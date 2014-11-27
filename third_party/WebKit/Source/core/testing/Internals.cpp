@@ -33,6 +33,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/InternalRuntimeFlags.h"
 #include "core/animation/AnimationTimeline.h"
@@ -1997,7 +1998,7 @@ PassRefPtr<DOMArrayBuffer> Internals::serializeObject(PassRefPtr<SerializedScrip
 PassRefPtr<SerializedScriptValue> Internals::deserializeBuffer(PassRefPtr<DOMArrayBuffer> buffer) const
 {
     String value(static_cast<const UChar*>(buffer->data()), buffer->byteLength() / sizeof(UChar));
-    return SerializedScriptValue::createFromWire(value);
+    return SerializedScriptValueFactory::instance().createFromWire(value);
 }
 
 void Internals::forceReload(bool endToEnd)

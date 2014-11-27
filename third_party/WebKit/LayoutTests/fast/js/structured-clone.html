@@ -1,0 +1,49 @@
+<!DOCTYPE HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+function promise_test(func, name, properties) {
+    properties = properties || {};
+    var test = async_test(name, properties);
+    Promise.resolve(test.step(func, test, test))
+           .then(function() { test.done(); })
+           .catch(test.step_func(function(value) { throw value; }));
+}
+
+function structuredClone(o)
+{
+    return new Promise(function(resolve, reject) {
+        var mc = new MessageChannel();
+        mc.port2.onmessage = function(e) { resolve(e.data); };
+        mc.port1.postMessage(o);
+    });
+}
+
+promise_test(function() {
+    var inner = {};
+    var orig = { inner: inner };
+    inner.outer = orig;
+    return structuredClone(orig).then(function(clone) {
+        assert_equals(clone.inner.outer, clone, 'Cycles should be preserved');
+    });
+}, 'Verify: "This algorithm preserves cycles..."');
+
+promise_test(function() {
+    var gen = {name: 'AES-CBC', length: 128};
+    return crypto.subtle.generateKey(gen, false, ['encrypt']).then(function(key) {
+        var simple = {};
+        var blob = new Blob(['content']);
+        var orig = {
+            s1: simple, s2: simple,
+            b1: blob, b2: blob,
+            k1: key, k2: key
+        };
+        return structuredClone(orig).then(function(clone) {
+            assert_equals(clone.s1, clone.s2, 'JS object identity should be preserved');
+            assert_equals(clone.b1, clone.b2, 'Core object identity should be preserved');
+            assert_equals(clone.k1, clone.k2, 'Module object identity should be preserved');
+        });
+    });
+}, 'Verify: "This algorithm preserves... the identity of duplicate objects in graphs."');
+
+</script>

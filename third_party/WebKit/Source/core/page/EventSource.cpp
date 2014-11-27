@@ -36,6 +36,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -433,7 +434,7 @@ bool EventSource::hasPendingActivity() const
 PassRefPtrWillBeRawPtr<MessageEvent> EventSource::createMessageEvent()
 {
     RefPtrWillBeRawPtr<MessageEvent> event = MessageEvent::create();
-    event->initMessageEvent(m_eventName.isEmpty() ? EventTypeNames::message : m_eventName, false, false, SerializedScriptValue::create(String(m_data)), m_eventStreamOrigin, m_lastEventId, 0, nullptr);
+    event->initMessageEvent(m_eventName.isEmpty() ? EventTypeNames::message : m_eventName, false, false, SerializedScriptValueFactory::instance().create(String(m_data)), m_eventStreamOrigin, m_lastEventId, 0, nullptr);
     m_data.clear();
     return event.release();
 }

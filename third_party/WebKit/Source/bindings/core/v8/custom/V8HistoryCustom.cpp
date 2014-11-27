@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Window.h"
@@ -62,7 +63,7 @@ void V8History::stateAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Va
 void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "pushState", "History", info.Holder(), info.GetIsolate());
-    RefPtr<SerializedScriptValue> historyState = SerializedScriptValue::create(info[0], 0, 0, exceptionState, info.GetIsolate());
+    RefPtr<SerializedScriptValue> historyState = SerializedScriptValueFactory::instance().create(info[0], 0, 0, exceptionState, info.GetIsolate());
     if (exceptionState.throwIfNeeded())
         return;
 
@@ -78,7 +79,7 @@ void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
 void V8History::replaceStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "replaceState", "History", info.Holder(), info.GetIsolate());
-    RefPtr<SerializedScriptValue> historyState = SerializedScriptValue::create(info[0], 0, 0, exceptionState, info.GetIsolate());
+    RefPtr<SerializedScriptValue> historyState = SerializedScriptValueFactory::instance().create(info[0], 0, 0, exceptionState, info.GetIsolate());
     if (exceptionState.throwIfNeeded())
         return;
 

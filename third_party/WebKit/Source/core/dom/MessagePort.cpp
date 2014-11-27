@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -177,7 +178,7 @@ static bool tryGetMessageFrom(WebMessagePortChannel& webChannel, RefPtr<Serializ
         for (size_t i = 0; i < webChannels.size(); ++i)
             (*channels)[i] = adoptPtr(webChannels[i]);
     }
-    message = SerializedScriptValue::createFromWire(messageString);
+    message = SerializedScriptValueFactory::instance().createFromWire(messageString);
     return true;
 }
 

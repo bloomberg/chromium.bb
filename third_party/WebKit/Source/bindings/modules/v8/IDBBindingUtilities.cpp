@@ -27,6 +27,7 @@
 #include "bindings/modules/v8/IDBBindingUtilities.h"
 
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMStringList.h"
@@ -359,7 +360,7 @@ static v8::Local<v8::Value> deserializeIDBValueBuffer(v8::Isolate* isolate, Shar
     // FIXME: The extra copy here can be eliminated by allowing SerializedScriptValue to take a raw const char* or const uint8_t*.
     Vector<uint8_t> value;
     value.append(buffer->data(), buffer->size());
-    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::createFromWireBytes(value);
+    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValueFactory::instance().createFromWireBytes(value);
     return serializedValue->deserialize(isolate, 0, blobInfo);
 }
 

@@ -374,7 +374,8 @@ INCLUDES_FOR_TYPE = {
                      'core/dom/StaticNodeList.h',
                      'core/html/LabelsNodeList.h']),
     'Promise': set(['bindings/core/v8/ScriptPromise.h']),
-    'SerializedScriptValue': set(['bindings/core/v8/SerializedScriptValue.h']),
+    'SerializedScriptValue': set(['bindings/core/v8/SerializedScriptValue.h',
+                                  'bindings/core/v8/SerializedScriptValueFactory.h']),
     'ScriptValue': set(['bindings/core/v8/ScriptValue.h']),
 }
 
@@ -492,7 +493,7 @@ V8_VALUE_TO_CPP_VALUE = {
     'EventTarget': 'V8DOMWrapper::isDOMWrapper({v8_value}) ? toWrapperTypeInfo(v8::Handle<v8::Object>::Cast({v8_value}))->toEventTarget(v8::Handle<v8::Object>::Cast({v8_value})) : 0',
     'NodeFilter': 'toNodeFilter({v8_value}, info.Holder(), ScriptState::current({isolate}))',
     'Promise': 'ScriptPromise::cast(ScriptState::current({isolate}), {v8_value})',
-    'SerializedScriptValue': 'SerializedScriptValue::create({v8_value}, 0, 0, exceptionState, {isolate})',
+    'SerializedScriptValue': 'SerializedScriptValueFactory::instance().create({v8_value}, 0, 0, exceptionState, {isolate})',
     'ScriptValue': 'ScriptValue(ScriptState::current({isolate}), {v8_value})',
     'Window': 'toDOMWindow({isolate}, {v8_value})',
     'XPathNSResolver': 'toXPathNSResolver({isolate}, {v8_value})',

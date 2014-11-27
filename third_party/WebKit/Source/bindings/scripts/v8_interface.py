@@ -245,6 +245,7 @@ def interface_context(interface):
         includes.add('bindings/core/v8/Dictionary.h')
         if any_type_attributes:
             includes.add('bindings/core/v8/SerializedScriptValue.h')
+            includes.add('bindings/core/v8/SerializedScriptValueFactory.h')
 
     # [NamedConstructor]
     named_constructor = named_constructor_context(interface)

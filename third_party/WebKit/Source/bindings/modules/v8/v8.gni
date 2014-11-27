@@ -12,6 +12,10 @@ bindings_modules_v8_files = get_path_info(
     "IDBBindingUtilities.h",
     "ModuleBindingsInitializer.cpp",
     "ModuleBindingsInitializer.h",
+    "ScriptValueSerializerForModules.cpp",
+    "ScriptValueSerializerForModules.h",
+    "SerializedScriptValueForModulesFactory.cpp",
+    "SerializedScriptValueForModulesFactory.h",
   ],
   "abspath") + bindings_modules_v8_custom_files
 

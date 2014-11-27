@@ -55,7 +55,7 @@ typedef Vector<RefPtr<DOMArrayBuffer>, 1> ArrayBufferArray;
 typedef HashMap<String, RefPtr<BlobDataHandle> > BlobDataHandleMap;
 typedef Vector<blink::WebBlobInfo> WebBlobInfoArray;
 
-class SerializedScriptValue final : public ThreadSafeRefCounted<SerializedScriptValue> {
+class SerializedScriptValue : public ThreadSafeRefCounted<SerializedScriptValue> {
 public:
     // Increment this for each incompatible change to the wire format.
     // Version 2: Added StringUCharTag for UChar v8 strings.
@@ -66,27 +66,11 @@ public:
     // Version 7: Extended File serialization with user visibility.
     static const uint32_t wireFormatVersion = 7;
 
-    ~SerializedScriptValue();
-
     // VarInt encoding constants.
     static const int varIntShift = 7;
     static const int varIntMask = (1 << varIntShift) - 1;
 
-    // If a serialization error occurs (e.g., cyclic input value) this
-    // function returns an empty representation, schedules a V8 exception to
-    // be thrown using v8::ThrowException(), and sets |didThrow|. In this case
-    // the caller must not invoke any V8 operations until control returns to
-    // V8. When serialization is successful, |didThrow| is false.
-    static PassRefPtr<SerializedScriptValue> create(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, ExceptionState&, v8::Isolate*);
-    static PassRefPtr<SerializedScriptValue> createFromWire(const String&);
-    static PassRefPtr<SerializedScriptValue> createFromWireBytes(const Vector<uint8_t>&);
-    static PassRefPtr<SerializedScriptValue> create(const String&);
-    static PassRefPtr<SerializedScriptValue> create(const String&, v8::Isolate*);
-    static PassRefPtr<SerializedScriptValue> create();
-    static PassRefPtr<SerializedScriptValue> create(const ScriptValue&, WebBlobInfoArray*, ExceptionState&, v8::Isolate*);
-
-    // Never throws exceptions.
-    static PassRefPtr<SerializedScriptValue> createAndSwallowExceptions(v8::Isolate*, v8::Handle<v8::Value>);
+    virtual ~SerializedScriptValue();
 
     static PassRefPtr<SerializedScriptValue> nullValue();
 
@@ -111,6 +95,7 @@ public:
     void registerMemoryAllocatedWithCurrentScriptContext();
 
 private:
+    // The followings are private, but used by SerializedScriptValueFactory.
     enum StringDataMode {
         StringValue,
         WireData
@@ -118,15 +103,23 @@ private:
     typedef Vector<WTF::ArrayBufferContents, 1> ArrayBufferContentsArray;
 
     SerializedScriptValue();
-    SerializedScriptValue(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, WebBlobInfoArray*, ExceptionState&, v8::Isolate*);
     explicit SerializedScriptValue(const String& wireData);
 
-    static PassOwnPtr<ArrayBufferContentsArray> transferArrayBuffers(v8::Isolate*, ArrayBufferArray&, ExceptionState&);
+    BlobDataHandleMap& blobDataHandles() { return m_blobDataHandles; }
+    String& data() { return m_data; }
+    void setData(const String& data) { m_data = data; }
+    void transferArrayBuffers(v8::Isolate*, ArrayBufferArray&, ExceptionState&);
+    ArrayBufferContentsArray* arrayBufferContentsArray() { return m_arrayBufferContentsArray.get(); }
 
+    static PassOwnPtr<ArrayBufferContentsArray> createArrayBuffers(v8::Isolate*, ArrayBufferArray&, ExceptionState&);
+
+private:
     String m_data;
     OwnPtr<ArrayBufferContentsArray> m_arrayBufferContentsArray;
     BlobDataHandleMap m_blobDataHandles;
     intptr_t m_externallyAllocatedMemory;
+
+    friend class SerializedScriptValueFactory;
 };
 
 } // namespace blink

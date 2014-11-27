@@ -37,6 +37,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8EventListener.h"
 #include "bindings/core/v8/V8EventListenerList.h"
@@ -199,7 +200,7 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     }
     TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, targetOrigin, info[targetOriginArgIndex]);
 
-    RefPtr<SerializedScriptValue> message = SerializedScriptValue::create(info[0], &portArray, &arrayBufferArray, exceptionState, info.GetIsolate());
+    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info[0], &portArray, &arrayBufferArray, exceptionState, info.GetIsolate());
     if (exceptionState.throwIfNeeded())
         return;
 

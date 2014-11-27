@@ -33,19 +33,20 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "public/platform/WebString.h"
 
 namespace blink {
 
 WebSerializedScriptValue WebSerializedScriptValue::fromString(const WebString& s)
 {
-    return SerializedScriptValue::createFromWire(s);
+    return SerializedScriptValueFactory::instance().createFromWire(s);
 }
 
 WebSerializedScriptValue WebSerializedScriptValue::serialize(v8::Handle<v8::Value> value)
 {
     TrackExceptionState exceptionState;
-    WebSerializedScriptValue serializedValue = SerializedScriptValue::create(value, 0, 0, exceptionState, v8::Isolate::GetCurrent());
+    WebSerializedScriptValue serializedValue = SerializedScriptValueFactory::instance().create(value, 0, 0, exceptionState, v8::Isolate::GetCurrent());
     if (exceptionState.hadException())
         return createInvalid();
     return serializedValue;
@@ -53,7 +54,7 @@ WebSerializedScriptValue WebSerializedScriptValue::serialize(v8::Handle<v8::Valu
 
 WebSerializedScriptValue WebSerializedScriptValue::createInvalid()
 {
-    return SerializedScriptValue::create();
+    return SerializedScriptValueFactory::instance().create();
 }
 
 void WebSerializedScriptValue::reset()

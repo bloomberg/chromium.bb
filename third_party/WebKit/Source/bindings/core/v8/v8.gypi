@@ -103,6 +103,8 @@
             'SerializationTag.h',
             'SerializedScriptValue.cpp',
             'SerializedScriptValue.h',
+            'SerializedScriptValueFactory.cpp',
+            'SerializedScriptValueFactory.h',
             'SharedPersistent.h',
             'V8AbstractEventListener.cpp',
             'V8AbstractEventListener.h',

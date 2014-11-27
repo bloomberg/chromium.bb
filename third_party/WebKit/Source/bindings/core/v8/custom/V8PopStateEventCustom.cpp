@@ -32,6 +32,7 @@
 #include "bindings/core/v8/V8PopStateEvent.h"
 
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8History.h"
 #include "core/events/PopStateEvent.h"
@@ -63,7 +64,7 @@ void V8PopStateEvent::stateAttributeGetterCustom(const v8::PropertyCallbackInfo<
             // we need to find the 'state' property on the main world wrapper and clone it.
             v8::Local<v8::Value> mainWorldState = V8HiddenValue::getHiddenValueFromMainWorldWrapper(info.GetIsolate(), event, V8HiddenValue::state(info.GetIsolate()));
             if (!mainWorldState.IsEmpty())
-                event->setSerializedState(SerializedScriptValue::createAndSwallowExceptions(info.GetIsolate(), mainWorldState));
+                event->setSerializedState(SerializedScriptValueFactory::instance().createAndSwallowExceptions(info.GetIsolate(), mainWorldState));
         }
         if (event->serializedState())
             result = event->serializedState()->deserialize();

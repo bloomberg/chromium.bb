@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "core/dom/DOMArrayBuffer.h"
@@ -31,7 +32,7 @@ void postMessageMethodCommon(const char* interfaceName, Type* instance, const v8
             return;
         }
     }
-    RefPtr<SerializedScriptValue> message = SerializedScriptValue::create(info[0], &ports, &arrayBuffers, exceptionState, info.GetIsolate());
+    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info[0], &ports, &arrayBuffers, exceptionState, info.GetIsolate());
     if (exceptionState.throwIfNeeded())
         return;
     // FIXME: Only pass context/exceptionState if instance really requires it.

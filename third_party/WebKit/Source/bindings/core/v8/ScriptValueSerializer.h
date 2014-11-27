@@ -8,9 +8,6 @@
 #include "bindings/core/v8/SerializationTag.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "public/platform/WebCrypto.h"
-#include "public/platform/WebCryptoKey.h"
-#include "public/platform/WebCryptoKeyAlgorithm.h"
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -24,8 +21,6 @@ class DOMArrayBuffer;
 class DOMArrayBufferView;
 class File;
 class FileList;
-
-namespace SerializedScriptValueInternal {
 
 typedef Vector<WTF::ArrayBufferContents, 1> ArrayBufferContentsArray;
 
@@ -94,15 +89,15 @@ private:
     HandleToT m_map;
 };
 
-// Writer is responsible for serializing primitive types and storing
+// SerializedScriptValueWriter is responsible for serializing primitive types and storing
 // information used to reconstruct composite types.
-class Writer {
+class SerializedScriptValueWriter {
     STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(Writer);
+    WTF_MAKE_NONCOPYABLE(SerializedScriptValueWriter);
 public:
     typedef UChar BufferValueType;
 
-    Writer()
+    SerializedScriptValueWriter()
         : m_position(0)
     {
     }
@@ -126,12 +121,10 @@ public:
     void writeNumberObject(double number);
     void writeBlob(const String& uuid, const String& type, unsigned long long size);
     void writeBlobIndex(int blobIndex);
-    void writeDOMFileSystem(int type, const String& name, const String& url);
     void writeFile(const File&);
     void writeFileIndex(int blobIndex);
     void writeFileList(const FileList&);
     void writeFileListIndex(const Vector<int>& blobIndices);
-    bool writeCryptoKey(const WebCryptoKey&);
     void writeArrayBuffer(const DOMArrayBuffer&);
     void writeArrayBufferView(const DOMArrayBufferView&);
     void writeImageData(uint32_t width, uint32_t height, const uint8_t* pixelData, uint32_t pixelDataLength);
@@ -153,14 +146,6 @@ protected:
     void doWriteArrayBuffer(const DOMArrayBuffer&);
     void doWriteString(const char* data, int length);
     void doWriteWebCoreString(const String&);
-    void doWriteHmacKey(const WebCryptoKey&);
-    void doWriteAesKey(const WebCryptoKey&);
-    void doWriteRsaHashedKey(const WebCryptoKey&);
-    void doWriteEcKey(const WebCryptoKey&);
-    void doWriteAlgorithmId(WebCryptoAlgorithmId);
-    void doWriteAsymmetricKeyType(WebCryptoKeyType);
-    void doWriteNamedCurve(WebCryptoNamedCurve);
-    void doWriteKeyUsages(const WebCryptoKeyUsageMask usages, bool extractable);
     int bytesNeededToWireEncode(uint32_t value);
 
     template<class T>
@@ -193,9 +178,9 @@ private:
     unsigned m_position;
 };
 
-class Serializer {
+class ScriptValueSerializer {
     STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(Serializer);
+    WTF_MAKE_NONCOPYABLE(ScriptValueSerializer);
 protected:
     class StateBase;
 public:
@@ -206,20 +191,11 @@ public:
         JSException
     };
 
-    Serializer(Writer&, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray*, BlobDataHandleMap& blobDataHandles, v8::TryCatch&, ScriptState*);
+    ScriptValueSerializer(SerializedScriptValueWriter&, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray*, BlobDataHandleMap& blobDataHandles, v8::TryCatch&, ScriptState*);
     v8::Isolate* isolate() { return m_scriptState->isolate(); }
 
     Status serialize(v8::Handle<v8::Value>);
     String errorMessage() { return m_errorMessage; }
-
-    // Functions used by serialization states.
-    Serializer::StateBase* doSerialize(v8::Handle<v8::Value>, Serializer::StateBase* next);
-
-    StateBase* doSerializeArrayBuffer(v8::Handle<v8::Value> arrayBuffer, StateBase* next);
-    StateBase* checkException(StateBase*);
-    StateBase* writeObject(uint32_t numProperties, StateBase*);
-    StateBase* writeSparseArray(uint32_t numProperties, uint32_t length, StateBase*);
-    StateBase* writeDenseArray(uint32_t numProperties, uint32_t length, StateBase*);
 
 protected:
     class StateBase {
@@ -236,7 +212,7 @@ protected:
         // Serializes (a part of) the current composite and returns
         // the next state to process or null when this is the final
         // state.
-        virtual StateBase* advance(Serializer&) = 0;
+        virtual StateBase* advance(ScriptValueSerializer&) = 0;
 
     protected:
         StateBase(v8::Handle<v8::Value> composite, StateBase* next)
@@ -258,7 +234,7 @@ protected:
         {
         }
 
-        virtual StateBase* advance(Serializer&) override
+        virtual StateBase* advance(ScriptValueSerializer&) override
         {
             delete this;
             return 0;
@@ -288,9 +264,9 @@ protected:
         }
 
     protected:
-        virtual StateBase* objectDone(unsigned numProperties, Serializer&) = 0;
+        virtual StateBase* objectDone(unsigned numProperties, ScriptValueSerializer&) = 0;
 
-        StateBase* serializeProperties(bool ignoreIndexed, Serializer&);
+        StateBase* serializeProperties(bool ignoreIndexed, ScriptValueSerializer&);
         v8::Local<v8::Array> m_propertyNames;
 
     private:
@@ -307,10 +283,10 @@ protected:
         {
         }
 
-        virtual StateBase* advance(Serializer&) override;
+        virtual StateBase* advance(ScriptValueSerializer&) override;
 
     protected:
-        virtual StateBase* objectDone(unsigned numProperties, Serializer&) override;
+        virtual StateBase* objectDone(unsigned numProperties, ScriptValueSerializer&) override;
     };
 
     class DenseArrayState final : public AbstractObjectState {
@@ -323,10 +299,10 @@ protected:
             m_propertyNames = v8::Local<v8::Array>::New(isolate, propertyNames);
         }
 
-        virtual StateBase* advance(Serializer&) override;
+        virtual StateBase* advance(ScriptValueSerializer&) override;
 
     protected:
-        virtual StateBase* objectDone(unsigned numProperties, Serializer&) override;
+        virtual StateBase* objectDone(unsigned numProperties, ScriptValueSerializer&) override;
 
     private:
         uint32_t m_arrayIndex;
@@ -341,13 +317,23 @@ protected:
             m_propertyNames = v8::Local<v8::Array>::New(isolate, propertyNames);
         }
 
-        virtual StateBase* advance(Serializer&) override;
+        virtual StateBase* advance(ScriptValueSerializer&) override;
 
     protected:
-        virtual StateBase* objectDone(unsigned numProperties, Serializer&) override;
+        virtual StateBase* objectDone(unsigned numProperties, ScriptValueSerializer&) override;
     };
 
+    // Functions used by serialization states.
+    virtual StateBase* doSerializeValue(v8::Handle<v8::Value>, StateBase* next);
+
 private:
+    StateBase* doSerialize(v8::Handle<v8::Value>, StateBase* next);
+    StateBase* doSerializeArrayBuffer(v8::Handle<v8::Value> arrayBuffer, StateBase* next);
+    StateBase* checkException(StateBase*);
+    StateBase* writeObject(uint32_t numProperties, StateBase*);
+    StateBase* writeSparseArray(uint32_t numProperties, uint32_t length, StateBase*);
+    StateBase* writeDenseArray(uint32_t numProperties, uint32_t length, StateBase*);
+
     StateBase* push(StateBase* state)
     {
         ASSERT(state);
@@ -370,10 +356,8 @@ private:
     void writeNumberObject(v8::Handle<v8::Value>);
     void writeBooleanObject(v8::Handle<v8::Value>);
     StateBase* writeBlob(v8::Handle<v8::Value>, StateBase* next);
-    StateBase* writeDOMFileSystem(v8::Handle<v8::Value>, StateBase* next);
     StateBase* writeFile(v8::Handle<v8::Value>, StateBase* next);
     StateBase* writeFileList(v8::Handle<v8::Value>, StateBase* next);
-    bool writeCryptoKey(v8::Handle<v8::Value>);
     void writeImageData(v8::Handle<v8::Value>);
     void writeRegExp(v8::Handle<v8::Value>);
     StateBase* writeAndGreyArrayBufferView(v8::Handle<v8::Object>, StateBase* next);
@@ -384,21 +368,22 @@ private:
     StateBase* startArrayState(v8::Handle<v8::Array>, StateBase* next);
     StateBase* startObjectState(v8::Handle<v8::Object>, StateBase* next);
 
-    // Marks object as having been visited by the serializer and assigns it a unique object reference ID.
-    // An object may only be greyed once.
-    void greyObject(const v8::Handle<v8::Object>&);
     bool appendBlobInfo(const String& uuid, const String& type, unsigned long long size, int* index);
     bool appendFileInfo(const File*, int* index);
 
 protected:
+    // Marks object as having been visited by the serializer and assigns it a unique object reference ID.
+    // An object may only be greyed once.
+    void greyObject(const v8::Handle<v8::Object>&);
+
     StateBase* handleError(Status errorStatus, const String& message, StateBase*);
 
-    Writer& writer() { return m_writer; }
+    SerializedScriptValueWriter& writer() { return m_writer; }
     uint32_t nextObjectReference() const { return m_nextObjectReference; }
 
 private:
     RefPtr<ScriptState> m_scriptState;
-    Writer& m_writer;
+    SerializedScriptValueWriter& m_writer;
     v8::TryCatch& m_tryCatch;
     int m_depth;
     Status m_status;
@@ -412,13 +397,13 @@ private:
     BlobDataHandleMap& m_blobDataHandles;
 };
 
-// Interface used by Reader to create objects of composite types.
-class CompositeCreator {
+// Interface used by SerializedScriptValueReader to create objects of composite types.
+class ScriptValueCompositeCreator {
     STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(CompositeCreator);
+    WTF_MAKE_NONCOPYABLE(ScriptValueCompositeCreator);
 public:
-    CompositeCreator() { }
-    virtual ~CompositeCreator() { }
+    ScriptValueCompositeCreator() { }
+    virtual ~ScriptValueCompositeCreator() { }
 
     virtual bool consumeTopOfStack(v8::Handle<v8::Value>*) = 0;
     virtual uint32_t objectReferenceCount() = 0;
@@ -434,13 +419,13 @@ public:
     virtual bool completeDenseArray(uint32_t numProperties, uint32_t length, v8::Handle<v8::Value>*) = 0;
 };
 
-// Reader is responsible for deserializing primitive types and
+// SerializedScriptValueReader is responsible for deserializing primitive types and
 // restoring information about saved objects of composite types.
-class Reader {
+class SerializedScriptValueReader {
     STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(Reader);
+    WTF_MAKE_NONCOPYABLE(SerializedScriptValueReader);
 public:
-    Reader(const uint8_t* buffer, int length, const WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, ScriptState* scriptState)
+    SerializedScriptValueReader(const uint8_t* buffer, int length, const WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, ScriptState* scriptState)
         : m_scriptState(scriptState)
         , m_buffer(buffer)
         , m_length(length)
@@ -470,14 +455,20 @@ protected:
     }
 
 public:
-    bool read(v8::Handle<v8::Value>*, CompositeCreator&);
+    virtual bool read(v8::Handle<v8::Value>*, ScriptValueCompositeCreator&);
     bool readVersion(uint32_t& version);
     void setVersion(uint32_t);
 
-private:
+protected:
+    bool readWithTag(SerializationTag, v8::Handle<v8::Value>*, ScriptValueCompositeCreator&);
+
     bool readTag(SerializationTag*);
     bool readWebCoreString(String*);
     bool readUint32(v8::Handle<v8::Value>*);
+
+    bool doReadUint32(uint32_t* value);
+
+private:
     void undoReadTag();
     bool readArrayBufferViewSubTag(ArrayBufferViewSubTag*);
     bool readString(v8::Handle<v8::Value>*);
@@ -490,13 +481,11 @@ private:
     bool readImageData(v8::Handle<v8::Value>*);
     PassRefPtr<DOMArrayBuffer> doReadArrayBuffer();
     bool readArrayBuffer(v8::Handle<v8::Value>*);
-    bool readArrayBufferView(v8::Handle<v8::Value>*, CompositeCreator&);
+    bool readArrayBufferView(v8::Handle<v8::Value>*, ScriptValueCompositeCreator&);
     bool readRegExp(v8::Handle<v8::Value>*);
     bool readBlob(v8::Handle<v8::Value>*, bool isIndexed);
-    bool readDOMFileSystem(v8::Handle<v8::Value>*);
     bool readFile(v8::Handle<v8::Value>*, bool isIndexed);
     bool readFileList(v8::Handle<v8::Value>*, bool isIndexed);
-    bool readCryptoKey(v8::Handle<v8::Value>*);
     File* readFileHelper();
     File* readFileIndexHelper();
 
@@ -516,18 +505,9 @@ private:
         return true;
     }
 
-    bool doReadUint32(uint32_t* value);
     bool doReadUint64(uint64_t* value);
     bool doReadNumber(double* number);
     PassRefPtr<BlobDataHandle> getOrCreateBlobDataHandle(const String& uuid, const String& type, long long size = -1);
-    bool doReadHmacKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
-    bool doReadAesKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
-    bool doReadRsaHashedKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
-    bool doReadEcKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
-    bool doReadAlgorithmId(WebCryptoAlgorithmId&);
-    bool doReadAsymmetricKeyType(WebCryptoKeyType&);
-    bool doReadNamedCurve(WebCryptoNamedCurve&);
-    bool doReadKeyUsages(WebCryptoKeyUsageMask& usages, bool& extractable);
 
 private:
     RefPtr<ScriptState> m_scriptState;
@@ -539,11 +519,11 @@ private:
     const BlobDataHandleMap& m_blobDataHandles;
 };
 
-class Deserializer : public CompositeCreator {
+class ScriptValueDeserializer : public ScriptValueCompositeCreator {
     STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(Deserializer);
+    WTF_MAKE_NONCOPYABLE(ScriptValueDeserializer);
 public:
-    Deserializer(Reader& reader, MessagePortArray* messagePorts, ArrayBufferContentsArray* arrayBufferContents)
+    ScriptValueDeserializer(SerializedScriptValueReader& reader, MessagePortArray* messagePorts, ArrayBufferContentsArray* arrayBufferContents)
         : m_reader(reader)
         , m_transferredMessagePorts(messagePorts)
         , m_arrayBufferContents(arrayBufferContents)
@@ -567,8 +547,8 @@ public:
     virtual uint32_t objectReferenceCount() override;
 
 protected:
-    Reader& reader() { return m_reader; }
-    bool read(v8::Local<v8::Value>*);
+    SerializedScriptValueReader& reader() { return m_reader; }
+    virtual bool read(v8::Local<v8::Value>*);
 
 private:
     bool initializeObject(v8::Handle<v8::Object>, uint32_t numProperties, v8::Handle<v8::Value>*);
@@ -585,7 +565,7 @@ private:
     void openComposite(const v8::Local<v8::Value>&);
     bool closeComposite(v8::Handle<v8::Value>*);
 
-    Reader& m_reader;
+    SerializedScriptValueReader& m_reader;
     Vector<v8::Local<v8::Value> > m_stack;
     Vector<v8::Handle<v8::Value> > m_objectPool;
     Vector<uint32_t> m_openCompositeReferenceStack;
@@ -594,8 +574,6 @@ private:
     Vector<v8::Handle<v8::Value> > m_arrayBuffers;
     uint32_t m_version;
 };
-
-} // namespace SerializedScriptValueInternal
 
 } // namespace blink
 

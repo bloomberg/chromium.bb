@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ModuleProxy.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
+#include "bindings/modules/v8/SerializedScriptValueForModulesFactory.h"
 #include "core/dom/ExecutionContext.h"
 
 namespace blink {
@@ -23,6 +24,7 @@ void ModuleBindingsInitializer::init()
 {
     ModuleProxy::moduleProxy().registerDidLeaveScriptContextForRecursionScope(didLeaveScriptContextForModule);
     initPartialInterfacesInModules();
+    SerializedScriptValueFactory::initialize(new SerializedScriptValueForModulesFactory);
 }
 
 } // namespace blink

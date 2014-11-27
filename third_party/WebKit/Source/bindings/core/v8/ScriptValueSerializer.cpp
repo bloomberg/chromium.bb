@@ -12,8 +12,6 @@
 #include "bindings/core/v8/V8FileList.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8MessagePort.h"
-#include "bindings/modules/v8/V8CryptoKey.h"
-#include "bindings/modules/v8/V8DOMFileSystem.h"
 #include "core/dom/DOMDataView.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
@@ -27,8 +25,6 @@
 // NOTE: be sure to change wireFormatVersion as necessary!
 
 namespace blink {
-
-namespace SerializedScriptValueInternal {
 
 // This code implements the HTML5 Structured Clone algorithm:
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/urls.html#safe-passing-of-structured-data
@@ -70,32 +66,32 @@ static bool shouldCheckForCycles(int depth)
     return !(depth & (depth - 1));
 }
 
-void Writer::writeUndefined()
+void SerializedScriptValueWriter::writeUndefined()
 {
     append(UndefinedTag);
 }
 
-void Writer::writeNull()
+void SerializedScriptValueWriter::writeNull()
 {
     append(NullTag);
 }
 
-void Writer::writeTrue()
+void SerializedScriptValueWriter::writeTrue()
 {
     append(TrueTag);
 }
 
-void Writer::writeFalse()
+void SerializedScriptValueWriter::writeFalse()
 {
     append(FalseTag);
 }
 
-void Writer::writeBooleanObject(bool value)
+void SerializedScriptValueWriter::writeBooleanObject(bool value)
 {
     append(value ? TrueObjectTag : FalseObjectTag);
 }
 
-void Writer::writeOneByteString(v8::Handle<v8::String>& string)
+void SerializedScriptValueWriter::writeOneByteString(v8::Handle<v8::String>& string)
 {
     int stringLength = string->Length();
     int utf8Length = string->Utf8Length();
@@ -115,7 +111,7 @@ void Writer::writeOneByteString(v8::Handle<v8::String>& string)
     m_position += utf8Length;
 }
 
-void Writer::writeUCharString(v8::Handle<v8::String>& string)
+void SerializedScriptValueWriter::writeUCharString(v8::Handle<v8::String>& string)
 {
     int length = string->Length();
     ASSERT(length >= 0);
@@ -135,14 +131,14 @@ void Writer::writeUCharString(v8::Handle<v8::String>& string)
     m_position += size;
 }
 
-void Writer::writeStringObject(const char* data, int length)
+void SerializedScriptValueWriter::writeStringObject(const char* data, int length)
 {
     ASSERT(length >= 0);
     append(StringObjectTag);
     doWriteString(data, length);
 }
 
-void Writer::writeWebCoreString(const String& string)
+void SerializedScriptValueWriter::writeWebCoreString(const String& string)
 {
     // Uses UTF8 encoding so we can read it back as either V8 or
     // WebCore string.
@@ -150,43 +146,43 @@ void Writer::writeWebCoreString(const String& string)
     doWriteWebCoreString(string);
 }
 
-void Writer::writeVersion()
+void SerializedScriptValueWriter::writeVersion()
 {
     append(VersionTag);
     doWriteUint32(SerializedScriptValue::wireFormatVersion);
 }
 
-void Writer::writeInt32(int32_t value)
+void SerializedScriptValueWriter::writeInt32(int32_t value)
 {
     append(Int32Tag);
     doWriteUint32(ZigZag::encode(static_cast<uint32_t>(value)));
 }
 
-void Writer::writeUint32(uint32_t value)
+void SerializedScriptValueWriter::writeUint32(uint32_t value)
 {
     append(Uint32Tag);
     doWriteUint32(value);
 }
 
-void Writer::writeDate(double numberValue)
+void SerializedScriptValueWriter::writeDate(double numberValue)
 {
     append(DateTag);
     doWriteNumber(numberValue);
 }
 
-void Writer::writeNumber(double number)
+void SerializedScriptValueWriter::writeNumber(double number)
 {
     append(NumberTag);
     doWriteNumber(number);
 }
 
-void Writer::writeNumberObject(double number)
+void SerializedScriptValueWriter::writeNumberObject(double number)
 {
     append(NumberObjectTag);
     doWriteNumber(number);
 }
 
-void Writer::writeBlob(const String& uuid, const String& type, unsigned long long size)
+void SerializedScriptValueWriter::writeBlob(const String& uuid, const String& type, unsigned long long size)
 {
     append(BlobTag);
     doWriteWebCoreString(uuid);
@@ -194,34 +190,26 @@ void Writer::writeBlob(const String& uuid, const String& type, unsigned long lon
     doWriteUint64(size);
 }
 
-void Writer::writeDOMFileSystem(int type, const String& name, const String& url)
-{
-    append(DOMFileSystemTag);
-    doWriteUint32(type);
-    doWriteWebCoreString(name);
-    doWriteWebCoreString(url);
-}
-
-void Writer::writeBlobIndex(int blobIndex)
+void SerializedScriptValueWriter::writeBlobIndex(int blobIndex)
 {
     ASSERT(blobIndex >= 0);
     append(BlobIndexTag);
     doWriteUint32(blobIndex);
 }
 
-void Writer::writeFile(const File& file)
+void SerializedScriptValueWriter::writeFile(const File& file)
 {
     append(FileTag);
     doWriteFile(file);
 }
 
-void Writer::writeFileIndex(int blobIndex)
+void SerializedScriptValueWriter::writeFileIndex(int blobIndex)
 {
     append(FileIndexTag);
     doWriteUint32(blobIndex);
 }
 
-void Writer::writeFileList(const FileList& fileList)
+void SerializedScriptValueWriter::writeFileList(const FileList& fileList)
 {
     append(FileListTag);
     uint32_t length = fileList.length();
@@ -230,7 +218,7 @@ void Writer::writeFileList(const FileList& fileList)
         doWriteFile(*fileList.item(i));
 }
 
-void Writer::writeFileListIndex(const Vector<int>& blobIndices)
+void SerializedScriptValueWriter::writeFileListIndex(const Vector<int>& blobIndices)
 {
     append(FileListIndexTag);
     uint32_t length = blobIndices.size();
@@ -239,46 +227,13 @@ void Writer::writeFileListIndex(const Vector<int>& blobIndices)
         doWriteUint32(blobIndices[i]);
 }
 
-bool Writer::writeCryptoKey(const WebCryptoKey& key)
-{
-    append(static_cast<uint8_t>(CryptoKeyTag));
-
-    switch (key.algorithm().paramsType()) {
-    case WebCryptoKeyAlgorithmParamsTypeAes:
-        doWriteAesKey(key);
-        break;
-    case WebCryptoKeyAlgorithmParamsTypeHmac:
-        doWriteHmacKey(key);
-        break;
-    case WebCryptoKeyAlgorithmParamsTypeRsaHashed:
-        doWriteRsaHashedKey(key);
-        break;
-    case WebCryptoKeyAlgorithmParamsTypeEc:
-        doWriteEcKey(key);
-        break;
-    case WebCryptoKeyAlgorithmParamsTypeNone:
-        ASSERT_NOT_REACHED();
-        return false;
-    }
-
-    doWriteKeyUsages(key.usages(), key.extractable());
-
-    WebVector<uint8_t> keyData;
-    if (!Platform::current()->crypto()->serializeKeyForClone(key, keyData))
-        return false;
-
-    doWriteUint32(keyData.size());
-    append(keyData.data(), keyData.size());
-    return true;
-}
-
-void Writer::writeArrayBuffer(const DOMArrayBuffer& arrayBuffer)
+void SerializedScriptValueWriter::writeArrayBuffer(const DOMArrayBuffer& arrayBuffer)
 {
     append(ArrayBufferTag);
     doWriteArrayBuffer(arrayBuffer);
 }
 
-void Writer::writeArrayBufferView(const DOMArrayBufferView& arrayBufferView)
+void SerializedScriptValueWriter::writeArrayBufferView(const DOMArrayBufferView& arrayBufferView)
 {
     append(ArrayBufferViewTag);
 #if ENABLE(ASSERT)
@@ -326,7 +281,7 @@ void Writer::writeArrayBufferView(const DOMArrayBufferView& arrayBufferView)
     doWriteUint32(arrayBufferView.byteLength());
 }
 
-void Writer::writeImageData(uint32_t width, uint32_t height, const uint8_t* pixelData, uint32_t pixelDataLength)
+void SerializedScriptValueWriter::writeImageData(uint32_t width, uint32_t height, const uint8_t* pixelData, uint32_t pixelDataLength)
 {
     append(ImageDataTag);
     doWriteUint32(width);
@@ -335,7 +290,7 @@ void Writer::writeImageData(uint32_t width, uint32_t height, const uint8_t* pixe
     append(pixelData, pixelDataLength);
 }
 
-void Writer::writeRegExp(v8::Local<v8::String> pattern, v8::RegExp::Flags flags)
+void SerializedScriptValueWriter::writeRegExp(v8::Local<v8::String> pattern, v8::RegExp::Flags flags)
 {
     append(RegExpTag);
     v8::String::Utf8Value patternUtf8Value(pattern);
@@ -343,45 +298,45 @@ void Writer::writeRegExp(v8::Local<v8::String> pattern, v8::RegExp::Flags flags)
     doWriteUint32(static_cast<uint32_t>(flags));
 }
 
-void Writer::writeTransferredMessagePort(uint32_t index)
+void SerializedScriptValueWriter::writeTransferredMessagePort(uint32_t index)
 {
     append(MessagePortTag);
     doWriteUint32(index);
 }
 
-void Writer::writeTransferredArrayBuffer(uint32_t index)
+void SerializedScriptValueWriter::writeTransferredArrayBuffer(uint32_t index)
 {
     append(ArrayBufferTransferTag);
     doWriteUint32(index);
 }
 
-void Writer::writeObjectReference(uint32_t reference)
+void SerializedScriptValueWriter::writeObjectReference(uint32_t reference)
 {
     append(ObjectReferenceTag);
     doWriteUint32(reference);
 }
 
-void Writer::writeObject(uint32_t numProperties)
+void SerializedScriptValueWriter::writeObject(uint32_t numProperties)
 {
     append(ObjectTag);
     doWriteUint32(numProperties);
 }
 
-void Writer::writeSparseArray(uint32_t numProperties, uint32_t length)
+void SerializedScriptValueWriter::writeSparseArray(uint32_t numProperties, uint32_t length)
 {
     append(SparseArrayTag);
     doWriteUint32(numProperties);
     doWriteUint32(length);
 }
 
-void Writer::writeDenseArray(uint32_t numProperties, uint32_t length)
+void SerializedScriptValueWriter::writeDenseArray(uint32_t numProperties, uint32_t length)
 {
     append(DenseArrayTag);
     doWriteUint32(numProperties);
     doWriteUint32(length);
 }
 
-String Writer::takeWireString()
+String SerializedScriptValueWriter::takeWireString()
 {
     COMPILE_ASSERT(sizeof(BufferValueType) == 2, BufferValueTypeIsTwoBytes);
     fillHole();
@@ -390,30 +345,30 @@ String Writer::takeWireString()
     return data;
 }
 
-void Writer::writeReferenceCount(uint32_t numberOfReferences)
+void SerializedScriptValueWriter::writeReferenceCount(uint32_t numberOfReferences)
 {
     append(ReferenceCountTag);
     doWriteUint32(numberOfReferences);
 }
 
-void Writer::writeGenerateFreshObject()
+void SerializedScriptValueWriter::writeGenerateFreshObject()
 {
     append(GenerateFreshObjectTag);
 }
 
-void Writer::writeGenerateFreshSparseArray(uint32_t length)
+void SerializedScriptValueWriter::writeGenerateFreshSparseArray(uint32_t length)
 {
     append(GenerateFreshSparseArrayTag);
     doWriteUint32(length);
 }
 
-void Writer::writeGenerateFreshDenseArray(uint32_t length)
+void SerializedScriptValueWriter::writeGenerateFreshDenseArray(uint32_t length)
 {
     append(GenerateFreshDenseArrayTag);
     doWriteUint32(length);
 }
 
-void Writer::doWriteFile(const File& file)
+void SerializedScriptValueWriter::doWriteFile(const File& file)
 {
     doWriteWebCoreString(file.hasBackingFile() ? file.path() : "");
     doWriteWebCoreString(file.name());
@@ -437,163 +392,26 @@ void Writer::doWriteFile(const File& file)
     doWriteUint32(static_cast<uint8_t>((file.userVisibility() == File::IsUserVisible) ? 1 : 0));
 }
 
-void Writer::doWriteArrayBuffer(const DOMArrayBuffer& arrayBuffer)
+void SerializedScriptValueWriter::doWriteArrayBuffer(const DOMArrayBuffer& arrayBuffer)
 {
     uint32_t byteLength = arrayBuffer.byteLength();
     doWriteUint32(byteLength);
     append(static_cast<const uint8_t*>(arrayBuffer.data()), byteLength);
 }
 
-void Writer::doWriteString(const char* data, int length)
+void SerializedScriptValueWriter::doWriteString(const char* data, int length)
 {
     doWriteUint32(static_cast<uint32_t>(length));
     append(reinterpret_cast<const uint8_t*>(data), length);
 }
 
-void Writer::doWriteWebCoreString(const String& string)
+void SerializedScriptValueWriter::doWriteWebCoreString(const String& string)
 {
     StringUTF8Adaptor stringUTF8(string);
     doWriteString(stringUTF8.data(), stringUTF8.length());
 }
 
-void Writer::doWriteHmacKey(const WebCryptoKey& key)
-{
-    ASSERT(key.algorithm().paramsType() == WebCryptoKeyAlgorithmParamsTypeHmac);
-
-    append(static_cast<uint8_t>(HmacKeyTag));
-    ASSERT(!(key.algorithm().hmacParams()->lengthBits() % 8));
-    doWriteUint32(key.algorithm().hmacParams()->lengthBits() / 8);
-    doWriteAlgorithmId(key.algorithm().hmacParams()->hash().id());
-}
-
-void Writer::doWriteAesKey(const WebCryptoKey& key)
-{
-    ASSERT(key.algorithm().paramsType() == WebCryptoKeyAlgorithmParamsTypeAes);
-
-    append(static_cast<uint8_t>(AesKeyTag));
-    doWriteAlgorithmId(key.algorithm().id());
-    // Converting the key length from bits to bytes is lossless and makes
-    // it fit in 1 byte.
-    ASSERT(!(key.algorithm().aesParams()->lengthBits() % 8));
-    doWriteUint32(key.algorithm().aesParams()->lengthBits() / 8);
-}
-
-void Writer::doWriteRsaHashedKey(const WebCryptoKey& key)
-{
-    ASSERT(key.algorithm().rsaHashedParams());
-    append(static_cast<uint8_t>(RsaHashedKeyTag));
-
-    doWriteAlgorithmId(key.algorithm().id());
-    doWriteAsymmetricKeyType(key.type());
-
-    const WebCryptoRsaHashedKeyAlgorithmParams* params = key.algorithm().rsaHashedParams();
-    doWriteUint32(params->modulusLengthBits());
-    doWriteUint32(params->publicExponent().size());
-    append(params->publicExponent().data(), params->publicExponent().size());
-    doWriteAlgorithmId(params->hash().id());
-}
-
-void Writer::doWriteEcKey(const WebCryptoKey& key)
-{
-    ASSERT(key.algorithm().ecParams());
-    append(static_cast<uint8_t>(EcKeyTag));
-
-    doWriteAlgorithmId(key.algorithm().id());
-    doWriteAsymmetricKeyType(key.type());
-    doWriteNamedCurve(key.algorithm().ecParams()->namedCurve());
-}
-
-void Writer::doWriteAlgorithmId(WebCryptoAlgorithmId id)
-{
-    switch (id) {
-    case WebCryptoAlgorithmIdAesCbc:
-        return doWriteUint32(AesCbcTag);
-    case WebCryptoAlgorithmIdHmac:
-        return doWriteUint32(HmacTag);
-    case WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
-        return doWriteUint32(RsaSsaPkcs1v1_5Tag);
-    case WebCryptoAlgorithmIdSha1:
-        return doWriteUint32(Sha1Tag);
-    case WebCryptoAlgorithmIdSha256:
-        return doWriteUint32(Sha256Tag);
-    case WebCryptoAlgorithmIdSha384:
-        return doWriteUint32(Sha384Tag);
-    case WebCryptoAlgorithmIdSha512:
-        return doWriteUint32(Sha512Tag);
-    case WebCryptoAlgorithmIdAesGcm:
-        return doWriteUint32(AesGcmTag);
-    case WebCryptoAlgorithmIdRsaOaep:
-        return doWriteUint32(RsaOaepTag);
-    case WebCryptoAlgorithmIdAesCtr:
-        return doWriteUint32(AesCtrTag);
-    case WebCryptoAlgorithmIdAesKw:
-        return doWriteUint32(AesKwTag);
-    case WebCryptoAlgorithmIdRsaPss:
-        return doWriteUint32(RsaPssTag);
-    case WebCryptoAlgorithmIdEcdsa:
-        return doWriteUint32(EcdsaTag);
-    }
-    ASSERT_NOT_REACHED();
-}
-
-void Writer::doWriteAsymmetricKeyType(WebCryptoKeyType keyType)
-{
-    switch (keyType) {
-    case WebCryptoKeyTypePublic:
-        doWriteUint32(PublicKeyType);
-        break;
-    case WebCryptoKeyTypePrivate:
-        doWriteUint32(PrivateKeyType);
-        break;
-    case WebCryptoKeyTypeSecret:
-        ASSERT_NOT_REACHED();
-    }
-}
-
-void Writer::doWriteNamedCurve(WebCryptoNamedCurve namedCurve)
-{
-    switch (namedCurve) {
-    case WebCryptoNamedCurveP256:
-        return doWriteUint32(P256Tag);
-    case WebCryptoNamedCurveP384:
-        return doWriteUint32(P384Tag);
-    case WebCryptoNamedCurveP521:
-        return doWriteUint32(P521Tag);
-    }
-    ASSERT_NOT_REACHED();
-}
-
-void Writer::doWriteKeyUsages(const WebCryptoKeyUsageMask usages, bool extractable)
-{
-    // Reminder to update this when adding new key usages.
-    COMPILE_ASSERT(EndOfWebCryptoKeyUsage == (1 << 7) + 1, UpdateMe);
-
-    uint32_t value = 0;
-
-    if (extractable)
-        value |= ExtractableUsage;
-
-    if (usages & WebCryptoKeyUsageEncrypt)
-        value |= EncryptUsage;
-    if (usages & WebCryptoKeyUsageDecrypt)
-        value |= DecryptUsage;
-    if (usages & WebCryptoKeyUsageSign)
-        value |= SignUsage;
-    if (usages & WebCryptoKeyUsageVerify)
-        value |= VerifyUsage;
-    if (usages & WebCryptoKeyUsageDeriveKey)
-        value |= DeriveKeyUsage;
-    if (usages & WebCryptoKeyUsageWrapKey)
-        value |= WrapKeyUsage;
-    if (usages & WebCryptoKeyUsageUnwrapKey)
-        value |= UnwrapKeyUsage;
-    if (usages & WebCryptoKeyUsageDeriveBits)
-        value |= DeriveBitsUsage;
-
-    doWriteUint32(value);
-}
-
-int Writer::bytesNeededToWireEncode(uint32_t value)
+int SerializedScriptValueWriter::bytesNeededToWireEncode(uint32_t value)
 {
     int bytes = 1;
     while (true) {
@@ -606,46 +424,46 @@ int Writer::bytesNeededToWireEncode(uint32_t value)
     return bytes;
 }
 
-void Writer::doWriteUint32(uint32_t value)
+void SerializedScriptValueWriter::doWriteUint32(uint32_t value)
 {
     doWriteUintHelper(value);
 }
 
-void Writer::doWriteUint64(uint64_t value)
+void SerializedScriptValueWriter::doWriteUint64(uint64_t value)
 {
     doWriteUintHelper(value);
 }
 
-void Writer::doWriteNumber(double number)
+void SerializedScriptValueWriter::doWriteNumber(double number)
 {
     append(reinterpret_cast<uint8_t*>(&number), sizeof(number));
 }
 
-void Writer::append(SerializationTag tag)
+void SerializedScriptValueWriter::append(SerializationTag tag)
 {
     append(static_cast<uint8_t>(tag));
 }
 
-void Writer::append(uint8_t b)
+void SerializedScriptValueWriter::append(uint8_t b)
 {
     ensureSpace(1);
     *byteAt(m_position++) = b;
 }
 
-void Writer::append(const uint8_t* data, int length)
+void SerializedScriptValueWriter::append(const uint8_t* data, int length)
 {
     ensureSpace(length);
     memcpy(byteAt(m_position), data, length);
     m_position += length;
 }
 
-void Writer::ensureSpace(unsigned extra)
+void SerializedScriptValueWriter::ensureSpace(unsigned extra)
 {
     COMPILE_ASSERT(sizeof(BufferValueType) == 2, BufferValueTypeIsTwoBytes);
     m_buffer.resize((m_position + extra + 1) / sizeof(BufferValueType)); // "+ 1" to round up.
 }
 
-void Writer::fillHole()
+void SerializedScriptValueWriter::fillHole()
 {
     COMPILE_ASSERT(sizeof(BufferValueType) == 2, BufferValueTypeIsTwoBytes);
     // If the writer is at odd position in the buffer, then one of
@@ -654,17 +472,17 @@ void Writer::fillHole()
         *byteAt(m_position) = static_cast<uint8_t>(PaddingTag);
 }
 
-uint8_t* Writer::byteAt(int position)
+uint8_t* SerializedScriptValueWriter::byteAt(int position)
 {
     return reinterpret_cast<uint8_t*>(m_buffer.data()) + position;
 }
 
-int Writer::v8StringWriteOptions()
+int SerializedScriptValueWriter::v8StringWriteOptions()
 {
     return v8::String::NO_NULL_TERMINATION;
 }
 
-Serializer::StateBase* Serializer::AbstractObjectState::serializeProperties(bool ignoreIndexed, Serializer& serializer)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::AbstractObjectState::serializeProperties(bool ignoreIndexed, ScriptValueSerializer& serializer)
 {
     while (m_index < m_propertyNames->Length()) {
         if (!m_nameDone) {
@@ -708,7 +526,7 @@ Serializer::StateBase* Serializer::AbstractObjectState::serializeProperties(bool
     return objectDone(m_numSerializedProperties, serializer);
 }
 
-Serializer::StateBase* Serializer::ObjectState::advance(Serializer& serializer)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::ObjectState::advance(ScriptValueSerializer& serializer)
 {
     if (m_propertyNames.IsEmpty()) {
         m_propertyNames = composite()->GetPropertyNames();
@@ -720,12 +538,12 @@ Serializer::StateBase* Serializer::ObjectState::advance(Serializer& serializer)
     return serializeProperties(false, serializer);
 }
 
-Serializer::StateBase* Serializer::ObjectState::objectDone(unsigned numProperties, Serializer& serializer)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::ObjectState::objectDone(unsigned numProperties, ScriptValueSerializer& serializer)
 {
     return serializer.writeObject(numProperties, this);
 }
 
-Serializer::StateBase* Serializer::DenseArrayState::advance(Serializer& serializer)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::DenseArrayState::advance(ScriptValueSerializer& serializer)
 {
     while (m_arrayIndex < m_arrayLength) {
         v8::Handle<v8::Value> value = composite().As<v8::Array>()->Get(m_arrayIndex);
@@ -738,17 +556,17 @@ Serializer::StateBase* Serializer::DenseArrayState::advance(Serializer& serializ
     return serializeProperties(true, serializer);
 }
 
-Serializer::StateBase* Serializer::DenseArrayState::objectDone(unsigned numProperties, Serializer& serializer)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::DenseArrayState::objectDone(unsigned numProperties, ScriptValueSerializer& serializer)
 {
     return serializer.writeDenseArray(numProperties, m_arrayLength, this);
 }
 
-Serializer::StateBase* Serializer::SparseArrayState::advance(Serializer& serializer)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::SparseArrayState::advance(ScriptValueSerializer& serializer)
 {
     return serializeProperties(false, serializer);
 }
 
-Serializer::StateBase* Serializer::SparseArrayState::objectDone(unsigned numProperties, Serializer& serializer)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::SparseArrayState::objectDone(unsigned numProperties, ScriptValueSerializer& serializer)
 {
     return serializer.writeSparseArray(numProperties, composite().As<v8::Array>()->Length(), this);
 }
@@ -782,7 +600,7 @@ static bool isHostObject(v8::Handle<v8::Object> object)
     return object->InternalFieldCount() || object->HasIndexedPropertiesInExternalArrayData();
 }
 
-Serializer::Serializer(Writer& writer, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
+ScriptValueSerializer::ScriptValueSerializer(SerializedScriptValueWriter& writer, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, ScriptState* scriptState)
     : m_scriptState(scriptState)
     , m_writer(writer)
     , m_tryCatch(tryCatch)
@@ -808,7 +626,7 @@ Serializer::Serializer(Writer& writer, MessagePortArray* messagePorts, ArrayBuff
     }
 }
 
-Serializer::Status Serializer::serialize(v8::Handle<v8::Value> value)
+ScriptValueSerializer::Status ScriptValueSerializer::serialize(v8::Handle<v8::Value> value)
 {
     v8::HandleScope scope(isolate());
     m_writer.writeVersion();
@@ -818,20 +636,28 @@ Serializer::Status Serializer::serialize(v8::Handle<v8::Value> value)
     return m_status;
 }
 
-Serializer::StateBase* Serializer::doSerialize(v8::Handle<v8::Value> value, Serializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerialize(v8::Handle<v8::Value> value, ScriptValueSerializer::StateBase* next)
 {
     m_writer.writeReferenceCount(m_nextObjectReference);
     uint32_t objectReference;
-    uint32_t arrayBufferIndex;
     if ((value->IsObject() || value->IsDate() || value->IsRegExp())
         && m_objectPool.tryGet(value.As<v8::Object>(), &objectReference)) {
         // Note that IsObject() also detects wrappers (eg, it will catch the things
         // that we grey and write below).
         ASSERT(!value->IsString());
         m_writer.writeObjectReference(objectReference);
-    } else if (value.IsEmpty()) {
+    } else {
+        return doSerializeValue(value, next);
+    }
+    return 0;
+}
+
+ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Handle<v8::Value> value, ScriptValueSerializer::StateBase* next)
+{
+    uint32_t arrayBufferIndex;
+    if (value.IsEmpty())
         return handleError(InputError, "The empty property name cannot be cloned.", next);
-    } else if (value->IsUndefined()) {
+    if (value->IsUndefined()) {
         m_writer.writeUndefined();
     } else if (value->IsNull()) {
         m_writer.writeNull();
@@ -877,13 +703,8 @@ Serializer::StateBase* Serializer::doSerialize(v8::Handle<v8::Value> value, Seri
             return writeFile(value, next);
         } else if (V8Blob::hasInstance(value, isolate())) {
             return writeBlob(value, next);
-        } else if (V8DOMFileSystem::hasInstance(value, isolate())) {
-            return writeDOMFileSystem(value, next);
         } else if (V8FileList::hasInstance(value, isolate())) {
             return writeFileList(value, next);
-        } else if (V8CryptoKey::hasInstance(value, isolate())) {
-            if (!writeCryptoKey(value))
-                return handleError(DataCloneError, "Couldn't serialize key data", next);
         } else if (V8ImageData::hasInstance(value, isolate())) {
             writeImageData(value);
         } else if (value->IsRegExp()) {
@@ -901,35 +722,35 @@ Serializer::StateBase* Serializer::doSerialize(v8::Handle<v8::Value> value, Seri
     return 0;
 }
 
-Serializer::StateBase* Serializer::doSerializeArrayBuffer(v8::Handle<v8::Value> arrayBuffer, Serializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeArrayBuffer(v8::Handle<v8::Value> arrayBuffer, ScriptValueSerializer::StateBase* next)
 {
     return doSerialize(arrayBuffer, next);
 }
 
-Serializer::StateBase* Serializer::checkException(Serializer::StateBase* state)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::checkException(ScriptValueSerializer::StateBase* state)
 {
     return m_tryCatch.HasCaught() ? handleError(JSException, "", state) : 0;
 }
 
-Serializer::StateBase* Serializer::writeObject(uint32_t numProperties, Serializer::StateBase* state)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeObject(uint32_t numProperties, ScriptValueSerializer::StateBase* state)
 {
     m_writer.writeObject(numProperties);
     return pop(state);
 }
 
-Serializer::StateBase* Serializer::writeSparseArray(uint32_t numProperties, uint32_t length, Serializer::StateBase* state)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeSparseArray(uint32_t numProperties, uint32_t length, ScriptValueSerializer::StateBase* state)
 {
     m_writer.writeSparseArray(numProperties, length);
     return pop(state);
 }
 
-Serializer::StateBase* Serializer::writeDenseArray(uint32_t numProperties, uint32_t length, Serializer::StateBase* state)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeDenseArray(uint32_t numProperties, uint32_t length, ScriptValueSerializer::StateBase* state)
 {
     m_writer.writeDenseArray(numProperties, length);
     return pop(state);
 }
 
-Serializer::StateBase* Serializer::handleError(Serializer::Status errorStatus, const String& message, Serializer::StateBase* state)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::handleError(ScriptValueSerializer::Status errorStatus, const String& message, ScriptValueSerializer::StateBase* state)
 {
     ASSERT(errorStatus != Success);
     m_status = errorStatus;
@@ -942,7 +763,7 @@ Serializer::StateBase* Serializer::handleError(Serializer::Status errorStatus, c
     return new ErrorState;
 }
 
-bool Serializer::checkComposite(Serializer::StateBase* top)
+bool ScriptValueSerializer::checkComposite(ScriptValueSerializer::StateBase* top)
 {
     ASSERT(top);
     if (m_depth > maxDepth)
@@ -957,7 +778,7 @@ bool Serializer::checkComposite(Serializer::StateBase* top)
     return true;
 }
 
-void Serializer::writeString(v8::Handle<v8::Value> value)
+void ScriptValueSerializer::writeString(v8::Handle<v8::Value> value)
 {
     v8::Handle<v8::String> string = value.As<v8::String>();
     if (!string->Length() || string->IsOneByte())
@@ -966,26 +787,26 @@ void Serializer::writeString(v8::Handle<v8::Value> value)
         m_writer.writeUCharString(string);
 }
 
-void Serializer::writeStringObject(v8::Handle<v8::Value> value)
+void ScriptValueSerializer::writeStringObject(v8::Handle<v8::Value> value)
 {
     v8::Handle<v8::StringObject> stringObject = value.As<v8::StringObject>();
     v8::String::Utf8Value stringValue(stringObject->ValueOf());
     m_writer.writeStringObject(*stringValue, stringValue.length());
 }
 
-void Serializer::writeNumberObject(v8::Handle<v8::Value> value)
+void ScriptValueSerializer::writeNumberObject(v8::Handle<v8::Value> value)
 {
     v8::Handle<v8::NumberObject> numberObject = value.As<v8::NumberObject>();
     m_writer.writeNumberObject(numberObject->ValueOf());
 }
 
-void Serializer::writeBooleanObject(v8::Handle<v8::Value> value)
+void ScriptValueSerializer::writeBooleanObject(v8::Handle<v8::Value> value)
 {
     v8::Handle<v8::BooleanObject> booleanObject = value.As<v8::BooleanObject>();
     m_writer.writeBooleanObject(booleanObject->ValueOf());
 }
 
-Serializer::StateBase* Serializer::writeBlob(v8::Handle<v8::Value> value, Serializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeBlob(v8::Handle<v8::Value> value, ScriptValueSerializer::StateBase* next)
 {
     Blob* blob = V8Blob::toImpl(value.As<v8::Object>());
     if (!blob)
@@ -1001,18 +822,7 @@ Serializer::StateBase* Serializer::writeBlob(v8::Handle<v8::Value> value, Serial
     return 0;
 }
 
-Serializer::StateBase* Serializer::writeDOMFileSystem(v8::Handle<v8::Value> value, StateBase* next)
-{
-    DOMFileSystem* fs = V8DOMFileSystem::toImpl(value.As<v8::Object>());
-    if (!fs)
-        return 0;
-    if (!fs->clonable())
-        return handleError(DataCloneError, "A FileSystem object could not be cloned.", next);
-    m_writer.writeDOMFileSystem(fs->type(), fs->name(), fs->rootURL().string());
-    return 0;
-}
-
-Serializer::StateBase* Serializer::writeFile(v8::Handle<v8::Value> value, Serializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeFile(v8::Handle<v8::Value> value, ScriptValueSerializer::StateBase* next)
 {
     File* file = V8File::toImpl(value.As<v8::Object>());
     if (!file)
@@ -1030,7 +840,7 @@ Serializer::StateBase* Serializer::writeFile(v8::Handle<v8::Value> value, Serial
     return 0;
 }
 
-Serializer::StateBase* Serializer::writeFileList(v8::Handle<v8::Value> value, Serializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeFileList(v8::Handle<v8::Value> value, ScriptValueSerializer::StateBase* next)
 {
     FileList* fileList = V8FileList::toImpl(value.As<v8::Object>());
     if (!fileList)
@@ -1056,15 +866,7 @@ Serializer::StateBase* Serializer::writeFileList(v8::Handle<v8::Value> value, Se
     return 0;
 }
 
-bool Serializer::writeCryptoKey(v8::Handle<v8::Value> value)
-{
-    CryptoKey* key = V8CryptoKey::toImpl(value.As<v8::Object>());
-    if (!key)
-        return false;
-    return m_writer.writeCryptoKey(key->key());
-}
-
-void Serializer::writeImageData(v8::Handle<v8::Value> value)
+void ScriptValueSerializer::writeImageData(v8::Handle<v8::Value> value)
 {
     ImageData* imageData = V8ImageData::toImpl(value.As<v8::Object>());
     if (!imageData)
@@ -1073,13 +875,13 @@ void Serializer::writeImageData(v8::Handle<v8::Value> value)
     m_writer.writeImageData(imageData->width(), imageData->height(), pixelArray->data(), pixelArray->length());
 }
 
-void Serializer::writeRegExp(v8::Handle<v8::Value> value)
+void ScriptValueSerializer::writeRegExp(v8::Handle<v8::Value> value)
 {
     v8::Handle<v8::RegExp> regExp = value.As<v8::RegExp>();
     m_writer.writeRegExp(regExp->GetSource(), regExp->GetFlags());
 }
 
-Serializer::StateBase* Serializer::writeAndGreyArrayBufferView(v8::Handle<v8::Object> object, Serializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyArrayBufferView(v8::Handle<v8::Object> object, ScriptValueSerializer::StateBase* next)
 {
     ASSERT(!object.IsEmpty());
     DOMArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(object);
@@ -1108,7 +910,7 @@ Serializer::StateBase* Serializer::writeAndGreyArrayBufferView(v8::Handle<v8::Ob
     return 0;
 }
 
-Serializer::StateBase* Serializer::writeArrayBuffer(v8::Handle<v8::Value> value, Serializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeArrayBuffer(v8::Handle<v8::Value> value, ScriptValueSerializer::StateBase* next)
 {
     DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
     if (!arrayBuffer)
@@ -1120,7 +922,7 @@ Serializer::StateBase* Serializer::writeArrayBuffer(v8::Handle<v8::Value> value,
     return 0;
 }
 
-Serializer::StateBase* Serializer::writeTransferredArrayBuffer(v8::Handle<v8::Value> value, uint32_t index, Serializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredArrayBuffer(v8::Handle<v8::Value> value, uint32_t index, ScriptValueSerializer::StateBase* next)
 {
     DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
     if (!arrayBuffer)
@@ -1131,7 +933,7 @@ Serializer::StateBase* Serializer::writeTransferredArrayBuffer(v8::Handle<v8::Va
     return 0;
 }
 
-bool Serializer::shouldSerializeDensely(uint32_t length, uint32_t propertyCount)
+bool ScriptValueSerializer::shouldSerializeDensely(uint32_t length, uint32_t propertyCount)
 {
     // Let K be the cost of serializing all property values that are there
     // Cost of serializing sparsely: 5*propertyCount + K (5 bytes per uint32_t key)
@@ -1140,7 +942,7 @@ bool Serializer::shouldSerializeDensely(uint32_t length, uint32_t propertyCount)
     return 6 * propertyCount >= length;
 }
 
-Serializer::StateBase* Serializer::startArrayState(v8::Handle<v8::Array> array, Serializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::startArrayState(v8::Handle<v8::Array> array, ScriptValueSerializer::StateBase* next)
 {
     v8::Handle<v8::Array> propertyNames = array->GetPropertyNames();
     if (StateBase* newState = checkException(next))
@@ -1156,7 +958,7 @@ Serializer::StateBase* Serializer::startArrayState(v8::Handle<v8::Array> array, 
     return push(new SparseArrayState(array, propertyNames, next, isolate()));
 }
 
-Serializer::StateBase* Serializer::startObjectState(v8::Handle<v8::Object> object, Serializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::startObjectState(v8::Handle<v8::Object> object, ScriptValueSerializer::StateBase* next)
 {
     m_writer.writeGenerateFreshObject();
     // FIXME: check not a wrapper
@@ -1165,14 +967,14 @@ Serializer::StateBase* Serializer::startObjectState(v8::Handle<v8::Object> objec
 
 // Marks object as having been visited by the serializer and assigns it a unique object reference ID.
 // An object may only be greyed once.
-void Serializer::greyObject(const v8::Handle<v8::Object>& object)
+void ScriptValueSerializer::greyObject(const v8::Handle<v8::Object>& object)
 {
     ASSERT(!m_objectPool.contains(object));
     uint32_t objectReference = m_nextObjectReference++;
     m_objectPool.set(object, objectReference);
 }
 
-bool Serializer::appendBlobInfo(const String& uuid, const String& type, unsigned long long size, int* index)
+bool ScriptValueSerializer::appendBlobInfo(const String& uuid, const String& type, unsigned long long size, int* index)
 {
     if (!m_blobInfo)
         return false;
@@ -1181,7 +983,7 @@ bool Serializer::appendBlobInfo(const String& uuid, const String& type, unsigned
     return true;
 }
 
-bool Serializer::appendFileInfo(const File* file, int* index)
+bool ScriptValueSerializer::appendFileInfo(const File* file, int* index)
 {
     if (!m_blobInfo)
         return false;
@@ -1194,11 +996,16 @@ bool Serializer::appendFileInfo(const File* file, int* index)
     return true;
 }
 
-bool Reader::read(v8::Handle<v8::Value>* value, CompositeCreator& creator)
+bool SerializedScriptValueReader::read(v8::Handle<v8::Value>* value, ScriptValueCompositeCreator& creator)
 {
     SerializationTag tag;
     if (!readTag(&tag))
         return false;
+    return readWithTag(tag, value, creator);
+}
+
+bool SerializedScriptValueReader::readWithTag(SerializationTag tag, v8::Handle<v8::Value>* value, ScriptValueCompositeCreator& creator)
+{
     switch (tag) {
     case ReferenceCountTag: {
         if (!m_version)
@@ -1284,19 +1091,9 @@ bool Reader::read(v8::Handle<v8::Value>* value, CompositeCreator& creator)
             return false;
         creator.pushObjectReference(*value);
         break;
-    case DOMFileSystemTag:
-        if (!readDOMFileSystem(value))
-            return false;
-        creator.pushObjectReference(*value);
-        break;
     case FileListTag:
     case FileListIndexTag:
         if (!readFileList(value, tag == FileListIndexTag))
-            return false;
-        creator.pushObjectReference(*value);
-        break;
-    case CryptoKeyTag:
-        if (!readCryptoKey(value))
             return false;
         creator.pushObjectReference(*value);
         break;
@@ -1414,13 +1211,16 @@ bool Reader::read(v8::Handle<v8::Value>* value, CompositeCreator& creator)
             return false;
         break;
     }
+    case DOMFileSystemTag:
+    case CryptoKeyTag:
+        ASSERT_NOT_REACHED();
     default:
         return false;
     }
     return !value->IsEmpty();
 }
 
-bool Reader::readVersion(uint32_t& version)
+bool SerializedScriptValueReader::readVersion(uint32_t& version)
 {
     SerializationTag tag;
     if (!readTag(&tag)) {
@@ -1439,12 +1239,12 @@ bool Reader::readVersion(uint32_t& version)
     return doReadUint32(&version);
 }
 
-void Reader::setVersion(uint32_t version)
+void SerializedScriptValueReader::setVersion(uint32_t version)
 {
     m_version = version;
 }
 
-bool Reader::readTag(SerializationTag* tag)
+bool SerializedScriptValueReader::readTag(SerializationTag* tag)
 {
     if (m_position >= m_length)
         return false;
@@ -1452,13 +1252,13 @@ bool Reader::readTag(SerializationTag* tag)
     return true;
 }
 
-void Reader::undoReadTag()
+void SerializedScriptValueReader::undoReadTag()
 {
     if (m_position > 0)
         --m_position;
 }
 
-bool Reader::readArrayBufferViewSubTag(ArrayBufferViewSubTag* tag)
+bool SerializedScriptValueReader::readArrayBufferViewSubTag(ArrayBufferViewSubTag* tag)
 {
     if (m_position >= m_length)
         return false;
@@ -1466,7 +1266,7 @@ bool Reader::readArrayBufferViewSubTag(ArrayBufferViewSubTag* tag)
     return true;
 }
 
-bool Reader::readString(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readString(v8::Handle<v8::Value>* value)
 {
     uint32_t length;
     if (!doReadUint32(&length))
@@ -1478,7 +1278,7 @@ bool Reader::readString(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool Reader::readUCharString(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readUCharString(v8::Handle<v8::Value>* value)
 {
     uint32_t length;
     if (!doReadUint32(&length) || (length & 1))
@@ -1491,7 +1291,7 @@ bool Reader::readUCharString(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool Reader::readStringObject(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readStringObject(v8::Handle<v8::Value>* value)
 {
     v8::Handle<v8::Value> stringValue;
     if (!readString(&stringValue) || !stringValue->IsString())
@@ -1500,7 +1300,7 @@ bool Reader::readStringObject(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool Reader::readWebCoreString(String* string)
+bool SerializedScriptValueReader::readWebCoreString(String* string)
 {
     uint32_t length;
     if (!doReadUint32(&length))
@@ -1512,7 +1312,7 @@ bool Reader::readWebCoreString(String* string)
     return true;
 }
 
-bool Reader::readInt32(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readInt32(v8::Handle<v8::Value>* value)
 {
     uint32_t rawValue;
     if (!doReadUint32(&rawValue))
@@ -1521,7 +1321,7 @@ bool Reader::readInt32(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool Reader::readUint32(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readUint32(v8::Handle<v8::Value>* value)
 {
     uint32_t rawValue;
     if (!doReadUint32(&rawValue))
@@ -1530,7 +1330,7 @@ bool Reader::readUint32(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool Reader::readDate(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readDate(v8::Handle<v8::Value>* value)
 {
     double numberValue;
     if (!doReadNumber(&numberValue))
@@ -1539,7 +1339,7 @@ bool Reader::readDate(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool Reader::readNumber(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readNumber(v8::Handle<v8::Value>* value)
 {
     double number;
     if (!doReadNumber(&number))
@@ -1548,7 +1348,7 @@ bool Reader::readNumber(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool Reader::readNumberObject(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readNumberObject(v8::Handle<v8::Value>* value)
 {
     double number;
     if (!doReadNumber(&number))
@@ -1557,7 +1357,7 @@ bool Reader::readNumberObject(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool Reader::readImageData(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readImageData(v8::Handle<v8::Value>* value)
 {
     uint32_t width;
     uint32_t height;
@@ -1580,7 +1380,7 @@ bool Reader::readImageData(v8::Handle<v8::Value>* value)
     return true;
 }
 
-PassRefPtr<DOMArrayBuffer> Reader::doReadArrayBuffer()
+PassRefPtr<DOMArrayBuffer> SerializedScriptValueReader::doReadArrayBuffer()
 {
     uint32_t byteLength;
     if (!doReadUint32(&byteLength))
@@ -1592,7 +1392,7 @@ PassRefPtr<DOMArrayBuffer> Reader::doReadArrayBuffer()
     return DOMArrayBuffer::create(bufferStart, byteLength);
 }
 
-bool Reader::readArrayBuffer(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readArrayBuffer(v8::Handle<v8::Value>* value)
 {
     RefPtr<DOMArrayBuffer> arrayBuffer = doReadArrayBuffer();
     if (!arrayBuffer)
@@ -1601,7 +1401,7 @@ bool Reader::readArrayBuffer(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool Reader::readArrayBufferView(v8::Handle<v8::Value>* value, CompositeCreator& creator)
+bool SerializedScriptValueReader::readArrayBufferView(v8::Handle<v8::Value>* value, ScriptValueCompositeCreator& creator)
 {
     ArrayBufferViewSubTag subTag;
     uint32_t byteOffset;
@@ -1701,7 +1501,7 @@ bool Reader::readArrayBufferView(v8::Handle<v8::Value>* value, CompositeCreator&
     return !value->IsEmpty();
 }
 
-bool Reader::readRegExp(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readRegExp(v8::Handle<v8::Value>* value)
 {
     v8::Handle<v8::Value> pattern;
     if (!readString(&pattern))
@@ -1713,7 +1513,7 @@ bool Reader::readRegExp(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool Reader::readBlob(v8::Handle<v8::Value>* value, bool isIndexed)
+bool SerializedScriptValueReader::readBlob(v8::Handle<v8::Value>* value, bool isIndexed)
 {
     if (m_version < 3)
         return false;
@@ -1745,23 +1545,7 @@ bool Reader::readBlob(v8::Handle<v8::Value>* value, bool isIndexed)
     return true;
 }
 
-bool Reader::readDOMFileSystem(v8::Handle<v8::Value>* value)
-{
-    uint32_t type;
-    String name;
-    String url;
-    if (!doReadUint32(&type))
-        return false;
-    if (!readWebCoreString(&name))
-        return false;
-    if (!readWebCoreString(&url))
-        return false;
-    DOMFileSystem* fs = DOMFileSystem::create(m_scriptState->executionContext(), name, static_cast<FileSystemType>(type), KURL(ParsedURLString, url));
-    *value = toV8(fs, m_scriptState->context()->Global(), isolate());
-    return true;
-}
-
-bool Reader::readFile(v8::Handle<v8::Value>* value, bool isIndexed)
+bool SerializedScriptValueReader::readFile(v8::Handle<v8::Value>* value, bool isIndexed)
 {
     File* file = nullptr;
     if (isIndexed) {
@@ -1777,7 +1561,7 @@ bool Reader::readFile(v8::Handle<v8::Value>* value, bool isIndexed)
     return true;
 }
 
-bool Reader::readFileList(v8::Handle<v8::Value>* value, bool isIndexed)
+bool SerializedScriptValueReader::readFileList(v8::Handle<v8::Value>* value, bool isIndexed)
 {
     if (m_version < 3)
         return false;
@@ -1802,62 +1586,7 @@ bool Reader::readFileList(v8::Handle<v8::Value>* value, bool isIndexed)
     return true;
 }
 
-bool Reader::readCryptoKey(v8::Handle<v8::Value>* value)
-{
-    uint32_t rawKeyType;
-    if (!doReadUint32(&rawKeyType))
-        return false;
-
-    WebCryptoKeyAlgorithm algorithm;
-    WebCryptoKeyType type = WebCryptoKeyTypeSecret;
-
-    switch (static_cast<CryptoKeySubTag>(rawKeyType)) {
-    case AesKeyTag:
-        if (!doReadAesKey(algorithm, type))
-            return false;
-        break;
-    case HmacKeyTag:
-        if (!doReadHmacKey(algorithm, type))
-            return false;
-        break;
-    case RsaHashedKeyTag:
-        if (!doReadRsaHashedKey(algorithm, type))
-            return false;
-        break;
-    case EcKeyTag:
-        if (!doReadEcKey(algorithm, type))
-            return false;
-        break;
-    default:
-        return false;
-    }
-
-    WebCryptoKeyUsageMask usages;
-    bool extractable;
-    if (!doReadKeyUsages(usages, extractable))
-        return false;
-
-    uint32_t keyDataLength;
-    if (!doReadUint32(&keyDataLength))
-        return false;
-
-    if (m_position + keyDataLength > m_length)
-        return false;
-
-    const uint8_t* keyData = m_buffer + m_position;
-    m_position += keyDataLength;
-
-    WebCryptoKey key = WebCryptoKey::createNull();
-    if (!Platform::current()->crypto()->deserializeKeyForClone(
-        algorithm, type, extractable, usages, keyData, keyDataLength, key)) {
-        return false;
-    }
-
-    *value = toV8(CryptoKey::create(key), m_scriptState->context()->Global(), isolate());
-    return true;
-}
-
-File* Reader::readFileHelper()
+File* SerializedScriptValueReader::readFileHelper()
 {
     if (m_version < 3)
         return nullptr;
@@ -1895,7 +1624,7 @@ File* Reader::readFileHelper()
     return File::createFromSerialization(path, name, relativePath, userVisibility, hasSnapshot > 0, size, lastModified, getOrCreateBlobDataHandle(uuid, type));
 }
 
-File* Reader::readFileIndexHelper()
+File* SerializedScriptValueReader::readFileIndexHelper()
 {
     if (m_version < 3)
         return nullptr;
@@ -1907,17 +1636,17 @@ File* Reader::readFileIndexHelper()
     return File::createFromIndexedSerialization(info.filePath(), info.fileName(), info.size(), info.lastModified(), getOrCreateBlobDataHandle(info.uuid(), info.type(), info.size()));
 }
 
-bool Reader::doReadUint32(uint32_t* value)
+bool SerializedScriptValueReader::doReadUint32(uint32_t* value)
 {
     return doReadUintHelper(value);
 }
 
-bool Reader::doReadUint64(uint64_t* value)
+bool SerializedScriptValueReader::doReadUint64(uint64_t* value)
 {
     return doReadUintHelper(value);
 }
 
-bool Reader::doReadNumber(double* number)
+bool SerializedScriptValueReader::doReadNumber(double* number)
 {
     if (m_position + sizeof(double) > m_length)
         return false;
@@ -1927,7 +1656,7 @@ bool Reader::doReadNumber(double* number)
     return true;
 }
 
-PassRefPtr<BlobDataHandle> Reader::getOrCreateBlobDataHandle(const String& uuid, const String& type, long long size)
+PassRefPtr<BlobDataHandle> SerializedScriptValueReader::getOrCreateBlobDataHandle(const String& uuid, const String& type, long long size)
 {
     // The containing ssv may have a BDH for this uuid if this ssv is just being
     // passed from main to worker thread (for example). We use those values when creating
@@ -1947,209 +1676,7 @@ PassRefPtr<BlobDataHandle> Reader::getOrCreateBlobDataHandle(const String& uuid,
     return BlobDataHandle::create(uuid, type, size);
 }
 
-bool Reader::doReadHmacKey(WebCryptoKeyAlgorithm& algorithm, WebCryptoKeyType& type)
-{
-    uint32_t lengthBytes;
-    if (!doReadUint32(&lengthBytes))
-        return false;
-    WebCryptoAlgorithmId hash;
-    if (!doReadAlgorithmId(hash))
-        return false;
-    algorithm = WebCryptoKeyAlgorithm::createHmac(hash, lengthBytes * 8);
-    type = WebCryptoKeyTypeSecret;
-    return !algorithm.isNull();
-}
-
-bool Reader::doReadAesKey(WebCryptoKeyAlgorithm& algorithm, WebCryptoKeyType& type)
-{
-    WebCryptoAlgorithmId id;
-    if (!doReadAlgorithmId(id))
-        return false;
-    uint32_t lengthBytes;
-    if (!doReadUint32(&lengthBytes))
-        return false;
-    algorithm = WebCryptoKeyAlgorithm::createAes(id, lengthBytes * 8);
-    type = WebCryptoKeyTypeSecret;
-    return !algorithm.isNull();
-}
-
-bool Reader::doReadRsaHashedKey(WebCryptoKeyAlgorithm& algorithm, WebCryptoKeyType& type)
-{
-    WebCryptoAlgorithmId id;
-    if (!doReadAlgorithmId(id))
-        return false;
-
-    if (!doReadAsymmetricKeyType(type))
-        return false;
-
-    uint32_t modulusLengthBits;
-    if (!doReadUint32(&modulusLengthBits))
-        return false;
-
-    uint32_t publicExponentSize;
-    if (!doReadUint32(&publicExponentSize))
-        return false;
-
-    if (m_position + publicExponentSize > m_length)
-        return false;
-
-    const uint8_t* publicExponent = m_buffer + m_position;
-    m_position += publicExponentSize;
-
-    WebCryptoAlgorithmId hash;
-    if (!doReadAlgorithmId(hash))
-        return false;
-    algorithm = WebCryptoKeyAlgorithm::createRsaHashed(id, modulusLengthBits, publicExponent, publicExponentSize, hash);
-
-    return !algorithm.isNull();
-}
-
-bool Reader::doReadEcKey(WebCryptoKeyAlgorithm& algorithm, WebCryptoKeyType& type)
-{
-    WebCryptoAlgorithmId id;
-    if (!doReadAlgorithmId(id))
-        return false;
-
-    if (!doReadAsymmetricKeyType(type))
-        return false;
-
-    WebCryptoNamedCurve namedCurve;
-    if (!doReadNamedCurve(namedCurve))
-        return false;
-
-    algorithm = WebCryptoKeyAlgorithm::createEc(id, namedCurve);
-    return !algorithm.isNull();
-}
-
-bool Reader::doReadAlgorithmId(WebCryptoAlgorithmId& id)
-{
-    uint32_t rawId;
-    if (!doReadUint32(&rawId))
-        return false;
-
-    switch (static_cast<CryptoKeyAlgorithmTag>(rawId)) {
-    case AesCbcTag:
-        id = WebCryptoAlgorithmIdAesCbc;
-        return true;
-    case HmacTag:
-        id = WebCryptoAlgorithmIdHmac;
-        return true;
-    case RsaSsaPkcs1v1_5Tag:
-        id = WebCryptoAlgorithmIdRsaSsaPkcs1v1_5;
-        return true;
-    case Sha1Tag:
-        id = WebCryptoAlgorithmIdSha1;
-        return true;
-    case Sha256Tag:
-        id = WebCryptoAlgorithmIdSha256;
-        return true;
-    case Sha384Tag:
-        id = WebCryptoAlgorithmIdSha384;
-        return true;
-    case Sha512Tag:
-        id = WebCryptoAlgorithmIdSha512;
-        return true;
-    case AesGcmTag:
-        id = WebCryptoAlgorithmIdAesGcm;
-        return true;
-    case RsaOaepTag:
-        id = WebCryptoAlgorithmIdRsaOaep;
-        return true;
-    case AesCtrTag:
-        id = WebCryptoAlgorithmIdAesCtr;
-        return true;
-    case AesKwTag:
-        id = WebCryptoAlgorithmIdAesKw;
-        return true;
-    case RsaPssTag:
-        id = WebCryptoAlgorithmIdRsaPss;
-        return true;
-    case EcdsaTag:
-        id = WebCryptoAlgorithmIdEcdsa;
-        return true;
-    }
-
-    return false;
-}
-
-bool Reader::doReadAsymmetricKeyType(WebCryptoKeyType& type)
-{
-    uint32_t rawType;
-    if (!doReadUint32(&rawType))
-        return false;
-
-    switch (static_cast<AssymetricCryptoKeyType>(rawType)) {
-    case PublicKeyType:
-        type = WebCryptoKeyTypePublic;
-        return true;
-    case PrivateKeyType:
-        type = WebCryptoKeyTypePrivate;
-        return true;
-    }
-
-    return false;
-}
-
-bool Reader::doReadNamedCurve(WebCryptoNamedCurve& namedCurve)
-{
-    uint32_t rawName;
-    if (!doReadUint32(&rawName))
-        return false;
-
-    switch (static_cast<NamedCurveTag>(rawName)) {
-    case P256Tag:
-        namedCurve = WebCryptoNamedCurveP256;
-        return true;
-    case P384Tag:
-        namedCurve = WebCryptoNamedCurveP384;
-        return true;
-    case P521Tag:
-        namedCurve = WebCryptoNamedCurveP521;
-        return true;
-    }
-
-    return false;
-}
-
-bool Reader::doReadKeyUsages(WebCryptoKeyUsageMask& usages, bool& extractable)
-{
-    // Reminder to update this when adding new key usages.
-    COMPILE_ASSERT(EndOfWebCryptoKeyUsage == (1 << 7) + 1, UpdateMe);
-    const uint32_t allPossibleUsages = ExtractableUsage | EncryptUsage | DecryptUsage | SignUsage | VerifyUsage | DeriveKeyUsage | WrapKeyUsage | UnwrapKeyUsage | DeriveBitsUsage;
-
-    uint32_t rawUsages;
-    if (!doReadUint32(&rawUsages))
-        return false;
-
-    // Make sure it doesn't contain an unrecognized usage value.
-    if (rawUsages & ~allPossibleUsages)
-        return false;
-
-    usages = 0;
-
-    extractable = rawUsages & ExtractableUsage;
-
-    if (rawUsages & EncryptUsage)
-        usages |= WebCryptoKeyUsageEncrypt;
-    if (rawUsages & DecryptUsage)
-        usages |= WebCryptoKeyUsageDecrypt;
-    if (rawUsages & SignUsage)
-        usages |= WebCryptoKeyUsageSign;
-    if (rawUsages & VerifyUsage)
-        usages |= WebCryptoKeyUsageVerify;
-    if (rawUsages & DeriveKeyUsage)
-        usages |= WebCryptoKeyUsageDeriveKey;
-    if (rawUsages & WrapKeyUsage)
-        usages |= WebCryptoKeyUsageWrapKey;
-    if (rawUsages & UnwrapKeyUsage)
-        usages |= WebCryptoKeyUsageUnwrapKey;
-    if (rawUsages & DeriveBitsUsage)
-        usages |= WebCryptoKeyUsageDeriveBits;
-
-    return true;
-}
-
-v8::Handle<v8::Value> Deserializer::deserialize()
+v8::Handle<v8::Value> ScriptValueDeserializer::deserialize()
 {
     v8::Isolate* isolate = m_reader.scriptState()->isolate();
     if (!m_reader.readVersion(m_version) || m_version > SerializedScriptValue::wireFormatVersion)
@@ -2166,21 +1693,21 @@ v8::Handle<v8::Value> Deserializer::deserialize()
     return result;
 }
 
-bool Deserializer::newSparseArray(uint32_t)
+bool ScriptValueDeserializer::newSparseArray(uint32_t)
 {
     v8::Local<v8::Array> array = v8::Array::New(m_reader.scriptState()->isolate(), 0);
     openComposite(array);
     return true;
 }
 
-bool Deserializer::newDenseArray(uint32_t length)
+bool ScriptValueDeserializer::newDenseArray(uint32_t length)
 {
     v8::Local<v8::Array> array = v8::Array::New(m_reader.scriptState()->isolate(), length);
     openComposite(array);
     return true;
 }
 
-bool Deserializer::consumeTopOfStack(v8::Handle<v8::Value>* object)
+bool ScriptValueDeserializer::consumeTopOfStack(v8::Handle<v8::Value>* object)
 {
     if (stackDepth() < 1)
         return false;
@@ -2189,7 +1716,7 @@ bool Deserializer::consumeTopOfStack(v8::Handle<v8::Value>* object)
     return true;
 }
 
-bool Deserializer::newObject()
+bool ScriptValueDeserializer::newObject()
 {
     v8::Local<v8::Object> object = v8::Object::New(m_reader.scriptState()->isolate());
     if (object.IsEmpty())
@@ -2198,7 +1725,7 @@ bool Deserializer::newObject()
     return true;
 }
 
-bool Deserializer::completeObject(uint32_t numProperties, v8::Handle<v8::Value>* value)
+bool ScriptValueDeserializer::completeObject(uint32_t numProperties, v8::Handle<v8::Value>* value)
 {
     v8::Local<v8::Object> object;
     if (m_version > 0) {
@@ -2214,7 +1741,7 @@ bool Deserializer::completeObject(uint32_t numProperties, v8::Handle<v8::Value>*
     return initializeObject(object, numProperties, value);
 }
 
-bool Deserializer::completeSparseArray(uint32_t numProperties, uint32_t length, v8::Handle<v8::Value>* value)
+bool ScriptValueDeserializer::completeSparseArray(uint32_t numProperties, uint32_t length, v8::Handle<v8::Value>* value)
 {
     v8::Local<v8::Array> array;
     if (m_version > 0) {
@@ -2230,7 +1757,7 @@ bool Deserializer::completeSparseArray(uint32_t numProperties, uint32_t length, 
     return initializeObject(array, numProperties, value);
 }
 
-bool Deserializer::completeDenseArray(uint32_t numProperties, uint32_t length, v8::Handle<v8::Value>* value)
+bool ScriptValueDeserializer::completeDenseArray(uint32_t numProperties, uint32_t length, v8::Handle<v8::Value>* value)
 {
     v8::Local<v8::Array> array;
     if (m_version > 0) {
@@ -2254,12 +1781,12 @@ bool Deserializer::completeDenseArray(uint32_t numProperties, uint32_t length, v
     return true;
 }
 
-void Deserializer::pushObjectReference(const v8::Handle<v8::Value>& object)
+void ScriptValueDeserializer::pushObjectReference(const v8::Handle<v8::Value>& object)
 {
     m_objectPool.append(object);
 }
 
-bool Deserializer::tryGetTransferredMessagePort(uint32_t index, v8::Handle<v8::Value>* object)
+bool ScriptValueDeserializer::tryGetTransferredMessagePort(uint32_t index, v8::Handle<v8::Value>* object)
 {
     if (!m_transferredMessagePorts)
         return false;
@@ -2270,7 +1797,7 @@ bool Deserializer::tryGetTransferredMessagePort(uint32_t index, v8::Handle<v8::V
     return true;
 }
 
-bool Deserializer::tryGetTransferredArrayBuffer(uint32_t index, v8::Handle<v8::Value>* object)
+bool ScriptValueDeserializer::tryGetTransferredArrayBuffer(uint32_t index, v8::Handle<v8::Value>* object)
 {
     if (!m_arrayBufferContents)
         return false;
@@ -2288,7 +1815,7 @@ bool Deserializer::tryGetTransferredArrayBuffer(uint32_t index, v8::Handle<v8::V
     return true;
 }
 
-bool Deserializer::tryGetObjectFromObjectReference(uint32_t reference, v8::Handle<v8::Value>* object)
+bool ScriptValueDeserializer::tryGetObjectFromObjectReference(uint32_t reference, v8::Handle<v8::Value>* object)
 {
     if (reference >= m_objectPool.size())
         return false;
@@ -2296,12 +1823,12 @@ bool Deserializer::tryGetObjectFromObjectReference(uint32_t reference, v8::Handl
     return object;
 }
 
-uint32_t Deserializer::objectReferenceCount()
+uint32_t ScriptValueDeserializer::objectReferenceCount()
 {
     return m_objectPool.size();
 }
 
-bool Deserializer::initializeObject(v8::Handle<v8::Object> object, uint32_t numProperties, v8::Handle<v8::Value>* value)
+bool ScriptValueDeserializer::initializeObject(v8::Handle<v8::Object> object, uint32_t numProperties, v8::Handle<v8::Value>* value)
 {
     unsigned length = 2 * numProperties;
     if (length > stackDepth())
@@ -2316,12 +1843,12 @@ bool Deserializer::initializeObject(v8::Handle<v8::Object> object, uint32_t numP
     return true;
 }
 
-bool Deserializer::read(v8::Local<v8::Value>* value)
+bool ScriptValueDeserializer::read(v8::Local<v8::Value>* value)
 {
     return m_reader.read(value, *this);
 }
 
-bool Deserializer::doDeserialize()
+bool ScriptValueDeserializer::doDeserialize()
 {
     v8::Local<v8::Value> value;
     if (!read(&value))
@@ -2331,20 +1858,20 @@ bool Deserializer::doDeserialize()
     return true;
 }
 
-v8::Local<v8::Value> Deserializer::element(unsigned index)
+v8::Local<v8::Value> ScriptValueDeserializer::element(unsigned index)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(index < m_stack.size());
     return m_stack[index];
 }
 
-void Deserializer::openComposite(const v8::Local<v8::Value>& object)
+void ScriptValueDeserializer::openComposite(const v8::Local<v8::Value>& object)
 {
     uint32_t newObjectReference = m_objectPool.size();
     m_openCompositeReferenceStack.append(newObjectReference);
     m_objectPool.append(object);
 }
 
-bool Deserializer::closeComposite(v8::Handle<v8::Value>* object)
+bool ScriptValueDeserializer::closeComposite(v8::Handle<v8::Value>* object)
 {
     if (!m_openCompositeReferenceStack.size())
         return false;
@@ -2355,7 +1882,5 @@ bool Deserializer::closeComposite(v8::Handle<v8::Value>* object)
     *object = m_objectPool[objectReference];
     return true;
 }
-
-} // SerializedScriptValueInternal
 
 } // namespace blink

@@ -29,6 +29,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/modules/v8/IDBBindingUtilities.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/ExceptionCode.h"
@@ -177,7 +178,7 @@ IDBRequest* IDBObjectStore::put(ScriptState* scriptState, WebIDBPutMode putMode,
     }
 
     Vector<WebBlobInfo> blobInfo;
-    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(value, &blobInfo, exceptionState, scriptState->isolate());
+    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValueFactory::instance().create(value, &blobInfo, exceptionState, scriptState->isolate());
     if (exceptionState.hadException())
         return 0;
 

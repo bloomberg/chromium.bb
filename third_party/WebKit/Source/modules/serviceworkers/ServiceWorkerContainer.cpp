@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -266,7 +267,7 @@ void ServiceWorkerContainer::dispatchMessageEvent(const WebString& message, cons
         return;
 
     OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::toMessagePortArray(executionContext(), webChannels);
-    RefPtr<SerializedScriptValue> value = SerializedScriptValue::createFromWire(message);
+    RefPtr<SerializedScriptValue> value = SerializedScriptValueFactory::instance().createFromWire(message);
     executionContext()->executingWindow()->dispatchEvent(MessageEvent::create(ports.release(), value));
 }
 

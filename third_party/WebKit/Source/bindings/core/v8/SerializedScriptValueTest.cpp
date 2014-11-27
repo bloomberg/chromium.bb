@@ -6,6 +6,7 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8File.h"
 #include "core/fileapi/File.h"
@@ -40,7 +41,7 @@ TEST_F(SerializedScriptValueTest, UserSelectedFile)
 
     v8::Handle<v8::Value> v8OriginalFile = toV8(originalFile, creationContext(), isolate());
     RefPtr<SerializedScriptValue> serializedScriptValue =
-        SerializedScriptValue::create(v8OriginalFile, nullptr, nullptr, ASSERT_NO_EXCEPTION, isolate());
+        SerializedScriptValueFactory::instance().create(v8OriginalFile, nullptr, nullptr, ASSERT_NO_EXCEPTION, isolate());
     v8::Handle<v8::Value> v8File = serializedScriptValue->deserialize(isolate());
 
     ASSERT_TRUE(V8File::hasInstance(v8File, isolate()));
@@ -60,7 +61,7 @@ TEST_F(SerializedScriptValueTest, FileConstructorFile)
 
     v8::Handle<v8::Value> v8OriginalFile = toV8(originalFile, creationContext(), isolate());
     RefPtr<SerializedScriptValue> serializedScriptValue =
-        SerializedScriptValue::create(v8OriginalFile, nullptr, nullptr, ASSERT_NO_EXCEPTION, isolate());
+        SerializedScriptValueFactory::instance().create(v8OriginalFile, nullptr, nullptr, ASSERT_NO_EXCEPTION, isolate());
     v8::Handle<v8::Value> v8File = serializedScriptValue->deserialize(isolate());
 
     ASSERT_TRUE(V8File::hasInstance(v8File, isolate()));

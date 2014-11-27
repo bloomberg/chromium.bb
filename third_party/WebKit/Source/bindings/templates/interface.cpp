@@ -551,7 +551,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     if (DOMWrapperWorld::current(info.GetIsolate()).isIsolatedWorld()) {
         {% for attribute in any_type_attributes %}
         if (!{{attribute.name}}.IsEmpty())
-            event->setSerialized{{attribute.name | blink_capitalize}}(SerializedScriptValue::createAndSwallowExceptions(info.GetIsolate(), {{attribute.name}}));
+            event->setSerialized{{attribute.name | blink_capitalize}}(SerializedScriptValueFactory::instance().createAndSwallowExceptions(info.GetIsolate(), {{attribute.name}}));
         {% endfor %}
     }
 

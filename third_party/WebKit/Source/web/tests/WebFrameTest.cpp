@@ -34,6 +34,7 @@
 
 #include "SkBitmap.h"
 #include "SkCanvas.h"
+#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8Node.h"
 #include "core/UserAgentStyleSheets.h"
 #include "core/clipboard/DataTransfer.h"
@@ -672,7 +673,7 @@ TEST_F(WebFrameTest, PostMessageThenDetach)
 
     RefPtrWillBeRawPtr<LocalFrame> frame = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame());
     NonThrowableExceptionState exceptionState;
-    frame->domWindow()->postMessage(SerializedScriptValue::create("message"), 0, "*", frame->localDOMWindow(), exceptionState);
+    frame->domWindow()->postMessage(SerializedScriptValueFactory::instance().create("message"), 0, "*", frame->localDOMWindow(), exceptionState);
     webViewHelper.reset();
     EXPECT_FALSE(exceptionState.hadException());
 

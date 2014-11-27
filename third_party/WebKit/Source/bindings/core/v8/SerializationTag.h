@@ -7,8 +7,6 @@
 
 namespace blink {
 
-namespace SerializedScriptValueInternal {
-
 // Serialization format is a sequence of tags followed by zero or more data arguments.
 // Tags always take exactly one byte. A serialized stream first begins with
 // a complete VersionTag. If the stream does not begin with a VersionTag, we assume that
@@ -95,63 +93,6 @@ enum ArrayBufferViewSubTag {
     DoubleArrayTag = 'F',
     DataViewTag = '?'
 };
-
-enum CryptoKeySubTag {
-    AesKeyTag = 1,
-    HmacKeyTag = 2,
-    // ID 3 was used by RsaKeyTag, while still behind experimental flag.
-    RsaHashedKeyTag = 4,
-    EcKeyTag = 5,
-    // Maximum allowed value is 255
-};
-
-enum AssymetricCryptoKeyType {
-    PublicKeyType = 1,
-    PrivateKeyType = 2,
-    // Maximum allowed value is 2^32-1
-};
-
-enum CryptoKeyAlgorithmTag {
-    AesCbcTag = 1,
-    HmacTag = 2,
-    RsaSsaPkcs1v1_5Tag = 3,
-    // ID 4 was used by RsaEs, while still behind experimental flag.
-    Sha1Tag = 5,
-    Sha256Tag = 6,
-    Sha384Tag = 7,
-    Sha512Tag = 8,
-    AesGcmTag = 9,
-    RsaOaepTag = 10,
-    AesCtrTag = 11,
-    AesKwTag = 12,
-    RsaPssTag = 13,
-    EcdsaTag = 14,
-    // Maximum allowed value is 2^32-1
-};
-
-enum NamedCurveTag {
-    P256Tag = 1,
-    P384Tag = 2,
-    P521Tag = 3,
-};
-
-enum CryptoKeyUsage {
-    // Extractability is not a "usage" in the WebCryptoKeyUsages sense, however
-    // it fits conveniently into this bitfield.
-    ExtractableUsage = 1 << 0,
-
-    EncryptUsage = 1 << 1,
-    DecryptUsage = 1 << 2,
-    SignUsage = 1 << 3,
-    VerifyUsage = 1 << 4,
-    DeriveKeyUsage = 1 << 5,
-    WrapKeyUsage = 1 << 6,
-    UnwrapKeyUsage = 1 << 7,
-    DeriveBitsUsage = 1 << 8,
-    // Maximum allowed value is 1 << 31
-};
-
-} // namespace SerializedScriptValueInternal
 
 } // namespace blink
 
