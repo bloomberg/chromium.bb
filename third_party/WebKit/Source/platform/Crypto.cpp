@@ -6,7 +6,6 @@
 #include "platform/Crypto.h"
 
 #include "public/platform/Platform.h"
-#include "public/platform/WebArrayBuffer.h"
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoAlgorithm.h"
 

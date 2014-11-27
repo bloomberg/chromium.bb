@@ -60,7 +60,7 @@ public:
     static PassRefPtr<CryptoResultImpl> create(ScriptState*);
 
     virtual void completeWithError(WebCryptoErrorType, const WebString&) override;
-    virtual void completeWithBuffer(const WebArrayBuffer&) override;
+    virtual void completeWithBuffer(const void* bytes, unsigned bytesSize) override;
     virtual void completeWithJson(const char* utf8Data, unsigned length) override;
     virtual void completeWithBoolean(bool) override;
     virtual void completeWithKey(const WebCryptoKey&) override;

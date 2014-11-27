@@ -45,7 +45,6 @@ namespace WTF { template <typename T> class PassRefPtr; }
 namespace blink {
 
 class CryptoResult;
-class WebArrayBuffer;
 class WebString;
 
 enum WebCryptoErrorType {
@@ -85,8 +84,6 @@ public:
     //   "iv must be 16 bytes long".
     BLINK_PLATFORM_EXPORT void completeWithError(WebCryptoErrorType, const WebString&);
 
-    // Note that WebArrayBuffer is NOT safe to create from another thread.
-    BLINK_PLATFORM_EXPORT void completeWithBuffer(const WebArrayBuffer&);
     // Makes a copy of the input data given as a pointer and byte length.
     BLINK_PLATFORM_EXPORT void completeWithBuffer(const void*, unsigned);
     BLINK_PLATFORM_EXPORT void completeWithJson(const char* utf8Data, unsigned length);
@@ -168,10 +165,6 @@ public:
     //   * WebCryptoKey and WebCryptoAlgorithm ARE threadsafe. They can be
     //     safely copied between threads and accessed. Copying is cheap because
     //     they are internally reference counted.
-    //
-    //   * WebArrayBuffer is NOT threadsafe. It should only be created from the
-    //     target Blink thread. This means threaded implementations may have to
-    //     make a copy of the output buffer.
     //
     // -----------------------
     // Inputs
@@ -279,4 +272,4 @@ protected:
 
 } // namespace blink
 
-#endif
+#endif // WebCrypto_h

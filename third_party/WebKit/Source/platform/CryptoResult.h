@@ -42,7 +42,7 @@ public:
     virtual ~CryptoResult() { }
 
     virtual void completeWithError(WebCryptoErrorType, const WebString&) = 0;
-    virtual void completeWithBuffer(const WebArrayBuffer&) = 0;
+    virtual void completeWithBuffer(const void* bytes, unsigned bytesSize) = 0;
     virtual void completeWithJson(const char* utf8Data, unsigned length) = 0;
     virtual void completeWithBoolean(bool) = 0;
     virtual void completeWithKey(const WebCryptoKey&) = 0;
