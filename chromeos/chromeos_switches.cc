@@ -261,5 +261,9 @@ const char kGoldenScreenshotsDir[] = "golden-screenshots-dir";
 // Screenshot testing: specifies the directoru where artifacts will be stored.
 const char kArtifactsDir[] = "artifacts-dir";
 
+// Bypass proxy for captive portal authorization.
+const char kEnableCaptivePortalBypassProxy[] =
+    "enable-captive-portal-bypass-proxy";
+
 }  // namespace switches
 }  // namespace chromeos

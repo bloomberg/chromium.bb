@@ -14101,6 +14101,12 @@ Do you accept?
         <message name="IDS_FLAGS_ENABLE_REMOTE_ASSISTANCE_DESCRIPTION" desc="Description of about::flags option to enable remote assistance on Chrome OS.">
           Accepts remote assistance connections to this machine via the Chrome Remote Desktop app.
         </message>
+        <message name="IDS_FLAGS_ENABLE_CAPTIVE_PORTAL_BYPASS_PROXY_NAME" desc="Name of about::flags option to enable bypass proxy for captive portal authorization on Chrome OS.">
+          Enable bypass proxy for Captive Portal Authorization
+        </message>
+        <message name="IDS_FLAGS_ENABLE_CAPTIVE_PORTAL_BYPASS_PROXY_DESCRIPTION" desc="Description of about::flags option to enable bypass proxy for captive portal authorization on Chrome OS.">
+          If proxy is configured, it usually prevents from authorization on different captive portals. This flag enables opening captive portal authorization dialog in a separate window, which ignores proxy settings.
+        </message>
       </if>
 
       <!-- Strings for controlling the minimum SSL/TLS version in about:flags. -->
@@ -15233,6 +15239,10 @@ Do you accept?
       </message>
       <message name="IDS_HOTWORD_OPT_IN_FINISHED_WAIT" desc="The text displayed when waiting for the voice model training to complete. ">
         Processing ...
+      </message>
+
+      <message name="IDS_CAPTIVE_PORTAL_AUTHORIZATION_DIALOG_NAME" desc="Name of the modal Web dialog (displayed in the title) displaying captive portal login page on ChromeOS.">
+        Captive Portal Authorization
       </message>
     </messages>
   </release>

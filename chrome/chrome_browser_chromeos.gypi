@@ -660,6 +660,8 @@
         'browser/chromeos/net/network_portal_detector_test_impl.h',
         'browser/chromeos/net/network_portal_notification_controller.cc',
         'browser/chromeos/net/network_portal_notification_controller.h',
+        'browser/chromeos/net/network_portal_web_dialog.cc',
+        'browser/chromeos/net/network_portal_web_dialog.h',
         'browser/chromeos/net/onc_utils.cc',
         'browser/chromeos/net/onc_utils.h',
         'browser/chromeos/net/proxy_config_handler.cc',
