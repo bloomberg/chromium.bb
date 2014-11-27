@@ -137,7 +137,11 @@ RtcDataChannelHandler::RtcDataChannelHandler(
 RtcDataChannelHandler::~RtcDataChannelHandler() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "::dtor";
-  DCHECK(!observer_.get());
+  // setClient might not have been called at all if the data channel was not
+  // passed to Blink.  So, we call it here explicitly just to make sure the
+  // observer gets properly unregistered.
+  // See RTCPeerConnectionHandler::OnDataChannel for more.
+  setClient(nullptr);
 }
 
 void RtcDataChannelHandler::setClient(
@@ -145,7 +149,7 @@ void RtcDataChannelHandler::setClient(
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(3) << "setClient " << client;
   webkit_client_ = client;
-  if (!client) {
+  if (!client && observer_.get()) {
     observer_->Unregister();
     observer_ = nullptr;
   }
