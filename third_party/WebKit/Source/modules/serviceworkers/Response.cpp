@@ -229,8 +229,12 @@ Headers* Response::headers() const
     return m_headers;
 }
 
-Response* Response::clone() const
+Response* Response::clone(ExceptionState& exceptionState) const
 {
+    if (bodyUsed()) {
+        exceptionState.throwTypeError("Response body is already used");
+        return nullptr;
+    }
     return Response::create(*this);
 }
 

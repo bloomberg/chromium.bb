@@ -51,7 +51,7 @@ public:
     Headers* headers() const;
 
     // From Response.idl:
-    Response* clone() const;
+    Response* clone(ExceptionState&) const;
 
     void populateWebServiceWorkerResponse(WebServiceWorkerResponse&);
 

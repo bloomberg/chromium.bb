@@ -53,7 +53,7 @@ public:
     String credentials() const;
 
     // From Request.idl:
-    Request* clone() const;
+    Request* clone(ExceptionState&) const;
 
     void populateWebServiceWorkerRequest(WebServiceWorkerRequest&) const;
 

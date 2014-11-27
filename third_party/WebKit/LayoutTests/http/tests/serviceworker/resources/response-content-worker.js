@@ -91,9 +91,10 @@ promise_test(function() {
           assert_false(
             response2.bodyUsed, 'bodyUsed should be false in Response cloned ' +
             'before the original response was consumed.');
-          response3 = response.clone();
-          assert_true(response3.bodyUsed,
-                      'bodyUsed should be true in clone of consumed response.');
+          assert_throws(
+            {name: 'TypeError'},
+            function() { response3 = response.clone(); },
+            'Response.clone() should throw if the body was used.');
           return response2.text();
         })
       .then(function(text) {

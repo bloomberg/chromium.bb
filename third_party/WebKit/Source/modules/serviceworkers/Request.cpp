@@ -336,8 +336,12 @@ String Request::credentials() const
     return "";
 }
 
-Request* Request::clone() const
+Request* Request::clone(ExceptionState& exceptionState) const
 {
+    if (bodyUsed()) {
+        exceptionState.throwTypeError("Request body is already used");
+        return nullptr;
+    }
     return Request::create(*this);
 }
 
