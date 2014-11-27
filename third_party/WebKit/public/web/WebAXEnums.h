@@ -249,6 +249,14 @@ enum WebAXOptionalBool {
     WebAXOptionalBoolFalse
 };
 
+// These values must match blink::AccessibilityOrientation values.
+// Enforced in AssertMatchingEnums.cpp.
+enum WebAXOrientation {
+    WebAXOrientationUndefined = 0,
+    WebAXOrientationVertical,
+    WebAXOrientationHorizontal,
+};
+
 } // namespace blink
 
 #endif

@@ -77,7 +77,7 @@ AccessibilityOrientation AXScrollbar::orientation() const
     if (m_scrollbar->orientation() == VerticalScrollbar)
         return AccessibilityOrientationVertical;
 
-    return AccessibilityOrientationHorizontal;
+    return AccessibilityOrientationVertical;
 }
 
 bool AXScrollbar::isEnabled() const

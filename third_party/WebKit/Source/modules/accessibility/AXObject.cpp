@@ -338,17 +338,10 @@ void AXObject::setLastKnownIsIgnoredValue(bool isIgnored)
     m_lastKnownIsIgnoredValue = isIgnored ? IgnoreObject : IncludeObject;
 }
 
-// Lacking concrete evidence of orientation, horizontal means width > height. vertical is height > width;
+// In ARIA 1.1, the default value for aria-orientation changed from horizontal to undefined.
 AccessibilityOrientation AXObject::orientation() const
 {
-    LayoutRect bounds = elementRect();
-    if (bounds.size().width() > bounds.size().height())
-        return AccessibilityOrientationHorizontal;
-    if (bounds.size().height() > bounds.size().width())
-        return AccessibilityOrientationVertical;
-
-    // A tie goes to horizontal.
-    return AccessibilityOrientationHorizontal;
+    return AccessibilityOrientationUndefined;
 }
 
 static String queryString(WebLocalizedString::Name name)

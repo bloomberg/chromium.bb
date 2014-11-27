@@ -95,6 +95,7 @@ public:
     BLINK_EXPORT bool isControl() const;
     BLINK_EXPORT bool isEnabled() const;
     BLINK_EXPORT WebAXExpanded isExpanded() const;
+    BLINK_EXPORT WebAXOrientation orientation() const;
     BLINK_EXPORT bool isFocused() const;
     BLINK_EXPORT bool isHovered() const;
     BLINK_EXPORT bool isIndeterminate() const;

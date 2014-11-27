@@ -232,6 +232,7 @@ struct AccessibilityText {
 };
 
 enum AccessibilityOrientation {
+    AccessibilityOrientationUndefined = 0,
     AccessibilityOrientationVertical,
     AccessibilityOrientationHorizontal,
 };

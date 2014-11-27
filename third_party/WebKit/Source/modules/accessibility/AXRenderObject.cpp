@@ -839,15 +839,44 @@ const AtomicString& AXRenderObject::accessKey() const
 AccessibilityOrientation AXRenderObject::orientation() const
 {
     const AtomicString& ariaOrientation = getAttribute(aria_orientationAttr);
+    AccessibilityOrientation axorientation = AccessibilityOrientationUndefined;
+
+    // For TreeGridRole, roleValue() can't be compared because its overridden
+    // in AXTable::roleValue()
+    if (ariaRoleAttribute() == TreeGridRole) {
+        if (equalIgnoringCase(ariaOrientation, "horizontal"))
+            axorientation = AccessibilityOrientationHorizontal;
+        if (equalIgnoringCase(ariaOrientation, "vertical"))
+            axorientation = AccessibilityOrientationVertical;
+        return axorientation;
+    }
+
+    switch (roleValue()) {
+    case ComboBoxRole:
+    case ListBoxRole:
+    case MenuRole:
+    case ScrollBarRole:
+    case TreeRole:
+        axorientation = AccessibilityOrientationVertical;
+        break;
+    case MenuBarRole:
+    case SliderRole:
+    case SplitterRole:
+    case TabListRole:
+    case ToolbarRole:
+        axorientation = AccessibilityOrientationHorizontal;
+        break;
+    case RadioGroupRole:
+        break;
+    default:
+        return AXObject::orientation();
+    }
+
     if (equalIgnoringCase(ariaOrientation, "horizontal"))
-        return AccessibilityOrientationHorizontal;
+        axorientation = AccessibilityOrientationHorizontal;
     if (equalIgnoringCase(ariaOrientation, "vertical"))
-        return AccessibilityOrientationVertical;
-
-    if (isScrollbar())
-        return AccessibilityOrientationVertical;
-
-    return AXObject::orientation();
+        axorientation = AccessibilityOrientationVertical;
+    return axorientation;
 }
 
 String AXRenderObject::text() const

@@ -65,6 +65,8 @@ AXObject* AXScrollView::scrollBar(AccessibilityOrientation orientation)
         return m_verticalScrollbar ? m_verticalScrollbar.get() : 0;
     case AccessibilityOrientationHorizontal:
         return m_horizontalScrollbar ? m_horizontalScrollbar.get() : 0;
+    case AccessibilityOrientationUndefined:
+        return 0;
     }
 
     return 0;

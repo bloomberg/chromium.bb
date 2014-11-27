@@ -397,6 +397,14 @@ bool WebAXObject::isVertical() const
     return m_private->orientation() == AccessibilityOrientationVertical;
 }
 
+WebAXOrientation WebAXObject::orientation() const
+{
+    if (isDetached())
+        return WebAXOrientationUndefined;
+
+    return static_cast<WebAXOrientation>(m_private->orientation());
+}
+
 bool WebAXObject::isVisible() const
 {
     if (isDetached())
