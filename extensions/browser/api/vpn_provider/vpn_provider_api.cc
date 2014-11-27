@@ -60,11 +60,9 @@ void ConvertParameters(const api_vpn::Parameters& parameters,
         JoinString(*parameters.domain_search, shill::kNonIPDelimiter));
   }
 
-  if (parameters.dns_servers) {
-    parameter_value->SetStringWithoutPathExpansion(
-        shill::kDnsServersParameterThirdPartyVpn,
-        JoinString(*parameters.dns_servers, shill::kIPDelimiter));
-  }
+  parameter_value->SetStringWithoutPathExpansion(
+      shill::kDnsServersParameterThirdPartyVpn,
+      JoinString(parameters.dns_servers, shill::kIPDelimiter));
 
   return;
 }
@@ -93,10 +91,6 @@ void VpnThreadExtensionFunction::SignalCallCompletionFailure(
 VpnProviderCreateConfigFunction::~VpnProviderCreateConfigFunction() {
 }
 
-void VpnProviderCreateConfigFunction::SignalCallCompletionSuccess(int handle) {
-  Respond(ArgumentList(api_vpn::CreateConfig::Results::Create(handle)));
-}
-
 ExtensionFunction::ResponseAction VpnProviderCreateConfigFunction::Run() {
   scoped_ptr<api_vpn::CreateConfig::Params> params(
       api_vpn::CreateConfig::Params::Create(*args_));
@@ -110,10 +104,8 @@ ExtensionFunction::ResponseAction VpnProviderCreateConfigFunction::Run() {
     return RespondNow(Error("Invalid profile."));
   }
 
-  // TODO(kaliamoorthi): (crbug.com/434711) Sort out the dependencies and
-  // replace the string concatenation with internationalized version.
   service->CreateConfiguration(
-      extension_id(), extension()->name() + ": " + params->name,
+      extension_id(), extension()->name(), params->name,
       base::Bind(&VpnProviderCreateConfigFunction::SignalCallCompletionSuccess,
                  this),
       base::Bind(&VpnProviderNotifyConnectionStateChangedFunction::
@@ -140,7 +132,7 @@ ExtensionFunction::ResponseAction VpnProviderDestroyConfigFunction::Run() {
   }
 
   service->DestroyConfiguration(
-      extension_id(), params->handle,
+      extension_id(), params->name,
       base::Bind(&VpnProviderDestroyConfigFunction::SignalCallCompletionSuccess,
                  this),
       base::Bind(&VpnProviderNotifyConnectionStateChangedFunction::
@@ -174,7 +166,7 @@ ExtensionFunction::ResponseAction VpnProviderSetParametersFunction::Run() {
   }
 
   service->SetParameters(
-      extension_id(), params->handle, parameter_value,
+      extension_id(), parameter_value,
       base::Bind(&VpnProviderSetParametersFunction::SignalCallCompletionSuccess,
                  this),
       base::Bind(&VpnProviderNotifyConnectionStateChangedFunction::
@@ -201,7 +193,7 @@ ExtensionFunction::ResponseAction VpnProviderSendPacketFunction::Run() {
   }
 
   service->SendPacket(
-      extension_id(), params->handle, params->data,
+      extension_id(), params->data,
       base::Bind(&VpnProviderSendPacketFunction::SignalCallCompletionSuccess,
                  this),
       base::Bind(&VpnProviderNotifyConnectionStateChangedFunction::
@@ -230,7 +222,7 @@ VpnProviderNotifyConnectionStateChangedFunction::Run() {
   }
 
   service->NotifyConnectionStateChanged(
-      extension_id(), params->handle, params->state,
+      extension_id(), params->state,
       base::Bind(&VpnProviderNotifyConnectionStateChangedFunction::
                      SignalCallCompletionSuccess,
                  this),

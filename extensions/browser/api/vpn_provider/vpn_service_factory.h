@@ -35,6 +35,7 @@ class VpnServiceFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsNULLWhileTesting() const override;
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 

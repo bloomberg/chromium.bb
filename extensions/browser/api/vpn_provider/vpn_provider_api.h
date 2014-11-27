@@ -30,8 +30,6 @@ class VpnProviderCreateConfigFunction : public VpnThreadExtensionFunction {
  protected:
   virtual ~VpnProviderCreateConfigFunction();
 
-  void SignalCallCompletionSuccess(int handle);
-
   virtual ExtensionFunction::ResponseAction Run() override;
 };
 

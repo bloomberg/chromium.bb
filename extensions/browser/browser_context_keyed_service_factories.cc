@@ -16,6 +16,7 @@
 #include "extensions/browser/api/sockets_udp/udp_socket_event_dispatcher.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/api/system_info/system_info_api.h"
+#include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/browser/renderer_startup_helper.h"
@@ -29,6 +30,9 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   ApiResourceManager<extensions::ResumableUDPSocket>::GetFactoryInstance();
   ApiResourceManager<extensions::SerialConnection>::GetFactoryInstance();
   ApiResourceManager<extensions::Socket>::GetFactoryInstance();
+#if defined(OS_CHROMEOS)
+  chromeos::VpnServiceFactory::GetInstance();
+#endif
   core_api::TCPServerSocketEventDispatcher::GetFactoryInstance();
   core_api::TCPSocketEventDispatcher::GetFactoryInstance();
   core_api::UDPSocketEventDispatcher::GetFactoryInstance();

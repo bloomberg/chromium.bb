@@ -317,7 +317,7 @@
     }
   ],
   "vpnProvider": {
-    "channel": "trunk",
+    "channel": "dev",
     "extension_types": ["extension", "platform_app"],
     "platforms": ["chromeos"]
   },
