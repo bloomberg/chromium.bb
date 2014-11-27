@@ -27,6 +27,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+"use strict";
+
 /**
  * @param {!InjectedScriptHostClass} InjectedScriptHost
  * @param {!Window} inspectedWindow
@@ -779,10 +781,18 @@ InjectedScript.prototype = {
                 this._lastResult = wrappedResult.result;
             return wrappedResult;
         } finally {
-            if (injectCommandLineAPI)
-                delete inspectedWindow["__commandLineAPI"];
-            if (injectScopeChain)
-                delete inspectedWindow["__scopeChainForEval"];
+            if (injectCommandLineAPI) {
+                try {
+                    delete inspectedWindow["__commandLineAPI"];
+                } catch(e) {
+                }
+            }
+            if (injectScopeChain) {
+                try {
+                    delete inspectedWindow["__scopeChainForEval"];
+                } catch(e) {
+                }
+            }
         }
     },
 
