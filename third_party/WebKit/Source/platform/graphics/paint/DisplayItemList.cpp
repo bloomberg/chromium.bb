@@ -10,6 +10,7 @@
 #ifndef NDEBUG
 #include "platform/graphics/paint/DisplayItem.h"
 #include "wtf/text/StringBuilder.h"
+#include <stdio.h>
 #endif
 
 namespace blink {
