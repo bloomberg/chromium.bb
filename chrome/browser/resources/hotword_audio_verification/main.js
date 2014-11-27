@@ -25,10 +25,8 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
 
-    // TODO(kcarattini): Change this to update the setting instead of
-    // advancing the flow.
     $('audio-history-agree').addEventListener('click', function(e) {
-      flow.advanceStep();
+      flow.enableAudioHistory();
       e.preventDefault();
     });
 
@@ -41,6 +39,5 @@ document.addEventListener('DOMContentLoaded', function() {
       chrome.browser.openTab({'url': 'chrome://settings'}, function() {});
       e.preventDefault();
     });
-
   });
 });

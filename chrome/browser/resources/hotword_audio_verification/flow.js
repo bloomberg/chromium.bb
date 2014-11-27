@@ -163,7 +163,51 @@
       chrome.hotwordPrivate.stopTraining();
   };
 
+  /**
+   * Attempts to enable audio history for the signed-in account.
+   */
+  Flow.prototype.enableAudioHistory = function() {
+    // Update UI
+    $('audio-history-agree').disabled = true;
+    $('audio-history-cancel').disabled = true;
+
+    $('audio-history-error').hidden = true;
+    $('audio-history-wait').hidden = false;
+
+    if (chrome.hotwordPrivate.setAudioHistoryEnabled) {
+      chrome.hotwordPrivate.setAudioHistoryEnabled(
+          true, this.onAudioHistoryRequestCompleted_.bind(this));
+    }
+  };
+
   // ---- private methods:
+
+  /**
+   * Shows an error if the audio history setting was not enabled successfully.
+   * @private
+   */
+  Flow.prototype.handleAudioHistoryError_ = function() {
+    $('audio-history-agree').disabled = false;
+    $('audio-history-cancel').disabled = false;
+
+    $('audio-history-wait').hidden = true;
+    $('audio-history-error').hidden = false;
+  };
+
+  /**
+   * Callback for when an audio history request completes.
+   * @param {chrome.hotwordPrivate.AudioHistoryState} state The audio history
+   *     request state.
+   * @private
+   */
+  Flow.prototype.onAudioHistoryRequestCompleted_ = function(state) {
+    if (!state.success || !state.enabled) {
+      this.handleAudioHistoryError_();
+      return;
+    }
+
+    this.advanceStep();
+  };
 
   /**
    * Shows an error if the speaker model has not been finalized.

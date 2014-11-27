@@ -13,8 +13,9 @@
     </div>
     <div class="buttonbar">
       <div class="right">
-        <div id="audio-history-buttons">
-          <button i18n-content="cancel" class="finish-button">
+        <div>
+          <button id="audio-history-cancel" i18n-content="cancel"
+              class="finish-button">
           </button>
           <button id="audio-history-agree" i18n-content="audioHistoryAgree"
               class="primary">
@@ -22,11 +23,11 @@
         </div>
       </div>
       <div class="left">
-        <div class="message wait" hidden>
+        <div id="audio-history-wait" class="message wait" hidden>
           <span class="icon"></span>
           <span i18n-content="audioHistoryWait" class="text"></span>
         </div>
-        <div class="message error" hidden>
+        <div id="audio-history-error" class="message error" hidden>
           <span class="icon"></span>
           <span i18n-content="error" class="text"></span>
         </div>
