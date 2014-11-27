@@ -289,7 +289,6 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %type <rule> block_valid_rule
 %type <rule> supports
 %type <rule> viewport
-%type <boolean> keyframes_rule_start
 
 %type <string> maybe_ns_prefix
 
@@ -318,7 +317,7 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %type <boolean> supports_disjunction
 %type <boolean> supports_declaration_condition
 
-%type <string> keyframe_name
+%type <string> webkit_keyframe_name
 %type <keyframe> keyframe_rule
 %type <keyframeRuleList> keyframes_rule
 %type <keyframeRuleList> keyframe_rule_list
@@ -845,21 +844,25 @@ before_keyframes_rule:
     ;
 
 keyframes_rule_start:
-    before_keyframes_rule KEYFRAMES_SYM maybe_space {
-        $$ = false;
-    }
-  | before_keyframes_rule WEBKIT_KEYFRAMES_SYM maybe_space {
-        $$ = true;
-    }
+    before_keyframes_rule KEYFRAMES_SYM maybe_space
+    ;
+
+webkit_keyframes_rule_start:
+    before_keyframes_rule WEBKIT_KEYFRAMES_SYM maybe_space
     ;
 
 keyframes:
-    keyframes_rule_start keyframe_name at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space location_label keyframes_rule closing_brace {
-        $$ = parser->createKeyframesRule($2, parser->sinkFloatingKeyframeVector($8), $1 /* isPrefixed */);
+    keyframes_rule_start IDENT at_rule_header_end_maybe_space
+    '{' at_rule_body_start maybe_space location_label keyframes_rule closing_brace {
+        $$ = parser->createKeyframesRule($2, parser->sinkFloatingKeyframeVector($8), false /* not prefixed */);
+    }
+    | webkit_keyframes_rule_start webkit_keyframe_name at_rule_header_end_maybe_space
+    '{' at_rule_body_start maybe_space location_label keyframes_rule closing_brace {
+        $$ = parser->createKeyframesRule($2, parser->sinkFloatingKeyframeVector($8), true /* prefixed */);
     }
     ;
 
-keyframe_name:
+webkit_keyframe_name:
     IDENT
     | STRING {
         if (parser->m_context.useCounter())
@@ -1780,6 +1783,7 @@ at_rule_end:
 
 regular_invalid_at_rule_header:
     keyframes_rule_start at_rule_header_recovery
+  | webkit_keyframes_rule_start at_rule_header_recovery
   | before_page_rule PAGE_SYM at_rule_header_recovery
   | before_font_face_rule FONT_FACE_SYM at_rule_header_recovery
   | before_supports_rule SUPPORTS_SYM error error_location rule_error_recovery {
