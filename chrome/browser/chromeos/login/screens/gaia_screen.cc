@@ -5,18 +5,27 @@
 #include "chrome/browser/chromeos/login/screens/gaia_screen.h"
 
 #include "base/logging.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 
 namespace chromeos {
 
-GaiaScreen::GaiaScreen() : handler_(NULL) {
+GaiaScreen::GaiaScreen() : legacy_handler_(NULL), screen_handler_(NULL) {
 }
 
 GaiaScreen::~GaiaScreen() {
 }
 
-void GaiaScreen::SetHandler(LoginDisplayWebUIHandler* handler) {
-  handler_ = handler;
+void GaiaScreen::SetLegacyHandler(LoginDisplayWebUIHandler* handler) {
+  legacy_handler_ = handler;
+}
+
+void GaiaScreen::SetScreenHandler(GaiaScreenHandler* handler) {
+  screen_handler_ = handler;
+}
+
+void GaiaScreen::MaybePreloadAuthExtension() {
+  screen_handler_->MaybePreloadAuthExtension();
 }
 
 }  // namespace chromeos

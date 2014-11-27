@@ -175,9 +175,6 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
   current_controller_ = this;
 
   registrar_.Add(this,
-                 chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
                  chrome::NOTIFICATION_USER_LIST_CHANGED,
                  content::NotificationService::AllSources());
   registrar_.Add(this,
@@ -322,10 +319,6 @@ void ExistingUserController::Observe(
                    browser_process_context_getter),
         base::TimeDelta::FromMilliseconds(kAuthCacheTransferDelayMs));
   }
-  if (type != chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED)
-    return;
-  login_display_->OnUserImageChanged(
-      *content::Details<user_manager::User>(details).ptr());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

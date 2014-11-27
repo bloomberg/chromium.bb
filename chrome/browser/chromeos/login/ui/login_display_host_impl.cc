@@ -588,11 +588,18 @@ void LoginDisplayHostImpl::StartUserAdding(
       desktop_background_controller()->MoveDesktopToLockedContainer();
 #endif
 
-  sign_in_controller_.reset();  // Only one controller in a time.
-  sign_in_controller_.reset(new chromeos::ExistingUserController(this));
+  existing_user_controller_.reset();  // Only one controller in a time.
+  existing_user_controller_.reset(new chromeos::ExistingUserController(this));
+
+  if (!signin_screen_controller_.get()) {
+    OobeDisplay* oobe_display = GetOobeUI();
+    signin_screen_controller_.reset(new SignInScreenController(
+        oobe_display, webui_login_display_->delegate()));
+  }
+
   SetOobeProgressBarVisible(oobe_progress_bar_visible_ = false);
   SetStatusAreaVisible(true);
-  sign_in_controller_->Init(
+  existing_user_controller_->Init(
       user_manager::UserManager::Get()->GetUsersAllowedForMultiProfile());
   CHECK(webui_login_display_);
   GetOobeUI()->ShowSigninScreen(LoginScreenContext(),
@@ -641,18 +648,25 @@ void LoginDisplayHostImpl::StartSignInScreen(
     StartupUtils::MarkDeviceRegistered(base::Closure());
   }
 
-  sign_in_controller_.reset();  // Only one controller in a time.
-  sign_in_controller_.reset(new chromeos::ExistingUserController(this));
+  existing_user_controller_.reset();  // Only one controller in a time.
+  existing_user_controller_.reset(new chromeos::ExistingUserController(this));
+
+  if (!signin_screen_controller_.get()) {
+    OobeDisplay* oobe_display = GetOobeUI();
+    signin_screen_controller_.reset(new SignInScreenController(
+        oobe_display, webui_login_display_->delegate()));
+  }
+
   oobe_progress_bar_visible_ = !StartupUtils::IsDeviceRegistered();
   SetOobeProgressBarVisible(oobe_progress_bar_visible_);
   SetStatusAreaVisible(true);
-  sign_in_controller_->Init(users);
+  existing_user_controller_->Init(users);
 
   // We might be here after a reboot that was triggered after OOBE was complete,
   // so check for auto-enrollment again. This might catch a cached decision from
   // a previous oobe flow, or might start a new check with the server.
   if (GetAutoEnrollmentController()->ShouldEnrollSilently())
-    sign_in_controller_->DoAutoEnrollment();
+    existing_user_controller_->DoAutoEnrollment();
   else
     GetAutoEnrollmentController()->Start();
 
@@ -684,10 +698,10 @@ void LoginDisplayHostImpl::ResumeSignInScreen() {
   // was successful but was interrupted by an auto-enrollment execution; once
   // auto-enrollment is complete we resume the normal login flow from here.
   DVLOG(1) << "Resuming sign in screen";
-  CHECK(sign_in_controller_.get());
+  CHECK(existing_user_controller_.get());
   SetOobeProgressBarVisible(oobe_progress_bar_visible_);
   SetStatusAreaVisible(true);
-  sign_in_controller_->ResumeLogin();
+  existing_user_controller_->ResumeLogin();
 }
 
 
@@ -982,9 +996,9 @@ void LoginDisplayHostImpl::OnAutoEnrollmentProgress(
     policy::AutoEnrollmentState state) {
   VLOG(1) << "OnAutoEnrollmentProgress, state " << state;
 
-  if (sign_in_controller_ &&
+  if (existing_user_controller_ &&
       auto_enrollment_controller_->ShouldEnrollSilently()) {
-    sign_in_controller_->DoAutoEnrollment();
+    existing_user_controller_->DoAutoEnrollment();
   }
 }
 

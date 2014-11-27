@@ -85,6 +85,10 @@ class GaiaScreenHandler : public BaseScreenHandler {
   // Cancel embedded signin for the next load.
   void CancelEmbeddedSignin();
 
+  // Decides whether an auth extension should be pre-loaded. If it should,
+  // pre-loads it.
+  void MaybePreloadAuthExtension();
+
   FrameState frame_state() const { return frame_state_; }
   net::Error frame_error() const { return frame_error_; }
 
@@ -168,10 +172,6 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   // Shows signin screen after dns cache and cookie cleanup operations finish.
   void ShowGaiaScreenIfReady();
-
-  // Decides whether an auth extension should be pre-loaded. If it should,
-  // pre-loads it.
-  void MaybePreloadAuthExtension();
 
   // Tells webui to load authentication extension. |force| is used to force the
   // extension reloading, if it has already been loaded. |silent_load| is true

@@ -462,6 +462,10 @@ SupervisedUserCreationScreenHandler*
   return supervised_user_creation_screen_actor_;
 }
 
+GaiaScreenHandler* OobeUI::GetGaiaScreenActor() {
+  return gaia_screen_handler_;
+}
+
 AppLaunchSplashScreenActor*
       OobeUI::GetAppLaunchSplashScreenActor() {
   return app_launch_splash_screen_actor_;

@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/auth/auth_prewarmer.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/signin_screen_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -227,10 +228,12 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
       auto_enrollment_progress_subscription_;
 
   // Sign in screen controller.
-  scoped_ptr<ExistingUserController> sign_in_controller_;
+  scoped_ptr<ExistingUserController> existing_user_controller_;
 
   // OOBE and some screens (camera, recovery) controller.
   scoped_ptr<WizardController> wizard_controller_;
+
+  scoped_ptr<SignInScreenController> signin_screen_controller_;
 
   // App launch controller.
   scoped_ptr<AppLaunchController> app_launch_controller_;

@@ -13,6 +13,7 @@
 namespace chromeos {
 
 class LoginDisplayWebUIHandler;
+class GaiaScreenHandler;
 
 // This class represents GAIA screen: login screen that is responsible for
 // GAIA-based sign-in.
@@ -20,10 +21,13 @@ class GaiaScreen {
  public:
   GaiaScreen();
   virtual ~GaiaScreen();
-  void SetHandler(LoginDisplayWebUIHandler* handler);
+  void SetLegacyHandler(LoginDisplayWebUIHandler* handler);
+  void SetScreenHandler(GaiaScreenHandler* handler);
+  void MaybePreloadAuthExtension();
 
  private:
-  LoginDisplayWebUIHandler* handler_;
+  LoginDisplayWebUIHandler* legacy_handler_;
+  GaiaScreenHandler* screen_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaScreen);
 };

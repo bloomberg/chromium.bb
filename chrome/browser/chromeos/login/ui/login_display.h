@@ -12,7 +12,6 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
-#include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/gfx/image/image.h"
@@ -25,7 +24,7 @@ class UserContext;
 
 // TODO(nkostylev): Extract interface, create a BaseLoginDisplay class.
 // An abstract class that defines login UI implementation.
-class LoginDisplay : public user_manager::RemoveUserDelegate {
+class LoginDisplay {
  public:
   // Sign in error IDs that require detailed error screen and not just
   // a simple error bubble.
@@ -115,10 +114,6 @@ class LoginDisplay : public user_manager::RemoveUserDelegate {
   // Notifies the login UI that the preferences defining how to visualize it to
   // the user have changed and it needs to refresh.
   virtual void OnPreferencesChanged() = 0;
-
-  // Called when user image has been changed.
-  // |user| contains updated user.
-  virtual void OnUserImageChanged(const user_manager::User& user) = 0;
 
   // Changes enabled state of the UI.
   virtual void SetUIEnabled(bool is_enabled) = 0;

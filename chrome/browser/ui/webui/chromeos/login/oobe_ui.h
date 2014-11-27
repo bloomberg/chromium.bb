@@ -122,6 +122,7 @@ class OobeUI : public OobeDisplay,
       override;
   virtual HostPairingScreenActor* GetHostPairingScreenActor() override;
   DeviceDisabledScreenActor* GetDeviceDisabledScreenActor() override;
+  virtual GaiaScreenHandler* GetGaiaScreenActor() override;
 
   // Collects localized strings from the owned handlers.
   void GetLocalizedStrings(base::DictionaryValue* localized_strings);

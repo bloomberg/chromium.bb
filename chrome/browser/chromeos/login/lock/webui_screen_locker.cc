@@ -98,6 +98,9 @@ void WebUIScreenLocker::LockScreen() {
   LoadURL(GURL(kLoginURL));
   lock_window->Grab();
 
+  signin_screen_controller_.reset(
+      new SignInScreenController(GetOobeUI(), this));
+
   login_display_.reset(new WebUILoginDisplay(this));
   login_display_->set_background_bounds(bounds);
   login_display_->set_parent_window(GetNativeWindow());
@@ -105,10 +108,6 @@ void WebUIScreenLocker::LockScreen() {
 
   GetOobeUI()->ShowSigninScreen(
       LoginScreenContext(), login_display_.get(), login_display_.get());
-
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
-                 content::NotificationService::AllSources());
 
   if (login::LoginScrollIntoViewEnabled())
     DisableKeyboardOverscroll();
@@ -204,25 +203,6 @@ void WebUIScreenLocker::OnLockBackgroundDisplayed() {
 
 OobeUI* WebUIScreenLocker::GetOobeUI() {
   return static_cast<OobeUI*>(GetWebUI()->GetController());
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WebUIScreenLocker, content::NotificationObserver implementation:
-
-void WebUIScreenLocker::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {
-      const user_manager::User& user =
-          *content::Details<user_manager::User>(details).ptr();
-      login_display_->OnUserImageChanged(user);
-      break;
-    }
-    default:
-      WebUILoginView::Observe(type, source, details);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

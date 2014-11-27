@@ -14,13 +14,14 @@ namespace chromeos {
 
 class AppLaunchSplashScreenActor;
 class AutoEnrollmentCheckScreenActor;
-class CoreOobeActor;
 class ControllerPairingScreenActor;
+class CoreOobeActor;
 class DeviceDisabledScreenActor;
 class EnableDebuggingScreenActor;
 class EnrollmentScreenActor;
 class ErrorScreenActor;
 class EulaScreenActor;
+class GaiaScreenHandler;
 class HIDDetectionScreenActor;
 class HostPairingScreenActor;
 class KioskAutolaunchScreenActor;
@@ -93,6 +94,7 @@ class OobeDisplay {
   virtual ControllerPairingScreenActor* GetControllerPairingScreenActor() = 0;
   virtual HostPairingScreenActor* GetHostPairingScreenActor() = 0;
   virtual DeviceDisabledScreenActor* GetDeviceDisabledScreenActor() = 0;
+  virtual GaiaScreenHandler* GetGaiaScreenActor() = 0;
 
   // Returns if JS side is fully loaded and ready to accept messages.
   // If |false| is returned, then |display_is_ready_callback| is stored

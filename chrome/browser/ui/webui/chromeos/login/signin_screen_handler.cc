@@ -906,9 +906,8 @@ void SigninScreenHandler::ShowGaiaPasswordChanged(const std::string& username) {
   gaia_screen_handler_->PasswordChangedFor(username);
   gaia_screen_handler_->PopulateEmail(username);
   core_oobe_actor_->ShowSignInUI(username);
-  CallJS("login.setAuthType",
-         username,
-         static_cast<int>(ONLINE_SIGN_IN),
+  CallJS("login.setAuthType", username,
+         static_cast<int>(UserSelectionScreen::ONLINE_SIGN_IN),
          base::StringValue(""));
 }
 
@@ -975,61 +974,22 @@ void SigninScreenHandler::ShowBannerMessage(const base::string16& message) {
 
 void SigninScreenHandler::ShowUserPodCustomIcon(
     const std::string& username,
-    const ScreenlockBridge::UserPodCustomIconOptions& icon_options) {
-  scoped_ptr<base::DictionaryValue> icon = icon_options.ToDictionaryValue();
-  if (!icon || icon->empty())
-    return;
-  CallJS("login.AccountPickerScreen.showUserPodCustomIcon", username, *icon);
+    const base::DictionaryValue& icon) {
+  CallJS("login.AccountPickerScreen.showUserPodCustomIcon", username, icon);
 }
 
 void SigninScreenHandler::HideUserPodCustomIcon(const std::string& username) {
   CallJS("login.AccountPickerScreen.hideUserPodCustomIcon", username);
 }
 
-void SigninScreenHandler::EnableInput() {
-  // Only for lock screen at the moment.
-  ScreenLocker::default_screen_locker()->EnableInput();
-}
-
 void SigninScreenHandler::SetAuthType(
     const std::string& username,
     ScreenlockBridge::LockHandler::AuthType auth_type,
     const base::string16& initial_value) {
-  if (delegate_->GetAuthType(username) ==
-          ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD)
-    return;
-
-  delegate_->SetAuthType(username, auth_type);
-
   CallJS("login.AccountPickerScreen.setAuthType",
          username,
          static_cast<int>(auth_type),
          base::StringValue(initial_value));
-}
-
-ScreenlockBridge::LockHandler::AuthType SigninScreenHandler::GetAuthType(
-    const std::string& username) const {
-  return delegate_->GetAuthType(username);
-}
-
-void SigninScreenHandler::Unlock(const std::string& user_email) {
-  DCHECK(ScreenLocker::default_screen_locker());
-  ScreenLocker::Hide();
-}
-
-void SigninScreenHandler::AttemptEasySignin(const std::string& user_email,
-                                            const std::string& secret,
-                                            const std::string& key_label) {
-  DCHECK(!ScreenLocker::default_screen_locker());
-  if (!delegate_)
-    return;
-
-  UserContext user_context(user_email);
-  user_context.SetAuthFlow(UserContext::AUTH_FLOW_EASY_UNLOCK);
-  user_context.SetKey(Key(secret));
-  user_context.GetKey()->SetLabel(key_label);
-
-  delegate_->Login(user_context, SigninSpecifics());
 }
 
 void SigninScreenHandler::OnMaximizeModeStarted() {
@@ -1255,12 +1215,6 @@ void SigninScreenHandler::HandleAccountPickerReady() {
   }
 
   is_account_picker_showing_first_time_ = true;
-  gaia_screen_handler_->MaybePreloadAuthExtension();
-
-  ScreenlockBridge::Get()->SetLockHandler(this);
-  if (ScreenLocker::default_screen_locker()) {
-    ScreenLocker::default_screen_locker()->delegate()->OnLockWebUIReady();
-  }
 
   if (delegate_)
     delegate_->OnSigninScreenReady();

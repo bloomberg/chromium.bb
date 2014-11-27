@@ -103,6 +103,14 @@ class LoginDisplayWebUIHandler {
                                        const std::string& default_locale,
                                        bool multipleRecommendedLocales) = 0;
 
+  virtual void ShowBannerMessage(const base::string16& message) = 0;
+  virtual void ShowUserPodCustomIcon(const std::string& username,
+                                     const base::DictionaryValue& icon) = 0;
+  virtual void HideUserPodCustomIcon(const std::string& username) = 0;
+  virtual void SetAuthType(const std::string& username,
+                           ScreenlockBridge::LockHandler::AuthType auth_type,
+                           const base::string16& initial_value) = 0;
+
  protected:
   virtual ~LoginDisplayWebUIHandler() {}
 };
@@ -197,15 +205,6 @@ class SigninScreenHandlerDelegate {
   // Request to (re)load user list.
   virtual void HandleGetUsers() = 0;
 
-  // Set authentication type (for easier unlocking).
-  virtual void SetAuthType(
-      const std::string& username,
-      ScreenlockBridge::LockHandler::AuthType auth_type) = 0;
-
-  // Get authentication type (for easier unlocking).
-  virtual ScreenlockBridge::LockHandler::AuthType GetAuthType(
-      const std::string& username) const = 0;
-
  protected:
   virtual ~SigninScreenHandlerDelegate() {}
 };
@@ -216,7 +215,6 @@ class SigninScreenHandler
     : public BaseScreenHandler,
       public LoginDisplayWebUIHandler,
       public content::NotificationObserver,
-      public ScreenlockBridge::LockHandler,
       public NetworkStateInformer::NetworkStateInformerObserver,
       public input_method::ImeKeyboard::Observer,
       public TouchViewControllerDelegate::Observer,
@@ -324,27 +322,19 @@ class SigninScreenHandler
       const std::string& default_locale,
       bool multipleRecommendedLocales) override;
 
+  virtual void ShowBannerMessage(const base::string16& message) override;
+  virtual void ShowUserPodCustomIcon(
+      const std::string& username,
+      const base::DictionaryValue& icon) override;
+  virtual void HideUserPodCustomIcon(const std::string& username) override;
+  virtual void SetAuthType(const std::string& username,
+                           ScreenlockBridge::LockHandler::AuthType auth_type,
+                           const base::string16& initial_value) override;
+
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) override;
-
-  // ScreenlockBridge::LockHandler implementation:
-  virtual void ShowBannerMessage(const base::string16& message) override;
-  virtual void ShowUserPodCustomIcon(
-      const std::string& username,
-      const ScreenlockBridge::UserPodCustomIconOptions& icon) override;
-  virtual void HideUserPodCustomIcon(const std::string& username) override;
-  virtual void EnableInput() override;
-  virtual void SetAuthType(const std::string& username,
-                           ScreenlockBridge::LockHandler::AuthType auth_type,
-                           const base::string16& initial_value) override;
-  virtual ScreenlockBridge::LockHandler::AuthType GetAuthType(
-      const std::string& username) const override;
-  virtual void Unlock(const std::string& user_email) override;
-  virtual void AttemptEasySignin(const std::string& user_email,
-                                 const std::string& secret,
-                                 const std::string& key_label) override;
 
   // TouchViewControllerDelegate::Observer implementation:
   virtual void OnMaximizeModeStarted() override;

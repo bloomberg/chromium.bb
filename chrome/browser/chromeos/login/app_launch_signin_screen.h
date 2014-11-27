@@ -79,11 +79,6 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   virtual void SetDisplayEmail(const std::string& email) override;
   virtual void Signout() override;
   virtual void HandleGetUsers() override;
-  virtual void SetAuthType(
-      const std::string& username,
-      ScreenlockBridge::LockHandler::AuthType auth_type) override;
-  virtual ScreenlockBridge::LockHandler::AuthType GetAuthType(
-      const std::string& username) const override;
 
   // AuthStatusConsumer implementation:
   virtual void OnAuthFailure(const AuthFailure& error) override;

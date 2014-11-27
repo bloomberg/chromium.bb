@@ -545,7 +545,6 @@ class WizardControllerFlowTest : public WizardControllerTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
-  EXPECT_TRUE(ExistingUserController::current_controller() == NULL);
   CheckCurrentScreen(WizardController::kNetworkScreenName);
 
   WaitUntilJSIsReady();
@@ -656,7 +655,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
   content::RunAllPendingInMessageLoop();
 
   CheckCurrentScreen(WizardController::kEnrollmentScreenName);
-  EXPECT_TRUE(ExistingUserController::current_controller() == NULL);
   EXPECT_EQ("ethernet,wifi,cellular",
             NetworkHandler::Get()->network_state_handler()
             ->GetCheckPortalListForTest());
@@ -1069,7 +1067,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
       SetParameters(mock_enrollment_screen_, ENROLLMENT_MODE_FORCED, ""))
       .Times(1);
 
-  EXPECT_TRUE(ExistingUserController::current_controller() == NULL);
   CheckCurrentScreen(WizardController::kNetworkScreenName);
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
@@ -1112,7 +1109,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
       SetParameters(mock_enrollment_screen_, ENROLLMENT_MODE_FORCED, ""))
       .Times(1);
 
-  EXPECT_TRUE(ExistingUserController::current_controller() == NULL);
   CheckCurrentScreen(WizardController::kNetworkScreenName);
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
@@ -1168,7 +1164,6 @@ class WizardControllerEnableDebuggingTest : public WizardControllerFlowTest {
 
 IN_PROC_BROWSER_TEST_F(WizardControllerEnableDebuggingTest,
                        ShowAndCancelEnableDebugging) {
-  EXPECT_TRUE(ExistingUserController::current_controller() == NULL);
   CheckCurrentScreen(WizardController::kNetworkScreenName);
   WaitUntilJSIsReady();
 

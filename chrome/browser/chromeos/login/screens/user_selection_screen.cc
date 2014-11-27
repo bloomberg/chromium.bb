@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
@@ -101,13 +102,24 @@ void AddPublicSessionDetailsToUserDictionaryEntry(
 
 }  // namespace
 
-UserSelectionScreen::UserSelectionScreen() : handler_(NULL) {
+UserSelectionScreen::UserSelectionScreen()
+    : handler_(NULL), login_display_delegate_(NULL) {
 }
 
 UserSelectionScreen::~UserSelectionScreen() {
+  ScreenlockBridge::Get()->SetLockHandler(nullptr);
   wm::UserActivityDetector* activity_detector = wm::UserActivityDetector::Get();
   if (activity_detector->HasObserver(this))
     activity_detector->RemoveObserver(this);
+}
+
+void UserSelectionScreen::InitEasyUnlock() {
+  ScreenlockBridge::Get()->SetLockHandler(this);
+}
+
+void UserSelectionScreen::SetLoginDisplayDelegate(
+    LoginDisplay::Delegate* login_display_delegate) {
+  login_display_delegate_ = login_display_delegate;
 }
 
 // static
@@ -357,13 +369,21 @@ void UserSelectionScreen::HandleGetUsers() {
   SendUserList();
 }
 
+// EasyUnlock stuff
+
 void UserSelectionScreen::SetAuthType(
-    const std::string& username,
-    ScreenlockBridge::LockHandler::AuthType auth_type) {
-  DCHECK(GetAuthType(username) !=
+    const std::string& user_id,
+    ScreenlockBridge::LockHandler::AuthType auth_type,
+    const base::string16& initial_value) {
+  if (GetAuthType(user_id) ==
+      ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD) {
+    return;
+  }
+  DCHECK(GetAuthType(user_id) !=
              ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD ||
          auth_type == ScreenlockBridge::LockHandler::FORCE_OFFLINE_PASSWORD);
-  user_auth_type_map_[username] = auth_type;
+  user_auth_type_map_[user_id] = auth_type;
+  handler_->SetAuthType(user_id, auth_type, initial_value);
 }
 
 ScreenlockBridge::LockHandler::AuthType UserSelectionScreen::GetAuthType(
@@ -371,6 +391,49 @@ ScreenlockBridge::LockHandler::AuthType UserSelectionScreen::GetAuthType(
   if (user_auth_type_map_.find(username) == user_auth_type_map_.end())
     return ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
   return user_auth_type_map_.find(username)->second;
+}
+
+void UserSelectionScreen::ShowBannerMessage(const base::string16& message) {
+  handler_->ShowBannerMessage(message);
+}
+
+void UserSelectionScreen::ShowUserPodCustomIcon(
+    const std::string& user_id,
+    const ScreenlockBridge::UserPodCustomIconOptions& icon_options) {
+  scoped_ptr<base::DictionaryValue> icon = icon_options.ToDictionaryValue();
+  if (!icon || icon->empty())
+    return;
+  handler_->ShowUserPodCustomIcon(user_id, *icon);
+}
+
+void UserSelectionScreen::HideUserPodCustomIcon(const std::string& user_id) {
+  handler_->HideUserPodCustomIcon(user_id);
+}
+
+void UserSelectionScreen::EnableInput() {
+  // TODO(antrim) It looks like some hack, why do we need to enable input via
+  // ScreenLock bridge, where does it get disabled?  Only for lock screen at the
+  // moment.
+  if (ScreenLocker::default_screen_locker())
+    ScreenLocker::default_screen_locker()->EnableInput();
+}
+
+void UserSelectionScreen::Unlock(const std::string& user_email) {
+  DCHECK(ScreenLocker::default_screen_locker());
+  ScreenLocker::Hide();
+}
+
+void UserSelectionScreen::AttemptEasySignin(const std::string& user_email,
+                                            const std::string& secret,
+                                            const std::string& key_label) {
+  DCHECK(!ScreenLocker::default_screen_locker());
+
+  UserContext user_context(user_email);
+  user_context.SetAuthFlow(UserContext::AUTH_FLOW_EASY_UNLOCK);
+  user_context.SetKey(Key(secret));
+  user_context.GetKey()->SetLabel(key_label);
+
+  login_display_delegate_->Login(user_context, SigninSpecifics());
 }
 
 }  // namespace chromeos
