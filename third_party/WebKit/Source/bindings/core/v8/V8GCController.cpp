@@ -414,7 +414,7 @@ void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
         Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::ForcedGC);
 
         // Forces a precise GC at the end of the current event loop.
-        Heap::setForcePreciseGCForTesting();
+        ThreadState::current()->requestGC(ThreadState::ForcedGC);
     }
 
     TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "GCEvent", "usedHeapSizeAfter", usedHeapSize(isolate));

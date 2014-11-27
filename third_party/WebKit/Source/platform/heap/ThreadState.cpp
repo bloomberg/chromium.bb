@@ -327,7 +327,6 @@ ThreadState::ThreadState()
     , m_atSafePoint(false)
     , m_interruptors()
     , m_didV8GCAfterLastGC(false)
-    , m_forcePreciseGCForTesting(false)
     , m_sweepInProgress(false)
     , m_noAllocationCount(0)
     , m_isTerminating(false)
@@ -771,8 +770,9 @@ void ThreadState::setGCState(GCState gcState)
         RELEASE_ASSERT(m_gcState == Sweeping);
         break;
     case GCScheduled:
+    case GCScheduledForTesting:
         checkThread();
-        RELEASE_ASSERT(m_gcState == NoGCScheduled || m_gcState == GCScheduled || m_gcState == StoppingOtherThreads);
+        RELEASE_ASSERT(m_gcState != GCRunning && m_gcState != SweepScheduled && m_gcState != Sweeping);
         break;
     case StoppingOtherThreads:
         checkThread();
@@ -807,25 +807,12 @@ void ThreadState::performPendingGC(StackState stackState)
 {
     checkThread();
     if (stackState == NoHeapPointersOnStack) {
-        if (forcePreciseGCForTesting()) {
-            setForcePreciseGCForTesting(false);
+        if (gcState() == GCScheduledForTesting) {
             Heap::collectAllGarbage();
         } else if (gcState() == GCScheduled) {
             Heap::collectGarbage(NoHeapPointersOnStack);
         }
     }
-}
-
-void ThreadState::setForcePreciseGCForTesting(bool value)
-{
-    checkThread();
-    m_forcePreciseGCForTesting = value;
-}
-
-bool ThreadState::forcePreciseGCForTesting()
-{
-    checkThread();
-    return m_forcePreciseGCForTesting;
 }
 
 void ThreadState::makeConsistentForSweeping()

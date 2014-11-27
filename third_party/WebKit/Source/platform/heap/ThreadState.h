@@ -324,6 +324,7 @@ public:
     enum GCState {
         NoGCScheduled,
         GCScheduled,
+        GCScheduledForTesting,
         StoppingOtherThreads,
         GCRunning,
         SweepScheduled,
@@ -421,21 +422,19 @@ public:
     bool shouldGC();
     bool shouldForceConservativeGC();
 
-    void requestGC() { setGCState(GCScheduled); }
+    // If you specify ForcedGC, you can force a precise GC at the end of the
+    // current event loop. This is used for layout tests that trigger GCs and
+    // check if objects aredead at a given point in time. That only reliably
+    // works when we get precise GCs with no conservative stack scanning.
+    void requestGC(CauseOfGC cause = NormalGC)
+    {
+        setGCState(cause == NormalGC ? GCScheduled : GCScheduledForTesting);
+    }
     void setGCState(GCState);
     GCState gcState() const;
 
     void preGC();
     void postGC();
-
-    // Was the last GC forced for testing? This is set when garbage collection
-    // is forced for testing and there are pointers on the stack. It remains
-    // set until a garbage collection is triggered with no pointers on the stack.
-    // This is used for layout tests that trigger GCs and check if objects are
-    // dead at a given point in time. That only reliably works when we get
-    // precise GCs with no conservative stack scanning.
-    void setForcePreciseGCForTesting(bool);
-    bool forcePreciseGCForTesting();
 
     void performPendingSweep();
 
@@ -740,7 +739,6 @@ private:
     bool m_atSafePoint;
     Vector<Interruptor*> m_interruptors;
     bool m_didV8GCAfterLastGC;
-    bool m_forcePreciseGCForTesting;
     bool m_sweepInProgress;
     size_t m_noAllocationCount;
     BaseHeap* m_heaps[NumberOfHeaps];

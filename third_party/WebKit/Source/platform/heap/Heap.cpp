@@ -2619,11 +2619,6 @@ void Heap::collectAllGarbage()
         collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::ForcedGC);
 }
 
-void Heap::setForcePreciseGCForTesting()
-{
-    ThreadState::current()->setForcePreciseGCForTesting(true);
-}
-
 template<typename Header>
 void ThreadHeap<Header>::prepareHeapForTermination()
 {
