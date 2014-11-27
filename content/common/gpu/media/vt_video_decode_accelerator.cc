@@ -10,6 +10,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/logging.h"
+#include "base/mac/mac_logging.h"
 #include "base/sys_byteorder.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/common/gpu/media/vt_video_decode_accelerator.h"
@@ -22,10 +24,10 @@ using content_common_gpu_media::InitializeStubs;
 using content_common_gpu_media::IsVtInitialized;
 using content_common_gpu_media::StubPathMap;
 
-#define NOTIFY_STATUS(name, status)                             \
-    do {                                                        \
-      DLOG(ERROR) << name << " failed with status " << status;  \
-      NotifyError(PLATFORM_FAILURE);                            \
+#define NOTIFY_STATUS(name, status)          \
+    do {                                     \
+      OSSTATUS_DLOG(ERROR, status) << name;  \
+      NotifyError(PLATFORM_FAILURE);         \
     } while (0)
 
 namespace content {
@@ -43,6 +45,121 @@ static const int kNumPictureBuffers = media::limits::kMaxVideoFrames + 1;
 // more. (NotifyEndOfBitstreamBuffer() is called when frames are moved into the
 // reorder queue.)
 static const int kMaxReorderQueueSize = 16;
+
+// Build an |image_config| dictionary for VideoToolbox initialization.
+static base::ScopedCFTypeRef<CFMutableDictionaryRef>
+BuildImageConfig(CMVideoDimensions coded_dimensions) {
+  // TODO(sandersd): RGBA option for 4:4:4 video.
+  int32_t pixel_format = kCVPixelFormatType_422YpCbCr8;
+
+#define CFINT(i) CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &i)
+  base::ScopedCFTypeRef<CFNumberRef> cf_pixel_format(CFINT(pixel_format));
+  base::ScopedCFTypeRef<CFNumberRef> cf_width(CFINT(coded_dimensions.width));
+  base::ScopedCFTypeRef<CFNumberRef> cf_height(CFINT(coded_dimensions.height));
+#undef CFINT
+
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config(
+      CFDictionaryCreateMutable(
+          kCFAllocatorDefault,
+          4,  // capacity
+          &kCFTypeDictionaryKeyCallBacks,
+          &kCFTypeDictionaryValueCallBacks));
+  CFDictionarySetValue(image_config, kCVPixelBufferPixelFormatTypeKey,
+                       cf_pixel_format);
+  CFDictionarySetValue(image_config, kCVPixelBufferWidthKey, cf_width);
+  CFDictionarySetValue(image_config, kCVPixelBufferHeightKey, cf_height);
+  CFDictionarySetValue(image_config, kCVPixelBufferOpenGLCompatibilityKey,
+                       kCFBooleanTrue);
+
+  return image_config;
+}
+
+// The purpose of this function is to preload the generic and hardware-specific
+// libraries required by VideoToolbox before the GPU sandbox is enabled.
+// VideoToolbox normally loads the hardware-specific libraries lazily, so we
+// must actually create a decompression session.
+//
+// If creating a decompression session fails, hardware decoding will be disabled
+// (Initialize() will always return false). If it succeeds but a required
+// library is not loaded yet (I have not experienced this, but the details are
+// not documented), then VideoToolbox will fall back on software decoding
+// internally. If that happens, the likely solution is to expand the scope of
+// this initialization.
+void InitializeVideoToolbox() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableAcceleratedVideoDecode)) {
+    return;
+  }
+
+  if (!IsVtInitialized()) {
+    // CoreVideo is also required, but the loader stops after the first path is
+    // loaded. Instead we rely on the transitive dependency from VideoToolbox to
+    // CoreVideo.
+    // TODO(sandersd): Fallback to PrivateFrameworks to support OS X < 10.8.
+    StubPathMap paths;
+    paths[kModuleVt].push_back(FILE_PATH_LITERAL(
+        "/System/Library/Frameworks/VideoToolbox.framework/VideoToolbox"));
+    if (!InitializeStubs(paths))
+      return;
+  }
+
+  // Create a decoding session.
+  // SPS and PPS data were taken from the 480p encoding of Big Buck Bunny.
+  const uint8_t sps[] = {0x67, 0x64, 0x00, 0x1e, 0xac, 0xd9, 0x80, 0xd4, 0x3d,
+                         0xa1, 0x00, 0x00, 0x03, 0x00, 0x01, 0x00, 0x00, 0x03,
+                         0x00, 0x30, 0x8f, 0x16, 0x2d, 0x9a};
+  const uint8_t pps[] = {0x68, 0xe9, 0x7b, 0xcb};
+  const uint8_t* data_ptrs[] = {sps, pps};
+  const size_t data_sizes[] = {arraysize(sps), arraysize(pps)};
+
+  base::ScopedCFTypeRef<CMFormatDescriptionRef> format;
+  OSStatus status = CMVideoFormatDescriptionCreateFromH264ParameterSets(
+      kCFAllocatorDefault,
+      2,                          // parameter_set_count
+      data_ptrs,                  // &parameter_set_pointers
+      data_sizes,                 // &parameter_set_sizes
+      kNALUHeaderLength,          // nal_unit_header_length
+      format.InitializeInto());
+  if (status) {
+    OSSTATUS_LOG(ERROR, status) << "Failed to create CMVideoFormatDescription "
+                                << "while initializing VideoToolbox";
+    content_common_gpu_media::UninitializeVt();
+    return;
+  }
+
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> decoder_config(
+      CFDictionaryCreateMutable(
+          kCFAllocatorDefault,
+          1,  // capacity
+          &kCFTypeDictionaryKeyCallBacks,
+          &kCFTypeDictionaryValueCallBacks));
+
+  CFDictionarySetValue(
+      decoder_config,
+      // kVTVideoDecoderSpecification_RequireHardwareAcceleratedVideoDecoder
+      CFSTR("RequireHardwareAcceleratedVideoDecoder"),
+      kCFBooleanTrue);
+
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config(
+      BuildImageConfig(CMVideoFormatDescriptionGetDimensions(format)));
+
+  VTDecompressionOutputCallbackRecord callback = {0};
+
+  base::ScopedCFTypeRef<VTDecompressionSessionRef> session;
+  status = VTDecompressionSessionCreate(
+      kCFAllocatorDefault,
+      format,               // video_format_description
+      decoder_config,       // video_decoder_specification
+      image_config,         // destination_image_buffer_attributes
+      &callback,            // output_callback
+      session.InitializeInto());
+  if (status) {
+    OSSTATUS_LOG(ERROR, status) << "Failed to create VTDecompressionSession "
+                                << "while initializing VideoToolbox";
+    content_common_gpu_media::UninitializeVt();
+    return;
+  }
+}
 
 // Route decoded frame callbacks back into the VTVideoDecodeAccelerator.
 static void OutputThunk(
@@ -112,26 +229,12 @@ bool VTVideoDecodeAccelerator::Initialize(
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
   client_ = client;
 
+  if (!IsVtInitialized())
+    return false;
+
   // Only H.264 is supported.
   if (profile < media::H264PROFILE_MIN || profile > media::H264PROFILE_MAX)
     return false;
-
-  // Require --no-sandbox until VideoToolbox library loading is part of sandbox
-  // startup (and this VDA is ready for regular users).
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoSandbox))
-    return false;
-
-  if (!IsVtInitialized()) {
-    // CoreVideo is also required, but the loader stops after the first
-    // path is loaded. Instead we rely on the transitive dependency from
-    // VideoToolbox to CoreVideo.
-    // TODO(sandersd): Fallback to PrivateFrameworks for VideoToolbox.
-    StubPathMap paths;
-    paths[kModuleVt].push_back(FILE_PATH_LITERAL(
-        "/System/Library/Frameworks/VideoToolbox.framework/VideoToolbox"));
-    if (!InitializeStubs(paths))
-      return false;
-  }
 
   // Spawn a thread to handle parsing and calling VideoToolbox.
   if (!decoder_thread_.Start())
@@ -213,25 +316,7 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
       kCFBooleanTrue);
 
   base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config(
-      CFDictionaryCreateMutable(
-          kCFAllocatorDefault,
-          4,  // capacity
-          &kCFTypeDictionaryKeyCallBacks,
-          &kCFTypeDictionaryValueCallBacks));
-
-#define CFINT(i) CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &i)
-  // TODO(sandersd): RGBA option for 4:4:4 video.
-  int32_t pixel_format = kCVPixelFormatType_422YpCbCr8;
-  base::ScopedCFTypeRef<CFNumberRef> cf_pixel_format(CFINT(pixel_format));
-  base::ScopedCFTypeRef<CFNumberRef> cf_width(CFINT(coded_dimensions.width));
-  base::ScopedCFTypeRef<CFNumberRef> cf_height(CFINT(coded_dimensions.height));
-#undef CFINT
-  CFDictionarySetValue(
-      image_config, kCVPixelBufferPixelFormatTypeKey, cf_pixel_format);
-  CFDictionarySetValue(image_config, kCVPixelBufferWidthKey, cf_width);
-  CFDictionarySetValue(image_config, kCVPixelBufferHeightKey, cf_height);
-  CFDictionarySetValue(
-      image_config, kCVPixelBufferOpenGLCompatibilityKey, kCFBooleanTrue);
+      BuildImageConfig(coded_dimensions));
 
   // TODO(sandersd): Does the old session need to be flushed first?
   session_.reset();
