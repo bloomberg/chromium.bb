@@ -604,6 +604,7 @@
     }],
     ['OS=="mac"', {
       'dependencies': [
+        '../media/media.gyp:media',
         'app/resources/content_resources.gyp:content_resources',
       ],
       'sources': [

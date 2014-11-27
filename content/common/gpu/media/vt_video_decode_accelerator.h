@@ -16,9 +16,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/gpu/media/h264_dpb.h"
 #include "content/common/gpu/media/vt.h"
 #include "media/filters/h264_parser.h"
+#include "media/video/h264_poc.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_context_cgl.h"
@@ -77,8 +77,11 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
     int32_t bitstream_id;
 
     // Relative presentation order of this frame (see AVC spec).
-    // TODO(sandersd): Reorder window size.
     int32_t pic_order_cnt;
+
+    // Nnumber of frames after this one in decode order that can appear before
+    // before it in presentation order.
+    int32_t reorder_window;
 
     // Size of the decoded frame.
     // TODO(sandersd): visible_rect.
@@ -99,6 +102,13 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   //
   // Methods for interacting with VideoToolbox. Run on |decoder_thread_|.
   //
+
+  // Compute the |pic_order_cnt| for a frame. Returns true or calls
+  // NotifyError() before returning false.
+  bool ComputePicOrderCnt(
+      const media::H264SPS* sps,
+      const media::H264SliceHeader& slice_hdr,
+      Frame* frame);
 
   // Set up VideoToolbox using the current SPS and PPS. Returns true or calls
   // NotifyError() before returning false.
@@ -198,6 +208,7 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   std::vector<uint8_t> last_spsext_;
   int last_pps_id_;
   std::vector<uint8_t> last_pps_;
+  media::H264POC poc_;
 
   //
   // Shared state (set up and torn down on GPU thread).

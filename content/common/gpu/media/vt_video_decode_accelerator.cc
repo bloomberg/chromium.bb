@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include <CoreVideo/CoreVideo.h>
 #include <OpenGL/CGLIOSurface.h>
 #include <OpenGL/gl.h>
@@ -13,7 +15,6 @@
 #include "content/common/gpu/media/vt_video_decode_accelerator.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/limits.h"
-#include "media/filters/h264_parser.h"
 #include "ui/gl/scoped_binders.h"
 
 using content_common_gpu_media::kModuleVt;
@@ -38,8 +39,9 @@ static const int kNALUHeaderLength = 4;
 // requirements are low, as we don't need the textures to be backed by storage.
 static const int kNumPictureBuffers = media::limits::kMaxVideoFrames + 1;
 
-// TODO(sandersd): Use the configured reorder window instead.
-static const int kMinReorderQueueSize = 4;
+// Maximum number of frames to queue for reordering before we stop asking for
+// more. (NotifyEndOfBitstreamBuffer() is called when frames are moved into the
+// reorder queue.)
 static const int kMaxReorderQueueSize = 16;
 
 // Route decoded frame callbacks back into the VTVideoDecodeAccelerator.
@@ -63,7 +65,7 @@ VTVideoDecodeAccelerator::Task::~Task() {
 }
 
 VTVideoDecodeAccelerator::Frame::Frame(int32_t bitstream_id)
-    : bitstream_id(bitstream_id), pic_order_cnt(0) {
+    : bitstream_id(bitstream_id), pic_order_cnt(0), reorder_window(0) {
 }
 
 VTVideoDecodeAccelerator::Frame::~Frame() {
@@ -74,11 +76,12 @@ bool VTVideoDecodeAccelerator::FrameOrder::operator()(
     const linked_ptr<Frame>& rhs) const {
   if (lhs->pic_order_cnt != rhs->pic_order_cnt)
     return lhs->pic_order_cnt > rhs->pic_order_cnt;
-  // If the pic_order is the same, fallback on using the bitstream order.
-  // TODO(sandersd): Assign a sequence number in Decode().
+  // If |pic_order_cnt| is the same, fall back on using the bitstream order.
+  // TODO(sandersd): Assign a sequence number in Decode() and use that instead.
+  // TODO(sandersd): Using the sequence number, ensure that frames older than
+  // |kMaxReorderQueueSize| are ordered first, regardless of |pic_order_cnt|.
   return lhs->bitstream_id > rhs->bitstream_id;
 }
-
 
 VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
     CGLContextObj cgl_context,
@@ -318,8 +321,8 @@ void VTVideoDecodeAccelerator::DecodeTask(
         return;
 
       case media::H264NALU::kNonIDRSlice:
-        // TODO(sandersd): Check that there has been an SPS or IDR slice since
-        // the last reset.
+        // TODO(sandersd): Check that there has been an IDR slice since the
+        // last reset.
       case media::H264NALU::kIDRSlice:
         {
           // TODO(sandersd): Make sure this only happens once per frame.
@@ -333,8 +336,8 @@ void VTVideoDecodeAccelerator::DecodeTask(
             return;
           }
 
-          // TODO(sandersd): Keep a cache of recent SPS/PPS units instead of
-          // only the most recent ones.
+          // TODO(sandersd): Maintain a cache of configurations and reconfigure
+          // only when a slice references a new config.
           DCHECK_EQ(slice_hdr.pic_parameter_set_id, last_pps_id_);
           const media::H264PPS* pps =
               parser_.GetPPS(slice_hdr.pic_parameter_set_id);
@@ -352,9 +355,16 @@ void VTVideoDecodeAccelerator::DecodeTask(
             return;
           }
 
-          // TODO(sandersd): Compute pic_order_cnt.
-          DCHECK(!slice_hdr.field_pic_flag);
-          frame->pic_order_cnt = 0;
+          if (!poc_.ComputePicOrderCnt(sps, slice_hdr, &frame->pic_order_cnt)) {
+            NotifyError(UNREADABLE_INPUT);
+            return;
+          }
+
+          if (sps->vui_parameters_present_flag &&
+              sps->bitstream_restriction_flag) {
+            frame->reorder_window = std::min(sps->max_num_reorder_frames,
+                                             kMaxReorderQueueSize - 1);
+          }
         }
       default:
         nalus.push_back(nalu);
@@ -618,6 +628,12 @@ bool VTVideoDecodeAccelerator::ProcessTaskQueue() {
     case TASK_RESET:
       DCHECK_EQ(task.type, pending_flush_tasks_.front());
       if (reorder_queue_.size() == 0) {
+        last_sps_id_ = -1;
+        last_pps_id_ = -1;
+        last_sps_.clear();
+        last_spsext_.clear();
+        last_pps_.clear();
+        poc_.Reset();
         pending_flush_tasks_.pop();
         client_->NotifyResetDone();
         task_queue_.pop();
@@ -645,7 +661,9 @@ bool VTVideoDecodeAccelerator::ProcessReorderQueue() {
   bool flushing = !task_queue_.empty() &&
                   (task_queue_.front().type != TASK_FRAME ||
                    task_queue_.front().frame->pic_order_cnt == 0);
-  if (flushing || reorder_queue_.size() >= kMinReorderQueueSize) {
+
+  size_t reorder_window = std::max(0, reorder_queue_.top()->reorder_window);
+  if (flushing || reorder_queue_.size() > reorder_window) {
     if (ProcessFrame(*reorder_queue_.top())) {
       reorder_queue_.pop();
       return true;
