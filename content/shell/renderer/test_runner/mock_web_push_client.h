@@ -40,8 +40,6 @@ class MockWebPushClient : public blink::WebPushClient {
   virtual void getPermissionStatus(
       blink::WebPushPermissionStatusCallback* callback,
       blink::WebServiceWorkerProvider* provider);
-  virtual void requestPermission(
-      blink::WebPushPermissionRequestCallbacks* callback);
 
   std::string end_point_;
   std::string registration_id_;

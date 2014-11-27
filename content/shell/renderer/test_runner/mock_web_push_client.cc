@@ -72,13 +72,4 @@ void MockWebPushClient::getPermissionStatus(
   delete callback;
 }
 
-void MockWebPushClient::requestPermission(
-    blink::WebPushPermissionRequestCallbacks* callback) {
-  if (error_message_ == "deny_permission")
-    callback->onError();
-  else
-    callback->onSuccess();
-  delete callback;
-}
-
 }  // Namespace content

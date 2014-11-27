@@ -31,8 +31,6 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
 
   // BrowserMessageFilter implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void OverrideThreadForMessage(const IPC::Message& message,
-                                BrowserThread::ID* thread) override;
 
   void OnRegister(int render_frame_id,
                   int callbacks_id,
@@ -43,10 +41,6 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void OnPermissionStatusRequest(int render_frame_id,
                                  int service_worker_provider_id,
                                  int permission_callback_id);
-
-  void OnRequestPermission(int render_frame_id,
-                           int request_id,
-                           bool user_gesture);
 
   void DoRegister(int render_frame_id,
                   int callbacks_id,
@@ -64,8 +58,6 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
                    const GURL& push_endpoint,
                    const std::string& push_registration_id,
                    PushRegistrationStatus status);
-
-  void DidRequestPermission(int render_frame_id, int request_id, bool allowed);
 
   PushMessagingService* service();
 

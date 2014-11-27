@@ -53,16 +53,6 @@ void PushMessagingDispatcher::registerPushMessaging(
                  service_worker_provider));
 }
 
-void PushMessagingDispatcher::requestPermission(
-    blink::WebPushPermissionRequestCallbacks* callbacks) {
-  DCHECK(callbacks);
-  int request_id = permission_request_callbacks_.Add(callbacks);
-  Send(new PushMessagingHostMsg_RequestPermission(
-      routing_id(),
-      request_id,
-      blink::WebUserGestureIndicator::isProcessingUserGesture()));
-}
-
 void PushMessagingDispatcher::DoRegister(
     blink::WebPushRegistrationCallbacks* callbacks,
     blink::WebServiceWorkerProvider* service_worker_provider,
@@ -144,18 +134,6 @@ void PushMessagingDispatcher::OnPermissionStatusFailure(int32 callback_id) {
   DCHECK(callback);
   callback->onError();
   permission_check_callbacks_.Remove(callback_id);
-}
-
-void PushMessagingDispatcher::OnRequestPermissionResponse(int32 request_id,
-                                                          bool allowed) {
-  blink::WebPushPermissionRequestCallbacks* callbacks =
-      permission_request_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
-  if (allowed)
-    callbacks->onSuccess();
-  else
-    callbacks->onError();
-  permission_request_callbacks_.Remove(request_id);
 }
 
 }  // namespace content

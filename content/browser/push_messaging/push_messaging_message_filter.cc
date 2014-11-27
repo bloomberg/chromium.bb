@@ -14,12 +14,7 @@
 #include "content/common/push_messaging_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/push_messaging_service.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/common/content_client.h"
 #include "third_party/WebKit/public/platform/WebPushPermissionStatus.h"
 
 namespace content {
@@ -52,18 +47,9 @@ bool PushMessagingMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_Register, OnRegister)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_PermissionStatus,
                         OnPermissionStatusRequest)
-    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_RequestPermission,
-                        OnRequestPermission)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void PushMessagingMessageFilter::OverrideThreadForMessage(
-    const IPC::Message& message,
-    BrowserThread::ID* thread) {
-  if (message.type() == PushMessagingHostMsg_RequestPermission::ID)
-    *thread = BrowserThread::UI;
 }
 
 void PushMessagingMessageFilter::OnRegister(int render_frame_id,
@@ -121,33 +107,6 @@ void PushMessagingMessageFilter::OnPermissionStatusRequest(
     Send(new PushMessagingMsg_PermissionStatusFailure(
           render_frame_id, permission_callback_id));
   }
-}
-
-void PushMessagingMessageFilter::OnRequestPermission(int render_frame_id,
-                                                     int request_id,
-                                                     bool user_gesture) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  RenderFrameHost* render_frame_host =
-      RenderFrameHost::FromID(render_process_id_, render_frame_id);
-  if (!render_frame_host)
-    return;
-
-  WebContents* web_contents =
-      WebContents::FromRenderFrameHost(render_frame_host);
-  if (!web_contents)
-    return;
-
-  GetContentClient()->browser()->RequestPermission(
-      PERMISSION_PUSH_MESSAGING,
-      web_contents,
-      render_frame_id,
-      render_frame_host->GetLastCommittedURL().GetOrigin(),
-      user_gesture,
-      base::Bind(&PushMessagingMessageFilter::DidRequestPermission,
-                 weak_factory_.GetWeakPtr(),
-                 render_frame_id,
-                 request_id));
 }
 
 void PushMessagingMessageFilter::DoRegister(
@@ -208,14 +167,6 @@ void PushMessagingMessageFilter::DidRegister(
         render_frame_id, callbacks_id, status));
   }
   RecordRegistrationStatus(status);
-}
-
-void PushMessagingMessageFilter::DidRequestPermission(int render_frame_id,
-                                                      int request_id,
-                                                      bool allowed) {
-  Send(new PushMessagingMsg_RequestPermissionResponse(render_frame_id,
-                                                      request_id,
-                                                      allowed));
 }
 
 PushMessagingService* PushMessagingMessageFilter::service() {
