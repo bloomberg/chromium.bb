@@ -36,7 +36,7 @@ class ChromiteImporter(object):
   # so make sure to disable our logic to avoid an infinite loop.
   _loading = False
 
-  def find_module(self, fullname, _path):
+  def find_module(self, fullname, _path=None):
     """Handle the 'chromite' module"""
     if fullname == 'chromite' and not self._loading:
       return self
