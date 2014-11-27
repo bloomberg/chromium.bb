@@ -310,8 +310,12 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   // It's safe to use Unretained here since |rendering_thread_| will be stopped
   // in VideoDecodeAcceleratorTest.TearDown(), while the |rendering_helper_| is
   // a member of that class. (See video_decode_accelerator_unittest.cc.)
-  gl_surface_->GetVSyncProvider()->GetVSyncParameters(base::Bind(
-      &RenderingHelper::UpdateVSyncParameters, base::Unretained(this), done));
+  gfx::VSyncProvider* vsync_provider = gl_surface_->GetVSyncProvider();
+  if (vsync_provider)
+    vsync_provider->GetVSyncParameters(base::Bind(
+        &RenderingHelper::UpdateVSyncParameters, base::Unretained(this), done));
+  else
+    done->Signal();
 }
 
 // The rendering for the first few frames is slow (e.g., 100ms on Peach Pit).
@@ -543,10 +547,12 @@ void RenderingHelper::RenderContent() {
   // It's safe to use Unretained here since |rendering_thread_| will be stopped
   // in VideoDecodeAcceleratorTest.TearDown(), while the |rendering_helper_| is
   // a member of that class. (See video_decode_accelerator_unittest.cc.)
-  gl_surface_->GetVSyncProvider()->GetVSyncParameters(
-      base::Bind(&RenderingHelper::UpdateVSyncParameters,
-                 base::Unretained(this),
-                 static_cast<base::WaitableEvent*>(NULL)));
+  gfx::VSyncProvider* vsync_provider = gl_surface_->GetVSyncProvider();
+  if (vsync_provider) {
+    vsync_provider->GetVSyncParameters(base::Bind(
+        &RenderingHelper::UpdateVSyncParameters, base::Unretained(this),
+        static_cast<base::WaitableEvent*>(NULL)));
+  }
 
   glUniform1i(glGetUniformLocation(program_, "tex_flip"), 1);
 
@@ -664,15 +670,19 @@ void RenderingHelper::DropOneFrameForAllVideos() {
 
 void RenderingHelper::ScheduleNextRenderContent() {
   scheduled_render_time_ += frame_duration_;
-
-  // Schedules the next RenderContent() at latest VSYNC before the
-  // |scheduled_render_time_|.
   base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeTicks target =
-      std::max(now + vsync_interval_, scheduled_render_time_);
+  base::TimeTicks target;
 
-  int64 intervals = (target - vsync_timebase_) / vsync_interval_;
-  target = vsync_timebase_ + intervals * vsync_interval_;
+  if (vsync_interval_ != base::TimeDelta()) {
+    // Schedules the next RenderContent() at latest VSYNC before the
+    // |scheduled_render_time_|.
+    target = std::max(now + vsync_interval_, scheduled_render_time_);
+
+    int64 intervals = (target - vsync_timebase_) / vsync_interval_;
+    target = vsync_timebase_ + intervals * vsync_interval_;
+  } else {
+    target = std::max(now, scheduled_render_time_);
+  }
 
   // When the rendering falls behind, drops frames.
   while (scheduled_render_time_ < target) {
