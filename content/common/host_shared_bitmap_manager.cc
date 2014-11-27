@@ -31,15 +31,39 @@ class BitmapData : public base::RefCountedThreadSafe<BitmapData> {
   DISALLOW_COPY_AND_ASSIGN(BitmapData);
 };
 
-// Holds a reference on the memory to keep it alive.
-void FreeSharedMemory(scoped_refptr<BitmapData> data,
-                      cc::SharedBitmap* bitmap) {}
+namespace {
+
+class HostSharedBitmap : public cc::SharedBitmap {
+ public:
+  HostSharedBitmap(uint8* pixels,
+                   scoped_refptr<BitmapData> bitmap_data,
+                   const cc::SharedBitmapId& id,
+                   HostSharedBitmapManager* manager)
+      : SharedBitmap(pixels, id),
+        bitmap_data_(bitmap_data),
+        manager_(manager) {}
+
+  ~HostSharedBitmap() override {
+    if (manager_)
+      manager_->FreeSharedMemoryFromMap(id());
+  }
+
+  base::SharedMemory* memory() override { return bitmap_data_->memory.get(); }
+
+ private:
+  scoped_refptr<BitmapData> bitmap_data_;
+  HostSharedBitmapManager* manager_;
+};
+
+}  // namespace
 
 base::LazyInstance<HostSharedBitmapManager> g_shared_memory_manager =
     LAZY_INSTANCE_INITIALIZER;
 
 HostSharedBitmapManager::HostSharedBitmapManager() {}
-HostSharedBitmapManager::~HostSharedBitmapManager() {}
+HostSharedBitmapManager::~HostSharedBitmapManager() {
+  DCHECK(handle_map_.empty());
+}
 
 HostSharedBitmapManager* HostSharedBitmapManager::current() {
   return g_shared_memory_manager.Pointer();
@@ -62,11 +86,8 @@ scoped_ptr<cc::SharedBitmap> HostSharedBitmapManager::AllocateSharedBitmap(
 
   cc::SharedBitmapId id = cc::SharedBitmap::GenerateId();
   handle_map_[id] = data;
-  return make_scoped_ptr(new cc::SharedBitmap(
-      data->pixels.get(),
-      id,
-      base::Bind(&HostSharedBitmapManager::FreeSharedMemoryFromMap,
-                 base::Unretained(this))));
+  return make_scoped_ptr(
+      new HostSharedBitmap(data->pixels.get(), data, id, this));
 }
 
 scoped_ptr<cc::SharedBitmap> HostSharedBitmapManager::GetSharedBitmapFromId(
@@ -85,8 +106,8 @@ scoped_ptr<cc::SharedBitmap> HostSharedBitmapManager::GetSharedBitmapFromId(
     return scoped_ptr<cc::SharedBitmap>();
 
   if (data->pixels) {
-    return make_scoped_ptr(new cc::SharedBitmap(
-        data->pixels.get(), id, base::Bind(&FreeSharedMemory, it->second)));
+    return make_scoped_ptr(
+        new HostSharedBitmap(data->pixels.get(), data, id, nullptr));
   }
   if (!data->memory->memory()) {
     TRACE_EVENT0("renderer_host",
@@ -96,10 +117,8 @@ scoped_ptr<cc::SharedBitmap> HostSharedBitmapManager::GetSharedBitmapFromId(
     }
   }
 
-  scoped_ptr<cc::SharedBitmap> bitmap(new cc::SharedBitmap(
-      data->memory.get(), id, base::Bind(&FreeSharedMemory, it->second)));
-
-  return bitmap.Pass();
+  return make_scoped_ptr(new HostSharedBitmap(
+      static_cast<uint8*>(data->memory->memory()), data, id, nullptr));
 }
 
 scoped_ptr<cc::SharedBitmap> HostSharedBitmapManager::GetBitmapForSharedMemory(
@@ -193,9 +212,9 @@ size_t HostSharedBitmapManager::AllocatedBitmapCount() const {
 }
 
 void HostSharedBitmapManager::FreeSharedMemoryFromMap(
-    cc::SharedBitmap* bitmap) {
+    const cc::SharedBitmapId& id) {
   base::AutoLock lock(lock_);
-  handle_map_.erase(bitmap->id());
+  handle_map_.erase(id);
 }
 
 }  // namespace content

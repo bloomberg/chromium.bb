@@ -10,24 +10,12 @@
 
 namespace cc {
 
-SharedBitmap::SharedBitmap(
-    base::SharedMemory* memory,
-    const SharedBitmapId& id,
-    const base::Callback<void(SharedBitmap* bitmap)>& free_callback)
-    : memory_(memory),
-      pixels_(static_cast<uint8*>(memory_->memory())),
-      id_(id),
-      free_callback_(free_callback) {
+SharedBitmap::SharedBitmap(uint8* pixels, const SharedBitmapId& id)
+    : pixels_(pixels), id_(id) {
 }
 
-SharedBitmap::SharedBitmap(
-    uint8* pixels,
-    const SharedBitmapId& id,
-    const base::Callback<void(SharedBitmap* bitmap)>& free_callback)
-    : memory_(NULL), pixels_(pixels), id_(id), free_callback_(free_callback) {
+SharedBitmap::~SharedBitmap() {
 }
-
-SharedBitmap::~SharedBitmap() { free_callback_.Run(this); }
 
 // static
 bool SharedBitmap::SizeInBytes(const gfx::Size& size, size_t* size_in_bytes) {

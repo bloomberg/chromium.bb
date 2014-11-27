@@ -6,8 +6,7 @@
 #define CC_RESOURCES_SHARED_BITMAP_H_
 
 #include "base/basictypes.h"
-#include "base/callback.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/geometry/size.h"
@@ -19,29 +18,15 @@ typedef gpu::Mailbox SharedBitmapId;
 
 class CC_EXPORT SharedBitmap {
  public:
-  SharedBitmap(base::SharedMemory* memory,
-               const SharedBitmapId& id,
-               const base::Callback<void(SharedBitmap* bitmap)>& free_callback);
+  SharedBitmap(uint8* pixels, const SharedBitmapId& id);
 
-  SharedBitmap(uint8* pixels,
-               const SharedBitmapId& id,
-               const base::Callback<void(SharedBitmap* bitmap)>& free_callback);
-
-  ~SharedBitmap();
-
-  bool operator<(const SharedBitmap& right) const {
-    if (memory_ < right.memory_)
-      return true;
-    if (memory_ > right.memory_)
-      return false;
-    return id_ < right.id_;
-  }
+  virtual ~SharedBitmap();
 
   uint8* pixels() { return pixels_; }
 
-  base::SharedMemory* memory() { return memory_; }
+  virtual base::SharedMemory* memory() = 0;
 
-  SharedBitmapId id() { return id_; }
+  const SharedBitmapId& id() { return id_; }
 
   // Returns true if the size is valid and false otherwise.
   static bool SizeInBytes(const gfx::Size& size, size_t* size_in_bytes);
@@ -57,10 +42,8 @@ class CC_EXPORT SharedBitmap {
   static SharedBitmapId GenerateId();
 
  private:
-  base::SharedMemory* memory_;
   uint8* pixels_;
   SharedBitmapId id_;
-  base::Callback<void(SharedBitmap* bitmap)> free_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedBitmap);
 };

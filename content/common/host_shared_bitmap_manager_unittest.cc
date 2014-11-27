@@ -92,6 +92,8 @@ TEST_F(HostSharedBitmapManagerTest, TestCreateForChild) {
   EXPECT_TRUE(shared_bitmap);
   EXPECT_TRUE(
       memcmp(bitmap->memory(), shared_bitmap->pixels(), size_in_bytes) == 0);
+
+  manager_->ChildDeletedSharedBitmap(id);
 }
 
 TEST_F(HostSharedBitmapManagerTest, RemoveProcess) {
@@ -154,6 +156,7 @@ TEST_F(HostSharedBitmapManagerTest, AddDuplicate) {
   ASSERT_TRUE(shared_bitmap.get() != NULL);
   EXPECT_EQ(memcmp(shared_bitmap->pixels(), bitmap->memory(), size_in_bytes),
             0);
+  manager_->ChildDeletedSharedBitmap(id);
 }
 
 }  // namespace
