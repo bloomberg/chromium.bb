@@ -131,6 +131,8 @@ const int kMultipleClickRadiusPixels = 5;
 const char kSubMenuDepthIdentifier[] = "_";
 const char kSubMenuIdentifier[] = " >";
 const char kSeparatorIdentifier[] = "---------";
+const char kDisabledIdentifier[] = "#";
+const char kCheckedIdentifier[] = "*";
 
 bool OutsideMultiClickRadius(const WebPoint& a, const WebPoint& b) {
   return ((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)) >
@@ -140,15 +142,20 @@ bool OutsideMultiClickRadius(const WebPoint& a, const WebPoint& b) {
 void PopulateCustomItems(const WebVector<WebMenuItemInfo>& customItems,
     const std::string& prefix, std::vector<std::string>* strings) {
   for (size_t i = 0; i < customItems.size(); ++i) {
+    std::string prefixCopy = prefix;
+    if (!customItems[i].enabled)
+        prefixCopy = kDisabledIdentifier + prefix;
+    if (customItems[i].checked)
+        prefixCopy = kCheckedIdentifier + prefix;
     if (customItems[i].type == blink::WebMenuItemInfo::Separator) {
-      strings->push_back(prefix + kSeparatorIdentifier);
+      strings->push_back(prefixCopy + kSeparatorIdentifier);
     } else if (customItems[i].type == blink::WebMenuItemInfo::SubMenu) {
-      strings->push_back(prefix + customItems[i].label.utf8() +
+      strings->push_back(prefixCopy + customItems[i].label.utf8() +
           kSubMenuIdentifier);
-      PopulateCustomItems(customItems[i].subMenuItems, prefix +
+      PopulateCustomItems(customItems[i].subMenuItems, prefixCopy +
           kSubMenuDepthIdentifier, strings);
     } else {
-      strings->push_back(prefix + customItems[i].label.utf8());
+      strings->push_back(prefixCopy + customItems[i].label.utf8());
     }
   }
 }
