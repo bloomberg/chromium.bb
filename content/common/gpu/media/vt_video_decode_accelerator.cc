@@ -589,10 +589,10 @@ void VTVideoDecodeAccelerator::Output(
 
 void VTVideoDecodeAccelerator::DecodeDone(Frame* frame) {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(frame->bitstream_id, pending_frames_.front()->bitstream_id);
+  DCHECK_EQ(1u, pending_frames_.count(frame->bitstream_id));
   Task task(TASK_FRAME);
-  task.frame = pending_frames_.front();
-  pending_frames_.pop();
+  task.frame = pending_frames_[frame->bitstream_id];
+  pending_frames_.erase(frame->bitstream_id);
   task_queue_.push(task);
   ProcessWorkQueues();
 }
@@ -615,10 +615,10 @@ void VTVideoDecodeAccelerator::FlushDone(TaskType type) {
 
 void VTVideoDecodeAccelerator::Decode(const media::BitstreamBuffer& bitstream) {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(assigned_bitstream_ids_.count(bitstream.id()), 0u);
+  DCHECK_EQ(0u, assigned_bitstream_ids_.count(bitstream.id()));
   assigned_bitstream_ids_.insert(bitstream.id());
   Frame* frame = new Frame(bitstream.id());
-  pending_frames_.push(make_linked_ptr(frame));
+  pending_frames_[frame->bitstream_id] = make_linked_ptr(frame);
   decoder_thread_.message_loop_proxy()->PostTask(FROM_HERE, base::Bind(
       &VTVideoDecodeAccelerator::DecodeTask, base::Unretained(this),
       bitstream, frame));

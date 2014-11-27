@@ -176,9 +176,9 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // Size of assigned picture buffers.
   gfx::Size picture_size_;
 
-  // Queue of frames that have not yet been decoded; maintains ownership of the
-  // Frame objects while they flow through VideoToolbox.
-  std::queue<linked_ptr<Frame>> pending_frames_;
+  // Frames that have not yet been decoded, keyed by bitstream ID; maintains
+  // ownership of Frame objects while they flow through VideoToolbox.
+  std::map<int32_t, linked_ptr<Frame>> pending_frames_;
 
   // Set of assigned bitstream IDs, so that Destroy() can release them all.
   std::set<int32_t> assigned_bitstream_ids_;
