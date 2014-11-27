@@ -88,7 +88,7 @@ public:
     void trace(Visitor*);
 
 private:
-    bool shouldScheduleNavigation() const;
+    bool shouldScheduleReload() const;
     bool shouldScheduleNavigation(const String& url) const;
 
     void timerFired(Timer<NavigationScheduler>*);

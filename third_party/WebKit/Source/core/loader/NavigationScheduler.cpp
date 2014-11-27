@@ -223,14 +223,14 @@ bool NavigationScheduler::locationChangePending()
     return m_redirect && m_redirect->isLocationChange();
 }
 
-inline bool NavigationScheduler::shouldScheduleNavigation() const
+inline bool NavigationScheduler::shouldScheduleReload() const
 {
-    return m_frame->page();
+    return m_frame->page() && NavigationDisablerForBeforeUnload::isNavigationAllowed();
 }
 
 inline bool NavigationScheduler::shouldScheduleNavigation(const String& url) const
 {
-    return shouldScheduleNavigation() && (protocolIsJavaScript(url) || NavigationDisablerForBeforeUnload::isNavigationAllowed());
+    return m_frame->page() && (protocolIsJavaScript(url) || NavigationDisablerForBeforeUnload::isNavigationAllowed());
 }
 
 void NavigationScheduler::scheduleRedirect(double delay, const String& url)
@@ -312,7 +312,7 @@ void NavigationScheduler::scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubm
 
 void NavigationScheduler::scheduleReload()
 {
-    if (!shouldScheduleNavigation())
+    if (!shouldScheduleReload())
         return;
     if (m_frame->document()->url().isEmpty())
         return;
