@@ -36,7 +36,6 @@ from chromite.lib import portage_util
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
 from chromite.scripts import pushimage
-from chromite.scripts import upload_symbols
 
 
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
@@ -1406,20 +1405,20 @@ def UploadArchivedFile(archive_dir, upload_urls, filename, debug,
 
 def UploadSymbols(buildroot, board, official, cnt, failed_list):
   """Upload debug symbols for this build."""
-  log_cmd = ['upload_symbols', '--board', board]
+  cmd = ['upload_symbols', '--yes', '--board', board,
+         '--root', os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)]
   if failed_list is not None:
-    log_cmd += ['--failed-list', str(failed_list)]
+    cmd += ['--failed-list', str(failed_list)]
   if official:
-    log_cmd.append('--official_build')
+    cmd.append('--official_build')
   if cnt is not None:
-    log_cmd += ['--upload-limit', str(cnt)]
-  cros_build_lib.Info('Running: %s' % cros_build_lib.CmdToStr(log_cmd))
+    cmd += ['--upload-limit', str(cnt)]
 
-  ret = upload_symbols.UploadSymbols(
-      board=board, official=official, upload_limit=cnt,
-      root=os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR),
-      failed_list=failed_list)
-  if ret:
+  # We don't want to import upload_symbols directly because it uses the
+  # swarming module which itself imports a _lot_ of stuff.  It has also
+  # been known to hang.  We want to keep cbuildbot isolated & robust.
+  ret = RunBuildScript(buildroot, cmd, chromite_cmd=True, error_code_ok=True)
+  if ret.returncode:
     # TODO(davidjames): Convert this to a fatal error.
     # See http://crbug.com/212437
     cros_build_lib.PrintBuildbotStepWarnings()

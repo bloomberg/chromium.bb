@@ -30,6 +30,7 @@ except ImportError:
 import random
 import signal
 import socket
+import sys
 import textwrap
 import tempfile
 import time
@@ -49,14 +50,10 @@ from chromite.lib import timeout_util
 from chromite.scripts import cros_generate_breakpad_symbols
 
 # Needs to be after chromite imports.
-# TODO(build): When doing the initial buildbot bootstrap, we won't have any
-# other repos available.  So ignore isolateserver imports.  But buildbot will
-# re-exec itself once it has done a full repo sync and then the module will
-# be available -- it isn't needed that early.  http://crbug.com/341152
-try:
-  import isolateserver
-except ImportError:
-  isolateserver = None
+# We don't want to import the general keyring module as that will implicitly
+# try to import & connect to a dbus server.  That's a waste of time.
+sys.modules['keyring'] = None
+import isolateserver
 
 
 # URLs used for uploading symbols.
@@ -369,18 +366,16 @@ FakeItem = cros_build_lib.Collection(
     'FakeItem', sym_file=None, sym_header=None, content=lambda x: '')
 
 
-# TODO(build): Delete this if check. http://crbug.com/341152
-if isolateserver:
-  class SymbolItem(isolateserver.BufferItem):
-    """Turn a sym_file into an isolateserver.Item"""
+class SymbolItem(isolateserver.BufferItem):
+  """Turn a sym_file into an isolateserver.Item"""
 
-    ALGO = hashlib.sha1
+  ALGO = hashlib.sha1
 
-    def __init__(self, sym_file):
-      sym_header = cros_generate_breakpad_symbols.ReadSymsHeader(sym_file)
-      super(SymbolItem, self).__init__(str(sym_header), self.ALGO)
-      self.sym_header = sym_header
-      self.sym_file = sym_file
+  def __init__(self, sym_file):
+    sym_header = cros_generate_breakpad_symbols.ReadSymsHeader(sym_file)
+    super(SymbolItem, self).__init__(str(sym_header), self.ALGO)
+    self.sym_header = sym_header
+    self.sym_file = sym_file
 
 
 def SymbolDeduplicatorNotify(dedupe_namespace, dedupe_queue):
@@ -581,9 +576,6 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
   Returns:
     The number of errors that were encountered.
   """
-  # TODO(build): Delete this assert.
-  assert isolateserver, 'Missing isolateserver import http://crbug.com/341152'
-
   if server is None:
     if official:
       upload_url = OFFICIAL_UPLOAD_URL
@@ -597,6 +589,8 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
     cros_build_lib.Info('uploading specified symbols to %s', upload_url)
   else:
     if breakpad_dir is None:
+      if root is None:
+        raise ValueError('breakpad_dir requires root to be set')
       breakpad_dir = os.path.join(
           root,
           cros_generate_breakpad_symbols.FindBreakpadDir(board).lstrip('/'))
@@ -781,9 +775,6 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
 
 
 def main(argv):
-  # TODO(build): Delete this assert.
-  assert isolateserver, 'Missing isolateserver import http://crbug.com/341152'
-
   parser = commandline.ArgumentParser(description=__doc__)
 
   parser.add_argument('sym_paths', type='path_or_uri', nargs='*', default=None,
@@ -791,7 +782,9 @@ def main(argv):
   parser.add_argument('--board', default=None,
                       help='board to build packages for')
   parser.add_argument('--breakpad_root', type='path', default=None,
-                      help='root directory for breakpad symbols')
+                      help='full path to the breakpad symbol directory')
+  parser.add_argument('--root', type='path', default=None,
+                      help='full path to the chroot dir')
   parser.add_argument('--official_build', action='store_true', default=False,
                       help='point to official symbol server')
   parser.add_argument('--server', type=str, default=None,
@@ -862,7 +855,7 @@ def main(argv):
                        server=opts.server, breakpad_dir=opts.breakpad_root,
                        file_limit=opts.strip_cfi, sleep=DEFAULT_SLEEP_DELAY,
                        upload_limit=opts.upload_limit, sym_paths=opts.sym_paths,
-                       failed_list=opts.failed_list,
+                       failed_list=opts.failed_list, root=opts.root,
                        dedupe_namespace=dedupe_namespace)
   if ret:
     cros_build_lib.Error('encountered %i problem(s)', ret)

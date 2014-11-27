@@ -369,27 +369,27 @@ f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
     commands.GenerateBreakpadSymbols(self.tempdir, self._board, False)
     self.assertCommandContains(['--board=%s' % self._board])
 
-  @mock.patch('chromite.scripts.upload_symbols.UploadSymbols')
-  def testUploadSymbols(self, sym_mock, official=False, cnt=None):
+  def testUploadSymbols(self, official=False, cnt=None):
     """Test UploadSymbols Command."""
-    sym_mock.side_effect = [0]
     commands.UploadSymbols(self.tempdir, self._board, official, cnt, None)
-    self.assertEquals(sym_mock.call_count, 1)
-    _, kwargs = sym_mock.call_args
-    self.assertEquals(kwargs['official'], official)
-    self.assertEquals(kwargs['upload_limit'], cnt)
+    self.assertCommandContains(['--board', self._board])
+    self.assertCommandContains(['--official_build'], expected=official)
+    self.assertCommandContains(['--upload-limit'], expected=cnt is not None)
+    self.assertCommandContains(['--failed-list'], expected=False)
 
   def testOfficialUploadSymbols(self):
     """Test uploading symbols for official builds"""
-    # Seems pylint can't grasp the @mock.patch decorator.
-    # pylint: disable=E1120
     self.testUploadSymbols(official=True)
 
   def testLimitUploadSymbols(self):
     """Test uploading a limited number of symbols"""
-    # Seems pylint can't grasp the @mock.patch decorator.
-    # pylint: disable=E1120
     self.testUploadSymbols(cnt=10)
+
+  def testFailedUploadSymbols(self):
+    """Test when uploading fails"""
+    self.rc.SetDefaultCmdResult(returncode=1, error='i am sad')
+    # This should not throw an exception.
+    commands.UploadSymbols(self.tempdir, self._board, None, None, None)
 
   def testPushImages(self):
     """Test PushImages Command."""
