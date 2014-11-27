@@ -178,23 +178,15 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
     if (!CompositorAnimationsImpl::convertTimingForCompositor(timing, 0, out, playerPlaybackRate))
         return false;
 
-    if (timing.timingFunction->type() == TimingFunction::StepsFunction) {
-        // FIXME: Support step timing functions in the compositor.
-        return false;
-    }
-
-    if (timing.timingFunction->type() == TimingFunction::CubicBezierFunction) {
-        // FIXME: Fix compositor timing functions to accept inputs outside of
-        // [0,1].
-        const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(*timing.timingFunction);
+    if (timing.timingFunction->type() != TimingFunction::LinearFunction) {
+        // Checks the of size of KeyframeVector instead of PropertySpecificKeyframeVector.
         const KeyframeVector& keyframes = keyframeEffect.getFrames();
-        double startRange;
-        double endRange;
-        cubic.range(&startRange, &endRange);
+        if (keyframes.size() == 2 && keyframes.first()->easing().type() == TimingFunction::LinearFunction && timing.timingFunction->type() != TimingFunction::StepsFunction)
+            return true;
 
-        ASSERT(keyframes.size() >= 2);
-        if ((startRange < 0 || endRange > 1) && (keyframes.first()->easing().type() != TimingFunction::LinearFunction || keyframes[keyframes.size()-2]->easing().type() != TimingFunction::LinearFunction))
-            return false;
+        // FIXME: Support non-linear timing functions in the compositor for
+        // more than two keyframes and step timing functions in the compositor.
+        return false;
     }
 
     return true;
@@ -344,27 +336,6 @@ void addKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const Plat
     }
 }
 
-template <typename PlatformAnimationCurveType>
-void setTimingFunctionOnCurve(PlatformAnimationCurveType& curve, const Timing& timing)
-{
-    switch (timing.timingFunction->type()) {
-    case TimingFunction::LinearFunction:
-        curve.setTimingFunction(WebCompositorAnimationCurve::TimingFunctionTypeLinear);
-        return;
-
-    case TimingFunction::CubicBezierFunction: {
-        const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(*timing.timingFunction);
-        curve.setTimingFunction(cubic.x1(), cubic.y1(), cubic.x2(), cubic.y2());
-        return;
-    }
-
-    case TimingFunction::StepsFunction:
-    default:
-        ASSERT_NOT_REACHED();
-        return;
-    }
-}
-
 } // namespace anoymous
 
 void CompositorAnimationsImpl::addKeyframesToCurve(WebCompositorAnimationCurve& curve, const PropertySpecificKeyframeVector& keyframes, const Timing& timing)
@@ -373,7 +344,10 @@ void CompositorAnimationsImpl::addKeyframesToCurve(WebCompositorAnimationCurve& 
     for (const auto& keyframe : keyframes) {
         const TimingFunction* keyframeTimingFunction = 0;
         if (keyframe != lastKeyframe) { // Ignore timing function of last frame.
-            keyframeTimingFunction = &keyframe->easing();
+            if (keyframes.size() == 2 && keyframes.first()->easing().type() == TimingFunction::LinearFunction)
+                keyframeTimingFunction = timing.timingFunction.get();
+            else
+                keyframeTimingFunction = &keyframe->easing();
         }
 
         // FIXME: This relies on StringKeyframes being eagerly evaluated, which will
@@ -433,7 +407,6 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, do
 
             WebFloatAnimationCurve* floatCurve = Platform::current()->compositorSupport()->createFloatAnimationCurve();
             addKeyframesToCurve(*floatCurve, values, timing);
-            setTimingFunctionOnCurve(*floatCurve, timing);
             curve = adoptPtr(floatCurve);
             break;
         }
@@ -441,7 +414,6 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, do
             targetProperty = WebCompositorAnimation::TargetPropertyFilter;
             WebFilterAnimationCurve* filterCurve = Platform::current()->compositorSupport()->createFilterAnimationCurve();
             addKeyframesToCurve(*filterCurve, values, timing);
-            setTimingFunctionOnCurve(*filterCurve, timing);
             curve = adoptPtr(filterCurve);
             break;
         }
@@ -449,7 +421,6 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, do
             targetProperty = WebCompositorAnimation::TargetPropertyTransform;
             WebTransformAnimationCurve* transformCurve = Platform::current()->compositorSupport()->createTransformAnimationCurve();
             addKeyframesToCurve(*transformCurve, values, timing);
-            setTimingFunctionOnCurve(*transformCurve, timing);
             curve = adoptPtr(transformCurve);
             break;
         }
