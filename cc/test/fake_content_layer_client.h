@@ -31,6 +31,9 @@ class FakeContentLayerClient : public ContentLayerClient {
       SkCanvas* canvas,
       const gfx::Rect& rect,
       ContentLayerClient::GraphicsContextStatus gc_status) override;
+  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
+      const gfx::Rect& clip,
+      GraphicsContextStatus gc_status) override;
   bool FillsBoundsCompletely() const override;
 
   void set_fill_with_nonsolid_color(bool nonsolid) {

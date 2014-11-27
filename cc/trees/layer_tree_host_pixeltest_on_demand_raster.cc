@@ -80,6 +80,13 @@ class BlueYellowLayerClient : public ContentLayerClient {
         paint);
   }
 
+  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
+      const gfx::Rect& clip,
+      GraphicsContextStatus gc_status) override {
+    NOTIMPLEMENTED();
+    return DisplayItemList::Create();
+  }
+
  private:
   gfx::Rect layer_rect_;
 };

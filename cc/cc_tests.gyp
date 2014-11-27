@@ -74,6 +74,7 @@
       'quads/draw_quad_unittest.cc',
       'quads/list_container_unittest.cc',
       'quads/render_pass_unittest.cc',
+      'resources/display_item_list_unittest.cc',
       'resources/layer_quad_unittest.cc',
       'resources/picture_layer_tiling_set_unittest.cc',
       'resources/picture_layer_tiling_unittest.cc',

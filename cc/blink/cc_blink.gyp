@@ -36,6 +36,8 @@
         'web_compositor_support_impl.h',
         'web_content_layer_impl.cc',
         'web_content_layer_impl.h',
+        'web_display_item_list_impl.cc',
+        'web_display_item_list_impl.h',
         'web_external_bitmap_impl.cc',
         'web_external_bitmap_impl.h',
         'web_external_texture_layer_impl.cc',

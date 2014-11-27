@@ -47,6 +47,13 @@ class MaskContentLayerClient : public ContentLayerClient {
     }
   }
 
+  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
+      const gfx::Rect& clip,
+      GraphicsContextStatus gc_status) override {
+    NOTIMPLEMENTED();
+    return DisplayItemList::Create();
+  }
+
  private:
   gfx::Size bounds_;
 };

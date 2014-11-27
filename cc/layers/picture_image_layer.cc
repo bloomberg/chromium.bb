@@ -60,6 +60,13 @@ void PictureImageLayer::PaintContents(
   canvas->drawBitmap(bitmap_, 0, 0);
 }
 
+scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
+    const gfx::Rect& clip,
+    GraphicsContextStatus gc_status) {
+  NOTIMPLEMENTED();
+  return DisplayItemList::Create();
+}
+
 bool PictureImageLayer::FillsBoundsCompletely() const {
   return false;
 }

@@ -4,6 +4,7 @@
 
 #include "cc/blink/web_content_layer_impl.h"
 
+#include "cc/blink/web_display_item_list_impl.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/WebKit/public/platform/WebContentLayerClient.h"
@@ -61,6 +62,24 @@ void WebContentLayerImpl::PaintContents(
       graphics_context_status == ContentLayerClient::GRAPHICS_CONTEXT_ENABLED
           ? blink::WebContentLayerClient::GraphicsContextEnabled
           : blink::WebContentLayerClient::GraphicsContextDisabled);
+}
+
+scoped_refptr<cc::DisplayItemList>
+WebContentLayerImpl::PaintContentsToDisplayList(
+    const gfx::Rect& clip,
+    ContentLayerClient::GraphicsContextStatus graphics_context_status) {
+  if (!client_)
+    return cc::DisplayItemList::Create();
+
+  WebDisplayItemListImpl list;
+#if WEB_DISPLAY_ITEM_LIST_IS_DEFINED
+  client_->paintContents(
+      &list, clip, can_use_lcd_text_,
+      graphics_context_status == ContentLayerClient::GRAPHICS_CONTEXT_ENABLED
+          ? blink::WebContentLayerClient::GraphicsContextEnabled
+          : blink::WebContentLayerClient::GraphicsContextDisabled);
+#endif
+  return list.ToDisplayItemList();
 }
 
 bool WebContentLayerImpl::FillsBoundsCompletely() const {

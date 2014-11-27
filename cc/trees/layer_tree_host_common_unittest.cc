@@ -59,6 +59,12 @@ class MockContentLayerClient : public ContentLayerClient {
       SkCanvas* canvas,
       const gfx::Rect& clip,
       ContentLayerClient::GraphicsContextStatus gc_status) override {}
+  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
+      const gfx::Rect& clip,
+      GraphicsContextStatus gc_status) override {
+    NOTIMPLEMENTED();
+    return DisplayItemList::Create();
+  }
   bool FillsBoundsCompletely() const override { return false; }
 };
 

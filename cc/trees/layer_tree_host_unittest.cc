@@ -1114,6 +1114,12 @@ class TestOpacityChangeLayerDelegate : public ContentLayerClient {
     if (test_layer_)
       test_layer_->SetOpacity(0.f);
   }
+  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
+      const gfx::Rect& clip,
+      GraphicsContextStatus gc_status) override {
+    NOTIMPLEMENTED();
+    return DisplayItemList::Create();
+  }
   bool FillsBoundsCompletely() const override { return false; }
 
  private:
@@ -2323,6 +2329,13 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
       ++paint_count_;
     }
 
+    scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
+        const gfx::Rect& clip,
+        GraphicsContextStatus gc_status) override {
+      NOTIMPLEMENTED();
+      return DisplayItemList::Create();
+    }
+
     bool FillsBoundsCompletely() const override { return false; }
 
    private:
@@ -2591,6 +2604,13 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
         const gfx::Rect& clip,
         ContentLayerClient::GraphicsContextStatus gc_status) override {
       layer_->SetBounds(gfx::Size(2, 2));
+    }
+
+    scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
+        const gfx::Rect& clip,
+        GraphicsContextStatus gc_status) override {
+      NOTIMPLEMENTED();
+      return DisplayItemList::Create();
     }
 
     bool FillsBoundsCompletely() const override { return false; }

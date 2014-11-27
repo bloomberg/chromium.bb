@@ -9,6 +9,7 @@
 #include "cc/base/region.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/resources/picture_pile_impl.h"
+#include "cc/resources/raster_source_helper.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -87,62 +88,9 @@ void PicturePileImpl::RasterForAnalysis(skia::AnalysisCanvas* canvas,
 void PicturePileImpl::PlaybackToCanvas(SkCanvas* canvas,
                                        const gfx::Rect& canvas_rect,
                                        float contents_scale) const {
-  canvas->discard();
-  if (clear_canvas_with_debug_color_) {
-    // Any non-painted areas in the content bounds will be left in this color.
-    canvas->clear(DebugColors::NonPaintedFillColor());
-  }
-
-  // If this picture has opaque contents, it is guaranteeing that it will
-  // draw an opaque rect the size of the layer.  If it is not, then we must
-  // clear this canvas ourselves.
-  if (requires_clear_) {
-    TRACE_EVENT_INSTANT0("cc", "SkCanvas::clear", TRACE_EVENT_SCOPE_THREAD);
-    // Clearing is about ~4x faster than drawing a rect even if the content
-    // isn't covering a majority of the canvas.
-    canvas->clear(SK_ColorTRANSPARENT);
-  } else {
-    // Even if completely covered, for rasterizations that touch the edge of the
-    // layer, we also need to raster the background color underneath the last
-    // texel (since the recording won't cover it) and outside the last texel
-    // (due to linear filtering when using this texture).
-    gfx::Rect content_tiling_rect = gfx::ToEnclosingRect(
-        gfx::ScaleRect(gfx::Rect(tiling_.tiling_size()), contents_scale));
-
-    // The final texel of content may only be partially covered by a
-    // rasterization; this rect represents the content rect that is fully
-    // covered by content.
-    gfx::Rect deflated_content_tiling_rect = content_tiling_rect;
-    deflated_content_tiling_rect.Inset(0, 0, 1, 1);
-    if (!deflated_content_tiling_rect.Contains(canvas_rect)) {
-      if (clear_canvas_with_debug_color_) {
-        // Any non-painted areas outside of the content bounds are left in
-        // this color.  If this is seen then it means that cc neglected to
-        // rerasterize a tile that used to intersect with the content rect
-        // after the content bounds grew.
-        canvas->save();
-        canvas->translate(-canvas_rect.x(), -canvas_rect.y());
-        canvas->clipRect(gfx::RectToSkRect(content_tiling_rect),
-                         SkRegion::kDifference_Op);
-        canvas->drawColor(DebugColors::MissingResizeInvalidations(),
-                          SkXfermode::kSrc_Mode);
-        canvas->restore();
-      }
-
-      // Drawing at most 2 x 2 x (canvas width + canvas height) texels is 2-3X
-      // faster than clearing, so special case this.
-      canvas->save();
-      canvas->translate(-canvas_rect.x(), -canvas_rect.y());
-      gfx::Rect inflated_content_tiling_rect = content_tiling_rect;
-      inflated_content_tiling_rect.Inset(0, 0, -1, -1);
-      canvas->clipRect(gfx::RectToSkRect(inflated_content_tiling_rect),
-                       SkRegion::kReplace_Op);
-      canvas->clipRect(gfx::RectToSkRect(deflated_content_tiling_rect),
-                       SkRegion::kDifference_Op);
-      canvas->drawColor(background_color_, SkXfermode::kSrc_Mode);
-      canvas->restore();
-    }
-  }
+  RasterSourceHelper::PrepareForPlaybackToCanvas(
+      canvas, canvas_rect, gfx::Rect(tiling_.tiling_size()), contents_scale,
+      background_color_, clear_canvas_with_debug_color_, requires_clear_);
 
   RasterCommon(canvas,
                NULL,

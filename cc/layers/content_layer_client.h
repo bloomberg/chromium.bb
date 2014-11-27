@@ -6,6 +6,7 @@
 #define CC_LAYERS_CONTENT_LAYER_CLIENT_H_
 
 #include "cc/base/cc_export.h"
+#include "cc/resources/display_item_list.h"
 
 class SkCanvas;
 
@@ -26,6 +27,10 @@ class CC_EXPORT ContentLayerClient {
   virtual void PaintContents(SkCanvas* canvas,
                              const gfx::Rect& clip,
                              GraphicsContextStatus gc_status) = 0;
+
+  virtual scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
+      const gfx::Rect& clip,
+      GraphicsContextStatus gc_status) = 0;
 
   // If true the layer may skip clearing the background before rasterizing,
   // because it will cover any uncleared data with content.

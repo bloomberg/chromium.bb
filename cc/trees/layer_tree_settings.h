@@ -78,6 +78,7 @@ class CC_EXPORT LayerTreeSettings {
   size_t scheduled_raster_task_limit;
   bool use_occlusion_for_tile_prioritization;
   bool record_full_layer;
+  bool use_display_lists;
 
   LayerTreeDebugState initial_debug_state;
 };

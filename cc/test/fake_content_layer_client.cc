@@ -4,7 +4,10 @@
 
 #include "cc/test/fake_content_layer_client.h"
 
+#include "cc/resources/clip_display_item.h"
+#include "cc/resources/drawing_display_item.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -50,6 +53,58 @@ void FakeContentLayerClient::PaintContents(
       draw_rect.Inset(1, 1);
     }
   }
+}
+
+scoped_refptr<DisplayItemList>
+FakeContentLayerClient::PaintContentsToDisplayList(
+    const gfx::Rect& clip,
+    GraphicsContextStatus gc_status) {
+  SkPictureRecorder recorder;
+  skia::RefPtr<SkCanvas> canvas;
+  skia::RefPtr<SkPicture> picture;
+  scoped_refptr<DisplayItemList> list = DisplayItemList::Create();
+  list->AppendItem(ClipDisplayItem::Create(clip, std::vector<SkRRect>()));
+
+  for (RectPaintVector::const_iterator it = draw_rects_.begin();
+       it != draw_rects_.end(); ++it) {
+    const gfx::RectF& draw_rect = it->first;
+    const SkPaint& paint = it->second;
+    canvas = skia::SharePtr(
+        recorder.beginRecording(draw_rect.width(), draw_rect.height()));
+    canvas->drawRectCoords(0.f, 0.f, draw_rect.width(), draw_rect.height(),
+                           paint);
+    picture = skia::AdoptRef(recorder.endRecording());
+    list->AppendItem(DrawingDisplayItem::Create(
+        picture, gfx::PointF(draw_rect.x(), draw_rect.y())));
+  }
+
+  for (BitmapVector::const_iterator it = draw_bitmaps_.begin();
+       it != draw_bitmaps_.end(); ++it) {
+    canvas = skia::SharePtr(
+        recorder.beginRecording(it->bitmap.width(), it->bitmap.height()));
+    canvas->drawBitmap(it->bitmap, 0.f, 0.f, &it->paint);
+    picture = skia::AdoptRef(recorder.endRecording());
+    list->AppendItem(DrawingDisplayItem::Create(
+        picture, gfx::PointF(it->point.x(), it->point.y())));
+  }
+
+  if (fill_with_nonsolid_color_) {
+    gfx::RectF draw_rect = clip;
+    bool red = true;
+    while (!draw_rect.IsEmpty()) {
+      SkPaint paint;
+      paint.setColor(red ? SK_ColorRED : SK_ColorBLUE);
+      canvas =
+          skia::SharePtr(recorder.beginRecording(clip.width(), clip.height()));
+      canvas->drawRect(gfx::RectFToSkRect(draw_rect), paint);
+      picture = skia::AdoptRef(recorder.endRecording());
+      list->AppendItem(DrawingDisplayItem::Create(picture, gfx::PointF()));
+      draw_rect.Inset(1, 1);
+    }
+  }
+
+  list->AppendItem(EndClipDisplayItem::Create());
+  return list;
 }
 
 bool FakeContentLayerClient::FillsBoundsCompletely() const { return false; }

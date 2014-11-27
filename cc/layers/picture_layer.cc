@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
+#include "cc/resources/display_list_recording_source.h"
 #include "cc/resources/picture_pile.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -20,7 +21,6 @@ scoped_refptr<PictureLayer> PictureLayer::Create(ContentLayerClient* client) {
 
 PictureLayer::PictureLayer(ContentLayerClient* client)
     : client_(client),
-      recording_source_(new PicturePile),
       instrumentation_object_tracker_(id()),
       update_source_frame_number_(-1),
       can_use_lcd_text_for_update_(true),
@@ -79,6 +79,13 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
 void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
   Layer::SetLayerTreeHost(host);
   if (host) {
+    if (!recording_source_) {
+      if (host->settings().use_display_lists) {
+        recording_source_.reset(new DisplayListRecordingSource);
+      } else {
+        recording_source_.reset(new PicturePile);
+      }
+    }
     recording_source_->SetMinContentsScale(
         host->settings().minimum_contents_scale);
     recording_source_->SetTileGridSize(host->settings().default_tile_grid_size);

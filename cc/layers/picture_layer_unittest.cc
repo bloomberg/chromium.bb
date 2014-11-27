@@ -24,6 +24,12 @@ class MockContentLayerClient : public ContentLayerClient {
       SkCanvas* canvas,
       const gfx::Rect& clip,
       ContentLayerClient::GraphicsContextStatus gc_status) override {}
+  scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
+      const gfx::Rect& clip,
+      GraphicsContextStatus gc_status) override {
+    NOTIMPLEMENTED();
+    return DisplayItemList::Create();
+  }
   bool FillsBoundsCompletely() const override { return false; };
 };
 
@@ -73,6 +79,9 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
 TEST(PictureLayerTest, SuitableForGpuRasterization) {
   MockContentLayerClient client;
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
+  FakeLayerTreeHostClient host_client(FakeLayerTreeHostClient::DIRECT_3D);
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(&host_client);
+  host->SetRootLayer(layer);
   RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
 
   // Layer is suitable for gpu rasterization by default.

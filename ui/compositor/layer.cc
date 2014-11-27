@@ -726,6 +726,13 @@ void Layer::PaintContents(SkCanvas* sk_canvas,
     delegate_->OnPaintLayer(canvas.get());
 }
 
+scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
+    const gfx::Rect& clip,
+    ContentLayerClient::GraphicsContextStatus gc_status) {
+  NOTIMPLEMENTED();
+  return cc::DisplayItemList::Create();
+}
+
 bool Layer::FillsBoundsCompletely() const { return fills_bounds_completely_; }
 
 bool Layer::PrepareTextureMailbox(
