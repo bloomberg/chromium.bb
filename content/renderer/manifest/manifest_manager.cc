@@ -12,6 +12,7 @@
 #include "content/renderer/manifest/manifest_parser.h"
 #include "content/renderer/manifest/manifest_uma_util.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
@@ -110,9 +111,6 @@ void ManifestManager::FetchManifest() {
   }
 
   fetcher_.reset(new ManifestFetcher(url));
-
-  // TODO(mlamouri,kenneth): this is not yet taking into account manifest-src
-  // CSP rule, see http://crbug.com/409996.
   fetcher_->Start(render_frame()->GetWebFrame(),
                   base::Bind(&ManifestManager::OnManifestFetchComplete,
                              base::Unretained(this),
@@ -130,9 +128,27 @@ void ManifestManager::OnManifestFetchComplete(
   }
 
   ManifestUmaUtil::FetchSucceeded();
-  manifest_ = ManifestParser::Parse(data, response.url(), document_url);
+
+  ManifestParser parser(data, response.url(), document_url);
+  parser.Parse();
 
   fetcher_.reset();
+
+  for (const std::string& msg : parser.errors()) {
+    blink::WebConsoleMessage message;
+    message.level = blink::WebConsoleMessage::LevelError;
+    message.text = blink::WebString::fromUTF8(msg);
+    render_frame()->GetWebFrame()->addMessageToConsole(message);
+  }
+
+  // Having errors while parsing the manifest doesn't mean the manifest parsing
+  // failed. Some properties might have been ignored but some others kept.
+  if (parser.failed()) {
+    ResolveCallbacks(ResolveStateFailure);
+    return;
+  }
+
+  manifest_ = parser.manifest();
   ResolveCallbacks(ResolveStateSuccess);
 }
 

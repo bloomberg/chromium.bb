@@ -15,10 +15,42 @@
 
 namespace content {
 
+class ManifestBrowserTest;
+
+// Mock of a WebContentsDelegate that catches messages sent to the console.
+class MockWebContentsDelegate : public WebContentsDelegate {
+ public:
+  MockWebContentsDelegate(WebContents* web_contents, ManifestBrowserTest* test)
+      : web_contents_(web_contents),
+        test_(test) {
+  }
+
+  bool AddMessageToConsole(WebContents* source,
+                           int32 level,
+                           const base::string16& message,
+                           int32 line_no,
+                           const base::string16& source_id) override;
+
+ private:
+  WebContents* web_contents_;
+  ManifestBrowserTest* test_;
+};
+
 class ManifestBrowserTest : public ContentBrowserTest  {
  protected:
-  ManifestBrowserTest() {}
+  friend MockWebContentsDelegate;
+
+  ManifestBrowserTest() : console_error_count_(0) {}
   ~ManifestBrowserTest() override {}
+
+  void SetUpOnMainThread() override {
+    ContentBrowserTest::SetUpOnMainThread();
+    DCHECK(shell()->web_contents());
+
+    mock_web_contents_delegate_.reset(
+        new MockWebContentsDelegate(shell()->web_contents(), this));
+    shell()->web_contents()->SetDelegate(mock_web_contents_delegate_.get());
+  }
 
   void GetManifestAndWait() {
     shell()->web_contents()->GetManifest(
@@ -38,12 +70,37 @@ class ManifestBrowserTest : public ContentBrowserTest  {
     return manifest_;
   }
 
+  unsigned int console_error_count() const {
+    return console_error_count_;
+  }
+
+  void OnReceivedConsoleError() {
+    console_error_count_++;
+  }
+
  private:
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  scoped_ptr<MockWebContentsDelegate> mock_web_contents_delegate_;
   Manifest manifest_;
+  int console_error_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestBrowserTest);
 };
+
+// The implementation of AddMessageToConsole isn't inlined because it needs
+// to know about |test_|.
+bool MockWebContentsDelegate::AddMessageToConsole(
+    WebContents* source,
+    int32 level,
+    const base::string16& message,
+    int32 line_no,
+    const base::string16& source_id) {
+  DCHECK(source == web_contents_);
+
+  if (level == logging::LOG_ERROR)
+    test_->OnReceivedConsoleError();
+  return false;
+}
 
 // If a page has no manifest, requesting a manifest should return the empty
 // manifest.
@@ -56,6 +113,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, NoManifest) {
 
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
+  EXPECT_EQ(0u, console_error_count());
 }
 
 // If a page manifest points to a 404 URL, requesting the manifest should return
@@ -69,6 +127,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, 404Manifest) {
 
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
+  EXPECT_EQ(0u, console_error_count());
 }
 
 // If a page has an empty manifest, requesting the manifest should return the
@@ -82,6 +141,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, EmptyManifest) {
 
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
+  EXPECT_EQ(0u, console_error_count());
 }
 
 // If a page's manifest can't be parsed correctly, requesting the manifest
@@ -95,6 +155,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, ParseErrorManifest) {
 
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
+  EXPECT_EQ(1u, console_error_count());
 }
 
 // If a page has a manifest that can be fetched and parsed, requesting the
@@ -108,6 +169,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, DummyManifest) {
 
   GetManifestAndWait();
   EXPECT_FALSE(manifest().IsEmpty());
+  EXPECT_EQ(0u, console_error_count());
 }
 
 // If a page changes manifest during its life-time, requesting the manifest
@@ -143,6 +205,8 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, DynamicManifest) {
     GetManifestAndWait();
     EXPECT_TRUE(manifest().IsEmpty());
   }
+
+  EXPECT_EQ(0u, console_error_count());
 }
 
 // If a page's manifest lives in a different origin, it should follow the CORS
@@ -170,6 +234,8 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CORSManifest) {
 
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
+
+  EXPECT_EQ(0u, console_error_count());
 }
 
 // If a page's manifest is in an unsecure origin while the page is in a secure
@@ -197,6 +263,22 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, MixedContentManifest) {
 
   GetManifestAndWait();
   EXPECT_TRUE(manifest().IsEmpty());
+
+  EXPECT_EQ(0u, console_error_count());
+}
+
+// If a page's manifest has some parsing errors, they should show up in the
+// developer console.
+IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, ParsingErrorsManifest) {
+  GURL test_url = GetTestUrl("manifest", "parsing-errors.html");
+
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+  shell()->LoadURL(test_url);
+  navigation_observer.Wait();
+
+  GetManifestAndWait();
+  EXPECT_TRUE(manifest().IsEmpty());
+  EXPECT_EQ(6u, console_error_count());
 }
 
 } // namespace content

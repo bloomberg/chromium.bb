@@ -5,8 +5,10 @@
 #ifndef CONTENT_RENDERER_MANIFEST_MANIFEST_PARSER_H_
 #define CONTENT_RENDERER_MANIFEST_MANIFEST_PARSER_H_
 
+#include "base/strings/nullable_string16.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
+#include "content/public/common/manifest.h"
 
 class GURL;
 
@@ -16,16 +18,120 @@ class DictionaryValue;
 
 namespace content {
 
-struct Manifest;
-
 // ManifestParser handles the logic of parsing the Web Manifest from a string.
 // It implements:
 // http://w3c.github.io/manifest/#dfn-steps-for-processing-a-manifest
 class CONTENT_EXPORT ManifestParser {
  public:
-  static Manifest Parse(const base::StringPiece&,
-                        const GURL& manifest_url,
-                        const GURL& document_url);
+  ManifestParser(const base::StringPiece& data,
+                 const GURL& manifest_url,
+                 const GURL& document_url);
+  ~ManifestParser();
+
+  // Parse the Manifest from a string using following:
+  // http://w3c.github.io/manifest/#dfn-steps-for-processing-a-manifest
+  void Parse();
+
+  const Manifest& manifest() const;
+  const std::vector<std::string>& errors() const;
+  bool failed() const;
+
+ private:
+  // Used to indicate whether to strip whitespace when parsing a string.
+  enum TrimType {
+    Trim,
+    NoTrim
+  };
+
+  // Helper function to parse strings present on a given |dictionary| in a given
+  // field identified by its |key|.
+  // Returns the parsed string if any, a null string if the parsing failed.
+  base::NullableString16 ParseString(const base::DictionaryValue& dictionary,
+                                     const std::string& key,
+                                     TrimType trim);
+
+  // Helper function to parse URLs present on a given |dictionary| in a given
+  // field identified by its |key|. The URL is first parsed as a string then
+  // resolved using |base_url|.
+  // Returns a GURL. If the parsing failed, the GURL will not be valid.
+  GURL ParseURL(const base::DictionaryValue& dictionary,
+                const std::string& key,
+                const GURL& base_url);
+
+  // Parses the 'name' field of the manifest, as defined in:
+  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-name-member
+  // Returns the parsed string if any, a null string if the parsing failed.
+  base::NullableString16 ParseName(const base::DictionaryValue& dictionary);
+
+  // Parses the 'short_name' field of the manifest, as defined in:
+  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-short-name-member
+  // Returns the parsed string if any, a null string if the parsing failed.
+  base::NullableString16 ParseShortName(
+      const base::DictionaryValue& dictionary);
+
+  // Parses the 'start_url' field of the manifest, as defined in:
+  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-start_url-member
+  // Returns the parsed GURL if any, an empty GURL if the parsing failed.
+  GURL ParseStartURL(const base::DictionaryValue& dictionary);
+
+  // Parses the 'display' field of the manifest, as defined in:
+  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-display-member
+  // Returns the parsed DisplayMode if any, DISPLAY_MODE_UNSPECIFIED if the
+  // parsing failed.
+  Manifest::DisplayMode ParseDisplay(const base::DictionaryValue& dictionary);
+
+  // Parses the 'orientation' field of the manifest, as defined in:
+  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-orientation-member
+  // Returns the parsed WebScreenOrientationLockType if any,
+  // WebScreenOrientationLockDefault if the parsing failed.
+  blink::WebScreenOrientationLockType ParseOrientation(
+      const base::DictionaryValue& dictionary);
+
+  // Parses the 'src' field of an icon, as defined in:
+  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-src-member-of-an-icon
+  // Returns the parsed GURL if any, an empty GURL if the parsing failed.
+  GURL ParseIconSrc(const base::DictionaryValue& icon);
+
+  // Parses the 'type' field of an icon, as defined in:
+  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-type-member-of-an-icon
+  // Returns the parsed string if any, a null string if the parsing failed.
+  base::NullableString16 ParseIconType(const base::DictionaryValue& icon);
+
+  // Parses the 'density' field of an icon, as defined in:
+  // http://w3c.github.io/manifest/#dfn-steps-for-processing-a-density-member-of-an-icon
+  // Returns the parsed double if any, Manifest::Icon::kDefaultDensity if the
+  // parsing failed.
+  double ParseIconDensity(const base::DictionaryValue& icon);
+
+  // Parses the 'sizes' field of an icon, as defined in:
+  // http://w3c.github.io/manifest/#dfn-steps-for-processing-a-sizes-member-of-an-icon
+  // Returns a vector of gfx::Size with the successfully parsed sizes, if any.
+  // An empty vector if the field was not present or empty. "Any" is represented
+  // by gfx::Size(0, 0).
+  std::vector<gfx::Size> ParseIconSizes(const base::DictionaryValue& icon);
+
+  // Parses the 'icons' field of a Manifest, as defined in:
+  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-icons-member
+  // Returns a vector of Manifest::Icon with the successfully parsed icons, if
+  // any. An empty vector if the field was not present or empty.
+  std::vector<Manifest::Icon> ParseIcons(
+      const base::DictionaryValue& dictionary);
+
+  // Parses the 'gcm_sender_id' field of the manifest.
+  // This is a proprietary extension of the Web Manifest specification.
+  // Returns the parsed string if any, a null string if the parsing failed.
+  base::NullableString16 ParseGCMSenderID(
+      const base::DictionaryValue& dictionary);
+
+  const base::StringPiece& data_;
+  const GURL& manifest_url_;
+  const GURL& document_url_;
+
+  bool failed_;
+  Manifest manifest_;
+  std::vector<std::string> errors_;
+
+  DISALLOW_COPY_AND_ASSIGN(ManifestParser);
 };
 
 } // namespace content
