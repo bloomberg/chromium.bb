@@ -51,10 +51,14 @@ enum PushDeliveryStatus {
   // The message could not be delivered because of a service worker error.
   PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR,
 
+  // The message was delivered, but the Service Worker passed a Promise to
+  // event.waitUntil that got rejected.
+  PUSH_DELIVERY_STATUS_EVENT_WAITUNTIL_REJECTED,
+
   // When making changes, update PUSH_DELIVERY_STATUS_LAST below.
 
   // Used for IPC message range checks.
-  PUSH_DELIVERY_STATUS_LAST = PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR
+  PUSH_DELIVERY_STATUS_LAST = PUSH_DELIVERY_STATUS_EVENT_WAITUNTIL_REJECTED
 };
 
 const char* PushRegistrationStatusToString(PushRegistrationStatus status);
