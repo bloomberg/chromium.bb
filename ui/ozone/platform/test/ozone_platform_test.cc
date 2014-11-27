@@ -44,7 +44,7 @@ class OzonePlatformTest : public OzonePlatform {
     return gpu_platform_support_host_.get();
   }
   scoped_ptr<SystemInputInjector> CreateSystemInputInjector() override {
-    return nullptr; // no input injection support.
+    return nullptr;  // no input injection support.
   }
   scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,

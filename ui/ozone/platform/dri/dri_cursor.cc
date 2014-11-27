@@ -78,7 +78,13 @@ void DriCursor::MoveCursorTo(gfx::AcceleratedWidget widget,
 }
 
 void DriCursor::MoveCursorTo(const gfx::PointF& location) {
-  MoveCursorTo(cursor_window_, location);
+  DriWindow* window =
+      window_manager_->GetWindowAt(gfx::ToFlooredPoint(location));
+  if (!window)
+    return;
+
+  MoveCursorTo(window->GetAcceleratedWidget(),
+               location - window->GetBounds().OffsetFromOrigin());
 }
 
 void DriCursor::MoveCursor(const gfx::Vector2dF& delta) {

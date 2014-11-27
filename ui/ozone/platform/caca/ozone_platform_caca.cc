@@ -35,7 +35,7 @@ class OzonePlatformCaca : public OzonePlatform {
     return NULL;  // no GPU support
   }
   scoped_ptr<SystemInputInjector> CreateSystemInputInjector() override {
-    return nullptr; // no input injection support.
+    return nullptr;  // no input injection support.
   }
   scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,

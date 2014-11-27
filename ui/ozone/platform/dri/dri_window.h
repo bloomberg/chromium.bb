@@ -35,6 +35,8 @@ class DriWindow : public PlatformWindow,
 
   void Initialize();
 
+  gfx::AcceleratedWidget GetAcceleratedWidget();
+
   // PlatformWindow:
   void Show() override;
   void Hide() override;

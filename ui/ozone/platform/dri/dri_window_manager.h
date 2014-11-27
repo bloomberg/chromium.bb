@@ -10,6 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace gfx {
+class Point;
+}
+
 namespace ui {
 
 class DriCursor;
@@ -36,6 +40,9 @@ class DriWindowManager {
   // Returns the window associated with |widget|. Note: This function should
   // only be called if a valid window has been associated.
   DriWindow* GetWindow(gfx::AcceleratedWidget widget);
+
+  // Returns the window containing the specified screen location, or NULL.
+  DriWindow* GetWindowAt(const gfx::Point& location);
 
   DriCursor* cursor() const { return cursor_.get(); }
 

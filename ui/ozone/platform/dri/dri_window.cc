@@ -72,6 +72,10 @@ void DriWindow::Initialize() {
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
 }
 
+gfx::AcceleratedWidget DriWindow::GetAcceleratedWidget() {
+  return widget_;
+}
+
 void DriWindow::Show() {}
 
 void DriWindow::Hide() {}

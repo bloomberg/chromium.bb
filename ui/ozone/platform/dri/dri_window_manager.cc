@@ -62,6 +62,14 @@ DriWindow* DriWindowManager::GetWindow(gfx::AcceleratedWidget widget) {
   return NULL;
 }
 
+DriWindow* DriWindowManager::GetWindowAt(const gfx::Point& location) {
+  for (auto it = window_map_.begin(); it != window_map_.end(); ++it)
+    if (it->second->GetBounds().Contains(location))
+      return it->second;
+
+  return NULL;
+}
+
 void DriWindowManager::ResetCursorLocation() {
   gfx::AcceleratedWidget cursor_widget = gfx::kNullAcceleratedWidget;
   gfx::PointF location;

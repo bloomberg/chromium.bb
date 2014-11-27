@@ -22,8 +22,8 @@ class Event;
 // Ozone platform.
 class OZONE_EXPORT SystemInputInjector {
  public:
-  SystemInputInjector() {};
-  virtual ~SystemInputInjector() {};
+  SystemInputInjector() {}
+  virtual ~SystemInputInjector() {}
 
   // Moves the cursor on the screen and generates the corresponding MouseMove or
   // MouseDragged event.  |location| is in physical screen co-ordinates,
