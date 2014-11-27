@@ -16,6 +16,10 @@
 namespace content {
 
 // static
+int BrowserPluginManager::current_instance_id_ =
+    browser_plugin::kInstanceIDNone;
+
+// static
 BrowserPluginManager* BrowserPluginManager::Create(
     RenderViewImpl* render_view) {
   return new BrowserPluginManager(render_view);
@@ -23,7 +27,6 @@ BrowserPluginManager* BrowserPluginManager::Create(
 
 BrowserPluginManager::BrowserPluginManager(RenderViewImpl* render_view)
     : RenderViewObserver(render_view),
-      current_instance_id_(browser_plugin::kInstanceIDNone),
       render_view_(render_view->AsWeakPtr()) {
 }
 
