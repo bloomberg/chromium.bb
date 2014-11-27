@@ -79,7 +79,6 @@ void SearchResultContainerView::ListItemsChanged(size_t start, size_t count) {
 }
 
 void SearchResultContainerView::DoUpdate() {
-  ClearSelectedIndex();
   num_results_ = Update();
   Layout();
   PreferredSizeChanged();
