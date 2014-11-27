@@ -22,6 +22,16 @@ ScopedPathOverride::ScopedPathOverride(int key, const base::FilePath& dir)
   CHECK(result);
 }
 
+ScopedPathOverride::ScopedPathOverride(int key,
+                                       const FilePath& path,
+                                       bool is_absolute,
+                                       bool create)
+    : key_(key) {
+  bool result =
+      PathService::OverrideAndCreateIfNeeded(key, path, is_absolute, create);
+  CHECK(result);
+}
+
 ScopedPathOverride::~ScopedPathOverride() {
    bool result = PathService::RemoveOverride(key_);
    CHECK(result) << "The override seems to have been removed already!";

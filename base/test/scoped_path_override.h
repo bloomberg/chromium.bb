@@ -20,8 +20,15 @@ class ScopedPathOverride {
  public:
   // Contructor that initializes the override to a scoped temp directory.
   explicit ScopedPathOverride(int key);
+
   // Constructor that would use a path provided by the user.
   ScopedPathOverride(int key, const FilePath& dir);
+
+  // See PathService::OverrideAndCreateIfNeeded.
+  ScopedPathOverride(int key,
+                     const FilePath& path,
+                     bool is_absolute,
+                     bool create);
   ~ScopedPathOverride();
 
  private:
