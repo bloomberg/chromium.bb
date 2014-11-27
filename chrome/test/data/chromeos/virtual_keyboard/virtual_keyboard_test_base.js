@@ -192,11 +192,9 @@ function setUp() {
 
   chrome.inputMethodPrivate.getCurrentInputMethod.setCallbackData('us:en');
 
-  chrome.inputMethodPrivate.getInputMethods.setCallbackData([
-    {id: 'us', name: 'US Keyboard', indicator: 'US'},
-    {id: 'fr', name: 'French Keyboard', indicator: 'Fr'},
-    {id: 'de', name: 'German Keyboard', indicator: 'De'}
-  ]);
+  // Set an empty list. Tests that care about input methods in the menu will
+  // need to call this again with their own list of input methods.
+  chrome.inputMethodPrivate.getInputMethods.setCallbackData([]);
 
   chrome.runtime.getBackgroundPage.setCallbackData(undefined);
 

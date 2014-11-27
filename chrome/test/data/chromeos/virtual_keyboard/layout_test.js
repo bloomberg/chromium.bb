@@ -206,3 +206,49 @@ function testHandwritingLayoutAsync(testDoneCallback) {
   };
   onKeyboardReady(testCallback, config);
 }
+
+/**
+ * Test that IME switching from the InputView menu works.
+ */
+function testKeyboardSwitchIMEAsync(testDoneCallback) {
+  var testCallback = function () {
+    // Ensure that the menu key is present and displays the menu when pressed.
+    var menu = document.querySelector('.inputview-menu-view');
+    assertEquals('none', getComputedStyle(menu).display,
+                 'Menu should be hidden initially');
+    mockTap(findKeyById('Menu'));
+    assertFalse(menu.hidden,
+                'Menu should be visible after tapping menu toggle button');
+    var menuBounds = menu.getBoundingClientRect();
+    assertTrue(menuBounds.width > 0 && menuBounds.height > 0,
+               'Expect non-zero menu bounds.');
+
+    var imes = menu.querySelectorAll('.inputview-menu-list-indicator-name');
+    assertEquals(3, imes.length, 'Unexpected number of IMEs in menu view.');
+    assertEquals('US', imes[0].innerText, 'Unexpected IMEs in menu view');
+    assertEquals('Fr', imes[1].innerText, 'Unexpected IMEs in menu view');
+    assertEquals('De', imes[2].innerText, 'Unexpected IMEs in menu view');
+
+    // Expect a call to change to the German IME.
+    chrome.inputMethodPrivate.setCurrentInputMethod.addExpectation('de');
+
+    // Select the German IME and ensure that the menu is dismissed.
+    mockTap(imes[2]);
+    assertEquals('none', menu.style.display, "Menu didn't hide on switch.");
+
+    testDoneCallback();
+  };
+  var config = {
+    keyset: 'us.compact.qwerty',
+    languageCode: 'en',
+    passwordLayout: 'us',
+    name: 'English'
+  };
+  // Explicitly set up the available input methods.
+  chrome.inputMethodPrivate.getInputMethods.setCallbackData([
+    {id: 'us', name: 'US Keyboard', indicator: 'US'},
+    {id: 'fr', name: 'French Keyboard', indicator: 'Fr'},
+    {id: 'de', name: 'German Keyboard', indicator: 'De'}
+  ]);
+  onKeyboardReady(testCallback, config);
+}
