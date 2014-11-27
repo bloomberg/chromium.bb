@@ -5,7 +5,7 @@
 #ifndef UI_BASE_IME_CHROMEOS_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
 #define UI_BASE_IME_CHROMEOS_MOCK_IME_INPUT_CONTEXT_HANDLER_H_
 
-#include "chromeos/ime/composition_text.h"
+#include "ui/base/ime/chromeos/composition_text.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ui_base_export.h"
 

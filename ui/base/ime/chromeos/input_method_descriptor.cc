@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/ime/input_method_descriptor.h"
+#include "ui/base/ime/chromeos/input_method_descriptor.h"
 
 #include <sstream>
 
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chromeos/ime/extension_ime_util.h"
+#include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "url/gurl.h"
 
 namespace chromeos {

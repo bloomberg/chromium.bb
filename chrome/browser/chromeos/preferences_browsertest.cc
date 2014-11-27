@@ -21,11 +21,11 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/ime/fake_ime_keyboard.h"
 #include "components/feedback/tracing_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ime/chromeos/fake_ime_keyboard.h"
 #include "ui/events/event_utils.h"
 
 namespace chromeos {

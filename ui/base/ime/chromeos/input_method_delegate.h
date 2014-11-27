@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_IME_INPUT_METHOD_DELEGATE_H_
-#define CHROMEOS_IME_INPUT_METHOD_DELEGATE_H_
+#ifndef UI_BASE_IME_CHROMEOS_INPUT_METHOD_DELEGATE_H_
+#define UI_BASE_IME_CHROMEOS_INPUT_METHOD_DELEGATE_H_
 
 #include <string>
 
@@ -43,4 +43,4 @@ class InputMethodDelegate {
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROMEOS_IME_INPUT_METHOD_DELEGATE_H_
+#endif  // UI_BASE_IME_CHROMEOS_INPUT_METHOD_DELEGATE_H_

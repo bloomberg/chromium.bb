@@ -39,19 +39,6 @@ component("chromeos") {
   ]
   sources = gypi_values.chromeos_sources
   defines = [ "CHROMEOS_IMPLEMENTATION" ]
-  if (use_x11) {
-    configs += [ "//build/config/linux:x11" ]
-    deps += [ "//ui/gfx/x" ]
-    sources -= [
-      "ime/ime_keyboard_ozone.cc",
-      "ime/ime_keyboard_ozone.h",
-    ]
-  } else {
-    sources -= [
-      "ime/ime_keyboard_x11.cc",
-      "ime/ime_keyboard_x11.h",
-    ]
-  }
 }
 
 static_library("test_support") {
@@ -91,8 +78,6 @@ static_library("test_support") {
     "dbus/services/service_provider_test_helper.h",
     "disks/mock_disk_mount_manager.cc",
     "disks/mock_disk_mount_manager.h",
-    "ime/mock_component_extension_ime_manager_delegate.cc",
-    "ime/mock_component_extension_ime_manager_delegate.h",
     "login/auth/mock_auth_attempt_state_resolver.cc",
     "login/auth/mock_auth_attempt_state_resolver.h",
     "login/auth/mock_auth_status_consumer.cc",
@@ -134,8 +119,6 @@ static_library("test_support_without_gmock") {
     "dbus/fake_shill_manager_client.h",
     "dbus/fake_update_engine_client.cc",
     "dbus/fake_update_engine_client.h",
-    "ime/fake_input_method_delegate.cc",
-    "ime/fake_input_method_delegate.h",
   ]
 }
 
@@ -168,11 +151,6 @@ test("chromeos_unittests") {
   }
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
-  }
-  if (use_ozone) {
-    sources -= [
-      "ime/ime_keyboard_x11_unittest.cc",
-    ]
   }
 }
 

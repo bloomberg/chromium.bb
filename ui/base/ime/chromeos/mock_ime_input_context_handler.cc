@@ -4,7 +4,7 @@
 
 #include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
 
-#include "chromeos/ime/composition_text.h"
+#include "ui/base/ime/chromeos/composition_text.h"
 
 namespace chromeos {
 

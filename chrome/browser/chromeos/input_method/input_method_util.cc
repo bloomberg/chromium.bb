@@ -16,14 +16,17 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/extension_constants.h"
+
 // TODO(nona): move this header from this file.
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/ime/component_extension_ime_manager.h"
-#include "chromeos/ime/extension_ime_util.h"
+
+#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
+#include "ui/base/ime/chromeos/extension_ime_util.h"
+
 // For SetHardwareKeyboardLayoutForTesting.
-#include "chromeos/ime/fake_input_method_delegate.h"
-#include "chromeos/ime/input_method_delegate.h"
-#include "chromeos/ime/input_method_whitelist.h"
+#include "ui/base/ime/chromeos/fake_input_method_delegate.h"
+#include "ui/base/ime/chromeos/input_method_delegate.h"
+#include "ui/base/ime/chromeos/input_method_whitelist.h"
 
 namespace {
 

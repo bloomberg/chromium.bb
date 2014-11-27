@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/ime/input_method_whitelist.h"
+#include "ui/base/ime/chromeos/input_method_whitelist.h"
 
 #include <vector>
 
 #include "base/strings/string_util.h"
-#include "chromeos/ime/extension_ime_util.h"
-#include "chromeos/ime/input_method_descriptor.h"
 #include "chromeos/ime/input_methods.h"
+#include "ui/base/ime/chromeos/extension_ime_util.h"
+#include "ui/base/ime/chromeos/input_method_descriptor.h"
 
 namespace chromeos {
 namespace input_method {

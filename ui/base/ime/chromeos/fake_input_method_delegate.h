@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_IME_FAKE_INPUT_METHOD_DELEGATE_H_
-#define CHROMEOS_IME_FAKE_INPUT_METHOD_DELEGATE_H_
+#ifndef UI_BASE_IME_CHROMEOS_FAKE_INPUT_METHOD_DELEGATE_H_
+#define UI_BASE_IME_CHROMEOS_FAKE_INPUT_METHOD_DELEGATE_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "chromeos/chromeos_export.h"
-#include "chromeos/ime/input_method_delegate.h"
+#include "ui/base/ime/chromeos/input_method_delegate.h"
+#include "ui/base/ui_base_export.h"
 
 namespace chromeos {
 namespace input_method {
 
-class CHROMEOS_EXPORT FakeInputMethodDelegate : public InputMethodDelegate {
+class UI_BASE_EXPORT FakeInputMethodDelegate : public InputMethodDelegate {
  public:
   typedef base::Callback<base::string16 (const std::string& language_code)>
       LanguageNameLocalizationCallback;
@@ -63,4 +63,4 @@ class CHROMEOS_EXPORT FakeInputMethodDelegate : public InputMethodDelegate {
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROMEOS_IME_FAKE_INPUT_METHOD_DELEGATE_H_
+#endif  // UI_BASE_IME_CHROMEOS_FAKE_INPUT_METHOD_DELEGATE_H_
