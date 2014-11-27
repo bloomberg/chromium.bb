@@ -4986,7 +4986,7 @@ void Document::addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleM
 
     if (!consoleMessage->scriptState() && consoleMessage->url().isNull() && !consoleMessage->lineNumber()) {
         consoleMessage->setURL(url().string());
-        if (parsing() && !isInDocumentWrite() && scriptableDocumentParser()) {
+        if (!consoleMessage->isAsync() && parsing() && !isInDocumentWrite() && scriptableDocumentParser()) {
             ScriptableDocumentParser* parser = scriptableDocumentParser();
             if (!parser->isWaitingForScripts() && !parser->isExecutingScript())
                 consoleMessage->setLineNumber(parser->lineNumber().oneBasedInt());
