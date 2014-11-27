@@ -67,11 +67,6 @@ public class LibraryLoader {
     // directly from the APK file but it was compressed or not aligned.
     private static boolean sLibraryIsMappableInApk = true;
 
-    // One-way switch becomes true if the system library loading failed,
-    // and the right native library was found and loaded by the hack.
-    // The flag is used to report UMA stats later.
-    private static boolean sNativeLibraryHackWasUsed = false;
-
     /**
      * The same as ensureInitialized(null, false), should only be called
      * by non-browser processes.
@@ -87,27 +82,20 @@ public class LibraryLoader {
      *
      *  @param context The context in which the method is called, the caller
      *    may pass in a null context if it doesn't know in which context it
-     *    is running, or it doesn't need to work around the issue
-     *    http://b/13216167.
+     *    is running.
      *
-     *    When the context is not null and native library was not extracted
-     *    by Android package manager, the LibraryLoader class
-     *    will extract the native libraries from APK. This is a hack used to
-     *    work around some Sony devices with the following platform bug:
-     *    http://b/13216167.
-     *
-     *  @param shouldDeleteOldWorkaroundLibraries The flag tells whether the method
-     *    should delete the old workaround and fallback libraries or not.
+     *  @param shouldDeleteFallbackLibraries The flag tells whether the method
+     *    should delete the fallback libraries or not.
      */
     public static void ensureInitialized(
-            Context context, boolean shouldDeleteOldWorkaroundLibraries)
+            Context context, boolean shouldDeleteFallbackLibraries)
             throws ProcessInitException {
         synchronized (sLock) {
             if (sInitialized) {
                 // Already initialized, nothing to do.
                 return;
             }
-            loadAlreadyLocked(context, shouldDeleteOldWorkaroundLibraries);
+            loadAlreadyLocked(context, shouldDeleteFallbackLibraries);
             initializeAlreadyLocked();
         }
     }
@@ -139,15 +127,15 @@ public class LibraryLoader {
      * See the comment in doInBackground() for more considerations on this.
      *
      * @param context The context the code is running, or null if it doesn't have one.
-     * @param shouldDeleteOldWorkaroundLibraries The flag tells whether the method
-     *   should delete the old workaround and fallback libraries or not.
+     * @param shouldDeleteFallbackLibraries The flag tells whether the method
+     *   should delete the old fallback libraries or not.
      *
      * @throws ProcessInitException if the native library failed to load.
      */
-    public static void loadNow(Context context, boolean shouldDeleteOldWorkaroundLibraries)
+    public static void loadNow(Context context, boolean shouldDeleteFallbackLibraries)
             throws ProcessInitException {
         synchronized (sLock) {
-            loadAlreadyLocked(context, shouldDeleteOldWorkaroundLibraries);
+            loadAlreadyLocked(context, shouldDeleteFallbackLibraries);
         }
     }
 
@@ -164,7 +152,7 @@ public class LibraryLoader {
 
     // Invoke System.loadLibrary(...), triggering JNI_OnLoad in native code
     private static void loadAlreadyLocked(
-            Context context, boolean shouldDeleteOldWorkaroundLibraries)
+            Context context, boolean shouldDeleteFallbackLibraries)
             throws ProcessInitException {
         try {
             if (!sLoaded) {
@@ -261,29 +249,14 @@ public class LibraryLoader {
                 } else {
                     // Load libraries using the system linker.
                     for (String library : NativeLibraries.LIBRARIES) {
-                        try {
-                            System.loadLibrary(library);
-                        } catch (UnsatisfiedLinkError e) {
-                            if (context != null
-                                    && LibraryLoaderHelper.tryLoadLibraryUsingWorkaround(context,
-                                                                                         library)) {
-                                sNativeLibraryHackWasUsed = true;
-                            } else {
-                                throw e;
-                            }
-                        }
+                        System.loadLibrary(library);
                     }
                 }
 
-                if (context != null && shouldDeleteOldWorkaroundLibraries) {
-                    if (!sNativeLibraryHackWasUsed) {
-                        LibraryLoaderHelper.deleteLibrariesAsynchronously(
-                                context, LibraryLoaderHelper.PACKAGE_MANAGER_WORKAROUND_DIR);
-                    }
-                    if (!fallbackWasUsed) {
-                        LibraryLoaderHelper.deleteLibrariesAsynchronously(
-                                context, LibraryLoaderHelper.LOAD_FROM_APK_FALLBACK_DIR);
-                    }
+                if (!fallbackWasUsed && context != null
+                        && shouldDeleteFallbackLibraries) {
+                    LibraryLoaderHelper.deleteLibrariesAsynchronously(
+                            context, LibraryLoaderHelper.LOAD_FROM_APK_FALLBACK_DIR);
                 }
 
                 long stopTime = SystemClock.uptimeMillis();
@@ -373,7 +346,6 @@ public class LibraryLoader {
     // Called after all native initializations are complete.
     public static void onNativeInitializationComplete(Context context) {
         recordBrowserProcessHistogram(context);
-        nativeRecordNativeLibraryHack(sNativeLibraryHackWasUsed);
     }
 
     // Record Chromium linker histogram state for the main browser process. Called from
@@ -452,6 +424,4 @@ public class LibraryLoader {
     // Get the version of the native library. This is needed so that we can check we
     // have the right version before initializing the (rest of the) JNI.
     private static native String nativeGetVersionNumber();
-
-    private static native void nativeRecordNativeLibraryHack(boolean usedHack);
 }
