@@ -93,13 +93,6 @@ function FileManager() {
   this.selectionHandler_ = null;
 
   /**
-   * Dialog action controller.
-   * @type {DialogActionController}
-   * @private
-   */
-  this.dialogActionController_ = null;
-
-  /**
    * UI management class of file manager.
    * @type {FileManagerUI}
    * @private
@@ -181,6 +174,20 @@ function FileManager() {
    */
   this.appStateController_ = null;
 
+  /**
+   * Dialog action controller.
+   * @type {DialogActionController}
+   * @private
+   */
+  this.dialogActionController_ = null;
+
+  /**
+   * List update controller.
+   * @type {MetadataUpdateController}
+   * @private
+   */
+  this.metadataUpdateController_ = null;
+
   // --------------------------------------------------------------------------
   // DOM elements.
 
@@ -225,16 +232,6 @@ function FileManager() {
    * @private
    */
   this.openWithCommand_ = null;
-
-  // --------------------------------------------------------------------------
-  // Bound functions.
-
-  /**
-   * Bound function for onEntriesChanged_.
-   * @type {?function(this:FileManager, Event)}
-   * @private
-   */
-  this.onEntriesChangedBound_ = null;
 
   // --------------------------------------------------------------------------
   // Miscellaneous FileManager's states.
@@ -405,20 +402,9 @@ DialogType.isFolderDialog = function(type) {
 
 Object.freeze(DialogType);
 
-/**
- * Bottom margin of the list and tree for transparent preview panel.
- * @const
- */
-var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
-
 // Anonymous "namespace".
 (function() {
   // Private variables and helper functions.
-
-  /**
-   * Number of milliseconds in a day.
-   */
-  var MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
 
   /**
    * Some UI elements react on a single click and standard double click handling
@@ -426,36 +412,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * after the first.
    */
   var DOUBLE_CLICK_TIMEOUT = 200;
-
-  /**
-   * Updates the element to display the information about remaining space for
-   * the storage.
-   *
-   * @param {!Object<string, number>} sizeStatsResult Map containing remaining
-   *     space information.
-   * @param {!Element} spaceInnerBar Block element for a percentage bar
-   *     representing the remaining space.
-   * @param {!Element} spaceInfoLabel Inline element to contain the message.
-   * @param {!Element} spaceOuterBar Block element around the percentage bar.
-   */
-  var updateSpaceInfo = function(
-      sizeStatsResult, spaceInnerBar, spaceInfoLabel, spaceOuterBar) {
-    spaceInnerBar.removeAttribute('pending');
-    if (sizeStatsResult) {
-      var sizeStr = util.bytesToString(sizeStatsResult.remainingSize);
-      spaceInfoLabel.textContent = strf('SPACE_AVAILABLE', sizeStr);
-
-      var usedSpace =
-          sizeStatsResult.totalSize - sizeStatsResult.remainingSize;
-      spaceInnerBar.style.width =
-          (100 * usedSpace / sizeStatsResult.totalSize) + '%';
-
-      spaceOuterBar.hidden = false;
-    } else {
-      spaceOuterBar.hidden = true;
-      spaceInfoLabel.textContent = str('FAILED_SPACE_INFO');
-    }
-  };
 
   FileManager.prototype.initSettings_ = function(callback) {
     this.appStateController_ = new AppStateController(this.dialogType);
@@ -529,10 +485,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.directoryModel_,
         this.commandHandler);
 
-    chrome.fileManagerPrivate.onPreferencesChanged.addListener(
-        this.onPreferencesChanged_.bind(this));
-    this.onPreferencesChanged_();
-
     var driveConnectionChangedHandler =
         this.onDriveConnectionChanged_.bind(this);
     this.volumeManager_.addEventListener('drive-connection-changed',
@@ -551,16 +503,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initDataTransferOperations_ = function() {
-    this.fileOperationManager_ =
-        this.backgroundPage_.background.fileOperationManager;
-
     // CopyManager are required for 'Delete' operation in
     // Open and Save dialogs. But drag-n-drop and copy-paste are not needed.
-    if (this.dialogType != DialogType.FULL_PAGE) return;
-
-    this.onEntriesChangedBound_ = this.onEntriesChanged_.bind(this);
-    this.fileOperationManager_.addEventListener(
-        'entries-changed', this.onEntriesChangedBound_);
+    if (this.dialogType != DialogType.FULL_PAGE)
+      return;
 
     var controller = this.fileTransferController_ =
         new FileTransferController(
@@ -735,6 +681,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             loadTimeData.data = this.backgroundPage_.background.stringData;
             if (util.runningInBrowser())
               this.backgroundPage_.registerDialog(window);
+            this.fileOperationManager_ =
+                this.backgroundPage_.background.fileOperationManager;
             this.backgroundPage_.background.historyLoaderPromise.then(
                 /**
                  * @param {!importer.HistoryLoader} loader
@@ -929,19 +877,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.fileFilter_ = new FileFilter(
         this.metadataCache_,
         false  /* Don't show dot files and *.crdownload by default. */);
-
     this.fileWatcher_ = new FileWatcher(this.metadataCache_);
-    this.fileWatcher_.addEventListener(
-        'watcher-metadata-changed',
-        this.onWatcherMetadataChanged_.bind(this));
 
     assert(this.volumeManager_);
+    assert(this.fileOperationManager_);
     this.directoryModel_ = new DirectoryModel(
         singleSelection,
         this.fileFilter_,
         this.fileWatcher_,
         this.metadataCache_,
-        this.volumeManager_);
+        this.volumeManager_,
+        this.fileOperationManager_);
 
     this.folderShortcutsModel_ = new FolderShortcutsDataModel(
         this.volumeManager_);
@@ -1012,14 +958,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.selectionHandler_,
         this.launchParams_);
 
-    // Update metadata to change 'Today' and 'Yesterday' dates.
-    var today = new Date();
-    today.setHours(0);
-    today.setMinutes(0);
-    today.setSeconds(0);
-    today.setMilliseconds(0);
-    setTimeout(this.dailyUpdateModificationTime_.bind(this),
-               today.getTime() + MILLISECONDS_IN_DAY - Date.now() + 1000);
+    // Create metadata update controller.
+    this.metadataUpdateController_ = new MetadataUpdateController(
+        this.ui_.listContainer,
+        this.directoryModel_,
+        this.volumeManager_,
+        this.metadataCache_,
+        this.fileWatcher_,
+        this.fileOperationManager_);
   };
 
   /**
@@ -1068,63 +1014,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.ui_.setCurrentListType(type);
     this.appStateController_.saveViewOptions();
-  };
-
-  /**
-   * Handler of file manager operations. Called when an entry has been
-   * changed.
-   * This updates directory model to reflect operation result immediately (not
-   * waiting for directory update event). Also, preloads thumbnails for the
-   * images of new entries.
-   * See also FileOperationManager.EventRouter.
-   *
-   * @param {Event} event An event for the entry change.
-   * @private
-   */
-  FileManager.prototype.onEntriesChanged_ = function(event) {
-    var kind = event.kind;
-    var entries = event.entries;
-    this.directoryModel_.onEntriesChanged(kind, entries);
-    this.selectionHandler_.onFileSelectionChanged();
-
-    if (kind !== util.EntryChangedKind.CREATED)
-      return;
-
-    var preloadThumbnail = function(entry) {
-      var locationInfo = this.volumeManager_.getLocationInfo(entry);
-      if (!locationInfo)
-        return;
-      this.metadataCache_.getOne(entry, 'thumbnail|external',
-          function(metadata) {
-            var thumbnailLoader_ = new ThumbnailLoader(
-                entry,
-                ThumbnailLoader.LoaderType.CANVAS,
-                metadata,
-                undefined,  // Media type.
-                locationInfo.isDriveBased ?
-                    ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
-                    ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
-                10);  // Very low priority.
-            thumbnailLoader_.loadDetachedImage(function(success) {});
-          });
-    }.bind(this);
-
-    for (var i = 0; i < entries.length; i++) {
-      // Preload a thumbnail if the new copied entry an image.
-      if (FileType.isImage(entries[i]))
-        preloadThumbnail(entries[i]);
-    }
-  };
-
-  /**
-   * Handles local metadata changes in the currect directory.
-   * @param {Event} event Change event.
-   * @this {FileManager}
-   * @private
-   */
-  FileManager.prototype.onWatcherMetadataChanged_ = function(event) {
-    this.ui_.listContainer.currentView.updateListItemsMetadata(
-        event.metadataType, event.entries);
   };
 
   /**
@@ -1368,56 +1257,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * @private
-   */
-  FileManager.prototype.refreshCurrentDirectoryMetadata_ = function() {
-    var entries = this.directoryModel_.getFileList().slice();
-    var directoryEntry = this.directoryModel_.getCurrentDirEntry();
-    if (!directoryEntry)
-      return;
-    // We don't pass callback here. When new metadata arrives, we have an
-    // observer registered to update the UI.
-
-    // TODO(dgozman): refresh content metadata only when modificationTime
-    // changed.
-    var isFakeEntry = util.isFakeEntry(directoryEntry);
-    var getEntries = (isFakeEntry ? [] : [directoryEntry]).concat(entries);
-    if (!isFakeEntry)
-      this.metadataCache_.clearRecursively(directoryEntry, '*');
-    this.metadataCache_.get(getEntries, 'filesystem|external', null);
-
-    var visibleItems = this.ui.listContainer.currentList.items;
-    var visibleEntries = [];
-    for (var i = 0; i < visibleItems.length; i++) {
-      var index = this.ui.listContainer.currentList.getIndexOfListItem(
-          visibleItems[i]);
-      var entry = this.directoryModel_.getFileList().item(index);
-      // The following check is a workaround for the bug in list: sometimes item
-      // does not have listIndex, and therefore is not found in the list.
-      if (entry) visibleEntries.push(entry);
-    }
-    // Refreshes the metadata.
-    this.metadataCache_.getLatest(visibleEntries, 'thumbnail', null);
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.dailyUpdateModificationTime_ = function() {
-    var entries = this.directoryModel_.getFileList().slice();
-    this.metadataCache_.get(
-        entries,
-        'filesystem',
-        function() {
-          this.ui_.listContainer.currentView.updateListItemsMetadata(
-              'filesystem', entries);
-        }.bind(this));
-
-    setTimeout(this.dailyUpdateModificationTime_.bind(this),
-               MILLISECONDS_IN_DAY);
-  };
-
-  /**
    * TODO(mtomasz): Move this to a utility function working on the root type.
    * @return {boolean} True if the current directory content is from Google
    *     Drive.
@@ -1494,22 +1333,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     selection.tasks = new FileTasks(this);
     selection.tasks.init(selection.entries, selection.mimeTypes);
     selection.tasks.display(this.ui_.taskMenuButton);
-    this.refreshCurrentDirectoryMetadata_();
+    this.metadataUpdateController_.refreshCurrentDirectoryMetadata();
     this.selectionHandler_.onFileSelectionChanged();
   };
 
   /**
    * @private
    */
-  FileManager.prototype.onPreferencesChanged_ = function() {
-    var self = this;
-    chrome.fileManagerPrivate.getPreferences(function(prefs) {
-      var use12hourClock = !prefs.use24hourClock;
-      self.ui_.listContainer.table.setDateTimeFormat(use12hourClock);
-      self.refreshCurrentDirectoryMetadata_();
-    });
-  };
-
   FileManager.prototype.onDriveConnectionChanged_ = function() {
     var connection = this.volumeManager_.getDriveConnectionState();
     if (this.commandHandler)
@@ -1799,12 +1629,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
     this.backgroundPage_.background.progressCenter.removePanel(
         this.ui_.progressCenterPanel);
-    if (this.fileOperationManager_) {
-      if (this.onEntriesChangedBound_) {
-        this.fileOperationManager_.removeEventListener(
-            'entries-changed', this.onEntriesChangedBound_);
-      }
-    }
     window.closing = true;
     if (this.backgroundPage_)
       this.backgroundPage_.background.tryClose();

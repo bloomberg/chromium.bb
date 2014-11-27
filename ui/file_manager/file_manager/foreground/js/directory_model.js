@@ -17,11 +17,12 @@ var SHORT_RESCAN_INTERVAL = 100;
  * @param {FileWatcher} fileWatcher Instance of FileWatcher.
  * @param {MetadataCache} metadataCache The metadata cache service.
  * @param {VolumeManagerWrapper} volumeManager The volume manager.
+ * @param {!FileOperationManager} fileOperationManager File operation manager.
  * @constructor
  * @extends {cr.EventTarget}
  */
 function DirectoryModel(singleSelection, fileFilter, fileWatcher,
-                        metadataCache, volumeManager) {
+                        metadataCache, volumeManager, fileOperationManager) {
   this.fileListSelection_ = singleSelection ?
       new cr.ui.ListSingleSelectionModel() : new cr.ui.ListSelectionModel();
 
@@ -54,6 +55,10 @@ function DirectoryModel(singleSelection, fileFilter, fileWatcher,
   this.fileWatcher_.addEventListener(
       'watcher-directory-changed',
       this.onWatcherDirectoryChanged_.bind(this));
+  util.addEventListenerToBackgroundComponent(
+      fileOperationManager,
+      'entries-changed',
+      this.onEntriesChanged_.bind(this));
 }
 
 /**
@@ -673,10 +678,12 @@ DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
 
 /**
  * Callback when an entry is changed.
- * @param {util.EntryChangedKind} kind How the entry is changed.
- * @param {Array.<Entry>} entries The changed entries.
+ * @param {Event} event Entry change event.
+ * @private
  */
-DirectoryModel.prototype.onEntriesChanged = function(kind, entries) {
+DirectoryModel.prototype.onEntriesChanged_ = function(event) {
+  var kind = event.kind;
+  var entries = event.entries;
   // TODO(hidehiko): We should update directory model even the search result
   // is shown.
   var rootType = this.getCurrentRootType();

@@ -98,6 +98,7 @@
 //<include src="gear_menu_controller.js">
 //<include src="launch_param.js">
 //<include src="metadata/metadata_cache.js">
+//<include src="metadata_update_controller.js">
 //<include src="naming_controller.js">
 //<include src="navigation_list_model.js">
 //<include src="progress_center_item_group.js">

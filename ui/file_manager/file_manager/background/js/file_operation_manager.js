@@ -362,6 +362,7 @@ fileOperationUtil.zipSelection = function(
 
 /**
  * @constructor
+ * @extends {cr.EventTarget}
  */
 function FileOperationManager() {
   this.copyTasks_ = [];
@@ -1112,8 +1113,9 @@ FileOperationManager.Error = function(code, data) {
 /**
  * Adds an event listener for the tasks.
  * @param {string} type The name of the event.
- * @param {function(Event)} handler The handler for the event.
- *     This is called when the event is dispatched.
+ * @param {EventListenerType} handler The handler for the event.  This is called
+ *     when the event is dispatched.
+ * @override
  */
 FileOperationManager.prototype.addEventListener = function(type, handler) {
   this.eventRouter_.addEventListener(type, handler);
@@ -1122,7 +1124,8 @@ FileOperationManager.prototype.addEventListener = function(type, handler) {
 /**
  * Removes an event listener for the tasks.
  * @param {string} type The name of the event.
- * @param {function(Event)} handler The handler to be removed.
+ * @param {EventListenerType} handler The handler to be removed.
+ * @override
  */
 FileOperationManager.prototype.removeEventListener = function(type, handler) {
   this.eventRouter_.removeEventListener(type, handler);

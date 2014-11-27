@@ -78,6 +78,7 @@
           './gear_menu_controller.js',
           './launch_param.js',
           './metadata/metadata_cache.js',
+          './metadata_update_controller.js',
           './naming_controller.js',
           './navigation_list_model.js',
           './progress_center_item_group.js',

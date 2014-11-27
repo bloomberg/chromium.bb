@@ -1015,3 +1015,17 @@ util.validateFileName = function(parentEntry, name, filterHiddenOn) {
         });
   });
 };
+
+/**
+ * Adds a foregorund listener to the background page components.
+ * The lisner will be removed when the foreground window is closed.
+ * @param {!cr.EventTarget} target
+ * @param {string} type
+ * @param {Function} handler
+ */
+util.addEventListenerToBackgroundComponent = function(target, type, handler) {
+  target.addEventListener(type, handler);
+  window.addEventListener('pagehide', function() {
+    target.removeEventListener(type, handler);
+  });
+};

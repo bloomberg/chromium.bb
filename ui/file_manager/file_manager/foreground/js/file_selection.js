@@ -176,6 +176,11 @@ function FileSelectionHandler(fileManager) {
    * @type {!Date}
    */
   this.lastFileSelectionTime_ = new Date();
+
+  util.addEventListenerToBackgroundComponent(
+      assert(fileManager.fileOperationManager),
+      'entries-changed',
+      this.onFileSelectionChanged.bind(this));
 }
 
 /**
