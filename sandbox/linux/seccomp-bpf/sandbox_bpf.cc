@@ -79,8 +79,8 @@ bool KernelSupportsSeccompTsync() {
 
 }  // namespace
 
-SandboxBPF::SandboxBPF()
-    : proc_task_fd_(), sandbox_has_started_(false), policy_() {
+SandboxBPF::SandboxBPF(bpf_dsl::Policy* policy)
+    : proc_task_fd_(), sandbox_has_started_(false), policy_(policy) {
 }
 
 SandboxBPF::~SandboxBPF() {
@@ -104,16 +104,8 @@ bool SandboxBPF::SupportsSeccompSandbox(SeccompLevel level) {
   return false;
 }
 
-// Don't take a scoped_ptr here, polymorphism makes their use awkward.
-void SandboxBPF::SetSandboxPolicy(bpf_dsl::Policy* policy) {
-  DCHECK(!policy_);
-  if (sandbox_has_started_) {
-    SANDBOX_DIE("Cannot change policy after sandbox has started");
-  }
-  policy_.reset(policy);
-}
-
 bool SandboxBPF::StartSandbox(SeccompLevel seccomp_level) {
+  DCHECK(policy_);
   CHECK(seccomp_level == SeccompLevel::SINGLE_THREADED ||
         seccomp_level == SeccompLevel::MULTI_THREADED);
 
@@ -186,7 +178,7 @@ scoped_ptr<CodeGen::Program> SandboxBPF::AssembleFilter(
 #if !defined(NDEBUG)
   force_verification = true;
 #endif
-
+  DCHECK(policy_);
   bpf_dsl::PolicyCompiler compiler(policy_.get(), Trap::Registry());
   scoped_ptr<CodeGen::Program> program = compiler.Compile();
 

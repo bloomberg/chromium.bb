@@ -36,8 +36,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
     return true;
   }
 
-  sandbox::SandboxBPF sandbox;
-  sandbox.SetSandboxPolicy(new SandboxBPFBasePolicyAndroid());
+  sandbox::SandboxBPF sandbox(new SandboxBPFBasePolicyAndroid());
   CHECK(
       sandbox.StartSandbox(sandbox::SandboxBPF::SeccompLevel::MULTI_THREADED));
 #endif

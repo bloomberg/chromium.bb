@@ -154,8 +154,7 @@ void StartSandboxWithPolicy(sandbox::bpf_dsl::Policy* policy,
   // in order to make the use of the "Sandbox" object easier, we allow for
   // the object to be destroyed after the sandbox has been started. Note that
   // doing so does not stop the sandbox.
-  SandboxBPF sandbox;
-  sandbox.SetSandboxPolicy(policy);
+  SandboxBPF sandbox(policy);
 
   sandbox.SetProcTaskFd(proc_task_fd.Pass());
   CHECK(sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));

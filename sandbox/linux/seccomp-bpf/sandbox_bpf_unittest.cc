@@ -22,8 +22,8 @@ namespace {
 
 TEST(SandboxBPF, CreateDestroy) {
   // Give an opportunity to dynamic tools to perform some simple testing.
-  SandboxBPF sandbox;
-  SandboxBPF* sandbox_ptr = new SandboxBPF;
+  SandboxBPF sandbox(nullptr);
+  SandboxBPF* sandbox_ptr = new SandboxBPF(nullptr);
   delete sandbox_ptr;
 }
 
@@ -70,7 +70,7 @@ TEST(SandboxBPF, ProcTaskFdDescriptorGetsClosed) {
   base::ScopedFD write_end(pipe_fds[1]);
 
   {
-    SandboxBPF sandbox;
+    SandboxBPF sandbox(nullptr);
     sandbox.SetProcTaskFd(write_end.Pass());
   }
 

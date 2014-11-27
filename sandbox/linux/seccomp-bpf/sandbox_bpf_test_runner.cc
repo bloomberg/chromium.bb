@@ -34,8 +34,7 @@ void SandboxBPFTestRunner::Run() {
   if (sandbox::SandboxBPF::SupportsSeccompSandbox(
           SandboxBPF::SeccompLevel::SINGLE_THREADED)) {
     // Initialize and then start the sandbox with our custom policy
-    sandbox::SandboxBPF sandbox;
-    sandbox.SetSandboxPolicy(policy.release());
+    sandbox::SandboxBPF sandbox(policy.release());
     SANDBOX_ASSERT(sandbox.StartSandbox(
         sandbox::SandboxBPF::SeccompLevel::SINGLE_THREADED));
 
@@ -51,8 +50,7 @@ void SandboxBPFTestRunner::Run() {
     }
     // Call the compiler and verify the policy. That's the least we can do,
     // if we don't have kernel support.
-    sandbox::SandboxBPF sandbox;
-    sandbox.SetSandboxPolicy(policy.release());
+    sandbox::SandboxBPF sandbox(policy.release());
     sandbox.AssembleFilter(true /* force_verification */);
     sandbox::UnitTests::IgnoreThisTest();
   }

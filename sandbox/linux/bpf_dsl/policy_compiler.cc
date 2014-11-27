@@ -66,6 +66,7 @@ intptr_t ReturnErrno(const struct arch_seccomp_data&, void* aux) {
 }
 
 bool HasUnsafeTraps(const Policy* policy) {
+  DCHECK(policy);
   for (uint32_t sysnum : SyscallSet::ValidOnly()) {
     if (policy->EvaluateSyscall(sysnum)->HasUnsafeTraps()) {
       return true;
@@ -87,6 +88,7 @@ PolicyCompiler::PolicyCompiler(const Policy* policy, TrapRegistry* registry)
       conds_(),
       gen_(),
       has_unsafe_traps_(HasUnsafeTraps(policy_)) {
+  DCHECK(policy);
 }
 
 PolicyCompiler::~PolicyCompiler() {

@@ -30,7 +30,9 @@ class SANDBOX_EXPORT SandboxBPF {
     MULTI_THREADED,
   };
 
-  SandboxBPF();
+  // Ownership of |policy| is transfered here to the sandbox object.
+  // nullptr is allowed for unit tests.
+  explicit SandboxBPF(bpf_dsl::Policy* policy);
   // NOTE: Setting a policy and starting the sandbox is a one-way operation.
   // The kernel does not provide any option for unloading a loaded sandbox. The
   // sandbox remains engaged even when the object is destructed.
@@ -39,10 +41,6 @@ class SANDBOX_EXPORT SandboxBPF {
   // Detect if the kernel supports the specified seccomp level.
   // See StartSandbox() for a description of these.
   static bool SupportsSeccompSandbox(SeccompLevel level);
-
-  // Set the BPF policy as |policy|. Ownership of |policy| is transfered here
-  // to the sandbox object.
-  void SetSandboxPolicy(bpf_dsl::Policy* policy);
 
   // This is the main public entry point. It sets up the resources needed by
   // the sandbox, and enters Seccomp mode.
