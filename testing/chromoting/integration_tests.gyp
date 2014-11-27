@@ -26,7 +26,7 @@
                 '../../remoting/remoting.gyp:remoting_me2me_host_archive',
               ],
             }],  # OS=="linux"
-          ],          
+          ],
         },
       ],
     }],
