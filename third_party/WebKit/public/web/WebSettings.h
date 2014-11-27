@@ -54,9 +54,6 @@ public:
 
     enum V8CacheOptions {
         V8CacheOptionsDefault,
-        // FIXME: Remove this once the Chromium CL has landed.
-        V8CacheOptionsOff = V8CacheOptionsDefault,
-
         V8CacheOptionsParse,
         V8CacheOptionsCode,
         V8CacheOptionsCodeCompressed,
