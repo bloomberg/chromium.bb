@@ -1,6 +1,4 @@
 Tests js cpu profile in timeline.
 
-Main thread
-WebCore: Worker
-WebCore: Worker
+Main Thread
 

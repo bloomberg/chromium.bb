@@ -9,6 +9,14 @@
 var worker1;
 var worker2;
 
+// The function ensures call stack for the current frame is captured.
+function makeDOMEvent()
+{
+    var e = document.createElement("div");
+    e.innerHTML = "<p>test</p>";
+    return e.lastChild.textContents;
+}
+
 function startWorkerAndRunTest()
 {
     worker1 = new Worker("resources/worker.js");
@@ -28,13 +36,14 @@ function startWorkerAndRunTest()
 
 function startSecondWorker(onActionComplete)
 {
-    // FIXME: add a payload to the worker to make it produce a JSFrame.
     worker2 = new Worker("resources/worker.js");
     worker2.postMessage("");
+    makeDOMEvent();
     worker2.onmessage = function(event)
     {
-        onActionComplete();
         worker2.onmessage = null;
+        makeDOMEvent();
+        onActionComplete();
     }
 }
 
@@ -43,34 +52,31 @@ function test()
     InspectorTest.invokeWithTracing("startSecondWorker", processTracingEvents,
         "disabled-by-default-devtools.timeline.stack", true);
 
-    var seenFunctions = new Set();
-    var allEvents = [];
     function processTracingEvents()
     {
-        InspectorTest.addResult("Main thread");
-        InspectorTest.tracingTimelineModel()._mainThreadEvents.forEach(processEvent);
-        var threads = InspectorTest.tracingTimelineModel()._virtualThreads;
-        for (var i = 0; i < threads.length; ++i) {
-            if (threads[i].name !== "WebCore: Worker")
-                continue;
-            InspectorTest.addResult(threads[i].name);
-            threads[i].events.forEach(processEvent);
-        }
-        if (!seenFunctions.has("worker2.onmessage")) {
-            InspectorTest.addResult("Frame is missing. Dumping the entire trace:");
-            allEvents.forEach(InspectorTest.addResult);
-        }
+        var mainThread = { name: "Main Thread", events: InspectorTest.tracingTimelineModel()._mainThreadEvents };
+        processThread(new Set(["startSecondWorker", "worker2.onmessage"]), mainThread);
+        // FIXME: enable the check for workers.
+        // var workers = InspectorTest.tracingTimelineModel()._virtualThreads.filter(function(thread) { return thread.name === "WebCore: Worker"});
+        // workers.forEach(processThread.bind(null, new Set(["onmessage"])));
         InspectorTest.completeTest();
     }
 
-    function processEvent(event)
+    function processThread(expectedFunctions, thread)
     {
-        var eventString = event.name;
-        if (event.name === WebInspector.TimelineModel.RecordType.JSFrame) {
-            seenFunctions.add(event.args.data.functionName);
-            eventString = eventString + ": " + event.args.data.functionName;
+        InspectorTest.addResult(thread.name);
+        var missingFunctions = thread.events.reduce(processEvent, expectedFunctions);
+        if (missingFunctions.size) {
+            InspectorTest.addResult("FAIL: missing functions:");
+            missingFunctions.forEach(InspectorTest.addResult);
         }
-        allEvents.push(eventString);
+    }
+
+    function processEvent(expectedFunctions, event)
+    {
+        if (event.name === WebInspector.TimelineModel.RecordType.JSFrame)
+            expectedFunctions.delete(event.args.data.functionName);
+        return expectedFunctions;
     }
 }
 
