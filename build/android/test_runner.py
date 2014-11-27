@@ -546,6 +546,14 @@ def AddPerfTestOptions(option_parser):
       '--output-json-list',
       help='Write a simple list of names from --steps into the given file.')
   option_parser.add_option(
+      '--collect-chartjson-data',
+      action='store_true',
+      help='Cache the chartjson output from each step for later use.')
+  option_parser.add_option(
+      '--output-chartjson-data',
+      default='',
+      help='Write out chartjson into the given file.')
+  option_parser.add_option(
       '--print-step',
       help='The name of a previously executed perf step to print.')
   option_parser.add_option(
@@ -585,7 +593,8 @@ def ProcessPerfTestOptions(options, args, error_func):
   return perf_test_options.PerfOptions(
       options.steps, options.flaky_steps, options.output_json_list,
       options.print_step, options.no_timeout, options.test_filter,
-      options.dry_run, single_step)
+      options.dry_run, single_step, options.collect_chartjson_data,
+      options.output_chartjson_data)
 
 
 def AddPythonTestOptions(option_parser):
@@ -766,6 +775,10 @@ def _RunPerfTests(options, args, error_func):
   if perf_options.output_json_list:
     return perf_test_runner.OutputJsonList(
         perf_options.steps, perf_options.output_json_list)
+
+  if perf_options.output_chartjson_data:
+    return perf_test_runner.OutputChartjson(
+        perf_options.print_step, perf_options.output_chartjson_data)
 
   # Just print the results from a single previously executed step.
   if perf_options.print_step:

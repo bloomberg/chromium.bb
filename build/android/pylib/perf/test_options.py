@@ -15,4 +15,6 @@ PerfOptions = collections.namedtuple('PerfOptions', [
     'test_filter',
     'dry_run',
     'single_step',
+    'collect_chartjson_data',
+    'output_chartjson_data',
 ])

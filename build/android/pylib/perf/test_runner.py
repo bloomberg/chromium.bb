@@ -52,7 +52,9 @@ import json
 import logging
 import os
 import pickle
+import shutil
 import sys
+import tempfile
 import threading
 import time
 
@@ -71,6 +73,14 @@ def OutputJsonList(json_input, json_output):
   with file(json_output, 'w') as o:
     o.write(json.dumps(step_names))
   return 0
+
+
+def OutputChartjson(test_name, json_file_name):
+  file_name = os.path.join(constants.PERF_OUTPUT_DIR, test_name)
+  with file(file_name, 'r') as f:
+    persisted_result = pickle.load(f)
+  with open(json_file_name, 'w') as o:
+    o.write(persisted_result['chartjson'])
 
 
 def PrintTestOutput(test_name):
@@ -168,6 +178,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self._max_shard = max_shard
     self._tests = tests
     self._flaky_tests = flaky_tests
+    self._output_dir = None
 
   @staticmethod
   def _IsBetter(result):
@@ -198,6 +209,19 @@ class TestRunner(base_test_runner.BaseTestRunner):
                  test_name, self.device_serial, affinity, self._shard_index)
     return False
 
+  def _CleanupOutputDirectory(self):
+    if self._output_dir:
+      shutil.rmtree(self._output_dir, ignore_errors=True)
+      self._output_dir = None
+
+  def _ReadChartjsonOutput(self):
+    if not self._output_dir:
+      return ''
+
+    json_output_path = os.path.join(self._output_dir, 'results-chart.json')
+    with open(json_output_path) as f:
+      return f.read()
+
   def _LaunchPerfTest(self, test_name):
     """Runs a perf test.
 
@@ -220,6 +244,11 @@ class TestRunner(base_test_runner.BaseTestRunner):
     cmd = ('%s --device %s' %
            (self._tests['steps'][test_name]['cmd'],
             self.device_serial))
+
+    if self._options.collect_chartjson_data:
+      self._output_dir = tempfile.mkdtemp()
+      cmd = cmd + ' --output-dir=%s' % self._output_dir
+
     logging.info('%s : %s', test_name, cmd)
     start_time = datetime.datetime.now()
 
@@ -241,10 +270,12 @@ class TestRunner(base_test_runner.BaseTestRunner):
     try:
       exit_code, output = cmd_helper.GetCmdStatusAndOutputWithTimeout(
           full_cmd, timeout, cwd=cwd, shell=True, logfile=logfile)
+      json_output = self._ReadChartjsonOutput()
     except cmd_helper.TimeoutError as e:
       exit_code = -1
       output = str(e)
     finally:
+      self._CleanupOutputDirectory()
       if self._options.single_step:
         logfile.stop()
     end_time = datetime.datetime.now()
@@ -277,6 +308,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     persisted_result = {
         'name': test_name,
         'output': output,
+        'chartjson': json_output,
         'exit_code': exit_code,
         'actual_exit_code': actual_exit_code,
         'result_type': result_type,
