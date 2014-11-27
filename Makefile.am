@@ -11,7 +11,7 @@ BUILT_SOURCES =
 # Do not run xwayland test while it is known broken.
 AM_DISTCHECK_CONFIGURE_FLAGS = --disable-setuid-install --disable-xwayland-test
 
-EXTRA_DIST = weston.ini.in
+EXTRA_DIST = weston.ini.in ivi-shell/weston.ini.in
 
 weston.ini : $(srcdir)/weston.ini.in
 	$(AM_V_GEN)$(SED) \
@@ -20,7 +20,14 @@ weston.ini : $(srcdir)/weston.ini.in
 		-e 's|@libexecdir[@]|$(libexecdir)|g' \
 		$< > $@
 
-all-local : weston.ini
+ivi-shell/weston.ini : $(srcdir)/ivi-shell/weston.ini.in
+	$(AM_V_GEN)$(SED) \
+		-e 's|@bindir[@]|$(bindir)|g' \
+		-e 's|@abs_top_builddir[@]|$(abs_top_builddir)|g' \
+		-e 's|@libexecdir[@]|$(libexecdir)|g' \
+		$< > $@
+
+all-local : weston.ini ivi-shell/weston.ini
 
 AM_CFLAGS = $(GCC_CFLAGS)
 
@@ -36,7 +43,7 @@ AM_CPPFLAGS = 					\
 	-DLIBEXECDIR='"$(libexecdir)"'		\
 	-DBINDIR='"$(bindir)"'
 
-CLEANFILES = weston.ini $(BUILT_SOURCES)
+CLEANFILES = weston.ini ivi-shell/weston.ini $(BUILT_SOURCES)
 
 bin_PROGRAMS += weston
 
