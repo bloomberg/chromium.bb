@@ -428,7 +428,7 @@ class PathContext(object):
       delimiter = ';' if sys.platform.startswith('win') else ':'
       path_list = os.environ['PATH'].split(delimiter)
       for path in path_list:
-        if path.find('depot_tools') != -1:
+        if path.rstrip(os.path.sep).endswith('depot_tools'):
           return path
       return None
 
