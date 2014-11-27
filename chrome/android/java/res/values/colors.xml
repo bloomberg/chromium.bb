@@ -39,13 +39,20 @@
 
     <!--  Website Settings Popup colors -->
     <color name="website_settings_popup_button_text">#444444</color>
-    <color name="website_settings_popup_url">#848484</color>
-    <color name="website_settings_popup_url_domain">#444444</color>
-    <color name="website_settings_popup_url_scheme_http">#666666</color>
-    <color name="website_settings_popup_url_scheme_https">#1ac222</color>
-    <color name="website_settings_popup_url_scheme_mixed">#f2a600</color>
-    <color name="website_settings_popup_url_scheme_broken">#db4437</color>
+    <color name="website_settings_connection_broken_leading_text">#db4437</color>
     <color name="website_settings_popup_permission_spinner_text">#646464</color>
+
+    <!-- URL Emphasizer colors -->
+    <color name="url_emphasis_start_scheme_security_warning">#ffb000</color>
+    <color name="url_emphasis_start_scheme_security_error">#db4437</color>
+    <color name="url_emphasis_start_scheme_ev_secure">#1ac222</color>
+    <color name="url_emphasis_start_scheme_secure">#1ac222</color>
+    <color name="url_emphasis_scheme_to_domain">#969696</color>
+    <color name="url_emphasis_trailing_url">#969696</color>
+    <color name="url_emphasis_domain_and_registry">#333333</color>
+    <color name="url_emphasis_light_domain_and_registry">#ffffff</color>
+    <color name="url_emphasis_default_text">#333333</color>
+    <color name="url_emphasis_light_default_text">#ffffff</color>
 
     <!--  Distilled Page Prefs colors -->
     <color name="distilled_page_prefs_selected">#999999</color>

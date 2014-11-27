@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:lineSpacingExtra="4dp"
             android:paddingTop="16dp"
-            android:textColor="@color/website_settings_popup_url"
+            android:textColor="@color/url_emphasis_default_text"
             android:textSize="16sp"/>
 
         <TextView

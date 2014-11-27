@@ -43,6 +43,8 @@
       'browser/ui/android/login_prompt_android.cc',
       'browser/ui/android/navigation_popup.cc',
       'browser/ui/android/navigation_popup.h',
+      'browser/ui/android/omnibox/omnibox_url_emphasizer.cc',
+      'browser/ui/android/omnibox/omnibox_url_emphasizer.h',
       'browser/ui/android/omnibox/omnibox_view_util.cc',
       'browser/ui/android/omnibox/omnibox_view_util.h',
       'browser/ui/android/simple_message_box_android.cc',

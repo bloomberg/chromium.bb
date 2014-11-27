@@ -2781,6 +2781,7 @@
       'android/java/src/org/chromium/chrome/browser/omnibox/AnswersImage.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/AutocompleteController.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/OmniboxPrerender.java',
+      'android/java/src/org/chromium/chrome/browser/omnibox/OmniboxUrlEmphasizer.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/OmniboxViewUtil.java',
       'android/java/src/org/chromium/chrome/browser/password_manager/PasswordAuthenticationManager.java',
       'android/java/src/org/chromium/chrome/browser/PasswordUIView.java',

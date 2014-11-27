@@ -12,12 +12,10 @@ import android.graphics.drawable.ColorDrawable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
-import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -35,6 +33,8 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.ChromeSwitches;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarModel;
 import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
 import org.chromium.content.browser.WebContentsObserver;
@@ -77,6 +77,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     private static final int MAX_TABLET_DIALOG_WIDTH_DP = 400;
 
     private final Context mContext;
+    private final Profile mProfile;
     private final WebContents mWebContents;
 
     // A pointer to the C++ object for this UI.
@@ -110,8 +111,9 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
      * @param webContents The WebContents for which to show Website information. This information is
      *                    retrieved for the visible entry.
      */
-    private WebsiteSettingsPopup(Context context, WebContents webContents) {
+    private WebsiteSettingsPopup(Context context, Profile profile, WebContents webContents) {
         mContext = context;
+        mProfile = profile;
         mWebContents = webContents;
 
         // Find the container and all it's important subviews.
@@ -215,32 +217,6 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     }
 
     /**
-     * Gets the color to use for the scheme in the URL title for the given security level. Does not
-     * apply to internal pages.
-     *
-     * @param toolbarModelSecurityLevel A valid ToolbarModelSecurityLevel, which is the security
-     *                                  level of the page.
-     * @return The color ID to color the scheme in the URL title.
-     */
-    private int getSchemeColorId(int toolbarModelSecurityLevel) {
-        switch (toolbarModelSecurityLevel) {
-            case ToolbarModelSecurityLevel.NONE:
-                return R.color.website_settings_popup_url_scheme_http;
-            case ToolbarModelSecurityLevel.SECURE:
-            case ToolbarModelSecurityLevel.EV_SECURE:
-                return R.color.website_settings_popup_url_scheme_https;
-            case ToolbarModelSecurityLevel.SECURITY_WARNING:
-            case ToolbarModelSecurityLevel.SECURITY_POLICY_WARNING:
-                return R.color.website_settings_popup_url_scheme_mixed;
-            case ToolbarModelSecurityLevel.SECURITY_ERROR:
-                return R.color.website_settings_popup_url_scheme_broken;
-            default:
-                assert false : "Invalid security level specified: " + toolbarModelSecurityLevel;
-                return R.color.website_settings_popup_url_scheme_http;
-        }
-    }
-
-    /**
      * Gets the message to display in the connection message box for the given security level. Does
      * not apply to SECURITY_ERROR pages, since these have their own coloured/formatted message.
      *
@@ -274,60 +250,10 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     private void updatePageDetails(boolean isInternalPage) {
         mFullUrl = mWebContents.getVisibleUrl();
         int securityLevel = ToolbarModel.getSecurityLevelForWebContents(mWebContents);
-
-        URI parsedUrl;
-        try {
-            parsedUrl = new URI(mFullUrl);
-        } catch (URISyntaxException e) {
-            parsedUrl = null;
-        }
-
-        if (parsedUrl != null) {
-            // The URL is valid - color the scheme (and other components) for the security level.
-            SpannableStringBuilder sb = new SpannableStringBuilder();
-
-            int schemeColorId = R.color.website_settings_popup_url_scheme_http;
-            if (!isInternalPage) {
-                schemeColorId = getSchemeColorId(securityLevel);
-            }
-
-            String parsedUrlString = parsedUrl.toString();
-            sb.append(parsedUrlString);
-            final ForegroundColorSpan schemeColorSpan = new ForegroundColorSpan(
-                    mContext.getResources().getColor(schemeColorId));
-            sb.setSpan(schemeColorSpan, 0, parsedUrl.getScheme().length(),
-                    Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-            if (securityLevel == ToolbarModelSecurityLevel.SECURITY_ERROR) {
-                sb.setSpan(new StrikethroughSpan(), 0, parsedUrl.getScheme().length(),
-                        Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-            }
-
-            // The domain does not include the '://'.
-            String originToDisplay = UrlUtilities.getOriginForDisplay(parsedUrl, false);
-            int originBegin = parsedUrlString.indexOf(originToDisplay,
-                    parsedUrl.getScheme().length());
-            int originEnd = originBegin + originToDisplay.length();
-
-            // In some cases (e.g. 'about:blank') UrlUtilities.getOriginForDisplay will return the
-            // entire URL. In these cases originBegin will now be -1.
-            if (originBegin < 0) {
-                originBegin = parsedUrl.getScheme().length();
-                // Don't include the ':' in the origin for highlighting if present (it should always
-                // be there but check to be sure).
-                if (originBegin < parsedUrlString.length()) originBegin++;
-
-                originEnd = parsedUrlString.length();
-            }
-
-            final ForegroundColorSpan domainColorSpan = new ForegroundColorSpan(
-                    mContext.getResources().getColor(R.color.website_settings_popup_url_domain));
-            sb.setSpan(domainColorSpan, originBegin, originEnd, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-
-            mUrlTitle.setText(sb);
-        } else {
-            // The URL is invalid - still display it in the title, but don't apply any coloring.
-            mUrlTitle.setText(mFullUrl);
-        }
+        SpannableStringBuilder urlBuilder = new SpannableStringBuilder(mFullUrl);
+        OmniboxUrlEmphasizer.emphasizeUrl(urlBuilder, mContext.getResources(), mProfile,
+                securityLevel, isInternalPage, true);
+        mUrlTitle.setText(urlBuilder);
 
         // Display the appropriate connection message.
         SpannableStringBuilder messageBuilder = new SpannableStringBuilder();
@@ -336,9 +262,10 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                     getConnectionMessageId(securityLevel)));
         } else {
             String originToDisplay;
-            if (parsedUrl != null) {
+            try {
+                URI parsedUrl = new URI(mFullUrl);
                 originToDisplay = UrlUtilities.getOriginForDisplay(parsedUrl, false);
-            } else {
+            } catch (URISyntaxException e) {
                 // The URL is invalid - just display the full URL.
                 originToDisplay = mFullUrl;
             }
@@ -349,7 +276,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                     R.string.page_info_connection_broken_following_text, originToDisplay);
             messageBuilder.append(leadingText + " " + followingText);
             final ForegroundColorSpan redSpan = new ForegroundColorSpan(mContext.getResources()
-                    .getColor(R.color.website_settings_popup_url_scheme_broken));
+                    .getColor(R.color.website_settings_connection_broken_leading_text));
             final StyleSpan boldSpan = new StyleSpan(android.graphics.Typeface.BOLD);
             messageBuilder.setSpan(redSpan, 0, leadingText.length(),
                     Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
@@ -486,9 +413,9 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
      *                    retrieved for the visible entry.
      */
     @SuppressWarnings("unused")
-    public static void show(Context context, WebContents webContents) {
+    public static void show(Context context, Profile profile, WebContents webContents) {
         if (!CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_NEW_WEBSITE_SETTINGS)) {
-            new WebsiteSettingsPopup(context, webContents);
+            new WebsiteSettingsPopup(context, profile, webContents);
         } else {
             WebsiteSettingsPopupLegacy.show(context, webContents);
         }

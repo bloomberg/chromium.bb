@@ -73,6 +73,7 @@
 #include "chrome/browser/ui/android/infobars/translate_infobar.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
 #include "chrome/browser/ui/android/navigation_popup.h"
+#include "chrome/browser/ui/android/omnibox/omnibox_url_emphasizer.h"
 #include "chrome/browser/ui/android/omnibox/omnibox_view_util.h"
 #include "chrome/browser/ui/android/ssl_client_certificate_request.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_jni_bridge.h"
@@ -175,6 +176,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "NotificationUIManager",
     NotificationUIManagerAndroid::RegisterNotificationUIManager },
   { "OmniboxPrerender", RegisterOmniboxPrerender },
+  { "OmniboxUrlEmphasizer",
+    OmniboxUrlEmphasizer::RegisterOmniboxUrlEmphasizer },
   { "OmniboxViewUtil", OmniboxViewUtil::RegisterOmniboxViewUtil },
   { "PasswordGenerationPopup",
     autofill::PasswordGenerationPopupViewAndroid::Register},
