@@ -1,7 +1,10 @@
 include_rules = [
-  # History is being made into a Browser Component, so we have these
-  # basic rules followed by temporary exceptions.  Please don't
+  # History is being made into a Browser Component (http://crbug.com/370850), so
+  # we have these basic rules followed by temporary exceptions.  Please don't
   # add to the list of exceptions!
+  #
+  # Please send reviews to sdefresne@chromium.org when adding dependencies to
+  # this list.
   "-chrome/browser",
   "-components/search_engines",
   "+chrome/browser/chrome_notification_types.h",
@@ -12,11 +15,10 @@ include_rules = [
   "+chrome/tools/profiles",  # For history unit tests.
   "+components/visitedlink/browser",
 
-  # TODO(erikwright): Bring this list to zero.
+  # TODO(sdefresne): Bring this list to zero.
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
-  # http://crbug.com/370850
   "!chrome/browser/autocomplete/history_url_provider.h",
   "!chrome/browser/bookmarks/bookmark_model_factory.h",
   "!chrome/browser/bookmarks/chrome_bookmark_client.h",
@@ -59,7 +61,7 @@ specific_include_rules = {
   '.*_(api|browser|)test\.cc': [
     "+chrome/browser",
   ],
-  # TODO(sdefresne): Bring this list to zero. http://crbug.com/370850
+  # TODO(sdefresne): Bring this list to zero.
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
