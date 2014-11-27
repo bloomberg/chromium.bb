@@ -218,7 +218,7 @@ namespace app.window {
     // Creates a special ime window. This window is not focusable and can be
     // stacked above virtual keyboard window. This is restriced to component ime
     // extensions.
-    // Requires app.window.ime API permission.
+    // Requires the <code>app.window.ime</code> API permission.
     [nodoc] boolean? ime;
 
     // Frame type: <code>none</code> or <code>chrome</code> (defaults to
@@ -237,7 +237,8 @@ namespace app.window {
     [deprecated="Use innerBounds or outerBounds."] ContentBounds? bounds;
 
     // Enable window background transparency.
-    // Only supported in ash. Requires app.window.alpha API permission.
+    // Only supported in ash. Requires the <code>app.window.alpha</code> API
+    // permission.
     [nodoc] boolean? alphaEnabled;
 
     // The initial state of the window, allowing it to be created already
@@ -260,7 +261,7 @@ namespace app.window {
 
     // If true, the window will stay above most other windows. If there are
     // multiple windows of this kind, the currently focused window will be in
-    // the foreground. Requires the <code>"alwaysOnTopWindows"</code>
+    // the foreground. Requires the <code>alwaysOnTopWindows</code>
     // permission. Defaults to false.
     //
     // Call <code>setAlwaysOnTop()</code> on the window to change this property
@@ -296,14 +297,23 @@ namespace app.window {
     //
     // The user will be able to restore the window by pressing ESC. An
     // application can prevent the fullscreen state to be left when ESC is
-    // pressed by requesting the <b>overrideEscFullscreen</b> permission and
-    // canceling the event by calling .preventDefault(), like this:
+    // pressed by requesting the <code>app.window.fullscreen.overrideEsc</code>
+    // permission and canceling the event by calling .preventDefault(), in the
+    // keydown and keyup handlers, like this:
     //
-    // <code>window.onKeyDown = function(e) { if (e.keyCode == 27 /* ESC */) {
-    // e.preventDefault(); } };</code>
+    // <code>window.onkeydown = window.onkeyup = function(e) { if (e.keyCode ==
+    // 27 /* ESC */) { e.preventDefault(); } };</code>
+    //
+    // Note <code>window.fullscreen()</code> will cause the entire window to
+    // become fullscreen and does not require a user gesture. The HTML5
+    // fullscreen API can also be used to enter fullscreen mode (see
+    // <a href="http://developer.chrome.com/apps/api_other.html">Web APIs</a>
+    // for more details).
     static void fullscreen();
 
-    // Is the window fullscreen?
+    // Is the window fullscreen? This will be true if the window has been
+    // created fullscreen or was made fullscreen via the
+    // <code>AppWindow</code> or HTML5 fullscreen APIs.
     static boolean isFullscreen();
 
     // Minimize the window.
@@ -372,7 +382,7 @@ namespace app.window {
     [nodoc] boolean? firstShowHasHappened;
 
     // Set whether the window should stay above most other windows. Requires the
-    // <code>"alwaysOnTopWindows"</code> permission.
+    // <code>alwaysOnTopWindows</code> permission.
     static void setAlwaysOnTop(boolean alwaysOnTop);
 
     // Can the window use alpha transparency?
@@ -458,7 +468,8 @@ namespace app.window {
     // APIs in the window's script context will be functional.
     [nocompile] static void onClosed();
 
-    // Fired when the window is fullscreened.
+    // Fired when the window is fullscreened (either via the
+    // <code>AppWindow</code> or HTML5 APIs).
     [nocompile] static void onFullscreened();
 
     // Fired when the window is maximized.
