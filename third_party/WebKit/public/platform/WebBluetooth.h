@@ -6,7 +6,6 @@
 #define WebBluetooth_h
 
 #include "public/platform/WebCallbacks.h"
-#include "public/platform/WebCommon.h"
 
 namespace blink {
 
@@ -24,8 +23,6 @@ public:
     // Requests a bluetooth device.
     // WebBluetoothRequestDeviceCallbacks ownership transferred to the client.
     virtual void requestDevice(WebBluetoothRequestDeviceCallbacks*) = 0;
-    // FIXME: Remove after crrev.com/712153002 lands.
-    virtual void requestDevice(WebCallbacks<void, WebBluetoothError>*) { BLINK_ASSERT_NOT_REACHED(); };
 };
 
 } // namespace blink
