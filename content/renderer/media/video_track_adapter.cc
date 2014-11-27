@@ -9,9 +9,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
+#include "content/public/common/content_switches.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_util.h"
 
@@ -51,6 +54,8 @@ void ResetCallbackOnMainRenderThread(
 class VideoTrackAdapter::VideoFrameResolutionAdapter
     : public base::RefCountedThreadSafe<VideoFrameResolutionAdapter> {
  public:
+  // Setting |max_frame_rate| to 0.0, means that no frame rate limitation
+  // will be done.
   VideoFrameResolutionAdapter(
       scoped_refptr<base::SingleThreadTaskRunner> render_message_loop,
       const gfx::Size& max_size,
@@ -136,6 +141,21 @@ VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK_GE(max_aspect_ratio_, min_aspect_ratio_);
   CHECK_NE(0, max_aspect_ratio_);
+
+  const std::string max_fps_str =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kWebRtcMaxCaptureFramerate);
+  if (!max_fps_str.empty()) {
+    double value;
+    if (base::StringToDouble(max_fps_str, &value) && value >= 0.0) {
+      DVLOG(1) << "Overriding max frame rate.  Was=" << max_frame_rate
+              << ", Now=" << value;
+      max_frame_rate_ = value;
+    } else {
+      DLOG(ERROR) << "Unable to set max fps to " << max_fps_str;
+    }
+  }
+
   DVLOG(3) << "VideoFrameResolutionAdapter("
           << "{ max_width =" << max_frame_size_.width() << "}, "
           << "{ max_height =" << max_frame_size_.height() << "}, "

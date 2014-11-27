@@ -1257,6 +1257,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableWebRtcHWEncoding,
     switches::kEnableWebRtcHWVp8Encoding,
     switches::kEnableWebRtcHWH264Encoding,
+    switches::kWebRtcMaxCaptureFramerate,
 #endif
     switches::kLowEndDeviceMode,
 #if defined(OS_ANDROID)
