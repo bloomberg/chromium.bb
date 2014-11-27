@@ -37,6 +37,13 @@ class SkTextBlob;
 
 namespace blink {
 
+enum TextJustify {
+    TextJustifyAuto = 0x0,
+    TextJustifyNone = 0x1,
+    TextJustifyInterWord = 0x2,
+    TextJustifyDistribute = 0x3
+};
+
 class PLATFORM_EXPORT TextRun {
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -63,6 +70,7 @@ public:
         , m_characterScanForCodePath(characterScanForCodePath)
         , m_useComplexCodePath(false)
         , m_disableSpacing(false)
+        , m_textJustify(TextJustifyAuto)
         , m_tabSize(0)
         , m_normalizeSpace(false)
     {
@@ -83,6 +91,7 @@ public:
         , m_characterScanForCodePath(characterScanForCodePath)
         , m_useComplexCodePath(false)
         , m_disableSpacing(false)
+        , m_textJustify(TextJustifyAuto)
         , m_tabSize(0)
         , m_normalizeSpace(false)
     {
@@ -102,6 +111,7 @@ public:
         , m_characterScanForCodePath(characterScanForCodePath)
         , m_useComplexCodePath(false)
         , m_disableSpacing(false)
+        , m_textJustify(TextJustifyAuto)
         , m_tabSize(0)
         , m_normalizeSpace(normalizeSpace)
     {
@@ -130,6 +140,7 @@ public:
         , m_characterScanForCodePath(characterScanForCodePath)
         , m_useComplexCodePath(false)
         , m_disableSpacing(false)
+        , m_textJustify(TextJustifyAuto)
         , m_tabSize(0)
         , m_normalizeSpace(normalizeSpace)
     {
@@ -204,6 +215,9 @@ public:
     void setCharacterScanForCodePath(bool scan) { m_characterScanForCodePath = scan; }
     void setUseComplexCodePath(bool useComplex) { m_useComplexCodePath = useComplex; }
 
+    void setTextJustify(TextJustify textJustify) { m_textJustify = static_cast<unsigned>(textJustify); }
+    TextJustify textJustify() const { return static_cast<TextJustify>(m_textJustify); }
+
     class RenderingContext : public RefCounted<RenderingContext> {
     public:
         virtual ~RenderingContext() { }
@@ -235,6 +249,7 @@ private:
     unsigned m_characterScanForCodePath : 1;
     unsigned m_useComplexCodePath : 1;
     unsigned m_disableSpacing : 1;
+    unsigned m_textJustify : 2;
     unsigned m_tabSize;
     bool m_normalizeSpace;
     RefPtr<RenderingContext> m_renderingContext;

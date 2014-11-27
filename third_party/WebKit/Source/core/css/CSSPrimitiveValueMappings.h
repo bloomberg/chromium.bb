@@ -47,6 +47,7 @@
 #include "platform/graphics/Path.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextDirection.h"
+#include "platform/text/TextRun.h"
 #include "platform/text/UnicodeBidi.h"
 #include "platform/text/WritingMode.h"
 #include "wtf/MathExtras.h"

@@ -602,9 +602,9 @@ BidiRun* RenderBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
                     toInlineTextBox(r->m_box)->setCanHaveLeadingExpansion(true);
                 unsigned opportunitiesInRun;
                 if (rt->is8Bit())
-                    opportunitiesInRun = Character::expansionOpportunityCount(rt->characters8() + r->m_start, r->m_stop - r->m_start, r->m_box->direction(), isAfterExpansion);
+                    opportunitiesInRun = Character::expansionOpportunityCount(rt->characters8() + r->m_start, r->m_stop - r->m_start, r->m_box->direction(), isAfterExpansion, textJustify);
                 else
-                    opportunitiesInRun = Character::expansionOpportunityCount(rt->characters16() + r->m_start, r->m_stop - r->m_start, r->m_box->direction(), isAfterExpansion);
+                    opportunitiesInRun = Character::expansionOpportunityCount(rt->characters16() + r->m_start, r->m_stop - r->m_start, r->m_box->direction(), isAfterExpansion, textJustify);
                 expansionOpportunities.append(opportunitiesInRun);
                 expansionOpportunityCount += opportunitiesInRun;
             }

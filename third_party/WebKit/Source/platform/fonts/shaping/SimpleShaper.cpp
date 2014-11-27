@@ -55,7 +55,7 @@ SimpleShaper::SimpleShaper(const Font* font, const TextRun& run,
         m_expansionPerOpportunity = 0;
     } else {
         bool isAfterExpansion = m_isAfterExpansion;
-        unsigned expansionOpportunityCount = m_run.is8Bit() ? Character::expansionOpportunityCount(m_run.characters8(), m_run.length(), m_run.direction(), isAfterExpansion) : Character::expansionOpportunityCount(m_run.characters16(), m_run.length(), m_run.direction(), isAfterExpansion);
+        unsigned expansionOpportunityCount = m_run.is8Bit() ? Character::expansionOpportunityCount(m_run.characters8(), m_run.length(), m_run.direction(), isAfterExpansion, m_run.textJustify()) : Character::expansionOpportunityCount(m_run.characters16(), m_run.length(), m_run.direction(), isAfterExpansion, m_run.textJustify());
         if (isAfterExpansion && !m_run.allowsTrailingExpansion())
             expansionOpportunityCount--;
 
@@ -104,11 +104,11 @@ float SimpleShaper::adjustSpacing(float width, const CharacterData& charData)
     if (width)
         width += m_font->fontDescription().letterSpacing();
 
-    bool treatAsSpace = Character::treatAsSpace(charData.character);
-    if (treatAsSpace) {
+    bool isExpansionOpportunity = Character::treatAsSpace(charData.character) || (m_run.textJustify() == TextJustifyDistribute);
+    if (isExpansionOpportunity) {
         // Distribute the run's total expansion evenly over all expansion opportunities in the run.
         if (m_expansion) {
-            if (!treatAsSpace && !m_isAfterExpansion) {
+            if (!isExpansionOpportunity && !m_isAfterExpansion) {
                 // Take the expansion opportunity before this ideograph.
                 m_expansion -= m_expansionPerOpportunity;
                 m_runWidthSoFar += m_expansionPerOpportunity;
@@ -126,7 +126,7 @@ float SimpleShaper::adjustSpacing(float width, const CharacterData& charData)
 
         // Account for word spacing.
         // We apply additional space between "words" by adding width to the space character.
-        if (treatAsSpace && (charData.character != '\t' || !m_run.allowTabs())
+        if (isExpansionOpportunity && (charData.character != '\t' || !m_run.allowTabs())
             && (charData.characterOffset || charData.character == noBreakSpace)
             && m_font->fontDescription().wordSpacing()) {
             width += m_font->fontDescription().wordSpacing();

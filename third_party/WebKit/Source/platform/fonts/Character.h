@@ -34,6 +34,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextPath.h"
+#include "platform/text/TextRun.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -48,8 +49,8 @@ public:
     static bool isCJKIdeograph(UChar32);
     static bool isCJKIdeographOrSymbol(UChar32);
 
-    static unsigned expansionOpportunityCount(const LChar*, size_t length, TextDirection, bool& isAfterExpansion);
-    static unsigned expansionOpportunityCount(const UChar*, size_t length, TextDirection, bool& isAfterExpansion);
+    static unsigned expansionOpportunityCount(const LChar*, size_t length, TextDirection, bool& isAfterExpansion, const TextJustify);
+    static unsigned expansionOpportunityCount(const UChar*, size_t length, TextDirection, bool& isAfterExpansion, const TextJustify);
 
     static bool treatAsSpace(UChar c)
     {

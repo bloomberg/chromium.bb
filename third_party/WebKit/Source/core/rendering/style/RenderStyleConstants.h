@@ -339,10 +339,6 @@ enum TextAlignLast {
     TextAlignLastAuto, TextAlignLastStart, TextAlignLastEnd, TextAlignLastLeft, TextAlignLastRight, TextAlignLastCenter, TextAlignLastJustify
 };
 
-enum TextJustify {
-    TextJustifyAuto, TextJustifyNone, TextJustifyInterWord, TextJustifyDistribute
-};
-
 enum TextUnderlinePosition {
     // FIXME: Implement support for 'under left' and 'under right' values.
     TextUnderlinePositionAuto,

@@ -260,32 +260,31 @@ bool Character::isCJKIdeographOrSymbol(UChar32 c)
     return valueInIntervalList(cjkSymbolRanges, c);
 }
 
-unsigned Character::expansionOpportunityCount(const LChar* characters, size_t length, TextDirection direction, bool& isAfterExpansion)
+unsigned Character::expansionOpportunityCount(const LChar* characters, size_t length, TextDirection direction, bool& isAfterExpansion, const TextJustify textJustify)
 {
     unsigned count = 0;
-    if (direction == LTR) {
-        for (size_t i = 0; i < length; ++i) {
-            if (treatAsSpace(characters[i])) {
-                count++;
-                isAfterExpansion = true;
-            } else {
-                isAfterExpansion = false;
-            }
-        }
+    if (textJustify == TextJustifyDistribute) {
+        count = length - 1;
     } else {
-        for (size_t i = length; i > 0; --i) {
-            if (treatAsSpace(characters[i - 1])) {
-                count++;
-                isAfterExpansion = true;
-            } else {
-                isAfterExpansion = false;
+        if (direction == LTR) {
+            for (size_t i = 0; i < length; ++i) {
+                if (treatAsSpace(characters[i]))
+                    count++;
+            }
+        } else {
+            for (size_t i = length; i > 0; --i) {
+                if (treatAsSpace(characters[i - 1]))
+                    count++;
             }
         }
     }
+    int lastCharacter = (direction == LTR) ? length - 1 : 0;
+    isAfterExpansion = treatAsSpace(characters[lastCharacter]);
+
     return count;
 }
 
-unsigned Character::expansionOpportunityCount(const UChar* characters, size_t length, TextDirection direction, bool& isAfterExpansion)
+unsigned Character::expansionOpportunityCount(const UChar* characters, size_t length, TextDirection direction, bool& isAfterExpansion, const TextJustify textJustify)
 {
     unsigned count = 0;
     if (direction == LTR) {
