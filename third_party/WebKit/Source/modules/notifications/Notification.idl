@@ -46,7 +46,7 @@
     attribute EventHandler onclick;
     [MeasureAs=NotificationShowEvent] attribute EventHandler onshow;
     attribute EventHandler onerror;
-    attribute EventHandler onclose;
+    [MeasureAs=NotificationCloseEvent] attribute EventHandler onclose;
 
     readonly attribute DOMString title;
     readonly attribute DOMString dir;
