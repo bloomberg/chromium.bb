@@ -32,19 +32,19 @@ class MediaKeySystemAccessInitializer final : public blink::ScriptPromiseResolve
     WTF_MAKE_NONCOPYABLE(MediaKeySystemAccessInitializer);
 
 public:
-    static blink::ScriptPromise create(blink::ScriptState*, const String& keySystem, const Vector<blink::MediaKeySystemOptions>& supportedConfigurations);
+    static blink::ScriptPromise create(blink::ScriptState*, const String& keySystem, const Vector<blink::MediaKeySystemConfiguration>& supportedConfigurations);
     virtual ~MediaKeySystemAccessInitializer();
 
 private:
-    MediaKeySystemAccessInitializer(blink::ScriptState*, const String& keySystem, const Vector<blink::MediaKeySystemOptions>& supportedConfigurations);
+    MediaKeySystemAccessInitializer(blink::ScriptState*, const String& keySystem, const Vector<blink::MediaKeySystemConfiguration>& supportedConfigurations);
     void timerFired(blink::Timer<MediaKeySystemAccessInitializer>*);
 
     const String m_keySystem;
-    const Vector<blink::MediaKeySystemOptions> m_supportedConfigurations;
+    const Vector<blink::MediaKeySystemConfiguration> m_supportedConfigurations;
     blink::Timer<MediaKeySystemAccessInitializer> m_timer;
 };
 
-blink::ScriptPromise MediaKeySystemAccessInitializer::create(blink::ScriptState* scriptState, const String& keySystem, const Vector<blink::MediaKeySystemOptions>& supportedConfigurations)
+blink::ScriptPromise MediaKeySystemAccessInitializer::create(blink::ScriptState* scriptState, const String& keySystem, const Vector<blink::MediaKeySystemConfiguration>& supportedConfigurations)
 {
     RefPtr<MediaKeySystemAccessInitializer> initializer = adoptRef(new MediaKeySystemAccessInitializer(scriptState, keySystem, supportedConfigurations));
     initializer->suspendIfNeeded();
@@ -52,7 +52,7 @@ blink::ScriptPromise MediaKeySystemAccessInitializer::create(blink::ScriptState*
     return initializer->promise();
 }
 
-MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(blink::ScriptState* scriptState, const String& keySystem, const Vector<blink::MediaKeySystemOptions>& supportedConfigurations)
+MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(blink::ScriptState* scriptState, const String& keySystem, const Vector<blink::MediaKeySystemConfiguration>& supportedConfigurations)
     : blink::ScriptPromiseResolver(scriptState)
     , m_keySystem(keySystem)
     , m_supportedConfigurations(supportedConfigurations)
@@ -104,15 +104,17 @@ void MediaKeySystemAccessInitializer::timerFired(blink::Timer<MediaKeySystemAcce
         //       following steps:
         // FIXME: This test needs to be enhanced to use more values from
         //        combination.
-        if (isKeySystemSupportedWithContentType(m_keySystem, combination.initDataType())) {
-            // 5.3.3.1 Let access be a new MediaKeySystemAccess object, and
-            //         initialize it as follows:
-            // 5.3.3.1.1 Set the keySystem attribute to keySystem.
-            blink::MediaKeySystemAccess* access = new blink::MediaKeySystemAccess(m_keySystem);
+        for (const auto& initDataType : combination.initDataTypes()) {
+            if (isKeySystemSupportedWithContentType(m_keySystem, initDataType)) {
+                // 5.3.3.1 Let access be a new MediaKeySystemAccess object, and
+                //         initialize it as follows:
+                // 5.3.3.1.1 Set the keySystem attribute to keySystem.
+                blink::MediaKeySystemAccess* access = new blink::MediaKeySystemAccess(m_keySystem);
 
-            // 5.3.3.2 Resolve promise with access and abort these steps.
-            resolve(access);
-            return;
+                // 5.3.3.2 Resolve promise with access and abort these steps.
+                resolve(access);
+                return;
+            }
         }
     }
 
@@ -163,14 +165,14 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     //    (no supportedConfigurations provided.)
 
     // Remainder of steps handled in common routine below.
-    return NavigatorRequestMediaKeySystemAccess::from(navigator).requestMediaKeySystemAccess(scriptState, keySystem, Vector<MediaKeySystemOptions>());
+    return NavigatorRequestMediaKeySystemAccess::from(navigator).requestMediaKeySystemAccess(scriptState, keySystem, Vector<MediaKeySystemConfiguration>());
 }
 
 ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     ScriptState* scriptState,
     Navigator& navigator,
     const String& keySystem,
-    const Vector<MediaKeySystemOptions>& supportedConfigurations)
+    const Vector<MediaKeySystemConfiguration>& supportedConfigurations)
 {
     // From https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#requestmediakeysystemaccess
     // When this method is invoked, the user agent must run the following steps:
@@ -197,7 +199,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
 ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     ScriptState* scriptState,
     const String& keySystem,
-    const Vector<MediaKeySystemOptions>& supportedConfigurations)
+    const Vector<MediaKeySystemConfiguration>& supportedConfigurations)
 {
     // Continued from above.
     // 3. If keySystem is not one of the Key Systems supported by the user

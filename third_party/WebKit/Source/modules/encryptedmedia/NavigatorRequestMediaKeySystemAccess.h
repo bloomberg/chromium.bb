@@ -5,14 +5,12 @@
 #ifndef NavigatorRequestMediaKeySystemAccess_h
 #define NavigatorRequestMediaKeySystemAccess_h
 
-#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/modules/v8/V8MediaKeySystemOptions.h"
+#include "bindings/modules/v8/V8MediaKeySystemConfiguration.h"
 #include "core/frame/Navigator.h"
-#include "modules/encryptedmedia/MediaKeySystemOptions.h"
+#include "modules/encryptedmedia/MediaKeySystemConfiguration.h"
 #include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -31,12 +29,12 @@ public:
         ScriptState*,
         Navigator&,
         const String& keySystem,
-        const Vector<MediaKeySystemOptions>& supportedConfigurations);
+        const Vector<MediaKeySystemConfiguration>& supportedConfigurations);
 
     ScriptPromise requestMediaKeySystemAccess(
         ScriptState*,
         const String& keySystem,
-        const Vector<MediaKeySystemOptions>& supportedConfigurations);
+        const Vector<MediaKeySystemConfiguration>& supportedConfigurations);
 
     virtual void trace(Visitor*) override;
 
