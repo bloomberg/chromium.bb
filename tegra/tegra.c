@@ -246,3 +246,49 @@ int drm_tegra_bo_unmap(struct drm_tegra_bo *bo)
 
 	return 0;
 }
+
+drm_public
+int drm_tegra_bo_get_flags(struct drm_tegra_bo *bo, uint32_t *flags)
+{
+	struct drm_tegra_gem_get_flags args;
+	struct drm_tegra *drm = bo->drm;
+	int err;
+
+	if (!bo)
+		return -EINVAL;
+
+	memset(&args, 0, sizeof(args));
+	args.handle = bo->handle;
+
+	err = drmCommandWriteRead(drm->fd, DRM_TEGRA_GEM_GET_FLAGS, &args,
+				  sizeof(args));
+	if (err < 0)
+		return -errno;
+
+	if (flags)
+		*flags = args.flags;
+
+	return 0;
+}
+
+drm_public
+int drm_tegra_bo_set_flags(struct drm_tegra_bo *bo, uint32_t flags)
+{
+	struct drm_tegra_gem_get_flags args;
+	struct drm_tegra *drm = bo->drm;
+	int err;
+
+	if (!bo)
+		return -EINVAL;
+
+	memset(&args, 0, sizeof(args));
+	args.handle = bo->handle;
+	args.flags = flags;
+
+	err = drmCommandWriteRead(drm->fd, DRM_TEGRA_GEM_SET_FLAGS, &args,
+				  sizeof(args));
+	if (err < 0)
+		return -errno;
+
+	return 0;
+}
