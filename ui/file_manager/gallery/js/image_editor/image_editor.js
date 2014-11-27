@@ -233,7 +233,7 @@ ImageEditor.prototype.getCanvas = function() {
 ImageEditor.prototype.getBuffer = function() { return this.buffer_; };
 
 /**
- * @return {ImageView} ImageView instance.
+ * @return {!ImageView} ImageView instance.
  */
 ImageEditor.prototype.getImageView = function() { return this.imageView_; };
 
@@ -267,6 +267,7 @@ ImageEditor.prototype.onOptionsChange = function(options) {
  * @param {string} name The mode name.
  * @param {string} title The mode title.
  * @constructor
+ * @struct
  */
 
 ImageEditor.Mode = function(name, title) {
@@ -324,7 +325,7 @@ ImageEditor.Mode.prototype.setUp = function() {
 
 /**
  * Create mode-specific controls here.
- * @param {ImageEditor.Toolbar} toolbar The toolbar to populate.
+ * @param {!ImageEditor.Toolbar} toolbar The toolbar to populate.
  */
 ImageEditor.Mode.prototype.createTools = function(toolbar) {};
 
@@ -979,16 +980,16 @@ ImageEditor.Toolbar.prototype.addButton = function(
  * @param {number} min Min value of the option.
  * @param {number} value Default value of the option.
  * @param {number} max Max value of the options.
- * @param {number} scale A number to multiply by when setting
- *                       min/value/max in DOM.
+ * @param {number=} opt_scale A number to multiply by when setting
+ *     min/value/max in DOM.
  * @param {boolean=} opt_showNumeric True if numeric value should be displayed.
  * @return {HTMLElement} Range element.
  */
 ImageEditor.Toolbar.prototype.addRange = function(
-    name, title, min, value, max, scale, opt_showNumeric) {
+    name, title, min, value, max, opt_scale, opt_showNumeric) {
   var self = this;
 
-  scale = scale || 1;
+  var scale = opt_scale || 1;
 
   var range = this.create_('input');
 

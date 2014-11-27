@@ -140,9 +140,12 @@ ImageView.prototype.hasValidImage = function() {
 };
 
 /**
- * @return {HTMLCanvasElement} The cached thumbnail image.
+ * @return {!HTMLCanvasElement} The cached thumbnail image.
  */
-ImageView.prototype.getThumbnail = function() { return this.thumbnailCanvas_; };
+ImageView.prototype.getThumbnail = function() {
+  assert(this.thumbnailCanvas_);
+  return this.thumbnailCanvas_;
+};
 
 /**
  * @return {number} The content revision number.

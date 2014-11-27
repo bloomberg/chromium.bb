@@ -398,7 +398,7 @@ Command.Crop.prototype.revertView = function(canvas, imageView) {
  *
  * @param {string} name Command name.
  * @param {function(ImageData,ImageData,number,number)} filter Filter function.
- * @param {string} message Message to display when done.
+ * @param {?string} message Message to display when done.
  * @constructor
  * @extends {Command}
  */
