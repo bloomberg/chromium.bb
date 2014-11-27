@@ -1800,7 +1800,6 @@ void AXRenderObject::handleAriaExpandedChanged()
         case TreeGridRole:
         case GridRole:
         case TableRole:
-        case BrowserRole:
             foundParent = true;
             break;
         default:
