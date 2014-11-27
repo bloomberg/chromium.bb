@@ -3517,3 +3517,11 @@
    fun:_ZN7content28BrowserGpuChannelHostFactory21GpuChannelEstablishedEv
    fun:_ZN7content28BrowserGpuChannelHostFactory16EstablishRequest12FinishOnMainEv
 }
+{
+   Expected_leak_due_to_gpu_thread_leaked_by_lazy_instance
+   Memcheck:Leak
+   fun:calloc
+   fun:pthread_setspecific
+   ...
+   fun:_ZN3gpu22InProcessCommandBuffer21InitializeOnGpuThreadERKNS0_27InitializeOnGpuThreadParamsE
+}
