@@ -758,15 +758,15 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
 
   ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
 
-  std::string result = CreateNotification(
+  std::string original_result = CreateNotification(
       browser(), true, "abc.png", "Title1", "Body1", "chat");
-  EXPECT_NE("-1", result);
+  EXPECT_NE("-1", original_result);
 
   ASSERT_EQ(1, GetNotificationCount());
 
-  result = CreateNotification(
+  std::string replaced_result = CreateNotification(
       browser(), false, "no_such_file.png", "Title2", "Body2", "chat");
-  EXPECT_NE("-1", result);
+  EXPECT_NE("-1", replaced_result);
 
   ASSERT_EQ(1, GetNotificationCount());
   message_center::NotificationList::Notifications notifications =
@@ -774,6 +774,15 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
   EXPECT_EQ(base::ASCIIToUTF16("Title2"), (*notifications.rbegin())->title());
   EXPECT_EQ(base::ASCIIToUTF16("Body2"),
             (*notifications.rbegin())->message());
+
+  std::string result;
+  bool success = content::ExecuteScriptAndExtractString(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      std::string("hasBeenClosed(") + original_result + ");",
+      &result);
+
+  EXPECT_TRUE(success);
+  EXPECT_EQ(result, "true");
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestLastUsage) {
