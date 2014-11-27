@@ -12,6 +12,7 @@ usage() {
   echo "Usage: $0 [--options]"
   echo "Options:"
   echo "--[no-]syms: enable or disable installation of debugging symbols"
+  echo "--lib32: enable installation of 32-bit libraries, e.g. for V8 snapshot"
   echo "--[no-]arm: enable or disable installation of arm cross toolchain"
   echo "--[no-]chromeos-fonts: enable or disable installation of Chrome OS"\
        "fonts"
@@ -44,9 +45,7 @@ do
   case "$1" in
   --syms)                   do_inst_syms=1;;
   --no-syms)                do_inst_syms=0;;
-  # TODO(phajdan.jr): Remove the lib32 flags when nothing else refers to them.
   --lib32)                  do_inst_lib32=1;;
-  --no-lib32)               do_inst_lib32=0;;
   --arm)                    do_inst_arm=1;;
   --no-arm)                 do_inst_arm=0;;
   --chromeos-fonts)         do_inst_chromeos_fonts=1;;
@@ -62,6 +61,10 @@ do
   esac
   shift
 done
+
+if test "$do_inst_arm" = "1"; then
+  do_inst_lib32=1
+fi
 
 # Check for lsb_release command in $PATH
 if ! which lsb_release > /dev/null; then
@@ -137,11 +140,13 @@ dbg_list="libatk1.0-dbg libc6-dbg libcairo2-dbg libfontconfig1-dbg
           libxrandr2-dbg libxrender1-dbg libxtst6-dbg zlib1g-dbg
           libstdc++6-4.6-dbg"
 
+# 32-bit libraries needed e.g. to compile V8 snapshot for Android or armhf
+lib32_list="linux-libc-dev:i386"
+
 # arm cross toolchain packages needed to build chrome on armhf
 arm_list="libc6-dev-armhf-cross
           linux-libc-dev-armhf-cross
-          g++-arm-linux-gnueabihf
-          linux-libc-dev:i386"
+          g++-arm-linux-gnueabihf"
 
 # Packages to build NaCl, its toolchains, and its ports.
 naclports_list="ant autoconf bison cmake gawk intltool xutils-dev xsltproc"
@@ -207,6 +212,19 @@ if package_exists appmenu-gtk; then
   lib_list="$lib_list appmenu-gtk"
 fi
 
+# When cross building for arm/Android on 64-bit systems the host binaries
+# that are part of v8 need to be compiled with -m32 which means
+# that basic multilib support is needed.
+if file /sbin/init | grep -q 'ELF 64-bit'; then
+  # gcc-multilib conflicts with the arm cross compiler (at least in trusty) but
+  # g++-X.Y-multilib gives us the 32-bit support that we need. Find out the
+  # appropriate value of X and Y by seeing what version the current
+  # distribution's g++-multilib package depends on.
+  multilib_package=$(apt-cache depends g++-multilib --important | \
+      grep -E --color=never --only-matching '\bg\+\+-[0-9.]+-multilib\b')
+  lib32_list="$lib32_list $multilib_package"
+fi
+
 # Waits for the user to press 'Y' or 'N'. Either uppercase of lowercase is
 # accepted. Returns 0 for 'Y' and 1 for 'N'. If an optional parameter has
 # been provided to yes_no(), the function also accepts RETURN as a user input.
@@ -265,17 +283,11 @@ else
   dbg_list=
 fi
 
-# When cross building for arm on 64-bit systems the host binaries
-# that are part of v8 need to be compiled with -m32 which means
-# that basic multilib support is needed.
-if file /sbin/init | grep -q 'ELF 64-bit'; then
-  if [ "$lsb_release" = "trusty" ]; then
-    # gcc-multilib conflicts with the arm cross compiler in trusty but
-    # g++-4.8-multilib gives us the 32-bit support that we need.
-    arm_list="$arm_list g++-4.8-multilib"
-  else
-    arm_list="$arm_list g++-multilib"
-  fi
+if test "$do_inst_lib32" = "1" ; then
+  echo "Including 32-bit libraries for ARM/Android."
+else
+  echo "Skipping 32-bit libraries for ARM/Android."
+  lib32_list=
 fi
 
 if test "$do_inst_arm" = "1" ; then
@@ -293,8 +305,8 @@ else
 fi
 
 packages="$(
-  echo "${dev_list} ${lib_list} ${dbg_list} ${arm_list} ${nacl_list}" |
-  tr " " "\n" | sort -u | tr "\n" " "
+  echo "${dev_list} ${lib_list} ${dbg_list} ${lib32_list} ${arm_list}"\
+       "${nacl_list}" | tr " " "\n" | sort -u | tr "\n" " "
 )"
 
 if [ 1 -eq "${do_quick_check-0}" ] ; then
@@ -333,6 +345,11 @@ if [ 1 -eq "${do_quick_check-0}" ] ; then
   exit 0
 fi
 
+if test "$do_inst_lib32" = "1" || test "$do_inst_nacl" = "1"; then
+  if [[ ! $lsb_release =~ (precise|quantal|raring) ]]; then
+    sudo dpkg --add-architecture i386
+  fi
+fi
 sudo apt-get update
 
 # We initially run "apt-get" with the --reinstall option and parse its output.

@@ -19,7 +19,9 @@ fi
 
 # Install first the default Linux build deps.
 "$(dirname "${BASH_SOURCE[0]}")/install-build-deps.sh" \
-    --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt "$@"
+    --no-syms --lib32 --no-arm --no-chromeos-fonts --no-nacl --no-prompt "$@"
+
+lsb_release=$(lsb_release --codename --short)
 
 # The temporary directory used to store output of update-java-alternatives
 TEMPDIR=$(mktemp -d)
@@ -30,8 +32,6 @@ cleanup() {
   exit ${status}
 }
 trap cleanup EXIT
-
-sudo apt-get update
 
 # Fix deps
 sudo apt-get -f install
@@ -44,13 +44,13 @@ sudo apt-get -f install
 # common
 sudo apt-get -y install lighttpd python-pexpect xvfb x11-utils
 
-# Few binaries in the Android SDK require 32-bit libraries on the host.
-sudo apt-get -y install lib32z1 g++-multilib
-
-# On Trusty-based systems you can't compile V8's mksnapshot without this one.
-# It is compiled for the host, using the -m32 flag, so it needs some 32 bit
-# development support. It seems harmless on older Linux releases.
-sudo apt-get -y install linux-libc-dev:i386
+# Some binaries in the Android SDK require 32-bit libraries on the host.
+# See https://developer.android.com/sdk/installing/index.html?pkg=tools
+if [[ $lsb_release == "precise" ]]; then
+  sudo apt-get -y install ia32-libs
+else
+  sudo apt-get -y install libncurses5:i386 libstdc++6:i386 zlib1g:i386
+fi
 
 sudo apt-get -y install ant
 
