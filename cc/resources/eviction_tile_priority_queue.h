@@ -11,16 +11,17 @@
 #include "cc/base/cc_export.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/resources/tile_priority.h"
+#include "cc/resources/tiling_set_eviction_queue.h"
 
 namespace cc {
 
 class CC_EXPORT EvictionTilePriorityQueue {
  public:
-  struct PairedPictureLayerQueue {
-    PairedPictureLayerQueue();
-    PairedPictureLayerQueue(const PictureLayerImpl::Pair& layer_pair,
-                            TreePriority tree_priority);
-    ~PairedPictureLayerQueue();
+  struct PairedTilingSetQueue {
+    PairedTilingSetQueue();
+    PairedTilingSetQueue(const PictureLayerImpl::Pair& layer_pair,
+                         TreePriority tree_priority);
+    ~PairedTilingSetQueue();
 
     bool IsEmpty() const;
     Tile* Top(TreePriority tree_priority);
@@ -28,8 +29,8 @@ class CC_EXPORT EvictionTilePriorityQueue {
 
     WhichTree NextTileIteratorTree(TreePriority tree_priority) const;
 
-    PictureLayerImpl::LayerEvictionTileIterator active_iterator;
-    PictureLayerImpl::LayerEvictionTileIterator pending_iterator;
+    scoped_ptr<TilingSetEvictionQueue> active_queue;
+    scoped_ptr<TilingSetEvictionQueue> pending_queue;
 
     // TODO(vmpstr): Investigate removing this.
     std::vector<Tile*> returned_shared_tiles;
@@ -48,9 +49,9 @@ class CC_EXPORT EvictionTilePriorityQueue {
 
  private:
   // TODO(vmpstr): This is potentially unnecessary if it becomes the case that
-  // PairedPictureLayerQueue is fast enough to copy. In that case, we can use
-  // objects directly (ie std::vector<PairedPictureLayerQueue>).
-  ScopedPtrVector<PairedPictureLayerQueue> paired_queues_;
+  // PairedTilingSetQueue is fast enough to copy. In that case, we can use
+  // objects directly (ie std::vector<PairedTilingSetQueue>).
+  ScopedPtrVector<PairedTilingSetQueue> paired_queues_;
   TreePriority tree_priority_;
 
   DISALLOW_COPY_AND_ASSIGN(EvictionTilePriorityQueue);

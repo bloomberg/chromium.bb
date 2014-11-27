@@ -15,6 +15,7 @@
 #include "cc/resources/picture_layer_tiling.h"
 #include "cc/resources/picture_layer_tiling_set.h"
 #include "cc/resources/picture_pile_impl.h"
+#include "cc/resources/tiling_set_eviction_queue.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
@@ -67,39 +68,13 @@ class CC_EXPORT PictureLayerImpl
     PictureLayerTiling::TilingRasterTileIterator iterators_[NUM_ITERATORS];
   };
 
-  class CC_EXPORT LayerEvictionTileIterator {
-   public:
-    LayerEvictionTileIterator();
-    LayerEvictionTileIterator(PictureLayerImpl* layer,
-                              TreePriority tree_priority);
-    ~LayerEvictionTileIterator();
-
-    Tile* operator*();
-    const Tile* operator*() const;
-    LayerEvictionTileIterator& operator++();
-    operator bool() const;
-
-   private:
-    bool AdvanceToNextCategory();
-    bool AdvanceToNextTilingRangeType();
-    bool AdvanceToNextTiling();
-
-    PictureLayerTilingSet::TilingRange CurrentTilingRange() const;
-    size_t CurrentTilingIndex() const;
-
-    PictureLayerImpl* layer_;
-    TreePriority tree_priority_;
-
-    PictureLayerTiling::EvictionCategory current_category_;
-    PictureLayerTilingSet::TilingRangeType current_tiling_range_type_;
-    size_t current_tiling_;
-    PictureLayerTiling::TilingEvictionTileIterator current_iterator_;
-  };
-
   static scoped_ptr<PictureLayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return make_scoped_ptr(new PictureLayerImpl(tree_impl, id));
   }
   ~PictureLayerImpl() override;
+
+  scoped_ptr<TilingSetEvictionQueue> CreateEvictionQueue(
+      TreePriority tree_priority);
 
   // LayerImpl overrides.
   const char* LayerTypeAsString() const override;

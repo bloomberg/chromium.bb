@@ -118,24 +118,6 @@ class CC_EXPORT PictureLayerTiling {
     TilingData::SpiralDifferenceIterator spiral_iterator_;
   };
 
-  class CC_EXPORT TilingEvictionTileIterator {
-   public:
-    TilingEvictionTileIterator();
-    TilingEvictionTileIterator(PictureLayerTiling* tiling,
-                               TreePriority tree_priority,
-                               EvictionCategory category);
-    ~TilingEvictionTileIterator();
-
-    operator bool() const;
-    const Tile* operator*() const;
-    Tile* operator*();
-    TilingEvictionTileIterator& operator++();
-
-   private:
-    const std::vector<Tile*>* eviction_tiles_;
-    size_t current_eviction_tiles_index_;
-  };
-
   ~PictureLayerTiling();
 
   // Create a tiling with no tiles.  CreateTiles must be called to add some.
@@ -299,7 +281,7 @@ class CC_EXPORT PictureLayerTiling {
  protected:
   friend class CoverageIterator;
   friend class TilingRasterTileIterator;
-  friend class TilingEvictionTileIterator;
+  friend class TilingSetEvictionQueue;
 
   typedef std::pair<int, int> TileMapKey;
   typedef base::hash_map<TileMapKey, scoped_refptr<Tile>> TileMap;

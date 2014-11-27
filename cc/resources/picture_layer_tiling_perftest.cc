@@ -178,98 +178,6 @@ class PictureLayerTilingPerfTest : public testing::Test {
                            true);
   }
 
-  void RunEvictionIteratorConstructTest(const std::string& test_name,
-                                        const gfx::Rect& viewport) {
-    gfx::Size bounds(viewport.size());
-    picture_layer_tiling_ =
-        PictureLayerTiling::Create(1, bounds, &picture_layer_tiling_client_);
-    picture_layer_tiling_client_.set_tree(ACTIVE_TREE);
-    picture_layer_tiling_->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
-                                                    Occlusion());
-
-    timer_.Reset();
-    TreePriority priorities[] = {SAME_PRIORITY_FOR_BOTH_TREES,
-                                 SMOOTHNESS_TAKES_PRIORITY,
-                                 NEW_CONTENT_TAKES_PRIORITY};
-    int priority_count = 0;
-    do {
-      PictureLayerTiling::TilingEvictionTileIterator it(
-          picture_layer_tiling_.get(),
-          priorities[priority_count],
-          PictureLayerTiling::NOW);
-      priority_count = (priority_count + 1) % arraysize(priorities);
-      timer_.NextLap();
-    } while (!timer_.HasTimeLimitExpired());
-
-    perf_test::PrintResult("tiling_eviction_tile_iterator_construct",
-                           "",
-                           test_name,
-                           timer_.LapsPerSecond(),
-                           "runs/s",
-                           true);
-  }
-
-  void RunEvictionIteratorConstructAndIterateTest(const std::string& test_name,
-                                                  int num_tiles,
-                                                  const gfx::Rect& viewport) {
-    gfx::Size bounds(10000, 10000);
-    picture_layer_tiling_ =
-        PictureLayerTiling::Create(1, bounds, &picture_layer_tiling_client_);
-    picture_layer_tiling_client_.set_tree(ACTIVE_TREE);
-    picture_layer_tiling_->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
-                                                    Occlusion());
-
-    TreePriority priorities[] = {SAME_PRIORITY_FOR_BOTH_TREES,
-                                 SMOOTHNESS_TAKES_PRIORITY,
-                                 NEW_CONTENT_TAKES_PRIORITY};
-
-    // Ensure all tiles have resources.
-    std::vector<Tile*> all_tiles = picture_layer_tiling_->AllTilesForTesting();
-    for (std::vector<Tile*>::iterator tile_it = all_tiles.begin();
-         tile_it != all_tiles.end();
-         ++tile_it) {
-      Tile* tile = *tile_it;
-      ManagedTileState::DrawInfo& draw_info = tile->draw_info();
-      draw_info.SetResourceForTesting(
-          ScopedResource::Create(resource_provider_.get()).Pass());
-    }
-
-    int priority_count = 0;
-    timer_.Reset();
-    do {
-      int count = num_tiles;
-      PictureLayerTiling::TilingEvictionTileIterator it(
-          picture_layer_tiling_.get(),
-          priorities[priority_count],
-          PictureLayerTiling::EVENTUALLY);
-      while (count--) {
-        ASSERT_TRUE(it) << "count: " << count;
-        ASSERT_TRUE(*it != NULL) << "count: " << count;
-        ++it;
-      }
-      priority_count = (priority_count + 1) % arraysize(priorities);
-      timer_.NextLap();
-    } while (!timer_.HasTimeLimitExpired());
-
-    // Remove all resources from tiles to make sure the tile version destructor
-    // doesn't complain.
-    for (std::vector<Tile*>::iterator tile_it = all_tiles.begin();
-         tile_it != all_tiles.end();
-         ++tile_it) {
-      Tile* tile = *tile_it;
-      ManagedTileState::DrawInfo& draw_info = tile->draw_info();
-      draw_info.SetResourceForTesting(nullptr);
-    }
-
-    perf_test::PrintResult(
-        "tiling_eviction_tile_iterator_construct_and_iterate",
-        "",
-        test_name,
-        timer_.LapsPerSecond(),
-        "runs/s",
-        true);
-  }
-
  private:
   FakePictureLayerTilingClient picture_layer_tiling_client_;
   scoped_ptr<PictureLayerTiling> picture_layer_tiling_;
@@ -330,27 +238,6 @@ TEST_F(PictureLayerTilingPerfTest,
   RunRasterIteratorConstructAndIterateTest(
       "64_100x100", 64, gfx::Rect(0, 0, 100, 100));
   RunRasterIteratorConstructAndIterateTest(
-      "64_500x500", 64, gfx::Rect(0, 0, 500, 500));
-}
-
-TEST_F(PictureLayerTilingPerfTest, TilingEvictionTileIteratorConstruct) {
-  RunEvictionIteratorConstructTest("0_0_100x100", gfx::Rect(0, 0, 100, 100));
-  RunEvictionIteratorConstructTest("50_0_100x100", gfx::Rect(50, 0, 100, 100));
-  RunEvictionIteratorConstructTest("100_0_100x100",
-                                   gfx::Rect(100, 0, 100, 100));
-  RunEvictionIteratorConstructTest("150_0_100x100",
-                                   gfx::Rect(150, 0, 100, 100));
-}
-
-TEST_F(PictureLayerTilingPerfTest,
-       TilingEvictionTileIteratorConstructAndIterate) {
-  RunEvictionIteratorConstructAndIterateTest(
-      "32_100x100", 32, gfx::Rect(0, 0, 100, 100));
-  RunEvictionIteratorConstructAndIterateTest(
-      "32_500x500", 32, gfx::Rect(0, 0, 500, 500));
-  RunEvictionIteratorConstructAndIterateTest(
-      "64_100x100", 64, gfx::Rect(0, 0, 100, 100));
-  RunEvictionIteratorConstructAndIterateTest(
       "64_500x500", 64, gfx::Rect(0, 0, 500, 500));
 }
 

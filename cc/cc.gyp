@@ -453,6 +453,8 @@
         'resources/tile_manager.h',
         'resources/tile_priority.cc',
         'resources/tile_priority.h',
+        'resources/tiling_set_eviction_queue.cc',
+        'resources/tiling_set_eviction_queue.h',
         'resources/transferable_resource.cc',
         'resources/transferable_resource.h',
         'resources/ui_resource_bitmap.cc',

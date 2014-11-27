@@ -115,7 +115,7 @@ class PictureLayerImplPerfTest : public testing::Test {
                            true);
   }
 
-  void RunEvictionIteratorConstructAndIterateTest(
+  void RunEvictionQueueConstructAndIterateTest(
       const std::string& test_name,
       int num_tiles,
       const gfx::Size& viewport_size) {
@@ -129,12 +129,12 @@ class PictureLayerImplPerfTest : public testing::Test {
     timer_.Reset();
     do {
       int count = num_tiles;
-      PictureLayerImpl::LayerEvictionTileIterator it(
-          pending_layer_, priorities[priority_count]);
+      scoped_ptr<TilingSetEvictionQueue> queue =
+          pending_layer_->CreateEvictionQueue(priorities[priority_count]);
       while (count--) {
-        ASSERT_TRUE(it) << "count: " << count;
-        ASSERT_TRUE(*it != nullptr) << "count: " << count;
-        ++it;
+        ASSERT_TRUE(!queue->IsEmpty()) << "count: " << count;
+        ASSERT_TRUE(queue->Top() != nullptr) << "count: " << count;
+        queue->Pop();
       }
       priority_count = (priority_count + 1) % arraysize(priorities);
       timer_.NextLap();
@@ -148,8 +148,8 @@ class PictureLayerImplPerfTest : public testing::Test {
                            true);
   }
 
-  void RunEvictionIteratorConstructTest(const std::string& test_name,
-                                        const gfx::Rect& viewport) {
+  void RunEvictionQueueConstructTest(const std::string& test_name,
+                                     const gfx::Rect& viewport) {
     host_impl_.SetViewportSize(viewport.size());
     pending_layer_->SetScrollOffset(
         gfx::ScrollOffset(viewport.x(), viewport.y()));
@@ -161,8 +161,8 @@ class PictureLayerImplPerfTest : public testing::Test {
     int priority_count = 0;
     timer_.Reset();
     do {
-      PictureLayerImpl::LayerEvictionTileIterator it(
-          pending_layer_, priorities[priority_count]);
+      scoped_ptr<TilingSetEvictionQueue> queue =
+          pending_layer_->CreateEvictionQueue(priorities[priority_count]);
       priority_count = (priority_count + 1) % arraysize(priorities);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
@@ -225,6 +225,7 @@ TEST_F(PictureLayerImplPerfTest, LayerRasterTileIteratorConstruct) {
                                  gfx::Rect(9999, 0, 100, 100));
 }
 
+// TODO(e_hakkinen): Rename these tests once the perf numbers are in.
 TEST_F(PictureLayerImplPerfTest, LayerEvictionTileIteratorConstructAndIterate) {
   SetupPendingTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
 
@@ -240,16 +241,17 @@ TEST_F(PictureLayerImplPerfTest, LayerEvictionTileIteratorConstructAndIterate) {
   ASSERT_TRUE(host_impl_.tile_manager() != nullptr);
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(all_tiles);
 
-  RunEvictionIteratorConstructAndIterateTest(
+  RunEvictionQueueConstructAndIterateTest(
       "32_100x100", 32, gfx::Size(100, 100));
-  RunEvictionIteratorConstructAndIterateTest(
+  RunEvictionQueueConstructAndIterateTest(
       "32_500x500", 32, gfx::Size(500, 500));
-  RunEvictionIteratorConstructAndIterateTest(
+  RunEvictionQueueConstructAndIterateTest(
       "64_100x100", 64, gfx::Size(100, 100));
-  RunEvictionIteratorConstructAndIterateTest(
+  RunEvictionQueueConstructAndIterateTest(
       "64_500x500", 64, gfx::Size(500, 500));
 }
 
+// TODO(e_hakkinen): Rename these tests once the perf numbers are in.
 TEST_F(PictureLayerImplPerfTest, LayerEvictionTileIteratorConstruct) {
   SetupPendingTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
 
@@ -265,11 +267,9 @@ TEST_F(PictureLayerImplPerfTest, LayerEvictionTileIteratorConstruct) {
   ASSERT_TRUE(host_impl_.tile_manager() != nullptr);
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(all_tiles);
 
-  RunEvictionIteratorConstructTest("0_0_100x100", gfx::Rect(0, 0, 100, 100));
-  RunEvictionIteratorConstructTest("5000_0_100x100",
-                                   gfx::Rect(5000, 0, 100, 100));
-  RunEvictionIteratorConstructTest("9999_0_100x100",
-                                   gfx::Rect(9999, 0, 100, 100));
+  RunEvictionQueueConstructTest("0_0_100x100", gfx::Rect(0, 0, 100, 100));
+  RunEvictionQueueConstructTest("5000_0_100x100", gfx::Rect(5000, 0, 100, 100));
+  RunEvictionQueueConstructTest("9999_0_100x100", gfx::Rect(9999, 0, 100, 100));
 }
 
 }  // namespace

@@ -2903,7 +2903,7 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
   EXPECT_EQ(0u, high_res_tile_count);
 }
 
-TEST_F(PictureLayerImplTest, LayerEvictionTileIterator) {
+TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(1000, 1000);
 
@@ -2964,14 +2964,10 @@ TEST_F(PictureLayerImplTest, LayerEvictionTileIterator) {
   EXPECT_GT(number_of_marked_tiles, 1u);
   EXPECT_GT(number_of_unmarked_tiles, 1u);
 
-  // Empty iterator.
-  PictureLayerImpl::LayerEvictionTileIterator it;
-  EXPECT_FALSE(it);
-
   // Tiles don't have resources yet.
-  it = PictureLayerImpl::LayerEvictionTileIterator(
-      pending_layer_, SAME_PRIORITY_FOR_BOTH_TREES);
-  EXPECT_FALSE(it);
+  scoped_ptr<TilingSetEvictionQueue> queue =
+      pending_layer_->CreateEvictionQueue(SAME_PRIORITY_FOR_BOTH_TREES);
+  EXPECT_TRUE(queue->IsEmpty());
 
   host_impl_.tile_manager()->InitializeTilesWithResourcesForTesting(all_tiles);
 
@@ -2980,11 +2976,9 @@ TEST_F(PictureLayerImplTest, LayerEvictionTileIterator) {
   size_t scale_index = 0;
   bool reached_visible = false;
   Tile* last_tile = nullptr;
-  for (it = PictureLayerImpl::LayerEvictionTileIterator(
-           pending_layer_, SAME_PRIORITY_FOR_BOTH_TREES);
-       it;
-       ++it) {
-    Tile* tile = *it;
+  queue = pending_layer_->CreateEvictionQueue(SAME_PRIORITY_FOR_BOTH_TREES);
+  while (!queue->IsEmpty()) {
+    Tile* tile = queue->Top();
     if (!last_tile)
       last_tile = tile;
 
@@ -3022,6 +3016,7 @@ TEST_F(PictureLayerImplTest, LayerEvictionTileIterator) {
     }
 
     last_tile = tile;
+    queue->Pop();
   }
 
   EXPECT_TRUE(reached_visible);
@@ -3029,8 +3024,8 @@ TEST_F(PictureLayerImplTest, LayerEvictionTileIterator) {
 
   scale_index = 0;
   bool reached_required = false;
-  for (; it; ++it) {
-    Tile* tile = *it;
+  while (!queue->IsEmpty()) {
+    Tile* tile = queue->Top();
     EXPECT_TRUE(tile);
 
     TilePriority priority = tile->priority(PENDING_TREE);
@@ -3051,6 +3046,7 @@ TEST_F(PictureLayerImplTest, LayerEvictionTileIterator) {
 
     EXPECT_FLOAT_EQ(tile->contents_scale(), expected_scales[scale_index]);
     unique_tiles.insert(tile);
+    queue->Pop();
   }
 
   EXPECT_TRUE(reached_required);
@@ -3841,12 +3837,10 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
       size_t occluded_tile_count = 0u;
       Tile* last_tile = nullptr;
 
-      for (PictureLayerImpl::LayerEvictionTileIterator it =
-               PictureLayerImpl::LayerEvictionTileIterator(layer,
-                                                           tree_priority);
-           it;
-           ++it) {
-        Tile* tile = *it;
+      scoped_ptr<TilingSetEvictionQueue> queue =
+          layer->CreateEvictionQueue(tree_priority);
+      while (!queue->IsEmpty()) {
+        Tile* tile = queue->Top();
         if (!last_tile)
           last_tile = tile;
 
@@ -3874,6 +3868,7 @@ class OcclusionTrackingPictureLayerImplTest : public PictureLayerImplTest {
           }
         }
         last_tile = tile;
+        queue->Pop();
       }
       EXPECT_EQ(expected_occluded_tile_count[priority_count],
                 occluded_tile_count);
