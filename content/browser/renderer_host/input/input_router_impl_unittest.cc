@@ -992,8 +992,7 @@ TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
 
 TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
   // We test every gesture type, ensuring that the stream of gestures is valid.
-  const int kEventTypesLength = 29;
-  WebInputEvent::Type eventTypes[kEventTypesLength] = {
+  const WebInputEvent::Type eventTypes[] = {
       WebInputEvent::GestureTapDown,
       WebInputEvent::GestureShowPress,
       WebInputEvent::GestureTapCancel,
@@ -1018,12 +1017,11 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
       WebInputEvent::GestureTapCancel,
       WebInputEvent::GestureScrollBegin,
       WebInputEvent::GestureScrollUpdate,
-      WebInputEvent::GestureScrollUpdateWithoutPropagation,
       WebInputEvent::GesturePinchBegin,
       WebInputEvent::GesturePinchUpdate,
       WebInputEvent::GesturePinchEnd,
       WebInputEvent::GestureScrollEnd};
-  for (int i = 0; i < kEventTypesLength; ++i) {
+  for (size_t i = 0; i < arraysize(eventTypes); ++i) {
     WebInputEvent::Type type = eventTypes[i];
     if (!WebInputEventTraits::IgnoresAckDisposition(GetEventWithType(type))) {
       SimulateGestureEvent(type, blink::WebGestureDeviceTouchscreen);

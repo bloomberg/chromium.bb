@@ -165,7 +165,9 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
 
   void SendCurrentTouchEvent(blink::WebInputEvent::Type);
 
-  void GestureEvent(blink::WebInputEvent::Type, gin::Arguments*);
+  void GestureEvent(blink::WebInputEvent::Type,
+                    gin::Arguments*,
+                    bool preventPropagation = false);
 
   void UpdateClickCountForButton(blink::WebMouseEvent::Button);
 

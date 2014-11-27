@@ -147,7 +147,6 @@ int ToGestureEventType(WebInputEvent::Type type) {
     case WebInputEvent::GesturePinchUpdate:
       return GESTURE_EVENT_TYPE_PINCH_BY;
     case WebInputEvent::GestureTwoFingerTap:
-    case WebInputEvent::GestureScrollUpdateWithoutPropagation:
     default:
       NOTREACHED() << "Invalid source gesture type: "
                    << WebInputEventTraits::GetName(type);

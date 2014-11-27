@@ -37,7 +37,6 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
       scrolling_ = true;
       break;
     case WebInputEvent::GestureScrollUpdate:
-    case WebInputEvent::GestureScrollUpdateWithoutPropagation:
       if (!scrolling_)
         error_msg->append("Scroll update outside of scroll\n");
       break;

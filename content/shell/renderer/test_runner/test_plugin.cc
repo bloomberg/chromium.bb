@@ -620,7 +620,6 @@ bool TestPlugin::handleInputEvent(const blink::WebInputEvent& event,
     case blink::WebInputEvent::GestureScrollEnd:
       event_name = "GestureScrollEnd";
       break;
-    case blink::WebInputEvent::GestureScrollUpdateWithoutPropagation:
     case blink::WebInputEvent::GestureScrollUpdate:
       event_name = "GestureScrollUpdate";
       break;
@@ -678,6 +677,10 @@ bool TestPlugin::handleInputEvent(const blink::WebInputEvent& event,
       break;
     case blink::WebInputEvent::TouchCancel:
       event_name = "TouchCancel";
+      break;
+    default:
+      NOTREACHED() << "Received unexpected event type: " << event.type;
+      event_name = "unknown";
       break;
   }
 

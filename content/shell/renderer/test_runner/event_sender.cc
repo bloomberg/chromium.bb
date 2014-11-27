@@ -393,6 +393,8 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void GestureScrollBegin(gin::Arguments* args);
   void GestureScrollEnd(gin::Arguments* args);
   void GestureScrollUpdate(gin::Arguments* args);
+  //TODO: Remove GestureScrollUpdateWithoutPropagation once CL 732483003 has
+  // landed
   void GestureScrollUpdateWithoutPropagation(gin::Arguments* args);
   void GestureTap(gin::Arguments* args);
   void GestureTapDown(gin::Arguments* args);
@@ -1753,7 +1755,7 @@ void EventSender::GestureScrollUpdate(gin::Arguments* args) {
 }
 
 void EventSender::GestureScrollUpdateWithoutPropagation(gin::Arguments* args) {
-  GestureEvent(WebInputEvent::GestureScrollUpdateWithoutPropagation, args);
+  GestureEvent(WebInputEvent::GestureScrollUpdate, args, true);
 }
 
 void EventSender::GestureTap(gin::Arguments* args) {
@@ -1957,8 +1959,10 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type) {
   }
 }
 
+//TODO Remove preventPropagation from arguments once CL 732483003 has landed
 void EventSender::GestureEvent(WebInputEvent::Type type,
-                               gin::Arguments* args) {
+                               gin::Arguments* args,
+                               bool preventPropagation) {
   double x;
   double y;
   if (!args->GetNext(&x) || !args->GetNext(&y)) {
@@ -1971,9 +1975,17 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
 
   switch (type) {
     case WebInputEvent::GestureScrollUpdate:
-    case WebInputEvent::GestureScrollUpdateWithoutPropagation:
+    {
+      if (!preventPropagation && !args->PeekNext().IsEmpty()) {
+        if (!args->GetNext(&preventPropagation)) {
+          args->ThrowError();
+          return;
+        }
+      }
+
       event.data.scrollUpdate.deltaX = static_cast<float>(x);
       event.data.scrollUpdate.deltaY = static_cast<float>(y);
+      event.data.scrollUpdate.preventPropagation = preventPropagation;
       event.x = current_gesture_location_.x;
       event.y = current_gesture_location_.y;
       current_gesture_location_.x =
@@ -1981,6 +1993,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
       current_gesture_location_.y =
           current_gesture_location_.y + event.data.scrollUpdate.deltaY;
       break;
+    }
     case WebInputEvent::GestureScrollBegin:
       current_gesture_location_ = WebPoint(x, y);
       event.x = current_gesture_location_.x;

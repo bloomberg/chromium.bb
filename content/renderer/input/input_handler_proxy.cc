@@ -118,8 +118,7 @@ WebGestureEvent ObtainGestureScrollBegin(const WebGestureEvent& event) {
 void SendScrollLatencyUma(const WebInputEvent& event,
                           const ui::LatencyInfo& latency_info) {
   if (!(event.type == WebInputEvent::GestureScrollBegin ||
-        event.type == WebInputEvent::GestureScrollUpdate ||
-        event.type == WebInputEvent::GestureScrollUpdateWithoutPropagation))
+        event.type == WebInputEvent::GestureScrollUpdate))
     return;
 
   ui::LatencyInfo::LatencyMap::const_iterator it =
