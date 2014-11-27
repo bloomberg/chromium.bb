@@ -45,6 +45,11 @@ Promise.resolve(null).then(function(result) {
     return crypto.subtle.encrypt({name: 'AES-CBC', iv: new Uint8Array(0)}, key, data);
 }).then(failAndFinishJSTest, function(result) {
     logError(result);
+
+    // iv is longer than expected
+    return crypto.subtle.encrypt({name: 'AES-CBC', iv: new ArrayBuffer(17)}, key, data);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
 }).then(finishJSTest, failAndFinishJSTest);
 
 </script>

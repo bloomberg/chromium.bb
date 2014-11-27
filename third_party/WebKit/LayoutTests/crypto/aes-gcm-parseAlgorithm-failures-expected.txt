@@ -4,9 +4,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 error is: SyntaxError: AesGcmParams: iv: Missing required property
-error is: SyntaxError: AesGcmParams: iv: Not an ArrayBufferView
-error is: SyntaxError: AesGcmParams: iv: Not an ArrayBufferView
-error is: SyntaxError: AesGcmParams: additionalData: Not an ArrayBufferView
+error is: SyntaxError: AesGcmParams: iv: Not a BufferSource
+error is: SyntaxError: AesGcmParams: iv: Not a BufferSource
+error is: SyntaxError: AesGcmParams: additionalData: Not a BufferSource
 error is: SyntaxError: AesGcmParams: tagLength: Is not a number
 error is: SyntaxError: AesGcmParams: tagLength: Outside of numeric range
 error is: SyntaxError: AesGcmParams: tagLength: Outside of numeric range

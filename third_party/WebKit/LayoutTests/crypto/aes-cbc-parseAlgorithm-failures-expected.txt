@@ -3,9 +3,10 @@ Tests bad algorithm inputs for AES-CBC
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-error is: SyntaxError: AesCbcParams: iv: Not an ArrayBufferView
+error is: SyntaxError: AesCbcParams: iv: Not a BufferSource
 error is: SyntaxError: AesCbcParams: iv: Missing required property
-error is: SyntaxError: AesCbcParams: iv: Not an ArrayBufferView
+error is: SyntaxError: AesCbcParams: iv: Not a BufferSource
+error is: DataError: AesCbcParams: iv: Must be 16 bytes
 error is: DataError: AesCbcParams: iv: Must be 16 bytes
 PASS successfullyParsed is true
 
