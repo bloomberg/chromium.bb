@@ -5,9 +5,14 @@
 #ifndef UI_OZONE_PLATFORM_DRI_DRI_WINDOW_DELEGATE_H_
 #define UI_OZONE_PLATFORM_DRI_DRI_WINDOW_DELEGATE_H_
 
+#include <vector>
+
 #include "ui/gfx/native_widget_types.h"
 
+class SkBitmap;
+
 namespace gfx {
+class Point;
 class Rect;
 }  // namespace gfx
 
@@ -45,6 +50,15 @@ class DriWindowDelegate {
 
   // Called when the window is resized/moved.
   virtual void OnBoundsChanged(const gfx::Rect& bounds) = 0;
+
+  // Update the HW cursor bitmap & move to specified location. If
+  // the bitmap is empty, the cursor is hidden.
+  virtual void SetCursor(const std::vector<SkBitmap>& bitmaps,
+                         const gfx::Point& location,
+                         int frame_delay_ms) = 0;
+
+  // Move the HW cursor to the specified location.
+  virtual void MoveCursor(const gfx::Point& location) = 0;
 };
 
 }  // namespace ui

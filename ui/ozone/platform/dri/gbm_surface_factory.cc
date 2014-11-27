@@ -66,7 +66,7 @@ class SingleOverlay : public OverlayCandidatesOzone {
 }  // namespace
 
 GbmSurfaceFactory::GbmSurfaceFactory(bool allow_surfaceless)
-    : DriSurfaceFactory(NULL, NULL, NULL),
+    : DriSurfaceFactory(NULL, NULL),
       device_(NULL),
       allow_surfaceless_(allow_surfaceless) {
 }
@@ -238,8 +238,8 @@ bool GbmSurfaceFactory::CanCreateNativePixmap(BufferUsage usage) {
 DriWindowDelegate* GbmSurfaceFactory::GetOrCreateWindowDelegate(
     gfx::AcceleratedWidget widget) {
   if (!window_manager_->HasWindowDelegate(widget)) {
-    scoped_ptr<DriWindowDelegate> delegate(
-        new DriWindowDelegateImpl(widget, screen_manager_));
+    scoped_ptr<DriWindowDelegate> delegate(new DriWindowDelegateImpl(
+        widget, drm_, window_manager_, screen_manager_));
     delegate->Initialize();
     window_manager_->AddWindowDelegate(widget, delegate.Pass());
   }

@@ -44,6 +44,10 @@ class MockDriWindowDelegate : public ui::DriWindowDelegate {
     return controller_.get();
   }
   void OnBoundsChanged(const gfx::Rect& bounds) override {}
+  void SetCursor(const std::vector<SkBitmap>& bitmaps,
+                 const gfx::Point& location,
+                 int frame_delay_ms) override {}
+  void MoveCursor(const gfx::Point& location) override {}
 
  private:
   scoped_ptr<ui::HardwareDisplayController> controller_;

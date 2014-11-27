@@ -23,6 +23,7 @@ namespace ui {
 class DriSurfaceFactory;
 class DriWindowDelegate;
 class DriWindowDelegateManager;
+class DriWrapper;
 class NativeDisplayDelegateDri;
 class ScreenManager;
 
@@ -31,7 +32,7 @@ struct DisplaySnapshot_Params;
 
 class DriGpuPlatformSupport : public GpuPlatformSupport {
  public:
-  DriGpuPlatformSupport(DriSurfaceFactory* dri,
+  DriGpuPlatformSupport(DriWrapper* drm,
                         DriWindowDelegateManager* window_manager,
                         ScreenManager* screen_manager,
                         scoped_ptr<NativeDisplayDelegateDri> ndd);
@@ -69,7 +70,7 @@ class DriGpuPlatformSupport : public GpuPlatformSupport {
   void OnRelinquishDisplayControl();
 
   IPC::Sender* sender_;                       // Not owned.
-  DriSurfaceFactory* dri_;                    // Not owned.
+  DriWrapper* drm_;                           // Not owned.
   DriWindowDelegateManager* window_manager_;  // Not owned.
   ScreenManager* screen_manager_;             // Not owned.
 

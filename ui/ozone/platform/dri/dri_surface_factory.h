@@ -5,20 +5,13 @@
 #ifndef UI_OZONE_PLATFORM_DRI_DRI_SURFACE_FACTORY_H_
 #define UI_OZONE_PLATFORM_DRI_DRI_SURFACE_FACTORY_H_
 
-#include <map>
-#include <vector>
-
 #include "base/memory/scoped_ptr.h"
-#include "base/timer/timer.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
 
-class DriBuffer;
 class DriWindowDelegateManager;
 class DriWrapper;
-class ScreenManager;
 class SurfaceOzoneCanvas;
 
 // SurfaceFactoryOzone implementation on top of DRM/KMS using dumb buffers.
@@ -29,7 +22,6 @@ class DriSurfaceFactory : public SurfaceFactoryOzone {
   static const gfx::AcceleratedWidget kDefaultWidgetHandle;
 
   DriSurfaceFactory(DriWrapper* drm,
-                    ScreenManager* screen_manager,
                     DriWindowDelegateManager* window_manager);
   ~DriSurfaceFactory() override;
 
@@ -53,35 +45,11 @@ class DriSurfaceFactory : public SurfaceFactoryOzone {
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
 
-  // Cursor-related methods.
-  void SetHardwareCursor(gfx::AcceleratedWidget widget,
-                         const std::vector<SkBitmap>& bitmaps,
-                         const gfx::Point& location,
-                         int frame_delay_ms);
-  void MoveHardwareCursor(gfx::AcceleratedWidget window,
-                          const gfx::Point& location);
-
  protected:
-  // Draw the last set cursor & update the cursor plane.
-  void ResetCursor();
-
-  // Draw next frame in an animated cursor.
-  void OnCursorAnimationTimeout();
 
   DriWrapper* drm_;  // Not owned.
-  ScreenManager* screen_manager_;  // Not owned.
   DriWindowDelegateManager* window_manager_;  // Not owned.
   HardwareState state_;
-
-  scoped_refptr<DriBuffer> cursor_buffers_[2];
-  int cursor_frontbuffer_;
-
-  gfx::AcceleratedWidget cursor_widget_;
-  std::vector<SkBitmap> cursor_bitmaps_;
-  gfx::Point cursor_location_;
-  int cursor_frame_;
-  int cursor_frame_delay_ms_;
-  base::RepeatingTimer<DriSurfaceFactory> cursor_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DriSurfaceFactory);
 };

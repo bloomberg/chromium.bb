@@ -7,63 +7,23 @@
 #include <errno.h>
 
 #include "base/debug/trace_event.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkDevice.h"
-#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
-#include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
 namespace ui {
-
-namespace {
-
-#ifndef DRM_CAP_CURSOR_WIDTH
-#define DRM_CAP_CURSOR_WIDTH 0x8
-#endif
-
-#ifndef DRM_CAP_CURSOR_HEIGHT
-#define DRM_CAP_CURSOR_HEIGHT 0x9
-#endif
-
-void UpdateCursorImage(DriBuffer* cursor, const SkBitmap& image) {
-  SkRect damage;
-  image.getBounds(&damage);
-
-  // Clear to transparent in case |image| is smaller than the canvas.
-  SkCanvas* canvas = cursor->GetCanvas();
-  canvas->clear(SK_ColorTRANSPARENT);
-
-  SkRect clip;
-  clip.set(
-      0, 0, canvas->getDeviceSize().width(), canvas->getDeviceSize().height());
-  canvas->clipRect(clip, SkRegion::kReplace_Op);
-  canvas->drawBitmapRectToRect(image, &damage, damage);
-}
-
-}  // namespace
 
 // static
 const gfx::AcceleratedWidget DriSurfaceFactory::kDefaultWidgetHandle = 1;
 
 DriSurfaceFactory::DriSurfaceFactory(DriWrapper* drm,
-                                     ScreenManager* screen_manager,
                                      DriWindowDelegateManager* window_manager)
-    : drm_(drm),
-      screen_manager_(screen_manager),
-      window_manager_(window_manager),
-      state_(UNINITIALIZED),
-      cursor_frontbuffer_(0),
-      cursor_widget_(0),
-      cursor_frame_(0),
-      cursor_frame_delay_ms_(0) {
+    : drm_(drm), window_manager_(window_manager), state_(UNINITIALIZED) {
 }
 
 DriSurfaceFactory::~DriSurfaceFactory() {
@@ -79,21 +39,6 @@ DriSurfaceFactory::HardwareState DriSurfaceFactory::InitializeHardware() {
     LOG(ERROR) << "Failed to create DRI connection";
     state_ = FAILED;
     return state_;
-  }
-
-  uint64_t cursor_width = 64;
-  uint64_t cursor_height = 64;
-  drm_->GetCapability(DRM_CAP_CURSOR_WIDTH, &cursor_width);
-  drm_->GetCapability(DRM_CAP_CURSOR_HEIGHT, &cursor_height);
-
-  SkImageInfo info = SkImageInfo::MakeN32Premul(cursor_width, cursor_height);
-  for (size_t i = 0; i < arraysize(cursor_buffers_); ++i) {
-    cursor_buffers_[i] = new DriBuffer(drm_);
-    if (!cursor_buffers_[i]->Initialize(info)) {
-      LOG(ERROR) << "Failed to initialize cursor buffer";
-      state_ = FAILED;
-      return state_;
-    }
   }
 
   state_ = INITIALIZED;
@@ -117,75 +62,6 @@ bool DriSurfaceFactory::LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
   return false;
-}
-
-void DriSurfaceFactory::SetHardwareCursor(gfx::AcceleratedWidget widget,
-                                          const std::vector<SkBitmap>& bitmaps,
-                                          const gfx::Point& location,
-                                          int frame_delay_ms) {
-  cursor_widget_ = widget;
-  cursor_bitmaps_ = bitmaps;
-  cursor_location_ = location;
-  cursor_frame_ = 0;
-  cursor_frame_delay_ms_ = frame_delay_ms;
-  cursor_timer_.Stop();
-
-  if (cursor_frame_delay_ms_)
-    cursor_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(cursor_frame_delay_ms_),
-        this, &DriSurfaceFactory::OnCursorAnimationTimeout);
-
-  if (state_ != INITIALIZED)
-    return;
-
-  ResetCursor();
-}
-
-void DriSurfaceFactory::MoveHardwareCursor(gfx::AcceleratedWidget widget,
-                                           const gfx::Point& location) {
-  cursor_location_ = location;
-
-  if (state_ != INITIALIZED)
-    return;
-
-  HardwareDisplayController* controller =
-      window_manager_->GetWindowDelegate(widget)->GetController();
-  if (controller)
-    controller->MoveCursor(location);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// DriSurfaceFactory private
-
-void DriSurfaceFactory::ResetCursor() {
-  if (!cursor_widget_)
-    return;
-
-  HardwareDisplayController* controller =
-      window_manager_->GetWindowDelegate(cursor_widget_)->GetController();
-  if (cursor_bitmaps_.size()) {
-    // Draw new cursor into backbuffer.
-    UpdateCursorImage(cursor_buffers_[cursor_frontbuffer_ ^ 1].get(),
-                      cursor_bitmaps_[cursor_frame_]);
-
-    // Reset location & buffer.
-    if (controller) {
-      controller->MoveCursor(cursor_location_);
-      controller->SetCursor(cursor_buffers_[cursor_frontbuffer_ ^ 1]);
-      cursor_frontbuffer_ ^= 1;
-    }
-  } else {
-    // No cursor set.
-    if (controller)
-      controller->UnsetCursor();
-  }
-}
-
-void DriSurfaceFactory::OnCursorAnimationTimeout() {
-  cursor_frame_++;
-  cursor_frame_ %= cursor_bitmaps_.size();
-
-  ResetCursor();
 }
 
 }  // namespace ui

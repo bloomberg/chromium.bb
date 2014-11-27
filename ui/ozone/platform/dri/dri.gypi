@@ -118,6 +118,7 @@
         'sources': [
           'dri_surface_factory_unittest.cc',
           'dri_surface_unittest.cc',
+          'dri_window_delegate_impl_unittest.cc',
           'hardware_display_controller_unittest.cc',
           'screen_manager_unittest.cc',
           'test/mock_dri_wrapper.cc',

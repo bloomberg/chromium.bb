@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/ozone/device/device_manager.h"
@@ -140,8 +141,7 @@ class OzonePlatformGbm : public OzonePlatform {
         dri_.get(), buffer_generator_->device(), screen_manager_.get(),
         window_delegate_manager_.get());
     gpu_platform_support_.reset(new DriGpuPlatformSupport(
-        surface_factory_ozone_.get(), window_delegate_manager_.get(),
-        screen_manager_.get(),
+        dri_.get(), window_delegate_manager_.get(), screen_manager_.get(),
         scoped_ptr<NativeDisplayDelegateDri>(new NativeDisplayDelegateDri(
             dri_.get(), screen_manager_.get(), NULL))));
     if (surface_factory_ozone_->InitializeHardware() !=

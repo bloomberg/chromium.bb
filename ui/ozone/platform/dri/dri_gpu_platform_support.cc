@@ -10,7 +10,6 @@
 #include "ui/ozone/common/display_util.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
-#include "ui/ozone/platform/dri/dri_surface_factory.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/native_display_delegate_dri.h"
@@ -18,12 +17,12 @@
 namespace ui {
 
 DriGpuPlatformSupport::DriGpuPlatformSupport(
-    DriSurfaceFactory* dri,
+    DriWrapper* drm,
     DriWindowDelegateManager* window_manager,
     ScreenManager* screen_manager,
     scoped_ptr<NativeDisplayDelegateDri> ndd)
     : sender_(NULL),
-      dri_(dri),
+      drm_(drm),
       window_manager_(window_manager),
       screen_manager_(screen_manager),
       ndd_(ndd.Pass()) {
@@ -82,8 +81,8 @@ void DriGpuPlatformSupport::OnCreateWindowDelegate(
   // with it, we create it ahead of time. So when this call happens we do not
   // create a delegate if it already exists.
   if (!window_manager_->HasWindowDelegate(widget)) {
-    scoped_ptr<DriWindowDelegate> delegate(
-        new DriWindowDelegateImpl(widget, screen_manager_));
+    scoped_ptr<DriWindowDelegate> delegate(new DriWindowDelegateImpl(
+        widget, drm_, window_manager_, screen_manager_));
     delegate->Initialize();
     window_manager_->AddWindowDelegate(widget, delegate.Pass());
   }
@@ -105,12 +104,13 @@ void DriGpuPlatformSupport::OnCursorSet(gfx::AcceleratedWidget widget,
                                         const std::vector<SkBitmap>& bitmaps,
                                         const gfx::Point& location,
                                         int frame_delay_ms) {
-  dri_->SetHardwareCursor(widget, bitmaps, location, frame_delay_ms);
+  window_manager_->GetWindowDelegate(widget)
+      ->SetCursor(bitmaps, location, frame_delay_ms);
 }
 
 void DriGpuPlatformSupport::OnCursorMove(gfx::AcceleratedWidget widget,
                                          const gfx::Point& location) {
-  dri_->MoveHardwareCursor(widget, location);
+  window_manager_->GetWindowDelegate(widget)->MoveCursor(location);
 }
 
 void DriGpuPlatformSupport::OnForceDPMSOn() {

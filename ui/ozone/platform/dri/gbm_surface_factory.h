@@ -13,6 +13,7 @@ namespace ui {
 
 class DriWindowDelegate;
 class DriWindowDelegateManager;
+class ScreenManager;
 
 class GbmSurfaceFactory : public DriSurfaceFactory {
  public:
@@ -53,6 +54,7 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
  private:
   DriWindowDelegate* GetOrCreateWindowDelegate(gfx::AcceleratedWidget widget);
 
+  ScreenManager* screen_manager_;  // Not owned.
   gbm_device* device_;  // Not owned.
   bool allow_surfaceless_;
 
