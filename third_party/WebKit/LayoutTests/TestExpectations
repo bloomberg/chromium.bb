@@ -1240,6 +1240,9 @@ crbug.com/418021 inspector/profiler/heap-snapshot-inspect-dom-wrapper.html [ Pas
 crbug.com/418324 http/tests/media/media-source/mediasource-redundant-seek.html [ Pass Failure ]
 
 crbug.com/340522 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance.html [ Pass ImageOnlyFailure ]
+crbug.com/409503 fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ NeedsRebaseline ]
+crbug.com/409503 fast/forms/calendar-picker/calendar-picker-appearance-required-ar.html [ NeedsRebaseline ]
+crbug.com/409503 fast/forms/suggestion-picker/time-suggestion-picker-appearance-locale-hebrew.html [ NeedsRebaseline ]
 
 crbug.com/427606 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass ImageOnlyFailure ]
 crbug.com/437131 [ Win ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
