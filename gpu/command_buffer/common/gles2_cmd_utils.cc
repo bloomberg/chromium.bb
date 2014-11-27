@@ -9,6 +9,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include <GLES3/gl3.h>
 
 #include "base/numerics/safe_math.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"

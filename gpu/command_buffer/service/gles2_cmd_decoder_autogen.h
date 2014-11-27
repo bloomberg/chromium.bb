@@ -2045,6 +2045,39 @@ error::Error GLES2DecoderImpl::HandleTexParameterivImmediate(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleTexStorage3D(uint32_t immediate_data_size,
+                                                  const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::TexStorage3D& c =
+      *static_cast<const gles2::cmds::TexStorage3D*>(cmd_data);
+  (void)c;
+  GLenum target = static_cast<GLenum>(c.target);
+  GLsizei levels = static_cast<GLsizei>(c.levels);
+  GLenum internalFormat = static_cast<GLenum>(c.internalFormat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLsizei depth = static_cast<GLsizei>(c.depth);
+  if (levels < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage3D", "levels < 0");
+    return error::kNoError;
+  }
+  if (width < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage3D", "width < 0");
+    return error::kNoError;
+  }
+  if (height < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage3D", "height < 0");
+    return error::kNoError;
+  }
+  if (depth < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage3D", "depth < 0");
+    return error::kNoError;
+  }
+  glTexStorage3D(target, levels, internalFormat, width, height, depth);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleUniform1f(uint32_t immediate_data_size,
                                                const void* cmd_data) {
   const gles2::cmds::Uniform1f& c =

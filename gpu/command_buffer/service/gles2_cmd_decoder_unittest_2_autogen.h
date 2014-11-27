@@ -323,6 +323,18 @@ TEST_P(GLES2DecoderTest2, TexParameterivImmediateInvalidArgs1_0) {
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
+
+TEST_P(GLES2DecoderTest2, TexStorage3DValidArgs) {
+  EXPECT_CALL(*gl_, TexStorage3D(GL_TEXTURE_3D, 2, GL_RGB565, 4, 5, 6));
+  SpecializedSetup<cmds::TexStorage3D, 0>(true);
+  cmds::TexStorage3D cmd;
+  cmd.Init(GL_TEXTURE_3D, 2, GL_RGB565, 4, 5, 6);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
 // TODO(gman): TexSubImage2D
 
 TEST_P(GLES2DecoderTest2, Uniform1fValidArgs) {
@@ -1006,5 +1018,4 @@ TEST_P(GLES2DecoderTest2, PopGroupMarkerEXTValidArgs) {
 // TODO(gman): CopyTextureCHROMIUM
 // TODO(gman): DrawArraysInstancedANGLE
 // TODO(gman): DrawElementsInstancedANGLE
-// TODO(gman): VertexAttribDivisorANGLE
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

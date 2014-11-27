@@ -56,6 +56,7 @@ static std::string GetStringSrcBlendFactor(uint32_t value);
 static std::string GetStringStencilOp(uint32_t value);
 static std::string GetStringStringType(uint32_t value);
 static std::string GetStringSubscriptionTarget(uint32_t value);
+static std::string GetStringTexture3DTarget(uint32_t value);
 static std::string GetStringTextureBindTarget(uint32_t value);
 static std::string GetStringTextureFormat(uint32_t value);
 static std::string GetStringTextureInternalFormat(uint32_t value);

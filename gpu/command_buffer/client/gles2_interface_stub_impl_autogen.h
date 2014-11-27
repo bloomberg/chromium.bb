@@ -448,6 +448,13 @@ void GLES2InterfaceStub::TexParameteriv(GLenum /* target */,
                                         GLenum /* pname */,
                                         const GLint* /* params */) {
 }
+void GLES2InterfaceStub::TexStorage3D(GLenum /* target */,
+                                      GLsizei /* levels */,
+                                      GLenum /* internalFormat */,
+                                      GLsizei /* width */,
+                                      GLsizei /* height */,
+                                      GLsizei /* depth */) {
+}
 void GLES2InterfaceStub::TexSubImage2D(GLenum /* target */,
                                        GLint /* level */,
                                        GLint /* xoffset */,

@@ -271,6 +271,12 @@ virtual void TexParameteri(GLenum target, GLenum pname, GLint param) = 0;
 virtual void TexParameteriv(GLenum target,
                             GLenum pname,
                             const GLint* params) = 0;
+virtual void TexStorage3D(GLenum target,
+                          GLsizei levels,
+                          GLenum internalFormat,
+                          GLsizei width,
+                          GLsizei height,
+                          GLsizei depth) = 0;
 virtual void TexSubImage2D(GLenum target,
                            GLint level,
                            GLint xoffset,

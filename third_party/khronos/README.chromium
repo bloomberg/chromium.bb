@@ -2,17 +2,17 @@ Name: Khronos header files
 Short Name: khronos_headers
 URL: http://www.khronos.org/registry
 Version: unknown
-Date: 2014-10-20
+Date: 2014-11-26
 License: MIT/X11, SGI Free Software License B
 Security Critical: no
 
 Description:
-This package contains header files for the EGL and OpenGL ES 2.0 APIs from
+This package contains header files for the EGL and OpenGL ES APIs from
 Khronos. They are used for compiling code against these APIs as well as for
 generating the GL binding initialization logic.
 
 MIT/X11 (BSD like) license is for {EGL,KHR}/*, SGI Free Software License B is
-for GLES2/*.
+for GLES2/* and GLES3/*.
 
 Local Modifications:
 

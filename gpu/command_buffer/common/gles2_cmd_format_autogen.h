@@ -5278,6 +5278,70 @@ COMPILE_ASSERT(offsetof(TexParameterivImmediate, target) == 4,
 COMPILE_ASSERT(offsetof(TexParameterivImmediate, pname) == 8,
                OffsetOf_TexParameterivImmediate_pname_not_8);
 
+struct TexStorage3D {
+  typedef TexStorage3D ValueType;
+  static const CommandId kCmdId = kTexStorage3D;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target,
+            GLsizei _levels,
+            GLenum _internalFormat,
+            GLsizei _width,
+            GLsizei _height,
+            GLsizei _depth) {
+    SetHeader();
+    target = _target;
+    levels = _levels;
+    internalFormat = _internalFormat;
+    width = _width;
+    height = _height;
+    depth = _depth;
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLsizei _levels,
+            GLenum _internalFormat,
+            GLsizei _width,
+            GLsizei _height,
+            GLsizei _depth) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _levels, _internalFormat, _width, _height, _depth);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  int32_t levels;
+  uint32_t internalFormat;
+  int32_t width;
+  int32_t height;
+  int32_t depth;
+};
+
+COMPILE_ASSERT(sizeof(TexStorage3D) == 28, Sizeof_TexStorage3D_is_not_28);
+COMPILE_ASSERT(offsetof(TexStorage3D, header) == 0,
+               OffsetOf_TexStorage3D_header_not_0);
+COMPILE_ASSERT(offsetof(TexStorage3D, target) == 4,
+               OffsetOf_TexStorage3D_target_not_4);
+COMPILE_ASSERT(offsetof(TexStorage3D, levels) == 8,
+               OffsetOf_TexStorage3D_levels_not_8);
+COMPILE_ASSERT(offsetof(TexStorage3D, internalFormat) == 12,
+               OffsetOf_TexStorage3D_internalFormat_not_12);
+COMPILE_ASSERT(offsetof(TexStorage3D, width) == 16,
+               OffsetOf_TexStorage3D_width_not_16);
+COMPILE_ASSERT(offsetof(TexStorage3D, height) == 20,
+               OffsetOf_TexStorage3D_height_not_20);
+COMPILE_ASSERT(offsetof(TexStorage3D, depth) == 24,
+               OffsetOf_TexStorage3D_depth_not_24);
+
 struct TexSubImage2D {
   typedef TexSubImage2D ValueType;
   static const CommandId kCmdId = kTexSubImage2D;

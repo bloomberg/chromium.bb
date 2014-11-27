@@ -1626,6 +1626,24 @@ TEST_F(GLES2FormatTest, TexParameterivImmediate) {
   // TODO(gman): Check that data was inserted;
 }
 
+TEST_F(GLES2FormatTest, TexStorage3D) {
+  cmds::TexStorage3D& cmd = *GetBufferAs<cmds::TexStorage3D>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLsizei>(12),
+              static_cast<GLenum>(13), static_cast<GLsizei>(14),
+              static_cast<GLsizei>(15), static_cast<GLsizei>(16));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::TexStorage3D::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLsizei>(12), cmd.levels);
+  EXPECT_EQ(static_cast<GLenum>(13), cmd.internalFormat);
+  EXPECT_EQ(static_cast<GLsizei>(14), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(15), cmd.height);
+  EXPECT_EQ(static_cast<GLsizei>(16), cmd.depth);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, TexSubImage2D) {
   cmds::TexSubImage2D& cmd = *GetBufferAs<cmds::TexSubImage2D>();
   void* next_cmd = cmd.Set(

@@ -1325,6 +1325,39 @@ void GLES2Implementation::TexParameteriv(GLenum target,
   CheckGLError();
 }
 
+void GLES2Implementation::TexStorage3D(GLenum target,
+                                       GLsizei levels,
+                                       GLenum internalFormat,
+                                       GLsizei width,
+                                       GLsizei height,
+                                       GLsizei depth) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG(
+      "[" << GetLogPrefix() << "] glTexStorage3D("
+          << GLES2Util::GetStringTexture3DTarget(target) << ", " << levels
+          << ", "
+          << GLES2Util::GetStringTextureInternalFormatStorage(internalFormat)
+          << ", " << width << ", " << height << ", " << depth << ")");
+  if (levels < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexStorage3D", "levels < 0");
+    return;
+  }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexStorage3D", "width < 0");
+    return;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexStorage3D", "height < 0");
+    return;
+  }
+  if (depth < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexStorage3D", "depth < 0");
+    return;
+  }
+  helper_->TexStorage3D(target, levels, internalFormat, width, height, depth);
+  CheckGLError();
+}
+
 void GLES2Implementation::Uniform1f(GLint location, GLfloat x) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glUniform1f(" << location << ", "

@@ -503,6 +503,15 @@ void GLES2TexParameteri(GLenum target, GLenum pname, GLint param) {
 void GLES2TexParameteriv(GLenum target, GLenum pname, const GLint* params) {
   gles2::GetGLContext()->TexParameteriv(target, pname, params);
 }
+void GLES2TexStorage3D(GLenum target,
+                       GLsizei levels,
+                       GLenum internalFormat,
+                       GLsizei width,
+                       GLsizei height,
+                       GLsizei depth) {
+  gles2::GetGLContext()->TexStorage3D(target, levels, internalFormat, width,
+                                      height, depth);
+}
 void GLES2TexSubImage2D(GLenum target,
                         GLint level,
                         GLint xoffset,
@@ -1528,6 +1537,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glTexParameteriv",
      reinterpret_cast<GLES2FunctionPointer>(glTexParameteriv),
+    },
+    {
+     "glTexStorage3D",
+     reinterpret_cast<GLES2FunctionPointer>(glTexStorage3D),
     },
     {
      "glTexSubImage2D",

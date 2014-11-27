@@ -264,6 +264,12 @@ void TexParameterfv(GLenum target,
                     const GLfloat* params) override;
 void TexParameteri(GLenum target, GLenum pname, GLint param) override;
 void TexParameteriv(GLenum target, GLenum pname, const GLint* params) override;
+void TexStorage3D(GLenum target,
+                  GLsizei levels,
+                  GLenum internalFormat,
+                  GLsizei width,
+                  GLsizei height,
+                  GLsizei depth) override;
 void TexSubImage2D(GLenum target,
                    GLint level,
                    GLint xoffset,

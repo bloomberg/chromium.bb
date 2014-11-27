@@ -688,6 +688,16 @@ _NAMED_TYPE_INFO = {
       'GL_PROXY_TEXTURE_CUBE_MAP',
     ]
   },
+  'Texture3DTarget': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_TEXTURE_3D',
+      'GL_TEXTURE_2D_ARRAY',
+    ],
+    'invalid': [
+      'GL_TEXTURE_2D',
+    ]
+  },
   'TextureBindTarget': {
     'type': 'GLenum',
     'valid': [
@@ -2211,6 +2221,9 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoTexParameteriv',
     'gl_test_func': 'glTexParameteri',
     'first_element_only': True,
+  },
+  'TexStorage3D': {
+    'unsafe': True,
   },
   'TexSubImage2D': {
     'type': 'Manual',
@@ -8470,6 +8483,7 @@ extern const NameToFunc g_gles2_function_table[] = {
     dict = {}
     for fname in ['third_party/khronos/GLES2/gl2.h',
                   'third_party/khronos/GLES2/gl2ext.h',
+                  'third_party/khronos/GLES3/gl3.h',
                   'gpu/GLES2/gl2chromium.h',
                   'gpu/GLES2/gl2extchromium.h']:
       lines = open(fname).readlines()

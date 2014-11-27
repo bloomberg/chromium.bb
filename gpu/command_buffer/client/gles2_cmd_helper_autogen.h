@@ -1070,6 +1070,18 @@ void TexParameterivImmediate(GLenum target, GLenum pname, const GLint* params) {
   }
 }
 
+void TexStorage3D(GLenum target,
+                  GLsizei levels,
+                  GLenum internalFormat,
+                  GLsizei width,
+                  GLsizei height,
+                  GLsizei depth) {
+  gles2::cmds::TexStorage3D* c = GetCmdSpace<gles2::cmds::TexStorage3D>();
+  if (c) {
+    c->Init(target, levels, internalFormat, width, height, depth);
+  }
+}
+
 void TexSubImage2D(GLenum target,
                    GLint level,
                    GLint xoffset,

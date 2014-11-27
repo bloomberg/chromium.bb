@@ -417,6 +417,11 @@ static const GLenum valid_subscription_target_table[] = {
     GL_MOUSE_POSITION_CHROMIUM,
 };
 
+static const GLenum valid_texture_3_d_target_table[] = {
+    GL_TEXTURE_3D,
+    GL_TEXTURE_2D_ARRAY,
+};
+
 static const GLenum valid_texture_bind_target_table[] = {
     GL_TEXTURE_2D,
     GL_TEXTURE_CUBE_MAP,
@@ -603,6 +608,8 @@ Validators::Validators()
       string_type(valid_string_type_table, arraysize(valid_string_type_table)),
       subscription_target(valid_subscription_target_table,
                           arraysize(valid_subscription_target_table)),
+      texture_3_d_target(valid_texture_3_d_target_table,
+                         arraysize(valid_texture_3_d_target_table)),
       texture_bind_target(valid_texture_bind_target_table,
                           arraysize(valid_texture_bind_target_table)),
       texture_format(valid_texture_format_table,

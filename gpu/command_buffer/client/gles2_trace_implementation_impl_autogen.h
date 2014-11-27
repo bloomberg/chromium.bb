@@ -779,6 +779,16 @@ void GLES2TraceImplementation::TexParameteriv(GLenum target,
   gl_->TexParameteriv(target, pname, params);
 }
 
+void GLES2TraceImplementation::TexStorage3D(GLenum target,
+                                            GLsizei levels,
+                                            GLenum internalFormat,
+                                            GLsizei width,
+                                            GLsizei height,
+                                            GLsizei depth) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::TexStorage3D");
+  gl_->TexStorage3D(target, levels, internalFormat, width, height, depth);
+}
+
 void GLES2TraceImplementation::TexSubImage2D(GLenum target,
                                              GLint level,
                                              GLint xoffset,

@@ -129,6 +129,7 @@
 #define glTexParameterfv GLES2_GET_FUN(TexParameterfv)
 #define glTexParameteri GLES2_GET_FUN(TexParameteri)
 #define glTexParameteriv GLES2_GET_FUN(TexParameteriv)
+#define glTexStorage3D GLES2_GET_FUN(TexStorage3D)
 #define glTexSubImage2D GLES2_GET_FUN(TexSubImage2D)
 #define glUniform1f GLES2_GET_FUN(Uniform1f)
 #define glUniform1fv GLES2_GET_FUN(Uniform1fv)

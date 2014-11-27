@@ -1151,6 +1151,17 @@ TEST_F(GLES2ImplementationTest, TexParameteriv) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, TexStorage3D) {
+  struct Cmds {
+    cmds::TexStorage3D cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_TEXTURE_3D, 2, GL_RGB565, 4, 5, 6);
+
+  gl_->TexStorage3D(GL_TEXTURE_3D, 2, GL_RGB565, 4, 5, 6);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, Uniform1f) {
   struct Cmds {
     cmds::Uniform1f cmd;
