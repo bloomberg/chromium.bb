@@ -32,6 +32,9 @@ home-id=1007
 workspace-background-color=0x99000000
 workspace-background-id=2001
 
+[input-method]
+path=@libexecdir@/weston-keyboard
+
 [ivi-launcher]
 workspace-id=0
 icon-id=4001
