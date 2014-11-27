@@ -32,7 +32,8 @@ void AppCacheInterceptor::SetExtraRequestInfo(
     AppCacheServiceImpl* service,
     int process_id,
     int host_id,
-    ResourceType resource_type) {
+    ResourceType resource_type,
+    bool should_reset_appcache) {
   if (!service || (host_id == kAppCacheNoHostId))
     return;
 
@@ -48,7 +49,7 @@ void AppCacheInterceptor::SetExtraRequestInfo(
 
   // Create a handler for this request and associate it with the request.
   AppCacheRequestHandler* handler =
-      host->CreateRequestHandler(request, resource_type);
+      host->CreateRequestHandler(request, resource_type, should_reset_appcache);
   if (handler)
     SetHandler(request, handler);
 }

@@ -291,11 +291,13 @@ AppCacheHost* AppCacheHost::GetParentAppCacheHost() const {
 
 AppCacheRequestHandler* AppCacheHost::CreateRequestHandler(
     net::URLRequest* request,
-    ResourceType resource_type) {
+    ResourceType resource_type,
+    bool should_reset_appcache) {
   if (is_for_dedicated_worker()) {
     AppCacheHost* parent_host = GetParentAppCacheHost();
     if (parent_host)
-      return parent_host->CreateRequestHandler(request, resource_type);
+      return parent_host->CreateRequestHandler(
+          request, resource_type, should_reset_appcache);
     return NULL;
   }
 
@@ -303,12 +305,14 @@ AppCacheRequestHandler* AppCacheHost::CreateRequestHandler(
     // Store the first party origin so that it can be used later in SelectCache
     // for checking whether the creation of the appcache is allowed.
     first_party_url_ = request->first_party_for_cookies();
-    return new AppCacheRequestHandler(this, resource_type);
+    return new AppCacheRequestHandler(
+        this, resource_type, should_reset_appcache);
   }
 
   if ((associated_cache() && associated_cache()->is_complete()) ||
       is_selection_pending()) {
-    return new AppCacheRequestHandler(this, resource_type);
+    return new AppCacheRequestHandler(
+        this, resource_type, should_reset_appcache);
   }
   return NULL;
 }
