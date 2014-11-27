@@ -2128,12 +2128,17 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
   // * CreateNavigationStateFromPending
   render_view_->didCreateDataSource(frame, datasource);
 
-  // Create the serviceworker's per-document network observing object.
-  scoped_ptr<ServiceWorkerNetworkProvider>
-      network_provider(new ServiceWorkerNetworkProvider());
-  ServiceWorkerNetworkProvider::AttachToDocumentState(
-      DocumentState::FromDataSource(datasource),
-      network_provider.Pass());
+  // Create the serviceworker's per-document network observing object if it
+  // does not exist (When navigation happens within a page, the provider already
+  // exists).
+  if (!ServiceWorkerNetworkProvider::FromDocumentState(
+          DocumentState::FromDataSource(datasource))) {
+    scoped_ptr<ServiceWorkerNetworkProvider>
+        network_provider(new ServiceWorkerNetworkProvider());
+    ServiceWorkerNetworkProvider::AttachToDocumentState(
+        DocumentState::FromDataSource(datasource),
+        network_provider.Pass());
+  }
 }
 
 void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
