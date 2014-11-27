@@ -72,6 +72,10 @@ typedef void *EGLContext;
 
 #include "window.h"
 
+#include <sys/types.h>
+#include "ivi-application-client-protocol.h"
+#define IVI_SURFACE_ID 9000
+
 struct shm_pool;
 
 struct global {
@@ -91,6 +95,7 @@ struct display {
 	struct text_cursor_position *text_cursor_position;
 	struct workspace_manager *workspace_manager;
 	struct xdg_shell *xdg_shell;
+	struct ivi_application *ivi_application; /* ivi style shell */
 	EGLDisplay dpy;
 	EGLConfig argb_config;
 	EGLContext argb_ctx;
@@ -249,6 +254,8 @@ struct window {
 
 	struct window *parent;
 	struct wl_surface *last_parent_surface;
+
+	struct ivi_surface *ivi_surface;
 
 	struct window_frame *frame;
 
@@ -1381,6 +1388,19 @@ window_get_display(struct window *window)
 }
 
 static void
+handle_ivi_surface_configure(void *data, struct ivi_surface *ivi_surface,
+                             int32_t width, int32_t height)
+{
+	struct window *window = data;
+
+	window_schedule_resize(window, width, height);
+}
+
+static const struct ivi_surface_listener ivi_surface_listener = {
+        handle_ivi_surface_configure,
+};
+
+static void
 surface_create_surface(struct surface *surface, uint32_t flags)
 {
 	struct display *display = surface->window->display;
@@ -1503,7 +1523,7 @@ window_destroy(struct window *window)
 
 	wl_list_remove(&window->redraw_task.link);
 
-	wl_list_for_each(input, &display->input_list, link) {	  
+	wl_list_for_each(input, &display->input_list, link) {
 		if (input->touch_focus == window)
 			input->touch_focus = NULL;
 		if (input->pointer_focus == window)
@@ -1527,6 +1547,9 @@ window_destroy(struct window *window)
 		xdg_surface_destroy(window->xdg_surface);
 	if (window->xdg_popup)
 		xdg_popup_destroy(window->xdg_popup);
+
+	if (window->ivi_surface)
+		ivi_surface_destroy(window->ivi_surface);
 
 	surface_destroy(window->main_surface);
 
@@ -3074,7 +3097,7 @@ touch_handle_down(void *data, struct wl_touch *wl_touch,
 			wl_list_insert(&input->touch_point_list, &tp->link);
 
 			if (widget->touch_down_handler)
-				(*widget->touch_down_handler)(widget, input, 
+				(*widget->touch_down_handler)(widget, input,
 							      serial, time, id,
 							      sx, sy,
 							      widget->user_data);
@@ -4512,7 +4535,7 @@ window_create_internal(struct display *display, int custom)
 	surface = surface_create(window);
 	window->main_surface = surface;
 
-	assert(custom || display->xdg_shell);
+	assert(custom || display->xdg_shell || display->ivi_application);
 
 	window->custom = custom;
 	window->preferred_format = WINDOW_PREFERRED_FORMAT_NONE;
@@ -4532,17 +4555,30 @@ struct window *
 window_create(struct display *display)
 {
 	struct window *window;
+	uint32_t id_ivisurf;
 
 	window = window_create_internal(display, 0);
 
-	window->xdg_surface =
-		xdg_shell_get_xdg_surface(window->display->xdg_shell,
-					  window->main_surface->surface);
-	fail_on_null(window->xdg_surface);
+	if (window->display->xdg_shell) {
+		window->xdg_surface =
+			xdg_shell_get_xdg_surface(window->display->xdg_shell,
+						  window->main_surface->surface);
+		fail_on_null(window->xdg_surface);
 
-	xdg_surface_set_user_data(window->xdg_surface, window);
-	xdg_surface_add_listener(window->xdg_surface,
-				 &xdg_surface_listener, window);
+		xdg_surface_set_user_data(window->xdg_surface, window);
+		xdg_surface_add_listener(window->xdg_surface,
+					 &xdg_surface_listener, window);
+	} else if (display->ivi_application) {
+		/* auto generation of ivi_id based on process id + basement of id */
+		id_ivisurf = IVI_SURFACE_ID + (uint32_t)getpid();
+		window->ivi_surface =
+			ivi_application_surface_create(display->ivi_application,
+						       id_ivisurf, window->main_surface->surface);
+		fail_on_null(window->ivi_surface);
+
+		ivi_surface_add_listener(window->ivi_surface,
+					 &ivi_surface_listener, window);
+	}
 
 	return window;
 }
@@ -4794,6 +4830,9 @@ window_show_menu(struct display *display,
 	window->y = y;
 
 	frame_interior(menu->frame, &ix, &iy, NULL, NULL);
+
+	if (!display->xdg_shell)
+		return;
 
 	window->xdg_popup = xdg_shell_get_xdg_popup(display->xdg_shell,
 						    window->main_surface->surface,
@@ -5259,6 +5298,11 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 			wl_registry_bind(registry, id,
 					 &wl_subcompositor_interface, 1);
 	}
+	else if (strcmp(interface, "ivi_application") == 0) {
+		d->ivi_application =
+			wl_registry_bind(registry, id,
+					 &ivi_application_interface, 1);
+	}
 
 	if (d->global_handler)
 		d->global_handler(d, id, interface, version, d->user_data);
@@ -5556,6 +5600,9 @@ display_destroy(struct display *display)
 
 	if (display->xdg_shell)
 		xdg_shell_destroy(display->xdg_shell);
+
+	if (display->ivi_application)
+		ivi_application_destroy(display->ivi_application);
 
 	if (display->shm)
 		wl_shm_destroy(display->shm);
