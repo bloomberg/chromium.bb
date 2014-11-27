@@ -8,6 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -61,6 +63,9 @@ class DriCursor : public CursorDelegateEvdev {
 
   // The location of the cursor within the window.
   gfx::PointF cursor_location_;
+
+  // The bounsd of the display under the cursor.
+  gfx::Rect cursor_display_bounds_;
 };
 
 }  // namespace ui

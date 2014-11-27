@@ -61,14 +61,13 @@ void DriCursor::MoveCursorTo(gfx::AcceleratedWidget widget,
   if (widget != cursor_window_ && cursor_window_ != gfx::kNullAcceleratedWidget)
     HideCursor();
 
+  DriWindow* window = window_manager_->GetWindow(widget);
+
   cursor_window_ = widget;
   cursor_location_ = location;
+  cursor_display_bounds_ = window->GetBounds();
 
-  if (cursor_window_ == gfx::kNullAcceleratedWidget)
-    return;
-
-  DriWindow* window = window_manager_->GetWindow(cursor_window_);
-  const gfx::Size& size = window->GetBounds().size();
+  const gfx::Size& size = cursor_display_bounds_.size();
   cursor_location_.SetToMax(gfx::PointF(0, 0));
   // Right and bottom edges are exclusive.
   cursor_location_.SetToMin(gfx::PointF(size.width() - 1, size.height() - 1));
@@ -88,6 +87,9 @@ void DriCursor::MoveCursorTo(const gfx::PointF& location) {
 }
 
 void DriCursor::MoveCursor(const gfx::Vector2dF& delta) {
+  if (cursor_window_ == gfx::kNullAcceleratedWidget)
+    return;
+
 #if defined(OS_CHROMEOS)
   gfx::Vector2dF transformed_delta = delta;
   ui::CursorController::GetInstance()->ApplyCursorConfigForWindow(
@@ -99,11 +101,7 @@ void DriCursor::MoveCursor(const gfx::Vector2dF& delta) {
 }
 
 gfx::Rect DriCursor::GetCursorDisplayBounds() {
-  if (cursor_window_ == gfx::kNullAcceleratedWidget)
-    return gfx::Rect();
-
-  DriWindow* window = window_manager_->GetWindow(cursor_window_);
-  return window->GetBounds();
+  return cursor_display_bounds_;
 }
 
 gfx::AcceleratedWidget DriCursor::GetCursorWindow() {
