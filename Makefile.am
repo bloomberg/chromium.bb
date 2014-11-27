@@ -445,7 +445,9 @@ nodist_libtoytoolkit_la_SOURCES =			\
 	protocol/presentation_timing-protocol.c		\
 	protocol/presentation_timing-client-protocol.h	\
 	protocol/xdg-shell-protocol.c			\
-	protocol/xdg-shell-client-protocol.h
+	protocol/xdg-shell-client-protocol.h		\
+	protocol/ivi-application-protocol.c		\
+	protocol/ivi-application-client-protocol.h
 
 BUILT_SOURCES += $(nodist_libtoytoolkit_la_SOURCES)
 
@@ -1003,7 +1005,8 @@ EXTRA_DIST +=					\
 	protocol/xdg-shell.xml			\
 	protocol/fullscreen-shell.xml		\
 	protocol/presentation_timing.xml	\
-	protocol/scaler.xml
+	protocol/scaler.xml			\
+	protocol/ivi-application.xml
 
 man_MANS = weston.1 weston.ini.5
 
