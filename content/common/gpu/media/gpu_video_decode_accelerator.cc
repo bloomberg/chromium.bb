@@ -377,12 +377,12 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       texture_manager->SetLevelInfo(texture_ref,
                                     texture_target_,
                                     0,
-                                    0,
+                                    GL_RGBA,
                                     texture_dimensions_.width(),
                                     texture_dimensions_.height(),
                                     1,
                                     0,
-                                    0,
+                                    GL_RGBA,
                                     0,
                                     false);
     } else {
