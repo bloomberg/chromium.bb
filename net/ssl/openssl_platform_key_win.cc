@@ -13,11 +13,13 @@
 #include <vector>
 
 #include <openssl/bn.h>
+#include <openssl/digest.h>
 #include <openssl/ec_key.h>
 #include <openssl/err.h>
 #include <openssl/engine.h>
 #include <openssl/evp.h>
 #include <openssl/md5.h>
+#include <openssl/obj_mac.h>
 #include <openssl/rsa.h>
 #include <openssl/sha.h>
 
@@ -32,9 +34,6 @@
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/openssl_ssl_util.h"
-
-// TODO(davidben): The key needs to inform the choice of hash function in
-// TLS 1.2. See https://crbug.com/278370.
 
 namespace net {
 
@@ -383,6 +382,39 @@ int RsaMethodVerifyRaw(RSA* rsa,
   return 0;
 }
 
+int RsaMethodSupportsDigest(const RSA* rsa, const EVP_MD* md) {
+  const KeyExData* ex_data = RsaGetExData(rsa);
+  if (!ex_data) {
+    NOTREACHED();
+    return 0;
+  }
+
+  int hash_nid = EVP_MD_type(md);
+  if (ex_data->key->dwKeySpec == CERT_NCRYPT_KEY_SPEC) {
+    // Only hashes which appear in RsaSignPKCS1 are supported.
+    if (hash_nid != NID_sha1 && hash_nid != NID_sha256 &&
+        hash_nid != NID_sha384 && hash_nid != NID_sha512) {
+      return 0;
+    }
+
+    // If the key is a 1024-bit RSA, assume conservatively that it may only be
+    // able to sign SHA-1 hashes. This is the case for older Estonian ID cards
+    // that have 1024-bit RSA keys.
+    //
+    // CNG does provide NCryptIsAlgSupported and NCryptEnumAlgorithms functions,
+    // however they seem to both return NTE_NOT_SUPPORTED when querying the
+    // NCRYPT_PROV_HANDLE at the key's NCRYPT_PROVIDER_HANDLE_PROPERTY.
+    if (ex_data->key_length <= 1024 && hash_nid != NID_sha1)
+      return 0;
+
+    return 1;
+  } else {
+    // If the key is in CAPI, assume conservatively that the CAPI service
+    // provider may only be able to sign SHA-1 hashes.
+    return hash_nid == NID_sha1;
+  }
+}
+
 const RSA_METHOD win_rsa_method = {
     {
      0,  // references
@@ -404,6 +436,7 @@ const RSA_METHOD win_rsa_method = {
     nullptr,  // bn_mod_exp
     RSA_FLAG_OPAQUE,
     nullptr,  // keygen
+    RsaMethodSupportsDigest,
 };
 
 // Custom ECDSA_METHOD that uses the platform APIs.
