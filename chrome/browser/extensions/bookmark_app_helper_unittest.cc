@@ -28,6 +28,9 @@ const char kAppTitle[] = "Test title";
 const char kAppShortName[] = "Test short name";
 const char kAlternativeAppTitle[] = "Different test title";
 const char kAppDescription[] = "Test description";
+const char kAppIcon1[] = "fav1.png";
+const char kAppIcon2[] = "fav2.png";
+const char kAppIcon3[] = "fav3.png";
 
 const int kIconSizeTiny = extension_misc::EXTENSION_ICON_BITTY;
 const int kIconSizeSmall = extension_misc::EXTENSION_ICON_SMALL;
@@ -325,6 +328,9 @@ TEST_F(BookmarkAppHelperTest, UpdateWebAppInfoFromManifest) {
   WebApplicationInfo web_app_info;
   web_app_info.title = base::UTF8ToUTF16(kAlternativeAppTitle);
   web_app_info.app_url = GURL(kAlternativeAppUrl);
+  WebApplicationInfo::IconInfo info;
+  info.url = GURL(kAppIcon1);
+  web_app_info.icons.push_back(info);
 
   content::Manifest manifest;
   manifest.start_url = GURL(kAppUrl);
@@ -335,10 +341,27 @@ TEST_F(BookmarkAppHelperTest, UpdateWebAppInfoFromManifest) {
   EXPECT_EQ(base::UTF8ToUTF16(kAppShortName), web_app_info.title);
   EXPECT_EQ(GURL(kAppUrl), web_app_info.app_url);
 
-  // Test that |manifest.name| takes priority over |manifest.short_name|
+  // The icon info from |web_app_info| should be left as is, since the manifest
+  // doesn't have any icon information.
+  EXPECT_EQ(1u, web_app_info.icons.size());
+  EXPECT_EQ(GURL(kAppIcon1), web_app_info.icons[0].url);
+
+  // Test that |manifest.name| takes priority over |manifest.short_name|, and
+  // that icons provided by the manifest replace icons in |web_app_info|.
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
+
+  content::Manifest::Icon icon;
+  icon.src = GURL(kAppIcon2);
+  manifest.icons.push_back(icon);
+  icon.src = GURL(kAppIcon3);
+  manifest.icons.push_back(icon);
+
   BookmarkAppHelper::UpdateWebAppInfoFromManifest(manifest, &web_app_info);
   EXPECT_EQ(base::UTF8ToUTF16(kAppTitle), web_app_info.title);
+
+  EXPECT_EQ(2u, web_app_info.icons.size());
+  EXPECT_EQ(GURL(kAppIcon2), web_app_info.icons[0].url);
+  EXPECT_EQ(GURL(kAppIcon3), web_app_info.icons[1].url);
 }
 
 TEST_F(BookmarkAppHelperTest, ConstrainBitmapsToSizes) {

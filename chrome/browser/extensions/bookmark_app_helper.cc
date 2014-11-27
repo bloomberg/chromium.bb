@@ -130,6 +130,18 @@ void BookmarkAppHelper::UpdateWebAppInfoFromManifest(
   // Set the url based on the manifest value, if any.
   if (manifest.start_url.is_valid())
     web_app_info->app_url = manifest.start_url;
+
+  // If any icons are specified in the manifest, they take precedence over any
+  // we picked up from the web_app stuff.
+  if (!manifest.icons.empty()) {
+    web_app_info->icons.clear();
+    for (const auto& icon : manifest.icons) {
+      // TODO(benwells): Take the declared icon density and sizes into account.
+      WebApplicationInfo::IconInfo info;
+      info.url = icon.src;
+      web_app_info->icons.push_back(info);
+    }
+  }
 }
 
 // static
@@ -198,25 +210,6 @@ BookmarkAppHelper::BookmarkAppHelper(ExtensionService* service,
                  content::Source<CrxInstaller>(crx_installer_.get()));
 
   crx_installer_->set_error_on_unsupported_requirements(true);
-
-  if (!contents)
-    return;
-
-  // Add urls from the WebApplicationInfo.
-  std::vector<GURL> web_app_info_icon_urls;
-  for (std::vector<WebApplicationInfo::IconInfo>::const_iterator it =
-           web_app_info_.icons.begin();
-       it != web_app_info_.icons.end();
-       ++it) {
-    if (it->url.is_valid())
-      web_app_info_icon_urls.push_back(it->url);
-  }
-
-  favicon_downloader_.reset(
-      new FaviconDownloader(contents,
-                            web_app_info_icon_urls,
-                            base::Bind(&BookmarkAppHelper::OnIconsDownloaded,
-                                       base::Unretained(this))));
 }
 
 BookmarkAppHelper::~BookmarkAppHelper() {}
@@ -238,7 +231,21 @@ void BookmarkAppHelper::OnDidGetManifest(const content::Manifest& manifest) {
 
   UpdateWebAppInfoFromManifest(manifest, &web_app_info_);
 
-  DCHECK(favicon_downloader_.get());
+  // Add urls from the WebApplicationInfo.
+  std::vector<GURL> web_app_info_icon_urls;
+  for (std::vector<WebApplicationInfo::IconInfo>::const_iterator it =
+           web_app_info_.icons.begin();
+       it != web_app_info_.icons.end();
+       ++it) {
+    if (it->url.is_valid())
+      web_app_info_icon_urls.push_back(it->url);
+  }
+
+  favicon_downloader_.reset(
+      new FaviconDownloader(contents_,
+                            web_app_info_icon_urls,
+                            base::Bind(&BookmarkAppHelper::OnIconsDownloaded,
+                                       base::Unretained(this))));
   favicon_downloader_->Start();
 }
 
