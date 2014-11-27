@@ -161,9 +161,10 @@ scoped_refptr<AudioBuffer> AudioBuffer::CreateEOSBuffer() {
                                             kNoTimestamp()));
 }
 
-// Convert int16 values in the range [kint16min, kint16max] to [-1.0, 1.0].
+// Convert int16 values in the range [INT16_MIN, INT16_MAX] to [-1.0, 1.0].
 static inline float ConvertS16ToFloat(int16 value) {
-  return value * (value < 0 ? -1.0f / kint16min : 1.0f / kint16max);
+  return value * (value < 0 ? -1.0f / std::numeric_limits<int16>::min()
+                            : 1.0f / std::numeric_limits<int16>::max());
 }
 
 void AudioBuffer::ReadFrames(int frames_to_copy,

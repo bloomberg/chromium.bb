@@ -90,7 +90,6 @@ TEST(SincResamplerTest, Flush) {
     ASSERT_FLOAT_EQ(resampled_destination[i], 0);
 }
 
-// Test flush resets the internal state properly.
 TEST(SincResamplerTest, DISABLED_SetRatioBench) {
   MockSource mock_source;
   SincResampler resampler(

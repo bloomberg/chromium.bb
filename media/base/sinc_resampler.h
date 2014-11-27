@@ -48,7 +48,7 @@ class MEDIA_EXPORT SincResampler {
   SincResampler(double io_sample_rate_ratio,
                 int request_frames,
                 const ReadCB& read_cb);
-  virtual ~SincResampler();
+  ~SincResampler();
 
   // Resample |frames| of data from |read_cb_| into |destination|.
   void Resample(int frames, float* destination);
