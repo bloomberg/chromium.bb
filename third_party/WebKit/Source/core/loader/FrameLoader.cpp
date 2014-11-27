@@ -366,6 +366,7 @@ void FrameLoader::receivedFirstData()
 
     client()->dispatchDidCommitLoad(m_frame, m_currentItem.get(), historyCommitType);
 
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "CommitLoad", "data", InspectorCommitLoadEvent::data(m_frame));
     InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());
     m_frame->page()->didCommitLoad(m_frame);
     dispatchDidClearDocumentOfWindowObject();

@@ -7,6 +7,7 @@ Applications outside of WebKit depend on the stability of the mapping of these t
     BeginFrame : "BeginFrame"
     BeginMainThreadFrame : "BeginMainThreadFrame"
     CancelAnimationFrame : "CancelAnimationFrame"
+    CommitLoad : "CommitLoad"
     CompositeLayers : "CompositeLayers"
     ConsoleTime : "ConsoleTime"
     CpuProfile : "CpuProfile"

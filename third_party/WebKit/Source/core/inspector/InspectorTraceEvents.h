@@ -216,6 +216,11 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderObject*, const ImageResource&);
 };
 
+class InspectorCommitLoadEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
+};
+
 class InspectorMarkLoadEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);

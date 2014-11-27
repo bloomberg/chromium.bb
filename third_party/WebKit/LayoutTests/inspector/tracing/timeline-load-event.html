@@ -3,6 +3,10 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
+function display(callback)
+{
+    requestAnimationFrame(testRunner.displayAsyncThen.bind(testRunner, callback));
+}
 
 function test()
 {
@@ -10,7 +14,12 @@ function test()
 
     function pageReloaded()
     {
-        InspectorTest.stopTimeline(finish);
+        InspectorTest.invokePageFunctionAsync("display", displayDone);
+    }
+
+    function displayDone()
+    {
+        InspectorTest.stopTimeline(InspectorTest.safeWrap(finish))
     }
 
     function finish()
@@ -21,6 +30,12 @@ function test()
         InspectorTest.addResult("Timestamp records:");
         InspectorTest.printTimestampRecords("MarkDOMContent");
         InspectorTest.printTimestampRecords("MarkLoad");
+        InspectorTest.printTimestampRecords("MarkFirstPaint");
+
+        var eventDividers = InspectorTest.timelineModel().eventDividerRecords();
+        for (var i = 1; i < eventDividers.length; ++i)
+            InspectorTest.assertGreaterOrEqual(eventDividers[i], eventDividers[i - 1], "Event divider timestamps should be monotonically non-decreasing");
+
         InspectorTest.completeTest();
     }
 }
