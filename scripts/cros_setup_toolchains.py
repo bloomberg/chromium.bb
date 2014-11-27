@@ -163,11 +163,12 @@ def GetPackageMap(target):
   since here everything is static data and the structuring is for ease of
   configurability only.
 
-  args:
-    target - the target for which to return a version map
+  Args:
+    target: The target for which to return a version map
 
-  returns a map between packages and desired versions in internal format
-  (using the PACKAGE_* constants)
+  Returns:
+    A map between packages and desired versions in internal format
+    (using the PACKAGE_* constants)
   """
   if target in target_version_map:
     return target_version_map[target]
@@ -218,10 +219,11 @@ def IsPackageDisabled(target, package):
 def GetInstalledPackageVersions(atom):
   """Extracts the list of current versions of a target, package pair.
 
-  args:
-    atom - the atom to operate on (e.g. sys-devel/gcc)
+  Args:
+    atom: The atom to operate on (e.g. sys-devel/gcc)
 
-  returns the list of versions of the package currently installed.
+  Returns:
+    The list of versions of the package currently installed.
   """
   versions = []
   # pylint: disable=E1101
@@ -234,11 +236,12 @@ def GetInstalledPackageVersions(atom):
 def GetStablePackageVersion(atom, installed):
   """Extracts the current stable version for a given package.
 
-  args:
-    target, package - the target/package to operate on eg. i686-pc-linux-gnu,gcc
-    installed - Whether we want installed packages or ebuilds
+  Args:
+    atom: The target/package to operate on eg. i686-pc-linux-gnu,gcc
+    installed: Whether we want installed packages or ebuilds
 
-  returns a string containing the latest version.
+  Returns:
+    A string containing the latest version.
   """
   pkgtype = 'vartree' if installed else 'porttree'
   # pylint: disable=E1101
@@ -251,11 +254,14 @@ def VersionListToNumeric(target, package, versions, installed):
 
   Resolving means replacing PACKAGE_STABLE with the actual number.
 
-  args:
-    target, package - the target/package to operate on eg. i686-pc-linux-gnu,gcc
-    versions - list of versions to resolve
+  Args:
+    target: The target to operate on (e.g. i686-pc-linux-gnu)
+    package: The target/package to operate on (e.g. gcc)
+    versions: List of versions to resolve
+    installed: Query installed packages
 
-  returns list of purely numeric versions equivalent to argument
+  Returns:
+    List of purely numeric versions equivalent to argument
   """
   resolved = []
   atom = GetPortagePackage(target, package)
@@ -278,10 +284,12 @@ def GetDesiredPackageVersions(target, package):
   Since crossdev unmasks all packages by default, this will actually
   mean 'unstable' in most cases.
 
-  args:
-    target, package - the target/package to operate on eg. i686-pc-linux-gnu,gcc
+  Args:
+    target: The target to operate on (e.g. i686-pc-linux-gnu)
+    package: The target/package to operate on (e.g. gcc)
 
-  returns a list composed of either a version string, PACKAGE_STABLE
+  Returns:
+    A list composed of either a version string, PACKAGE_STABLE
   """
   packagemap = GetPackageMap(target)
 
@@ -299,11 +307,11 @@ def TargetIsInitialized(target):
   toolchain packages or can do it using emerge. Emerge is naturally
   preferred, because all packages can be updated in a single pass.
 
-  args:
-    targets - list of individual cross targets which are checked
+  Args:
+    target: The target to operate on (e.g. i686-pc-linux-gnu)
 
-  returns True if target is completely initialized
-  returns False otherwise
+  Returns:
+    True if |target| is completely initialized, else False
   """
   # Check if packages for the given target all have a proper version.
   try:
@@ -325,8 +333,8 @@ def RemovePackageMask(target):
 
   The pre-existing package.mask files can mess with the keywords.
 
-  args:
-    target - the target for which to remove the file
+  Args:
+    target: The target to operate on (e.g. i686-pc-linux-gnu)
   """
   maskfile = os.path.join('/etc/portage/package.mask', 'cross-' + target)
   osutils.SafeUnlink(maskfile)
@@ -367,9 +375,9 @@ def RebuildLibtool():
 def UpdateTargets(targets, usepkg):
   """Determines which packages need update/unmerge and defers to portage.
 
-  args:
-    targets - the list of targets to update
-    usepkg - copies the commandline option
+  Args:
+    targets: The list of targets to update
+    usepkg: Copies the commandline option
   """
   # Remove keyword files created by old versions of cros_setup_toolchains.
   osutils.SafeUnlink('/etc/portage/package.keywords/cross-host')
@@ -448,8 +456,9 @@ def CleanTargets(targets):
 def SelectActiveToolchains(targets, suffixes):
   """Runs gcc-config and binutils-config to select the desired.
 
-  args:
-    targets - the targets to select
+  Args:
+    targets: The targets to select
+    suffixes: Optional target-specific hacks
   """
   for package in ['gcc', 'binutils']:
     for target in targets:
@@ -518,8 +527,13 @@ def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
                      targets_wanted, boards_wanted):
   """Performs all steps to create a synchronized toolchain enviroment.
 
-  args:
-    arguments correspond to the given commandline flags
+  Args:
+    usepkg: Use prebuilt packages
+    deleteold: Unmerge deprecated packages
+    hostonly: Only setup the host toolchain
+    reconfig: Reload crossdev config and reselect toolchains
+    targets_wanted: All the targets to update
+    boards_wanted: Load targets from these boards
   """
   targets, crossdev_targets, reconfig_targets = {}, {}, {}
   if not hostonly:
