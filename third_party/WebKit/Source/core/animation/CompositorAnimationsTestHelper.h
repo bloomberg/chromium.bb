@@ -109,6 +109,9 @@ public:
     MOCK_METHOD2_T(add, void(const KeyframeType&, WebCompositorAnimationCurve::TimingFunctionType));
     MOCK_METHOD5_T(add, void(const KeyframeType&, double, double, double, double));
 
+    MOCK_METHOD4(setTimingFunction, void(double, double, double, double));
+    MOCK_METHOD1(setTimingFunction, void(WebCompositorAnimationCurve::TimingFunctionType));
+
     MOCK_CONST_METHOD1_T(getValue, float(double)); // Only on WebFloatAnimationCurve, but can't hurt to have here.
 
     virtual WebCompositorAnimationCurve::AnimationCurveType type() const { return CurveId; };
