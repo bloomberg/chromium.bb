@@ -63,17 +63,17 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
             target_state->OnWMEvent(&wm_event);
             event->StopPropagation();
           }
-          // WindowEventHandler can receive each event up to two times. Once a
-          // double-click has been received clear the target. Otherwise a
-          // duplicate of the event will be checking target history against
-          // itself.
           click_component_ = HTNOWHERE;
         }
       } else {
         click_component_ = HTNOWHERE;
       }
 
+      // The multi window resizer does not hide as a result of a single click
+      // because this code is never reached as a result of a single click.
+      // TODO(pkotwicz): Fix this. http://crbug.com/437125
       multi_window_resize_controller_.Hide();
+
       HandleVerticalResizeDoubleClick(target_state, event);
       break;
     }
@@ -95,7 +95,6 @@ void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     return;
 
   if (event->details().tap_count() != 2) {
-    // Note: TouchUMA::GESTURE_FRAMEVIEW_TAP is counted twice for each tap.
     TouchUMA::GetInstance()->
         RecordGestureAction(TouchUMA::GESTURE_FRAMEVIEW_TAP);
     return;
@@ -104,8 +103,6 @@ void WorkspaceEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   if (click_component_ == previous_target_component) {
     ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
         ash::UMA_TOGGLE_MAXIMIZE_CAPTION_GESTURE);
-    // Note: TouchUMA::GESTURE_FRAMEVIEW_TAP is counted twice each time
-    // TouchUMA::GESTURE_MAXIMIZE_DOUBLETAP is counted once.
     TouchUMA::GetInstance()->RecordGestureAction(
         TouchUMA::GESTURE_MAXIMIZE_DOUBLETAP);
     const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION);

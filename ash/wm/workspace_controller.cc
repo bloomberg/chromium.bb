@@ -48,13 +48,11 @@ WorkspaceController::WorkspaceController(aura::Window* viewport)
 
   viewport_->SetLayoutManager(layout_manager_);
   viewport_->AddPreTargetHandler(event_handler_.get());
-  viewport_->AddPostTargetHandler(event_handler_.get());
 }
 
 WorkspaceController::~WorkspaceController() {
   viewport_->SetLayoutManager(NULL);
   viewport_->RemovePreTargetHandler(event_handler_.get());
-  viewport_->RemovePostTargetHandler(event_handler_.get());
 }
 
 WorkspaceWindowState WorkspaceController::GetWindowState() const {
