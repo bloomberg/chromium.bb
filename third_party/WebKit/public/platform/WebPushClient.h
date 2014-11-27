@@ -29,9 +29,6 @@ public:
     // Ownership of the callback is transferred to the client.
     // Ownership of the WebServiceWorkerProvider is not transferred.
     virtual void getPermissionStatus(WebPushPermissionStatusCallback*, WebServiceWorkerProvider*) { }
-
-    // Ownership of the callback is transferred to the client.
-    virtual void requestPermission(WebPushPermissionRequestCallbacks*) { }
 };
 
 } // namespace blink
