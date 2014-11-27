@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
@@ -115,6 +116,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
       base::StringPrintf(
           "frame-src chrome://terms/ %s/;",
           extensions::kGaiaAuthExtensionOrigin));
+  source->OverrideContentSecurityPolicyObjectSrc("object-src *;");
 
   // Serve deferred resources.
   source->AddResourcePath(kEnrollmentHTMLPath, IDR_OOBE_ENROLLMENT_HTML);
@@ -372,6 +374,10 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   options::UserImageSource* user_image_source =
       new options::UserImageSource();
   content::URLDataSource::Add(profile, user_image_source);
+
+  // TabHelper is required for OOBE webui to make webview working on it.
+  content::WebContents* contents = web_ui->GetWebContents();
+  extensions::TabHelper::CreateForWebContents(contents);
 }
 
 OobeUI::~OobeUI() {
