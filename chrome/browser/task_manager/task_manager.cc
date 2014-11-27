@@ -242,6 +242,11 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       listen_requests_(0),
       update_state_(IDLE),
       is_updating_byte_count_(false) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 TaskManagerModel::TaskManagerModel"));
+
   AddResourceProvider(
       new task_manager::BrowserProcessResourceProvider(task_manager));
   AddResourceProvider(new task_manager::WebContentsResourceProvider(

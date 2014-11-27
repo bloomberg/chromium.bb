@@ -360,9 +360,19 @@ void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
   }
 
   if (!request_->status().is_success()) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 ResourceLoader::OnResponseStarted1"));
+
     ResponseCompleted();
     return;
   }
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 ResourceLoader::OnResponseStarted2"));
 
   // We want to send a final upload progress message prior to sending the
   // response complete message even if we're waiting for an ack to to a
@@ -370,14 +380,29 @@ void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
   waiting_for_upload_progress_ack_ = false;
   ReportUploadProgress();
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 ResourceLoader::OnResponseStarted3"));
+
   CompleteResponseStarted();
 
   if (is_deferred())
     return;
 
   if (request_->status().is_success()) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 ResourceLoader::OnResponseStarted4"));
+
     StartReading(false);  // Read the first chunk.
   } else {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile5(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 ResourceLoader::OnResponseStarted5"));
+
     ResponseCompleted();
   }
 }
@@ -394,9 +419,17 @@ void ResourceLoader::OnReadCompleted(net::URLRequest* unused, int bytes_read) {
 
   // bytes_read == -1 always implies an error.
   if (bytes_read == -1 || !request_->status().is_success()) {
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 ResourceLoader::OnReadCompleted1"));
+
     ResponseCompleted();
     return;
   }
+
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 ResourceLoader::OnReadCompleted2"));
 
   CompleteRead(bytes_read);
 
@@ -411,8 +444,16 @@ void ResourceLoader::OnReadCompleted(net::URLRequest* unused, int bytes_read) {
     return;
 
   if (bytes_read > 0) {
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 ResourceLoader::OnReadCompleted3"));
+
     StartReading(true);  // Read the next chunk.
   } else {
+    tracked_objects::ScopedTracker tracking_profile4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 ResourceLoader::OnReadCompleted4"));
+
     // URLRequest reported an EOF. Call ResponseCompleted.
     DCHECK_EQ(0, bytes_read);
     ResponseCompleted();
