@@ -135,9 +135,6 @@ void WaitUntilObserver::decrementPendingActivity()
     case NotificationClick:
         client->didHandleNotificationClickEvent(m_eventID, result);
         break;
-    case NotificationError:
-        client->didHandleNotificationErrorEvent(m_eventID, result);
-        break;
     case Push:
         client->didHandlePushEvent(m_eventID, result);
         break;

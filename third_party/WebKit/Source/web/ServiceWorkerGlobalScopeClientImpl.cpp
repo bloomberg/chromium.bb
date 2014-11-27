@@ -88,11 +88,6 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleNotificationClickEvent(int eve
     m_client.didHandleNotificationClickEvent(eventID, result);
 }
 
-void ServiceWorkerGlobalScopeClientImpl::didHandleNotificationErrorEvent(int eventID, WebServiceWorkerEventResult result)
-{
-    m_client.didHandleNotificationErrorEvent(eventID, result);
-}
-
 void ServiceWorkerGlobalScopeClientImpl::didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult result)
 {
     m_client.didHandlePushEvent(pushEventID, result);

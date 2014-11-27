@@ -56,7 +56,6 @@ public:
     virtual void didHandleFetchEvent(int fetchEventID, const WebServiceWorkerResponse&) override;
     virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult) override;
     virtual void didHandleNotificationClickEvent(int eventID, WebServiceWorkerEventResult) override;
-    virtual void didHandleNotificationErrorEvent(int eventID, WebServiceWorkerEventResult) override;
     virtual void didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult) override;
     virtual void didHandleSyncEvent(int syncEventID) override;
     virtual void postMessageToClient(int clientID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) override;

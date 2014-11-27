@@ -24,7 +24,6 @@ public:
         Activate,
         Install,
         NotificationClick,
-        NotificationError,
         Push
     };
 

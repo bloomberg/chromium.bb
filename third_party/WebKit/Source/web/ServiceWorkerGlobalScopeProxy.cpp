@@ -121,23 +121,13 @@ void ServiceWorkerGlobalScopeProxy::dispatchMessageEvent(const WebString& messag
     m_workerGlobalScope->dispatchEvent(MessageEvent::create(ports.release(), value));
 }
 
-void ServiceWorkerGlobalScopeProxy::dispatchNotificationClickEvent(int eventID, const WebNotificationData& data)
+void ServiceWorkerGlobalScopeProxy::dispatchNotificationClickEvent(int eventID, const WebString& notificationID, const WebNotificationData& data)
 {
     ASSERT(m_workerGlobalScope);
     WaitUntilObserver* observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::NotificationClick, eventID);
-    // FIXME: Initialize a Notification object based on |data|.
+    // FIXME: Initialize a Notification object based on |notificationID| and |data|.
     NotificationEventInit eventInit;
     RefPtrWillBeRawPtr<Event> event(NotificationEvent::create(EventTypeNames::notificationclick, eventInit, observer));
-    m_workerGlobalScope->dispatchExtendableEvent(event.release(), observer);
-}
-
-void ServiceWorkerGlobalScopeProxy::dispatchNotificationErrorEvent(int eventID, const WebNotificationData& data)
-{
-    ASSERT(m_workerGlobalScope);
-    WaitUntilObserver* observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::NotificationError, eventID);
-    // FIXME: Initialize a Notification object based on |data|.
-    NotificationEventInit eventInit;
-    RefPtrWillBeRawPtr<Event> event(NotificationEvent::create(EventTypeNames::notificationerror, eventInit, observer));
     m_workerGlobalScope->dispatchExtendableEvent(event.release(), observer);
 }
 

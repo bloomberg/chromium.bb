@@ -73,8 +73,7 @@ public:
     virtual void dispatchGeofencingEvent(int, WebGeofencingEventType, const WebString& regionID, const WebCircularGeofencingRegion&) override;
     virtual void dispatchInstallEvent(int) override;
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) override;
-    virtual void dispatchNotificationClickEvent(int eventID, const WebNotificationData&) override;
-    virtual void dispatchNotificationErrorEvent(int eventID, const WebNotificationData&) override;
+    virtual void dispatchNotificationClickEvent(int, const WebString& notificationID, const WebNotificationData&) override;
     virtual void dispatchPushEvent(int, const WebString& data) override;
     virtual void dispatchSyncEvent(int) override;
 
