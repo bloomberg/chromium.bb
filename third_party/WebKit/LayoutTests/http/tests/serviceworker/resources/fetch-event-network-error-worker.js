@@ -13,6 +13,25 @@ self.addEventListener('fetch', function(event) {
     case '?prevent-default-and-respond-with':
       event.preventDefault();
       break;
+    case '?unused-body':
+      event.respondWith(new Response('body'));
+      break;
+    case '?used-body':
+      var res = new Response('body');
+      res.text();
+      event.respondWith(res);
+      break;
+    case '?unused-fetched-body':
+      event.respondWith(fetch('other.html').then(function(res){
+          return res;
+        }));
+      break;
+    case '?used-fetched-body':
+      event.respondWith(fetch('other.html').then(function(res){
+          res.text();
+          return res;
+        }));
+      break;
     }
   });
 

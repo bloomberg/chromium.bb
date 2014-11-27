@@ -133,6 +133,11 @@ void RespondWithObserver::responseWasFulfilled(const ScriptValue& value)
         responseWasRejected();
         return;
     }
+    if (response->bodyUsed()) {
+        responseWasRejected();
+        return;
+    }
+    response->setBodyUsed();
     WebServiceWorkerResponse webResponse;
     response->populateWebServiceWorkerResponse(webResponse);
     ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleFetchEvent(m_eventID, webResponse);

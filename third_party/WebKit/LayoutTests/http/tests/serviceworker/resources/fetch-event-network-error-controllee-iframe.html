@@ -36,7 +36,11 @@ function run_tests() {
   var tests = [
     { name: 'prevent-default-and-respond-with', expect_load: true },
     { name: 'prevent-default', expect_load: false },
-    { name: 'reject', expect_load: false }
+    { name: 'reject', expect_load: false },
+    { name: 'unused-body', expect_load: true },
+    { name: 'used-body', expect_load: false },
+    { name: 'unused-fetched-body', expect_load: true },
+    { name: 'used-fetched-body', expect_load: false }
   ].map(make_test);
 
   Promise.all(tests)

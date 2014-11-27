@@ -79,7 +79,7 @@ self.addEventListener('fetch', function(event) {
           fetch(request)
             .then(function(res) {
                 response = res;
-                res.text()
+                res.clone().text()
                   .then(function(body) {
                       // Send the result to fetch-access-control.html.
                       port.postMessage(

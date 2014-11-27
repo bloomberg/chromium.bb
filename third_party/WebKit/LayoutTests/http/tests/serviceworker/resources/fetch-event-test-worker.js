@@ -41,6 +41,20 @@ function handleMultipleRespondWith(event) {
   }
 }
 
+var lastResponseForUsedCheck = undefined;
+
+function handleUsedCheck(event) {
+  if (!lastResponseForUsedCheck) {
+    event.respondWith(fetch('other.html').then(function(response) {
+        lastResponseForUsedCheck = response;
+        return response;
+      }));
+  } else {
+    event.respondWith(new Response(
+        'bodyUsed: ' + lastResponseForUsedCheck.bodyUsed));
+  }
+}
+
 self.addEventListener('fetch', function(event) {
     var url = event.request.url;
     var handlers = [
@@ -51,7 +65,8 @@ self.addEventListener('fetch', function(event) {
       { pattern: '?null', fn: handleNullBody },
       { pattern: '?fetch', fn: handleFetch },
       { pattern: '?form-post', fn: handleFormPost },
-      { pattern: '?multiple-respond-with', fn: handleMultipleRespondWith }
+      { pattern: '?multiple-respond-with', fn: handleMultipleRespondWith },
+      { pattern: '?used-check', fn: handleUsedCheck }
     ];
 
     var handler = null;
