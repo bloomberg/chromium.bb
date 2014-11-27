@@ -590,6 +590,7 @@ input[type='checkbox']:checked {
 
   .gallery > .toolbar button span {
     display: inline;
+    white-space: nowrap;
   }
 
 }
