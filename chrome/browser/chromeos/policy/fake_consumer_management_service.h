@@ -13,15 +13,15 @@ namespace policy {
 class FakeConsumerManagementService : public ConsumerManagementService {
  public:
   FakeConsumerManagementService();
-  virtual ~FakeConsumerManagementService();
+  ~FakeConsumerManagementService() override;
 
   // Set both status and enrollment stage.
   void SetStatusAndEnrollmentStage(Status status, EnrollmentStage stage);
 
   // ConsumerManagementServcie:
-  virtual Status GetStatus() const override;
-  virtual EnrollmentStage GetEnrollmentStage() const override;
-  virtual void SetEnrollmentStage(EnrollmentStage stage) override;
+  Status GetStatus() const override;
+  EnrollmentStage GetEnrollmentStage() const override;
+  void SetEnrollmentStage(EnrollmentStage stage) override;
 
  private:
   Status status_;

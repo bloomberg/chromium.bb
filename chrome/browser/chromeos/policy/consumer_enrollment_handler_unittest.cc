@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/consumer_enrollment_handler.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -61,7 +62,7 @@ class ConsumerEnrollmentHandlerTest : public testing::Test {
     fake_user_manager_->set_owner_email(kTestOwner);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(testing_profile_manager_->SetUp());
     profile_ = testing_profile_manager_->CreateTestingProfile(kTestUser);
 

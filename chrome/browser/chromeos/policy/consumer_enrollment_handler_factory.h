@@ -32,12 +32,12 @@ class ConsumerEnrollmentHandlerFactory
   friend struct DefaultSingletonTraits<ConsumerEnrollmentHandlerFactory>;
 
   ConsumerEnrollmentHandlerFactory();
-  virtual ~ConsumerEnrollmentHandlerFactory();
+  ~ConsumerEnrollmentHandlerFactory() override;
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ConsumerEnrollmentHandlerFactory);
 };

@@ -141,9 +141,9 @@ class ConsumerManagementService
   void SetOwner(const std::string& user_id, const SetOwnerCallback& callback);
 
   // chromeos::DeviceSettingsService::Observer:
-  virtual void OwnershipStatusChanged() override;
-  virtual void DeviceSettingsUpdated() override;
-  virtual void OnDeviceSettingsServiceShutdown() override;
+  void OwnershipStatusChanged() override;
+  void DeviceSettingsUpdated() override;
+  void OnDeviceSettingsServiceShutdown() override;
 
  protected:
   void NotifyStatusChanged();

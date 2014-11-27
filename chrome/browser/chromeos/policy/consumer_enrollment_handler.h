@@ -32,19 +32,19 @@ class ConsumerEnrollmentHandler
       Profile* profile,
       ConsumerManagementService* consumer_management_service,
       DeviceManagementService* device_management_service);
-  virtual ~ConsumerEnrollmentHandler();
+  ~ConsumerEnrollmentHandler() override;
 
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // OAuth2TokenService::Observer:
-  virtual void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
 
   // OAuth2TokenService::Consumer:
-  virtual void OnGetTokenSuccess(
+  void OnGetTokenSuccess(
       const OAuth2TokenService::Request* request,
       const std::string& access_token,
       const base::Time& expiration_time) override;
-  virtual void OnGetTokenFailure(
+  void OnGetTokenFailure(
       const OAuth2TokenService::Request* request,
       const GoogleServiceAuthError& error) override;
 

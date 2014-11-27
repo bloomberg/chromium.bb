@@ -29,12 +29,12 @@ class ConsumerManagementNotifierFactory
   friend struct DefaultSingletonTraits<ConsumerManagementNotifierFactory>;
 
   ConsumerManagementNotifierFactory();
-  virtual ~ConsumerManagementNotifierFactory();
+  ~ConsumerManagementNotifierFactory() override;
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-  virtual bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
 
   DISALLOW_COPY_AND_ASSIGN(ConsumerManagementNotifierFactory);
 };

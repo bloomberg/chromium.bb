@@ -41,11 +41,11 @@ class DesktopNotificationDelegate : public NotificationDelegate {
                               const base::Closure& button_click_callback);
 
   // NotificationDelegate:
-  virtual std::string id() const override;
-  virtual void ButtonClick(int button_index) override;
+  std::string id() const override;
+  void ButtonClick(int button_index) override;
 
  private:
-  virtual ~DesktopNotificationDelegate();
+  ~DesktopNotificationDelegate() override;
 
   std::string id_;
   base::Closure button_click_callback_;

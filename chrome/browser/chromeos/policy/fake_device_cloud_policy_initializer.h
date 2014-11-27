@@ -21,8 +21,8 @@ class FakeDeviceCloudPolicyInitializer : public DeviceCloudPolicyInitializer {
  public:
   FakeDeviceCloudPolicyInitializer();
 
-  virtual void Init() override;
-  virtual void Shutdown() override;
+  void Init() override;
+  void Shutdown() override;
 
   virtual void StartEnrollment(
       enterprise_management::PolicyData::ManagementMode management_mode,

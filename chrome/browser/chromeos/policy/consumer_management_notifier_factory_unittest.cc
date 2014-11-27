@@ -48,7 +48,7 @@ class ConsumerManagementNotifierFactoryTest : public testing::Test {
     fake_user_manager_->set_owner_email(kTestOwner);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     ASSERT_TRUE(testing_profile_manager_->SetUp());
   }
 

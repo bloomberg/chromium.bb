@@ -24,12 +24,12 @@ class ConsumerManagementNotifier
   ConsumerManagementNotifier(
       Profile* profile,
       ConsumerManagementService* consumer_management_service);
-  virtual ~ConsumerManagementNotifier();
+  ~ConsumerManagementNotifier() override;
 
-  virtual void Shutdown() override;
+  void Shutdown() override;
 
   // ConsumerManagementService::Observer:
-  virtual void OnConsumerManagementStatusChanged() override;
+  void OnConsumerManagementStatusChanged() override;
 
  private:
   // Shows a desktop notification.

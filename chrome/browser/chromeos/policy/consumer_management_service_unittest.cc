@@ -55,7 +55,7 @@ class ConsumerManagementServiceTest : public BrowserWithTestWindowTest {
                        MockFlushAndSignBootAttributes));
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
     testing_profile_manager_.reset(new TestingProfileManager(
@@ -65,7 +65,7 @@ class ConsumerManagementServiceTest : public BrowserWithTestWindowTest {
                                                  NULL));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     testing_profile_manager_.reset();
     service_.reset();
 

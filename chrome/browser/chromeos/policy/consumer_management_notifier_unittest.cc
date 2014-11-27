@@ -32,7 +32,7 @@ class ConsumerManagementNotifierTest : public BrowserWithTestWindowTest {
         make_scoped_ptr(fake_service_));
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
     // Set up TestingProfileManager. This is required for NotificationUIManager.
@@ -41,7 +41,7 @@ class ConsumerManagementNotifierTest : public BrowserWithTestWindowTest {
     ASSERT_TRUE(testing_profile_manager_->SetUp());
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     if (notification_)
       notification_->Shutdown();
     notification_.reset();
