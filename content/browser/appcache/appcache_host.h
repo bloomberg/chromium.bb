@@ -111,7 +111,8 @@ class CONTENT_EXPORT AppCacheHost
   // May return NULL if the request isn't subject to retrieval from an appache.
   AppCacheRequestHandler* CreateRequestHandler(
       net::URLRequest* request,
-      ResourceType resource_type);
+      ResourceType resource_type,
+      bool should_reset_appcache);
 
   // Support for devtools inspecting appcache resources.
   void GetResourceList(std::vector<AppCacheResourceInfo>* resource_infos);
