@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Push API: PushMessageData's text-based constructor and accessor behaviour.</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+    <script src="../serviceworker/resources/test-helpers.js"></script>
+  </head>
+  <body>
+    <script>
+      // Tests that the PushMessageData object exists, can be constructed and
+      // returns the expected values through its text() accessor.
+      service_worker_test(
+          'resources/pushmessagedata-constructor-text.js',
+          'Exposure and behaviour of the PushMessageData object in a ServiceWorker.');
+    </script>
+  </body>
+</html>

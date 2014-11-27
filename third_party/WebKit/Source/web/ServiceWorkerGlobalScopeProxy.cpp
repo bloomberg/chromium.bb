@@ -43,6 +43,7 @@
 #include "modules/geofencing/GeofencingEvent.h"
 #include "modules/notifications/NotificationEvent.h"
 #include "modules/push_messaging/PushEvent.h"
+#include "modules/push_messaging/PushMessageData.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "modules/serviceworkers/FetchEvent.h"
 #include "modules/serviceworkers/Headers.h"
@@ -144,7 +145,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchPushEvent(int eventID, const WebStri
 {
     ASSERT(m_workerGlobalScope);
     WaitUntilObserver* observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::Push, eventID);
-    RefPtrWillBeRawPtr<Event> event(PushEvent::create(EventTypeNames::push, data, observer));
+    RefPtrWillBeRawPtr<Event> event(PushEvent::create(EventTypeNames::push, PushMessageData::create(data), observer));
     m_workerGlobalScope->dispatchExtendableEvent(event.release(), observer);
 }
 

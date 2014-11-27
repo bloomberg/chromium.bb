@@ -6,6 +6,7 @@
 #define PushEvent_h
 
 #include "modules/EventModules.h"
+#include "modules/push_messaging/PushMessageData.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
@@ -16,7 +17,7 @@ namespace blink {
 struct PushEventInit : public ExtendableEventInit {
     PushEventInit();
 
-    String data;
+    Member<PushMessageData> data;
 };
 
 class PushEvent final : public ExtendableEvent {
@@ -26,7 +27,7 @@ public:
     {
         return adoptRefWillBeNoop(new PushEvent);
     }
-    static PassRefPtrWillBeRawPtr<PushEvent> create(const AtomicString& type, const String& data, WaitUntilObserver* observer)
+    static PassRefPtrWillBeRawPtr<PushEvent> create(const AtomicString& type, PushMessageData* data, WaitUntilObserver* observer)
     {
         return adoptRefWillBeNoop(new PushEvent(type, data, observer));
     }
@@ -39,13 +40,16 @@ public:
 
     virtual const AtomicString& interfaceName() const override;
 
-    String data() const { return m_data; }
+    PushMessageData* data();
+
+    virtual void trace(Visitor*) override;
 
 private:
     PushEvent();
-    PushEvent(const AtomicString& type, const String& data, WaitUntilObserver*);
+    PushEvent(const AtomicString& type, PushMessageData*, WaitUntilObserver*);
     PushEvent(const AtomicString& type, const PushEventInit&);
-    String m_data;
+
+    PersistentWillBeMember<PushMessageData> m_data;
 };
 
 } // namespace blink
