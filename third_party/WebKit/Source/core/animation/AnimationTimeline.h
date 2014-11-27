@@ -86,6 +86,8 @@ public:
     double currentTime();
     double currentTimeInternal(bool& isNull);
     double currentTimeInternal();
+    void setCurrentTime(double);
+    void setCurrentTimeInternal(double);
     double effectiveTime();
     void pauseAnimationsForTesting(double);
 

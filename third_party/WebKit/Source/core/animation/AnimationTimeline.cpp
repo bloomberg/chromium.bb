@@ -212,6 +212,16 @@ double AnimationTimeline::currentTimeInternal()
     return currentTimeInternal(isNull);
 }
 
+void AnimationTimeline::setCurrentTime(double currentTime)
+{
+    setCurrentTimeInternal(currentTime / 1000);
+}
+
+void AnimationTimeline::setCurrentTimeInternal(double currentTime)
+{
+    m_zeroTimeOffset = document()->animationClock().currentTime() - m_zeroTime - currentTime;
+}
+
 double AnimationTimeline::effectiveTime()
 {
     double time = currentTimeInternal();

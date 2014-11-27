@@ -6,7 +6,8 @@
     RuntimeEnabled=WebAnimationsAPI,
     WillBeGarbageCollected,
 ] interface AnimationTimeline {
-    readonly attribute double? currentTime;
+    attribute double? currentTime;
+    attribute double playbackRate;
     AnimationPlayer play(AnimationNode source);
     sequence<AnimationPlayer> getAnimationPlayers();
 };
