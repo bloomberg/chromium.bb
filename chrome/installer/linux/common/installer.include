@@ -136,6 +136,11 @@ stage_install_common() {
   # in build/common.gypi.
   install -m 644 "${BUILDDIR}/icudtl.dat" "${STAGEDIR}/${INSTALLDIR}/"
 
+  # V8 snapshot files; only necessary when v8_use_external_startup_data is
+  # set to 1 in build/common.gypi.
+  install -m 644 "${BUILDDIR}/natives_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
+  install -m 644 "${BUILDDIR}/snapshot_blob.bin" "${STAGEDIR}/${INSTALLDIR}/"
+
   # sandbox
   # Rename sandbox binary with hyphen instead of underscore because that's what
   # the code looks for, but the build targets can't use hyphens (scons bug?)
