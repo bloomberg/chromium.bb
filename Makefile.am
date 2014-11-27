@@ -400,7 +400,9 @@ nodist_weston_simple_shm_SOURCES =		\
 	protocol/xdg-shell-protocol.c		\
 	protocol/xdg-shell-client-protocol.h	\
 	protocol/fullscreen-shell-protocol.c	\
-	protocol/fullscreen-shell-client-protocol.h
+	protocol/fullscreen-shell-client-protocol.h	\
+	protocol/ivi-application-protocol.c		\
+	protocol/ivi-application-client-protocol.h
 weston_simple_shm_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
 weston_simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la
 
