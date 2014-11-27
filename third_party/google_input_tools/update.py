@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Performs pull of google-input-tools from local clone of GitHub repository."""
+
 import json
 import logging
 import optparse
@@ -10,48 +12,50 @@ import os
 import re
 import shutil
 import subprocess
-import sys
 
-_BASE_REGEX_STRING = '^\s*goog\.%s\(\s*[\'"](.+)[\'"]\s*\)'
+_BASE_REGEX_STRING = r'^\s*goog\.%s\(\s*[\'"](.+)[\'"]\s*\)'
 require_regex = re.compile(_BASE_REGEX_STRING % 'require')
 provide_regex = re.compile(_BASE_REGEX_STRING % 'provide')
 
 preamble = [
-  '# Copyright 2014 The Chromium Authors. All rights reserved.',
-  '# Use of this source code is governed by a BSD-style license that can be',
-  '# found in the LICENSE file.',
-  '',
-  '# This file is auto-generated using update.py.',
-  '']
+    '# Copyright 2014 The Chromium Authors. All rights reserved.',
+    '# Use of this source code is governed by a BSD-style license that can be',
+    '# found in the LICENSE file.',
+    '',
+    '# This file is auto-generated using update.py.',
+    ''
+]
 
 # Entry-points required to build a virtual keyboard.
 namespaces = [
-  'i18n.input.chrome.inputview.Controller',
-  'i18n.input.chrome.inputview.content.compact.letter',
-  'i18n.input.chrome.inputview.content.compact.util',
-  'i18n.input.chrome.inputview.content.compact.symbol',
-  'i18n.input.chrome.inputview.content.compact.more',
-  'i18n.input.chrome.inputview.content.compact.numberpad',
-  'i18n.input.chrome.inputview.content.ContextlayoutUtil',
-  'i18n.input.chrome.inputview.content.util',
-  'i18n.input.chrome.inputview.EmojiType',
-  'i18n.input.chrome.inputview.layouts.CompactSpaceRow',
-  'i18n.input.chrome.inputview.layouts.RowsOf101',
-  'i18n.input.chrome.inputview.layouts.RowsOf102',
-  'i18n.input.chrome.inputview.layouts.RowsOfCompact',
-  'i18n.input.chrome.inputview.layouts.RowsOfJP',
-  'i18n.input.chrome.inputview.layouts.RowsOfNumberpad',
-  'i18n.input.chrome.inputview.layouts.SpaceRow',
-  'i18n.input.chrome.inputview.layouts.util',
-  'i18n.input.hwt.util']
+    'i18n.input.chrome.inputview.Controller',
+    'i18n.input.chrome.inputview.content.compact.letter',
+    'i18n.input.chrome.inputview.content.compact.util',
+    'i18n.input.chrome.inputview.content.compact.symbol',
+    'i18n.input.chrome.inputview.content.compact.more',
+    'i18n.input.chrome.inputview.content.compact.numberpad',
+    'i18n.input.chrome.inputview.content.ContextlayoutUtil',
+    'i18n.input.chrome.inputview.content.util',
+    'i18n.input.chrome.inputview.EmojiType',
+    'i18n.input.chrome.inputview.layouts.CompactSpaceRow',
+    'i18n.input.chrome.inputview.layouts.RowsOf101',
+    'i18n.input.chrome.inputview.layouts.RowsOf102',
+    'i18n.input.chrome.inputview.layouts.RowsOfCompact',
+    'i18n.input.chrome.inputview.layouts.RowsOfJP',
+    'i18n.input.chrome.inputview.layouts.RowsOfNumberpad',
+    'i18n.input.chrome.inputview.layouts.SpaceRow',
+    'i18n.input.chrome.inputview.layouts.util',
+    'i18n.input.hwt.util'
+]
 
 # Any additional required files.
 extras = [
-  'common.css',
-  'emoji.css'
+    'common.css',
+    'emoji.css'
 ]
 
-def ProcessFile(filename):
+
+def process_file(filename):
   """Extracts provided and required namespaces.
 
   Description:
@@ -78,7 +82,7 @@ def ProcessFile(filename):
   return provides, requires
 
 
-def ExpandDirectories(refs):
+def expand_directories(refs):
   """Expands any directory references into inputs.
 
   Description:
@@ -97,11 +101,11 @@ def ExpandDirectories(refs):
   requirements = {}
   for ref in refs:
     if os.path.isdir(ref):
-      for (root, dirs, files) in os.walk(ref):
+      for (root, _, files) in os.walk(ref):
         for name in files:
           if name.endswith('js'):
             filename = os.path.join(root, name)
-            provides, requires = ProcessFile(filename)
+            provides, requires = process_file(filename)
             for p in provides:
               providers[p] = filename
             requirements[filename] = []
@@ -110,45 +114,48 @@ def ExpandDirectories(refs):
   return providers, requirements
 
 
-def ExtractDependencies(namespace, providers, requirements, dependencies):
+def extract_dependencies(namespace, providers, requirements, dependencies):
   """Recursively extracts all dependencies for a namespace.
+
   Description:
     Recursively extracts all dependencies for a namespace.
 
   Args:
     namespace: The namespace to process.
     providers: Mapping of namespace to filename that provides the namespace.
-    requireemnts: Mapping of filename to a list of prerequisite namespaces.
+    requirements: Mapping of filename to a list of prerequisite namespaces.
+    dependencies: List of files required to build inputview.
   Returns:
   """
+
   if namespace in providers:
     filename = providers[namespace]
-    if not filename in dependencies:
+    if filename not in dependencies:
       for ns in requirements[filename]:
-        ExtractDependencies(ns, providers, requirements, dependencies)
+        extract_dependencies(ns, providers, requirements, dependencies)
     dependencies.add(filename)
 
 
-def HomeDir():
+def home_dir():
   """Resolves the user's home directory."""
 
   return os.path.expanduser('~')
 
 
-def ExpandPathRelativeToHome(path):
-   """Resolves a path that is relative to the home directory.
+def expand_path_relative_to_home(path):
+  """Resolves a path that is relative to the home directory.
 
-   Args: 
-     path: Relative path.
+  Args:
+    path: Relative path.
 
-   Returns:
-     Resolved path.
-   """
+  Returns:
+    Resolved path.
+  """
 
-   return os.path.join(os.path.expanduser('~'), path)
+  return os.path.join(os.path.expanduser('~'), path)
 
 
-def GetGoogleInputToolsSandboxFromOptions(options):
+def get_google_input_tools_sandbox_from_options(options):
   """Generate the input-input-tools path from the --input flag.
 
   Args:
@@ -159,12 +166,12 @@ def GetGoogleInputToolsSandboxFromOptions(options):
 
   path = options.input
   if not path:
-    path = ExpandPathRelativeToHome('google-input-tools')
+    path = expand_path_relative_to_home('google-input-tools')
     print 'Unspecified path for google-input-tools. Defaulting to %s' % path
   return path
 
 
-def GetClosureLibrarySandboxFromOptions(options):
+def get_closure_library_sandbox_from_options(options):
   """Generate the closure-library path from the --input flag.
 
   Args:
@@ -175,12 +182,12 @@ def GetClosureLibrarySandboxFromOptions(options):
 
   path = options.lib
   if not path:
-    path = ExpandPathRelativeToHome('closure-library')
+    path = expand_path_relative_to_home('closure-library')
     print 'Unspecified path for closure-library. Defaulting to %s' % path
   return path
 
 
-def CopyFile(source, target):
+def copy_file(source, target):
   """Copies a file from the source to the target location.
 
   Args:
@@ -198,28 +205,28 @@ def CopyFile(source, target):
     subprocess.call(['chmod', '-x', target])
 
 
-def UpdateFile(filename, input_source, closure_source, target_files):
-    """Updates files in third_party/google_input_tools.
+def update_file(filename, input_source, closure_source, target_files):
+  """Updates files in third_party/google_input_tools.
 
-    Args:
-      filename: The file to update.
-      input_source: Root of the google_input_tools sandbox.
-      closure_source: Root of the closure_library sandbox.
-      target_files: List of relative paths to target files.
-    """
+  Args:
+    filename: The file to update.
+    input_source: Root of the google_input_tools sandbox.
+    closure_source: Root of the closure_library sandbox.
+    target_files: List of relative paths to target files.
+  """
 
-    target = ''
-    if filename.startswith(input_source):
-      target = os.path.join('src', filename[len(input_source)+1:])
-    elif filename.startswith(closure_source):
-      target = os.path.join('third_party/closure_library', \
-                            filename[len(closure_source)+1:])
-    if len(target) > 0:
-      CopyFile(filename, target)
-      target_files.append(os.path.relpath(target, os.getcwd()))
+  target = ''
+  if filename.startswith(input_source):
+    target = os.path.join('src', filename[len(input_source)+1:])
+  elif filename.startswith(closure_source):
+    target = os.path.join('third_party/closure_library',
+                          filename[len(closure_source)+1:])
+  if target:
+    copy_file(filename, target)
+    target_files.append(os.path.relpath(target, os.getcwd()))
 
 
-def GenerateBuildFile(target_files):
+def generate_build_file(target_files):
   """Updates inputview.gypi.
 
   Args:
@@ -234,7 +241,7 @@ def GenerateBuildFile(target_files):
     file_handle.write(json_str.replace('\"', '\''))
 
 
-def CopyDir(input_path, sub_dir):
+def copy_dir(input_path, sub_dir):
   """Copies all files in a subdirectory of google-input-tools.
 
   Description:
@@ -243,15 +250,16 @@ def CopyDir(input_path, sub_dir):
 
   Args:
     input_path: Path to the google-input-tools-sandbox.
+    sub_dir: Subdirectory to copy within google-input-tools sandbox.
   """
-  dir = os.path.join(input_path, "chrome", "os", "inputview", sub_dir)
-  for (root, dirs, files) in os.walk(dir):
+  source_dir = os.path.join(input_path, 'chrome', 'os', 'inputview', sub_dir)
+  for (root, _, files) in os.walk(source_dir):
     for name in files:
       filename = os.path.join(root, name)
-      relative_path = filename[len(dir) + 1:]
+      relative_path = filename[len(source_dir) + 1:]
       target = os.path.join('src', 'chrome', 'os', 'inputview', sub_dir,
-                       relative_path)
-      CopyFile(filename, target)
+                            relative_path)
+      copy_file(filename, target)
 
 
 def main():
@@ -267,15 +275,15 @@ def main():
                     action='append',
                     help='Path to the google-input-tools sandbox.')
   parser.add_option('-l',
-                     '--lib',
-                     dest='lib',
-                     action='store',
-                     help='Path to the closure-library sandbox.')
+                    '--lib',
+                    dest='lib',
+                    action='store',
+                    help='Path to the closure-library sandbox.')
 
-  (options, args) = parser.parse_args()
+  (options, _) = parser.parse_args()
 
-  input_path = GetGoogleInputToolsSandboxFromOptions(options)
-  closure_library_path = GetClosureLibrarySandboxFromOptions(options)
+  input_path = get_google_input_tools_sandbox_from_options(options)
+  closure_library_path = get_closure_library_sandbox_from_options(options)
 
   if not os.path.isdir(input_path):
     print 'Could not find google-input-tools sandbox.'
@@ -284,32 +292,32 @@ def main():
     print 'Could not find closure-library sandbox.'
     exit(1)
 
-  (providers, requirements) = \
-      ExpandDirectories([os.path.join(input_path, 'chrome'),
-                         closure_library_path])
+  (providers, requirements) = expand_directories([
+      os.path.join(input_path, 'chrome'),
+      closure_library_path])
 
   dependencies = set()
   for name in namespaces:
-    ExtractDependencies(name, providers, requirements, dependencies)
+    extract_dependencies(name, providers, requirements, dependencies)
 
   target_files = []
   for name in dependencies:
-    UpdateFile(name, input_path, closure_library_path, target_files)
+    update_file(name, input_path, closure_library_path, target_files)
 
-  GenerateBuildFile(target_files)
+  generate_build_file(target_files)
 
   # Copy resources
-  CopyDir(input_path, "_locales")
-  CopyDir(input_path, "images")
-  CopyDir(input_path, 'config')
-  CopyDir(input_path, 'layouts')
-  CopyDir(input_path, 'sounds')
+  copy_dir(input_path, '_locales')
+  copy_dir(input_path, 'images')
+  copy_dir(input_path, 'config')
+  copy_dir(input_path, 'layouts')
+  copy_dir(input_path, 'sounds')
 
   # Copy extra support files.
   for name in extras:
     source = os.path.join(input_path, 'chrome', 'os', 'inputview', name)
     target = os.path.join('src', 'chrome', 'os', 'inputview', name)
-    CopyFile(source ,target)
+    copy_file(source, target)
 
 
 if __name__ == '__main__':
