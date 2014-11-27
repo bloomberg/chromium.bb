@@ -232,7 +232,7 @@ public:
 
     void checkAndPark(ThreadState* state, SafePointAwareMutexLocker* locker = 0)
     {
-        ASSERT(!state->isSweepInProgress());
+        ASSERT(!state->sweepForbidden());
         if (!acquireLoad(&m_canResume)) {
             // If we are leaving the safepoint from a SafePointAwareMutexLocker
             // call out to release the lock before going to sleep. This enables the
@@ -247,7 +247,7 @@ public:
 
     void enterSafePoint(ThreadState* state)
     {
-        ASSERT(!state->isSweepInProgress());
+        ASSERT(!state->sweepForbidden());
         pushAllRegisters(this, state, enterSafePointAfterPushRegisters);
     }
 
@@ -327,7 +327,7 @@ ThreadState::ThreadState()
     , m_atSafePoint(false)
     , m_interruptors()
     , m_didV8GCAfterLastGC(false)
-    , m_sweepInProgress(false)
+    , m_sweepForbidden(false)
     , m_noAllocationCount(0)
     , m_isTerminating(false)
     , m_shouldFlushHeapDoesNotContainCache(false)
@@ -729,7 +729,7 @@ bool ThreadState::shouldGC()
     checkThread();
     // Do not GC during sweeping. We allow allocation during finalization,
     // but those allocations are not allowed to lead to nested GCs.
-    if (m_sweepInProgress)
+    if (sweepForbidden())
         return false;
 
     // Trigger garbage collection on a 50% increase in size,
@@ -745,7 +745,7 @@ bool ThreadState::shouldForceConservativeGC()
     checkThread();
     // Do not GC during sweeping. We allow allocation during finalization,
     // but those allocations are not allowed to lead to nested GCs.
-    if (m_sweepInProgress)
+    if (sweepForbidden())
         return false;
 
     size_t newSize = Heap::allocatedObjectSize();
@@ -1017,7 +1017,7 @@ void ThreadState::performPendingSweep()
 
     size_t allocatedObjectSizeBeforeSweeping = Heap::allocatedObjectSize();
     {
-        NoSweepScope scope(this);
+        SweepForbiddenScope forbiddenScope(this);
 
         // Disallow allocation during weak processing.
         enterNoAllocationScope();
@@ -1113,7 +1113,7 @@ ThreadState::AttachedThreadStateSet& ThreadState::attachedThreads()
 void ThreadState::unregisterPreFinalizerInternal(void* target)
 {
     checkThread();
-    if (isSweepInProgress())
+    if (sweepForbidden())
         return;
     auto it = m_preFinalizers.find(target);
     ASSERT(it != m_preFinalizers.end());

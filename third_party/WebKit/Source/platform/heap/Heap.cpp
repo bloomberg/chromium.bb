@@ -885,7 +885,7 @@ bool ThreadHeap<Header>::expandObject(Header* header, size_t newSize)
 template<typename Header>
 void ThreadHeap<Header>::promptlyFreeObject(Header* header)
 {
-    ASSERT(!m_threadState->isSweepInProgress());
+    ASSERT(!m_threadState->sweepForbidden());
     header->checkHeader();
     Address address = reinterpret_cast<Address>(header);
     Address payload = header->payload();
@@ -896,7 +896,7 @@ void ThreadHeap<Header>::promptlyFreeObject(Header* header)
     ASSERT(page == pageFromAddress(address));
 
     {
-        ThreadState::NoSweepScope scope(m_threadState);
+        ThreadState::SweepForbiddenScope forbiddenScope(m_threadState);
         HeapObjectHeader::finalize(header->gcInfo(), payload, payloadSize);
         if (address + size == m_currentAllocationPoint) {
             m_currentAllocationPoint = address;
@@ -924,7 +924,7 @@ void ThreadHeap<Header>::promptlyFreeObject(Header* header)
 template<typename Header>
 bool ThreadHeap<Header>::coalesce(size_t allocationSize)
 {
-    if (m_threadState->isSweepInProgress())
+    if (m_threadState->sweepForbidden())
         return false;
 
     if (m_promptlyFreedCount < 256)
@@ -1061,7 +1061,7 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
     // Use a separate list for large objects allocated during sweeping to make
     // sure that we do not accidentally sweep objects that have been
     // allocated during sweeping.
-    if (m_threadState->isSweepInProgress()) {
+    if (m_threadState->sweepForbidden()) {
         if (!m_lastLargeObjectAllocatedDuringSweeping)
             m_lastLargeObjectAllocatedDuringSweeping = largeObject;
         largeObject->link(&m_firstLargeObjectAllocatedDuringSweeping);
@@ -1341,7 +1341,7 @@ void ThreadHeap<Header>::allocatePage(const GCInfo* gcInfo)
     // Use a separate list for pages allocated during sweeping to make
     // sure that we do not accidentally sweep objects that have been
     // allocated during sweeping.
-    if (m_threadState->isSweepInProgress()) {
+    if (m_threadState->sweepForbidden()) {
         if (!m_lastPageAllocatedDuringSweeping)
             m_lastPageAllocatedDuringSweeping = page;
         page->link(&m_firstPageAllocatedDuringSweeping);
@@ -2671,7 +2671,7 @@ void HeapAllocator::backingFree(void* address)
         return;
 
     ThreadState* state = ThreadState::current();
-    if (state->isSweepInProgress())
+    if (state->sweepForbidden())
         return;
 
     // Don't promptly free large objects because their page is never reused
@@ -2712,7 +2712,7 @@ bool HeapAllocator::backingExpand(void* address, size_t newSize)
         return false;
 
     ThreadState* state = ThreadState::current();
-    if (state->isSweepInProgress())
+    if (state->sweepForbidden())
         return false;
     ASSERT(state->isAllocationAllowed());
 

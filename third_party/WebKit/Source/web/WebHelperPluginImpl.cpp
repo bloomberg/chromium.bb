@@ -61,7 +61,7 @@ WebHelperPluginImpl::~WebHelperPluginImpl()
     // FIXME: Oilpan: it is potentially problematic to support plugin
     // disposal during an Oilpan GC. If it happens, we need to know
     // and evaluate possible ways to handle it.
-    ASSERT(!ThreadState::current()->isSweepInProgress());
+    ASSERT(!ThreadState::current()->sweepForbidden());
     if (m_pluginContainer)
         m_pluginContainer->dispose();
 #endif

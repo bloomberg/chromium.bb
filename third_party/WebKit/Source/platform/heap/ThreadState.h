@@ -331,17 +331,17 @@ public:
         Sweeping,
     };
 
-    class NoSweepScope {
+    class SweepForbiddenScope {
     public:
-        explicit NoSweepScope(ThreadState* state) : m_state(state)
+        explicit SweepForbiddenScope(ThreadState* state) : m_state(state)
         {
-            ASSERT(!m_state->m_sweepInProgress);
-            m_state->m_sweepInProgress = true;
+            ASSERT(!m_state->m_sweepForbidden);
+            m_state->m_sweepForbidden = true;
         }
-        ~NoSweepScope()
+        ~SweepForbiddenScope()
         {
-            ASSERT(m_state->m_sweepInProgress);
-            m_state->m_sweepInProgress = false;
+            ASSERT(m_state->m_sweepForbidden);
+            m_state->m_sweepForbidden = false;
         }
     private:
         ThreadState* m_state;
@@ -449,7 +449,7 @@ public:
     void makeConsistentForSweeping();
 
     // Is this thread currently sweeping?
-    bool isSweepInProgress() const { return m_sweepInProgress; }
+    bool sweepForbidden() const { return m_sweepForbidden; }
 
     void prepareRegionTree();
     void flushHeapDoesNotContainCacheIfNeeded();
@@ -656,7 +656,7 @@ public:
     {
         checkThread();
         ASSERT(!m_preFinalizers.contains(&target));
-        ASSERT(!isSweepInProgress());
+        ASSERT(!sweepForbidden());
         m_preFinalizers.add(&target, &T::invokePreFinalizer);
     }
 
@@ -739,7 +739,7 @@ private:
     bool m_atSafePoint;
     Vector<Interruptor*> m_interruptors;
     bool m_didV8GCAfterLastGC;
-    bool m_sweepInProgress;
+    bool m_sweepForbidden;
     size_t m_noAllocationCount;
     BaseHeap* m_heaps[NumberOfHeaps];
 
@@ -799,7 +799,7 @@ public:
             // case we just try to acquire the lock without being at a safepoint.
             // If another thread tries to do a GC at that time it might time out
             // due to this thread not being at a safepoint and waiting on the lock.
-            if (!state->isSweepInProgress() && !state->isAtSafePoint()) {
+            if (!state->sweepForbidden() && !state->isAtSafePoint()) {
                 state->enterSafePoint(stackState, this);
                 leaveSafePoint = true;
             }
