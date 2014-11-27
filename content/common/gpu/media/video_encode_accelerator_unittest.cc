@@ -12,6 +12,7 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/sys_byteorder.h"
 #include "base/time/time.h"
 #include "content/common/gpu/media/video_accelerator_unittest_helpers.h"
 #include "media/base/bind_to_current_loop.h"
@@ -79,8 +80,12 @@ const unsigned int kMinFramesForBitrateTests = 300;
 //   (see http://www.fourcc.org/yuv.php#IYUV).
 // - |width| and |height| are in pixels.
 // - |profile| to encode into (values of media::VideoCodecProfile).
-// - |out_filename| filename to save the encoded stream to (optional).
-//   Output stream is saved for the simple encode test only.
+// - |out_filename| filename to save the encoded stream to (optional). The
+//   format for H264 is Annex-B byte stream. The format for VP8 is IVF. Output
+//   stream is saved for the simple encode test only. H264 raw stream and IVF
+//   can be used as input of VDA unittest. H264 raw stream can be played by
+//   "mplayer -fps 25 out.h264" and IVF can be played by mplayer directly.
+//   Helpful description: http://wiki.multimedia.cx/index.php?title=IVF
 // Further parameters are optional (need to provide preceding positional
 // parameters if a specific subsequent parameter is required):
 // - |requested_bitrate| requested bitrate in bits per second.
@@ -95,6 +100,26 @@ const char* g_default_in_parameters = ":320:192:1:out.h264:200000";
 // Environment to store test stream data for all test cases.
 class VideoEncodeAcceleratorTestEnvironment;
 VideoEncodeAcceleratorTestEnvironment* g_env;
+
+struct IvfFileHeader {
+  char signature[4];     // signature: 'DKIF'
+  uint16_t version;      // version (should be 0)
+  uint16_t header_size;  // size of header in bytes
+  uint32_t fourcc;       // codec FourCC (e.g., 'VP80')
+  uint16_t width;        // width in pixels
+  uint16_t height;       // height in pixels
+  uint32_t framerate;    // frame rate per seconds
+  uint32_t timescale;    // time scale. For example, if framerate is 30 and
+                         // timescale is 2, the unit of IvfFrameHeader.timestamp
+                         // is 2/30 seconds.
+  uint32_t num_frames;   // number of frames in file
+  uint32_t unused;       // unused
+} __attribute__((packed));
+
+struct IvfFrameHeader {
+  uint32_t frame_size;  // Size of frame in bytes (not including the header)
+  uint64_t timestamp;   // 64-bit presentation timestamp
+} __attribute__((packed));
 
 struct TestStream {
   TestStream()
@@ -154,6 +179,14 @@ static bool WriteFile(base::File* file,
     written_bytes += bytes;
   }
   return true;
+}
+
+static bool IsH264(media::VideoCodecProfile profile) {
+  return profile >= media::H264PROFILE_MIN && profile <= media::H264PROFILE_MAX;
+}
+
+static bool IsVP8(media::VideoCodecProfile profile) {
+  return profile >= media::VP8PROFILE_MIN && profile <= media::VP8PROFILE_MAX;
 }
 
 // ARM performs CPU cache management with CPU cache line granularity. We thus
@@ -447,11 +480,9 @@ scoped_ptr<StreamValidator> StreamValidator::Create(
     const FrameFoundCallback& frame_cb) {
   scoped_ptr<StreamValidator> validator;
 
-  if (profile >= media::H264PROFILE_MIN &&
-      profile <= media::H264PROFILE_MAX) {
+  if (IsH264(profile)) {
     validator.reset(new H264Validator(frame_cb));
-  } else if (profile >= media::VP8PROFILE_MIN &&
-             profile <= media::VP8PROFILE_MAX) {
+  } else if (IsVP8(profile)) {
     validator.reset(new VP8Validator(frame_cb));
   } else {
     LOG(FATAL) << "Unsupported profile: " << profile;
@@ -518,6 +549,12 @@ class VEAClient : public VideoEncodeAccelerator::Client {
   // Test codec performance, failing the test if we are currently running
   // the performance test.
   void VerifyPerf();
+
+  // Write IVF file header to test_stream_->out_filename.
+  void WriteIvfFileHeader();
+
+  // Write an IVF frame header to test_stream_->out_filename.
+  void WriteIvfFrameHeader(int frame_index, size_t frame_size);
 
   // Prepare and return a frame wrapping the data at |position| bytes in
   // the input stream, ready to be sent to encoder.
@@ -776,6 +813,8 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
   } else {
     num_frames_to_encode_ = test_stream_->num_frames;
   }
+  if (save_to_file_ && IsVP8(test_stream_->requested_profile))
+    WriteIvfFileHeader();
 
   input_coded_size_ = input_coded_size;
   num_required_input_buffers_ = input_count;
@@ -812,19 +851,22 @@ void VEAClient::BitstreamBufferReady(int32 bitstream_buffer_id,
   encoded_stream_size_since_last_check_ += payload_size;
 
   const uint8* stream_ptr = static_cast<const uint8*>(shm->memory());
-  if (payload_size > 0)
+  if (payload_size > 0) {
     validator_->ProcessStreamBuffer(stream_ptr, payload_size);
+
+    if (save_to_file_) {
+      if (IsVP8(test_stream_->requested_profile))
+        WriteIvfFrameHeader(num_encoded_frames_ - 1, payload_size);
+
+      EXPECT_TRUE(base::AppendToFile(
+          base::FilePath::FromUTF8Unsafe(test_stream_->out_filename),
+          static_cast<char*>(shm->memory()),
+          base::checked_cast<int>(payload_size)));
+    }
+  }
 
   EXPECT_EQ(key_frame, seen_keyframe_in_this_buffer_);
   seen_keyframe_in_this_buffer_ = false;
-
-  if (save_to_file_) {
-    int size = base::checked_cast<int>(payload_size);
-    EXPECT_TRUE(base::AppendToFile(
-                    base::FilePath::FromUTF8Unsafe(test_stream_->out_filename),
-                    static_cast<char*>(shm->memory()),
-                    size));
-  }
 
   FeedEncoderWithOutput(shm);
 }
@@ -1017,6 +1059,41 @@ void VEAClient::VerifyStreamProperties() {
                 current_requested_bitrate_,
                 kBitrateTolerance * current_requested_bitrate_);
   }
+}
+
+void VEAClient::WriteIvfFileHeader() {
+  IvfFileHeader header;
+
+  memset(&header, 0, sizeof(header));
+  header.signature[0] = 'D';
+  header.signature[1] = 'K';
+  header.signature[2] = 'I';
+  header.signature[3] = 'F';
+  header.version = 0;
+  header.header_size = base::ByteSwapToLE16(sizeof(header));
+  header.fourcc = base::ByteSwapToLE32(0x30385056);  // VP80
+  header.width = base::ByteSwapToLE16(
+      base::checked_cast<uint16_t>(test_stream_->visible_size.width()));
+  header.height = base::ByteSwapToLE16(
+      base::checked_cast<uint16_t>(test_stream_->visible_size.height()));
+  header.framerate = base::ByteSwapToLE32(requested_framerate_);
+  header.timescale = base::ByteSwapToLE32(1);
+  header.num_frames = base::ByteSwapToLE32(num_frames_to_encode_);
+
+  EXPECT_TRUE(base::AppendToFile(
+      base::FilePath::FromUTF8Unsafe(test_stream_->out_filename),
+      reinterpret_cast<char*>(&header), sizeof(header)));
+}
+
+void VEAClient::WriteIvfFrameHeader(int frame_index, size_t frame_size) {
+  IvfFrameHeader header;
+
+  memset(&header, 0, sizeof(header));
+  header.frame_size = base::ByteSwapToLE32(frame_size);
+  header.timestamp = base::ByteSwapToLE64(frame_index);
+  EXPECT_TRUE(base::AppendToFile(
+      base::FilePath::FromUTF8Unsafe(test_stream_->out_filename),
+      reinterpret_cast<char*>(&header), sizeof(header)));
 }
 
 // Setup test stream data and delete temporary aligned files at the beginning
