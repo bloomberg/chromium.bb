@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/streams/ReadableStream.h"
@@ -44,7 +45,7 @@ public:
     static size_t size(const PassType& chunk) { return chunk->byteLength(); }
     static ScriptValue toScriptValue(ScriptState* scriptState, const HoldType& value)
     {
-        return ScriptValue(scriptState, toV8NoInline(value.get(), scriptState->context()->Global(), scriptState->isolate()));
+        return ScriptValue(scriptState, toV8(value.get(), scriptState->context()->Global(), scriptState->isolate()));
     }
 };
 

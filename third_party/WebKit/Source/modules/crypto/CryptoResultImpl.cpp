@@ -34,6 +34,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/modules/v8/V8CryptoKey.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMError.h"
@@ -160,8 +161,8 @@ void CryptoResultImpl::completeWithKeyPair(const WebCryptoKey& publicKey, const 
 
         Dictionary keyPair = Dictionary::createEmpty(scriptState->isolate());
 
-        v8::Handle<v8::Value> publicKeyValue = toV8NoInline(CryptoKey::create(publicKey), scriptState->context()->Global(), scriptState->isolate());
-        v8::Handle<v8::Value> privateKeyValue = toV8NoInline(CryptoKey::create(privateKey), scriptState->context()->Global(), scriptState->isolate());
+        v8::Handle<v8::Value> publicKeyValue = toV8(CryptoKey::create(publicKey), scriptState->context()->Global(), scriptState->isolate());
+        v8::Handle<v8::Value> privateKeyValue = toV8(CryptoKey::create(privateKey), scriptState->context()->Global(), scriptState->isolate());
 
         keyPair.set("publicKey", publicKeyValue);
         keyPair.set("privateKey", privateKeyValue);
