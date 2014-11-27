@@ -74,13 +74,13 @@ RenderObject* RenderFieldset::layoutSpecialExcludedChild(bool relayoutChildren, 
         if (style()->isLeftToRightDirection()) {
             switch (legend->style()->textAlign()) {
             case CENTER:
-                logicalLeft = (logicalWidth() - logicalWidthForChild(legend)) / 2;
+                logicalLeft = (logicalWidth() - logicalWidthForChild(*legend)) / 2;
                 break;
             case RIGHT:
-                logicalLeft = logicalWidth() - borderEnd() - paddingEnd() - logicalWidthForChild(legend);
+                logicalLeft = logicalWidth() - borderEnd() - paddingEnd() - logicalWidthForChild(*legend);
                 break;
             default:
-                logicalLeft = borderStart() + paddingStart() + marginStartForChild(legend);
+                logicalLeft = borderStart() + paddingStart() + marginStartForChild(*legend);
                 break;
             }
         } else {
@@ -91,20 +91,20 @@ RenderObject* RenderFieldset::layoutSpecialExcludedChild(bool relayoutChildren, 
             case CENTER: {
                 // Make sure that the extra pixel goes to the end side in RTL (since it went to the end side
                 // in LTR).
-                LayoutUnit centeredWidth = logicalWidth() - logicalWidthForChild(legend);
+                LayoutUnit centeredWidth = logicalWidth() - logicalWidthForChild(*legend);
                 logicalLeft = centeredWidth - centeredWidth / 2;
                 break;
             }
             default:
-                logicalLeft = logicalWidth() - borderStart() - paddingStart() - marginStartForChild(legend) - logicalWidthForChild(legend);
+                logicalLeft = logicalWidth() - borderStart() - paddingStart() - marginStartForChild(*legend) - logicalWidthForChild(*legend);
                 break;
             }
         }
 
-        setLogicalLeftForChild(legend, logicalLeft);
+        setLogicalLeftForChild(*legend, logicalLeft);
 
         LayoutUnit fieldsetBorderBefore = borderBefore();
-        LayoutUnit legendLogicalHeight = logicalHeightForChild(legend);
+        LayoutUnit legendLogicalHeight = logicalHeightForChild(*legend);
 
         LayoutUnit legendLogicalTop;
         LayoutUnit collapsedLegendExtent;
@@ -115,11 +115,12 @@ RenderObject* RenderFieldset::layoutSpecialExcludedChild(bool relayoutChildren, 
             // on the legend's margins as we want to still follow the author's cues.
             // Firefox completely ignores the margins in this case which seems wrong.
             legendLogicalTop = (fieldsetBorderBefore - legendLogicalHeight) / 2;
-            collapsedLegendExtent = max<LayoutUnit>(fieldsetBorderBefore, legendLogicalTop + legendLogicalHeight + marginAfterForChild(legend));
-        } else
-            collapsedLegendExtent = legendLogicalHeight + marginAfterForChild(legend);
+            collapsedLegendExtent = max<LayoutUnit>(fieldsetBorderBefore, legendLogicalTop + legendLogicalHeight + marginAfterForChild(*legend));
+        } else {
+            collapsedLegendExtent = legendLogicalHeight + marginAfterForChild(*legend);
+        }
 
-        setLogicalTopForChild(legend, legendLogicalTop);
+        setLogicalTopForChild(*legend, legendLogicalTop);
         setLogicalHeight(paddingBefore() + collapsedLegendExtent);
     }
     return legend;

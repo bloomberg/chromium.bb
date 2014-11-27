@@ -653,7 +653,7 @@ LayoutUnit RenderGrid::minContentForChild(RenderBox& child, GridTrackSizingDirec
     if (direction == ForColumns) {
         // FIXME: It's unclear if we should return the intrinsic width or the preferred width.
         // See http://lists.w3.org/Archives/Public/www-style/2013Jan/0245.html
-        return child.minPreferredLogicalWidth() + marginIntrinsicLogicalWidthForChild(&child);
+        return child.minPreferredLogicalWidth() + marginIntrinsicLogicalWidthForChild(child);
     }
 
     return logicalHeightForChild(child, columnTracks);
@@ -669,7 +669,7 @@ LayoutUnit RenderGrid::maxContentForChild(RenderBox& child, GridTrackSizingDirec
     if (direction == ForColumns) {
         // FIXME: It's unclear if we should return the intrinsic width or the preferred width.
         // See http://lists.w3.org/Archives/Public/www-style/2013Jan/0245.html
-        return child.maxPreferredLogicalWidth() + marginIntrinsicLogicalWidthForChild(&child);
+        return child.maxPreferredLogicalWidth() + marginIntrinsicLogicalWidthForChild(child);
     }
 
     return logicalHeightForChild(child, columnTracks);
@@ -1209,7 +1209,7 @@ LayoutUnit RenderGrid::startOfColumnForChild(const RenderBox& child) const
     const GridCoordinate& coordinate = cachedGridCoordinate(child);
     LayoutUnit startOfColumn = m_columnPositions[coordinate.columns.resolvedInitialPosition.toInt()];
     // The grid items should be inside the grid container's border box, that's why they need to be shifted.
-    return startOfColumn + marginStartForChild(&child);
+    return startOfColumn + marginStartForChild(child);
 }
 
 LayoutUnit RenderGrid::endOfColumnForChild(const RenderBox& child) const
@@ -1217,7 +1217,7 @@ LayoutUnit RenderGrid::endOfColumnForChild(const RenderBox& child) const
     const GridCoordinate& coordinate = cachedGridCoordinate(child);
     LayoutUnit startOfColumn = m_columnPositions[coordinate.columns.resolvedInitialPosition.toInt()];
     // The grid items should be inside the grid container's border box, that's why they need to be shifted.
-    LayoutUnit columnPosition = startOfColumn + marginStartForChild(&child);
+    LayoutUnit columnPosition = startOfColumn + marginStartForChild(child);
 
     LayoutUnit endOfColumn = m_columnPositions[coordinate.columns.resolvedFinalPosition.next().toInt()];
     LayoutUnit offsetFromColumnPosition = computeOverflowAlignmentOffset(child.style()->justifySelfOverflowAlignment(), startOfColumn, endOfColumn, child.logicalWidth());
@@ -1246,7 +1246,7 @@ LayoutUnit RenderGrid::centeredColumnPositionForChild(const RenderBox& child) co
     const GridCoordinate& coordinate = cachedGridCoordinate(child);
     LayoutUnit startOfColumn = m_columnPositions[coordinate.columns.resolvedInitialPosition.toInt()];
     LayoutUnit endOfColumn = m_columnPositions[coordinate.columns.resolvedFinalPosition.next().toInt()];
-    LayoutUnit columnPosition = startOfColumn + marginStartForChild(&child);
+    LayoutUnit columnPosition = startOfColumn + marginStartForChild(child);
     LayoutUnit offsetFromColumnPosition = computeOverflowAlignmentOffset(child.style()->justifySelfOverflowAlignment(), startOfColumn, endOfColumn, child.logicalWidth());
 
     return columnPosition + offsetFromColumnPosition / 2;
@@ -1333,7 +1333,7 @@ LayoutUnit RenderGrid::endOfRowForChild(const RenderBox& child) const
 
     LayoutUnit startOfRow = m_rowPositions[coordinate.rows.resolvedInitialPosition.toInt()];
     // The grid items should be inside the grid container's border box, that's why they need to be shifted.
-    LayoutUnit rowPosition = startOfRow + marginBeforeForChild(&child);
+    LayoutUnit rowPosition = startOfRow + marginBeforeForChild(child);
 
     LayoutUnit endOfRow = m_rowPositions[coordinate.rows.resolvedFinalPosition.next().toInt()];
     LayoutUnit offsetFromRowPosition = computeOverflowAlignmentOffset(child.style()->alignSelfOverflowAlignment(), startOfRow, endOfRow, child.logicalHeight());
@@ -1347,7 +1347,7 @@ LayoutUnit RenderGrid::startOfRowForChild(const RenderBox& child) const
 
     LayoutUnit startOfRow = m_rowPositions[coordinate.rows.resolvedInitialPosition.toInt()];
     // The grid items should be inside the grid container's border box, that's why they need to be shifted.
-    LayoutUnit rowPosition = startOfRow + marginBeforeForChild(&child);
+    LayoutUnit rowPosition = startOfRow + marginBeforeForChild(child);
 
     return rowPosition;
 }
@@ -1357,9 +1357,9 @@ LayoutUnit RenderGrid::centeredRowPositionForChild(const RenderBox& child) const
     const GridCoordinate& coordinate = cachedGridCoordinate(child);
 
     // The grid items should be inside the grid container's border box, that's why they need to be shifted.
-    LayoutUnit startOfRow = m_rowPositions[coordinate.rows.resolvedInitialPosition.toInt()] + marginBeforeForChild(&child);
+    LayoutUnit startOfRow = m_rowPositions[coordinate.rows.resolvedInitialPosition.toInt()] + marginBeforeForChild(child);
     LayoutUnit endOfRow = m_rowPositions[coordinate.rows.resolvedFinalPosition.next().toInt()];
-    LayoutUnit rowPosition = startOfRow + marginBeforeForChild(&child);
+    LayoutUnit rowPosition = startOfRow + marginBeforeForChild(child);
     LayoutUnit offsetFromRowPosition = computeOverflowAlignmentOffset(child.style()->alignSelfOverflowAlignment(), startOfRow, endOfRow, child.logicalHeight());
 
     return rowPosition + offsetFromRowPosition / 2;

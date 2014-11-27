@@ -364,8 +364,8 @@ void RenderBlockFlow::setMarginsForRubyRun(BidiRun* run, RenderRubyRun* renderer
         }
     }
     renderer->getOverhang(lineInfo.isFirstLine(), renderer->style()->isLeftToRightDirection() ? previousObject : nextObject, renderer->style()->isLeftToRightDirection() ? nextObject : previousObject, startOverhang, endOverhang);
-    setMarginStartForChild(renderer, -startOverhang);
-    setMarginEndForChild(renderer, -endOverhang);
+    setMarginStartForChild(*renderer, -startOverhang);
+    setMarginEndForChild(*renderer, -endOverhang);
 }
 
 static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* run, RenderText* renderer, float xPos, const LineInfo& lineInfo,
@@ -622,8 +622,8 @@ BidiRun* RenderBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
                 RenderBox* renderBox = toRenderBox(r->m_object);
                 if (renderBox->isRubyRun())
                     setMarginsForRubyRun(r, toRenderRubyRun(renderBox), previousObject, lineInfo);
-                r->m_box->setLogicalWidth(logicalWidthForChild(renderBox).toFloat());
-                totalLogicalWidth += marginStartForChild(renderBox) + marginEndForChild(renderBox);
+                r->m_box->setLogicalWidth(logicalWidthForChild(*renderBox).toFloat());
+                totalLogicalWidth += marginStartForChild(*renderBox) + marginEndForChild(*renderBox);
                 needsWordSpacing = true;
             }
         }
@@ -872,7 +872,7 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
 
                 if (paginated) {
                     LayoutUnit adjustment = 0;
-                    adjustLinePositionForPagination(lineBox, adjustment, layoutState.flowThread());
+                    adjustLinePositionForPagination(*lineBox, adjustment, layoutState.flowThread());
                     if (adjustment) {
                         LayoutUnit oldLineWidth = availableLogicalWidthForLine(oldLogicalHeight, layoutState.lineInfo().isFirstLine());
                         lineBox->adjustBlockDirectionPosition(adjustment.toFloat());
@@ -1002,7 +1002,7 @@ void RenderBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
                 line->attachLine();
                 if (paginated) {
                     delta -= line->paginationStrut();
-                    adjustLinePositionForPagination(line, delta, layoutState.flowThread());
+                    adjustLinePositionForPagination(*line, delta, layoutState.flowThread());
                 }
                 if (delta) {
                     layoutState.updatePaintInvalidationRangeFromBox(line, delta);
@@ -1011,10 +1011,10 @@ void RenderBlockFlow::linkToEndLineIfNeeded(LineLayoutState& layoutState)
                 if (Vector<RenderBox*>* cleanLineFloats = line->floatsPtr()) {
                     Vector<RenderBox*>::iterator end = cleanLineFloats->end();
                     for (Vector<RenderBox*>::iterator f = cleanLineFloats->begin(); f != end; ++f) {
-                        FloatingObject* floatingObject = insertFloatingObject(*f);
+                        FloatingObject* floatingObject = insertFloatingObject(**f);
                         ASSERT(!floatingObject->originatingLine());
                         floatingObject->setOriginatingLine(line);
-                        setLogicalHeight(logicalTopForChild(*f) - marginBeforeForChild(*f) + delta);
+                        setLogicalHeight(logicalTopForChild(**f) - marginBeforeForChild(**f) + delta);
                         positionNewFloats();
                     }
                 }
@@ -1561,7 +1561,7 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
             if (o->isReplaced() || o->isFloating() || o->isOutOfFlowPositioned()) {
                 RenderBox* box = toRenderBox(o);
 
-                updateBlockChildDirtyBitsBeforeLayout(relayoutChildren, box);
+                updateBlockChildDirtyBitsBeforeLayout(relayoutChildren, *box);
 
                 if (o->isOutOfFlowPositioned())
                     o->containingBlock()->insertPositionedObject(box);
@@ -1661,7 +1661,7 @@ RootInlineBox* RenderBlockFlow::determineStartPosition(LineLayoutState& layoutSt
         for (curr = firstRootBox(); curr && !curr->isDirty(); curr = curr->nextRootBox()) {
             if (paginated) {
                 paginationDelta -= curr->paginationStrut();
-                adjustLinePositionForPagination(curr, paginationDelta, layoutState.flowThread());
+                adjustLinePositionForPagination(*curr, paginationDelta, layoutState.flowThread());
                 if (paginationDelta) {
                     if (containsFloats() || !layoutState.floats().isEmpty()) {
                         // FIXME: Do better eventually.  For now if we ever shift because of pagination and floats are present just go to a full layout.
@@ -1735,10 +1735,10 @@ RootInlineBox* RenderBlockFlow::determineStartPosition(LineLayoutState& layoutSt
             if (Vector<RenderBox*>* cleanLineFloats = line->floatsPtr()) {
                 Vector<RenderBox*>::iterator end = cleanLineFloats->end();
                 for (Vector<RenderBox*>::iterator f = cleanLineFloats->begin(); f != end; ++f) {
-                    FloatingObject* floatingObject = insertFloatingObject(*f);
+                    FloatingObject* floatingObject = insertFloatingObject(**f);
                     ASSERT(!floatingObject->originatingLine());
                     floatingObject->setOriginatingLine(line);
-                    setLogicalHeight(logicalTopForChild(*f) - marginBeforeForChild(*f));
+                    setLogicalHeight(logicalTopForChild(**f) - marginBeforeForChild(**f));
                     positionNewFloats();
                     ASSERT(layoutState.floats()[numCleanFloats].object == *f);
                     numCleanFloats++;
@@ -1820,7 +1820,7 @@ bool RenderBlockFlow::checkPaginationAndFloatsAtEndLine(LineLayoutState& layoutS
                 // strut yet.
                 LayoutUnit oldPaginationStrut = lineBox->paginationStrut();
                 lineDelta -= oldPaginationStrut;
-                adjustLinePositionForPagination(lineBox, lineDelta, layoutState.flowThread());
+                adjustLinePositionForPagination(*lineBox, lineDelta, layoutState.flowThread());
                 lineBox->setPaginationStrut(oldPaginationStrut);
             }
         }
@@ -2017,7 +2017,7 @@ bool RenderBlockFlow::positionNewFloatOnLine(FloatingObject* newFloat, FloatingO
         if (logicalTopForFloat(floatingObject) == logicalHeight() + lineInfo.floatPaginationStrut()) {
             floatingObject->setPaginationStrut(paginationStrut + floatingObject->paginationStrut());
             RenderBox* floatBox = floatingObject->renderer();
-            setLogicalTopForChild(floatBox, logicalTopForChild(floatBox) + marginBeforeForChild(floatBox) + paginationStrut);
+            setLogicalTopForChild(*floatBox, logicalTopForChild(*floatBox) + marginBeforeForChild(*floatBox) + paginationStrut);
             if (floatBox->isRenderBlock())
                 floatBox->forceChildLayout();
             else

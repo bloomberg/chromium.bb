@@ -103,7 +103,7 @@ void RenderFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidt
         if (child->isOutOfFlowPositioned())
             continue;
 
-        LayoutUnit margin = marginIntrinsicLogicalWidthForChild(child);
+        LayoutUnit margin = marginIntrinsicLogicalWidthForChild(*child);
         bool hasOrthogonalWritingMode = child->isHorizontalWritingMode() != isHorizontalWritingMode();
         LayoutUnit minPreferredLogicalWidth = hasOrthogonalWritingMode ? child->logicalHeight() : child->minPreferredLogicalWidth();
         LayoutUnit maxPreferredLogicalWidth = hasOrthogonalWritingMode ? child->logicalHeight() : child->maxPreferredLogicalWidth();
@@ -296,7 +296,7 @@ LayoutUnit RenderFlexibleBox::clientLogicalBottomAfterRepositioning()
     for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
         if (child->isOutOfFlowPositioned())
             continue;
-        LayoutUnit childLogicalBottom = logicalTopForChild(child) + logicalHeightForChild(child) + marginAfterForChild(child);
+        LayoutUnit childLogicalBottom = logicalTopForChild(*child) + logicalHeightForChild(*child) + marginAfterForChild(*child);
         maxChildLogicalBottom = std::max(maxChildLogicalBottom, childLogicalBottom);
     }
     return std::max(clientLogicalBottom(), maxChildLogicalBottom + paddingAfter());
@@ -1092,7 +1092,7 @@ void RenderFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
         }
         // We may have already forced relayout for orthogonal flowing children in preferredMainAxisContentExtentForChild.
         bool forceChildRelayout = relayoutChildren && !childPreferredMainAxisContentExtentRequiresLayout(*child, hasInfiniteLineLength);
-        updateBlockChildDirtyBitsBeforeLayout(forceChildRelayout, child);
+        updateBlockChildDirtyBitsBeforeLayout(forceChildRelayout, *child);
         child->layoutIfNeeded();
 
         updateAutoMarginsInMainAxis(*child, autoMarginOffset);

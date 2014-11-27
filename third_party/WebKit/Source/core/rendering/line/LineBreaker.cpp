@@ -39,7 +39,7 @@ void LineBreaker::skipLeadingWhitespace(InlineBidiResolver& resolver, LineInfo& 
                 lineInfo.incrementRunsFromLeadingWhitespace();
             }
         } else if (object->isFloating()) {
-            m_block->positionNewFloatOnLine(m_block->insertFloatingObject(toRenderBox(object)), lastFloatFromPreviousLine, lineInfo, width);
+            m_block->positionNewFloatOnLine(m_block->insertFloatingObject(*toRenderBox(object)), lastFloatFromPreviousLine, lineInfo, width);
         } else if (object->isText() && object->style()->hasTextCombine() && object->isCombineText() && !toRenderCombineText(object)->isCombined()) {
             toRenderCombineText(object)->combineText();
             if (toRenderCombineText(object)->isCombined())

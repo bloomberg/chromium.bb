@@ -1539,16 +1539,16 @@ bool RenderBlock::createsNewFormattingContext() const
         || isDocumentElement() || style()->columnSpan() || isGridItem();
 }
 
-void RenderBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, RenderBox* child)
+void RenderBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, RenderBox& child)
 {
     // FIXME: Technically percentage height objects only need a relayout if their percentage isn't going to be turned into
     // an auto value. Add a method to determine this, so that we can avoid the relayout.
-    if (relayoutChildren || (child->hasRelativeLogicalHeight() && !isRenderView()))
-        child->setChildNeedsLayout(MarkOnlyThis);
+    if (relayoutChildren || (child.hasRelativeLogicalHeight() && !isRenderView()))
+        child.setChildNeedsLayout(MarkOnlyThis);
 
     // If relayoutChildren is set and the child has percentage padding or an embedded content box, we also need to invalidate the childs pref widths.
-    if (relayoutChildren && child->needsPreferredWidthsRecalculation())
-        child->setPreferredLogicalWidthsDirty(MarkOnlyThis);
+    if (relayoutChildren && child.needsPreferredWidthsRecalculation())
+        child.setPreferredLogicalWidthsDirty(MarkOnlyThis);
 }
 
 void RenderBlock::simplifiedNormalFlowLayout()
@@ -1665,13 +1665,13 @@ void RenderBlock::markFixedPositionObjectForLayoutIfNeeded(RenderObject* child, 
     }
 }
 
-LayoutUnit RenderBlock::marginIntrinsicLogicalWidthForChild(RenderBox* child) const
+LayoutUnit RenderBlock::marginIntrinsicLogicalWidthForChild(RenderBox& child) const
 {
     // A margin has three types: fixed, percentage, and auto (variable).
     // Auto and percentage margins become 0 when computing min/max width.
     // Fixed margins can be added in as is.
-    Length marginLeft = child->style()->marginStartUsing(style());
-    Length marginRight = child->style()->marginEndUsing(style());
+    Length marginLeft = child.style()->marginStartUsing(style());
+    Length marginRight = child.style()->marginEndUsing(style());
     LayoutUnit margin = 0;
     if (marginLeft.isFixed())
         margin += marginLeft.value();
@@ -1729,7 +1729,7 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
                 r->updateLogicalHeight();
             else
                 r->updateLogicalWidth();
-            oldLogicalTop = logicalTopForChild(r);
+            oldLogicalTop = logicalTopForChild(*r);
         }
 
         // FIXME: We should be able to do a r->setNeedsPositionedMovementLayout() here instead of a full layout. Need
@@ -1740,7 +1740,7 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
         r->layoutIfNeeded();
 
         // Lay out again if our estimate was wrong.
-        if (needsBlockDirectionLocationSetBeforeLayout && logicalTopForChild(r) != oldLogicalTop)
+        if (needsBlockDirectionLocationSetBeforeLayout && logicalTopForChild(*r) != oldLogicalTop)
             r->forceChildLayout();
     }
 
@@ -2426,7 +2426,7 @@ static PositionWithAffinity positionForPointRespectingEditingBoundaries(RenderBl
         return child->positionForPoint(pointInChildCoordinates);
 
     // Otherwise return before or after the child, depending on if the click was to the logical left or logical right of the child
-    LayoutUnit childMiddle = parent->logicalWidthForChild(child) / 2;
+    LayoutUnit childMiddle = parent->logicalWidthForChild(*child) / 2;
     LayoutUnit logicalLeft = parent->isHorizontalWritingMode() ? pointInChildCoordinates.x() : pointInChildCoordinates.y();
     if (logicalLeft < childMiddle)
         return ancestor->createPositionWithAffinity(childNode->nodeIndex(), DOWNSTREAM);
@@ -2561,14 +2561,14 @@ PositionWithAffinity RenderBlock::positionForPoint(const LayoutPoint& point)
 
     bool blocksAreFlipped = style()->isFlippedBlocksWritingMode();
     if (lastCandidateBox) {
-        if (pointInLogicalContents.y() > logicalTopForChild(lastCandidateBox)
-            || (!blocksAreFlipped && pointInLogicalContents.y() == logicalTopForChild(lastCandidateBox)))
+        if (pointInLogicalContents.y() > logicalTopForChild(*lastCandidateBox)
+            || (!blocksAreFlipped && pointInLogicalContents.y() == logicalTopForChild(*lastCandidateBox)))
             return positionForPointRespectingEditingBoundaries(this, lastCandidateBox, pointInContents);
 
         for (RenderBox* childBox = firstChildBox(); childBox; childBox = childBox->nextSiblingBox()) {
             if (!isChildHitTestCandidate(childBox))
                 continue;
-            LayoutUnit childLogicalBottom = logicalTopForChild(childBox) + logicalHeightForChild(childBox);
+            LayoutUnit childLogicalBottom = logicalTopForChild(*childBox) + logicalHeightForChild(*childBox);
             // We hit child if our click is above the bottom of its padding box (like IE6/7 and FF3).
             if (isChildHitTestCandidate(childBox) && (pointInLogicalContents.y() < childLogicalBottom
                 || (blocksAreFlipped && pointInLogicalContents.y() == childLogicalBottom)))
@@ -3665,34 +3665,34 @@ LayoutUnit RenderBlock::offsetFromLogicalTopOfFirstPage() const
     return 0;
 }
 
-LayoutUnit RenderBlock::collapsedMarginBeforeForChild(const RenderBox* child) const
+LayoutUnit RenderBlock::collapsedMarginBeforeForChild(const RenderBox& child) const
 {
     // If the child has the same directionality as we do, then we can just return its
     // collapsed margin.
-    if (!child->isWritingModeRoot())
-        return child->collapsedMarginBefore();
+    if (!child.isWritingModeRoot())
+        return child.collapsedMarginBefore();
 
     // The child has a different directionality.  If the child is parallel, then it's just
     // flipped relative to us.  We can use the collapsed margin for the opposite edge.
-    if (child->isHorizontalWritingMode() == isHorizontalWritingMode())
-        return child->collapsedMarginAfter();
+    if (child.isHorizontalWritingMode() == isHorizontalWritingMode())
+        return child.collapsedMarginAfter();
 
     // The child is perpendicular to us, which means its margins don't collapse but are on the
     // "logical left/right" sides of the child box.  We can just return the raw margin in this case.
     return marginBeforeForChild(child);
 }
 
-LayoutUnit RenderBlock::collapsedMarginAfterForChild(const  RenderBox* child) const
+LayoutUnit RenderBlock::collapsedMarginAfterForChild(const RenderBox& child) const
 {
     // If the child has the same directionality as we do, then we can just return its
     // collapsed margin.
-    if (!child->isWritingModeRoot())
-        return child->collapsedMarginAfter();
+    if (!child.isWritingModeRoot())
+        return child.collapsedMarginAfter();
 
     // The child has a different directionality.  If the child is parallel, then it's just
     // flipped relative to us.  We can use the collapsed margin for the opposite edge.
-    if (child->isHorizontalWritingMode() == isHorizontalWritingMode())
-        return child->collapsedMarginBefore();
+    if (child.isHorizontalWritingMode() == isHorizontalWritingMode())
+        return child.collapsedMarginBefore();
 
     // The child is perpendicular to us, which means its margins don't collapse but are on the
     // "logical left/right" side of the child box.  We can just return the raw margin in this case.

@@ -311,7 +311,7 @@ private:
     virtual void addOverflowFromChildren() override;
 
     void recalcSections() const;
-    void layoutCaption(RenderTableCaption*);
+    void layoutCaption(RenderTableCaption&);
 
     void distributeExtraLogicalHeight(int extraLogicalHeight);
 

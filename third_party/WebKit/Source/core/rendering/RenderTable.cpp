@@ -348,27 +348,27 @@ LayoutUnit RenderTable::convertStyleLogicalHeightToComputedHeight(const Length& 
     return std::max<LayoutUnit>(0, computedLogicalHeight);
 }
 
-void RenderTable::layoutCaption(RenderTableCaption* caption)
+void RenderTable::layoutCaption(RenderTableCaption& caption)
 {
-    if (caption->needsLayout()) {
+    if (caption.needsLayout()) {
         // The margins may not be available but ensure the caption is at least located beneath any previous sibling caption
         // so that it does not mistakenly think any floats in the previous caption intrude into it.
-        caption->setLogicalLocation(LayoutPoint(caption->marginStart(), collapsedMarginBeforeForChild(caption) + logicalHeight()));
+        caption.setLogicalLocation(LayoutPoint(caption.marginStart(), collapsedMarginBeforeForChild(caption) + logicalHeight()));
         // If RenderTableCaption ever gets a layout() function, use it here.
-        caption->layoutIfNeeded();
+        caption.layoutIfNeeded();
     }
     // Apply the margins to the location now that they are definitely available from layout
     LayoutUnit captionLogicalTop = collapsedMarginBeforeForChild(caption) + logicalHeight();
     if (view()->layoutState()->isPaginated()) {
-        captionLogicalTop += caption->paginationStrut();
-        caption->setPaginationStrut(0);
+        captionLogicalTop += caption.paginationStrut();
+        caption.setPaginationStrut(0);
     }
-    caption->setLogicalLocation(LayoutPoint(caption->marginStart(), captionLogicalTop));
+    caption.setLogicalLocation(LayoutPoint(caption.marginStart(), captionLogicalTop));
 
     if (!selfNeedsLayout())
-        caption->setMayNeedPaintInvalidation(true);
+        caption.setMayNeedPaintInvalidation(true);
 
-    setLogicalHeight(logicalHeight() + caption->logicalHeight() + collapsedMarginBeforeForChild(caption) + collapsedMarginAfterForChild(caption));
+    setLogicalHeight(logicalHeight() + caption.logicalHeight() + collapsedMarginBeforeForChild(caption) + collapsedMarginAfterForChild(caption));
 }
 
 void RenderTable::distributeExtraLogicalHeight(int extraLogicalHeight)
@@ -468,7 +468,7 @@ void RenderTable::layout()
             for (unsigned i = 0; i < m_captions.size(); i++) {
                 if (m_captions[i]->style()->captionSide() == CAPBOTTOM)
                     continue;
-                layoutCaption(m_captions[i]);
+                layoutCaption(*m_captions[i]);
             }
             if (logicalHeight() != oldTableLogicalTop) {
                 sectionMoved = true;
@@ -537,7 +537,7 @@ void RenderTable::layout()
         for (unsigned i = 0; i < m_captions.size(); i++) {
             if (m_captions[i]->style()->captionSide() != CAPBOTTOM)
                 continue;
-            layoutCaption(m_captions[i]);
+            layoutCaption(*m_captions[i]);
         }
 
         updateLogicalHeight();
