@@ -310,7 +310,7 @@ static bool getArrayBufferViewImpl(NPObject* object, WebArrayBufferView* arrayBu
     if (!impl)
         return false;
 
-    *arrayBufferView = WebArrayBufferView(impl->view());
+    *arrayBufferView = WebArrayBufferView(impl);
     return true;
 }
 

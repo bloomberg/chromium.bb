@@ -30,7 +30,6 @@
 #include "public/web/WebArrayBufferView.h"
 
 #include "bindings/core/v8/V8ArrayBufferView.h"
-#include "wtf/ArrayBufferView.h"
 
 namespace blink {
 
@@ -65,21 +64,21 @@ WebArrayBufferView* WebArrayBufferView::createFromV8Value(v8::Handle<v8::Value> 
         return 0;
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     DOMArrayBufferView* view = V8ArrayBufferView::toImpl(value->ToObject(isolate));
-    return new WebArrayBufferView(view->view());
+    return new WebArrayBufferView(view);
 }
 
-WebArrayBufferView::WebArrayBufferView(const PassRefPtr<ArrayBufferView>& value)
+WebArrayBufferView::WebArrayBufferView(const PassRefPtr<DOMArrayBufferView>& value)
     : m_private(value)
 {
 }
 
-WebArrayBufferView& WebArrayBufferView::operator=(const PassRefPtr<ArrayBufferView>& value)
+WebArrayBufferView& WebArrayBufferView::operator=(const PassRefPtr<DOMArrayBufferView>& value)
 {
     m_private = value;
     return *this;
 }
 
-WebArrayBufferView::operator PassRefPtr<ArrayBufferView>() const
+WebArrayBufferView::operator PassRefPtr<DOMArrayBufferView>() const
 {
     return m_private.get();
 }
