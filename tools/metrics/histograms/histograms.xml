@@ -51508,6 +51508,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Opened manually / Site is blacklisted"/>
   <int value="4"
       label="Opened automatically / Confirming generated password saved"/>
+  <int value="5"
+      label="Opened automatically / Offering a credential to choose"/>
 </enum>
 
 <enum name="PasswordGenerationEvent" type="int">
@@ -51976,6 +51978,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="Clicked 'Done'"/>
   <int value="6" label="Clicked 'Enable password manager'"/>
   <int value="7" label="Clicked 'OK'"/>
+  <int value="8" label="Clicked on a credential"/>
 </enum>
 
 <enum name="PeerConnectionCounters" type="int">
