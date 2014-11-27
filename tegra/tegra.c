@@ -292,3 +292,54 @@ int drm_tegra_bo_set_flags(struct drm_tegra_bo *bo, uint32_t flags)
 
 	return 0;
 }
+
+drm_public
+int drm_tegra_bo_get_tiling(struct drm_tegra_bo *bo,
+			    struct drm_tegra_bo_tiling *tiling)
+{
+	struct drm_tegra_gem_get_tiling args;
+	struct drm_tegra *drm = bo->drm;
+	int err;
+
+	if (!bo)
+		return -EINVAL;
+
+	memset(&args, 0, sizeof(args));
+	args.handle = bo->handle;
+
+	err = drmCommandWriteRead(drm->fd, DRM_TEGRA_GEM_GET_TILING, &args,
+				  sizeof(args));
+	if (err < 0)
+		return -errno;
+
+	if (tiling) {
+		tiling->mode = args.mode;
+		tiling->value = args.value;
+	}
+
+	return 0;
+}
+
+drm_public
+int drm_tegra_bo_set_tiling(struct drm_tegra_bo *bo,
+			    const struct drm_tegra_bo_tiling *tiling)
+{
+	struct drm_tegra_gem_set_tiling args;
+	struct drm_tegra *drm = bo->drm;
+	int err;
+
+	if (!bo)
+		return -EINVAL;
+
+	memset(&args, 0, sizeof(args));
+	args.handle = bo->handle;
+	args.mode = tiling->mode;
+	args.value = tiling->value;
+
+	err = drmCommandWriteRead(drm->fd, DRM_TEGRA_GEM_SET_TILING, &args,
+				  sizeof(args));
+	if (err < 0)
+		return -errno;
+
+	return 0;
+}

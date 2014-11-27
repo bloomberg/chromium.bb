@@ -47,4 +47,14 @@ int drm_tegra_bo_unmap(struct drm_tegra_bo *bo);
 int drm_tegra_bo_get_flags(struct drm_tegra_bo *bo, uint32_t *flags);
 int drm_tegra_bo_set_flags(struct drm_tegra_bo *bo, uint32_t flags);
 
+struct drm_tegra_bo_tiling {
+	uint32_t mode;
+	uint32_t value;
+};
+
+int drm_tegra_bo_get_tiling(struct drm_tegra_bo *bo,
+			    struct drm_tegra_bo_tiling *tiling);
+int drm_tegra_bo_set_tiling(struct drm_tegra_bo *bo,
+			    const struct drm_tegra_bo_tiling *tiling);
+
 #endif /* __DRM_TEGRA_H__ */
