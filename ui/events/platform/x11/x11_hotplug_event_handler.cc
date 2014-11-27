@@ -42,6 +42,13 @@ const char kATKeyboardName[] = "AT Translated Set 2 keyboard";
 // The prefix of xinput devices corresponding to CrOS EC internal keyboards.
 const char kCrosEcKeyboardPrefix[] = "cros-ec";
 
+// Names of all known internal devices that should not be considered as
+// keyboards.
+// TODO(rsadam@): Identify these devices using udev rules. (Crbug.com/420728.)
+const char* kKnownInvalidKeyboardDeviceNames[] = {"Power Button",
+                                                  "Sleep Button",
+                                                  "Video Bus"};
+
 const char* kCachedAtomList[] = {
   "Abs MT Position X",
   "Abs MT Position Y",
@@ -137,11 +144,14 @@ struct DisplayState {
   Atom mt_position_y;
 };
 
-// Returns true if |name| is the name of a known keyboard device. Note, this may
-// return false negatives.
-bool IsKnownKeyboard(const std::string& name) {
-  std::string lower = base::StringToLowerASCII(name);
-  return lower.find("keyboard") != std::string::npos;
+// Returns true if |name| is the name of a known invalid keyboard device. Note,
+// this may return false negatives.
+bool IsKnownInvalidKeyboardDevice(const std::string& name) {
+  for (const char* device_name : kKnownInvalidKeyboardDeviceNames) {
+    if (name == device_name)
+      return true;
+  }
+  return false;
 }
 
 // Returns true if |name| is the name of a known internal keyboard device. Note,
@@ -233,10 +243,10 @@ void HandleKeyboardDevicesInWorker(
     InputDeviceType type;
     if (IsInternalKeyboard(device_name)) {
       type = InputDeviceType::INPUT_DEVICE_INTERNAL;
-    } else if (IsKnownKeyboard(device_name)) {
-      type = InputDeviceType::INPUT_DEVICE_EXTERNAL;
-    } else {
+    } else if (IsKnownInvalidKeyboardDevice(device_name)) {
       type = InputDeviceType::INPUT_DEVICE_UNKNOWN;
+    } else {
+      type = InputDeviceType::INPUT_DEVICE_EXTERNAL;
     }
     devices.push_back(
         KeyboardDevice(device_info.id, type, device_name));
