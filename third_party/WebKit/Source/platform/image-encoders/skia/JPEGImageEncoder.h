@@ -31,24 +31,23 @@
 #ifndef JPEGImageEncoder_h
 #define JPEGImageEncoder_h
 
+#include "platform/image-encoders/ImageEncoder.h"
 #include "wtf/Vector.h"
 
 class SkBitmap;
 
 namespace blink {
 
-struct ImageDataBuffer;
-
 class JPEGImageEncoder {
 public:
     // Encode the input data with a compression quality in [0-100].
     static bool encode(const SkBitmap&, int quality, Vector<unsigned char>*);
-    static bool encode(const ImageDataBuffer&, int quality, Vector<unsigned char>*);
+    static bool encode(const ImageEncoder::RawImageBytes&, int quality, Vector<unsigned char>*);
 
     // For callers: provide a reasonable compression quality default.
-    enum Quality { DefaultCompressionQuality = 92 };
+    static const int DefaultCompressionQuality = 92;
 };
 
 } // namespace blink
 
-#endif
+#endif // JPEGImageEncoder_h

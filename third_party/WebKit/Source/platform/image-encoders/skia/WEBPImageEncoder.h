@@ -31,24 +31,23 @@
 #ifndef WEBPImageEncoder_h
 #define WEBPImageEncoder_h
 
+#include "platform/image-encoders/ImageEncoder.h"
 #include "wtf/Vector.h"
 
 class SkBitmap;
 
 namespace blink {
 
-struct ImageDataBuffer;
-
 class WEBPImageEncoder {
 public:
     // Encode the input data with a compression quality in [0-100].
     static bool encode(const SkBitmap&, int quality, Vector<unsigned char>*);
-    static bool encode(const ImageDataBuffer&, int quality, Vector<unsigned char>*);
+    static bool encode(const ImageEncoder::RawImageBytes&, int quality, Vector<unsigned char>*);
 
     // For callers: provide a reasonable compression quality default.
-    enum Quality { DefaultCompressionQuality = 80 };
+    static const int DefaultCompressionQuality = 80;
 };
 
 } // namespace blink
 
-#endif
+#endif // WEBPImageEncoder_h

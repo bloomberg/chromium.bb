@@ -34,7 +34,6 @@
 #include "platform/graphics/ImageBuffer.h"
 
 #include "GrContext.h"
-#include "platform/MIMETypeRegistry.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -45,9 +44,7 @@
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/image-encoders/skia/JPEGImageEncoder.h"
-#include "platform/image-encoders/skia/PNGImageEncoder.h"
-#include "platform/image-encoders/skia/WEBPImageEncoder.h"
+#include "platform/image-encoders/ImageEncoder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebExternalTextureMailbox.h"
 #include "public/platform/WebGraphicsContext3D.h"
@@ -56,9 +53,6 @@
 #include "third_party/skia/include/effects/SkTableColorFilter.h"
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/MathExtras.h"
-#include "wtf/Vector.h"
-#include "wtf/text/Base64.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -415,52 +409,12 @@ void ImageBuffer::putByteArray(Multiply multiplied, const unsigned char* source,
     context()->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
 }
 
-template <typename T>
-static bool encodeImage(T& source, const String& mimeType, const double* quality, Vector<char>* output)
-{
-    Vector<unsigned char>* encodedImage = reinterpret_cast<Vector<unsigned char>*>(output);
-
-    if (mimeType == "image/jpeg") {
-        int compressionQuality = JPEGImageEncoder::DefaultCompressionQuality;
-        if (quality && *quality >= 0.0 && *quality <= 1.0)
-            compressionQuality = static_cast<int>(*quality * 100 + 0.5);
-        if (!JPEGImageEncoder::encode(source, compressionQuality, encodedImage))
-            return false;
-    } else if (mimeType == "image/webp") {
-        int compressionQuality = WEBPImageEncoder::DefaultCompressionQuality;
-        if (quality && *quality >= 0.0 && *quality <= 1.0)
-            compressionQuality = static_cast<int>(*quality * 100 + 0.5);
-        if (!WEBPImageEncoder::encode(source, compressionQuality, encodedImage))
-            return false;
-    } else {
-        if (!PNGImageEncoder::encode(source, encodedImage))
-            return false;
-        ASSERT(mimeType == "image/png");
-    }
-
-    return true;
-}
-
 String ImageBuffer::toDataURL(const String& mimeType, const double* quality) const
 {
-    ASSERT(MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(mimeType));
-
-    Vector<char> encodedImage;
-    if (!isSurfaceValid() || !encodeImage(m_surface->bitmap(), mimeType, quality, &encodedImage))
+    if (!isSurfaceValid())
         return "data:,";
 
-    return "data:" + mimeType + ";base64," + base64Encode(encodedImage);
-}
-
-String ImageDataToDataURL(const ImageDataBuffer& imageData, const String& mimeType, const double* quality)
-{
-    ASSERT(MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(mimeType));
-
-    Vector<char> encodedImage;
-    if (!encodeImage(imageData, mimeType, quality, &encodedImage))
-        return "data:,";
-
-    return "data:" + mimeType + ";base64," + base64Encode(encodedImage);
+    return ImageEncoder::toDataURL(m_surface->bitmap(), mimeType, quality);
 }
 
 } // namespace blink
