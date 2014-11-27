@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_CHROMEOS_IME_KEYBOARD_X11_H_
-#define UI_BASE_IME_CHROMEOS_IME_KEYBOARD_X11_H_
+#ifndef CHROMEOS_IME_IME_KEYBOARD_X11_H_
+#define CHROMEOS_IME_IME_KEYBOARD_X11_H_
 
-#include "ui/base/ime/chromeos/ime_keyboard.h"
+#include "chromeos/ime/ime_keyboard.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -24,12 +24,17 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_checker.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/gfx/x/x11_types.h"
+
+// These includes conflict with base/tracked_objects.h so must come last.
+#include <X11/XKBlib.h>
+#include <X11/Xlib.h>
+
 
 namespace chromeos {
 namespace input_method {
 
-class UI_BASE_EXPORT ImeKeyboardX11 : public ImeKeyboard {
+class CHROMEOS_EXPORT ImeKeyboardX11 : public ImeKeyboard {
  public:
   ImeKeyboardX11();
   virtual ~ImeKeyboardX11();
@@ -85,4 +90,4 @@ class UI_BASE_EXPORT ImeKeyboardX11 : public ImeKeyboard {
 } // namespace input_method
 } // namespace chromeos
 
-#endif  // UI_BASE_IME_CHROMEOS_IME_KEYBOARD_X11_H_
+#endif  // CHROMEOS_IME_IME_KEYBOARD_X11_H_

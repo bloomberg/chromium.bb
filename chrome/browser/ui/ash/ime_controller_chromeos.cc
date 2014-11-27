@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
 
+#include "chromeos/ime/input_method_manager.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
 
 void ImeController::HandleNextIme() {
   chromeos::input_method::InputMethodManager* manager =

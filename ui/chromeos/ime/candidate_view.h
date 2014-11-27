@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_CHROMEOS_IME_CANDIDATE_VIEW_H_
-#define UI_CHROMEOS_IME_CANDIDATE_VIEW_H_
+#ifndef ASH_IME_CANDIDATE_VIEW_H_
+#define ASH_IME_CANDIDATE_VIEW_H_
 
 #include "base/gtest_prod_util.h"
 #include "ui/base/ime/candidate_window.h"

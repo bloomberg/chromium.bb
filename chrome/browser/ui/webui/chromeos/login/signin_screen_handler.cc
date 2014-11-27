@@ -58,6 +58,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/ime/ime_keyboard.h"
+#include "chromeos/ime/input_method_descriptor.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/network_state.h"
@@ -70,9 +73,6 @@
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/input_method_descriptor.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/webui/web_ui_util.h"
 
 #if !defined(USE_ATHENA)

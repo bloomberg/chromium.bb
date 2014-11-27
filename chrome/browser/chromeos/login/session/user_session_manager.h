@@ -16,12 +16,12 @@
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "net/base/network_change_notifier.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
 
 class GURL;
 class PrefRegistrySimple;

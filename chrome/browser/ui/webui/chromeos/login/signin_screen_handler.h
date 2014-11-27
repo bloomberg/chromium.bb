@@ -27,14 +27,14 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/touch_view_controller_delegate.h"
+#include "chromeos/ime/ime_keyboard.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui.h"
 #include "net/base/net_errors.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/events/event_handler.h"
 
 class EasyUnlockService;

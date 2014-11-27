@@ -25,6 +25,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -32,7 +33,6 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;

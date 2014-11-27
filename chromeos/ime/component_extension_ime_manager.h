@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_CHROMEOS_COMPONENT_EXTENSION_IME_MANAGER_H_
-#define UI_BASE_IME_CHROMEOS_COMPONENT_EXTENSION_IME_MANAGER_H_
+#ifndef CHROMEOS_IME_COMPONENT_EXTENSION_IME_MANAGER_H_
+#define CHROMEOS_IME_COMPONENT_EXTENSION_IME_MANAGER_H_
 
 #include <map>
 #include <set>
@@ -11,15 +11,15 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "ui/base/ime/chromeos/input_method_descriptor.h"
-#include "ui/base/ui_base_export.h"
+#include "chromeos/chromeos_export.h"
+#include "chromeos/ime/input_method_descriptor.h"
 
 class Profile;
 
 namespace chromeos {
 
 // Represents an engine in component extension IME.
-struct UI_BASE_EXPORT ComponentExtensionEngine {
+struct CHROMEOS_EXPORT ComponentExtensionEngine {
   ComponentExtensionEngine();
   ~ComponentExtensionEngine();
   std::string engine_id;  // The engine id.
@@ -33,7 +33,7 @@ struct UI_BASE_EXPORT ComponentExtensionEngine {
 };
 
 // Represents a component extension IME.
-struct UI_BASE_EXPORT ComponentExtensionIME {
+struct CHROMEOS_EXPORT ComponentExtensionIME {
   ComponentExtensionIME();
   ~ComponentExtensionIME();
   std::string id;  // extension id.
@@ -45,7 +45,7 @@ struct UI_BASE_EXPORT ComponentExtensionIME {
 };
 
 // Provides an interface to list/load/unload for component extension IME.
-class UI_BASE_EXPORT ComponentExtensionIMEManagerDelegate {
+class CHROMEOS_EXPORT ComponentExtensionIMEManagerDelegate {
  public:
   ComponentExtensionIMEManagerDelegate();
   virtual ~ComponentExtensionIMEManagerDelegate();
@@ -67,7 +67,7 @@ class UI_BASE_EXPORT ComponentExtensionIMEManagerDelegate {
 };
 
 // This class manages component extension input method.
-class UI_BASE_EXPORT ComponentExtensionIMEManager {
+class CHROMEOS_EXPORT ComponentExtensionIMEManager {
  public:
   ComponentExtensionIMEManager();
   virtual ~ComponentExtensionIMEManager();
@@ -128,4 +128,4 @@ class UI_BASE_EXPORT ComponentExtensionIMEManager {
 
 }  // namespace chromeos
 
-#endif  // UI_BASE_IME_CHROMEOS_COMPONENT_EXTENSION_IME_MANAGER_H_
+#endif  // CHROMEOS_IME_COMPONENT_EXTENSION_IME_MANAGER_H_

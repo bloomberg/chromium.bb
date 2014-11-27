@@ -10,8 +10,8 @@
 #include "base/values.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/ime/ime_keyboard.h"
 #include "content/public/browser/web_ui.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(USE_ATHENA)

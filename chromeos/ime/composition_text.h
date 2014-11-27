@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_CHROMEOS_COMPOSITION_TEXT_H_
-#define UI_BASE_IME_CHROMEOS_COMPOSITION_TEXT_H_
+#ifndef CHROMEOS_IME_COMPOSITION_TEXT_H_
+#define CHROMEOS_IME_COMPOSITION_TEXT_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "ui/base/ui_base_export.h"
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
-class UI_BASE_EXPORT CompositionText {
+class CHROMEOS_EXPORT CompositionText {
  public:
   enum UnderlineType {
     COMPOSITION_TEXT_UNDERLINE_SINGLE = 1,
@@ -67,4 +67,4 @@ class UI_BASE_EXPORT CompositionText {
 
 }  // namespace chromeos
 
-#endif  // UI_BASE_IME_CHROMEOS_COMPOSITION_TEXT_H_
+#endif  // CHROMEOS_IME_COMPOSITION_TEXT_H_

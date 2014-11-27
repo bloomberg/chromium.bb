@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/chromeos/input_method/input_method_engine_interface.h"
-#include "ui/base/ime/chromeos/input_method_descriptor.h"
+#include "chromeos/ime/input_method_descriptor.h"
 
 namespace ui {
 class KeyEvent;

@@ -39,6 +39,19 @@ component("chromeos") {
   ]
   sources = gypi_values.chromeos_sources
   defines = [ "CHROMEOS_IMPLEMENTATION" ]
+  if (use_x11) {
+    configs += [ "//build/config/linux:x11" ]
+    deps += [ "//ui/gfx/x" ]
+    sources -= [
+      "ime/ime_keyboard_ozone.cc",
+      "ime/ime_keyboard_ozone.h",
+    ]
+  } else {
+    sources -= [
+      "ime/ime_keyboard_x11.cc",
+      "ime/ime_keyboard_x11.h",
+    ]
+  }
 }
 
 static_library("test_support") {
@@ -121,6 +134,8 @@ static_library("test_support_without_gmock") {
     "dbus/fake_shill_manager_client.h",
     "dbus/fake_update_engine_client.cc",
     "dbus/fake_update_engine_client.h",
+    "ime/fake_input_method_delegate.cc",
+    "ime/fake_input_method_delegate.h",
   ]
 }
 

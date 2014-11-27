@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_CHROMEOS_IME_KEYBOARD_OZONE_H_
-#define UI_BASE_IME_CHROMEOS_IME_KEYBOARD_OZONE_H_
+#ifndef CHROMEOS_IME_IME_KEYBOARD_OZONE_H_
+#define CHROMEOS_IME_IME_KEYBOARD_OZONE_H_
 
-#include "ui/base/ime/chromeos/ime_keyboard.h"
+#include "chromeos/ime/ime_keyboard.h"
 
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "ui/base/ui_base_export.h"
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 namespace input_method {
 
-class UI_BASE_EXPORT ImeKeyboardOzone : public ImeKeyboard {
+class CHROMEOS_EXPORT ImeKeyboardOzone : public ImeKeyboard {
  public:
   ImeKeyboardOzone();
   virtual ~ImeKeyboardOzone();
@@ -37,4 +37,4 @@ class UI_BASE_EXPORT ImeKeyboardOzone : public ImeKeyboard {
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // UI_BASE_IME_CHROMEOS_IME_KEYBOARD_OZONE_H_
+#endif  // CHROMEOS_IME_IME_KEYBOARD_OZONE_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/chromeos/ime_keyboard_ozone.h"
+#include "chromeos/ime/ime_keyboard_ozone.h"
 
 namespace chromeos {
 namespace input_method {
@@ -53,9 +53,7 @@ bool ImeKeyboardOzone::SetAutoRepeatEnabled(bool enabled) {
 }
 
 // static
-ImeKeyboard* ImeKeyboard::Create() {
-  return new ImeKeyboardOzone();
-}
+ImeKeyboard* ImeKeyboard::Create() { return new ImeKeyboardOzone(); }
 
 }  // namespace input_method
 }  // namespace chromeos

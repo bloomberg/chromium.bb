@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
+#include "chromeos/ime/component_extension_ime_manager.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "chromeos/chromeos_switches.h"
-#include "ui/base/ime/chromeos/extension_ime_util.h"
+#include "chromeos/ime/extension_ime_util.h"
 
 namespace chromeos {
 

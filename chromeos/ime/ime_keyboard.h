@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_IME_CHROMEOS_IME_KEYBOARD_H_
-#define UI_BASE_IME_CHROMEOS_IME_KEYBOARD_H_
+#ifndef CHROMEOS_IME_IME_KEYBOARD_H_
+#define CHROMEOS_IME_IME_KEYBOARD_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "ui/base/ui_base_export.h"
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 namespace input_method {
@@ -35,7 +35,7 @@ enum ModifierKey {
 
 class InputMethodUtil;
 
-class UI_BASE_EXPORT ImeKeyboard {
+class CHROMEOS_EXPORT ImeKeyboard {
  public:
   class Observer {
    public:
@@ -98,20 +98,20 @@ class UI_BASE_EXPORT ImeKeyboard {
 
   // Returns true if auto repeat is enabled. This function is protected: for
   // testability.
-  static UI_BASE_EXPORT bool GetAutoRepeatEnabledForTesting();
+  static CHROMEOS_EXPORT bool GetAutoRepeatEnabledForTesting();
 
   // On success, set current auto repeat rate on |out_rate| and returns true.
   // Returns false otherwise. This function is protected: for testability.
-  static UI_BASE_EXPORT bool GetAutoRepeatRateForTesting(
+  static CHROMEOS_EXPORT bool GetAutoRepeatRateForTesting(
       AutoRepeatRate* out_rate);
 
   // Returns false if |layout_name| contains a bad character.
-  static UI_BASE_EXPORT bool CheckLayoutNameForTesting(
+  static CHROMEOS_EXPORT bool CheckLayoutNameForTesting(
       const std::string& layout_name);
 
   // Note: At this moment, classes other than InputMethodManager should not
   // instantiate the ImeKeyboard class.
-  static UI_BASE_EXPORT ImeKeyboard* Create();
+  static ImeKeyboard* Create();
 
   bool caps_lock_is_enabled_;
   std::string last_layout_;
@@ -123,4 +123,4 @@ class UI_BASE_EXPORT ImeKeyboard {
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // UI_BASE_IME_CHROMEOS_IME_KEYBOARD_H_
+#endif  // CHROMEOS_IME_IME_KEYBOARD_H_

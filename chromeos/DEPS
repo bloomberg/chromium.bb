@@ -1,5 +1,5 @@
 # Please keep the dependencies here to a minimum. This is intended to be a
-# low level Chrome OS system library that may be used by targets that need to
+# low level Chrome OS system library that may be used by targets that need to 
 # be kept as small as possible.
 include_rules = [
   "+crypto",
@@ -11,6 +11,7 @@ include_rules = [
 
   # Some targets may not have any UI, so explictly exclude src/ui.
   "-ui",
-  # TODO(stevenjb/flackr): Remove these dependencies.
-  "+ui/accelerometer"
+  # TODO(stevenjb/flackr/shuchen): Remove these dependencies.
+  "+ui/accelerometer",
+  "+ui/gfx/x"
 ]

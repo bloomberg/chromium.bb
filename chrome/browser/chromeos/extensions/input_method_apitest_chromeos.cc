@@ -11,6 +11,8 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chromeos/ime/extension_ime_util.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -18,8 +20,6 @@
 #include "extensions/browser/api/test/test_api.h"
 #include "extensions/browser/notification_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
 
 namespace {
 

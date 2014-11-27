@@ -68,8 +68,8 @@
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/keyboard_brightness_controller.h"
 #include "base/sys_info.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "chromeos/ime/ime_keyboard.h"
+#include "chromeos/ime/input_method_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
