@@ -218,6 +218,7 @@ void DoCopyTexImage2D(const gpu::gles2::GLES2Decoder* decoder,
                       GLuint source_id,
                       GLuint dest_id,
                       GLint dest_level,
+                      GLenum dest_internal_format,
                       GLsizei width,
                       GLsizei height,
                       GLuint framebuffer) {
@@ -230,8 +231,14 @@ void DoCopyTexImage2D(const gpu::gles2::GLES2Decoder* decoder,
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glCopyTexSubImage2D(GL_TEXTURE_2D, dest_level, 0 /* xoffset */,
-                        0 /* yoffset */, 0 /* x */, 0 /* y */, width, height);
+    glCopyTexImage2D(GL_TEXTURE_2D,
+                     dest_level,
+                     dest_internal_format,
+                     0 /* x */,
+                     0 /* y */,
+                     width,
+                     height,
+                     0 /* border */);
   }
 
   decoder->RestoreTextureState(source_id);
@@ -325,15 +332,16 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
   bool source_format_contain_superset_of_dest_format =
       source_internal_format == dest_internal_format ||
       (source_internal_format == GL_RGBA && dest_internal_format == GL_RGB);
-  bool source_target_allowed = source_target == GL_TEXTURE_2D ||
-                               source_target == GL_TEXTURE_RECTANGLE_ARB;
-  if (source_target_allowed && !flip_y && !premultiply_alpha_change &&
+  // GL_TEXTURE_RECTANGLE_ARB on FBO is supported by OpenGL, not GLES2,
+  // so restrict this to GL_TEXTURE_2D.
+  if (source_target == GL_TEXTURE_2D && !flip_y && !premultiply_alpha_change &&
       source_format_contain_superset_of_dest_format) {
     DoCopyTexImage2D(decoder,
                      source_target,
                      source_id,
                      dest_id,
                      dest_level,
+                     dest_internal_format,
                      width,
                      height,
                      framebuffer_);
