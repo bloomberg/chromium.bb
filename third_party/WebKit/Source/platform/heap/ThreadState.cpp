@@ -332,7 +332,7 @@ ThreadState::ThreadState()
     , m_noAllocationCount(0)
     , m_isTerminating(false)
     , m_shouldFlushHeapDoesNotContainCache(false)
-    , m_collectionRate(0)
+    , m_collectionRate(1.0)
     , m_gcState(NoGCScheduled)
     , m_traceDOMWrappers(0)
 #if defined(ADDRESS_SANITIZER)
@@ -1065,11 +1065,13 @@ void ThreadState::performPendingSweep()
 
     // If we collected less than 50% of objects, record that the collection rate
     // is low which we use to determine when to perform the next GC.
-    // FIXME: We should make m_collectionRate available in non-main threads.
-    // FIXME: Heap::markedObjectSize() may not be accurate because other threads
-    // may not have finished sweeping.
     if (isMainThread()) {
+        // FIXME: Heap::markedObjectSize() may not be accurate because other threads
+        // may not have finished sweeping.
         m_collectionRate = 1.0 * Heap::markedObjectSize() / allocatedObjectSizeBeforeSweeping;
+    } else {
+        // FIXME: We should make m_collectionRate workable in non-main threads.
+        m_collectionRate = 1.0;
     }
 
     if (Platform::current()) {
