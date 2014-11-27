@@ -8,17 +8,17 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/sync/glue/frontend_data_type_controller.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "components/history/core/browser/history_service_observer.h"
 
 namespace browser_sync {
 
 // A class that manages the startup and shutdown of bookmark sync.
 class BookmarkDataTypeController : public FrontendDataTypeController,
-                                   public content::NotificationObserver,
-                                   public bookmarks::BaseBookmarkModelObserver {
+                                   public bookmarks::BaseBookmarkModelObserver,
+                                   public history::HistoryServiceObserver {
  public:
   BookmarkDataTypeController(ProfileSyncComponentsFactory* profile_sync_factory,
                              Profile* profile,
@@ -26,11 +26,6 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
 
   // FrontendDataTypeController:
   syncer::ModelType type() const override;
-
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
  private:
   ~BookmarkDataTypeController() override;
@@ -49,12 +44,14 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
   // service have finished loading.
   bool DependentsLoaded();
 
-  content::NotificationRegistrar registrar_;
+  // history::HistoryServiceObserver:
+  void OnHistoryServiceLoaded(HistoryService* service) override;
+  void HistoryServiceBeingDeleted(HistoryService* history_service) override;
 
-  BookmarkModel* bookmark_model_;
-
-  // Have we installed ourselves as a BookmarkModel observer?
-  bool installed_bookmark_observer_;
+  ScopedObserver<HistoryService, HistoryServiceObserver>
+      history_service_observer_;
+  ScopedObserver<BookmarkModel, BaseBookmarkModelObserver>
+      bookmark_model_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkDataTypeController);
 };

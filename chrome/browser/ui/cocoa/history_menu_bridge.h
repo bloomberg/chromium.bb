@@ -11,6 +11,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
+#include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
 #import "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_service.h"
@@ -149,6 +150,7 @@ class HistoryMenuBridge : public content::NotificationObserver,
                     base::Time visit_time) override;
   void OnURLsModified(HistoryService* history_service,
                       const history::URLRows& changed_urls) override;
+  void OnHistoryServiceLoaded(HistoryService* service) override;
 
   // Looks up an NSMenuItem in the |menu_item_map_| and returns the
   // corresponding HistoryItem.
@@ -239,6 +241,9 @@ class HistoryMenuBridge : public content::NotificationObserver,
 
   // The default favicon if a HistoryItem does not have one.
   base::scoped_nsobject<NSImage> default_favicon_;
+
+  ScopedObserver<HistoryService, HistoryServiceObserver>
+      history_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryMenuBridge);
 };

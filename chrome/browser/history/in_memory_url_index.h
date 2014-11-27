@@ -16,6 +16,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/history/history_db_task.h"
@@ -247,6 +248,7 @@ class InMemoryURLIndex : public HistoryServiceObserver,
                     base::Time visit_time) override;
   void OnURLsModified(HistoryService* history_service,
                       const URLRows& changed_urls) override;
+  void OnHistoryServiceLoaded(HistoryService* history_service) override;
 
   // Notification handlers.
   void OnURLsDeleted(const URLsDeletedDetails* details);
@@ -309,6 +311,9 @@ class InMemoryURLIndex : public HistoryServiceObserver,
   // temporary safety check to insure that the cache is saved before the
   // index has been destructed.
   bool needs_to_be_cached_;
+
+  ScopedObserver<HistoryService, HistoryServiceObserver>
+      history_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryURLIndex);
 };

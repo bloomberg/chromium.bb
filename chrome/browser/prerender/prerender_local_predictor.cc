@@ -528,9 +528,9 @@ class PrerenderLocalPredictor::PrefetchList {
 PrerenderLocalPredictor::PrerenderLocalPredictor(
     PrerenderManager* prerender_manager)
     : prerender_manager_(prerender_manager),
-      is_history_service_observer_(false),
       weak_factory_(this),
-      prefetch_list_(new PrefetchList()) {
+      prefetch_list_(new PrefetchList()),
+      history_service_observer_(this) {
   RecordEvent(EVENT_CONSTRUCTED);
   if (base::MessageLoop::current()) {
     timer_.Start(FROM_HERE,
@@ -583,12 +583,7 @@ PrerenderLocalPredictor::~PrerenderLocalPredictor() {
 
 void PrerenderLocalPredictor::Shutdown() {
   timer_.Stop();
-  if (is_history_service_observer_) {
-    HistoryService* history = GetHistoryIfExists();
-    CHECK(history);
-    history->RemoveObserver(this);
-    is_history_service_observer_ = false;
-  }
+  history_service_observer_.RemoveAll();
 }
 
 void PrerenderLocalPredictor::OnAddVisit(HistoryService* history_service,
@@ -1139,13 +1134,12 @@ void PrerenderLocalPredictor::Init() {
   }
   HistoryService* history = GetHistoryIfExists();
   if (history) {
-    CHECK(!is_history_service_observer_);
+    CHECK(!history_service_observer_.IsObserving(history));
     history->ScheduleDBTask(
         scoped_ptr<history::HistoryDBTask>(
             new GetVisitHistoryTask(this, kMaxVisitHistory)),
         &history_db_tracker_);
-    history->AddObserver(this);
-    is_history_service_observer_ = true;
+    history_service_observer_.Add(history);
   } else {
     RecordEvent(EVENT_INIT_FAILED_NO_HISTORY);
   }

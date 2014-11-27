@@ -15,8 +15,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 
 using content::BrowserThread;
 
@@ -32,59 +30,33 @@ BookmarkDataTypeController::BookmarkDataTypeController(
           profile_sync_factory,
           profile,
           sync_service),
-      bookmark_model_(NULL),
-      installed_bookmark_observer_(false) {
+      history_service_observer_(this),
+      bookmark_model_observer_(this) {
 }
 
 syncer::ModelType BookmarkDataTypeController::type() const {
   return syncer::BOOKMARKS;
 }
 
-void BookmarkDataTypeController::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(state_, MODEL_STARTING);
-  DCHECK_EQ(chrome::NOTIFICATION_HISTORY_LOADED, type);
-
-  if (!DependentsLoaded())
-    return;
-
-  bookmark_model_->RemoveObserver(this);
-  installed_bookmark_observer_ = false;
-
-  registrar_.RemoveAll();
-  OnModelLoaded();
-}
-
 BookmarkDataTypeController::~BookmarkDataTypeController() {
-  if (installed_bookmark_observer_ && bookmark_model_) {
-    DCHECK(profile_);
-    bookmark_model_->RemoveObserver(this);
-  }
 }
 
 bool BookmarkDataTypeController::StartModels() {
-  bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
   if (!DependentsLoaded()) {
-    bookmark_model_->AddObserver(this);
-    installed_bookmark_observer_ = true;
-
-    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
-                   content::Source<Profile>(sync_service_->profile()));
+    BookmarkModel* bookmark_model =
+        BookmarkModelFactory::GetForProfile(profile_);
+    bookmark_model_observer_.Add(bookmark_model);
+    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+        profile_, Profile::EXPLICIT_ACCESS);
+    history_service_observer_.Add(history_service);
     return false;
   }
   return true;
 }
 
-// Cleanup for our extra registrar usage.
 void BookmarkDataTypeController::CleanUpState() {
-  registrar_.RemoveAll();
-  if (bookmark_model_ && installed_bookmark_observer_) {
-    bookmark_model_->RemoveObserver(this);
-    installed_bookmark_observer_ = false;
-  }
+  history_service_observer_.RemoveAll();
+  bookmark_model_observer_.RemoveAll();
 }
 
 void BookmarkDataTypeController::CreateSyncComponents() {
@@ -101,25 +73,25 @@ void BookmarkDataTypeController::BookmarkModelChanged() {
 void BookmarkDataTypeController::BookmarkModelLoaded(BookmarkModel* model,
                                                      bool ids_reassigned) {
   DCHECK(model->loaded());
-  model->RemoveObserver(this);
-  installed_bookmark_observer_ = false;
+  bookmark_model_observer_.RemoveAll();
 
   if (!DependentsLoaded())
     return;
 
-  registrar_.RemoveAll();
+  history_service_observer_.RemoveAll();
   OnModelLoaded();
 }
 
 void BookmarkDataTypeController::BookmarkModelBeingDeleted(
     BookmarkModel* model) {
-  installed_bookmark_observer_ = false;
+  CleanUpState();
 }
 
 // Check that both the bookmark model and the history service (for favicons)
 // are loaded.
 bool BookmarkDataTypeController::DependentsLoaded() {
-  if (!bookmark_model_ || !bookmark_model_->loaded())
+  BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile_);
+  if (!bookmark_model || !bookmark_model->loaded())
     return false;
 
   HistoryService* history = HistoryServiceFactory::GetForProfile(
@@ -129,6 +101,24 @@ bool BookmarkDataTypeController::DependentsLoaded() {
 
   // All necessary services are loaded.
   return true;
+}
+
+void BookmarkDataTypeController::OnHistoryServiceLoaded(
+    HistoryService* service) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(state_, MODEL_STARTING);
+  history_service_observer_.RemoveAll();
+
+  if (!DependentsLoaded())
+    return;
+
+  bookmark_model_observer_.RemoveAll();
+  OnModelLoaded();
+}
+
+void BookmarkDataTypeController::HistoryServiceBeingDeleted(
+    HistoryService* history_service) {
+  CleanUpState();
 }
 
 }  // namespace browser_sync

@@ -230,11 +230,6 @@ enum NotificationType {
 
   // History -----------------------------------------------------------------
 
-  // Sent when a history service has finished loading. The source is the
-  // profile that the history service belongs to, and the details is the
-  // HistoryService.
-  NOTIFICATION_HISTORY_LOADED,
-
   // Sent when one or more URLs are deleted.
   //
   // The source is the profile owning the history service that changed, and

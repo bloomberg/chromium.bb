@@ -11,8 +11,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_table.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/navigation_controller.h"
@@ -61,6 +63,7 @@ namespace predictors {
 class AutocompleteActionPredictor
     : public KeyedService,
       public content::NotificationObserver,
+      public history::HistoryServiceObserver,
       public base::SupportsWeakPtr<AutocompleteActionPredictor> {
  public:
   enum Action {
@@ -215,6 +218,12 @@ class AutocompleteActionPredictor
   // Calculates the confidence for an entry in the DBCacheMap.
   double CalculateConfidenceForDbEntry(DBCacheMap::const_iterator iter) const;
 
+  // KeyedService:
+  void Shutdown() override;
+
+  // history::HistoryServiceObserver:
+  void OnHistoryServiceLoaded(HistoryService* history_service) override;
+
   Profile* profile_;
 
   // Set when this is a predictor for an incognito profile.
@@ -245,6 +254,9 @@ class AutocompleteActionPredictor
   DBIdCacheMap db_id_cache_;
 
   bool initialized_;
+
+  ScopedObserver<HistoryService, HistoryServiceObserver>
+      history_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteActionPredictor);
 };

@@ -163,6 +163,10 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
                    base::Unretained(&start_callback_)));
   }
 
+  void NotifyHistoryServiceLoaded() {
+    history_service_->NotifyHistoryServiceLoaded();
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<BookmarkDataTypeController> bookmark_dtc_;
   scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
@@ -230,10 +234,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartHistoryServiceNotReady) {
   EXPECT_CALL(*history_service_, BackendLoaded()).WillRepeatedly(Return(true));
 
   // Send the notification that the history service has finished loading the db.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_HISTORY_LOADED,
-      content::Source<Profile>(&profile_),
-      content::NotificationService::NoDetails());
+  NotifyHistoryServiceLoaded();
   EXPECT_EQ(DataTypeController::MODEL_LOADED, bookmark_dtc_->state());
 }
 

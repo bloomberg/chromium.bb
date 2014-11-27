@@ -49,6 +49,7 @@
 #include "components/app_modal/app_modal_dialog.h"
 #include "components/app_modal/app_modal_dialog_queue.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/download_item.h"
@@ -364,14 +365,6 @@ void WaitForTemplateURLServiceToLoad(TemplateURLService* service) {
   ASSERT_TRUE(service->loaded());
 }
 
-void WaitForHistoryToLoad(HistoryService* history_service) {
-  content::WindowedNotificationObserver history_loaded_observer(
-      chrome::NOTIFICATION_HISTORY_LOADED,
-      content::NotificationService::AllSources());
-  if (!history_service->BackendLoaded())
-    history_loaded_observer.Wait();
-}
-
 void DownloadURL(Browser* browser, const GURL& download_url) {
   base::ScopedTempDir downloads_directory;
   ASSERT_TRUE(downloads_directory.CreateUniqueTempDir());
@@ -539,6 +532,45 @@ void HistoryEnumerator::HistoryQueryComplete(
   for (size_t i = 0; i < results->size(); ++i)
     urls_.push_back((*results)[i].url());
   quit_task.Run();
+}
+
+// Wait for HistoryService to load.
+class WaitHistoryLoadedObserver : public history::HistoryServiceObserver {
+ public:
+  explicit WaitHistoryLoadedObserver(content::MessageLoopRunner* runner);
+  ~WaitHistoryLoadedObserver() override;
+
+  // history::HistoryServiceObserver:
+  void OnHistoryServiceLoaded(HistoryService* service) override;
+
+ private:
+  // weak
+  content::MessageLoopRunner* runner_;
+};
+
+WaitHistoryLoadedObserver::WaitHistoryLoadedObserver(
+    content::MessageLoopRunner* runner)
+    : runner_(runner) {
+}
+
+WaitHistoryLoadedObserver::~WaitHistoryLoadedObserver() {
+}
+
+void WaitHistoryLoadedObserver::OnHistoryServiceLoaded(
+    HistoryService* service) {
+  runner_->Quit();
+}
+
+void WaitForHistoryToLoad(HistoryService* history_service) {
+  if (!history_service->BackendLoaded()) {
+    scoped_refptr<content::MessageLoopRunner> runner =
+        new content::MessageLoopRunner;
+    WaitHistoryLoadedObserver observer(runner.get());
+    ScopedObserver<HistoryService, history::HistoryServiceObserver>
+        scoped_observer(&observer);
+    scoped_observer.Add(history_service);
+    runner->Run();
+  }
 }
 
 }  // namespace ui_test_utils

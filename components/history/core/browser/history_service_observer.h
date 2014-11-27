@@ -42,6 +42,12 @@ class HistoryServiceObserver {
   virtual void OnAddVisit(HistoryService* history_service,
                           const BriefVisitInfo& info) {}
 
+  // Is called to notify when |history_service| has finished loading.
+  virtual void OnHistoryServiceLoaded(HistoryService* history_service) {}
+
+  // Is called to notify when |history_service| is being deleted.
+  virtual void HistoryServiceBeingDeleted(HistoryService* history_service) {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryServiceObserver);
 };

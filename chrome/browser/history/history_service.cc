@@ -888,6 +888,8 @@ void HistoryService::Cleanup() {
     return;
   }
 
+  NotifyHistoryServiceBeingDeleted();
+
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   // Unload the backend.
@@ -1234,10 +1236,7 @@ void HistoryService::BroadcastNotificationsHelper(
 void HistoryService::OnDBLoaded() {
   DCHECK(thread_checker_.CalledOnValidThread());
   backend_loaded_ = true;
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_HISTORY_LOADED,
-      content::Source<Profile>(profile_),
-      content::Details<HistoryService>(this));
+  NotifyHistoryServiceLoaded();
 }
 
 bool HistoryService::GetRowForURL(const GURL& url, history::URLRow* url_row) {
@@ -1267,6 +1266,18 @@ void HistoryService::NotifyURLsModified(const history::URLRows& changed_urls) {
   FOR_EACH_OBSERVER(history::HistoryServiceObserver,
                     observers_,
                     OnURLsModified(this, changed_urls));
+}
+
+void HistoryService::NotifyHistoryServiceLoaded() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  FOR_EACH_OBSERVER(history::HistoryServiceObserver, observers_,
+                    OnHistoryServiceLoaded(this));
+}
+
+void HistoryService::NotifyHistoryServiceBeingDeleted() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  FOR_EACH_OBSERVER(history::HistoryServiceObserver, observers_,
+                    HistoryServiceBeingDeleted(this));
 }
 
 scoped_ptr<base::CallbackList<void(const std::set<GURL>&)>::Subscription>

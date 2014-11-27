@@ -53,6 +53,10 @@ class FilePath;
 class Thread;
 }
 
+namespace safe_browsing {
+class LastDownloadFinder;
+}
+
 namespace visitedlink {
 class VisitedLinkMaster;
 }
@@ -539,8 +543,10 @@ class HistoryService : public content::NotificationObserver,
   friend class HistoryURLProviderTest;
   friend class history::InMemoryURLIndexTest;
   template<typename Info, typename Callback> friend class DownloadRequest;
+  friend class safe_browsing::LastDownloadFinder;
   friend class PageUsageRequest;
   friend class RedirectRequest;
+  friend class SyncBookmarkDataTypeControllerTest;
   friend class TestingProfile;
 
   // Called on shutdown, this will tell the history backend to complete and
@@ -606,6 +612,13 @@ class HistoryService : public content::NotificationObserver,
   // Notify all HistoryServiceObservers registered that URLs have been added or
   // modified. |changed_urls| contains the list of affects URLs.
   void NotifyURLsModified(const history::URLRows& changed_urls);
+
+  // Notify all HistoryServiceObservers registered that the
+  // HistoryService has finished loading.
+  void NotifyHistoryServiceLoaded();
+
+  // HistoryService is being deleted.
+  void NotifyHistoryServiceBeingDeleted();
 
   // Favicon -------------------------------------------------------------------
 
@@ -844,6 +857,9 @@ class HistoryService : public content::NotificationObserver,
     ScheduleTask(priority, base::Bind(func, history_backend_.get(),
                                       a, b, c, d, e));
   }
+
+  // TODO(sdefresne): http://crbug.com/430070 remove this method.
+  Profile* profile() { return profile_; }
 
   base::ThreadChecker thread_checker_;
 

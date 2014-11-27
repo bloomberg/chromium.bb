@@ -23,12 +23,12 @@
 namespace history {
 
 InMemoryHistoryBackend::InMemoryHistoryBackend()
-    : profile_(nullptr), history_service_(nullptr) {
+    : profile_(nullptr),
+      history_service_observer_(this),
+      history_service_(nullptr) {
 }
 
 InMemoryHistoryBackend::~InMemoryHistoryBackend() {
-  if (history_service_)
-    history_service_->RemoveObserver(this);
 }
 
 bool InMemoryHistoryBackend::Init(const base::FilePath& history_filename) {
@@ -44,11 +44,11 @@ void InMemoryHistoryBackend::AttachToHistoryService(
     return;
   }
 
-  DCHECK(history_service);
-  history_service_ = history_service;
-  history_service_->AddObserver(this);
-
   profile_ = profile;
+
+  DCHECK(history_service);
+  history_service_observer_.Add(history_service);
+  history_service_ = history_service;
 
   // TODO(evanm): this is currently necessitated by generate_profile, which
   // runs without a browser process. generate_profile should really create

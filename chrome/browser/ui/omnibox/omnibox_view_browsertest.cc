@@ -141,6 +141,14 @@ const int kCtrlOrCmdMask = ui::EF_CONTROL_DOWN;
 class OmniboxViewTest : public InProcessBrowserTest,
                         public content::NotificationObserver,
                         public history::HistoryServiceObserver {
+ public:
+  OmniboxViewTest() : observer_(this) {}
+
+  // history::HisoryServiceObserver
+  void OnHistoryServiceLoaded(HistoryService* history_service) override {
+    base::MessageLoop::current()->Quit();
+  }
+
  protected:
   void SetUpOnMainThread() override {
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -285,9 +293,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(history_service);
 
     if (!history_service->BackendLoaded()) {
-      content::NotificationRegistrar registrar;
-      registrar.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
-                    content::Source<Profile>(profile));
+      observer_.Add(history_service);
       content::RunMessageLoop();
     }
 
@@ -349,7 +355,6 @@ class OmniboxViewTest : public InProcessBrowserTest,
       case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
       case chrome::NOTIFICATION_TAB_PARENTED:
       case chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY:
-      case chrome::NOTIFICATION_HISTORY_LOADED:
         break;
       default:
         FAIL() << "Unexpected notification type";
@@ -361,6 +366,11 @@ class OmniboxViewTest : public InProcessBrowserTest,
                       const history::URLRows& changed_urls) override {
     base::MessageLoop::current()->Quit();
   }
+
+ private:
+  ScopedObserver<HistoryService, OmniboxViewTest> observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(OmniboxViewTest);
 };
 
 // Test if ctrl-* accelerators are workable in omnibox.

@@ -350,9 +350,10 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
     : profile_(profile),
       config_(config),
       initialization_state_(NOT_INITIALIZED),
-      tables_(PredictorDatabaseFactory::GetForProfile(
-          profile)->resource_prefetch_tables()),
-      results_map_deleter_(&results_map_) {
+      tables_(PredictorDatabaseFactory::GetForProfile(profile)
+                  ->resource_prefetch_tables()),
+      results_map_deleter_(&results_map_),
+      history_service_observer_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Some form of learning has to be enabled.
@@ -443,15 +444,6 @@ void ResourcePrefetchPredictor::Observe(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   switch (type) {
-    case chrome::NOTIFICATION_HISTORY_LOADED: {
-      DCHECK_EQ(initialization_state_, INITIALIZING);
-      notification_registrar_.Remove(this,
-                                     chrome::NOTIFICATION_HISTORY_LOADED,
-                                     content::Source<Profile>(profile_));
-      OnHistoryAndCacheLoaded();
-      break;
-    }
-
     case chrome::NOTIFICATION_HISTORY_URLS_DELETED: {
       DCHECK_EQ(initialization_state_, INITIALIZED);
       const content::Details<const history::URLsDeletedDetails>
@@ -752,15 +744,7 @@ void ResourcePrefetchPredictor::CreateCaches(
   UMA_HISTOGRAM_COUNTS("ResourcePrefetchPredictor.HostTableHostCount",
                        host_table_cache_->size());
 
-  // Add notifications for history loading if it is not ready.
-  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-    profile_, Profile::EXPLICIT_ACCESS);
-  if (!history_service) {
-    notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
-                                content::Source<Profile>(profile_));
-  } else {
-    OnHistoryAndCacheLoaded();
-  }
+  ConnectToHistoryService();
 }
 
 void ResourcePrefetchPredictor::OnHistoryAndCacheLoaded() {
@@ -777,6 +761,7 @@ void ResourcePrefetchPredictor::OnHistoryAndCacheLoaded() {
         this, config_, profile_->GetRequestContext());
   }
 
+  history_service_observer_.RemoveAll();
   initialization_state_ = INITIALIZED;
 }
 
@@ -1352,6 +1337,28 @@ void ResourcePrefetchPredictor::ReportPredictedAccuracyStatsHelper(
 #undef RPP_HISTOGRAM_MEDIUM_TIMES
 #undef RPP_PREDICTED_HISTOGRAM_PERCENTAGE
 #undef RPP_PREDICTED_HISTOGRAM_COUNTS
+}
+
+void ResourcePrefetchPredictor::OnHistoryServiceLoaded(
+    HistoryService* history_service) {
+  OnHistoryAndCacheLoaded();
+  history_service_observer_.Remove(history_service);
+}
+
+void ResourcePrefetchPredictor::ConnectToHistoryService() {
+  // Register for HistoryServiceLoading if it is not ready.
+  HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  if (!history_service)
+    return;
+  if (history_service->BackendLoaded()) {
+    // HistoryService is already loaded. Continue with Initialization.
+    OnHistoryAndCacheLoaded();
+    return;
+  }
+  DCHECK(!history_service_observer_.IsObserving(history_service));
+  history_service_observer_.Add(history_service);
+  return;
 }
 
 }  // namespace predictors

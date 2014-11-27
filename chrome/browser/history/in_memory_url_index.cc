@@ -103,7 +103,8 @@ InMemoryURLIndex::InMemoryURLIndex(Profile* profile,
       save_cache_observer_(NULL),
       shutdown_(false),
       restored_(false),
-      needs_to_be_cached_(false) {
+      needs_to_be_cached_(false),
+      history_service_observer_(this) {
   InitializeSchemeWhitelist(&scheme_whitelist_);
   if (profile) {
     // TODO(mrossetti): Register for language change notifications.
@@ -111,7 +112,7 @@ InMemoryURLIndex::InMemoryURLIndex(Profile* profile,
     registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, source);
   }
   if (history_service_)
-    history_service_->AddObserver(this);
+    history_service_observer_.Add(history_service_);
 }
 
 // Called only by unit tests.
@@ -124,7 +125,8 @@ InMemoryURLIndex::InMemoryURLIndex()
       save_cache_observer_(NULL),
       shutdown_(false),
       restored_(false),
-      needs_to_be_cached_(false) {
+      needs_to_be_cached_(false),
+      history_service_observer_(this) {
   InitializeSchemeWhitelist(&scheme_whitelist_);
 }
 
@@ -139,8 +141,7 @@ void InMemoryURLIndex::Init() {
 }
 
 void InMemoryURLIndex::ShutDown() {
-  if (history_service_)
-    history_service_->RemoveObserver(this);
+  history_service_observer_.RemoveAll();
   registrar_.RemoveAll();
   cache_reader_tracker_.TryCancelAll();
   shutdown_ = true;
@@ -191,11 +192,6 @@ void InMemoryURLIndex::Observe(int notification_type,
       OnURLsDeleted(
           content::Details<history::URLsDeletedDetails>(details).ptr());
       break;
-    case chrome::NOTIFICATION_HISTORY_LOADED:
-      registrar_.Remove(this, chrome::NOTIFICATION_HISTORY_LOADED,
-                        content::Source<Profile>(profile_));
-      ScheduleRebuildFromHistory();
-      break;
     default:
       // For simplicity, the unit tests send us all notifications, even when
       // we haven't registered for them, so don't assert here.
@@ -226,6 +222,10 @@ void InMemoryURLIndex::OnURLsModified(HistoryService* history_service,
                                                     scheme_whitelist_,
                                                     &private_data_tracker_);
   }
+}
+
+void InMemoryURLIndex::OnHistoryServiceLoaded(HistoryService* history_service) {
+  ScheduleRebuildFromHistory();
 }
 
 void InMemoryURLIndex::OnURLsDeleted(const URLsDeletedDetails* details) {
@@ -298,11 +298,13 @@ void InMemoryURLIndex::OnCacheLoadDone(
         FROM_HERE, base::Bind(DeleteCacheFile, path));
     HistoryService* service =
         HistoryServiceFactory::GetForProfileWithoutCreating(profile_);
-    if (service && service->backend_loaded()) {
-      ScheduleRebuildFromHistory();
-    } else {
-      registrar_.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
-                     content::Source<Profile>(profile_));
+    if (service) {
+      if (!service->backend_loaded()) {
+        if (!history_service_observer_.IsObserving(service))
+          history_service_observer_.Add(service);
+      } else {
+        ScheduleRebuildFromHistory();
+      }
     }
   }
 }
