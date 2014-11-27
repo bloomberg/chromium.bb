@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "tools/gn/build_settings.h"
 #include "tools/gn/builder.h"
+#include "tools/gn/label_pattern.h"
 #include "tools/gn/loader.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/scope.h"
@@ -53,6 +54,13 @@ class CommonSetup {
     check_public_headers_ = s;
   }
 
+  // Read from the .gn file, these are the targets to check. If the .gn file
+  // does not specify anything, this will be null. If the .gn file specifies
+  // the empty list, this will be non-null but empty.
+  const std::vector<LabelPattern>* check_patterns() const {
+    return check_patterns_.get();
+  }
+
   BuildSettings& build_settings() { return build_settings_; }
   Builder* builder() { return builder_.get(); }
   LoaderImpl* loader() { return loader_.get(); }
@@ -79,6 +87,9 @@ class CommonSetup {
   bool check_for_bad_items_;
   bool check_for_unused_overrides_;
   bool check_public_headers_;
+
+  // See getter for info.
+  scoped_ptr<std::vector<LabelPattern> > check_patterns_;
 
  private:
   CommonSetup& operator=(const CommonSetup& other);  // Disallow.

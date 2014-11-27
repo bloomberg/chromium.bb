@@ -12,6 +12,7 @@
 #include "base/strings/string_piece.h"
 
 class BuildSettings;
+class LabelPattern;
 class Setup;
 class Target;
 
@@ -101,8 +102,7 @@ bool ResolveTargetsFromCommandLinePattern(
     std::vector<const Target*>* matches);
 
 // Runs the header checker. All targets in the build should be given in
-// all_targets, and the specific targets to check should be in to_check. If
-// to_check is empty, all targets will be checked.
+// all_targets, and the specific targets to check should be in to_check.
 //
 // force_check, if true, will override targets opting out of header checking
 // with "check_includes = false" and will check them anyway.
@@ -113,6 +113,13 @@ bool CheckPublicHeaders(const BuildSettings* build_settings,
                         const std::vector<const Target*>& all_targets,
                         const std::vector<const Target*>& to_check,
                         bool force_check);
+
+// Filters the given list of targets by the given pattern list. This is a
+// helper function for setting up a call to CheckPublicHeaders based on a check
+// filter.
+void FilterTargetsByPatterns(const std::vector<const Target*>& input,
+                             const std::vector<LabelPattern>& filter,
+                             std::vector<const Target*>* output);
 
 }  // namespace commands
 

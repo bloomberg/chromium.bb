@@ -131,16 +131,10 @@ HeaderChecker::~HeaderChecker() {
 bool HeaderChecker::Run(const std::vector<const Target*>& to_check,
                         bool force_check,
                         std::vector<Err>* errors) {
-  if (to_check.empty()) {
-    // Check all files.
-    RunCheckOverFiles(file_map_, force_check);
-  } else {
-    // Run only over the files in the given targets.
-    FileMap files_to_check;
-    for (const auto& check : to_check)
-      AddTargetToFileMap(check, &files_to_check);
-    RunCheckOverFiles(files_to_check, force_check);
-  }
+  FileMap files_to_check;
+  for (const auto& check : to_check)
+    AddTargetToFileMap(check, &files_to_check);
+  RunCheckOverFiles(files_to_check, force_check);
 
   if (errors_.empty())
     return true;

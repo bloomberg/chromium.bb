@@ -948,7 +948,7 @@ const char kVisibility_Help[] =
     "    visibility = [ \"//bar:*\" ]\n"
     "\n"
     "  Any target in \"//bar/\" or any subdirectory thereof:\n"
-    "    visibility = [ \"//bar/*\"\n ]"
+    "    visibility = [ \"//bar/*\" ]\n"
     "\n"
     "  Just these specific targets:\n"
     "    visibility = [ \":mything\", \"//foo:something_else\" ]\n"

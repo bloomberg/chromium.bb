@@ -1,5 +1,6 @@
-# This file is used by the experimental meta-buildsystem in src/tools/gn to
-# find the root of the source tree and to set startup options.
+# This file is used by the GN meta build system to find the root of the source
+# tree and to set startup options. For documentation on the values set in this
+# file, run "gn help dotfile" at the command line.
 
 # The location of the build configuration file.
 buildconfig = "//build/config/BUILDCONFIG.gn"
@@ -8,3 +9,11 @@ buildconfig = "//build/config/BUILDCONFIG.gn"
 # GN build files are placed when they can not be placed directly
 # in the source tree, e.g. for third party source trees.
 secondary_source = "//build/secondary/"
+
+# These are the targets to check headers for by default. The files in targets
+# matching these patterns (see "gn help label_pattern" for format) will have
+# their includes checked for proper dependencies when you run either
+# "gn check" or "gn gen --check".
+check_targets = [
+  "//base"
+]

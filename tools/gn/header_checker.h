@@ -50,8 +50,7 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
   HeaderChecker(const BuildSettings* build_settings,
                 const std::vector<const Target*>& targets);
 
-  // Runs the check. The targets in to_check will be checked. If this list is
-  // empty, all targets will be checked.
+  // Runs the check. The targets in to_check will be checked.
   //
   // This assumes that the current thread already has a message loop. On
   // error, fills the given vector with the errors and returns false. Returns
