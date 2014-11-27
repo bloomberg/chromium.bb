@@ -9,6 +9,8 @@
 #include "components/web_resource/web_resource_pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace web_resource {
+
 class EulaAcceptedNotifierTest : public testing::Test,
                                  public EulaAcceptedNotifier::Observer {
  public:
@@ -73,3 +75,5 @@ TEST_F(EulaAcceptedNotifierTest, EulaNotInitiallyAccepted) {
   // Call it a second time, to ensure the answer doesn't change.
   EXPECT_TRUE(notifier()->IsEulaAccepted());
 }
+
+}  // namespace web_resource

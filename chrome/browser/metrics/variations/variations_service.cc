@@ -219,7 +219,8 @@ void RecordRequestsAllowedHistogram(ResourceRequestsAllowedState state) {
 // Converts ResourceRequestAllowedNotifier::State to the corresponding
 // ResourceRequestsAllowedState value.
 ResourceRequestsAllowedState ResourceRequestStateToHistogramValue(
-    ResourceRequestAllowedNotifier::State state) {
+    web_resource::ResourceRequestAllowedNotifier::State state) {
+  using web_resource::ResourceRequestAllowedNotifier;
   switch (state) {
     case ResourceRequestAllowedNotifier::DISALLOWED_EULA_NOT_ACCEPTED:
       return RESOURCE_REQUESTS_NOT_ALLOWED_EULA_NOT_ACCEPTED;
@@ -287,7 +288,7 @@ void OverrideUIString(uint32_t hash, const base::string16& string) {
 }  // namespace
 
 VariationsService::VariationsService(
-    ResourceRequestAllowedNotifier* notifier,
+    web_resource::ResourceRequestAllowedNotifier* notifier,
     PrefService* local_state,
     metrics::MetricsStateManager* state_manager)
     : local_state_(local_state),
@@ -490,7 +491,7 @@ scoped_ptr<VariationsService> VariationsService::Create(
   }
 #endif
   result.reset(new VariationsService(
-      new ResourceRequestAllowedNotifier(
+      new web_resource::ResourceRequestAllowedNotifier(
           local_state, switches::kDisableBackgroundNetworking),
       local_state, state_manager));
   return result.Pass();
@@ -547,10 +548,10 @@ void VariationsService::StoreSeed(const std::string& seed_data,
 void VariationsService::FetchVariationsSeed() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  const ResourceRequestAllowedNotifier::State state =
+  const web_resource::ResourceRequestAllowedNotifier::State state =
       resource_request_allowed_notifier_->GetResourceRequestsAllowedState();
   RecordRequestsAllowedHistogram(ResourceRequestStateToHistogramValue(state));
-  if (state != ResourceRequestAllowedNotifier::ALLOWED) {
+  if (state != web_resource::ResourceRequestAllowedNotifier::ALLOWED) {
     DVLOG(1) << "Resource requests were not allowed. Waiting for notification.";
     return;
   }

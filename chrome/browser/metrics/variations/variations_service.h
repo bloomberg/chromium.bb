@@ -51,7 +51,7 @@ namespace chrome_variations {
 // new seed data from the variations server.
 class VariationsService
     : public net::URLFetcherDelegate,
-      public ResourceRequestAllowedNotifier::Observer {
+      public web_resource::ResourceRequestAllowedNotifier::Observer {
  public:
   class Observer {
    public:
@@ -149,7 +149,7 @@ class VariationsService
   // Does not take ownership of |state_manager|. Caller should ensure that
   // |state_manager| is valid for the lifetime of this class. Use the |Create|
   // factory method to create a VariationsService.
-  VariationsService(ResourceRequestAllowedNotifier* notifier,
+  VariationsService(web_resource::ResourceRequestAllowedNotifier* notifier,
                     PrefService* local_state,
                     metrics::MetricsStateManager* state_manager);
 
@@ -215,7 +215,8 @@ class VariationsService
 
   // Helper class used to tell this service if it's allowed to make network
   // resource requests.
-  scoped_ptr<ResourceRequestAllowedNotifier> resource_request_allowed_notifier_;
+  scoped_ptr<web_resource::ResourceRequestAllowedNotifier>
+      resource_request_allowed_notifier_;
 
   // The start time of the last seed request. This is used to measure the
   // latency of seed requests. Initially zero.

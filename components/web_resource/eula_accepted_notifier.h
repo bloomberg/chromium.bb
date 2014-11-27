@@ -10,6 +10,8 @@
 
 class PrefService;
 
+namespace web_resource {
+
 // Helper class for querying the EULA accepted state and receiving a
 // notification when the EULA is accepted.
 class EulaAcceptedNotifier {
@@ -55,5 +57,7 @@ class EulaAcceptedNotifier {
 
   DISALLOW_COPY_AND_ASSIGN(EulaAcceptedNotifier);
 };
+
+}  // namespace web_resource
 
 #endif  // COMPONENTS_WEB_RESOURCE_EULA_ACCEPTED_NOTIFIER_H_

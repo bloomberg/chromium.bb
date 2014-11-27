@@ -10,6 +10,8 @@
 
 class PrefService;
 
+namespace web_resource {
+
 // A subclass of ResourceRequestAllowedNotifier used to expose some
 // functionality for testing.
 //
@@ -47,5 +49,7 @@ class TestRequestAllowedNotifier : public ResourceRequestAllowedNotifier {
 
   DISALLOW_COPY_AND_ASSIGN(TestRequestAllowedNotifier);
 };
+
+}  // namespace web_resource
 
 #endif  // COMPONENTS_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_TEST_UTIL_H_

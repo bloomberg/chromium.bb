@@ -9,6 +9,8 @@
 #include "base/prefs/pref_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
 
+namespace web_resource {
+
 EulaAcceptedNotifier::EulaAcceptedNotifier(PrefService* local_state)
     : local_state_(local_state), observer_(nullptr) {
 }
@@ -63,3 +65,5 @@ void EulaAcceptedNotifier::OnPrefChanged() {
   DCHECK(local_state_->GetBoolean(prefs::kEulaAccepted));
   observer_->OnEulaAccepted();
 }
+
+}  // namespace web_resource

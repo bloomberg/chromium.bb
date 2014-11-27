@@ -6,6 +6,8 @@
 
 #include "base/command_line.h"
 
+namespace web_resource {
+
 ResourceRequestAllowedNotifier::ResourceRequestAllowedNotifier(
     PrefService* local_state,
     const char* disable_network_switch)
@@ -41,8 +43,10 @@ void ResourceRequestAllowedNotifier::Init(Observer* observer) {
 
 ResourceRequestAllowedNotifier::State
 ResourceRequestAllowedNotifier::GetResourceRequestsAllowedState() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(disable_network_switch_))
+  if (disable_network_switch_ &&
+      CommandLine::ForCurrentProcess()->HasSwitch(disable_network_switch_)) {
     return DISALLOWED_COMMAND_LINE_DISABLED;
+  }
 
   // The observer requested permission. Return the current criteria state and
   // set a flag to remind this class to notify the observer once the criteria
@@ -116,3 +120,5 @@ void ResourceRequestAllowedNotifier::OnConnectionTypeChanged(
     DVLOG(1) << "Network went offline.";
   }
 }
+
+}  // namespace web_resource

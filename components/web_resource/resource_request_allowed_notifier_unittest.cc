@@ -7,6 +7,8 @@
 #include "components/web_resource/resource_request_allowed_notifier_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace web_resource {
+
 // Override NetworkChangeNotifier to simulate connection type changes for tests.
 class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
  public:
@@ -272,3 +274,5 @@ TEST_F(ResourceRequestAllowedNotifierTest, NoRequestNoNotifyEula) {
   SimulateEulaAccepted();
   EXPECT_FALSE(was_notified());
 }
+
+}  // namespace web_resource

@@ -10,6 +10,8 @@
 
 class PrefService;
 
+namespace web_resource {
+
 // This class informs an interested observer when resource requests over the
 // network are permitted.
 //
@@ -51,7 +53,8 @@ class ResourceRequestAllowedNotifier
   // Creates a new ResourceRequestAllowedNotifier.
   // |local_state| is the PrefService to observe.
   // |disable_network_switch| is the command line switch to disable network
-  // activity, and is expected to outlive the ResourceRequestAllowedNotifier.
+  // activity. It is expected to outlive the ResourceRequestAllowedNotifier and
+  // may be null.
   ResourceRequestAllowedNotifier(PrefService* local_state,
                                  const char* disable_network_switch);
   ~ResourceRequestAllowedNotifier() override;
@@ -119,5 +122,7 @@ class ResourceRequestAllowedNotifier
 
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestAllowedNotifier);
 };
+
+}  // namespace web_resource
 
 #endif  // COMPONENTS_WEB_RESOURCE_RESOURCE_REQUEST_ALLOWED_NOTIFIER_H_
