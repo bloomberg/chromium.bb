@@ -61,6 +61,7 @@ weston-view
 weston-keyboard
 libtoytoolkit.a
 weston-desktop-shell
+weston-ivi-shell-user-interface
 weston-info
 weston-screensaver
 weston-screenshooter
