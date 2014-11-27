@@ -238,19 +238,8 @@ IdlTypeBase.cpp_type_args = cpp_type
 IdlUnionType.cpp_type_initializer = ''
 
 
-def native_array_length_check_type(idl_type):
-    if idl_type.native_array_element_type:
-        if (idl_type.native_array_element_type.base_type in CPP_TYPE_SAME_AS_IDL_TYPE or
-            idl_type.native_array_element_type.base_type in CPP_INT_TYPES or
-            idl_type.native_array_element_type.base_type in CPP_UNSIGNED_TYPES):
-            return idl_type.native_array_element_type.cpp_type
-    return None
-
-
 IdlArrayOrSequenceType.native_array_element_type = property(
     lambda self: self.element_type)
-IdlTypeBase.native_array_length_check_type = None
-IdlArrayOrSequenceType.native_array_length_check_type = property(native_array_length_check_type)
 
 
 def cpp_template_type(template, inner_type):

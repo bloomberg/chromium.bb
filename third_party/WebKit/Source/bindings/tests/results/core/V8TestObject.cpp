@@ -6183,10 +6183,6 @@ static void voidMethodArrayLongArgMethod(const v8::FunctionCallbackInfo<v8::Valu
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<int> arrayLongArg;
     {
-        if (v8::Local<v8::Array>::Cast(info[0])->Length() >  WTF::DefaultAllocatorQuantizer::kMaxUnquantizedAllocation / sizeof(int)) {
-            exceptionState.throwTypeError("Array length exceeds supported limit.");
-            return;
-        }
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arrayLongArg, toImplArray<int>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     }
     impl->voidMethodArrayLongArg(arrayLongArg);
@@ -6295,10 +6291,6 @@ static void voidMethodSequenceLongArgMethod(const v8::FunctionCallbackInfo<v8::V
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<int> longSequenceArg;
     {
-        if (v8::Local<v8::Array>::Cast(info[0])->Length() >  WTF::DefaultAllocatorQuantizer::kMaxUnquantizedAllocation / sizeof(int)) {
-            exceptionState.throwTypeError("Array length exceeds supported limit.");
-            return;
-        }
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longSequenceArg, toImplArray<int>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     }
     impl->voidMethodSequenceLongArg(longSequenceArg);
@@ -7901,10 +7893,6 @@ static void overloadedMethodD2Method(const v8::FunctionCallbackInfo<v8::Value>& 
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     Vector<int> longArrayArg;
     {
-        if (v8::Local<v8::Array>::Cast(info[0])->Length() >  WTF::DefaultAllocatorQuantizer::kMaxUnquantizedAllocation / sizeof(int)) {
-            exceptionState.throwTypeError("Array length exceeds supported limit.");
-            return;
-        }
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArrayArg, toImplArray<int>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     }
     impl->overloadedMethodD(longArrayArg);

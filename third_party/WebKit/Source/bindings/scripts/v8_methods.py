@@ -239,7 +239,6 @@ def argument_context(interface, method, argument, index):
         'is_variadic_wrapper_type': is_variadic_wrapper_type,
         'is_wrapper_type': idl_type.is_wrapper_type,
         'name': argument.name,
-        'native_array_length_check_type': idl_type.native_array_length_check_type,
         'private_script_cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(
             argument.name, isolate='scriptState->isolate()',
             creation_context='scriptState->context()->Global()'),
