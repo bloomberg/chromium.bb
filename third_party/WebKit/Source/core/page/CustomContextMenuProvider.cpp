@@ -80,7 +80,7 @@ void CustomContextMenuProvider::appendMenuItem(HTMLMenuItemElement* menuItem, Co
         return;
 
     m_menuItems.append(menuItem);
-    contextMenu.appendItem(ContextMenuItem(ActionType, static_cast<ContextMenuAction>(ContextMenuItemBaseCustomTag + m_menuItems.size() - 1), labelString));
+    contextMenu.appendItem(ContextMenuItem(ActionType, static_cast<ContextMenuAction>(ContextMenuItemBaseCustomTag + m_menuItems.size() - 1), labelString, !menuItem->fastHasAttribute(disabledAttr), false));
 }
 
 void CustomContextMenuProvider::populateContextMenuItems(const HTMLMenuElement& menu, ContextMenu& contextMenu)
