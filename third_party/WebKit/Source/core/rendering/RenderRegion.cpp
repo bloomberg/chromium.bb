@@ -114,30 +114,6 @@ void RenderRegion::layoutBlock(bool relayoutChildren)
     // RenderFlowThread itself).
 }
 
-void RenderRegion::paintInvalidationOfFlowThreadContentRectangle(const LayoutRect& paintInvalidationRect, const LayoutRect& flowThreadPortionRect, const LayoutRect& flowThreadPortionOverflowRect, const LayoutPoint& regionLocation)
-{
-    ASSERT(isValid());
-
-    // We only have to issue a paint invalidation in this region if the region rect intersects the paint invalidation rect.
-    LayoutRect flippedFlowThreadPortionRect(flowThreadPortionRect);
-    LayoutRect flippedFlowThreadPortionOverflowRect(flowThreadPortionOverflowRect);
-    flowThread()->flipForWritingMode(flippedFlowThreadPortionRect); // Put the region rects into physical coordinates.
-    flowThread()->flipForWritingMode(flippedFlowThreadPortionOverflowRect);
-
-    LayoutRect clippedRect(paintInvalidationRect);
-    clippedRect.intersect(flippedFlowThreadPortionOverflowRect);
-    if (clippedRect.isEmpty())
-        return;
-
-    // Put the region rect into the region's physical coordinate space.
-    clippedRect.setLocation(regionLocation + (clippedRect.location() - flippedFlowThreadPortionRect.location()));
-
-    // Now switch to the region's writing mode coordinate space and let it issue paint invalidations itself.
-    flipForWritingMode(clippedRect);
-
-    invalidatePaintRectangle(clippedRect);
-}
-
 void RenderRegion::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     if (!isValid()) {

@@ -1063,16 +1063,6 @@ const RenderLayerModelObject* RenderObject::enclosingCompositedContainer() const
 
 const RenderLayerModelObject* RenderObject::adjustCompositedContainerForSpecialAncestors(const RenderLayerModelObject* paintInvalidationContainer) const
 {
-    // If we have a flow thread, then we need to do individual paint invalidations within the RenderRegions instead.
-    // Return the flow thread as a paint invalidation container in order to create a chokepoint that allows us to change
-    // paint invalidation to do individual region paint invalidations.
-    if (RenderFlowThread* parentRenderFlowThread = flowThreadContainingBlock()) {
-        // If we have already found a paint invalidation container then we will invalidate paints in that container only if it is part of the same
-        // flow thread. Otherwise we will need to catch the paint invalidation call and send it to the flow thread.
-        if (!paintInvalidationContainer || paintInvalidationContainer->flowThreadContainingBlock() != parentRenderFlowThread)
-            paintInvalidationContainer = parentRenderFlowThread;
-    }
-
     if (paintInvalidationContainer)
         return paintInvalidationContainer;
 
@@ -1140,11 +1130,6 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::invalidatePaintUsingContainer()",
         "object", this->debugName().ascii(),
         "info", jsonObjectForPaintInvalidationInfo(r, paintInvalidationReasonToString(invalidationReason)));
-
-    if (paintInvalidationContainer->isRenderFlowThread()) {
-        toRenderFlowThread(paintInvalidationContainer)->paintInvalidationRectangleInRegions(r);
-        return;
-    }
 
     if (paintInvalidationContainer->isRenderView()) {
         toRenderView(paintInvalidationContainer)->invalidatePaintForRectangle(r, invalidationReason);
@@ -2037,20 +2022,15 @@ FloatPoint RenderObject::localToInvalidationBackingPoint(const LayoutPoint& loca
 {
     const RenderLayerModelObject* paintInvalidationContainer = containerForPaintInvalidation();
     ASSERT(paintInvalidationContainer);
-    RenderLayer* layer = paintInvalidationContainer->layer();
-    ASSERT(layer);
+    ASSERT(paintInvalidationContainer->layer());
+    ASSERT(paintInvalidationContainer->layer()->compositingState() != NotComposited);
 
     if (backingLayer)
-        *backingLayer = layer;
+        *backingLayer = paintInvalidationContainer->layer();
     FloatPoint containerPoint = localToContainerPoint(FloatPoint(localPoint), paintInvalidationContainer, TraverseDocumentBoundaries);
-
-    if (layer->compositingState() == NotComposited) // This can happen for RenderFlowThread.
-        return containerPoint;
-
     RenderLayer::mapPointToPaintBackingCoordinates(paintInvalidationContainer, containerPoint);
     return containerPoint;
 }
-
 
 LayoutSize RenderObject::offsetFromContainer(const RenderObject* o, const LayoutPoint& point, bool* offsetDependsOnPoint) const
 {

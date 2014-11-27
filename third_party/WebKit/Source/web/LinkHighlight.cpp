@@ -107,9 +107,8 @@ void LinkHighlight::releaseResources()
 
 void LinkHighlight::attachLinkHighlightToCompositingLayer(const RenderLayerModelObject* paintInvalidationContainer)
 {
-    // FIXME: there should always be a GraphicsLayer. See https://code.google.com/p/chromium/issues/detail?id=359877.
     GraphicsLayer* newGraphicsLayer = paintInvalidationContainer->layer()->graphicsLayerBacking();
-    if (newGraphicsLayer && !newGraphicsLayer->drawsContent())
+    if (!newGraphicsLayer->drawsContent())
         newGraphicsLayer = paintInvalidationContainer->layer()->graphicsLayerBackingForScrolling();
     if (!newGraphicsLayer)
         return;

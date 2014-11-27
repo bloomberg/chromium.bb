@@ -116,6 +116,13 @@ void RenderFlowThread::validateRegions()
     updateRegionsFlowThreadPortionRect();
 }
 
+void RenderFlowThread::mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+{
+    ASSERT(paintInvalidationContainer != this); // A flow thread should never be an invalidation container.
+    rect = fragmentsBoundingBox(rect);
+    RenderBlockFlow::mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, paintInvalidationState);
+}
+
 void RenderFlowThread::layout()
 {
     m_pageLogicalSizeChanged = m_regionsInvalidated && everHadLayout();
@@ -142,30 +149,6 @@ bool RenderFlowThread::nodeAtPoint(const HitTestRequest& request, HitTestResult&
     if (hitTestAction == HitTestBlockBackground)
         return false;
     return RenderBlockFlow::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, hitTestAction);
-}
-
-bool RenderFlowThread::shouldIssuePaintInvalidations(const LayoutRect& r) const
-{
-    if (view()->document().printing() || r.isEmpty())
-        return false;
-
-    return true;
-}
-
-void RenderFlowThread::paintInvalidationRectangleInRegions(const LayoutRect& paintInvalidationRect) const
-{
-    if (!shouldIssuePaintInvalidations(paintInvalidationRect) || !hasValidRegionInfo())
-        return;
-
-    // We can't use currentFlowThread as it is possible to have interleaved flow threads and the wrong one could be used.
-    // Let each columnSet figure out the proper enclosing flow thread.
-    CurrentRenderFlowThreadDisabler disabler(view());
-
-    for (RenderMultiColumnSetList::const_iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
-        RenderMultiColumnSet* columnSet = *iter;
-
-        columnSet->paintInvalidationForFlowThreadContent(paintInvalidationRect);
-    }
 }
 
 LayoutUnit RenderFlowThread::pageLogicalHeightForOffset(LayoutUnit offset)
@@ -241,7 +224,7 @@ void RenderFlowThread::collectLayerFragments(LayerFragments& layerFragments, con
     }
 }
 
-LayoutRect RenderFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundingBox)
+LayoutRect RenderFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundingBox) const
 {
     ASSERT(!m_regionsInvalidated);
 

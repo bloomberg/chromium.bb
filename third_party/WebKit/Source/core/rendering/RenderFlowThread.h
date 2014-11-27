@@ -56,6 +56,8 @@ public:
     virtual bool isRenderMultiColumnFlowThread() const { return false; }
     virtual bool isRenderPagedFlowThread() const { return false; }
 
+    virtual bool supportsPaintInvalidationStateCachedOffsets() const override { return false; }
+
     virtual void layout() override;
 
     // Always create a RenderLayer for the RenderFlowThread so that we
@@ -77,7 +79,7 @@ public:
     void invalidateRegions();
     bool hasValidRegionInfo() const { return !m_regionsInvalidated && !m_multiColumnSetList.isEmpty(); }
 
-    void paintInvalidationRectangleInRegions(const LayoutRect&) const;
+    virtual void mapRectToPaintInvalidationBacking(const RenderLayerModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
 
     LayoutUnit pageLogicalHeightForOffset(LayoutUnit);
     LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit, PageBoundaryRule = IncludePageBoundary);
@@ -97,7 +99,7 @@ public:
     bool pageLogicalSizeChanged() const { return m_pageLogicalSizeChanged; }
 
     void collectLayerFragments(LayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect);
-    LayoutRect fragmentsBoundingBox(const LayoutRect& layerBoundingBox);
+    LayoutRect fragmentsBoundingBox(const LayoutRect& layerBoundingBox) const;
 
     LayoutPoint flowThreadPointToVisualPoint(const LayoutPoint& flowThreadPoint) const
     {
@@ -115,7 +117,6 @@ protected:
     virtual const char* renderName() const = 0;
 
     void updateRegionsFlowThreadPortionRect();
-    bool shouldIssuePaintInvalidations(const LayoutRect&) const;
 
     virtual RenderMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const = 0;
 

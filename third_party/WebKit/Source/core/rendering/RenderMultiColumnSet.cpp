@@ -429,44 +429,6 @@ void RenderMultiColumnSet::paintObject(const PaintInfo& paintInfo, const LayoutP
     MultiColumnSetPainter(*this).paintObject(paintInfo, paintOffset);
 }
 
-void RenderMultiColumnSet::paintInvalidationForFlowThreadContent(const LayoutRect& paintInvalidationRect)
-{
-    // Figure out the start and end columns and only check within that range so that we don't walk the
-    // entire column set. Put the paint invalidation rect into flow thread coordinates by flipping it first.
-    LayoutRect flowThreadPaintInvalidationRect(paintInvalidationRect);
-    flowThread()->flipForWritingMode(flowThreadPaintInvalidationRect);
-
-    // Now we can compare this rect with the flow thread portions owned by each column. First let's
-    // just see if the paint invalidation rect intersects our flow thread portion at all.
-    LayoutRect clippedRect(flowThreadPaintInvalidationRect);
-    clippedRect.intersect(RenderRegion::flowThreadPortionOverflowRect());
-    if (clippedRect.isEmpty())
-        return;
-
-    // Now we know we intersect at least one column. Let's figure out the logical top and logical
-    // bottom of the area in which we're issuing paint invalidations.
-    LayoutUnit paintInvalidationLogicalTop = isHorizontalWritingMode() ? flowThreadPaintInvalidationRect.y() : flowThreadPaintInvalidationRect.x();
-    LayoutUnit paintInvalidationLogicalBottom = (isHorizontalWritingMode() ? flowThreadPaintInvalidationRect.maxY() : flowThreadPaintInvalidationRect.maxX()) - 1;
-
-    unsigned startColumn = columnIndexAtOffset(paintInvalidationLogicalTop);
-    unsigned endColumn = columnIndexAtOffset(paintInvalidationLogicalBottom);
-
-    LayoutUnit colGap = columnGap();
-    unsigned colCount = actualColumnCount();
-    for (unsigned i = startColumn; i <= endColumn; i++) {
-        LayoutRect colRect = columnRectAt(i);
-
-        // Get the portion of the flow thread that corresponds to this column.
-        LayoutRect flowThreadPortion = flowThreadPortionRectAt(i);
-
-        // Now get the overflow rect that corresponds to the column.
-        LayoutRect flowThreadOverflowPortion = flowThreadPortionOverflowRect(flowThreadPortion, i, colCount, colGap);
-
-        // Do a paint invalidation for this specific column.
-        paintInvalidationOfFlowThreadContentRectangle(paintInvalidationRect, flowThreadPortion, flowThreadOverflowPortion, colRect.location());
-    }
-}
-
 void RenderMultiColumnSet::collectLayerFragments(LayerFragments& fragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect)
 {
     // |layerBoundingBox| is in the flow thread coordinate space, relative to the top/left edge of
