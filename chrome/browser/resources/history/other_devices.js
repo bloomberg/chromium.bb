@@ -137,6 +137,7 @@ DeviceContextMenuController.prototype.onOpenAll_ = function(e) {
 DeviceContextMenuController.prototype.updateMenuItems_ = function() {
   this.collapseItem_.hidden = this.session_.collapsed;
   this.expandItem_.hidden = !this.session_.collapsed;
+  this.menu.selectedItem = this.menu.querySelector(':not([hidden])');
 };
 
 
