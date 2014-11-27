@@ -95,6 +95,10 @@ static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::V
             impl->voidMethodArrayOfLongsArg();
             return;
         }
+        if (v8::Local<v8::Array>::Cast(info[0])->Length() >  WTF::DefaultAllocatorQuantizer::kMaxUnquantizedAllocation / sizeof(int)) {
+            exceptionState.throwTypeError("Array length exceeds supported limit.");
+            return;
+        }
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(arrayOfLongsArg, toImplArray<int>(info[0], 1, info.GetIsolate(), exceptionState), exceptionState);
     }
     impl->voidMethodArrayOfLongsArg(arrayOfLongsArg);

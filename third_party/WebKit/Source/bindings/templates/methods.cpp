@@ -120,6 +120,12 @@ if (info.Length() > {{argument.index}} && {% if argument.is_nullable %}!isUndefi
     return;
 }
 {% endif %}{# argument.has_type_checking_interface #}
+{% if argument.native_array_length_check_type %}
+if (v8::Local<v8::Array>::Cast(info[{{argument.index}}])->Length() >  WTF::DefaultAllocatorQuantizer::kMaxUnquantizedAllocation / sizeof({{argument.native_array_length_check_type}})) {
+    exceptionState.throwTypeError("Array length exceeds supported limit.");
+    return;
+}
+{% endif %}{# argument.native_array_length_check_type #}
 {% if argument.is_callback_interface %}
 {# FIXME: remove EventListener special case #}
 {% if argument.idl_type == 'EventListener' %}
