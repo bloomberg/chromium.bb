@@ -114,8 +114,8 @@ private:
     WillBeHeapHashSet<RefPtrWillBeMember<AnimationPlayer>> m_playersNeedingUpdate;
     WillBeHeapHashSet<RawPtrWillBeWeakMember<AnimationPlayer>> m_players;
 
-    double m_currentTimeSnapshot;
-    double m_rawCurrentTimeSnapshot;
+    double m_documentCurrentTimeSnapshot;
+    double m_zeroTimeOffset;
     double m_playbackRate;
 
     friend class SMILTimeContainer;

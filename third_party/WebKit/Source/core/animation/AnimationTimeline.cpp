@@ -63,8 +63,8 @@ PassRefPtrWillBeRawPtr<AnimationTimeline> AnimationTimeline::create(Document* do
 AnimationTimeline::AnimationTimeline(Document* document, PassOwnPtrWillBeRawPtr<PlatformTiming> timing)
     : m_document(document)
     , m_zeroTime(0)
-    , m_currentTimeSnapshot(0)
-    , m_rawCurrentTimeSnapshot(0)
+    , m_documentCurrentTimeSnapshot(0)
+    , m_zeroTimeOffset(0)
     , m_playbackRate(1)
 {
     if (!timing)
@@ -180,7 +180,7 @@ double AnimationTimeline::zeroTime()
     if (!m_zeroTime && m_document && m_document->loader()) {
         m_zeroTime = m_document->loader()->timing()->referenceMonotonicTime();
     }
-    return m_zeroTime;
+    return m_zeroTime + m_zeroTimeOffset;
 }
 
 double AnimationTimeline::currentTime(bool& isNull)
@@ -195,7 +195,8 @@ double AnimationTimeline::currentTimeInternal(bool& isNull)
         return std::numeric_limits<double>::quiet_NaN();
     }
     // New currentTime = currentTime when the playback rate was last changed + time delta since then * playback rate
-    double result = m_currentTimeSnapshot + (m_document->animationClock().currentTime() - m_rawCurrentTimeSnapshot - zeroTime()) * playbackRate();
+    double delta = document()->animationClock().currentTime() - m_documentCurrentTimeSnapshot;
+    double result = m_documentCurrentTimeSnapshot - zeroTime() + delta * playbackRate();
     isNull = std::isnan(result);
     return result;
 }
@@ -243,8 +244,11 @@ void AnimationTimeline::setOutdatedAnimationPlayer(AnimationPlayer* player)
 
 void AnimationTimeline::setPlaybackRate(double playbackRate)
 {
-    m_currentTimeSnapshot = currentTimeInternal();
-    m_rawCurrentTimeSnapshot = m_document->animationClock().currentTime() - zeroTime();
+    // FIXME: floating point error difference between current time before and after the playback rate changes
+    if (!m_documentCurrentTimeSnapshot)
+        m_documentCurrentTimeSnapshot = m_zeroTime;
+    m_zeroTimeOffset += (document()->animationClock().currentTime() - m_documentCurrentTimeSnapshot) * (1 - m_playbackRate);
+    m_documentCurrentTimeSnapshot = document()->animationClock().currentTime();
     m_playbackRate = playbackRate;
     for (const auto& player : m_players) {
         player->setCompositorPending(true);

@@ -187,86 +187,108 @@ TEST_F(AnimationAnimationTimelineTest, ZeroTime)
     EXPECT_FALSE(isNull);
 }
 
-TEST_F(AnimationAnimationTimelineTest, PlaybackRateForInspectorNormal)
+TEST_F(AnimationAnimationTimelineTest, PlaybackRateNormal)
 {
     timeline = AnimationTimeline::create(document.get());
+    double zeroTime = timeline->zeroTime();
     bool isNull;
 
-    document->animationClock().updateTime(100);
     timeline->setPlaybackRate(1.0);
+    EXPECT_EQ(1.0, timeline->playbackRate());
+    document->animationClock().updateTime(100);
+    EXPECT_EQ(zeroTime, timeline->zeroTime());
     EXPECT_EQ(100, timeline->currentTimeInternal());
     EXPECT_EQ(100, timeline->currentTimeInternal(isNull));
     EXPECT_FALSE(isNull);
 
     document->animationClock().updateTime(200);
+    EXPECT_EQ(zeroTime, timeline->zeroTime());
     EXPECT_EQ(200, timeline->currentTimeInternal());
     EXPECT_EQ(200, timeline->currentTimeInternal(isNull));
     EXPECT_FALSE(isNull);
 }
 
-TEST_F(AnimationAnimationTimelineTest, PlaybackRateForInspectorPause)
+TEST_F(AnimationAnimationTimelineTest, PlaybackRatePause)
 {
     timeline = AnimationTimeline::create(document.get());
+    double zeroTime = timeline->zeroTime();
     bool isNull;
 
     document->animationClock().updateTime(100);
+    EXPECT_EQ(zeroTime, timeline->zeroTime());
     EXPECT_EQ(100, timeline->currentTimeInternal());
     EXPECT_EQ(100, timeline->currentTimeInternal(isNull));
     EXPECT_FALSE(isNull);
 
     timeline->setPlaybackRate(0.0);
+    EXPECT_EQ(0.0, timeline->playbackRate());
     document->animationClock().updateTime(200);
+    EXPECT_EQ(zeroTime, timeline->zeroTime());
     EXPECT_EQ(100, timeline->currentTimeInternal());
     EXPECT_EQ(100, timeline->currentTimeInternal(isNull));
 
     timeline->setPlaybackRate(1.0);
+    EXPECT_EQ(1.0, timeline->playbackRate());
     document->animationClock().updateTime(400);
+    EXPECT_EQ(zeroTime + 100, timeline->zeroTime());
     EXPECT_EQ(300, timeline->currentTimeInternal());
     EXPECT_EQ(300, timeline->currentTimeInternal(isNull));
 
     EXPECT_FALSE(isNull);
 }
 
-TEST_F(AnimationAnimationTimelineTest, PlaybackRateForInspectorSlow)
+TEST_F(AnimationAnimationTimelineTest, PlaybackRateSlow)
 {
     timeline = AnimationTimeline::create(document.get());
+    double zeroTime = timeline->zeroTime();
     bool isNull;
 
     document->animationClock().updateTime(100);
+    EXPECT_EQ(zeroTime, timeline->zeroTime());
     EXPECT_EQ(100, timeline->currentTimeInternal());
     EXPECT_EQ(100, timeline->currentTimeInternal(isNull));
     EXPECT_FALSE(isNull);
 
     timeline->setPlaybackRate(0.5);
+    EXPECT_EQ(0.5, timeline->playbackRate());
     document->animationClock().updateTime(300);
+    EXPECT_EQ(zeroTime, timeline->zeroTime());
     EXPECT_EQ(200, timeline->currentTimeInternal());
     EXPECT_EQ(200, timeline->currentTimeInternal(isNull));
 
     timeline->setPlaybackRate(1.0);
+    EXPECT_EQ(1.0, timeline->playbackRate());
     document->animationClock().updateTime(400);
+    EXPECT_EQ(zeroTime + 100, timeline->zeroTime());
     EXPECT_EQ(300, timeline->currentTimeInternal());
     EXPECT_EQ(300, timeline->currentTimeInternal(isNull));
 
     EXPECT_FALSE(isNull);
 }
 
-TEST_F(AnimationAnimationTimelineTest, PlaybackRateForInspectorFast)
+TEST_F(AnimationAnimationTimelineTest, PlaybackRateFast)
 {
     timeline = AnimationTimeline::create(document.get());
+    double zeroTime = timeline->zeroTime();
     bool isNull;
 
     document->animationClock().updateTime(100);
+    EXPECT_EQ(zeroTime, timeline->zeroTime());
     EXPECT_EQ(100, timeline->currentTimeInternal());
     EXPECT_EQ(100, timeline->currentTimeInternal(isNull));
     EXPECT_FALSE(isNull);
 
-    timeline->setPlaybackRate(2);
+    timeline->setPlaybackRate(2.0);
+    EXPECT_EQ(2.0, timeline->playbackRate());
     document->animationClock().updateTime(300);
+    EXPECT_EQ(zeroTime, timeline->zeroTime());
     EXPECT_EQ(500, timeline->currentTimeInternal());
     EXPECT_EQ(500, timeline->currentTimeInternal(isNull));
 
     timeline->setPlaybackRate(1.0);
+    EXPECT_EQ(1.0, timeline->playbackRate());
     document->animationClock().updateTime(400);
+    EXPECT_EQ(zeroTime - 200, timeline->zeroTime());
     EXPECT_EQ(600, timeline->currentTimeInternal());
     EXPECT_EQ(600, timeline->currentTimeInternal(isNull));
 
