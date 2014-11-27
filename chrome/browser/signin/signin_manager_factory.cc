@@ -7,6 +7,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -21,6 +22,7 @@ SigninManagerFactory::SigninManagerFactory()
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ChromeSigninClientFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  DependsOn(AccountTrackerServiceFactory::GetInstance());
 }
 
 SigninManagerFactory::~SigninManagerFactory() {
