@@ -30,6 +30,7 @@ public:
     virtual void setFrontend(InspectorFrontend*) override;
     virtual void clearFrontend() override;
     void reset();
+    virtual void restore() override;
 
     // Protocol method implementations.
     virtual void getAnimationPlayersForNode(ErrorString*, int nodeId, bool includeSubtreeAnimations, RefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> >& animationPlayersArray) override;
@@ -37,6 +38,14 @@ public:
     virtual void playAnimationPlayer(ErrorString*, const String& id, RefPtr<TypeBuilder::Animation::AnimationPlayer>&) override;
     virtual void setAnimationPlayerCurrentTime(ErrorString*, const String& id, double currentTime, RefPtr<TypeBuilder::Animation::AnimationPlayer>&) override;
     virtual void getAnimationPlayerState(ErrorString*, const String& id, double* currentTime, bool* isRunning) override;
+    virtual void startListening(ErrorString*, int nodeId, bool includeSubtreeAnimations) override;
+    virtual void stopListening(ErrorString*) override;
+
+    // API for InspectorInstrumentation
+    void didCreateAnimationPlayer(AnimationPlayer&);
+
+    // API for InspectorFrontend
+    virtual void enable(ErrorString*) override;
 
     // Methods for other agents to use.
     AnimationPlayer* assertAnimationPlayer(ErrorString*, const String& id);
@@ -53,6 +62,9 @@ private:
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     InspectorFrontend::Animation* m_frontend;
     WillBeHeapHashMap<String, RefPtrWillBeMember<AnimationPlayer> > m_idToAnimationPlayer;
+
+    RawPtrWillBeMember<Element> m_element;
+    bool m_includeSubtree;
 };
 
 }

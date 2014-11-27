@@ -17,8 +17,13 @@
 #include "core/css/CSSKeyframesRule.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorNodeIds.h"
+#include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorStyleSheet.h"
 #include "platform/Decimal.h"
+
+namespace AnimationAgentState {
+static const char animationAgentEnabled[] = "animationAgentEnabled";
+}
 
 namespace blink {
 
@@ -26,6 +31,7 @@ InspectorAnimationAgent::InspectorAnimationAgent(InspectorDOMAgent* domAgent)
     : InspectorBaseAgent<InspectorAnimationAgent>("Animation")
     , m_domAgent(domAgent)
     , m_frontend(0)
+    , m_element(nullptr)
 {
 }
 
@@ -36,6 +42,7 @@ void InspectorAnimationAgent::setFrontend(InspectorFrontend* frontend)
 
 void InspectorAnimationAgent::clearFrontend()
 {
+    m_instrumentingAgents->setInspectorAnimationAgent(0);
     m_frontend = nullptr;
     reset();
 }
@@ -43,6 +50,20 @@ void InspectorAnimationAgent::clearFrontend()
 void InspectorAnimationAgent::reset()
 {
     m_idToAnimationPlayer.clear();
+}
+
+void InspectorAnimationAgent::restore()
+{
+    if (m_state->getBoolean(AnimationAgentState::animationAgentEnabled)) {
+        ErrorString error;
+        enable(&error);
+    }
+}
+
+void InspectorAnimationAgent::enable(ErrorString*)
+{
+    m_state->setBoolean(AnimationAgentState::animationAgentEnabled, true);
+    m_instrumentingAgents->setInspectorAnimationAgent(this);
 }
 
 PassRefPtr<TypeBuilder::Animation::AnimationNode> InspectorAnimationAgent::buildObjectForAnimationNode(AnimationNode* animationNode)
@@ -223,6 +244,35 @@ void InspectorAnimationAgent::getAnimationPlayerState(ErrorString* errorString, 
         return;
     *currentTime = player->currentTime();
     *isRunning = player->playing();
+}
+
+void InspectorAnimationAgent::startListening(ErrorString* errorString, int nodeId, bool includeSubtreeAnimations)
+{
+    Element* element = m_domAgent->assertElement(errorString, nodeId);
+    if (!element)
+        return;
+    m_element = element;
+    m_includeSubtree = includeSubtreeAnimations;
+}
+
+void InspectorAnimationAgent::stopListening(ErrorString*)
+{
+    m_element = 0;
+}
+
+void InspectorAnimationAgent::didCreateAnimationPlayer(AnimationPlayer& player)
+{
+    if (!m_element)
+        return;
+    Animation* animation = toAnimation(player.source());
+
+    bool inSubtree = m_includeSubtree ? m_element->contains(animation->target()) : m_element->isSameNode(animation->target());
+    if (!inSubtree)
+        return;
+
+    m_idToAnimationPlayer.set(playerId(player), &player);
+    RefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = buildObjectForKeyframesRule(player);
+    m_frontend->animationPlayerCreated(buildObjectForAnimationPlayer(player, keyframeRule));
 }
 
 AnimationPlayer* InspectorAnimationAgent::assertAnimationPlayer(ErrorString* errorString, const String& id)
