@@ -11,6 +11,26 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 
+DROP TABLE IF EXISTS `annotationsTable`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `annotationsTable` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `build_id` int(11) NOT NULL,
+  `last_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `last_annotator` varchar(80) DEFAULT NULL,
+  `failure_category` enum('bad_cl','bug_in_tot','merge_conflict','tree_closed','scheduled_abort','cl_not_ready','bad_chrome','infra_failure','test_flake','gerrit_failure','gs_failure','lab_failure','bad_binary_package','build_flake','mystery') DEFAULT 'mystery',
+  `failure_message` varchar(1024) DEFAULT NULL,
+  `blame_url` varchar(512) DEFAULT NULL,
+  `notes` varchar(1024) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `build_id` (`build_id`),
+  KEY `last_updated` (`last_updated`),
+  CONSTRAINT `annotationsTable_ibfk_1` FOREIGN KEY (`build_id`) REFERENCES `buildTable` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
 DROP TABLE IF EXISTS `boardPerBuildTable`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
