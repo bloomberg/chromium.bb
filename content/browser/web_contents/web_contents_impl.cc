@@ -3905,10 +3905,13 @@ WebPreferences WebContentsImpl::ComputeWebkitPrefs() {
 
 int WebContentsImpl::CreateSwappedOutRenderView(
     SiteInstance* instance) {
-  return GetRenderManager()->CreateRenderFrame(
-      instance, MSG_ROUTING_NONE, CREATE_RF_SWAPPED_OUT |
-                                      CREATE_RF_FOR_MAIN_FRAME_NAVIGATION |
-                                      CREATE_RF_HIDDEN);
+  int render_view_routing_id = MSG_ROUTING_NONE;
+  GetRenderManager()->CreateRenderFrame(
+      instance, nullptr, MSG_ROUTING_NONE,
+      CREATE_RF_SWAPPED_OUT | CREATE_RF_FOR_MAIN_FRAME_NAVIGATION |
+          CREATE_RF_HIDDEN,
+      &render_view_routing_id);
+  return render_view_routing_id;
 }
 
 void WebContentsImpl::OnUserGesture() {
@@ -4080,17 +4083,22 @@ int WebContentsImpl::CreateOpenerRenderViews(SiteInstance* instance) {
 
   // Create a swapped out RenderView in the given SiteInstance if none exists,
   // setting its opener to the given route_id.  Return the new view's route_id.
-  return GetRenderManager()->CreateRenderFrame(
-      instance, opener_route_id, CREATE_RF_FOR_MAIN_FRAME_NAVIGATION |
-                                     CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN);
+  int render_view_routing_id = MSG_ROUTING_NONE;
+  GetRenderManager()->CreateRenderFrame(instance, nullptr, opener_route_id,
+                                        CREATE_RF_FOR_MAIN_FRAME_NAVIGATION |
+                                            CREATE_RF_SWAPPED_OUT |
+                                            CREATE_RF_HIDDEN,
+                                        &render_view_routing_id);
+  return render_view_routing_id;
 }
 
 NavigationControllerImpl& WebContentsImpl::GetControllerForRenderManager() {
   return GetController();
 }
 
-WebUIImpl* WebContentsImpl::CreateWebUIForRenderManager(const GURL& url) {
-  return static_cast<WebUIImpl*>(CreateWebUI(url));
+scoped_ptr<WebUIImpl> WebContentsImpl::CreateWebUIForRenderManager(
+    const GURL& url) {
+  return scoped_ptr<WebUIImpl>(static_cast<WebUIImpl*>(CreateWebUI(url)));
 }
 
 NavigationEntry*

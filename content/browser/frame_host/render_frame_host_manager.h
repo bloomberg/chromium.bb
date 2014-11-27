@@ -26,14 +26,13 @@ namespace content {
 class BrowserContext;
 class CrossProcessFrameConnector;
 class CrossSiteTransferringRequest;
-class InterstitialPageImpl;
 class FrameTreeNode;
+class InterstitialPageImpl;
 class NavigationControllerImpl;
 class NavigationEntry;
 class NavigationEntryImpl;
 class RenderFrameHost;
 class RenderFrameHostDelegate;
-class RenderFrameHost;
 class RenderFrameHostImpl;
 class RenderFrameHostManagerTest;
 class RenderFrameProxyHost;
@@ -148,7 +147,8 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
     // Creates a WebUI object for the given URL if one applies. Ownership of the
     // returned pointer will be passed to the caller. If no WebUI applies,
     // returns NULL.
-    virtual WebUIImpl* CreateWebUIForRenderManager(const GURL& url) = 0;
+    virtual scoped_ptr<WebUIImpl> CreateWebUIForRenderManager(
+        const GURL& url) = 0;
 
     // Returns the navigation entry of the current navigation, or NULL if there
     // is none.
@@ -231,10 +231,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
                                    pending_and_current_web_ui_.get();
   }
 
-  // Sets the pending Web UI for the pending navigation, ensuring that the
-  // bindings are appropriate compared to |bindings|.
-  void SetPendingWebUI(const GURL& url, int bindings);
-
   // Called when we want to instruct the renderer to navigate to the given
   // navigation entry. It may create a new RenderFrameHost or re-use an existing
   // one. The RenderFrameHost to navigate will be returned. Returns NULL if one
@@ -297,11 +293,22 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // Called when a renderer sets its opener to null.
   void DidDisownOpener(RenderFrameHost* render_frame_host);
 
-  // Helper method to create and initialize a RenderFrameHost.  If |flags|
-  // has the CREATE_RF_SWAPPED_OUT bit set from the CreateRenderFrameFlags
-  // enum, it will initially be placed on the swapped out hosts list.
-  // Returns the routing id of the *view* associated with the frame.
-  int CreateRenderFrame(SiteInstance* instance, int opener_route_id, int flags);
+  // Sets the pending Web UI for the pending navigation, ensuring that the
+  // bindings are appropriate compared to |bindings|.
+  void SetPendingWebUI(const GURL& url, int bindings);
+
+  // Creates and initializes a RenderFrameHost. The |web_ui| is an optional
+  // input parameter used to double check bindings when swapping back in a
+  // previously existing RenderFrameHost. If |flags| has the
+  // CREATE_RF_SWAPPED_OUT bit set from the CreateRenderFrameFlags enum, it will
+  // initially be placed on the swapped out hosts list. If |view_routing_id_ptr|
+  // is not nullptr it will be set to the routing id of the view associated with
+  // the frame.
+  scoped_ptr<RenderFrameHostImpl> CreateRenderFrame(SiteInstance* instance,
+                                                    WebUIImpl* web_ui,
+                                                    int opener_route_id,
+                                                    int flags,
+                                                    int* view_routing_id_ptr);
 
   // Helper method to create and initialize a RenderFrameProxyHost and return
   // its routing id.
@@ -401,6 +408,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
       const GURL& new_effective_url,
       bool new_is_view_source_mode) const;
 
+  // Creates a new Web UI, ensuring that the bindings are appropriate compared
+  // to |bindings|.
+  scoped_ptr<WebUIImpl> CreateWebUI(const GURL& url, int bindings);
+
   // Returns true if it is safe to reuse the current WebUI when navigating from
   // |current_entry| to |new_url|.
   bool ShouldReuseWebUI(
@@ -435,12 +446,19 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
       SiteInstance* current_instance,
       NavigationEntry* current_entry);
 
-  // Creates a new RenderFrameHostImpl for the |new_instance| while respecting
-  // the opener route if needed and stores it in pending_render_frame_host_.
-  void CreateRenderFrameHostForNewSiteInstance(
-      SiteInstance* old_instance,
-      SiteInstance* new_instance,
-      bool is_main_frame);
+  // Creates a new RenderFrameHostImpl for the |new_instance| and assign it to
+  // |pending_render_frame_host_| while respecting the opener route if needed
+  // and stores it in pending_render_frame_host_.
+  void CreatePendingRenderFrameHost(SiteInstance* old_instance,
+                                    SiteInstance* new_instance,
+                                    bool is_main_frame);
+
+  // Ensure that we have created RFHs for the new RFH's opener chain if
+  // we are staying in the same BrowsingInstance. This allows the new RFH
+  // to send cross-process script calls to its opener(s). Returns the opener
+  // route ID to be used for the new RenderView to be created.
+  int CreateOpenerRenderViewsIfNeeded(SiteInstance* old_instance,
+                                      SiteInstance* new_instance);
 
   // Creates a RenderFrameHost and corresponding RenderViewHost if necessary.
   scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(SiteInstance* instance,
@@ -473,6 +491,10 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // RenderFrameHost has committed.  |old_render_frame_host| will either be
   // deleted or put on the pending delete list during this call.
   void SwapOutOldFrame(scoped_ptr<RenderFrameHostImpl> old_render_frame_host);
+
+  // Discards a RenderFrameHost that was never made active (for active ones
+  // SwapOutOldFrame is used instead).
+  void DiscardUnusedFrame(scoped_ptr<RenderFrameHostImpl> render_frame_host);
 
   // Holds |render_frame_host| until it can be deleted when its swap out ACK
   // arrives.

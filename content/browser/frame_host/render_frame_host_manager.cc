@@ -134,23 +134,25 @@ RenderFrameProxyHost* RenderFrameHostManager::GetProxyToParent() {
   return iter->second;
 }
 
-void RenderFrameHostManager::SetPendingWebUI(const GURL& url,
-                                             int bindings) {
-  pending_web_ui_.reset(
-      delegate_->CreateWebUIForRenderManager(url));
+void RenderFrameHostManager::SetPendingWebUI(const GURL& url, int bindings) {
+  pending_web_ui_ = CreateWebUI(url, bindings);
   pending_and_current_web_ui_.reset();
+}
+
+scoped_ptr<WebUIImpl> RenderFrameHostManager::CreateWebUI(const GURL& url,
+                                                          int bindings) {
+  scoped_ptr<WebUIImpl> new_web_ui(delegate_->CreateWebUIForRenderManager(url));
 
   // If we have assigned (zero or more) bindings to this NavigationEntry in the
   // past, make sure we're not granting it different bindings than it had
   // before.  If so, note it and don't give it any bindings, to avoid a
   // potential privilege escalation.
-  if (pending_web_ui_.get() &&
-      bindings != NavigationEntryImpl::kInvalidBindings &&
-      pending_web_ui_->GetBindings() != bindings) {
-    RecordAction(
-        base::UserMetricsAction("ProcessSwapBindingsMismatch_RVHM"));
-    pending_web_ui_.reset();
+  if (new_web_ui && bindings != NavigationEntryImpl::kInvalidBindings &&
+      new_web_ui->GetBindings() != bindings) {
+    RecordAction(base::UserMetricsAction("ProcessSwapBindingsMismatch_RVHM"));
+    return nullptr;
   }
+  return new_web_ui.Pass();
 }
 
 RenderFrameHostImpl* RenderFrameHostManager::Navigate(
@@ -554,6 +556,30 @@ void RenderFrameHostManager::SwapOutOldFrame(
     // The old RenderFrameHost will stay alive inside the proxy so that existing
     // JavaScript window references to it stay valid.
     proxy->TakeFrameHostOwnership(old_render_frame_host.Pass());
+  }
+}
+
+void RenderFrameHostManager::DiscardUnusedFrame(
+    scoped_ptr<RenderFrameHostImpl> render_frame_host) {
+  // TODO(carlosk): this code is very similar to what can be found in
+  // SwapOutOldFrame and we should see that these are unified at some point.
+
+  // If the SiteInstance for the pending RFH is being used by others don't
+  // delete the RFH. Just swap it out and it can be reused at a later point.
+  SiteInstanceImpl* site_instance = render_frame_host->GetSiteInstance();
+  if (site_instance->HasSite() && site_instance->active_frame_count() > 1) {
+    // Any currently suspended navigations are no longer needed.
+    render_frame_host->CancelSuspendedNavigations();
+
+    RenderFrameProxyHost* proxy =
+        new RenderFrameProxyHost(site_instance, frame_tree_node_);
+    proxy_hosts_[site_instance->GetId()] = proxy;
+    render_frame_host->SwapOut(proxy);
+    if (frame_tree_node_->IsMainFrame())
+      proxy->TakeFrameHostOwnership(render_frame_host.Pass());
+  } else {
+    // We won't be coming back, so delete this one.
+    render_frame_host.reset();
   }
 }
 
@@ -990,16 +1016,32 @@ const GURL& RenderFrameHostManager::GetCurrentURLForSiteInstance(
   return current_instance->GetSiteURL();
 }
 
-void RenderFrameHostManager::CreateRenderFrameHostForNewSiteInstance(
+void RenderFrameHostManager::CreatePendingRenderFrameHost(
     SiteInstance* old_instance,
     SiteInstance* new_instance,
     bool is_main_frame) {
   int create_render_frame_flags = 0;
   if (is_main_frame)
     create_render_frame_flags |= CREATE_RF_FOR_MAIN_FRAME_NAVIGATION;
-  // Ensure that we have created RFHs for the new RFH's opener chain if
-  // we are staying in the same BrowsingInstance. This allows the new RFH
-  // to send cross-process script calls to its opener(s).
+
+  if (delegate_->IsHidden())
+    create_render_frame_flags |= CREATE_RF_HIDDEN;
+
+  int opener_route_id =
+      CreateOpenerRenderViewsIfNeeded(old_instance, new_instance);
+
+  if (pending_render_frame_host_)
+    CancelPending();
+
+  // Create a non-swapped-out RFH with the given opener.
+  pending_render_frame_host_ =
+      CreateRenderFrame(new_instance, pending_web_ui(), opener_route_id,
+                        create_render_frame_flags, nullptr);
+}
+
+int RenderFrameHostManager::CreateOpenerRenderViewsIfNeeded(
+    SiteInstance* old_instance,
+    SiteInstance* new_instance) {
   int opener_route_id = MSG_ROUTING_NONE;
   if (new_instance->IsRelatedSiteInstance(old_instance)) {
     opener_route_id =
@@ -1012,17 +1054,7 @@ void RenderFrameHostManager::CreateRenderFrameHostForNewSiteInstance(
           frame_tree_node_, new_instance);
     }
   }
-
-  if (delegate_->IsHidden())
-    create_render_frame_flags |= CREATE_RF_HIDDEN;
-
-  // Create a non-swapped-out RFH with the given opener.
-  int route_id = CreateRenderFrame(new_instance, opener_route_id,
-                                   create_render_frame_flags);
-  if (route_id == MSG_ROUTING_NONE) {
-    pending_render_frame_host_.reset();
-    return;
-  }
+  return opener_route_id;
 }
 
 scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
@@ -1056,9 +1088,12 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
   return render_frame_host.Pass();
 }
 
-int RenderFrameHostManager::CreateRenderFrame(SiteInstance* instance,
-                                              int opener_route_id,
-                                              int flags) {
+scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
+    SiteInstance* instance,
+    WebUIImpl* web_ui,
+    int opener_route_id,
+    int flags,
+    int* view_routing_id_ptr) {
   bool swapped_out = !!(flags & CREATE_RF_SWAPPED_OUT);
   CHECK(instance);
   // Swapped out views should always be hidden.
@@ -1071,10 +1106,11 @@ int RenderFrameHostManager::CreateRenderFrame(SiteInstance* instance,
   }
 
   scoped_ptr<RenderFrameHostImpl> new_render_frame_host;
-  RenderFrameHostImpl* frame_to_announce = NULL;
-  int routing_id = MSG_ROUTING_NONE;
+  bool success = true;
+  if (view_routing_id_ptr)
+    *view_routing_id_ptr = MSG_ROUTING_NONE;
 
-  // We are creating a pending or swapped out RFH here.  We should never create
+  // We are creating a pending or swapped out RFH here. We should never create
   // it in the same SiteInstance as our current RFH.
   CHECK_NE(render_frame_host_->GetSiteInstance(), instance);
 
@@ -1082,9 +1118,9 @@ int RenderFrameHostManager::CreateRenderFrame(SiteInstance* instance,
   // to re-use the existing one, which has already been initialized.  We'll
   // remove it from the list of proxy hosts below if it will be active.
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
-
   if (proxy && proxy->render_frame_host()) {
-    routing_id = proxy->GetRenderViewHost()->GetRoutingID();
+    if (view_routing_id_ptr)
+      *view_routing_id_ptr = proxy->GetRenderViewHost()->GetRoutingID();
     // Delete the existing RenderFrameProxyHost, but reuse the RenderFrameHost.
     // Prevent the process from exiting while we're trying to use it.
     if (!swapped_out) {
@@ -1098,13 +1134,13 @@ int RenderFrameHostManager::CreateRenderFrame(SiteInstance* instance,
       // gets a RenderViewHost in the SiteInstance of its opener WebContents.
       // If not used in the first navigation, this RVH is swapped out and is not
       // granted bindings, so we may need to grant them when swapping it in.
-      if (pending_web_ui() &&
-          !new_render_frame_host->GetProcess()->IsIsolatedGuest()) {
-        int required_bindings = pending_web_ui()->GetBindings();
-        RenderViewHost* rvh = new_render_frame_host->render_view_host();
-        if ((rvh->GetEnabledBindings() & required_bindings) !=
-                required_bindings) {
-          rvh->AllowBindings(required_bindings);
+      if (web_ui && !new_render_frame_host->GetProcess()->IsIsolatedGuest()) {
+        int required_bindings = web_ui->GetBindings();
+        RenderViewHost* render_view_host =
+            new_render_frame_host->render_view_host();
+        if ((render_view_host->GetEnabledBindings() & required_bindings) !=
+            required_bindings) {
+          render_view_host->AllowBindings(required_bindings);
         }
       }
     }
@@ -1129,7 +1165,7 @@ int RenderFrameHostManager::CreateRenderFrame(SiteInstance* instance,
         proxy->TakeFrameHostOwnership(new_render_frame_host.Pass());
     }
 
-    bool success =
+    success =
         InitRenderView(render_view_host, opener_route_id, proxy_routing_id,
                        !!(flags & CREATE_RF_FOR_MAIN_FRAME_NAVIGATION));
     if (success) {
@@ -1141,22 +1177,24 @@ int RenderFrameHostManager::CreateRenderFrame(SiteInstance* instance,
         DCHECK(new_render_frame_host.get());
         success = InitRenderFrame(new_render_frame_host.get());
       }
-    } else if (!swapped_out && pending_render_frame_host_) {
-      CancelPending();
+      if (success) {
+        if (view_routing_id_ptr)
+          *view_routing_id_ptr = render_view_host->GetRoutingID();
+        // If a brand new RFH was created, announce it to observers.
+        if (new_render_frame_host) {
+          render_frame_delegate_->RenderFrameCreated(
+              new_render_frame_host.get());
+        }
+      }
     }
-    routing_id = render_view_host->GetRoutingID();
-    frame_to_announce = new_render_frame_host.get();
   }
 
-  // Use this as our new pending RFH if it isn't swapped out.
-  if (!swapped_out)
-    pending_render_frame_host_ = new_render_frame_host.Pass();
-
-  // If a brand new RFH was created, announce it to observers.
-  if (frame_to_announce)
-    render_frame_delegate_->RenderFrameCreated(frame_to_announce);
-
-  return routing_id;
+  // Returns the new RFH if it isn't swapped out.
+  if (success && !swapped_out) {
+    DCHECK(new_render_frame_host->GetSiteInstance() == instance);
+    return new_render_frame_host.Pass();
+  }
+  return nullptr;
 }
 
 int RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
@@ -1439,8 +1477,8 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     // otherwise CancelPending may clear the pending_web_ui_ and the page will
     // not have its bindings set appropriately.
     SetPendingWebUI(url, bindings);
-    CreateRenderFrameHostForNewSiteInstance(
-        current_instance, new_instance.get(), frame_tree_node_->IsMainFrame());
+    CreatePendingRenderFrameHost(current_instance, new_instance.get(),
+                                 frame_tree_node_->IsMainFrame());
     if (!pending_render_frame_host_.get()) {
       return NULL;
     }
@@ -1558,24 +1596,7 @@ void RenderFrameHostManager::CancelPending() {
   // We no longer need to prevent the process from exiting.
   pending_render_frame_host->GetProcess()->RemovePendingView();
 
-  // If the SiteInstance for the pending RFH is being used by others, don't
-  // delete the RFH, just swap it out and it can be reused at a later point.
-  SiteInstanceImpl* site_instance =
-      pending_render_frame_host->GetSiteInstance();
-  if (site_instance->active_frame_count() > 1) {
-    // Any currently suspended navigations are no longer needed.
-    pending_render_frame_host->CancelSuspendedNavigations();
-
-    RenderFrameProxyHost* proxy =
-        new RenderFrameProxyHost(site_instance, frame_tree_node_);
-    proxy_hosts_[site_instance->GetId()] = proxy;
-    pending_render_frame_host->SwapOut(proxy);
-    if (frame_tree_node_->IsMainFrame())
-      proxy->TakeFrameHostOwnership(pending_render_frame_host.Pass());
-  } else {
-    // We won't be coming back, so delete this one.
-    pending_render_frame_host.reset();
-  }
+  DiscardUnusedFrame(pending_render_frame_host.Pass());
 
   pending_web_ui_.reset();
   pending_and_current_web_ui_.reset();

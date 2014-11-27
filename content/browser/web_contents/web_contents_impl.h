@@ -554,7 +554,7 @@ class CONTENT_EXPORT WebContentsImpl
                                       bool is_main_frame) override;
   int CreateOpenerRenderViewsForRenderManager(SiteInstance* instance) override;
   NavigationControllerImpl& GetControllerForRenderManager() override;
-  WebUIImpl* CreateWebUIForRenderManager(const GURL& url) override;
+  scoped_ptr<WebUIImpl> CreateWebUIForRenderManager(const GURL& url) override;
   NavigationEntry* GetLastCommittedNavigationEntryForRenderManager() override;
   bool FocusLocationBarByDefault() override;
   void SetFocusToLocationBar(bool select_all) override;
