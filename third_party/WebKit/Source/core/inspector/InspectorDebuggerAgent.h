@@ -178,7 +178,9 @@ public:
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     void scriptExecutionBlockedByCSP(const String& directiveText);
     void willCallFunction(ExecutionContext*, int scriptId, const String& scriptName, int scriptLine);
+    void didCallFunction();
     void willEvaluateScript(LocalFrame*, const String& url, int lineNumber);
+    void didEvaluateScript();
 
     class Listener : public WillBeGarbageCollectedMixin {
     public:
@@ -230,6 +232,8 @@ private:
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> > currentCallFrames();
     PassRefPtr<TypeBuilder::Debugger::StackTrace> currentAsyncStackTrace();
 
+    void changeRecursionLevelForStepOut(int step);
+
     virtual void didParseSource(const String& scriptId, const Script&, CompileResult) override final;
     virtual bool v8AsyncTaskEventsEnabled() const override final;
     virtual void didReceiveV8AsyncTaskEvent(ExecutionContext*, const String& eventType, const String& eventName, int id) override final;
@@ -279,6 +283,7 @@ private:
 
     int m_skippedStepFrameCount;
     int m_minFrameCountForSkip;
+    int m_recursionLevelForStepOut;
     bool m_skipAllPauses;
     bool m_skipContentScripts;
     OwnPtr<ScriptRegexp> m_cachedSkipStackRegExp;

@@ -1,0 +1,37 @@
+Tests that stepping out of an event listener will lead to a pause in the next event listener.
+
+Recieved foo event(1)! Recieved foo event(2)! Recieved foo event(1)! Recieved foo event(2)!
+Set timer for test function.
+Call stack:
+    0) inner (debugger-step-out-event-listener.html:26)
+    1) testFunction (debugger-step-out-event-listener.html:32)
+
+Executing StepInto...
+Executing StepInto...
+Executing StepInto...
+Call stack:
+    0) fooEventHandler1 (debugger-step-out-event-listener.html:14)
+    1) inner (debugger-step-out-event-listener.html:27)
+    2) testFunction (debugger-step-out-event-listener.html:32)
+
+Executing StepOut...
+Call stack:
+    0) fooEventHandler2 (debugger-step-out-event-listener.html:17)
+    1) inner (debugger-step-out-event-listener.html:27)
+    2) testFunction (debugger-step-out-event-listener.html:32)
+
+Executing StepOut...
+Call stack:
+    0) inner (debugger-step-out-event-listener.html:29)
+    1) testFunction (debugger-step-out-event-listener.html:32)
+
+Set timer for test function.
+Call stack:
+    0) inner (debugger-step-out-event-listener.html:26)
+    1) testFunction (debugger-step-out-event-listener.html:32)
+
+Executing StepOut...
+Call stack:
+    0) testFunction (debugger-step-out-event-listener.html:33)
+
+

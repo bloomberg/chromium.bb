@@ -148,7 +148,7 @@ interface InspectorInstrumentation {
     [Debugger, Timeline, Inline=FastReturn]
     InspectorInstrumentationCookie willCallFunction([Keep] ExecutionContext*, int scriptId, const String& scriptName, int scriptLine);
 
-    [Timeline, Inline=FastReturn]
+    [Debugger, Timeline, Inline=FastReturn]
     void didCallFunction(const InspectorInstrumentationCookie&);
 
     [Timeline, Inline=FastReturn]
@@ -208,7 +208,7 @@ interface InspectorInstrumentation {
     [Debugger, Timeline, Inline=FastReturn]
     InspectorInstrumentationCookie willEvaluateScript([Keep] LocalFrame*, const String& url, int lineNumber);
 
-    [Timeline, Inline=FastReturn]
+    [Debugger, Timeline, Inline=FastReturn]
     void didEvaluateScript(const InspectorInstrumentationCookie&);
 
     [PageRuntime, Inline=FastReturn]

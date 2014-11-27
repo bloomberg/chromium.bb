@@ -129,6 +129,7 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_listener(nullptr)
     , m_skippedStepFrameCount(0)
     , m_minFrameCountForSkip(0)
+    , m_recursionLevelForStepOut(0)
     , m_skipAllPauses(false)
     , m_skipContentScripts(false)
     , m_asyncCallStackTracker(adoptPtrWillBeNoop(new AsyncCallStackTracker()))
@@ -1003,6 +1004,7 @@ void InspectorDebuggerAgent::stepOut(ErrorString* errorString)
     if (!assertPaused(errorString))
         return;
     m_scheduledDebuggerStep = StepOut;
+    m_recursionLevelForStepOut = 1;
     m_steppingFromFramework = isTopCallFrameInFramework();
     m_injectedScriptManager->releaseObjectGroup(InspectorDebuggerAgent::backtraceObjectGroup);
     scriptDebugServer().stepOutOfFunction();
@@ -1248,15 +1250,39 @@ void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directive
 
 void InspectorDebuggerAgent::willCallFunction(ExecutionContext*, int scriptId, const String&, int)
 {
-    // Skip unknown scripts (i.e. InjectedScript).
+    changeRecursionLevelForStepOut(+1);
+    // Skip unknown scripts (e.g. InjectedScript).
     if (!m_scripts.contains(String::number(scriptId)))
         return;
     schedulePauseOnNextStatementIfSteppingInto();
 }
 
+void InspectorDebuggerAgent::didCallFunction()
+{
+    changeRecursionLevelForStepOut(-1);
+}
+
 void InspectorDebuggerAgent::willEvaluateScript(LocalFrame*, const String&, int)
 {
+    changeRecursionLevelForStepOut(+1);
     schedulePauseOnNextStatementIfSteppingInto();
+}
+
+void InspectorDebuggerAgent::didEvaluateScript()
+{
+    changeRecursionLevelForStepOut(-1);
+}
+
+void InspectorDebuggerAgent::changeRecursionLevelForStepOut(int step)
+{
+    if (m_scheduledDebuggerStep != StepOut)
+        return;
+    m_recursionLevelForStepOut += step;
+    if (!m_recursionLevelForStepOut) {
+        // When StepOut crosses a task boundary (i.e. js -> blink_c++) from where it was requested,
+        // switch stepping to step into a next JS task, as if we exited to a blackboxed framework.
+        m_scheduledDebuggerStep = StepInto;
+    }
 }
 
 PassRefPtr<Array<CallFrame> > InspectorDebuggerAgent::currentCallFrames()

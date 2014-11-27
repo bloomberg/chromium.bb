@@ -1,0 +1,46 @@
+Tests stepping out from custom element callbacks.
+
+[page] Invoked createdCallback.
+[page] Invoked attributeChangedCallback.
+[page] Invoked attachedCallback.
+[page] Invoked detachedCallback.
+Set timer for test function.
+Call stack:
+    0) createdCallback (debugger-step-out-custom-element-callbacks.html:12)
+    1) testFunction (debugger-step-out-custom-element-callbacks.html:28)
+
+Executing StepOut...
+Call stack:
+    0) testFunction (debugger-step-out-custom-element-callbacks.html:29)
+
+Executing StepInto...
+Executing StepInto...
+Call stack:
+    0) attributeChangedCallback (debugger-step-out-custom-element-callbacks.html:25)
+    1) testFunction (debugger-step-out-custom-element-callbacks.html:29)
+
+Executing StepOut...
+Call stack:
+    0) testFunction (debugger-step-out-custom-element-callbacks.html:30)
+
+Executing StepInto...
+Executing StepInto...
+Call stack:
+    0) attachedCallback (debugger-step-out-custom-element-callbacks.html:17)
+    1) testFunction (debugger-step-out-custom-element-callbacks.html:30)
+
+Executing StepOut...
+Call stack:
+    0) testFunction (debugger-step-out-custom-element-callbacks.html:31)
+
+Executing StepInto...
+Executing StepInto...
+Call stack:
+    0) detachedCallback (debugger-step-out-custom-element-callbacks.html:21)
+    1) testFunction (debugger-step-out-custom-element-callbacks.html:31)
+
+Executing StepOut...
+Call stack:
+    0) testFunction (debugger-step-out-custom-element-callbacks.html:32)
+
+
