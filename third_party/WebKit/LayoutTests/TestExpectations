@@ -1399,14 +1399,7 @@ crbug.com/435342 media/video-seeking.html [ Pass Failure ]
 crbug.com/436436 fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Pass Failure ]
 
 # Test case needs to be updated after https://codereview.chromium.org/680213004/
-crbug.com/416425 fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
-crbug.com/416425 [ Mac Win ] virtual/antialiasedtext/fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
-crbug.com/416425 svg/text/text-overflow-ellipsis-svgfont.html [ NeedsRebaseline ]
-crbug.com/416425 [ Win XP Linux ] fast/text/line-break-after-question-mark.html [ NeedsRebaseline ]
-crbug.com/416425 fast/css/font-face-opentype.html [ NeedsRebaseline ]
-crbug.com/416425 virtual/textblob/fast/text/ellipsis-platform-font-change.html [ NeedsRebaseline ]
 crbug.com/416425 virtual/textblob/fast/text/ellipsis-stroked.html [ ImageOnlyFailure ]
-crbug.com/416425 virtual/textblob/svg/text/text-overflow-ellipsis-svgfont.html [ NeedsRebaseline ]
 
 crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Pass Slow Timeout ]
 crbug.com/435525 [ Mac Debug ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ NeedsRebaseline ]
