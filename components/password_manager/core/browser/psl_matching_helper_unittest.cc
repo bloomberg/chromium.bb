@@ -32,7 +32,9 @@ TEST(PSLMatchingUtilsTest, IsPublicSuffixDomainMatch) {
       {"http://www.example.com", "https://www.example.com", false},
       {"http://www.example.com:123", "http://www.example.com", false},
       {"http://www.example.org", "http://www.example.com", false},
-      // Invalid urls should not match anything.
+      // URLs without registry controlled domains should not match.
+      {"http://localhost", "http://127.0.0.1", false},
+      // Invalid URLs should not match anything.
       {"http://", "http://", false},
       {"", "", false},
       {"bad url", "bad url", false},
