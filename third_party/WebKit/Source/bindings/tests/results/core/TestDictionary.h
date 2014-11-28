@@ -45,17 +45,14 @@ public:
     bool hasDoubleOrNullMember() const { return !m_doubleOrNullMember.isNull(); }
     double doubleOrNullMember() const { return m_doubleOrNullMember.get(); }
     void setDoubleOrNullMember(double value) { m_doubleOrNullMember = value; }
-    void setDoubleOrNullMemberToNull() { m_doubleOrNullMember = Nullable<double>(); }
 
     bool hasStringOrNullMember() const { return !m_stringOrNullMember.isNull(); }
     String stringOrNullMember() const { return m_stringOrNullMember; }
     void setStringOrNullMember(String value) { m_stringOrNullMember = value; }
-    void setStringOrNullMemberToNull() { m_stringOrNullMember = String(); }
 
     bool hasTestInterfaceOrNullMember() const { return m_testInterfaceOrNullMember; }
     PassRefPtr<TestInterfaceImplementation> testInterfaceOrNullMember() const { return m_testInterfaceOrNullMember; }
     void setTestInterfaceOrNullMember(PassRefPtr<TestInterfaceImplementation> value) { m_testInterfaceOrNullMember = value; }
-    void setTestInterfaceOrNullMemberToNull() { m_testInterfaceOrNullMember = RefPtr<TestInterfaceImplementation>(); }
 
     bool hasTestInterfaceGarbageCollectedMember() const { return m_testInterfaceGarbageCollectedMember; }
     TestInterfaceGarbageCollected* testInterfaceGarbageCollectedMember() const { return m_testInterfaceGarbageCollectedMember; }
@@ -64,7 +61,6 @@ public:
     bool hasTestInterfaceGarbageCollectedOrNullMember() const { return m_testInterfaceGarbageCollectedOrNullMember; }
     TestInterfaceGarbageCollected* testInterfaceGarbageCollectedOrNullMember() const { return m_testInterfaceGarbageCollectedOrNullMember; }
     void setTestInterfaceGarbageCollectedOrNullMember(TestInterfaceGarbageCollected* value) { m_testInterfaceGarbageCollectedOrNullMember = value; }
-    void setTestInterfaceGarbageCollectedOrNullMemberToNull() { m_testInterfaceGarbageCollectedOrNullMember = Member<TestInterfaceGarbageCollected>(); }
 
     bool hasTestInterfaceWillBeGarbageCollectedMember() const { return m_testInterfaceWillBeGarbageCollectedMember; }
     PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> testInterfaceWillBeGarbageCollectedMember() const { return m_testInterfaceWillBeGarbageCollectedMember; }
@@ -73,7 +69,6 @@ public:
     bool hasTestInterfaceWillBeGarbageCollectedOrNullMember() const { return m_testInterfaceWillBeGarbageCollectedOrNullMember; }
     PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> testInterfaceWillBeGarbageCollectedOrNullMember() const { return m_testInterfaceWillBeGarbageCollectedOrNullMember; }
     void setTestInterfaceWillBeGarbageCollectedOrNullMember(PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> value) { m_testInterfaceWillBeGarbageCollectedOrNullMember = value; }
-    void setTestInterfaceWillBeGarbageCollectedOrNullMemberToNull() { m_testInterfaceWillBeGarbageCollectedOrNullMember = RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected>(); }
 
     bool hasStringArrayMember() const { return !m_stringArrayMember.isNull(); }
     const Vector<String>& stringArrayMember() const { return m_stringArrayMember.get(); }
@@ -90,7 +85,6 @@ public:
     bool hasElementOrNullMember() const { return m_elementOrNullMember; }
     PassRefPtrWillBeRawPtr<Element> elementOrNullMember() const { return m_elementOrNullMember; }
     void setElementOrNullMember(PassRefPtrWillBeRawPtr<Element> value) { m_elementOrNullMember = value; }
-    void setElementOrNullMemberToNull() { m_elementOrNullMember = RefPtrWillBeMember<Element>(); }
 
     bool hasObjectMember() const { return !(m_objectMember.isEmpty() || m_objectMember.isNull() || m_objectMember.isUndefined()); }
     ScriptValue objectMember() const { return m_objectMember; }
@@ -99,7 +93,6 @@ public:
     bool hasObjectOrNullMember() const { return !(m_objectOrNullMember.isEmpty() || m_objectOrNullMember.isNull() || m_objectOrNullMember.isUndefined()); }
     ScriptValue objectOrNullMember() const { return m_objectOrNullMember; }
     void setObjectOrNullMember(ScriptValue value) { m_objectOrNullMember = value; }
-    void setObjectOrNullMemberToNull() { m_objectOrNullMember = ScriptValue(); }
 
     bool hasCreateMember() const { return !m_createMember.isNull(); }
     bool createMember() const { return m_createMember.get(); }

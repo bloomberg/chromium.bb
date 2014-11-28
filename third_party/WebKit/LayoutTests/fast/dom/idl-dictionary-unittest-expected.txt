@@ -69,12 +69,13 @@ Additional test for union type members
 PASS dict.doubleOrStringMember is "foo"
 PASS dict.doubleOrStringMember is "[object Object]"
 PASS dict.doubleOrStringMember is ""
-PASS dict.doubleOrStringMember is "null"
+This FAIL is intentional
+FAIL dict.doubleOrStringMember should be null (of type string). Was undefined (of type undefined).
 PASS dict.doubleOrStringMember is undefined.
 
 Test for explicit undefined or null, and missing members
 PASS dict.longMember is undefined.
-PASS dict.longMemberWithDefault is 0
+PASS dict.longMemberWithDefault is 42
 PASS dict.longOrNullMember is undefined.
 PASS dict.longOrNullMemberWithDefault is null
 
