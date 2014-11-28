@@ -87,10 +87,6 @@ class TabSpecificContentSettings
   static TabSpecificContentSettings* Get(int render_process_id,
                                          int render_view_id);
 
-  // Returns the object given a render frame's id.
-  static TabSpecificContentSettings* GetForFrame(int render_process_id,
-                                                 int render_view_id);
-
   // Static methods called on the UI threads.
   // Called when cookies for the given URL were read either from within the
   // current page or while loading it. |blocked_by_policy| should be true, if
@@ -351,8 +347,9 @@ class TabSpecificContentSettings
   void RemoveSiteDataObserver(SiteDataObserver* observer);
 
  private:
-  explicit TabSpecificContentSettings(content::WebContents* tab);
   friend class content::WebContentsUserData<TabSpecificContentSettings>;
+
+  explicit TabSpecificContentSettings(content::WebContents* tab);
 
   // content::WebContentsObserver overrides.
   void RenderFrameForInterstitialPageCreated(
