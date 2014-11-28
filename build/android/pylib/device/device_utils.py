@@ -829,7 +829,11 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    return self.old_interface.FileExistsOnDevice(device_path)
+    try:
+      self.RunShellCommand(['test', '-e', device_path], check_return=True)
+      return True
+    except device_errors.AdbCommandFailedError:
+      return False
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def PullFile(self, device_path, host_path, timeout=None, retries=None):

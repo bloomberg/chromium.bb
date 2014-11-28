@@ -1084,44 +1084,20 @@ class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsNewImplTest):
          ('/test/host/path/file2', '/test/device/path/file2')])
 
 
-class DeviceUtilsFileExistsTest(DeviceUtilsOldImplTest):
+class DeviceUtilsFileExistsTest(DeviceUtilsNewImplTest):
 
   def testFileExists_usingTest_fileExists(self):
-    with self.assertCalls(
-        "adb -s 0123456789abcdef shell "
-            "'test -e \"/data/app/test.file.exists\"; echo $?'",
-        '0\r\n'):
-      self.assertTrue(self.device.FileExists('/data/app/test.file.exists'))
+    with self.assertCall(
+        self.call.device.RunShellCommand(
+            ['test', '-e', '/path/file.exists'], check_return=True), ''):
+      self.assertTrue(self.device.FileExists('/path/file.exists'))
 
   def testFileExists_usingTest_fileDoesntExist(self):
-    with self.assertCalls(
-        "adb -s 0123456789abcdef shell "
-            "'test -e \"/data/app/test.file.does.not.exist\"; echo $?'",
-        '1\r\n'):
-      self.assertFalse(self.device.FileExists(
-          '/data/app/test.file.does.not.exist'))
-
-  def testFileExists_usingLs_fileExists(self):
-    with self.assertCallsSequence([
-        ("adb -s 0123456789abcdef shell "
-            "'test -e \"/data/app/test.file.exists\"; echo $?'",
-         'test: not found\r\n'),
-        ("adb -s 0123456789abcdef shell "
-            "'ls \"/data/app/test.file.exists\" >/dev/null 2>&1; echo $?'",
-         '0\r\n')]):
-      self.assertTrue(self.device.FileExists('/data/app/test.file.exists'))
-
-  def testFileExists_usingLs_fileDoesntExist(self):
-    with self.assertCallsSequence([
-        ("adb -s 0123456789abcdef shell "
-            "'test -e \"/data/app/test.file.does.not.exist\"; echo $?'",
-         'test: not found\r\n'),
-        ("adb -s 0123456789abcdef shell "
-            "'ls \"/data/app/test.file.does.not.exist\" "
-            ">/dev/null 2>&1; echo $?'",
-         '1\r\n')]):
-      self.assertFalse(self.device.FileExists(
-          '/data/app/test.file.does.not.exist'))
+    with self.assertCall(
+        self.call.device.RunShellCommand(
+            ['test', '-e', '/does/not/exist'], check_return=True),
+        self.ShellError('', 1)):
+      self.assertFalse(self.device.FileExists('/does/not/exist'))
 
 
 class DeviceUtilsPullFileTest(DeviceUtilsOldImplTest):
