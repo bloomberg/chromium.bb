@@ -546,6 +546,7 @@ public:
         AttrChildChange = 601,
         DocumentGetOverrideStyle = 602,
         NotificationCloseEvent = 603,
+        BlockedSniffingImageToScript = 604,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
