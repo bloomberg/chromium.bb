@@ -333,14 +333,31 @@ void RenderViewDevToolsAgentHost::RenderProcessGone(
 }
 
 bool RenderViewDevToolsAgentHost::OnMessageReceived(
+    const IPC::Message& message) {
+  if (!render_view_host_)
+    return false;
+  if (message.type() == ViewHostMsg_SwapCompositorFrame::ID)
+    OnSwapCompositorFrame(message);
+  return false;
+}
+
+bool RenderViewDevToolsAgentHost::OnMessageReceived(
     const IPC::Message& message,
     RenderFrameHost* render_frame_host) {
   if (!render_view_host_)
     return false;
-  if (render_frame_host != render_view_host_->GetMainFrame()) {
+  if (render_frame_host != render_view_host_->GetMainFrame())
     return false;
-  }
-  return DispatchIPCMessage(message);
+
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(RenderViewDevToolsAgentHost, message)
+    IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
+                        OnDispatchOnInspectorFrontend)
+    IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAgentRuntimeState,
+                        OnSaveAgentRuntimeState)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void RenderViewDevToolsAgentHost::DidAttachInterstitialPage() {
@@ -464,24 +481,6 @@ void RenderViewDevToolsAgentHost::DisconnectRenderViewHost() {
 
 void RenderViewDevToolsAgentHost::RenderViewCrashed() {
   inspector_handler_->TargetCrashed();
-}
-
-bool RenderViewDevToolsAgentHost::DispatchIPCMessage(
-    const IPC::Message& msg) {
-  if (!render_view_host_)
-    return false;
-
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(RenderViewDevToolsAgentHost, msg)
-    IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
-                        OnDispatchOnInspectorFrontend)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAgentRuntimeState,
-                        OnSaveAgentRuntimeState)
-    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
-                                handled = false; OnSwapCompositorFrame(msg))
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void RenderViewDevToolsAgentHost::OnSwapCompositorFrame(
