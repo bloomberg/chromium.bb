@@ -123,8 +123,6 @@ void DriWindow::MoveCursorTo(const gfx::Point& location) {
 bool DriWindow::CanDispatchEvent(const PlatformEvent& ne) {
   DCHECK(ne);
   Event* event = static_cast<Event*>(ne);
-  if (event->IsMouseEvent() || event->IsScrollEvent())
-    return window_manager_->cursor()->GetCursorWindow() == widget_;
 
   if (event->IsTouchEvent()) {
     int64_t display_id =
@@ -145,8 +143,13 @@ bool DriWindow::CanDispatchEvent(const PlatformEvent& ne) {
                              snapshot->current_mode()->size());
 
     return display_bounds == bounds_;
+  } else if (event->IsLocatedEvent()) {
+    LocatedEvent* located_event = static_cast<LocatedEvent*>(event);
+    return bounds_.Contains(
+        gfx::ToFlooredPoint(located_event->root_location()));
   }
 
+  // TODO(spang): For non-ash builds we would need smarter keyboard focus.
   return true;
 }
 
@@ -154,9 +157,15 @@ uint32_t DriWindow::DispatchEvent(const PlatformEvent& native_event) {
   DCHECK(native_event);
 
   Event* event = static_cast<Event*>(native_event);
-  if (event->IsTouchEvent())
+  if (event->IsTouchEvent()) {
     RewriteTouchEvent(static_cast<TouchEvent*>(event));
-
+  } else if (event->IsLocatedEvent()) {
+    // Make the event location relative to this window's origin.
+    LocatedEvent* located_event = static_cast<LocatedEvent*>(event);
+    gfx::PointF location = located_event->root_location();
+    location -= bounds_.OffsetFromOrigin();
+    located_event->set_location(location);
+  }
   DispatchEventFromNativeUiEvent(
       native_event, base::Bind(&PlatformWindowDelegate::DispatchEvent,
                                base::Unretained(delegate_)));

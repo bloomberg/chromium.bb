@@ -113,7 +113,7 @@ bool DriCursor::IsCursorVisible() {
 }
 
 gfx::PointF DriCursor::GetLocation() {
-  return cursor_location_;
+  return cursor_location_ + cursor_display_bounds_.OffsetFromOrigin();
 }
 
 gfx::Point DriCursor::bitmap_location() {
