@@ -484,6 +484,7 @@ void HeapObjectHeader::markDead()
 NO_SANITIZE_ADDRESS
 void HeapObjectHeader::zapMagic()
 {
+    checkHeader();
     m_magic = zappedMagic;
 }
 #endif
@@ -1050,6 +1051,7 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
     Address headerAddress = largeObjectAddress + sizeof(LargeObject<Header>) + headerPadding<Header>();
     memset(headerAddress, 0, size);
     Header* header = new (NotNull, headerAddress) Header(size, gcInfo);
+    header->checkHeader();
     Address result = headerAddress + sizeof(*header);
     ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
     LargeObject<Header>* largeObject = new (largeObjectAddress) LargeObject<Header>(pageMemory, gcInfo, threadState());
@@ -1578,6 +1580,7 @@ size_t HeapPage<Header>::objectPayloadSizeForTesting()
     do {
         Header* header = reinterpret_cast<Header*>(headerAddress);
         if (!header->isFree()) {
+            header->checkHeader();
             objectPayloadSize += header->payloadSize();
         }
         ASSERT(header->size() < blinkPagePayloadSize());
@@ -1621,6 +1624,7 @@ void HeapPage<Header>::sweep(ThreadHeap<Header>* heap)
         }
         // At this point we know this is a valid object of type Header
         Header* header = static_cast<Header*>(basicHeader);
+        header->checkHeader();
 
         if (!header->isMarked()) {
             // For ASan we unpoison the specific object when calling the finalizer and
@@ -1738,6 +1742,7 @@ Header* HeapPage<Header>::findHeaderFromAddress(Address address)
     Header* header = reinterpret_cast<Header*>(objectAddress);
     if (header->isFree())
         return 0;
+    header->checkHeader();
     return header;
 }
 
