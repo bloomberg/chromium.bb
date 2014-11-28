@@ -55,15 +55,6 @@ class TabSpecificContentSettings
   // Use signed int, that's what the enum flags implicitly convert to.
   typedef int32_t MicrophoneCameraState;
 
-  // UMA statistics for the mixed content shield
-  enum MixedScriptAction {
-    MIXED_SCRIPT_ACTION_DISPLAYED_SHIELD = 0,
-    MIXED_SCRIPT_ACTION_DISPLAYED_BUBBLE,
-    MIXED_SCRIPT_ACTION_CLICKED_ALLOW,
-    MIXED_SCRIPT_ACTION_CLICKED_LEARN_MORE,
-    MIXED_SCRIPT_ACTION_COUNT
-  };
-
   // Classes that want to be notified about site data events must implement
   // this abstract class and add themselves as observer to the
   // |TabSpecificContentSettings|.
@@ -91,8 +82,6 @@ class TabSpecificContentSettings
   };
 
   ~TabSpecificContentSettings() override;
-
-  static void RecordMixedScriptAction(MixedScriptAction action);
 
   // Returns the object given a render view's id.
   static TabSpecificContentSettings* Get(int render_process_id,

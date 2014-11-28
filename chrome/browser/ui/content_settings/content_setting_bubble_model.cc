@@ -8,6 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -973,14 +974,14 @@ ContentSettingMixedScriptBubbleModel::ContentSettingMixedScriptBubbleModel(
     : ContentSettingTitleLinkAndCustomModel(
         delegate, web_contents, profile, content_type) {
   DCHECK_EQ(content_type, CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
-  TabSpecificContentSettings::RecordMixedScriptAction(
-      TabSpecificContentSettings::MIXED_SCRIPT_ACTION_DISPLAYED_BUBBLE);
+  content_settings::RecordMixedScriptAction(
+      content_settings::MIXED_SCRIPT_ACTION_DISPLAYED_BUBBLE);
   set_custom_link_enabled(true);
 }
 
 void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
-  TabSpecificContentSettings::RecordMixedScriptAction(
-      TabSpecificContentSettings::MIXED_SCRIPT_ACTION_CLICKED_ALLOW);
+  content_settings::RecordMixedScriptAction(
+      content_settings::MIXED_SCRIPT_ACTION_CLICKED_ALLOW);
   DCHECK(web_contents());
   web_contents()->SendToAllFrames(
       new ChromeViewMsg_SetAllowRunningInsecureContent(MSG_ROUTING_NONE, true));

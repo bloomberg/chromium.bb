@@ -247,6 +247,8 @@
       'browser/component_updater/swiftshader_component_installer.h',
       'browser/content_settings/chrome_content_settings_client.cc',
       'browser/content_settings/chrome_content_settings_client.h',
+      'browser/content_settings/chrome_content_settings_utils.cc',
+      'browser/content_settings/chrome_content_settings_utils.h',
       'browser/content_settings/content_settings_usages_state.cc',
       'browser/content_settings/content_settings_usages_state.h',
       'browser/content_settings/cookie_settings.cc',
