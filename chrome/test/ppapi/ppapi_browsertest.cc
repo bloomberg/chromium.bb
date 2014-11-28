@@ -303,7 +303,13 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocket) {
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, TCPSocket) {
   RUN_TCPSOCKET_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(TCPSocket)) {
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on Mac ASAN: http://crbug.com/437408.
+#define MAYBE_TCPSocket DISABLED_TCPSocket
+#else
+#define MAYBE_TCPSocket TCPSocket
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(MAYBE_TCPSocket)) {
   RUN_TCPSOCKET_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, TCPSocket) {
@@ -323,7 +329,14 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(TCPServerSocketPrivate)
 TEST_PPAPI_NACL(TCPServerSocketPrivate)
 
 TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivate)
-TEST_PPAPI_NACL_WITH_SSL_SERVER(TCPSocketPrivate)
+
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on Mac ASAN: http://crbug.com/437408.
+#define MAYBE_TCPSocketPrivate DISABLED_TCPSocketPrivate
+#else
+#define MAYBE_TCPSocketPrivate TCPSocketPrivate
+#endif
+TEST_PPAPI_NACL_WITH_SSL_SERVER(MAYBE_TCPSocketPrivate)
 
 TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivateTrusted)
 
@@ -519,7 +532,13 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader1) {
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader2) {
   RUN_URLLOADER_SUBTESTS_2;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader3) {
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on Mac ASAN: http://crbug.com/437411.
+#define MAYBE_URLLoader3 DISABLED_URLLoader3
+#else
+#define MAYBE_URLLoader3 URLLoader3
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_URLLoader3) {
   RUN_URLLOADER_SUBTESTS_3;
 }
 
@@ -821,7 +840,14 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FileRef1) {
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FileRef2) {
   RUN_FILEREF_SUBTESTS_2;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileRef1) {
+
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on Mac ASAN: http://crbug.com/437411.
+#define MAYBE_FileRef1 DISABLED_FileRef1
+#else
+#define MAYBE_FileRef1 FileRef1
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_FileRef1) {
   RUN_FILEREF_SUBTESTS_1;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileRef2) {
