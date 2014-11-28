@@ -180,6 +180,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   void DoMouseUp(const blink::WebMouseEvent&);
   void DoMouseMove(const blink::WebMouseEvent&);
   void ReplaySavedEvents();
+  bool HandleInputEventOnViewOrPopup(const blink::WebInputEvent&);
 
   bool force_layout_on_events() const { return force_layout_on_events_; }
   void set_force_layout_on_events(bool force) {

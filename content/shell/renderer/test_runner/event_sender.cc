@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebPagePopup.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "v8/include/v8.h"
@@ -35,6 +36,7 @@ using blink::WebKeyboardEvent;
 using blink::WebMenuItemInfo;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
+using blink::WebPagePopup;
 using blink::WebPoint;
 using blink::WebString;
 using blink::WebTouchEvent;
@@ -1210,7 +1212,7 @@ void EventSender::MouseDown(int button_number, int modifiers) {
                  click_count_,
                  modifiers,
                  &event);
-  view_->handleInputEvent(event);
+  HandleInputEventOnViewOrPopup(event);
 }
 
 void EventSender::MouseUp(int button_number, int modifiers) {
@@ -1374,7 +1376,7 @@ void EventSender::KeyDown(const std::string& code_str,
   if (GetEditCommand(event_down, &edit_command))
     delegate_->SetEditCommand(edit_command, "");
 
-  view_->handleInputEvent(event_down);
+  HandleInputEventOnViewOrPopup(event_down);
 
   if (code == ui::VKEY_ESCAPE && !current_drag_data_.isNull()) {
     WebMouseEvent event;
@@ -1398,10 +1400,10 @@ void EventSender::KeyDown(const std::string& code_str,
     // standard any more), but it matches the actual behavior in Blink.
     if (code != ui::VKEY_RETURN)
       event_char.keyIdentifier[0] = '\0';
-    view_->handleInputEvent(event_char);
+    HandleInputEventOnViewOrPopup(event_char);
   }
 
-  view_->handleInputEvent(event_up);
+  HandleInputEventOnViewOrPopup(event_up);
 }
 
 void EventSender::EnableDOMUIEventLogging() {}
@@ -1436,7 +1438,7 @@ std::vector<std::string> EventSender::ContextClick() {
                  click_count_,
                  0,
                  &event);
-  view_->handleInputEvent(event);
+  HandleInputEventOnViewOrPopup(event);
 
 #if defined(OS_WIN)
   InitMouseEvent(WebInputEvent::MouseUp,
@@ -1446,7 +1448,7 @@ std::vector<std::string> EventSender::ContextClick() {
                  click_count_,
                  0,
                  &event);
-  view_->handleInputEvent(event);
+  HandleInputEventOnViewOrPopup(event);
 
   pressed_button_= WebMouseEvent::ButtonNone;
 #endif
@@ -1587,7 +1589,7 @@ void EventSender::GestureFlingCancel() {
   if (force_layout_on_events_)
     view_->layout();
 
-  view_->handleInputEvent(event);
+  HandleInputEventOnViewOrPopup(event);
 }
 
 void EventSender::GestureFlingStart(float x,
@@ -1609,7 +1611,7 @@ void EventSender::GestureFlingStart(float x,
   if (force_layout_on_events_)
     view_->layout();
 
-  view_->handleInputEvent(event);
+  HandleInputEventOnViewOrPopup(event);
 }
 
 void EventSender::GestureScrollFirstPoint(int x, int y) {
@@ -1725,7 +1727,7 @@ void EventSender::MouseDragBegin() {
                  &event);
   event.phase = WebMouseWheelEvent::PhaseBegan;
   event.hasPreciseScrollingDeltas = true;
-  view_->handleInputEvent(event);
+  HandleInputEventOnViewOrPopup(event);
 }
 
 void EventSender::MouseDragEnd() {
@@ -1739,7 +1741,7 @@ void EventSender::MouseDragEnd() {
                  &event);
   event.phase = WebMouseWheelEvent::PhaseEnded;
   event.hasPreciseScrollingDeltas = true;
-  view_->handleInputEvent(event);
+  HandleInputEventOnViewOrPopup(event);
 }
 
 void EventSender::GestureScrollBegin(gin::Arguments* args) {
@@ -1789,7 +1791,7 @@ void EventSender::GestureTwoFingerTap(gin::Arguments* args) {
 void EventSender::ContinuousMouseScrollBy(gin::Arguments* args) {
   WebMouseWheelEvent event;
   InitMouseWheelEvent(args, true, &event);
-  view_->handleInputEvent(event);
+  HandleInputEventOnViewOrPopup(event);
 }
 
 void EventSender::MouseMoveTo(gin::Arguments* args) {
@@ -1839,7 +1841,7 @@ void EventSender::TrackpadScrollBegin() {
                  &event);
   event.phase = blink::WebMouseWheelEvent::PhaseBegan;
   event.hasPreciseScrollingDeltas = true;
-  view_->handleInputEvent(event);
+  HandleInputEventOnViewOrPopup(event);
 }
 
 void EventSender::TrackpadScroll(gin::Arguments* args) {
@@ -1847,7 +1849,7 @@ void EventSender::TrackpadScroll(gin::Arguments* args) {
   InitMouseWheelEvent(args, true, &event);
   event.phase = blink::WebMouseWheelEvent::PhaseChanged;
   event.hasPreciseScrollingDeltas = true;
-  view_->handleInputEvent(event);
+  HandleInputEventOnViewOrPopup(event);
 }
 
 void EventSender::TrackpadScrollEnd() {
@@ -1861,13 +1863,13 @@ void EventSender::TrackpadScrollEnd() {
                  &event);
   event.phase = WebMouseWheelEvent::PhaseEnded;
   event.hasPreciseScrollingDeltas = true;
-  view_->handleInputEvent(event);
+  HandleInputEventOnViewOrPopup(event);
 }
 
 void EventSender::MouseScrollBy(gin::Arguments* args) {
    WebMouseWheelEvent event;
   InitMouseWheelEvent(args, false, &event);
-  view_->handleInputEvent(event);
+  HandleInputEventOnViewOrPopup(event);
 }
 
 void EventSender::MouseMomentumBegin() {
@@ -1881,7 +1883,7 @@ void EventSender::MouseMomentumBegin() {
                  &event);
   event.momentumPhase = WebMouseWheelEvent::PhaseBegan;
   event.hasPreciseScrollingDeltas = true;
-  view_->handleInputEvent(event);
+  HandleInputEventOnViewOrPopup(event);
 }
 
 void EventSender::MouseMomentumBegin2(gin::Arguments* args) {
@@ -1889,7 +1891,7 @@ void EventSender::MouseMomentumBegin2(gin::Arguments* args) {
   InitMouseWheelEvent(args, true, &event);
   event.momentumPhase = WebMouseWheelEvent::PhaseBegan;
   event.hasPreciseScrollingDeltas = true;
-  view_->handleInputEvent(event);
+  HandleInputEventOnViewOrPopup(event);
 }
 
 void EventSender::MouseMomentumScrollBy(gin::Arguments* args) {
@@ -1897,7 +1899,7 @@ void EventSender::MouseMomentumScrollBy(gin::Arguments* args) {
   InitMouseWheelEvent(args, true, &event);
   event.momentumPhase = WebMouseWheelEvent::PhaseChanged;
   event.hasPreciseScrollingDeltas = true;
-  view_->handleInputEvent(event);
+  HandleInputEventOnViewOrPopup(event);
 }
 
 void EventSender::MouseMomentumEnd() {
@@ -1911,7 +1913,7 @@ void EventSender::MouseMomentumEnd() {
                  &event);
   event.momentumPhase = WebMouseWheelEvent::PhaseEnded;
   event.hasPreciseScrollingDeltas = true;
-  view_->handleInputEvent(event);
+  HandleInputEventOnViewOrPopup(event);
 }
 
 void EventSender::ScheduleAsynchronousClick(int button_number, int modifiers) {
@@ -1947,7 +1949,7 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type) {
   touch_event.touchesLength = touch_points_.size();
   for (size_t i = 0; i < touch_points_.size(); ++i)
     touch_event.touches[i] = touch_points_[i];
-  view_->handleInputEvent(touch_event);
+  HandleInputEventOnViewOrPopup(touch_event);
 
   for (size_t i = 0; i < touch_points_.size(); ++i) {
     WebTouchPoint* touch_point = &touch_points_[i];
@@ -2167,7 +2169,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
   if (force_layout_on_events_)
     view_->layout();
 
-  bool result = view_->handleInputEvent(event);
+  bool result = HandleInputEventOnViewOrPopup(event);
 
   // Long press might start a drag drop session. Complete it if so.
   if (type == WebInputEvent::GestureLongPress && !current_drag_data_.isNull()) {
@@ -2272,7 +2274,7 @@ void EventSender::FinishDragAndDrop(const WebMouseEvent& e,
 }
 
 void EventSender::DoMouseUp(const WebMouseEvent& e) {
-  view_->handleInputEvent(e);
+  HandleInputEventOnViewOrPopup(e);
 
   pressed_button_ = WebMouseEvent::ButtonNone;
   last_click_time_sec_ = e.timeStampSeconds;
@@ -2293,7 +2295,7 @@ void EventSender::DoMouseUp(const WebMouseEvent& e) {
 void EventSender::DoMouseMove(const WebMouseEvent& e) {
   last_mouse_pos_ = WebPoint(e.x, e.y);
 
-  view_->handleInputEvent(e);
+  HandleInputEventOnViewOrPopup(e);
 
   if (pressed_button_ == WebMouseEvent::ButtonNone ||
       current_drag_data_.isNull()) {
@@ -2346,6 +2348,14 @@ void EventSender::ReplaySavedEvents() {
   }
 
   replaying_saved_events_ = false;
+}
+
+bool EventSender::HandleInputEventOnViewOrPopup(const WebInputEvent& event) {
+  if (WebPagePopup* popup = view_->pagePopup()) {
+    if (!WebInputEvent::isKeyboardEventType(event.type))
+      return popup->handleInputEvent(event);
+  }
+  return view_->handleInputEvent(event);
 }
 
 }  // namespace content
