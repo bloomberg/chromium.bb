@@ -71,8 +71,7 @@ class VpnService::VpnConfiguration : public ShillThirdPartyVpnObserver {
   const std::string& object_path() const { return object_path_; }
 
   // ShillThirdPartyVpnObserver:
-  // TODO(kaliamoorthi): Replace |data| and |length| with a string value.
-  void OnPacketReceived(const uint8_t* data, size_t length) override;
+  void OnPacketReceived(const std::string& data) override;
   void OnPlatformMessage(uint32_t message) override;
 
  private:
@@ -103,13 +102,12 @@ VpnService::VpnConfiguration::VpnConfiguration(
 VpnService::VpnConfiguration::~VpnConfiguration() {
 }
 
-void VpnService::VpnConfiguration::OnPacketReceived(const uint8_t* data,
-                                                    size_t length) {
+void VpnService::VpnConfiguration::OnPacketReceived(const std::string& data) {
   if (!vpn_service_) {
     return;
   }
-  scoped_ptr<base::ListValue> event_args = api_vpn::OnPacketReceived::Create(
-      std::string(reinterpret_cast<const char*>(data), length));
+  scoped_ptr<base::ListValue> event_args =
+      api_vpn::OnPacketReceived::Create(data);
   vpn_service_->SendSignalToExtension(
       extension_id_, api_vpn::OnPacketReceived::kEventName, event_args.Pass());
 }

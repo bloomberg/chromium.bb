@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/bind.h"
 #include "chromeos/dbus/shill_client_unittest_base.h"
 #include "chromeos/dbus/shill_third_party_vpn_driver_client.h"
@@ -20,7 +22,7 @@ class MockShillThirdPartyVpnObserver : public ShillThirdPartyVpnObserver {
  public:
   MockShillThirdPartyVpnObserver() {}
   ~MockShillThirdPartyVpnObserver() override {}
-  MOCK_METHOD2(OnPacketReceived, void(const uint8_t* data, size_t length));
+  MOCK_METHOD1(OnPacketReceived, void(const std::string& data));
   MOCK_METHOD1(OnPlatformMessage, void(uint32_t message));
 };
 
@@ -57,7 +59,7 @@ class ShillThirdPartyVpnDriverClientTest : public ShillClientUnittestBase {
 TEST_F(ShillThirdPartyVpnDriverClientTest, PlatformSignal) {
   uint32_t connected_state = 123456;
   const int kPacketSize = 5;
-  uint8_t data[kPacketSize] = {};
+  std::string data_packet(1, kPacketSize);
   dbus::Signal pmessage_signal(shill::kFlimflamThirdPartyVpnInterface,
                                shill::kOnPlatformMessageFunction);
   {
@@ -69,13 +71,15 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, PlatformSignal) {
                                 shill::kOnPacketReceivedFunction);
   {
     dbus::MessageWriter writer(&preceived_signal);
-    writer.AppendArrayOfBytes(data, kPacketSize);
+    writer.AppendArrayOfBytes(
+        reinterpret_cast<const unsigned char*>(data_packet.data()),
+        data_packet.size());
   }
 
   // Expect each signal to be triggered once.
   MockShillThirdPartyVpnObserver observer;
   EXPECT_CALL(observer, OnPlatformMessage(connected_state)).Times(1);
-  EXPECT_CALL(observer, OnPacketReceived(_, kPacketSize)).Times(1);
+  EXPECT_CALL(observer, OnPacketReceived(data_packet)).Times(1);
 
   client_->AddShillThirdPartyVpnObserver(kExampleIPConfigPath, &observer);
 
@@ -106,7 +110,7 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, PlatformSignal) {
 
   // Check after removing the observer that there is no further signals.
   EXPECT_CALL(observer, OnPlatformMessage(connected_state)).Times(0);
-  EXPECT_CALL(observer, OnPacketReceived(_, kPacketSize)).Times(0);
+  EXPECT_CALL(observer, OnPacketReceived(data_packet)).Times(0);
 
   // Run the signal callback.
   SendPlatformMessageSignal(&pmessage_signal);

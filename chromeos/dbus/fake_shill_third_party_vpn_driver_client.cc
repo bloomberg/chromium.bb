@@ -72,8 +72,7 @@ void FakeShillThirdPartyVpnDriverClient::OnPacketReceived(
     return;
   }
 
-  it->second->OnPacketReceived(reinterpret_cast<const uint8_t*>(packet.data()),
-                               packet.length());
+  it->second->OnPacketReceived(packet);
 }
 
 void FakeShillThirdPartyVpnDriverClient::OnPlatformMessage(

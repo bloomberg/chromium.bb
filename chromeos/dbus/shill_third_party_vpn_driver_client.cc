@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/shill_third_party_vpn_driver_client.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "chromeos/dbus/shill_third_party_vpn_observer.h"
 #include "dbus/bus.h"
@@ -265,8 +267,10 @@ void ShillThirdPartyVpnDriverClientImpl::OnPacketReceived(
   dbus::MessageReader reader(signal);
   const uint8_t* data = nullptr;
   size_t length = 0;
-  if (reader.PopArrayOfBytes(&data, &length))
-    helper_info->observer()->OnPacketReceived(data, length);
+  if (reader.PopArrayOfBytes(&data, &length)) {
+    helper_info->observer()->OnPacketReceived(
+        std::string(reinterpret_cast<const char*>(data), length));
+  }
 }
 
 // static
