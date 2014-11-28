@@ -1211,17 +1211,6 @@ private:
     v8::TryCatch& m_block;
 };
 
-// Returns an object representing {done: true, value: undefined}.
-v8::Local<v8::Value> v8DoneIteratorResult(v8::Isolate*);
-
-// Returns an object representing {done: false, value: |value|}.
-v8::Local<v8::Value> v8IteratorResult(v8::Isolate*, v8::Handle<v8::Value>);
-template <typename T>
-v8::Local<v8::Value> v8IteratorResult(ScriptState* scriptState, const T& value)
-{
-    return v8IteratorResult(scriptState->isolate(), V8ValueTraits<T>::toV8Value(value, scriptState->context()->Global(), scriptState->isolate()));
-}
-
 typedef void (*InstallTemplateFunction)(v8::Handle<v8::FunctionTemplate>, v8::Isolate*);
 
 } // namespace blink

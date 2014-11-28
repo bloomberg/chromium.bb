@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8IteratorResultValue.h"
 #include "core/dom/Iterator.h"
 #include "core/fetch/FetchUtils.h"
 #include "wtf/NotFound.h"
@@ -31,9 +32,8 @@ public:
     {
         // FIXME: This simply advances an index and returns the next value if
         // any, so if the iterated object is mutated values may be skipped.
-        v8::Isolate* isolate = scriptState->isolate();
         if (m_current >= m_headers->size())
-            return ScriptValue(scriptState, v8DoneIteratorResult(isolate));
+            return v8IteratorResultDone(scriptState);
 
         const FetchHeaderList::Header& header = m_headers->entry(m_current++);
         switch (m_type) {
@@ -41,13 +41,12 @@ public:
             Vector<String> pair;
             pair.append(header.first);
             pair.append(header.second);
-            return ScriptValue(scriptState, v8IteratorResult(scriptState, pair));
+            return v8IteratorResult(scriptState, pair);
         }
         case Key:
-            return ScriptValue(scriptState, v8IteratorResult(scriptState, header.first));
-
+            return v8IteratorResult(scriptState, header.first);
         case Value:
-            return ScriptValue(scriptState, v8IteratorResult(scriptState, header.second));
+            return v8IteratorResult(scriptState, header.second);
         }
         ASSERT_NOT_REACHED();
         return ScriptValue();

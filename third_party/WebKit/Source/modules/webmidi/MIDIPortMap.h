@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8IteratorResultValue.h"
 #include "core/dom/Iterator.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
@@ -70,8 +71,8 @@ private:
         virtual ScriptValue next(ScriptState* scriptState, ExceptionState&) override
         {
             if (m_iterator == m_end)
-                return ScriptValue(scriptState, v8DoneIteratorResult(scriptState->isolate()));
-            ScriptValue result(scriptState, v8IteratorResult(scriptState, Selector::select(scriptState, m_iterator)));
+                return v8IteratorResultDone(scriptState);
+            ScriptValue result = v8IteratorResult(scriptState, Selector::select(scriptState, m_iterator));
             ++m_iterator;
             return result;
         }

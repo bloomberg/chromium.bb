@@ -134,6 +134,8 @@
             'V8HiddenValue.h',
             'V8Initializer.cpp',
             'V8Initializer.h',
+            'V8IteratorResultValue.cpp',
+            'V8IteratorResultValue.h',
             'V8LazyEventListener.cpp',
             'V8LazyEventListener.h',
             'V8MutationCallback.cpp',

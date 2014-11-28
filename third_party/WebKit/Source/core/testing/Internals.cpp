@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
+#include "bindings/core/v8/V8IteratorResultValue.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/InternalRuntimeFlags.h"
 #include "core/animation/AnimationTimeline.h"
@@ -160,12 +161,11 @@ public:
 
     virtual ScriptValue next(ScriptState* scriptState, ExceptionState& exceptionState) override
     {
-        v8::Isolate* isolate = scriptState->isolate();
         int value = m_current * m_current;
         if (m_current >= 5)
-            return ScriptValue(scriptState, v8DoneIteratorResult(isolate));
+            return v8IteratorResultDone(scriptState);
         ++m_current;
-        return ScriptValue(scriptState, v8IteratorResult(scriptState, value));
+        return v8IteratorResult(scriptState, value);
     }
 
     virtual ScriptValue next(ScriptState* scriptState, ScriptValue value, ExceptionState& exceptionState) override

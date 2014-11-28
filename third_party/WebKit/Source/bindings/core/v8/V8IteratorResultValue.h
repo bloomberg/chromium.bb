@@ -1,0 +1,39 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef V8IteratorResultValue_h
+#define V8IteratorResultValue_h
+
+#include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/V8Binding.h"
+#include <v8.h>
+
+namespace blink {
+
+v8::Handle<v8::Object> v8IteratorResultValue(v8::Isolate*, bool done, v8::Handle<v8::Value>);
+
+template<typename T>
+inline ScriptValue v8IteratorResult(ScriptState* scriptState, const T& value)
+{
+    return ScriptValue(
+        scriptState,
+        v8IteratorResultValue(
+            scriptState->isolate(),
+            false,
+            V8ValueTraits<T>::toV8Value(value, scriptState->context()->Global(), scriptState->isolate())));
+}
+
+inline ScriptValue v8IteratorResultDone(ScriptState* scriptState)
+{
+    return ScriptValue(
+        scriptState,
+        v8IteratorResultValue(
+            scriptState->isolate(),
+            true,
+            v8::Undefined(scriptState->isolate())));
+}
+
+} // namespace blink
+
+#endif // V8IteratorResultValue_h
