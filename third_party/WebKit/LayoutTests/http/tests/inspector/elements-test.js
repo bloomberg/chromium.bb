@@ -79,6 +79,21 @@ InspectorTest.nodeWithId = function(idValue, callback)
     InspectorTest.findNode(nodeIdMatches, callback);
 }
 
+InspectorTest.querySelector = function(selector, callback)
+{
+    WebInspector.domModel.requestDocument(documentRequested.bind(this));
+
+    function documentRequested(doc)
+    {
+        WebInspector.domModel.querySelector(doc.id, selector, nodeSelected);
+    }
+
+    function nodeSelected(nodeId)
+    {
+        callback(WebInspector.domModel.nodeForId(nodeId));
+    }
+}
+
 InspectorTest.shadowRootByHostId = function(idValue, callback)
 {
     function shadowRootMatches(node)
