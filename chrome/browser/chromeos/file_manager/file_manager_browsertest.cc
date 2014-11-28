@@ -1440,16 +1440,14 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RotateImageOnDrive) {
   StartTest();
 }
 
-// TODO(hirono): Disabled for being flaky: crbug.com/437313
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DISABLED_CropImageOnDownloads) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, CropImageOnDownloads) {
   AddScript("gallery/photo_editor.js");
   set_test_case_name("cropImageOnDownloads");
   StartTest();
 }
 
-// TODO(hirono): Disabled for being flaky: crbug.com/437313
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
-                       DISABLED_CropImageOnDownloads) {
+                       CropImageOnDownloads) {
   AddScript("gallery/photo_editor.js");
   set_test_case_name("cropImageOnDownloads");
   StartTest();
