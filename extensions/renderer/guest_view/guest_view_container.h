@@ -27,7 +27,6 @@ class GuestViewContainer : public content::BrowserPluginDelegate,
   virtual bool HandlesMessage(const IPC::Message& message) = 0;
   virtual bool OnMessage(const IPC::Message& message) = 0;
 
- protected:
   int element_instance_id() const { return element_instance_id_; }
   int render_view_routing_id() const { return render_view_routing_id_; }
 

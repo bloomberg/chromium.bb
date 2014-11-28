@@ -23,7 +23,6 @@ BrowserPluginManager* BrowserPluginManager::Create(
 
 BrowserPluginManager::BrowserPluginManager(RenderViewImpl* render_view)
     : RenderViewObserver(render_view),
-      current_instance_id_(browser_plugin::kInstanceIDNone),
       render_view_(render_view->AsWeakPtr()) {
 }
 
@@ -46,7 +45,7 @@ BrowserPlugin* BrowserPluginManager::GetBrowserPlugin(
 }
 
 int BrowserPluginManager::GetNextInstanceID() {
-  return ++current_instance_id_;
+  return RenderThread::Get()->GenerateRoutingID();
 }
 
 void BrowserPluginManager::UpdateDeviceScaleFactor() {

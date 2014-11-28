@@ -13,8 +13,7 @@
 #include "third_party/WebKit/public/web/WebView.h"
 
 namespace {
-typedef std::pair<int, int> GuestViewID;
-typedef std::map<GuestViewID, extensions::ExtensionsGuestViewContainer*>
+typedef std::map<int, extensions::ExtensionsGuestViewContainer*>
     ExtensionsGuestViewContainerMap;
 static base::LazyInstance<ExtensionsGuestViewContainerMap>
     g_guest_view_container_map = LAZY_INSTANCE_INITIALIZER;
@@ -22,144 +21,71 @@ static base::LazyInstance<ExtensionsGuestViewContainerMap>
 
 namespace extensions {
 
+ExtensionsGuestViewContainer::Request::Request(
+    GuestViewContainer* container,
+    v8::Handle<v8::Function> callback,
+    v8::Isolate* isolate)
+    : container_(container),
+      callback_(callback),
+      isolate_(isolate) {
+}
+
+ExtensionsGuestViewContainer::Request::~Request() {
+}
+
+bool ExtensionsGuestViewContainer::Request::HasCallback() const {
+  return !callback_.IsEmpty();
+}
+
+v8::Handle<v8::Function>
+ExtensionsGuestViewContainer::Request::GetCallback() const {
+  return callback_.NewHandle(isolate_);
+}
+
 ExtensionsGuestViewContainer::AttachRequest::AttachRequest(
-    int element_instance_id,
+    GuestViewContainer* container,
     int guest_instance_id,
     scoped_ptr<base::DictionaryValue> params,
     v8::Handle<v8::Function> callback,
     v8::Isolate* isolate)
-    : element_instance_id_(element_instance_id),
+    : Request(container, callback, isolate),
       guest_instance_id_(guest_instance_id),
-      params_(params.Pass()),
-      callback_(callback),
-      isolate_(isolate) {
+      params_(params.Pass()) {
 }
 
 ExtensionsGuestViewContainer::AttachRequest::~AttachRequest() {
 }
 
-bool ExtensionsGuestViewContainer::AttachRequest::HasCallback() const {
-  return !callback_.IsEmpty();
-}
-
-v8::Handle<v8::Function>
-ExtensionsGuestViewContainer::AttachRequest::GetCallback() const {
-  return callback_.NewHandle(isolate_);
-}
-
-ExtensionsGuestViewContainer::ExtensionsGuestViewContainer(
-      content::RenderFrame* render_frame)
-    : GuestViewContainer(render_frame),
-      ready_(false) {
-}
-
-ExtensionsGuestViewContainer::~ExtensionsGuestViewContainer() {
-  if (element_instance_id() != guestview::kInstanceIDNone) {
-    g_guest_view_container_map.Get().erase(
-        GuestViewID(render_view_routing_id(), element_instance_id()));
-  }
-}
-
-ExtensionsGuestViewContainer* ExtensionsGuestViewContainer::FromID(
-    int render_view_routing_id,
-    int element_instance_id) {
-  ExtensionsGuestViewContainerMap* guest_view_containers =
-      g_guest_view_container_map.Pointer();
-  ExtensionsGuestViewContainerMap::iterator it = guest_view_containers->find(
-      GuestViewID(render_view_routing_id, element_instance_id));
-  return it == guest_view_containers->end() ? NULL : it->second;
-}
-
-void ExtensionsGuestViewContainer::AttachGuest(
-    linked_ptr<AttachRequest> request) {
-  EnqueueAttachRequest(request);
-  PerformPendingAttachRequest();
-}
-
-void ExtensionsGuestViewContainer::SetElementInstanceID(
-    int element_instance_id) {
-  GuestViewContainer::SetElementInstanceID(element_instance_id);
-
-  GuestViewID guest_view_id(render_view_routing_id(), element_instance_id);
-  DCHECK(g_guest_view_container_map.Get().find(guest_view_id) ==
-            g_guest_view_container_map.Get().end());
-  g_guest_view_container_map.Get().insert(std::make_pair(guest_view_id, this));
-}
-
-void ExtensionsGuestViewContainer::Ready() {
-  ready_ = true;
-  CHECK(!pending_response_.get());
-  PerformPendingAttachRequest();
-}
-
-bool ExtensionsGuestViewContainer::HandlesMessage(const IPC::Message& message) {
-  return message.type() == ExtensionMsg_GuestAttached::ID;
-}
-
-bool ExtensionsGuestViewContainer::OnMessage(const IPC::Message& message) {
-  bool handled = false;
-  IPC_BEGIN_MESSAGE_MAP(ExtensionsGuestViewContainer, message)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_GuestAttached, OnGuestAttached)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void ExtensionsGuestViewContainer::OnGuestAttached(int /* unused */,
-                                                   int guest_proxy_routing_id) {
-  // Handle the callback for the current request with a pending response.
-  HandlePendingResponseCallback(guest_proxy_routing_id);
-  // Perform the subsequent attach request if one exists.
-  PerformPendingAttachRequest();
-}
-
-void ExtensionsGuestViewContainer::AttachGuestInternal(
-    linked_ptr<AttachRequest> request) {
-  CHECK(!pending_response_.get());
-  // Step 1, send the attach params to chrome/.
-  render_frame()->Send(
-      new ExtensionHostMsg_AttachGuest(render_view_routing_id(),
-                                       request->element_instance_id(),
-                                       request->guest_instance_id(),
-                                       *request->attach_params()));
+void ExtensionsGuestViewContainer::AttachRequest::PerformRequest() {
+  // Step 1, send the attach params to extensions/.
+  container()->render_frame()->Send(
+      new ExtensionHostMsg_AttachGuest(container()->render_view_routing_id(),
+                                       container()->element_instance_id(),
+                                       guest_instance_id_,
+                                       *params_));
 
   // Step 2, attach plugin through content/.
-  render_frame()->AttachGuest(request->element_instance_id());
-
-  pending_response_ = request;
+  container()->render_frame()->AttachGuest(container()->element_instance_id());
 }
 
-void ExtensionsGuestViewContainer::EnqueueAttachRequest(
-    linked_ptr<AttachRequest> request) {
-  pending_requests_.push_back(request);
-}
-
-void ExtensionsGuestViewContainer::PerformPendingAttachRequest() {
-  if (!ready_ || pending_requests_.empty() || pending_response_.get())
+void ExtensionsGuestViewContainer::AttachRequest::HandleResponse(
+    const IPC::Message& message) {
+  ExtensionMsg_GuestAttached::Param param;
+  if (!ExtensionMsg_GuestAttached::Read(&message, &param))
     return;
 
-  linked_ptr<AttachRequest> pending_request = pending_requests_.front();
-  pending_requests_.pop_front();
-  AttachGuestInternal(pending_request);
-}
-
-void ExtensionsGuestViewContainer::HandlePendingResponseCallback(
-    int guest_proxy_routing_id) {
-  CHECK(pending_response_.get());
-  linked_ptr<AttachRequest> pending_response(pending_response_.release());
-
   // If we don't have a callback then there's nothing more to do.
-  if (!pending_response->HasCallback())
+  if (!HasCallback())
     return;
 
   content::RenderView* guest_proxy_render_view =
-      content::RenderView::FromRoutingID(guest_proxy_routing_id);
+      content::RenderView::FromRoutingID(param.b);
   // TODO(fsamuel): Should we be reporting an error to JavaScript or DCHECKing?
   if (!guest_proxy_render_view)
     return;
 
-  v8::HandleScope handle_scope(pending_response->isolate());
-  v8::Handle<v8::Function> callback = pending_response->GetCallback();
+  v8::HandleScope handle_scope(isolate());
+  v8::Handle<v8::Function> callback = GetCallback();
   v8::Handle<v8::Context> context = callback->CreationContext();
   if (context.IsEmpty())
     return;
@@ -176,6 +102,89 @@ void ExtensionsGuestViewContainer::HandlePendingResponseCallback(
   // Call the AttachGuest API's callback with the guest proxy as the first
   // parameter.
   callback->Call(context->Global(), argc, argv);
+}
+
+ExtensionsGuestViewContainer::ExtensionsGuestViewContainer(
+      content::RenderFrame* render_frame)
+    : GuestViewContainer(render_frame),
+      ready_(false) {
+}
+
+ExtensionsGuestViewContainer::~ExtensionsGuestViewContainer() {
+  if (element_instance_id() != guestview::kInstanceIDNone) {
+    g_guest_view_container_map.Get().erase(element_instance_id());
+  }
+}
+
+ExtensionsGuestViewContainer* ExtensionsGuestViewContainer::FromID(
+    int element_instance_id) {
+  ExtensionsGuestViewContainerMap* guest_view_containers =
+      g_guest_view_container_map.Pointer();
+  ExtensionsGuestViewContainerMap::iterator it =
+      guest_view_containers->find(element_instance_id);
+  return it == guest_view_containers->end() ? NULL : it->second;
+}
+
+void ExtensionsGuestViewContainer::IssueRequest(linked_ptr<Request> request) {
+  EnqueueRequest(request);
+  PerformPendingRequest();
+}
+
+void ExtensionsGuestViewContainer::SetElementInstanceID(
+    int element_instance_id) {
+  GuestViewContainer::SetElementInstanceID(element_instance_id);
+
+  DCHECK(g_guest_view_container_map.Get().find(element_instance_id) ==
+            g_guest_view_container_map.Get().end());
+  g_guest_view_container_map.Get().insert(
+      std::make_pair(element_instance_id, this));
+}
+
+void ExtensionsGuestViewContainer::Ready() {
+  ready_ = true;
+  CHECK(!pending_response_.get());
+  PerformPendingRequest();
+}
+
+bool ExtensionsGuestViewContainer::HandlesMessage(const IPC::Message& message) {
+  return (message.type() == ExtensionMsg_GuestAttached::ID);
+}
+
+bool ExtensionsGuestViewContainer::OnMessage(const IPC::Message& message) {
+  if (message.type() == ExtensionMsg_GuestAttached::ID) {
+    OnHandleCallback(message);
+    return true;
+  }
+  return false;
+}
+
+void ExtensionsGuestViewContainer::OnHandleCallback(
+    const IPC::Message& message) {
+  // Handle the callback for the current request with a pending response.
+  HandlePendingResponseCallback(message);
+  // Perform the subsequent attach request if one exists.
+  PerformPendingRequest();
+}
+
+void ExtensionsGuestViewContainer::EnqueueRequest(linked_ptr<Request> request) {
+  pending_requests_.push_back(request);
+}
+
+void ExtensionsGuestViewContainer::PerformPendingRequest() {
+  if (!ready_ || pending_requests_.empty() || pending_response_.get())
+    return;
+
+  linked_ptr<Request> pending_request = pending_requests_.front();
+  pending_requests_.pop_front();
+  pending_request->PerformRequest();
+  pending_response_ = pending_request;
+}
+
+void ExtensionsGuestViewContainer::HandlePendingResponseCallback(
+    const IPC::Message& message) {
+  CHECK(pending_response_.get());
+  linked_ptr<Request> pending_response(pending_response_.release());
+  pending_response->HandleResponse(message);
 }
 
 }  // namespace extensions
