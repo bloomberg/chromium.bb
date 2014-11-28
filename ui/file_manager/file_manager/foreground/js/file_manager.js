@@ -236,6 +236,13 @@ function FileManager() {
    */
   this.initializeQueue_ = new AsyncUtil.Group();
 
+  /**
+   * Count of the SourceNotFound error.
+   * @type {number}
+   * @private
+   */
+  this.sourceNotFoundErrorCount_ = 0;
+
   // Object.seal() has big performance/memory overhead for now, so we use
   // Object.preventExtensions() here. crbug.com/412239.
   Object.preventExtensions(this);
@@ -475,17 +482,43 @@ Object.freeze(DialogType);
     if (this.dialogType != DialogType.FULL_PAGE)
       return;
 
-    this.fileTransferController_ = new FileTransferController(
-        assert(this.document_),
-        assert(this.ui_.listContainer),
-        assert(this.ui_.directoryTree),
-        this.ui_.multiProfileShareDialog,
-        assert(this.backgroundPage_.background.progressCenter),
-        assert(this.fileOperationManager_),
-        assert(this.metadataCache_),
-        assert(this.directoryModel_),
-        assert(this.volumeManager_),
-        assert(this.selectionHandler_));
+    var controller = this.fileTransferController_ =
+        new FileTransferController(
+                this.document_,
+                this.fileOperationManager_,
+                this.metadataCache_,
+                this.directoryModel_,
+                this.volumeManager_,
+                this.ui_.multiProfileShareDialog,
+                this.backgroundPage_.background.progressCenter);
+    controller.attachDragSource(this.ui_.listContainer.table.list);
+    controller.attachFileListDropTarget(this.ui_.listContainer.table.list);
+    controller.attachDragSource(this.ui_.listContainer.grid);
+    controller.attachFileListDropTarget(this.ui_.listContainer.grid);
+    controller.attachTreeDropTarget(this.ui_.directoryTree);
+    controller.attachCopyPasteHandlers();
+    controller.addEventListener('selection-copied',
+        this.blinkSelection.bind(this));
+    controller.addEventListener('selection-cut',
+        this.blinkSelection.bind(this));
+    controller.addEventListener('source-not-found',
+        this.onSourceNotFound_.bind(this));
+  };
+
+  /**
+   * Handles an error that the source entry of file operation is not found.
+   * @private
+   */
+  FileManager.prototype.onSourceNotFound_ = function(event) {
+    var item = new ProgressCenterItem();
+    item.id = 'source-not-found-' + this.sourceNotFoundErrorCount_;
+    if (event.progressType === ProgressItemType.COPY)
+      item.message = strf('COPY_SOURCE_NOT_FOUND_ERROR', event.fileName);
+    else if (event.progressType === ProgressItemType.MOVE)
+      item.message = strf('MOVE_SOURCE_NOT_FOUND_ERROR', event.fileName);
+    item.state = ProgressItemState.ERROR;
+    this.backgroundPage_.background.progressCenter.updateItem(item);
+    this.sourceNotFoundErrorCount_++;
   };
 
   /**
@@ -1233,6 +1266,35 @@ Object.freeze(DialogType);
    */
   FileManager.prototype.getCurrentDirectoryEntry = function() {
     return this.directoryModel_ && this.directoryModel_.getCurrentDirEntry();
+  };
+
+  /**
+   * Blinks the selection. Used to give feedback when copying or cutting the
+   * selection.
+   */
+  FileManager.prototype.blinkSelection = function() {
+    var selection = this.getSelection();
+    if (!selection || selection.totalCount == 0)
+      return;
+
+    for (var i = 0; i < selection.entries.length; i++) {
+      var selectedIndex = selection.indexes[i];
+      var listItem =
+          this.ui.listContainer.currentList.getListItemByIndex(selectedIndex);
+      if (listItem)
+        this.blinkListItem_(listItem);
+    }
+  };
+
+  /**
+   * @param {Element} listItem List item element.
+   * @private
+   */
+  FileManager.prototype.blinkListItem_ = function(listItem) {
+    listItem.classList.add('blink');
+    setTimeout(function() {
+      listItem.classList.remove('blink');
+    }, 100);
   };
 
   /**
