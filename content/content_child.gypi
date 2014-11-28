@@ -289,6 +289,7 @@
       'child/webcrypto/openssl/aes_key_openssl.h',
       'child/webcrypto/openssl/aes_kw_openssl.cc',
       'child/webcrypto/openssl/ec_key_openssl.cc',
+      'child/webcrypto/openssl/ecdh_openssl.cc',
       'child/webcrypto/openssl/ecdsa_openssl.cc',
       'child/webcrypto/openssl/hmac_openssl.cc',
       'child/webcrypto/openssl/key_openssl.cc',

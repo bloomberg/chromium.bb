@@ -33,6 +33,7 @@ AlgorithmImplementation* CreatePlatformRsaOaepImplementation();
 AlgorithmImplementation* CreatePlatformRsaSsaImplementation();
 AlgorithmImplementation* CreatePlatformRsaPssImplementation();
 AlgorithmImplementation* CreatePlatformEcdsaImplementation();
+AlgorithmImplementation* CreatePlatformEcdhImplementation();
 
 }  // namespace webcrypto
 

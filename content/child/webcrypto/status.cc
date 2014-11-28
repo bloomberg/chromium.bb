@@ -296,6 +296,32 @@ Status Status::JwkOctetStringWrongLength(const std::string& member_name,
           member_name.c_str(), actual_length, expected_length));
 }
 
+Status Status::ErrorEcdhPublicKeyWrongType() {
+  return Status(
+      blink::WebCryptoErrorTypeInvalidAccess,
+      "The public parameter for ECDH key derivation is not a public EC key");
+}
+
+Status Status::ErrorEcdhPublicKeyWrongAlgorithm() {
+  return Status(
+      blink::WebCryptoErrorTypeInvalidAccess,
+      "The public parameter for ECDH key derivation must be for ECDH");
+}
+
+Status Status::ErrorEcdhCurveMismatch() {
+  return Status(blink::WebCryptoErrorTypeInvalidAccess,
+                "The public parameter for ECDH key derivation is for a "
+                "different named curve");
+}
+
+Status Status::ErrorEcdhLengthTooBig(unsigned int max_length_bits) {
+  return Status(blink::WebCryptoErrorTypeInvalidAccess,
+                base::StringPrintf(
+                    "Length specified for ECDH key derivation is too large. "
+                    "Maximum allowed is %u bits",
+                    max_length_bits));
+}
+
 Status::Status(blink::WebCryptoErrorType error_type,
                const std::string& error_details_utf8)
     : type_(TYPE_ERROR),

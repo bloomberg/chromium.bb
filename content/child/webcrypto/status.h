@@ -237,6 +237,19 @@ class CONTENT_EXPORT Status {
                                           size_t expected_length,
                                           size_t actual_length);
 
+  // The public key given for ECDH key derivation was not an EC public key.
+  static Status ErrorEcdhPublicKeyWrongType();
+
+  // The public key's algorithm was not ECDH.
+  static Status ErrorEcdhPublicKeyWrongAlgorithm();
+
+  // The public and private keys given to ECDH key derivation were not for the
+  // same named curve.
+  static Status ErrorEcdhCurveMismatch();
+
+  // The requested bit length for ECDH key derivation was too large.
+  static Status ErrorEcdhLengthTooBig(unsigned int max_length_bits);
+
  private:
   enum Type { TYPE_ERROR, TYPE_SUCCESS };
 

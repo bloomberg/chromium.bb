@@ -96,6 +96,11 @@ AlgorithmImplementation* CreatePlatformEcdsaImplementation() {
   return NULL;
 }
 
+AlgorithmImplementation* CreatePlatformEcdhImplementation() {
+  // TODO(eroman): http://crbug.com/399093
+  return NULL;
+}
+
 }  // namespace webcrypto
 
 }  // namespace content
