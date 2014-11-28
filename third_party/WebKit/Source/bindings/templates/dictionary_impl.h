@@ -23,6 +23,9 @@ public:
     bool {{member.has_method_name}}() const { return {{member.has_method_expression}}; }
     {{member.rvalue_cpp_type}} {{member.cpp_name}}() const { return {{member.getter_expression}}; }
     void {{member.setter_name}}({{member.rvalue_cpp_type}} value) { m_{{member.cpp_name}} = value; }
+    {% if member.null_setter_name %}
+    void {{member.null_setter_name}}() { m_{{member.cpp_name}} = {{member.member_cpp_type}}(); }
+    {% endif %}
 
     {% endfor %}
     virtual void trace(Visitor*);
