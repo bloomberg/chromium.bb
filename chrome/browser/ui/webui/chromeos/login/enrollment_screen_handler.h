@@ -12,6 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
+#include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/extensions/signin/scoped_gaia_auth_extension.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -69,6 +70,8 @@ class EnrollmentScreenHandler
   void HandleRetry();
   void HandleFrameLoadingCompleted(int status);
 
+  void UpdateStateInternal(ErrorScreenActor::ErrorReason reason,
+                           bool force_update);
   void SetupAndShowOfflineMessage(NetworkStateInformer::State state,
                                   ErrorScreenActor::ErrorReason reason);
   void HideOfflineMessage(NetworkStateInformer::State state,
@@ -116,6 +119,9 @@ class EnrollmentScreenHandler
 
   // Latest enrollment frame error.
   net::Error frame_error_;
+
+  // True if screen was not shown yet.
+  bool first_show_;
 
   // Network state informer used to keep signin screen up.
   scoped_refptr<NetworkStateInformer> network_state_informer_;

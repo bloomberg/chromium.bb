@@ -71,6 +71,7 @@ EnrollmentScreenHandler::EnrollmentScreenHandler(
       show_on_init_(false),
       enrollment_mode_(ENROLLMENT_MODE_MANUAL),
       frame_error_(net::OK),
+      first_show_(true),
       network_state_informer_(network_state_informer),
       error_screen_actor_(error_screen_actor),
       histogram_helper_(new ErrorScreensHistogramHelper("Enrollment")),
@@ -352,12 +353,20 @@ bool EnrollmentScreenHandler::IsEnrollmentScreenHiddenByError() const {
               OobeUI::SCREEN_OOBE_ENROLLMENT);
 }
 
-// TODO(rsorokin): This function is mostly copied from SigninScreenHandler and
-// should be refactored in the future.
 void EnrollmentScreenHandler::UpdateState(
     ErrorScreenActor::ErrorReason reason) {
-  if (!IsOnEnrollmentScreen() && !IsEnrollmentScreenHiddenByError())
+  UpdateStateInternal(reason, false);
+}
+
+// TODO(rsorokin): This function is mostly copied from SigninScreenHandler and
+// should be refactored in the future.
+void EnrollmentScreenHandler::UpdateStateInternal(
+    ErrorScreenActor::ErrorReason reason,
+    bool force_update) {
+  if (!force_update && !IsOnEnrollmentScreen() &&
+      !IsEnrollmentScreenHiddenByError()) {
     return;
+  }
 
   NetworkStateInformer::State state = network_state_informer_->state();
   const std::string network_path = network_state_informer_->network_path();
@@ -510,6 +519,10 @@ void EnrollmentScreenHandler::DoShow() {
   screen_data.SetString("management_domain", management_domain_);
 
   ShowScreen(OobeUI::kScreenOobeEnrollment, &screen_data);
+  if (first_show_) {
+    first_show_ = false;
+    UpdateStateInternal(ErrorScreenActor::ERROR_REASON_UPDATE, true);
+  }
   histogram_helper_->OnScreenShow();
 }
 
