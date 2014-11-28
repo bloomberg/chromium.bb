@@ -116,8 +116,7 @@ function DialogActionController(
   dialogFooter.filenameInput.addEventListener(
       'input', this.updateOkButton_.bind(this));
   fileSelectionHandler.addEventListener(
-      FileSelectionHandler.EventType.CHANGE_THROTTLED,
-      this.onFileSelectionChanged_.bind(this));
+      'change', this.onFileSelectionChanged_.bind(this));
 
   dialogFooter.initFileTypeFilter(
       this.fileTypes_, launchParam.includeAllFiles);
@@ -412,7 +411,6 @@ DialogActionController.prototype.onFileSelectionChanged_ = function() {
     this.dialogFooter_.filenameInput.value = selection.entries[0].name;
   }
 
-  // TODO(hirono): Update OK button after initializing task.
   this.updateOkButton_();
 };
 
@@ -444,19 +442,27 @@ DialogActionController.prototype.updateOkButton_ = function() {
     return;
   }
 
+  var isDriveOffline =
+      this.volumeManager_.getDriveConnectionState().type ===
+      VolumeManagerCommon.DriveConnectionType.OFFLINE;
+  var filesAvailable =
+      !this.directoryModel_.isOnDrive() ||
+      !isDriveOffline ||
+      selection.allDriveFilesPresent;
+
   if (this.dialogType_ === DialogType.SELECT_OPEN_FILE) {
     this.dialogFooter_.okButton.disabled =
+        !filesAvailable ||
         selection.directoryCount !== 0 ||
-        selection.fileCount !== 1 ||
-        !this.fileSelectionHandler_.isAvailable();
+        selection.fileCount !== 1;
     return;
   }
 
   if (this.dialogType_ === DialogType.SELECT_OPEN_MULTI_FILE) {
     this.dialogFooter_.okButton.disabled =
+        !filesAvailable ||
         selection.directoryCount !== 0 ||
-        selection.fileCount === 0 ||
-        !this.fileSelectionHandler_.isAvailable();
+        selection.fileCount === 0;
     return;
   }
 
