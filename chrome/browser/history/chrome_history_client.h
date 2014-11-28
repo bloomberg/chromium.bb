@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "components/history/core/browser/history_client.h"
-#include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/top_sites_observer.h"
 
 class BookmarkModel;
@@ -21,18 +20,12 @@ class TopSites;
 // This class implements history::HistoryClient to abstract operations that
 // depend on Chrome environment.
 class ChromeHistoryClient : public history::HistoryClient,
-                            public history::HistoryServiceObserver,
                             public history::TopSitesObserver {
  public:
   explicit ChromeHistoryClient(BookmarkModel* bookmark_model,
                                Profile* profile,
                                history::TopSites* top_sites);
   ~ChromeHistoryClient() override;
-
-  // TODO(sdefresne): once NOTIFICATION_HISTORY_URL* notifications are no
-  // longer used, remove this reference to the HistoryService from the
-  // ChromeHistoryClient, http://crbug.com/373326
-  void SetHistoryService(HistoryService* history_service);
 
   // history::HistoryClient:
   void BlockUntilBookmarksLoaded() override;
@@ -52,7 +45,6 @@ class ChromeHistoryClient : public history::HistoryClient,
   // The BookmarkModel, this should outlive ChromeHistoryClient.
   BookmarkModel* bookmark_model_;
   Profile* profile_;
-  HistoryService* history_service_;
   // The TopSites object is owned by the Profile (see
   // chrome/browser/profiles/profile_impl.h)
   // and lazily constructed by the  getter.

@@ -465,11 +465,8 @@ void TestingProfile::CreateFaviconService() {
 
 static KeyedService* BuildHistoryService(content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  ChromeHistoryClient* history_client =
-      ChromeHistoryClientFactory::GetForProfile(profile);
-  HistoryService* history_service = new HistoryService(history_client, profile);
-  if (history_client)
-    history_client->SetHistoryService(history_service);
+  HistoryService* history_service = new HistoryService(
+      ChromeHistoryClientFactory::GetForProfile(profile), profile);
   return history_service;
 }
 
