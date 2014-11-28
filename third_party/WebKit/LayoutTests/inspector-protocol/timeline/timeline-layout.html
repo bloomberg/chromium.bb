@@ -27,17 +27,17 @@ function test()
         var schedRecalc = InspectorTest.findEvent("ScheduleStyleRecalculation", "I");
         var recalcBegin = InspectorTest.findEvent("RecalculateStyles", "B");
         var recalcEnd = InspectorTest.findEvent("RecalculateStyles", "E");
-        InspectorTest.assertEquals(schedRecalc.args.frame, recalcBegin.args.frame, "RecalculateStyles frame");
+        InspectorTest.assertEquals(schedRecalc.args.data.frame, recalcBegin.args.beginData.frame, "RecalculateStyles frame");
         InspectorTest.assert(recalcEnd.args.elementCount > 0, "RecalculateStyles elementCount");
 
         var invalidate = InspectorTest.findEvent("InvalidateLayout", "I");
         var layoutBegin = InspectorTest.findEvent("Layout", "B");
         var layoutEnd = InspectorTest.findEvent("Layout", "E");
 
-        InspectorTest.assertEquals(recalcBegin.args.frame, invalidate.args.frame, "InvalidateLayout frame");
+        InspectorTest.assertEquals(recalcBegin.args.beginData.frame, invalidate.args.data.frame, "InvalidateLayout frame");
 
         var beginData = layoutBegin.args.beginData;
-        InspectorTest.assertEquals(invalidate.args.frame, beginData.frame, "Layout frame");
+        InspectorTest.assertEquals(invalidate.args.data.frame, beginData.frame, "Layout frame");
         InspectorTest.assert(beginData.dirtyObjects > 0, "dirtyObjects");
         InspectorTest.assert(beginData.totalObjects > 0, "totalObjects");
 

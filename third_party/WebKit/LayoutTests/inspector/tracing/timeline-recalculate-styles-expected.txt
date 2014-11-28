@@ -5,12 +5,13 @@ RecalculateStyles Properties:
 {
     data : {
         beginData : {
+            frame : <string>
             stackTrace : <object>
         }
         elementCount : 2
-        frame : <string>
     }
     endTime : <number>
+    frameId : <string>
     stackTrace : <object>
     startTime : <number>
     thread : <string>

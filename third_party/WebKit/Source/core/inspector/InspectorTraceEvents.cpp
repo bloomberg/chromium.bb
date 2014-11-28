@@ -561,6 +561,13 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorScrollLayerEvent::data
     return value.release();
 }
 
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorUpdateLayerTreeEvent::data(LocalFrame* frame)
+{
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("frame", toHexString(frame));
+    return value.release();
+}
+
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorEvaluateScriptEvent::data(LocalFrame* frame, const String& url, int lineNumber)
 {
     RefPtr<TracedValue> value = TracedValue::create();
@@ -628,16 +635,18 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorUpdateCountersEvent::d
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorInvalidateLayoutEvent::data()
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorInvalidateLayoutEvent::data(LocalFrame* frame)
 {
     RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("frame", toHexString(frame));
     setCallStack(value.get());
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorRecalculateStylesEvent::data()
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorRecalculateStylesEvent::data(LocalFrame* frame)
 {
     RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("frame", toHexString(frame));
     setCallStack(value.get());
     return value.release();
 }

@@ -231,6 +231,11 @@ public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(RenderObject*);
 };
 
+class InspectorUpdateLayerTreeEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
+};
+
 class InspectorEvaluateScriptEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*, const String& url, int lineNumber);
@@ -248,12 +253,12 @@ public:
 
 class InspectorInvalidateLayoutEvent {
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data();
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
 };
 
 class InspectorRecalculateStylesEvent {
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data();
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(LocalFrame*);
 };
 
 class InspectorEventDispatchEvent {

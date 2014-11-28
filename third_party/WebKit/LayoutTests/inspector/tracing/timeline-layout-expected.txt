@@ -21,6 +21,7 @@ Layout Properties:
         }
     }
     endTime : <number>
+    frameId : <string>
     stackTrace : <object>
     startTime : <number>
     thread : <string>
@@ -42,6 +43,7 @@ Layout Properties:
         }
     }
     endTime : <number>
+    frameId : <string>
     stackTrace : <object>
     startTime : <number>
     thread : <string>
