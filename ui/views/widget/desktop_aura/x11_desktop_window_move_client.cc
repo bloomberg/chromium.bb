@@ -25,9 +25,11 @@ X11DesktopWindowMoveClient::X11DesktopWindowMoveClient()
 
 X11DesktopWindowMoveClient::~X11DesktopWindowMoveClient() {}
 
-void X11DesktopWindowMoveClient::OnMouseMovement(XMotionEvent* event) {
-  gfx::Point cursor_point(event->x_root, event->y_root);
-  gfx::Point system_loc = cursor_point - window_offset_;
+void X11DesktopWindowMoveClient::OnMouseMovement(
+    const gfx::Point& screen_point,
+    int flags,
+    base::TimeDelta event_time) {
+  gfx::Point system_loc = screen_point - window_offset_;
   host_->SetBounds(gfx::Rect(system_loc, host_->GetBounds().size()));
 }
 

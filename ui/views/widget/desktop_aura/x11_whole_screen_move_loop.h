@@ -13,16 +13,16 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vector2d_f.h"
+#include "ui/gfx/x/x11_types.h"
 #include "ui/views/widget/desktop_aura/x11_move_loop.h"
 #include "ui/views/widget/desktop_aura/x11_move_loop_delegate.h"
-
-typedef struct _XDisplay XDisplay;
 
 namespace aura {
 class Window;
 }
 
 namespace ui {
+class MouseEvent;
 class ScopedEventDispatcher;
 }
 
@@ -55,7 +55,7 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
   void GrabEscKey();
 
   // Creates an input-only window to be used during the drag.
-  Window CreateDragInputWindow(XDisplay* display);
+  XID CreateDragInputWindow(XDisplay* display);
 
   // Dispatch mouse movement event to |delegate_| in a posted task.
   void DispatchMouseMovement();
@@ -74,7 +74,7 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
 
   // An invisible InputOnly window. Keyboard grab and sometimes mouse grab
   // are set on this window.
-  ::Window grab_input_window_;
+  XID grab_input_window_;
 
   // Whether the pointer was grabbed on |grab_input_window_|.
   bool grabbed_pointer_;
@@ -85,7 +85,7 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
   // pressing escape).
   bool canceled_;
 
-  XMotionEvent last_xmotion_;
+  scoped_ptr<ui::MouseEvent> last_motion_in_screen_;
   base::WeakPtrFactory<X11WholeScreenMoveLoop> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(X11WholeScreenMoveLoop);

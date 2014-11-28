@@ -95,7 +95,9 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   void OnWindowDestroyed(aura::Window* window) override;
 
   // Overridden from X11WholeScreenMoveLoopDelegate:
-  void OnMouseMovement(XMotionEvent* event) override;
+  void OnMouseMovement(const gfx::Point& screen_point,
+                       int flags,
+                       base::TimeDelta event_time) override;
   void OnMouseReleased() override;
   void OnMoveLoopEnded() override;
 
@@ -170,6 +172,12 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // server.
   ui::SelectionFormatMap GetFormatMap() const;
 
+  // Returns the modifier state for the most recent mouse move. This is done to
+  // bypass an asynchronous roundtrip with the X11 server.
+  int current_modifier_state() const {
+    return current_modifier_state_;
+  }
+
   // Handling XdndPosition can be paused while waiting for more data; this is
   // called either synchronously from OnXdndPosition, or asynchronously after
   // we've received data requested from the other window.
@@ -204,6 +212,9 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // Target side information.
   class X11DragContext;
   scoped_ptr<X11DragContext> target_current_context_;
+
+  // The modifier state for the most recent mouse move.
+  int current_modifier_state_;
 
   // The Aura window that is currently under the cursor. We need to manually
   // keep track of this because Windows will only call our drag enter method

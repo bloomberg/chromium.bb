@@ -16,6 +16,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater.h"
@@ -24,6 +25,7 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/x11_move_loop.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/public/drag_drop_delegate.h"
 
 #include <X11/Xlib.h>
 
@@ -100,9 +102,38 @@ class TestMoveLoop : public X11MoveLoop {
   bool is_running_;
 };
 
+// Implementation of DesktopDragDropClientAuraX11 which short circuits
+// FindWindowFor().
+class SimpleTestDragDropClient : public DesktopDragDropClientAuraX11 {
+ public:
+  SimpleTestDragDropClient(aura::Window*,
+                           DesktopNativeCursorManager* cursor_manager);
+  ~SimpleTestDragDropClient() override;
+
+  // Sets |xid| as the topmost window for all mouse positions.
+  void SetTopmostXWindow(XID xid);
+
+  // Returns true if the move loop is running.
+  bool IsMoveLoopRunning();
+
+ private:
+  // DesktopDragDropClientAuraX11:
+  scoped_ptr<X11MoveLoop> CreateMoveLoop(
+      X11MoveLoopDelegate* delegate) override;
+  XID FindWindowFor(const gfx::Point& screen_point) override;
+
+  // The XID of the window which is simulated to be the topmost window.
+  XID target_xid_;
+
+  // The move loop. Not owned.
+  TestMoveLoop* loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(SimpleTestDragDropClient);
+};
+
 // Implementation of DesktopDragDropClientAuraX11 which works with a fake
 // |DesktopDragDropClientAuraX11::source_current_window_|.
-class TestDragDropClient : public DesktopDragDropClientAuraX11 {
+class TestDragDropClient : public SimpleTestDragDropClient {
  public:
   // The location in screen coordinates used for the synthetic mouse moves
   // generated in SetTopmostXWindowAndMoveMouse().
@@ -146,22 +177,12 @@ class TestDragDropClient : public DesktopDragDropClientAuraX11 {
   // generates a synthetic mouse move.
   void SetTopmostXWindowAndMoveMouse(::Window xid);
 
-  // Returns true if the move loop is running.
-  bool IsMoveLoopRunning();
-
  private:
   // DesktopDragDropClientAuraX11:
-  scoped_ptr<X11MoveLoop> CreateMoveLoop(
-      X11MoveLoopDelegate* delegate) override;
-  ::Window FindWindowFor(const gfx::Point& screen_point) override;
   void SendXClientEvent(::Window xid, XEvent* event) override;
 
   // The XID of the window which initiated the drag.
   ::Window source_xid_;
-
-  // The XID of the window which is simulated to be the topmost window at the
-  // current mouse position.
-  ::Window target_xid_;
 
   // The move loop. Not owned.
   TestMoveLoop* loop_;
@@ -238,6 +259,41 @@ void TestMoveLoop::EndMoveLoop() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// SimpleTestDragDropClient
+
+SimpleTestDragDropClient::SimpleTestDragDropClient(
+    aura::Window* window,
+    DesktopNativeCursorManager* cursor_manager)
+    : DesktopDragDropClientAuraX11(window,
+                                   cursor_manager,
+                                   gfx::GetXDisplay(),
+                                   window->GetHost()->GetAcceleratedWidget()),
+      target_xid_(None),
+      loop_(NULL) {
+}
+
+SimpleTestDragDropClient::~SimpleTestDragDropClient() {
+}
+
+void SimpleTestDragDropClient::SetTopmostXWindow(XID xid) {
+  target_xid_ = xid;
+}
+
+bool SimpleTestDragDropClient::IsMoveLoopRunning() {
+  return loop_->IsRunning();
+}
+
+scoped_ptr<X11MoveLoop> SimpleTestDragDropClient::CreateMoveLoop(
+    X11MoveLoopDelegate* delegate) {
+  loop_ = new TestMoveLoop(delegate);
+  return scoped_ptr<X11MoveLoop>(loop_);
+}
+
+XID SimpleTestDragDropClient::FindWindowFor(const gfx::Point& screen_point) {
+  return target_xid_;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // TestDragDropClient
 
 // static
@@ -249,12 +305,8 @@ const int TestDragDropClient::kMouseMoveY = 200;
 TestDragDropClient::TestDragDropClient(
     aura::Window* window,
     DesktopNativeCursorManager* cursor_manager)
-    : DesktopDragDropClientAuraX11(window,
-                                   cursor_manager,
-                                   gfx::GetXDisplay(),
-                                   window->GetHost()->GetAcceleratedWidget()),
+    : SimpleTestDragDropClient(window, cursor_manager),
       source_xid_(window->GetHost()->GetAcceleratedWidget()),
-      target_xid_(None),
       loop_(NULL),
       atom_cache_(gfx::GetXDisplay(), kAtomsToCache) {
 }
@@ -311,27 +363,9 @@ void TestDragDropClient::OnFinished(XID target_window,
 }
 
 void TestDragDropClient::SetTopmostXWindowAndMoveMouse(::Window xid) {
-  target_xid_ = xid;
-
-  XMotionEvent event;
-  event.time = CurrentTime;
-  event.x_root = kMouseMoveX;
-  event.y_root = kMouseMoveY;
-  OnMouseMovement(&event);
-}
-
-bool TestDragDropClient::IsMoveLoopRunning() {
-  return loop_->IsRunning();
-}
-
-scoped_ptr<X11MoveLoop> TestDragDropClient::CreateMoveLoop(
-    X11MoveLoopDelegate* delegate) {
-  loop_ = new TestMoveLoop(delegate);
-  return scoped_ptr<X11MoveLoop>(loop_);
-}
-
-::Window TestDragDropClient::FindWindowFor(const gfx::Point& screen_point) {
-  return target_xid_;
+  SetTopmostXWindow(xid);
+  OnMouseMovement(gfx::Point(kMouseMoveX, kMouseMoveY), ui::EF_NONE,
+                  ui::EventTimeForNow());
 }
 
 void TestDragDropClient::SendXClientEvent(::Window xid, XEvent* event) {
@@ -718,6 +752,216 @@ TEST_F(DesktopDragDropClientAuraX11Test, RejectAfterMouseRelease) {
       base::Bind(&RejectAfterMouseReleaseStep3, client()));
   result = StartDragAndDrop();
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE, result);
+}
+
+namespace {
+
+// DragDropDelegate which counts the number of each type of drag-drop event and
+// keeps track of the most recent drag-drop event.
+class TestDragDropDelegate : public aura::client::DragDropDelegate {
+ public:
+  TestDragDropDelegate()
+      : num_enters_(0),
+        num_updates_(0),
+        num_exits_(0),
+        num_drops_(0),
+        last_event_flags_(0) {}
+  ~TestDragDropDelegate() override {}
+
+  int num_enters() const { return num_enters_; }
+  int num_updates() const { return num_updates_; }
+  int num_exits() const { return num_exits_; }
+  int num_drops() const { return num_drops_; }
+  gfx::Point last_event_mouse_position() const {
+    return last_event_mouse_position_;
+  }
+  int last_event_flags() const { return last_event_flags_; }
+
+ private:
+  // aura::client::DragDropDelegate:
+  void OnDragEntered(const ui::DropTargetEvent& event) override {
+    ++num_enters_;
+    last_event_mouse_position_ = event.location();
+    last_event_flags_ = event.flags();
+  }
+
+  int OnDragUpdated(const ui::DropTargetEvent& event) override {
+    ++num_updates_;
+    last_event_mouse_position_ = event.location();
+    last_event_flags_ = event.flags();
+    return ui::DragDropTypes::DRAG_COPY;
+  }
+
+  void OnDragExited() override {
+    ++num_exits_;
+  }
+
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) override {
+    ++num_drops_;
+    last_event_mouse_position_ = event.location();
+    last_event_flags_ = event.flags();
+    return ui::DragDropTypes::DRAG_COPY;
+  }
+
+  int num_enters_;
+  int num_updates_;
+  int num_exits_;
+  int num_drops_;
+
+  gfx::Point last_event_mouse_position_;
+  int last_event_flags_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDragDropDelegate);
+};
+
+}  // namespace
+
+// Test harness for tests where the drag and drop source and target are both
+// Chrome windows.
+class DesktopDragDropClientAuraX11ChromeSourceTargetTest
+    : public ViewsTestBase {
+ public:
+  DesktopDragDropClientAuraX11ChromeSourceTargetTest() {
+  }
+
+  ~DesktopDragDropClientAuraX11ChromeSourceTargetTest() override {}
+
+  int StartDragAndDrop() {
+    ui::OSExchangeData data;
+    data.SetString(base::ASCIIToUTF16("Test"));
+
+    return client_->StartDragAndDrop(
+        data,
+        widget_->GetNativeWindow()->GetRootWindow(),
+        widget_->GetNativeWindow(),
+        gfx::Point(),
+        ui::DragDropTypes::DRAG_COPY,
+        ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+  }
+
+  // ViewsTestBase:
+  void SetUp() override {
+    ViewsTestBase::SetUp();
+
+    // Create widget to initiate the drags.
+    widget_.reset(new Widget);
+    Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.native_widget = new DesktopNativeWidgetAura(widget_.get());
+    params.bounds = gfx::Rect(100, 100);
+    widget_->Init(params);
+    widget_->Show();
+
+    cursor_manager_.reset(new DesktopNativeCursorManager(
+        DesktopCursorLoaderUpdater::Create()));
+
+    client_.reset(new SimpleTestDragDropClient(widget_->GetNativeWindow(),
+                                               cursor_manager_.get()));
+    client_->Init();
+  }
+
+  void TearDown() override {
+    client_.reset();
+    cursor_manager_.reset();
+    widget_.reset();
+    ViewsTestBase::TearDown();
+  }
+
+  SimpleTestDragDropClient* client() {
+    return client_.get();
+  }
+
+ private:
+  scoped_ptr<SimpleTestDragDropClient> client_;
+  scoped_ptr<DesktopNativeCursorManager> cursor_manager_;
+
+  // The widget used to initiate drags.
+  scoped_ptr<Widget> widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(DesktopDragDropClientAuraX11ChromeSourceTargetTest);
+};
+
+namespace {
+
+void ChromeSourceTargetStep2(SimpleTestDragDropClient* client,
+                             int modifier_flags) {
+  EXPECT_TRUE(client->IsMoveLoopRunning());
+
+  scoped_ptr<Widget> target_widget(new Widget);
+  Widget::InitParams target_params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  target_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  target_params.native_widget =
+      new DesktopNativeWidgetAura(target_widget.get());
+  target_params.bounds = gfx::Rect(100, 100);
+  target_widget->Init(target_params);
+  target_widget->Show();
+
+  TestDragDropDelegate* delegate = new TestDragDropDelegate;
+  aura::client::SetDragDropDelegate(target_widget->GetNativeWindow(), delegate);
+
+  client->SetTopmostXWindow(
+      target_widget->GetNativeView()->GetHost()->GetAcceleratedWidget());
+
+  gfx::Rect target_widget_bounds_in_screen =
+      target_widget->GetWindowBoundsInScreen();
+  gfx::Point point1_in_screen = target_widget_bounds_in_screen.CenterPoint();
+  gfx::Point point1_in_target_widget(
+      target_widget_bounds_in_screen.width() / 2,
+      target_widget_bounds_in_screen.height() / 2);
+  gfx::Point point2_in_screen = point1_in_screen + gfx::Vector2d(1, 0);
+  gfx::Point point2_in_target_widget =
+      point1_in_target_widget + gfx::Vector2d(1, 0);
+
+  client->OnMouseMovement(point1_in_screen, modifier_flags,
+                          ui::EventTimeForNow());
+  EXPECT_EQ(1, delegate->num_enters());
+  EXPECT_EQ(1, delegate->num_updates());
+  EXPECT_EQ(0, delegate->num_exits());
+  EXPECT_EQ(0, delegate->num_drops());
+  EXPECT_EQ(point1_in_target_widget.ToString(),
+            delegate->last_event_mouse_position().ToString());
+  EXPECT_EQ(modifier_flags, delegate->last_event_flags());
+
+  client->OnMouseMovement(point2_in_screen, modifier_flags,
+                          ui::EventTimeForNow());
+  EXPECT_EQ(1, delegate->num_enters());
+  EXPECT_EQ(2, delegate->num_updates());
+  EXPECT_EQ(0, delegate->num_exits());
+  EXPECT_EQ(0, delegate->num_drops());
+  EXPECT_EQ(point2_in_target_widget.ToString(),
+            delegate->last_event_mouse_position().ToString());
+  EXPECT_EQ(modifier_flags, delegate->last_event_flags());
+
+  client->OnMouseReleased();
+  EXPECT_EQ(1, delegate->num_enters());
+  EXPECT_EQ(2, delegate->num_updates());
+  EXPECT_EQ(0, delegate->num_exits());
+  EXPECT_EQ(1, delegate->num_drops());
+  EXPECT_EQ(point2_in_target_widget.ToString(),
+            delegate->last_event_mouse_position().ToString());
+  EXPECT_EQ(modifier_flags, delegate->last_event_flags());
+
+  EXPECT_FALSE(client->IsMoveLoopRunning());
+}
+
+}  // namespace
+
+TEST_F(DesktopDragDropClientAuraX11ChromeSourceTargetTest, Basic) {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&ChromeSourceTargetStep2, client(), ui::EF_NONE));
+  int result = StartDragAndDrop();
+  EXPECT_EQ(ui::DragDropTypes::DRAG_COPY, result);
+}
+
+// Test that if 'Ctrl' is pressed during a drag and drop operation, that
+// the aura::client::DragDropDelegate is properly notified.
+TEST_F(DesktopDragDropClientAuraX11ChromeSourceTargetTest, CtrlPressed) {
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&ChromeSourceTargetStep2, client(), ui::EF_CONTROL_DOWN));
+  int result = StartDragAndDrop();
+  EXPECT_EQ(ui::DragDropTypes::DRAG_COPY, result);
 }
 
 }  // namespace views
