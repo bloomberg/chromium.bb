@@ -50,6 +50,21 @@ partial interface MyIFacePartial { };
 partial interface MyIFaceInherit : Foo {};
 
 /* TREE
+ *Interface(MyIFaceMissingArgument)
+ *  Operation(foo)
+ *    Arguments()
+ *      Argument(arg)
+ *        Type()
+ *          PrimitiveType(DOMString)
+ *      Error(Missing argument.)
+ *    Type()
+ *      PrimitiveType(void)
+ */
+interface MyIFaceMissingArgument {
+  void foo(DOMString arg, );
+};
+
+/* TREE
  *Interface(MyIFaceBig)
  *  Const(setString)
  *    PrimitiveType(DOMString)

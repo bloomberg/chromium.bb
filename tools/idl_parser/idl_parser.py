@@ -283,6 +283,12 @@ class IDLParser(object):
     """Dictionary : DICTIONARY error ';'"""
     p[0] = self.BuildError(p, 'Dictionary')
 
+  # [11.2] Error recovery for regular Dictionary
+  # (for errors inside dictionary definition)
+  def p_DictionaryError2(self, p):
+    """Dictionary : DICTIONARY identifier Inheritance '{' error"""
+    p[0] = self.BuildError(p, 'Dictionary')
+
   # [12]
   def p_DictionaryMembers(self, p):
     """DictionaryMembers : ExtendedAttributeList DictionaryMember DictionaryMembers
@@ -589,6 +595,11 @@ class IDLParser(object):
                  |"""
     if len(p) > 1:
       p[0] = ListFromConcat(p[2], p[3])
+
+  # [54.1] Arguments error recovery
+  def p_ArgumentsError(self, p):
+    """Arguments : ',' error"""
+    p[0] = self.BuildError(p, 'Arguments')
 
   # [55]
   def p_Argument(self, p):

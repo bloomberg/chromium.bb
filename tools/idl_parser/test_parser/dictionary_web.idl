@@ -92,4 +92,7 @@ dictionary MyDictNull {
   DOMString? setString = null;
 };
 
-
+/* ERROR Unexpected keyword "attribute" after "{". */
+dictionary MyDictUnexpectedAttribute {
+  attribute DOMString foo = "";
+};
