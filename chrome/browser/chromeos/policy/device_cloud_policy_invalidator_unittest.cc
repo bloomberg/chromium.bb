@@ -172,9 +172,9 @@ void DeviceCloudPolicyInvalidatorTest::TearDown() {
   base::RunLoop().RunUntilIdle();
 
   invalidation::ProfileInvalidationProviderFactory::GetInstance()->
-      RegisterTestingFactory(NULL);
+      RegisterTestingFactory(nullptr);
   chromeos::DeviceSettingsService::Get()->UnsetSessionManager();
-  TestingBrowserProcess::GetGlobal()->SetBrowserPolicyConnector(NULL);
+  TestingBrowserProcess::GetGlobal()->SetBrowserPolicyConnector(nullptr);
   chromeos::DeviceOAuth2TokenServiceFactory::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
   chromeos::SystemSaltGetter::Shutdown();
@@ -209,7 +209,7 @@ DeviceCloudPolicyInvalidatorTest::GetProfileInvalidationService(
           invalidation::ProfileInvalidationProviderFactory::GetInstance()->
               GetServiceForBrowserContext(profile, false));
   if (!invalidation_provider)
-    return NULL;
+    return nullptr;
   return static_cast<invalidation::FakeInvalidationService*>(
       invalidation_provider->GetInvalidationService());
 }

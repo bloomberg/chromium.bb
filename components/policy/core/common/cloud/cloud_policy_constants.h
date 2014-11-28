@@ -6,7 +6,6 @@
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_CONSTANTS_H_
 
 #include <string>
-#include <utility>
 
 #include "components/policy/policy_export.h"
 
@@ -121,9 +120,6 @@ enum DeviceMode {
                                           // consumer kiosk with ability to auto
                                           // launch a kiosk webapp.
 };
-
-// A pair that combines a policy fetch type and entity ID.
-typedef std::pair<std::string, std::string> PolicyNamespaceKey;
 
 // Returns the Chrome user policy type to use. This allows overridding the
 // default user policy type on Android and iOS for testing purposes.

@@ -32,10 +32,12 @@ namespace {
 bool NotInSchemaMap(const scoped_refptr<SchemaMap> schema_map,
                     PolicyDomain domain,
                     const std::string& component_id) {
-  return schema_map->GetSchema(PolicyNamespace(domain, component_id)) == NULL;
+  return schema_map->GetSchema(PolicyNamespace(domain, component_id)) ==
+         nullptr;
 }
 
-bool ToPolicyNamespace(const PolicyNamespaceKey& key, PolicyNamespace* ns) {
+bool ToPolicyNamespace(const std::pair<std::string, std::string>& key,
+                       PolicyNamespace* ns) {
   if (!ComponentCloudPolicyStore::GetPolicyDomain(key.first, &ns->domain))
     return false;
   ns->component_id = key.second;
@@ -304,8 +306,8 @@ void ComponentCloudPolicyService::OnCoreConnected(CloudPolicyCore* core) {
   core_->client()->AddObserver(this);
 
   // Register the supported policy domains at the client.
-  core_->client()->AddNamespaceToFetch(
-      PolicyNamespaceKey(dm_protocol::kChromeExtensionPolicyType, ""));
+  core_->client()->AddPolicyTypeToFetch(
+      dm_protocol::kChromeExtensionPolicyType, std::string());
 
   // Immediately load any PolicyFetchResponses that the client may already
   // have if the backend is ready.
@@ -320,8 +322,8 @@ void ComponentCloudPolicyService::OnCoreDisconnecting(CloudPolicyCore* core) {
   core_->client()->RemoveObserver(this);
 
   // Remove all the namespaces from the client.
-  core_->client()->RemoveNamespaceToFetch(
-      PolicyNamespaceKey(dm_protocol::kChromeExtensionPolicyType, ""));
+  core_->client()->RemovePolicyTypeToFetch(
+      dm_protocol::kChromeExtensionPolicyType, std::string());
 }
 
 void ComponentCloudPolicyService::OnRefreshSchedulerStarted(
@@ -396,8 +398,7 @@ void ComponentCloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
   // Backend.
   const CloudPolicyClient::ResponseMap& responses =
       core_->client()->responses();
-  for (CloudPolicyClient::ResponseMap::const_iterator it = responses.begin();
-       it != responses.end(); ++it) {
+  for (auto it = responses.begin(); it != responses.end(); ++it) {
     PolicyNamespace ns;
     if (ToPolicyNamespace(it->first, &ns) &&
         current_schema_map_->GetSchema(ns)) {

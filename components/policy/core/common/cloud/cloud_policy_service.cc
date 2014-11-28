@@ -11,15 +11,17 @@ namespace em = enterprise_management;
 
 namespace policy {
 
-CloudPolicyService::CloudPolicyService(const PolicyNamespaceKey& policy_ns_key,
+CloudPolicyService::CloudPolicyService(const std::string& policy_type,
+                                       const std::string& settings_entity_id,
                                        CloudPolicyClient* client,
                                        CloudPolicyStore* store)
-    : policy_ns_key_(policy_ns_key),
+    : policy_type_(policy_type),
+      settings_entity_id_(settings_entity_id),
       client_(client),
       store_(store),
       refresh_state_(REFRESH_NONE),
       initialization_complete_(false) {
-  client_->AddNamespaceToFetch(policy_ns_key_);
+  client_->AddPolicyTypeToFetch(policy_type_, settings_entity_id_);
   client_->AddObserver(this);
   store_->AddObserver(this);
 
@@ -29,7 +31,7 @@ CloudPolicyService::CloudPolicyService(const PolicyNamespaceKey& policy_ns_key,
 }
 
 CloudPolicyService::~CloudPolicyService() {
-  client_->RemoveNamespaceToFetch(policy_ns_key_);
+  client_->RemovePolicyTypeToFetch(policy_type_, settings_entity_id_);
   client_->RemoveObserver(this);
   store_->RemoveObserver(this);
 }
@@ -64,7 +66,8 @@ void CloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
     return;
   }
 
-  const em::PolicyFetchResponse* policy = client_->GetPolicyFor(policy_ns_key_);
+  const em::PolicyFetchResponse* policy =
+      client_->GetPolicyFor(policy_type_, settings_entity_id_);
   if (policy) {
     if (refresh_state_ != REFRESH_NONE)
       refresh_state_ = REFRESH_POLICY_STORE;

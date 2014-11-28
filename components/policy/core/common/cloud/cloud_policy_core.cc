@@ -17,10 +17,12 @@ namespace policy {
 CloudPolicyCore::Observer::~Observer() {}
 
 CloudPolicyCore::CloudPolicyCore(
-    const PolicyNamespaceKey& key,
+    const std::string& policy_type,
+    const std::string& settings_entity_id,
     CloudPolicyStore* store,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : policy_ns_key_(key),
+    : policy_type_(policy_type),
+      settings_entity_id_(settings_entity_id),
       store_(store),
       task_runner_(task_runner) {}
 
@@ -30,7 +32,8 @@ void CloudPolicyCore::Connect(scoped_ptr<CloudPolicyClient> client) {
   CHECK(!client_);
   CHECK(client);
   client_ = client.Pass();
-  service_.reset(new CloudPolicyService(policy_ns_key_, client_.get(), store_));
+  service_.reset(new CloudPolicyService(policy_type_, settings_entity_id_,
+                                        client_.get(), store_));
   FOR_EACH_OBSERVER(Observer, observers_, OnCoreConnected(this));
 }
 

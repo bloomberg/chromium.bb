@@ -99,15 +99,15 @@ DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     ServerBackedStateKeysBroker* state_keys_broker)
     : CloudPolicyManager(
-          PolicyNamespaceKey(dm_protocol::kChromeDevicePolicyType,
-                             std::string()),
+          dm_protocol::kChromeDevicePolicyType,
+          std::string(),
           store.get(),
           task_runner,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)),
       device_store_(store.Pass()),
       state_keys_broker_(state_keys_broker),
-      local_state_(NULL) {
+      local_state_(nullptr) {
 }
 
 DeviceCloudPolicyManagerChromeOS::~DeviceCloudPolicyManagerChromeOS() {}

@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
-#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/policy_export.h"
 
@@ -39,7 +38,8 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
   };
 
   // |client| and |store| must remain valid for the object life time.
-  CloudPolicyService(const PolicyNamespaceKey& policy_ns_key,
+  CloudPolicyService(const std::string& policy_type,
+                     const std::string& settings_entity_id,
                      CloudPolicyClient* client,
                      CloudPolicyStore* store);
   ~CloudPolicyService() override;
@@ -76,8 +76,10 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
   // is passed through to the refresh callbacks.
   void RefreshCompleted(bool success);
 
-  // The policy namespace fetched by |client_| and expected by |store_|.
-  PolicyNamespaceKey policy_ns_key_;
+  // The policy type that will be fetched by the |client_|, with the optional
+  // |settings_entity_id_|.
+  std::string policy_type_;
+  std::string settings_entity_id_;
 
   // The client used to talk to the cloud.
   CloudPolicyClient* client_;

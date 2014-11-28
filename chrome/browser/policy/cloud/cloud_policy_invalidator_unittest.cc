@@ -211,11 +211,11 @@ class CloudPolicyInvalidatorTest : public testing::Test {
 };
 
 CloudPolicyInvalidatorTest::CloudPolicyInvalidatorTest()
-    : core_(PolicyNamespaceKey(dm_protocol::kChromeUserPolicyType,
-                               std::string()),
+    : core_(dm_protocol::kChromeUserPolicyType,
+            std::string(),
             &store_,
             loop_.message_loop_proxy()),
-      client_(NULL),
+      client_(nullptr),
       task_runner_(new base::TestSimpleTaskRunner()),
       clock_(new base::SimpleTestClock()),
       object_id_a_(135, "asdf"),
@@ -274,7 +274,7 @@ void CloudPolicyInvalidatorTest::StartRefreshScheduler() {
 }
 
 void CloudPolicyInvalidatorTest::DisconnectCore() {
-  client_ = NULL;
+  client_ = nullptr;
   core_.Disconnect();
 }
 

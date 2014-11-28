@@ -76,8 +76,8 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
         management_mode_ == em::PolicyData::CONSUMER_MANAGED);
   store_->AddObserver(this);
   client_->AddObserver(this);
-  client_->AddNamespaceToFetch(PolicyNamespaceKey(
-      dm_protocol::kChromeDevicePolicyType, std::string()));
+  client_->AddPolicyTypeToFetch(dm_protocol::kChromeDevicePolicyType,
+                                std::string());
 }
 
 EnrollmentHandlerChromeOS::~EnrollmentHandlerChromeOS() {
@@ -106,7 +106,7 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
 
   // Validate the policy.
   const em::PolicyFetchResponse* policy = client_->GetPolicyFor(
-      PolicyNamespaceKey(dm_protocol::kChromeDevicePolicyType, std::string()));
+      dm_protocol::kChromeDevicePolicyType, std::string());
   if (!policy) {
     ReportResult(EnrollmentStatus::ForFetchError(
         DM_STATUS_RESPONSE_DECODING_ERROR));
@@ -141,7 +141,7 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
     // ValidateInitialKey(). ValidateInitialKey() still checks that the policy
     // data is correctly signed by the new public key when the verification key
     // is empty.
-    validator->ValidateInitialKey("", "");
+    validator->ValidateInitialKey(std::string(), std::string());
   } else {
     // If |domain| is empty here, the policy validation code will just use the
     // domain from the username field in the policy itself to do key validation.

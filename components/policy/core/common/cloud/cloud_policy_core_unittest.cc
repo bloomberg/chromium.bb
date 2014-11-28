@@ -21,8 +21,8 @@ class CloudPolicyCoreTest : public testing::Test,
                             public CloudPolicyCore::Observer {
  protected:
   CloudPolicyCoreTest()
-      : core_(PolicyNamespaceKey(dm_protocol::kChromeUserPolicyType,
-                                 std::string()),
+      : core_(dm_protocol::kChromeUserPolicyType,
+              std::string(),
               &store_,
               loop_.message_loop_proxy()),
         core_connected_callback_count_(0),

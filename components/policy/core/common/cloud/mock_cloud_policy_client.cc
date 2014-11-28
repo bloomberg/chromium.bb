@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "policy/proto/device_management_backend.pb.h"
@@ -15,9 +17,9 @@ MockCloudPolicyClient::MockCloudPolicyClient()
                         std::string(),
                         std::string(),
                         USER_AFFILIATION_NONE,
-                        NULL,
-                        NULL,
-                        NULL) {}
+                        nullptr,
+                        nullptr,
+                        nullptr) {}
 
 MockCloudPolicyClient::~MockCloudPolicyClient() {}
 
@@ -25,9 +27,11 @@ void MockCloudPolicyClient::SetDMToken(const std::string& token) {
   dm_token_ = token;
 }
 
-void MockCloudPolicyClient::SetPolicy(const PolicyNamespaceKey& policy_ns_key,
+void MockCloudPolicyClient::SetPolicy(const std::string& policy_type,
+                                      const std::string& settings_entity_id,
                                       const em::PolicyFetchResponse& policy) {
-  em::PolicyFetchResponse*& response = responses_[policy_ns_key];
+  em::PolicyFetchResponse*& response =
+      responses_[std::make_pair(policy_type, settings_entity_id)];
   delete response;
   response = new enterprise_management::PolicyFetchResponse(policy);
 }

@@ -80,12 +80,12 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
-    : CloudPolicyManager(
-          PolicyNamespaceKey(dm_protocol::kChromeUserPolicyType, std::string()),
-          store.get(),
-          task_runner,
-          file_task_runner,
-          io_task_runner),
+    : CloudPolicyManager(dm_protocol::kChromeUserPolicyType,
+                         std::string(),
+                         store.get(),
+                         task_runner,
+                         file_task_runner,
+                         io_task_runner),
       store_(store.Pass()),
       external_data_manager_(external_data_manager.Pass()),
       component_policy_cache_path_(component_policy_cache_path),
@@ -125,7 +125,7 @@ void UserCloudPolicyManagerChromeOS::Connect(
   scoped_ptr<CloudPolicyClient> cloud_policy_client(
       new CloudPolicyClient(std::string(), std::string(),
                             kPolicyVerificationKeyHash, user_affiliation,
-                            NULL, device_management_service,
+                            nullptr, device_management_service,
                             request_context));
   core()->Connect(cloud_policy_client.Pass());
   client()->AddObserver(this);

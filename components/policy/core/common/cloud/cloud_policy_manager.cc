@@ -23,12 +23,13 @@
 namespace policy {
 
 CloudPolicyManager::CloudPolicyManager(
-    const PolicyNamespaceKey& policy_ns_key,
+    const std::string& policy_type,
+    const std::string& settings_entity_id,
     CloudPolicyStore* cloud_policy_store,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
-    : core_(policy_ns_key, cloud_policy_store, task_runner),
+    : core_(policy_type, settings_entity_id, cloud_policy_store, task_runner),
       waiting_for_policy_refresh_(false),
       file_task_runner_(file_task_runner),
       io_task_runner_(io_task_runner) {

@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_member.h"
-#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/policy_export.h"
 
 class PrefService;
@@ -52,7 +51,8 @@ class POLICY_EXPORT CloudPolicyCore {
   };
 
   // |task_runner| is the runner for policy refresh tasks.
-  CloudPolicyCore(const PolicyNamespaceKey& policy_ns_key,
+  CloudPolicyCore(const std::string& policy_type,
+                  const std::string& settings_entity_id,
                   CloudPolicyStore* store,
                   const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~CloudPolicyCore();
@@ -101,7 +101,8 @@ class POLICY_EXPORT CloudPolicyCore {
   // Updates the refresh scheduler on refresh delay changes.
   void UpdateRefreshDelayFromPref();
 
-  PolicyNamespaceKey policy_ns_key_;
+  std::string policy_type_;
+  std::string settings_entity_id_;
   CloudPolicyStore* store_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_ptr<CloudPolicyClient> client_;

@@ -49,7 +49,7 @@ namespace policy {
 
 namespace {
 
-// Creates and initializes a cloud policy client. Returns NULL if the device
+// Creates and initializes a cloud policy client. Returns nullptr if the device
 // doesn't have credentials in device settings (i.e. is not
 // enterprise-enrolled).
 scoped_ptr<CloudPolicyClient> CreateClient(
@@ -68,11 +68,10 @@ scoped_ptr<CloudPolicyClient> CreateClient(
       new SystemPolicyRequestContext(
           system_request_context, GetUserAgent());
 
-  scoped_ptr<CloudPolicyClient> client(
-      new CloudPolicyClient(std::string(), std::string(),
-                            kPolicyVerificationKeyHash,
-                            USER_AFFILIATION_MANAGED,
-                            NULL, device_management_service, request_context));
+  scoped_ptr<CloudPolicyClient> client(new CloudPolicyClient(
+      std::string(), std::string(), kPolicyVerificationKeyHash,
+      USER_AFFILIATION_MANAGED, nullptr, device_management_service,
+      request_context));
   client->SetupRegistration(policy_data->request_token(),
                             policy_data->device_id());
   return client.Pass();
@@ -129,8 +128,8 @@ DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
       store_(store.Pass()),
       extension_tracker_(account, store_.get(), &schema_registry_),
       external_data_manager_(external_data_manager),
-      core_(PolicyNamespaceKey(dm_protocol::kChromePublicAccountPolicyType,
-                               store_->account_id()),
+      core_(dm_protocol::kChromePublicAccountPolicyType,
+            store_->account_id(),
             store_.get(),
             task_runner),
       policy_update_callback_(policy_update_callback) {
@@ -146,7 +145,7 @@ DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
   // Unblock the |schema_registry_| so that the |component_policy_service_|
   // starts using it.
   schema_registry_.RegisterComponent(
-      PolicyNamespace(POLICY_DOMAIN_CHROME, ""),
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()),
       g_browser_process->browser_policy_connector()->GetChromeSchema());
   schema_registry_.SetReady(POLICY_DOMAIN_CHROME);
   schema_registry_.SetReady(POLICY_DOMAIN_EXTENSIONS);
@@ -154,7 +153,7 @@ DeviceLocalAccountPolicyBroker::DeviceLocalAccountPolicyBroker(
 
 DeviceLocalAccountPolicyBroker::~DeviceLocalAccountPolicyBroker() {
   store_->RemoveObserver(this);
-  external_data_manager_->SetPolicyStore(NULL);
+  external_data_manager_->SetPolicyStore(nullptr);
   external_data_manager_->Disconnect();
 }
 
@@ -252,7 +251,7 @@ DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
     : session_manager_client_(session_manager_client),
       device_settings_service_(device_settings_service),
       cros_settings_(cros_settings),
-      device_management_service_(NULL),
+      device_management_service_(nullptr),
       waiting_for_cros_settings_(false),
       orphan_extension_cache_deletion_state_(NOT_STARTED),
       store_background_task_runner_(store_background_task_runner),
@@ -279,8 +278,8 @@ DeviceLocalAccountPolicyService::~DeviceLocalAccountPolicyService() {
 }
 
 void DeviceLocalAccountPolicyService::Shutdown() {
-  device_management_service_ = NULL;
-  request_context_ = NULL;
+  device_management_service_ = nullptr;
+  request_context_ = nullptr;
   DeleteBrokers(&policy_brokers_);
 }
 
@@ -303,7 +302,7 @@ DeviceLocalAccountPolicyBroker*
         const std::string& user_id) {
   PolicyBrokerMap::iterator entry = policy_brokers_.find(user_id);
   if (entry == policy_brokers_.end())
-    return NULL;
+    return nullptr;
 
   return entry->second;
 }
@@ -558,7 +557,7 @@ DeviceLocalAccountPolicyBroker*
     if (it->second->core()->store() == store)
       return it->second;
   }
-  return NULL;
+  return nullptr;
 }
 
 void DeviceLocalAccountPolicyService::NotifyPolicyUpdated(

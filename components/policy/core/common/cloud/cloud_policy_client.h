@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -38,8 +39,9 @@ class DeviceManagementService;
 // installed in the cloud policy cache.
 class POLICY_EXPORT CloudPolicyClient {
  public:
-  // Maps a PolicyNamespaceKey to its corresponding PolicyFetchResponse.
-  typedef std::map<PolicyNamespaceKey,
+  // Maps a (policy type, settings entity ID) pair to its corresponding
+  // PolicyFetchResponse.
+  typedef std::map<std::pair<std::string, std::string>,
                    enterprise_management::PolicyFetchResponse*> ResponseMap;
 
   // A callback which receives boolean status of an operation.  If the operation
@@ -168,11 +170,16 @@ class POLICY_EXPORT CloudPolicyClient {
     public_key_version_valid_ = false;
   }
 
-  // FetchPolicy() calls will request this policy namespace.
-  void AddNamespaceToFetch(const PolicyNamespaceKey& policy_ns_key);
+  // FetchPolicy() calls will request this policy type.
+  // If |settings_entity_id| is empty then it won't be set in the
+  // PolicyFetchRequest.
+  void AddPolicyTypeToFetch(const std::string& policy_type,
+                            const std::string& settings_entity_id);
 
-  // FetchPolicy() calls won't request the given policy namespace anymore.
-  void RemoveNamespaceToFetch(const PolicyNamespaceKey& policy_ns_key);
+  // FetchPolicy() calls won't request the given policy type and optional
+  // |settings_entity_id| anymore.
+  void RemovePolicyTypeToFetch(const std::string& policy_type,
+                               const std::string& settings_entity_id);
 
   // Configures a set of device state keys to transfer to the server in the next
   // policy fetch. If the fetch is successful, the keys will be cleared so they
@@ -196,10 +203,11 @@ class POLICY_EXPORT CloudPolicyClient {
     return responses_;
   }
 
-  // Returns the policy response for |policy_ns_key|, if found in |responses()|;
-  // otherwise returns NULL.
+  // Returns the policy response for the (|policy_type|, |settings_entity_id|)
+  // pair if found in |responses()|. Otherwise returns nullptr.
   const enterprise_management::PolicyFetchResponse* GetPolicyFor(
-      const PolicyNamespaceKey& policy_ns_key) const;
+      const std::string& policy_type,
+      const std::string& settings_entity_id) const;
 
   DeviceManagementStatus status() const {
     return status_;
@@ -219,8 +227,8 @@ class POLICY_EXPORT CloudPolicyClient {
   scoped_refptr<net::URLRequestContextGetter> GetRequestContext();
 
  protected:
-  // A set of PolicyNamespaceKeys to fetch.
-  typedef std::set<PolicyNamespaceKey> NamespaceSet;
+  // A set of (policy type, settings entity ID) pairs to fetch.
+  typedef std::set<std::pair<std::string, std::string>> PolicyTypeSet;
 
   // Callback for retries of registration requests.
   void OnRetryRegister(DeviceManagementRequestJob* job);
@@ -267,7 +275,7 @@ class POLICY_EXPORT CloudPolicyClient {
   const std::string machine_model_;
   const std::string verification_key_hash_;
   const UserAffiliation user_affiliation_;
-  NamespaceSet namespaces_to_fetch_;
+  PolicyTypeSet types_to_fetch_;
   std::vector<std::string> state_keys_to_upload_;
 
   std::string dm_token_;

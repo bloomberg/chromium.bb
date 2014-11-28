@@ -41,7 +41,8 @@ class ProfilePolicyConnectorTest : public testing::Test {
 
     cloud_policy_store_.NotifyStoreLoaded();
     cloud_policy_manager_.reset(
-        new CloudPolicyManager(PolicyNamespaceKey("", ""),
+        new CloudPolicyManager(std::string(),
+                               std::string(),
                                &cloud_policy_store_,
                                loop_.message_loop_proxy(),
                                loop_.message_loop_proxy(),
@@ -49,7 +50,7 @@ class ProfilePolicyConnectorTest : public testing::Test {
   }
 
   void TearDown() override {
-    TestingBrowserProcess::GetGlobal()->SetBrowserPolicyConnector(NULL);
+    TestingBrowserProcess::GetGlobal()->SetBrowserPolicyConnector(nullptr);
     cloud_policy_manager_->Shutdown();
   }
 
@@ -64,7 +65,7 @@ TEST_F(ProfilePolicyConnectorTest, IsPolicyFromCloudPolicy) {
   ProfilePolicyConnector connector;
   connector.Init(false,
 #if defined(OS_CHROMEOS)
-                 NULL,
+                 nullptr,
 #endif
                  &schema_registry_,
                  cloud_policy_manager_.get());
@@ -72,7 +73,7 @@ TEST_F(ProfilePolicyConnectorTest, IsPolicyFromCloudPolicy) {
   // No policy is set initially.
   EXPECT_FALSE(
       connector.IsPolicyFromCloudPolicy(autofill::prefs::kAutofillEnabled));
-  PolicyNamespace chrome_ns(POLICY_DOMAIN_CHROME, "");
+  PolicyNamespace chrome_ns(POLICY_DOMAIN_CHROME, std::string());
   EXPECT_FALSE(connector.policy_service()->GetPolicies(chrome_ns).GetValue(
       key::kAutoFillEnabled));
 
@@ -81,7 +82,7 @@ TEST_F(ProfilePolicyConnectorTest, IsPolicyFromCloudPolicy) {
                                       POLICY_LEVEL_MANDATORY,
                                       POLICY_SCOPE_USER,
                                       new base::FundamentalValue(false),
-                                      NULL);
+                                      nullptr);
   cloud_policy_store_.NotifyStoreLoaded();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(connector.IsPolicyFromCloudPolicy(key::kAutoFillEnabled));
@@ -97,7 +98,7 @@ TEST_F(ProfilePolicyConnectorTest, IsPolicyFromCloudPolicy) {
           POLICY_LEVEL_MANDATORY,
           POLICY_SCOPE_USER,
           new base::FundamentalValue(true),
-          NULL);
+          nullptr);
   mock_provider_.UpdateChromePolicy(map);
   EXPECT_FALSE(connector.IsPolicyFromCloudPolicy(key::kAutoFillEnabled));
   value = connector.policy_service()->GetPolicies(chrome_ns).GetValue(

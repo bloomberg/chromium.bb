@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
-#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_service.h"
@@ -50,7 +49,8 @@ class POLICY_EXPORT CloudPolicyManager
   // |io_task_runner| is used for network IO. Currently this must be the IO
   // BrowserThread.
   CloudPolicyManager(
-      const PolicyNamespaceKey& policy_ns_key,
+      const std::string& policy_type,
+      const std::string& settings_entity_id,
       CloudPolicyStore* cloud_policy_store,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,

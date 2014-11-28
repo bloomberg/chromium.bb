@@ -172,9 +172,8 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshManagedNotYetFetched) {
 
 TEST_F(CloudPolicyRefreshSchedulerTest, InitialRefreshManagedAlreadyFetched) {
   last_update_ = base::Time::NowFromSystemTime();
-  client_.SetPolicy(PolicyNamespaceKey(dm_protocol::kChromeUserPolicyType,
-                                       std::string()),
-      em::PolicyFetchResponse());
+  client_.SetPolicy(dm_protocol::kChromeUserPolicyType, std::string(),
+                    em::PolicyFetchResponse());
   scoped_ptr<CloudPolicyRefreshScheduler> scheduler(CreateRefreshScheduler());
   CheckTiming(kPolicyRefreshRate);
   EXPECT_CALL(client_, FetchPolicy()).Times(1);
