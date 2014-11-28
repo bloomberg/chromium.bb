@@ -121,6 +121,9 @@ public:
 
     void didChangeTimerAlignmentInterval();
 
+    int timerNestingLevel() { return m_timerNestingLevel; }
+    void setTimerNestingLevel(int level) { m_timerNestingLevel = level; }
+
     SandboxFlags sandboxFlags() const { return m_sandboxFlags; }
     bool isSandboxed(SandboxFlags mask) const { return m_sandboxFlags & mask; }
     void enforceSandboxFlags(SandboxFlags mask);
@@ -159,6 +162,7 @@ private:
     int m_circularSequentialID;
     typedef HashMap<int, OwnPtr<DOMTimer> > TimeoutMap;
     TimeoutMap m_timeouts;
+    int m_timerNestingLevel;
 
     bool m_inDispatchErrorEvent;
     class PendingException;

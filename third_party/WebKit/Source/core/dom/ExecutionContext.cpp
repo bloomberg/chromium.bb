@@ -69,6 +69,7 @@ public:
 ExecutionContext::ExecutionContext()
     : m_sandboxFlags(SandboxNone)
     , m_circularSequentialID(0)
+    , m_timerNestingLevel(0)
     , m_inDispatchErrorEvent(false)
     , m_activeDOMObjectsAreSuspended(false)
     , m_activeDOMObjectsAreStopped(false)

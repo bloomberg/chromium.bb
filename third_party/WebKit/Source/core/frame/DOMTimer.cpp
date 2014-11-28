@@ -46,8 +46,6 @@ static const double oneMillisecond = 0.001;
 // the smallest possible interval timer.
 static const double minimumInterval = 0.004;
 
-static int timerNestingLevel = 0;
-
 static inline bool shouldForwardUserGesture(int interval, int nestingLevel)
 {
     return UserGestureIndicator::processingUserGesture()
@@ -90,7 +88,7 @@ void DOMTimer::removeByID(ExecutionContext* context, int timeoutID)
 DOMTimer::DOMTimer(ExecutionContext* context, PassOwnPtr<ScheduledAction> action, int interval, bool singleShot, int timeoutID)
     : SuspendableTimer(context)
     , m_timeoutID(timeoutID)
-    , m_nestingLevel(timerNestingLevel + 1)
+    , m_nestingLevel(context->timerNestingLevel() + 1)
     , m_action(action)
 {
     ASSERT(timeoutID > 0);
@@ -118,7 +116,7 @@ int DOMTimer::timeoutID() const
 void DOMTimer::fired()
 {
     ExecutionContext* context = executionContext();
-    timerNestingLevel = m_nestingLevel;
+    context->setTimerNestingLevel(m_nestingLevel);
     ASSERT(!context->activeDOMObjectsAreSuspended());
     // Only the first execution of a multi-shot timer should get an affirmative user gesture indicator.
     UserGestureIndicator gestureIndicator(m_userGestureToken.release());
@@ -150,6 +148,8 @@ void DOMTimer::fired()
     // Delete timer before executing the action for one-shot timers.
     OwnPtr<ScheduledAction> action = m_action.release();
 
+    LifecycleContext<ExecutionContext>::Observer observer(context);
+
     // This timer is being deleted; no access to member variables allowed after this point.
     context->removeTimeoutByID(m_timeoutID);
 
@@ -158,7 +158,8 @@ void DOMTimer::fired()
     InspectorInstrumentation::didFireTimer(cookie);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", "data", InspectorUpdateCountersEvent::data());
 
-    timerNestingLevel = 0;
+    if (observer.lifecycleContext())
+        context->setTimerNestingLevel(0);
 }
 
 void DOMTimer::contextDestroyed()
