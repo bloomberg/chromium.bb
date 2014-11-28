@@ -43,8 +43,11 @@ _SERVER = None
 
 # This is tricky because it is looked at during import time. At atexit time,
 # __file__ is not defined anymore so it has to be saved first. Also make it work
-# when executed directly from a .zip file.
-_SOURCE = os.path.basename(zip_package.get_main_script_path())
+# when executed directly from a .zip file. Also handle interactive mode where
+# this is always set to None.
+_SOURCE = zip_package.get_main_script_path()
+if _SOURCE:
+  _SOURCE = os.path.basename(_SOURCE)
 
 _TIME_STARTED = time.time()
 
