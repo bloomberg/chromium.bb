@@ -114,10 +114,14 @@ bool QuitWithAppsController::ShouldQuit() {
 
   // If there are browser windows, and this notification has been suppressed for
   // this session or permanently, then just return false to prevent Chrome from
-  // quitting. If there are no browser windows, always show the notification.
+  // quitting. If there are no browser windows, or Chrome is restarting, always
+  // show the notification.
+  bool is_restart = g_browser_process->local_state()->GetBoolean(
+      prefs::kRestartLastSessionOnShutdown);
   bool suppress_always = !g_browser_process->local_state()->GetBoolean(
       prefs::kNotifyWhenAppsKeepChromeAlive);
   if (!chrome::BrowserIterator().done() &&
+      !is_restart &&
       (suppress_for_session_ || suppress_always)) {
     return false;
   }
