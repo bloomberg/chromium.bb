@@ -43,6 +43,8 @@ namespace blink {
 
 namespace {
 
+const int kMaxRecursionDepth = 22;
+
 // In order to make sure all pending messages to be processed in
 // v8::Function::Call, we don't call handleMaxRecursionDepthExceeded
 // directly. Instead, we create a v8::Function of

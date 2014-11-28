@@ -64,8 +64,6 @@ namespace TraceEvent {
 class ConvertableToTraceFormat;
 }
 
-const int kMaxRecursionDepth = 22;
-
 // Helpers for throwing JavaScript TypeErrors for arity mismatches.
 void setArityTypeError(ExceptionState&, const char* valid, unsigned provided);
 v8::Local<v8::Value> createMinimumArityTypeErrorForMethod(v8::Isolate*, const char* method, const char* type, unsigned expected, unsigned provided);
