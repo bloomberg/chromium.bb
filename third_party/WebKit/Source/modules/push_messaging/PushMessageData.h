@@ -5,11 +5,17 @@
 #ifndef PushMessageData_h
 #define PushMessageData_h
 
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
+
+class Blob;
+class DOMArrayBuffer;
+class ExceptionState;
+class ScriptState;
 
 class PushMessageData final : public GarbageCollectedFinalized<PushMessageData>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -27,6 +33,9 @@ public:
 
     virtual ~PushMessageData();
 
+    PassRefPtr<DOMArrayBuffer> arrayBuffer() const;
+    Blob* blob() const;
+    ScriptValue json(ScriptState*, ExceptionState&) const;
     const String& text() const;
 
     void trace(Visitor*);

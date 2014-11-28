@@ -4,15 +4,16 @@
 
 // http://w3c.github.io/push-api/#pushmessagedata-interface
 
+typedef object JSON;
+
 [
     Constructor(USVString message),
     Exposed=ServiceWorker,
     GarbageCollected,
     RuntimeEnabled=PushMessaging,
 ] interface PushMessageData {
-    // FIXME: Implement the arrayBuffer() method.
-    // FIXME: Implement the blob() method.
-    // FIXME: Implement the json() method.
-    
+    ArrayBuffer arrayBuffer();
+    Blob blob();
+    [CallWith=ScriptState, RaisesException] JSON json();
     USVString text();
 };
