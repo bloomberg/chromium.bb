@@ -176,6 +176,11 @@
   display: none;
 }
 
+#oauth-enrollment.saml #oauth-enroll-signin-divider,
+#oauth-enrollment.saml #oauth-enroll-signin-right {
+  display: none;
+}
+
 #oauth-saml-notice-message {
   margin: 0 auto;
 }
