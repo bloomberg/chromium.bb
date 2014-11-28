@@ -485,41 +485,31 @@ size_t Internals::countElementShadow(const Node* root, ExceptionState& exception
 Node* Internals::nextSiblingByWalker(Node* node)
 {
     ASSERT(node);
-    ComposedTreeWalker walker(*node);
-    walker.nextSibling();
-    return walker.get();
+    return ComposedTreeWalker::nextSibling(*node);
 }
 
 Node* Internals::firstChildByWalker(Node* node)
 {
     ASSERT(node);
-    ComposedTreeWalker walker(*node);
-    walker.firstChild();
-    return walker.get();
+    return ComposedTreeWalker::firstChild(*node);
 }
 
 Node* Internals::lastChildByWalker(Node* node)
 {
     ASSERT(node);
-    ComposedTreeWalker walker(*node);
-    walker.lastChild();
-    return walker.get();
+    return ComposedTreeWalker::lastChild(*node);
 }
 
 Node* Internals::nextNodeByWalker(Node* node)
 {
     ASSERT(node);
-    ComposedTreeWalker walker(*node);
-    walker.next();
-    return walker.get();
+    return ComposedTreeWalker::next(*node);
 }
 
 Node* Internals::previousNodeByWalker(Node* node)
 {
     ASSERT(node);
-    ComposedTreeWalker walker(*node);
-    walker.previous();
-    return walker.get();
+    return ComposedTreeWalker::previous(*node);
 }
 
 String Internals::elementRenderTreeAsText(Element* element, ExceptionState& exceptionState)

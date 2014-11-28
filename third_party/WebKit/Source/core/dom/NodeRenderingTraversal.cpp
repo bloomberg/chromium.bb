@@ -71,15 +71,15 @@ bool contains(const ContainerNode& container, const Node& node)
 
 Node* nextSibling(const Node& node)
 {
-    ComposedTreeWalker walker(node);
     if (node.isBeforePseudoElement()) {
-        walker.parent();
-        walker.firstChild();
-    } else
-        walker.nextSibling();
-
-    if (walker.get() || node.isAfterPseudoElement())
-        return walker.get();
+        if (Node* next = ComposedTreeWalker::firstChild(*ComposedTreeWalker::parent(node)))
+            return next;
+    } else {
+        if (Node* next = ComposedTreeWalker::nextSibling(node))
+            return next;
+        if (node.isAfterPseudoElement())
+            return 0;
+    }
 
     Node* parent = ComposedTreeWalker::traverseParent(node);
     if (parent && parent->isElementNode())
@@ -90,15 +90,15 @@ Node* nextSibling(const Node& node)
 
 Node* previousSibling(const Node& node)
 {
-    ComposedTreeWalker walker(node);
     if (node.isAfterPseudoElement()) {
-        walker.parent();
-        walker.lastChild();
-    } else
-        walker.previousSibling();
-
-    if (walker.get() || node.isBeforePseudoElement())
-        return walker.get();
+        if (Node* previous = ComposedTreeWalker::lastChild(*ComposedTreeWalker::parent(node)))
+            return previous;
+    } else {
+        if (Node* previous = ComposedTreeWalker::previousSibling(node))
+            return previous;
+        if (node.isBeforePseudoElement())
+            return 0;
+    }
 
     Node* parent = ComposedTreeWalker::traverseParent(node);
     if (parent && parent->isElementNode())
@@ -109,9 +109,7 @@ Node* previousSibling(const Node& node)
 
 static Node* lastChild(const Node& node)
 {
-    ComposedTreeWalker walker(node);
-    walker.lastChild();
-    return walker.get();
+    return ComposedTreeWalker::lastChild(node);
 }
 
 static Node* pseudoAwarePreviousSibling(const Node& node)
@@ -162,9 +160,7 @@ Node* previous(const Node& node, const Node* stayWithin)
 
 Node* firstChild(const Node& node)
 {
-    ComposedTreeWalker walker(node);
-    walker.firstChild();
-    return walker.get();
+    return ComposedTreeWalker::firstChild(node);
 }
 
 static Node* pseudoAwareNextSibling(const Node& node)

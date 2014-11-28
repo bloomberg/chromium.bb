@@ -101,8 +101,7 @@ bool SVGImage::currentFrameHasSingleSecurityOrigin() const
 
     // Don't allow foreignObject elements or images that are not known to be
     // single-origin since these can leak cross-origin information.
-    ComposedTreeWalker walker(*rootElement);
-    while (Node* node = walker.get()) {
+    for (Node* node = rootElement; node; node = ComposedTreeWalker::next(*node)) {
         if (isSVGForeignObjectElement(*node))
             return false;
         if (isSVGImageElement(*node)) {
@@ -112,7 +111,6 @@ bool SVGImage::currentFrameHasSingleSecurityOrigin() const
             if (!toSVGFEImageElement(*node).currentFrameHasSingleSecurityOrigin())
                 return false;
         }
-        walker.next();
     }
 
     // Because SVG image rendering disallows external resources and links, these
