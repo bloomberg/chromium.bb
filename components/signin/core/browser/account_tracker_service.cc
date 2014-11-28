@@ -327,6 +327,13 @@ void AccountTrackerService::StopTrackingAccount(const std::string& account_id) {
 
 void AccountTrackerService::StartFetchingUserInfo(
     const std::string& account_id) {
+  // Don't bother fetching for supervised users since this causes the token
+  // service to raise spurious auth errors.
+  // TODO(treib): this string is also used in supervised_user_constants.cc.
+  // Should put in a common place.
+  if (account_id == "managed_user@localhost")
+    return;
+
   if (ContainsKey(user_info_requests_, account_id))
     DeleteFetcher(user_info_requests_[account_id]);
 
