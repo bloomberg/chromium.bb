@@ -792,17 +792,33 @@ def TimedCommand(functor, *args, **kwargs):
     functor: The function to run.
     args: The args to pass to the function.
     kwargs: Optional args to pass to the function.
-    timed_log_level: The log level to use (defaults to info).
-    timed_log_msg: The message to log with timing info appended (defaults to
-                   details about the call made).  It must include a %s to hold
-                   the time delta details.
+    timed_log_level: The log level to use (defaults to logging.INFO).
+    timed_log_msg: The message to log after the command completes.  It may have
+      keywords: "name" (the function name), "args" (the args passed to the
+      func), "kwargs" (the kwargs passed to the func), "ret" (the return value
+      from the func), and "delta" (the timing delta).
+    timed_log_callback: Function to call upon completion (instead of logging).
+      Will be passed (log_level, log_msg, result, datetime.timedelta).
   """
-  log_msg = kwargs.pop('timed_log_msg', '%s(*%r, **%r) took: %%s'
-                       % (functor.__name__, args, kwargs))
+  log_msg = kwargs.pop(
+      'timed_log_msg',
+      '%(name)s(*%(args)r, **%(kwargs)r)=%(ret)s took: %(delta)s')
   log_level = kwargs.pop('timed_log_level', logging.INFO)
+  log_callback = kwargs.pop('timed_log_callback', None)
   start = datetime.now()
   ret = functor(*args, **kwargs)
-  logger.log(log_level, log_msg, datetime.now() - start)
+  delta = datetime.now() - start
+  log_msg %= {
+      'name': functor.__name__,
+      'args': args,
+      'kwargs': kwargs,
+      'ret': ret,
+      'delta': delta,
+  }
+  if log_callback is None:
+    logging.log(log_level, log_msg)
+  else:
+    log_callback(log_level, log_msg, ret, delta)
   return ret
 
 

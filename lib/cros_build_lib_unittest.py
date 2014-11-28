@@ -700,28 +700,53 @@ class TestRetries(cros_test_lib.MockTestCase):
     _check_counters(3, 2)
 
 
-class TestTimedCommand(RunCommandTestCase):
+class TestTimedCommand(cros_test_lib.MockTestCase):
   """Tests for TimedCommand()"""
+
+  # TODO: Would be nice to insert a hook into the logging system so we verify
+  # the message actually gets passed down.  The logging module swallows the
+  # exceptions it throws internally when not all args get converted.
+
+  def setUp(self):
+    self.cmd = mock.MagicMock(return_value=1234)
+    self.cmd.__name__ = 'name'
 
   def testBasic(self):
     """Make sure simple stuff works."""
-    cros_build_lib.TimedCommand(cros_build_lib.RunCommand, ['true', 'foo'])
-    self.rc.assertCommandCalled(['true', 'foo'])
+    cros_build_lib.TimedCommand(self.cmd)
+    self.cmd.assert_called_once_with()
 
   def testArgs(self):
     """Verify passing of optional args to the destination function."""
-    cros_build_lib.TimedCommand(cros_build_lib.RunCommand, ':', shell=True,
-                                print_cmd=False, error_code_ok=False)
-    self.rc.assertCommandCalled(':', shell=True, print_cmd=False,
-                                error_code_ok=False)
+    cros_build_lib.TimedCommand(self.cmd, 'arg', 1, kw=True, alist=[])
+    self.cmd.assert_called_once_with('arg', 1, kw=True, alist=[])
+
+  def testReturn(self):
+    """Verify return values get passed back."""
+    ret = cros_build_lib.TimedCommand(self.cmd)
+    self.assertEqual(ret, 1234)
+
+  def testCallback(self):
+    """Verify log callback does the right thing."""
+    def cb(lvl, msg, ret, delta):
+      self.assertEqual(lvl, 10)
+      self.assertEqual(msg, 'msg!')
+      self.assertEqual(ret, 1234)
+      self.assertTrue(isinstance(delta, datetime.timedelta))
+    cros_build_lib.TimedCommand(self.cmd, timed_log_level=10,
+                                timed_log_msg='msg!', timed_log_callback=cb)
 
   def testLog(self):
-    """Verify logging does the right thing."""
-    m = self.PatchObject(cros_build_lib.logger, 'log')
-    cros_build_lib.TimedCommand(cros_build_lib.RunCommand, 'fun',
-                                timed_log_msg='msg! %s', shell=True)
-    self.rc.assertCommandCalled('fun', shell=True)
-    self.assertEqual(m.call_count, 2)
+    """Verify the logger module gets called."""
+    m = self.PatchObject(logging, 'log')
+    cros_build_lib.TimedCommand(self.cmd, timed_log_level=logging.WARNING,
+                                timed_log_msg='msg!')
+    self.assertEqual(m.call_count, 1)
+
+  def testLogStraight(self):
+    """Verify logging messages does the right thing."""
+    cros_build_lib.TimedCommand(self.cmd, timed_log_level=logging.WARNING,
+                                timed_log_msg='msg!')
 
 
 class TestListFiles(cros_test_lib.TempDirTestCase):

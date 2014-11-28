@@ -337,7 +337,7 @@ def UploadSymbol(upload_url, sym_item, file_limit=DEFAULT_FILE_LIMIT,
           retry_util.RetryException,
           (urllib2.HTTPError, urllib2.URLError), MAX_RETRIES, SymUpload,
           upload_url, upload_item, sleep=INITIAL_RETRY_DELAY,
-          timed_log_msg=('upload of %10i bytes took %%s: %s' %
+          timed_log_msg=('upload of %10i bytes took %%(delta)s: %s' %
                          (file_size, os.path.basename(sym_file))))
       success = True
 
