@@ -90,6 +90,7 @@ class WebNotificationManager;
 class WebPluginListBuilder;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
+class WebPushProvider;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 class WebSandboxSupport;
@@ -635,6 +636,11 @@ public:
 
     // Returns pointer to client owned WebBluetooth implementation.
     virtual WebBluetooth* bluetooth() { return 0; }
+
+
+    // Push API------------------------------------------------------------
+
+    virtual WebPushProvider* pushProvider() { return 0; }
 
 protected:
     virtual ~Platform() { }
