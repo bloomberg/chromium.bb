@@ -437,6 +437,7 @@ public:
     // collect garbage at this point.
     bool shouldGC();
     bool shouldForceConservativeGC();
+    void scheduleGCOrForceConservativeGCIfNeeded();
 
     // If you specify ForcedGC, you can force a precise GC at the end of the
     // current event loop. This is used for layout tests that trigger GCs and

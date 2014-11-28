@@ -694,13 +694,18 @@ Address ThreadHeap<Header>::outOfLineAllocate(size_t payloadSize, size_t allocat
         return allocateLargeObject(allocationSize, gcInfo);
 
     updateRemainingAllocationSize();
-    if (threadState()->shouldGC()) {
-        if (threadState()->shouldForceConservativeGC())
-            Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::NormalGC);
-        else
-            threadState()->scheduleGC();
-    }
-    ensureCurrentAllocation(allocationSize, gcInfo);
+    threadState()->scheduleGCOrForceConservativeGCIfNeeded();
+
+    setAllocationPoint(0, 0);
+    ASSERT(allocationSize >= allocationGranularity);
+    if (allocateFromFreeList(allocationSize))
+        return allocate(payloadSize, gcInfo);
+    if (coalesce(allocationSize) && allocateFromFreeList(allocationSize))
+        return allocate(payloadSize, gcInfo);
+
+    addPageToHeap(gcInfo);
+    bool success = allocateFromFreeList(allocationSize);
+    RELEASE_ASSERT(success);
     return allocate(payloadSize, gcInfo);
 }
 
@@ -730,20 +735,6 @@ bool ThreadHeap<Header>::allocateFromFreeList(size_t allocationSize)
     }
     m_freeList.m_biggestFreeListIndex = i;
     return false;
-}
-
-template<typename Header>
-void ThreadHeap<Header>::ensureCurrentAllocation(size_t allocationSize, const GCInfo* gcInfo)
-{
-    setAllocationPoint(0, 0);
-    ASSERT(allocationSize >= allocationGranularity);
-    if (allocateFromFreeList(allocationSize))
-        return;
-    if (coalesce(allocationSize) && allocateFromFreeList(allocationSize))
-        return;
-    addPageToHeap(gcInfo);
-    bool success = allocateFromFreeList(allocationSize);
-    RELEASE_ASSERT(success);
 }
 
 #if ENABLE(ASSERT)
@@ -1042,8 +1033,8 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
 #endif
 
     updateRemainingAllocationSize();
-    if (m_threadState->shouldGC())
-        m_threadState->scheduleGC();
+    m_threadState->scheduleGCOrForceConservativeGCIfNeeded();
+
     m_threadState->shouldFlushHeapDoesNotContainCache();
     PageMemory* pageMemory = PageMemory::allocate(allocationSize);
     m_threadState->allocatedRegionsSinceLastGC().append(pageMemory->region());

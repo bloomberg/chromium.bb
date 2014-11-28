@@ -817,7 +817,6 @@ private:
         m_lastRemainingAllocationSize = m_remainingAllocationSize = size;
     }
     void updateRemainingAllocationSize();
-    void ensureCurrentAllocation(size_t, const GCInfo*);
     bool allocateFromFreeList(size_t);
 
     void freeLargeObject(LargeObject<Header>*, LargeObject<Header>**);

@@ -762,6 +762,16 @@ bool ThreadState::shouldForceConservativeGC()
     return newSize >= 32 * 1024 * 1024 && newSize > 4 * Heap::markedObjectSize();
 }
 
+void ThreadState::scheduleGCOrForceConservativeGCIfNeeded()
+{
+    if (!shouldGC())
+        return;
+    if (shouldForceConservativeGC())
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::NormalGC);
+    else
+        scheduleGC();
+}
+
 void ThreadState::setGCState(GCState gcState)
 {
     switch (gcState) {
