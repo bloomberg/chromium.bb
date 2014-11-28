@@ -810,7 +810,7 @@ void ThreadState::runScheduledGC(StackState stackState)
         if (gcState() == GCScheduledForTesting) {
             Heap::collectAllGarbage();
         } else if (gcState() == GCScheduled) {
-            Heap::collectGarbage(NoHeapPointersOnStack);
+            Heap::collectGarbage(NoHeapPointersOnStack, NormalGC);
         }
     }
 }

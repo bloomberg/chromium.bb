@@ -315,7 +315,7 @@ public:
     };
 
     // When profiling we would like to identify forced GC requests.
-    enum CauseOfGC {
+    enum GCType {
         NormalGC,
         ForcedGC
     };
@@ -442,9 +442,9 @@ public:
     // current event loop. This is used for layout tests that trigger GCs and
     // check if objects aredead at a given point in time. That only reliably
     // works when we get precise GCs with no conservative stack scanning.
-    void requestGC(CauseOfGC cause = NormalGC)
+    void scheduleGC(GCType gcType = NormalGC)
     {
-        setGCState(cause == NormalGC ? GCScheduled : GCScheduledForTesting);
+        setGCState(gcType == NormalGC ? GCScheduled : GCScheduledForTesting);
     }
     void setGCState(GCState);
     GCState gcState() const;

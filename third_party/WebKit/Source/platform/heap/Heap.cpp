@@ -695,9 +695,9 @@ Address ThreadHeap<Header>::outOfLineAllocate(size_t payloadSize, size_t allocat
     updateRemainingAllocationSize();
     if (threadState()->shouldGC()) {
         if (threadState()->shouldForceConservativeGC())
-            Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+            Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::NormalGC);
         else
-            threadState()->requestGC();
+            threadState()->scheduleGC();
     }
     ensureCurrentAllocation(allocationSize, gcInfo);
     return allocate(payloadSize, gcInfo);
@@ -1042,7 +1042,7 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
 
     updateRemainingAllocationSize();
     if (m_threadState->shouldGC())
-        m_threadState->requestGC();
+        m_threadState->scheduleGC();
     m_threadState->shouldFlushHeapDoesNotContainCache();
     PageMemory* pageMemory = PageMemory::allocate(allocationSize);
     m_threadState->allocatedRegionsSinceLastGC().append(pageMemory->region());
@@ -2458,7 +2458,7 @@ void Heap::postGC()
         (*it)->postGC();
 }
 
-void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::CauseOfGC cause)
+void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCType gcType)
 {
     ThreadState* state = ThreadState::current();
     state->setGCState(ThreadState::StoppingOtherThreads);
@@ -2466,7 +2466,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::Cause
     GCScope gcScope(stackState);
     // Check if we successfully parked the other threads. If not we bail out of the GC.
     if (!gcScope.allThreadsParked()) {
-        state->requestGC();
+        state->scheduleGC();
         return;
     }
 
@@ -2477,7 +2477,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::Cause
 
     TRACE_EVENT2("blink_gc", "Heap::collectGarbage",
         "precise", stackState == ThreadState::NoHeapPointersOnStack,
-        "forced", cause == ThreadState::ForcedGC);
+        "forced", gcType == ThreadState::ForcedGC);
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink_gc", "BlinkGC");
     double timeStamp = WTF::currentTimeMS();
 #if ENABLE(GC_PROFILE_MARKING)
@@ -2637,7 +2637,7 @@ void Heap::collectAllGarbage()
     // some heap allocated objects own objects that contain persistents
     // pointing to other heap allocated objects.
     for (int i = 0; i < 5; i++)
-        collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::ForcedGC);
+        collectGarbage(ThreadState::NoHeapPointersOnStack);
 }
 
 template<typename Header>

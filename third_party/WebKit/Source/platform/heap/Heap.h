@@ -911,7 +911,7 @@ public:
 
     template<typename T> static Address reallocate(void* previous, size_t);
 
-    static void collectGarbage(ThreadState::StackState, ThreadState::CauseOfGC = ThreadState::NormalGC);
+    static void collectGarbage(ThreadState::StackState, ThreadState::GCType = ThreadState::ForcedGC);
     static void collectGarbageForTerminatingThread(ThreadState*);
     static void collectAllGarbage();
     template<CallbackInvocationMode Mode> static void processMarkingStack();
