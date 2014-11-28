@@ -32,6 +32,7 @@ class PrefService;
 namespace policy {
 
 class DeviceCloudPolicyStoreChromeOS;
+class EnterpriseInstallAttributes;
 
 // CloudPolicyManager specialization for device policy on Chrome OS.
 class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
@@ -73,8 +74,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
 
   // Starts the connection via |client_to_connect|.
   void StartConnection(scoped_ptr<CloudPolicyClient> client_to_connect,
-                       scoped_ptr<CloudPolicyClient::StatusProvider>
-                           device_status_provider);
+                       EnterpriseInstallAttributes* install_attributes);
 
   DeviceCloudPolicyStoreChromeOS* device_store() {
     return device_store_.get();
@@ -99,11 +99,6 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
 
   scoped_ptr<chromeos::attestation::AttestationPolicyObserver>
       attestation_policy_observer_;
-
-  // TODO(davidyu): Currently we need to keep this object alive while
-  // CloudPolicyClient is in use. We should have CPC take over the
-  // ownership of this object instead. See http://crbug.com/383696.
-  scoped_ptr<CloudPolicyClient::StatusProvider> device_status_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyManagerChromeOS);
 };

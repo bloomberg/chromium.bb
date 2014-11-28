@@ -125,8 +125,7 @@ void UserCloudPolicyManagerChromeOS::Connect(
   scoped_ptr<CloudPolicyClient> cloud_policy_client(
       new CloudPolicyClient(std::string(), std::string(),
                             kPolicyVerificationKeyHash, user_affiliation,
-                            nullptr, device_management_service,
-                            request_context));
+                            device_management_service, request_context));
   core()->Connect(cloud_policy_client.Pass());
   client()->AddObserver(this);
 

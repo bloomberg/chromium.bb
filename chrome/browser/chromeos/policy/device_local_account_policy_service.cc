@@ -68,10 +68,11 @@ scoped_ptr<CloudPolicyClient> CreateClient(
       new SystemPolicyRequestContext(
           system_request_context, GetUserAgent());
 
-  scoped_ptr<CloudPolicyClient> client(new CloudPolicyClient(
-      std::string(), std::string(), kPolicyVerificationKeyHash,
-      USER_AFFILIATION_MANAGED, nullptr, device_management_service,
-      request_context));
+  scoped_ptr<CloudPolicyClient> client(
+      new CloudPolicyClient(std::string(), std::string(),
+                            kPolicyVerificationKeyHash,
+                            USER_AFFILIATION_MANAGED,
+                            device_management_service, request_context));
   client->SetupRegistration(policy_data->request_token(),
                             policy_data->device_id());
   return client.Pass();

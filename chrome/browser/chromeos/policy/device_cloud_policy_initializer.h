@@ -127,8 +127,6 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
 
   ServerBackedStateKeysBroker::Subscription state_keys_update_subscription_;
 
-  scoped_ptr<CloudPolicyClient::StatusProvider> device_status_provider_;
-
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyInitializer);
 };
 

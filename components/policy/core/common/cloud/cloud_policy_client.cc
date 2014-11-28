@@ -52,7 +52,6 @@ CloudPolicyClient::CloudPolicyClient(
     const std::string& machine_model,
     const std::string& verification_key_hash,
     UserAffiliation user_affiliation,
-    StatusProvider* status_provider,
     DeviceManagementService* service,
     scoped_refptr<net::URLRequestContextGetter> request_context)
     : machine_id_(machine_id),
@@ -66,7 +65,6 @@ CloudPolicyClient::CloudPolicyClient(
       invalidation_version_(0),
       fetched_invalidation_version_(0),
       service_(service),                  // Can be null for unit tests.
-      status_provider_(status_provider),  // Can be null for unit tests.
       status_(DM_STATUS_SUCCESS),
       request_context_(request_context) {
 }
@@ -285,6 +283,14 @@ void CloudPolicyClient::AddObserver(Observer* observer) {
 
 void CloudPolicyClient::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void CloudPolicyClient::SetStatusProvider(scoped_ptr<StatusProvider> provider) {
+  status_provider_ = provider.Pass();
+}
+
+bool CloudPolicyClient::HasStatusProviderForTest() {
+  return status_provider_;
 }
 
 void CloudPolicyClient::AddPolicyTypeToFetch(

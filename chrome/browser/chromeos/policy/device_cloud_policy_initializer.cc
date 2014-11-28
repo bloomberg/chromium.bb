@@ -85,12 +85,6 @@ void DeviceCloudPolicyInitializer::Init() {
       base::Bind(&DeviceCloudPolicyInitializer::TryToCreateClient,
                  base::Unretained(this)));
 
-  device_status_provider_.reset(
-      new DeviceStatusCollector(
-          local_state_,
-          chromeos::system::StatisticsProvider::GetInstance(),
-          NULL));
-
   TryToCreateClient();
 }
 
@@ -98,7 +92,6 @@ void DeviceCloudPolicyInitializer::Shutdown() {
   DCHECK(is_initialized_);
 
   device_store_->RemoveObserver(this);
-  device_status_provider_.reset();
   enrollment_handler_.reset();
   state_keys_update_subscription_.reset();
   is_initialized_ = false;
@@ -220,7 +213,6 @@ scoped_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
                             DeviceCloudPolicyManagerChromeOS::GetMachineModel(),
                             kPolicyVerificationKeyHash,
                             USER_AFFILIATION_NONE,
-                            device_status_provider_.get(),
                             device_management_service,
                             request_context));
 }
@@ -246,7 +238,7 @@ void DeviceCloudPolicyInitializer::TryToCreateClient() {
 void DeviceCloudPolicyInitializer::StartConnection(
     scoped_ptr<CloudPolicyClient> client) {
   if (!manager_->core()->service())
-    manager_->StartConnection(client.Pass(), device_status_provider_.Pass());
+    manager_->StartConnection(client.Pass(), install_attributes_);
 
   if (!on_connected_callback_.is_null()) {
     on_connected_callback_.Run();

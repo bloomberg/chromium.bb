@@ -98,11 +98,11 @@ class CloudPolicyClientTest : public testing::Test {
   }
 
   virtual void SetUp() override {
-    EXPECT_CALL(status_provider_, GetDeviceStatus(_))
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(status_provider_, GetSessionStatus(_))
-        .WillRepeatedly(Return(false));
     CreateClient(USER_AFFILIATION_NONE);
+    EXPECT_CALL(*status_provider_, GetDeviceStatus(_))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*status_provider_, GetSessionStatus(_))
+        .WillRepeatedly(Return(false));
   }
 
   virtual void TearDown() override {
@@ -122,9 +122,13 @@ class CloudPolicyClientTest : public testing::Test {
         loop_.message_loop_proxy());
     client_.reset(new CloudPolicyClient(kMachineID, kMachineModel,
                                         kPolicyVerificationKeyHash,
-                                        user_affiliation, &status_provider_,
+                                        user_affiliation,
                                         &service_,
                                         request_context_));
+    scoped_ptr<StrictMock<MockStatusProvider> > status_provider =
+        make_scoped_ptr(new StrictMock<MockStatusProvider>());
+    status_provider_ = status_provider.get();
+    client_->SetStatusProvider(status_provider.Pass());
     client_->AddPolicyTypeToFetch(policy_type_, std::string());
     client_->AddObserver(&observer_);
   }
@@ -204,7 +208,8 @@ class CloudPolicyClientTest : public testing::Test {
   std::string client_id_;
   std::string policy_type_;
   MockDeviceManagementService service_;
-  StrictMock<MockStatusProvider> status_provider_;
+  // Weak pointer to StatusProvider - actual object is owned by client_.
+  StrictMock<MockStatusProvider>* status_provider_;
   StrictMock<MockCloudPolicyClientObserver> observer_;
   StrictMock<MockUploadCertificateObserver> upload_certificate_observer_;
   scoped_ptr<CloudPolicyClient> client_;
@@ -228,7 +233,7 @@ TEST_F(CloudPolicyClientTest, SetupRegistrationAndPolicyFetch) {
 
   ExpectPolicyFetch(kDMToken, dm_protocol::kValueUserAffiliationNone);
   EXPECT_CALL(observer_, OnPolicyFetched(_));
-  EXPECT_CALL(status_provider_, OnSubmittedSuccessfully());
+  EXPECT_CALL(*status_provider_, OnSubmittedSuccessfully());
   client_->FetchPolicy();
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
   CheckPolicyResponse();
@@ -245,7 +250,7 @@ TEST_F(CloudPolicyClientTest, RegistrationAndPolicyFetch) {
 
   ExpectPolicyFetch(kDMToken, dm_protocol::kValueUserAffiliationNone);
   EXPECT_CALL(observer_, OnPolicyFetched(_));
-  EXPECT_CALL(status_provider_, OnSubmittedSuccessfully());
+  EXPECT_CALL(*status_provider_, OnSubmittedSuccessfully());
   client_->FetchPolicy();
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
   CheckPolicyResponse();
@@ -332,7 +337,7 @@ TEST_F(CloudPolicyClientTest, PolicyUpdate) {
 
   ExpectPolicyFetch(kDMToken, dm_protocol::kValueUserAffiliationNone);
   EXPECT_CALL(observer_, OnPolicyFetched(_));
-  EXPECT_CALL(status_provider_, OnSubmittedSuccessfully());
+  EXPECT_CALL(*status_provider_, OnSubmittedSuccessfully());
   client_->FetchPolicy();
   CheckPolicyResponse();
 
@@ -341,7 +346,7 @@ TEST_F(CloudPolicyClientTest, PolicyUpdate) {
       CreatePolicyData("updated-fake-policy-data"));
   ExpectPolicyFetch(kDMToken, dm_protocol::kValueUserAffiliationNone);
   EXPECT_CALL(observer_, OnPolicyFetched(_));
-  EXPECT_CALL(status_provider_, OnSubmittedSuccessfully());
+  EXPECT_CALL(*status_provider_, OnSubmittedSuccessfully());
   client_->FetchPolicy();
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
   CheckPolicyResponse();
@@ -364,7 +369,7 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithMetaData) {
 
   ExpectPolicyFetch(kDMToken, dm_protocol::kValueUserAffiliationNone);
   EXPECT_CALL(observer_, OnPolicyFetched(_));
-  EXPECT_CALL(status_provider_, OnSubmittedSuccessfully());
+  EXPECT_CALL(*status_provider_, OnSubmittedSuccessfully());
   client_->FetchPolicy();
   CheckPolicyResponse();
 }
@@ -382,7 +387,7 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithInvalidation) {
 
   ExpectPolicyFetch(kDMToken, dm_protocol::kValueUserAffiliationNone);
   EXPECT_CALL(observer_, OnPolicyFetched(_));
-  EXPECT_CALL(status_provider_, OnSubmittedSuccessfully());
+  EXPECT_CALL(*status_provider_, OnSubmittedSuccessfully());
   client_->FetchPolicy();
   CheckPolicyResponse();
   EXPECT_EQ(12345, client_->fetched_invalidation_version());
@@ -397,7 +402,7 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithInvalidationNoPayload) {
 
   ExpectPolicyFetch(kDMToken, dm_protocol::kValueUserAffiliationNone);
   EXPECT_CALL(observer_, OnPolicyFetched(_));
-  EXPECT_CALL(status_provider_, OnSubmittedSuccessfully());
+  EXPECT_CALL(*status_provider_, OnSubmittedSuccessfully());
   client_->FetchPolicy();
   CheckPolicyResponse();
   EXPECT_EQ(-12345, client_->fetched_invalidation_version());
@@ -419,7 +424,7 @@ TEST_F(CloudPolicyClientTest, BadPolicyResponse) {
       CreatePolicyData("excess-fake-policy-data"));
   ExpectPolicyFetch(kDMToken, dm_protocol::kValueUserAffiliationNone);
   EXPECT_CALL(observer_, OnPolicyFetched(_));
-  EXPECT_CALL(status_provider_, OnSubmittedSuccessfully());
+  EXPECT_CALL(*status_provider_, OnSubmittedSuccessfully());
   client_->FetchPolicy();
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
   CheckPolicyResponse();
@@ -434,7 +439,7 @@ TEST_F(CloudPolicyClientTest, PolicyRequestFailure) {
       .WillOnce(service_.FailJob(DM_STATUS_REQUEST_FAILED));
   EXPECT_CALL(service_, StartJob(_, _, _, _, _, _, _));
   EXPECT_CALL(observer_, OnClientError(_));
-  EXPECT_CALL(status_provider_, OnSubmittedSuccessfully()).Times(0);
+  EXPECT_CALL(*status_provider_, OnSubmittedSuccessfully()).Times(0);
   client_->FetchPolicy();
   EXPECT_EQ(DM_STATUS_REQUEST_FAILED, client_->status());
   EXPECT_FALSE(client_->GetPolicyFor(policy_type_, std::string()));
@@ -521,7 +526,7 @@ TEST_F(CloudPolicyClientTest, PolicyFetchWithExtensionPolicy) {
                kDMToken, dm_protocol::kValueUserAffiliationNone, client_id_, _))
       .WillOnce(SaveArg<6>(&policy_request_));
   EXPECT_CALL(observer_, OnPolicyFetched(_));
-  EXPECT_CALL(status_provider_, OnSubmittedSuccessfully());
+  EXPECT_CALL(*status_provider_, OnSubmittedSuccessfully());
   for (size_t i = 0; i < arraysize(kExtensions); ++i) {
     client_->AddPolicyTypeToFetch(dm_protocol::kChromeExtensionPolicyType,
                                   kExtensions[i]);

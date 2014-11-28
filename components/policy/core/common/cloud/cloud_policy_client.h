@@ -97,7 +97,6 @@ class POLICY_EXPORT CloudPolicyClient {
       const std::string& machine_model,
       const std::string& verification_key_hash,
       UserAffiliation user_affiliation,
-      StatusProvider* provider,
       DeviceManagementService* service,
       scoped_refptr<net::URLRequestContextGetter> request_context);
   virtual ~CloudPolicyClient();
@@ -152,6 +151,13 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // Removes the specified observer.
   void RemoveObserver(Observer* observer);
+
+  // Sets the status provider for this client, or NULL if no provider.
+  // ClouldPolicyClient takes ownership of the passed |provider|.
+  void SetStatusProvider(scoped_ptr<StatusProvider> provider);
+
+  // Returns true if this object has a StatusProvider configured.
+  bool HasStatusProviderForTest();
 
   void set_submit_machine_id(bool submit_machine_id) {
     submit_machine_id_ = submit_machine_id;
@@ -299,7 +305,7 @@ class POLICY_EXPORT CloudPolicyClient {
   scoped_ptr<DeviceManagementRequestJob> request_job_;
 
   // Status upload data is produced by |status_provider_|.
-  StatusProvider* status_provider_;
+  scoped_ptr<StatusProvider> status_provider_;
 
   // The policy responses returned by the last policy fetch operation.
   ResponseMap responses_;

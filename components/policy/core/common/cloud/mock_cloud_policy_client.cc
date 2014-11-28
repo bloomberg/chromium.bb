@@ -18,7 +18,6 @@ MockCloudPolicyClient::MockCloudPolicyClient()
                         std::string(),
                         USER_AFFILIATION_NONE,
                         nullptr,
-                        nullptr,
                         nullptr) {}
 
 MockCloudPolicyClient::~MockCloudPolicyClient() {}
