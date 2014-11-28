@@ -659,7 +659,7 @@ public:
 
     size_t objectPayloadSizeForTesting();
 
-    void setupHeapsForTermination();
+    void prepareHeapForTermination();
 
     // Request to call a pref-finalizer of the target object before the object
     // is destructed.  The class T must have USING_PRE_FINALIZER().  The

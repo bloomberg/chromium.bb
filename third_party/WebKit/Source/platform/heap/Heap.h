@@ -209,6 +209,7 @@ public:
     void unlink(LargeObject<Header>** previousNext)
     {
         *previousNext = m_next;
+        m_next = nullptr;
     }
 
     // The LargeObject pseudo-page contains one actual object. Determine
@@ -492,8 +493,17 @@ class HeapPage final : public BaseHeapPage {
 public:
     HeapPage(PageMemory*, ThreadHeap<Header>*, const GCInfo*);
 
-    void link(HeapPage**);
-    static void unlink(ThreadHeap<Header>*, HeapPage*, HeapPage**);
+    void link(HeapPage** previousNext)
+    {
+        m_next = *previousNext;
+        *previousNext = this;
+    }
+
+    void unlink(HeapPage** previousNext)
+    {
+        *previousNext = m_next;
+        m_next = nullptr;
+    }
 
     bool isEmpty();
 

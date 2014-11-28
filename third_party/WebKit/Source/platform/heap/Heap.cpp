@@ -1399,11 +1399,11 @@ void ThreadHeap<Header>::sweepNormalPages()
     HeapPage<Header>* page = m_firstPage;
     HeapPage<Header>** previousNext = &m_firstPage;
     while (page) {
-        page->resetPromptlyFreedSize();
         if (page->isEmpty()) {
-            HeapPage<Header>* unusedPage = page;
-            page = page->next();
-            HeapPage<Header>::unlink(this, unusedPage, previousNext);
+            HeapPage<Header>* next = page->next();
+            page->unlink(previousNext);
+            removePageFromHeap(page);
+            page = next;
             --m_numberOfNormalPages;
         } else {
             page->sweep(this);
@@ -1558,20 +1558,6 @@ HeapPage<Header>::HeapPage(PageMemory* storage, ThreadHeap<Header>* heap, const 
 }
 
 template<typename Header>
-void HeapPage<Header>::link(HeapPage** prevNext)
-{
-    m_next = *prevNext;
-    *prevNext = this;
-}
-
-template<typename Header>
-void HeapPage<Header>::unlink(ThreadHeap<Header>* heap, HeapPage* unused, HeapPage** prevNext)
-{
-    *prevNext = unused->m_next;
-    heap->removePageFromHeap(unused);
-}
-
-template<typename Header>
 size_t HeapPage<Header>::objectPayloadSizeForTesting()
 {
     size_t objectPayloadSize = 0;
@@ -1601,6 +1587,8 @@ template<typename Header>
 void HeapPage<Header>::sweep(ThreadHeap<Header>* heap)
 {
     clearObjectStartBitMap();
+    resetPromptlyFreedSize();
+
     Address startOfGap = payload();
     for (Address headerAddress = startOfGap; headerAddress < end(); ) {
         BasicObjectHeader* basicHeader = reinterpret_cast<BasicObjectHeader*>(headerAddress);
