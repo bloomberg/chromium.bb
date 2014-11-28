@@ -259,15 +259,8 @@ bool HTMLDocumentParser::processingData() const
 
 void HTMLDocumentParser::pumpTokenizerIfPossible()
 {
-    if (isStopped())
+    if (isStopped() || isWaitingForScripts())
         return;
-    if (isWaitingForScripts())
-        return;
-
-    // Once a resume is scheduled, HTMLParserScheduler controls when we next pump.
-    if (isScheduledForResume()) {
-        return;
-    }
 
     pumpTokenizer();
 }
@@ -564,7 +557,6 @@ static PassRefPtr<MediaValues> createMediaValues(Document* document)
 void HTMLDocumentParser::pumpTokenizer()
 {
     ASSERT(!isStopped());
-    ASSERT(!isScheduledForResume());
 #if !ENABLE(OILPAN)
     // ASSERT that this object is both attached to the Document and protected.
     ASSERT(refCount() >= 2);
