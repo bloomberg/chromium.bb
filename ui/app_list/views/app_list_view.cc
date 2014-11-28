@@ -86,7 +86,8 @@ bool SupportsShadow() {
 // rectangle with the given radius.
 class AppListOverlayView : public views::View {
  public:
-  AppListOverlayView(int corner_radius) : corner_radius_(corner_radius) {
+  explicit AppListOverlayView(int corner_radius)
+      : corner_radius_(corner_radius) {
     SetPaintToLayer(true);
     SetVisible(false);
     layer()->SetOpacity(0.0f);

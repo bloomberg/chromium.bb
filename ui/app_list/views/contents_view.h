@@ -45,7 +45,7 @@ class StartPageView;
 class APP_LIST_EXPORT ContentsView : public views::View,
                                      public PaginationModelObserver {
  public:
-  ContentsView(AppListMainView* app_list_main_view);
+  explicit ContentsView(AppListMainView* app_list_main_view);
   ~ContentsView() override;
 
   // Initialize the pages of the launcher. In the experimental launcher, should

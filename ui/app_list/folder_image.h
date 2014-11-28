@@ -37,7 +37,7 @@ class APP_LIST_EXPORT FolderImageObserver {
 class APP_LIST_EXPORT FolderImage : public AppListItemListObserver,
                                     public AppListItemObserver {
  public:
-  FolderImage(AppListItemList* item_list);
+  explicit FolderImage(AppListItemList* item_list);
   ~FolderImage() override;
 
   // Generates the folder's icon from the icons of the items in the item list,

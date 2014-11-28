@@ -151,4 +151,4 @@ void StartToCustomAnimator::Update(double progress,
   contents_view()->GetPageView(custom_page)->SetBoundsRect(custom_page_rect);
 }
 
-}  // app_list
+}  // namespace app_list

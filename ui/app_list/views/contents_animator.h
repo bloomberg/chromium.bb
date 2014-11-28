@@ -23,7 +23,7 @@ class ContentsView;
 // implemented, B -> A will implicitly be the inverse animation).
 class ContentsAnimator {
  public:
-  ContentsAnimator(ContentsView* contents_view);
+  explicit ContentsAnimator(ContentsView* contents_view);
 
   virtual ~ContentsAnimator();
 
@@ -62,7 +62,7 @@ class ContentsAnimator {
 // page pair.
 class DefaultAnimator : public ContentsAnimator {
  public:
-  DefaultAnimator(ContentsView* contents_view);
+  explicit DefaultAnimator(ContentsView* contents_view);
 
   ~DefaultAnimator() override {}
 
@@ -76,7 +76,7 @@ class DefaultAnimator : public ContentsAnimator {
 // Animator between the start page and apps grid page.
 class StartToAppsAnimator : public ContentsAnimator {
  public:
-  StartToAppsAnimator(ContentsView* contents_view);
+  explicit StartToAppsAnimator(ContentsView* contents_view);
 
   ~StartToAppsAnimator() override {}
 
@@ -90,7 +90,7 @@ class StartToAppsAnimator : public ContentsAnimator {
 // Animator from start page to custom page.
 class StartToCustomAnimator : public ContentsAnimator {
  public:
-  StartToCustomAnimator(ContentsView* contents_view);
+  explicit StartToCustomAnimator(ContentsView* contents_view);
 
   std::string NameForTests() const override;
   void Update(double progress, int start_page, int custom_page) override;
@@ -98,6 +98,6 @@ class StartToCustomAnimator : public ContentsAnimator {
   DISALLOW_COPY_AND_ASSIGN(StartToCustomAnimator);
 };
 
-}  // app_list
+}  // namespace app_list
 
 #endif  // UI_APP_LIST_VIEWS_CONTENTS_ANIMATOR_H_

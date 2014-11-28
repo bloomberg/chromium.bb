@@ -5,6 +5,7 @@
 #ifndef UI_APP_LIST_SEARCH_RESULT_H_
 #define UI_APP_LIST_SEARCH_RESULT_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"

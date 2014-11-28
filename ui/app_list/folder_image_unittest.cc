@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "ui/app_list/folder_image.h"
 
 #include "base/macros.h"
@@ -83,6 +85,7 @@ class FolderImageTest : public testing::Test {
 
   TestFolderImageObserver observer_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(FolderImageTest);
 };
 

@@ -158,7 +158,8 @@ class AppListViewTestContext {
 // delegate is owned by the view.
 class UnitTestViewDelegate : public app_list::test::AppListTestViewDelegate {
  public:
-  UnitTestViewDelegate(AppListViewTestContext* parent) : parent_(parent) {}
+  explicit UnitTestViewDelegate(AppListViewTestContext* parent)
+      : parent_(parent) {}
 
   // Overridden from app_list::AppListViewDelegate:
   bool ShouldCenterWindow() const override {
@@ -701,7 +702,7 @@ class AppListViewTestDesktop : public views::ViewsTestBase,
  private:
   class AppListViewTestViewsDelegate : public views::TestViewsDelegate {
    public:
-    AppListViewTestViewsDelegate(AppListViewTestDesktop* parent)
+    explicit AppListViewTestViewsDelegate(AppListViewTestDesktop* parent)
         : parent_(parent) {}
 
     // Overridden from views::ViewsDelegate:

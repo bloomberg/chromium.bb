@@ -196,7 +196,7 @@ class ItemRemoveAnimationDelegate : public gfx::AnimationDelegate {
 // "zoom out" case when releasing an item being dragged.
 class ItemMoveAnimationDelegate : public gfx::AnimationDelegate {
  public:
-  ItemMoveAnimationDelegate(views::View* view) : view_(view) {}
+  explicit ItemMoveAnimationDelegate(views::View* view) : view_(view) {}
 
   void AnimationEnded(const gfx::Animation* animation) override {
     view_->SchedulePaint();

@@ -25,7 +25,7 @@ const int kTopPadding = 5;
 // in the correct order.
 class SearchCardView : public views::View {
  public:
-  SearchCardView(views::View* content_view) {
+  explicit SearchCardView(views::View* content_view) {
     SetBorder(make_scoped_ptr(new views::ShadowBorder(
         kCardShadowBlur, kCardShadowColor, kCardShadowYOffset, 0)));
     SetLayoutManager(new views::FillLayout());
