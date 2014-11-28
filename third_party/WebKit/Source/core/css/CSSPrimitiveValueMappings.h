@@ -4754,14 +4754,14 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ScrollBehavior behavior)
 {
     m_primitiveUnitType = CSS_VALUE_ID;
     switch (behavior) {
-    case ScrollBehaviorInstant:
-        m_value.valueID = CSSValueInstant;
+    case ScrollBehaviorAuto:
+        m_value.valueID = CSSValueAuto;
         break;
     case ScrollBehaviorSmooth:
         m_value.valueID = CSSValueSmooth;
         break;
-    case ScrollBehaviorAuto:
-        // Behavior 'auto' is only allowed in ScrollOptions arguments passed to
+    case ScrollBehaviorInstant:
+        // Behavior 'instant' is only allowed in ScrollOptions arguments passed to
         // CSSOM scroll APIs.
         ASSERT_NOT_REACHED();
     }
@@ -4770,15 +4770,15 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ScrollBehavior behavior)
 template<> inline CSSPrimitiveValue::operator ScrollBehavior() const
 {
     switch (getValueID()) {
-    case CSSValueInstant:
-        return ScrollBehaviorInstant;
+    case CSSValueAuto:
+        return ScrollBehaviorAuto;
     case CSSValueSmooth:
         return ScrollBehaviorSmooth;
     default:
         break;
     }
     ASSERT_NOT_REACHED();
-    return ScrollBehaviorInstant;
+    return ScrollBehaviorAuto;
 }
 
 }

@@ -245,9 +245,9 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId
         return valueID == CSSValueStatic || valueID == CSSValueRelative || valueID == CSSValueAbsolute || valueID == CSSValueFixed;
     case CSSPropertyResize: // none | both | horizontal | vertical | auto
         return valueID == CSSValueNone || valueID == CSSValueBoth || valueID == CSSValueHorizontal || valueID == CSSValueVertical || valueID == CSSValueAuto;
-    case CSSPropertyScrollBehavior: // instant | smooth
+    case CSSPropertyScrollBehavior: // auto | smooth
         ASSERT(RuntimeEnabledFeatures::cssomSmoothScrollEnabled());
-        return valueID == CSSValueInstant || valueID == CSSValueSmooth;
+        return valueID == CSSValueAuto || valueID == CSSValueSmooth;
     case CSSPropertySpeak: // none | normal | spell-out | digits | literal-punctuation | no-punctuation
         return valueID == CSSValueNone || valueID == CSSValueNormal || valueID == CSSValueSpellOut || valueID == CSSValueDigits || valueID == CSSValueLiteralPunctuation || valueID == CSSValueNoPunctuation;
     case CSSPropertyTableLayout: // auto | fixed

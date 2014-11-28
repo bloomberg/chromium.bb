@@ -973,7 +973,7 @@ safe
 legacy
 
 // scroll-behavior
-instant
+// auto
 smooth
 
 // will-change

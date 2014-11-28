@@ -1643,7 +1643,7 @@ public:
     static TouchAction initialTouchAction() { return TouchActionAuto; }
     static ShadowList* initialBoxShadow() { return 0; }
     static ShadowList* initialTextShadow() { return 0; }
-    static ScrollBehavior initialScrollBehavior() { return ScrollBehaviorInstant; }
+    static ScrollBehavior initialScrollBehavior() { return ScrollBehaviorAuto; }
     static ScrollBlocksOn initialScrollBlocksOn() { return ScrollBlocksOnNone; }
 
     // The initial value is 'none' for grid tracks.
