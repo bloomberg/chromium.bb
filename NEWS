@@ -1,7 +1,6 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 * Noteworthy changes in release 2.6.1 (2014-12-01)
-
 ** New features
 *** New Braille tables
 - New grade 1 and grade 2 Gaeilge tables implementing the 2014 UIB
@@ -15,6 +14,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 - Vastly improved Danish tables thanks to Bue Vester-Andersen
   - back-translation, both in 6 dots grade 2 and 8 dots grade 2.
   - Better handling of dash, slash, and other punctuation within words in 8 dots grade 2.
+- New table for Dutch (Netherlands) thanks to Henri Apperloo from CBB
 
 ** Backwards incompatible changes
 - Deleted ga.ctb now superseded by ga-g1.utb and ga.g2.ctb.
