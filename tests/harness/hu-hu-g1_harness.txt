@@ -3898,6 +3898,10 @@
           "output": "taggyülekezet"
         }, 
         {
+          "input": "⠞⠁⠏⠎⠱⠷⠝⠑⠞⠑⠅⠃⠑⠝",
+          "output": "tapsszünetekben"
+        }, 
+        {
           "input": "⠞⠈⠝⠉⠩⠕⠏⠕⠗⠞", 
           "output": "tánccsoport"
         }, 
@@ -8575,6 +8579,10 @@
         {
           "input": "taggyülekezet", 
           "output": "⠞⠁⠛⠹⠷⠇⠑⠅⠑⠣⠑⠞"
+        }, 
+        {
+          "input": "tapsszünetekben",
+          "output": "⠞⠁⠏⠎⠱⠷⠝⠑⠞⠑⠅⠃⠑⠝"
         }, 
         {
           "input": "tánccsoport", 

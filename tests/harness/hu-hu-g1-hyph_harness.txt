@@ -3968,6 +3968,10 @@
           "output": "tag-gyü-le-ke-zet"
         }, 
         {
+          "input": "tapsszünetekben",
+          "output": "taps-szü-ne-tek-ben"
+        }, 
+        {
           "input": "tánccsoport", 
           "output": "tánc-cso-port"
         }, 

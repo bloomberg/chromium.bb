@@ -4867,6 +4867,11 @@ taggyülekezet
 testmode: backtranslate
 taggyülekezet
 
+tapsszünetekben
+
+testmode: backtranslate
+tapsszünetekben
+
 tánccsoport
 
 testmode: backtranslate

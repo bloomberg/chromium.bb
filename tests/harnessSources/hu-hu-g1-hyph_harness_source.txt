@@ -2971,6 +2971,9 @@ testmode: hyphenate
 taggyülekezet
 
 testmode: hyphenate
+tapsszünetekben
+
+testmode: hyphenate
 tánccsoport
 
 testmode: hyphenate

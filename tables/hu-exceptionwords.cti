@@ -1305,6 +1305,7 @@ partword dialógus =	For example dialógusszegény word
 partword puffanás =	For example puffanásszerű word
 partword elemzés 15-123-15-134-126-16-234	For example elemzésszerű, elemzésszerűen words
 partword említés =	For example említésszinten word
+begword taps = For example tapsszerű, tapsszünetekben words
 
 #ty, lly, tty related exceptions
 #This exception part containing english words with need presenting original english braille rules
