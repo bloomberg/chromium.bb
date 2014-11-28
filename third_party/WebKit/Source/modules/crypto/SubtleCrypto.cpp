@@ -410,4 +410,26 @@ ScriptPromise SubtleCrypto::unwrapKey(ScriptState* scriptState, const String& ra
     return promise;
 }
 
+ScriptPromise SubtleCrypto::deriveBits(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* baseKey, unsigned lengthBits)
+{
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
+    ScriptPromise promise = result->promise();
+
+    if (!canAccessWebCrypto(scriptState, result.get()))
+        return promise;
+
+    if (!ensureNotNull(baseKey, "baseKey", result.get()))
+        return promise;
+
+    WebCryptoAlgorithm algorithm;
+    if (!parseAlgorithm(rawAlgorithm, WebCryptoOperationDeriveBits, algorithm, result.get()))
+        return promise;
+
+    if (!baseKey->canBeUsedForAlgorithm(algorithm, WebCryptoOperationDeriveBits, result.get()))
+        return promise;
+
+    Platform::current()->crypto()->deriveBits(algorithm, baseKey->key(), lengthBits, result->result());
+    return promise;
+}
+
 } // namespace blink

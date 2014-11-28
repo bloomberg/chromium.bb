@@ -67,6 +67,7 @@ public:
     ScriptPromise wrapKey(ScriptState*, const String&, CryptoKey*, CryptoKey*, const Dictionary&);
     ScriptPromise unwrapKey(ScriptState*, const String&, const DOMArrayPiece&, CryptoKey*, const Dictionary&, const Dictionary&, bool, const Vector<String>&);
 
+    ScriptPromise deriveBits(ScriptState*, const Dictionary&, CryptoKey*, unsigned);
     void trace(Visitor*) { }
 
 private:

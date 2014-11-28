@@ -33,6 +33,7 @@
 
 #include "WebCommon.h"
 #include "WebCryptoAlgorithm.h"
+#include "WebCryptoKey.h"
 #include "WebVector.h"
 
 namespace blink {
@@ -285,6 +286,21 @@ public:
 
 private:
     const WebCryptoNamedCurve m_namedCurve;
+};
+
+class WebCryptoEcdhKeyDeriveParams : public WebCryptoAlgorithmParams {
+public:
+    explicit WebCryptoEcdhKeyDeriveParams(const WebCryptoKey& publicKey)
+        : m_publicKey(publicKey)
+    {
+    }
+
+    virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeEcdhKeyDeriveParams; }
+
+    const WebCryptoKey publicKey() const { return m_publicKey; }
+
+private:
+    const WebCryptoKey m_publicKey;
 };
 
 } // namespace blink

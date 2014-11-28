@@ -58,4 +58,6 @@ typedef (ArrayBuffer or ArrayBufferView) BufferSource;
     [CallWith=ScriptState] Promise wrapKey(KeyFormat format, CryptoKey key, CryptoKey wrappingKey, Dictionary wrapAlgorithm);
 
     [CallWith=ScriptState] Promise unwrapKey(KeyFormat format, BufferSource wrappedKey, CryptoKey unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, sequence<KeyUsage> keyUsages);
+
+    [CallWith=ScriptState] Promise deriveBits(Dictionary algorithm, CryptoKey baseKey, unsigned long length);
 };

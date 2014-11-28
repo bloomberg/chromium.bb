@@ -35,6 +35,7 @@
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/modules/v8/UnionTypesModules.h"
+#include "bindings/modules/v8/V8CryptoKey.h"
 #include "core/dom/DOMArrayPiece.h"
 #include "core/dom/DOMTypedArray.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
@@ -66,6 +67,7 @@ struct AlgorithmNameMapping {
 // Also all names must be upper case ASCII.
 const AlgorithmNameMapping algorithmNameMappings[] = {
     {"HMAC", 4, WebCryptoAlgorithmIdHmac},
+    {"ECDH", 4, WebCryptoAlgorithmIdEcdh},
     {"SHA-1", 5, WebCryptoAlgorithmIdSha1},
     {"ECDSA", 5, WebCryptoAlgorithmIdEcdsa},
     {"AES-KW", 6, WebCryptoAlgorithmIdAesKw},
@@ -705,6 +707,29 @@ bool parseEcKeyImportParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmPara
     return true;
 }
 
+// Defined by the WebCrypto spec as:
+//
+//     dictionary EcdhKeyDeriveParams : Algorithm {
+//       required CryptoKey public;
+//     };
+bool parseEcdhKeyDeriveParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
+{
+    v8::Local<v8::Value> v8Value;
+    if (!raw.get("public", v8Value)) {
+        setSyntaxError(context.toString("public", "Missing required property"), error);
+        return false;
+    }
+
+    CryptoKey* cryptoKey = V8CryptoKey::toImplWithTypeCheck(raw.isolate(), v8Value);
+    if (!cryptoKey) {
+        setSyntaxError(context.toString("public", "Must be a CryptoKey"), error);
+        return false;
+    }
+
+    params = adoptPtr(new WebCryptoEcdhKeyDeriveParams(cryptoKey->key()));
+    return true;
+}
+
 bool parseAlgorithmParams(const Dictionary& raw, WebCryptoAlgorithmParamsType type, OwnPtr<WebCryptoAlgorithmParams>& params, ErrorContext& context, AlgorithmError* error)
 {
     switch (type) {
@@ -749,6 +774,9 @@ bool parseAlgorithmParams(const Dictionary& raw, WebCryptoAlgorithmParamsType ty
     case WebCryptoAlgorithmParamsTypeEcKeyImportParams:
         context.add("EcKeyImportParams");
         return parseEcKeyImportParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeEcdhKeyDeriveParams:
+        context.add("EcdhKeyDeriveParams");
+        return parseEcdhKeyDeriveParams(raw, params, context, error);
     }
     ASSERT_NOT_REACHED();
     return false;

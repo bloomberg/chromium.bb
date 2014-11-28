@@ -29,6 +29,7 @@ enum CryptoKeyAlgorithmTag {
     AesKwTag = 12,
     RsaPssTag = 13,
     EcdsaTag = 14,
+    EcdhTag = 15,
     // Maximum allowed value is 2^32-1
 };
 
@@ -212,6 +213,8 @@ void SerializedScriptValueWriterForModules::doWriteAlgorithmId(WebCryptoAlgorith
         return doWriteUint32(RsaPssTag);
     case WebCryptoAlgorithmIdEcdsa:
         return doWriteUint32(EcdsaTag);
+    case WebCryptoAlgorithmIdEcdh:
+        return doWriteUint32(EcdhTag);
     }
     ASSERT_NOT_REACHED();
 }
@@ -500,6 +503,9 @@ bool SerializedScriptValueReaderForModules::doReadAlgorithmId(WebCryptoAlgorithm
         return true;
     case EcdsaTag:
         id = WebCryptoAlgorithmIdEcdsa;
+        return true;
+    case EcdhTag:
+        id = WebCryptoAlgorithmIdEcdh;
         return true;
     }
 
