@@ -184,7 +184,6 @@ private:
     TreeScopeStyleSheetCollection* styleSheetCollectionFor(TreeScope&);
     bool shouldUpdateDocumentStyleSheetCollection(StyleResolverUpdateMode) const;
     bool shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode) const;
-    bool shouldApplyXSLTransform() const;
 
     void markTreeScopeDirty(TreeScope&);
 
