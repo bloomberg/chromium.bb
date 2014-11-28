@@ -46,6 +46,7 @@
 #include "core/rendering/RenderView.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/Handle.h"
@@ -420,6 +421,11 @@ void WebPagePopupImpl::close()
 
 void WebPagePopupImpl::closePopup()
 {
+    // This function can be called in EventDispatchForbiddenScope for the main
+    // document, and the following operations dispatch some events.  It's safe
+    // because web authors can't listen the events.
+    EventDispatchForbiddenScope::AllowUserAgentEvents allowEvents;
+
     if (m_page) {
         toLocalFrame(m_page->mainFrame())->loader().stopAllLoaders();
         ASSERT(m_page->deprecatedLocalMainFrame()->localDOMWindow());
