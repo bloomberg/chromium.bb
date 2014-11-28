@@ -1395,10 +1395,6 @@ crbug.com/435864 http/tests/security/shape-image-cors-allow-origin.html [ Pass C
 crbug.com/435864 http/tests/security/shape-image-cors-disallow-origin.html [ Pass Crash ]
 crbug.com/431643 [ Win ] http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain_allow_timing.html [ Pass Failure ]
 
-crbug.com/434090 inspector/tracing/worker-js-profile.html [ Pass Failure ]
-crbug.com/434369 virtual/deferred/inspector/tracing/worker-js-profile.html [ Pass Failure ]
-crbug.com/434690 virtual/implsidepainting/inspector/tracing/worker-js-profile.html [ Pass Failure ]
-
 crbug.com/435342 media/video-seeking.html [ Pass Failure ]
 
 crbug.com/435525 [ Mac Debug ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ NeedsManualRebaseline ]
