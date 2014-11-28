@@ -7,6 +7,7 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/profile_notification.h"
 #include "jni/NotificationUIManager_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -16,6 +17,13 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
+
+// Called by the Java side when a notification event has been received, but the
+// NotificationUIManager has not been initialized yet. Enforce initialization of
+// the class.
+static void InitializeNotificationUIManager(JNIEnv* env, jclass clazz) {
+  g_browser_process->notification_ui_manager();
+}
 
 // static
 NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
@@ -28,32 +36,42 @@ NotificationUIManagerAndroid::NotificationUIManagerAndroid() {
           AttachCurrentThread(),
           reinterpret_cast<intptr_t>(this),
           base::android::GetApplicationContext()));
+
+  // TODO(peter): Synchronize notifications with the Java side.
 }
 
-NotificationUIManagerAndroid::~NotificationUIManagerAndroid() {}
+NotificationUIManagerAndroid::~NotificationUIManagerAndroid() {
+  Java_NotificationUIManager_destroy(AttachCurrentThread(),
+                                     java_object_.obj());
+}
 
-void NotificationUIManagerAndroid::OnNotificationClicked(
+bool NotificationUIManagerAndroid::OnNotificationClicked(
     JNIEnv* env, jobject java_object, jstring notification_id) {
   std::string id = ConvertJavaStringToUTF8(env, notification_id);
 
   auto iter = profile_notifications_.find(id);
-  if (iter == profile_notifications_.end())
-    return;
+  if (iter == profile_notifications_.end()) {
+    // TODO(peter): Handle the "click" event for notifications which have
+    // outlived the browser process that created them.
+    return false;
+  }
 
   const Notification& notification = iter->second->notification();
   notification.delegate()->Click();
+  return true;
 }
 
-void NotificationUIManagerAndroid::OnNotificationClosed(
+bool NotificationUIManagerAndroid::OnNotificationClosed(
     JNIEnv* env, jobject java_object, jstring notification_id) {
   std::string id = ConvertJavaStringToUTF8(env, notification_id);
 
   auto iter = profile_notifications_.find(id);
   if (iter == profile_notifications_.end())
-    return;
+    return false;
 
   const Notification& notification = iter->second->notification();
   notification.delegate()->Close(true /** by_user **/);
+  return true;
 }
 
 void NotificationUIManagerAndroid::Add(const Notification& notification,

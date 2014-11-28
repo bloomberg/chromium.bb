@@ -125,6 +125,17 @@
             </intent-filter>
         </receiver>
 
+        <!-- Android Notification service listener -->
+        <service android:exported="false"
+                 android:name="org.chromium.chrome.browser.notifications.NotificationService"/>
+        <receiver android:exported="false"
+                  android:name="org.chromium.chrome.browser.notifications.NotificationService$Receiver">
+            <intent-filter>
+                <action android:name="org.chromium.chrome.browser.notifications.CLICK_NOTIFICATION" />
+                <action android:name="org.chromium.chrome.browser.notifications.CLOSE_NOTIFICATION" />
+            </intent-filter>
+        </receiver>
+
         <provider android:name="org.chromium.chrome.browser.ChromeBrowserProvider"
                   android:authorities="org.chromium.chrome.shell"
                   android:exported="true" />

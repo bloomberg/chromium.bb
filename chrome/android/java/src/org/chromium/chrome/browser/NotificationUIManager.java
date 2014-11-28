@@ -7,17 +7,16 @@ package org.chromium.chrome.browser;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.widget.Toast;
+import android.util.Log;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.chrome.R;
+import org.chromium.chrome.browser.notifications.NotificationConstants;
+import org.chromium.chrome.browser.notifications.NotificationService;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 /**
@@ -26,19 +25,13 @@ import org.chromium.chrome.browser.widget.RoundedIconGenerator;
  *
  * This class should only be used on the UI thread.
  */
-public class NotificationUIManager extends BroadcastReceiver {
-    private static final String EXTRA_NOTIFICATION_ID = "notification_id";
-
-    private static final String ACTION_CLICK_NOTIFICATION =
-            "org.chromium.chrome.browser.CLICK_NOTIFICATION";
-    private static final String ACTION_CLOSE_NOTIFICATION =
-            "org.chromium.chrome.browser.CLOSE_NOTIFICATION";
-    private static final String ACTION_SITE_SETTINGS_NOTIFICATION =
-            "org.chromium.chrome.browser.ACTION_SITE_SETTINGS_NOTIFICATION";
+public class NotificationUIManager {
+    private static final String TAG = NotificationUIManager.class.getSimpleName();
 
     private static final int NOTIFICATION_ICON_BG_COLOR = Color.rgb(150, 150, 150);
     private static final int NOTIFICATION_TEXT_SIZE_DP = 28;
 
+    private static NotificationUIManager sInstance;
     private final long mNativeNotificationManager;
 
     private final Context mAppContext;
@@ -48,9 +41,23 @@ public class NotificationUIManager extends BroadcastReceiver {
 
     private int mLastNotificationId;
 
-    private NotificationUIManager(long nativeNotificationManager, Context context) {
-        super();
+    /**
+     * Creates a new instance of the NotificationUIManager.
+     *
+     * @param nativeNotificationManager Instance of the NotificationUIManagerAndroid class.
+     * @param context Application context for this instance of Chrome.
+     */
+    @CalledByNative
+    private static NotificationUIManager create(long nativeNotificationManager, Context context) {
+        if (sInstance != null) {
+            throw new IllegalStateException("There must only be a single NotificationUIManager.");
+        }
 
+        sInstance = new NotificationUIManager(nativeNotificationManager, context);
+        return sInstance;
+    }
+
+    private NotificationUIManager(long nativeNotificationManager, Context context) {
         mNativeNotificationManager = nativeNotificationManager;
         mAppContext = context.getApplicationContext();
 
@@ -58,43 +65,53 @@ public class NotificationUIManager extends BroadcastReceiver {
                 mAppContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
         mLastNotificationId = 0;
-
-        // Register this instance as a broadcast receiver, which will be used for handling
-        // clicked-on and rejected notifications.
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_CLICK_NOTIFICATION);
-        filter.addAction(ACTION_CLOSE_NOTIFICATION);
-
-        // TODO(peter): This should be handled by a broadcast receiver outside of the Notification
-        // system, as it will also be used by other features.
-        filter.addAction(ACTION_SITE_SETTINGS_NOTIFICATION);
-
-        // TODO(peter): Notification events should be received by an intent receiver that does not
-        // require Chrome to be running all the time.
-        mAppContext.registerReceiver(this, filter);
     }
 
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        if (!intent.hasExtra(EXTRA_NOTIFICATION_ID))
-            return;
+    /**
+     * Marks the current instance as being freed, allowing for a new NotificationUIManager
+     * object to be initialized.
+     */
+    @CalledByNative
+    private void destroy() {
+        assert sInstance == this;
+        sInstance = null;
+    }
 
-        String notificationId = intent.getStringExtra(EXTRA_NOTIFICATION_ID);
-        if (ACTION_CLICK_NOTIFICATION.equals(intent.getAction())) {
-            nativeOnNotificationClicked(mNativeNotificationManager, notificationId);
-        } else if (ACTION_CLOSE_NOTIFICATION.equals(intent.getAction())) {
-            nativeOnNotificationClosed(mNativeNotificationManager, notificationId);
-        } else if (ACTION_SITE_SETTINGS_NOTIFICATION.equals(intent.getAction())) {
-            // TODO(peter): Remove this when the intent goes elsewhere.
-            Toast.makeText(mAppContext, "Not implemented.", Toast.LENGTH_SHORT).show();
+    /**
+     * Invoked by the NotificationService when a Notification intent has been received. There may
+     * not be an active instance of the NotificationUIManager at this time, so inform the native
+     * side through a static method, initialzing the manager if needed.
+     *
+     * @param intent The intent as received by the Notification service.
+     * @return Whether the event could be handled by the native Notification manager.
+     */
+    public static boolean dispatchNotificationEvent(Intent intent) {
+        if (sInstance == null) {
+            nativeInitializeNotificationUIManager();
+            if (sInstance == null) {
+                Log.e(TAG, "Unable to initialize the native NotificationUIManager.");
+                return false;
+            }
+        }
+
+        String notificationId = intent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_ID);
+        if (NotificationConstants.ACTION_CLICK_NOTIFICATION.equals(intent.getAction())) {
+            return sInstance.onNotificationClicked(notificationId);
+        } else if (NotificationConstants.ACTION_CLOSE_NOTIFICATION.equals(intent.getAction())) {
+            return sInstance.onNotificationClosed(notificationId);
+        } else {
+            Log.e(TAG, "Unrecognized Notification action: " + intent.getAction());
+            return false;
         }
     }
 
     private PendingIntent getPendingIntent(String notificationId, int platformId, String action) {
         Intent intent = new Intent(action);
-        intent.putExtra(EXTRA_NOTIFICATION_ID, notificationId);
+        intent.setClass(mAppContext, NotificationService.Receiver.class);
+        intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_ID, notificationId);
 
-        return PendingIntent.getBroadcast(mAppContext, platformId, intent, 0);
+        return PendingIntent.getBroadcast(mAppContext, platformId, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     /**
@@ -123,11 +140,11 @@ public class NotificationUIManager extends BroadcastReceiver {
                 .setLargeIcon(icon)
                 .setSmallIcon(android.R.drawable.ic_menu_myplaces)
                 .setContentIntent(getPendingIntent(
-                        notificationId, mLastNotificationId, ACTION_CLICK_NOTIFICATION))
+                        notificationId, mLastNotificationId,
+                        NotificationConstants.ACTION_CLICK_NOTIFICATION))
                 .setDeleteIntent(getPendingIntent(
-                        notificationId, mLastNotificationId, ACTION_CLOSE_NOTIFICATION))
-                .addAction(R.drawable.globe_favicon, "Site settings", getPendingIntent(
-                        notificationId, mLastNotificationId, ACTION_SITE_SETTINGS_NOTIFICATION))
+                        notificationId, mLastNotificationId,
+                        NotificationConstants.ACTION_CLOSE_NOTIFICATION))
                 .setSubText(origin)
                 .build();
 
@@ -170,14 +187,18 @@ public class NotificationUIManager extends BroadcastReceiver {
         mNotificationManager.cancel(platformId);
     }
 
-    @CalledByNative
-    private static NotificationUIManager create(long nativeNotificationManager, Context context) {
-        return new NotificationUIManager(nativeNotificationManager, context);
+    private boolean onNotificationClicked(String notificationId) {
+        return nativeOnNotificationClicked(mNativeNotificationManager, notificationId);
     }
 
-    private native void nativeOnNotificationClicked(
-            long nativeNotificationUIManagerAndroid, String notificationId);
+    private boolean onNotificationClosed(String notificationId) {
+        return nativeOnNotificationClosed(mNativeNotificationManager, notificationId);
+    }
 
-    private native void nativeOnNotificationClosed(
+    private static native void nativeInitializeNotificationUIManager();
+
+    private native boolean nativeOnNotificationClicked(
+            long nativeNotificationUIManagerAndroid, String notificationId);
+    private native boolean nativeOnNotificationClosed(
             long nativeNotificationUIManagerAndroid, String notificationId);
 }

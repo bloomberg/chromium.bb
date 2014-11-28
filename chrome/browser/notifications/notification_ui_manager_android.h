@@ -23,12 +23,12 @@ class NotificationUIManagerAndroid : public NotificationUIManager {
   ~NotificationUIManagerAndroid() override;
 
   // Called by the Java implementation when a notification has been clicked on.
-  void OnNotificationClicked(JNIEnv* env,
+  bool OnNotificationClicked(JNIEnv* env,
                              jobject java_object,
                              jstring notification_id);
 
   // Called by the Java implementation when a notification has been closed.
-  void OnNotificationClosed(JNIEnv* env,
+  bool OnNotificationClosed(JNIEnv* env,
                             jobject java_object,
                             jstring notification_id);
 
