@@ -29,6 +29,7 @@
 
 #include "platform/PlatformThreadData.h"
 #include "platform/ThreadTimers.h"
+#include "wtf/Atomics.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/HashSet.h"
 #include <limits.h>
@@ -378,7 +379,7 @@ void TimerBase::setNextFireTime(double newUnalignedTime)
     if (oldTime != newTime) {
         m_nextFireTime = newTime;
         static unsigned currentHeapInsertionOrder;
-        m_heapInsertionOrder = currentHeapInsertionOrder++;
+        m_heapInsertionOrder = atomicAdd(&currentHeapInsertionOrder, 1);
 
         bool wasFirstTimerInHeap = m_heapIndex == 0;
 
@@ -411,4 +412,3 @@ double TimerBase::nextUnalignedFireInterval() const
 }
 
 } // namespace blink
-
