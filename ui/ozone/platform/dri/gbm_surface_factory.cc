@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "third_party/khronos/EGL/egl.h"
+#include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_impl.h"
 #include "ui/ozone/platform/dri/dri_window_delegate_manager.h"
 #include "ui/ozone/platform/dri/gbm_buffer.h"
@@ -108,40 +109,7 @@ const int32* GbmSurfaceFactory::GetEGLSurfaceProperties(
 bool GbmSurfaceFactory::LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
-  base::NativeLibraryLoadError error;
-  base::NativeLibrary gles_library = base::LoadNativeLibrary(
-      base::FilePath("libGLESv2.so.2"),
-      &error);
-  if (!gles_library) {
-    LOG(WARNING) << "Failed to load GLES library: " << error.ToString();
-    return false;
-  }
-
-  base::NativeLibrary egl_library = base::LoadNativeLibrary(
-      base::FilePath("libEGL.so.1"),
-      &error);
-  if (!egl_library) {
-    LOG(WARNING) << "Failed to load EGL library: " << error.ToString();
-    base::UnloadNativeLibrary(gles_library);
-    return false;
-  }
-
-  GLGetProcAddressProc get_proc_address =
-      reinterpret_cast<GLGetProcAddressProc>(
-          base::GetFunctionPointerFromNativeLibrary(
-              egl_library, "eglGetProcAddress"));
-  if (!get_proc_address) {
-    LOG(ERROR) << "eglGetProcAddress not found.";
-    base::UnloadNativeLibrary(egl_library);
-    base::UnloadNativeLibrary(gles_library);
-    return false;
-  }
-
-  set_gl_get_proc_address.Run(get_proc_address);
-  add_gl_library.Run(egl_library);
-  add_gl_library.Run(gles_library);
-
-  return true;
+  return LoadDefaultEGLGLES2Bindings(add_gl_library, set_gl_get_proc_address);
 }
 
 scoped_ptr<SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(

@@ -92,6 +92,8 @@
         'common/display_snapshot_proxy.h',
         'common/display_util.cc',
         'common/display_util.h',
+        'common/egl_util.cc',
+        'common/egl_util.h',
         'common/gpu/ozone_gpu_message_generator.cc',
         'common/gpu/ozone_gpu_message_generator.h',
         'common/gpu/ozone_gpu_message_params.cc',

@@ -18,6 +18,7 @@
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/vsync_provider.h"
+#include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support.h"
@@ -264,37 +265,8 @@ bool SurfaceFactoryEgltest::LoadEGLGLES2Bindings(
   if (!gles_soname)
     gles_soname = kDefaultGlesSoname;
 
-  base::NativeLibraryLoadError error;
-  base::NativeLibrary egl_library =
-      base::LoadNativeLibrary(base::FilePath(egl_soname), &error);
-  if (!egl_library) {
-    LOG(WARNING) << "Failed to load EGL library: " << error.ToString();
-    return false;
-  }
-
-  base::NativeLibrary gles_library =
-      base::LoadNativeLibrary(base::FilePath(gles_soname), &error);
-  if (!gles_library) {
-    LOG(WARNING) << "Failed to load GLES library: " << error.ToString();
-    base::UnloadNativeLibrary(egl_library);
-    return false;
-  }
-
-  GLGetProcAddressProc get_proc_address =
-      reinterpret_cast<GLGetProcAddressProc>(
-          base::GetFunctionPointerFromNativeLibrary(egl_library,
-                                                    "eglGetProcAddress"));
-  if (!get_proc_address) {
-    LOG(ERROR) << "eglGetProcAddress not found.";
-    base::UnloadNativeLibrary(egl_library);
-    base::UnloadNativeLibrary(gles_library);
-    return false;
-  }
-
-  set_gl_get_proc_address.Run(get_proc_address);
-  add_gl_library.Run(egl_library);
-  add_gl_library.Run(gles_library);
-  return true;
+  return ::ui::LoadEGLGLES2Bindings(add_gl_library, set_gl_get_proc_address,
+                                    egl_soname, gles_soname);
 }
 
 const int32* SurfaceFactoryEgltest::GetEGLSurfaceProperties(
