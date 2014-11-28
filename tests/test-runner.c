@@ -33,6 +33,7 @@
 #include <dlfcn.h>
 #include <errno.h>
 #include <limits.h>
+#include <sys/ptrace.h>
 
 #include "test-runner.h"
 
@@ -246,6 +247,38 @@ stderr_reset_color(void)
 		fprintf(stderr, "\033[0m");
 }
 
+/* this function is taken from libinput/test/litest.c
+ * (rev 028513a0a723e97941c39)
+ */
+static int
+is_debugger_attached(void)
+{
+	int status;
+	int rc;
+	int pid = fork();
+
+	if (pid == -1)
+		return 0;
+
+	if (pid == 0) {
+		int ppid = getppid();
+		if (ptrace(PTRACE_ATTACH, ppid, NULL, NULL) == 0) {
+			waitpid(ppid, NULL, 0);
+			ptrace(PTRACE_CONT, NULL, NULL);
+			ptrace(PTRACE_DETACH, ppid, NULL, NULL);
+			rc = 0;
+		} else {
+			rc = 1;
+		}
+		_exit(rc);
+	} else {
+		waitpid(pid, &status, 0);
+		rc = WEXITSTATUS(status);
+	}
+
+	return rc;
+}
+
 int main(int argc, char *argv[])
 {
 	const struct test *t;
@@ -259,11 +292,16 @@ int main(int argc, char *argv[])
 	sys_malloc = dlsym(RTLD_NEXT, "malloc");
 	sys_free = dlsym(RTLD_NEXT, "free");
 
-	leak_check_enabled = !getenv("WAYLAND_TEST_NO_LEAK_CHECK");
-	timeouts_enabled = !getenv("WAYLAND_TEST_NO_TIMEOUTS");
-
 	if (isatty(fileno(stderr)))
 		is_atty = 1;
+
+	if (is_debugger_attached()) {
+		leak_check_enabled = 0;
+		timeouts_enabled = 0;
+	} else {
+		leak_check_enabled = !getenv("WAYLAND_TEST_NO_LEAK_CHECK");
+		timeouts_enabled = !getenv("WAYLAND_TEST_NO_TIMEOUTS");
+	}
 
 	if (argc == 2 && strcmp(argv[1], "--help") == 0)
 		usage(argv[0], EXIT_SUCCESS);
