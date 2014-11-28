@@ -1712,13 +1712,14 @@ TEST(HeapTest, TypedHeapSanity)
 
 TEST(HeapTest, NoAllocation)
 {
-    EXPECT_TRUE(ThreadState::current()->isAllocationAllowed());
+    ThreadState* state = ThreadState::current();
+    EXPECT_TRUE(state->isAllocationAllowed());
     {
         // Disallow allocation
-        NoAllocationScope<AnyThread> noAllocationScope;
-        EXPECT_FALSE(ThreadState::current()->isAllocationAllowed());
+        ThreadState::NoAllocationScope noAllocationScope(state);
+        EXPECT_FALSE(state->isAllocationAllowed());
     }
-    EXPECT_TRUE(ThreadState::current()->isAllocationAllowed());
+    EXPECT_TRUE(state->isAllocationAllowed());
 }
 
 TEST(HeapTest, Members)

@@ -1019,18 +1019,19 @@ void ThreadState::performPendingSweep()
     {
         SweepForbiddenScope forbiddenScope(this);
 
-        // Disallow allocation during weak processing.
-        enterNoAllocationScope();
         {
-            TRACE_EVENT0("blink_gc", "ThreadState::threadLocalWeakProcessing");
-            // Perform thread-specific weak processing.
-            while (popAndInvokeWeakPointerCallback(Heap::s_markingVisitor)) { }
+            // Disallow allocation during weak processing.
+            NoAllocationScope noAllocationScope(this);
+            {
+                TRACE_EVENT0("blink_gc", "ThreadState::threadLocalWeakProcessing");
+                // Perform thread-specific weak processing.
+                while (popAndInvokeWeakPointerCallback(Heap::s_markingVisitor)) { }
+            }
+            {
+                TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");
+                invokePreFinalizers(*Heap::s_markingVisitor);
+            }
         }
-        {
-            TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");
-            invokePreFinalizers(*Heap::s_markingVisitor);
-        }
-        leaveNoAllocationScope();
 
         {
             TRACE_EVENT0("blink_gc", "ThreadState::sweepNonFinalizedHeaps");

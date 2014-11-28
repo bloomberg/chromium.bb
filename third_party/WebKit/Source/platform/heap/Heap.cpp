@@ -2487,7 +2487,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::Cause
     // Disallow allocation during garbage collection (but not
     // during the finalization that happens when the gcScope is
     // torn down).
-    NoAllocationScope<AnyThread> noAllocationScope;
+    ThreadState::NoAllocationScope noAllocationScope(state);
 
     enterGC();
     preGC();
@@ -2544,7 +2544,7 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
     // same time as a thread local GC.
 
     {
-        NoAllocationScope<AnyThread> noAllocationScope;
+        ThreadState::NoAllocationScope noAllocationScope(state);
 
         enterGC();
         state->preGC();

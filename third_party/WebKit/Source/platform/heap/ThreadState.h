@@ -331,7 +331,23 @@ public:
         Sweeping,
     };
 
-    class SweepForbiddenScope {
+    // The NoAllocationScope class is used in debug mode to catch unwanted
+    // allocations. E.g. allocations during GC.
+    class NoAllocationScope final {
+    public:
+        explicit NoAllocationScope(ThreadState* state) : m_state(state)
+        {
+            m_state->enterNoAllocationScope();
+        }
+        ~NoAllocationScope()
+        {
+            m_state->leaveNoAllocationScope();
+        }
+    private:
+        ThreadState* m_state;
+    };
+
+    class SweepForbiddenScope final {
     public:
         explicit SweepForbiddenScope(ThreadState* state) : m_state(state)
         {
