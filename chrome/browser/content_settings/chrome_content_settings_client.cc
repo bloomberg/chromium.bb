@@ -10,16 +10,6 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeContentSettingsClient);
 ChromeContentSettingsClient::~ChromeContentSettingsClient() {
 }
 
-// static
-void ChromeContentSettingsClient::CreateForWebContents(
-    content::WebContents* contents) {
-  if (FromWebContents(contents))
-    return;
-
-  contents->SetUserData(UserDataKey(),
-                        new ChromeContentSettingsClient(contents));
-}
-
 void ChromeContentSettingsClient::OnCookiesRead(
     const GURL& url,
     const GURL& first_party_url,

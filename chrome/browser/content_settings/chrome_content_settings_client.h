@@ -18,8 +18,6 @@ class ChromeContentSettingsClient
  public:
   ~ChromeContentSettingsClient() override;
 
-  static void CreateForWebContents(content::WebContents* contents);
-
   // ContentSettingsClient implementation.
   void OnCookiesRead(const GURL& url,
                      const GURL& first_party_url,
