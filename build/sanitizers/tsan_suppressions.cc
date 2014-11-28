@@ -169,10 +169,6 @@ char kTSanDefaultSuppressions[] =
 "race:PrepareTextureMailbox\n"
 "race:cc::LayerTreeHost::PaintLayerContents\n"
 
-// http://crbug.com/328804
-"race:v8::internal::Heap::SetStackLimits\n"
-"race:ScavengePointer\n"
-
 // http://crbug.com/328826
 "race:gLCDOrder\n"
 "race:gLCDOrientation\n"
