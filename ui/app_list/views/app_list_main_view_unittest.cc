@@ -303,11 +303,11 @@ TEST_F(AppListMainViewTest, DragReparentItemOntoPageSwitcher) {
 
   AppListItemView* dragged = StartDragForReparent(0);
 
-  gfx::Rect main_view_bounds = main_view_->bounds();
+  gfx::Rect grid_view_bounds = RootGridView()->bounds();
   // Drag the reparent item to the page switcher.
   gfx::Point point =
-      gfx::Point(main_view_bounds.width() / 2,
-                 main_view_bounds.bottom() - first_slot_tile.height());
+      gfx::Point(grid_view_bounds.width() / 2,
+                 grid_view_bounds.bottom() - first_slot_tile.height());
   SimulateUpdateDrag(FolderGridView(), AppsGridView::MOUSE, dragged, point);
 
   // Drop it.
