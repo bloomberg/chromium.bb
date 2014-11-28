@@ -144,8 +144,6 @@ namespace blink {
         void deviceOrPageScaleFactorChanged();
         double devicePixelRatio() const;
 
-        String documentTypeString() const;
-
         PassOwnPtr<DragImage> nodeImage(Node&);
         PassOwnPtr<DragImage> dragImageForSelection();
 

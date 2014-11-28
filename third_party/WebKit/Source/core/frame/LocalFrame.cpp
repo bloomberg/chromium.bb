@@ -570,14 +570,6 @@ double LocalFrame::devicePixelRatio() const
     return ratio;
 }
 
-String LocalFrame::documentTypeString() const
-{
-    if (DocumentType* doctype = document()->doctype())
-        return createMarkup(doctype);
-
-    return String();
-}
-
 PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
 {
     if (!node.renderer())
