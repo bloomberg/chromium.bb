@@ -20,6 +20,9 @@
 #include "gin/run_microtasks_observer.h"
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#ifdef OS_MACOSX
+#include "base/mac/foundation_util.h"
+#endif  // OS_MACOSX
 #include "base/path_service.h"
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
@@ -68,6 +71,14 @@ bool MapV8Files(base::FilePath* natives_path, base::FilePath* snapshot_path,
 
   return true;
 }
+
+const int v8_snapshot_dir =
+#if defined(OS_ANDROID)
+    base::DIR_ANDROID_APP_DATA;
+#elif defined(OS_POSIX)
+    base::DIR_EXE;
+#endif  // defined(OS_ANDROID)
+
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
 }  // namespace
@@ -79,18 +90,21 @@ bool IsolateHolder::LoadV8Snapshot() {
   if (g_mapped_natives && g_mapped_snapshot)
     return true;
 
+#if !defined(OS_MACOSX)
   base::FilePath data_path;
-  PathService::Get(
-#if defined(OS_ANDROID)
-    base::DIR_ANDROID_APP_DATA,
-#elif defined(OS_POSIX)
-    base::DIR_EXE,
-#endif
-    &data_path);
+  PathService::Get(v8_snapshot_dir, &data_path);
   DCHECK(!data_path.empty());
 
   base::FilePath natives_path = data_path.AppendASCII("natives_blob.bin");
   base::FilePath snapshot_path = data_path.AppendASCII("snapshot_blob.bin");
+#else  // !defined(OS_MACOSX)
+  base::FilePath natives_path = base::mac::PathForFrameworkBundleResource(
+      CFSTR("natives_blob.bin"));
+  base::FilePath snapshot_path = base::mac::PathForFrameworkBundleResource(
+      CFSTR("snapshot_blob.bin"));
+  DCHECK(!natives_path.empty());
+  DCHECK(!snapshot_path.empty());
+#endif  // !defined(OS_MACOSX)
 
   return MapV8Files(&natives_path, &snapshot_path);
 }
