@@ -29,7 +29,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/PseudoElement.h"
-#include "core/dom/shadow/ComposedTreeWalker.h"
+#include "core/dom/shadow/ComposedTreeTraversal.h"
 #include "core/rendering/RenderObject.h"
 
 namespace blink {
@@ -57,7 +57,7 @@ ContainerNode* parent(const Node& node, ParentDetails* details)
     ASSERT(!node.document().childNeedsDistributionRecalc());
     if (isActiveInsertionPoint(node))
         return 0;
-    return toContainerNode(ComposedTreeWalker::traverseParent(node, details));
+    return toContainerNode(ComposedTreeTraversal::traverseParent(node, details));
 }
 
 bool contains(const ContainerNode& container, const Node& node)
@@ -72,16 +72,16 @@ bool contains(const ContainerNode& container, const Node& node)
 Node* nextSibling(const Node& node)
 {
     if (node.isBeforePseudoElement()) {
-        if (Node* next = ComposedTreeWalker::firstChild(*ComposedTreeWalker::parent(node)))
+        if (Node* next = ComposedTreeTraversal::firstChild(*ComposedTreeTraversal::parent(node)))
             return next;
     } else {
-        if (Node* next = ComposedTreeWalker::nextSibling(node))
+        if (Node* next = ComposedTreeTraversal::nextSibling(node))
             return next;
         if (node.isAfterPseudoElement())
             return 0;
     }
 
-    Node* parent = ComposedTreeWalker::traverseParent(node);
+    Node* parent = ComposedTreeTraversal::traverseParent(node);
     if (parent && parent->isElementNode())
         return toElement(parent)->pseudoElement(AFTER);
 
@@ -91,16 +91,16 @@ Node* nextSibling(const Node& node)
 Node* previousSibling(const Node& node)
 {
     if (node.isAfterPseudoElement()) {
-        if (Node* previous = ComposedTreeWalker::lastChild(*ComposedTreeWalker::parent(node)))
+        if (Node* previous = ComposedTreeTraversal::lastChild(*ComposedTreeTraversal::parent(node)))
             return previous;
     } else {
-        if (Node* previous = ComposedTreeWalker::previousSibling(node))
+        if (Node* previous = ComposedTreeTraversal::previousSibling(node))
             return previous;
         if (node.isBeforePseudoElement())
             return 0;
     }
 
-    Node* parent = ComposedTreeWalker::traverseParent(node);
+    Node* parent = ComposedTreeTraversal::traverseParent(node);
     if (parent && parent->isElementNode())
         return toElement(parent)->pseudoElement(BEFORE);
 
@@ -109,7 +109,7 @@ Node* previousSibling(const Node& node)
 
 static Node* lastChild(const Node& node)
 {
-    return ComposedTreeWalker::lastChild(node);
+    return ComposedTreeTraversal::lastChild(node);
 }
 
 static Node* pseudoAwarePreviousSibling(const Node& node)
@@ -160,7 +160,7 @@ Node* previous(const Node& node, const Node* stayWithin)
 
 Node* firstChild(const Node& node)
 {
-    return ComposedTreeWalker::firstChild(node);
+    return ComposedTreeTraversal::firstChild(node);
 }
 
 static Node* pseudoAwareNextSibling(const Node& node)

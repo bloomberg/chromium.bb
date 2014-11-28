@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "core/dom/shadow/ComposedTreeWalker.h"
+#include "core/dom/shadow/ComposedTreeTraversal.h"
 
 #include "core/dom/Element.h"
 #include "core/dom/shadow/ElementShadow.h"
@@ -39,19 +39,19 @@ static inline ElementShadow* shadowFor(const Node& node)
     return node.isElementNode() ? toElement(node).shadow() : 0;
 }
 
-Node* ComposedTreeWalker::traverseChild(const Node& node, TraversalDirection direction)
+Node* ComposedTreeTraversal::traverseChild(const Node& node, TraversalDirection direction)
 {
     ElementShadow* shadow = shadowFor(node);
     return shadow ? traverseLightChildren(*shadow->youngestShadowRoot(), direction)
-            : traverseLightChildren(node, direction);
+        : traverseLightChildren(node, direction);
 }
 
-Node* ComposedTreeWalker::traverseLightChildren(const Node& node, TraversalDirection direction)
+Node* ComposedTreeTraversal::traverseLightChildren(const Node& node, TraversalDirection direction)
 {
     return traverseSiblings(direction == TraversalDirectionForward ? node.firstChild() : node.lastChild(), direction);
 }
 
-Node* ComposedTreeWalker::traverseSiblings(const Node* node, TraversalDirection direction)
+Node* ComposedTreeTraversal::traverseSiblings(const Node* node, TraversalDirection direction)
 {
     for (const Node* sibling = node; sibling; sibling = (direction == TraversalDirectionForward ? sibling->nextSibling() : sibling->previousSibling())) {
         if (Node* found = traverseNode(*sibling, direction))
@@ -60,7 +60,7 @@ Node* ComposedTreeWalker::traverseSiblings(const Node* node, TraversalDirection 
     return 0;
 }
 
-Node* ComposedTreeWalker::traverseNode(const Node& node, TraversalDirection direction)
+Node* ComposedTreeTraversal::traverseNode(const Node& node, TraversalDirection direction)
 {
     if (!isActiveInsertionPoint(node))
         return const_cast<Node*>(&node);
@@ -71,7 +71,7 @@ Node* ComposedTreeWalker::traverseNode(const Node& node, TraversalDirection dire
     return 0;
 }
 
-Node* ComposedTreeWalker::traverseDistributedNodes(const Node* node, const InsertionPoint& insertionPoint, TraversalDirection direction)
+Node* ComposedTreeTraversal::traverseDistributedNodes(const Node* node, const InsertionPoint& insertionPoint, TraversalDirection direction)
 {
     for (const Node* next = node; next; next = (direction == TraversalDirectionForward ? insertionPoint.nextTo(next) : insertionPoint.previousTo(next))) {
         if (Node* found = traverseNode(*next, direction))
@@ -80,7 +80,7 @@ Node* ComposedTreeWalker::traverseDistributedNodes(const Node* node, const Inser
     return 0;
 }
 
-Node* ComposedTreeWalker::traverseSiblingOrBackToInsertionPoint(const Node& node, TraversalDirection direction)
+Node* ComposedTreeTraversal::traverseSiblingOrBackToInsertionPoint(const Node& node, TraversalDirection direction)
 {
     if (!shadowWhereNodeCanBeDistributed(node))
         return traverseSiblingInCurrentTree(node, direction);
@@ -94,7 +94,7 @@ Node* ComposedTreeWalker::traverseSiblingOrBackToInsertionPoint(const Node& node
     return traverseSiblingOrBackToInsertionPoint(*insertionPoint, direction);
 }
 
-Node* ComposedTreeWalker::traverseSiblingInCurrentTree(const Node& node, TraversalDirection direction)
+Node* ComposedTreeTraversal::traverseSiblingInCurrentTree(const Node& node, TraversalDirection direction)
 {
     if (Node* found = traverseSiblings(direction == TraversalDirectionForward ? node.nextSibling() : node.previousSibling(), direction))
         return found;
@@ -103,7 +103,7 @@ Node* ComposedTreeWalker::traverseSiblingInCurrentTree(const Node& node, Travers
     return 0;
 }
 
-Node* ComposedTreeWalker::traverseBackToYoungerShadowRoot(const Node& node, TraversalDirection direction)
+Node* ComposedTreeTraversal::traverseBackToYoungerShadowRoot(const Node& node, TraversalDirection direction)
 {
     if (node.parentNode() && node.parentNode()->isShadowRoot()) {
         ShadowRoot* parentShadowRoot = toShadowRoot(node.parentNode());
@@ -118,7 +118,7 @@ Node* ComposedTreeWalker::traverseBackToYoungerShadowRoot(const Node& node, Trav
 
 // FIXME: Use an iterative algorithm so that it can be inlined.
 // https://bugs.webkit.org/show_bug.cgi?id=90415
-Node* ComposedTreeWalker::traverseParent(const Node& node, ParentTraversalDetails* details)
+Node* ComposedTreeTraversal::traverseParent(const Node& node, ParentTraversalDetails* details)
 {
     if (node.isPseudoElement())
         return node.parentOrShadowHostNode();
@@ -137,7 +137,7 @@ Node* ComposedTreeWalker::traverseParent(const Node& node, ParentTraversalDetail
     return traverseParentOrHost(node);
 }
 
-inline Node* ComposedTreeWalker::traverseParentOrHost(const Node& node)
+inline Node* ComposedTreeTraversal::traverseParentOrHost(const Node& node)
 {
     Node* parent = node.parentNode();
     if (!parent)

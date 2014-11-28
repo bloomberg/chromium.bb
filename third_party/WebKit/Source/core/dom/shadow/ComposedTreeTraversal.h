@@ -24,8 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ComposedTreeWalker_h
-#define ComposedTreeWalker_h
+#ifndef ComposedTreeTraversal_h
+#define ComposedTreeTraversal_h
 
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/shadow/InsertionPoint.h"
@@ -37,7 +37,7 @@ class Node;
 
 // FIXME: Make some functions inline to optimise the performance.
 // https://bugs.webkit.org/show_bug.cgi?id=82702
-class ComposedTreeWalker {
+class ComposedTreeTraversal {
 public:
     typedef NodeRenderingTraversal::ParentDetails ParentTraversalDetails;
 
@@ -100,7 +100,7 @@ private:
     static Node* traverseParentOrHost(const Node&);
 };
 
-inline Node* ComposedTreeWalker::parent(const Node& node)
+inline Node* ComposedTreeTraversal::parent(const Node& node)
 {
     assertPrecondition(node);
     Node* result = traverseParent(node);
@@ -108,7 +108,7 @@ inline Node* ComposedTreeWalker::parent(const Node& node)
     return result;
 }
 
-inline Node* ComposedTreeWalker::nextSibling(const Node& node)
+inline Node* ComposedTreeTraversal::nextSibling(const Node& node)
 {
     assertPrecondition(node);
     Node* result = traverseSiblingOrBackToInsertionPoint(node, TraversalDirectionForward);
@@ -116,7 +116,7 @@ inline Node* ComposedTreeWalker::nextSibling(const Node& node)
     return result;
 }
 
-inline Node* ComposedTreeWalker::previousSibling(const Node& node)
+inline Node* ComposedTreeTraversal::previousSibling(const Node& node)
 {
     assertPrecondition(node);
     Node* result = traverseSiblingOrBackToInsertionPoint(node, TraversalDirectionBackward);
@@ -124,7 +124,7 @@ inline Node* ComposedTreeWalker::previousSibling(const Node& node)
     return result;
 }
 
-inline Node* ComposedTreeWalker::next(const Node& node)
+inline Node* ComposedTreeTraversal::next(const Node& node)
 {
     assertPrecondition(node);
     Node* result = traverseNext(node);
@@ -132,7 +132,7 @@ inline Node* ComposedTreeWalker::next(const Node& node)
     return result;
 }
 
-inline Node* ComposedTreeWalker::traverseNext(const Node& node)
+inline Node* ComposedTreeTraversal::traverseNext(const Node& node)
 {
     if (Node* next = traverseFirstChild(node))
         return next;
@@ -143,7 +143,7 @@ inline Node* ComposedTreeWalker::traverseNext(const Node& node)
     return 0;
 }
 
-inline Node* ComposedTreeWalker::previous(const Node& node)
+inline Node* ComposedTreeTraversal::previous(const Node& node)
 {
     assertPrecondition(node);
     Node* result = traversePrevious(node);
@@ -151,7 +151,7 @@ inline Node* ComposedTreeWalker::previous(const Node& node)
     return result;
 }
 
-inline Node* ComposedTreeWalker::traversePrevious(const Node& node)
+inline Node* ComposedTreeTraversal::traversePrevious(const Node& node)
 {
     if (Node* previous = traversePreviousSibling(node)) {
         while (Node* child = traverseLastChild(*previous))
@@ -161,7 +161,7 @@ inline Node* ComposedTreeWalker::traversePrevious(const Node& node)
     return traverseParent(node);
 }
 
-inline Node* ComposedTreeWalker::firstChild(const Node& node)
+inline Node* ComposedTreeTraversal::firstChild(const Node& node)
 {
     assertPrecondition(node);
     Node* result = traverseChild(node, TraversalDirectionForward);
@@ -169,7 +169,7 @@ inline Node* ComposedTreeWalker::firstChild(const Node& node)
     return result;
 }
 
-inline Node* ComposedTreeWalker::lastChild(const Node& node)
+inline Node* ComposedTreeTraversal::lastChild(const Node& node)
 {
     assertPrecondition(node);
     Node* result = traverseLastChild(node);
@@ -177,22 +177,22 @@ inline Node* ComposedTreeWalker::lastChild(const Node& node)
     return result;
 }
 
-inline Node* ComposedTreeWalker::traverseNextSibling(const Node& node)
+inline Node* ComposedTreeTraversal::traverseNextSibling(const Node& node)
 {
     return traverseSiblingOrBackToInsertionPoint(node, TraversalDirectionForward);
 }
 
-inline Node* ComposedTreeWalker::traversePreviousSibling(const Node& node)
+inline Node* ComposedTreeTraversal::traversePreviousSibling(const Node& node)
 {
     return traverseSiblingOrBackToInsertionPoint(node, TraversalDirectionBackward);
 }
 
-inline Node* ComposedTreeWalker::traverseFirstChild(const Node& node)
+inline Node* ComposedTreeTraversal::traverseFirstChild(const Node& node)
 {
     return traverseChild(node, TraversalDirectionForward);
 }
 
-inline Node* ComposedTreeWalker::traverseLastChild(const Node& node)
+inline Node* ComposedTreeTraversal::traverseLastChild(const Node& node)
 {
     return traverseChild(node, TraversalDirectionBackward);
 }

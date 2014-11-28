@@ -59,7 +59,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/ViewportDescription.h"
-#include "core/dom/shadow/ComposedTreeWalker.h"
+#include "core/dom/shadow/ComposedTreeTraversal.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/SelectRuleFeatureSet.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -485,31 +485,31 @@ size_t Internals::countElementShadow(const Node* root, ExceptionState& exception
 Node* Internals::nextSiblingByWalker(Node* node)
 {
     ASSERT(node);
-    return ComposedTreeWalker::nextSibling(*node);
+    return ComposedTreeTraversal::nextSibling(*node);
 }
 
 Node* Internals::firstChildByWalker(Node* node)
 {
     ASSERT(node);
-    return ComposedTreeWalker::firstChild(*node);
+    return ComposedTreeTraversal::firstChild(*node);
 }
 
 Node* Internals::lastChildByWalker(Node* node)
 {
     ASSERT(node);
-    return ComposedTreeWalker::lastChild(*node);
+    return ComposedTreeTraversal::lastChild(*node);
 }
 
 Node* Internals::nextNodeByWalker(Node* node)
 {
     ASSERT(node);
-    return ComposedTreeWalker::next(*node);
+    return ComposedTreeTraversal::next(*node);
 }
 
 Node* Internals::previousNodeByWalker(Node* node)
 {
     ASSERT(node);
-    return ComposedTreeWalker::previous(*node);
+    return ComposedTreeTraversal::previous(*node);
 }
 
 String Internals::elementRenderTreeAsText(Element* element, ExceptionState& exceptionState)

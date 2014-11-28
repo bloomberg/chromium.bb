@@ -31,7 +31,7 @@
 
 #include "core/animation/AnimationTimeline.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/shadow/ComposedTreeWalker.h"
+#include "core/dom/shadow/ComposedTreeTraversal.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -101,7 +101,7 @@ bool SVGImage::currentFrameHasSingleSecurityOrigin() const
 
     // Don't allow foreignObject elements or images that are not known to be
     // single-origin since these can leak cross-origin information.
-    for (Node* node = rootElement; node; node = ComposedTreeWalker::next(*node)) {
+    for (Node* node = rootElement; node; node = ComposedTreeTraversal::next(*node)) {
         if (isSVGForeignObjectElement(*node))
             return false;
         if (isSVGImageElement(*node)) {
