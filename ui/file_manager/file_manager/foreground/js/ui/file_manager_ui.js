@@ -22,9 +22,8 @@ function FileManagerUI(element, launchParam) {
   /**
    * Top level element of Files.app.
    * @type {!HTMLElement}
-   * @private
    */
-  this.element_ = element;
+  this.element = element;
 
   /**
    * Dialog type.
@@ -38,28 +37,28 @@ function FileManagerUI(element, launchParam) {
    * @type {!ErrorDialog}
    * @const
    */
-  this.errorDialog = new ErrorDialog(this.element_);
+  this.errorDialog = new ErrorDialog(this.element);
 
   /**
    * Alert dialog.
    * @type {!cr.ui.dialogs.AlertDialog}
    * @const
    */
-  this.alertDialog = new cr.ui.dialogs.AlertDialog(this.element_);
+  this.alertDialog = new cr.ui.dialogs.AlertDialog(this.element);
 
   /**
    * Confirm dialog.
    * @type {!cr.ui.dialogs.ConfirmDialog}
    * @const
    */
-  this.confirmDialog = new cr.ui.dialogs.ConfirmDialog(this.element_);
+  this.confirmDialog = new cr.ui.dialogs.ConfirmDialog(this.element);
 
   /**
    * Confirm dialog for delete.
    * @type {!cr.ui.dialogs.ConfirmDialog}
    * @const
    */
-  this.deleteConfirmDialog = new cr.ui.dialogs.ConfirmDialog(this.element_);
+  this.deleteConfirmDialog = new cr.ui.dialogs.ConfirmDialog(this.element);
   this.deleteConfirmDialog.setOkLabel(str('DELETE_BUTTON_LABEL'));
 
   /**
@@ -67,21 +66,21 @@ function FileManagerUI(element, launchParam) {
    * @type {!cr.ui.dialogs.PromptDialog}
    * @const
    */
-  this.promptDialog = new cr.ui.dialogs.PromptDialog(this.element_);
+  this.promptDialog = new cr.ui.dialogs.PromptDialog(this.element);
 
   /**
    * Share dialog.
    * @type {!ShareDialog}
    * @const
    */
-  this.shareDialog = new ShareDialog(this.element_);
+  this.shareDialog = new ShareDialog(this.element);
 
   /**
    * Multi-profile share dialog.
    * @type {!MultiProfileShareDialog}
    * @const
    */
-  this.multiProfileShareDialog = new MultiProfileShareDialog(this.element_);
+  this.multiProfileShareDialog = new MultiProfileShareDialog(this.element);
 
   /**
    * Default task picker.
@@ -89,7 +88,7 @@ function FileManagerUI(element, launchParam) {
    * @const
    */
   this.defaultTaskPicker =
-      new cr.filebrowser.DefaultActionDialog(this.element_);
+      new cr.filebrowser.DefaultActionDialog(this.element);
 
   /**
    * Suggest apps dialog.
@@ -97,14 +96,22 @@ function FileManagerUI(element, launchParam) {
    * @const
    */
   this.suggestAppsDialog = new SuggestAppsDialog(
-      this.element_, launchParam.suggestAppsDialogState);
+      this.element, launchParam.suggestAppsDialogState);
 
   /**
    * Conflict dialog.
    * @type {!ConflictDialog}
    * @const
    */
-  this.conflictDialog = new ConflictDialog(this.element_);
+  this.conflictDialog = new ConflictDialog(this.element);
+
+  /**
+   * The container element of the dialog.
+   * @type {!HTMLElement}
+   * @private
+   */
+  this.dialogContainer =
+      queryRequiredElement(this.element, '.dialog-container');
 
   /**
    * Context menu for texts.
@@ -126,16 +133,16 @@ function FileManagerUI(element, launchParam) {
    * @const
    */
   this.searchBox = new SearchBox(
-      this.element_.querySelector('#search-box'),
-      this.element_.querySelector('#search-button'),
-      this.element_.querySelector('#no-search-results'));
+      this.element.querySelector('#search-box'),
+      this.element.querySelector('#search-button'),
+      this.element.querySelector('#no-search-results'));
 
   /**
    * Toggle-view button.
    * @type {!Element}
    * @const
    */
-  this.toggleViewButton = queryRequiredElement(this.element_, '#view-button');
+  this.toggleViewButton = queryRequiredElement(this.element, '#view-button');
 
   /**
    * The button to open gear menu.
@@ -163,13 +170,19 @@ function FileManagerUI(element, launchParam) {
    * @const
    */
   this.progressCenterPanel = new ProgressCenterPanel(
-      queryRequiredElement(this.element_, '#progress-center'));
+      queryRequiredElement(this.element, '#progress-center'));
 
   /**
    * List container.
    * @type {ListContainer}
    */
   this.listContainer = null;
+
+  /**
+   * @type {!HTMLElement}
+   */
+  this.formatPanelError =
+      queryRequiredElement(this.element, '#format-panel > .error');
 
   /**
    * @type {PreviewPanel}
@@ -195,22 +208,22 @@ function FileManagerUI(element, launchParam) {
    * @type {!DialogFooter}
    */
   this.dialogFooter = DialogFooter.findDialogFooter(
-      this.dialogType_, /** @type {!Document} */(this.element_.ownerDocument));
+      this.dialogType_, /** @type {!Document} */(this.element.ownerDocument));
 
   Object.seal(this);
 
   // Initialize attributes.
-  this.element_.querySelector('#app-name').innerText =
+  this.element.querySelector('#app-name').innerText =
       chrome.runtime.getManifest().name;
-  this.element_.setAttribute('type', this.dialogType_);
+  this.element.setAttribute('type', this.dialogType_);
 
   // Modify UI default behavior.
-  this.element_.addEventListener('click', this.onExternalLinkClick_.bind(this));
-  this.element_.addEventListener('drop', function(e) {
+  this.element.addEventListener('click', this.onExternalLinkClick_.bind(this));
+  this.element.addEventListener('drop', function(e) {
     e.preventDefault();
   });
   if (util.runningInBrowser()) {
-    this.element_.addEventListener('contextmenu', function(e) {
+    this.element.addEventListener('contextmenu', function(e) {
       e.preventDefault();
       e.stopPropagation();
     });
@@ -261,11 +274,11 @@ FileManagerUI.prototype.initAdditionalUI = function(
 
   // List container.
   this.listContainer = new ListContainer(
-      queryRequiredElement(this.element_, '#list-container'), table, grid);
+      queryRequiredElement(this.element, '#list-container'), table, grid);
 
   // Splitter.
   this.decorateSplitter_(
-      queryRequiredElement(this.element_, '#navigation-list-splitter'));
+      queryRequiredElement(this.element, '#navigation-list-splitter'));
 
   // Preview panel.
   this.previewPanel = previewPanel;

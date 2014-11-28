@@ -73,13 +73,6 @@ function FileManager() {
   this.folderShortcutsModel_ = null;
 
   /**
-   * VolumeInfo of the current volume.
-   * @type {VolumeInfo}
-   * @private
-   */
-  this.currentVolumeInfo_ = null;
-
-  /**
    * Handler for command events.
    * @type {CommandHandler}
    */
@@ -188,6 +181,13 @@ function FileManager() {
    */
   this.metadataUpdateController_ = null;
 
+  /**
+   * Component for main window and its misc UI parts.
+   * @type {MainWindowComponent}
+   * @private
+   */
+  this.mainWindowComponent_ = null;
+
   // --------------------------------------------------------------------------
   // DOM elements.
 
@@ -220,13 +220,6 @@ function FileManager() {
   this.actionMenuItem_ = null;
 
   /**
-   * The container element of the dialog.
-   * @type {HTMLDivElement}
-   * @private
-   */
-  this.dialogContainer_ = null;
-
-  /**
    * Open-with command in the context menu.
    * @type {cr.ui.Command}
    * @private
@@ -242,22 +235,6 @@ function FileManager() {
    * @private
    */
   this.initializeQueue_ = new AsyncUtil.Group();
-
-  /**
-   * True while a user is pressing <Tab>.
-   * This is used for identifying the trigger causing the filelist to
-   * be focused.
-   * @type {boolean}
-   * @private
-   */
-  this.pressingTab_ = false;
-
-  /**
-   * The last clicked item in the file list.
-   * @type {HTMLLIElement}
-   * @private
-   */
-  this.lastClickedItem_ = null;
 
   /**
    * Count of the SourceNotFound error.
@@ -404,15 +381,6 @@ Object.freeze(DialogType);
 
 // Anonymous "namespace".
 (function() {
-  // Private variables and helper functions.
-
-  /**
-   * Some UI elements react on a single click and standard double click handling
-   * leads to confusing results. We ignore a second click if it comes soon
-   * after the first.
-   */
-  var DOUBLE_CLICK_TIMEOUT = 200;
-
   FileManager.prototype.initSettings_ = function(callback) {
     this.appStateController_ = new AppStateController(this.dialogType);
     this.appStateController_.loadInitialViewOptions().then(callback);
@@ -449,18 +417,14 @@ Object.freeze(DialogType);
           'relayout', self.ui_.relayout.bind(self.ui_));
     });
 
-    var dm = this.directoryModel_;
-    dm.addEventListener('directory-changed',
-                        this.onDirectoryChanged_.bind(this));
-
     var listBeingUpdated = null;
-    dm.addEventListener('begin-update-files', function() {
+    this.directoryModel_.addEventListener('begin-update-files', function() {
       self.ui_.listContainer.currentList.startBatchUpdates();
       // Remember the list which was used when updating files started, so
       // endBatchUpdates() is called on the same list.
       listBeingUpdated = self.ui_.listContainer.currentList;
     });
-    dm.addEventListener('end-update-files', function() {
+    this.directoryModel_.addEventListener('end-update-files', function() {
       self.namingController_.restoreItemBeingRenamed();
       listBeingUpdated.endBatchUpdates();
       listBeingUpdated = null;
@@ -472,6 +436,8 @@ Object.freeze(DialogType);
     assert(this.spinnerController_);
     assert(this.commandHandler);
     assert(this.selectionHandler_);
+    assert(this.launchParams_);
+    assert(this.volumeManager_);
 
     this.scanController_ = new ScanController(
         this.directoryModel_,
@@ -479,17 +445,25 @@ Object.freeze(DialogType);
         this.spinnerController_,
         this.commandHandler,
         this.selectionHandler_);
-   this.gearMenuController_ = new GearMenuController(
+    this.gearMenuController_ = new GearMenuController(
         this.ui_.gearButton,
         this.ui_.gearMenu,
         this.directoryModel_,
         this.commandHandler);
 
-    var driveConnectionChangedHandler =
-        this.onDriveConnectionChanged_.bind(this);
-    this.volumeManager_.addEventListener('drive-connection-changed',
-        driveConnectionChangedHandler);
-    driveConnectionChangedHandler();
+    assert(this.fileFilter_);
+    assert(this.namingController_);
+    assert(this.appStateController_);
+    this.mainWindowComponent_ = new MainWindowComponent(
+        this.dialogType,
+        this.ui_,
+        this.volumeManager_,
+        this.directoryModel_,
+        this.fileFilter_,
+        this.selectionHandler_,
+        this.namingController_,
+        this.appStateController_,
+        {dispatchSelectionAction: this.dispatchSelectionAction_.bind(this)});
 
     this.initDataTransferOperations_();
 
@@ -772,6 +746,7 @@ Object.freeze(DialogType);
     assert(this.metadataCache_);
     assert(this.volumeManager_);
     assert(this.historyLoader_);
+    assert(this.dialogDom_);
 
     // Cache nodes we'll be manipulating.
     var dom = this.dialogDom_;
@@ -811,25 +786,9 @@ Object.freeze(DialogType);
             this.metadataCache_,
             this.volumeManager_));
 
-    // Handle document event.
-    this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
-    this.document_.addEventListener('keyup', this.onKeyUp_.bind(this));
-
     // Handle UI events.
-    this.ui_.listContainer.element.addEventListener(
-        'keydown', this.onListKeyDown_.bind(this));
-    this.ui_.listContainer.element.addEventListener(
-        ListContainer.EventType.TEXT_SEARCH, this.onTextSearch_.bind(this));
-    this.ui_.locationLine.addEventListener(
-        'pathclick', this.onBreadcrumbClick_.bind(this));
     this.backgroundPage_.background.progressCenter.addPanel(
         this.ui_.progressCenterPanel);
-    this.ui_.toggleViewButton.addEventListener('click',
-        this.onToggleViewButtonClick_.bind(this));
-
-    this.dialogContainer_ = /** @type {!HTMLDivElement} */
-        (this.dialogDom_.querySelector('.dialog-container'));
-
     this.ui_.taskMenuButton.addEventListener('select',
         this.onTaskItemClicked_.bind(this));
 
@@ -852,14 +811,6 @@ Object.freeze(DialogType);
     this.ui_.listContainer.table.redraw();
 
     callback();
-  };
-
-  /**
-   * @param {Event} event Click event.
-   * @private
-   */
-  FileManager.prototype.onBreadcrumbClick_ = function(event) {
-    this.directoryModel_.changeDirectoryEntry(event.entry);
   };
 
   /**
@@ -897,17 +848,6 @@ Object.freeze(DialogType);
     this.directoryModel_.getFileListSelection().addEventListener('change',
         this.selectionHandler_.onFileSelectionChanged.bind(
             this.selectionHandler_));
-
-    var onDetailClickBound = this.onDetailClick_.bind(this);
-    this.ui_.listContainer.table.list.addEventListener(
-        'click', onDetailClickBound);
-    this.ui_.listContainer.grid.addEventListener(
-        'click', onDetailClickBound);
-
-    var fileListFocusBound = this.onFileListFocus_.bind(this);
-    this.ui_.listContainer.table.list.addEventListener(
-        'focus', fileListFocusBound);
-    this.ui_.listContainer.grid.addEventListener('focus', fileListFocusBound);
 
     // TODO(mtomasz, yoshiki): Create navigation list earlier, and here just
     // attach the directory model.
@@ -947,6 +887,7 @@ Object.freeze(DialogType);
     this.spinnerController_.show();
 
     // Create dialog action controller.
+    assert(this.launchParams_);
     this.dialogActionController_ = new DialogActionController(
         this.dialogType,
         this.ui_.dialogFooter,
@@ -985,35 +926,6 @@ Object.freeze(DialogType);
         this.volumeManager_, this.folderShortcutsModel_);
 
     this.ui_.initDirectoryTree(directoryTree);
-  };
-
-  /**
-   * File list focus handler. Used to select the top most element on the list
-   * if nothing was selected.
-   *
-   * @private
-   */
-  FileManager.prototype.onFileListFocus_ = function() {
-    // If the file list is focused by <Tab>, select the first item if no item
-    // is selected.
-    if (this.pressingTab_) {
-      if (this.getSelection() && this.getSelection().totalCount == 0)
-        this.directoryModel_.selectIndex(0);
-    }
-  };
-
-  /**
-   * Sets the current list type.
-   * @param {ListContainer.ListType} type New list type.
-   */
-  FileManager.prototype.setListType = function(type) {
-    if ((type && type == this.ui_.listContainer.currentListType) ||
-        !this.directoryModel_) {
-      return;
-    }
-
-    this.ui_.setCurrentListType(type);
-    this.appStateController_.saveViewOptions();
   };
 
   /**
@@ -1338,19 +1250,6 @@ Object.freeze(DialogType);
   };
 
   /**
-   * @private
-   */
-  FileManager.prototype.onDriveConnectionChanged_ = function() {
-    var connection = this.volumeManager_.getDriveConnectionState();
-    if (this.commandHandler)
-      this.commandHandler.updateAvailability();
-    if (this.dialogContainer_)
-      this.dialogContainer_.setAttribute('connection', connection.type);
-    this.ui_.shareDialog.hideWithResult(ShareDialog.Result.NETWORK_ERROR);
-    this.ui_.suggestAppsDialog.onDriveConnectionChanged(connection.type);
-  };
-
-  /**
    * Tells whether the current directory is read only.
    * TODO(mtomasz): Remove and use EntryLocation directly.
    * @return {boolean} True if read only, false otherwise.
@@ -1396,41 +1295,6 @@ Object.freeze(DialogType);
     setTimeout(function() {
       listItem.classList.remove('blink');
     }, 100);
-  };
-
-  /**
-   * Handles mouse click or tap.
-   *
-   * @param {Event} event The click event.
-   * @private
-   */
-  FileManager.prototype.onDetailClick_ = function(event) {
-    if (this.namingController_.isRenamingInProgress()) {
-      // Don't pay attention to clicks during a rename.
-      return;
-    }
-
-    var listItem = this.ui_.listContainer.findListItemForNode(
-        event.touchedElement || event.srcElement);
-    var selection = this.getSelection();
-    if (!listItem || !listItem.selected || selection.totalCount != 1) {
-      return;
-    }
-
-    // React on double click, but only if both clicks hit the same item.
-    // TODO(mtomasz): Simplify it, and use a double click handler if possible.
-    var clickNumber = (this.lastClickedItem_ == listItem) ? 2 : undefined;
-    this.lastClickedItem_ = listItem;
-
-    if (event.detail != clickNumber)
-      return;
-
-    var entry = selection.entries[0];
-    if (entry.isDirectory) {
-      this.onDirectoryAction_(entry);
-    } else {
-      this.dispatchSelectionAction_();
-    }
   };
 
   /**
@@ -1520,93 +1384,6 @@ Object.freeze(DialogType);
   };
 
   /**
-   * Called when a dialog is shown.
-   */
-  FileManager.prototype.onDialogShown = function() {
-    // If a dialog is shown, activate the window.
-    var appWindow = chrome.app.window.current();
-    if (appWindow)
-      appWindow.focus();
-  };
-
-  /**
-   * Executes directory action (i.e. changes directory).
-   *
-   * @param {DirectoryEntry} entry Directory entry to which directory should be
-   *                               changed.
-   * @private
-   */
-  FileManager.prototype.onDirectoryAction_ = function(entry) {
-    return this.directoryModel_.changeDirectoryEntry(entry);
-  };
-
-  /**
-   * Update the window title.
-   * @private
-   */
-  FileManager.prototype.updateTitle_ = function() {
-    if (this.dialogType != DialogType.FULL_PAGE)
-      return;
-
-    if (!this.currentVolumeInfo_)
-      return;
-
-    this.document_.title = this.currentVolumeInfo_.label;
-  };
-
-  /**
-   * Update the UI when the current directory changes.
-   *
-   * @param {Event} event The directory-changed event.
-   * @private
-   */
-  FileManager.prototype.onDirectoryChanged_ = function(event) {
-    var oldCurrentVolumeInfo = this.currentVolumeInfo_;
-
-    // Remember the current volume info.
-    this.currentVolumeInfo_ = this.volumeManager_.getVolumeInfo(
-        event.newDirEntry);
-
-    this.selectionHandler_.onFileSelectionChanged();
-    this.searchController_.clear();
-
-    if (this.commandHandler)
-      this.commandHandler.updateAvailability();
-
-    this.updateUnformattedVolumeStatus_();
-    this.updateTitle_();
-
-    var currentEntry = this.getCurrentDirectoryEntry();
-    this.ui_.locationLine.show(currentEntry);
-    this.ui_.previewPanel.currentEntry = util.isFakeEntry(currentEntry) ?
-        null : currentEntry;
-  };
-
-  FileManager.prototype.updateUnformattedVolumeStatus_ = function() {
-    var volumeInfo = this.volumeManager_.getVolumeInfo(
-        this.directoryModel_.getCurrentDirEntry());
-
-    if (volumeInfo && volumeInfo.error) {
-      this.dialogDom_.setAttribute('unformatted', '');
-
-      var errorNode = this.dialogDom_.querySelector('#format-panel > .error');
-      if (volumeInfo.error ===
-          VolumeManagerCommon.VolumeError.UNSUPPORTED_FILESYSTEM) {
-        errorNode.textContent = str('UNSUPPORTED_FILESYSTEM_WARNING');
-      } else {
-        errorNode.textContent = str('UNKNOWN_FILESYSTEM_WARNING');
-      }
-
-      // Update 'canExecute' for format command so the format button's disabled
-      // property is properly set.
-      if (this.commandHandler)
-        this.commandHandler.updateAvailability();
-    } else {
-      this.dialogDom_.removeAttribute('unformatted');
-    }
-  };
-
-  /**
    * Unload handler for the page.
    * @private
    */
@@ -1632,127 +1409,6 @@ Object.freeze(DialogType);
     window.closing = true;
     if (this.backgroundPage_)
       this.backgroundPage_.background.tryClose();
-  };
-
-  /**
-   * Handles click event on the toggle-view button.
-   * @param {Event} event Click event.
-   * @private
-   */
-  FileManager.prototype.onToggleViewButtonClick_ = function(event) {
-    if (this.ui_.listContainer.currentListType ===
-        ListContainer.ListType.DETAIL) {
-      this.setListType(ListContainer.ListType.THUMBNAIL);
-    } else {
-      this.setListType(ListContainer.ListType.DETAIL);
-    }
-
-    event.target.blur();
-  };
-
-  /**
-   * KeyDown event handler for the document.
-   * @param {Event} event Key event.
-   * @private
-   */
-  FileManager.prototype.onKeyDown_ = function(event) {
-    if (event.keyCode === 9)  // Tab
-      this.pressingTab_ = true;
-
-    if (event.srcElement === this.ui_.listContainer.renameInput) {
-      // Ignore keydown handler in the rename input box.
-      return;
-    }
-
-    switch (util.getKeyModifiers(event) + event.keyIdentifier) {
-      case 'Ctrl-U+00BE':  // Ctrl-. => Toggle filter files.
-        this.fileFilter_.setFilterHidden(
-            !this.fileFilter_.isFilterHiddenOn());
-        event.preventDefault();
-        return;
-
-      case 'U+001B':  // Escape => Cancel dialog.
-        if (this.dialogType != DialogType.FULL_PAGE) {
-          // If there is nothing else for ESC to do, then cancel the dialog.
-          event.preventDefault();
-          this.ui_.dialogFooter.cancelButton.click();
-        }
-        break;
-    }
-  };
-
-  /**
-   * KeyUp event handler for the document.
-   * @param {Event} event Key event.
-   * @private
-   */
-  FileManager.prototype.onKeyUp_ = function(event) {
-    if (event.keyCode === 9)  // Tab
-      this.pressingTab_ = false;
-  };
-
-  /**
-   * KeyDown event handler for the div#list-container element.
-   * @param {Event} event Key event.
-   * @private
-   */
-  FileManager.prototype.onListKeyDown_ = function(event) {
-    switch (util.getKeyModifiers(event) + event.keyIdentifier) {
-      case 'U+0008':  // Backspace => Up one directory.
-        event.preventDefault();
-        // TODO(mtomasz): Use Entry.getParent() instead.
-        if (!this.getCurrentDirectoryEntry())
-          break;
-        var currentEntry = this.getCurrentDirectoryEntry();
-        var locationInfo = this.volumeManager_.getLocationInfo(currentEntry);
-        // TODO(mtomasz): There may be a tiny race in here.
-        if (locationInfo && !locationInfo.isRootEntry &&
-            !locationInfo.isSpecialSearchRoot) {
-          currentEntry.getParent(function(parentEntry) {
-            this.directoryModel_.changeDirectoryEntry(parentEntry);
-          }.bind(this), function() { /* Ignore errors. */});
-        }
-        break;
-
-      case 'Enter':  // Enter => Change directory or perform default action.
-        // TODO(dgozman): move directory action to dispatchSelectionAction.
-        var selection = this.getSelection();
-        if (selection.totalCount === 1 &&
-            selection.entries[0].isDirectory &&
-            !DialogType.isFolderDialog(this.dialogType)) {
-          var item = this.ui.listContainer.currentList.getListItemByIndex(
-              selection.indexes[0]);
-          // If the item is in renaming process, we don't allow to change
-          // directory.
-          if (!item.hasAttribute('renaming')) {
-            event.preventDefault();
-            this.onDirectoryAction_(selection.entries[0]);
-          }
-        } else if (this.dispatchSelectionAction_()) {
-          event.preventDefault();
-        }
-        break;
-    }
-  };
-
-  /**
-   * Performs a 'text search' - selects a first list entry with name
-   * starting with entered text (case-insensitive).
-   * @private
-   */
-  FileManager.prototype.onTextSearch_ = function() {
-    var text = this.ui_.listContainer.textSearchState.text;
-    var dm = this.directoryModel_.getFileList();
-    for (var index = 0; index < dm.length; ++index) {
-      var name = dm.item(index).name;
-      if (name.substring(0, text.length).toLowerCase() == text) {
-        this.ui.listContainer.currentList.selectionModel.selectedIndexes =
-            [index];
-        return;
-      }
-    }
-
-    this.ui_.listContainer.textSearchState.text = '';
   };
 
   /**

@@ -270,8 +270,12 @@ var CommandHandler = function(fileManager) {
 
   // Register events.
   fileManager.document.addEventListener('command', this.onCommand_.bind(this));
-  fileManager.document.addEventListener('canExecute',
-                                        this.onCanExecute_.bind(this));
+  fileManager.document.addEventListener(
+      'canExecute', this.onCanExecute_.bind(this));
+  fileManager.directoryModel.addEventListener(
+      'directory-change', this.updateAvailability.bind(this));
+  fileManager.volumeManager.addEventListener(
+      'drive-connection-changed', this.updateAvailability.bind(this));
 };
 
 /**

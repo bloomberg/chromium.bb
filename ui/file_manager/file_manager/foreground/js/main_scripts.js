@@ -128,6 +128,7 @@
 //<include src="ui/share_dialog.js">
 //<include src="ui/suggest_apps_dialog.js">
 //<include src="ui/tree.css.js">
+//<include src="main_window_component.js">
 //<include src="volume_manager_wrapper.js">
 
 // // For accurate load performance tracking place main.js should be

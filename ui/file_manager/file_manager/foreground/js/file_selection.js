@@ -181,6 +181,9 @@ function FileSelectionHandler(fileManager) {
       assert(fileManager.fileOperationManager),
       'entries-changed',
       this.onFileSelectionChanged.bind(this));
+  // Register evnets to update file selections.
+  fileManager.directoryModel.addEventListener(
+      'directory-changed', this.onFileSelectionChanged.bind(this));
 }
 
 /**

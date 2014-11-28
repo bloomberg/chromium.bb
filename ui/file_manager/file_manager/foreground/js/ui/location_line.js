@@ -38,7 +38,7 @@ LocationLine.prototype.__proto__ = cr.EventTarget.prototype;
 /**
  * Shows breadcrumbs.
  *
- * @param {Entry} entry Target entry.
+ * @param {!Entry|!Object} entry Target entry or fake entry.
  */
 LocationLine.prototype.show = function(entry) {
   if (entry === this.entry_)

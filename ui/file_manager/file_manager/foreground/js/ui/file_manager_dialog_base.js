@@ -69,8 +69,12 @@ FileManagerDialogBase.prototype.showImpl_ = function(
     return false;
 
   FileManagerDialogBase.shown = true;
-  if (FileManagerDialogBase.fileManager_)
-    FileManagerDialogBase.fileManager_.onDialogShown();
+
+  // If a dialog is shown, activate the window.
+  var appWindow = chrome.app.window.current();
+  if (appWindow)
+    appWindow.focus();
+
   cr.ui.dialogs.BaseDialog.prototype.showWithTitle.call(
       this, title, message, onOk, onCancel, null);
 

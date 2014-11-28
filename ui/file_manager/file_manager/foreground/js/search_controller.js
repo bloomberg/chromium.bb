@@ -47,6 +47,7 @@ function SearchController(
       SearchBox.EventType.TEXT_CHANGE, this.onTextChange_.bind(this));
   searchBox.addEventListener(
       SearchBox.EventType.ITEM_SELECT, this.onItemSelect_.bind(this));
+  directoryModel.addEventListener('directory-changed', this.clear.bind(this));
 }
 
 SearchController.prototype = {
