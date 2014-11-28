@@ -53,11 +53,11 @@ function test()
                 InspectorTest.evaluateInPage("addErrorToConsole()");
             }
 
-            function didAddMessage(lineNumber, message)
+            function didAddMessage(message)
             {
                 if (this !== shownSourceFrame)
                     return;
-                InspectorTest.addResult("Message added to source frame: " + message.messageText);
+                InspectorTest.addResult("Message added to source frame: " + message.messageText());
                 WebInspector.consoleModel.requestClearMessages();
             }
 
