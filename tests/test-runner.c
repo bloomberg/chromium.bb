@@ -42,11 +42,14 @@ static void (*sys_free)(void*);
 static void* (*sys_realloc)(void*, size_t);
 static void* (*sys_calloc)(size_t, size_t);
 
+/* when set to 1, check if tests are not leaking memory and opened files.
+ * It is turned on by default. It can be turned off by
+ * WAYLAND_TEST_NO_LEAK_CHECK environment variable. */
 int leak_check_enabled;
 
 /* when this var is set to 0, every call to test_set_timeout() is
  * suppressed - handy when debugging the test. Can be set by
- * WAYLAND_TESTS_NO_TIMEOUTS evnironment var */
+ * WAYLAND_TEST_NO_TIMEOUTS evnironment var */
 static int timeouts_enabled = 1;
 
 extern const struct test __start_test_section, __stop_test_section;
@@ -234,8 +237,8 @@ int main(int argc, char *argv[])
 	sys_malloc = dlsym(RTLD_NEXT, "malloc");
 	sys_free = dlsym(RTLD_NEXT, "free");
 
-	leak_check_enabled = !getenv("NO_ASSERT_LEAK_CHECK");
-	timeouts_enabled = !getenv("WAYLAND_TESTS_NO_TIMEOUTS");
+	leak_check_enabled = !getenv("WAYLAND_TEST_NO_LEAK_CHECK");
+	timeouts_enabled = !getenv("WAYLAND_TEST_NO_TIMEOUTS");
 
 	if (argc == 2 && strcmp(argv[1], "--help") == 0)
 		usage(argv[0], EXIT_SUCCESS);
