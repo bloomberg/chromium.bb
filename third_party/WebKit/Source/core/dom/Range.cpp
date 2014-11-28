@@ -989,11 +989,6 @@ String Range::toString() const
     return builder.toString();
 }
 
-String Range::toHTML() const
-{
-    return createMarkup(this);
-}
-
 String Range::text() const
 {
     return plainText(this, TextIteratorEmitsObjectReplacementCharacter);

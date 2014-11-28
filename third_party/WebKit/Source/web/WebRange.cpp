@@ -69,37 +69,9 @@ int WebRange::endOffset() const
     return m_private->endOffset();
 }
 
-WebNode WebRange::startContainer(WebExceptionCode& exceptionCode) const
-{
-    // FIXME: Create a wrapper class that just sets the internal int.
-    RefPtrWillBeRawPtr<Node> node(m_private->startContainer());
-    exceptionCode = 0;
-    return node.release();
-}
-
-WebNode WebRange::endContainer(WebExceptionCode& exceptionCode) const
-{
-    // FIXME: Create a wrapper class that just sets the internal int.
-    RefPtrWillBeRawPtr<Node> node(m_private->endContainer());
-    exceptionCode = 0;
-    return node.release();
-}
-
-WebString WebRange::toHTMLText() const
-{
-    return m_private->toHTML();
-}
-
 WebString WebRange::toPlainText() const
 {
     return m_private->text();
-}
-
-WebRange WebRange::expandedToParagraph() const
-{
-    WebRange copy(*this);
-    copy.m_private->expand("block", IGNORE_EXCEPTION);
-    return copy;
 }
 
 // static

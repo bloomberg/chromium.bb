@@ -93,7 +93,6 @@ public:
     void insertNode(PassRefPtrWillBeRawPtr<Node>, ExceptionState&);
     String toString() const;
 
-    String toHTML() const;
     String text() const;
 
     PassRefPtrWillBeRawPtr<DocumentFragment> createContextualFragment(const String& html, ExceptionState&);

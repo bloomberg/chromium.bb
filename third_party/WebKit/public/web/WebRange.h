@@ -62,13 +62,7 @@ public:
 
     BLINK_EXPORT int startOffset() const;
     BLINK_EXPORT int endOffset() const;
-    BLINK_EXPORT WebNode startContainer(int& exceptionCode) const;
-    BLINK_EXPORT WebNode endContainer(int& exceptionCode) const;
-
-    BLINK_EXPORT WebString toHTMLText() const;
     BLINK_EXPORT WebString toPlainText() const;
-
-    BLINK_EXPORT WebRange expandedToParagraph() const;
 
     BLINK_EXPORT static WebRange fromDocumentRange(WebLocalFrame*, int start, int length);
 
