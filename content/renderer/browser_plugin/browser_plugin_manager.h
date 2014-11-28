@@ -51,9 +51,6 @@ class CONTENT_EXPORT BrowserPluginManager
   void UpdateDeviceScaleFactor();
   void UpdateFocusState();
   RenderViewImpl* render_view() const { return render_view_.get(); }
-
-  // Returns a new instance ID to be used by BrowserPlugin. Instance IDs are
-  // unique per process.
   int GetNextInstanceID();
 
   // RenderViewObserver override. Call on render thread.
@@ -78,7 +75,7 @@ class CONTENT_EXPORT BrowserPluginManager
 
   // This map is keyed by guest instance IDs.
   IDMap<BrowserPlugin> instances_;
-  static int current_instance_id_;
+  int current_instance_id_;
   base::WeakPtr<RenderViewImpl> render_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManager);

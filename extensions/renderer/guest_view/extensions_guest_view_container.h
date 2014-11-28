@@ -17,18 +17,26 @@ namespace extensions {
 
 class ExtensionsGuestViewContainer : public GuestViewContainer {
  public:
-
-  class Request {
+  // This class represents an AttachGuest request from Javascript. It includes
+  // the input parameters and the callback function. The Attach operation may
+  // not execute immediately, if the container is not ready or if there are
+  // other attach operations in flight.
+  class AttachRequest {
    public:
-    Request(GuestViewContainer* container,
-            v8::Handle<v8::Function> callback,
-            v8::Isolate* isolate);
-    virtual ~Request();
+    AttachRequest(int element_instance_id,
+                  int guest_instance_id,
+                  scoped_ptr<base::DictionaryValue> params,
+                  v8::Handle<v8::Function> callback,
+                  v8::Isolate* isolate);
+    ~AttachRequest();
 
-    virtual void PerformRequest() = 0;
-    virtual void HandleResponse(const IPC::Message& message) = 0;
+    int element_instance_id() const { return element_instance_id_; }
 
-    GuestViewContainer* container() const { return container_; }
+    int guest_instance_id() const { return guest_instance_id_; }
+
+    base::DictionaryValue* attach_params() const {
+      return params_.get();
+    }
 
     bool HasCallback() const;
 
@@ -37,38 +45,20 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
     v8::Isolate* isolate() const { return isolate_; }
 
    private:
-    GuestViewContainer* container_;
-    ScopedPersistent<v8::Function> callback_;
-    v8::Isolate* const isolate_;
-  };
-
-  // This class represents an AttachGuest request from Javascript. It includes
-  // the input parameters and the callback function. The Attach operation may
-  // not execute immediately, if the container is not ready or if there are
-  // other attach operations in flight.
-  class AttachRequest : public Request {
-   public:
-    AttachRequest(GuestViewContainer* container,
-                  int guest_instance_id,
-                  scoped_ptr<base::DictionaryValue> params,
-                  v8::Handle<v8::Function> callback,
-                  v8::Isolate* isolate);
-    ~AttachRequest() override;
-
-    void PerformRequest() override;
-    void HandleResponse(const IPC::Message& message) override;
-
-   private:
+    const int element_instance_id_;
     const int guest_instance_id_;
     scoped_ptr<base::DictionaryValue> params_;
+    ScopedPersistent<v8::Function> callback_;
+    v8::Isolate* const isolate_;
   };
 
   explicit ExtensionsGuestViewContainer(content::RenderFrame* render_frame);
   ~ExtensionsGuestViewContainer() override;
 
-  static ExtensionsGuestViewContainer* FromID(int element_instance_id);
+  static ExtensionsGuestViewContainer* FromID(int render_view_routing_id,
+                                              int element_instance_id);
 
-  void IssueRequest(linked_ptr<Request> request);
+  void AttachGuest(linked_ptr<AttachRequest> request);
 
   // BrowserPluginDelegate implementation.
   void SetElementInstanceID(int element_instance_id) override;
@@ -79,16 +69,18 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
   bool OnMessage(const IPC::Message& message) override;
 
  private:
-  void OnHandleCallback(const IPC::Message& message);
+  void OnGuestAttached(int element_instance_id,
+                       int guest_proxy_routing_id);
 
-  void EnqueueRequest(linked_ptr<Request> request);
-  void PerformPendingRequest();
-  void HandlePendingResponseCallback(const IPC::Message& message);
+  void AttachGuestInternal(linked_ptr<AttachRequest> request);
+  void EnqueueAttachRequest(linked_ptr<AttachRequest> request);
+  void PerformPendingAttachRequest();
+  void HandlePendingResponseCallback(int guest_proxy_routing_id);
 
   bool ready_;
 
-  std::deque<linked_ptr<Request> > pending_requests_;
-  linked_ptr<Request> pending_response_;
+  std::deque<linked_ptr<AttachRequest> > pending_requests_;
+  linked_ptr<AttachRequest> pending_response_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsGuestViewContainer);
 };
