@@ -46,8 +46,6 @@ class EulaScreenHandler : public EulaView,
 
  private:
   // JS messages handlers.
-  void HandleAcceptButtonClicked();
-  void HandleBackButtonClicked();
   void HandleOnLearnMore();
   void HandleOnChromeCredits();
   void HandleOnChromeOSCredits();

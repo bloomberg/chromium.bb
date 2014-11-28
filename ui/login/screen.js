@@ -6,8 +6,8 @@
  * @fileoverview Base class for all login WebUI screens.
  */
 cr.define('login', function() {
-  /** @const */ var CALLBACK_USER_ACTED = 'userActed';
   /** @const */ var CALLBACK_CONTEXT_CHANGED = 'contextChanged';
+  /** @const */ var CALLBACK_USER_ACTED = 'userActed';
 
   function doNothing() {};
 
@@ -94,6 +94,22 @@ cr.define('login', function() {
      */
     commitContextChanges: function() {
       return this.commitContextChangesImpl_.apply(this, arguments);
+    },
+
+    /**
+     * @final
+     */
+    declareButton: function(id) {
+      var self = this;
+      var button = this.ownerDocument.createElement('button');
+      button.id = id;
+
+      button.addEventListener('click', function(e) {
+        self.sendImpl_(CALLBACK_USER_ACTED, id);
+        e.stopPropagation();
+      });
+
+      return button;
     },
 
     /**

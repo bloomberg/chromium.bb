@@ -86,25 +86,16 @@ login.createScreen('EulaScreen', 'eula', function() {
     get buttons() {
       var buttons = [];
 
-      var backButton = this.ownerDocument.createElement('button');
-      backButton.id = 'back-button';
+      var backButton = this.declareButton('back-button');
       backButton.textContent = loadTimeData.getString('back');
-
-      var self = this;
-      backButton.addEventListener('click', function(e) {
-        chrome.send('eulaBackButtonClicked');
-        e.stopPropagation();
-      });
       buttons.push(backButton);
 
-      var acceptButton = this.ownerDocument.createElement('button');
-      acceptButton.id = 'accept-button';
+      var acceptButton = this.declareButton('accept-button');
       acceptButton.disabled = true;
       acceptButton.classList.add('preserve-disabled-state');
       acceptButton.textContent = loadTimeData.getString('acceptAgreement');
       acceptButton.addEventListener('click', function(e) {
         $('eula').classList.add('loading');  // Mark EULA screen busy.
-        chrome.send('eulaAcceptButtonClicked');
         e.stopPropagation();
       });
       buttons.push(acceptButton);

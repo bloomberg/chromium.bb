@@ -39,11 +39,10 @@ class EulaScreen : public EulaModel, public TpmPasswordFetcherDelegate {
   virtual void Show() override;
   virtual void Hide() override;
   virtual GURL GetOemEulaUrl() const override;
-  virtual void OnAcceptButtonClicked() override;
-  virtual void OnBackButtonClicked() override;
   virtual void InitiatePasswordFetch() override;
   virtual bool IsUsageStatsEnabled() const override;
   virtual void OnViewDestroyed(EulaView* view) override;
+  virtual void OnUserAction(const std::string& action_id) override;
   virtual void OnContextKeyUpdated(
       const ::login::ScreenContext::KeyType& key) override;
 

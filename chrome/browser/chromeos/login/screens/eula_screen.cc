@@ -17,12 +17,6 @@
 
 namespace chromeos {
 
-namespace {
-
-const char kContextKeyUsageStatsEnabled[] = "usageStatsEnabled";
-
-}  // namespace
-
 EulaScreen::EulaScreen(BaseScreenDelegate* base_screen_delegate,
                        Delegate* delegate,
                        EulaView* view)
@@ -77,14 +71,6 @@ GURL EulaScreen::GetOemEulaUrl() const {
   return GURL();
 }
 
-void EulaScreen::OnAcceptButtonClicked() {
-  Finish(BaseScreenDelegate::EULA_ACCEPTED);
-}
-
-void EulaScreen::OnBackButtonClicked() {
-  Finish(BaseScreenDelegate::EULA_BACK);
-}
-
 void EulaScreen::InitiatePasswordFetch() {
   if (tpm_password_.empty()) {
     password_fetcher_.Fetch();
@@ -107,6 +93,15 @@ bool EulaScreen::IsUsageStatsEnabled() const {
 void EulaScreen::OnViewDestroyed(EulaView* view) {
   if (view_ == view)
     view_ = NULL;
+}
+
+void EulaScreen::OnUserAction(const std::string& action_id) {
+  if (action_id == kUserActionAcceptButtonClicked)
+    Finish(BaseScreenDelegate::EULA_ACCEPTED);
+  else if (action_id == kUserActionBackButtonClicked)
+    Finish(BaseScreenDelegate::EULA_BACK);
+  else
+    BaseScreen::OnUserAction(action_id);
 }
 
 void EulaScreen::OnContextKeyUpdated(

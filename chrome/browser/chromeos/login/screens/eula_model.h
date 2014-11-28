@@ -16,6 +16,10 @@ class EulaView;
 // Allows us to get info from eula screen that we need.
 class EulaModel : public BaseScreen {
  public:
+  static const char kUserActionAcceptButtonClicked[];
+  static const char kUserActionBackButtonClicked[];
+  static const char kContextKeyUsageStatsEnabled[];
+
   explicit EulaModel(BaseScreenDelegate* base_screen_delegate);
   virtual ~EulaModel();
 
@@ -25,12 +29,6 @@ class EulaModel : public BaseScreen {
   // Returns URL of the OEM EULA page that should be displayed using current
   // locale and manifest. Returns empty URL otherwise.
   virtual GURL GetOemEulaUrl() const = 0;
-
-  // Called when accept button was clicked.
-  virtual void OnAcceptButtonClicked() = 0;
-
-  // Called when back button was clicked.
-  virtual void OnBackButtonClicked() = 0;
 
   // Initiate TPM password fetch. Will call actor's OnPasswordFetched() when
   // done.

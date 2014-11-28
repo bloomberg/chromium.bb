@@ -49,8 +49,8 @@ void BaseScreen::Finish(BaseScreenDelegate::ExitCodes exit_code) {
 void BaseScreen::SetContext(::login::ScreenContext* context) {
 }
 
-void BaseScreen::OnButtonPressed(const std::string& button_id) {
-  LOG(WARNING) << "Unhandled button click: button_id=" << button_id;
+void BaseScreen::OnUserAction(const std::string& action_id) {
+  LOG(WARNING) << "Unhandled user action: action_id=" << action_id;
 }
 
 void BaseScreen::OnContextKeyUpdated(

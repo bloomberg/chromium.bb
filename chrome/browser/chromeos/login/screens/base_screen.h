@@ -78,9 +78,10 @@ class BaseScreen {
   // it's work with |outcome|.
   void Finish(BaseScreenDelegate::ExitCodes exit_code);
 
-  // Called when button with |button_id| was pressed. Notification
-  // about this event comes from the JS counterpart.
-  virtual void OnButtonPressed(const std::string& button_id);
+  // Called when user action event with |event_id|
+  // happened. Notification about this event comes from the JS
+  // counterpart.
+  virtual void OnUserAction(const std::string& event_id);
 
   // The method is called each time some key in screen context is
   // updated by JS side. Default implementation does nothing, so

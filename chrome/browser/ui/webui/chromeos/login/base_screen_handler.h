@@ -240,6 +240,9 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
   // names.
   std::string FullMethodPath(const std::string& method) const;
 
+  // Handles user action.
+  void HandleUserAction(const std::string& action_id);
+
   // Handles situation when screen context is changed.
   void HandleContextChanged(const base::DictionaryValue* diff);
 

@@ -86,6 +86,8 @@ void BaseScreenHandler::GetLocalizedStrings(base::DictionaryValue* dict) {
 }
 
 void BaseScreenHandler::RegisterMessages() {
+  AddPrefixedCallback("userActed",
+                      &BaseScreenHandler::HandleUserAction);
   AddPrefixedCallback("contextChanged",
                       &BaseScreenHandler::HandleContextChanged);
   DeclareJSCallbacks();
@@ -116,6 +118,11 @@ gfx::NativeWindow BaseScreenHandler::GetNativeWindow() {
 std::string BaseScreenHandler::FullMethodPath(const std::string& method) const {
   DCHECK(!method.empty());
   return js_screen_path_prefix_ + method;
+}
+
+void BaseScreenHandler::HandleUserAction(const std::string& action_id) {
+  if (base_screen_)
+    base_screen_->OnUserAction(action_id);
 }
 
 void BaseScreenHandler::HandleContextChanged(

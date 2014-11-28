@@ -8,6 +8,10 @@
 
 namespace chromeos {
 
+const char EulaModel::kUserActionAcceptButtonClicked[] = "accept-button";
+const char EulaModel::kUserActionBackButtonClicked[] = "back-button";
+const char EulaModel::kContextKeyUsageStatsEnabled[] = "usageStatsEnabled";
+
 EulaModel::EulaModel(BaseScreenDelegate* base_screen_delegate)
     : BaseScreen(base_screen_delegate) {
 }

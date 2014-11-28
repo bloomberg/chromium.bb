@@ -147,10 +147,6 @@ void EulaScreenHandler::DeclareLocalizedValues(
 }
 
 void EulaScreenHandler::DeclareJSCallbacks() {
-  AddCallback("eulaAcceptButtonClicked",
-              &EulaScreenHandler::HandleAcceptButtonClicked);
-  AddCallback("eulaBackButtonClicked",
-              &EulaScreenHandler::HandleBackButtonClicked);
   AddCallback("eulaOnLearnMore", &EulaScreenHandler::HandleOnLearnMore);
   AddCallback("eulaOnChromeOSCredits",
               &EulaScreenHandler::HandleOnChromeOSCredits);
@@ -187,16 +183,6 @@ void EulaScreenHandler::Initialize() {
 
 void EulaScreenHandler::OnPasswordFetched(const std::string& tpm_password) {
   core_oobe_actor_->SetTpmPassword(tpm_password);
-}
-
-void EulaScreenHandler::HandleAcceptButtonClicked() {
-  if (model_)
-    model_->OnAcceptButtonClicked();
-}
-
-void EulaScreenHandler::HandleBackButtonClicked() {
-  if (model_)
-    model_->OnBackButtonClicked();
 }
 
 void EulaScreenHandler::HandleOnLearnMore() {
