@@ -68,7 +68,7 @@
 debug('Check that page popup doesn\'t exist at first.');
 shouldBeNull('$("mock-page-popup")');
 
-openPickerWithMock($('month'), test1);
+openPicker($('month'), test1);
 
 function test1() {
     debug('Check that page popup exists.');
@@ -91,7 +91,7 @@ function test1AfterClosing() {
     shouldBeNull('$("mock-page-popup")');
     shouldBeEqualToString('document.getElementById("month").value', '2012-03');
 
-    openPickerWithMock($('month'), test2);
+    openPicker($('month'), test2);
 }
 
 var scrollTopBeforeWheelEvent = 0;
@@ -120,7 +120,7 @@ function test2() {
 function test2AfterClosing() {
     shouldBeNull('$("mock-page-popup")');
 
-    openPickerWithMock($('month'), test3);
+    openPicker($('month'), test3);
 }
 
 function test3() {

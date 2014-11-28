@@ -39,7 +39,7 @@ debug('Check that page popup doesn\'t exist at first.');
 shouldBeNull('$("mock-page-popup")');
 
 window.onload = function() {
-    openPickerWithMock($('time'), test1);
+    openPicker($('time'), test1);
 };
 
 
@@ -67,7 +67,7 @@ function test1AfterClosing() {
     shouldBeNull('document.getElementById("mock-page-popup")');
     shouldBeEqualToString('document.getElementById("time").value', '01:03');
 
-    openPickerWithMock($('time'), test2);
+    openPicker($('time'), test2);
 }
 
 var scrollTopBeforeWheelEvent = 0;
@@ -96,7 +96,7 @@ function test2() {
 function test2AfterClosing() {
     shouldBeNull('$("mock-page-popup")');
 
-    openPickerWithMock($('time'), test3);
+    openPicker($('time'), test3);
 }
 
 function test3() {

@@ -18,7 +18,7 @@ document.body.appendChild(input);
 input.value = '1999-07-31T12:59';
 
 shouldBeEqualToString('getUserAgentShadowTextContent(input)', '1999-07-31 12:59');
-openPickerWithMock(input, function() {
+openPicker(input, function() {
     shouldBeEqualToString('getUserAgentShadowTextContent(input)', '1999-07-31 12:59');
 
     eventSender.keyDown('rightArrow');
@@ -26,8 +26,6 @@ openPickerWithMock(input, function() {
 
     removeCommitDelay();
     eventSender.keyDown('\n');
-    shouldBeEqualToString('selectedValue()', '1999-08-01');
-
     shouldBeEqualToString('getUserAgentShadowTextContent(input)', '1999-08-01 12:59');
     finishJSTest();
 });
