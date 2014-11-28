@@ -129,12 +129,12 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   bool OnMessageReceivedFromEmbedder(const IPC::Message& message);
 
   WebContentsImpl* embedder_web_contents() const {
-    return embedder_web_contents_;
+    return attached_ ? owner_web_contents_ : NULL;
   }
 
   // Returns the embedder's RenderWidgetHostView if it is available.
   // Returns NULL otherwise.
-  RenderWidgetHostView* GetEmbedderRenderWidgetHostView();
+  RenderWidgetHostView* GetOwnerRenderWidgetHostView();
 
   bool focused() const { return focused_; }
   bool visible() const { return guest_visible_; }
@@ -166,7 +166,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   void SendMessageToEmbedder(IPC::Message* msg);
 
   // Returns whether the guest is attached to an embedder.
-  bool attached() const { return embedder_web_contents_ != NULL; }
+  bool attached() const { return attached_; }
 
   // Attaches this BrowserPluginGuest to the provided |embedder_web_contents|
   // and initializes the guest with the provided |params|. Attaching a guest
@@ -206,7 +206,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
             const blink::WebFindOptions& options);
 
  private:
-  class EmbedderWebContentsObserver;
+  class EmbedderVisibilityObserver;
 
   // BrowserPluginGuest is a WebContentsObserver of |web_contents| and
   // |web_contents| has to stay valid for the lifetime of BrowserPluginGuest.
@@ -326,8 +326,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // The last tooltip that was set with SetTooltipText().
   base::string16 current_tooltip_text_;
 
-  scoped_ptr<EmbedderWebContentsObserver> embedder_web_contents_observer_;
-  WebContentsImpl* embedder_web_contents_;
+  scoped_ptr<EmbedderVisibilityObserver> embedder_visibility_observer_;
+  WebContentsImpl* owner_web_contents_;
+
+  // Indicates whether this guest has been attached to a container.
+  bool attached_;
 
   // An identifier that uniquely identifies a browser plugin within an embedder.
   int browser_plugin_instance_id_;

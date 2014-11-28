@@ -88,7 +88,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   virtual void DidStopLoading() {}
 
   // This method is called before the embedder is destroyed.
-  // |embedder_web_contents_| should still be valid during this call. This
+  // |owner_web_contents_| should still be valid during this call. This
   // allows the derived class to perform some cleanup related to the embedder
   // web contents.
   virtual void EmbedderWillBeDestroyed() {}
@@ -156,7 +156,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   typedef base::Callback<void(content::WebContents*)>
       WebContentsCreatedCallback;
   virtual void CreateWebContents(
-      int embedder_render_process_id,
+      int owner_render_process_id,
       const GURL& embedder_site_url,
       const base::DictionaryValue& create_params,
       const WebContentsCreatedCallback& callback) = 0;
@@ -184,7 +184,11 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   bool initialized() const { return initialized_; }
 
   content::WebContents* embedder_web_contents() const {
-    return embedder_web_contents_;
+    return attached_ ? owner_web_contents_ : NULL;
+  }
+
+  content::WebContents* owner_web_contents() const {
+    return owner_web_contents_;
   }
 
   // Returns the parameters associated with the element hosting this GuestView
@@ -192,7 +196,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   base::DictionaryValue* attach_params() const { return attach_params_.get(); }
 
   // Returns whether this guest has an associated embedder.
-  bool attached() const { return !!embedder_web_contents_; }
+  bool attached() const { return attached_; }
 
   // Returns the instance ID of the <*view> element.
   int view_instance_id() const { return view_instance_id_; }
@@ -211,8 +215,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // Returns the user browser context of the embedder.
   content::BrowserContext* browser_context() const { return browser_context_; }
 
-  // Returns the embedder's process ID.
-  int embedder_render_process_id() const { return embedder_render_process_id_; }
+  // Returns the owner's process ID.
+  int owner_render_process_id() const { return owner_render_process_id_; }
 
   GuestViewBase* GetOpener() const {
     return opener_.get();
@@ -249,7 +253,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   ~GuestViewBase() override;
 
  private:
-  class EmbedderLifetimeObserver;
+  class OwnerLifetimeObserver;
 
   class OpenerLifetimeObserver;
 
@@ -276,9 +280,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) final;
 
-  content::WebContents* embedder_web_contents_;
+  content::WebContents* owner_web_contents_;
   std::string embedder_extension_id_;
-  int embedder_render_process_id_;
+  int owner_render_process_id_;
   content::BrowserContext* browser_context_;
 
   // |guest_instance_id_| is a profile-wide unique identifier for a guest
@@ -289,10 +293,16 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // embedder RenderViewHost for a particular <*view> instance.
   int view_instance_id_;
 
-  // |element_instance_id_| is an identififer that's unique to a particular
+  // |element_instance_id_| is an identifer that's unique to a particular
   // GuestViewContainer element.
   int element_instance_id_;
 
+  // |attached_| indicates whether this GuestViewBase has been attached to a
+  // container.
+  bool attached_;
+
+  // |initialized_| indicates whether GuestViewBase::Init has been called for
+  // this object.
   bool initialized_;
 
   // Indicates that this guest is in the process of being destroyed.
@@ -315,7 +325,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // This observer ensures that this guest self-destructs if the embedder goes
   // away.
-  scoped_ptr<EmbedderLifetimeObserver> embedder_lifetime_observer_;
+  scoped_ptr<OwnerLifetimeObserver> owner_lifetime_observer_;
 
   // This observer ensures that if the guest is unattached and its opener goes
   // away then this guest also self-destructs.

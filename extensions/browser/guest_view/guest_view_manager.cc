@@ -119,7 +119,7 @@ int GuestViewManager::GetNextInstanceID() {
 
 void GuestViewManager::CreateGuest(const std::string& view_type,
                                    const std::string& embedder_extension_id,
-                                   content::WebContents* embedder_web_contents,
+                                   content::WebContents* owner_web_contents,
                                    const base::DictionaryValue& create_params,
                                    const WebContentsCreatedCallback& callback) {
   int guest_instance_id = GetNextInstanceID();
@@ -130,7 +130,7 @@ void GuestViewManager::CreateGuest(const std::string& view_type,
     return;
   }
   guest->Init(
-      embedder_extension_id, embedder_web_contents, create_params, callback);
+      embedder_extension_id, owner_web_contents, create_params, callback);
 }
 
 content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
@@ -303,7 +303,7 @@ bool GuestViewManager::CanEmbedderAccessInstanceID(
   if (!guest_view)
     return false;
 
-  return embedder_render_process_id == guest_view->embedder_render_process_id();
+  return embedder_render_process_id == guest_view->owner_render_process_id();
 }
 
 }  // namespace extensions

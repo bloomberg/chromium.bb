@@ -198,12 +198,12 @@ int WebViewGuest::GetTaskPrefix() const {
 }
 
 void WebViewGuest::CreateWebContents(
-    int embedder_render_process_id,
+    int owner_render_process_id,
     const GURL& embedder_site_url,
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
-  content::RenderProcessHost* embedder_render_process_host =
-      content::RenderProcessHost::FromID(embedder_render_process_id);
+  content::RenderProcessHost* owner_render_process_host =
+      content::RenderProcessHost::FromID(owner_render_process_id);
   std::string storage_partition_id;
   bool persist_storage = false;
   std::string storage_partition_string;
@@ -216,7 +216,7 @@ void WebViewGuest::CreateWebContents(
     content::RecordAction(
         base::UserMetricsAction("BadMessageTerminate_BPGM"));
     base::KillProcess(
-        embedder_render_process_host->GetHandle(),
+        owner_render_process_host->GetHandle(),
         content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
     callback.Run(NULL);
     return;
@@ -235,7 +235,7 @@ void WebViewGuest::CreateWebContents(
   // the new tag can script each other.
   GuestViewManager* guest_view_manager =
       GuestViewManager::FromBrowserContext(
-          embedder_render_process_host->GetBrowserContext());
+          owner_render_process_host->GetBrowserContext());
   content::SiteInstance* guest_site_instance =
       guest_view_manager->GetGuestSiteInstance(guest_site);
   if (!guest_site_instance) {
@@ -243,10 +243,10 @@ void WebViewGuest::CreateWebContents(
     // that webview tags are also not allowed to send messages across
     // different partitions.
     guest_site_instance = content::SiteInstance::CreateForURL(
-        embedder_render_process_host->GetBrowserContext(), guest_site);
+        owner_render_process_host->GetBrowserContext(), guest_site);
   }
   WebContents::CreateParams params(
-      embedder_render_process_host->GetBrowserContext(),
+      owner_render_process_host->GetBrowserContext(),
       guest_site_instance);
   params.guest_delegate = this;
   callback.Run(WebContents::Create(params));
@@ -354,7 +354,7 @@ void WebViewGuest::EmbedderWillBeDestroyed() {
           &RemoveWebViewEventListenersOnIOThread,
           browser_context(),
           embedder_extension_id(),
-          embedder_render_process_id(),
+          owner_render_process_id(),
           view_instance_id()));
 }
 
@@ -808,7 +808,7 @@ void WebViewGuest::PushWebViewStateToIOThread() {
   }
 
   WebViewRendererState::WebViewInfo web_view_info;
-  web_view_info.embedder_process_id = embedder_render_process_id();
+  web_view_info.embedder_process_id = owner_render_process_id();
   web_view_info.instance_id = view_instance_id();
   web_view_info.partition_id = partition_id;
   web_view_info.embedder_extension_id = embedder_extension_id();
@@ -1217,7 +1217,7 @@ void WebViewGuest::OnWebViewNewWindowResponse(
     bool allow,
     const std::string& user_input) {
   WebViewGuest* guest =
-      WebViewGuest::From(embedder_render_process_id(), new_window_instance_id);
+      WebViewGuest::From(owner_render_process_id(), new_window_instance_id);
   if (!guest)
     return;
 

@@ -32,7 +32,7 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
   // GuestViewBase implementation.
   const char* GetAPINamespace() const override;
   int GetTaskPrefix() const override;
-  void CreateWebContents(int embedder_render_process_id,
+  void CreateWebContents(int owner_render_process_id,
                          const GURL& embedder_site_url,
                          const base::DictionaryValue& create_params,
                          const WebContentsCreatedCallback& callback) override;
