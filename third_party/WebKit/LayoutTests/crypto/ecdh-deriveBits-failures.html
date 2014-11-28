@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/common.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+description("Tests bad inputs to ECDH's deriveBits()");
+
+jsTestIsAsync = true;
+
+var keyPairs = {
+    ecdh: {},
+    ecdsa: {}
+};
+
+// Generate some EC keys for ECDSA and ECDH.
+function createTestKeys() {
+    return crypto.subtle.generateKey({name: "ecdh", namedCurve: "P-256"}, true, ["deriveBits"]).then(function(result) {
+      keyPairs.ecdh.p256_1 = result;
+
+      return crypto.subtle.generateKey({name: "ecdh", namedCurve: "P-256"}, true, ["deriveBits"]);
+    }).then(function(result) {
+      keyPairs.ecdh.p256_2 = result;
+
+      return crypto.subtle.generateKey({name: "ecdh", namedCurve: "P-384"}, true, ["deriveBits"]);
+    }).then(function(result) {
+      keyPairs.ecdh.p384_1 = result;
+
+      return crypto.subtle.generateKey({name: "ecdsa", namedCurve: "P-256"}, true, ["sign"]);
+    }).then(function(result) {
+      keyPairs.ecdsa.p256_1 = result;
+    });
+}
+
+createTestKeys().then(function(result) {
+  // Bad algorithm parameter (no algorithm name or public key)
+  return crypto.subtle.deriveBits({}, keyPairs.ecdh.p256_1.privateKey, 256);
+}).then(failAndFinishJSTest, function(result) {
+  logError(result);
+
+  // Bad algorithm parameter (no public key)
+  return crypto.subtle.deriveBits({name: 'ecdh'}, keyPairs.ecdh.p256_1.privateKey, 256);
+}).then(failAndFinishJSTest, function(result) {
+  logError(result);
+
+  // Bad algorithm parameter (null)
+  return crypto.subtle.deriveBits(null, keyPairs.ecdh.p256_1.privateKey, 256);
+}).then(failAndFinishJSTest, function(result) {
+  logError(result);
+
+  // Bad algorithm parameter (not an object)
+  return crypto.subtle.deriveBits(-1, keyPairs.ecdh.p256_1.privateKey, 256);
+}).then(failAndFinishJSTest, function(result) {
+  logError(result);
+
+  // Bad algorithm parameter (public key is null)
+  return crypto.subtle.deriveBits({name: 'ecdh', public: null}, keyPairs.ecdh.p256_1.privateKey, 256);
+}).then(failAndFinishJSTest, function(result) {
+  logError(result);
+
+  // Bad algorithm parameter (public key is wrong type)
+  return crypto.subtle.deriveBits({name: 'ecdh', public: -1}, keyPairs.ecdh.p256_1.privateKey, 256);
+}).then(failAndFinishJSTest, function(result) {
+  logError(result);
+
+  // Bad algorithm parameter (public key is wrong type)
+  return crypto.subtle.deriveBits({name: 'ecdh', public: "foo"}, keyPairs.ecdh.p256_1.privateKey, 256);
+}).then(failAndFinishJSTest, function(result) {
+  logError(result);
+
+  // Bad algorithm parameter (public key is for wrong curve)
+  return crypto.subtle.deriveBits({name: 'ecdh', public: keyPairs.ecdh.p384_1.publicKey}, keyPairs.ecdh.p256_1.privateKey, 256);
+}).then(failAndFinishJSTest, function(result) {
+  logError(result);
+
+  // Bad algorithm parameter (public key is not a public key)
+  return crypto.subtle.deriveBits({name: 'ecdh', public: keyPairs.ecdh.p256_2.privateKey}, keyPairs.ecdh.p256_1.privateKey, 256);
+}).then(failAndFinishJSTest, function(result) {
+  logError(result);
+
+  // Bad algorithm parameter (public key is for ECDSA).
+  return crypto.subtle.deriveBits({name: 'ecdh', public: keyPairs.ecdsa.p256_1.publicKey}, keyPairs.ecdh.p256_1.privateKey, {test: 3});
+}).then(failAndFinishJSTest, function(result) {
+  logError(result);
+}).then(finishJSTest, failAndFinishJSTest);
+
+</script>
+
+</body>
+</html>
