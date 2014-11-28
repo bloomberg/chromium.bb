@@ -72,12 +72,14 @@ bool MapV8Files(base::FilePath* natives_path, base::FilePath* snapshot_path,
   return true;
 }
 
+#if !defined(OS_MACOSX)
 const int v8_snapshot_dir =
 #if defined(OS_ANDROID)
     base::DIR_ANDROID_APP_DATA;
 #elif defined(OS_POSIX)
     base::DIR_EXE;
 #endif  // defined(OS_ANDROID)
+#endif  // !defined(OS_MACOSX)
 
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
