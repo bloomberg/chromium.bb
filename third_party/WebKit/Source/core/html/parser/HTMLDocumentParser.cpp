@@ -117,6 +117,7 @@ HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, bool reportErrors
     , m_endWasDelayed(false)
     , m_haveBackgroundParser(false)
     , m_pumpSessionNestingLevel(0)
+    , m_pumpSpeculationsSessionNestingLevel(0)
 {
     ASSERT(shouldUseThreading() || (m_token && m_tokenizer));
 }
@@ -135,6 +136,7 @@ HTMLDocumentParser::HTMLDocumentParser(DocumentFragment* fragment, Element* cont
     , m_endWasDelayed(false)
     , m_haveBackgroundParser(false)
     , m_pumpSessionNestingLevel(0)
+    , m_pumpSpeculationsSessionNestingLevel(0)
 {
     ASSERT(!shouldUseThreading());
     bool reportErrors = false; // For now document fragment parsing never reports errors.
@@ -499,19 +501,29 @@ void HTMLDocumentParser::pumpPendingSpeculations()
     ASSERT(!m_lastChunkBeforeScript);
     ASSERT(!isWaitingForScripts());
     ASSERT(!isStopped());
+    ASSERT(!isScheduledForResume());
+    ASSERT(!inPumpSession());
+
+    // Do not allow pumping speculations in nested event loops.
+    if (m_pumpSpeculationsSessionNestingLevel)
+        m_parserScheduler->scheduleForResume();
 
     // FIXME: Pass in current input length.
     TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ParseHTML", "beginData", InspectorParseHtmlEvent::beginData(document(), lineNumber().zeroBasedInt()));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willWriteHTML(document(), lineNumber().zeroBasedInt());
 
-    SpeculationsPumpSession session(contextForParsingSession());
+    SpeculationsPumpSession session(m_pumpSpeculationsSessionNestingLevel, contextForParsingSession());
     while (!m_speculations.isEmpty()) {
+        ASSERT(!isScheduledForResume());
         size_t elementTokenCount = processParsedChunkFromBackgroundParser(m_speculations.takeFirst());
         session.addedElementTokens(elementTokenCount);
 
-        // Always check isStopped first as m_document may be null.
-        if (isStopped() || isWaitingForScripts())
+        // Always check isParsing first as m_document may be null.
+        // Surprisingly, isScheduledForResume() may be set here as a result of
+        // processParsedChunkFromBackgroundParser running arbitrary javascript
+        // which invokes nested event loops. (e.g. inspector breakpoints)
+        if (!isParsing() || isWaitingForScripts() || isScheduledForResume())
             break;
 
         if (m_speculations.isEmpty() || m_parserScheduler->yieldIfNeeded(session, m_speculations.first()->startingScript))

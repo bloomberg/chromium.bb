@@ -36,17 +36,17 @@ namespace blink {
 class Document;
 class HTMLDocumentParser;
 
-class ActiveParserSession {
+class ActiveParserSession : public NestingLevelIncrementer {
     STACK_ALLOCATED();
 public:
-    explicit ActiveParserSession(Document*);
+    ActiveParserSession(unsigned& nestingLevel, Document*);
     ~ActiveParserSession();
 
 private:
     RefPtrWillBeMember<Document> m_document;
 };
 
-class PumpSession : public NestingLevelIncrementer, public ActiveParserSession {
+class PumpSession : public ActiveParserSession {
     STACK_ALLOCATED();
 public:
     PumpSession(unsigned& nestingLevel, Document*);
@@ -55,7 +55,7 @@ public:
 
 class SpeculationsPumpSession : public ActiveParserSession {
 public:
-    explicit SpeculationsPumpSession(Document*);
+    SpeculationsPumpSession(unsigned& nestingLevel, Document*);
     ~SpeculationsPumpSession();
 
     double elapsedTime() const;
@@ -78,6 +78,7 @@ public:
 
     bool isScheduledForResume() const { return m_isSuspendedWithActiveTimer || m_continueNextChunkTimer.isActive(); }
 
+    void scheduleForResume();
     bool yieldIfNeeded(const SpeculationsPumpSession&, bool startingScript);
 
     void suspend();
@@ -87,7 +88,6 @@ private:
     explicit HTMLParserScheduler(HTMLDocumentParser*);
 
     bool shouldYield(const SpeculationsPumpSession&, bool startingScript) const;
-    void scheduleForResume();
     void continueNextChunkTimerFired(Timer<HTMLParserScheduler>*);
 
     HTMLDocumentParser* m_parser;
