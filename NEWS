@@ -4,6 +4,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** Braille table improvements
 - Updates and correction to Hungarian braille tables, thanks to Hammer
   Attila.
+- Correction to English UK grade 2 braille tables and new tests,
+  thanks to Paul Wood, Mesar Hameed
+
 ** Documentation updates
 - The documentation has been restructured to be more beginner friendly
   and a short introduction to translation table writing has been added.
