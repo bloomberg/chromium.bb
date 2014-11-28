@@ -46,11 +46,18 @@ public:
     static CodePath characterRangeCodePath(const LChar*, unsigned) { return SimplePath; }
     static CodePath characterRangeCodePath(const UChar*, unsigned len);
 
+    static inline bool isInRange(UChar32 character, UChar32 lowerBound, UChar32 upperBound)
+    {
+        return character >= lowerBound && character <= upperBound;
+    }
+
     static bool isCJKIdeograph(UChar32);
     static bool isCJKIdeographOrSymbol(UChar32);
 
     static unsigned expansionOpportunityCount(const LChar*, size_t length, TextDirection, bool& isAfterExpansion, const TextJustify);
     static unsigned expansionOpportunityCount(const UChar*, size_t length, TextDirection, bool& isAfterExpansion, const TextJustify);
+
+    static bool shouldIgnoreRotation(UChar32 character);
 
     static bool treatAsSpace(UChar c)
     {
