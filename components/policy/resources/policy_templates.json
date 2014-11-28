@@ -6880,10 +6880,10 @@
         },
       ],
       'supported_on': [
-        'chrome.*:39-',
-        'chrome_os:39-',
-        'android:39-',
-        'ios:39-',
+        'chrome.*:39-43',
+        'chrome_os:39-43',
+        'android:39-43',
+        'ios:39-43',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -6892,7 +6892,9 @@
       'example_value': 'ssl3',
       'id': 279,
       'caption': '''Minimum SSL version enabled''',
-      'desc': '''If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use a default minimum version, which is SSLv3 in Chrome 39 but may be TLS 1.0 in Chrome 40.
+      'desc': '''Warning: SSLv3 support will be entirely removed from Chrome after version 43 (around July 2015) after which the setting "ssl3" will be ignored and the default of "tls1" used instead.
+
+      If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use a default minimum version, which is SSLv3 in Chrome 39 but may be TLS 1.0 in Chrome 40.
 
       Otherwise it may be set to one of the following values: "sslv3", "tls1", "tls1.1" or "tls1.2". When set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not use SSL/TLS versions less than the specified version. An unrecognized value will be ignored.
 
@@ -6933,10 +6935,10 @@
         },
       ],
       'supported_on': [
-        'chrome.*:39-',
-        'chrome_os:39-',
-        'android:39-',
-        'ios:39-',
+        'chrome.*:39-43',
+        'chrome_os:39-43',
+        'android:39-43',
+        'ios:39-43',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -6945,7 +6947,9 @@
       'example_value': 'tls1',
       'id': 280,
       'caption': '''Minimum SSL version to fallback to''',
-      'desc': '''When an SSL/TLS handshake fails, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will retry the connection with a lesser version of SSL/TLS in order to work around bugs in HTTPS servers. This setting configures the version at which this fallback process will stop. If a server performs version negotiation correctly (i.e. without breaking the connection) then this setting doesn't apply. Regardless, the resulting connection must still comply with SSLVersionMin.
+      'desc': '''Warning: SSLv3 support will be entirely removed from Chrome after version 43 (around July 2015) after which the setting "ssl3" will be ignored and the default of "tls1" used instead.
+
+      When an SSL/TLS handshake fails, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will retry the connection with a lesser version of SSL/TLS in order to work around bugs in HTTPS servers. This setting configures the version at which this fallback process will stop. If a server performs version negotiation correctly (i.e. without breaking the connection) then this setting doesn't apply. Regardless, the resulting connection must still comply with SSLVersionMin.
 
       If this policy is not configured then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use a default minimum version, which was SSLv3 in Chrome 38 but is TLS 1.0 in Chrome 39.
 
@@ -6953,7 +6957,7 @@
 
       A setting of "tls1.2" disables all fallback but this may have a significant compatibility impact.
 
-      Note that, despite the number, "sslv3" is an earier version than "tls1".''',
+      Note that, despite the number, "sslv3" is an earlier version than "tls1".''',
     },
     {
       'name': 'ContextualSearchEnabled',
