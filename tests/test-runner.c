@@ -52,6 +52,9 @@ int leak_check_enabled;
  * WAYLAND_TEST_NO_TIMEOUTS evnironment var */
 static int timeouts_enabled = 1;
 
+/* set to one if the output goes to the terminal */
+static int is_atty = 0;
+
 extern const struct test __start_test_section, __stop_test_section;
 
 __attribute__ ((visibility("default"))) void *
@@ -224,6 +227,25 @@ rmdir_xdg_runtime_dir(void)
 		perror("Cleaning XDG_RUNTIME_DIR");
 }
 
+#define RED	"\033[31m"
+#define GREEN	"\033[32m"
+
+static void
+stderr_set_color(const char *color)
+{
+	/* use colors only when the output is connected to
+	 * the terminal */
+	if (is_atty)
+		fprintf(stderr, "%s", color);
+}
+
+static void
+stderr_reset_color(void)
+{
+	if (is_atty)
+		fprintf(stderr, "\033[0m");
+}
+
 int main(int argc, char *argv[])
 {
 	const struct test *t;
@@ -239,6 +261,9 @@ int main(int argc, char *argv[])
 
 	leak_check_enabled = !getenv("WAYLAND_TEST_NO_LEAK_CHECK");
 	timeouts_enabled = !getenv("WAYLAND_TEST_NO_TIMEOUTS");
+
+	if (isatty(fileno(stderr)))
+		is_atty = 1;
 
 	if (argc == 2 && strcmp(argv[1], "--help") == 0)
 		usage(argv[0], EXIT_SUCCESS);
@@ -271,31 +296,44 @@ int main(int argc, char *argv[])
 			run_test(t); /* never returns */
 
 		if (waitid(P_ALL, 0, &info, WEXITED)) {
+			stderr_set_color(RED);
 			fprintf(stderr, "waitid failed: %m\n");
+			stderr_reset_color();
+
 			abort();
 		}
 
-		fprintf(stderr, "test \"%s\":\t", t->name);
 		switch (info.si_code) {
 		case CLD_EXITED:
-			fprintf(stderr, "exit status %d", info.si_status);
 			if (info.si_status == EXIT_SUCCESS)
-				success = 1;
+				success = !t->must_fail;
+			else
+				success = t->must_fail;
+
+			stderr_set_color(success ? GREEN : RED);
+			fprintf(stderr, "test \"%s\":\texit status %d",
+				t->name, info.si_status);
+
 			break;
 		case CLD_KILLED:
 		case CLD_DUMPED:
-			fprintf(stderr, "signal %d", info.si_status);
+			if (t->must_fail)
+				success = 1;
+
+			stderr_set_color(success ? GREEN : RED);
+			fprintf(stderr, "test \"%s\":\tsignal %d",
+				t->name, info.si_status);
+
 			break;
 		}
-
-		if (t->must_fail)
-			success = !success;
 
 		if (success) {
 			pass++;
 			fprintf(stderr, ", pass.\n");
 		} else
 			fprintf(stderr, ", fail.\n");
+
+		stderr_reset_color();
 
 		/* print separator line */
 		fprintf(stderr, "----------------------------------------\n");
