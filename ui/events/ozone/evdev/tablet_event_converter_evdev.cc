@@ -141,9 +141,10 @@ void TabletEventConverterEvdev::DispatchMouseButton(const input_event& input) {
 
   int flag = modifiers_->GetEventFlagFromModifier(modifier);
   modifiers_->UpdateModifier(modifier, input.value);
-  callback_.Run(make_scoped_ptr(new MouseEvent(
-      input.value ? ET_MOUSE_PRESSED : ET_MOUSE_RELEASED, cursor_->location(),
-      cursor_->location(), modifiers_->GetModifierFlags() | flag, flag)));
+  callback_.Run(make_scoped_ptr(
+      new MouseEvent(input.value ? ET_MOUSE_PRESSED : ET_MOUSE_RELEASED,
+                     cursor_->GetLocation(), cursor_->GetLocation(),
+                     modifiers_->GetModifierFlags() | flag, flag)));
 }
 
 void TabletEventConverterEvdev::FlushEvents() {
@@ -162,8 +163,8 @@ void TabletEventConverterEvdev::FlushEvents() {
   UpdateCursor();
 
   callback_.Run(make_scoped_ptr(
-      new MouseEvent(ui::ET_MOUSE_MOVED, cursor_->location(),
-                     cursor_->location(), modifiers_->GetModifierFlags(),
+      new MouseEvent(ui::ET_MOUSE_MOVED, cursor_->GetLocation(),
+                     cursor_->GetLocation(), modifiers_->GetModifierFlags(),
                      /* changed_button_flags */ 0)));
 
   abs_value_dirty_ = false;

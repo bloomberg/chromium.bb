@@ -111,8 +111,8 @@ void EventConverterEvdevImpl::DispatchMouseButton(const input_event& input) {
   modifiers_->UpdateModifier(modifier, input.value);
   callback_.Run(make_scoped_ptr(
       new MouseEvent(input.value ? ET_MOUSE_PRESSED : ET_MOUSE_RELEASED,
-                     cursor_->location(),
-                     cursor_->location(),
+                     cursor_->GetLocation(),
+                     cursor_->GetLocation(),
                      modifiers_->GetModifierFlags() | flag,
                      flag)));
 }
@@ -125,8 +125,8 @@ void EventConverterEvdevImpl::FlushEvents() {
 
   callback_.Run(make_scoped_ptr(
       new MouseEvent(ui::ET_MOUSE_MOVED,
-                     cursor_->location(),
-                     cursor_->location(),
+                     cursor_->GetLocation(),
+                     cursor_->GetLocation(),
                      modifiers_->GetModifierFlags(),
                      /* changed_button_flags */ 0)));
   x_offset_ = 0;

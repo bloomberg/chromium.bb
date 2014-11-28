@@ -63,7 +63,7 @@ class MockCursorEvdev : public CursorDelegateEvdev {
     NOTIMPLEMENTED();
     return gfx::Rect();
   }
-  gfx::PointF location() override { return cursor_location_; }
+  gfx::PointF GetLocation() override { return cursor_location_; }
 
  private:
   // The location of the mock cursor.
@@ -173,7 +173,7 @@ TEST_F(InputInjectorEvdevTest, DoubleClick) {
 TEST_F(InputInjectorEvdevTest, MouseMoved) {
   injector_.MoveCursorTo(gfx::PointF(1, 1));
   run_loop_.RunUntilIdle();
-  EXPECT_EQ(cursor_.location(), gfx::PointF(1, 1));
+  EXPECT_EQ(cursor_.GetLocation(), gfx::PointF(1, 1));
 }
 
 TEST_F(InputInjectorEvdevTest, MouseDragged) {

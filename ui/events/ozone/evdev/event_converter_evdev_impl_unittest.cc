@@ -62,7 +62,7 @@ class MockCursorEvdev : public CursorDelegateEvdev {
     NOTIMPLEMENTED();
     return gfx::Rect();
   }
-  gfx::PointF location() override { return cursor_location_; }
+  gfx::PointF GetLocation() override { return cursor_location_; }
 
  private:
   // The location of the mock cursor.
@@ -449,7 +449,7 @@ TEST_F(EventConverterEvdevImplTest, MouseMove) {
 
   event = dispatched_mouse_event(0);
   EXPECT_EQ(ui::ET_MOUSE_MOVED, event->type());
-  EXPECT_EQ(cursor()->location(), gfx::PointF(4, 2));
+  EXPECT_EQ(cursor()->GetLocation(), gfx::PointF(4, 2));
 }
 
 TEST_F(EventConverterEvdevImplTest, UnmappedKeyPress) {

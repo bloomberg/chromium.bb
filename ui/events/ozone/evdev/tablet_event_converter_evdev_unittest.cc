@@ -90,7 +90,7 @@ class MockTabletCursorEvdev : public CursorDelegateEvdev {
   }
   void MoveCursor(const gfx::Vector2dF& delta) override { NOTREACHED(); }
   bool IsCursorVisible() override { return 1; }
-  gfx::PointF location() override { return cursor_location_; }
+  gfx::PointF GetLocation() override { return cursor_location_; }
   gfx::Rect GetCursorDisplayBounds() override { return cursor_display_bounds_; }
 
  private:
@@ -216,8 +216,8 @@ TEST_F(TabletEventConverterEvdevTest, MoveTopLeft) {
   ui::MouseEvent* event = dev->event(0);
   EXPECT_EQ(ui::ET_MOUSE_MOVED, event->type());
 
-  EXPECT_LT(cursor()->location().x(), EPSILON);
-  EXPECT_LT(cursor()->location().y(), EPSILON);
+  EXPECT_LT(cursor()->GetLocation().x(), EPSILON);
+  EXPECT_LT(cursor()->GetLocation().y(), EPSILON);
 }
 
 TEST_F(TabletEventConverterEvdevTest, MoveTopRight) {
@@ -249,9 +249,9 @@ TEST_F(TabletEventConverterEvdevTest, MoveTopRight) {
   ui::MouseEvent* event = dev->event(0);
   EXPECT_EQ(ui::ET_MOUSE_MOVED, event->type());
 
-  EXPECT_GT(cursor()->location().x(),
+  EXPECT_GT(cursor()->GetLocation().x(),
             cursor()->GetCursorDisplayBounds().width() - EPSILON);
-  EXPECT_LT(cursor()->location().y(), EPSILON);
+  EXPECT_LT(cursor()->GetLocation().y(), EPSILON);
 }
 
 TEST_F(TabletEventConverterEvdevTest, MoveBottomLeft) {
@@ -282,8 +282,8 @@ TEST_F(TabletEventConverterEvdevTest, MoveBottomLeft) {
   ui::MouseEvent* event = dev->event(0);
   EXPECT_EQ(ui::ET_MOUSE_MOVED, event->type());
 
-  EXPECT_LT(cursor()->location().x(), EPSILON);
-  EXPECT_GT(cursor()->location().y(),
+  EXPECT_LT(cursor()->GetLocation().x(), EPSILON);
+  EXPECT_GT(cursor()->GetLocation().y(),
             cursor()->GetCursorDisplayBounds().height() - EPSILON);
 }
 
@@ -317,9 +317,9 @@ TEST_F(TabletEventConverterEvdevTest, MoveBottomRight) {
   ui::MouseEvent* event = dev->event(0);
   EXPECT_EQ(ui::ET_MOUSE_MOVED, event->type());
 
-  EXPECT_GT(cursor()->location().x(),
+  EXPECT_GT(cursor()->GetLocation().x(),
             cursor()->GetCursorDisplayBounds().height() - EPSILON);
-  EXPECT_GT(cursor()->location().y(),
+  EXPECT_GT(cursor()->GetLocation().y(),
             cursor()->GetCursorDisplayBounds().height() - EPSILON);
 }
 

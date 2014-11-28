@@ -27,7 +27,7 @@ class EVENTS_OZONE_EVDEV_EXPORT CursorDelegateEvdev {
   virtual void MoveCursorTo(const gfx::PointF& location) = 0;
 
   // Location in window.
-  virtual gfx::PointF location() = 0;
+  virtual gfx::PointF GetLocation() = 0;
 
   // Cursor visibility.
   virtual bool IsCursorVisible() = 0;

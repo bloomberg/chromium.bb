@@ -45,7 +45,7 @@ class DriCursor : public CursorDelegateEvdev {
   void MoveCursorTo(const gfx::PointF& location) override;
   void MoveCursor(const gfx::Vector2dF& delta) override;
   bool IsCursorVisible() override;
-  gfx::PointF location() override;
+  gfx::PointF GetLocation() override;
   gfx::Rect GetCursorDisplayBounds() override;
 
  private:

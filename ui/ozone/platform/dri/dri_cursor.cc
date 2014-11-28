@@ -112,7 +112,7 @@ bool DriCursor::IsCursorVisible() {
   return cursor_.get();
 }
 
-gfx::PointF DriCursor::location() {
+gfx::PointF DriCursor::GetLocation() {
   return cursor_location_;
 }
 

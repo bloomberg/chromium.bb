@@ -251,8 +251,8 @@ void GestureInterpreterLibevdevCros::OnGestureMove(const Gesture* gesture,
   // TODO(spang): Use move->ordinal_dx, move->ordinal_dy
   // TODO(spang): Use move->start_time, move->end_time
   Dispatch(make_scoped_ptr(new MouseEvent(ET_MOUSE_MOVED,
-                                          cursor_->location(),
-                                          cursor_->location(),
+                                          cursor_->GetLocation(),
+                                          cursor_->GetLocation(),
                                           modifiers_->GetModifierFlags(),
                                           /* changed_button_flags */ 0)));
 }
@@ -271,7 +271,7 @@ void GestureInterpreterLibevdevCros::OnGestureScroll(
   // TODO(spang): Support SetNaturalScroll
   // TODO(spang): Use scroll->start_time
   Dispatch(make_scoped_ptr(new ScrollEvent(ET_SCROLL,
-                                           cursor_->location(),
+                                           cursor_->GetLocation(),
                                            StimeToTimedelta(gesture->end_time),
                                            modifiers_->GetModifierFlags(),
                                            scroll->dx,
@@ -338,7 +338,7 @@ void GestureInterpreterLibevdevCros::OnGestureFling(const Gesture* gesture,
 
   // Fling is like 2-finger scrolling but with velocity instead of displacement.
   Dispatch(make_scoped_ptr(new ScrollEvent(type,
-                                           cursor_->location(),
+                                           cursor_->GetLocation(),
                                            StimeToTimedelta(gesture->end_time),
                                            modifiers_->GetModifierFlags(),
                                            fling->vx,
@@ -361,7 +361,7 @@ void GestureInterpreterLibevdevCros::OnGestureSwipe(const Gesture* gesture,
 
   // Swipe is 3-finger scrolling.
   Dispatch(make_scoped_ptr(new ScrollEvent(ET_SCROLL,
-                                           cursor_->location(),
+                                           cursor_->GetLocation(),
                                            StimeToTimedelta(gesture->end_time),
                                            modifiers_->GetModifierFlags(),
                                            swipe->dx,
@@ -383,7 +383,7 @@ void GestureInterpreterLibevdevCros::OnGestureSwipeLift(
   // TODO(spang): Figure out why and put it in this comment.
 
   Dispatch(make_scoped_ptr(new ScrollEvent(ET_SCROLL_FLING_START,
-                                           cursor_->location(),
+                                           cursor_->GetLocation(),
                                            StimeToTimedelta(gesture->end_time),
                                            modifiers_->GetModifierFlags(),
                                            /* x_offset */ 0,
@@ -420,12 +420,12 @@ void GestureInterpreterLibevdevCros::Dispatch(scoped_ptr<Event> event) {
 
 void GestureInterpreterLibevdevCros::DispatchMouseButton(unsigned int modifier,
                                                          bool down) {
-  const gfx::PointF& loc = cursor_->location();
+  const gfx::PointF location = cursor_->GetLocation();
   int flag = modifiers_->GetEventFlagFromModifier(modifier);
   EventType type = (down ? ET_MOUSE_PRESSED : ET_MOUSE_RELEASED);
   modifiers_->UpdateModifier(modifier, down);
   Dispatch(make_scoped_ptr(new MouseEvent(
-      type, loc, loc, modifiers_->GetModifierFlags() | flag, flag)));
+      type, location, location, modifiers_->GetModifierFlags() | flag, flag)));
 }
 
 void GestureInterpreterLibevdevCros::DispatchChangedKeys(Evdev* evdev,

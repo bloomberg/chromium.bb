@@ -48,8 +48,8 @@ void InputInjectorEvdev::InjectMouseButton(EventFlags button, bool down) {
       EventModifiersEvdev::GetEventFlagFromModifier(changed_button);
   callback_.Run(make_scoped_ptr(new MouseEvent(
       (down) ? ET_MOUSE_PRESSED : ET_MOUSE_RELEASED,
-      cursor_->location(),
-      cursor_->location(),
+      cursor_->GetLocation(),
+      cursor_->GetLocation(),
       modifiers_->GetModifierFlags() | changed_button_flag,
       changed_button_flag)));
 }
@@ -57,8 +57,8 @@ void InputInjectorEvdev::InjectMouseButton(EventFlags button, bool down) {
 void InputInjectorEvdev::InjectMouseWheel(int delta_x, int delta_y) {
   callback_.Run(make_scoped_ptr(new MouseWheelEvent(
       gfx::Vector2d(delta_x, delta_y),
-      cursor_->location(),
-      cursor_->location(),
+      cursor_->GetLocation(),
+      cursor_->GetLocation(),
       modifiers_->GetModifierFlags(),
       0 /* changed_button_flags */)));
 }
@@ -68,8 +68,8 @@ void InputInjectorEvdev::MoveCursorTo(const gfx::PointF& location) {
     cursor_->MoveCursorTo(location);
     callback_.Run(make_scoped_ptr(new MouseEvent(
         ET_MOUSE_MOVED,
-        cursor_->location(),
-        cursor_->location(),
+        cursor_->GetLocation(),
+        cursor_->GetLocation(),
         modifiers_->GetModifierFlags(),
         0 /* changed_button_flags */)));
   }

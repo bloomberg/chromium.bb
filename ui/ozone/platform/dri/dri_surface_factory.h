@@ -21,8 +21,7 @@ class DriSurfaceFactory : public SurfaceFactoryOzone {
  public:
   static const gfx::AcceleratedWidget kDefaultWidgetHandle;
 
-  DriSurfaceFactory(DriWrapper* drm,
-                    DriWindowDelegateManager* window_manager);
+  DriSurfaceFactory(DriWrapper* drm, DriWindowDelegateManager* window_manager);
   ~DriSurfaceFactory() override;
 
   // Describes the state of the hardware after initialization.

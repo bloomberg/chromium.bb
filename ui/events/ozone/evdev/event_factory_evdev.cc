@@ -299,8 +299,8 @@ void EventFactoryEvdev::WarpCursorTo(gfx::AcceleratedWidget widget,
   if (cursor_) {
     cursor_->MoveCursorTo(widget, location);
     PostUiEvent(make_scoped_ptr(new MouseEvent(ET_MOUSE_MOVED,
-                                               cursor_->location(),
-                                               cursor_->location(),
+                                               cursor_->GetLocation(),
+                                               cursor_->GetLocation(),
                                                modifiers_.GetModifierFlags(),
                                                /* changed_button_flags */ 0)));
   }
