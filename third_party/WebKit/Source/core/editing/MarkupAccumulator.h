@@ -69,7 +69,7 @@ public:
     MarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node>>*, EAbsoluteURLs, const Range* = nullptr, SerializationType = AsOwnerDocument);
     virtual ~MarkupAccumulator();
 
-    String serializeNodes(Node& targetNode, EChildrenOnly, Vector<QualifiedName>* tagNamesToSkip = nullptr);
+    String serializeNodes(Node& targetNode, EChildrenOnly);
 
     static void appendComment(StringBuilder&, const String&);
 
@@ -109,7 +109,7 @@ protected:
 private:
     String resolveURLIfNeeded(const Element&, const String&) const;
     void appendQuotedURLAttributeValue(StringBuilder&, const Element&, const Attribute&);
-    void serializeNodesWithNamespaces(Node& targetNode, EChildrenOnly, const Namespaces*, Vector<QualifiedName>* tagNamesToSkip);
+    void serializeNodesWithNamespaces(Node& targetNode, EChildrenOnly, const Namespaces*);
     bool serializeAsHTMLDocument(const Node&) const;
 
     StringBuilder m_markup;

@@ -109,7 +109,7 @@ MarkupAccumulator::~MarkupAccumulator()
 {
 }
 
-String MarkupAccumulator::serializeNodes(Node& targetNode, EChildrenOnly childrenOnly, Vector<QualifiedName>* tagNamesToSkip)
+String MarkupAccumulator::serializeNodes(Node& targetNode, EChildrenOnly childrenOnly)
 {
     Namespaces* namespaces = nullptr;
     Namespaces namespaceHash;
@@ -119,19 +119,12 @@ String MarkupAccumulator::serializeNodes(Node& targetNode, EChildrenOnly childre
         namespaces = &namespaceHash;
     }
 
-    serializeNodesWithNamespaces(targetNode, childrenOnly, namespaces, tagNamesToSkip);
+    serializeNodesWithNamespaces(targetNode, childrenOnly, namespaces);
     return m_markup.toString();
 }
 
-void MarkupAccumulator::serializeNodesWithNamespaces(Node& targetNode, EChildrenOnly childrenOnly, const Namespaces* namespaces, Vector<QualifiedName>* tagNamesToSkip)
+void MarkupAccumulator::serializeNodesWithNamespaces(Node& targetNode, EChildrenOnly childrenOnly, const Namespaces* namespaces)
 {
-    if (tagNamesToSkip && targetNode.isElementNode()) {
-        for (const auto& tag : *tagNamesToSkip) {
-            if (toElement(targetNode).hasTagName(tag))
-                return;
-        }
-    }
-
     Namespaces namespaceHash;
     if (namespaces)
         namespaceHash = *namespaces;
@@ -142,7 +135,7 @@ void MarkupAccumulator::serializeNodesWithNamespaces(Node& targetNode, EChildren
     if (!(serializeAsHTMLDocument(targetNode) && elementCannotHaveEndTag(targetNode))) {
         Node* current = isHTMLTemplateElement(targetNode) ? toHTMLTemplateElement(targetNode).content()->firstChild() : targetNode.firstChild();
         for ( ; current; current = current->nextSibling())
-            serializeNodesWithNamespaces(*current, IncludeNode, &namespaceHash, tagNamesToSkip);
+            serializeNodesWithNamespaces(*current, IncludeNode, &namespaceHash);
     }
 
     if (!childrenOnly && targetNode.isElementNode())

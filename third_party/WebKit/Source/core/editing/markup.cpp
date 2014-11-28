@@ -753,13 +753,13 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkupWithContext(Doc
     return fragment;
 }
 
-String createMarkup(const Node* node, EChildrenOnly childrenOnly, WillBeHeapVector<RawPtrWillBeMember<Node>>* nodes, EAbsoluteURLs shouldResolveURLs, Vector<QualifiedName>* tagNamesToSkip)
+String createMarkup(const Node* node, EChildrenOnly childrenOnly, WillBeHeapVector<RawPtrWillBeMember<Node>>* nodes, EAbsoluteURLs shouldResolveURLs)
 {
     if (!node)
         return "";
 
     MarkupAccumulator accumulator(nodes, shouldResolveURLs);
-    return accumulator.serializeNodes(const_cast<Node&>(*node), childrenOnly, tagNamesToSkip);
+    return accumulator.serializeNodes(const_cast<Node&>(*node), childrenOnly);
 }
 
 static void fillContainerFromString(ContainerNode* paragraph, const String& string)
