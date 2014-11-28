@@ -82,6 +82,7 @@ class WebRTCPeerConnectionHandler;
 class WebScreenOrientationClient;
 class WebSharedWorker;
 class WebSharedWorkerClient;
+class WebSpeechRecognizer;
 class WebString;
 class WebURL;
 class WebURLLoader;
@@ -566,6 +567,7 @@ public:
     // Access the embedder API for (client-based) screen orientation client .
     virtual WebScreenOrientationClient* webScreenOrientationClient() { return 0; }
 
+
     // Accessibility -------------------------------------------------------
 
     // Notifies embedder about an accessibility event.
@@ -580,6 +582,7 @@ public:
         const WebAXObject& endObject,
         int endOffset) { }
 
+
     // ServiceWorker -------------------------------------------------------
 
     // Whether the document associated with WebDataSource is controlled by the
@@ -589,6 +592,12 @@ public:
     // Returns an identifier of the service worker controlling the document
     // associated with the WebDataSource.
     virtual int64_t serviceWorkerID(WebDataSource&) { return -1; }
+
+
+    // Speech --------------------------------------------------------------
+
+    // Access the embedder API for speech recognition services.
+    virtual WebSpeechRecognizer* speechRecognizer() { return 0; }
 
 protected:
     virtual ~WebFrameClient() { }

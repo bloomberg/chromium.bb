@@ -180,10 +180,10 @@ SpeechRecognition::SpeechRecognition(ExecutionContext* context)
 {
     Document* document = toDocument(executionContext());
 
-    Page* page = document->page();
-    ASSERT(page);
+    LocalFrame* frame = document->frame();
+    ASSERT(frame);
 
-    m_controller = SpeechRecognitionController::from(page);
+    m_controller = SpeechRecognitionController::from(*frame);
     ASSERT(m_controller);
 
     // FIXME: Need to hook up with Page to get notified when the visibility changes.
