@@ -41,6 +41,9 @@ import java.util.HashSet;
  */
 public class SigninManager {
 
+    public static final String CONFIRM_MANAGED_SIGNIN_DIALOG_TAG =
+            "confirm_managed_signin_dialog_tag";
+
     private static final String TAG = "SigninManager";
 
     private static SigninManager sSigninManager;
@@ -67,7 +70,7 @@ public class SigninManager {
     private ProgressDialog mSignOutProgressDialog;
     private Runnable mSignOutCallback;
 
-    private AlertDialog mPolicyConfirmationDialog;
+    private ConfirmManagedSigninFragment mPolicyConfirmationDialog;
 
     private boolean mSigninAllowedByPolicy;
 
@@ -176,10 +179,10 @@ public class SigninManager {
      * Returns true if signin can be started now.
      */
     public boolean isSignInAllowed() {
-        return mSigninAllowedByPolicy &&
-                !mFirstRunCheckIsPending &&
-                mSignInAccount == null &&
-                ChromeSigninController.get(mContext).getSignedInUser() == null;
+        return mSigninAllowedByPolicy
+                && !mFirstRunCheckIsPending
+                && mSignInAccount == null
+                && ChromeSigninController.get(mContext).getSignedInUser() == null;
     }
 
     /**
@@ -272,8 +275,9 @@ public class SigninManager {
             return;
         }
 
-        if (mSignInActivity != null &&
-                ApplicationStatus.getStateForActivity(mSignInActivity) == ActivityState.DESTROYED) {
+        if (mSignInActivity != null
+                && ApplicationStatus.getStateForActivity(mSignInActivity)
+                        == ActivityState.DESTROYED) {
             // The activity is no longer running, cancel sign in.
             cancelSignIn();
             return;
@@ -287,44 +291,30 @@ public class SigninManager {
         }
 
         Log.d(TAG, "Account has policy management");
-        AlertDialog.Builder builder = new AlertDialog.Builder(mSignInActivity);
-        builder.setTitle(R.string.policy_dialog_title);
-        builder.setMessage(mContext.getResources().getString(R.string.policy_dialog_message,
-                                                             managementDomain));
-        builder.setPositiveButton(
-                R.string.policy_dialog_proceed,
+        mPolicyConfirmationDialog = new ConfirmManagedSigninFragment(
+                managementDomain,
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        Log.d(TAG, "Accepted policy management, proceeding with sign-in");
-                        // This will call back to onPolicyFetchedBeforeSignIn.
-                        nativeFetchPolicyBeforeSignIn(mNativeSigninManagerAndroid);
+                        if (mPolicyConfirmationDialog == null) return;
                         mPolicyConfirmationDialog = null;
-                    }
-                });
-        builder.setNegativeButton(
-                R.string.policy_dialog_cancel,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        Log.d(TAG, "Cancelled sign-in");
-                        cancelSignIn();
-                        mPolicyConfirmationDialog = null;
-                    }
-                });
-        mPolicyConfirmationDialog = builder.create();
-        mPolicyConfirmationDialog.setOnDismissListener(
-                new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        if (mPolicyConfirmationDialog != null) {
-                            Log.d(TAG, "Policy dialog dismissed, cancelling sign-in.");
-                            cancelSignIn();
-                            mPolicyConfirmationDialog = null;
+
+                        switch (id) {
+                            case AlertDialog.BUTTON_POSITIVE:
+                                Log.d(TAG, "Accepted policy management, proceeding with sign-in");
+                                // This will call back to onPolicyFetchedBeforeSignIn.
+                                nativeFetchPolicyBeforeSignIn(mNativeSigninManagerAndroid);
+                                break;
+
+                            default:
+                                Log.d(TAG, "Cancelled sign-in");
+                                cancelSignIn();
+                                break;
                         }
                     }
                 });
-        mPolicyConfirmationDialog.show();
+        mPolicyConfirmationDialog.show(mSignInActivity.getFragmentManager(),
+                                       CONFIRM_MANAGED_SIGNIN_DIALOG_TAG);
     }
 
     @CalledByNative
@@ -377,8 +367,8 @@ public class SigninManager {
 
         // Sign-in to sync.
         ProfileSyncService profileSyncService = ProfileSyncService.get(mContext);
-        if (SyncStatusHelper.get(mContext).isSyncEnabled(mSignInAccount) &&
-                !profileSyncService.hasSyncSetupCompleted()) {
+        if (SyncStatusHelper.get(mContext).isSyncEnabled(mSignInAccount)
+                && !profileSyncService.hasSyncSetupCompleted()) {
             profileSyncService.setSetupInProgress(true);
             profileSyncService.syncSignIn();
         }

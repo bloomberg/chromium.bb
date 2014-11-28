@@ -84,12 +84,16 @@ adb start-server
 #   5037: adb
 #   8001: http server
 #   9031: sync server
+#   9041: search by image server
+#   9051: policy server
 #   10000: net unittests
 #   10201: net unittests
 ssh -C \
     -R 5037:localhost:5037 \
     -L 8001:localhost:8001 \
     -L 9031:localhost:9031 \
+    -L 9041:localhost:9041 \
+    -L 9051:localhost:9051 \
     -R 10000:localhost:10000 \
     -R 10201:localhost:10201 \
     "$remote_host"

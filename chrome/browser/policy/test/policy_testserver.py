@@ -86,7 +86,12 @@ import testserver_base
 
 import device_management_backend_pb2 as dm
 import cloud_policy_pb2 as cp
-import chrome_extension_policy_pb2 as ep
+
+# Policy for extensions is not supported on Android nor iOS.
+try:
+  import chrome_extension_policy_pb2 as ep
+except ImportError:
+  ep = None
 
 # Device policy is only available on Chrome OS builds.
 try:
@@ -236,6 +241,12 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       self.server.stop = True
       http_response = 200
       raw_reply = 'OK'
+    elif path == '/test/ping':
+      # This path and reply are used by the test setup of host-driven tests for
+      # Android to determine if the server is up, and are not part of the
+      # DM protocol.
+      http_response = 200
+      raw_reply = 'Policy server is up.'
     else:
       http_response = 404
       raw_reply = 'Invalid path'
@@ -715,7 +726,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if payload is None:
           self.GatherDevicePolicySettings(settings, policy.get(policy_key, {}))
           payload = settings.SerializeToString()
-      elif msg.policy_type == 'google/chrome/extension':
+      elif ep is not None and msg.policy_type == 'google/chrome/extension':
         settings = ep.ExternalPolicyData()
         payload = self.server.ReadPolicyFromDataDir(policy_key, settings)
         if payload is None:

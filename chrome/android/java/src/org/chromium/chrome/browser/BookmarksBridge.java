@@ -106,6 +106,14 @@ public class BookmarksBridge {
         }
 
         /**
+         * Invoked when all user-editable nodes have been removed. The exception is partner and
+         * managed bookmarks, which are not affected by this operation.
+         */
+        public void bookmarkAllUserNodesRemoved() {
+            bookmarkModelChanged();
+        }
+
+        /**
          * Invoked when the title or url of a node changes.
          * @param node The node being changed.
          */
@@ -592,6 +600,13 @@ public class BookmarksBridge {
         for (BookmarkModelObserver observer : mObservers) {
             observer.bookmarkNodeRemoved(parent, oldIndex, node,
                     mIsDoingExtensiveChanges);
+        }
+    }
+
+    @CalledByNative
+    private void bookmarkAllUserNodesRemoved() {
+        for (BookmarkModelObserver observer : mObservers) {
+            observer.bookmarkAllUserNodesRemoved();
         }
     }
 

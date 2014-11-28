@@ -40,6 +40,7 @@ _PYTHONPATH_DIRS = [
 # The correct path is determined based on the build type. E.g. out/Debug for
 # debug builds and out/Release for release builds.
 _GENERATED_PYTHONPATH_DIRS = [
+    'pyproto/policy/proto/',
     'pyproto/sync/protocol/',
     'pyproto/'
 ]
@@ -48,6 +49,7 @@ _TEST_SERVER_HOST = '127.0.0.1'
 # Paths for supported test server executables.
 TEST_NET_SERVER_PATH = 'net/tools/testserver/testserver.py'
 TEST_SYNC_SERVER_PATH = 'sync/tools/testserver/sync_testserver.py'
+TEST_POLICY_SERVER_PATH = 'chrome/browser/policy/test/policy_testserver.py'
 # Parameters to check that the server is up and running.
 TEST_SERVER_CHECK_PARAMS = {
   TEST_NET_SERVER_PATH: {
@@ -58,6 +60,10 @@ TEST_SERVER_CHECK_PARAMS = {
       'url_path': 'chromiumsync/time',
       'response': '0123456789'
   },
+  TEST_POLICY_SERVER_PATH: {
+      'url_path': 'test/ping',
+      'response': 'Policy server is up.'
+  },
 }
 
 class TestServer(object):
@@ -66,7 +72,8 @@ class TestServer(object):
   For shutting down the server, call TearDown().
   """
 
-  def __init__(self, shard_index, test_server_port, test_server_path):
+  def __init__(self, shard_index, test_server_port, test_server_path,
+               test_server_flags=None):
     """Sets up a Python driven test server on the host machine.
 
     Args:
@@ -75,6 +82,7 @@ class TestServer(object):
                         the shard index. To retrieve the real port access the
                         member variable |port|.
       test_server_path: The path (relative to the root src dir) of the server
+      test_server_flags: Optional list of additional flags to the test server
     """
     self.host = _TEST_SERVER_HOST
     self.port = test_server_port + shard_index
@@ -94,10 +102,11 @@ class TestServer(object):
 
     # NOTE: A separate python process is used to simplify getting the right
     # system path for finding includes.
+    test_server_flags = test_server_flags or []
     cmd = ['python', os.path.join(src_dir, test_server_path),
            '--log-to-console',
            ('--host=%s' % self.host),
-           ('--port=%d' % self.port)]
+           ('--port=%d' % self.port)] + test_server_flags
     self._test_server_process = subprocess.Popen(
           cmd, env={'PYTHONPATH': python_path})
     test_url = 'http://%s:%d/%s' % (self.host, self.port,

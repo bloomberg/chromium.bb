@@ -957,6 +957,19 @@ void BookmarksBridge::BookmarkNodeRemoved(BookmarkModel* model,
       CreateJavaBookmark(node).obj());
 }
 
+void BookmarksBridge::BookmarkAllUserNodesRemoved(
+    BookmarkModel* model,
+    const std::set<GURL>& removed_urls) {
+  if (!IsLoaded())
+    return;
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_BookmarksBridge_bookmarkAllUserNodesRemoved(env, obj.obj());
+}
+
 void BookmarksBridge::BookmarkNodeChanged(BookmarkModel* model,
                                           const BookmarkNode* node) {
   if (!IsLoaded())
