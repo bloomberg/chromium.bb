@@ -139,6 +139,11 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, LayoutTest) {
           VirtualKeyboardBrowserTestConfig());
 }
 
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, ModifierTest) {
+  RunTest(base::FilePath(FILE_PATH_LITERAL("modifier_test.js")),
+          VirtualKeyboardBrowserTestConfig());
+}
+
 // crbug.com/387372. This test started failing at Blink r176582.
 IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_ControlKeysTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("control_keys_test.js")),
