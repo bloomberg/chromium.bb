@@ -299,7 +299,7 @@ void ResourceLoader::willSendRequest(blink::WebURLLoader*, blink::WebURLRequest&
     const ResourceResponse& redirectResponse(passedRedirectResponse.toResourceResponse());
     ASSERT(!redirectResponse.isNull());
     if (!m_host->canAccessRedirect(m_resource, newRequest, redirectResponse, m_options)) {
-        cancel();
+        cancel(ResourceError::cancelledDueToAccessCheckError(newRequest.url()));
         return;
     }
     ASSERT(m_state != Terminated);
@@ -377,7 +377,7 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
                 m_resource->setResponse(resourceResponse);
             if (!m_host->canAccessResource(resource, m_options.securityOrigin.get(), response.url())) {
                 m_host->didReceiveResponse(m_resource, resourceResponse);
-                cancel();
+                cancel(ResourceError::cancelledDueToAccessCheckError(KURL(response.url())));
                 return;
             }
         }

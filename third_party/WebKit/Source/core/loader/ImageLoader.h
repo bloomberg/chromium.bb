@@ -136,7 +136,8 @@ private:
     void setImageWithoutConsideringPendingLoadEvent(ImageResource*);
     void sourceImageChanged();
     void clearFailedLoadURL();
-    void crossSiteOrCSPViolationOccured(AtomicString);
+    void dispatchErrorEvent();
+    void crossSiteOrCSPViolationOccurred(AtomicString);
     void enqueueImageLoadingMicroTask(UpdateFromElementBehavior);
     static ResourcePtr<ImageResource> createImageResourceForImageDocument(Document&, FetchRequest&);
 

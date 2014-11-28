@@ -41,6 +41,13 @@ ResourceError ResourceError::cancelledError(const String& failingURL)
     return Platform::current()->cancelledError(KURL(ParsedURLString, failingURL));
 }
 
+ResourceError ResourceError::cancelledDueToAccessCheckError(const String& failingURL)
+{
+    ResourceError error = cancelledError(failingURL);
+    error.setIsAccessCheck(true);
+    return error;
+}
+
 ResourceError ResourceError::copy() const
 {
     ResourceError errorCopy;
@@ -50,6 +57,7 @@ ResourceError ResourceError::copy() const
     errorCopy.m_localizedDescription = m_localizedDescription.isolatedCopy();
     errorCopy.m_isNull = m_isNull;
     errorCopy.m_isCancellation = m_isCancellation;
+    errorCopy.m_isAccessCheck = m_isAccessCheck;
     errorCopy.m_isTimeout = m_isTimeout;
     errorCopy.m_staleCopyInCache = m_staleCopyInCache;
     return errorCopy;
@@ -76,6 +84,9 @@ bool ResourceError::compare(const ResourceError& a, const ResourceError& b)
         return false;
 
     if (a.isCancellation() != b.isCancellation())
+        return false;
+
+    if (a.isAccessCheck() != b.isAccessCheck())
         return false;
 
     if (a.isTimeout() != b.isTimeout())

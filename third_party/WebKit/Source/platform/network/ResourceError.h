@@ -37,11 +37,13 @@ PLATFORM_EXPORT extern const char errorDomainBlinkInternal[]; // Used for errors
 class PLATFORM_EXPORT ResourceError {
 public:
     static ResourceError cancelledError(const String& failingURL);
+    static ResourceError cancelledDueToAccessCheckError(const String& failingURL);
 
     ResourceError()
         : m_errorCode(0)
         , m_isNull(true)
         , m_isCancellation(false)
+        , m_isAccessCheck(false)
         , m_isTimeout(false)
         , m_staleCopyInCache(false)
     {
@@ -54,6 +56,7 @@ public:
         , m_localizedDescription(localizedDescription)
         , m_isNull(false)
         , m_isCancellation(false)
+        , m_isAccessCheck(false)
         , m_isTimeout(false)
         , m_staleCopyInCache(false)
     {
@@ -72,6 +75,9 @@ public:
     void setIsCancellation(bool isCancellation) { m_isCancellation = isCancellation; }
     bool isCancellation() const { return m_isCancellation; }
 
+    void setIsAccessCheck(bool isAccessCheck) { m_isAccessCheck = isAccessCheck; }
+    bool isAccessCheck() const { return m_isAccessCheck; }
+
     void setIsTimeout(bool isTimeout) { m_isTimeout = isTimeout; }
     bool isTimeout() const { return m_isTimeout; }
     void setStaleCopyInCache(bool staleCopyInCache) { m_staleCopyInCache = staleCopyInCache; }
@@ -86,6 +92,7 @@ private:
     String m_localizedDescription;
     bool m_isNull;
     bool m_isCancellation;
+    bool m_isAccessCheck;
     bool m_isTimeout;
     bool m_staleCopyInCache;
 };
