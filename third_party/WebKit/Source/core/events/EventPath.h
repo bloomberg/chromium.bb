@@ -56,7 +56,7 @@ public:
     size_t size() const { return m_nodeEventContexts.size(); }
 
     void adjustForRelatedTarget(Node*, EventTarget* relatedTarget);
-    void adjustForTouchEvent(Node*, TouchEvent&);
+    void adjustForTouchEvent(TouchEvent&);
 
     static EventTarget* eventTargetRespectingTargetRules(Node*);
 
@@ -76,7 +76,7 @@ private:
     void shrink(size_t newSize) { m_nodeEventContexts.shrink(newSize); }
     void shrinkIfNeeded(const Node* target, const EventTarget* relatedTarget);
 
-    void adjustTouchList(const Node*, const TouchList*, WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedTouchList, const WillBeHeapVector<RawPtrWillBeMember<TreeScope>>& treeScopes);
+    void adjustTouchList(const TouchList*, WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedTouchList, const WillBeHeapVector<RawPtrWillBeMember<TreeScope>>& treeScopes);
 
     typedef WillBeHeapHashMap<RawPtrWillBeMember<TreeScope>, RefPtrWillBeMember<TreeScopeEventContext>> TreeScopeEventContextMap;
     TreeScopeEventContext* ensureTreeScopeEventContext(Node* currentTarget, TreeScope*, TreeScopeEventContextMap&);

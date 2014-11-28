@@ -280,7 +280,7 @@ void EventPath::shrinkIfNeeded(const Node* target, const EventTarget* relatedTar
     }
 }
 
-void EventPath::adjustForTouchEvent(Node* node, TouchEvent& touchEvent)
+void EventPath::adjustForTouchEvent(TouchEvent& touchEvent)
 {
     WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedTouches;
     WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedTargetTouches;
@@ -295,9 +295,9 @@ void EventPath::adjustForTouchEvent(Node* node, TouchEvent& touchEvent)
         treeScopes.append(&treeScopeEventContext->treeScope());
     }
 
-    adjustTouchList(node, touchEvent.touches(), adjustedTouches, treeScopes);
-    adjustTouchList(node, touchEvent.targetTouches(), adjustedTargetTouches, treeScopes);
-    adjustTouchList(node, touchEvent.changedTouches(), adjustedChangedTouches, treeScopes);
+    adjustTouchList(touchEvent.touches(), adjustedTouches, treeScopes);
+    adjustTouchList(touchEvent.targetTouches(), adjustedTargetTouches, treeScopes);
+    adjustTouchList(touchEvent.changedTouches(), adjustedChangedTouches, treeScopes);
 
 #if ENABLE(ASSERT)
     for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
@@ -310,7 +310,7 @@ void EventPath::adjustForTouchEvent(Node* node, TouchEvent& touchEvent)
 #endif
 }
 
-void EventPath::adjustTouchList(const Node* node, const TouchList* touchList, WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedTouchList, const WillBeHeapVector<RawPtrWillBeMember<TreeScope>>& treeScopes)
+void EventPath::adjustTouchList(const TouchList* touchList, WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedTouchList, const WillBeHeapVector<RawPtrWillBeMember<TreeScope>>& treeScopes)
 {
     if (!touchList)
         return;
