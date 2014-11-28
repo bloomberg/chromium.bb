@@ -9,17 +9,16 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
-#include "chrome/browser/chromeos/login/screens/eula_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/eula_model.h"
 #include "chromeos/tpm_password_fetcher.h"
+#include "components/login/screens/screen_context.h"
 #include "url/gurl.h"
 
 namespace chromeos {
 
 // Representation independent class that controls OOBE screen showing EULA
 // to users.
-class EulaScreen : public BaseScreen,
-                   public EulaScreenActor::Delegate,
-                   public TpmPasswordFetcherDelegate {
+class EulaScreen : public EulaModel, public TpmPasswordFetcherDelegate {
  public:
   class Delegate {
    public:
@@ -32,21 +31,21 @@ class EulaScreen : public BaseScreen,
 
   EulaScreen(BaseScreenDelegate* base_screen_delegate,
              Delegate* delegate,
-             EulaScreenActor* actor);
+             EulaView* view);
   virtual ~EulaScreen();
 
-  // BaseScreen implementation:
+  // EulaModel implementation:
   virtual void PrepareToShow() override;
   virtual void Show() override;
   virtual void Hide() override;
-  virtual std::string GetName() const override;
-
-  // EulaScreenActor::Delegate implementation:
   virtual GURL GetOemEulaUrl() const override;
-  virtual void OnExit(bool accepted, bool usage_stats_enabled) override;
+  virtual void OnAcceptButtonClicked() override;
+  virtual void OnBackButtonClicked() override;
   virtual void InitiatePasswordFetch() override;
   virtual bool IsUsageStatsEnabled() const override;
-  virtual void OnActorDestroyed(EulaScreenActor* actor) override;
+  virtual void OnViewDestroyed(EulaView* view) override;
+  virtual void OnContextKeyUpdated(
+      const ::login::ScreenContext::KeyType& key) override;
 
   // TpmPasswordFetcherDelegate implementation:
   virtual void OnPasswordFetched(const std::string& tpm_password) override;
@@ -64,7 +63,7 @@ class EulaScreen : public BaseScreen,
 
   Delegate* delegate_;
 
-  EulaScreenActor* actor_;
+  EulaView* view_;
 
   TpmPasswordFetcher password_fetcher_;
 

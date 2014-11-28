@@ -308,8 +308,7 @@ BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
     return new chromeos::UserImageScreen(
         this, oobe_display_->GetUserImageScreenActor());
   } else if (screen_name == kEulaScreenName) {
-    return new chromeos::EulaScreen(
-        this, this, oobe_display_->GetEulaScreenActor());
+    return new chromeos::EulaScreen(this, this, oobe_display_->GetEulaView());
   } else if (screen_name == kEnrollmentScreenName) {
     return new chromeos::EnrollmentScreen(
         this, oobe_display_->GetEnrollmentScreenActor());

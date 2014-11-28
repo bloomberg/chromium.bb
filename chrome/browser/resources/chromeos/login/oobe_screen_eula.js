@@ -7,6 +7,8 @@
  */
 
 login.createScreen('EulaScreen', 'eula', function() {
+  var CONTEXT_KEY_USAGE_STATS_ENABLED = 'usageStatsEnabled';
+
   return {
     /** @override */
     decorate: function() {
@@ -33,6 +35,14 @@ login.createScreen('EulaScreen', 'eula', function() {
           $('installation-settings-ok-button').focus();
         }, 0);
         event.preventDefault();
+      });
+
+      var self = this;
+      $('usage-stats').addEventListener('click', function(event) {
+        self.context.set(CONTEXT_KEY_USAGE_STATS_ENABLED,
+                         $('usage-stats').checked);
+        self.commitContextChanges();
+        event.stopPropagation();
       });
     },
 
@@ -79,8 +89,10 @@ login.createScreen('EulaScreen', 'eula', function() {
       var backButton = this.ownerDocument.createElement('button');
       backButton.id = 'back-button';
       backButton.textContent = loadTimeData.getString('back');
+
+      var self = this;
       backButton.addEventListener('click', function(e) {
-        chrome.send('eulaOnExit', [false, $('usage-stats').checked]);
+        chrome.send('eulaBackButtonClicked');
         e.stopPropagation();
       });
       buttons.push(backButton);
@@ -92,7 +104,7 @@ login.createScreen('EulaScreen', 'eula', function() {
       acceptButton.textContent = loadTimeData.getString('acceptAgreement');
       acceptButton.addEventListener('click', function(e) {
         $('eula').classList.add('loading');  // Mark EULA screen busy.
-        chrome.send('eulaOnExit', [true, $('usage-stats').checked]);
+        chrome.send('eulaAcceptButtonClicked');
         e.stopPropagation();
       });
       buttons.push(acceptButton);

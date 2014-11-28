@@ -67,7 +67,6 @@ Polymer('oobe-screen', (function() {
      */
     decorate: function(screen) {
       this.screen_ = screen;
-      screen.initialize();
       this.context = screen.screenContext_;
       this.C = this.context.storage_;
       this.contextObservers_ = {};

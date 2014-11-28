@@ -85,6 +85,12 @@ void BaseScreenHandler::GetLocalizedStrings(base::DictionaryValue* dict) {
   GetAdditionalParameters(dict);
 }
 
+void BaseScreenHandler::RegisterMessages() {
+  AddPrefixedCallback("contextChanged",
+                      &BaseScreenHandler::HandleContextChanged);
+  DeclareJSCallbacks();
+}
+
 void BaseScreenHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
 }
 
@@ -110,6 +116,12 @@ gfx::NativeWindow BaseScreenHandler::GetNativeWindow() {
 std::string BaseScreenHandler::FullMethodPath(const std::string& method) const {
   DCHECK(!method.empty());
   return js_screen_path_prefix_ + method;
+}
+
+void BaseScreenHandler::HandleContextChanged(
+    const base::DictionaryValue* diff) {
+  if (diff && base_screen_)
+    base_screen_->OnContextChanged(*diff);
 }
 
 }  // namespace chromeos

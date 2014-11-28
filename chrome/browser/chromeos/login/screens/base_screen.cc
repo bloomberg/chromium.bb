@@ -37,6 +37,8 @@ bool BaseScreen::IsPermanent() {
 }
 
 std::string BaseScreen::GetID() const {
+  // TODO (ygorshenin, crbug.com/433797): elimitate intermediate
+  // GetName() ASAP.
   return GetName();
 }
 
@@ -48,11 +50,19 @@ void BaseScreen::SetContext(::login::ScreenContext* context) {
 }
 
 void BaseScreen::OnButtonPressed(const std::string& button_id) {
-  LOG(WARNING) << "BaseScreen::OnButtonPressed(): button_id=" << button_id;
+  LOG(WARNING) << "Unhandled button click: button_id=" << button_id;
 }
 
-void BaseScreen::OnContextChanged(const base::DictionaryValue* diff) {
-  LOG(WARNING) << "BaseScreen::OnContextChanged()";
+void BaseScreen::OnContextKeyUpdated(
+    const ::login::ScreenContext::KeyType& key) {
+  LOG(WARNING) << "Unhandled context change: key=" << key;
+}
+
+void BaseScreen::OnContextChanged(const base::DictionaryValue& diff) {
+  std::vector<::login::ScreenContext::KeyType> keys;
+  context_.ApplyChanges(diff, &keys);
+  for (const auto& key : keys)
+    OnContextKeyUpdated(key);
 }
 
 }  // namespace chromeos

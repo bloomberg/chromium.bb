@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/login/screens/eula_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/eula_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chromeos/tpm_password_fetcher.h"
 #include "content/public/browser/web_ui.h"
@@ -23,37 +23,37 @@ class HelpAppLauncher;
 
 // WebUI implementation of EulaScreenActor. It is used to interact
 // with the eula part of the JS page.
-class EulaScreenHandler : public EulaScreenActor,
+class EulaScreenHandler : public EulaView,
                           public BaseScreenHandler,
                           public TpmPasswordFetcherDelegate {
  public:
   explicit EulaScreenHandler(CoreOobeActor* core_oobe_actor);
   virtual ~EulaScreenHandler();
 
-  // EulaScreenActor implementation:
+  // EulaView implementation:
   virtual void PrepareToShow() override;
   virtual void Show() override;
   virtual void Hide() override;
-  virtual void SetDelegate(Delegate* delegate) override;
+  virtual void Bind(EulaModel& model) override;
+  virtual void Unbind() override;
   virtual void OnPasswordFetched(const std::string& tpm_password) override;
 
   // BaseScreenHandler implementation:
   virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;
+  virtual void DeclareJSCallbacks() override;
   virtual void GetAdditionalParameters(base::DictionaryValue* dict) override;
   virtual void Initialize() override;
 
-  // WebUIMessageHandler implementation:
-  virtual void RegisterMessages() override;
-
  private:
   // JS messages handlers.
-  void HandleOnExit(bool accepted, bool usager_stats_enabled);
+  void HandleAcceptButtonClicked();
+  void HandleBackButtonClicked();
   void HandleOnLearnMore();
   void HandleOnChromeCredits();
   void HandleOnChromeOSCredits();
   void HandleOnInstallationSettingsPopupOpened();
 
-  EulaScreenActor::Delegate* delegate_;
+  EulaModel* model_;
   CoreOobeActor* core_oobe_actor_;
 
   // Help application used for help dialogs.

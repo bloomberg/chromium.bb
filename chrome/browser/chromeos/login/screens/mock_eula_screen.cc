@@ -7,29 +7,34 @@
 namespace chromeos {
 
 using ::testing::AtLeast;
-using ::testing::NotNull;
+using ::testing::_;
 
 MockEulaScreen::MockEulaScreen(BaseScreenDelegate* base_screen_delegate,
                                Delegate* delegate,
-                               EulaScreenActor* actor)
-    : EulaScreen(base_screen_delegate, delegate, actor) {
+                               EulaView* view)
+    : EulaScreen(base_screen_delegate, delegate, view) {
 }
 
 MockEulaScreen::~MockEulaScreen() {
 }
 
-MockEulaScreenActor::MockEulaScreenActor() {
-  EXPECT_CALL(*this, MockSetDelegate(NotNull())).Times(AtLeast(1));
+MockEulaView::MockEulaView() {
+  EXPECT_CALL(*this, MockBind(_)).Times(AtLeast(1));
 }
 
-MockEulaScreenActor::~MockEulaScreenActor() {
-  if (delegate_)
-    delegate_->OnActorDestroyed(this);
+MockEulaView::~MockEulaView() {
+  if (model_)
+    model_->OnViewDestroyed(this);
 }
 
-void MockEulaScreenActor::SetDelegate(Delegate* delegate) {
-  delegate_ = delegate;
-  MockSetDelegate(delegate);
+void MockEulaView::Bind(EulaModel& model) {
+  model_ = &model;
+  MockBind(model);
+}
+
+void MockEulaView::Unbind() {
+  model_ = nullptr;
+  MockUnbind();
 }
 
 }  // namespace chromeos

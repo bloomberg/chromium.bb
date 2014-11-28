@@ -194,7 +194,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
       update_screen_handler_(NULL),
       network_screen_actor_(NULL),
       debugging_screen_actor_(NULL),
-      eula_screen_actor_(NULL),
+      eula_view_(NULL),
       hid_detection_screen_actor_(NULL),
       reset_screen_actor_(NULL),
       autolaunch_screen_actor_(NULL),
@@ -244,7 +244,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   AddScreenHandler(debugging_screen_handler);
 
   EulaScreenHandler* eula_screen_handler = new EulaScreenHandler(core_handler_);
-  eula_screen_actor_ = eula_screen_handler;
+  eula_view_ = eula_screen_handler;
   AddScreenHandler(eula_screen_handler);
 
   ResetScreenHandler* reset_screen_handler = new ResetScreenHandler();
@@ -397,8 +397,8 @@ NetworkScreenActor* OobeUI::GetNetworkScreenActor() {
   return network_screen_actor_;
 }
 
-EulaScreenActor* OobeUI::GetEulaScreenActor() {
-  return eula_screen_actor_;
+EulaView* OobeUI::GetEulaView() {
+  return eula_view_;
 }
 
 EnableDebuggingScreenActor* OobeUI::GetEnableDebuggingScreenActor() {

@@ -98,7 +98,7 @@ class OobeUI : public OobeDisplay,
   virtual CoreOobeActor* GetCoreOobeActor() override;
   virtual UpdateScreenActor* GetUpdateScreenActor() override;
   virtual NetworkScreenActor* GetNetworkScreenActor() override;
-  virtual EulaScreenActor* GetEulaScreenActor() override;
+  virtual EulaView* GetEulaView() override;
   virtual EnableDebuggingScreenActor* GetEnableDebuggingScreenActor() override;
   virtual EnrollmentScreenActor* GetEnrollmentScreenActor() override;
   virtual ResetScreenActor* GetResetScreenActor() override;
@@ -193,7 +193,7 @@ class OobeUI : public OobeDisplay,
   UpdateScreenHandler* update_screen_handler_;
   NetworkScreenActor* network_screen_actor_;
   EnableDebuggingScreenActor* debugging_screen_actor_;
-  EulaScreenActor* eula_screen_actor_;
+  EulaView* eula_view_;
   EnrollmentScreenActor* enrollment_screen_actor_;
   HIDDetectionScreenActor* hid_detection_screen_actor_;
   ResetScreenActor* reset_screen_actor_;

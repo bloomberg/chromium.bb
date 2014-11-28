@@ -24,6 +24,8 @@ class Value;
 
 namespace chromeos {
 
+class BaseScreen;
+
 // Class that collects Localized Values for translation.
 class LocalizedValuesBuilder {
  public:
@@ -90,6 +92,9 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
   void GetLocalizedStrings(
       base::DictionaryValue* localized_strings);
 
+  // WebUIMessageHandler implementation:
+  virtual void RegisterMessages() override;
+
   // This method is called when page is ready. It propagates to inherited class
   // via virtual Initialize() method (see below).
   void InitializeBase();
@@ -104,6 +109,13 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
  protected:
   // All subclasses should implement this method to provide localized values.
   virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) = 0;
+
+  // All subclasses should implement this method to register callbacks for JS
+  // messages.
+  //
+  // TODO (ygorshenin, crbug.com/433797): make this method purely vrtual when
+  // all screens will be switched to use ScreenContext.
+  virtual void DeclareJSCallbacks() {}
 
   // Subclasses can override these methods to pass additional parameters
   // to loadTimeData. Generally, it is a bad approach, and it should be replaced
@@ -221,13 +233,20 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
   // Returns the window which shows us.
   virtual gfx::NativeWindow GetNativeWindow();
 
+  void set_base_screen(BaseScreen* base_screen) { base_screen_ = base_screen; }
+
  private:
   // Returns full name of JS method based on screen and method
   // names.
   std::string FullMethodPath(const std::string& method) const;
 
+  // Handles situation when screen context is changed.
+  void HandleContextChanged(const base::DictionaryValue* diff);
+
   // Keeps whether page is ready.
   bool page_is_ready_;
+
+  BaseScreen* base_screen_;
 
   base::DictionaryValue* localized_values_;
 

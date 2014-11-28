@@ -43,7 +43,7 @@ cr.define('login', function() {
     contextObservers_: null,
 
     /**
-     * Called during screen registration.
+     * Called during screen initialization.
      */
     decorate: doNothing,
 
@@ -116,7 +116,11 @@ cr.define('login', function() {
      * @private
      */
     initializeImpl_: function() {
-      this.screenContext_ = new login.ScreenContext();
+      if (cr.isChromeOS)
+        this.screenContext_ = new login.ScreenContext();
+
+      this.decorate();
+
       this.querySelectorAllImpl_('[alias]').forEach(function(element) {
         var alias = element.getAttribute('alias');
         if (alias in this)
@@ -320,7 +324,7 @@ cr.define('login', function() {
       api.register = function() {
         var screen = $(id);
         screen.__proto__ = new Constructor();
-        screen.decorate();
+        screen.initialize();
         Oobe.getInstance().registerScreen(screen);
       };
 

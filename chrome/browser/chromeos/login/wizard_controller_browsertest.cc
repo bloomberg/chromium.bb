@@ -426,10 +426,8 @@ class WizardControllerFlowTest : public WizardControllerTest {
          kUpdateScreenName,
          MockUpdateScreen,
          MockUpdateScreenActor);
-    MOCK_WITH_DELEGATE(mock_eula_screen_,
-                       kEulaScreenName,
-                       MockEulaScreen,
-                       MockEulaScreenActor);
+    MOCK_WITH_DELEGATE(mock_eula_screen_, kEulaScreenName, MockEulaScreen,
+                       MockEulaView);
     MOCK(mock_enrollment_screen_,
          kEnrollmentScreenName,
          MockEnrollmentScreen,
@@ -522,7 +520,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
   MockOutShowHide<MockNetworkScreen, MockNetworkScreenActor>*
       mock_network_screen_;
   MockOutShowHide<MockUpdateScreen, MockUpdateScreenActor>* mock_update_screen_;
-  MockOutShowHide<MockEulaScreen, MockEulaScreenActor>* mock_eula_screen_;
+  MockOutShowHide<MockEulaScreen, MockEulaView>* mock_eula_screen_;
   MockOutShowHide<MockEnrollmentScreen,
       MockEnrollmentScreenActor>* mock_enrollment_screen_;
   MockOutShowHide<MockAutoEnrollmentCheckScreen,

@@ -82,10 +82,11 @@ class BaseScreen {
   // about this event comes from the JS counterpart.
   virtual void OnButtonPressed(const std::string& button_id);
 
-  // Called when context for the currenct screen was
-  // changed. Notification about this event comes from the JS
-  // counterpart.
-  virtual void OnContextChanged(const base::DictionaryValue* diff);
+  // The method is called each time some key in screen context is
+  // updated by JS side. Default implementation does nothing, so
+  // subclasses should override it in order to observe updates in
+  // screen context.
+  virtual void OnContextKeyUpdated(const ::login::ScreenContext::KeyType& key);
 
   BaseScreenDelegate* get_base_screen_delegate() const {
     return base_screen_delegate_;
@@ -98,11 +99,17 @@ class BaseScreen {
   FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestSuccess);
   FRIEND_TEST_ALL_PREFIXES(ProvisionedEnrollmentScreenTest, TestBackButton);
 
+  friend class BaseScreenHandler;
   friend class NetworkScreenTest;
   friend class ScreenManager;
   friend class UpdateScreenTest;
 
   void SetContext(::login::ScreenContext* context);
+
+  // Called when context for the current screen was
+  // changed. Notification about this event comes from the JS
+  // counterpart.
+  void OnContextChanged(const base::DictionaryValue& diff);
 
   BaseScreenDelegate* base_screen_delegate_;
 
