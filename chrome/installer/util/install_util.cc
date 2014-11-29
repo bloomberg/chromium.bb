@@ -362,14 +362,20 @@ void InstallUtil::UpdateInstallerStage(bool system_install,
 }
 
 bool InstallUtil::IsPerUserInstall(const wchar_t* const exe_path) {
-  wchar_t program_files_path[MAX_PATH] = {0};
-  if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PROGRAM_FILES, NULL,
-                                SHGFP_TYPE_CURRENT, program_files_path))) {
-    return !StartsWith(exe_path, program_files_path, false);
-  } else {
+  const int kProgramFilesKey =
+#if defined(_WIN64)
+      // TODO(wfh): Revise this when Chrome is/can be installed in the 64-bit
+      // program files directory.
+      base::DIR_PROGRAM_FILESX86;
+#else
+      base::DIR_PROGRAM_FILES;
+#endif
+  base::FilePath program_files_path;
+  if (!PathService::Get(kProgramFilesKey, &program_files_path)) {
     NOTREACHED();
+    return true;
   }
-  return true;
+  return !StartsWith(exe_path, program_files_path.value().c_str(), false);
 }
 
 bool InstallUtil::IsMultiInstall(BrowserDistribution* dist,

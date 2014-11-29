@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <shlwapi.h>  // For SHDeleteKey.
 
+#include "base/base_paths.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -38,20 +39,17 @@ const wchar_t kTestExperimentLabel[] = L"test_label_value";
 // and user settings.
 class GoogleUpdateSettingsTest : public testing::Test {
  protected:
-  virtual void SetUp() override {
-    base::FilePath program_files_path;
-    PathService::Get(base::DIR_PROGRAM_FILES, &program_files_path);
-    program_files_override_.reset(new base::ScopedPathOverride(
-        base::DIR_PROGRAM_FILES, program_files_path));
-
-    registry_overrides_.OverrideRegistry(HKEY_LOCAL_MACHINE);
-    registry_overrides_.OverrideRegistry(HKEY_CURRENT_USER);
-  }
-
   enum SystemUserInstall {
     SYSTEM_INSTALL,
     USER_INSTALL,
   };
+
+  GoogleUpdateSettingsTest()
+      : program_files_override_(base::DIR_PROGRAM_FILES),
+        program_files_x86_override_(base::DIR_PROGRAM_FILESX86) {
+    registry_overrides_.OverrideRegistry(HKEY_LOCAL_MACHINE);
+    registry_overrides_.OverrideRegistry(HKEY_CURRENT_USER);
+  }
 
   void SetApField(SystemUserInstall is_system, const wchar_t* value) {
     HKEY root = is_system == SYSTEM_INSTALL ?
@@ -306,8 +304,10 @@ class GoogleUpdateSettingsTest : public testing::Test {
                time_in_minutes) == ERROR_SUCCESS;
   }
 
-  // Keep Program Files path so InstallUtil::IsPerUserInstall doesn't crash.
-  scoped_ptr<base::ScopedPathOverride> program_files_override_;
+  // Path overrides so that SHGetFolderPath isn't needed after the registry
+  // is overridden.
+  base::ScopedPathOverride program_files_override_;
+  base::ScopedPathOverride program_files_x86_override_;
   registry_util::RegistryOverrideManager registry_overrides_;
 };
 
@@ -640,11 +640,18 @@ TEST_F(GoogleUpdateSettingsTest, GetAppUpdatePolicyNoOverride) {
 }
 
 TEST_F(GoogleUpdateSettingsTest, UpdateProfileCountsSystemInstall) {
-  // Pretend to be a system install for GoogleUpdateSettings::IsSystemInstall().
-  base::FilePath program_files_path;
-  PathService::Get(base::DIR_PROGRAM_FILES, &program_files_path);
-  base::ScopedPathOverride dir_module_override(base::DIR_MODULE,
-                                               program_files_path);
+  // Override FILE_MODULE and FILE_EXE with a path somewhere in the default
+  // system-level install location so that
+  // GoogleUpdateSettings::IsSystemInstall() returns true.
+  base::FilePath file_exe;
+  ASSERT_TRUE(PathService::Get(base::FILE_EXE, &file_exe));
+  base::FilePath install_dir(installer::GetChromeInstallPath(
+      true /* system_install */, BrowserDistribution::GetDistribution()));
+  file_exe = install_dir.Append(file_exe.BaseName());
+  base::ScopedPathOverride file_module_override(
+      base::FILE_MODULE, file_exe, true /* is_absolute */, false /* create */);
+  base::ScopedPathOverride file_exe_override(
+      base::FILE_EXE, file_exe, true /* is_absolute */, false /* create */);
 
   // No profile count keys present yet.
   const base::string16& state_key = BrowserDistribution::GetDistribution()->
