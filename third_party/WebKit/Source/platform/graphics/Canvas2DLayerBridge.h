@@ -140,6 +140,7 @@ protected:
     uint32_t m_lastImageId;
     Vector<MailboxInfo> m_mailboxes;
     int m_releasedMailboxInfoIndex;
+    OpacityMode m_opacityMode;
 };
 
 } // namespace blink

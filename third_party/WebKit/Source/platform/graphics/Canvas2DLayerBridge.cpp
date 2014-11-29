@@ -39,6 +39,7 @@
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/RefCountedLeakCounter.h"
 
 namespace {
@@ -51,13 +52,15 @@ DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, canvas2DLayerBridgeInstance
 
 namespace blink {
 
-static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size, int msaaSampleCount = 0)
+static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size, int msaaSampleCount, OpacityMode opacityMode)
 {
     if (!gr)
         return nullptr;
     gr->resetContext();
     SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
-    return adoptRef(SkSurface::NewRenderTarget(gr, info,  msaaSampleCount));
+    SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
+    return adoptRef(SkSurface::NewRenderTarget(gr, info,  msaaSampleCount,
+        Opaque == opacityMode ? 0 : &disableLCDProps));
 }
 
 PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size, OpacityMode opacityMode, int msaaSampleCount)
@@ -66,7 +69,7 @@ PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size,
     OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!contextProvider)
         return nullptr;
-    RefPtr<SkSurface> surface(createSkSurface(contextProvider->grContext(), size, msaaSampleCount));
+    RefPtr<SkSurface> surface(createSkSurface(contextProvider->grContext(), size, msaaSampleCount, opacityMode));
     if (!surface)
         return nullptr;
     RefPtr<Canvas2DLayerBridge> layerBridge;
@@ -93,6 +96,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
     , m_prev(0)
     , m_lastImageId(0)
     , m_releasedMailboxInfoIndex(InvalidMailboxIndex)
+    , m_opacityMode(opacityMode)
 {
     ASSERT(m_canvas);
     ASSERT(m_surface);
@@ -370,7 +374,7 @@ bool Canvas2DLayerBridge::restoreSurface()
 
     if (sharedContext && !sharedContext->isContextLost()) {
         IntSize size(m_canvas->getTopDevice()->width(), m_canvas->getTopDevice()->height());
-        RefPtr<SkSurface> surface(createSkSurface(m_contextProvider->grContext(), size, m_msaaSampleCount));
+        RefPtr<SkSurface> surface(createSkSurface(m_contextProvider->grContext(), size, m_msaaSampleCount, m_opacityMode));
         if (surface.get()) {
             m_surface = surface.release();
             m_canvas->setSurface(m_surface.get());

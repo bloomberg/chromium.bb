@@ -77,7 +77,6 @@ ImageBuffer::ImageBuffer(PassOwnPtr<ImageBufferSurface> surface)
 {
     if (m_surface->canvas()) {
         m_context = adoptPtr(new GraphicsContext(m_surface->canvas()));
-        m_context->setCertainlyOpaque(m_surface->opacityMode() == Opaque);
         m_context->setAccelerated(m_surface->isAccelerated());
     }
     m_surface->setImageBuffer(this);
