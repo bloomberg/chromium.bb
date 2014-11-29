@@ -449,6 +449,7 @@ InspectorTest.TempFileMock = function(dirPath, name)
 {
     this._chunks = [];
     this._name = name;
+    this._size = 0;
 }
 
 InspectorTest.TempFileMock.prototype = {
@@ -458,8 +459,10 @@ InspectorTest.TempFileMock.prototype = {
      */
     write: function(chunks, callback)
     {
+        for (var i = 0; i < chunks.length; ++i)
+            this._size += chunks[i].length;
         this._chunks.push.apply(this._chunks, chunks);
-        setTimeout(callback.bind(this, true), 1);
+        setTimeout(callback.bind(this, this._size), 1);
     },
 
     finishWriting: function() { },
