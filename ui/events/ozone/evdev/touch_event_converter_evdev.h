@@ -42,6 +42,19 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
  private:
   friend class MockTouchEventConverterEvdev;
 
+  struct InProgressEvents {
+    InProgressEvents();
+
+    float x_;
+    float y_;
+    int id_;  // Device reported "unique" touch point id; -1 means not active
+    int finger_;  // "Finger" id starting from 0; -1 means not active
+
+    EventType type_;
+    float radius_x_;
+    float radius_y_;
+    float pressure_;
+  };
 
   // Overidden from base::MessagePumpLibevent::Watcher.
   void OnFileCanReadWithoutBlocking(int fd) override;
@@ -52,6 +65,8 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   void ProcessAbs(const input_event& input);
   void ProcessSyn(const input_event& input);
 
+  void ReportEvent(int touch_id,
+      const InProgressEvents& event, const base::TimeDelta& delta);
   void ReportEvents(base::TimeDelta delta);
 
   // Callback for dispatching events.
@@ -84,20 +99,6 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   // Bit field tracking which in-progress touch points have been modified
   // without a syn event.
   std::bitset<MAX_FINGERS> altered_slots_;
-
-  struct InProgressEvents {
-    InProgressEvents();
-
-    float x_;
-    float y_;
-    int id_;  // Device reported "unique" touch point id; -1 means not active
-    int finger_;  // "Finger" id starting from 0; -1 means not active
-
-    EventType type_;
-    float radius_x_;
-    float radius_y_;
-    float pressure_;
-  };
 
   // In-progress touch points.
   InProgressEvents events_[MAX_FINGERS];

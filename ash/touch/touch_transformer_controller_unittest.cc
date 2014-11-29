@@ -244,14 +244,26 @@ TEST_F(TouchTransformerControllerTest, TouchTransformerExtendedMode) {
   x = 0.0;
   y = 0.0;
   device_manager->ApplyTouchTransformer(6, &x, &y);
+#if defined(USE_OZONE)
+  // On ozone we expect screen coordinates so add display origin.
+  EXPECT_EQ(0 + 0, static_cast<int>(x));
+  EXPECT_EQ(0 + 828, static_cast<int>(y));
+#else
   EXPECT_EQ(0, static_cast<int>(x));
   EXPECT_EQ(0, static_cast<int>(y));
+#endif
 
   x = 2559.0;
   y = 2427.0;
   device_manager->ApplyTouchTransformer(6, &x, &y);
+#if defined(USE_OZONE)
+  // On ozone we expect screen coordinates so add display origin.
+  EXPECT_EQ(2559 + 0, static_cast<int>(x));
+  EXPECT_EQ(1599 + 828, static_cast<int>(y));
+#else
   EXPECT_EQ(2559, static_cast<int>(x));
   EXPECT_EQ(1599, static_cast<int>(y));
+#endif
 }
 
 TEST_F(TouchTransformerControllerTest, TouchRadiusScale) {

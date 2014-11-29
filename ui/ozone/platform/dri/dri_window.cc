@@ -20,28 +20,6 @@
 
 namespace ui {
 
-namespace {
-
-void RewriteTouchEvent(TouchEvent* event) {
-  float x = event->location_f().x();
-  float y = event->location_f().y();
-  double radius_x = event->radius_x();
-  double radius_y = event->radius_y();
-
-  DeviceDataManager::GetInstance()->ApplyTouchTransformer(
-      event->source_device_id(), &x, &y);
-  DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(
-      event->source_device_id(), &radius_x);
-  DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(
-      event->source_device_id(), &radius_y);
-
-  event->set_location(gfx::PointF(x, y));
-  event->set_radius_x(radius_x);
-  event->set_radius_y(radius_y);
-}
-
-}  // namespace
-
 DriWindow::DriWindow(PlatformWindowDelegate* delegate,
                      const gfx::Rect& bounds,
                      DriGpuPlatformSupportHost* sender,
@@ -124,26 +102,7 @@ bool DriWindow::CanDispatchEvent(const PlatformEvent& ne) {
   DCHECK(ne);
   Event* event = static_cast<Event*>(ne);
 
-  if (event->IsTouchEvent()) {
-    int64_t display_id =
-        DeviceDataManager::GetInstance()->GetDisplayForTouchDevice(
-            event->source_device_id());
-
-    if (display_id == gfx::Display::kInvalidDisplayID)
-      return false;
-
-    DisplaySnapshot* snapshot = display_manager_->GetDisplay(display_id);
-    if (!snapshot || !snapshot->current_mode())
-      return false;
-
-    // Touchscreens are associated with a specific display. Since windows can
-    // move between displays we want to make sure that the window is on the
-    // correct display.
-    gfx::Rect display_bounds(snapshot->origin(),
-                             snapshot->current_mode()->size());
-
-    return display_bounds == bounds_;
-  } else if (event->IsLocatedEvent()) {
+  if (event->IsLocatedEvent()) {
     LocatedEvent* located_event = static_cast<LocatedEvent*>(event);
     return bounds_.Contains(
         gfx::ToFlooredPoint(located_event->root_location()));
@@ -157,9 +116,7 @@ uint32_t DriWindow::DispatchEvent(const PlatformEvent& native_event) {
   DCHECK(native_event);
 
   Event* event = static_cast<Event*>(native_event);
-  if (event->IsTouchEvent()) {
-    RewriteTouchEvent(static_cast<TouchEvent*>(event));
-  } else if (event->IsLocatedEvent()) {
+  if (event->IsLocatedEvent()) {
     // Make the event location relative to this window's origin.
     LocatedEvent* located_event = static_cast<LocatedEvent*>(event);
     gfx::PointF location = located_event->root_location();

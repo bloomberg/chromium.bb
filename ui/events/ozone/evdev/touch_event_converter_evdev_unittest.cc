@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/evdev/touch_event_converter_evdev.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
@@ -138,6 +139,8 @@ class TouchEventConverterEvdevTest : public testing::Test {
     device_ = new ui::MockTouchEventConverterEvdev(
         events_in_, base::FilePath(kTestDevicePath));
     loop_ = new base::MessageLoopForUI;
+
+    ui::DeviceDataManager::CreateInstance();
   }
 
   void TearDown() override {

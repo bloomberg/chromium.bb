@@ -81,6 +81,12 @@ gfx::Transform TouchTransformerController::GetTouchTransform(
       touchscreen.id == ui::InputDevice::kInvalidId)
     return ctm;
 
+#if defined(USE_OZONE)
+  // Translate the touch so that it falls within the display bounds.
+  ctm.Translate(display.bounds_in_native().x(),
+                display.bounds_in_native().y());
+#endif
+
   // Take care of panel fitting only if supported.
   // If panel fitting is enabled then the aspect ratio is preserved and the
   // display is scaled acordingly. In this case blank regions would be present

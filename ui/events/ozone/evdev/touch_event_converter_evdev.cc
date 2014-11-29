@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_util_linux.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -265,22 +266,42 @@ void TouchEventConverterEvdev::ProcessSyn(const input_event& input) {
   }
 }
 
+void TouchEventConverterEvdev::ReportEvent(int touch_id,
+    const InProgressEvents& event, const base::TimeDelta& delta) {
+  float x = event.x_;
+  float y = event.y_;
+
+  double radius_x = event.radius_x_;
+  double radius_y = event.radius_y_;
+
+  // Transform the event according (this is used to align touches
+  // to the image based on display mode).
+  DeviceDataManager::GetInstance()->ApplyTouchTransformer(
+      id_, &x, &y);
+  DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(
+      id_, &radius_x);
+  DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(
+      id_, &radius_y);
+
+  gfx::PointF location(x, y);
+
+  scoped_ptr<TouchEvent> touch_event(
+      new TouchEvent(event.type_, location,
+                     /* flags */ 0,
+                     /* touch_id */ touch_id,
+                     delta,
+                     /* radius_x */ radius_x,
+                     /* radius_y */ radius_y,
+                     /* angle */ 0.,
+                     event.pressure_));
+  touch_event->set_source_device_id(id_);
+  callback_.Run(touch_event.Pass());
+}
+
 void TouchEventConverterEvdev::ReportEvents(base::TimeDelta delta) {
   for (int i = 0; i < MAX_FINGERS; i++) {
     if (altered_slots_[i]) {
-      // TODO(rikroege): Support elliptical finger regions.
-      scoped_ptr<TouchEvent> event(
-          new TouchEvent(events_[i].type_,
-                         gfx::PointF(events_[i].x_, events_[i].y_),
-                         /* flags */ 0,
-                         /* touch_id */ i,
-                         delta,
-                         /* radius_x */ events_[i].radius_x_,
-                         /* radius_y */ events_[i].radius_y_,
-                         /* angle */ 0.,
-                         events_[i].pressure_));
-      event->set_source_device_id(id_);
-      callback_.Run(event.Pass());
+      ReportEvent(i, events_[i], delta);
 
       // Subsequent events for this finger will be touch-move until it
       // is released.
