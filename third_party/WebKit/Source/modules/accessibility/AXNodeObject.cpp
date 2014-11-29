@@ -878,7 +878,7 @@ int AXNodeObject::headingLevel() const
     if (!node)
         return 0;
 
-    if (ariaRoleAttribute() == HeadingRole)
+    if (roleValue() == HeadingRole && hasAttribute(aria_levelAttr))
         return getAttribute(aria_levelAttr).toInt();
 
     if (!node->isHTMLElement())
