@@ -50,16 +50,14 @@ namespace policy {
 namespace {
 
 // Creates and initializes a cloud policy client. Returns nullptr if the device
-// doesn't have credentials in device settings (i.e. is not
-// enterprise-enrolled).
+// is not enterprise-enrolled.
 scoped_ptr<CloudPolicyClient> CreateClient(
     chromeos::DeviceSettingsService* device_settings_service,
     DeviceManagementService* device_management_service,
     scoped_refptr<net::URLRequestContextGetter> system_request_context) {
   const em::PolicyData* policy_data = device_settings_service->policy_data();
   if (!policy_data ||
-      !policy_data->has_request_token() ||
-      !policy_data->has_device_id() ||
+      GetManagementMode(*policy_data) != MANAGEMENT_MODE_ENTERPRISE_MANAGED ||
       !device_management_service) {
     return scoped_ptr<CloudPolicyClient>();
   }

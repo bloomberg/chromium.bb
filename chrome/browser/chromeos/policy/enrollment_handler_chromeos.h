@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "policy/proto/device_management_backend.pb.h"
@@ -71,7 +72,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       bool is_auto_enrollment,
       const std::string& requisition,
       const AllowedDeviceModes& allowed_device_modes,
-      enterprise_management::PolicyData::ManagementMode management_mode,
+      ManagementMode management_mode,
       const EnrollmentCallback& completion_callback);
   virtual ~EnrollmentHandlerChromeOS();
 
@@ -170,7 +171,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   std::string current_state_key_;
   std::string refresh_token_;
   AllowedDeviceModes allowed_device_modes_;
-  enterprise_management::PolicyData::ManagementMode management_mode_;
+  ManagementMode management_mode_;
   EnrollmentCallback completion_callback_;
 
   // The device mode as received in the registration request.

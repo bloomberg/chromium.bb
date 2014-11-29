@@ -9,6 +9,10 @@
 
 #include "components/policy/policy_export.h"
 
+namespace enterprise_management {
+class PolicyData;
+}
+
 namespace policy {
 
 // Constants related to the device management protocol.
@@ -126,6 +130,22 @@ enum DeviceMode {
 // TODO(joaodasilva): remove this once the server is ready.
 // http://crbug.com/248527
 POLICY_EXPORT const char* GetChromeUserPolicyType();
+
+// An enum that indicates if a device that has a local owner, is enterprise-
+// managed, or is consumer-managed. This is a copy of ManagementMode in
+// PolicyData. See device_management_backend.proto for the explanation of each
+// mode.
+enum ManagementMode {
+  MANAGEMENT_MODE_LOCAL_OWNER = 0,
+  MANAGEMENT_MODE_ENTERPRISE_MANAGED = 1,
+  MANAGEMENT_MODE_CONSUMER_MANAGED = 2,
+};
+
+// Returns the management mode of |policy_data|. You should use this function
+// instead of using |management_mode| in |policy_data| to handle legacy
+// |policy_data| that doesn't have |management_mode| set.
+POLICY_EXPORT ManagementMode GetManagementMode(
+    const enterprise_management::PolicyData& policy_data);
 
 }  // namespace policy
 

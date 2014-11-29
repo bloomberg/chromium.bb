@@ -25,6 +25,7 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "policy/proto/device_management_backend.pb.h"
 
 using google::protobuf::RepeatedField;
@@ -614,8 +615,10 @@ void DeviceSettingsProvider::UpdateValuesCache(
   // If the device is not managed, or is consumer-managed, we set the device
   // owner value.
   if (policy_data.has_username() &&
-      (!policy_data.has_request_token() ||
-       policy_data.management_mode() == em::PolicyData::CONSUMER_MANAGED)) {
+      (policy::GetManagementMode(policy_data) ==
+           policy::MANAGEMENT_MODE_LOCAL_OWNER ||
+       policy::GetManagementMode(policy_data) ==
+           policy::MANAGEMENT_MODE_CONSUMER_MANAGED)) {
     new_values_cache.SetString(kDeviceOwner, policy_data.username());
   }
 

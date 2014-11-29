@@ -38,7 +38,7 @@ void FakeDeviceCloudPolicyInitializer::Shutdown() {
 }
 
 void FakeDeviceCloudPolicyInitializer::StartEnrollment(
-    enterprise_management::PolicyData::ManagementMode management_mode,
+    ManagementMode management_mode,
     DeviceManagementService* device_management_service,
     const std::string& auth_token,
     bool is_auto_enrollment,

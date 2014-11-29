@@ -6,7 +6,11 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "components/policy/core/common/policy_switches.h"
+#include "policy/proto/device_management_backend.pb.h"
+
+namespace em = enterprise_management;
 
 namespace policy {
 
@@ -100,6 +104,28 @@ const char* GetChromeUserPolicyType() {
     return "google/chrome/user";
 #endif
   return dm_protocol::kChromeUserPolicyType;
+}
+
+ManagementMode GetManagementMode(const em::PolicyData& policy_data) {
+  if (policy_data.has_management_mode()) {
+    switch (policy_data.management_mode()) {
+      case em::PolicyData::LOCAL_OWNER:
+        return MANAGEMENT_MODE_LOCAL_OWNER;
+
+      case em::PolicyData::ENTERPRISE_MANAGED:
+        return MANAGEMENT_MODE_ENTERPRISE_MANAGED;
+
+      case em::PolicyData::CONSUMER_MANAGED:
+        return MANAGEMENT_MODE_CONSUMER_MANAGED;
+
+      default:
+        NOTREACHED();
+        return MANAGEMENT_MODE_LOCAL_OWNER;
+    }
+  }
+
+  return policy_data.has_request_token() ?
+      MANAGEMENT_MODE_ENTERPRISE_MANAGED : MANAGEMENT_MODE_LOCAL_OWNER;
 }
 
 }  // namespace policy

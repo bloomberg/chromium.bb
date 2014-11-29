@@ -16,13 +16,11 @@
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "policy/proto/device_management_backend.pb.h"
-
-namespace em = enterprise_management;
 
 namespace policy {
 
@@ -111,7 +109,7 @@ void ConsumerEnrollmentHandler::OnOwnerAccessTokenAvailable(
   device_modes[policy::DEVICE_MODE_ENTERPRISE] = true;
 
   initializer->StartEnrollment(
-      em::PolicyData::CONSUMER_MANAGED,
+      MANAGEMENT_MODE_CONSUMER_MANAGED,
       device_management_service_,
       access_token,
       false,  // is_auto_enrollment

@@ -34,6 +34,7 @@
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/schema_registry.h"
@@ -328,7 +329,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
  protected:
   DeviceCloudPolicyManagerChromeOSEnrollmentTest()
       : is_auto_enrollment_(false),
-        management_mode_(em::PolicyData::ENTERPRISE_MANAGED),
+        management_mode_(MANAGEMENT_MODE_ENTERPRISE_MANAGED),
         register_status_(DM_STATUS_SUCCESS),
         policy_fetch_status_(DM_STATUS_SUCCESS),
         robot_auth_fetch_status_(DM_STATUS_SUCCESS),
@@ -377,7 +378,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     ASSERT_TRUE(manager_->core()->client());
     EXPECT_TRUE(manager_->core()->client()->is_registered());
 
-    if (management_mode_ != em::PolicyData::CONSUMER_MANAGED) {
+    if (management_mode_ != MANAGEMENT_MODE_CONSUMER_MANAGED) {
       EXPECT_EQ(DEVICE_MODE_ENTERPRISE, install_attributes_->GetMode());
       EXPECT_TRUE(store_->has_policy());
       EXPECT_TRUE(store_->is_managed());
@@ -473,7 +474,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
       url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
     }
 
-    if (management_mode_ == em::PolicyData::CONSUMER_MANAGED)
+    if (management_mode_ == MANAGEMENT_MODE_CONSUMER_MANAGED)
       FlushDeviceSettings();
     else
       base::RunLoop().RunUntilIdle();
@@ -504,7 +505,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
   }
 
   bool is_auto_enrollment_;
-  em::PolicyData::ManagementMode management_mode_;
+  ManagementMode management_mode_;
 
   DeviceManagementStatus register_status_;
   em::DeviceManagementResponse register_response_;
@@ -626,7 +627,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, LoadError) {
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest,
        SuccessfulConsumerManagementEnrollment) {
-  management_mode_ = em::PolicyData::CONSUMER_MANAGED;
+  management_mode_ = MANAGEMENT_MODE_CONSUMER_MANAGED;
   owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
   InitOwner(device_policy_.policy_data().username(), true);
   FlushDeviceSettings();

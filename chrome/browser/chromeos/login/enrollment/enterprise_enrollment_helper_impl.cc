@@ -21,7 +21,6 @@
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "policy/proto/device_management_backend.pb.h"
 
 namespace {
 
@@ -167,7 +166,7 @@ void EnterpriseEnrollmentHelperImpl::DoEnrollUsingToken(
       connector->GetDeviceCloudPolicyInitializer();
   CHECK(dcp_initializer);
   dcp_initializer->StartEnrollment(
-      enterprise_management::PolicyData::ENTERPRISE_MANAGED,
+      policy::MANAGEMENT_MODE_ENTERPRISE_MANAGED,
       connector->device_management_service(),
       token,
       is_auto_enrollment(),

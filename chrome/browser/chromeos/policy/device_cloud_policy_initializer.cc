@@ -22,13 +22,10 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/statistics_provider.h"
-#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/system_policy_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-
-namespace em = enterprise_management;
 
 namespace policy {
 
@@ -98,7 +95,7 @@ void DeviceCloudPolicyInitializer::Shutdown() {
 }
 
 void DeviceCloudPolicyInitializer::StartEnrollment(
-    em::PolicyData::ManagementMode management_mode,
+    ManagementMode management_mode,
     DeviceManagementService* device_management_service,
     const std::string& auth_token,
     bool is_auto_enrollment,
@@ -218,21 +215,24 @@ scoped_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
 }
 
 void DeviceCloudPolicyInitializer::TryToCreateClient() {
-  if (device_store_->is_initialized() &&
-      device_store_->has_policy() &&
-      !device_store_->policy()->request_token().empty() &&
-      !state_keys_broker_->pending() &&
-      !enrollment_handler_) {
-    DeviceManagementService* service = NULL;
-    if (device_store_->policy()->management_mode() ==
-        em::PolicyData::CONSUMER_MANAGED) {
-      service = consumer_service_;
-    } else {
-      service = enterprise_service_;
-    }
-    if (service)
-      StartConnection(CreateClient(service));
+  if (!device_store_->is_initialized() ||
+      !device_store_->has_policy() ||
+      state_keys_broker_->pending() ||
+      enrollment_handler_) {
+    return;
   }
+
+  DeviceManagementService* service = nullptr;
+  if (GetManagementMode(*device_store_->policy()) ==
+      MANAGEMENT_MODE_CONSUMER_MANAGED) {
+    service = consumer_service_;
+  } else if (GetManagementMode(*device_store_->policy()) ==
+             MANAGEMENT_MODE_ENTERPRISE_MANAGED) {
+    service = enterprise_service_;
+  }
+
+  if (service)
+    StartConnection(CreateClient(service));
 }
 
 void DeviceCloudPolicyInitializer::StartConnection(
