@@ -238,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest,
   EXPECT_NE(host_zoom_map, default_profile_host_zoom_map);
 
   double new_zoom_level =
-      host_zoom_map->GetZoomLevelForHostAndScheme(test_scheme, test_host);
+      host_zoom_map->GetZoomLevelForHostAndScheme(test_scheme, test_host) + 0.5;
   host_zoom_map->SetZoomLevelForHostAndScheme(test_scheme, test_host,
                                               new_zoom_level);
   observer.BlockUntilZoomLevelForHostHasChanged(test_host);
