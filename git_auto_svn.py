@@ -83,11 +83,6 @@ def main(argv):
   assert svn_repo is not None, 'Unable to find svn repo for %s' % match.group(1)
   print 'Found upstream svn repo %s and path %s' % (svn_repo, svn_path)
 
-  # TODO(kjellander): Remove when WebRTC has moved to Git (crbug.com/435091)
-  svn_url = urlparse.urlparse(svn_repo)
-  if svn_url.scheme == 'http' and svn_url.hostname.endswith('googlecode.com'):
-    svn_repo = svn_repo.replace('http://', 'https://')
-
   set_config('svn-remote.svn.url', svn_repo)
   set_config('svn-remote.svn.fetch',
              '%s:refs/remotes/%s' % (svn_path, upstream))
