@@ -199,6 +199,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // This must be called when the status() is ACTIVATED.
   void DispatchSyncEvent(const StatusCallback& callback);
 
+  // Sends notificationclick event to the associated embedded worker and
+  // asynchronously calls |callback| when it errors out or it gets a response
+  // from the worker to notify completion.
+  //
+  // This must be called when the status() is ACTIVATED.
+  void DispatchNotificationClickEvent(const StatusCallback& callback,
+                                      const std::string& notification_id);
+
   // Sends push event to the associated embedded worker and asynchronously calls
   // |callback| when it errors out or it gets a response from the worker to
   // notify completion.
@@ -287,6 +295,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                             ServiceWorkerFetchEventResult result,
                             const ServiceWorkerResponse& response);
   void OnSyncEventFinished(int request_id);
+  void OnNotificationClickEventFinished(int request_id);
   void OnPushEventFinished(int request_id,
                            blink::WebServiceWorkerEventResult result);
   void OnGeofencingEventFinished(int request_id);
@@ -313,6 +322,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   IDMap<StatusCallback, IDMapOwnPointer> install_callbacks_;
   IDMap<FetchCallback, IDMapOwnPointer> fetch_callbacks_;
   IDMap<StatusCallback, IDMapOwnPointer> sync_callbacks_;
+  IDMap<StatusCallback, IDMapOwnPointer> notification_click_callbacks_;
   IDMap<StatusCallback, IDMapOwnPointer> push_callbacks_;
   IDMap<StatusCallback, IDMapOwnPointer> geofencing_callbacks_;
 

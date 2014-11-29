@@ -31472,6 +31472,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Execution time of ServiceWorkerGlobalScope.onmessage.</summary>
 </histogram>
 
+<histogram name="ServiceWorker.NotificationClickEventExecutionTime"
+    units="millisecond">
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Execution time of ServiceWorkerGlobalScope.onnotificationclick.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.PushEventExecutionTime" units="millisecond">
   <owner>johnme@chromium.org</owner>
   <summary>Execution time of ServiceWorkerGlobalScope.onpush.</summary>

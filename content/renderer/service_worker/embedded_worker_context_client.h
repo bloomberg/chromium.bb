@@ -91,6 +91,9 @@ class EmbeddedWorkerContextClient
   virtual void didHandleFetchEvent(
       int request_id,
       const blink::WebServiceWorkerResponse& response);
+  virtual void didHandleNotificationClickEvent(
+      int request_id,
+      blink::WebServiceWorkerEventResult result);
   virtual void didHandlePushEvent(int request_id,
                                   blink::WebServiceWorkerEventResult result);
   virtual void didHandleSyncEvent(int request_id);

@@ -12,6 +12,7 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
 #include "ipc/ipc_message.h"
+#include "third_party/WebKit/public/platform/WebNotificationData.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerRequest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -129,6 +130,18 @@ void ServiceWorkerScriptContext::DidHandleFetchEvent(
       GetRoutingID(), request_id, result, response));
 }
 
+void ServiceWorkerScriptContext::DidHandleNotificationClickEvent(
+    int request_id,
+    blink::WebServiceWorkerEventResult result) {
+  UMA_HISTOGRAM_TIMES(
+      "ServiceWorker.NotificationClickEventExecutionTime",
+      base::TimeTicks::Now() - notification_click_start_timings_[request_id]);
+  notification_click_start_timings_.erase(request_id);
+
+  Send(new ServiceWorkerHostMsg_NotificationClickEventFinished(
+      GetRoutingID(), request_id));
+}
+
 void ServiceWorkerScriptContext::DidHandlePushEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
@@ -229,6 +242,21 @@ void ServiceWorkerScriptContext::OnSyncEvent(int request_id) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerScriptContext::OnSyncEvent");
   proxy_->dispatchSyncEvent(request_id);
+}
+
+void ServiceWorkerScriptContext::OnNotificationClickEvent(
+    int request_id, const std::string& notification_id) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerScriptContext::OnNotificationClickEvent");
+  notification_click_start_timings_[request_id] = base::TimeTicks::Now();
+
+  blink::WebNotificationData notification;
+  // TODO(peter): Initialize |notification| with the actual contents.
+
+  proxy_->dispatchNotificationClickEvent(
+      request_id,
+      blink::WebString::fromUTF8(notification_id),
+      notification);
 }
 
 void ServiceWorkerScriptContext::OnPushEvent(int request_id,

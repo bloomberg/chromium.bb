@@ -395,6 +395,37 @@ void ServiceWorkerVersion::DispatchSyncEvent(const StatusCallback& callback) {
   }
 }
 
+void ServiceWorkerVersion::DispatchNotificationClickEvent(
+    const StatusCallback& callback,
+    const std::string& notification_id) {
+  DCHECK_EQ(ACTIVATED, status()) << status();
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    callback.Run(SERVICE_WORKER_ERROR_ABORT);
+    return;
+  }
+
+  if (running_status() != RUNNING) {
+    // Schedule calling this method after starting the worker.
+    StartWorker(base::Bind(&RunTaskAfterStartWorker,
+                           weak_factory_.GetWeakPtr(), callback,
+                           base::Bind(&self::DispatchNotificationClickEvent,
+                                      weak_factory_.GetWeakPtr(),
+                                      callback, notification_id)));
+    return;
+  }
+
+  int request_id =
+      notification_click_callbacks_.Add(new StatusCallback(callback));
+  ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
+      ServiceWorkerMsg_NotificationClickEvent(request_id, notification_id));
+  if (status != SERVICE_WORKER_OK) {
+    notification_click_callbacks_.Remove(request_id);
+    RunSoon(base::Bind(callback, status));
+  }
+}
+
 void ServiceWorkerVersion::DispatchPushEvent(const StatusCallback& callback,
                                              const std::string& data) {
   DCHECK_EQ(ACTIVATED, status()) << status();
@@ -595,6 +626,8 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnFetchEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SyncEventFinished,
                         OnSyncEventFinished)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_NotificationClickEventFinished,
+                        OnNotificationClickEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PushEventFinished,
                         OnPushEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GeofencingEventFinished,
@@ -734,6 +767,22 @@ void ServiceWorkerVersion::OnSyncEventFinished(
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(SERVICE_WORKER_OK);
   sync_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerVersion::OnNotificationClickEventFinished(
+    int request_id) {
+  TRACE_EVENT1("ServiceWorker",
+               "ServiceWorkerVersion::OnNotificationClickEventFinished",
+               "Request id", request_id);
+  StatusCallback* callback = notification_click_callbacks_.Lookup(request_id);
+  if (!callback) {
+    NOTREACHED() << "Got unexpected message: " << request_id;
+    return;
+  }
+
+  scoped_refptr<ServiceWorkerVersion> protect(this);
+  callback->Run(SERVICE_WORKER_OK);
+  notification_click_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerVersion::OnPushEventFinished(
