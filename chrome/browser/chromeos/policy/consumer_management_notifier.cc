@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/policy/consumer_management_notifier.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
@@ -20,6 +23,7 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_settings.h"
 #include "url/gurl.h"
 
@@ -47,8 +51,8 @@ class DesktopNotificationDelegate : public NotificationDelegate {
  private:
   ~DesktopNotificationDelegate() override;
 
-  std::string id_;
-  base::Closure button_click_callback_;
+  const std::string id_;
+  const base::Closure button_click_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationDelegate);
 };
@@ -93,7 +97,7 @@ void ConsumerManagementNotifier::Shutdown() {
 
 void ConsumerManagementNotifier::OnConsumerManagementStatusChanged() {
   if (consumer_management_service_->HasPendingEnrollmentNotification()) {
-    ConsumerManagementService::EnrollmentStage stage =
+    const ConsumerManagementService::EnrollmentStage stage =
         consumer_management_service_->GetEnrollmentStage();
     // Reset the enrollment stage so that we won't show the same notification,
     // again.

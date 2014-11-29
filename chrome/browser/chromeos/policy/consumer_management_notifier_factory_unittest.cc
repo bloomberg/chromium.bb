@@ -9,7 +9,6 @@
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/consumer_management_notifier.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/fake_consumer_management_service.h"
 #include "chrome/test/base/testing_browser_process.h"

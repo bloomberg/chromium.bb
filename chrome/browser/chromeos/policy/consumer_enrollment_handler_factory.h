@@ -18,7 +18,6 @@ class BrowserContext;
 namespace policy {
 
 class ConsumerEnrollmentHandler;
-class ConsumerManagementService;
 
 class ConsumerEnrollmentHandlerFactory
     : public BrowserContextKeyedServiceFactory {
