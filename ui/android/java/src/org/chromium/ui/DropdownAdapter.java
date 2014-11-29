@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView.LayoutParams;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -80,7 +81,14 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
                                  R.color.dropdown_divider_color));
             }
         }
-        layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, height));
+
+        // Note: trying to set the height of the root LinearLayout breaks accessibility,
+        // so we have to adjust the height of this LinearLayout that wraps the TextViews instead.
+        // If you need to modify this layout, don't forget to test it with TalkBack and make sure
+        // it doesn't regress.
+        // http://crbug.com/429364
+        View wrapper = layout.findViewById(R.id.dropdown_label_wrapper);
+        wrapper.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, height));
 
         DropdownItem item = getItem(position);
         TextView labelView = (TextView) layout.findViewById(R.id.dropdown_label);
