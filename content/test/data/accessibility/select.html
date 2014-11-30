@@ -1,5 +1,9 @@
 <!--
 @MAC-ALLOW:AXRoleDescription=*
+@WIN-ALLOW:MULTISELECTABLE
+@WIN-ALLOW:EXTSELECTABLE
+@WIN-ALLOW:SELECT*
+@WIN-ALLOW:HASPOPUP
 -->
 <html>
 <body>
@@ -13,7 +17,17 @@
     <option value="2" selected>Option 2</option>
     <option value="3">Option 3</option>
   </select>
-  <select id="B" name="Select C" requried>
+  <select id="C" name="Select C" requried>
+    <option value="1">Option 1</option>
+    <option value="2">Option 2</option>
+    <option value="3">Option 3</option>
+  </select>
+  <select id="D" name="Select D" multiple="2">
+    <option value="1">Option 1</option>
+    <option value="2">Option 2</option>
+    <option value="3">Option 3</option>
+  </select>
+  <select id="E" name="Select E" size="3">
     <option value="1">Option 1</option>
     <option value="2">Option 2</option>
     <option value="3">Option 3</option>
