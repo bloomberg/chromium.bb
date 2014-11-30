@@ -1364,14 +1364,17 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenMultipleImagesOnDrive) {
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, TraverseSlideImagesOnDownloads) {
+// Disabled due to flakiness: crbug.com/437293
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       DISABLED_TraverseSlideImagesOnDownloads) {
   AddScript("gallery/slide_mode.js");
   set_test_case_name("traverseSlideImagesOnDownloads");
   StartTest();
 }
 
+// Disabled due to flakiness: crbug.com/437293
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
-                       TraverseSlideImagesOnDownloads) {
+                       DISABLED_TraverseSlideImagesOnDownloads) {
   AddScript("gallery/slide_mode.js");
   set_test_case_name("traverseSlideImagesOnDownloads");
   StartTest();
