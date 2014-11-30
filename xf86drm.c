@@ -303,7 +303,7 @@ static int chown_check_return(const char *path, uid_t owner, gid_t group)
  * special file node with the major and minor numbers specified by \p dev and
  * parent directory if necessary and was called by root.
  */
-static int drmOpenDevice(long dev, int minor, int type)
+static int drmOpenDevice(dev_t dev, int minor, int type)
 {
     stat_t          st;
     const char      *dev_name;
@@ -2213,7 +2213,7 @@ int drmGetClient(int fd, int idx, int *auth, int *pid, int *uid,
 int drmGetStats(int fd, drmStatsT *stats)
 {
     drm_stats_t s;
-    int         i;
+    unsigned    i;
 
     if (drmIoctl(fd, DRM_IOCTL_GET_STATS, &s))
 	return -errno;

@@ -854,7 +854,7 @@ int drmHandleEvent(int fd, drmEventContextPtr evctx)
 	len = read(fd, buffer, sizeof buffer);
 	if (len == 0)
 		return 0;
-	if (len < sizeof *e)
+	if (len < (int)sizeof *e)
 		return -1;
 
 	i = 0;

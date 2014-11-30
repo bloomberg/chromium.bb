@@ -104,7 +104,8 @@ static void usage(char *name)
 
 int main(int argc, char **argv)
 {
-	int i, c, fd, ret;
+	unsigned i;
+	int c, fd, ret;
 	char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "exynos", "omapdrm", "tilcdc", "msm", "tegra" };
 	drmVBlank vbl;
 	drmEventContext evctx;
