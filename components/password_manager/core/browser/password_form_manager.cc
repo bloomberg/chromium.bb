@@ -262,6 +262,17 @@ void PasswordFormManager::ProvisionallySave(
       is_new_login_ = true;
       user_action_ = password_changed ? kUserActionChoosePslMatch
                                       : kUserActionOverridePassword;
+
+      // Update credential to reflect that it has been used for submission.
+      // If this isn't updated, then password generation uploads are off for
+      // sites where PSL matching is required to fill the login form, as two
+      // PASSWORD votes are uploaded per saved password instead of one.
+      //
+      // TODO(gcasto): It would be nice if other state were shared such that if
+      // say a password was updated on one match it would update on all related
+      // passwords. This is a much larger change.
+      UpdateMetadataForUsage(pending_credentials_);
+
       // Normally, the copy of the PSL matched credentials, adapted for the
       // current domain, is saved automatically without asking the user, because
       // the copy likely represents the same account, i.e., the one for which
@@ -574,9 +585,15 @@ void PasswordFormManager::SaveAsNewLogin(bool reset_preferred_login) {
   // Upload credentials the first time they are saved. This data is used
   // by password generation to help determine account creation sites.
   // Blacklisted credentials will never be used, so don't upload a vote for
-  // them.
-  if (!pending_credentials_.blacklisted_by_user)
-    UploadPasswordForm(pending_credentials_.form_data, autofill::PASSWORD);
+  // them. Credentials that have been previously used (e.g. PSL matches) are
+  // checked to see if they are valid account creation forms.
+  if (!pending_credentials_.blacklisted_by_user) {
+    if (pending_credentials_.times_used == 0) {
+      UploadPasswordForm(pending_credentials_.form_data, autofill::PASSWORD);
+    } else {
+      CheckForAccountCreationForm(pending_credentials_, observed_form_);
+    }
+  }
 
   pending_credentials_.date_created = Time::Now();
   SanitizePossibleUsernames(&pending_credentials_);
@@ -639,8 +656,7 @@ void PasswordFormManager::UpdateLogin() {
     return;
   }
 
-  // Update metadata.
-  ++pending_credentials_.times_used;
+  UpdateMetadataForUsage(pending_credentials_);
 
   if (client_->IsSyncAccountCredential(
           base::UTF16ToUTF8(pending_credentials_.username_value),
@@ -653,10 +669,6 @@ void PasswordFormManager::UpdateLogin() {
   CheckForAccountCreationForm(pending_credentials_, observed_form_);
 
   UpdatePreferredLoginState(password_store);
-
-  // Remove alternate usernames. At this point we assume that we have found
-  // the right username.
-  pending_credentials_.other_possible_usernames.clear();
 
   // Update the new preferred login.
   if (!selected_username_.empty()) {
@@ -716,6 +728,15 @@ void PasswordFormManager::UpdateLogin() {
     VLOG(4) << "Updating this login: " << pending_credentials_;
     password_store->UpdateLogin(pending_credentials_);
   }
+}
+
+void PasswordFormManager::UpdateMetadataForUsage(
+    const PasswordForm& credential) {
+  ++pending_credentials_.times_used;
+
+  // Remove alternate usernames. At this point we assume that we have found
+  // the right username.
+  pending_credentials_.other_possible_usernames.clear();
 }
 
 bool PasswordFormManager::UpdatePendingCredentialsIfOtherPossibleUsername(

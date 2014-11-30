@@ -5,6 +5,7 @@
 #include <ostream>
 
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
 
@@ -73,6 +74,8 @@ std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
             << base::UTF16ToUTF8(form.new_password_element)
             << " new_password_value: "
             << base::UTF16ToUTF8(form.new_password_value)
+            << " other_possible_usernames: "
+            << JoinString(form.other_possible_usernames, '|')
             << " autocomplete_set:" << form.password_autocomplete_set
             << " blacklisted: " << form.blacklisted_by_user
             << " preferred: " << form.preferred

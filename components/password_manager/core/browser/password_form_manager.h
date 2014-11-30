@@ -250,6 +250,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   bool UpdatePendingCredentialsIfOtherPossibleUsername(
       const base::string16& username);
 
+  // Update state to reflect that |credential| was used. This is broken out from
+  // UpdateLogin() so that PSL matches can also be properly updated.
+  void UpdateMetadataForUsage(const autofill::PasswordForm& credential);
+
   // Converts the "ActionsTaken" fields into an int so they can be logged to
   // UMA.
   int GetActionsTaken();
