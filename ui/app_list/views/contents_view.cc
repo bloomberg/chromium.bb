@@ -425,6 +425,10 @@ void ContentsView::Layout() {
   // the left. (Since we are not animating, we don't need to be careful about
   // which side we place the off-screen views onto.)
   gfx::Rect rect(GetDefaultContentsBounds());
+  // Custom pages are aligned to the top of the window, not under the search
+  // box.
+  if (IsStateActive(AppListModel::STATE_CUSTOM_LAUNCHER_PAGE))
+    rect = GetContentsBounds();
   if (rect.IsEmpty())
     return;
 

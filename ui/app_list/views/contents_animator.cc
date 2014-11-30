@@ -21,6 +21,12 @@ ContentsAnimator::ContentsAnimator(ContentsView* contents_view)
 ContentsAnimator::~ContentsAnimator() {
 }
 
+gfx::Rect ContentsAnimator::GetOnscreenPageBounds(int page_index) const {
+  return contents_view_->IsStateActive(AppListModel::STATE_CUSTOM_LAUNCHER_PAGE)
+             ? contents_view_->GetContentsBounds()
+             : contents_view_->GetDefaultContentsBounds();
+}
+
 gfx::Rect ContentsAnimator::GetOffscreenPageBounds(int page_index) const {
   gfx::Rect bounds(contents_view_->GetContentsBounds());
   // The start page and search page origins are above; all other pages' origins
@@ -82,13 +88,14 @@ std::string DefaultAnimator::NameForTests() const {
 void DefaultAnimator::Update(double progress, int from_page, int to_page) {
   // Move the from page from 0 to its origin. Move the to page from its origin
   // to 0.
-  gfx::Rect on_screen(contents_view()->GetDefaultContentsBounds());
+  gfx::Rect from_page_onscreen(GetOnscreenPageBounds(from_page));
+  gfx::Rect to_page_onscreen(GetOnscreenPageBounds(to_page));
   gfx::Rect from_page_origin(GetOffscreenPageBounds(from_page));
   gfx::Rect to_page_origin(GetOffscreenPageBounds(to_page));
-  gfx::Rect from_page_rect(
-      gfx::Tween::RectValueBetween(progress, on_screen, from_page_origin));
+  gfx::Rect from_page_rect(gfx::Tween::RectValueBetween(
+      progress, from_page_onscreen, from_page_origin));
   gfx::Rect to_page_rect(
-      gfx::Tween::RectValueBetween(progress, to_page_origin, on_screen));
+      gfx::Tween::RectValueBetween(progress, to_page_origin, to_page_onscreen));
 
   contents_view()->GetPageView(from_page)->SetBoundsRect(from_page_rect);
   contents_view()->GetPageView(to_page)->SetBoundsRect(to_page_rect);
@@ -138,8 +145,8 @@ std::string StartToCustomAnimator::NameForTests() const {
 void StartToCustomAnimator::Update(double progress,
                                    int start_page,
                                    int custom_page) {
-  gfx::Rect start_page_on_screen(contents_view()->GetDefaultContentsBounds());
-  gfx::Rect custom_page_on_screen(contents_view()->GetContentsBounds());
+  gfx::Rect start_page_on_screen(GetOnscreenPageBounds(start_page));
+  gfx::Rect custom_page_on_screen(GetOnscreenPageBounds(custom_page));
   gfx::Rect start_page_origin(GetOffscreenPageBounds(start_page));
   gfx::Rect custom_page_origin(contents_view()->GetCustomPageCollapsedBounds());
   gfx::Rect start_page_rect(gfx::Tween::RectValueBetween(
