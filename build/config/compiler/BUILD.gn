@@ -22,6 +22,17 @@ declare_args() {
   # only two architectures that are currently checked in). Turn this off when
   # you are using a custom toolchain and need to control -B in cflags.
   linux_use_bundled_binutils = is_linux && cpu_arch == "x64"
+
+  # Compile in such a way as to enable profiling of the generated code. For
+  # example, don't omit the frame pointer and leave in symbols.
+  enable_profiling = false
+
+  # Compile in such a way as to make it possible for the profiler to unwind full
+  # stack frames. Setting this flag has a large effect on the performance of the
+  # generated code than just setting profiling, but gives the profiler more
+  # information to analyze.
+  # Requires profiling to be set to true.
+  enable_full_stack_frames_for_profiling = false
 }
 
 use_gold = is_linux && cpu_arch == "x64"
@@ -181,6 +192,25 @@ config("compiler") {
       cflags_cc += [
         "-std=gnu++11",
       ]
+    }
+
+    if (enable_profiling && !is_debug) {
+      # The GYP build spams this define into every compilation unit, as we do
+      # here, but it only appears to be used in base and a couple other places.
+      # TODO(abarth): Should we move this define closer to where it's used?
+      defines += [ "ENABLE_PROFILING" ]
+
+      cflags += [
+        "-fno-omit-frame-pointer",
+        "-g",
+      ]
+
+      if (enable_full_stack_frames_for_profiling) {
+        cflags += [
+          "-fno-inline",
+          "-fno-optimize-sibling-calls",
+        ]
+      }
     }
 
     # CPU architecture. We may or may not be doing a cross compile now, so for
