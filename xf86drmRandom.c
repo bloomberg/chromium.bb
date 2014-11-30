@@ -98,7 +98,7 @@ typedef struct RandomState {
     unsigned long q;		/* m div a */
     unsigned long r;		/* m mod a */
     unsigned long check;
-    long          seed;
+    unsigned long seed;
 } RandomState;
 
 #if RANDOM_MAIN
@@ -147,13 +147,13 @@ int drmRandomDestroy(void *state)
 unsigned long drmRandom(void *state)
 {
     RandomState   *s = (RandomState *)state;
-    long          hi;
-    long          lo;
+    unsigned long hi;
+    unsigned long lo;
 
     hi      = s->seed / s->q;
     lo      = s->seed % s->q;
     s->seed = s->a * lo - s->r * hi;
-    if (s->seed <= 0) s->seed += s->m;
+    if ((s->a * lo) <= (s->r * hi)) s->seed += s->m;
 
     return s->seed;
 }
@@ -166,7 +166,7 @@ double drmRandomDouble(void *state)
 }
 
 #if RANDOM_MAIN
-static void check_period(long seed)
+static void check_period(unsigned long seed)
 {
     unsigned long count = 0;
     unsigned long initial;
@@ -178,7 +178,7 @@ static void check_period(long seed)
     while (initial != drmRandom(state)) {
 	if (!++count) break;
     }
-    printf("With seed of %10ld, period = %10lu (0x%08lx)\n",
+    printf("With seed of %10lu, period = %10lu (0x%08lx)\n",
 	   seed, count, count);
     drmRandomDestroy(state);
 }
