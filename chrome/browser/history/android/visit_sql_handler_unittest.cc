@@ -13,6 +13,7 @@
 #include "chrome/browser/history/android/urls_sql_handler.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/common/chrome_constants.h"
+#include "components/history/core/browser/history_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -32,8 +33,8 @@ class VisitSQLHandlerTest : public testing::Test {
   virtual void SetUp() {
     // Get a temporary directory for the test DB files.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath history_db_name = temp_dir_.path().AppendASCII(
-        chrome::kHistoryFilename);
+    base::FilePath history_db_name =
+        temp_dir_.path().AppendASCII(kHistoryFilename);
     ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name));
   }
 

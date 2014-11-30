@@ -136,11 +136,6 @@ const base::FilePath::CharType kGuestProfileDir[] = FPL("Guest Profile");
 const wchar_t kBrowserResourcesDll[] = L"chrome.dll";
 
 // filenames
-#if defined(OS_ANDROID)
-const base::FilePath::CharType kAndroidCacheFilename[] = FPL("AndroidCache");
-#endif
-const base::FilePath::CharType kArchivedHistoryFilename[] =
-    FPL("Archived History");
 const base::FilePath::CharType kCacheDirname[] = FPL("Cache");
 const base::FilePath::CharType kChannelIDFilename[] = FPL("Origin Bound Certs");
 const base::FilePath::CharType kCookieFilename[] = FPL("Cookies");
@@ -152,10 +147,8 @@ const base::FilePath::CharType kExtensionActivityLogFilename[] =
     FPL("Extension Activity");
 const base::FilePath::CharType kExtensionsCookieFilename[] =
     FPL("Extension Cookies");
-const base::FilePath::CharType kFaviconsFilename[] = FPL("Favicons");
 const base::FilePath::CharType kFirstRunSentinel[] = FPL("First Run");
 const base::FilePath::CharType kGCMStoreDirname[] = FPL("GCM Store");
-const base::FilePath::CharType kHistoryFilename[] = FPL("History");
 const base::FilePath::CharType kJumpListIconDirname[] = FPL("JumpListIcons");
 const base::FilePath::CharType kLocalStateFilename[] = FPL("Local State");
 const base::FilePath::CharType kLocalStorePoolName[] = FPL("LocalStorePool");
@@ -185,7 +178,6 @@ const base::FilePath::CharType kSupervisedUserSettingsFilename[] =
 const base::FilePath::CharType kSyncCredentialsFilename[] =
     FPL("Sync Credentials");
 const base::FilePath::CharType kThemePackFilename[] = FPL("Cached Theme.pak");
-const base::FilePath::CharType kThumbnailsFilename[] = FPL("Thumbnails");
 const base::FilePath::CharType kTopSitesFilename[] = FPL("Top Sites");
 const base::FilePath::CharType kWebAppDirname[] = FPL("Web Applications");
 

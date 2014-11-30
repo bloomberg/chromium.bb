@@ -25,6 +25,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
@@ -191,9 +192,8 @@ class AndroidProviderBackendTest : public testing::Test {
     // Setup the database directory and files.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    history_db_name_ = temp_dir_.path().AppendASCII(chrome::kHistoryFilename);
-    thumbnail_db_name_ = temp_dir_.path().AppendASCII(
-        chrome::kFaviconsFilename);
+    history_db_name_ = temp_dir_.path().AppendASCII(kHistoryFilename);
+    thumbnail_db_name_ = temp_dir_.path().AppendASCII(kFaviconsFilename);
     android_cache_db_name_ = temp_dir_.path().AppendASCII(
         "TestAndroidCache.db");
   }

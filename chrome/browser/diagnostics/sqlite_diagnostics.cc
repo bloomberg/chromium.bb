@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_constants.h"
+#include "components/history/core/browser/history_constants.h"
 #include "components/webdata/common/webdata_constants.h"
 #include "content/public/common/content_constants.h"
 #include "sql/connection.h"
@@ -219,7 +220,7 @@ DiagnosticsTest* MakeSqliteWebDatabaseTrackerDbTest() {
 DiagnosticsTest* MakeSqliteHistoryDbTest() {
   return new SqliteIntegrityTest(SqliteIntegrityTest::CRITICAL,
                                  DIAGNOSTICS_SQLITE_INTEGRITY_HISTORY_TEST,
-                                 base::FilePath(chrome::kHistoryFilename));
+                                 base::FilePath(history::kHistoryFilename));
 }
 
 #if defined(OS_CHROMEOS)
@@ -243,7 +244,7 @@ DiagnosticsTest* MakeSqliteNssKeyDbTest() {
 DiagnosticsTest* MakeSqliteThumbnailsDbTest() {
   return new SqliteIntegrityTest(SqliteIntegrityTest::NO_FLAGS_SET,
                                  DIAGNOSTICS_SQLITE_INTEGRITY_THUMBNAILS_TEST,
-                                 base::FilePath(chrome::kThumbnailsFilename));
+                                 base::FilePath(history::kThumbnailsFilename));
 }
 
 DiagnosticsTest* MakeSqliteWebDataDbTest() {

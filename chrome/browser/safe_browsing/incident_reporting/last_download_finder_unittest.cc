@@ -28,6 +28,7 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/history/core/browser/history_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,7 +42,7 @@ KeyedService* BuildHistoryService(content::BrowserContext* context) {
 
   // Delete the file before creating the service.
   base::FilePath history_path(
-      profile->GetPath().Append(chrome::kHistoryFilename));
+      profile->GetPath().Append(history::kHistoryFilename));
   if (!base::DeleteFile(history_path, false) ||
       base::PathExists(history_path)) {
     ADD_FAILURE() << "failed to delete history db file "

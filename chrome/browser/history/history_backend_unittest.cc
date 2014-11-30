@@ -31,6 +31,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/importer/imported_favicon_usage.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/test/history_client_fake_bookmarks.h"
@@ -1544,8 +1545,7 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   base::FilePath new_history_path(test_dir());
   base::DeleteFile(new_history_path, true);
   base::CreateDirectory(new_history_path);
-  base::FilePath new_history_file =
-      new_history_path.Append(chrome::kHistoryFilename);
+  base::FilePath new_history_file = new_history_path.Append(kHistoryFilename);
   ASSERT_TRUE(base::CopyFile(old_history_path, new_history_file));
 
   backend_ = new HistoryBackend(
@@ -2797,8 +2797,7 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   base::FilePath new_history_path(test_dir());
   base::DeleteFile(new_history_path, true);
   base::CreateDirectory(new_history_path);
-  base::FilePath new_history_file =
-      new_history_path.Append(chrome::kHistoryFilename);
+  base::FilePath new_history_file = new_history_path.Append(kHistoryFilename);
   ASSERT_TRUE(base::CopyFile(old_history, new_history_file));
 
   backend_ = new HistoryBackend(

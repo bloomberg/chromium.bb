@@ -62,10 +62,6 @@ extern const base::FilePath::CharType kGuestProfileDir[];
 extern const wchar_t kBrowserResourcesDll[];
 
 // filenames
-#if defined(OS_ANDROID)
-extern const base::FilePath::CharType kAndroidCacheFilename[];
-#endif
-extern const base::FilePath::CharType kArchivedHistoryFilename[];
 extern const base::FilePath::CharType kCacheDirname[];
 extern const base::FilePath::CharType kChannelIDFilename[];
 extern const base::FilePath::CharType kCookieFilename[];
@@ -73,10 +69,8 @@ extern const base::FilePath::CharType kCRLSetFilename[];
 extern const base::FilePath::CharType kCustomDictionaryFileName[];
 extern const base::FilePath::CharType kExtensionActivityLogFilename[];
 extern const base::FilePath::CharType kExtensionsCookieFilename[];
-extern const base::FilePath::CharType kFaviconsFilename[];
 extern const base::FilePath::CharType kFirstRunSentinel[];
 extern const base::FilePath::CharType kGCMStoreDirname[];
-extern const base::FilePath::CharType kHistoryFilename[];
 extern const base::FilePath::CharType kJumpListIconDirname[];
 extern const base::FilePath::CharType kLocalStateFilename[];
 extern const base::FilePath::CharType kLocalStorePoolName[];

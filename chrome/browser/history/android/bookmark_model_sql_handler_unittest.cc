@@ -15,6 +15,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/history/core/browser/history_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -56,8 +57,8 @@ class BookmarkModelSQLHandlerTest : public testing::Test {
 
     // Create the directory for history database.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath history_db_name = temp_dir_.path().AppendASCII(
-        chrome::kHistoryFilename);
+    base::FilePath history_db_name =
+        temp_dir_.path().AppendASCII(kHistoryFilename);
     history_db_.Init(history_db_name);
   }
 

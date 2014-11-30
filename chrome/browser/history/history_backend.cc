@@ -40,6 +40,7 @@
 #include "components/favicon_base/select_favicon_frames.h"
 #include "components/history/core/browser/history_backend_observer.h"
 #include "components/history/core/browser/history_client.h"
+#include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/page_usage_data.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -262,20 +263,20 @@ void HistoryBackend::ClearCachedDataForContextID(ContextID context_id) {
 }
 
 base::FilePath HistoryBackend::GetThumbnailFileName() const {
-  return history_dir_.Append(chrome::kThumbnailsFilename);
+  return history_dir_.Append(history::kThumbnailsFilename);
 }
 
 base::FilePath HistoryBackend::GetFaviconsFileName() const {
-  return history_dir_.Append(chrome::kFaviconsFilename);
+  return history_dir_.Append(history::kFaviconsFilename);
 }
 
 base::FilePath HistoryBackend::GetArchivedFileName() const {
-  return history_dir_.Append(chrome::kArchivedHistoryFilename);
+  return history_dir_.Append(history::kArchivedHistoryFilename);
 }
 
 #if defined(OS_ANDROID)
 base::FilePath HistoryBackend::GetAndroidCacheFileName() const {
-  return history_dir_.Append(chrome::kAndroidCacheFilename);
+  return history_dir_.Append(history::kAndroidCacheFilename);
 }
 #endif
 
@@ -588,7 +589,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   TimeTicks beginning_time = TimeTicks::Now();
 
   // Compute the file names.
-  base::FilePath history_name = history_dir_.Append(chrome::kHistoryFilename);
+  base::FilePath history_name = history_dir_.Append(history::kHistoryFilename);
   base::FilePath thumbnail_name = GetFaviconsFileName();
   base::FilePath archived_name = GetArchivedFileName();
 

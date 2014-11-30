@@ -52,6 +52,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/common/policy_service.h"
@@ -474,7 +475,7 @@ bool TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
   DestroyHistoryService();
   if (delete_file) {
     base::FilePath path = GetPath();
-    path = path.Append(chrome::kHistoryFilename);
+    path = path.Append(history::kHistoryFilename);
     if (!base::DeleteFile(path, false) || base::PathExists(path))
       return false;
   }

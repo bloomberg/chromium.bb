@@ -53,6 +53,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
+#include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/page_usage_data.h"
 #include "components/history/core/common/thumbnail_score.h"
@@ -140,8 +141,7 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
     data_path =
           data_path.AppendASCII(base::StringPrintf("history.%d.sql", version));
     ASSERT_NO_FATAL_FAILURE(
-        ExecuteSQLScript(data_path, history_dir_.Append(
-            chrome::kHistoryFilename)));
+        ExecuteSQLScript(data_path, history_dir_.Append(kHistoryFilename)));
   }
 
   void CreateArchivedDB() {
@@ -149,9 +149,8 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
     data_path = data_path.AppendASCII("History");
     data_path = data_path.AppendASCII("archived_history.4.sql");
-    ASSERT_NO_FATAL_FAILURE(
-        ExecuteSQLScript(data_path, history_dir_.Append(
-            chrome::kArchivedHistoryFilename)));
+    ASSERT_NO_FATAL_FAILURE(ExecuteSQLScript(
+        data_path, history_dir_.Append(kArchivedHistoryFilename)));
   }
 
   // testing::Test
@@ -288,7 +287,7 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadsState) {
   {
     // Open the db for manual manipulation.
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
 
     // Manually insert corrupted rows; there's infrastructure in place now to
     // make this impossible, at least according to the test above.
@@ -318,7 +317,7 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadsState) {
   {
     // Re-open the db for manual manipulation.
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     {
       // The version should have been updated.
       int cur_version = HistoryDatabase::GetCurrentVersion();
@@ -356,7 +355,7 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadsReasonPathsAndDangerType) {
   {
     // Re-open the db for manual manipulation.
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
 
     // Manually insert some rows.
     sql::Statement s(db.GetUniqueStatement(
@@ -399,7 +398,7 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadsReasonPathsAndDangerType) {
   {
     // Re-open the db for manual manipulation.
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     {
       // The version should have been updated.
       int cur_version = HistoryDatabase::GetCurrentVersion();
@@ -466,7 +465,7 @@ TEST_F(HistoryBackendDBTest, MigrateReferrer) {
   ASSERT_NO_FATAL_FAILURE(CreateDBVersion(22));
   {
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     sql::Statement s(db.GetUniqueStatement(
         "INSERT INTO downloads (id, full_path, url, start_time, "
         "received_bytes, total_bytes, state, end_time, opened) VALUES "
@@ -490,7 +489,7 @@ TEST_F(HistoryBackendDBTest, MigrateReferrer) {
   {
     // Re-open the db for manual manipulation.
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     // The version should have been updated.
     int cur_version = HistoryDatabase::GetCurrentVersion();
     ASSERT_LE(26, cur_version);
@@ -514,7 +513,7 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadedByExtension) {
   ASSERT_NO_FATAL_FAILURE(CreateDBVersion(26));
   {
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     {
       sql::Statement s(db.GetUniqueStatement(
           "INSERT INTO downloads (id, current_path, target_path, start_time, "
@@ -552,7 +551,7 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadedByExtension) {
   {
     // Re-open the db for manual manipulation.
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     // The version should have been updated.
     int cur_version = HistoryDatabase::GetCurrentVersion();
     ASSERT_LE(27, cur_version);
@@ -577,7 +576,7 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadValidators) {
   ASSERT_NO_FATAL_FAILURE(CreateDBVersion(27));
   {
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     {
       sql::Statement s(db.GetUniqueStatement(
           "INSERT INTO downloads (id, current_path, target_path, start_time, "
@@ -617,7 +616,7 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadValidators) {
   {
     // Re-open the db for manual manipulation.
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     // The version should have been updated.
     int cur_version = HistoryDatabase::GetCurrentVersion();
     ASSERT_LE(28, cur_version);
@@ -641,16 +640,14 @@ TEST_F(HistoryBackendDBTest, PurgeArchivedDatabase) {
   ASSERT_NO_FATAL_FAILURE(CreateDBVersion(27));
   ASSERT_NO_FATAL_FAILURE(CreateArchivedDB());
 
-  ASSERT_TRUE(base::PathExists(
-      history_dir_.Append(chrome::kArchivedHistoryFilename)));
+  ASSERT_TRUE(base::PathExists(history_dir_.Append(kArchivedHistoryFilename)));
 
   CreateBackendAndDatabase();
   DeleteBackend();
 
   // We do not retain expired history entries in an archived database as of M37.
   // Verify that any legacy archived database is deleted on start-up.
-  ASSERT_FALSE(base::PathExists(
-      history_dir_.Append(chrome::kArchivedHistoryFilename)));
+  ASSERT_FALSE(base::PathExists(history_dir_.Append(kArchivedHistoryFilename)));
 }
 
 TEST_F(HistoryBackendDBTest, MigrateDownloadMimeType) {
@@ -658,7 +655,7 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadMimeType) {
   ASSERT_NO_FATAL_FAILURE(CreateDBVersion(28));
   {
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     {
       sql::Statement s(db.GetUniqueStatement(
           "INSERT INTO downloads (id, current_path, target_path, start_time, "
@@ -701,7 +698,7 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadMimeType) {
   {
     // Re-open the db for manual manipulation.
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     // The version should have been updated.
     int cur_version = HistoryDatabase::GetCurrentVersion();
     ASSERT_LE(29, cur_version);
@@ -737,7 +734,7 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadRowCreateAndDelete) {
   DeleteBackend();
   {
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     sql::Statement statement(db.GetUniqueStatement(
         "Select Count(*) from downloads"));
     EXPECT_TRUE(statement.Step());
@@ -756,7 +753,7 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadRowCreateAndDelete) {
   DeleteBackend();
   {
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     sql::Statement statement(db.GetUniqueStatement(
         "Select Count(*) from downloads"));
     EXPECT_TRUE(statement.Step());
@@ -803,7 +800,7 @@ TEST_F(HistoryBackendDBTest, DownloadNukeRecordsMissingURLs) {
   DeleteBackend();
   {
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     sql::Statement statement(db.GetUniqueStatement(
         "DELETE FROM downloads_url_chains WHERE id=1"));
     ASSERT_TRUE(statement.Run());
@@ -817,7 +814,7 @@ TEST_F(HistoryBackendDBTest, DownloadNukeRecordsMissingURLs) {
   DeleteBackend();
   {
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     {
       sql::Statement statement(db.GetUniqueStatement(
             "SELECT count(*) from downloads"));
@@ -840,7 +837,7 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadInProgressCleanup) {
   DeleteBackend();
   {
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     sql::Statement statement(db.GetUniqueStatement(
         "Select Count(*) from downloads"));
     EXPECT_TRUE(statement.Step());
@@ -870,7 +867,7 @@ TEST_F(HistoryBackendDBTest, ConfirmDownloadInProgressCleanup) {
   DeleteBackend();
   {
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
     sql::Statement statement(db.GetUniqueStatement(
         "Select Count(*) from downloads"));
     EXPECT_TRUE(statement.Step());
@@ -1818,7 +1815,7 @@ TEST_F(HistoryBackendDBTest, MigratePresentations) {
   {
     // Re-open the db for manual manipulation.
     sql::Connection db;
-    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
 
     // Add an entry to urls.
     {
