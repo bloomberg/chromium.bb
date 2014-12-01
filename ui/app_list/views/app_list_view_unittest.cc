@@ -180,8 +180,12 @@ AppListViewTestContext::AppListViewTestContext(int test_type,
     : test_type_(static_cast<TestType>(test_type)) {
   switch (test_type_) {
     case NORMAL:
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kDisableExperimentalAppList);
       break;
     case LANDSCAPE:
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kDisableExperimentalAppList);
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
           switches::kEnableCenteredAppList);
       break;

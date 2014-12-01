@@ -154,14 +154,14 @@ class AppListMainViewTest : public views::ViewsTestBase {
     grid_view->UpdateDragFromItem(pointer, drag_event);
   }
 
+  ContentsView* ContentsView() { return main_view_->contents_view(); }
+
   AppsGridView* RootGridView() {
-    return main_view_->contents_view()->apps_container_view()->apps_grid_view();
+    return ContentsView()->apps_container_view()->apps_grid_view();
   }
 
   AppListFolderView* FolderView() {
-    return main_view_->contents_view()
-        ->apps_container_view()
-        ->app_list_folder_view();
+    return ContentsView()->apps_container_view()->app_list_folder_view();
   }
 
   AppsGridView* FolderGridView() { return FolderView()->items_grid_view(); }
@@ -293,13 +293,23 @@ TEST_F(AppListMainViewTest, DragLastItemFromFolderAndDropAtLastSlot) {
 // Tests dragging an item out of a single item folder and dropping it onto the
 // page switcher. Regression test for http://crbug.com/415530/.
 TEST_F(AppListMainViewTest, DragReparentItemOntoPageSwitcher) {
+  // Number of apps to populate. Should provide more than 1 page of apps (6*4 =
+  // 24).
+  const int kNumApps = 30;
+
+  // Ensure we are on the apps grid view page.
+  app_list::ContentsView* contents_view = ContentsView();
+  contents_view->SetActivePage(
+      contents_view->GetPageIndexForState(AppListModel::STATE_APPS));
+  contents_view->Layout();
+
   AppListItemView* folder_item_view = CreateAndOpenSingleItemFolder();
   const gfx::Rect first_slot_tile = folder_item_view->bounds();
 
-  delegate_->GetTestModel()->PopulateApps(20);
+  delegate_->GetTestModel()->PopulateApps(kNumApps);
 
   EXPECT_EQ(1, FolderViewModel()->view_size());
-  EXPECT_EQ(21, RootViewModel()->view_size());
+  EXPECT_EQ(kNumApps + 1, RootViewModel()->view_size());
 
   AppListItemView* dragged = StartDragForReparent(0);
 
@@ -314,7 +324,7 @@ TEST_F(AppListMainViewTest, DragReparentItemOntoPageSwitcher) {
   FolderGridView()->EndDrag(false);
 
   // The folder should be destroyed.
-  EXPECT_EQ(21, RootViewModel()->view_size());
+  EXPECT_EQ(kNumApps + 1, RootViewModel()->view_size());
   EXPECT_EQ(NULL,
             delegate_->GetTestModel()->FindFolderItem("single_item_folder"));
 }
