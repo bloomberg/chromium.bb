@@ -27,10 +27,6 @@
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
-#include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_analyzer.h"
-#include "chrome/browser/safe_browsing/incident_reporting/blacklist_load_analyzer.h"
-#include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
-#include "chrome/browser/safe_browsing/incident_reporting/off_domain_inclusion_detector.h"
 #include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
@@ -55,9 +51,11 @@
 #include "chrome/installer/util/browser_distribution.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include <string>
-#include "base/metrics/field_trial.h"
+#if defined(FULL_SAFE_BROWSING)
+#include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_analyzer.h"
+#include "chrome/browser/safe_browsing/incident_reporting/blacklist_load_analyzer.h"
+#include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
+#include "chrome/browser/safe_browsing/incident_reporting/off_domain_inclusion_detector.h"
 #endif
 
 using content::BrowserThread;
@@ -188,14 +186,6 @@ SafeBrowsingService* SafeBrowsingService::CreateSafeBrowsingService() {
   return factory_->CreateSafeBrowsingService();
 }
 
-#if defined(OS_ANDROID) && defined(FULL_SAFE_BROWSING)
-// static
-bool SafeBrowsingService::IsEnabledByFieldTrial() {
-  const std::string experiment_name =
-      base::FieldTrialList::FindFullName("SafeBrowsingAndroid");
-  return experiment_name == "Enabled";
-}
-#endif
 
 SafeBrowsingService::SafeBrowsingService()
     : protocol_manager_(NULL),
@@ -285,8 +275,11 @@ void SafeBrowsingService::ShutDown() {
   // on it.
   csd_service_.reset();
 
+#if defined(FULL_SAFE_BROWSING)
   off_domain_inclusion_detector_.reset();
   incident_service_.reset();
+#endif
+
   download_service_.reset();
 
   url_request_context_getter_ = NULL;
@@ -345,13 +338,13 @@ SafeBrowsingService::CreatePreferenceValidationDelegate(
   return scoped_ptr<TrackedPreferenceValidationDelegate>();
 }
 
+#if defined(FULL_SAFE_BROWSING)
 void SafeBrowsingService::RegisterDelayedAnalysisCallback(
     const safe_browsing::DelayedAnalysisCallback& callback) {
-#if defined(FULL_SAFE_BROWSING)
   if (incident_service_)
     incident_service_->RegisterDelayedAnalysisCallback(callback);
-#endif
 }
+#endif
 
 void SafeBrowsingService::AddDownloadManager(
     content::DownloadManager* download_manager) {
