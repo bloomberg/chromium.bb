@@ -244,9 +244,8 @@ bool LaunchProcess(const CommandLine& cmdline,
   return rv;
 }
 
-bool LaunchElevatedProcess(const CommandLine& cmdline,
-                           const LaunchOptions& options,
-                           ProcessHandle* process_handle) {
+Process LaunchElevatedProcess(const CommandLine& cmdline,
+                              const LaunchOptions& options) {
   const string16 file = cmdline.GetProgram().value();
   const string16 arguments = cmdline.GetArgumentsString();
 
@@ -263,20 +262,13 @@ bool LaunchElevatedProcess(const CommandLine& cmdline,
 
   if (!ShellExecuteEx(&shex_info)) {
     DPLOG(ERROR);
-    return false;
+    return Process();
   }
 
   if (options.wait)
     WaitForSingleObject(shex_info.hProcess, INFINITE);
 
-  // If the caller wants the process handle give it to them, otherwise just
-  // close it.  Closing it does not terminate the process.
-  if (process_handle)
-    *process_handle = shex_info.hProcess;
-  else
-    CloseHandle(shex_info.hProcess);
-
-  return true;
+  return Process(shex_info.hProcess);
 }
 
 bool SetJobObjectLimitFlags(HANDLE job_object, DWORD limit_flags) {

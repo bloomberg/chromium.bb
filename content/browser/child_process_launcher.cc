@@ -317,9 +317,7 @@ void ChildProcessLauncher::Context::LaunchInternal(
   if (launch_elevated) {
     base::LaunchOptions options;
     options.start_hidden = true;
-    base::ProcessHandle handle = base::kNullProcessHandle;
-    if (base::LaunchElevatedProcess(*cmd_line, options, &handle))
-      process = base::Process(handle);
+    process = base::LaunchElevatedProcess(*cmd_line, options);
   } else {
     process = StartSandboxedProcess(delegate, cmd_line);
   }

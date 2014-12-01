@@ -182,7 +182,7 @@ void ElevateIfNeededToReenableUpdates() {
 
   if (base::win::GetVersion() >= base::win::VERSION_VISTA &&
       base::win::UserAccountControlIsEnabled()) {
-    base::LaunchElevatedProcess(cmd, launch_options, NULL);
+    base::LaunchElevatedProcess(cmd, launch_options);
   } else {
     base::LaunchProcess(cmd, launch_options, NULL);
   }
