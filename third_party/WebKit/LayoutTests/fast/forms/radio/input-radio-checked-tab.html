@@ -10,7 +10,7 @@
 
         // Simulate an option-tab, which can tab to a radio button with default preference settings. 
         if (window.eventSender)
-            eventSender.keyDown('\t', ["altKey"]);
+            eventSender.keyDown('\t', navigator.platform.indexOf('Mac') == 0 ? ["altKey"] : []);
     }
     </script>
 </head>
