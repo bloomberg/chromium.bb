@@ -80,7 +80,7 @@ FocusEventDispatchMediator::FocusEventDispatchMediator(PassRefPtrWillBeRawPtr<Fo
 
 bool FocusEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
 {
-    event()->eventPath().adjustForRelatedTarget(*dispatcher->node(), event()->relatedTarget());
+    event()->eventPath().adjustForRelatedTarget(dispatcher->node(), event()->relatedTarget());
     return EventDispatchMediator::dispatchEvent(dispatcher);
 }
 
@@ -96,7 +96,7 @@ BlurEventDispatchMediator::BlurEventDispatchMediator(PassRefPtrWillBeRawPtr<Focu
 
 bool BlurEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
 {
-    event()->eventPath().adjustForRelatedTarget(*dispatcher->node(), event()->relatedTarget());
+    event()->eventPath().adjustForRelatedTarget(dispatcher->node(), event()->relatedTarget());
     return EventDispatchMediator::dispatchEvent(dispatcher);
 }
 
@@ -112,7 +112,7 @@ FocusInEventDispatchMediator::FocusInEventDispatchMediator(PassRefPtrWillBeRawPt
 
 bool FocusInEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
 {
-    event()->eventPath().adjustForRelatedTarget(*dispatcher->node(), event()->relatedTarget());
+    event()->eventPath().adjustForRelatedTarget(dispatcher->node(), event()->relatedTarget());
     return EventDispatchMediator::dispatchEvent(dispatcher);
 }
 
@@ -128,7 +128,7 @@ FocusOutEventDispatchMediator::FocusOutEventDispatchMediator(PassRefPtrWillBeRaw
 
 bool FocusOutEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
 {
-    event()->eventPath().adjustForRelatedTarget(*dispatcher->node(), event()->relatedTarget());
+    event()->eventPath().adjustForRelatedTarget(dispatcher->node(), event()->relatedTarget());
     return EventDispatchMediator::dispatchEvent(dispatcher);
 }
 

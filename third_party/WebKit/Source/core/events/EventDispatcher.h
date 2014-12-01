@@ -48,17 +48,17 @@ enum EventDispatchContinuation {
 class EventDispatcher {
     STACK_ALLOCATED();
 public:
-    static bool dispatchEvent(Node*, PassRefPtrWillBeRawPtr<EventDispatchMediator>);
-    static void dispatchScopedEvent(Node*, PassRefPtrWillBeRawPtr<EventDispatchMediator>);
+    static bool dispatchEvent(Node&, PassRefPtrWillBeRawPtr<EventDispatchMediator>);
+    static void dispatchScopedEvent(Node&, PassRefPtrWillBeRawPtr<EventDispatchMediator>);
 
-    static void dispatchSimulatedClick(Node*, Event* underlyingEvent, SimulatedClickMouseEventOptions);
+    static void dispatchSimulatedClick(Node&, Event* underlyingEvent, SimulatedClickMouseEventOptions);
 
     bool dispatch();
-    Node* node() const { return m_node.get(); }
-    Event* event() const { return m_event.get(); }
+    Node& node() const { return *m_node; }
+    Event& event() const { return *m_event; }
 
 private:
-    EventDispatcher(Node*, PassRefPtrWillBeRawPtr<Event>);
+    EventDispatcher(Node&, PassRefPtrWillBeRawPtr<Event>);
     const NodeEventContext* topNodeEventContext();
 
     EventDispatchContinuation dispatchEventPreProcess(void*& preDispatchEventHandlerResult);

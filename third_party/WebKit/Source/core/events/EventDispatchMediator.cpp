@@ -53,7 +53,7 @@ void EventDispatchMediator::trace(Visitor* visitor)
 
 bool EventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
 {
-    ASSERT(m_event.get() == dispatcher->event());
+    ASSERT(m_event.get() == &dispatcher->event());
     return dispatcher->dispatch();
 }
 

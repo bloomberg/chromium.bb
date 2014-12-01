@@ -80,7 +80,7 @@ void ScopedEventQueue::dispatchEvent(PassRefPtrWillBeRawPtr<EventDispatchMediato
 {
     ASSERT(mediator->event()->target());
     Node* node = mediator->event()->target()->toNode();
-    EventDispatcher::dispatchEvent(node, mediator);
+    EventDispatcher::dispatchEvent(*node, mediator);
 }
 
 ScopedEventQueue* ScopedEventQueue::instance()

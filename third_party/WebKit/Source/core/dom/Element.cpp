@@ -2149,13 +2149,13 @@ bool Element::isMouseFocusable() const
 void Element::dispatchFocusEvent(Element* oldFocusedElement, FocusType type)
 {
     RefPtrWillBeRawPtr<FocusEvent> event = FocusEvent::create(EventTypeNames::focus, false, false, document().domWindow(), 0, oldFocusedElement);
-    EventDispatcher::dispatchEvent(this, FocusEventDispatchMediator::create(event.release()));
+    EventDispatcher::dispatchEvent(*this, FocusEventDispatchMediator::create(event.release()));
 }
 
 void Element::dispatchBlurEvent(Element* newFocusedElement)
 {
     RefPtrWillBeRawPtr<FocusEvent> event = FocusEvent::create(EventTypeNames::blur, false, false, document().domWindow(), 0, newFocusedElement);
-    EventDispatcher::dispatchEvent(this, BlurEventDispatchMediator::create(event.release()));
+    EventDispatcher::dispatchEvent(*this, BlurEventDispatchMediator::create(event.release()));
 }
 
 void Element::dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, FocusType)
