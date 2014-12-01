@@ -155,11 +155,11 @@ void PushMessagingMessageFilter::DoPermissionStatusRequest(
 void PushMessagingMessageFilter::DidRegister(
     int render_frame_id,
     int callbacks_id,
-    const GURL& push_endpoint,
     const std::string& push_registration_id,
     PushRegistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (status == PUSH_REGISTRATION_STATUS_SUCCESS) {
+    GURL push_endpoint(service()->PushEndpoint());
     Send(new PushMessagingMsg_RegisterSuccess(
         render_frame_id, callbacks_id, push_endpoint, push_registration_id));
   } else {

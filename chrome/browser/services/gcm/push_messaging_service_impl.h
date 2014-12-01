@@ -50,6 +50,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   bool CanHandle(const std::string& app_id) const override;
 
   // content::PushMessagingService implementation:
+  GURL PushEndpoint() override;
   void Register(
       const GURL& origin,
       int64 service_worker_registration_id,

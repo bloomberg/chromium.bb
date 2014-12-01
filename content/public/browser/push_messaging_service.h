@@ -19,14 +19,18 @@ namespace content {
 // push messaging services like GCM.
 class CONTENT_EXPORT PushMessagingService {
  public:
-  typedef base::Callback<void(const GURL& /* endpoint */,
-                              const std::string& /* registration_id */,
+  typedef base::Callback<void(const std::string& /* registration_id */,
                               PushRegistrationStatus /* status */)>
       RegisterCallback;
 
   virtual ~PushMessagingService() {}
 
-  // Register the given |sender_id| with GCM.
+  // Returns the absolute URL exposed by the push server where the webapp server
+  // can send push messages. This is currently assumed to be the same for all
+  // origins and push registrations.
+  virtual GURL PushEndpoint() = 0;
+
+  // Register the given |sender_id| with the push messaging service.
   virtual void Register(const GURL& origin,
                         int64 service_worker_registration_id,
                         const std::string& sender_id,

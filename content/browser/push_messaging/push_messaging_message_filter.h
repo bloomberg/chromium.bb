@@ -55,7 +55,6 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
 
   void DidRegister(int render_frame_id,
                    int callbacks_id,
-                   const GURL& push_endpoint,
                    const std::string& push_registration_id,
                    PushRegistrationStatus status);
 

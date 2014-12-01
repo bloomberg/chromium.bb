@@ -203,6 +203,10 @@ void PushMessagingServiceImpl::OnSendAcknowledged(
   NOTREACHED() << "The Push API shouldn't have sent messages upstream";
 }
 
+GURL PushMessagingServiceImpl::PushEndpoint() {
+  return GURL(std::string(kPushMessagingEndpoint));
+}
+
 void PushMessagingServiceImpl::Register(
     const GURL& origin,
     int64 service_worker_registration_id,
@@ -226,6 +230,9 @@ void PushMessagingServiceImpl::Register(
     return;
   }
 
+  // TODO(johnme): This is probably redundant due to
+  // https://codereview.chromium.org/756063002, or even if it isn't it'll
+  // interfere with auto-removing the app handler, so should be removed.
   // If this is registering for the first time then the driver does not have
   // this as an app handler and registration would fail.
   if (gcm_profile_service_->driver()->GetAppHandler(
@@ -307,8 +314,7 @@ void PushMessagingServiceImpl::RegisterEnd(
     const content::PushMessagingService::RegisterCallback& callback,
     const std::string& registration_id,
     content::PushRegistrationStatus status) {
-  GURL endpoint = GURL(std::string(kPushMessagingEndpoint));
-  callback.Run(endpoint, registration_id, status);
+  callback.Run(registration_id, status);
   if (status == content::PUSH_REGISTRATION_STATUS_SUCCESS)
     IncreasePushRegistrationCount(1);
 }
