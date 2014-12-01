@@ -161,9 +161,8 @@ PP_Bool StartPpapiProxy(PP_Instance instance);
 // management.
 class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
  public:
-  ManifestServiceProxy(PP_Instance pp_instance)
-      : pp_instance_(pp_instance) {
-  }
+  ManifestServiceProxy(PP_Instance pp_instance, bool is_helper_process)
+      : pp_instance_(pp_instance), is_helper_process_(is_helper_process) {}
 
   ~ManifestServiceProxy() override {}
 
@@ -200,7 +199,8 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
     pnacl_options.translate = PP_FALSE;
     pnacl_options.is_debug = PP_FALSE;
     pnacl_options.opt_level = 2;
-    if (!ManifestResolveKey(pp_instance_, false, key, &url, &pnacl_options)) {
+    if (!ManifestResolveKey(pp_instance_, is_helper_process_, key, &url,
+                            &pnacl_options)) {
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(callback, base::Passed(base::File()), 0, 0));
@@ -233,6 +233,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
   }
 
   PP_Instance pp_instance_;
+  bool is_helper_process_;
   DISALLOW_COPY_AND_ASSIGN(ManifestServiceProxy);
 };
 
@@ -309,33 +310,24 @@ void LaunchSelLdr(PP_Instance instance,
   CHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
             BelongsToCurrentThread());
   NaClAppProcessType process_type = PP_ToNaClAppProcessType(pp_process_type);
+  bool is_helper_process = process_type == kPNaClTranslatorProcessType;
   // Create the manifest service proxy here, so on error case, it will be
   // destructed (without passing it to ManifestServiceChannel).
   scoped_ptr<ManifestServiceChannel::Delegate> manifest_service_proxy(
-      new ManifestServiceProxy(instance));
+      new ManifestServiceProxy(instance, is_helper_process));
 
   FileDescriptor result_socket;
   IPC::Sender* sender = content::RenderThread::Get();
   DCHECK(sender);
-  int routing_id = 0;
-  // If the nexe uses ppapi APIs, we need a routing ID.
-  // To get the routing ID, we must be on the main thread.
-  // Some nexes do not use ppapi and launch from the background thread,
-  // so those nexes can skip finding a routing_id. Currently, that only
-  // applies to the PNaClTranslatorProcesses.
-  bool uses_ppapi = process_type != kPNaClTranslatorProcessType;
-  if (uses_ppapi) {
-    routing_id = GetRoutingID(instance);
-    if (!routing_id) {
-      if (nexe_file_info->handle != PP_kInvalidFileHandle) {
-        base::File closer(nexe_file_info->handle);
-      }
-      ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
-          FROM_HERE,
-          base::Bind(callback.func, callback.user_data,
-                     static_cast<int32_t>(PP_ERROR_FAILED)));
-      return;
+  int routing_id = GetRoutingID(instance);
+  if (!routing_id) {
+    if (nexe_file_info->handle != PP_kInvalidFileHandle) {
+      base::File closer(nexe_file_info->handle);
     }
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE, base::Bind(callback.func, callback.user_data,
+                              static_cast<int32_t>(PP_ERROR_FAILED)));
+    return;
   }
 
   InstanceInfo instance_info;
@@ -439,11 +431,12 @@ void LaunchSelLdr(PP_Instance instance,
 
   // Create the manifest service handle as well.
   // For security hardening, disable the IPCs for open_resource() when they
-  // aren't needed.  PNaCl doesn't expose open_resource().
+  // aren't needed.  PNaCl pexes can't use open_resource(), but general nexes
+  // and the PNaCl translator nexes may use it.
   if (load_manager &&
-      process_type == kNativeNaClProcessType &&
-      IsValidChannelHandle(
-          launch_result.manifest_service_ipc_channel_handle)) {
+      (process_type == kNativeNaClProcessType ||
+       process_type == kPNaClTranslatorProcessType) &&
+      IsValidChannelHandle(launch_result.manifest_service_ipc_channel_handle)) {
     scoped_ptr<ManifestServiceChannel> manifest_service_channel(
         new ManifestServiceChannel(
             launch_result.manifest_service_ipc_channel_handle,
@@ -453,8 +446,8 @@ void LaunchSelLdr(PP_Instance instance,
     load_manager->set_manifest_service_channel(
         manifest_service_channel.Pass());
   } else {
-    // Currently, manifest service works only on linux/non-SFI mode.
-    // On other platforms, the socket will not be created, and thus this
+    // The manifest service is not used for some cases like PNaCl pexes.
+    // In that case, the socket will not be created, and thus this
     // condition needs to be handled as success.
     PostPPCompletionCallback(callback, PP_OK);
   }

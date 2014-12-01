@@ -401,6 +401,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     // https://code.google.com/p/nativeclient/issues/detail?id=3914.
     // Once done, this can be removed.
     args->irt_load_optional = 1;
+    args->pnacl_mode = 0;
   }
 
 #if defined(OS_LINUX) || defined(OS_MACOSX)
