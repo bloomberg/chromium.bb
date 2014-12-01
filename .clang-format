@@ -6,8 +6,3 @@ BasedOnStyle: Chromium
 # 'vector<vector<int>>'. ('Auto' means that clang-format will only use
 # 'int>>' if the file already contains at least one such instance.)
 Standard: Cpp11
-
----
-Language: Java
-# See http://crbug.com/429372 for information about this section.
-Cpp11BracedListStyle: false  # but see http://llvm.org/PR21457
