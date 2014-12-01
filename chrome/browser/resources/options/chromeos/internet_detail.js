@@ -1087,7 +1087,9 @@ cr.define('options.internet', function() {
     } else if (type == 'Cellular') {
       autoConnectCheckboxId = 'auto-connect-network-cellular';
     } else if (type == 'VPN') {
-      oncData.setProperty('VPN.Host', $('inet-server-hostname').value);
+      if ($('inet-server-hostname').value != 'undefined') {
+        oncData.setProperty('VPN.Host', $('inet-server-hostname').value);
+      }
       autoConnectCheckboxId = 'auto-connect-network-vpn';
     }
     if (autoConnectCheckboxId != '') {
