@@ -8,6 +8,8 @@ harness_TESTS =					\
 	en-ueb-g2-dictionary_harness.txt	\
 	en-us-g2-dictionary_harness.txt		\
 	ethio-g1_harness.txt			\
+	ga-g1_harness.txt			\
+	ga-g2_harness.txt			\
 	hu-hu-comp8_harness.txt			\
 	hu-hu-g1-hyph_harness.txt		\
 	hu-hu-g1_harness.txt			\
