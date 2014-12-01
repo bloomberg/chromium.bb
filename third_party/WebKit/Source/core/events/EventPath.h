@@ -44,9 +44,9 @@ class TreeScope;
 
 class EventPath final : public NoBaseWillBeGarbageCollected<EventPath> {
 public:
-    explicit EventPath(Event*);
-    explicit EventPath(Node*);
-    void resetWith(Node*);
+    explicit EventPath(Event&);
+    explicit EventPath(Node&);
+    void resetWith(Node&);
 
     NodeEventContext& operator[](size_t index) { return m_nodeEventContexts[index]; }
     const NodeEventContext& operator[](size_t index) const { return m_nodeEventContexts[index]; }
@@ -55,10 +55,10 @@ public:
     bool isEmpty() const { return m_nodeEventContexts.isEmpty(); }
     size_t size() const { return m_nodeEventContexts.size(); }
 
-    void adjustForRelatedTarget(Node*, EventTarget* relatedTarget);
+    void adjustForRelatedTarget(Node&, EventTarget* relatedTarget);
     void adjustForTouchEvent(TouchEvent&);
 
-    static EventTarget* eventTargetRespectingTargetRules(Node*);
+    static EventTarget* eventTargetRespectingTargetRules(Node&);
 
     void trace(Visitor*);
 
@@ -67,14 +67,14 @@ private:
 
     NodeEventContext& at(size_t index) { return m_nodeEventContexts[index]; }
 
-    void addNodeEventContext(Node*);
+    void addNodeEventContext(Node&);
 
     void calculatePath();
     void calculateAdjustedTargets();
     void calculateTreeScopePrePostOrderNumbers();
 
     void shrink(size_t newSize) { m_nodeEventContexts.shrink(newSize); }
-    void shrinkIfNeeded(const Node* target, const EventTarget* relatedTarget);
+    void shrinkIfNeeded(const Node& target, const EventTarget& relatedTarget);
 
     void adjustTouchList(const TouchList*, WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedTouchList, const WillBeHeapVector<RawPtrWillBeMember<TreeScope>>& treeScopes);
 
@@ -83,8 +83,8 @@ private:
 
     typedef WillBeHeapHashMap<RawPtrWillBeMember<TreeScope>, RawPtrWillBeMember<EventTarget>> RelatedTargetMap;
 
-    static void buildRelatedNodeMap(const Node*, RelatedTargetMap&);
-    static EventTarget* findRelatedNode(TreeScope*, RelatedTargetMap&);
+    static void buildRelatedNodeMap(const Node&, RelatedTargetMap&);
+    static EventTarget* findRelatedNode(TreeScope&, RelatedTargetMap&);
 
 #if ENABLE(ASSERT)
     static void checkReachability(TreeScope&, TouchList&);

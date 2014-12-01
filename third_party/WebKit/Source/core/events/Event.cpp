@@ -230,7 +230,7 @@ void Event::setUnderlyingEvent(PassRefPtrWillBeRawPtr<Event> ue)
 EventPath& Event::ensureEventPath()
 {
     if (!m_eventPath)
-        m_eventPath = adoptPtrWillBeNoop(new EventPath(this));
+        m_eventPath = adoptPtrWillBeNoop(new EventPath(*this));
     return *m_eventPath;
 }
 

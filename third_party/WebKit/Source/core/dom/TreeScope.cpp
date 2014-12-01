@@ -375,7 +375,7 @@ Element* TreeScope::adjustedFocusedElement() const
     if (!element)
         return 0;
 
-    EventPath eventPath(element);
+    EventPath eventPath(*element);
     for (size_t i = 0; i < eventPath.size(); ++i) {
         if (eventPath[i].node() == rootNode()) {
             // eventPath.at(i).target() is one of the followings:

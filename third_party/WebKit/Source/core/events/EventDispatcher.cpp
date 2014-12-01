@@ -62,13 +62,13 @@ EventDispatcher::EventDispatcher(Node* node, PassRefPtrWillBeRawPtr<Event> event
     ASSERT(m_event.get());
     ASSERT(!m_event->type().isNull()); // JavaScript code can create an event with an empty name, but not null.
     m_view = node->document().view();
-    m_event->ensureEventPath().resetWith(m_node.get());
+    m_event->ensureEventPath().resetWith(*m_node);
 }
 
 void EventDispatcher::dispatchScopedEvent(Node* node, PassRefPtrWillBeRawPtr<EventDispatchMediator> mediator)
 {
     // We need to set the target here because it can go away by the time we actually fire the event.
-    mediator->event()->setTarget(EventPath::eventTargetRespectingTargetRules(node));
+    mediator->event()->setTarget(EventPath::eventTargetRespectingTargetRules(*node));
     ScopedEventQueue::instance()->enqueueEventDispatchMediator(mediator);
 }
 
@@ -114,7 +114,7 @@ bool EventDispatcher::dispatch()
     m_eventDispatched = true;
 #endif
 
-    m_event->setTarget(EventPath::eventTargetRespectingTargetRules(m_node.get()));
+    m_event->setTarget(EventPath::eventTargetRespectingTargetRules(*m_node));
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     ASSERT(m_event->target());
     WindowEventContext windowEventContext(m_event.get(), m_node.get(), topNodeEventContext());
@@ -197,7 +197,7 @@ inline void EventDispatcher::dispatchEventAtBubbling(WindowEventContext& windowC
 
 inline void EventDispatcher::dispatchEventPostProcess(void* preDispatchEventHandlerResult)
 {
-    m_event->setTarget(EventPath::eventTargetRespectingTargetRules(m_node.get()));
+    m_event->setTarget(EventPath::eventTargetRespectingTargetRules(*m_node));
     m_event->setCurrentTarget(0);
     m_event->setEventPhase(0);
 

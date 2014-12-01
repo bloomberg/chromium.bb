@@ -38,14 +38,12 @@
 
 namespace blink {
 
-EventTarget* EventPath::eventTargetRespectingTargetRules(Node* referenceNode)
+EventTarget* EventPath::eventTargetRespectingTargetRules(Node& referenceNode)
 {
-    ASSERT(referenceNode);
+    if (referenceNode.isPseudoElement())
+        return referenceNode.parentNode();
 
-    if (referenceNode->isPseudoElement())
-        return referenceNode->parentNode();
-
-    return referenceNode;
+    return &referenceNode;
 }
 
 static inline bool shouldStopAtShadowRoot(Event& event, ShadowRoot& shadowRoot, EventTarget& target)
@@ -66,23 +64,22 @@ static inline bool shouldStopAtShadowRoot(Event& event, ShadowRoot& shadowRoot, 
             || eventType == EventTypeNames::selectstart);
 }
 
-EventPath::EventPath(Event* event)
+EventPath::EventPath(Event& event)
     : m_node(nullptr)
-    , m_event(event)
+    , m_event(&event)
 {
 }
 
-EventPath::EventPath(Node* node)
+EventPath::EventPath(Node& node)
     : m_node(node)
     , m_event(nullptr)
 {
     resetWith(node);
 }
 
-void EventPath::resetWith(Node* node)
+void EventPath::resetWith(Node& node)
 {
-    ASSERT(node);
-    m_node = node;
+    m_node = &node;
     m_nodeEventContexts.clear();
     m_treeScopeEventContexts.clear();
     calculatePath();
@@ -90,9 +87,9 @@ void EventPath::resetWith(Node* node)
     calculateTreeScopePrePostOrderNumbers();
 }
 
-void EventPath::addNodeEventContext(Node* node)
+void EventPath::addNodeEventContext(Node& node)
 {
-    m_nodeEventContexts.append(NodeEventContext(node, eventTargetRespectingTargetRules(node)));
+    m_nodeEventContexts.append(NodeEventContext(&node, eventTargetRespectingTargetRules(node)));
 }
 
 void EventPath::calculatePath()
@@ -102,7 +99,7 @@ void EventPath::calculatePath()
     m_node->document().updateDistributionForNodeIfNeeded(const_cast<Node*>(m_node.get()));
 
     Node* current = m_node;
-    addNodeEventContext(current);
+    addNodeEventContext(*current);
     if (!m_node->inDocument())
         return;
     while (current) {
@@ -116,9 +113,9 @@ void EventPath::calculatePath()
                     ShadowRoot* containingShadowRoot = insertionPoint->containingShadowRoot();
                     ASSERT(containingShadowRoot);
                     if (!containingShadowRoot->isOldest())
-                        addNodeEventContext(containingShadowRoot->olderShadowRoot());
+                        addNodeEventContext(*containingShadowRoot->olderShadowRoot());
                 }
-                addNodeEventContext(insertionPoint);
+                addNodeEventContext(*insertionPoint);
             }
             current = insertionPoints.last();
             continue;
@@ -127,11 +124,11 @@ void EventPath::calculatePath()
             if (m_event && shouldStopAtShadowRoot(*m_event, *toShadowRoot(current), *m_node))
                 break;
             current = current->shadowHost();
-            addNodeEventContext(current);
+            addNodeEventContext(*current);
         } else {
             current = current->parentNode();
             if (current)
-                addNodeEventContext(current);
+                addNodeEventContext(*current);
         }
     }
 }
@@ -179,10 +176,10 @@ TreeScopeEventContext* EventPath::ensureTreeScopeEventContext(Node* currentTarge
         if (parentTreeScopeEventContext && parentTreeScopeEventContext->target()) {
             treeScopeEventContext->setTarget(parentTreeScopeEventContext->target());
         } else if (currentTarget) {
-            treeScopeEventContext->setTarget(eventTargetRespectingTargetRules(currentTarget));
+            treeScopeEventContext->setTarget(eventTargetRespectingTargetRules(*currentTarget));
         }
     } else if (!treeScopeEventContext->target() && currentTarget) {
-        treeScopeEventContext->setTarget(eventTargetRespectingTargetRules(currentTarget));
+        treeScopeEventContext->setTarget(eventTargetRespectingTargetRules(*currentTarget));
     }
     return treeScopeEventContext;
 }
@@ -207,27 +204,26 @@ void EventPath::calculateAdjustedTargets()
     m_treeScopeEventContexts.appendRange(treeScopeEventContextMap.values().begin(), treeScopeEventContextMap.values().end());
 }
 
-void EventPath::buildRelatedNodeMap(const Node* relatedNode, RelatedTargetMap& relatedTargetMap)
+void EventPath::buildRelatedNodeMap(const Node& relatedNode, RelatedTargetMap& relatedTargetMap)
 {
-    EventPath relatedTargetEventPath(const_cast<Node*>(relatedNode));
+    EventPath relatedTargetEventPath(const_cast<Node&>(relatedNode));
     for (size_t i = 0; i < relatedTargetEventPath.m_treeScopeEventContexts.size(); ++i) {
         TreeScopeEventContext* treeScopeEventContext = relatedTargetEventPath.m_treeScopeEventContexts[i].get();
         relatedTargetMap.add(&treeScopeEventContext->treeScope(), treeScopeEventContext->target());
     }
 }
 
-EventTarget* EventPath::findRelatedNode(TreeScope* scope, RelatedTargetMap& relatedTargetMap)
+EventTarget* EventPath::findRelatedNode(TreeScope& scope, RelatedTargetMap& relatedTargetMap)
 {
     WillBeHeapVector<RawPtrWillBeMember<TreeScope>, 32> parentTreeScopes;
     EventTarget* relatedNode = 0;
-    while (scope) {
-        parentTreeScopes.append(scope);
-        RelatedTargetMap::const_iterator iter = relatedTargetMap.find(scope);
+    for (TreeScope* current = &scope; current; current = current->olderShadowRootOrParentTreeScope()) {
+        parentTreeScopes.append(current);
+        RelatedTargetMap::const_iterator iter = relatedTargetMap.find(current);
         if (iter != relatedTargetMap.end() && iter->value) {
             relatedNode = iter->value;
             break;
         }
-        scope = scope->olderShadowRootOrParentTreeScope();
     }
     ASSERT(relatedNode);
     for (WillBeHeapVector<RawPtrWillBeMember<TreeScope>, 32>::iterator iter = parentTreeScopes.begin(); iter < parentTreeScopes.end(); ++iter)
@@ -235,40 +231,38 @@ EventTarget* EventPath::findRelatedNode(TreeScope* scope, RelatedTargetMap& rela
     return relatedNode;
 }
 
-void EventPath::adjustForRelatedTarget(Node* target, EventTarget* relatedTarget)
+void EventPath::adjustForRelatedTarget(Node& target, EventTarget* relatedTarget)
 {
-    if (!target)
-        return;
     if (!relatedTarget)
         return;
     Node* relatedNode = relatedTarget->toNode();
     if (!relatedNode)
         return;
-    if (target->document() != relatedNode->document())
+    if (target.document() != relatedNode->document())
         return;
-    if (!target->inDocument() || !relatedNode->inDocument())
+    if (!target.inDocument() || !relatedNode->inDocument())
         return;
 
     RelatedTargetMap relatedNodeMap;
-    buildRelatedNodeMap(relatedNode, relatedNodeMap);
+    buildRelatedNodeMap(*relatedNode, relatedNodeMap);
 
     for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
-        EventTarget* adjustedRelatedTarget = findRelatedNode(&treeScopeEventContext.get()->treeScope(), relatedNodeMap);
+        EventTarget* adjustedRelatedTarget = findRelatedNode(treeScopeEventContext->treeScope(), relatedNodeMap);
         ASSERT(adjustedRelatedTarget);
         treeScopeEventContext.get()->setRelatedTarget(adjustedRelatedTarget);
     }
 
-    shrinkIfNeeded(target, relatedTarget);
+    shrinkIfNeeded(target, *relatedTarget);
 }
 
-void EventPath::shrinkIfNeeded(const Node* target, const EventTarget* relatedTarget)
+void EventPath::shrinkIfNeeded(const Node& target, const EventTarget& relatedTarget)
 {
     // Synthetic mouse events can have a relatedTarget which is identical to the target.
-    bool targetIsIdenticalToToRelatedTarget = (target == relatedTarget);
+    bool targetIsIdenticalToToRelatedTarget = (&target == &relatedTarget);
 
     for (size_t i = 0; i < size(); ++i) {
         if (targetIsIdenticalToToRelatedTarget) {
-            if (target->treeScope().rootNode() == at(i).node()) {
+            if (target.treeScope().rootNode() == at(i).node()) {
                 shrink(i + 1);
                 break;
             }
@@ -317,9 +311,9 @@ void EventPath::adjustTouchList(const TouchList* touchList, WillBeHeapVector<Raw
     for (size_t i = 0; i < touchList->length(); ++i) {
         const Touch& touch = *touchList->item(i);
         RelatedTargetMap relatedNodeMap;
-        buildRelatedNodeMap(touch.target()->toNode(), relatedNodeMap);
+        buildRelatedNodeMap(*touch.target()->toNode(), relatedNodeMap);
         for (size_t j = 0; j < treeScopes.size(); ++j) {
-            adjustedTouchList[j]->append(touch.cloneWithNewTarget(findRelatedNode(treeScopes[j], relatedNodeMap)));
+            adjustedTouchList[j]->append(touch.cloneWithNewTarget(findRelatedNode(*treeScopes[j], relatedNodeMap)));
         }
     }
 }
