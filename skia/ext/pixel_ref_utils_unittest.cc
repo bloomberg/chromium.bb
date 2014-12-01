@@ -53,11 +53,9 @@ class TestDiscardableShader : public SkShader {
   SkBitmap bitmap_;
 };
 
-#ifdef SK_SUPPORT_LEGACY_DEEPFLATTENING
 SkFlattenable* TestDiscardableShader::CreateProc(SkReadBuffer&) {
   return new TestDiscardableShader;
 }
-#endif
 
 void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap) {
   bitmap->allocN32Pixels(size.width(), size.height());
