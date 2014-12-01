@@ -182,8 +182,9 @@ if (enable_google_now) {
 if (enable_webrtc) {
   grit_defines += [ "-D", "enable_webrtc" ]
 }
-# Note: enable_hangout_services_extension is omitted. It is never set in the
-# GYP build. Need to figure out what it's for.
+if (enable_hangout_services_extension) {
+  grit_defines += [ "-D", "enable_hangout_services_extension" ]
+}
 if (enable_task_manager) {
   grit_defines += [ "-D", "enable_task_manager" ]
 }

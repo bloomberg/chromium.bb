@@ -204,6 +204,9 @@ config("feature_flags") {
   if (proprietary_codecs) {
     defines += [ "USE_PROPRIETARY_CODECS" ]
   }
+  if (enable_hangout_services_extension) {
+    defines += [ "ENABLE_HANGOUT_SERVICES_EXTENSION=1" ]
+  }
 }
 
 # Debug/release ----------------------------------------------------------------

@@ -159,3 +159,8 @@ use_brlapi = is_chromeos
 # system).
 # TODO(GYP) also require !embedded to enable.
 use_gconf = is_linux && !is_chromeos
+
+# Hangout services is an extension that adds extra features to Hangouts.
+# For official GYP builds, this flag is set, it will likely need to be
+# parameterized in the future for a similar use.
+enable_hangout_services_extension = false
