@@ -77,9 +77,13 @@ gfx::Rect DriWindow::GetBounds() {
   return bounds_;
 }
 
-void DriWindow::SetCapture() {}
+void DriWindow::SetCapture() {
+  window_manager_->GrabEvents(widget_);
+}
 
-void DriWindow::ReleaseCapture() {}
+void DriWindow::ReleaseCapture() {
+  window_manager_->UngrabEvents(widget_);
+}
 
 void DriWindow::ToggleFullscreen() {}
 
@@ -101,6 +105,11 @@ void DriWindow::MoveCursorTo(const gfx::Point& location) {
 bool DriWindow::CanDispatchEvent(const PlatformEvent& ne) {
   DCHECK(ne);
   Event* event = static_cast<Event*>(ne);
+
+  // If there is a grab, capture events here.
+  gfx::AcceleratedWidget grabber = window_manager_->event_grabber();
+  if (grabber != gfx::kNullAcceleratedWidget)
+    return grabber == widget_;
 
   if (event->IsLocatedEvent()) {
     LocatedEvent* located_event = static_cast<LocatedEvent*>(event);

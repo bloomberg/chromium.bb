@@ -20,7 +20,9 @@ gfx::PointF GetDefaultCursorLocation(DriWindow* window) {
 }  // namespace
 
 DriWindowManager::DriWindowManager(DriGpuPlatformSupportHost* sender)
-    : last_allocated_widget_(0), cursor_(new DriCursor(this, sender)) {
+    : last_allocated_widget_(0),
+      cursor_(new DriCursor(this, sender)),
+      event_grabber_(gfx::kNullAcceleratedWidget) {
 }
 
 DriWindowManager::~DriWindowManager() {
@@ -51,6 +53,8 @@ void DriWindowManager::RemoveWindow(gfx::AcceleratedWidget widget) {
 
   if (cursor_->GetCursorWindow() == widget)
     ResetCursorLocation();
+  if (event_grabber_ == widget)
+    event_grabber_ = gfx::kNullAcceleratedWidget;
 }
 
 DriWindow* DriWindowManager::GetWindow(gfx::AcceleratedWidget widget) {
@@ -80,6 +84,18 @@ void DriWindowManager::ResetCursorLocation() {
   }
 
   cursor_->MoveCursorTo(cursor_widget, location);
+}
+
+void DriWindowManager::GrabEvents(gfx::AcceleratedWidget widget) {
+  if (event_grabber_ != gfx::kNullAcceleratedWidget)
+    return;
+  event_grabber_ = widget;
+}
+
+void DriWindowManager::UngrabEvents(gfx::AcceleratedWidget widget) {
+  if (event_grabber_ != widget)
+    return;
+  event_grabber_ = gfx::kNullAcceleratedWidget;
 }
 
 }  // namespace ui

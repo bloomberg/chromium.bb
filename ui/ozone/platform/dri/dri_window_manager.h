@@ -46,6 +46,16 @@ class DriWindowManager {
 
   DriCursor* cursor() const { return cursor_.get(); }
 
+  // Tries to set a given widget as the recipient for events. It will
+  // fail if there is already another widget as recipient.
+  void GrabEvents(gfx::AcceleratedWidget widget);
+
+  // Unsets a given widget as the recipient for events.
+  void UngrabEvents(gfx::AcceleratedWidget widget);
+
+  // Gets the current widget recipient of mouse events.
+  gfx::AcceleratedWidget event_grabber() const { return event_grabber_; }
+
  private:
   // Reset the cursor location based on the list of active windows.
   void ResetCursorLocation();
@@ -56,6 +66,8 @@ class DriWindowManager {
   WidgetToWindowMap window_map_;
 
   scoped_ptr<DriCursor> cursor_;
+
+  gfx::AcceleratedWidget event_grabber_;
 
   DISALLOW_COPY_AND_ASSIGN(DriWindowManager);
 };
