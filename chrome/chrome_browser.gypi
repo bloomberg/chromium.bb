@@ -2309,6 +2309,7 @@
     ],
     # Everything but Android, iOS, and CrOS.
     'chrome_browser_desktop_sources': [
+      'browser/profiles/avatar_menu_desktop.cc',
       'browser/profiles/avatar_menu_observer.h',
       'browser/profiles/avatar_menu_actions_desktop.cc',
       'browser/profiles/avatar_menu_actions_desktop.h',

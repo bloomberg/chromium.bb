@@ -831,6 +831,7 @@
         'browser/chromeos/preferences.h',
         'browser/chromeos/profiles/avatar_menu_actions_chromeos.cc',
         'browser/chromeos/profiles/avatar_menu_actions_chromeos.h',
+        'browser/chromeos/profiles/avatar_menu_chromeos.cc',
         'browser/chromeos/profiles/multiprofiles_intro_dialog.cc',
         'browser/chromeos/profiles/multiprofiles_intro_dialog.h',
         'browser/chromeos/profiles/multiprofiles_session_aborted_dialog.cc',

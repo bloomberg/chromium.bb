@@ -92,6 +92,13 @@ class AvatarMenu :
   // True if avatar menu should be displayed.
   static bool ShouldShowAvatarMenu();
 
+  // Sets |image| to the avatar corresponding to the profile at |profile_path|
+  // and sets |is_rectangle| to true unless |image| is a built-in profile
+  // avatar. For built-in profile avatars, returns the non-high res version.
+  static void GetImageForMenuButton(const base::FilePath& profile_path,
+                                    gfx::Image* image,
+                                    bool* is_rectangle);
+
   // Compare items by name.
   static bool CompareItems(const Item* item1, const Item* item2);
 

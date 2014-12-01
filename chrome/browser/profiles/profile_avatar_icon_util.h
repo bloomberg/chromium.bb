@@ -60,13 +60,6 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
 // so that when resized to a square aspect ratio it looks pretty.
 SkBitmap GetAvatarIconAsSquare(const SkBitmap& source_bitmap, int scale_factor);
 
-// Sets |image| to the avatar corresponding to the profile at |profile_path| and
-// sets |is_rectangle| to true unless |image| is a built-in profile avatar. For
-// built-in profile avatars, always return the non-high res version.
-void GetTransparentBackgroundProfileAvatar(const base::FilePath& profile_path,
-                                           gfx::Image* image,
-                                           bool* is_rectangle);
-
 // Gets the number of default avatar icons that exist.
 size_t GetDefaultAvatarIconCount();
 
