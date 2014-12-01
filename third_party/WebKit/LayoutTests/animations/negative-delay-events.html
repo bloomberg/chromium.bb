@@ -38,15 +38,17 @@
         div.innerText = text;
         document.getElementById('log').appendChild(div);
     }
+
+    var count = 0;
     document.addEventListener('webkitAnimationStart', function(event) {
-        var pass = event.elapsedTime === 0;
+        var pass = event.elapsedTime === [0, 0.05, 0.15][count++];
         log((pass ? 'PASS' : 'FAIL') + ': ' + event.target.id + ': Start event: elapsedTime=' + event.elapsedTime);
     }, false);
-    var count = 0;
+
     document.addEventListener('webkitAnimationEnd', function(event) {
         var pass = event.elapsedTime === 0.1;
         log((pass ? 'PASS' : 'FAIL') + ': ' + event.target.id + ': End event: elapsedTime=' + event.elapsedTime);
-        switch (++count) {
+        switch (count) {
         case 1:
             document.getElementById('animation2').classList.add('animation');
             break;

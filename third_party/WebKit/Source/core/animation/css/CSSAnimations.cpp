@@ -618,10 +618,9 @@ void CSSAnimations::AnimationEventDelegate::onEventCondition(const AnimationNode
     if (m_previousPhase != currentPhase
         && (currentPhase == AnimationNode::PhaseActive || currentPhase == AnimationNode::PhaseAfter)
         && (m_previousPhase == AnimationNode::PhaseNone || m_previousPhase == AnimationNode::PhaseBefore)) {
-        // The spec states that the elapsed time should be
-        // 'delay < 0 ? -delay : 0', but we always use 0 to match the existing
-        // implementation. See crbug.com/279611
-        maybeDispatch(Document::ANIMATIONSTART_LISTENER, EventTypeNames::animationstart, 0);
+        const double startDelay = animationNode->specifiedTiming().startDelay;
+        const double elapsedTime = startDelay < 0 ? -startDelay : 0;
+        maybeDispatch(Document::ANIMATIONSTART_LISTENER, EventTypeNames::animationstart, elapsedTime);
     }
 
     if (currentPhase == AnimationNode::PhaseActive && m_previousPhase == currentPhase && m_previousIteration != currentIteration) {
