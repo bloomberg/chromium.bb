@@ -38,6 +38,7 @@ class DriCursor : public CursorDelegateEvdev {
   void ShowCursor();
   void HideCursor();
   gfx::AcceleratedWidget GetCursorWindow();
+  void Reset();
 
   // CursorDelegateEvdev:
   void MoveCursorTo(gfx::AcceleratedWidget widget,

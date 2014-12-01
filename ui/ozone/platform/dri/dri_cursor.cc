@@ -108,6 +108,11 @@ gfx::AcceleratedWidget DriCursor::GetCursorWindow() {
   return cursor_window_;
 }
 
+void DriCursor::Reset() {
+  cursor_window_ = gfx::kNullAcceleratedWidget;
+  cursor_ = nullptr;
+}
+
 bool DriCursor::IsCursorVisible() {
   return cursor_.get();
 }

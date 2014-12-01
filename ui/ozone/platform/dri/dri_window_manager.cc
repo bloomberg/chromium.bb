@@ -75,14 +75,16 @@ DriWindow* DriWindowManager::GetWindowAt(const gfx::Point& location) {
 }
 
 void DriWindowManager::ResetCursorLocation() {
-  gfx::AcceleratedWidget cursor_widget = gfx::kNullAcceleratedWidget;
-  gfx::PointF location;
-  if (!window_map_.empty()) {
-    WidgetToWindowMap::iterator it = window_map_.begin();
-    cursor_widget = it->first;
-    location = GetDefaultCursorLocation(it->second);
+  if (window_map_.empty()) {
+    // When there is no more window left, reset the cursor to avoid
+    // sending incorrect messages to the gpu process.
+    cursor_->Reset();
+    return;
   }
 
+  WidgetToWindowMap::iterator it = window_map_.begin();
+  gfx::AcceleratedWidget cursor_widget = it->first;
+  gfx::PointF location = GetDefaultCursorLocation(it->second);
   cursor_->MoveCursorTo(cursor_widget, location);
 }
 
