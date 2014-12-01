@@ -105,7 +105,6 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMo
     if (e.modifiers & WebInputEvent::MetaKey)
         m_modifiers |= PlatformEvent::MetaKey;
 
-    m_modifierFlags = e.modifiers;
     m_timestamp = e.timeStampSeconds;
     m_clickCount = e.clickCount;
 

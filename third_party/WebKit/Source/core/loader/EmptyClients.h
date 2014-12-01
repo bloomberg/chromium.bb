@@ -133,7 +133,7 @@ public:
     virtual blink::WebScreenInfo screenInfo() const override { return blink::WebScreenInfo(); }
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const override { }
 
-    virtual void mouseDidMoveOverElement(const HitTestResult&, unsigned) override { }
+    virtual void mouseDidMoveOverElement(const HitTestResult&) override { }
 
     virtual void setToolTip(const String&, TextDirection) override { }
 

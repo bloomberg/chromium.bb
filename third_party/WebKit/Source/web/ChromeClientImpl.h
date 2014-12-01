@@ -117,8 +117,7 @@ public:
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const override;
     virtual void deviceOrPageScaleFactorChanged() const override;
     virtual void layoutUpdated(LocalFrame*) const override;
-    virtual void mouseDidMoveOverElement(
-        const HitTestResult&, unsigned modifierFlags) override;
+    virtual void mouseDidMoveOverElement(const HitTestResult&) override;
     virtual void setToolTip(const WTF::String& tooltipText, TextDirection) override;
     virtual void dispatchViewportPropertiesDidChange(const ViewportDescription&) const override;
     virtual void print(LocalFrame*) override;

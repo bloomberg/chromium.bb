@@ -527,8 +527,7 @@ void ChromeClientImpl::layoutUpdated(LocalFrame* frame) const
     m_webView->layoutUpdated(WebLocalFrameImpl::fromFrame(frame));
 }
 
-void ChromeClientImpl::mouseDidMoveOverElement(
-    const HitTestResult& result, unsigned modifierFlags)
+void ChromeClientImpl::mouseDidMoveOverElement(const HitTestResult& result)
 {
     if (!m_webView->client())
         return;

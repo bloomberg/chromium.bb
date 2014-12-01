@@ -109,7 +109,7 @@ public:
 
     IntRect windowResizerRect() const;
 
-    void mouseDidMoveOverElement(const HitTestResult&, unsigned modifierFlags);
+    void mouseDidMoveOverElement(const HitTestResult&);
 
     void setToolTip(const HitTestResult&);
 

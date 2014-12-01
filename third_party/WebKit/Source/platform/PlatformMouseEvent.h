@@ -48,7 +48,6 @@ public:
         , m_button(NoButton)
         , m_clickCount(0)
         , m_synthesized(RealOrIndistinguishable)
-        , m_modifierFlags(0)
     {
     }
 
@@ -59,7 +58,6 @@ public:
         , m_button(button)
         , m_clickCount(clickCount)
         , m_synthesized(RealOrIndistinguishable)
-        , m_modifierFlags(0)
     {
     }
 
@@ -70,7 +68,6 @@ public:
         , m_button(button)
         , m_clickCount(clickCount)
         , m_synthesized(synthesized)
-        , m_modifierFlags(0)
     {
     }
 
@@ -81,7 +78,6 @@ public:
         , m_button(button)
         , m_clickCount(clickCount)
         , m_synthesized(synthesized)
-        , m_modifierFlags(0)
     {
     }
 
@@ -91,7 +87,6 @@ public:
 
     MouseButton button() const { return m_button; }
     int clickCount() const { return m_clickCount; }
-    unsigned modifierFlags() const { return m_modifierFlags; }
     bool fromTouch() const { return m_synthesized == FromTouch; }
     SyntheticEventType syntheticEventType() const { return m_synthesized; }
 
@@ -102,7 +97,6 @@ protected:
     MouseButton m_button;
     int m_clickCount;
     SyntheticEventType m_synthesized;
-    unsigned m_modifierFlags;
 };
 
 } // namespace blink

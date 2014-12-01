@@ -147,7 +147,7 @@ public:
     virtual void deviceOrPageScaleFactorChanged() const { }
     virtual void layoutUpdated(LocalFrame*) const { }
 
-    virtual void mouseDidMoveOverElement(const HitTestResult&, unsigned modifierFlags) = 0;
+    virtual void mouseDidMoveOverElement(const HitTestResult&) = 0;
 
     virtual void setToolTip(const String&, TextDirection) = 0;
 
