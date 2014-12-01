@@ -121,7 +121,7 @@ bool NotificationUIManagerAndroid::Update(const Notification& notification,
   const GURL origin_url = notification.origin_url();
   DCHECK(origin_url.is_valid());
 
-  for (auto iterator : profile_notifications_) {
+  for (const auto& iterator : profile_notifications_) {
     ProfileNotification* profile_notification = iterator.second;
     if (profile_notification->notification().replace_id() != replace_id ||
         profile_notification->notification().origin_url() != origin_url ||

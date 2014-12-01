@@ -25,7 +25,7 @@ DisplayManager* GetDisplayManager() {
 ui::TouchscreenDevice FindTouchscreenById(unsigned int id) {
   const std::vector<ui::TouchscreenDevice>& touchscreens =
       ui::DeviceDataManager::GetInstance()->touchscreen_devices();
-  for (auto touchscreen : touchscreens) {
+  for (const auto& touchscreen : touchscreens) {
     if (touchscreen.id == id)
       return touchscreen;
   }

@@ -1139,7 +1139,7 @@ void RenderTextHarfBuzz::ShapeRun(internal::TextRunHarfBuzz* run) {
 #endif
 
   // Try shaping with the fallback fonts.
-  for (auto family : fallback_families) {
+  for (const auto& family : fallback_families) {
     if (family == primary_family)
       continue;
 #if defined(OS_WIN)
