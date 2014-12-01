@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -19,6 +20,8 @@
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/extensions/webstore_startup_installer.h"
+#include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_audio_history_handler.h"
@@ -39,7 +42,9 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/one_shot_event.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 using extensions::BrowserContextKeyedAPIFactory;
 using extensions::HotwordPrivateEventService;
@@ -195,7 +200,54 @@ const char kHotwordFieldTrialExperimentalGroupName[] = "Experimental";
 const char kHotwordUnusablePrefName[] = "hotword.search_enabled";
 // String passed to indicate the training state has changed.
 const char kHotwordTrainingEnabled[] = "hotword_training_enabled";
+// Id of the hotword notification.
+const char kHotwordNotificationId[] = "hotword";
+// Notifier id for the hotword notification.
+const char kHotwordNotifierId[] = "hotword.notification";
 }  // namespace hotword_internal
+
+// Delegate for the hotword notification.
+class HotwordNotificationDelegate : public NotificationDelegate {
+ public:
+  explicit HotwordNotificationDelegate(Profile* profile)
+      : profile_(profile) {
+  }
+
+  // Overridden from NotificationDelegate:
+  void ButtonClick(int button_index) override {
+    DCHECK_EQ(0, button_index);
+
+    // Launch the hotword audio verification app in the right mode.
+    HotwordService::LaunchMode launch_mode =
+        HotwordService::HOTWORD_AND_AUDIO_HISTORY;
+    if (profile_->GetPrefs()->GetBoolean(
+            prefs::kHotwordAudioHistoryEnabled)) {
+      // TODO(rlp): Make sure the Chrome Audio History pref is synced
+      // to the account-level Audio History setting from footprints.
+      launch_mode = HotwordService::HOTWORD_ONLY;
+    }
+
+    HotwordService* hotword_service =
+        HotwordServiceFactory::GetForProfile(profile_);
+
+    if (!hotword_service)
+      return;
+
+    hotword_service->LaunchHotwordAudioVerificationApp(launch_mode);
+  }
+
+  // Overridden from NotificationDelegate:
+  std::string id() const override {
+    return hotword_internal::kHotwordNotificationId;
+  }
+
+ private:
+  ~HotwordNotificationDelegate() override {}
+
+  Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(HotwordNotificationDelegate);
+};
 
 // static
 bool HotwordService::DoesHotwordSupportLanguage(Profile* profile) {
@@ -268,9 +320,63 @@ HotwordService::HotwordService(Profile* profile)
   }
 
   audio_history_handler_.reset(new HotwordAudioHistoryHandler(profile_));
+
+  if (HotwordServiceFactory::IsHotwordHardwareAvailable() &&
+      IsHotwordAllowed() &&
+      IsExperimentalHotwordingEnabled()) {
+    // Show the hotword notification in 5 seconds if the experimental flag is
+    // on, or in 30 minutes if not. We need to wait at least a few seconds
+    // for the hotword extension to be installed.
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(switches::kEnableExperimentalHotwordHardware)) {
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&HotwordService::ShowHotwordNotification,
+                     weak_factory_.GetWeakPtr()),
+          base::TimeDelta::FromSeconds(5));
+    } else if (!profile_->GetPrefs()->GetBoolean(
+                   prefs::kHotwordAlwaysOnNotificationSeen)) {
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&HotwordService::ShowHotwordNotification,
+                     weak_factory_.GetWeakPtr()),
+          base::TimeDelta::FromMinutes(30));
+    }
+  }
 }
 
 HotwordService::~HotwordService() {
+}
+
+void HotwordService::ShowHotwordNotification() {
+  // Check for enabled here in case always-on was enabled during the delay.
+  if (!IsServiceAvailable() || IsAlwaysOnEnabled())
+    return;
+
+  message_center::RichNotificationData data;
+  const base::string16 label = l10n_util::GetStringUTF16(
+        IDS_HOTWORD_NOTIFICATION_BUTTON);
+  data.buttons.push_back(message_center::ButtonInfo(label));
+
+  Notification notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      GURL(),
+      l10n_util::GetStringUTF16(IDS_HOTWORD_NOTIFICATION_TITLE),
+      l10n_util::GetStringUTF16(IDS_HOTWORD_NOTIFICATION_DESCRIPTION),
+      ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_HOTWORD_NOTIFICATION_ICON),
+      blink::WebTextDirectionDefault,
+      message_center::NotifierId(
+          message_center::NotifierId::SYSTEM_COMPONENT,
+          hotword_internal::kHotwordNotifierId),
+      base::string16(),
+      base::string16(),
+      data,
+      new HotwordNotificationDelegate(profile_));
+
+  g_browser_process->notification_ui_manager()->Add(notification, profile_);
+  profile_->GetPrefs()->SetBoolean(
+      prefs::kHotwordAlwaysOnNotificationSeen, true);
 }
 
 void HotwordService::OnExtensionUninstalled(

@@ -153,6 +153,9 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   // Returns the ID of the extension that may need to be reinstalled.
   std::string ReinstalledExtensionId();
 
+  // Creates a notification for always-on hotwording.
+  void ShowHotwordNotification();
+
   Profile* profile_;
 
   PrefChangeRegistrar pref_registrar_;
@@ -174,10 +177,13 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   // Whether we are currently in the process of training the speaker model.
   bool training_;
 
-  base::WeakPtrFactory<HotwordService> weak_factory_;
-
   // Stores the launch mode for the Hotword Audio Verification App.
   LaunchMode hotword_audio_verification_launch_mode_;
+
+  // The WeakPtrFactory should be the last member, so the weak pointer
+  // gets invalidated before the destructors for other members run,
+  // to avoid callbacks into a half-destroyed object.
+  base::WeakPtrFactory<HotwordService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HotwordService);
 };

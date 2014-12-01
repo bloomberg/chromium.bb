@@ -1722,17 +1722,14 @@ void BrowserOptionsHandler::HandleLaunchHotwordAudioVerificationApp(
   if (retrain) {
     DCHECK(profile->GetPrefs()->GetBoolean(
         prefs::kHotwordAlwaysOnSearchEnabled));
-    DCHECK(profile->GetPrefs()->GetBoolean(
-        prefs::kHotwordAudioHistoryEnabled));
 
     launch_mode = HotwordService::RETRAIN;
+    // TODO(rlp): Make sure the Chrome Audio History pref is synced
+    // to the account-level Audio History setting from footprints.
   } else if (profile->GetPrefs()->GetBoolean(
       prefs::kHotwordAudioHistoryEnabled)) {
     DCHECK(!profile->GetPrefs()->GetBoolean(
         prefs::kHotwordAlwaysOnSearchEnabled));
-
-    // TODO(kcarattini): Make sure the Chrome Audio History pref is synced
-    // to the account-level Audio History setting from footprints.
     launch_mode = HotwordService::HOTWORD_ONLY;
   } else {
     DCHECK(!profile->GetPrefs()->GetBoolean(

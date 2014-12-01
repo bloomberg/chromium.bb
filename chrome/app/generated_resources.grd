@@ -15255,12 +15255,23 @@ Do you accept?
       <message name="IDS_HOTWORD_OPT_IN_FINISH" desc="Text on the finish button for the 'Ok Google' hotword opt-in dialog.">
         OK
       </message>
-      <message name="IDS_HOTWORD_OPT_IN_FINISHED_WAIT" desc="The text displayed when waiting for the voice model training to complete. ">
+      <message name="IDS_HOTWORD_OPT_IN_FINISHED_WAIT" desc="The text displayed when waiting for the voice model training to complete.">
         Processing ...
       </message>
 
       <message name="IDS_CAPTIVE_PORTAL_AUTHORIZATION_DIALOG_NAME" desc="Name of the modal Web dialog (displayed in the title) displaying captive portal login page on ChromeOS.">
         Captive Portal Authorization
+      </message>
+
+      <!-- Hotword Notification -->
+      <message name="IDS_HOTWORD_NOTIFICATION_TITLE" desc="The text displayed as the title for the hotword notification. ">
+        Voice search at any time
+      </message>
+      <message name="IDS_HOTWORD_NOTIFICATION_DESCRIPTION" desc="The text displayed as the description for the hotword notification. ">
+        Enable "Ok Google" to voice search when your screen is on and unlocked
+      </message>
+      <message name="IDS_HOTWORD_NOTIFICATION_BUTTON" desc="The text displayed on the button of the hotword notification. ">
+        Enable "Ok Google"
       </message>
     </messages>
   </release>

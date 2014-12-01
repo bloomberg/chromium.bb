@@ -351,6 +351,7 @@
         <structure type="chrome_scaled_image" name="IDR_HOME_H" file="common/browser_home_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_HOME_P" file="common/browser_home_pressed.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_HOTWORD_NOTIFICATION_ICON" file="common/notification_hotword_icon.png" />
       <if expr="not is_android and not is_ios">
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_ADD_USER" file="common/icon_add_user.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_BROWSE_GUEST" file="common/icon_browse_as_guest.png" />
@@ -1206,7 +1207,6 @@
       <structure type="chrome_scaled_image" name="IDR_PEOPLE_SEARCH_ACTION_CHAT" file="common/chat.png" />
       <structure type="chrome_scaled_image" name="IDR_PEOPLE_SEARCH_ACTION_CHAT_HOVER" file="common/chat_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_PEOPLE_SEARCH_ACTION_CHAT_PRESSED" file="common/chat_pressed.png" />
-
     </structures>
   </release>
 </grit>

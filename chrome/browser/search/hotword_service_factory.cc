@@ -125,6 +125,9 @@ void HotwordServiceFactory::RegisterProfilePrefs(
   prefs->RegisterBooleanPref(prefs::kHotwordAlwaysOnSearchEnabled,
                              false,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kHotwordAlwaysOnNotificationSeen,
+                             false,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 KeyedService* HotwordServiceFactory::BuildServiceInstanceFor(

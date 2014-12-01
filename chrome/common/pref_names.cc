@@ -1787,6 +1787,11 @@ const char kHotwordSearchEnabled[] = "hotword.search_enabled_2";
 // trigger from any screen.
 const char kHotwordAlwaysOnSearchEnabled[] = "hotword.always_on_search_enabled";
 
+// A boolean pref that indicates whether the hotword always-on notification
+// has been seen already.
+const char kHotwordAlwaysOnNotificationSeen[] =
+    "hotword.always_on_notification_seen";
+
 // A boolean pref that controls whether the sound of "Ok, Google" plus a few
 // seconds of audio data before is sent back to improve voice search.
 const char kHotwordAudioLoggingEnabled[] = "hotword.audio_logging_enabled";
