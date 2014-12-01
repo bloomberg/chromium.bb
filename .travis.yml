@@ -29,3 +29,10 @@ script: "./autogen.sh && ./configure $ENABLE_UCS4 && make && make check"
 # tell the irc channel about the results of the build
 notifications:
   irc: "irc.oftc.net#liblouis"
+
+# do not build on the following branches
+branches:
+  except:
+    - ikiwiki_ctl
+    - website
+    - formal_braille_spec
