@@ -83,8 +83,6 @@
     boolean hasAutofocusRequest(optional Document document);
     [RaisesException] DOMString[] formControlStateOfHistoryItem();
     [RaisesException] void setFormControlStateOfHistoryItem(sequence<DOMString> values);
-    [RaisesException] void setEnableMockPagePopup(boolean enabled);
-    readonly attribute PagePopupController pagePopupController;
     readonly attribute Window pagePopupWindow;
 
     [RaisesException] ClientRect absoluteCaretBounds();

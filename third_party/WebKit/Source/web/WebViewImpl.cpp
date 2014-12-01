@@ -1592,7 +1592,7 @@ void WebViewImpl::closePagePopup(PagePopup* popup)
     m_pagePopup = nullptr;
 }
 
-LocalDOMWindow* WebViewImpl::pagePopupWindow()
+LocalDOMWindow* WebViewImpl::pagePopupWindow() const
 {
     return m_pagePopup ? m_pagePopup->window() : nullptr;
 }

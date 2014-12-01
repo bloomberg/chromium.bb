@@ -117,9 +117,7 @@ public:
 
     virtual bool hasOpenedPopup() const override { return false; }
     virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) const override;
-    virtual void setPagePopupDriver(PagePopupDriver*) override { }
-    virtual void resetPagePopupDriver() override { }
-    virtual PagePopupDriver* pagePopupDriver() const override { return nullptr; }
+    virtual DOMWindow* pagePopupWindowForTesting() const override { return nullptr; }
 
     virtual void setStatusbarText(const String&) override { }
 

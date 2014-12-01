@@ -108,7 +108,6 @@
 #include "core/page/FocusController.h"
 #include "core/page/NetworkStateNotifier.h"
 #include "core/page/Page.h"
-#include "core/page/PagePopupController.h"
 #include "core/page/PrintContext.h"
 #include "core/plugins/testing/DictionaryPluginPlaceholder.h"
 #include "core/plugins/testing/DocumentFragmentPluginPlaceholder.h"
@@ -124,7 +123,6 @@
 #include "core/testing/InternalSettings.h"
 #include "core/testing/LayerRect.h"
 #include "core/testing/LayerRectList.h"
-#include "core/testing/MockPagePopupDriver.h"
 #include "core/testing/PluginPlaceholderOptions.h"
 #include "core/testing/PrivateScriptTest.h"
 #include "core/testing/TypeConversions.h"
@@ -180,9 +178,6 @@ private:
 
 } // namespace
 
-// FIXME: oilpan: These will be removed soon.
-static MockPagePopupDriver* s_pagePopupDriver = 0;
-
 using namespace HTMLNames;
 
 static bool markerTypesFrom(const String& markerType, DocumentMarker::MarkerTypes& result)
@@ -227,9 +222,6 @@ void Internals::resetToConsistentState(Page* page)
     page->setIsCursorVisible(true);
     page->setPageScaleFactor(1, IntPoint(0, 0));
     blink::overrideUserPreferredLanguages(Vector<AtomicString>());
-    delete s_pagePopupDriver;
-    s_pagePopupDriver = 0;
-    page->chrome().client().resetPagePopupDriver();
     if (!page->deprecatedLocalMainFrame()->spellChecker().isContinuousSpellCheckingEnabled())
         page->deprecatedLocalMainFrame()->spellChecker().toggleContinuousSpellChecking();
     if (page->deprecatedLocalMainFrame()->editor().isOverwriteModeEnabled())
@@ -658,38 +650,14 @@ void Internals::setFormControlStateOfHistoryItem(const Vector<String>& state, Ex
     mainItem->setDocumentState(state);
 }
 
-void Internals::setEnableMockPagePopup(bool enabled, ExceptionState& exceptionState)
-{
-    Document* document = contextDocument();
-    if (!document || !document->page())
-        return;
-    Page* page = document->page();
-    if (!enabled) {
-        page->chrome().client().resetPagePopupDriver();
-        return;
-    }
-    if (!s_pagePopupDriver)
-        s_pagePopupDriver = MockPagePopupDriver::create(page->deprecatedLocalMainFrame()).leakPtr();
-    page->chrome().client().setPagePopupDriver(s_pagePopupDriver);
-}
-
-PassRefPtrWillBeRawPtr<PagePopupController> Internals::pagePopupController()
-{
-    return s_pagePopupDriver ? s_pagePopupDriver->pagePopupController() : 0;
-}
-
 DOMWindow* Internals::pagePopupWindow() const
 {
     Document* document = contextDocument();
     if (!document)
         return nullptr;
-    Page* page = document->page();
-    if (!page)
-        return nullptr;
-    PagePopupDriver* pagePopupDriver = page->chrome().client().pagePopupDriver();
-    if (!pagePopupDriver)
-        return nullptr;
-    return pagePopupDriver->pagePopupWindow();
+    if (Page* page = document->page())
+        return page->chrome().client().pagePopupWindowForTesting();
+    return nullptr;
 }
 
 PassRefPtrWillBeRawPtr<ClientRect> Internals::absoluteCaretBounds(ExceptionState& exceptionState)

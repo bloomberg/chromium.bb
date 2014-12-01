@@ -48,7 +48,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Page.h"
-#include "core/page/PagePopupDriver.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/compositing/CompositedSelectionBound.h"
@@ -127,7 +126,6 @@ static WebSelectionBound toWebSelectionBound(const CompositedSelectionBound& bou
 
 ChromeClientImpl::ChromeClientImpl(WebViewImpl* webView)
     : m_webView(webView)
-    , m_pagePopupDriver(webView)
 {
 }
 
@@ -730,25 +728,17 @@ PassRefPtrWillBeRawPtr<PopupMenu> ChromeClientImpl::createPopupMenu(LocalFrame& 
 
 PagePopup* ChromeClientImpl::openPagePopup(PagePopupClient* client, const IntRect& originBoundsInRootView)
 {
-    ASSERT(m_pagePopupDriver);
-    return m_pagePopupDriver->openPagePopup(client, originBoundsInRootView);
+    return m_webView->openPagePopup(client, originBoundsInRootView);
 }
 
 void ChromeClientImpl::closePagePopup(PagePopup* popup)
 {
-    ASSERT(m_pagePopupDriver);
-    m_pagePopupDriver->closePagePopup(popup);
+    m_webView->closePagePopup(popup);
 }
 
-void ChromeClientImpl::setPagePopupDriver(PagePopupDriver* driver)
+DOMWindow* ChromeClientImpl::pagePopupWindowForTesting() const
 {
-    ASSERT(driver);
-    m_pagePopupDriver = driver;
-}
-
-void ChromeClientImpl::resetPagePopupDriver()
-{
-    m_pagePopupDriver = m_webView;
+    return m_webView->pagePopupWindow();
 }
 
 bool ChromeClientImpl::shouldRunModalDialogDuringPageDismissal(const DialogType& dialogType, const String& dialogMessage, Document::PageDismissalType dismissalType) const

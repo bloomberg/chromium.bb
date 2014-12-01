@@ -32,7 +32,6 @@
 #define WebViewImpl_h
 
 #include "core/page/EventWithHitTestResults.h"
-#include "core/page/PagePopupDriver.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -84,7 +83,6 @@ struct WebSelectionBound;
 class WebViewImpl final : public WebView
     , public RefCounted<WebViewImpl>
     , public WebGestureCurveTarget
-    , public PagePopupDriver
     , public PageWidgetEventHandler {
 public:
     static WebViewImpl* create(WebViewClient*);
@@ -410,10 +408,9 @@ public:
     // Notification that a popup was opened/closed.
     void popupOpened(PopupContainer*);
     void popupClosed(PopupContainer*);
-    // PagePopupDriver functions.
-    virtual PagePopup* openPagePopup(PagePopupClient*, const IntRect& originBoundsInRootView) override;
-    virtual void closePagePopup(PagePopup*) override;
-    virtual LocalDOMWindow* pagePopupWindow() override;
+    PagePopup* openPagePopup(PagePopupClient*, const IntRect& originBoundsInRootView);
+    void closePagePopup(PagePopup*);
+    LocalDOMWindow* pagePopupWindow() const;
 
     // Returns the input event we're currently processing. This is used in some
     // cases where the WebCore DOM event doesn't have the information we need.

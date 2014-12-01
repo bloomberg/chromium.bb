@@ -3470,8 +3470,6 @@
             'testing/LayerRect.h',
             'testing/LayerRectList.cpp',
             'testing/LayerRectList.h',
-            'testing/MockPagePopupDriver.cpp',
-            'testing/MockPagePopupDriver.h',
             'testing/NullExecutionContext.cpp',
             'testing/NullExecutionContext.h',
             'testing/PartialPrivateScriptTest.h',

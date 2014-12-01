@@ -155,9 +155,7 @@ public:
     virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) const override;
     PagePopup* openPagePopup(PagePopupClient*, const IntRect&);
     void closePagePopup(PagePopup*);
-    virtual void setPagePopupDriver(PagePopupDriver*) override;
-    virtual void resetPagePopupDriver() override;
-    virtual PagePopupDriver* pagePopupDriver() const override { return m_pagePopupDriver; }
+    virtual DOMWindow* pagePopupWindowForTesting() const override;
 
     virtual bool shouldRunModalDialogDuringPageDismissal(const DialogType&, const String& dialogMessage, Document::PageDismissalType) const override;
 

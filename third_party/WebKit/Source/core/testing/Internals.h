@@ -63,7 +63,6 @@ class LocalDOMWindow;
 class LocalFrame;
 class Node;
 class Page;
-class PagePopupController;
 class PluginPlaceholderOptions;
 class PrivateScriptTest;
 class Range;
@@ -137,8 +136,6 @@ public:
     bool hasAutofocusRequest();
     Vector<String> formControlStateOfHistoryItem(ExceptionState&);
     void setFormControlStateOfHistoryItem(const Vector<String>&, ExceptionState&);
-    void setEnableMockPagePopup(bool, ExceptionState&);
-    PassRefPtrWillBeRawPtr<PagePopupController> pagePopupController();
     DOMWindow* pagePopupWindow() const;
 
     PassRefPtrWillBeRawPtr<ClientRect> absoluteCaretBounds(ExceptionState&);

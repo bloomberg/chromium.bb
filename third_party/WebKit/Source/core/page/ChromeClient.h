@@ -193,10 +193,7 @@ public:
     // Checks if there is an opened popup, called by RenderMenuList::showPopup().
     virtual bool hasOpenedPopup() const = 0;
     virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) const = 0;
-    // For testing.
-    virtual void setPagePopupDriver(PagePopupDriver*) = 0;
-    virtual void resetPagePopupDriver() = 0;
-    virtual PagePopupDriver* pagePopupDriver() const = 0;
+    virtual DOMWindow* pagePopupWindowForTesting() const = 0;
 
     virtual void postAccessibilityNotification(AXObject*, AXObjectCache::AXNotification) { }
     virtual String acceptLanguages() = 0;

@@ -4,23 +4,6 @@ var popupWindow = null;
 
 var popupOpenCallback = null;
 
-function openPickerWithMock(input, callback) {
-    if (window.internals)
-        internals.setEnableMockPagePopup(true);
-    input.offsetTop; // Force to lay out
-    if (input.type === "color") {
-        input.focus();
-        eventSender.keyDown(" ");
-    } else {
-        sendKey(input, "Down", false, true);
-    }
-    popupWindow = document.getElementById('mock-page-popup').contentWindow;
-    if (typeof callback === "function") {
-        popupOpenCallback = callback;
-        popupWindow.addEventListener("didOpenPicker", popupOpenCallbackWrapper, false);
-    }
-}
-
 function popupOpenCallbackWrapper() {
     popupWindow.removeEventListener("didOpenPicker", popupOpenCallbackWrapper);
     setTimeout(popupOpenCallback, 0);
