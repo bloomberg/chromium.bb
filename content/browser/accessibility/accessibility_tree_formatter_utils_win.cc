@@ -200,6 +200,7 @@ AccessibilityRoleStateMap::AccessibilityRoleStateMap() {
   IA2_STATE_MAP(IA2_STATE_CHECKABLE)
   IA2_STATE_MAP(IA2_STATE_DEFUNCT)
   IA2_STATE_MAP(IA2_STATE_EDITABLE)
+  IA2_STATE_MAP(IA2_STATE_HORIZONTAL)
   IA2_STATE_MAP(IA2_STATE_ICONIFIED)
   IA2_STATE_MAP(IA2_STATE_INVALID_ENTRY)
   IA2_STATE_MAP(IA2_STATE_MANAGES_DESCENDANTS)
@@ -211,12 +212,11 @@ AccessibilityRoleStateMap::AccessibilityRoleStateMap() {
   IA2_STATE_MAP(IA2_STATE_STALE)
   IA2_STATE_MAP(IA2_STATE_SUPPORTS_AUTOCOMPLETION)
   IA2_STATE_MAP(IA2_STATE_TRANSIENT)
+  IA2_STATE_MAP(IA2_STATE_VERTICAL)
 
   // Untested states include those that would be repeated on nearly every node,
   // or would vary based on window size.
-  // IA2_STATE_MAP(IA2_STATE_HORIZONTAL) // Untested.
   // IA2_STATE_MAP(IA2_STATE_OPAQUE) // Untested.
-  // IA2_STATE_MAP(IA2_STATE_VERTICAL) // Untested.
 }
 
 }  // namespace.

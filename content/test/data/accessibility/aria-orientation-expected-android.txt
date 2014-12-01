@@ -1,3 +1,40 @@
 android.webkit.WebView focusable focused scrollable
-    android.view.View range range_max=17 range_current_value=14
-    android.view.View range range_max=17 range_current_value=14
+    android.widget.Spinner
+    android.widget.Spinner
+    android.widget.Spinner
+    android.widget.ListView collection
+    android.widget.ListView collection
+    android.widget.ListView collection
+    android.view.View
+    android.view.View
+    android.view.View
+    android.view.View
+    android.view.View
+    android.view.View
+    android.view.View
+    android.view.View
+    android.view.View
+    android.view.View range
+    android.view.View range
+    android.view.View range
+    android.widget.SeekBar range item_count=100
+    android.widget.SeekBar range item_count=100
+    android.widget.SeekBar range item_count=100
+    android.view.View
+    android.view.View
+    android.view.View
+    android.widget.TabWidget
+    android.widget.TabWidget
+    android.widget.TabWidget
+    android.view.View
+    android.view.View
+    android.view.View
+    android.view.View collection hierarchical
+    android.view.View collection hierarchical
+    android.view.View collection hierarchical
+    android.widget.GridView collection
+        android.view.View
+    android.widget.GridView collection
+        android.view.View
+    android.widget.GridView collection
+        android.view.View

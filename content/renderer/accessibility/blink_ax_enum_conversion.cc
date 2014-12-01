@@ -73,8 +73,10 @@ uint32 AXStateFromBlink(const blink::WebAXObject& o) {
   if (o.isEnabled())
     state |= (1 << ui::AX_STATE_ENABLED);
 
-  if (o.isVertical())
+  if (o.orientation() == blink::WebAXOrientationVertical)
     state |= (1 << ui::AX_STATE_VERTICAL);
+  else if (o.orientation() == blink::WebAXOrientationHorizontal)
+    state |= (1 << ui::AX_STATE_HORIZONTAL);
 
   if (o.isVisited())
     state |= (1 << ui::AX_STATE_VISITED);

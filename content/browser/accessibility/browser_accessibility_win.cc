@@ -3358,11 +3358,10 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     ia_state_ |= STATE_SYSTEM_TRAVERSED;
   if (!HasState(ui::AX_STATE_ENABLED))
     ia_state_ |= STATE_SYSTEM_UNAVAILABLE;
-  if (HasState(ui::AX_STATE_VERTICAL)) {
+  if (HasState(ui::AX_STATE_VERTICAL))
     ia2_state_ |= IA2_STATE_VERTICAL;
-  } else {
+  if (HasState(ui::AX_STATE_HORIZONTAL))
     ia2_state_ |= IA2_STATE_HORIZONTAL;
-  }
   if (HasState(ui::AX_STATE_VISITED))
     ia_state_ |= STATE_SYSTEM_TRAVERSED;
 

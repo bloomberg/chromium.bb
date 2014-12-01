@@ -201,6 +201,7 @@
     focusable,
     focused,
     haspopup,
+    horizontal,
     hovered,
     indeterminate,
     invisible,

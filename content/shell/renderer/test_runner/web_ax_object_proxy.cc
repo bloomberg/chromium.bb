@@ -297,13 +297,6 @@ std::string GetTitle(const blink::WebAXObject& object) {
   return title.insert(0, "AXTitle: ");
 }
 
-std::string GetOrientation(const blink::WebAXObject& object) {
-  if (object.isVertical())
-    return "AXOrientation: AXVerticalOrientation";
-
-  return "AXOrientation: AXHorizontalOrientation";
-}
-
 std::string GetValueDescription(const blink::WebAXObject& object) {
   std::string value_description = object.valueDescription().utf8();
   return value_description.insert(0, "AXValueDescription: ");
@@ -776,7 +769,13 @@ bool WebAXObjectProxy::IsReadOnly() {
 
 std::string WebAXObjectProxy::Orientation() {
   accessibility_object_.updateLayoutAndCheckValidity();
-  return GetOrientation(accessibility_object_);
+  if (accessibility_object_.orientation() == blink::WebAXOrientationVertical)
+    return "AXOrientation: AXVerticalOrientation";
+  else if (accessibility_object_.orientation()
+           == blink::WebAXOrientationHorizontal)
+    return "AXOrientation: AXHorizontalOrientation";
+
+  return std::string();
 }
 
 int WebAXObjectProxy::ClickPointX() {
