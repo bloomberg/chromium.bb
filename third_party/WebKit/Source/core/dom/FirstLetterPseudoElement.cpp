@@ -203,7 +203,7 @@ void FirstLetterPseudoElement::detach(const AttachContext& context)
     TemporaryChange<bool> isInDetach(m_isInDetach, true);
 
     if (m_remainingTextRenderer) {
-        if (m_remainingTextRenderer->node()) {
+        if (m_remainingTextRenderer->node() && document().isActive()) {
             Text* textNode = toText(m_remainingTextRenderer->node());
             m_remainingTextRenderer->setText(textNode->dataImpl(), true);
         }
