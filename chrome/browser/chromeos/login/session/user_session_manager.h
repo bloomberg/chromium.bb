@@ -206,6 +206,9 @@ class UserSessionManager
   // Update Easy unlock cryptohome keys for given user context.
   void UpdateEasyUnlockKeys(const UserContext& user_context);
 
+  // Removes a profile from the per-user input methods states map.
+  void RemoveProfileForTesting(Profile* profile);
+
  private:
   friend struct DefaultSingletonTraits<UserSessionManager>;
 

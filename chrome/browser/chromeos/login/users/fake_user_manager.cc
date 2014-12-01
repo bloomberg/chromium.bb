@@ -167,6 +167,12 @@ void FakeUserManager::SwitchActiveUser(const std::string& email) {
   active_user_id_ = email;
   ProfileHelper::Get()->ActiveUserHashChanged(
       ProfileHelper::GetUserIdHashByUserIdForTesting(email));
+  if (user_list_.size() && !active_user_id_.empty()) {
+    for (user_manager::UserList::const_iterator it = user_list_.begin();
+         it != user_list_.end(); ++it) {
+      (*it)->set_is_active((*it)->email() == active_user_id_);
+    }
+  }
 }
 
 void FakeUserManager::SaveUserDisplayName(
