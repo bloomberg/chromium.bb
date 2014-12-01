@@ -950,7 +950,7 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
   }
 
   // Scrolling after a pinch gesture should always be in local space.  The
-  // scroll deltas do not have the page scale factor applied.
+  // scroll deltas have the page scale factor applied.
   {
     host_impl_->active_tree()->SetPageScaleFactorAndLimits(
         page_scale_factor, min_page_scale, max_page_scale);
@@ -973,9 +973,8 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
 
     scoped_ptr<ScrollAndScaleSet> scroll_info =
         host_impl_->ProcessScrollDeltas();
-    ExpectContains(*scroll_info.get(),
-                   scroll_layer->id(),
-                   scroll_delta);
+    ExpectContains(*scroll_info.get(), scroll_layer->id(),
+                   gfx::Vector2d(0, scroll_delta.y() / page_scale_delta));
   }
 }
 
@@ -3601,7 +3600,7 @@ TEST_F(LayerTreeHostImplTest, ScrollScaledLayer) {
   host_impl_->ScrollBy(gfx::Point(), wheel_scroll_delta);
   host_impl_->ScrollEnd();
 
-  // The scale should not have been applied to the scroll delta.
+  // It should apply the scale factor to the scroll delta for the wheel event.
   scroll_info = host_impl_->ProcessScrollDeltas();
   ExpectContains(*scroll_info.get(),
                  scroll_layer->id(),
@@ -7825,6 +7824,41 @@ TEST_F(LayerTreeHostImplTest, DidBecomeActive) {
   EXPECT_EQ(3u, raw_pending_layer->did_become_active_call_count());
   EXPECT_EQ(2u, raw_mask_layer->did_become_active_call_count());
   EXPECT_EQ(1u, raw_replica_mask_layer->did_become_active_call_count());
+}
+
+TEST_F(LayerTreeHostImplTest, WheelScrollWithPageScaleFactorOnInnerLayer) {
+  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  DrawFrame();
+
+  EXPECT_EQ(scroll_layer, host_impl_->InnerViewportScrollLayer());
+
+  float min_page_scale = 1.f, max_page_scale = 4.f;
+  float page_scale_factor = 1.f;
+
+  // The scroll deltas should have the page scale factor applied.
+  {
+    host_impl_->active_tree()->SetPageScaleFactorAndLimits(
+        page_scale_factor, min_page_scale, max_page_scale);
+    host_impl_->active_tree()->SetPageScaleDelta(1.f);
+    scroll_layer->SetScrollDelta(gfx::Vector2d());
+
+    float page_scale_delta = 2.f;
+    host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture);
+    host_impl_->PinchGestureBegin();
+    host_impl_->PinchGestureUpdate(page_scale_delta, gfx::Point());
+    host_impl_->PinchGestureEnd();
+    host_impl_->ScrollEnd();
+
+    gfx::Vector2dF scroll_delta(0, 5);
+    EXPECT_EQ(InputHandler::ScrollStarted,
+              host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(), scroll_layer->TotalScrollOffset());
+
+    host_impl_->ScrollBy(gfx::Point(), scroll_delta);
+    host_impl_->ScrollEnd();
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 2.5), scroll_layer->TotalScrollOffset());
+  }
 }
 
 class LayerTreeHostImplCountingLostSurfaces : public LayerTreeHostImplTest {

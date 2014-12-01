@@ -2551,10 +2551,14 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
   return actual_viewport_end_point - viewport_point;
 }
 
-static gfx::Vector2dF ScrollLayerWithLocalDelta(LayerImpl* layer_impl,
-    const gfx::Vector2dF& local_delta) {
+static gfx::Vector2dF ScrollLayerWithLocalDelta(
+    LayerImpl* layer_impl,
+    const gfx::Vector2dF& local_delta,
+    float page_scale_factor) {
   gfx::Vector2dF previous_delta(layer_impl->ScrollDelta());
-  layer_impl->ScrollBy(local_delta);
+  gfx::Vector2dF delta = local_delta;
+  delta.Scale(1.f / page_scale_factor);
+  layer_impl->ScrollBy(delta);
   return layer_impl->ScrollDelta() - previous_delta;
 }
 
@@ -2632,7 +2636,8 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     // Gesture events need to be transformed from viewport coordinates to local
     // layer coordinates so that the scrolling contents exactly follow the
     // user's finger. In contrast, wheel events represent a fixed amount of
-    // scrolling so we can just apply them directly.
+    // scrolling so we can just apply them directly, but the page scale factor
+    // is applied to the scroll delta.
     if (!wheel_scrolling_) {
       float scale_from_viewport_to_screen_space = device_scale_factor_;
       applied_delta =
@@ -2640,7 +2645,8 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
                                             scale_from_viewport_to_screen_space,
                                             viewport_point, pending_delta);
     } else {
-      applied_delta = ScrollLayerWithLocalDelta(layer_impl, pending_delta);
+      applied_delta = ScrollLayerWithLocalDelta(
+          layer_impl, pending_delta, active_tree_->total_page_scale_factor());
     }
 
     const float kEpsilon = 0.1f;
@@ -2762,7 +2768,8 @@ bool LayerTreeHostImpl::ScrollVerticallyByPage(const gfx::Point& viewport_point,
 
     gfx::Vector2dF delta = gfx::Vector2dF(0.f, page);
 
-    gfx::Vector2dF applied_delta = ScrollLayerWithLocalDelta(layer_impl, delta);
+    gfx::Vector2dF applied_delta =
+        ScrollLayerWithLocalDelta(layer_impl, delta, 1.f);
 
     if (!applied_delta.IsZero()) {
       client_->SetNeedsCommitOnImplThread();
