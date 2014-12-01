@@ -110,7 +110,6 @@ table_files = \
 	Fr-Ca-g2.ctb \
 	fr-fr-g1.utb \
 	Fr-Fr-g2.ctb \
-	ga.ctb \
 	gd.ctb \
 	gon.ctb \
 	gr-bb.ctb \
