@@ -50,6 +50,8 @@
         'password_manager/core/browser/password_manager_internals_service.h',
         'password_manager/core/browser/password_manager_metrics_util.cc',
         'password_manager/core/browser/password_manager_metrics_util.h',
+        'password_manager/core/browser/password_manager_url_collection_experiment.cc',
+	'password_manager/core/browser/password_manager_url_collection_experiment.h',
         'password_manager/core/browser/password_store.cc',
         'password_manager/core/browser/password_store.h',
         'password_manager/core/browser/password_store_change.h',

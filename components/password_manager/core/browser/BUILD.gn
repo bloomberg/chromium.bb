@@ -42,6 +42,8 @@ static_library("browser") {
     "password_manager_internals_service.h",
     "password_manager_metrics_util.cc",
     "password_manager_metrics_util.h",
+    "password_manager_url_collection_experiment.cc",
+    "password_manager_url_collection_experiment.h",
     "password_store.cc",
     "password_store.h",
     "password_store_change.h",

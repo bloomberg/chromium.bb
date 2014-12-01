@@ -20,6 +20,10 @@ PasswordManagerClient::GetProbabilityForExperiment(
   return 0;
 }
 
+void PasswordManagerClient::AskUserAndMaybeReportURL(
+    const std::string& url) const {
+}
+
 bool PasswordManagerClient::IsPasswordSyncEnabled(CustomPassphraseState state) {
   return false;
 }
@@ -33,6 +37,10 @@ void PasswordManagerClient::LogSavePasswordProgress(
 }
 
 bool PasswordManagerClient::IsLoggingActive() const {
+  return false;
+}
+
+bool PasswordManagerClient::ShouldAskUserToSubmitURL() {
   return false;
 }
 
