@@ -2,31 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-template("python_binary_module") {
+template("python_binary_module_sources") {
   # Only available on linux for now.
   assert(is_linux)
   assert(defined(invoker.sources))
-  assert(defined(invoker.python_base_module))
 
   cython_root = "//third_party/cython"
   cython_script = "$cython_root/src/cython.py"
   cython_output = "${target_out_dir}/${target_name}.cc"
 
   generator_target_name = target_name + "_cython_compiler"
-  shared_library_name = target_name + "_shared_library"
   config_name = target_name + "_python_config"
 
-  if (is_linux) {
-    shared_library_prefix = "lib"
-    shared_library_suffix = ".so"
-    python_module_suffix = ".so"
-  }
-
-  target_visibility = [
-    ":$generator_target_name",
-    ":$shared_library_name",
-    ":$target_name",
-  ]
+  target_visibility = [ ":$target_name" ]
 
   action(generator_target_name) {
     visibility = target_visibility
@@ -35,8 +23,10 @@ template("python_binary_module") {
     outputs = [ cython_output ]
     args = [
       "--cplus",
-      "-I", rebase_path("//", root_build_dir),
-      "-o", rebase_path(cython_output, root_build_dir),
+      "-I",
+      rebase_path("//", root_build_dir),
+      "-o",
+      rebase_path(cython_output, root_build_dir),
     ] + rebase_path(sources, root_build_dir)
   }
 
@@ -44,27 +34,25 @@ template("python_binary_module") {
     visibility = target_visibility
     python_flags = "//third_party/cython/python_flags.py"
     include_dirs = exec_script(python_flags,
-                               [ "--gn", "--includes" ],
+                               [ "--includes" ],
                                "list lines")
     libs = exec_script(python_flags,
-                       [ "--gn", "--libraries" ],
+                       [ "--libraries" ],
                        "list lines")
     lib_dirs = exec_script(python_flags,
-                           [ "--gn", "--library_dirs" ],
+                           [ "--library_dirs" ],
                            "list lines")
     if (!is_win) {
       # Generated code includes static utility functions that often go unused.
-      cflags = [
-        "-Wno-unused-function",
-      ]
+      cflags = [ "-Wno-unused-function" ]
     }
   }
 
-  shared_library(shared_library_name) {
-    visibility = target_visibility
-    deps = [
-      ":$generator_target_name",
-    ]
+  source_set(target_name) {
+    deps = [ ":$generator_target_name" ]
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
@@ -75,7 +63,48 @@ template("python_binary_module") {
     if (defined(invoker.additional_sources)) {
       sources += invoker.additional_sources
     }
-    configs += [ ":$config_name" ]
+    all_dependent_configs = [ ":$config_name" ]
+  }
+}
+
+template("python_binary_module") {
+  # Only available on linux for now.
+  assert(is_linux)
+  assert(defined(invoker.sources))
+  assert(defined(invoker.python_base_module))
+
+  sources_target_name = target_name + "_cython_sources"
+  shared_library_name = target_name + "_shared_library"
+
+  if (is_linux) {
+    shared_library_prefix = "lib"
+    shared_library_suffix = ".so"
+    python_module_suffix = ".so"
+  }
+
+  target_visibility = [
+    ":$sources_target_name",
+    ":$shared_library_name",
+    ":$target_name",
+  ]
+
+  python_binary_module_sources(sources_target_name) {
+    visibility = target_visibility
+    sources = invoker.sources
+  }
+
+  shared_library(shared_library_name) {
+    visibility = target_visibility
+    deps = [ ":$sources_target_name" ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+    if (defined(invoker.datadeps)) {
+      datadeps = invoker.datadeps
+    }
+    if (defined(invoker.additional_sources)) {
+      sources = invoker.additional_sources
+    }
     if (defined(invoker.configs)) {
       configs += invoker.configs
     }
@@ -89,8 +118,6 @@ template("python_binary_module") {
     outputs = [
       "$root_out_dir/python/$python_base_module/${target_name}${python_module_suffix}"
     ]
-    deps = [
-      ":$shared_library_name"
-    ]
+    deps = [ ":$shared_library_name" ]
   }
 }
