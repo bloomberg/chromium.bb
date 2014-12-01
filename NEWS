@@ -4,8 +4,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 ** New features
 *** New Braille tables
-- New grade 1 and grade 2 Gaeilge tables implementing the 2014 UIB standard.
-  Including tests, thanks to Ronan McGuirk, Mesar Hameed.
+- New grade 1 and grade 2 Gaeilge tables implementing the 2014 UIB
+  standard. Including tests, thanks to Ronan McGuirk, Mesar Hameed.
 
 ** Braille table improvements
 - Updates and correction to Hungarian braille tables, thanks to Hammer
@@ -16,14 +16,19 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** Backwards incompatible changes
 - Deleted ga.ctb now superseded by ga-g1.utb and ga.g2.ctb.
 
+** Bug fixes
+- fix a compiler warning in the logging code. Thanks Peter Lundblad
+  for reporting it and Michael Whapples for fixing the problem.
+
 ** Documentation updates
 - The documentation has been restructured to be more beginner friendly
-  and a short introduction to translation table writing has been added.
-  Thanks to Joseph Lee and Christian Egli
+  and a short introduction to translation table writing has been
+  added. Thanks to Joseph Lee and Christian Egli
 
 ** Other changes
 - When compiling with mingw or cygwin resulting dll is liblouis.dll.
-- runHarness.py: add new output format, conpact output mode suitable for grepping.
+- runHarness.py: add new output format, conpact output mode suitable
+  for grepping.
 
 * Noteworthy changes in release 2.6.0 (2014-9-01)
 This is the first release by the new maintainer team. A lot of work by
