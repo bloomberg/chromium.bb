@@ -291,7 +291,7 @@ class DevToolsAndroidBridge
                                const std::string& response);
 
   Profile* profile_;
-  scoped_refptr<AndroidDeviceManager> device_manager_;
+  const scoped_ptr<AndroidDeviceManager> device_manager_;
 
   typedef std::map<std::string, scoped_refptr<AndroidDeviceManager::Device>>
       DeviceMap;

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -17,11 +18,7 @@ namespace net {
 class StreamSocket;
 }
 
-class AndroidDeviceManager
-    : public base::RefCountedThreadSafe<
-          AndroidDeviceManager,
-          content::BrowserThread::DeleteOnUIThread>,
-      public base::NonThreadSafe {
+class AndroidDeviceManager : public base::NonThreadSafe {
  public:
   typedef base::Callback<void(int, const std::string&)> CommandCallback;
   typedef base::Callback<void(int result, scoped_ptr<net::StreamSocket>)>
@@ -175,7 +172,9 @@ class AndroidDeviceManager
 
   typedef std::vector<scoped_refptr<DeviceProvider> > DeviceProviders;
 
-  static scoped_refptr<AndroidDeviceManager> Create();
+  virtual ~AndroidDeviceManager();
+
+  static scoped_ptr<AndroidDeviceManager> Create();
 
   void SetDeviceProviders(const DeviceProviders& providers);
 
@@ -207,20 +206,18 @@ class AndroidDeviceManager
     base::Thread* thread_;
   };
 
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::UI>;
-  friend class base::DeleteHelper<AndroidDeviceManager>;
   AndroidDeviceManager();
-  virtual ~AndroidDeviceManager();
 
   void UpdateDevices(const DevicesCallback& callback,
-                     DeviceDescriptors* descriptors);
+                     scoped_ptr<DeviceDescriptors> descriptors);
 
   typedef std::map<std::string, base::WeakPtr<Device> > DeviceWeakMap;
 
   scoped_refptr<HandlerThread> handler_thread_;
   DeviceProviders providers_;
   DeviceWeakMap devices_;
+
+  base::WeakPtrFactory<AndroidDeviceManager> weak_factory_;
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_DEVICE_ANDROID_DEVICE_MANAGER_H_

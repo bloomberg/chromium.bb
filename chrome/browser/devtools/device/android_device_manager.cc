@@ -211,7 +211,7 @@ class DevicesRequest : public base::RefCountedThreadSafe<DevicesRequest> {
   typedef AndroidDeviceManager::DeviceProvider DeviceProvider;
   typedef AndroidDeviceManager::DeviceProviders DeviceProviders;
   typedef AndroidDeviceManager::DeviceDescriptors DeviceDescriptors;
-  typedef base::Callback<void(DeviceDescriptors*)>
+  typedef base::Callback<void(scoped_ptr<DeviceDescriptors>)>
       DescriptorsCallback;
 
   static void Start(scoped_refptr<base::MessageLoopProxy> device_message_loop,
@@ -243,7 +243,7 @@ class DevicesRequest : public base::RefCountedThreadSafe<DevicesRequest> {
   friend class base::RefCountedThreadSafe<DevicesRequest>;
   ~DevicesRequest() {
     response_message_loop_->PostTask(FROM_HERE,
-        base::Bind(callback_, descriptors_.release()));
+        base::Bind(callback_, base::Passed(&descriptors_)));
   }
 
   typedef std::vector<std::string> Serials;
@@ -450,8 +450,8 @@ AndroidDeviceManager::HandlerThread::~HandlerThread() {
 }
 
 // static
-scoped_refptr<AndroidDeviceManager> AndroidDeviceManager::Create() {
-  return new AndroidDeviceManager();
+scoped_ptr<AndroidDeviceManager> AndroidDeviceManager::Create() {
+  return make_scoped_ptr(new AndroidDeviceManager());
 }
 
 void AndroidDeviceManager::SetDeviceProviders(
@@ -470,12 +470,13 @@ void AndroidDeviceManager::QueryDevices(const DevicesCallback& callback) {
   DevicesRequest::Start(handler_thread_->message_loop(),
                         providers_,
                         base::Bind(&AndroidDeviceManager::UpdateDevices,
-                                   this,
+                                   weak_factory_.GetWeakPtr(),
                                    callback));
 }
 
 AndroidDeviceManager::AndroidDeviceManager()
-    : handler_thread_(HandlerThread::GetInstance()) {
+    : handler_thread_(HandlerThread::GetInstance()),
+      weak_factory_(this) {
 }
 
 AndroidDeviceManager::~AndroidDeviceManager() {
@@ -484,8 +485,7 @@ AndroidDeviceManager::~AndroidDeviceManager() {
 
 void AndroidDeviceManager::UpdateDevices(
     const DevicesCallback& callback,
-    DeviceDescriptors* descriptors_raw) {
-  scoped_ptr<DeviceDescriptors> descriptors(descriptors_raw);
+    scoped_ptr<DeviceDescriptors> descriptors) {
   Devices response;
   DeviceWeakMap new_devices;
   for (DeviceDescriptors::const_iterator it = descriptors->begin();
