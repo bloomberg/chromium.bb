@@ -19,6 +19,7 @@ class ImmersiveFullscreenController;
 }
 #endif
 
+class DesktopKeyboardCapture;
 class ExtensionKeybindingRegistryViews;
 
 namespace views {
@@ -82,6 +83,7 @@ class ChromeNativeAppWindowViews
   bool HasFrameColor() const override;
   SkColor ActiveFrameColor() const override;
   SkColor InactiveFrameColor() const override;
+  virtual void SetInterceptAllKeys(bool want_all_keys) override;
 
   // NativeAppWindowViews implementation.
   void InitializeWindow(
@@ -114,6 +116,9 @@ class ChromeNativeAppWindowViews
 
   // Used to show the system menu.
   scoped_ptr<views::MenuRunner> menu_runner_;
+
+  // Used to capture all keyboard events including task switching sequence.
+  scoped_ptr<DesktopKeyboardCapture> desktop_keyboard_capture_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNativeAppWindowViews);
 };

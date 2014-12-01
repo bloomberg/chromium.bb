@@ -120,6 +120,7 @@ class APIPermission {
     kInfobars,
     kInput,
     kInputMethodPrivate,
+    kInterceptAllKeys,
     kLocation,
     kLogPrivate,
     kManagement,

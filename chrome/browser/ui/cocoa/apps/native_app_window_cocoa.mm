@@ -982,6 +982,11 @@ void NativeAppWindowCocoa::SetVisibleOnAllWorkspaces(bool always_visible) {
   SetWorkspacesCollectionBehavior(window(), always_visible);
 }
 
+void NativeAppWindowCocoa::SetInterceptAllKeys(bool want_all_key) {
+  // TODO(sriramsr): implement for OSX (http://crbug.com/166928).
+  NOTIMPLEMENTED();
+}
+
 NativeAppWindowCocoa::~NativeAppWindowCocoa() {
 }
 

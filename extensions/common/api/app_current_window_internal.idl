@@ -53,6 +53,7 @@
     static void setShape(Region region);
     static void setAlwaysOnTop(boolean always_on_top);
     static void setVisibleOnAllWorkspaces(boolean always_visible);
+    static void setInterceptAllKeys(boolean want_all_keys);
   };
 
   interface Events {

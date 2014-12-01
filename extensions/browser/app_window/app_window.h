@@ -336,6 +336,10 @@ class AppWindow : public content::NotificationObserver,
   // may be false if the bit is silently switched off for security reasons.
   bool IsAlwaysOnTop() const;
 
+  // Set whether the window should get even reserved keys (modulo platform
+  // restrictions).
+  void SetInterceptAllKeys(bool want_all_keys);
+
   // Retrieve the current state of the app window as a dictionary, to pass to
   // the renderer.
   void GetSerializedState(base::DictionaryValue* properties) const;

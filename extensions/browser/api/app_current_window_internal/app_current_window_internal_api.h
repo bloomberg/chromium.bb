@@ -208,6 +208,17 @@ class AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction
   bool RunWithWindow(AppWindow* window) override;
 };
 
+class AppCurrentWindowInternalSetInterceptAllKeysFunction
+    : public AppCurrentWindowInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setInterceptAllKeys",
+                             APP_CURRENTWINDOWINTERNAL_SETINTERCEPTALLKEYS)
+
+ protected:
+  virtual ~AppCurrentWindowInternalSetInterceptAllKeysFunction() {}
+  virtual bool RunWithWindow(AppWindow* window) override;
+};
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_APP_CURRENT_WINDOW_INTERNAL_APP_CURRENT_WINDOW_INTERNAL_API_H_

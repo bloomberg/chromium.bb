@@ -394,6 +394,12 @@ namespace app.window {
     // This is only available on dev channel.
     static void setVisibleOnAllWorkspaces(boolean alwaysVisible);
 
+    // Set whether the window should get all keyboard events including system
+    // keys that are usually not sent. This is best-effort subject to platform
+    // specific constraints. Requires the <code>"app.window.allKeys"</code>
+    // permission. This is currently available only in dev channel on Windows.
+    static void setInterceptAllKeys(boolean wantAllKeys);
+
     // The JavaScript 'window' object for the created child.
     [instanceOf=Window] object contentWindow;
 

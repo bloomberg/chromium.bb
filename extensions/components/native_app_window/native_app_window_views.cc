@@ -374,6 +374,10 @@ void NativeAppWindowViews::UpdateShape(scoped_ptr<SkRegion> region) {
   // Stub implementation. See also ChromeNativeAppWindowViews.
 }
 
+void NativeAppWindowViews::SetInterceptAllKeys(bool want_all_keys) {
+  // Stub implementation. See also ChromeNativeAppWindowViews.
+}
+
 void NativeAppWindowViews::HandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,

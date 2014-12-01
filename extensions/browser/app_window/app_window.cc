@@ -711,6 +711,10 @@ void AppWindow::SetAlwaysOnTop(bool always_on_top) {
 
 bool AppWindow::IsAlwaysOnTop() const { return cached_always_on_top_; }
 
+void AppWindow::SetInterceptAllKeys(bool want_all_keys) {
+  native_app_window_->SetInterceptAllKeys(want_all_keys);
+}
+
 void AppWindow::WindowEventsReady() {
   can_send_events_ = true;
   SendOnWindowShownIfShown();

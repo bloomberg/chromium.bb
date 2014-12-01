@@ -28,7 +28,8 @@ namespace SetShape = app_current_window_internal::SetShape;
 namespace SetAlwaysOnTop = app_current_window_internal::SetAlwaysOnTop;
 namespace SetVisibleOnAllWorkspaces =
     app_current_window_internal::SetVisibleOnAllWorkspaces;
-
+namespace SetInterceptAllKeys =
+    app_current_window_internal::SetInterceptAllKeys;
 using app_current_window_internal::Bounds;
 using app_current_window_internal::Region;
 using app_current_window_internal::RegionRect;
@@ -50,6 +51,11 @@ const char kRequiresFramelessWindow[] =
 
 const char kAlwaysOnTopPermission[] =
     "The \"app.window.alwaysOnTop\" permission is required.";
+
+const char kInterceptAllKeysPermission[] = "app.window.interceptAllKeys";
+
+const char kInterceptAllKeysPermissionError[] =
+    "The \"app.window.interceptAllKeys\" permission is required.";
 
 const char kInvalidParameters[] = "Invalid parameters.";
 
@@ -409,6 +415,21 @@ bool AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction::RunWithWindow(
       SetVisibleOnAllWorkspaces::Params::Create(*args_));
   CHECK(params.get());
   window->GetBaseWindow()->SetVisibleOnAllWorkspaces(params->always_visible);
+  return true;
+}
+
+bool AppCurrentWindowInternalSetInterceptAllKeysFunction::RunWithWindow(
+    AppWindow* window) {
+  if (!extension()->permissions_data()->HasAPIPermission(
+          kInterceptAllKeysPermission)) {
+    error_ = kInterceptAllKeysPermissionError;
+    return false;
+  }
+
+  scoped_ptr<SetInterceptAllKeys::Params> params(
+      SetInterceptAllKeys::Params::Create(*args_));
+  CHECK(params.get());
+  window->SetInterceptAllKeys(params->want_all_keys);
   return true;
 }
 

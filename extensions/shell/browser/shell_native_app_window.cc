@@ -140,6 +140,10 @@ void ShellNativeAppWindow::UpdateShape(scoped_ptr<SkRegion> region) {
   NOTIMPLEMENTED();
 }
 
+void ShellNativeAppWindow::SetInterceptAllKeys(bool want_all_keys) {
+  NOTIMPLEMENTED();
+}
+
 void ShellNativeAppWindow::HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) {
   // No special handling. The WebContents will handle it.
