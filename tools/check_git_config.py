@@ -416,7 +416,7 @@ def check_gclient_config(conf):
     print (
         'It is strongly advised to switch to unmanaged mode. For more '
         'information about managed mode and reasons for its deprecation see:')
-    print 'http://www.chromium.org/developers/how-tos/get-the-code#Managed_mode'
+    print 'http://www.chromium.org/developers/how-tos/get-the-code/gclient-managed-mode'
     print
     print (
         'There\'s also a large suite of tools to assist managing git '
