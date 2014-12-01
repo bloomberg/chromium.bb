@@ -239,10 +239,14 @@ void FileVideoCaptureDevice::OnCaptureTask() {
                                   0,
                                   base::TimeTicks::Now());
   // Reschedule next CaptureTask.
-  const base::TimeDelta next_on_capture_timedelta =
-      base::TimeDelta::FromMicroseconds(1E6 / capture_format_.frame_rate) -
+  const base::TimeDelta frame_interval =
+      base::TimeDelta::FromMicroseconds(1E6 / capture_format_.frame_rate);
+  base::TimeDelta next_on_capture_timedelta = frame_interval -
       (base::TimeTicks::Now() - timestamp_before_reading);
-
+  if (next_on_capture_timedelta.InMilliseconds() < 0) {
+    DLOG(WARNING) << "Frame reading took longer than the frame interval.";
+    next_on_capture_timedelta = frame_interval;
+  }
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&FileVideoCaptureDevice::OnCaptureTask,
