@@ -157,7 +157,7 @@ public:
     virtual PassRefPtrWillBeRawPtr<MediaQueryList> matchMedia(const String&) = 0;
 
     // DOM Level 2 Style Interface
-    virtual PassRefPtrWillBeRawPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt) const = 0;
+    virtual PassRefPtrWillBeRawPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt = String()) const = 0;
 
     // WebKit extensions
     virtual PassRefPtrWillBeRawPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const = 0;
