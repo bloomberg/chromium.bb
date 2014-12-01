@@ -7,10 +7,11 @@
  * Supports undo/redo.
  * Command execution is asynchronous (callback-based).
  *
- * @param {Document} document Document to create canvases in.
- * @param {HTMLCanvasElement} canvas The canvas with the original image.
+ * @param {!Document} document Document to create canvases in.
+ * @param {!HTMLCanvasElement} canvas The canvas with the original image.
  * @param {function(function())} saveFunction Function to save the image.
  * @constructor
+ * @struct
  */
 function CommandQueue(document, canvas, saveFunction) {
   this.document_ = document;
@@ -45,8 +46,8 @@ function CommandQueue(document, canvas, saveFunction) {
  * Attach the UI elements to the command queue.
  * Once the UI is attached the results of image manipulations are displayed.
  *
- * @param {ImageView} imageView The ImageView object to display the results.
- * @param {ImageEditor.Prompt} prompt Prompt to use with this CommandQueue.
+ * @param {!ImageView} imageView The ImageView object to display the results.
+ * @param {!ImageEditor.Prompt} prompt Prompt to use with this CommandQueue.
  * @param {function(boolean)} lock Function to enable/disable buttons etc.
  */
 CommandQueue.prototype.attachUI = function(imageView, prompt, lock) {
@@ -122,8 +123,8 @@ CommandQueue.prototype.commit_ = function(opt_delay) {
 /**
  * Internal function to execute the command in a given context.
  *
- * @param {Command} command The command to execute.
- * @param {Object} uiContext The UI context.
+ * @param {!Command} command The command to execute.
+ * @param {!Object} uiContext The UI context.
  * @param {function(number=)} callback Completion callback.
  * @private
  */
@@ -151,7 +152,7 @@ CommandQueue.prototype.doExecute_ = function(command, uiContext, callback) {
 /**
  * Executes the command.
  *
- * @param {Command} command Command to execute.
+ * @param {!Command} command Command to execute.
  * @param {boolean=} opt_keep_redo True if redo stack should not be cleared.
  */
 CommandQueue.prototype.execute = function(command, opt_keep_redo) {
@@ -264,6 +265,7 @@ CommandQueue.prototype.close = function() {
  *
  * @param {string} name Command name.
  * @constructor
+ * @struct
  */
 function Command(name) {
   this.name_ = name;
@@ -282,11 +284,11 @@ Command.prototype.toString = function() {
  * The two actions are combined into one method because sometimes it is nice
  * to be able to show partial results for slower operations.
  *
- * @param {Document} document Document on which to execute command.
- * @param {HTMLCanvasElement} srcCanvas Canvas to execute on.
+ * @param {!Document} document Document on which to execute command.
+ * @param {!HTMLCanvasElement} srcCanvas Canvas to execute on.
  * @param {function(HTMLCanvasElement, number)} callback Callback to call on
  *   completion.
- * @param {Object} uiContext Context to work in.
+ * @param {!Object} uiContext Context to work in.
  */
 Command.prototype.execute = function(document, srcCanvas, callback, uiContext) {
   console.error('Command.prototype.execute not implemented');
@@ -295,8 +297,8 @@ Command.prototype.execute = function(document, srcCanvas, callback, uiContext) {
 /**
  * Visualize reversion of the operation.
  *
- * @param {HTMLCanvasElement} canvas Image data to use.
- * @param {ImageView} imageView ImageView to revert.
+ * @param {!HTMLCanvasElement} canvas Image data to use.
+ * @param {!ImageView} imageView ImageView to revert.
  * @return {number} Animation duration in ms.
  */
 Command.prototype.revertView = function(canvas, imageView) {
@@ -307,16 +309,17 @@ Command.prototype.revertView = function(canvas, imageView) {
 /**
  * Creates canvas to render on.
  *
- * @param {Document} document Document to create canvas in.
- * @param {HTMLCanvasElement} srcCanvas to copy optional dimensions from.
+ * @param {!Document} document Document to create canvas in.
+ * @param {!HTMLCanvasElement} srcCanvas to copy optional dimensions from.
  * @param {number=} opt_width new canvas width.
  * @param {number=} opt_height new canvas height.
- * @return {HTMLCanvasElement} Newly created canvas.
+ * @return {!HTMLCanvasElement} Newly created canvas.
  * @private
  */
 Command.prototype.createCanvas_ = function(
     document, srcCanvas, opt_width, opt_height) {
-  var result = document.createElement('canvas');
+  var result = assertInstanceof(document.createElement('canvas'),
+      HTMLCanvasElement);
   result.width = opt_width || srcCanvas.width;
   result.height = opt_height || srcCanvas.height;
   return result;
@@ -328,6 +331,7 @@ Command.prototype.createCanvas_ = function(
  * @param {number} rotate90 Rotation angle in 90 degree increments (signed).
  * @constructor
  * @extends {Command}
+ * @struct
  */
 Command.Rotate = function(rotate90) {
   Command.call(this, 'rotate(' + rotate90 * 90 + 'deg)');
@@ -362,9 +366,10 @@ Command.Rotate.prototype.revertView = function(canvas, imageView) {
 /**
  * Crop command.
  *
- * @param {ImageRect} imageRect Crop rectangle in image coordinates.
+ * @param {!ImageRect} imageRect Crop rectangle in image coordinates.
  * @constructor
  * @extends {Command}
+ * @struct
  */
 Command.Crop = function(imageRect) {
   Command.call(this, 'crop' + imageRect.toString());
@@ -378,8 +383,8 @@ Command.Crop.prototype.execute = function(
     document, srcCanvas, callback, uiContext) {
   var result = this.createCanvas_(
       document, srcCanvas, this.imageRect_.width, this.imageRect_.height);
-  ImageRect.drawImage(
-      result.getContext('2d'), srcCanvas, null, this.imageRect_);
+  var ctx = assertInstanceof(result.getContext('2d'), CanvasRenderingContext2D);
+  ImageRect.drawImage(ctx, srcCanvas, null, this.imageRect_);
   var delay;
   if (uiContext.imageView) {
     delay = uiContext.imageView.replaceAndAnimate(result, this.imageRect_, 0);
@@ -401,6 +406,7 @@ Command.Crop.prototype.revertView = function(canvas, imageView) {
  * @param {?string} message Message to display when done.
  * @constructor
  * @extends {Command}
+ * @struct
  */
 Command.Filter = function(name, filter, message) {
   Command.call(this, name);
@@ -426,11 +432,12 @@ Command.Filter.prototype.execute = function(
     } else {
       var viewport = uiContext.imageView.viewport_;
 
-      var imageStrip = new ImageRect(viewport.getImageBounds());
+      var imageStrip = ImageRect.createFromBounds(viewport.getImageBounds());
       imageStrip.top = previousRow;
       imageStrip.height = updatedRow - previousRow;
 
-      var screenStrip = new ImageRect(viewport.getImageBoundsOnScreen());
+      var screenStrip = ImageRect.createFromBounds(
+          viewport.getImageBoundsOnScreen());
       screenStrip.top = Math.round(viewport.imageToScreenY(previousRow));
       screenStrip.height =
           Math.round(viewport.imageToScreenY(updatedRow)) - screenStrip.top;

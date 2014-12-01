@@ -34,16 +34,19 @@ filter.create = function(name, options) {
  * @param {!HTMLCanvasElement} srcCanvas Source canvas.
  * @param {function(ImageData,ImageData,number,number)} filterFunc Filter.
  * @param {function(number, number)} progressCallback Progress callback.
- * @param {number} maxPixelsPerStrip Pixel number to process at once.
+ * @param {number=} opt_maxPixelsPerStrip Pixel number to process at once.
  */
 filter.applyByStrips = function(
-    dstCanvas, srcCanvas, filterFunc, progressCallback, maxPixelsPerStrip) {
+    dstCanvas, srcCanvas, filterFunc, progressCallback, opt_maxPixelsPerStrip) {
+  // 1 Mpix is a reasonable default.
+  var maxPixelsPerStrip = opt_maxPixelsPerStrip || 1000000;
+
   var dstContext = dstCanvas.getContext('2d');
   var srcContext = srcCanvas.getContext('2d');
   var source = srcContext.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
 
   var stripCount = Math.ceil(srcCanvas.width * srcCanvas.height /
-      (maxPixelsPerStrip || 1000000));  // 1 Mpix is a reasonable default.
+      maxPixelsPerStrip);
 
   var strip = srcContext.getImageData(0, 0,
       srcCanvas.width, Math.ceil(srcCanvas.height / stripCount));
