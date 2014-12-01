@@ -184,5 +184,14 @@ base::string16 MatchPrint(const char* title) {
 
 base::string16 MatchAnyPrint() { return MatchPrint("*"); }
 
+base::string16 MatchSubframe(const char* title) {
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_SUBFRAME_PREFIX,
+                                    base::ASCIIToUTF16(title));
+}
+
+base::string16 MatchAnySubframe() {
+  return MatchSubframe("*");
+}
+
 }  // namespace browsertest_util
 }  // namespace task_manager

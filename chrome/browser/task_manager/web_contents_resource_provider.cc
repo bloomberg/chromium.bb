@@ -27,8 +27,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 
-using content::RenderViewHost;
 using content::RenderFrameHost;
+using content::RenderProcessHost;
+using content::RenderViewHost;
 using content::SiteInstance;
 using content::WebContents;
 
@@ -86,7 +87,8 @@ WebContents* SubframeResource::GetWebContents() const {
 
 // Tracks changes to one WebContents, and manages task manager resources for
 // that WebContents, on behalf of a WebContentsResourceProvider.
-class TaskManagerWebContentsEntry : public content::WebContentsObserver {
+class TaskManagerWebContentsEntry : public content::WebContentsObserver,
+                                    public content::RenderProcessHostObserver {
  public:
   typedef std::multimap<SiteInstance*, RendererResource*> ResourceMap;
   typedef std::pair<ResourceMap::iterator, ResourceMap::iterator> ResourceRange;
@@ -97,19 +99,7 @@ class TaskManagerWebContentsEntry : public content::WebContentsObserver {
         provider_(provider),
         main_frame_site_instance_(NULL) {}
 
-  ~TaskManagerWebContentsEntry() override {
-    for (ResourceMap::iterator j = resources_by_site_instance_.begin();
-         j != resources_by_site_instance_.end();) {
-      RendererResource* resource = j->second;
-
-      // Advance to next non-duplicate entry.
-      do {
-        ++j;
-      } while (j != resources_by_site_instance_.end() && resource == j->second);
-
-      delete resource;
-    }
-  }
+  ~TaskManagerWebContentsEntry() override { ClearAllResources(false); }
 
   // content::WebContentsObserver implementation.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
@@ -124,17 +114,24 @@ class TaskManagerWebContentsEntry : public content::WebContentsObserver {
   }
 
   void RenderViewReady() override {
-    ClearAllResources();
+    ClearAllResources(true);
     CreateAllResources();
   }
 
-  void RenderProcessGone(base::TerminationStatus status) override {
-    ClearAllResources();
+  void WebContentsDestroyed() override {
+    ClearAllResources(true);
+    provider_->DeleteEntry(web_contents(), this);  // Deletes |this|.
   }
 
-  void WebContentsDestroyed() override {
-    ClearAllResources();
-    provider_->DeleteEntry(web_contents(), this);  // Deletes |this|.
+  // content::RenderProcessHostObserver implementation.
+  void RenderProcessExited(RenderProcessHost* process_host,
+                           base::TerminationStatus status,
+                           int exit_code) override {
+    ClearResourcesForProcess(process_host);
+  }
+
+  void RenderProcessHostDestroyed(RenderProcessHost* process_host) override {
+    tracked_process_hosts_.erase(process_host);
   }
 
   // Called by WebContentsResourceProvider.
@@ -153,21 +150,27 @@ class TaskManagerWebContentsEntry : public content::WebContentsObserver {
                    base::Unretained(this)));
   }
 
-  void ClearAllResources() {
-    for (ResourceMap::iterator j = resources_by_site_instance_.begin();
-         j != resources_by_site_instance_.end();) {
-      RendererResource* resource = j->second;
-
-      // Advance to next non-duplicate entry.
-      do {
-        ++j;
-      } while (j != resources_by_site_instance_.end() && resource == j->second);
-
-      // Remove the resource from the Task Manager.
-      task_manager()->RemoveResource(resource);
+  void ClearAllResources(bool update_task_manager) {
+    RendererResource* last_resource = NULL;
+    for (auto& x : resources_by_site_instance_) {
+      RendererResource* resource = x.second;
+      if (resource == last_resource)
+        continue;  // Skip multiset duplicates.
+      if (update_task_manager)
+        task_manager()->RemoveResource(resource);
       delete resource;
+      last_resource = resource;
     }
     resources_by_site_instance_.clear();
+
+    RenderProcessHost* last_process_host = NULL;
+    for (RenderProcessHost* process_host : tracked_process_hosts_) {
+      if (last_process_host == process_host)
+        continue;  // Skip multiset duplicates.
+      process_host->RemoveObserver(this);
+      last_process_host = process_host;
+    }
+    tracked_process_hosts_.clear();
     tracked_frame_hosts_.clear();
   }
 
@@ -193,9 +196,22 @@ class TaskManagerWebContentsEntry : public content::WebContentsObserver {
       // actually destroy it.
       task_manager()->RemoveResource(resource);
       delete resource;
+      DecrementProcessWatch(site_instance->GetProcess());
       if (site_instance == main_frame_site_instance_) {
         main_frame_site_instance_ = NULL;
       }
+    }
+  }
+
+  void ClearResourcesForProcess(RenderProcessHost* crashed_process) {
+    std::vector<RenderFrameHost*> frame_hosts_to_delete;
+    for (RenderFrameHost* frame_host : tracked_frame_hosts_) {
+      if (frame_host->GetProcess() == crashed_process) {
+        frame_hosts_to_delete.push_back(frame_host);
+      }
+    }
+    for (RenderFrameHost* frame_host : frame_hosts_to_delete) {
+      ClearResourceForFrame(frame_host);
     }
   }
 
@@ -203,6 +219,10 @@ class TaskManagerWebContentsEntry : public content::WebContentsObserver {
     SiteInstance* site_instance = render_frame_host->GetSiteInstance();
 
     DCHECK_EQ(0u, tracked_frame_hosts_.count(render_frame_host));
+
+    if (!site_instance->GetProcess()->HasConnection())
+      return;
+
     tracked_frame_hosts_.insert(render_frame_host);
 
     ResourceRange existing_resource_range =
@@ -235,6 +255,7 @@ class TaskManagerWebContentsEntry : public content::WebContentsObserver {
         }
         task_manager()->RemoveResource(old_resource);
         delete old_resource;
+        DecrementProcessWatch(site_instance->GetProcess());
       }
     }
 
@@ -242,7 +263,34 @@ class TaskManagerWebContentsEntry : public content::WebContentsObserver {
       task_manager()->AddResource(new_resource.get());
       resources_by_site_instance_.insert(
           std::make_pair(site_instance, new_resource.release()));
+      IncrementProcessWatch(site_instance->GetProcess());
     }
+  }
+
+  // Add ourself as an observer of |process|, if we aren't already. Must be
+  // balanced by a call to DecrementProcessWatch().
+  // TODO(nick): Move away from RenderProcessHostObserver once
+  // WebContentsObserver supports per-frame process death notices.
+  void IncrementProcessWatch(RenderProcessHost* process) {
+    auto range = tracked_process_hosts_.equal_range(process);
+    if (range.first == range.second) {
+      process->AddObserver(this);
+    }
+    tracked_process_hosts_.insert(range.first, process);
+  }
+
+  void DecrementProcessWatch(RenderProcessHost* process) {
+    auto range = tracked_process_hosts_.equal_range(process);
+    if (range.first == range.second) {
+      NOTREACHED();
+      return;
+    }
+
+    auto element = range.first++;
+    if (range.first == range.second) {
+      process->RemoveObserver(this);
+    }
+    tracked_process_hosts_.erase(element, range.first);
   }
 
  private:
@@ -251,8 +299,20 @@ class TaskManagerWebContentsEntry : public content::WebContentsObserver {
   WebContentsInformation* info() { return provider_->info(); }
 
   WebContentsResourceProvider* const provider_;
+
+  // Every RenderFrameHost that we're watching.
   std::set<RenderFrameHost*> tracked_frame_hosts_;
+
+  // The set of processes we're currently observing. There is one entry here per
+  // RendererResource we create. A multimap because we may request observation
+  // more than once, say if two resources happen to share a process.
+  std::multiset<RenderProcessHost*> tracked_process_hosts_;
+
+  // Maps SiteInstances to the RendererResources. A multimap, this contains one
+  // entry per tracked RenderFrameHost, so we can tell when we're done reusing.
   ResourceMap resources_by_site_instance_;
+
+  // The site instance of the main frame.
   SiteInstance* main_frame_site_instance_;
 };
 

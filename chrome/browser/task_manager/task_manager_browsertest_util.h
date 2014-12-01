@@ -35,6 +35,8 @@ base::string16 MatchBackground(const char* title);  // "Background: " + title
 base::string16 MatchAnyBackground();                // "Background: *"
 base::string16 MatchPrint(const char* title);       // "Print: " + title
 base::string16 MatchAnyPrint();                     // "Print: *"
+base::string16 MatchSubframe(const char* title);    // "Subframe: " + title
+base::string16 MatchAnySubframe();                  // "Subframe: *"
 
 }  // namespace browsertest_util
 }  // namespace task_manager
