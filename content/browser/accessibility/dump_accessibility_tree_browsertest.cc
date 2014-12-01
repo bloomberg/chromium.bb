@@ -399,6 +399,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaDialog) {
   RunTest(FILE_PATH_LITERAL("aria-dialog.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaDirectory) {
+  RunTest(FILE_PATH_LITERAL("aria-directory.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaExpanded) {
   RunTest(FILE_PATH_LITERAL("aria-expanded.html"));
 }
@@ -494,6 +498,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunTest(FILE_PATH_LITERAL("aria-menuitemradio.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaMultiline) {
+  RunTest(FILE_PATH_LITERAL("aria-multiline.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaNavigation) {
   RunTest(FILE_PATH_LITERAL("aria-navigation.html"));
 }
@@ -566,6 +575,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaSort) {
   RunTest(FILE_PATH_LITERAL("aria-sort.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaSlider) {
+  RunTest(FILE_PATH_LITERAL("aria-slider.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityAriaSpinButton) {
   RunTest(FILE_PATH_LITERAL("aria-spinbutton.html"));
@@ -588,8 +601,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaToolbar) {
   RunTest(FILE_PATH_LITERAL("aria-toolbar.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaTooltip) {
+  RunTest(FILE_PATH_LITERAL("aria-tooltip.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaTree) {
   RunTest(FILE_PATH_LITERAL("aria-tree.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaTreeGrid) {
+  RunTest(FILE_PATH_LITERAL("aria-treegrid.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaValueMin) {
