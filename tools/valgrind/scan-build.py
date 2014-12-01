@@ -5,6 +5,7 @@
 
 import argparse
 import errno
+import json
 import os
 import re
 import sys
@@ -191,6 +192,8 @@ def main(argv):
   commands = parser.add_mutually_exclusive_group(required=True)
   commands.add_argument("--update", action='store_true')
   commands.add_argument("--find", metavar='search term')
+  parser.add_argument("--json", action='store_true',
+                      help="Output in JSON format")
   args = parser.parse_args()
 
   path = os.path.abspath(os.path.dirname(argv[0]))
@@ -205,22 +208,38 @@ def main(argv):
       builder.ScanLogs(lambda x:False)
 
   if args.find:
+    result = []
     tester = MultiLineChange(args.find.splitlines())
     fyi.FetchInfo()
 
-    print "SCANNING FOR ", args.find
+    if not args.json:
+      print "SCANNING FOR ", args.find
     for builder in fyi.Builders():
-      print "Scanning", builder.Name()
+      if not args.json:
+        print "Scanning", builder.Name()
       occurrences = builder.ScanLogs(tester)
       if occurrences:
         min_build = min(occurrences)
         path = builder.GetBuildPath(min_build)
-        print "Earliest occurrence in build %d" % min_build
-        print "Latest occurrence in build %d" % max(occurrences)
-        print "Latest build: %d" % builder.LatestBuild()
-        print path
-        print "%d total" % len(occurrences)
-
+        if args.json:
+          data = {}
+          data['builder'] = builder.Name()
+          data['first_affected'] = min_build
+          data['last_affected'] = max(occurrences)
+          data['last_build'] = builder.LatestBuild()
+          data['frequency'] = ((int(builder.LatestBuild()) - int(min_build)) /
+              len(occurrences))
+          data['total'] = len(occurrences)
+          data['first_url'] = path
+          result.append(data)
+        else:
+          print "Earliest occurrence in build %d" % min_build
+          print "Latest occurrence in build %d" % max(occurrences)
+          print "Latest build: %d" % builder.LatestBuild()
+          print path
+          print "%d total" % len(occurrences)
+    if args.json:
+      json.dump(result, sys.stdout, indent=2, sort_keys=True)
 
 if __name__ == "__main__":
   sys.exit(main(sys.argv))
