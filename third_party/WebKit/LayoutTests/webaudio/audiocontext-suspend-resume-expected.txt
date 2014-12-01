@@ -1,0 +1,20 @@
+Test suspend/resume for an (offline) AudioContext
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS context.state is "suspended"
+PASS p1 = context.suspend() did not throw exception.
+PASS [object Object] is an instance of function Promise() { [native code] }
+PASS context.suspend() was correctly rejected for an offline context
+PASS p1 = context.resume() did not throw exception.
+PASS [object Object] is an instance of function Promise() { [native code] }
+PASS context.state is "suspended"
+PASS context.resume() was correctly rejected for an offline context
+PASS context.state is "closed"
+PASS context.suspend() on a closed context rejected as expected
+PASS context.resume() on a closed context rejected as expected
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

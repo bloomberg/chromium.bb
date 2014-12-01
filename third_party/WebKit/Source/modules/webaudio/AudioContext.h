@@ -25,6 +25,8 @@
 #ifndef AudioContext_h
 #define AudioContext_h
 
+#include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/events/EventListener.h"
@@ -79,6 +81,16 @@ class AudioContext : public RefCountedGarbageCollectedWillBeGarbageCollectedFina
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AudioContext);
 public:
+    // The state of an audio context.  On creation, the state is Suspended. The state is Running if
+    // audio is being processed (audio graph is being pulled for data). The state is Closed if the
+    // audio context has been closed.  The valid transitions are from Suspended to either Running or
+    // Closed; Running to Suspended or Closed. Once Closed, there are no valid transitions.
+    enum AudioContextState {
+        Suspended,
+        Running,
+        Closed
+    };
+
     // Create an AudioContext for rendering to the audio hardware.
     static AudioContext* create(Document&, ExceptionState&);
 
@@ -97,6 +109,7 @@ public:
     size_t currentSampleFrame() const { return m_destinationNode->currentSampleFrame(); }
     double currentTime() const { return m_destinationNode->currentTime(); }
     float sampleRate() const { return m_destinationNode->sampleRate(); }
+    String state() const;
 
     AudioBuffer* createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
 
@@ -130,6 +143,10 @@ public:
     ChannelMergerNode* createChannelMerger(size_t numberOfInputs, ExceptionState&);
     OscillatorNode* createOscillator();
     PeriodicWave* createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, ExceptionState&);
+
+    // Suspend/Resume
+    ScriptPromise suspendContext(ScriptState*);
+    ScriptPromise resumeContext(ScriptState*);
 
     // When a source node has no more processing to do (has finished playing), then it tells the context to dereference it.
     void notifyNodeFinishedProcessing(AudioNode*);
@@ -227,9 +244,11 @@ public:
     virtual ExecutionContext* executionContext() const override final;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
     void startRendering();
     void fireCompletionEvent();
+    void notifyStateChange();
 
     static unsigned s_hardwareContextCount;
 
@@ -276,6 +295,28 @@ private:
     // AudioNode::makeConnection when we add an AudioNode to this, and must call
     // AudioNode::breakConnection() when we remove an AudioNode from this.
     Member<HeapVector<Member<AudioNode>>> m_referencedNodes;
+
+    // Stop rendering the audio graph.
+    void stopRendering();
+
+    // Handle Promises for resume() and suspend()
+    void resolvePromisesForResume();
+    void resolvePromisesForResumeOnMainThread();
+
+    void resolvePromisesForSuspend();
+    void resolvePromisesForSuspendOnMainThread();
+
+    // Vector of promises created by resume(). It takes time to handle them, so we collect all of
+    // the promises here until they can be resolved or rejected.
+    Vector<RefPtr<ScriptPromiseResolver> > m_resumeResolvers;
+    // Like m_resumeResolvers but for suspend().
+    Vector<RefPtr<ScriptPromiseResolver> > m_suspendResolvers;
+    void rejectPendingResolvers();
+
+    // True if we're in the process of resolving promises for resume().  Resolving can take some
+    // time and the audio context process loop is very fast, so we don't want to call resolve an
+    // excessive number of times.
+    bool m_isResolvingResumePromises;
 
     class AudioNodeDisposer {
     public:
@@ -340,6 +381,9 @@ private:
     Member<AudioBuffer> m_renderTarget;
 
     bool m_isOfflineContext;
+
+    AudioContextState m_contextState;
+    void setContextState(AudioContextState);
 
     AsyncAudioDecoder m_audioDecoder;
 

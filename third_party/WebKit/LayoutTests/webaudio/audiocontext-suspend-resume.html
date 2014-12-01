@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test audiocontext suspend/resume</title>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+    <script src="../resources/js-test.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description("Test suspend/resume for an (offline) AudioContext");
+
+      var context;
+      var osc;
+      var p1;
+      var p2;
+
+      var sampleRate = 44100;
+      var durationInSeconds = 1;
+
+      // Convenience function that returns a function that calls the |passFailMethod| with the given
+      // |message|.  The |passFailMethod| should be either |testPassed| or |testFailed|.
+      function handlePromise(passFailMethod, message) {
+        return function () {
+                 passFailMethod(message);
+               };
+      }
+
+      function checkResult (event) {
+        // We don't care about the actual result of the offline rendering.
+        shouldBeEqualToString("context.state", "closed");
+        // suspend() should be rejected on a closed context.
+        context.suspend()
+          .then(handlePromise(
+                  testFailed,
+                  "context.suspend() on a closed context not rejected"),
+                handlePromise(
+                  testPassed,
+                  "context.suspend() on a closed context rejected as expected"))
+          .then(function () {
+                  // resume() should be rejected on closed context.
+                  return context.resume();
+                })
+          .then(handlePromise(
+                  testFailed,
+                  "context.resume() on a closed context not rejected"),
+                handlePromise(
+                  testPassed,
+                  "context.resume() on a closed context rejected as expected"))
+          .then(finishJSTest);
+      }
+
+      function runOfflineContextTest() {
+        // Render the offline context.
+        osc.start();
+        context.oncomplete = checkResult;
+        context.startRendering();
+      }
+
+      function runResumeTest () {
+        // Multiple calls to resume should not be a problem. But we can't test that on an offline
+        // context. Thus, check that resume() on an OfflineAudioContext rejects the promise.
+        shouldNotThrow("p1 = context.resume()");
+        shouldBeType(p1, Promise);
+        // Resume doesn't actually resume an offline context
+        shouldBeEqualToString("context.state", "suspended");
+      
+        p1.then(handlePromise(
+                  testFailed,
+                  "context.resume() should have been rejected for an offline context"),
+                handlePromise(
+                  testPassed,
+                  "context.resume() was correctly rejected for an offline context"))
+          .then(runOfflineContextTest);
+      }
+
+      function runTest() {
+        window.jsTestIsAsync = true;
+        // Test suspend/resume.  Ideally this test is best with a online AudioContext, but content
+        // shell doesn't really have a working online AudioContext. Hence, use an
+        // OfflineAudioContext. Not all possible scenarios can be easily checked with an offline
+        // context instead of an online context.
+
+        // Create an audio context with an oscillator.
+        context = new OfflineAudioContext(1, durationInSeconds * sampleRate, sampleRate);
+        osc = context.createOscillator();
+        osc.connect(context.destination);
+
+        // Verify the state.
+        shouldBeEqualToString("context.state", "suspended");
+
+        // Multiple calls to suspend() should not be a problem. But we can't test that on an offline
+        // context.  Thus, check that suspend() on an OfflineAudioContext rejects the promise.
+        shouldNotThrow("p1 = context.suspend()");
+        shouldBeType(p1, Promise);
+        p1.then(handlePromise(
+                  testFailed,
+                  "context.suspend() should have been rejected for an offline context"),
+                handlePromise(
+                  testPassed,
+                  "context.suspend() was correctly rejected for an offline context"))
+           .then(runResumeTest);
+      }
+
+      runTest();
+      successfullyParsed = true;
+    </script>
+  </body>
+</html>

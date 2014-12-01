@@ -90,8 +90,19 @@ void DefaultAudioDestinationNode::createDestination()
 void DefaultAudioDestinationNode::startRendering()
 {
     ASSERT(isInitialized());
-    if (isInitialized())
+    if (isInitialized()) {
+        ASSERT(!m_destination->isPlaying());
         m_destination->start();
+    }
+}
+
+void DefaultAudioDestinationNode::stopRendering()
+{
+    ASSERT(isInitialized());
+    if (isInitialized()) {
+        ASSERT(m_destination->isPlaying());
+        m_destination->stop();
+    }
 }
 
 unsigned long DefaultAudioDestinationNode::maxChannelCount() const

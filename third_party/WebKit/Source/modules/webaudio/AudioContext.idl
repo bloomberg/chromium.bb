@@ -23,6 +23,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+enum AudioContextState {
+    "suspended",
+    "running",
+    "closed"
+};
+
 [
     GarbageCollected,
     ActiveDOMObject,
@@ -43,6 +49,9 @@
 
     // All panning is relative to this listener.
     readonly attribute AudioListener listener;
+
+    // Current state of the AudioContext
+    readonly attribute AudioContextState state;
 
     [RaisesException] AudioBuffer createBuffer(unsigned long numberOfChannels, unsigned long numberOfFrames, float sampleRate);
 
@@ -74,4 +83,10 @@
     // Channel splitting and merging
     [RaisesException] ChannelSplitterNode createChannelSplitter(optional unsigned long numberOfOutputs);
     [RaisesException] ChannelMergerNode createChannelMerger(optional unsigned long numberOfInputs);
+
+    // Pause/resume
+    [CallWith=ScriptState, ImplementedAs=suspendContext] Promise suspend();
+    [CallWith=ScriptState, ImplementedAs=resumeContext] Promise resume();
+
+    attribute EventHandler onstatechange;
 };
