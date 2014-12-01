@@ -152,7 +152,7 @@ void BreakBlockquoteCommand::doApply()
             // find the first one so that we know where to start numbering.
             while (listChildNode && !isHTMLLIElement(*listChildNode))
                 listChildNode = listChildNode->nextSibling();
-            if (listChildNode && listChildNode->renderer() && listChildNode->renderer()->isListItem())
+            if (isListItem(listChildNode))
                 setNodeAttribute(clonedChild, startAttr, AtomicString::number(toRenderListItem(listChildNode->renderer())->value()));
         }
 

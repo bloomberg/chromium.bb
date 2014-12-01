@@ -48,7 +48,6 @@
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLLIElement.h"
-#include "core/html/HTMLOListElement.h"
 #include "core/html/HTMLParagraphElement.h"
 #include "core/html/HTMLSpanElement.h"
 #include "core/html/HTMLTableCellElement.h"
@@ -544,18 +543,6 @@ VisiblePosition visiblePositionAfterNode(Node& node)
     return VisiblePosition(positionInParentAfterNode(node));
 }
 
-// Create a range object with two visible positions, start and end.
-// create(Document*, const Position&, const Position&); will use deprecatedEditingOffset
-// Use this function instead of create a regular range object (avoiding editing offset).
-PassRefPtrWillBeRawPtr<Range> createRange(Document& document, const VisiblePosition& start, const VisiblePosition& end, ExceptionState& exceptionState)
-{
-    RefPtrWillBeRawPtr<Range> selectedRange = Range::create(document);
-    selectedRange->setStart(start.deepEquivalent().containerNode(), start.deepEquivalent().computeOffsetInContainerNode(), exceptionState);
-    if (!exceptionState.hadException())
-        selectedRange->setEnd(end.deepEquivalent().containerNode(), end.deepEquivalent().computeOffsetInContainerNode(), exceptionState);
-    return selectedRange.release();
-}
-
 bool isHTMLListElement(Node* n)
 {
     return (n && (isHTMLUListElement(*n) || isHTMLOListElement(*n) || isHTMLDListElement(*n)));
@@ -736,6 +723,13 @@ HTMLElement* outermostEnclosingList(Node* node, HTMLElement* rootList)
     return list;
 }
 
+// Determines whether two positions are visibly next to each other (first then second)
+// while ignoring whitespaces and unrendered nodes
+static bool isVisiblyAdjacent(const Position& first, const Position& second)
+{
+    return VisiblePosition(first) == VisiblePosition(second.upstream());
+}
+
 bool canMergeLists(Element* firstList, Element* secondList)
 {
     if (!firstList || !secondList || !firstList->isHTMLElement() || !secondList->isHTMLElement())
@@ -820,11 +814,6 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> createBreakElement(Document& document)
     return HTMLBRElement::create(document);
 }
 
-PassRefPtrWillBeRawPtr<HTMLOListElement> createOrderedListElement(Document& document)
-{
-    return HTMLOListElement::create(document);
-}
-
 PassRefPtrWillBeRawPtr<HTMLUListElement> createUnorderedListElement(Document& document)
 {
     return HTMLUListElement::create(document);
@@ -837,12 +826,7 @@ PassRefPtrWillBeRawPtr<HTMLLIElement> createListItemElement(Document& document)
 
 PassRefPtrWillBeRawPtr<HTMLElement> createHTMLElement(Document& document, const QualifiedName& name)
 {
-    return createHTMLElement(document, name.localName());
-}
-
-PassRefPtrWillBeRawPtr<HTMLElement> createHTMLElement(Document& document, const AtomicString& tagName)
-{
-    return HTMLElementFactory::createHTMLElement(tagName, document, 0, false);
+    return HTMLElementFactory::createHTMLElement(name.localName(), document, 0, false);
 }
 
 bool isTabHTMLSpanElement(const Node* node)
@@ -863,7 +847,7 @@ HTMLSpanElement* tabSpanElement(const Node* node)
     return isTabHTMLSpanElementTextNode(node) ? toHTMLSpanElement(node->parentNode()) : 0;
 }
 
-PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document& document, PassRefPtrWillBeRawPtr<Text> prpTabTextNode)
+static PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document& document, PassRefPtrWillBeRawPtr<Text> prpTabTextNode)
 {
     RefPtrWillBeRawPtr<Text> tabTextNode = prpTabTextNode;
 
@@ -896,12 +880,9 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> createBlockPlaceholderElement(Document& do
     return toHTMLBRElement(document.createElement(brTag, false).get());
 }
 
-bool isNodeRendered(const Node *node)
+bool isNodeRendered(const Node& node)
 {
-    if (!node)
-        return false;
-
-    RenderObject* renderer = node->renderer();
+    RenderObject* renderer = node.renderer();
     if (!renderer)
         return false;
 
@@ -1129,13 +1110,6 @@ VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope)
     if (!range)
         return VisiblePosition();
     return VisiblePosition(range->startPosition());
-}
-
-// Determines whether two positions are visibly next to each other (first then second)
-// while ignoring whitespaces and unrendered nodes
-bool isVisiblyAdjacent(const Position& first, const Position& second)
-{
-    return VisiblePosition(first) == VisiblePosition(second.upstream());
 }
 
 // Determines whether a node is inside a range or visibly starts and ends at the boundaries of the range.

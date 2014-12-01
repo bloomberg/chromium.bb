@@ -286,7 +286,7 @@ void ReplacementFragment::removeUnrenderedNodes(ContainerNode* holder)
     WillBeHeapVector<RefPtrWillBeMember<Node>> unrendered;
 
     for (Node& node : NodeTraversal::descendantsOf(*holder)) {
-        if (!isNodeRendered(&node) && !isTableStructureNode(&node))
+        if (!isNodeRendered(node) && !isTableStructureNode(&node))
             unrendered.append(&node);
     }
 
