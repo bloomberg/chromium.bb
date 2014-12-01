@@ -1171,8 +1171,7 @@ Resource.WrapFunction.prototype = {
  */
 Resource.WrapFunction.resourceFactoryMethod = function(resourceConstructor, resourceName)
 {
-    /** @this {Resource.WrapFunction} */
-    return function()
+    return /** @this {Resource.WrapFunction} */ function()
     {
         var wrappedObject = /** @type {?Object} */ (this.result());
         if (!wrappedObject)
