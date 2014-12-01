@@ -5,178 +5,31 @@
   <script src="resources/compatibility.js"></script>
   <script src="resources/audio-testing.js"></script>
   <script src="../resources/js-test.js"></script>
+  <script src="resources/stereopanner-testing.js"></script>
 </head>
 
 <body>
   <div id="description"></div>
   <div id="console"></div>
   <script>
-    description("Test panning model of StereoPannerNode.");
-
+    description('Test panning model of StereoPannerNode.');
     window.jsTestIsAsync = true;
 
-    var sampleRate = 44100;
+    var testForMonoInput = StereoPannerTest.createTest({
+      numberOfInputChannel: 1,
+      description: 'Test for mono input'
+    });
+    testForMonoInput.run();
 
-    // Number of nodes to create for testing.
-    var nodesToCreate = 100;
-
-    // Interval between the onset of each impulse.
-    var timeStep = 0.001;
-
-    // Total render length. Should be long enough for all panner nodes.
-    var renderLength = timeStep * (nodesToCreate + 1);
-
-    var impulse;
-    var impulseLength = Math.round(timeStep * sampleRate);
-
-    // Pan step unit for each test trial. Note that panStep spans over 0 to 4.
-    var panStep = 4 / (nodesToCreate - 1);
-
-    var sources = [];
-    var panners = [];
-    var panPositions = [];
-    var onsets = [];
-
-    var context = new OfflineAudioContext(2, sampleRate * renderLength, sampleRate);
-
-    // Calculates channel gains based on equal power panning model. The internal
-    // panning clipped the pan value between -1, 1.
-    function getChannelGains (pan) {
-      pan = Math.min(Math.max(pan, -1), 1);
-      var normalized = 0.5 * Math.PI * (pan * 0.5 + 0.5);
-      return {
-        gainL: Math.cos(normalized),
-        gainR: Math.sin(normalized)
-      };
-    }
-
-    function prepareTest() {
-      impulse = createImpulseBuffer(context, impulseLength);
-
-      // Create multiple buffer source nodes and panner nodes for testing.
-      // Each source node plays the same impulse buffer and goes through a
-      // panner node. Each trial is performed sequentially with the interval of
-      // 'timeStep' and a different pan position.
-      for (var i = 0; i < nodesToCreate; i++) {
-        sources[i] = context.createBufferSource();
-        panners[i] = context.createStereoPanner();
-        sources[i].connect(panners[i]);
-        panners[i].connect(context.destination);
-
-        sources[i].buffer = impulse;
-
-        // Moves the pan value for each panner by pan step unit from -2 to 2.
-        // This is to check if the internal panning value is clipped properly.
-        panners[i].pan.value = panPositions[i] = panStep * i - 2;
-
-        onsets[i] = timeStep * i;
-        sources[i].start(onsets[i]);
+    var testForStereoInput = StereoPannerTest.createTest({
+      numberOfInputChannel: 2,
+      description: 'Test for stereo input'
+    });
+    testForStereoInput.run({
+      onComplete: function () {
+        finishJSTest();
       }
-    }
-
-    // To verify the result, check if each source is an impulse starting at a
-    // different time and the rendered impulse has the expected gain.
-    function verifyResult(event) {
-
-      var success = true;
-
-      // The max error we allow between the rendered impulse and the
-      // expected value.  This value is experimentally determined.  Set
-      // to 0 to make the test fail to see what the actual error is.
-      var maxAllowedError = 1.3e-6;
-
-      var chanL = event.renderedBuffer.getChannelData(0),
-          chanR = event.renderedBuffer.getChannelData(1);
-
-      // Number of impulses found in the rendered result.
-      var impulseIndex = 0;
-
-      // Max (relative) error and the index of the maxima for the left
-      // and right channels.
-      var maxErrorL = 0,
-          maxErrorR = 0,
-          maxErrorIndexL = 0,
-          maxErrorIndexR = 0;
-
-      // Locations of where the impulses aren't at the expected locations.
-      var errors = [];
-
-      for (var i = 0; i < chanL.length; i++) {
-
-        // We assume that the left and right channels start at the same instant.
-        if (chanL[i] !== 0 || chanR[i] !== 0) {
-
-          // Get amount of error between actual and expected gain.
-          var expected = getChannelGains(panPositions[impulseIndex]),
-              errorL = Math.abs(chanL[i] - expected.gainL),
-              errorR = Math.abs(chanR[i] - expected.gainR);
-
-          if (errorL > maxErrorL) {
-            maxErrorL = errorL;
-            maxErrorIndexL = impulseIndex;
-          }
-
-          if (errorR > maxErrorR) {
-            maxErrorR = errorR;
-            maxErrorIndexR = impulseIndex;
-          }
-
-          // Keep track of the impulses that didn't show up where we expected
-          // them to be.
-          var expectedOffset = timeToSampleFrame(onsets[impulseIndex], sampleRate);
-          if (i != expectedOffset) {
-            errors.push({
-              actual: i,
-              expected: expectedOffset
-            });
-          }
-
-          impulseIndex++;
-        }
-      }
-
-      if (impulseIndex === nodesToCreate) {
-        testPassed('Number of impulses matches the number of panner nodes.');
-      } else {
-        testFailed('Number of impulses is incorrect. (Found ' + impulseIndex + ' but expected ' + nodesToCreate + ')');
-        sucess = false;
-      }
-
-      if (errors.length === 0) {
-        testPassed("All impulses at expected offsets.");
-      } else {
-        testFailed(errors.length + " timing errors found in " + nodesToCreate + " panner nodes.");
-        for (var i = 0; i < errors.length; i++) {
-          testFailed("Impulse at sample " + errors[i].actual + " but expected " + errors[i].expected);
-        }
-        success = false;
-      }
-
-      if (maxErrorL <= maxAllowedError) {
-        testPassed("Left channel gain values are correct.");
-      } else {
-        testFailed("Left channel gain values are incorrect.  Max error = " + maxErrorL + " at time " + onsets[maxErrorIndexL] + " (threshold = " + maxAllowedError + ")");
-        success = false;
-      }
-
-      if (maxErrorR <= maxAllowedError) {
-        testPassed("Right channel gain values are correct.");
-      } else {
-        testFailed("Right channel gain values are incorrect.  Max error = " + maxErrorR + " at time " + onsets[maxErrorIndexR] + " (threshold = " + maxAllowedError + ")");
-        success = false;
-      }
-
-      if (success)
-        testPassed("StereoPannerNode test passed.");
-      else
-        testFailed("StereoPannerNode test failed.");
-
-      finishJSTest();
-    }
-
-    prepareTest();
-    context.oncomplete = verifyResult;
-    context.startRendering();
+    });
 
     successfullyParsed = true;
   </script>

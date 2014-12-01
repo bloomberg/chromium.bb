@@ -6,7 +6,12 @@ PASS Number of impulses matches the number of panner nodes.
 PASS All impulses at expected offsets.
 PASS Left channel gain values are correct.
 PASS Right channel gain values are correct.
-PASS StereoPannerNode test passed.
+PASS Test for mono input: passed.
+PASS Number of impulses matches the number of panner nodes.
+PASS All impulses at expected offsets.
+PASS Left channel gain values are correct.
+PASS Right channel gain values are correct.
+PASS Test for stereo input: passed.
 PASS successfullyParsed is true
 
 TEST COMPLETE

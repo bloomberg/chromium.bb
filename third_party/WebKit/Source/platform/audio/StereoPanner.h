@@ -10,6 +10,8 @@
 namespace blink {
 
 // Common type of stereo panner as found in normal audio mixing equipment.
+// See: http://webaudio.github.io/web-audio-api/#the-stereopannernode-interface
+
 class PLATFORM_EXPORT StereoPanner final : public Spatializer {
 public:
     explicit StereoPanner(float sampleRate);
