@@ -1,11 +1,20 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 * Noteworthy changes in release 2.6.1 (2014-12-01)
+
+** New features
+*** New Braille tables
+- New grade 1 and grade 2 Gaeilge tables implementing the 2014 UIB standard.
+  Including tests, thanks to Ronan McGuirk, Mesar Hameed.
+
 ** Braille table improvements
 - Updates and correction to Hungarian braille tables, thanks to Hammer
   Attila.
 - Correction to English UK grade 2 braille tables and new tests,
   thanks to Paul Wood, Mesar Hameed
+
+** Backwards incompatible changes
+- Deleted ga.ctb now superseded by ga-g1.utb and ga.g2.ctb.
 
 ** Documentation updates
 - The documentation has been restructured to be more beginner friendly
