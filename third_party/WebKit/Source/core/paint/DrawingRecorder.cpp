@@ -47,7 +47,7 @@ DrawingRecorder::~DrawingRecorder()
 #endif
 
     RefPtr<DisplayList> displayList = m_context->endRecording();
-    if (!displayList->picture()->approximateOpCount())
+    if (!displayList->picture() || !displayList->picture()->approximateOpCount())
         return;
     ASSERT(displayList->bounds() == m_bounds);
     OwnPtr<DrawingDisplayItem> drawingItem = adoptPtr(

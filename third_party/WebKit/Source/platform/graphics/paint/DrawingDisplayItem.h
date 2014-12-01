@@ -15,7 +15,7 @@ namespace blink {
 class PLATFORM_EXPORT DrawingDisplayItem : public DisplayItem {
 public:
     DrawingDisplayItem(DisplayItemClient client, Type type, PassRefPtr<SkPicture> picture, const FloatPoint& location)
-        : DisplayItem(client, type), m_picture(picture), m_location(location) { }
+        : DisplayItem(client, type), m_picture(picture), m_location(location) { ASSERT(m_picture.get()); }
 
     virtual void replay(GraphicsContext*);
 
