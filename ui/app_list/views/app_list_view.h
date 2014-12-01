@@ -167,9 +167,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   SearchBoxView* search_box_view_;
   SpeechView* speech_view_;
 
-  // The red "experimental" banner for the experimental app list.
-  views::ImageView* experimental_banner_view_;
-
   // A semi-transparent white overlay that covers the app list while dialogs are
   // open.
   views::View* overlay_view_;

@@ -159,7 +159,6 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       app_list_main_view_(NULL),
       search_box_view_(NULL),
       speech_view_(NULL),
-      experimental_banner_view_(NULL),
       overlay_view_(NULL),
       animation_observer_(new HideViewAnimationObserver()) {
   CHECK(delegate);
@@ -373,18 +372,6 @@ void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
     AddChildView(speech_view_);
   }
 
-  if (app_list::switches::IsExperimentalAppListEnabled()) {
-    // Draw a banner in the corner of the experimental app list.
-    experimental_banner_view_ = new views::ImageView;
-    const gfx::ImageSkia& experimental_icon =
-        *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_APP_LIST_EXPERIMENTAL_ICON);
-    experimental_banner_view_->SetImage(experimental_icon);
-    experimental_banner_view_->SetPaintToLayer(true);
-    experimental_banner_view_->SetFillsBoundsOpaquely(false);
-    AddChildView(experimental_banner_view_);
-  }
-
   OnProfilesChanged();
 }
 
@@ -590,18 +577,6 @@ void AppListView::Layout() {
     speech_bounds.Inset(-speech_view_->GetInsets());
     speech_view_->SetBoundsRect(speech_bounds);
   }
-
-  if (experimental_banner_view_) {
-    // Position the experimental banner in the lower right corner.
-    gfx::Rect image_bounds = experimental_banner_view_->GetImageBounds();
-    image_bounds.set_origin(
-        gfx::Point(contents_bounds.width() - image_bounds.width(),
-                   contents_bounds.height() - image_bounds.height()));
-    experimental_banner_view_->SetBoundsRect(image_bounds);
-  }
-
-  if (overlay_view_)
-    overlay_view_->SetBoundsRect(contents_bounds);
 }
 
 void AppListView::SchedulePaintInRect(const gfx::Rect& rect) {
