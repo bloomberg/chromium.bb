@@ -176,6 +176,9 @@ const char kGoodExtensionID[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char kGoodExtensionCRXPath[] = "extensions/good.crx";
 const char kGoodExtensionVersion[] = "1.0";
 const char kPackagedAppCRXPath[] = "extensions/platform_apps/app_window_2.crx";
+const char kShowManagedStorageID[] = "ongnjlefhnoajpbodoldndkbkdgfomlp";
+const char kShowManagedStorageCRXPath[] = "extensions/show_managed_storage.crx";
+const char kShowManagedStorageVersion[] = "1.0";
 
 const char kExternalData[] = "External data";
 const char kExternalDataURL[] = "http://localhost/external_data";
@@ -380,6 +383,12 @@ scoped_ptr<net::FakeURLFetcher> RunCallbackAndReturnFakeURLFetcher(
 
 bool IsSessionStarted() {
   return user_manager::UserManager::Get()->IsSessionStarted();
+}
+
+void PolicyChangedCallback(const base::Closure& callback,
+                           const base::Value* old_value,
+                           const base::Value* new_value) {
+  callback.Run();
 }
 
 }  // namespace
@@ -1958,6 +1967,104 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
                 ->GetActiveIMEState()
                 ->GetCurrentInputMethod()
                 .id());
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
+  // Set up a test update server for the Show Managed Storage app.
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  TestingUpdateManifestProvider testing_update_manifest_provider(
+      kRelativeUpdateURL);
+  testing_update_manifest_provider.AddUpdate(
+      kShowManagedStorageID,
+      kShowManagedStorageVersion,
+      embedded_test_server()->GetURL(std::string("/") +
+                                     kShowManagedStorageCRXPath));
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&TestingUpdateManifestProvider::HandleRequest,
+                 base::Unretained(&testing_update_manifest_provider)));
+
+  // Force-install the Show Managed Storage app. This app can be installed in
+  // public sessions because it's whitelisted for testing purposes.
+  em::StringList* forcelist = device_local_account_policy_.payload()
+      .mutable_extensioninstallforcelist()->mutable_value();
+  forcelist->add_entries(base::StringPrintf(
+      "%s;%s",
+      kShowManagedStorageID,
+      embedded_test_server()->GetURL(kRelativeUpdateURL).spec().c_str()));
+
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+  WaitForPolicy();
+
+  // Set a policy for the app at the policy testserver.
+  test_server_.UpdatePolicyData(dm_protocol::kChromeExtensionPolicyType,
+                                kShowManagedStorageID,
+                                "{"
+                                "  \"string\": {"
+                                "    \"Value\": \"policy test value one\""
+                                "  }"
+                                "}");
+
+  // Observe the app installation after login.
+  content::WindowedNotificationObserver extension_observer(
+      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+      base::Bind(DoesInstallSuccessReferToId, kShowManagedStorageID));
+  ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
+  WaitForSessionStart();
+  extension_observer.Wait();
+
+  // Verify that the app was installed.
+  Profile* profile = GetProfileForTest();
+  ASSERT_TRUE(profile);
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  EXPECT_TRUE(extension_service->GetExtensionById(kShowManagedStorageID, true));
+
+  // Wait for the app policy if it hasn't been fetched yet.
+  ProfilePolicyConnector* connector =
+      ProfilePolicyConnectorFactory::GetForProfile(profile);
+  ASSERT_TRUE(connector);
+  PolicyService* policy_service = connector->policy_service();
+  ASSERT_TRUE(policy_service);
+  const PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, kShowManagedStorageID);
+  if (policy_service->GetPolicies(ns).empty()) {
+    PolicyChangeRegistrar policy_registrar(policy_service, ns);
+    base::RunLoop run_loop;
+    policy_registrar.Observe(
+        "string", base::Bind(&PolicyChangedCallback, run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  // Verify that the app policy was set.
+  base::StringValue expected_value("policy test value one");
+  EXPECT_TRUE(base::Value::Equals(
+      &expected_value,
+      policy_service->GetPolicies(ns).GetValue("string")));
+
+  // Now update the policy at the server.
+  test_server_.UpdatePolicyData(dm_protocol::kChromeExtensionPolicyType,
+                                kShowManagedStorageID,
+                                "{"
+                                "  \"string\": {"
+                                "    \"Value\": \"policy test value two\""
+                                "  }"
+                                "}");
+
+  // And issue a policy refresh.
+  {
+    PolicyChangeRegistrar policy_registrar(policy_service, ns);
+    base::RunLoop run_loop;
+    policy_registrar.Observe(
+        "string", base::Bind(&PolicyChangedCallback, run_loop.QuitClosure()));
+    policy_service->RefreshPolicies(base::Closure());
+    run_loop.Run();
+  }
+
+  // Verify that the app policy was updated.
+  base::StringValue expected_new_value("policy test value two");
+  EXPECT_TRUE(base::Value::Equals(
+      &expected_new_value,
+      policy_service->GetPolicies(ns).GetValue("string")));
 }
 
 class TermsOfServiceDownloadTest : public DeviceLocalAccountTest,

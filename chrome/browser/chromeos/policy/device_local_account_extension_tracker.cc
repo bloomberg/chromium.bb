@@ -12,6 +12,7 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/schema.h"
+#include "components/policy/core/common/schema_map.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "extensions/browser/pref_names.h"
 
@@ -74,6 +75,17 @@ void DeviceLocalAccountExtensionTracker::UpdateFromStore() {
 
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, it.key());
+    if (schema_registry_->schema_map()->GetSchema(ns)) {
+      // Important detail: Don't register the component again if it already
+      // has a schema! If the session already started for this public session
+      // then the real Schema for the extension has already been set by the
+      // ManagedValueStoreCache::ExtensionTracker. Do not override that schema
+      // with an invalid one now, or the policy for the extension will be
+      // dropped.
+      // However, if the forcelist is updated then we need to register the new
+      // component ID so that its remote policy data can be fetched.
+      continue;
+    }
     schema_registry_->RegisterComponent(ns, Schema());
   }
 
