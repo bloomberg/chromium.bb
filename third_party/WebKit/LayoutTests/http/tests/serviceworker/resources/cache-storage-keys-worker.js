@@ -1,5 +1,6 @@
 importScripts('worker-testharness.js');
 importScripts('../../resources/testharness-helpers.js');
+importScripts('override_assert_object_equals.js');
 
 var test_cache_list =
   ['', 'example', 'Another cache name', 'A', 'a', 'ex ample'];
