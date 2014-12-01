@@ -1846,6 +1846,7 @@ ash::ShelfID ChromeLauncherController::InsertAppLauncherItem(
   model_->AddAt(index, item);
 
   app_icon_loader_->FetchImage(app_id);
+  app_icon_loader_->UpdateImage(app_id);
 
   SetShelfItemDelegate(id, controller);
 
