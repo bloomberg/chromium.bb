@@ -104,16 +104,16 @@ GestureEventDispatchMediator::GestureEventDispatchMediator(PassRefPtrWillBeRawPt
 {
 }
 
-GestureEvent* GestureEventDispatchMediator::event() const
+GestureEvent& GestureEventDispatchMediator::event() const
 {
     return toGestureEvent(EventDispatchMediator::event());
 }
 
-bool GestureEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
+bool GestureEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
-    dispatcher->dispatch();
-    ASSERT(!event()->defaultPrevented());
-    return event()->defaultHandled() || event()->defaultPrevented();
+    dispatcher.dispatch();
+    ASSERT(!event().defaultPrevented());
+    return event().defaultHandled() || event().defaultPrevented();
 }
 
 } // namespace blink

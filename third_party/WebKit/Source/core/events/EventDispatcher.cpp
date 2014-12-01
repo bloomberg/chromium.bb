@@ -45,10 +45,8 @@ bool EventDispatcher::dispatchEvent(Node& node, PassRefPtrWillBeRawPtr<EventDisp
 {
     TRACE_EVENT0("blink", "EventDispatcher::dispatchEvent");
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
-    if (!mediator->event())
-        return true;
-    EventDispatcher dispatcher(node, mediator->event());
-    return mediator->dispatchEvent(&dispatcher);
+    EventDispatcher dispatcher(node, &mediator->event());
+    return mediator->dispatchEvent(dispatcher);
 }
 
 EventDispatcher::EventDispatcher(Node& node, PassRefPtrWillBeRawPtr<Event> event)
@@ -67,7 +65,7 @@ EventDispatcher::EventDispatcher(Node& node, PassRefPtrWillBeRawPtr<Event> event
 void EventDispatcher::dispatchScopedEvent(Node& node, PassRefPtrWillBeRawPtr<EventDispatchMediator> mediator)
 {
     // We need to set the target here because it can go away by the time we actually fire the event.
-    mediator->event()->setTarget(EventPath::eventTargetRespectingTargetRules(node));
+    mediator->event().setTarget(EventPath::eventTargetRespectingTargetRules(node));
     ScopedEventQueue::instance()->enqueueEventDispatchMediator(mediator);
 }
 

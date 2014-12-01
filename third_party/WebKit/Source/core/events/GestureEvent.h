@@ -65,9 +65,9 @@ public:
 private:
     explicit GestureEventDispatchMediator(PassRefPtrWillBeRawPtr<GestureEvent>);
 
-    GestureEvent* event() const;
+    GestureEvent& event() const;
 
-    virtual bool dispatchEvent(EventDispatcher*) const override;
+    virtual bool dispatchEvent(EventDispatcher&) const override;
 };
 
 DEFINE_EVENT_TYPE_CASTS(GestureEvent);

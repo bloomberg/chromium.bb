@@ -222,10 +222,10 @@ KeyboardEventDispatchMediator::KeyboardEventDispatchMediator(PassRefPtrWillBeRaw
 {
 }
 
-bool KeyboardEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
+bool KeyboardEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
     // Make sure not to return true if we already took default action while handling the event.
-    return EventDispatchMediator::dispatchEvent(dispatcher) && !event()->defaultHandled();
+    return EventDispatchMediator::dispatchEvent(dispatcher) && !event().defaultHandled();
 }
 
 } // namespace blink

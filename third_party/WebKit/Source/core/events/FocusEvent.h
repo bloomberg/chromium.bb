@@ -78,8 +78,8 @@ public:
     static PassRefPtrWillBeRawPtr<FocusEventDispatchMediator> create(PassRefPtrWillBeRawPtr<FocusEvent>);
 private:
     explicit FocusEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
-    FocusEvent* event() const { return static_cast<FocusEvent*>(EventDispatchMediator::event()); }
-    virtual bool dispatchEvent(EventDispatcher*) const override;
+    FocusEvent& event() const { return static_cast<FocusEvent&>(EventDispatchMediator::event()); }
+    virtual bool dispatchEvent(EventDispatcher&) const override;
 };
 
 class BlurEventDispatchMediator final : public EventDispatchMediator {
@@ -87,8 +87,8 @@ public:
     static PassRefPtrWillBeRawPtr<BlurEventDispatchMediator> create(PassRefPtrWillBeRawPtr<FocusEvent>);
 private:
     explicit BlurEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
-    FocusEvent* event() const { return static_cast<FocusEvent*>(EventDispatchMediator::event()); }
-    virtual bool dispatchEvent(EventDispatcher*) const override;
+    FocusEvent& event() const { return static_cast<FocusEvent&>(EventDispatchMediator::event()); }
+    virtual bool dispatchEvent(EventDispatcher&) const override;
 };
 
 class FocusInEventDispatchMediator final : public EventDispatchMediator {
@@ -96,8 +96,8 @@ public:
     static PassRefPtrWillBeRawPtr<FocusInEventDispatchMediator> create(PassRefPtrWillBeRawPtr<FocusEvent>);
 private:
     explicit FocusInEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
-    FocusEvent* event() const { return static_cast<FocusEvent*>(EventDispatchMediator::event()); }
-    virtual bool dispatchEvent(EventDispatcher*) const override;
+    FocusEvent& event() const { return static_cast<FocusEvent&>(EventDispatchMediator::event()); }
+    virtual bool dispatchEvent(EventDispatcher&) const override;
 };
 
 class FocusOutEventDispatchMediator final : public EventDispatchMediator {
@@ -105,8 +105,8 @@ public:
     static PassRefPtrWillBeRawPtr<FocusOutEventDispatchMediator> create(PassRefPtrWillBeRawPtr<FocusEvent>);
 private:
     explicit FocusOutEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
-    FocusEvent* event() const { return static_cast<FocusEvent*>(EventDispatchMediator::event()); }
-    virtual bool dispatchEvent(EventDispatcher*) const override;
+    FocusEvent& event() const { return static_cast<FocusEvent&>(EventDispatchMediator::event()); }
+    virtual bool dispatchEvent(EventDispatcher&) const override;
 };
 
 } // namespace blink

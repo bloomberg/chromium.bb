@@ -111,8 +111,8 @@ public:
     static PassRefPtrWillBeRawPtr<WheelEventDispatchMediator> create(const PlatformWheelEvent&, PassRefPtrWillBeRawPtr<AbstractView>);
 private:
     WheelEventDispatchMediator(const PlatformWheelEvent&, PassRefPtrWillBeRawPtr<AbstractView>);
-    WheelEvent* event() const;
-    virtual bool dispatchEvent(EventDispatcher*) const override;
+    WheelEvent& event() const;
+    virtual bool dispatchEvent(EventDispatcher&) const override;
 };
 
 } // namespace blink

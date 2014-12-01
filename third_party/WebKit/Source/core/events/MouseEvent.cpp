@@ -238,46 +238,46 @@ MouseEventDispatchMediator::MouseEventDispatchMediator(PassRefPtrWillBeRawPtr<Mo
 {
 }
 
-MouseEvent* MouseEventDispatchMediator::event() const
+MouseEvent& MouseEventDispatchMediator::event() const
 {
     return toMouseEvent(EventDispatchMediator::event());
 }
 
-bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
+bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
     if (isSyntheticMouseEvent()) {
-        event()->eventPath().adjustForRelatedTarget(dispatcher->node(), event()->relatedTarget());
-        return dispatcher->dispatch();
+        event().eventPath().adjustForRelatedTarget(dispatcher.node(), event().relatedTarget());
+        return dispatcher.dispatch();
     }
 
-    if (isDisabledFormControl(&dispatcher->node()))
+    if (isDisabledFormControl(&dispatcher.node()))
         return false;
 
-    if (event()->type().isEmpty())
+    if (event().type().isEmpty())
         return true; // Shouldn't happen.
 
-    ASSERT(!event()->target() || event()->target() != event()->relatedTarget());
+    ASSERT(!event().target() || event().target() != event().relatedTarget());
 
-    EventTarget* relatedTarget = event()->relatedTarget();
-    event()->eventPath().adjustForRelatedTarget(dispatcher->node(), relatedTarget);
+    EventTarget* relatedTarget = event().relatedTarget();
+    event().eventPath().adjustForRelatedTarget(dispatcher.node(), relatedTarget);
 
-    dispatcher->dispatch();
-    bool swallowEvent = event()->defaultHandled() || event()->defaultPrevented();
+    dispatcher.dispatch();
+    bool swallowEvent = event().defaultHandled() || event().defaultPrevented();
 
-    if (event()->type() != EventTypeNames::click || event()->detail() != 2)
+    if (event().type() != EventTypeNames::click || event().detail() != 2)
         return !swallowEvent;
 
     // Special case: If it's a double click event, we also send the dblclick event. This is not part
     // of the DOM specs, but is used for compatibility with the ondblclick="" attribute. This is treated
     // as a separate event in other DOM-compliant browsers like Firefox, and so we do the same.
     RefPtrWillBeRawPtr<MouseEvent> doubleClickEvent = MouseEvent::create();
-    doubleClickEvent->initMouseEvent(EventTypeNames::dblclick, event()->bubbles(), event()->cancelable(), event()->view(),
-                                     event()->detail(), event()->screenX(), event()->screenY(), event()->clientX(), event()->clientY(),
-                                     event()->ctrlKey(), event()->altKey(), event()->shiftKey(), event()->metaKey(),
-                                     event()->button(), relatedTarget);
-    if (event()->defaultHandled())
+    doubleClickEvent->initMouseEvent(EventTypeNames::dblclick, event().bubbles(), event().cancelable(), event().view(),
+        event().detail(), event().screenX(), event().screenY(), event().clientX(), event().clientY(),
+        event().ctrlKey(), event().altKey(), event().shiftKey(), event().metaKey(),
+        event().button(), relatedTarget);
+    if (event().defaultHandled())
         doubleClickEvent->setDefaultHandled();
-    EventDispatcher::dispatchEvent(dispatcher->node(), MouseEventDispatchMediator::create(doubleClickEvent));
+    EventDispatcher::dispatchEvent(dispatcher.node(), MouseEventDispatchMediator::create(doubleClickEvent));
     if (doubleClickEvent->defaultHandled() || doubleClickEvent->defaultPrevented())
         return false;
     return !swallowEvent;

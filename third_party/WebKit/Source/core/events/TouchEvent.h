@@ -91,8 +91,8 @@ public:
 
 private:
     explicit TouchEventDispatchMediator(PassRefPtrWillBeRawPtr<TouchEvent>);
-    TouchEvent* event() const;
-    virtual bool dispatchEvent(EventDispatcher*) const override;
+    TouchEvent& event() const;
+    virtual bool dispatchEvent(EventDispatcher&) const override;
 };
 
 DEFINE_EVENT_TYPE_CASTS(TouchEvent);

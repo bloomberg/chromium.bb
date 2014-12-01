@@ -104,23 +104,21 @@ PassRefPtrWillBeRawPtr<WheelEventDispatchMediator> WheelEventDispatchMediator::c
 
 WheelEventDispatchMediator::WheelEventDispatchMediator(const PlatformWheelEvent& event, PassRefPtrWillBeRawPtr<AbstractView> view)
 {
-    if (!(event.deltaX() || event.deltaY()))
-        return;
-
     setEvent(WheelEvent::create(FloatPoint(event.wheelTicksX(), event.wheelTicksY()), FloatPoint(event.deltaX(), event.deltaY()),
         deltaMode(event), view, event.globalPosition(), event.position(),
         event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey()));
 }
 
-WheelEvent* WheelEventDispatchMediator::event() const
+WheelEvent& WheelEventDispatchMediator::event() const
 {
     return toWheelEvent(EventDispatchMediator::event());
 }
 
-bool WheelEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
+bool WheelEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
-    ASSERT(event());
-    return EventDispatchMediator::dispatchEvent(dispatcher) && !event()->defaultHandled();
+    if (!(event().deltaX() || event().deltaY()))
+        return true;
+    return EventDispatchMediator::dispatchEvent(dispatcher) && !event().defaultHandled();
 }
 
 } // namespace blink

@@ -119,15 +119,15 @@ TouchEventDispatchMediator::TouchEventDispatchMediator(PassRefPtrWillBeRawPtr<To
 {
 }
 
-TouchEvent* TouchEventDispatchMediator::event() const
+TouchEvent& TouchEventDispatchMediator::event() const
 {
     return toTouchEvent(EventDispatchMediator::event());
 }
 
-bool TouchEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
+bool TouchEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
-    event()->eventPath().adjustForTouchEvent(*event());
-    return dispatcher->dispatch();
+    event().eventPath().adjustForTouchEvent(event());
+    return dispatcher.dispatch();
 }
 
 } // namespace blink
