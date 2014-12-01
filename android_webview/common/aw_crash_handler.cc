@@ -6,6 +6,9 @@
 
 #include <android/log.h>
 #include <signal.h>
+#include <sys/prctl.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 
 #include "base/logging.h"
 
@@ -27,6 +30,14 @@ void AwExceptionHandler(int sig, siginfo_t* info, void* uc) {
   if (g_crash_msg_ptr != NULL)
     __android_log_write(ANDROID_LOG_ERROR, "chromium", g_crash_msg_ptr);
 
+  // Detect if some buggy code in the embedder did reinstall the handler using
+  // signal() instead of sigaction() (which would cause |info| to be invalid).
+  struct sigaction cur_handler;
+  if (sigaction(sig, NULL, &cur_handler) != 0 ||
+      (cur_handler.sa_flags & SA_SIGINFO) == 0) {
+    info = NULL;
+  }
+
   // We served our purpose. Now restore the old crash handlers. If the embedder
   // did register a custom crash handler, it will be invoked by the kernel after
   // this function returns. Otherwise, this will end up invoking the default
@@ -34,6 +45,17 @@ void AwExceptionHandler(int sig, siginfo_t* info, void* uc) {
   for (uint32_t i = 0; i < arraysize(kExceptionSignals); ++i) {
     if (sigaction(kExceptionSignals[i], &old_handlers[i], NULL) == -1) {
       signal(kExceptionSignals[i], SIG_DFL);
+    }
+  }
+
+  if ((info != NULL && info->si_pid) || sig == SIGABRT) {
+    // This signal was triggered by somebody sending us the signal with kill().
+    // In order to retrigger it, we have to queue a new signal by calling
+    // kill() ourselves.  The special case (si_pid == 0 && sig == SIGABRT) is
+    // due to the kernel sending a SIGABRT from a user request via SysRQ.
+    if (syscall(__NR_tgkill, getpid(), syscall(__NR_gettid), sig) < 0) {
+      // If we failed to kill ourselves resort to terminating uncleanly.
+      exit(1);
     }
   }
 }
@@ -65,6 +87,7 @@ void RegisterCrashHandler(const std::string& version) {
   memset(&sa, 0, sizeof(sa));
   sigemptyset(&sa.sa_mask);
 
+  // Mask all exception signals when we're handling one of them.
   for (uint32_t i = 0; i < arraysize(kExceptionSignals); ++i)
     sigaddset(&sa.sa_mask, kExceptionSignals[i]);
 
