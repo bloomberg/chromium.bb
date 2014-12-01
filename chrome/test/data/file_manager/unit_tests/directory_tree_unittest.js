@@ -14,7 +14,9 @@ loadTimeData.data = {
   DRIVE_MY_DRIVE_LABEL: 'My Drive',
   DRIVE_OFFLINE_COLLECTION_LABEL: 'Offline',
   DRIVE_SHARED_WITH_ME_COLLECTION_LABEL: 'Shared with me',
-  DRIVE_RECENT_COLLECTION_LABEL: 'Recent'
+  DRIVE_RECENT_COLLECTION_LABEL: 'Recent',
+  REMOVABLE_DIRECTORY_LABEL: 'External Storage',
+  ARCHIVE_DIRECTORY_LABEL: 'Archives'
 };
 
 function setUp() {
@@ -30,6 +32,21 @@ function setUp() {
   window.webkitResolveLocalFileSystemURL = function(url, callback) {
     callback(webkitResolveLocalFileSystemURLEntries[url]);
   };
+}
+
+/**
+ * Returns item labels of a directory tree as a list.
+ *
+ * @param {DirectoryTree} directoryTree A directory tree.
+ * @return {Array.<string>} List of labels.
+ */
+function getDirectoryTreeItemLabelsAsAList(directoryTree) {
+  var result = [];
+  for (var i = 0; i < directoryTree.items.length; i++) {
+    var item = directoryTree.items[i];
+    result.push(item.label);
+  }
+  return result;
 }
 
 /**
@@ -88,4 +105,102 @@ function testCreateDirectoryTree(callback) {
     assertEquals(str('DRIVE_OFFLINE_COLLECTION_LABEL'),
         driveItem.items[3].label);
   }), callback);
+}
+
+/**
+ * Test case for updateSubElementsFromList.
+ *
+ * Mounts/unmounts removable and archive volumes, and checks these volumes come
+ * up to/disappear from the list correctly.
+ */
+function testUpdateSubElementsFromList() {
+  // Creates elements.
+  var parentElement = document.createElement('div');
+  var directoryTree = document.createElement('div');
+  parentElement.appendChild(directoryTree);
+
+  // Creates mocks.
+  var directoryModel = new MockDirectoryModel();
+  var volumeManager = new MockVolumeManager();
+  var metadataCache = new MockMetadataCache();
+
+  // Sets entry which is returned by
+  // window.webkitResolveLocalFileSystemURLResults.
+  var driveFileSystem = volumeManager.volumeInfoList.item(0).fileSystem;
+  window.webkitResolveLocalFileSystemURLEntries['filesystem:drive/root'] =
+      new MockDirectoryEntry(driveFileSystem, '/root');
+
+  DirectoryTree.decorate(directoryTree, directoryModel, volumeManager,
+      metadataCache, true);
+  directoryTree.dataModel = new MockNavigationListModel(volumeManager);
+  directoryTree.updateSubElementsFromList(true);
+
+  // There are 2 volumes, Drive and Downloads, at first.
+  assertArrayEquals([
+    str('DRIVE_DIRECTORY_LABEL'),
+    str('DOWNLOADS_DIRECTORY_LABEL')
+  ], getDirectoryTreeItemLabelsAsAList(directoryTree));
+
+  // Mounts a removable volume.
+  var removableVolume = MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.REMOVABLE,
+      'removable',
+      str('REMOVABLE_DIRECTORY_LABEL'));
+  volumeManager.volumeInfoList.push(removableVolume);
+
+  // Asserts that the directoryTree is not updated before the update.
+  assertArrayEquals([
+    str('DRIVE_DIRECTORY_LABEL'),
+    str('DOWNLOADS_DIRECTORY_LABEL')
+  ], getDirectoryTreeItemLabelsAsAList(directoryTree));
+
+  // Asserts that a removable directory is added after the update.
+  directoryTree.updateSubElementsFromList(false);
+  assertArrayEquals([
+    str('DRIVE_DIRECTORY_LABEL'),
+    str('DOWNLOADS_DIRECTORY_LABEL'),
+    str('REMOVABLE_DIRECTORY_LABEL')
+  ], getDirectoryTreeItemLabelsAsAList(directoryTree));
+
+  // Mounts an archive volume before the removable directory.
+  var archiveVolume = MockVolumeManager.createMockVolumeInfo(
+      VolumeManagerCommon.VolumeType.ARCHIVE,
+      'archive',
+      str('ARCHIVE_DIRECTORY_LABEL'));
+  volumeManager.volumeInfoList.splice(2, 0, archiveVolume);
+
+  // Asserts that the directoryTree is not updated before the update.
+  assertArrayEquals([
+    str('DRIVE_DIRECTORY_LABEL'),
+    str('DOWNLOADS_DIRECTORY_LABEL'),
+    str('REMOVABLE_DIRECTORY_LABEL')
+  ], getDirectoryTreeItemLabelsAsAList(directoryTree));
+
+  // Asserts that an archive directory is added before the removable directory.
+  directoryTree.updateSubElementsFromList(false);
+  assertArrayEquals([
+    str('DRIVE_DIRECTORY_LABEL'),
+    str('DOWNLOADS_DIRECTORY_LABEL'),
+    str('ARCHIVE_DIRECTORY_LABEL'),
+    str('REMOVABLE_DIRECTORY_LABEL')
+  ], getDirectoryTreeItemLabelsAsAList(directoryTree));
+
+  // Deletes an archive directory.
+  volumeManager.volumeInfoList.splice(2, 1);
+
+  // Asserts that the directoryTree is not updated before the update.
+  assertArrayEquals([
+    str('DRIVE_DIRECTORY_LABEL'),
+    str('DOWNLOADS_DIRECTORY_LABEL'),
+    str('ARCHIVE_DIRECTORY_LABEL'),
+    str('REMOVABLE_DIRECTORY_LABEL')
+  ], getDirectoryTreeItemLabelsAsAList(directoryTree));
+
+  // Asserts that an archive directory is deleted.
+  directoryTree.updateSubElementsFromList(false);
+  assertArrayEquals([
+    str('DRIVE_DIRECTORY_LABEL'),
+    str('DOWNLOADS_DIRECTORY_LABEL'),
+    str('REMOVABLE_DIRECTORY_LABEL')
+  ], getDirectoryTreeItemLabelsAsAList(directoryTree));
 }
