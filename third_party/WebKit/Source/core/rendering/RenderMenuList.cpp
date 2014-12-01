@@ -26,9 +26,9 @@
 #include "core/rendering/RenderMenuList.h"
 
 #include "core/HTMLNames.h"
-#include "core/accessibility/AXObjectCache.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/dom/AXObjectCache.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"

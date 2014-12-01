@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/html/canvas/HitRegion.h"
 
-#include "core/accessibility/AXObjectCache.h"
+#include "core/dom/AXObjectCache.h"
 #include "core/rendering/RenderBoxModelObject.h"
 
 namespace blink {

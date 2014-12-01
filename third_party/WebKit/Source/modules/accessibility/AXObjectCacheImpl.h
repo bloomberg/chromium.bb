@@ -29,7 +29,7 @@
 #ifndef AXObjectCacheImpl_h
 #define AXObjectCacheImpl_h
 
-#include "core/accessibility/AXObjectCache.h"
+#include "core/dom/AXObjectCache.h"
 #include "core/rendering/RenderText.h"
 #include "modules/accessibility/AXObject.h"
 #include "platform/Timer.h"

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/rendering/RenderBlockFlow.h"
 
-#include "core/accessibility/AXObjectCache.h"
+#include "core/dom/AXObjectCache.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"

@@ -38,8 +38,6 @@ class Page;
 class RenderMenuList;
 class Widget;
 
-// Code outside of the accessibility directory should only use the AXObjectCache
-// interface, never AXObjectCacheImpl.
 class AXObjectCache {
     WTF_MAKE_NONCOPYABLE(AXObjectCache); WTF_MAKE_FAST_ALLOCATED;
 public:

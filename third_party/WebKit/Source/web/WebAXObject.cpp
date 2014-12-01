@@ -32,8 +32,8 @@
 #include "public/web/WebAXObject.h"
 
 #include "core/HTMLNames.h"
-#include "core/accessibility/AXObjectCache.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/dom/AXObjectCache.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/frame/FrameView.h"

@@ -34,7 +34,7 @@
 #include "config.h"
 
 #include "bindings/core/v8/SerializedScriptValue.h"
-#include "core/accessibility/AXObjectCache.h"
+#include "core/dom/AXObjectCache.h"
 #include "core/dom/DocumentMarker.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/IconURL.h"

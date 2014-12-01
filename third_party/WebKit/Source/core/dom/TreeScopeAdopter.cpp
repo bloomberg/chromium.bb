@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/dom/TreeScopeAdopter.h"
 
-#include "core/accessibility/AXObjectCache.h"
+#include "core/dom/AXObjectCache.h"
 #include "core/dom/Attr.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"

@@ -535,8 +535,6 @@
         'webcore_files': [
             'Init.cpp',
             'Init.h',
-            'accessibility/AXObjectCache.cpp',
-            'accessibility/AXObjectCache.h',
             'animation/ActiveAnimations.cpp',
             'animation/ActiveAnimations.h',
             'animation/Animation.cpp',
@@ -1992,6 +1990,8 @@
             'xmlhttprequest/XMLHttpRequestUpload.h',
         ],
         'webcore_dom_files': [
+            'dom/AXObjectCache.cpp',
+            'dom/AXObjectCache.h',
             'dom/ActiveDOMObject.cpp',
             'dom/AddConsoleMessageTask.cpp',
             'dom/AddConsoleMessageTask.h',

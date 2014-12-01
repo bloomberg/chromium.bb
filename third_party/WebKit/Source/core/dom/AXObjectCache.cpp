@@ -28,7 +28,7 @@
 
 #include "config.h"
 
-#include "core/accessibility/AXObjectCache.h"
+#include "core/dom/AXObjectCache.h"
 
 namespace blink {
 
