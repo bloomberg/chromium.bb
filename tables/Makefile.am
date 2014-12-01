@@ -34,8 +34,8 @@ table_files = \
 	da-ansi8.dis \
 	da-chardefs6.cti \
 	da-chardefs8.cti \
-	da-dk.dis \
 	da-dk-common6.uti \
+	da-dk.dis \
 	da-dk-g16.utb \
 	da-dk-g18.utb \
 	da-dk-g26.ctb \
@@ -43,8 +43,8 @@ table_files = \
 	da-dk-g28caps.cti \
 	da-dk-g28.ctb \
 	da-dk-g28-patches.cti \
-	da-dk-nocaps.uti \
 	da-dk-g2core.cti \
+	da-dk-nocaps.uti \
 	da-lt.ctb \
 	de-ch-accents.cti \
 	de-chardefs6.cti \
@@ -187,9 +187,8 @@ table_files = \
 	nl-BE-chardefs.cti \
 	nl-BE.dis \
 	nl-BE-g1.ctb \
-	nl-be-g1.utb \
-	nl-BE-translation.cti \
-	Nl-Nl-g1.utb \
+	nl-NL-chardefs.cti \
+	nl-NL-g1.ctb \
 	no-no.ctb \
 	no-no.dis \
 	no-no-g0.utb \
