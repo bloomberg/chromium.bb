@@ -35,11 +35,15 @@ table_files = \
 	da-chardefs6.cti \
 	da-chardefs8.cti \
 	da-dk.dis \
+	da-dk-common6.uti \
 	da-dk-g16.utb \
 	da-dk-g18.utb \
 	da-dk-g26.ctb \
+	da-dk-g26-patches.cti \
 	da-dk-g28caps.cti \
 	da-dk-g28.ctb \
+	da-dk-g28-patches.cti \
+	da-dk-nocaps.uti \
 	da-dk-g2core.cti \
 	da-lt.ctb \
 	de-ch-accents.cti \
