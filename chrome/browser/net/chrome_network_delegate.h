@@ -131,9 +131,19 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
     enable_do_not_track_ = enable_do_not_track;
   }
 
+  void set_force_safe_search(
+      BooleanPrefMember* force_safe_search) {
+    force_safe_search_ = force_safe_search;
+  }
+
   void set_force_google_safe_search(
       BooleanPrefMember* force_google_safe_search) {
     force_google_safe_search_ = force_google_safe_search;
+  }
+
+  void set_force_youtube_safety_mode(
+      BooleanPrefMember* force_youtube_safety_mode) {
+    force_youtube_safety_mode_ = force_youtube_safety_mode;
   }
 
   void set_data_reduction_proxy_enabled_pref(
@@ -199,7 +209,9 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   static void InitializePrefsOnUIThread(
       BooleanPrefMember* enable_referrers,
       BooleanPrefMember* enable_do_not_track,
+      BooleanPrefMember* force_safe_search,
       BooleanPrefMember* force_google_safe_search,
+      BooleanPrefMember* force_youtube_safety_mode,
       PrefService* pref_service);
 
   // When called, all file:// URLs will now be accessible.  If this is not
@@ -286,7 +298,9 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   // Weak, owned by our owner.
   BooleanPrefMember* enable_referrers_;
   BooleanPrefMember* enable_do_not_track_;
+  BooleanPrefMember* force_safe_search_;
   BooleanPrefMember* force_google_safe_search_;
+  BooleanPrefMember* force_youtube_safety_mode_;
   BooleanPrefMember* data_reduction_proxy_enabled_;
 
   // Weak, owned by our owner.

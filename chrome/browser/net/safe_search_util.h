@@ -24,6 +24,11 @@ void ForceGoogleSafeSearch(const net::URLRequest* request, GURL* new_url);
 void ForceYouTubeSafetyMode(const net::URLRequest* request,
                             net::HttpRequestHeaders* headers);
 
+int GetForceGoogleSafeSearchCountForTesting();
+int GetForceYouTubeSafetyModeCountForTesting();
+void ClearForceGoogleSafeSearchCountForTesting();
+void ClearForceYouTubeSafetyModeCountForTesting();
+
 }  // namespace safe_search_util
 
 #endif  // CHROME_BROWSER_NET_SAFE_SEARCH_UTIL_H_

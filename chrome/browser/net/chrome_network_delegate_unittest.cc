@@ -9,12 +9,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/net/safe_search_util.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "net/base/completion_callback.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -105,7 +104,11 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
 
   void SetUp() override {
     ChromeNetworkDelegate::InitializePrefsOnUIThread(
-        &enable_referrers_, NULL, &force_google_safe_search_,
+        &enable_referrers_,
+        NULL,
+        &force_safe_search_,
+        &force_google_safe_search_,
+        &force_youtube_safety_mode_,
         profile_.GetTestingPrefService());
   }
 
@@ -113,12 +116,19 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
   scoped_ptr<net::NetworkDelegate> CreateNetworkDelegate() {
     scoped_ptr<ChromeNetworkDelegate> network_delegate(
         new ChromeNetworkDelegate(forwarder(), &enable_referrers_));
+    network_delegate->set_force_safe_search(&force_safe_search_);
     network_delegate->set_force_google_safe_search(&force_google_safe_search_);
+    network_delegate->set_force_youtube_safety_mode(
+        &force_youtube_safety_mode_);
     return network_delegate.Pass();
   }
 
-  void SetSafeSearch(bool value) {
-    force_google_safe_search_.SetValue(value);
+  void SetSafeSearch(bool safe_search,
+                     bool google_safe_search,
+                     bool youtube_safety_mode) {
+    force_safe_search_.SetValue(safe_search);
+    force_google_safe_search_.SetValue(google_safe_search);
+    force_youtube_safety_mode_.SetValue(youtube_safety_mode);
   }
 
   void SetDelegate(net::NetworkDelegate* delegate) {
@@ -126,21 +136,23 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
     context_.set_network_delegate(network_delegate_);
   }
 
-  // Does a request using the |url_string| URL and verifies that the expected
-  // string is equal to the query part (between ? and #) of the final url of
-  // that request.
-  void CheckAddedParameters(const std::string& url_string,
-                            const std::string& expected_query_parameters) {
-    // Show the URL in the trace so we know where we failed.
-    SCOPED_TRACE(url_string);
+  // Does a request to an arbitrary URL and verifies that the SafeSearch
+  // enforcement utility functions were called/not called as expected.
+  void QueryURL(bool expect_google_safe_search,
+                bool expect_youtube_safety_mode) {
+    safe_search_util::ClearForceGoogleSafeSearchCountForTesting();
+    safe_search_util::ClearForceYouTubeSafetyModeCountForTesting();
 
     scoped_ptr<net::URLRequest> request(context_.CreateRequest(
-        GURL(url_string), net::DEFAULT_PRIORITY, &delegate_, NULL));
+        GURL("http://anyurl.com"), net::DEFAULT_PRIORITY, &delegate_, NULL));
 
     request->Start();
     base::MessageLoop::current()->RunUntilIdle();
 
-    EXPECT_EQ(expected_query_parameters, request->url().query());
+    EXPECT_EQ(expect_google_safe_search ? 1 : 0,
+        safe_search_util::GetForceGoogleSafeSearchCountForTesting());
+    EXPECT_EQ(expect_youtube_safety_mode ? 1 : 0,
+        safe_search_util::GetForceYouTubeSafetyModeCountForTesting());
   }
 
  private:
@@ -158,143 +170,31 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
 #endif
   TestingProfile profile_;
   BooleanPrefMember enable_referrers_;
+  BooleanPrefMember force_safe_search_;
   BooleanPrefMember force_google_safe_search_;
+  BooleanPrefMember force_youtube_safety_mode_;
   scoped_ptr<net::URLRequest> request_;
   net::TestURLRequestContext context_;
   net::NetworkDelegate* network_delegate_;
   net::TestDelegate delegate_;
 };
 
-TEST_F(ChromeNetworkDelegateSafeSearchTest, SafeSearchOn) {
-  // Tests with SafeSearch on, request parameters should be rewritten.
-  const std::string kSafeParameter = chrome::kSafeSearchSafeParameter;
-  const std::string kSsuiParameter = chrome::kSafeSearchSsuiParameter;
-  const std::string kBothParameters = kSafeParameter + "&" + kSsuiParameter;
-  SetSafeSearch(true);
+TEST_F(ChromeNetworkDelegateSafeSearchTest, SafeSearch) {
   scoped_ptr<net::NetworkDelegate> delegate(CreateNetworkDelegate());
   SetDelegate(delegate.get());
 
-  // Test the home page.
-  CheckAddedParameters("http://google.com/", kBothParameters);
+  // Loop over all combinations of the three policies.
+  for (int i = 0; i < 8; i++) {
+    bool safe_search = i % 2;
+    bool google_safe_search = (i / 2) % 2;
+    bool youtube_safety_mode = i / 4;
+    SetSafeSearch(safe_search, google_safe_search, youtube_safety_mode);
 
-  // Test the search home page.
-  CheckAddedParameters("http://google.com/webhp",
-                       kBothParameters);
-
-  // Test different valid search pages with parameters.
-  CheckAddedParameters("http://google.com/search?q=google",
-                       "q=google&" + kBothParameters);
-
-  CheckAddedParameters("http://google.com/?q=google",
-                       "q=google&" + kBothParameters);
-
-  CheckAddedParameters("http://google.com/webhp?q=google",
-                       "q=google&" + kBothParameters);
-
-  // Test the valid pages with safe set to off.
-  CheckAddedParameters("http://google.com/search?q=google&safe=off",
-                       "q=google&" + kBothParameters);
-
-  CheckAddedParameters("http://google.com/?q=google&safe=off",
-                       "q=google&" + kBothParameters);
-
-  CheckAddedParameters("http://google.com/webhp?q=google&safe=off",
-                       "q=google&" + kBothParameters);
-
-  CheckAddedParameters("http://google.com/webhp?q=google&%73afe=off",
-                       "q=google&%73afe=off&" + kBothParameters);
-
-  // Test the home page, different TLDs.
-  CheckAddedParameters("http://google.de/", kBothParameters);
-  CheckAddedParameters("http://google.ro/", kBothParameters);
-  CheckAddedParameters("http://google.nl/", kBothParameters);
-
-  // Test the search home page, different TLD.
-  CheckAddedParameters("http://google.de/webhp", kBothParameters);
-
-  // Test the search page with parameters, different TLD.
-  CheckAddedParameters("http://google.de/search?q=google",
-                       "q=google&" + kBothParameters);
-
-  // Test the home page with parameters, different TLD.
-  CheckAddedParameters("http://google.de/?q=google",
-                       "q=google&" + kBothParameters);
-
-  // Test the search page with the parameters set.
-  CheckAddedParameters("http://google.de/?q=google&" + kBothParameters,
-                       "q=google&" + kBothParameters);
-
-  // Test some possibly tricky combinations.
-  CheckAddedParameters("http://google.com/?q=goog&" + kSafeParameter +
-                       "&ssui=one",
-                       "q=goog&" + kBothParameters);
-
-  CheckAddedParameters("http://google.de/?q=goog&unsafe=active&" +
-                       kSsuiParameter,
-                       "q=goog&unsafe=active&" + kBothParameters);
-
-  CheckAddedParameters("http://google.de/?q=goog&safe=off&ssui=off",
-                       "q=goog&" + kBothParameters);
-
-  // Test various combinations where we should not add anything.
-  CheckAddedParameters("http://google.com/?q=goog&" + kSsuiParameter + "&" +
-                       kSafeParameter,
-                       "q=goog&" + kBothParameters);
-
-  CheckAddedParameters("http://google.com/?" + kSsuiParameter + "&q=goog&" +
-                       kSafeParameter,
-                       "q=goog&" + kBothParameters);
-
-  CheckAddedParameters("http://google.com/?" + kSsuiParameter + "&" +
-                       kSafeParameter + "&q=goog",
-                       "q=goog&" + kBothParameters);
-
-  // Test that another website is not affected, without parameters.
-  CheckAddedParameters("http://google.com/finance", std::string());
-
-  // Test that another website is not affected, with parameters.
-  CheckAddedParameters("http://google.com/finance?q=goog", "q=goog");
-
-  // Test that another website is not affected with redirects, with parameters.
-  CheckAddedParameters("http://finance.google.com/?q=goog", "q=goog");
-
-  // Test with percent-encoded data (%26 is &)
-  CheckAddedParameters("http://google.com/?q=%26%26%26&" + kSsuiParameter +
-                       "&" + kSafeParameter + "&param=%26%26%26",
-                       "q=%26%26%26&param=%26%26%26&" + kBothParameters);
-}
-
-TEST_F(ChromeNetworkDelegateSafeSearchTest, SafeSearchOff) {
-  // Tests with SafeSearch settings off, delegate should not alter requests.
-  SetSafeSearch(false);
-  scoped_ptr<net::NetworkDelegate> delegate(CreateNetworkDelegate());
-  SetDelegate(delegate.get());
-
-  // Test the home page.
-  CheckAddedParameters("http://google.com/", std::string());
-
-  // Test the search home page.
-  CheckAddedParameters("http://google.com/webhp", std::string());
-
-  // Test the home page with parameters.
-  CheckAddedParameters("http://google.com/search?q=google",
-                       "q=google");
-
-  // Test the search page with parameters.
-  CheckAddedParameters("http://google.com/?q=google",
-                       "q=google");
-
-  // Test the search webhp page with parameters.
-  CheckAddedParameters("http://google.com/webhp?q=google",
-                       "q=google");
-
-  // Test the home page with parameters and safe set to off.
-  CheckAddedParameters("http://google.com/search?q=google&safe=off",
-                       "q=google&safe=off");
-
-  // Test the home page with parameters and safe set to active.
-  CheckAddedParameters("http://google.com/search?q=google&safe=active",
-                       "q=google&safe=active");
+    // The old "SafeSearch" policy implies both Google and YouTube.
+    bool expect_google_safe_search = safe_search || google_safe_search;
+    bool expect_youtube_safety_mode = safe_search || youtube_safety_mode;
+    QueryURL(expect_google_safe_search, expect_youtube_safety_mode);
+  }
 }
 
 // Privacy Mode disables Channel Id if cookies are blocked (cr223191)
@@ -314,7 +214,7 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
 
   void SetUp() override {
     ChromeNetworkDelegate::InitializePrefsOnUIThread(
-        &enable_referrers_, NULL, NULL,
+        &enable_referrers_, NULL, NULL, NULL, NULL,
         profile_.GetTestingPrefService());
   }
 

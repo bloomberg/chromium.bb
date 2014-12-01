@@ -23,6 +23,9 @@
 
 namespace {
 
+int g_force_google_safe_search_count_for_test = 0;
+int g_force_youtube_safety_mode_count_for_test = 0;
+
 const char kYouTubeSafetyModeHeaderName[] = "YouTube-Safety-Mode";
 const char kYouTubeSafetyModeHeaderValue[] = "Active";
 
@@ -70,6 +73,8 @@ namespace safe_search_util {
 // enforces that the SafeSearch query parameters are set to active.
 // Sets the query part of |new_url| with the new value of the parameters.
 void ForceGoogleSafeSearch(const net::URLRequest* request, GURL* new_url) {
+  ++g_force_google_safe_search_count_for_test;
+
   if (!google_util::IsGoogleSearchUrl(request->url()) &&
       !google_util::IsGoogleHomePageUrl(request->url()))
     return;
@@ -88,6 +93,8 @@ void ForceGoogleSafeSearch(const net::URLRequest* request, GURL* new_url) {
 // setting YouTube's Safety Mode header.
 void ForceYouTubeSafetyMode(const net::URLRequest* request,
                             net::HttpRequestHeaders* headers) {
+  ++g_force_youtube_safety_mode_count_for_test;
+
   if (!google_util::IsYoutubeDomainUrl(
           request->url(),
           google_util::ALLOW_SUBDOMAIN,
@@ -96,6 +103,22 @@ void ForceYouTubeSafetyMode(const net::URLRequest* request,
 
   headers->SetHeader(kYouTubeSafetyModeHeaderName,
                      kYouTubeSafetyModeHeaderValue);
+}
+
+int GetForceGoogleSafeSearchCountForTesting() {
+  return g_force_google_safe_search_count_for_test;
+}
+
+int GetForceYouTubeSafetyModeCountForTesting() {
+  return g_force_youtube_safety_mode_count_for_test;
+}
+
+void ClearForceGoogleSafeSearchCountForTesting() {
+  g_force_google_safe_search_count_for_test = 0;
+}
+
+void ClearForceYouTubeSafetyModeCountForTesting() {
+  g_force_youtube_safety_mode_count_for_test = 0;
 }
 
 }  // namespace safe_search_util

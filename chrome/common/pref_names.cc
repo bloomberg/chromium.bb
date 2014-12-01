@@ -891,8 +891,17 @@ const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
 // permitted.
 const char kAllowDeletingBrowserHistory[] = "history.deleting_enabled";
 
-// Boolean controlling whether SafeSearch is mandatory for Google Web Searches.
+// Boolean controlling whether SafeSearch is mandatory for Google Web Searches
+// and also whether Safety Mode is mandatory on YouTube.
+// DEPRECATED: This is replaced by kForceGoogleSafeSearch and
+// kForceYouTubeSafetyMode, and still exists for legacy reasons only.
 const char kForceSafeSearch[] = "settings.force_safesearch";
+
+// Boolean controlling whether SafeSearch is mandatory for Google Web Searches.
+const char kForceGoogleSafeSearch[] = "settings.force_google_safesearch";
+
+// Boolean controlling whether Safety Mode is mandatory on YouTube.
+const char kForceYouTubeSafetyMode[] = "settings.force_youtube_safety_mode";
 
 // Boolean controlling whether History is recorded and synced for
 // supervised users.

@@ -443,6 +443,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       &enable_referrers_,
       &enable_do_not_track_,
       &force_safesearch_,
+      &force_google_safesearch_,
+      &force_youtube_safety_mode_,
       pref_service);
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy =
@@ -1028,7 +1030,9 @@ void ProfileIOData::Init(
   network_delegate->set_profile_path(profile_params_->path);
   network_delegate->set_cookie_settings(profile_params_->cookie_settings.get());
   network_delegate->set_enable_do_not_track(&enable_do_not_track_);
-  network_delegate->set_force_google_safe_search(&force_safesearch_);
+  network_delegate->set_force_safe_search(&force_safesearch_);
+  network_delegate->set_force_google_safe_search(&force_google_safesearch_);
+  network_delegate->set_force_youtube_safety_mode(&force_youtube_safety_mode_);
   network_delegate->set_prerender_tracker(profile_params_->prerender_tracker);
   network_delegate_.reset(network_delegate);
 
@@ -1209,6 +1213,8 @@ void ProfileIOData::ShutdownOnUIThread(
   enable_referrers_.Destroy();
   enable_do_not_track_.Destroy();
   force_safesearch_.Destroy();
+  force_google_safesearch_.Destroy();
+  force_youtube_safety_mode_.Destroy();
 #if !defined(OS_CHROMEOS)
   enable_metrics_.Destroy();
 #endif

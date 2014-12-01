@@ -319,6 +319,20 @@
     "os": ["win", "linux", "mac", "chromeos"]
   },
 
+  "ForceGoogleSafeSearch": {
+    "pref": "settings.force_google_safesearch",
+    "test_policy": { "ForceGoogleSafeSearch": true },
+    "settings_pages": [],
+    "os": ["win", "linux", "mac", "chromeos"]
+  },
+
+  "ForceYouTubeSafetyMode": {
+    "pref": "settings.force_youtube_safety_mode",
+    "test_policy": { "ForceYouTubeSafetyMode": true },
+    "settings_pages": [],
+    "os": ["win", "linux", "mac", "chromeos"]
+  },
+
   "MetricsReportingEnabled": {
     "os": ["win", "mac", "linux"],
     "official_only": true,

@@ -251,7 +251,9 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
     : profile_(NULL),
       enable_referrers_(enable_referrers),
       enable_do_not_track_(NULL),
+      force_safe_search_(NULL),
       force_google_safe_search_(NULL),
+      force_youtube_safety_mode_(NULL),
       data_reduction_proxy_enabled_(NULL),
 #if defined(ENABLE_CONFIGURATION_POLICY)
       url_blacklist_manager_(NULL),
@@ -309,7 +311,9 @@ void ChromeNetworkDelegate::NeverThrottleRequests() {
 void ChromeNetworkDelegate::InitializePrefsOnUIThread(
     BooleanPrefMember* enable_referrers,
     BooleanPrefMember* enable_do_not_track,
+    BooleanPrefMember* force_safe_search,
     BooleanPrefMember* force_google_safe_search,
+    BooleanPrefMember* force_youtube_safety_mode,
     PrefService* pref_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   enable_referrers->Init(prefs::kEnableReferrers, pref_service);
@@ -320,9 +324,20 @@ void ChromeNetworkDelegate::InitializePrefsOnUIThread(
     enable_do_not_track->MoveToThread(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
+  if (force_safe_search) {
+    force_safe_search->Init(prefs::kForceSafeSearch, pref_service);
+    force_safe_search->MoveToThread(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  }
   if (force_google_safe_search) {
-    force_google_safe_search->Init(prefs::kForceSafeSearch, pref_service);
+    force_google_safe_search->Init(prefs::kForceGoogleSafeSearch, pref_service);
     force_google_safe_search->MoveToThread(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  }
+  if (force_youtube_safety_mode) {
+    force_youtube_safety_mode->Init(prefs::kForceYouTubeSafetyMode,
+                                    pref_service);
+    force_youtube_safety_mode->MoveToThread(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
 }
@@ -395,8 +410,9 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
         client_hints_->GetDevicePixelRatioHeader(), true);
   }
 
-  bool force_safe_search = force_google_safe_search_ &&
-                           force_google_safe_search_->GetValue();
+  bool force_safe_search =
+      (force_safe_search_ && force_safe_search_->GetValue()) ||
+      (force_google_safe_search_ && force_google_safe_search_->GetValue());
 
   net::CompletionCallback wrapped_callback = callback;
   if (force_safe_search) {
@@ -445,9 +461,10 @@ int ChromeNetworkDelegate::OnBeforeSendHeaders(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
-  bool force_safe_search = force_google_safe_search_ &&
-                           force_google_safe_search_->GetValue();
-  if (force_safe_search)
+  bool force_safety_mode =
+      (force_safe_search_ && force_safe_search_->GetValue()) ||
+      (force_youtube_safety_mode_ && force_youtube_safety_mode_->GetValue());
+  if (force_safety_mode)
     safe_search_util::ForceYouTubeSafetyMode(request, headers);
 
   TRACE_EVENT_ASYNC_STEP_PAST0("net", "URLRequest", request, "SendRequest");
