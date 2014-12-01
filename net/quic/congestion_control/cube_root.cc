@@ -64,7 +64,7 @@ uint32 CubeRoot::Root(uint64 a) {
 
   if (msb < 7) {
     // MSB in our table.
-    return ((cube_root_table[static_cast<uint32>(a)]) + 31) >> 6;
+    return ((cube_root_table[a]) + 31) >> 6;
   }
   // MSB          7,  8,  9, 10, 11, 12, 13, 14, 15, 16, ...
   // cubic_shift  1,  1,  1,  2,  2,  2,  3,  3,  3,  4, ...
@@ -72,9 +72,8 @@ uint32 CubeRoot::Root(uint64 a) {
   cubic_shift = ((cubic_shift * 342) >> 10);  // Div by 3, biased high.
 
   // 4 to 6 bits accuracy depending on MSB.
-  uint32 down_shifted_to_6bit = (a >> (cubic_shift * 3));
-  uint64 root = ((cube_root_table[down_shifted_to_6bit] + 10) << cubic_shift)
-      >> 6;
+  uint64 root =
+      ((cube_root_table[a >> (cubic_shift * 3)] + 10) << cubic_shift) >> 6;
 
   // Make one Newton-Raphson iteration.
   // Since x has an error (inaccuracy due to the use of fix point) we get a

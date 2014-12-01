@@ -318,8 +318,9 @@ QuicClientSession::~QuicClientSession() {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.MaxReorderingTimeLongRtt",
                                 reordering, 0, kMaxReordering, 50);
   }
-  UMA_HISTOGRAM_COUNTS("Net.QuicSession.MaxReordering",
-                       stats.max_sequence_reordering);
+  UMA_HISTOGRAM_COUNTS(
+      "Net.QuicSession.MaxReordering",
+      static_cast<base::HistogramBase::Sample>(stats.max_sequence_reordering));
 }
 
 void QuicClientSession::OnStreamFrames(

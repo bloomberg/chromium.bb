@@ -67,7 +67,8 @@ QuicTime::Delta QuicTime::Delta::Multiply(int i) const {
 }
 
 QuicTime::Delta QuicTime::Delta::Multiply(double d) const {
-  return QuicTime::Delta::FromMicroseconds(ToMicroseconds() * d);
+  return QuicTime::Delta::FromMicroseconds(
+      static_cast<int64>(ToMicroseconds() * d));
 }
 
 // static

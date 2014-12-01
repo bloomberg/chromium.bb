@@ -132,7 +132,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // The number of times that OnPacketHeader was called.
   // If the network replicates packets, then this number may be slightly
   // different from the real number of distinct packets received.
-  QuicPacketSequenceNumber num_packets_received_;
+  QuicPacketCount num_packets_received_;
   // Number of times a truncated ACK frame was sent.
   size_t num_truncated_acks_sent_;
   // Number of times a truncated ACK frame was received.

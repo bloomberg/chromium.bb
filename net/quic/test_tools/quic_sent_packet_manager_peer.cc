@@ -72,7 +72,7 @@ RttStats* QuicSentPacketManagerPeer::GetRttStats(
 }
 
 // static
-size_t QuicSentPacketManagerPeer::GetNackCount(
+QuicPacketCount QuicSentPacketManagerPeer::GetNackCount(
     const QuicSentPacketManager* sent_packet_manager,
     QuicPacketSequenceNumber sequence_number) {
   return sent_packet_manager->unacked_packets_.

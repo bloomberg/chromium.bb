@@ -118,7 +118,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   QuicPacketCount congestion_window_;
 
   // Congestion window before the last loss event or RTO.
-  QuicByteCount previous_congestion_window_;
+  QuicPacketCount previous_congestion_window_;
 
   // Slow start congestion window in packets, aka ssthresh.
   QuicPacketCount slowstart_threshold_;

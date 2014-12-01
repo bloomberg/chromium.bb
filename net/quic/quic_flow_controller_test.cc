@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_flow_controller.h"
 
+#include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
@@ -12,12 +13,8 @@
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using base::StringPrintf;
-
 namespace net {
 namespace test {
-
-using ::testing::_;
 
 class QuicFlowControllerTest : public ::testing::Test {
  public:
@@ -37,9 +34,9 @@ class QuicFlowControllerTest : public ::testing::Test {
 
  protected:
   QuicStreamId stream_id_;
-  uint64 send_window_;
-  uint64 receive_window_;
-  uint64 max_receive_window_;
+  QuicByteCount send_window_;
+  QuicByteCount receive_window_;
+  QuicByteCount max_receive_window_;
   scoped_ptr<QuicFlowController> flow_controller_;
   MockConnection connection_;
 };
@@ -80,8 +77,8 @@ TEST_F(QuicFlowControllerTest, SendingBytes) {
               SendConnectionClose(QUIC_FLOW_CONTROL_SENT_TOO_MUCH_DATA));
   EXPECT_DFATAL(
       flow_controller_->AddBytesSent(send_window_ * 10),
-      StringPrintf("Trying to send an extra %d bytes",
-                   static_cast<int>(send_window_ * 10)));
+      base::StringPrintf("Trying to send an extra %" PRIu64 " bytes",
+                         send_window_ * 10));
   EXPECT_TRUE(flow_controller_->IsBlocked());
   EXPECT_EQ(0u, flow_controller_->SendWindowSize());
 }
@@ -104,7 +101,7 @@ TEST_F(QuicFlowControllerTest, ReceivingBytes) {
             QuicFlowControllerPeer::ReceiveWindowSize(flow_controller_.get()));
 
   // Consume enough bytes to send a WINDOW_UPDATE frame.
-  EXPECT_CALL(connection_, SendWindowUpdate(stream_id_, _)).Times(1);
+  EXPECT_CALL(connection_, SendWindowUpdate(stream_id_, ::testing::_)).Times(1);
 
   flow_controller_->AddBytesConsumed(1 + receive_window_ / 2);
 

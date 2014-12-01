@@ -35,8 +35,8 @@ class CubicTest : public ::testing::Test {
 TEST_F(CubicTest, AboveOrigin) {
   // Convex growth.
   const QuicTime::Delta rtt_min = hundred_ms_;
-  uint32 current_cwnd = 10;
-  uint32 expected_cwnd = current_cwnd + 1;
+  QuicPacketCount current_cwnd = 10;
+  QuicPacketCount expected_cwnd = current_cwnd + 1;
   // Initialize the state.
   clock_.AdvanceTime(one_ms_);
   EXPECT_EQ(expected_cwnd,
@@ -44,7 +44,7 @@ TEST_F(CubicTest, AboveOrigin) {
   current_cwnd = expected_cwnd;
   // Normal TCP phase.
   for (int i = 0; i < 48; ++i) {
-    for (uint32 n = 1; n < current_cwnd / kNConnectionAlpha; ++n) {
+    for (QuicPacketCount n = 1; n < current_cwnd / kNConnectionAlpha; ++n) {
       // Call once per ACK.
       EXPECT_NEAR(current_cwnd,
                   cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min), 1);
@@ -56,7 +56,7 @@ TEST_F(CubicTest, AboveOrigin) {
   }
   // Cubic phase.
   for (int i = 0; i < 52; ++i) {
-    for (uint32 n = 1; n < current_cwnd; ++n) {
+    for (QuicPacketCount n = 1; n < current_cwnd; ++n) {
       // Call once per ACK.
       EXPECT_EQ(current_cwnd,
                 cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min));
@@ -74,15 +74,15 @@ TEST_F(CubicTest, AboveOrigin) {
 
 TEST_F(CubicTest, CwndIncreaseStatsDuringConvexRegion) {
   const QuicTime::Delta rtt_min = hundred_ms_;
-  uint32 current_cwnd = 10;
-  uint32 expected_cwnd = current_cwnd + 1;
+  QuicPacketCount current_cwnd = 10;
+  QuicPacketCount expected_cwnd = current_cwnd + 1;
   // Initialize controller state.
   clock_.AdvanceTime(one_ms_);
   expected_cwnd = cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min);
   current_cwnd = expected_cwnd;
   // Testing Reno mode increase.
   for (int i = 0; i < 48; ++i) {
-    for (uint32 n = 1; n < current_cwnd / kNConnectionAlpha; ++n) {
+    for (QuicPacketCount n = 1; n < current_cwnd / kNConnectionAlpha; ++n) {
       // Call once per ACK, causing cwnd growth in Reno mode.
       cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min);
     }
@@ -94,13 +94,13 @@ TEST_F(CubicTest, CwndIncreaseStatsDuringConvexRegion) {
     EXPECT_NEAR(1u, stats_.cwnd_increase_cubic_mode, 1);
     expected_cwnd++;
   }
-  uint32 old_cwnd = current_cwnd;
+  QuicPacketCount old_cwnd = current_cwnd;
   stats_.cwnd_increase_cubic_mode = 0;
   stats_.cwnd_increase_congestion_avoidance = 0;
 
   // Testing Cubic mode increase.
   for (int i = 0; i < 52; ++i) {
-    for (uint32 n = 1; n < current_cwnd; ++n) {
+    for (QuicPacketCount n = 1; n < current_cwnd; ++n) {
       // Call once per ACK.
       cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min);
     }
@@ -120,16 +120,16 @@ TEST_F(CubicTest, CwndIncreaseStatsDuringConvexRegion) {
 
 TEST_F(CubicTest, LossEvents) {
   const QuicTime::Delta rtt_min = hundred_ms_;
-  uint32 current_cwnd = 422;
-  uint32 expected_cwnd = current_cwnd + 1;
+  QuicPacketCount current_cwnd = 422;
+  QuicPacketCount expected_cwnd = current_cwnd + 1;
   // Initialize the state.
   clock_.AdvanceTime(one_ms_);
   EXPECT_EQ(expected_cwnd,
             cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min));
-  expected_cwnd = static_cast<int>(current_cwnd * kNConnectionBeta);
+  expected_cwnd = static_cast<QuicPacketCount>(current_cwnd * kNConnectionBeta);
   EXPECT_EQ(expected_cwnd,
             cubic_.CongestionWindowAfterPacketLoss(current_cwnd));
-  expected_cwnd = static_cast<int>(current_cwnd * kNConnectionBeta);
+  expected_cwnd = static_cast<QuicPacketCount>(current_cwnd * kNConnectionBeta);
   EXPECT_EQ(expected_cwnd,
             cubic_.CongestionWindowAfterPacketLoss(current_cwnd));
 }
@@ -137,19 +137,19 @@ TEST_F(CubicTest, LossEvents) {
 TEST_F(CubicTest, BelowOrigin) {
   // Concave growth.
   const QuicTime::Delta rtt_min = hundred_ms_;
-  uint32 current_cwnd = 422;
-  uint32 expected_cwnd = current_cwnd + 1;
+  QuicPacketCount current_cwnd = 422;
+  QuicPacketCount expected_cwnd = current_cwnd + 1;
   // Initialize the state.
   clock_.AdvanceTime(one_ms_);
   EXPECT_EQ(expected_cwnd,
             cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min));
-  expected_cwnd = static_cast<int>(current_cwnd * kNConnectionBeta);
+  expected_cwnd = static_cast<QuicPacketCount>(current_cwnd * kNConnectionBeta);
   EXPECT_EQ(expected_cwnd,
             cubic_.CongestionWindowAfterPacketLoss(current_cwnd));
   current_cwnd = expected_cwnd;
   // First update after loss to initialize the epoch.
   current_cwnd = cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min);
-  uint32 old_cwnd =  current_cwnd;
+  QuicPacketCount old_cwnd = current_cwnd;
   // Cubic phase.
   stats_.cwnd_increase_cubic_mode = 0;
   stats_.cwnd_increase_congestion_avoidance = 0;

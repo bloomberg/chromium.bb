@@ -71,7 +71,7 @@ class NET_EXPORT_PRIVATE Cubic {
   QuicPacketCount last_max_congestion_window_;
 
   // Number of acked packets since the cycle started (epoch).
-  uint32 acked_packets_count_;
+  QuicPacketCount acked_packets_count_;
 
   // TCP Reno equivalent congestion window in packets.
   QuicPacketCount estimated_tcp_congestion_window_;

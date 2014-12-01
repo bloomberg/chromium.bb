@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
+#include "net/quic/quic_bandwidth.h"
 #include "net/socket/next_proto.h"
 #include "net/spdy/spdy_framer.h"  // TODO(willchan): Reconsider this.
 #include "net/spdy/spdy_protocol.h"
@@ -143,8 +144,10 @@ extern const char kAlternateProtocolHeader[];
 class NET_EXPORT HttpServerProperties {
  public:
   struct NetworkStats {
+    NetworkStats() : bandwidth_estimate(QuicBandwidth::Zero()) {}
+
     base::TimeDelta srtt;
-    uint64 bandwidth_estimate;
+    QuicBandwidth bandwidth_estimate;
   };
 
   HttpServerProperties() {}

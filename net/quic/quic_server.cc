@@ -74,7 +74,8 @@ int QuicServer::Listen(const IPEndPoint& address) {
   // These send and receive buffer sizes are sized for a single connection,
   // because the default usage of QuicServer is as a test server with one or
   // two clients.  Adjust higher for use with many clients.
-  rc = socket->SetReceiveBufferSize(TcpReceiver::kReceiveWindowTCP);
+  rc = socket->SetReceiveBufferSize(
+      static_cast<int32>(TcpReceiver::kReceiveWindowTCP));
   if (rc < 0) {
     LOG(ERROR) << "SetReceiveBufferSize() failed: " << ErrorToString(rc);
     return rc;

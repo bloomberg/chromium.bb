@@ -15,43 +15,44 @@ namespace test {
 // static
 void QuicFlowControllerPeer::SetSendWindowOffset(
     QuicFlowController* flow_controller,
-    uint64 offset) {
+    QuicStreamOffset offset) {
   flow_controller->send_window_offset_ = offset;
 }
 
 // static
 void QuicFlowControllerPeer::SetReceiveWindowOffset(
     QuicFlowController* flow_controller,
-    uint64 offset) {
+    QuicStreamOffset offset) {
   flow_controller->receive_window_offset_ = offset;
 }
 
 // static
 void QuicFlowControllerPeer::SetMaxReceiveWindow(
-    QuicFlowController* flow_controller, uint64 window_size) {
+  QuicFlowController* flow_controller,
+  QuicByteCount window_size) {
   flow_controller->max_receive_window_ = window_size;
 }
 
 // static
-uint64 QuicFlowControllerPeer::SendWindowOffset(
+QuicStreamOffset QuicFlowControllerPeer::SendWindowOffset(
     QuicFlowController* flow_controller) {
   return flow_controller->send_window_offset_;
 }
 
 // static
-uint64 QuicFlowControllerPeer::SendWindowSize(
+QuicByteCount QuicFlowControllerPeer::SendWindowSize(
     QuicFlowController* flow_controller) {
   return flow_controller->SendWindowSize();
 }
 
 // static
-uint64 QuicFlowControllerPeer::ReceiveWindowOffset(
+QuicStreamOffset QuicFlowControllerPeer::ReceiveWindowOffset(
     QuicFlowController* flow_controller) {
   return flow_controller->receive_window_offset_;
 }
 
 // static
-uint64 QuicFlowControllerPeer::ReceiveWindowSize(
+QuicByteCount QuicFlowControllerPeer::ReceiveWindowSize(
     QuicFlowController* flow_controller) {
   return flow_controller->receive_window_offset_ -
          flow_controller->highest_received_byte_offset_;

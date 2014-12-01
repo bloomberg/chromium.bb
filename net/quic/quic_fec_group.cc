@@ -164,8 +164,9 @@ bool QuicFecGroup::UpdateParity(StringPiece payload) {
 size_t QuicFecGroup::NumMissingPackets() const {
   if (min_protected_packet_ == kNoSequenceNumber)
     return numeric_limits<size_t>::max();
-  return (max_protected_packet_ - min_protected_packet_ + 1) -
-      received_packets_.size();
+  return static_cast<size_t>(
+      (max_protected_packet_ - min_protected_packet_ + 1) -
+      received_packets_.size());
 }
 
 }  // namespace net

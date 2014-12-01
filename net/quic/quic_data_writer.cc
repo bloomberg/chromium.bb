@@ -11,9 +11,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 
-using base::StringPiece;
-using std::numeric_limits;
-
 namespace net {
 
 QuicDataWriter::QuicDataWriter(size_t size)
@@ -47,8 +44,8 @@ bool QuicDataWriter::WriteUInt32(uint32 value) {
 }
 
 bool QuicDataWriter::WriteUInt48(uint64 value) {
-  uint32 hi = value >> 32;
-  uint32 lo = value & GG_UINT64_C(0x00000000FFFFFFFF);
+  uint16 hi = static_cast<uint16>(value >> 32);
+  uint32 lo = static_cast<uint32>(value);
   return WriteUInt32(lo) && WriteUInt16(hi);
 }
 
@@ -61,10 +58,10 @@ bool QuicDataWriter::WriteUFloat16(uint64 value) {
   if (value < (GG_UINT64_C(1) << kUFloat16MantissaEffectiveBits)) {
     // Fast path: either the value is denormalized, or has exponent zero.
     // Both cases are represented by the value itself.
-    result = value;
+    result = static_cast<uint16>(value);
   } else if (value >= kUFloat16MaxValue) {
     // Value is out of range; clamp it to the maximum representable.
-    result = numeric_limits<uint16>::max();
+    result = std::numeric_limits<uint16>::max();
   } else {
     // The highest bit is between position 13 and 42 (zero-based), which
     // corresponds to exponent 1-30. In the output, mantissa is from 0 to 10,
@@ -89,17 +86,17 @@ bool QuicDataWriter::WriteUFloat16(uint64 value) {
     // Hidden bit (position 11) is set. We should remove it and increment the
     // exponent. Equivalently, we just add it to the exponent.
     // This hides the bit.
-    result = value + (exponent << kUFloat16MantissaBits);
+    result = static_cast<uint16>(value + (exponent << kUFloat16MantissaBits));
   }
 
   return WriteBytes(&result, sizeof(result));
 }
 
-bool QuicDataWriter::WriteStringPiece16(StringPiece val) {
-  if (val.length() > numeric_limits<uint16>::max()) {
+bool QuicDataWriter::WriteStringPiece16(base::StringPiece val) {
+  if (val.size() > std::numeric_limits<uint16>::max()) {
     return false;
   }
-  if (!WriteUInt16(val.size())) {
+  if (!WriteUInt16(static_cast<uint16>(val.size()))) {
     return false;
   }
   return WriteBytes(val.data(), val.size());
@@ -127,7 +124,7 @@ char* QuicDataWriter::BeginWrite(size_t length) {
   }
 
 #ifdef ARCH_CPU_64_BITS
-  DCHECK_LE(length, numeric_limits<uint32>::max());
+  DCHECK_LE(length, std::numeric_limits<uint32>::max());
 #endif
 
   return buffer_ + length_;

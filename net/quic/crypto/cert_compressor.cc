@@ -260,7 +260,7 @@ size_t CertEntriesSize(const vector<CertEntry>& entries) {
 void SerializeCertEntries(uint8* out, const vector<CertEntry>& entries) {
   for (vector<CertEntry>::const_iterator i = entries.begin();
        i != entries.end(); ++i) {
-    *out++ = i->type;
+    *out++ = static_cast<uint8>(i->type);
     switch (i->type) {
       case CertEntry::COMPRESSED:
         break;

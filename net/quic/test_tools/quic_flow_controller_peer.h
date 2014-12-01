@@ -16,21 +16,22 @@ namespace test {
 class QuicFlowControllerPeer {
  public:
   static void SetSendWindowOffset(QuicFlowController* flow_controller,
-                                  uint64 offset);
+                                  QuicStreamOffset offset);
 
   static void SetReceiveWindowOffset(QuicFlowController* flow_controller,
-                                     uint64 offset);
+                                     QuicStreamOffset offset);
 
   static void SetMaxReceiveWindow(QuicFlowController* flow_controller,
-                                  uint64 window_size);
+                                  QuicByteCount window_size);
 
-  static uint64 SendWindowOffset(QuicFlowController* flow_controller);
+  static QuicStreamOffset SendWindowOffset(QuicFlowController* flow_controller);
 
-  static uint64 SendWindowSize(QuicFlowController* flow_controller);
+  static QuicByteCount SendWindowSize(QuicFlowController* flow_controller);
 
-  static uint64 ReceiveWindowOffset(QuicFlowController* flow_controller);
+  static QuicStreamOffset ReceiveWindowOffset(
+      QuicFlowController* flow_controller);
 
-  static uint64 ReceiveWindowSize(QuicFlowController* flow_controller);
+  static QuicByteCount ReceiveWindowSize(QuicFlowController* flow_controller);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicFlowControllerPeer);

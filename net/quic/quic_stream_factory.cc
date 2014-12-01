@@ -871,7 +871,8 @@ int QuicStreamFactory::CreateSession(
   // that is more than large enough for a full receive window, and yet
   // does not consume "too much" memory.  If we see bursty packet loss, we may
   // revisit this setting and test for its impact.
-  const int32 kSocketBufferSize(TcpReceiver::kReceiveWindowTCP);
+  const int32 kSocketBufferSize =
+      static_cast<int32>(TcpReceiver::kReceiveWindowTCP);
   rv = socket->SetReceiveBufferSize(kSocketBufferSize);
   if (rv != OK) {
     HistogramCreateSessionFailure(CREATION_ERROR_SETTING_RECEIVE_BUFFER);
@@ -928,7 +929,8 @@ int QuicStreamFactory::CreateSession(
         http_server_properties_->GetServerNetworkStats(
             server_id.host_port_pair());
     if (stats != nullptr) {
-      config.SetInitialRoundTripTimeUsToSend(stats->srtt.InMicroseconds());
+      config.SetInitialRoundTripTimeUsToSend(
+          static_cast<uint32>(stats->srtt.InMicroseconds()));
     }
   }
 

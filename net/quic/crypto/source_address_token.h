@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/quic/crypto/cached_network_parameters.h"
@@ -31,6 +32,8 @@ class NET_EXPORT_PRIVATE SourceAddressToken {
   }
   void set_ip(base::StringPiece ip) {
     ip_ = ip.as_string();
+    DCHECK_LE(ip_.size(),
+              static_cast<size_t>(std::numeric_limits<char>::max()));
   }
 
   int64 timestamp() const {

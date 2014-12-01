@@ -285,7 +285,7 @@ void QuicSentPacketManager::HandleAckForSentPackets(
       // threshold is to tolerate re-ordering.  This handles both StretchAcks
       // and Forward Acks.
       // The nack count only increases when the largest observed increases.
-      size_t min_nacks = ack_frame.largest_observed - sequence_number;
+      QuicPacketCount min_nacks = ack_frame.largest_observed - sequence_number;
       // Truncated acks can nack the largest observed, so use a min of 1.
       if (min_nacks == 0) {
         min_nacks = 1;

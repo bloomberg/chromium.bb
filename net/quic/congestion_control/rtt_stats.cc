@@ -79,9 +79,9 @@ void RttStats::UpdateRtt(QuicTime::Delta send_delta,
     mean_deviation_ = QuicTime::Delta::FromMicroseconds(
         rtt_sample.ToMicroseconds() / 2);
   } else {
-    mean_deviation_ = QuicTime::Delta::FromMicroseconds(
+    mean_deviation_ = QuicTime::Delta::FromMicroseconds(static_cast<int64>(
         kOneMinusBeta * mean_deviation_.ToMicroseconds() +
-        kBeta * std::abs(smoothed_rtt_.Subtract(rtt_sample).ToMicroseconds()));
+        kBeta * std::abs(smoothed_rtt_.Subtract(rtt_sample).ToMicroseconds())));
     smoothed_rtt_ = smoothed_rtt_.Multiply(kOneMinusAlpha).Add(
         rtt_sample.Multiply(kAlpha));
     DVLOG(1) << " smoothed_rtt(us):" << smoothed_rtt_.ToMicroseconds()

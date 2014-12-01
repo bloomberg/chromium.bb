@@ -1166,8 +1166,8 @@ TEST_P(QuicConnectionTest, TruncatedAck) {
   }
   EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
       .WillOnce(Return(lost_packets));
-  EXPECT_CALL(entropy_calculator_,
-              EntropyHash(511)).WillOnce(testing::Return(0));
+  EXPECT_CALL(entropy_calculator_, EntropyHash(511))
+      .WillOnce(Return(static_cast<QuicPacketEntropyHash>(0)));
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
   ProcessAckPacket(&frame);
 

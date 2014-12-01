@@ -161,8 +161,8 @@ QuicPacketCount Cubic::CongestionWindowAfterAck(
   // suddenly, leading to more than one iteration through the following loop.
   while (true) {
     // Update estimated TCP congestion_window.
-    uint32 required_ack_count =
-        estimated_tcp_congestion_window_ / Alpha();
+    QuicPacketCount required_ack_count = static_cast<QuicPacketCount>(
+        estimated_tcp_congestion_window_ / Alpha());
     if (acked_packets_count_ < required_ack_count) {
       break;
     }

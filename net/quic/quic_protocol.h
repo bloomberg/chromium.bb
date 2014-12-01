@@ -1089,7 +1089,7 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   QuicTime sent_time;
   // Zero when the packet is serialized, non-zero once it's sent.
   QuicByteCount bytes_sent;
-  size_t nack_count;
+  QuicPacketCount nack_count;
   // Reason why this packet was transmitted.
   TransmissionType transmission_type;
   // Stores the sequence numbers of all transmissions of this packet.

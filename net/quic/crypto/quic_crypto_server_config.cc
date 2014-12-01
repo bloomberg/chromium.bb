@@ -251,9 +251,13 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::GenerateConfig(
 
   string encoded_public_values;
   // First three bytes encode the length of the public value.
-  encoded_public_values.push_back(curve25519_public_value.size());
-  encoded_public_values.push_back(curve25519_public_value.size() >> 8);
-  encoded_public_values.push_back(curve25519_public_value.size() >> 16);
+  DCHECK_LT(curve25519_public_value.size(), (1U << 24));
+  encoded_public_values.push_back(
+      static_cast<char>(curve25519_public_value.size()));
+  encoded_public_values.push_back(
+      static_cast<char>(curve25519_public_value.size() >> 8));
+  encoded_public_values.push_back(
+      static_cast<char>(curve25519_public_value.size() >> 16));
   encoded_public_values.append(curve25519_public_value.data(),
                                curve25519_public_value.size());
 
@@ -263,9 +267,13 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::GenerateConfig(
     scoped_ptr<P256KeyExchange> p256(P256KeyExchange::New(p256_private_key));
     StringPiece p256_public_value = p256->public_value();
 
-    encoded_public_values.push_back(p256_public_value.size());
-    encoded_public_values.push_back(p256_public_value.size() >> 8);
-    encoded_public_values.push_back(p256_public_value.size() >> 16);
+    DCHECK_LT(p256_public_value.size(), (1U << 24));
+    encoded_public_values.push_back(
+        static_cast<char>(p256_public_value.size()));
+    encoded_public_values.push_back(
+        static_cast<char>(p256_public_value.size() >> 8));
+    encoded_public_values.push_back(
+        static_cast<char>(p256_public_value.size() >> 16));
     encoded_public_values.append(p256_public_value.data(),
                                  p256_public_value.size());
   }

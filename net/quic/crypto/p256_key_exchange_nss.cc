@@ -5,6 +5,7 @@
 #include "net/quic/crypto/p256_key_exchange.h"
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/sys_byteorder.h"
 
 using base::StringPiece;
@@ -131,7 +132,7 @@ string P256KeyExchange::NewPrivateKey() {
   }
 
   // TODO(thaidn): determine how large encrypted private key can be
-  uint16 private_key_size = private_key.size();
+  uint16 private_key_size = base::checked_cast<uint16>(private_key.size());
   const size_t result_size = sizeof(private_key_size) +
                              private_key_size +
                              public_key.size();

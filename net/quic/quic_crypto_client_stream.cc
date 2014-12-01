@@ -256,8 +256,8 @@ void QuicCryptoClientStream::DoSendCHLO(
         session()->connection()->supported_versions().front(),
         cached, &crypto_negotiated_params_, &out);
     // Pad the inchoate client hello to fill up a packet.
-    const size_t kFramingOverhead = 50;  // A rough estimate.
-    const size_t max_packet_size =
+    const QuicByteCount kFramingOverhead = 50;  // A rough estimate.
+    const QuicByteCount max_packet_size =
         session()->connection()->max_packet_length();
     if (max_packet_size <= kFramingOverhead) {
       DLOG(DFATAL) << "max_packet_length (" << max_packet_size
@@ -270,7 +270,8 @@ void QuicCryptoClientStream::DoSendCHLO(
       CloseConnection(QUIC_INTERNAL_ERROR);
       return;
     }
-    out.set_minimum_size(max_packet_size - kFramingOverhead);
+    out.set_minimum_size(
+        static_cast<size_t>(max_packet_size - kFramingOverhead));
     next_state_ = STATE_RECV_REJ;
     SendHandshakeMessage(out);
     return;

@@ -16,9 +16,9 @@ namespace net {
 QuicFlowController::QuicFlowController(QuicConnection* connection,
                                        QuicStreamId id,
                                        bool is_server,
-                                       uint64 send_window_offset,
-                                       uint64 receive_window_offset,
-                                       uint64 max_receive_window)
+                                       QuicStreamOffset send_window_offset,
+                                       QuicStreamOffset receive_window_offset,
+                                       QuicByteCount max_receive_window)
     : connection_(connection),
       id_(id),
       is_enabled_(true),
@@ -38,7 +38,7 @@ QuicFlowController::QuicFlowController(QuicConnection* connection,
            << ", setting send window offset to: " << send_window_offset_;
 }
 
-void QuicFlowController::AddBytesConsumed(uint64 bytes_consumed) {
+void QuicFlowController::AddBytesConsumed(QuicByteCount bytes_consumed) {
   if (!IsEnabled()) {
     return;
   }
@@ -49,7 +49,8 @@ void QuicFlowController::AddBytesConsumed(uint64 bytes_consumed) {
   MaybeSendWindowUpdate();
 }
 
-bool QuicFlowController::UpdateHighestReceivedOffset(uint64 new_offset) {
+bool QuicFlowController::UpdateHighestReceivedOffset(
+    QuicStreamOffset new_offset) {
   if (!IsEnabled()) {
     return false;
   }
@@ -66,7 +67,7 @@ bool QuicFlowController::UpdateHighestReceivedOffset(uint64 new_offset) {
   return true;
 }
 
-void QuicFlowController::AddBytesSent(uint64 bytes_sent) {
+void QuicFlowController::AddBytesSent(QuicByteCount bytes_sent) {
   if (!IsEnabled()) {
     return;
   }
@@ -111,8 +112,8 @@ void QuicFlowController::MaybeSendWindowUpdate() {
   // (receive window offset - consumed bytes) < (max window / 2).
   // This is behaviour copied from SPDY.
   DCHECK_LT(bytes_consumed_, receive_window_offset_);
-  size_t consumed_window = receive_window_offset_ - bytes_consumed_;
-  size_t threshold = (max_receive_window_ / 2);
+  QuicStreamOffset consumed_window = receive_window_offset_ - bytes_consumed_;
+  QuicByteCount threshold = (max_receive_window_ / 2);
 
   if (consumed_window < threshold) {
     // Update our receive window.
@@ -151,7 +152,8 @@ void QuicFlowController::MaybeSendBlocked() {
   }
 }
 
-bool QuicFlowController::UpdateSendWindowOffset(uint64 new_send_window_offset) {
+bool QuicFlowController::UpdateSendWindowOffset(
+    QuicStreamOffset new_send_window_offset) {
   if (!IsEnabled()) {
     return false;
   }

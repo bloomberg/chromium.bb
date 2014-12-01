@@ -21,7 +21,7 @@ namespace net {
 class NET_EXPORT_PRIVATE TCPLossAlgorithm : public LossDetectionInterface {
  public:
   // TCP retransmits after 3 nacks.
-  static const size_t kNumberOfNacksBeforeRetransmission = 3;
+  static const QuicPacketCount kNumberOfNacksBeforeRetransmission = 3;
 
   TCPLossAlgorithm();
   ~TCPLossAlgorithm() override {}

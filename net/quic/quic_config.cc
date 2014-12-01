@@ -484,8 +484,8 @@ void QuicConfig::SetIdleConnectionStateLifetime(
     QuicTime::Delta max_idle_connection_state_lifetime,
     QuicTime::Delta default_idle_conection_state_lifetime) {
   idle_connection_state_lifetime_seconds_.set(
-      max_idle_connection_state_lifetime.ToSeconds(),
-      default_idle_conection_state_lifetime.ToSeconds());
+      static_cast<uint32>(max_idle_connection_state_lifetime.ToSeconds()),
+      static_cast<uint32>(default_idle_conection_state_lifetime.ToSeconds()));
 }
 
 QuicTime::Delta QuicConfig::IdleConnectionStateLifetime() const {
@@ -523,7 +523,7 @@ uint32 QuicConfig::ReceivedBytesForConnectionId() const {
   return bytes_for_connection_id_.GetReceivedValue();
 }
 
-void QuicConfig::SetInitialRoundTripTimeUsToSend(size_t rtt) {
+void QuicConfig::SetInitialRoundTripTimeUsToSend(uint32 rtt) {
   initial_round_trip_time_us_.SetSendValue(rtt);
 }
 

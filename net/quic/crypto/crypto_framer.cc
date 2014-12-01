@@ -112,7 +112,7 @@ QuicData* CryptoFramer::ConstructHandshakeMessage(
     DCHECK(false) << "Failed to write message tag.";
     return nullptr;
   }
-  if (!writer.WriteUInt16(num_entries)) {
+  if (!writer.WriteUInt16(static_cast<uint16>(num_entries))) {
     DCHECK(false) << "Failed to write size.";
     return nullptr;
   }

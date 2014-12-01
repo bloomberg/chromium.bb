@@ -320,7 +320,7 @@ class NET_EXPORT_PRIVATE QuicConfig {
   uint32 ReceivedBytesForConnectionId() const;
 
   // Sets an estimated initial round trip time in us.
-  void SetInitialRoundTripTimeUsToSend(size_t rtt_us);
+  void SetInitialRoundTripTimeUsToSend(uint32 rtt_us);
 
   bool HasReceivedInitialRoundTripTimeUs() const;
 

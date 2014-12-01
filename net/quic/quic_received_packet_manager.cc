@@ -164,9 +164,9 @@ void QuicReceivedPacketManager::RecordPacketReceived(
 
     // Record how out of order stats.
     ++stats_->packets_reordered;
-    uint32 sequence_gap = ack_frame_.largest_observed - sequence_number;
     stats_->max_sequence_reordering =
-        max(stats_->max_sequence_reordering, sequence_gap);
+        max(stats_->max_sequence_reordering,
+            ack_frame_.largest_observed - sequence_number);
     int64 reordering_time_us =
         receipt_time.Subtract(time_largest_observed_).ToMicroseconds();
     stats_->max_time_reordering_us = max(stats_->max_time_reordering_us,

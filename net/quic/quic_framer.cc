@@ -781,12 +781,12 @@ bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
   // The FEC group number is the sequence number of the first fec
   // protected packet, or 0 if this packet is not protected.
   if (header.is_in_fec_group == IN_FEC_GROUP) {
-    DCHECK_GE(header.packet_sequence_number, header.fec_group);
-    DCHECK_GT(255u, header.packet_sequence_number - header.fec_group);
+    DCHECK_LE(header.fec_group, header.packet_sequence_number);
+    DCHECK_LT(header.packet_sequence_number - header.fec_group, 255u);
     // Offset from the current packet sequence number to the first fec
     // protected packet.
     uint8 first_fec_protected_packet_offset =
-        header.packet_sequence_number - header.fec_group;
+        static_cast<uint8>(header.packet_sequence_number - header.fec_group);
     if (!writer->WriteBytes(&first_fec_protected_packet_offset, 1)) {
       return false;
     }
@@ -987,18 +987,20 @@ QuicFramer::AckFrameInfo QuicFramer::GetAckFrameInfo(
   QuicPacketSequenceNumber last_missing = *iter;
   ++iter;
   for (; iter != frame.missing_packets.end(); ++iter) {
-    if (cur_range_length != numeric_limits<uint8>::max() &&
+    if (cur_range_length < numeric_limits<uint8>::max() &&
         *iter == (last_missing + 1)) {
       ++cur_range_length;
     } else {
-      ack_info.nack_ranges[last_missing - cur_range_length] = cur_range_length;
+      ack_info.nack_ranges[last_missing - cur_range_length] =
+          static_cast<uint8>(cur_range_length);
       cur_range_length = 0;
     }
     ack_info.max_delta = max(ack_info.max_delta, *iter - last_missing);
     last_missing = *iter;
   }
   // Include the last nack range.
-  ack_info.nack_ranges[last_missing - cur_range_length] = cur_range_length;
+  ack_info.nack_ranges[last_missing - cur_range_length] =
+      static_cast<uint8>(cur_range_length);
   // Include the range to the largest observed.
   ack_info.max_delta =
       max(ack_info.max_delta, frame.largest_observed - last_missing);
@@ -1904,7 +1906,7 @@ bool QuicFramer::AppendTypeByte(const QuicFrame& frame,
       break;
     }
     default:
-      type_byte = frame.type;
+      type_byte = static_cast<uint8>(frame.type);
       break;
   }
 
@@ -1957,7 +1959,9 @@ bool QuicFramer::AppendStreamFrame(
     return false;
   }
   if (!no_stream_frame_length) {
-    if (!writer->WriteUInt16(frame.data.TotalBufferSize())) {
+    if ((frame.data.TotalBufferSize() > std::numeric_limits<uint16>::max()) ||
+        !writer->WriteUInt16(
+            static_cast<uint16>(frame.data.TotalBufferSize()))) {
       LOG(DFATAL) << "Writing stream frame length failed";
       return false;
     }
@@ -2071,7 +2075,7 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
   }
 
   const uint8 num_missing_ranges =
-      min(ack_info.nack_ranges.size(), max_num_ranges);
+      static_cast<uint8>(min(ack_info.nack_ranges.size(), max_num_ranges));
   if (!writer->WriteBytes(&num_missing_ranges, 1)) {
     return false;
   }
@@ -2098,11 +2102,11 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
 
   // Append revived packets.
   // If not all the revived packets fit, only mention the ones that do.
-  uint8 num_revived_packets = min(frame.revived_packets.size(),
-                                  kMaxRevivedPackets);
-  num_revived_packets = min(
+  uint8 num_revived_packets =
+      static_cast<uint8>(min(frame.revived_packets.size(), kMaxRevivedPackets));
+  num_revived_packets = static_cast<uint8>(min(
       static_cast<size_t>(num_revived_packets),
-      (writer->capacity() - writer->length()) / largest_observed_length);
+      (writer->capacity() - writer->length()) / largest_observed_length));
   if (!writer->WriteBytes(&num_revived_packets, 1)) {
     return false;
   }

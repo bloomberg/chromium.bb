@@ -38,7 +38,7 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
 
   // Sets the nack count to the max of the current nack count and |min_nacks|.
   void NackPacket(QuicPacketSequenceNumber sequence_number,
-                  size_t min_nacks);
+                  QuicPacketCount min_nacks);
 
   // Marks |sequence_number| as no longer in flight.
   void RemoveFromInFlight(QuicPacketSequenceNumber sequence_number);
@@ -164,7 +164,7 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // The packet at the 0th index of unacked_packets_.
   QuicPacketSequenceNumber least_unacked_;
 
-  size_t bytes_in_flight_;
+  QuicByteCount bytes_in_flight_;
   // Number of retransmittable crypto handshake packets.
   size_t pending_crypto_packet_count_;
 

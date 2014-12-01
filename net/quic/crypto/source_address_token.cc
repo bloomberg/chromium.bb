@@ -20,10 +20,10 @@ SourceAddressToken::~SourceAddressToken() {
 
 string SourceAddressToken::SerializeAsString() const {
   string out;
-  out.push_back(ip_.size());
+  out.push_back(static_cast<char>(ip_.size()));
   out.append(ip_);
   string time_str = base::Int64ToString(timestamp_);
-  out.push_back(time_str.size());
+  out.push_back(static_cast<char>(time_str.size()));
   out.append(time_str);
   // TODO(rtenneti): Implement serialization of optional CachedNetworkParameters
   // when they are used.

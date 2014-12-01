@@ -66,9 +66,9 @@ class StrikeRegister::InternalNode {
 
   uint32 child(unsigned n) const { return data_[n] >> 8; }
 
-  uint8 critbyte() const { return data_[0]; }
+  uint8 critbyte() const { return static_cast<uint8>(data_[0]); }
 
-  uint8 otherbits() const { return data_[1]; }
+  uint8 otherbits() const { return static_cast<uint8>(data_[1]); }
 
   // These bytes are organised thus:
   //   <24 bits> left child
@@ -194,9 +194,10 @@ InsertStatus StrikeRegister::Insert(const uint8 nonce[32],
   }
 
   // Now we need to find the first bit where we differ from |best_match|.
-  unsigned differing_byte;
+  uint8 differing_byte;
   uint8 new_other_bits;
-  for (differing_byte = 0; differing_byte < sizeof(value); differing_byte++) {
+  for (differing_byte = 0; differing_byte < arraysize(value);
+       differing_byte++) {
     new_other_bits = value[differing_byte] ^ best_match[differing_byte];
     if (new_other_bits) {
       break;

@@ -103,17 +103,17 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
 
   // Called when we see a frame which could increase the highest offset.
   // Returns true if the highest offset did increase.
-  bool MaybeIncreaseHighestReceivedOffset(uint64 new_offset);
+  bool MaybeIncreaseHighestReceivedOffset(QuicStreamOffset new_offset);
   // Called when bytese are sent to the peer.
-  void AddBytesSent(uint64 bytes);
+  void AddBytesSent(QuicByteCount bytes);
   // Called by the stream sequencer as bytes are consumed from the buffer.
   // If our receive window has dropped below the threshold, then send a
   // WINDOW_UPDATE frame.
-  void AddBytesConsumed(uint64 bytes);
+  void AddBytesConsumed(QuicByteCount bytes);
 
   // Updates the flow controller's send window offset and calls OnCanWrite if
   // it was blocked before.
-  void UpdateSendWindowOffset(uint64 new_offset);
+  void UpdateSendWindowOffset(QuicStreamOffset new_offset);
 
   // Returns true if the stream is flow control blocked, by the stream flow
   // control window or the connection flow control window.

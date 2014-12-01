@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "base/debug/stack_trace.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -57,10 +58,10 @@ const QuicPacketSequenceNumber kMaxPacketGap = 5000;
 const size_t kMaxFecGroups = 2;
 
 // Maximum number of acks received before sending an ack in response.
-const size_t kMaxPacketsReceivedBeforeAckSend = 20;
+const QuicPacketCount kMaxPacketsReceivedBeforeAckSend = 20;
 
 // Maximum number of tracked packets.
-const size_t kMaxTrackedPackets = 5 * kMaxTcpCongestionWindow;;
+const QuicPacketCount kMaxTrackedPackets = 5 * kMaxTcpCongestionWindow;
 
 bool Near(QuicPacketSequenceNumber a, QuicPacketSequenceNumber b) {
   QuicPacketSequenceNumber delta = (a > b) ? a - b : b - a;
@@ -949,14 +950,14 @@ void QuicConnection::MaybeCloseIfTooManyOutstandingPackets() {
           (sent_packet_manager_.GetLeastUnacked() + kMaxTrackedPackets)) {
     SendConnectionCloseWithDetails(
         QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS,
-        StringPrintf("More than %zu outstanding.", kMaxTrackedPackets));
+        StringPrintf("More than %" PRIu64 " outstanding.", kMaxTrackedPackets));
   }
   // This occurs if there are received packet gaps and the peer does not raise
   // the least unacked fast enough.
   if (received_packet_manager_.NumTrackedPackets() > kMaxTrackedPackets) {
     SendConnectionCloseWithDetails(
         QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS,
-        StringPrintf("More than %zu outstanding.", kMaxTrackedPackets));
+        StringPrintf("More than %" PRIu64 " outstanding.", kMaxTrackedPackets));
   }
 }
 
@@ -1138,8 +1139,7 @@ const QuicConnectionStats& QuicConnection::GetStats() {
       sent_packet_manager_.GetRttStats()->min_rtt().ToMicroseconds();
   stats_.srtt_us =
       sent_packet_manager_.GetRttStats()->smoothed_rtt().ToMicroseconds();
-  stats_.estimated_bandwidth =
-      sent_packet_manager_.BandwidthEstimate().ToBytesPerSecond();
+  stats_.estimated_bandwidth = sent_packet_manager_.BandwidthEstimate();
   stats_.max_packet_size = packet_generator_.max_packet_length();
   return stats_;
 }

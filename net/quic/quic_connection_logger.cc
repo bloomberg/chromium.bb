@@ -58,7 +58,8 @@ base::Value* NetLogQuicPacketSentCallback(
   dict->SetString("packet_sequence_number",
                   base::Uint64ToString(serialized_packet.sequence_number));
   dict->SetInteger("size", packet_size);
-  dict->SetInteger("sent_time_us", sent_time.ToDebuggingValue());
+  dict->SetInteger("sent_time_us",
+                   static_cast<int>(sent_time.ToDebuggingValue()));
   return dict;
 }
 
@@ -85,7 +86,7 @@ base::Value* NetLogQuicPacketHeaderCallback(const QuicPacketHeader* header,
                   base::Uint64ToString(header->packet_sequence_number));
   dict->SetInteger("entropy_flag", header->entropy_flag);
   dict->SetInteger("fec_flag", header->fec_flag);
-  dict->SetInteger("fec_group", header->fec_group);
+  dict->SetInteger("fec_group", static_cast<int>(header->fec_group));
   return dict;
 }
 
@@ -104,8 +105,9 @@ base::Value* NetLogQuicAckFrameCallback(const QuicAckFrame* frame,
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("largest_observed",
                   base::Uint64ToString(frame->largest_observed));
-  dict->SetInteger("delta_time_largest_observed_us",
-                   frame->delta_time_largest_observed.ToMicroseconds());
+  dict->SetInteger(
+      "delta_time_largest_observed_us",
+      static_cast<int>(frame->delta_time_largest_observed.ToMicroseconds()));
   dict->SetInteger("entropy_hash",
                    frame->entropy_hash);
   dict->SetBoolean("truncated", frame->is_truncated);
@@ -132,8 +134,9 @@ base::Value* NetLogQuicAckFrameCallback(const QuicAckFrame* frame,
   for (PacketTimeList::const_iterator it = received_times.begin();
        it != received_times.end(); ++it) {
     base::DictionaryValue* info = new base::DictionaryValue();
-    info->SetInteger("sequence_number", it->first);
-    info->SetInteger("received", it->second.ToDebuggingValue());
+    info->SetInteger("sequence_number", static_cast<int>(it->first));
+    info->SetInteger("received",
+                     static_cast<int>(it->second.ToDebuggingValue()));
     received->Append(info);
   }
 
@@ -147,7 +150,8 @@ base::Value* NetLogQuicCongestionFeedbackFrameCallback(
   switch (frame->type) {
     case kTCP:
       dict->SetString("type", "TCP");
-      dict->SetInteger("receive_window", frame->tcp.receive_window);
+      dict->SetInteger("receive_window",
+                       static_cast<int>(frame->tcp.receive_window));
       break;
   }
 
@@ -552,17 +556,22 @@ void QuicConnectionLogger::OnPacketHeader(const QuicPacketHeader& header) {
       // There is a gap between the largest packet previously received and
       // the current packet.  This indicates either loss, or out-of-order
       // delivery.
-      UMA_HISTOGRAM_COUNTS("Net.QuicSession.PacketGapReceived", delta - 1);
+      UMA_HISTOGRAM_COUNTS("Net.QuicSession.PacketGapReceived",
+                           static_cast<base::HistogramBase::Sample>(delta - 1));
     }
     largest_received_packet_sequence_number_ = header.packet_sequence_number;
   }
-  if (header.packet_sequence_number < received_packets_.size())
-    received_packets_[header.packet_sequence_number] = true;
+  if (header.packet_sequence_number < received_packets_.size()) {
+    received_packets_[static_cast<size_t>(header.packet_sequence_number)] =
+        true;
+  }
   if (header.packet_sequence_number < last_received_packet_sequence_number_) {
     ++num_out_of_order_received_packets_;
-    UMA_HISTOGRAM_COUNTS("Net.QuicSession.OutOfOrderGapReceived",
-                         last_received_packet_sequence_number_ -
-                             header.packet_sequence_number);
+    UMA_HISTOGRAM_COUNTS(
+        "Net.QuicSession.OutOfOrderGapReceived",
+        static_cast<base::HistogramBase::Sample>(
+            last_received_packet_sequence_number_ -
+            header.packet_sequence_number));
   }
   last_received_packet_sequence_number_ = header.packet_sequence_number;
 }
@@ -580,8 +589,10 @@ void QuicConnectionLogger::OnAckFrame(const QuicAckFrame& frame) {
 
   const size_t kApproximateLargestSoloAckBytes = 100;
   if (last_received_packet_sequence_number_ < received_acks_.size() &&
-      last_received_packet_size_ < kApproximateLargestSoloAckBytes)
-    received_acks_[last_received_packet_sequence_number_] = true;
+      last_received_packet_size_ < kApproximateLargestSoloAckBytes) {
+    received_acks_[static_cast<size_t>(last_received_packet_sequence_number_)] =
+        true;
+  }
 
   if (frame.is_truncated)
     ++num_truncated_acks_received_;
@@ -839,7 +850,7 @@ void QuicConnectionLogger::RecordAggregatePacketLossRate() const {
   base::HistogramBase* histogram = base::Histogram::FactoryGet(
       prefix + connection_description_, 1, 1000, 75,
       base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->Add(numerator / divisor);
+  histogram->Add(static_cast<base::HistogramBase::Sample>(numerator / divisor));
 }
 
 void QuicConnectionLogger::RecordLossHistograms() const {

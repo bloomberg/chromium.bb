@@ -280,11 +280,11 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // Called in OnConfigNegotiated when we receive a new stream level flow
   // control window in a negotiated config. Closes the connection if invalid.
-  void OnNewStreamFlowControlWindow(uint32 new_window);
+  void OnNewStreamFlowControlWindow(QuicStreamOffset new_window);
 
   // Called in OnConfigNegotiated when we receive a new session level flow
   // control window in a negotiated config. Closes the connection if invalid.
-  void OnNewSessionFlowControlWindow(uint32 new_window);
+  void OnNewSessionFlowControlWindow(QuicStreamOffset new_window);
 
   // Keep track of highest received byte offset of locally closed streams, while
   // waiting for a definitive final highest offset from the peer.

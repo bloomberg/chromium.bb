@@ -259,13 +259,13 @@ const char* QuicUtils::TransmissionTypeToString(TransmissionType type) {
 
 // static
 string QuicUtils::TagToString(QuicTag tag) {
-  char chars[4];
+  char chars[sizeof tag];
   bool ascii = true;
   const QuicTag orig_tag = tag;
 
-  for (size_t i = 0; i < sizeof(chars); i++) {
-    chars[i] = tag;
-    if ((chars[i] == 0 || chars[i] == '\xff') && i == 3) {
+  for (size_t i = 0; i < arraysize(chars); i++) {
+    chars[i] = static_cast<char>(tag);
+    if ((chars[i] == 0 || chars[i] == '\xff') && i == arraysize(chars) - 1) {
       chars[i] = ' ';
     }
     if (!isprint(static_cast<unsigned char>(chars[i]))) {
