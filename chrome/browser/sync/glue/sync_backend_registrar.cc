@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -63,6 +64,9 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(profile_);
 
+  // TODO(pavely): Remove ScopedTracker below once crbug.com/426272 is fixed.
+  tracked_objects::ScopedTracker tracker1(FROM_HERE_WITH_EXPLICIT_FUNCTION(
+      "426272 SyncBackendRegistrar::ctor thread"));
   sync_thread_ = sync_thread.Pass();
   if (!sync_thread_) {
     sync_thread_.reset(new base::Thread("Chrome_SyncThread"));
@@ -87,6 +91,9 @@ SyncBackendRegistrar::SyncBackendRegistrar(
       new syncer::PassiveModelWorker(sync_thread_->message_loop(), this);
   workers_[syncer::GROUP_PASSIVE]->RegisterForLoopDestruction();
 
+  // TODO(pavely): Remove ScopedTracker below once crbug.com/426272 is fixed.
+  tracked_objects::ScopedTracker tracker2(FROM_HERE_WITH_EXPLICIT_FUNCTION(
+      "426272 SyncBackendRegistrar::ctor history"));
   HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
   if (history_service) {
@@ -96,6 +103,9 @@ SyncBackendRegistrar::SyncBackendRegistrar(
 
   }
 
+  // TODO(pavely): Remove ScopedTracker below once crbug.com/426272 is fixed.
+  tracked_objects::ScopedTracker tracker3(FROM_HERE_WITH_EXPLICIT_FUNCTION(
+      "426272 SyncBackendRegistrar::ctor passwords"));
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
   if (password_store.get()) {

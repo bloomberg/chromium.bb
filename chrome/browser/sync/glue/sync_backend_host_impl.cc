@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -107,6 +108,9 @@ void SyncBackendHostImpl::Initialize(
     syncer::ReportUnrecoverableErrorFunction
         report_unrecoverable_error_function,
     syncer::NetworkResources* network_resources) {
+  // TODO(pavely): Remove ScopedTracker below once crbug.com/426272 is fixed.
+  tracked_objects::ScopedTracker tracker1(FROM_HERE_WITH_EXPLICIT_FUNCTION(
+      "426272 SyncBackendHostImpl::Initialize registrar"));
   registrar_.reset(new browser_sync::SyncBackendRegistrar(name_,
                                             profile_,
                                             sync_thread.Pass()));
@@ -115,10 +119,16 @@ void SyncBackendHostImpl::Initialize(
   frontend_ = frontend;
   DCHECK(frontend);
 
+  // TODO(pavely): Remove ScopedTracker below once crbug.com/426272 is fixed.
+  tracked_objects::ScopedTracker tracker2(FROM_HERE_WITH_EXPLICIT_FUNCTION(
+      "426272 SyncBackendHostImpl::Initialize locks"));
   syncer::ModelSafeRoutingInfo routing_info;
   std::vector<scoped_refptr<syncer::ModelSafeWorker> > workers;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
   registrar_->GetWorkers(&workers);
+  // TODO(pavely): Remove ScopedTracker below once crbug.com/426272 is fixed.
+  tracked_objects::ScopedTracker tracker3(FROM_HERE_WITH_EXPLICIT_FUNCTION(
+      "426272 SyncBackendHostImpl::Initialize init"));
 
   InternalComponentsFactory::Switches factory_switches = {
     InternalComponentsFactory::ENCRYPTION_KEYSTORE,
