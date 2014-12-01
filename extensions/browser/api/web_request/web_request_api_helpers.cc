@@ -1196,6 +1196,7 @@ void ClearCacheOnNavigation() {
 
 void NotifyWebRequestAPIUsed(void* browser_context_id,
                              const std::string& extension_id) {
+  DCHECK(!extension_id.empty());
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::BrowserContext* browser_context =
       reinterpret_cast<content::BrowserContext*>(browser_context_id);

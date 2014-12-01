@@ -2252,11 +2252,11 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
 
   helpers::ClearCacheOnNavigation();
 
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&helpers::NotifyWebRequestAPIUsed,
-                                     profile_id(),
-                                     extension->id()));
+  if (!extension_id_safe().empty()) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&helpers::NotifyWebRequestAPIUsed,
+                                       profile_id(), extension_id_safe()));
+  }
 
   return true;
 }
