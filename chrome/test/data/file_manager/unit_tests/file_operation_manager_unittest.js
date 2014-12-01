@@ -54,8 +54,8 @@ function reportPromise(promise, callback) {
   promise.then(
       callback.bind(null, false),
       function(error) {
-        if (error instanceof FileOperationManager.Error) {
-          console.error('FileOperationManager.Error: code=' + error.code);
+        if (error instanceof fileOperationUtil.Error) {
+          console.error('fileOperationUtil.Error: code=' + error.code);
         } else {
           console.error(error.stack || error.name || error);
         }
@@ -215,9 +215,9 @@ function testDeduplicatePath(callback) {
   var failedPromise =
       fileOperationUtil.deduplicatePath(fileSystem3.root, 'file.txt').
       then(function() {
-        assertTrue(false, 'FileOperationManager.Error is not reported.');
+        assertTrue(false, 'fileOperationUtil.Error is not reported.');
       }, function(error) {
-        assertTrue(error instanceof FileOperationManager.Error);
+        assertTrue(error instanceof fileOperationUtil.Error);
         assertEquals(util.FileOperationErrorType.TARGET_EXISTS, error.code);
       });
 

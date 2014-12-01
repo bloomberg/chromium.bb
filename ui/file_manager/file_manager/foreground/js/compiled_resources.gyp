@@ -47,6 +47,7 @@
           '../../common/js/util.js',
           '../../common/js/progress_center_common.js',
           '../../background/js/file_operation_manager.js',
+          '../../background/js/file_operation_util.js',
           '../../background/js/file_operation_handler.js',
           '../../background/js/device_handler.js',
           '../../background/js/drive_sync_handler.js',

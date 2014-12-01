@@ -37,7 +37,7 @@ var FileOperationProgressEvent = function() {};
 /** @type {string} */
 FileOperationProgressEvent.prototype.reason;
 
-/** @type {(FileOperationManager.Error|undefined)} */
+/** @type {(fileOperationUtil.Error|undefined)} */
 FileOperationProgressEvent.prototype.error;
 
 

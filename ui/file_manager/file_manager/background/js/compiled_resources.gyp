@@ -30,6 +30,7 @@
           'drive_sync_handler.js',
           'file_operation_handler.js',
           'file_operation_manager.js',
+          'file_operation_util.js',
           'import_history.js',
           'media_scanner.js',
           'progress_center.js',
