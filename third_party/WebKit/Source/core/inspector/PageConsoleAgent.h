@@ -55,6 +55,9 @@ public:
 protected:
     virtual ConsoleMessageStorage* messageStorage() override;
 
+    virtual void enableStackCapturingIfNeeded() override;
+    virtual void disableStackCapturingIfNeeded() override;
+
 private:
     PageConsoleAgent(InjectedScriptManager*, InspectorDOMAgent*, InspectorTimelineAgent*, Page*);
     virtual void clearMessages(ErrorString*) override;
@@ -62,6 +65,8 @@ private:
 
     RawPtrWillBeMember<InspectorDOMAgent> m_inspectorDOMAgent;
     RawPtrWillBeMember<Page> m_page;
+
+    static int s_enabledAgentCount;
 };
 
 } // namespace blink

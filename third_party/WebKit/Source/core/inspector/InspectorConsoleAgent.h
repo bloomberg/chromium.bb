@@ -93,12 +93,13 @@ protected:
     void sendConsoleMessageToFrontend(ConsoleMessage*, bool generatePreview);
     virtual ConsoleMessageStorage* messageStorage() = 0;
 
+    virtual void enableStackCapturingIfNeeded() = 0;
+    virtual void disableStackCapturingIfNeeded() = 0;
+
     RawPtrWillBeMember<InspectorTimelineAgent> m_timelineAgent;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     InspectorFrontend::Console* m_frontend;
     bool m_enabled;
-private:
-    static int s_enabledAgentCount;
 };
 
 } // namespace blink

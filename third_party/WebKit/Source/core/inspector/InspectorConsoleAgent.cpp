@@ -27,7 +27,6 @@
 #include "core/inspector/InspectorConsoleAgent.h"
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
-#include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptProfiler.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
@@ -63,8 +62,6 @@ static const char consoleMessagesEnabled[] = "consoleMessagesEnabled";
 static const char tracingBasedTimeline[] = "tracingBasedTimeline";
 }
 
-int InspectorConsoleAgent::s_enabledAgentCount = 0;
-
 InspectorConsoleAgent::InspectorConsoleAgent(InspectorTimelineAgent* timelineAgent, InjectedScriptManager* injectedScriptManager)
     : InspectorBaseAgent<InspectorConsoleAgent>("Console")
     , m_timelineAgent(timelineAgent)
@@ -94,9 +91,7 @@ void InspectorConsoleAgent::enable(ErrorString*)
         return;
     m_instrumentingAgents->setInspectorConsoleAgent(this);
     m_enabled = true;
-    if (!s_enabledAgentCount)
-        ScriptController::setCaptureCallStackForUncaughtExceptions(true);
-    ++s_enabledAgentCount;
+    enableStackCapturingIfNeeded();
 
     m_state->setBoolean(ConsoleAgentState::consoleMessagesEnabled, true);
 
@@ -118,8 +113,8 @@ void InspectorConsoleAgent::disable(ErrorString*)
         return;
     m_instrumentingAgents->setInspectorConsoleAgent(0);
     m_enabled = false;
-    if (!(--s_enabledAgentCount))
-        ScriptController::setCaptureCallStackForUncaughtExceptions(false);
+    disableStackCapturingIfNeeded();
+
     m_state->setBoolean(ConsoleAgentState::consoleMessagesEnabled, false);
     m_state->setBoolean(ConsoleAgentState::tracingBasedTimeline, false);
 }

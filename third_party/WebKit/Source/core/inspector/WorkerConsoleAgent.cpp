@@ -29,8 +29,9 @@
  */
 
 #include "config.h"
-
 #include "core/inspector/WorkerConsoleAgent.h"
+
+#include "bindings/core/v8/ScriptController.h"
 #include "core/workers/WorkerGlobalScope.h"
 
 namespace blink {
@@ -48,6 +49,16 @@ WorkerConsoleAgent::~WorkerConsoleAgent()
 ConsoleMessageStorage* WorkerConsoleAgent::messageStorage()
 {
     return m_workerGlobalScope->messageStorage();
+}
+
+void WorkerConsoleAgent::enableStackCapturingIfNeeded()
+{
+    ScriptController::setCaptureCallStackForUncaughtExceptions(true);
+}
+
+void WorkerConsoleAgent::disableStackCapturingIfNeeded()
+{
+    ScriptController::setCaptureCallStackForUncaughtExceptions(false);
 }
 
 void WorkerConsoleAgent::addInspectedNode(ErrorString* error, int)

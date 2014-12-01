@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/inspector/PageConsoleAgent.h"
 
+#include "bindings/core/v8/ScriptController.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -42,6 +43,8 @@
 #include "core/page/Page.h"
 
 namespace blink {
+
+int PageConsoleAgent::s_enabledAgentCount = 0;
 
 PageConsoleAgent::PageConsoleAgent(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorTimelineAgent* timelineAgent, Page* page)
     : InspectorConsoleAgent(timelineAgent, injectedScriptManager)
@@ -73,6 +76,19 @@ void PageConsoleAgent::clearMessages(ErrorString* errorString)
 ConsoleMessageStorage* PageConsoleAgent::messageStorage()
 {
     return &m_page->frameHost().consoleMessageStorage();
+}
+
+void PageConsoleAgent::enableStackCapturingIfNeeded()
+{
+    if (!s_enabledAgentCount)
+        ScriptController::setCaptureCallStackForUncaughtExceptions(true);
+    ++s_enabledAgentCount;
+}
+
+void PageConsoleAgent::disableStackCapturingIfNeeded()
+{
+    if (!(--s_enabledAgentCount))
+        ScriptController::setCaptureCallStackForUncaughtExceptions(false);
 }
 
 class InspectableNode final : public InjectedScriptHost::InspectableObject {

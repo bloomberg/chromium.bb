@@ -52,6 +52,9 @@ public:
 protected:
     virtual ConsoleMessageStorage* messageStorage() override;
 
+    virtual void enableStackCapturingIfNeeded() override;
+    virtual void disableStackCapturingIfNeeded() override;
+
 private:
     WorkerConsoleAgent(InspectorTimelineAgent*, InjectedScriptManager*, WorkerGlobalScope*);
     virtual void addInspectedNode(ErrorString*, int nodeId) override;
