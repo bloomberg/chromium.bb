@@ -273,9 +273,10 @@ Viewport.prototype.getImageElementBoundsOnScreen = function() {
 
 /**
  * The image bounds on screen, which is clipped with the screen size.
- * @return {ImageRect}
+ * @return {!ImageRect}
  */
 Viewport.prototype.getImageBoundsOnScreenClipped = function() {
+  assert(this.imageBoundsOnScreenClipped_);
   return this.imageBoundsOnScreenClipped_;
 };
 
@@ -304,8 +305,8 @@ Viewport.prototype.screenToImageY = function(y) {
 };
 
 /**
- * @param {ImageRect} rect Rectangle in screen coordinates.
- * @return {ImageRect} Rectangle in image coordinates.
+ * @param {!ImageRect} rect Rectangle in screen coordinates.
+ * @return {!ImageRect} Rectangle in image coordinates.
  */
 Viewport.prototype.screenToImageRect = function(rect) {
   return new ImageRect(
@@ -401,7 +402,7 @@ Viewport.prototype.update_ = function() {
     zoomedHeight = ~~(this.imageBounds_.width * scale * this.zoom_);
   }
   var dx = Math.max(zoomedWidht - this.screenBounds_.width, 0) / 2;
-  var dy = Math.max(zoomedHeight - this.screenBounds_.height, 0) /2;
+  var dy = Math.max(zoomedHeight - this.screenBounds_.height, 0) / 2;
   this.offsetX_ = ImageUtil.clamp(-dx, this.offsetX_, dx);
   this.offsetY_ = ImageUtil.clamp(-dy, this.offsetY_, dy);
 

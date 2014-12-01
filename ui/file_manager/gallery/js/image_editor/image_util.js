@@ -136,6 +136,16 @@ function ImageRect() {
                 Array.apply(null, arguments));
 }
 
+/**
+ * Creates an image rect with a bound.
+ * @param {{left: number, top: number, right: number, bottom: number}} bound
+ *     A bound.
+ * @return {!ImageRect}
+ */
+ImageRect.createFromBounds = function(bound) {
+  return new ImageRect(bound);
+};
+
 ImageRect.prototype = {
   /**
    * Obtains the x coordinate of right edge. The most right pixels in the
@@ -191,7 +201,7 @@ ImageRect.prototype.moveTo = function(x, y) {
 /**
  * @param {number} dx Difference in X.
  * @param {number} dy Difference in Y.
- * @return {ImageRect} A rectangle inflated by (dx, dy), same center.
+ * @return {!ImageRect} A rectangle inflated by (dx, dy), same center.
  */
 ImageRect.prototype.inflate = function(dx, dy) {
   return new ImageRect(

@@ -274,6 +274,18 @@ ImageEditor.Mode = function(name, title) {
   this.name = name;
   this.title = title;
   this.message_ = 'GALLERY_ENTER_WHEN_DONE';
+
+  /**
+   * @type {ImageEditor}
+   * @private
+   */
+  this.editor_ = null;
+
+  /**
+   * @type {Viewport}
+   * @private
+   */
+  this.viewport_ = null;
 };
 
 ImageEditor.Mode.prototype = {__proto__: ImageBuffer.Overlay.prototype };
@@ -615,11 +627,15 @@ ImageEditor.prototype.onDoubleTap_ = function(x, y) {
 /**
  * Hide the tools that overlap the given rectangular frame.
  *
- * @param {ImageRect} frame Hide the tool that overlaps this rect.
- * @param {ImageRect} transparent But do not hide the tool that is completely
- *     inside this rect.
+ * @param {ImageRect=} opt_frame Hide the tool that overlaps this rect.
+ * @param {ImageRect=} opt_transparent But do not hide the tool that is
+ *     completely inside this rect.
  */
-ImageEditor.prototype.hideOverlappingTools = function(frame, transparent) {
+ImageEditor.prototype.hideOverlappingTools = function(
+    opt_frame, opt_transparent) {
+  var frame = opt_frame || null;
+  var transparent = opt_transparent || null;
+
   var tools = this.rootContainer_.ownerDocument.querySelectorAll('.dimmable');
   var changed = false;
   for (var i = 0; i != tools.length; i++) {
