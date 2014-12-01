@@ -63,7 +63,8 @@ overlay-scrollbar \
 pango1.0 \
 pulseaudio \
 udev \
-zlib1g"
+zlib1g \
+brltty"
 
 precise_specific_packages="libtasn1-3"
 trusty_specific_packages="\

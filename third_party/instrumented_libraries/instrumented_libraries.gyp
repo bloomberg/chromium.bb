@@ -156,6 +156,11 @@
             '<(_sanitizer_type)-libpng12-0',
           ],
         }],
+        ['chromeos==1', {
+          'dependencies': [
+            '<(_sanitizer_type)-brltty',
+          ],
+        }]
       ],
       'direct_dependent_settings': {
         'target_conditions': [
@@ -664,6 +669,26 @@
           '--with-gobject',
           # See above.
           '--disable-introspection',
+      ],
+      'dependencies=': [],
+      'includes': ['standard_instrumented_package_target.gypi'],
+    },
+    {
+      'package_name': 'brltty',
+      'extra_configure_flags': [
+          # From debian/rules.
+          '--without-viavoice',
+          '--without-theta',
+          '--without-swift',
+          '--bindir=/sbin',
+          '--with-curses=ncursesw',
+          '--disable-stripping',
+          # We don't need any of those.
+          '--disable-java-bindings',
+          '--disable-lisp-bindings',
+          '--disable-ocaml-bindings',
+          '--disable-python-bindings',
+          '--disable-tcl-bindings'
       ],
       'dependencies=': [],
       'includes': ['standard_instrumented_package_target.gypi'],
