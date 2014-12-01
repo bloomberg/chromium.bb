@@ -39,11 +39,12 @@ from pylib.monkey import test_options as monkey_test_options
 from pylib.perf import setup as perf_setup
 from pylib.perf import test_options as perf_test_options
 from pylib.perf import test_runner as perf_test_runner
+from pylib.results import json_results
+from pylib.results import report_results
 from pylib.uiautomator import setup as uiautomator_setup
 from pylib.uiautomator import test_options as uiautomator_test_options
 from pylib.utils import apk_helper
 from pylib.utils import command_option_parser
-from pylib.utils import report_results
 from pylib.utils import reraiser_thread
 from pylib.utils import run_tests_helper
 
@@ -94,6 +95,9 @@ def AddCommonOptions(option_parser):
   group.add_option('--adb-path',
                    help=('Specify the absolute path of the adb binary that '
                          'should be used.'))
+  group.add_option('--json-results-file', dest='json_results_file',
+                   help='If set, will dump results in JSON format '
+                        'to specified file.')
   option_parser.add_option_group(group)
 
 
@@ -161,8 +165,7 @@ def AddGTestOptions(option_parser):
                            dest='isolate_file_path',
                            help='.isolate file path to override the default '
                                 'path')
-  # TODO(gkanwar): Move these to Common Options once we have the plumbing
-  # in our other test types to handle these commands
+
   AddCommonOptions(option_parser)
   AddDeviceOptions(option_parser)
 
@@ -647,6 +650,9 @@ def _RunGTests(options, devices):
         test_package=suite_name,
         flakiness_server=options.flakiness_dashboard_server)
 
+    if options.json_results_file:
+      json_results.GenerateJsonResultsFile(results, options.json_results_file)
+
   if os.path.isdir(constants.ISOLATE_DEPS_DIR):
     shutil.rmtree(constants.ISOLATE_DEPS_DIR)
 
@@ -665,6 +671,9 @@ def _RunLinkerTests(options, devices):
       results=results,
       test_type='Linker test',
       test_package='ChromiumLinkerTest')
+
+  if options.json_results_file:
+    json_results.GenerateJsonResultsFile(results, options.json_results_file)
 
   return exit_code
 
@@ -717,6 +726,9 @@ def _RunInstrumentationTests(options, error_func, devices):
       annotation=options.annotations,
       flakiness_server=options.flakiness_dashboard_server)
 
+  if options.json_results_file:
+    json_results.GenerateJsonResultsFile(results, options.json_results_file)
+
   return exit_code
 
 
@@ -736,6 +748,9 @@ def _RunUIAutomatorTests(options, error_func, devices):
       test_package=os.path.basename(options.test_jar),
       annotation=options.annotations,
       flakiness_server=options.flakiness_dashboard_server)
+
+  if options.json_results_file:
+    json_results.GenerateJsonResultsFile(results, options.json_results_file)
 
   return exit_code
 
@@ -763,6 +778,9 @@ def _RunMonkeyTests(options, error_func, devices):
       results=results,
       test_type='Monkey',
       test_package='Monkey')
+
+  if options.json_results_file:
+    json_results.GenerateJsonResultsFile(results, options.json_results_file)
 
   return exit_code
 
@@ -798,6 +816,9 @@ def _RunPerfTests(options, args, error_func):
       results=results,
       test_type='Perf',
       test_package='Perf')
+
+  if options.json_results_file:
+    json_results.GenerateJsonResultsFile(results, options.json_results_file)
 
   if perf_options.single_step:
     return perf_test_runner.PrintTestOutput('single_step')
@@ -938,6 +959,10 @@ def RunTestsInPlatformMode(command, options, option_parser):
             test_package=test_run.TestPackage(),
             annotation=options.annotations,
             flakiness_server=options.flakiness_dashboard_server)
+
+        if options.json_results_file:
+          json_results.GenerateJsonResultsFile(
+              results, options.json_results_file)
 
   return results
 

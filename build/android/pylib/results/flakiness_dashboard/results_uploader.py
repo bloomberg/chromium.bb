@@ -12,10 +12,9 @@ import tempfile
 import xml
 
 
-#TODO(craigdh): pylib/utils/ should not depend on pylib/.
 from pylib import cmd_helper
 from pylib import constants
-from pylib.utils import json_results_generator
+from pylib.results.flakiness_dashboard import json_results_generator
 from pylib.utils import repo_utils
 
 

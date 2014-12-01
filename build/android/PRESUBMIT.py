@@ -64,6 +64,7 @@ def CommonChecks(input_api, output_api):
           J('pylib', 'device', 'device_utils_test.py'),
           J('pylib', 'gtest', 'test_package_test.py'),
           J('pylib', 'instrumentation', 'test_runner_test.py'),
+          J('pylib', 'results', 'json_results_test.py'),
           J('pylib', 'utils', 'md5sum_test.py'),
       ],
       env=pylib_test_env))

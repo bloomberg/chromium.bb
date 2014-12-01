@@ -9,7 +9,7 @@ import os
 import re
 
 from pylib import constants
-from pylib.utils import flakiness_dashboard_results_uploader
+from pylib.results.flakiness_dashboard import results_uploader
 
 
 def _LogToFile(results, test_type, suite_name):
@@ -58,7 +58,7 @@ def _LogToFlakinessDashboard(results, test_type, test_package,
       logging.warning('Invalid test type')
       return
 
-    flakiness_dashboard_results_uploader.Upload(
+    results_uploader.Upload(
         results, flakiness_server, dashboard_test_type)
 
   except Exception as e:
