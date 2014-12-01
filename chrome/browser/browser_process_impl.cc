@@ -102,9 +102,7 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "components/gcm_driver/gcm_driver_android.h"
-#else
+#if !defined(OS_ANDROID)
 #include "chrome/browser/chrome_device_client.h"
 #include "chrome/browser/services/gcm/gcm_desktop_utils.h"
 #include "components/gcm_driver/gcm_client_factory.h"
@@ -1128,7 +1126,11 @@ void BrowserProcessImpl::CreateGCMDriver() {
   DCHECK(!gcm_driver_);
 
 #if defined(OS_ANDROID)
-  gcm_driver_.reset(new gcm::GCMDriverAndroid);
+  // Android's GCMDriver currently makes the assumption that it's a singleton.
+  // Until this gets fixed, instantiating multiple Java GCMDrivers will throw
+  // an exception, but because they're only initialized on demand these crashes
+  // would be very difficult to triage. See http://crbug.com/437827.
+  NOTREACHED();
 #else
   base::FilePath store_path;
   CHECK(PathService::Get(chrome::DIR_GLOBAL_GCM_STORE, &store_path));
