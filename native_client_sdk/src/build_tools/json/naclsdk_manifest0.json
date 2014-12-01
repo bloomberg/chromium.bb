@@ -4,17 +4,17 @@
       "archives": [
         {
           "checksum": {
-            "sha1": "61bc0ab13c4ff1d3222446fb616f207b1617441f"
+            "sha1": "0593db33d2f6f7dacf9ae4447e35463951f0dbe3"
           },
           "host_os": "all",
-          "size": 29619,
-          "url": "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.228691/sdk_tools.tgz"
+          "size": 29701,
+          "url": "https://storage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/trunk.306188/sdk_tools.tgz"
         }
       ],
-      "description": "Native Client SDK Tools, revision 228691",
+      "description": "Native Client SDK Tools, revision 306188",
       "name": "sdk_tools",
       "recommended": "yes",
-      "revision": 228691,
+      "revision": 306188,
       "stability": "stable",
       "version": 1
     }
