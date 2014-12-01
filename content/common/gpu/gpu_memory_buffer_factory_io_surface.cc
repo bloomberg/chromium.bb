@@ -110,9 +110,13 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
   if (!io_surface)
     return gfx::GpuMemoryBufferHandle();
 
-  IOSurfaceMapKey key(id, client_id);
-  DCHECK(io_surfaces_.find(key) == io_surfaces_.end());
-  io_surfaces_[key] = io_surface;
+  {
+    base::AutoLock lock(io_surfaces_lock_);
+
+    IOSurfaceMapKey key(id, client_id);
+    DCHECK(io_surfaces_.find(key) == io_surfaces_.end());
+    io_surfaces_[key] = io_surface;
+  }
 
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::IO_SURFACE_BUFFER;
@@ -124,6 +128,8 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
 void GpuMemoryBufferFactoryIOSurface::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id) {
+  base::AutoLock lock(io_surfaces_lock_);
+
   IOSurfaceMapKey key(id, client_id);
   IOSurfaceMap::iterator it = io_surfaces_.find(key);
   if (it != io_surfaces_.end())
@@ -141,6 +147,8 @@ GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
     gfx::GpuMemoryBuffer::Format format,
     unsigned internalformat,
     int client_id) {
+  base::AutoLock lock(io_surfaces_lock_);
+
   DCHECK_EQ(handle.type, gfx::IO_SURFACE_BUFFER);
   IOSurfaceMapKey key(handle.id, client_id);
   IOSurfaceMap::iterator it = io_surfaces_.find(key);

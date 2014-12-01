@@ -7,6 +7,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "ui/gfx/geometry/size.h"
@@ -55,6 +56,7 @@ class GpuMemoryBufferFactorySurfaceTexture : public GpuMemoryBufferFactory,
   typedef base::hash_map<SurfaceTextureMapKey,
                          scoped_refptr<gfx::SurfaceTexture>> SurfaceTextureMap;
   SurfaceTextureMap surface_textures_;
+  base::Lock surface_textures_lock_;
 };
 
 }  // namespace content

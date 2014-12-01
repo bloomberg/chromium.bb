@@ -10,6 +10,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "ui/gfx/geometry/size.h"
@@ -57,6 +58,7 @@ class GpuMemoryBufferFactoryIOSurface : public GpuMemoryBufferFactory,
   typedef base::hash_map<IOSurfaceMapKey, base::ScopedCFTypeRef<IOSurfaceRef>>
       IOSurfaceMap;
   IOSurfaceMap io_surfaces_;
+  base::Lock io_surfaces_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactoryIOSurface);
 };

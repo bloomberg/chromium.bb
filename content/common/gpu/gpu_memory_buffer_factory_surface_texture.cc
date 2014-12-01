@@ -63,9 +63,13 @@ GpuMemoryBufferFactorySurfaceTexture::CreateGpuMemoryBuffer(
   SurfaceTextureManager::GetInstance()->RegisterSurfaceTexture(
       id, client_id, surface_texture.get());
 
-  SurfaceTextureMapKey key(id, client_id);
-  DCHECK(surface_textures_.find(key) == surface_textures_.end());
-  surface_textures_[key] = surface_texture;
+  {
+    base::AutoLock lock(surface_textures_lock_);
+
+    SurfaceTextureMapKey key(id, client_id);
+    DCHECK(surface_textures_.find(key) == surface_textures_.end());
+    surface_textures_[key] = surface_texture;
+  }
 
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::SURFACE_TEXTURE_BUFFER;
@@ -76,10 +80,14 @@ GpuMemoryBufferFactorySurfaceTexture::CreateGpuMemoryBuffer(
 void GpuMemoryBufferFactorySurfaceTexture::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id) {
-  SurfaceTextureMapKey key(id, client_id);
-  SurfaceTextureMap::iterator it = surface_textures_.find(key);
-  if (it != surface_textures_.end())
-    surface_textures_.erase(it);
+  {
+    base::AutoLock lock(surface_textures_lock_);
+
+    SurfaceTextureMapKey key(id, client_id);
+    SurfaceTextureMap::iterator it = surface_textures_.find(key);
+    if (it != surface_textures_.end())
+      surface_textures_.erase(it);
+  }
 
   SurfaceTextureManager::GetInstance()->UnregisterSurfaceTexture(id, client_id);
 }
@@ -95,7 +103,10 @@ GpuMemoryBufferFactorySurfaceTexture::CreateImageForGpuMemoryBuffer(
     gfx::GpuMemoryBuffer::Format format,
     unsigned internalformat,
     int client_id) {
+  base::AutoLock lock(surface_textures_lock_);
+
   DCHECK_EQ(handle.type, gfx::SURFACE_TEXTURE_BUFFER);
+
   SurfaceTextureMapKey key(handle.id, client_id);
   SurfaceTextureMap::iterator it = surface_textures_.find(key);
   if (it == surface_textures_.end())
