@@ -105,15 +105,31 @@ void ExtensionsGuestViewContainer::AttachRequest::HandleResponse(
 }
 
 ExtensionsGuestViewContainer::ExtensionsGuestViewContainer(
-      content::RenderFrame* render_frame)
+    content::RenderFrame* render_frame)
     : GuestViewContainer(render_frame),
-      ready_(false) {
+      ready_(false),
+      destruction_isolate_(nullptr) {
 }
 
 ExtensionsGuestViewContainer::~ExtensionsGuestViewContainer() {
   if (element_instance_id() != guestview::kInstanceIDNone) {
     g_guest_view_container_map.Get().erase(element_instance_id());
   }
+
+  // Call the destruction callback, if one is registered.
+  if (destruction_callback_.IsEmpty())
+    return;
+  v8::HandleScope handle_scope(destruction_isolate_);
+  v8::Handle<v8::Function> callback =
+      destruction_callback_.NewHandle(destruction_isolate_);
+  v8::Handle<v8::Context> context = callback->CreationContext();
+  if (context.IsEmpty())
+    return;
+
+  v8::Context::Scope context_scope(context);
+  blink::WebScopedMicrotaskSuppression suppression;
+
+  callback->Call(context->Global(), 0, nullptr);
 }
 
 ExtensionsGuestViewContainer* ExtensionsGuestViewContainer::FromID(
@@ -128,6 +144,13 @@ ExtensionsGuestViewContainer* ExtensionsGuestViewContainer::FromID(
 void ExtensionsGuestViewContainer::IssueRequest(linked_ptr<Request> request) {
   EnqueueRequest(request);
   PerformPendingRequest();
+}
+
+void ExtensionsGuestViewContainer::RegisterDestructionCallback(
+    v8::Handle<v8::Function> callback,
+    v8::Isolate* isolate) {
+  destruction_callback_.reset(callback);
+  destruction_isolate_ = isolate;
 }
 
 void ExtensionsGuestViewContainer::SetElementInstanceID(

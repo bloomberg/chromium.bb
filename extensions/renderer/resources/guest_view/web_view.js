@@ -54,7 +54,7 @@ WebViewImpl.setupElement = function(proto) {
   // Create default implementations for undefined API methods.
   var createDefaultApiMethod = function(m) {
     return function(var_args) {
-      if (!this.guest.getId()) {window.console.log(this);
+      if (!this.guest.getId()) {
         return false;
       }
       var args = $Array.concat([this.guest.getId()], $Array.slice(arguments));
@@ -80,19 +80,10 @@ WebViewImpl.prototype.onElementAttached = function() {
 
 // Resets some state upon detaching <webview> element from the DOM.
 WebViewImpl.prototype.onElementDetached = function() {
-  // If the guest's ID is defined then the <webview> has navigated and has
-  // already picked up a partition ID. Thus, we need to reset the initialization
-  // state. However, it may be the case that beforeFirstNavigation is false BUT
-  // the guest's ID has yet to be initialized. This means that we have not
-  // heard back from createGuest yet. We will not reset the flag in this case so
-  // that we don't end up allocating a second guest.
-  if (this.guest.getId()) {
-    this.guest.destroy();
-    this.guest = new GuestView('webview');
-    this.beforeFirstNavigation = true;
-    this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].validPartitionId =
-        true;
-  }
+  this.guest.destroy();
+  this.beforeFirstNavigation = true;
+  this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].validPartitionId =
+      true;
   this.internalInstanceId = 0;
 };
 
@@ -306,10 +297,13 @@ WebViewImpl.prototype.buildAttachParams = function() {
 };
 
 WebViewImpl.prototype.attachWindow = function(guestInstanceId) {
+  // If |guestInstanceId| was provided, then a different existing guest is being
+  // attached to this webview, and the current one will get destroyed.
   if (guestInstanceId) {
-    if (this.guest.getId() && this.guest.getId() != guestInstanceId) {
-      this.guest.destroy();
+    if (this.guest.getId() == guestInstanceId) {
+      return;
     }
+    this.guest.destroy();
     this.guest = new GuestView('webview', guestInstanceId);
   }
 

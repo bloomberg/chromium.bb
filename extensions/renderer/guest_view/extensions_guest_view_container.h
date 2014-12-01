@@ -69,6 +69,8 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
   static ExtensionsGuestViewContainer* FromID(int element_instance_id);
 
   void IssueRequest(linked_ptr<Request> request);
+  void RegisterDestructionCallback(v8::Handle<v8::Function> callback,
+                                   v8::Isolate* isolate);
 
   // BrowserPluginDelegate implementation.
   void SetElementInstanceID(int element_instance_id) override;
@@ -89,6 +91,9 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
 
   std::deque<linked_ptr<Request> > pending_requests_;
   linked_ptr<Request> pending_response_;
+
+  ScopedPersistent<v8::Function> destruction_callback_;
+  v8::Isolate* destruction_isolate_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsGuestViewContainer);
 };

@@ -28,6 +28,12 @@ class GuestViewInternalCustomBindings : public ObjectBackedNativeHandler {
   // down to the GuestView. The GuestView may use these parameters to update the
   // state of the guest hosted in another process.
   void AttachGuest(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // RegisterDestructionCallback registers a JavaScript callback function to be
+  // called when the guestview's container is destroyed.
+  // RegisterDestructionCallback takes in a single paramater, |callback|.
+  void RegisterDestructionCallback(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 }  // namespace extensions
