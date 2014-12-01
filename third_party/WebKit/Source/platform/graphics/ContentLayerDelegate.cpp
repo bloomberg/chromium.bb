@@ -29,9 +29,14 @@
 #include "platform/EventTracer.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/transforms/AffineTransform.h"
+#include "platform/transforms/TransformationMatrix.h"
+#include "public/platform/WebDisplayItemList.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebRect.h"
+#include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 
 namespace blink {
 
@@ -60,6 +65,49 @@ void ContentLayerDelegate::paintContents(
         context.setAnnotationMode(AnnotateAll);
 
     m_painter->paint(context, clip);
+}
+
+void ContentLayerDelegate::paintContents(
+    WebDisplayItemList* webDisplayItemList, const WebRect& clip, bool canPaintLCDText,
+    WebContentLayerClient::GraphicsContextStatus contextStatus)
+{
+    // Once Slimming Paint is fully implemented, this method will no longer
+    // be needed since Blink will be in charge of creating the display list
+    // during the document lifecylcle.
+
+    // Some layers don't yet produce display lists. To handle such layers, we
+    // create a canvas backed by an SkPicture, and manually insert this
+    // SkPicture into the WebDisplayItemList when the layer's display list is
+    // empty.
+    SkPictureRecorder recorder;
+    RefPtr<SkPicture> picture;
+    SkCanvas* canvas = recorder.beginRecording(clip.width, clip.height);
+    canvas->save();
+    canvas->translate(-clip.x, -clip.y);
+    canvas->clipRect(SkRect::MakeXYWH(clip.x, clip.y, clip.width, clip.height));
+    paintContents(canvas, clip, canPaintLCDText, contextStatus);
+    canvas->restore();
+    picture = adoptRef(recorder.endRecording());
+
+    DisplayItemList* displayItemList = m_painter->existingDisplayItemList();
+    if (!displayItemList) {
+        webDisplayItemList->appendDrawingItem(picture.get(), WebFloatPoint());
+        return;
+    }
+
+    const PaintList& paintList = displayItemList->paintList();
+    IntSize offset = m_painter->displayItemListOffset();
+    if (offset != IntSize()) {
+        TransformationMatrix matrix;
+        matrix.translate(-offset.width(), -offset.height());
+        webDisplayItemList->appendTransformItem(TransformationMatrix::toSkMatrix44(matrix));
+    }
+
+    for (PaintList::const_iterator it = paintList.begin(); it != paintList.end(); ++it)
+        (*it)->appendToWebDisplayItemList(webDisplayItemList);
+
+    if (offset != IntSize())
+        webDisplayItemList->appendEndTransformItem();
 }
 
 } // namespace blink

@@ -20,6 +20,7 @@ public:
     BeginFilterDisplayItem(DisplayItemClient client, Type type, PassRefPtr<ImageFilter> imageFilter, const LayoutRect& bounds)
         : DisplayItem(client, type), m_imageFilter(imageFilter), m_bounds(bounds) { }
     virtual void replay(GraphicsContext*) override;
+    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 #ifndef NDEBUG
     virtual WTF::String asDebugString() const override;
@@ -34,6 +35,7 @@ public:
     EndFilterDisplayItem(DisplayItemClient client)
         : DisplayItem(client, EndFilter) { }
     virtual void replay(GraphicsContext*) override;
+    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 #ifndef NDEBUG
     virtual WTF::String asDebugString() const override;

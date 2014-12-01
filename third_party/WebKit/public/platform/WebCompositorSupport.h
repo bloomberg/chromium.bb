@@ -42,6 +42,7 @@ class WebCompositorAnimationCurve;
 class WebCompositorOutputSurface;
 class WebContentLayer;
 class WebContentLayerClient;
+class WebDisplayItemList;
 class WebExternalTextureLayer;
 class WebExternalTextureLayerClient;
 class WebFilterAnimationCurve;
@@ -81,6 +82,10 @@ public:
     virtual WebScrollbarLayer* createScrollbarLayer(WebScrollbar*, WebScrollbarThemePainter, WebScrollbarThemeGeometry*) { return 0; }
 
     virtual WebScrollbarLayer* createSolidColorScrollbarLayer(WebScrollbar::Orientation, int thumbThickness, int trackStart, bool isLeftSideVerticalScrollbar) { return 0; }
+
+    // Display lists ------------------------------------------------
+
+    virtual WebDisplayItemList* createDisplayItemList() { return 0; }
 
     // Animation ----------------------------------------------------
 

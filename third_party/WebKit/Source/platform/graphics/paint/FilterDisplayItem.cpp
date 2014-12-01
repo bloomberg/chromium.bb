@@ -6,6 +6,7 @@
 #include "platform/graphics/paint/FilterDisplayItem.h"
 
 #include "platform/graphics/GraphicsContext.h"
+#include "public/platform/WebDisplayItemList.h"
 
 namespace blink {
 
@@ -17,6 +18,11 @@ void BeginFilterDisplayItem::replay(GraphicsContext* context)
     boundaries.move(-m_bounds.x().toFloat(), -m_bounds.y().toFloat());
     context->beginLayer(1, CompositeSourceOver, &boundaries, ColorFilterNone, m_imageFilter.get());
     context->translate(-m_bounds.x().toFloat(), -m_bounds.y().toFloat());
+}
+
+void BeginFilterDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+{
+    list->appendFilterItem(m_imageFilter.get(), FloatRect(m_bounds));
 }
 
 #ifndef NDEBUG
@@ -32,6 +38,11 @@ void EndFilterDisplayItem::replay(GraphicsContext* context)
 {
     context->endLayer();
     context->restore();
+}
+
+void EndFilterDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+{
+    list->appendEndFilterItem();
 }
 
 #ifndef NDEBUG

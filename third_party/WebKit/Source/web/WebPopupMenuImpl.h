@@ -81,6 +81,7 @@ public:
 
     // WebContentLayerClient
     virtual void paintContents(WebCanvas*, const WebRect& clip, bool canPaintLCDTest, WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) override final;
+    virtual void paintContents(WebDisplayItemList*, const WebRect& clip, bool canPaintLCDTest, WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) override final { }
 
     // WebPopupMenuImpl
     void initialize(PopupContainer* widget, const WebRect& bounds);

@@ -56,6 +56,7 @@ public:
 
     // WebContentLayerClient implementation.
     virtual void paintContents(WebCanvas*, const WebRect& clipRect, bool canPaintLCDText, WebContentLayerClient::GraphicsContextStatus) override;
+    virtual void paintContents(WebDisplayItemList*, const WebRect& clipRect, bool canPaintLCDText, WebContentLayerClient::GraphicsContextStatus) override { }
 
     // WebCompositorAnimationDelegate implementation.
     virtual void notifyAnimationStarted(double monotonicTime, int group) override;

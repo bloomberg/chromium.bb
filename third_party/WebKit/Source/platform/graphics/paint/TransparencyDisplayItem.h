@@ -21,6 +21,7 @@ public:
         , m_blendMode(blendMode)
         , m_opacity(opacity) { }
     virtual void replay(GraphicsContext*) override;
+    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
 #ifndef NDEBUG
@@ -38,6 +39,7 @@ public:
     EndTransparencyDisplayItem(DisplayItemClient client, Type type)
         : DisplayItem(client, type) { }
     virtual void replay(GraphicsContext*) override;
+    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
 #ifndef NDEBUG

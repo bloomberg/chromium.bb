@@ -14,6 +14,7 @@
 namespace blink {
 
 class GraphicsContext;
+class WebDisplayItemList;
 
 typedef void* DisplayItemClient;
 
@@ -73,6 +74,8 @@ public:
     DisplayItemClient client() const { return m_id.client; }
     Type type() const { return m_id.type; }
     bool idsEqual(const DisplayItem& other) const { return m_id.client == other.m_id.client && m_id.type == other.m_id.type; }
+
+    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const = 0;
 
 #ifndef NDEBUG
     static WTF::String typeAsDebugString(DisplayItem::Type);

@@ -6,12 +6,18 @@
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 
 #include "platform/graphics/GraphicsContext.h"
+#include "public/platform/WebDisplayItemList.h"
 
 namespace blink {
 
 void DrawingDisplayItem::replay(GraphicsContext* context)
 {
     context->drawPicture(m_picture.get(), m_location);
+}
+
+void DrawingDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+{
+    list->appendDrawingItem(m_picture.get(), m_location);
 }
 
 #ifndef NDEBUG

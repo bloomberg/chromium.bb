@@ -7,6 +7,8 @@
 
 #include "platform/geometry/RoundedRect.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "public/platform/WebDisplayItemList.h"
+#include "third_party/skia/include/core/SkScalar.h"
 
 namespace blink {
 
@@ -18,9 +20,35 @@ void ClipDisplayItem::replay(GraphicsContext* context)
         context->clipRoundedRect(roundedRect);
 }
 
+void ClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+{
+    WebVector<SkRRect> webRoundedRects(m_roundedRectClips.size());
+    for (size_t i = 0; i < m_roundedRectClips.size(); ++i) {
+        RoundedRect::Radii rectRadii = m_roundedRectClips[i].radii();
+        SkVector skRadii[4];
+        skRadii[SkRRect::kUpperLeft_Corner].set(SkIntToScalar(rectRadii.topLeft().width()),
+            SkIntToScalar(rectRadii.topLeft().height()));
+        skRadii[SkRRect::kUpperRight_Corner].set(SkIntToScalar(rectRadii.topRight().width()),
+            SkIntToScalar(rectRadii.topRight().height()));
+        skRadii[SkRRect::kLowerRight_Corner].set(SkIntToScalar(rectRadii.bottomRight().width()),
+            SkIntToScalar(rectRadii.bottomRight().height()));
+        skRadii[SkRRect::kLowerLeft_Corner].set(SkIntToScalar(rectRadii.bottomLeft().width()),
+            SkIntToScalar(rectRadii.bottomLeft().height()));
+        SkRRect skRoundedRect;
+        skRoundedRect.setRectRadii(m_roundedRectClips[i].rect(), skRadii);
+        webRoundedRects[i] = skRoundedRect;
+    }
+    list->appendClipItem(m_clipRect, webRoundedRects);
+}
+
 void EndClipDisplayItem::replay(GraphicsContext* context)
 {
     context->restore();
+}
+
+void EndClipDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+{
+    list->appendEndClipItem();
 }
 
 #ifndef NDEBUG

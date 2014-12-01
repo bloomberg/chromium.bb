@@ -29,8 +29,12 @@
 #include "WebCanvas.h"
 #include "WebCommon.h"
 
+// FIXME: Remove this after references to this macro in Chromium are removed.
+#define WEB_DISPLAY_ITEM_LIST_IS_DEFINED 1
+
 namespace blink {
 
+class WebDisplayItemList;
 struct WebRect;
 struct WebFloatRect;
 
@@ -48,6 +52,8 @@ public:
     // The |disableContext| enum controls most processing in
     // GraphicsContext to isolate the painting code in performance tests.
     virtual void paintContents(WebCanvas*, const WebRect& clip, bool canPaintLCDText, GraphicsContextStatus = GraphicsContextEnabled) = 0;
+
+    virtual void paintContents(WebDisplayItemList*, const WebRect& clip, bool canPaintLCDText, GraphicsContextStatus = GraphicsContextEnabled) = 0;
 
 protected:
     virtual ~WebContentLayerClient() { }

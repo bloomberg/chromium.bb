@@ -6,6 +6,8 @@
 #include "platform/graphics/paint/TransformDisplayItem.h"
 
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/transforms/TransformationMatrix.h"
+#include "public/platform/WebDisplayItemList.h"
 
 namespace blink {
 
@@ -20,6 +22,11 @@ void BeginTransformDisplayItem::replay(GraphicsContext* context)
     context->concatCTM(m_transform.toAffineTransform());
 }
 
+void BeginTransformDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+{
+    list->appendTransformItem(affineTransformToSkMatrix(m_transform.toAffineTransform()));
+}
+
 #ifndef NDEBUG
 WTF::String BeginTransformDisplayItem::asDebugString() const
 {
@@ -32,6 +39,11 @@ WTF::String BeginTransformDisplayItem::asDebugString() const
 void EndTransformDisplayItem::replay(GraphicsContext* context)
 {
     context->restore();
+}
+
+void EndTransformDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+{
+    list->appendEndTransformItem();
 }
 
 #ifndef NDEBUG

@@ -16,6 +16,7 @@ class PLATFORM_EXPORT BeginTransformDisplayItem : public DisplayItem {
 public:
     BeginTransformDisplayItem(DisplayItemClient, const TransformationMatrix&);
     virtual void replay(GraphicsContext*) override;
+    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 #ifndef NDEBUG
     virtual WTF::String asDebugString() const override;
@@ -28,6 +29,7 @@ public:
     EndTransformDisplayItem(DisplayItemClient client)
         : DisplayItem(client, EndTransform) { }
     virtual void replay(GraphicsContext*) override;
+    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 #ifndef NDEBUG
     virtual WTF::String asDebugString() const override;

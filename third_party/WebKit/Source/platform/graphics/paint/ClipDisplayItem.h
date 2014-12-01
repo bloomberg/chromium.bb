@@ -20,6 +20,7 @@ public:
         : DisplayItem(client, type), m_clipRect(clipRect) { }
 
     virtual void replay(GraphicsContext*) override;
+    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
     Vector<RoundedRect>& roundedRectClips() { return m_roundedRectClips; }
 
@@ -36,6 +37,7 @@ public:
     EndClipDisplayItem(DisplayItemClient client) : DisplayItem(client, EndClip) { }
 
     virtual void replay(GraphicsContext*) override;
+    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 };
 
 } // namespace blink

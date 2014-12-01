@@ -7,6 +7,7 @@
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "public/platform/WebDisplayItemList.h"
 
 namespace blink {
 
@@ -22,6 +23,11 @@ void BeginTransparencyDisplayItem::replay(GraphicsContext* context)
         context->setCompositeOperation(context->compositeOperation(), WebBlendModeNormal);
 }
 
+void BeginTransparencyDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+{
+    list->appendTransparencyItem(m_opacity, m_blendMode);
+}
+
 #ifndef NDEBUG
 WTF::String BeginTransparencyDisplayItem::asDebugString() const
 {
@@ -34,6 +40,11 @@ WTF::String BeginTransparencyDisplayItem::asDebugString() const
 void EndTransparencyDisplayItem::replay(GraphicsContext* context)
 {
     context->endLayer();
+}
+
+void EndTransparencyDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
+{
+    list->appendEndTransparencyItem();
 }
 
 #ifndef NDEBUG

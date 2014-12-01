@@ -235,6 +235,8 @@ public:
 
     // GraphicsContextPainter implementation.
     virtual void paint(GraphicsContext&, const IntRect& clip) override;
+    virtual IntSize displayItemListOffset() const override { return offsetFromRenderer(); }
+    virtual DisplayItemList* existingDisplayItemList() const override { return m_displayItemList.get(); }
 
     // WebCompositorAnimationDelegate implementation.
     virtual void notifyAnimationStarted(double monotonicTime, int group) override;

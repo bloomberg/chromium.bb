@@ -18,6 +18,7 @@ public:
         : DisplayItem(client, type), m_picture(picture), m_location(location) { ASSERT(m_picture.get()); }
 
     virtual void replay(GraphicsContext*);
+    virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
     PassRefPtr<SkPicture> picture() const { return m_picture; }
     const FloatPoint& location() const { return m_location; }

@@ -26,6 +26,7 @@
 #define ContentLayerDelegate_h
 
 #include "platform/PlatformExport.h"
+#include "platform/geometry/IntSize.h"
 #include "public/platform/WebContentLayerClient.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
@@ -34,12 +35,15 @@ class SkCanvas;
 
 namespace blink {
 
+class DisplayItemList;
 class GraphicsContext;
 class IntRect;
 
 class PLATFORM_EXPORT GraphicsContextPainter {
 public:
     virtual void paint(GraphicsContext&, const IntRect& clip) = 0;
+    virtual DisplayItemList* existingDisplayItemList() const = 0;
+    virtual IntSize displayItemListOffset() const = 0;
 
 protected:
     virtual ~GraphicsContextPainter() { }
@@ -60,6 +64,7 @@ public:
 
     // WebContentLayerClient implementation.
     virtual void paintContents(SkCanvas*, const WebRect& clip, bool canPaintLCDText, WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) override;
+    virtual void paintContents(WebDisplayItemList*, const WebRect& clip, bool canPaintLCDText, WebContentLayerClient::GraphicsContextStatus = GraphicsContextEnabled) override;
 
 private:
     GraphicsContextPainter* m_painter;
