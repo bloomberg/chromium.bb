@@ -686,10 +686,18 @@ int Printer::FunctionCall(const FunctionCallNode* func_call,
     terminator += " {";
   terminator += suffix;
 
+  // Special case to make function calls of one arg taking a long list of
+  // boolean operators not indent.
+  bool continuation_requires_indent =
+      list.size() != 1 || !list[0]->AsBinaryOp() ||
+      (list[0]->AsBinaryOp()->op().value() != "||" &&
+       list[0]->AsBinaryOp()->op().value() != "&&");
+
   // 1: Same line.
   Printer sub1;
   InitializeSub(&sub1);
-  sub1.stack_.push_back(IndentState(CurrentColumn(), true, false));
+  sub1.stack_.push_back(
+      IndentState(CurrentColumn(), continuation_requires_indent, false));
   int penalty_one_line = 0;
   for (size_t i = 0; i < list.size(); ++i) {
     penalty_one_line += sub1.Expr(list[i], kPrecedenceLowest,
@@ -706,7 +714,8 @@ int Printer::FunctionCall(const FunctionCallNode* func_call,
   // 2: Starting on same line, broken at commas.
   Printer sub2;
   InitializeSub(&sub2);
-  sub2.stack_.push_back(IndentState(CurrentColumn(), true, false));
+  sub2.stack_.push_back(
+      IndentState(CurrentColumn(), continuation_requires_indent, false));
   int penalty_multiline_start_same_line = 0;
   for (size_t i = 0; i < list.size(); ++i) {
     penalty_multiline_start_same_line += sub2.Expr(
@@ -721,7 +730,8 @@ int Printer::FunctionCall(const FunctionCallNode* func_call,
   // 3: Starting on next line, broken at commas.
   Printer sub3;
   InitializeSub(&sub3);
-  sub3.stack_.push_back(IndentState(margin() + kIndentSize * 2, true, false));
+  sub3.stack_.push_back(IndentState(margin() + kIndentSize * 2,
+                                    continuation_requires_indent, false));
   sub3.Newline();
   int penalty_multiline_start_next_line = 0;
   for (size_t i = 0; i < list.size(); ++i) {
@@ -757,10 +767,13 @@ int Printer::FunctionCall(const FunctionCallNode* func_call,
     // No elements, and not forcing newlines, print nothing.
   } else {
     if (penalty_multiline_start_next_line < penalty_multiline_start_same_line) {
-      stack_.push_back(IndentState(margin() + kIndentSize * 2, true, false));
+      stack_.push_back(IndentState(margin() + kIndentSize * 2,
+                                   continuation_requires_indent,
+                                   false));
       Newline();
     } else {
-      stack_.push_back(IndentState(CurrentColumn(), true, false));
+      stack_.push_back(
+          IndentState(CurrentColumn(), continuation_requires_indent, false));
     }
 
     for (size_t i = 0; i < list.size(); ++i) {
