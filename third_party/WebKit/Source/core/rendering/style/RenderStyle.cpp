@@ -1286,28 +1286,6 @@ void RenderStyle::getShadowExtent(const ShadowList* shadowList, LayoutUnit &top,
     }
 }
 
-LayoutBoxExtent RenderStyle::getShadowInsetExtent(const ShadowList* shadowList) const
-{
-    LayoutUnit top = 0;
-    LayoutUnit right = 0;
-    LayoutUnit bottom = 0;
-    LayoutUnit left = 0;
-
-    size_t shadowCount = shadowList ? shadowList->shadows().size() : 0;
-    for (size_t i = 0; i < shadowCount; ++i) {
-        const ShadowData& shadow = shadowList->shadows()[i];
-        if (shadow.style() == Normal)
-            continue;
-        float blurAndSpread = shadow.blur() + shadow.spread();
-        top = std::max<LayoutUnit>(top, shadow.y() + blurAndSpread);
-        right = std::min<LayoutUnit>(right, shadow.x() - blurAndSpread);
-        bottom = std::min<LayoutUnit>(bottom, shadow.y() - blurAndSpread);
-        left = std::max<LayoutUnit>(left, shadow.x() + blurAndSpread);
-    }
-
-    return LayoutBoxExtent(top, right, bottom, left);
-}
-
 void RenderStyle::getShadowHorizontalExtent(const ShadowList* shadowList, LayoutUnit &left, LayoutUnit &right) const
 {
     left = 0;

@@ -380,7 +380,6 @@ public:
     bool hasMargin() const { return surround->margin.nonZero(); }
     bool hasBorder() const { return surround->border.hasBorder(); }
     bool hasPadding() const { return surround->padding.nonZero(); }
-    bool hasOffset() const { return surround->offset.nonZero(); }
     bool hasMarginBeforeQuirk() const { return marginBefore().quirk(); }
     bool hasMarginAfterQuirk() const { return marginAfter().quirk(); }
 
@@ -407,11 +406,6 @@ public:
     LayoutBoxExtent borderImageOutsets() const
     {
         return imageOutsets(borderImage());
-    }
-
-    LayoutBoxExtent maskBoxImageOutsets() const
-    {
-        return imageOutsets(maskBoxImage());
     }
 
     bool hasFilterOutsets() const { return hasFilter() && filter().hasOutsets(); }
@@ -638,29 +632,11 @@ public:
         return wordBreak() == BreakWordBreak || overflowWrap() == BreakOverflowWrap;
     }
 
-    EFillRepeat backgroundRepeatX() const { return static_cast<EFillRepeat>(m_background->background().repeatX()); }
-    EFillRepeat backgroundRepeatY() const { return static_cast<EFillRepeat>(m_background->background().repeatY()); }
-    CompositeOperator backgroundComposite() const { return static_cast<CompositeOperator>(m_background->background().composite()); }
-    EFillAttachment backgroundAttachment() const { return static_cast<EFillAttachment>(m_background->background().attachment()); }
     EFillBox backgroundClip() const { return static_cast<EFillBox>(m_background->background().clip()); }
-    EFillBox backgroundOrigin() const { return static_cast<EFillBox>(m_background->background().origin()); }
-    const Length& backgroundXPosition() const { return m_background->background().xPosition(); }
-    const Length& backgroundYPosition() const { return m_background->background().yPosition(); }
-    EFillSizeType backgroundSizeType() const { return m_background->background().sizeType(); }
-    const LengthSize& backgroundSizeLength() const { return m_background->background().sizeLength(); }
     FillLayer& accessBackgroundLayers() { return m_background.access()->m_background; }
     const FillLayer& backgroundLayers() const { return m_background->background(); }
 
     StyleImage* maskImage() const { return rareNonInheritedData->m_mask.image(); }
-    EFillRepeat maskRepeatX() const { return static_cast<EFillRepeat>(rareNonInheritedData->m_mask.repeatX()); }
-    EFillRepeat maskRepeatY() const { return static_cast<EFillRepeat>(rareNonInheritedData->m_mask.repeatY()); }
-    CompositeOperator maskComposite() const { return static_cast<CompositeOperator>(rareNonInheritedData->m_mask.composite()); }
-    EFillBox maskClip() const { return static_cast<EFillBox>(rareNonInheritedData->m_mask.clip()); }
-    EFillBox maskOrigin() const { return static_cast<EFillBox>(rareNonInheritedData->m_mask.origin()); }
-    const Length& maskXPosition() const { return rareNonInheritedData->m_mask.xPosition(); }
-    const Length& maskYPosition() const { return rareNonInheritedData->m_mask.yPosition(); }
-    EFillSizeType maskSizeType() const { return rareNonInheritedData->m_mask.sizeType(); }
-    const LengthSize& maskSizeLength() const { return rareNonInheritedData->m_mask.sizeLength(); }
     FillLayer& accessMaskLayers() { return rareNonInheritedData.access()->m_mask; }
     const FillLayer& maskLayers() const { return rareNonInheritedData->m_mask; }
 
@@ -728,9 +704,6 @@ public:
     }
 
     ShadowList* textShadow() const { return rareInheritedData->textShadow.get(); }
-    void getTextShadowExtent(LayoutUnit& top, LayoutUnit& right, LayoutUnit& bottom, LayoutUnit& left) const { getShadowExtent(textShadow(), top, right, bottom, left); }
-    void getTextShadowHorizontalExtent(LayoutUnit& left, LayoutUnit& right) const { getShadowHorizontalExtent(textShadow(), left, right); }
-    void getTextShadowVerticalExtent(LayoutUnit& top, LayoutUnit& bottom) const { getShadowVerticalExtent(textShadow(), top, bottom); }
     void getTextShadowInlineDirectionExtent(LayoutUnit& logicalLeft, LayoutUnit& logicalRight) { getShadowInlineDirectionExtent(textShadow(), logicalLeft, logicalRight); }
     void getTextShadowBlockDirectionExtent(LayoutUnit& logicalTop, LayoutUnit& logicalBottom) { getShadowBlockDirectionExtent(textShadow(), logicalTop, logicalBottom); }
 
@@ -795,9 +768,6 @@ public:
 
     ShadowList* boxShadow() const { return rareNonInheritedData->m_boxShadow.get(); }
     void getBoxShadowExtent(LayoutUnit& top, LayoutUnit& right, LayoutUnit& bottom, LayoutUnit& left) const { getShadowExtent(boxShadow(), top, right, bottom, left); }
-    LayoutBoxExtent getBoxShadowInsetExtent() const { return getShadowInsetExtent(boxShadow()); }
-    void getBoxShadowHorizontalExtent(LayoutUnit& left, LayoutUnit& right) const { getShadowHorizontalExtent(boxShadow(), left, right); }
-    void getBoxShadowVerticalExtent(LayoutUnit& top, LayoutUnit& bottom) const { getShadowVerticalExtent(boxShadow(), top, bottom); }
     void getBoxShadowInlineDirectionExtent(LayoutUnit& logicalLeft, LayoutUnit& logicalRight) { getShadowInlineDirectionExtent(boxShadow(), logicalLeft, logicalRight); }
     void getBoxShadowBlockDirectionExtent(LayoutUnit& logicalTop, LayoutUnit& logicalBottom) { getShadowBlockDirectionExtent(boxShadow(), logicalTop, logicalBottom); }
 
@@ -885,9 +855,6 @@ public:
     unsigned tabSize() const { return rareInheritedData->m_tabSize; }
 
     // End CSS3 Getters
-
-    WrapFlow wrapFlow() const { return static_cast<WrapFlow>(rareNonInheritedData->m_wrapFlow); }
-    WrapThrough wrapThrough() const { return static_cast<WrapThrough>(rareNonInheritedData->m_wrapThrough); }
 
     // Apple-specific property getter methods
     EPointerEvents pointerEvents() const { return static_cast<EPointerEvents>(inherited_flags._pointerEvents); }
@@ -1023,11 +990,6 @@ public:
 
     void setBackgroundColor(const StyleColor& v) { SET_VAR(m_background, m_color, v); }
 
-    void setBackgroundXPosition(const Length& length) { SET_VAR(m_background, m_background.m_xPosition, length); }
-    void setBackgroundYPosition(const Length& length) { SET_VAR(m_background, m_background.m_yPosition, length); }
-    void setBackgroundSize(EFillSizeType b) { SET_VAR(m_background, m_background.m_sizeType, b); }
-    void setBackgroundSizeLength(const LengthSize& s) { SET_VAR(m_background, m_background.m_sizeLength, s); }
-
     void setBorderImage(const NinePieceImage& b) { SET_VAR(surround, border.m_image, b); }
     void setBorderImageSource(PassRefPtr<StyleImage>);
     void setBorderImageSlices(const LengthBox&);
@@ -1148,8 +1110,6 @@ public:
         }
     }
 
-    void setMaskImage(PassRefPtr<StyleImage> v) { rareNonInheritedData.access()->m_mask.setImage(v); }
-
     void setMaskBoxImage(const NinePieceImage& b) { SET_VAR(rareNonInheritedData, m_maskBoxImage, b); }
     void setMaskBoxImageSource(PassRefPtr<StyleImage> v) { rareNonInheritedData.access()->m_maskBoxImage.setImage(v); }
     void setMaskBoxImageSlices(const LengthBox& slices)
@@ -1168,9 +1128,6 @@ public:
     {
         rareNonInheritedData.access()->m_maskBoxImage.setOutset(outset);
     }
-    void setMaskXPosition(const Length& length) { SET_VAR(rareNonInheritedData, m_mask.m_xPosition, length); }
-    void setMaskYPosition(const Length& length) { SET_VAR(rareNonInheritedData, m_mask.m_yPosition, length); }
-    void setMaskSize(const LengthSize& s) { SET_VAR(rareNonInheritedData, m_mask.m_sizeLength, s); }
 
     void setBorderCollapse(EBorderCollapse collapse) { inherited_flags._border_collapse = collapse; }
     void setHorizontalBorderSpacing(short);
@@ -1293,7 +1250,6 @@ public:
     void setOverflowWrap(EOverflowWrap b) { SET_VAR(rareInheritedData, overflowWrap, b); }
     void setLineBreak(LineBreak b) { SET_VAR(rareInheritedData, lineBreak, b); }
     void setHighlight(const AtomicString& h) { SET_VAR(rareInheritedData, highlight, h); }
-    void setHyphens(Hyphens h) { SET_VAR(rareInheritedData, hyphens, h); }
     void setHyphenationString(const AtomicString& h) { SET_VAR(rareInheritedData, hyphenationString, h); }
     void setLocale(const AtomicString& locale) { SET_VAR(rareInheritedData, locale, locale); }
     void setResize(EResize r) { SET_VAR(rareNonInheritedData, m_resize, r); }
@@ -1307,7 +1263,6 @@ public:
     void setColumnRuleColor(const StyleColor& c) { SET_BORDERVALUE_COLOR(rareNonInheritedData.access()->m_multiCol, m_rule, c); }
     void setColumnRuleStyle(EBorderStyle b) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_rule.m_style, b); }
     void setColumnRuleWidth(unsigned short w) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_rule.m_width, w); }
-    void resetColumnRule() { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_rule, BorderValue()); }
     void setColumnSpan(ColumnSpan columnSpan) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_columnSpan, columnSpan); }
     void setColumnBreakBefore(EPageBreak p) { SET_VAR(rareNonInheritedData.access()->m_multiCol, m_breakBefore, p); }
     // For valid values of column-break-inside see http://www.w3.org/TR/css3-multicol/#break-before-break-after-break-inside
@@ -1705,7 +1660,6 @@ private:
 
     void inheritUnicodeBidiFrom(const RenderStyle* parent) { noninherited_flags.unicodeBidi = parent->noninherited_flags.unicodeBidi; }
     void getShadowExtent(const ShadowList*, LayoutUnit& top, LayoutUnit& right, LayoutUnit& bottom, LayoutUnit& left) const;
-    LayoutBoxExtent getShadowInsetExtent(const ShadowList*) const;
     void getShadowHorizontalExtent(const ShadowList*, LayoutUnit& left, LayoutUnit& right) const;
     void getShadowVerticalExtent(const ShadowList*, LayoutUnit& top, LayoutUnit& bottom) const;
     void getShadowInlineDirectionExtent(const ShadowList* shadow, LayoutUnit& logicalLeft, LayoutUnit& logicalRight) const
