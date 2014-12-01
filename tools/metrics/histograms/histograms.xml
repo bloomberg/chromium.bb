@@ -38664,6 +38664,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time spent in V8 compiler (full codegen).</summary>
 </histogram>
 
+<histogram name="V8.CompileDeserialize" units="milliseconds">
+  <owner>vogelheim@chromium.org</owner>
+  <summary>Time spent deseriailzing code, used by V8 code caching.</summary>
+</histogram>
+
 <histogram name="V8.CompileEval" units="milliseconds">
   <owner>jochen@chromium.org</owner>
   <owner>yangguo@chromium.org</owner>
@@ -38676,6 +38681,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </obsolete>
   <owner>jochen@chromium.org</owner>
   <summary>Time spent compiling functions lazily on first run.</summary>
+</histogram>
+
+<histogram name="V8.CompileSerialize" units="milliseconds">
+  <owner>vogelheim@chromium.org</owner>
+  <summary>Time spent serializing code, used by V8 code caching.</summary>
 </histogram>
 
 <histogram name="V8.DeferredCodeGeneration">
