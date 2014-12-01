@@ -599,23 +599,6 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintImageEvent::data(
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintImageEvent::data(const RenderObject& owningRenderer, const StyleImage& styleImage)
-{
-    RefPtr<TracedValue> value = TracedValue::create();
-    setGeneratingNodeInfo(value.get(), &owningRenderer, "nodeId");
-    if (const ImageResource* resource = styleImage.cachedImage())
-        value->setString("url", resource->url().string());
-    return value.release();
-}
-
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintImageEvent::data(const RenderObject* owningRenderer, const ImageResource& imageResource)
-{
-    RefPtr<TracedValue> value = TracedValue::create();
-    setGeneratingNodeInfo(value.get(), owningRenderer, "nodeId");
-    value->setString("url", imageResource.url().string());
-    return value.release();
-}
-
 static size_t usedHeapSize()
 {
     HeapInfo info;

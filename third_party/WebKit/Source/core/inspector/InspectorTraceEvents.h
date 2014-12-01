@@ -22,7 +22,6 @@ class Event;
 class ExecutionContext;
 class FrameView;
 class GraphicsLayer;
-class ImageResource;
 class KURL;
 class LayoutRect;
 class LocalFrame;
@@ -34,7 +33,6 @@ class RenderObject;
 class ResourceRequest;
 class ResourceResponse;
 class StyleChangeReasonForTracing;
-class StyleImage;
 class TracedValue;
 class WorkerThread;
 class XMLHttpRequest;
@@ -212,8 +210,6 @@ public:
 class InspectorPaintImageEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderImage&);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderObject&, const StyleImage&);
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderObject*, const ImageResource&);
 };
 
 class InspectorCommitLoadEvent {
