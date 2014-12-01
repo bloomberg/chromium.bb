@@ -504,22 +504,11 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
     prefs.v8_cache_options = V8_CACHE_OPTIONS_DEFAULT;
   }
 
-  std::string streaming_experiment_group =
-      base::FieldTrialList::FindFullName("V8ScriptStreaming");
-  prefs.v8_script_streaming_enabled =
-      command_line.HasSwitch(switches::kEnableV8ScriptStreaming);
-  if (streaming_experiment_group == "Enabled") {
-    prefs.v8_script_streaming_enabled = true;
-    prefs.v8_script_streaming_mode = V8_SCRIPT_STREAMING_MODE_ALL;
-  } else if (streaming_experiment_group == "OnlyAsyncAndDefer") {
-    prefs.v8_script_streaming_enabled = true;
-    prefs.v8_script_streaming_mode =
-        V8_SCRIPT_STREAMING_MODE_ONLY_ASYNC_AND_DEFER;
-  } else if (streaming_experiment_group == "AllPlusBlockParserBlocking") {
-    prefs.v8_script_streaming_enabled = true;
-    prefs.v8_script_streaming_mode =
-        V8_SCRIPT_STREAMING_MODE_ALL_PLUS_BLOCK_PARSER_BLOCKING;
-  }
+  // TODO(marja): Clean up preferences + command line flag after streaming has
+  // launched in stable.
+  prefs.v8_script_streaming_enabled = true;
+  prefs.v8_script_streaming_mode =
+      V8_SCRIPT_STREAMING_MODE_ONLY_ASYNC_AND_DEFER;
 
   GetContentClient()->browser()->OverrideWebkitPrefs(this, url, &prefs);
   return prefs;
