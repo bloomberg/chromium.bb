@@ -159,6 +159,7 @@
         ['chromeos==1', {
           'dependencies': [
             '<(_sanitizer_type)-brltty',
+            '<(_sanitizer_type)-libva1',
           ],
         }]
       ],
@@ -691,6 +692,15 @@
           '--disable-tcl-bindings'
       ],
       'dependencies=': [],
+      'includes': ['standard_instrumented_package_target.gypi'],
+    },
+    {
+      'package_name': 'libva1',
+      'dependencies=': [],
+      # Backport a use-after-free fix:
+      # http://cgit.freedesktop.org/libva/diff/va/va.c?h=staging&id=d4988142a3f2256e38c5c5cdcdfc1b4f5f3c1ea9
+      'patch': 'patches/libva1.diff',
+      'run_before_build': 'scripts/libva1.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
   ],
