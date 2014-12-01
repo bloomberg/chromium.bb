@@ -695,4 +695,8 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
   return index < [buttons_ count] ? [buttons_ objectAtIndex:index] : nil;
 }
 
+- (ToolbarActionsBar*)toolbarActionsBar {
+  return toolbarActionsBar_.get();
+}
+
 @end

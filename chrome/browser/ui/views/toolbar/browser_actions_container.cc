@@ -727,7 +727,8 @@ void BrowserActionsContainer::ViewHierarchyChanged(
     return;
 
   if (details.is_add && details.child == this) {
-    if (!in_overflow_mode()) {  // We only need one keybinding registry.
+    if (!in_overflow_mode() &&  // We only need one keybinding registry.
+        parent()->GetFocusManager()) {  // focus manager can be null in tests.
       extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryViews(
           browser_->profile(),
           parent()->GetFocusManager(),

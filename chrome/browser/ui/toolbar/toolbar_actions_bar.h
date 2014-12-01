@@ -123,6 +123,8 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
     return platform_settings_;
   }
 
+  ToolbarActionsBarDelegate* delegate_for_test() { return delegate_; }
+
  private:
   using ToolbarActions = ScopedVector<ToolbarActionViewController>;
 

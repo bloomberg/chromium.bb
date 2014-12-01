@@ -97,6 +97,7 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 
 @interface BrowserActionsController(TestingAPI)
 - (BrowserActionButton*)buttonWithIndex:(NSUInteger)index;
+- (ToolbarActionsBar*)toolbarActionsBar;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_EXTENSIONS_BROWSER_ACTIONS_CONTROLLER_H_

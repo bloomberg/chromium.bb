@@ -9,10 +9,10 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
-#include "chrome/browser/extensions/extension_toolbar_model_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -28,10 +28,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
-#include "extensions/common/manifest_constants.h"
-#include "extensions/common/value_builder.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
@@ -101,62 +98,6 @@ content::WebContents* TestWebContentsFactory::CreateWebContents(
   DCHECK(web_contents);
   web_contents_.push_back(web_contents.release());
   return web_contents_.back();
-}
-
-// Creates a new ExtensionToolbarModel for the given |context|.
-KeyedService* BuildToolbarModel(content::BrowserContext* context) {
-  return new ExtensionToolbarModel(Profile::FromBrowserContext(context),
-                                   ExtensionPrefs::Get(context));
-}
-
-// Given a |profile|, assigns the testing keyed service function to
-// BuildToolbarModel() and uses it to create and initialize a new
-// ExtensionToolbarModel.
-// |wait_for_ready| indicates whether or not to post the ExtensionSystem's
-// ready task.
-ExtensionToolbarModel* CreateToolbarModelForProfile(Profile* profile,
-                                                    bool wait_for_ready) {
-  ExtensionToolbarModel* model = ExtensionToolbarModel::Get(profile);
-  if (model)
-    return model;
-
-  // No existing model means it's a new profile (since we, by default, don't
-  // create the ToolbarModel in testing).
-  ExtensionToolbarModelFactory::GetInstance()->SetTestingFactory(
-      profile, &BuildToolbarModel);
-  model = ExtensionToolbarModel::Get(profile);
-  if (wait_for_ready) {
-    // Fake the extension system ready signal.
-    // HACK ALERT! In production, the ready task on ExtensionSystem (and most
-    // everything else on it, too) is shared between incognito and normal
-    // profiles, but a TestExtensionSystem doesn't have the concept of "shared".
-    // Because of this, we have to set any new profile's TestExtensionSystem's
-    // ready task, too.
-    static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile))->
-        SetReady();
-    // Run tasks posted to TestExtensionSystem.
-    base::RunLoop().RunUntilIdle();
-  }
-
-  return model;
-}
-
-// Create an extension. If |action_key| is non-NULL, it should point to either
-// kBrowserAction or kPageAction, and the extension will have the associated
-// action.
-scoped_refptr<const Extension> GetActionExtension(const std::string& name,
-                                                  const char* action_key) {
-  DictionaryBuilder manifest;
-  manifest.Set("name", name)
-          .Set("description", "An extension")
-          .Set("manifest_version", 2)
-          .Set("version", "1.0.0");
-  if (action_key)
-    manifest.Set(action_key, DictionaryBuilder().Pass());
-
-  return ExtensionBuilder().SetManifest(manifest.Pass())
-                           .SetID(crx_file::id_util::GenerateId(name))
-                           .Build();
 }
 
 // A simple observer that tracks the number of times certain events occur.
@@ -308,7 +249,8 @@ class ExtensionToolbarModelUnitTest : public ExtensionServiceTestBase {
 
 void ExtensionToolbarModelUnitTest::Init() {
   InitializeEmptyExtensionService();
-  toolbar_model_ = CreateToolbarModelForProfile(profile(), true);
+  toolbar_model_ =
+      extension_action_test_util::CreateToolbarModelForProfile(profile());
   model_observer_.reset(new ExtensionToolbarModelTestObserver(toolbar_model_));
 }
 
@@ -347,11 +289,12 @@ testing::AssertionResult ExtensionToolbarModelUnitTest::RemoveExtension(
 }
 
 testing::AssertionResult ExtensionToolbarModelUnitTest::AddActionExtensions() {
-  browser_action_extension_ =
-      GetActionExtension("browser_action", manifest_keys::kBrowserAction);
-  page_action_extension_ =
-       GetActionExtension("page_action", manifest_keys::kPageAction);
-  no_action_extension_ = GetActionExtension("no_action", NULL);
+  browser_action_extension_ = extension_action_test_util::CreateActionExtension(
+      "browser_action", extension_action_test_util::BROWSER_ACTION);
+  page_action_extension_ = extension_action_test_util::CreateActionExtension(
+      "page_action", extension_action_test_util::PAGE_ACTION);
+  no_action_extension_ = extension_action_test_util::CreateActionExtension(
+      "no_action", extension_action_test_util::NO_ACTION);
 
   ExtensionList extensions;
   extensions.push_back(browser_action_extension_);
@@ -363,12 +306,12 @@ testing::AssertionResult ExtensionToolbarModelUnitTest::AddActionExtensions() {
 
 testing::AssertionResult
 ExtensionToolbarModelUnitTest::AddBrowserActionExtensions() {
-  browser_action_a_ =
-      GetActionExtension("browser_actionA", manifest_keys::kBrowserAction);
-  browser_action_b_ =
-      GetActionExtension("browser_actionB", manifest_keys::kBrowserAction);
-  browser_action_c_ =
-      GetActionExtension("browser_actionC", manifest_keys::kBrowserAction);
+  browser_action_a_ = extension_action_test_util::CreateActionExtension(
+      "browser_actionA", extension_action_test_util::BROWSER_ACTION);
+  browser_action_b_ = extension_action_test_util::CreateActionExtension(
+      "browser_actionB", extension_action_test_util::BROWSER_ACTION);
+  browser_action_c_ = extension_action_test_util::CreateActionExtension(
+      "browser_actionC", extension_action_test_util::BROWSER_ACTION);
 
   ExtensionList extensions;
   extensions.push_back(browser_action_a_);
@@ -408,7 +351,8 @@ TEST_F(ExtensionToolbarModelUnitTest, BasicExtensionToolbarModelTest) {
 
   // Load an extension with no browser action.
   scoped_refptr<const Extension> extension1 =
-      GetActionExtension("no_action", NULL);
+      extension_action_test_util::CreateActionExtension(
+          "no_action", extension_action_test_util::NO_ACTION);
   ASSERT_TRUE(AddExtension(extension1));
 
   // This extension should not be in the model (has no browser action).
@@ -418,7 +362,8 @@ TEST_F(ExtensionToolbarModelUnitTest, BasicExtensionToolbarModelTest) {
 
   // Load an extension with a browser action.
   scoped_refptr<const Extension> extension2 =
-      GetActionExtension("browser_action", manifest_keys::kBrowserAction);
+      extension_action_test_util::CreateActionExtension(
+          "browser_action", extension_action_test_util::BROWSER_ACTION);
   ASSERT_TRUE(AddExtension(extension2));
 
   // We should now find our extension in the model.
@@ -896,7 +841,8 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarIncognitoModeTest) {
 
   // Get an incognito profile and toolbar.
   ExtensionToolbarModel* incognito_model =
-      CreateToolbarModelForProfile(profile()->GetOffTheRecordProfile(), true);
+      extension_action_test_util::CreateToolbarModelForProfile(
+          profile()->GetOffTheRecordProfile());
 
   ExtensionToolbarModelTestObserver incognito_observer(incognito_model);
   EXPECT_EQ(0u, incognito_observer.moved_count());
@@ -1001,7 +947,8 @@ TEST_F(ExtensionToolbarModelUnitTest,
 
   // Get an incognito profile and toolbar.
   ExtensionToolbarModel* incognito_model =
-      CreateToolbarModelForProfile(profile()->GetOffTheRecordProfile(), true);
+      extension_action_test_util::CreateToolbarModelForProfile(
+          profile()->GetOffTheRecordProfile());
   ExtensionToolbarModelTestObserver incognito_observer(incognito_model);
 
   // Right now, no extensions are enabled in incognito mode.
@@ -1289,7 +1236,8 @@ TEST_F(ExtensionToolbarModelUnitTest, ToolbarActionsPopOutToAct) {
 TEST_F(ExtensionToolbarModelUnitTest, ModelWaitsForExtensionSystemReady) {
   InitializeEmptyExtensionService();
   ExtensionToolbarModel* toolbar_model =
-       CreateToolbarModelForProfile(profile(), false);
+       extension_action_test_util::
+           CreateToolbarModelForProfileWithoutWaitingForReady(profile());
   ExtensionToolbarModelTestObserver model_observer(toolbar_model);
   EXPECT_TRUE(AddBrowserActionExtensions());
 
