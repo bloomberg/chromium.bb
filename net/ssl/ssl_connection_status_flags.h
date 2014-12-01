@@ -13,7 +13,6 @@ namespace net {
 // Status flags for SSLInfo::connection_status.
 enum {
   // The lower 16 bits are reserved for the TLS ciphersuite id.
-  SSL_CONNECTION_CIPHERSUITE_SHIFT = 0,
   SSL_CONNECTION_CIPHERSUITE_MASK = 0xffff,
 
   // The next two bits are reserved for the compression used.
@@ -53,9 +52,8 @@ enum {
 COMPILE_ASSERT(SSL_CONNECTION_VERSION_MAX - 1 <= SSL_CONNECTION_VERSION_MASK,
                SSL_CONNECTION_VERSION_MASK_too_small);
 
-inline int SSLConnectionStatusToCipherSuite(int connection_status) {
-  return (connection_status >> SSL_CONNECTION_CIPHERSUITE_SHIFT) &
-         SSL_CONNECTION_CIPHERSUITE_MASK;
+inline uint16 SSLConnectionStatusToCipherSuite(int connection_status) {
+  return static_cast<uint16>(connection_status);
 }
 
 inline int SSLConnectionStatusToVersion(int connection_status) {
@@ -63,14 +61,12 @@ inline int SSLConnectionStatusToVersion(int connection_status) {
          SSL_CONNECTION_VERSION_MASK;
 }
 
-inline void SSLConnectionStatusSetCipherSuite(int cipher_suite,
+inline void SSLConnectionStatusSetCipherSuite(uint16 cipher_suite,
                                               int* connection_status) {
   // Clear out the old ciphersuite.
-  *connection_status &=
-      ~(SSL_CONNECTION_CIPHERSUITE_MASK << SSL_CONNECTION_CIPHERSUITE_SHIFT);
+  *connection_status &= ~SSL_CONNECTION_CIPHERSUITE_MASK;
   // Set the new ciphersuite.
-  *connection_status |= ((cipher_suite & SSL_CONNECTION_CIPHERSUITE_MASK)
-                         << SSL_CONNECTION_CIPHERSUITE_SHIFT);
+  *connection_status |= cipher_suite;
 }
 
 inline void SSLConnectionStatusSetVersion(int version, int* connection_status) {

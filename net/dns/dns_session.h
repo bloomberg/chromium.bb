@@ -66,7 +66,7 @@ class NET_EXPORT_PRIVATE DnsSession
   NetLog* net_log() const { return net_log_; }
 
   // Return the next random query ID.
-  int NextQueryId() const;
+  uint16 NextQueryId() const;
 
   // Return the index of the first configured server to use on first attempt.
   unsigned NextFirstServerIndex();

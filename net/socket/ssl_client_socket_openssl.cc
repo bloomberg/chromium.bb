@@ -81,11 +81,10 @@ unsigned long SSL_CIPHER_get_id(const SSL_CIPHER* cipher) { return cipher->id; }
 #endif
 
 // Used for encoding the |connection_status| field of an SSLInfo object.
-int EncodeSSLConnectionStatus(int cipher_suite,
+int EncodeSSLConnectionStatus(uint16 cipher_suite,
                               int compression,
                               int version) {
-  return ((cipher_suite & SSL_CONNECTION_CIPHERSUITE_MASK) <<
-          SSL_CONNECTION_CIPHERSUITE_SHIFT) |
+  return cipher_suite |
          ((compression & SSL_CONNECTION_COMPRESSION_MASK) <<
           SSL_CONNECTION_COMPRESSION_SHIFT) |
          ((version & SSL_CONNECTION_VERSION_MASK) <<
@@ -625,7 +624,7 @@ bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->security_bits = SSL_CIPHER_get_bits(cipher, NULL);
 
   ssl_info->connection_status = EncodeSSLConnectionStatus(
-      SSL_CIPHER_get_id(cipher), 0 /* no compression */,
+      static_cast<uint16>(SSL_CIPHER_get_id(cipher)), 0 /* no compression */,
       GetNetSSLVersion(ssl_));
 
   if (!SSL_get_secure_renegotiation_support(ssl_))
@@ -788,7 +787,7 @@ int SSLClientSocketOpenSSL::Init() {
   // appended to the cipher removal |command|.
   for (size_t i = 0; i < sk_SSL_CIPHER_num(ciphers); ++i) {
     const SSL_CIPHER* cipher = sk_SSL_CIPHER_value(ciphers, i);
-    const uint16 id = SSL_CIPHER_get_id(cipher);
+    const uint16 id = static_cast<uint16>(SSL_CIPHER_get_id(cipher));
     // Remove any ciphers with a strength of less than 80 bits. Note the NSS
     // implementation uses "effective" bits here but OpenSSL does not provide
     // this detail. This only impacts Triple DES: reports 112 vs. 168 bits,

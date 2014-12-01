@@ -8,6 +8,7 @@
 #include "base/debug/trace_event.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "crypto/sha2.h"
@@ -517,10 +518,12 @@ std::string CRLSetStorage::Serialize(const CRLSet* crl_set) {
   }
 
   std::string ret;
-  char* out = WriteInto(&ret, len + 1 /* to include final NUL */);
+  uint8_t* out = reinterpret_cast<uint8_t*>(
+      WriteInto(&ret, len + 1 /* to include final NUL */));
   size_t off = 0;
-  out[off++] = header.size();
-  out[off++] = header.size() >> 8;
+  CHECK(base::IsValueInRangeForNumericType<uint16>(header.size()));
+  out[off++] = static_cast<uint8_t>(header.size());
+  out[off++] = static_cast<uint8_t>(header.size() >> 8);
   memcpy(out + off, header.data(), header.size());
   off += header.size();
 
@@ -534,7 +537,8 @@ std::string CRLSetStorage::Serialize(const CRLSet* crl_set) {
 
     for (std::vector<std::string>::const_iterator j = i->second.begin();
          j != i->second.end(); ++j) {
-      out[off++] = j->size();
+      CHECK(base::IsValueInRangeForNumericType<uint8_t>(j->size()));
+      out[off++] = static_cast<uint8_t>(j->size());
       memcpy(out + off, j->data(), j->size());
       off += j->size();
     }

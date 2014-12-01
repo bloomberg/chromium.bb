@@ -15,13 +15,13 @@ TEST(SSLConnectionStatusTest, SetCipherSuite) {
   int expected_version = SSLConnectionStatusToVersion(connection_status);
 
   SSLConnectionStatusSetCipherSuite(12345, &connection_status);
-  EXPECT_EQ(12345, SSLConnectionStatusToCipherSuite(connection_status));
+  EXPECT_EQ(12345U, SSLConnectionStatusToCipherSuite(connection_status));
   EXPECT_EQ(expected_version, SSLConnectionStatusToVersion(connection_status));
 }
 
 TEST(SSLConnectionStatusTest, SetVersion) {
   int connection_status = 0xDEADBEEF;
-  int expected_cipher_suite =
+  uint16 expected_cipher_suite =
       SSLConnectionStatusToCipherSuite(connection_status);
 
   SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_2,

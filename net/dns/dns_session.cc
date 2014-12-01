@@ -39,7 +39,9 @@ struct DnsSession::ServerStats {
     : last_failure_count(0), rtt_estimate(rtt_estimate_param) {
     rtt_histogram.reset(new base::SampleVector(buckets));
     // Seed histogram with 2 samples at |rtt_estimate| timeout.
-    rtt_histogram->Accumulate(rtt_estimate.InMilliseconds(), 2);
+    rtt_histogram->Accumulate(
+        static_cast<base::HistogramBase::Sample>(rtt_estimate.InMilliseconds()),
+        2);
   }
 
   // Count of consecutive failures after last success.
@@ -100,7 +102,9 @@ DnsSession::~DnsSession() {
   RecordServerStats();
 }
 
-int DnsSession::NextQueryId() const { return rand_callback_.Run(); }
+uint16 DnsSession::NextQueryId() const {
+  return static_cast<uint16>(rand_callback_.Run());
+}
 
 unsigned DnsSession::NextFirstServerIndex() {
   unsigned index = NextGoodServerIndex(server_index_);
@@ -182,8 +186,8 @@ void DnsSession::RecordRTT(unsigned server_index, base::TimeDelta rtt) {
   deviation += (abs_error - deviation) / 4;  // * delta
 
   // Histogram-based method.
-  server_stats_[server_index]->rtt_histogram
-      ->Accumulate(rtt.InMilliseconds(), 1);
+  server_stats_[server_index]->rtt_histogram->Accumulate(
+      static_cast<base::HistogramBase::Sample>(rtt.InMilliseconds()), 1);
 }
 
 void DnsSession::RecordLostPacket(unsigned server_index, int attempt) {

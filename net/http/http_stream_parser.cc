@@ -25,7 +25,7 @@ namespace net {
 
 namespace {
 
-const size_t kMaxMergedHeaderAndBodySize = 1400;
+const uint64 kMaxMergedHeaderAndBodySize = 1400;
 const size_t kRequestBodyBufferSize = 1 << 14;  // 16KB
 
 std::string GetResponseHeaderLines(const HttpResponseHeaders& headers) {
@@ -59,12 +59,12 @@ bool HeadersContainMultipleCopiesOfField(const HttpResponseHeaders& headers,
   return false;
 }
 
-base::Value* NetLogSendRequestBodyCallback(int length,
+base::Value* NetLogSendRequestBodyCallback(uint64 length,
                                            bool is_chunked,
                                            bool did_merge,
                                            NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->SetInteger("length", length);
+  dict->SetInteger("length", static_cast<int>(length));
   dict->SetBoolean("is_chunked", is_chunked);
   dict->SetBoolean("did_merge", did_merge);
   return dict;
@@ -253,8 +253,8 @@ int HttpStreamParser::SendRequest(const std::string& request_line,
   // single write.
   bool did_merge = false;
   if (ShouldMergeRequestHeadersAndBody(request, request_->upload_data_stream)) {
-    size_t merged_size =
-        request_headers_length_ + request_->upload_data_stream->size();
+    int merged_size = static_cast<int>(
+        request_headers_length_ + request_->upload_data_stream->size());
     scoped_refptr<IOBuffer> merged_request_headers_and_body(
         new IOBuffer(merged_size));
     // We'll repurpose |request_headers_| to store the merged headers and
@@ -265,10 +265,10 @@ int HttpStreamParser::SendRequest(const std::string& request_line,
     memcpy(request_headers_->data(), request.data(), request_headers_length_);
     request_headers_->DidConsume(request_headers_length_);
 
-    size_t todo = request_->upload_data_stream->size();
+    uint64 todo = request_->upload_data_stream->size();
     while (todo) {
-      int consumed = request_->upload_data_stream
-          ->Read(request_headers_.get(), todo, CompletionCallback());
+      int consumed = request_->upload_data_stream->Read(
+          request_headers_.get(), static_cast<int>(todo), CompletionCallback());
       DCHECK_GT(consumed, 0);  // Read() won't fail if not chunked.
       request_headers_->DidConsume(consumed);
       todo -= consumed;
@@ -1059,7 +1059,7 @@ bool HttpStreamParser::ShouldMergeRequestHeadersAndBody(
       // IsInMemory() ensures that the request body is not chunked.
       request_body->IsInMemory() &&
       request_body->size() > 0) {
-    size_t merged_size = request_headers.size() + request_body->size();
+    uint64 merged_size = request_headers.size() + request_body->size();
     if (merged_size <= kMaxMergedHeaderAndBodySize)
       return true;
   }

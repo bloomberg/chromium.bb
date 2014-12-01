@@ -2473,10 +2473,7 @@ void SSLClientSocketNSS::Core::UpdateConnectionStatus() {
   if (ok == SECSuccess &&
       channel_info.length == sizeof(channel_info) &&
       channel_info.cipherSuite) {
-    nss_handshake_state_.ssl_connection_status |=
-        (static_cast<int>(channel_info.cipherSuite) &
-         SSL_CONNECTION_CIPHERSUITE_MASK) <<
-        SSL_CONNECTION_CIPHERSUITE_SHIFT;
+    nss_handshake_state_.ssl_connection_status |= channel_info.cipherSuite;
 
     nss_handshake_state_.ssl_connection_status |=
         (static_cast<int>(channel_info.compressionMethod) &

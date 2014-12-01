@@ -53,9 +53,9 @@ bool URLRequestSimpleJob::ReadRawData(IOBuffer* buf, int buf_size,
           "422489 URLRequestSimpleJob::ReadRawData"));
 
   DCHECK(bytes_read);
-  int remaining = byte_range_.last_byte_position() - data_offset_ + 1;
-  if (buf_size > remaining)
-    buf_size = remaining;
+  buf_size = static_cast<int>(std::min(
+      static_cast<int64>(buf_size),
+      byte_range_.last_byte_position() - data_offset_ + 1));
   memcpy(buf->data(), data_->front() + data_offset_, buf_size);
   data_offset_ += buf_size;
   *bytes_read = buf_size;
@@ -138,9 +138,8 @@ void URLRequestSimpleJob::OnGetDataCompleted(int result) {
     }
 
     data_offset_ = byte_range_.first_byte_position();
-    int remaining_bytes = byte_range_.last_byte_position() -
-        byte_range_.first_byte_position() + 1;
-    set_expected_content_size(remaining_bytes);
+    set_expected_content_size(
+        byte_range_.last_byte_position() - data_offset_ + 1);
     NotifyHeadersComplete();
   } else {
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));

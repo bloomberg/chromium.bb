@@ -264,7 +264,7 @@ std::string TransportSecurityState::CanonicalizeHost(const std::string& host) {
       break;
 
     for (size_t j = 0; j < label_length; ++j) {
-      new_host[i + 1 + j] = tolower(new_host[i + 1 + j]);
+      new_host[i + 1 + j] = static_cast<char>(tolower(new_host[i + 1 + j]));
     }
   }
 

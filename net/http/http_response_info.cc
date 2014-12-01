@@ -343,7 +343,7 @@ void HttpResponseInfo::Persist(Pickle* pickle,
            ssl_info.signed_certificate_timestamps.begin(); it !=
            ssl_info.signed_certificate_timestamps.end(); ++it) {
         it->sct->Persist(pickle);
-        pickle->WriteUInt16(it->status);
+        pickle->WriteUInt16(static_cast<uint16>(it->status));
       }
     }
   }

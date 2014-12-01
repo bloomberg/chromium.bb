@@ -258,9 +258,9 @@ void CheckSSLInfo(const SSLInfo& ssl_info) {
   EXPECT_GT(ssl_info.security_bits, 0);
 
   // The cipher suite TLS_NULL_WITH_NULL_NULL (0) must not be negotiated.
-  int cipher_suite = SSLConnectionStatusToCipherSuite(
+  uint16 cipher_suite = SSLConnectionStatusToCipherSuite(
       ssl_info.connection_status);
-  EXPECT_NE(0, cipher_suite);
+  EXPECT_NE(0U, cipher_suite);
 }
 
 void CheckFullRequestHeaders(const HttpRequestHeaders& headers,
@@ -3763,7 +3763,7 @@ TEST_F(URLRequestTestHTTP, MAYBE_GetTest_ManyCookies) {
     ASSERT_LT(upper_bound, 1000000);
   }
 
-  int tolerance = upper_bound * 0.005;
+  int tolerance = static_cast<int>(upper_bound * 0.005);
   if (tolerance < 2)
     tolerance = 2;
 
@@ -4969,8 +4969,10 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
 
     base::RunLoop().Run();
 
-    int64 size = 0;
-    ASSERT_EQ(true, base::GetFileSize(path, &size));
+    int64 size64 = 0;
+    ASSERT_EQ(true, base::GetFileSize(path, &size64));
+    ASSERT_LE(size64, std::numeric_limits<int>::max());
+    int size = static_cast<int>(size64);
     scoped_ptr<char[]> buf(new char[size]);
 
     ASSERT_EQ(size, base::ReadFile(path, buf.get(), size));

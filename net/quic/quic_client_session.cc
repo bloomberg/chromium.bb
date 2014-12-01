@@ -451,7 +451,7 @@ bool QuicClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
   // Report the TLS cipher suite that most closely resembles the crypto
   // parameters of the QUIC connection.
   QuicTag aead = crypto_stream_->crypto_negotiated_params().aead;
-  int cipher_suite;
+  uint16 cipher_suite;
   int security_bits;
   switch (aead) {
     case kAESG:
@@ -467,9 +467,7 @@ bool QuicClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
       return false;
   }
   int ssl_connection_status = 0;
-  ssl_connection_status |=
-      (cipher_suite & SSL_CONNECTION_CIPHERSUITE_MASK) <<
-       SSL_CONNECTION_CIPHERSUITE_SHIFT;
+  ssl_connection_status |= cipher_suite;
   ssl_connection_status |=
       (SSL_CONNECTION_VERSION_QUIC & SSL_CONNECTION_VERSION_MASK) <<
        SSL_CONNECTION_VERSION_SHIFT;

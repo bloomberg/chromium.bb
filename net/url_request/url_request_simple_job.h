@@ -66,7 +66,7 @@ class NET_EXPORT URLRequestSimpleJob : public URLRangeRequestJob {
   std::string mime_type_;
   std::string charset_;
   scoped_refptr<base::RefCountedMemory> data_;
-  int data_offset_;
+  int64 data_offset_;
   base::WeakPtrFactory<URLRequestSimpleJob> weak_factory_;
 };
 

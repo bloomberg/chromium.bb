@@ -392,8 +392,10 @@ class DnsTCPAttempt : public DnsAttempt {
     if (rv < 0)
       return rv;
 
-    base::WriteBigEndian<uint16>(length_buffer_->data(),
-                                 query_->io_buffer()->size());
+    uint16 query_size = static_cast<uint16>(query_->io_buffer()->size());
+    if (static_cast<int>(query_size) != query_->io_buffer()->size())
+      return ERR_FAILED;
+    base::WriteBigEndian<uint16>(length_buffer_->data(), query_size);
     buffer_ =
         new DrainableIOBuffer(length_buffer_.get(), length_buffer_->size());
     next_state_ = STATE_SEND_LENGTH;
