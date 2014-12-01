@@ -18,7 +18,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
+#include "cc/resources/shared_bitmap.h"
 #include "content/child/child_process.h"
+#include "content/child/child_shared_bitmap_manager.h"
 #include "content/child/npapi/npobject_proxy.h"
 #include "content/child/npapi/npobject_stub.h"
 #include "content/child/npapi/npobject_util.h"
@@ -496,12 +498,12 @@ void WebPluginDelegateProxy::OnChannelError() {
 #endif
 }
 
-static void CopyTransportDIBHandleForMessage(
-    const TransportDIB::Handle& handle_in,
-    TransportDIB::Handle* handle_out,
+static void CopySharedMemoryHandleForMessage(
+    const base::SharedMemoryHandle& handle_in,
+    base::SharedMemoryHandle* handle_out,
     base::ProcessId peer_pid) {
-#if defined(OS_MACOSX)
-  // On Mac, TransportDIB::Handle is typedef'ed to FileDescriptor, and
+#if defined(OS_POSIX)
+  // On POSIX, base::ShardMemoryHandle is typedef'ed to FileDescriptor, and
   // FileDescriptor message fields needs to remain valid until the message is
   // sent or else the sendmsg() call will fail.
   if ((handle_out->fd = HANDLE_EINTR(dup(handle_in.fd))) < 0) {
@@ -516,8 +518,7 @@ static void CopyTransportDIBHandleForMessage(
                         FILE_MAP_READ | FILE_MAP_WRITE, 0);
   DCHECK(*handle_out != NULL);
 #else
-  // Don't need to do anything special for other platforms.
-  *handle_out = handle_in;
+#error Shared memory copy not implemented.
 #endif
 }
 
@@ -529,8 +530,8 @@ void WebPluginDelegateProxy::SendUpdateGeometry(
   PluginMsg_UpdateGeometry_Param param;
   param.window_rect = plugin_rect_;
   param.clip_rect = clip_rect_;
-  param.windowless_buffer0 = TransportDIB::DefaultHandleValue();
-  param.windowless_buffer1 = TransportDIB::DefaultHandleValue();
+  param.windowless_buffer0 = base::SharedMemory::NULLHandle();
+  param.windowless_buffer1 = base::SharedMemory::NULLHandle();
   param.windowless_buffer_index = back_buffer_index();
 
 #if defined(OS_POSIX)
@@ -540,15 +541,15 @@ void WebPluginDelegateProxy::SendUpdateGeometry(
   if (bitmaps_changed)
 #endif
   {
-    if (transport_stores_[0].dib)
-      CopyTransportDIBHandleForMessage(transport_stores_[0].dib->handle(),
-                                       &param.windowless_buffer0,
-                                       channel_host_->peer_pid());
+    if (transport_stores_[0].bitmap)
+      CopySharedMemoryHandleForMessage(
+          transport_stores_[0].bitmap->memory()->handle(),
+          &param.windowless_buffer0, channel_host_->peer_pid());
 
-    if (transport_stores_[1].dib)
-      CopyTransportDIBHandleForMessage(transport_stores_[1].dib->handle(),
-                                       &param.windowless_buffer1,
-                                       channel_host_->peer_pid());
+    if (transport_stores_[1].bitmap)
+      CopySharedMemoryHandleForMessage(
+          transport_stores_[1].bitmap->memory()->handle(),
+          &param.windowless_buffer1, channel_host_->peer_pid());
   }
 
   IPC::Message* msg;
@@ -594,9 +595,9 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
       // asynchronously.
       ResetWindowlessBitmaps();
       if (!window_rect.IsEmpty()) {
-        if (!CreateSharedBitmap(&transport_stores_[0].dib,
+        if (!CreateSharedBitmap(&transport_stores_[0].bitmap,
                                 &transport_stores_[0].canvas) ||
-            !CreateSharedBitmap(&transport_stores_[1].dib,
+            !CreateSharedBitmap(&transport_stores_[1].bitmap,
                                 &transport_stores_[1].canvas)) {
           DCHECK(false);
           ResetWindowlessBitmaps();
@@ -610,8 +611,8 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
 }
 
 void WebPluginDelegateProxy::ResetWindowlessBitmaps() {
-  transport_stores_[0].dib.reset();
-  transport_stores_[1].dib.reset();
+  transport_stores_[0].bitmap.reset();
+  transport_stores_[1].bitmap.reset();
 
   transport_stores_[0].canvas.reset();
   transport_stores_[1].canvas.reset();
@@ -641,28 +642,23 @@ bool WebPluginDelegateProxy::CreateLocalBitmap(
 #endif
 
 bool WebPluginDelegateProxy::CreateSharedBitmap(
-    scoped_ptr<TransportDIB>* memory,
+    scoped_ptr<cc::SharedBitmap>* memory,
     scoped_ptr<skia::PlatformCanvas>* canvas) {
-  const size_t size = BitmapSizeForPluginRect(plugin_rect_);
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  memory->reset(TransportDIB::Create(size, 0));
+  *memory =
+      ChildThread::current()->shared_bitmap_manager()->AllocateSharedBitmap(
+          plugin_rect_.size());
   if (!memory->get())
     return false;
-#endif
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
-  TransportDIB::Handle handle;
-  IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(size, false, &handle);
-  if (!RenderThreadImpl::current()->Send(msg))
-    return false;
-  if (handle.fd < 0)
-    return false;
-  memory->reset(TransportDIB::Map(handle));
+  DCHECK((*memory)->memory());
+#if defined(OS_POSIX)
+  canvas->reset(skia::CreatePlatformCanvas(
+      plugin_rect_.width(), plugin_rect_.height(), true, (*memory)->pixels(),
+      skia::RETURN_NULL_ON_FAILURE));
 #else
-  static uint32 sequence_number = 0;
-  memory->reset(TransportDIB::Create(size, sequence_number++));
+  canvas->reset(skia::CreatePlatformCanvas(
+      plugin_rect_.width(), plugin_rect_.height(), true,
+      (*memory)->memory()->handle(), skia::RETURN_NULL_ON_FAILURE));
 #endif
-  canvas->reset((*memory)->GetPlatformCanvas(plugin_rect_.width(),
-                                             plugin_rect_.height()));
   return !!canvas->get();
 }
 
@@ -721,7 +717,7 @@ void WebPluginDelegateProxy::Paint(SkCanvas* canvas,
   if (invalidate_pending_) {
     // Only send the PaintAck message if this paint is in response to an
     // invalidate from the plugin, since this message acts as an access token
-    // to ensure only one process is using the transport dib at a time.
+    // to ensure only one process is using the shared bitmap at a time.
     invalidate_pending_ = false;
     Send(new PluginMsg_DidPaint(instance_id_));
   }
@@ -1023,12 +1019,12 @@ void WebPluginDelegateProxy::CopyFromBackBufferToFrontBuffer(
   const size_t stride =
       skia::PlatformCanvasStrideForWidth(plugin_rect_.width());
   const size_t chunk_size = 4 * rect.width();
-  DCHECK(back_buffer_dib() != NULL);
-  uint8* source_data = static_cast<uint8*>(back_buffer_dib()->memory()) +
-                       rect.y() * stride + 4 * rect.x();
-  DCHECK(front_buffer_dib() != NULL);
-  uint8* target_data = static_cast<uint8*>(front_buffer_dib()->memory()) +
-                       rect.y() * stride + 4 * rect.x();
+  DCHECK(back_buffer_bitmap() != NULL);
+  uint8* source_data =
+      back_buffer_bitmap()->pixels() + rect.y() * stride + 4 * rect.x();
+  DCHECK(front_buffer_bitmap() != NULL);
+  uint8* target_data =
+      front_buffer_bitmap()->pixels() + rect.y() * stride + 4 * rect.x();
   for (int row = 0; row < rect.height(); ++row) {
     memcpy(target_data, source_data, chunk_size);
     source_data += stride;

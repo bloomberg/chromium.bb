@@ -19,7 +19,6 @@
 #include "ipc/ipc_sender.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
-#include "ui/surface/transport_dib.h"
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)
@@ -33,6 +32,10 @@ class SkBitmap;
 
 namespace base {
 class WaitableEvent;
+}
+
+namespace cc {
+class SharedBitmap;
 }
 
 namespace content {
@@ -155,7 +158,7 @@ class WebPluginDelegateProxy
     SharedBitmap();
     ~SharedBitmap();
 
-    scoped_ptr<TransportDIB> dib;
+    scoped_ptr<cc::SharedBitmap> bitmap;
     scoped_ptr<SkCanvas> canvas;
   };
 
@@ -229,12 +232,12 @@ class WebPluginDelegateProxy
     return transport_stores_[back_buffer_index()].canvas.get();
   }
 
-  TransportDIB* front_buffer_dib() const {
-    return transport_stores_[front_buffer_index()].dib.get();
+  cc::SharedBitmap* front_buffer_bitmap() const {
+    return transport_stores_[front_buffer_index()].bitmap.get();
   }
 
-  TransportDIB* back_buffer_dib() const {
-    return transport_stores_[back_buffer_index()].dib.get();
+  cc::SharedBitmap* back_buffer_bitmap() const {
+    return transport_stores_[back_buffer_index()].bitmap.get();
   }
 
 #if !defined(OS_WIN)
@@ -245,7 +248,7 @@ class WebPluginDelegateProxy
 #endif
 
   // Creates a shared memory section and canvas.
-  bool CreateSharedBitmap(scoped_ptr<TransportDIB>* memory,
+  bool CreateSharedBitmap(scoped_ptr<cc::SharedBitmap>* memory,
                           scoped_ptr<SkCanvas>* canvas);
 
   // Called for cleanup during plugin destruction. Normally right before the
