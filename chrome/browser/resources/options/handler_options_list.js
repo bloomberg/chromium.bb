@@ -188,7 +188,7 @@ cr.define('options', function() {
         this.appendChild(indicator);
       }
 
-      if (data.registered_by_user) {
+      if (data.is_default_handler_set_by_user) {
         // Remove link.
         var removeElement = document.createElement('div');
         removeElement.textContent =
