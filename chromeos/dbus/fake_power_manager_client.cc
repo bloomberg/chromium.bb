@@ -38,11 +38,6 @@ bool FakePowerManagerClient::HasObserver(const Observer* observer) const {
   return false;
 }
 
-void FakePowerManagerClient::SetRenderProcessManagerDelegate(
-    base::WeakPtr<RenderProcessManagerDelegate> delegate) {
-  render_process_manager_delegate_ = delegate;
-}
-
 void FakePowerManagerClient::DecreaseScreenBrightness(bool allow_off) {
 }
 
@@ -108,14 +103,9 @@ int FakePowerManagerClient::GetNumPendingSuspendReadinessCallbacks() {
 
 void FakePowerManagerClient::SendSuspendImminent() {
   FOR_EACH_OBSERVER(Observer, observers_, SuspendImminent());
-  if (render_process_manager_delegate_)
-    render_process_manager_delegate_->SuspendImminent();
 }
 
 void FakePowerManagerClient::SendSuspendDone() {
-  if (render_process_manager_delegate_)
-    render_process_manager_delegate_->SuspendDone();
-
   FOR_EACH_OBSERVER(Observer, observers_, SuspendDone(base::TimeDelta()));
 }
 

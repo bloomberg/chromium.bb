@@ -38,8 +38,6 @@ class FakePowerManagerClient : public PowerManagerClient {
   virtual void AddObserver(Observer* observer) override;
   virtual void RemoveObserver(Observer* observer) override;
   virtual bool HasObserver(const Observer* observer) const override;
-  virtual void SetRenderProcessManagerDelegate(
-      base::WeakPtr<RenderProcessManagerDelegate> delegate) override;
   virtual void DecreaseScreenBrightness(bool allow_off) override;
   virtual void IncreaseScreenBrightness() override;
   virtual void SetScreenBrightnessPercent(
@@ -91,9 +89,6 @@ class FakePowerManagerClient : public PowerManagerClient {
 
   // Last projecting state set in SetIsProjecting().
   bool is_projecting_;
-
-  // Delegate for managing power consumption of Chrome's renderer processes.
-  base::WeakPtr<RenderProcessManagerDelegate> render_process_manager_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePowerManagerClient);
 };
