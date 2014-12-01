@@ -445,6 +445,36 @@ TEST_F(AlternateProtocolServerPropertiesTest, Canonical) {
   EXPECT_EQ(".c.youtube.com", impl_.GetCanonicalSuffix(canonical_port_pair));
 }
 
+TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBelowThreshold) {
+  impl_.SetAlternateProtocolProbabilityThreshold(0.02);
+
+  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
+  HostPortPair canonical_port_pair("bar.c.youtube.com", 80);
+  AlternateProtocolInfo canonical_protocol(1234, QUIC, 0.01);
+
+  impl_.SetAlternateProtocol(canonical_port_pair,
+                             canonical_protocol.port,
+                             canonical_protocol.protocol,
+                             canonical_protocol.probability);
+  EXPECT_FALSE(impl_.HasAlternateProtocol(canonical_port_pair));
+  EXPECT_FALSE(impl_.HasAlternateProtocol(test_host_port_pair));
+}
+
+TEST_F(AlternateProtocolServerPropertiesTest, CanonicalAboveThreshold) {
+  impl_.SetAlternateProtocolProbabilityThreshold(0.02);
+
+  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
+  HostPortPair canonical_port_pair("bar.c.youtube.com", 80);
+  AlternateProtocolInfo canonical_protocol(1234, QUIC, 0.03);
+
+  impl_.SetAlternateProtocol(canonical_port_pair,
+                             canonical_protocol.port,
+                             canonical_protocol.protocol,
+                             canonical_protocol.probability);
+  EXPECT_TRUE(impl_.HasAlternateProtocol(canonical_port_pair));
+  EXPECT_TRUE(impl_.HasAlternateProtocol(test_host_port_pair));
+}
+
 TEST_F(AlternateProtocolServerPropertiesTest, ClearCanonical) {
   HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
   HostPortPair canonical_port_pair("bar.c.youtube.com", 80);

@@ -204,12 +204,16 @@ bool HttpServerPropertiesImpl::HasAlternateProtocol(
   if (g_forced_alternate_protocol)
     return true;
   AlternateProtocolMap::const_iterator it = alternate_protocol_map_.Get(server);
-  if (it != alternate_protocol_map_.end() &&
-      it->second.probability >= alternate_protocol_probability_threshold_) {
-    return true;
+  if (it != alternate_protocol_map_.end())
+    return it->second.probability >= alternate_protocol_probability_threshold_;
+
+  auto canonical = GetCanonicalHost(server);
+  if (canonical == canonical_host_to_origin_map_.end() ||
+      canonical->second.Equals(server)) {
+    return false;
   }
 
-  return GetCanonicalHost(server) != canonical_host_to_origin_map_.end();
+  return HasAlternateProtocol(canonical->second);
 }
 
 std::string HttpServerPropertiesImpl::GetCanonicalSuffix(
