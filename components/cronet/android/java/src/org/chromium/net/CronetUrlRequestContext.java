@@ -76,6 +76,16 @@ public class CronetUrlRequestContext extends UrlRequestContext  {
         mUrlRequestContextAdapter = 0;
     }
 
+    @Override
+    public void startNetLogToFile(String fileName) {
+        nativeStartNetLogToFile(mUrlRequestContextAdapter, fileName);
+    }
+
+    @Override
+    public void stopNetLog() {
+        nativeStopNetLog(mUrlRequestContextAdapter);
+    }
+
     /**
      * Mark request as started to prevent shutdown when there are active
      * requests.

@@ -82,10 +82,11 @@ public class ChromiumUrlRequestContext {
     }
 
     /**
-     * Starts NetLog logging to a file named |fileName| in the
-     * application temporary directory. |fileName| must not be empty. Log level
-     * is LOG_ALL_BUT_BYTES. If the file exists it is truncated before starting.
-     * If actively logging the call is ignored.
+     * Starts NetLog logging to a file. The NetLog log level used is
+     * LOG_ALL_BUT_BYTES.
+     * @param fileName The complete file path. It must not be empty. If file
+     *            exists, it is truncated before starting. If actively logging,
+     *            this method is ignored.
      */
     public void startNetLogToFile(String fileName) {
         nativeStartNetLogToFile(mChromiumUrlRequestContextAdapter, fileName);
@@ -93,7 +94,7 @@ public class ChromiumUrlRequestContext {
 
     /**
      * Stops NetLog logging and flushes file to disk. If a logging session is
-     * not in progress this call is ignored.
+     * not in progress, this call is ignored.
      */
     public void stopNetLog() {
         nativeStopNetLog(mChromiumUrlRequestContextAdapter);

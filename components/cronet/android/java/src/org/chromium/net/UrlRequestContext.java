@@ -56,6 +56,21 @@ public abstract class UrlRequestContext {
     public abstract void shutdown();
 
     /**
+     * Starts NetLog logging to a file. The NetLog log level used is
+     * LOG_ALL_BUT_BYTES.
+     * @param fileName The complete file path. It must not be empty. If file
+     *            exists, it is truncated before starting. If actively logging,
+     *            this method is ignored.
+     */
+    public abstract void startNetLogToFile(String fileName);
+
+    /**
+     * Stops NetLog logging and flushes file to disk. If a logging session is
+     * not in progress, this call is ignored.
+     */
+    public abstract void stopNetLog();
+
+    /**
      * Create context with given config. If config.legacyMode is true, or
      * native library is not available, then creates HttpUrlConnection-based
      * context.
