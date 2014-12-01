@@ -46,7 +46,7 @@
 // Note: Widevine is not available on platforms using components because
 // RegisterPepperCdm() cannot set the codecs.
 // TODO(ddorwin): Enable these tests after we have the ability to use the CUS
-// in these tests. See http://crbug.com/311724.
+// in these tests. See http://crbug.com/356833.
 #if defined(WIDEVINE_CDM_AVAILABLE) && !defined(WIDEVINE_CDM_IS_COMPONENT)
 #define EXPECT_WV EXPECT_TRUE
 #define EXPECT_WVMP4 EXPECT_TRUE
@@ -216,8 +216,12 @@ class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
 #else
     pepper_plugin.append(pepper_type_for_key_system);
 #endif
+// TODO(sandersd): A component CDM registered this way declares support for
+// audio codecs, but not the other codecs we expect. http://crbug.com/356833.
+#if !defined(WIDEVINE_CDM_IS_COMPONENT)
     command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
                                      pepper_plugin);
+#endif
   }
 
   void LoadTestPage() {
@@ -849,11 +853,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaIsTypeSupportedWidevineTest,
                        Widevine_Basic) {
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
-  EXPECT_TRUE(IsConcreteSupportedKeySystem(kWidevineAlpha));
-#else
   EXPECT_WV(IsConcreteSupportedKeySystem(kWidevineAlpha));
-#endif
   EXPECT_WV(IsSupportedKeySystemWithMediaMimeType(
       "video/webm", no_codecs(), kWidevineAlpha));
 }
