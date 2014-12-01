@@ -97,11 +97,6 @@ class CHROMEOS_EXPORT ProxyResolutionServiceProvider
  private:
   explicit ProxyResolutionServiceProvider(ProxyResolverInterface *resovler);
 
-  // Creates the instance for testing. Takes the ownership of |resovler|
-  friend class ProxyResolutionServiceProviderTest;
-  static ProxyResolutionServiceProvider* CreateForTesting(
-      ProxyResolverInterface* resolver);
-
   // Called from ExportedObject, when ResolveProxyHandler() is exported as
   // a D-Bus method, or failed to be exported.
   void OnExported(const std::string& interface_name,

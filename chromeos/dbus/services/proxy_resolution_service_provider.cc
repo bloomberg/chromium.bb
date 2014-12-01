@@ -270,12 +270,6 @@ ProxyResolutionServiceProvider* ProxyResolutionServiceProvider::Create(
       new ProxyResolverImpl(delegate.Pass()));
 }
 
-ProxyResolutionServiceProvider*
-ProxyResolutionServiceProvider::CreateForTesting(
-    ProxyResolverInterface* resolver) {
-  return new ProxyResolutionServiceProvider(resolver);
-}
-
 ProxyResolverInterface::~ProxyResolverInterface() {
 }
 
