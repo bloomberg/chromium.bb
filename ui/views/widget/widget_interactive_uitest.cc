@@ -24,7 +24,6 @@
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
-#include "ui/wm/core/default_screen_position_client.h"
 #include "ui/wm/public/activation_client.h"
 
 #if defined(OS_WIN)
@@ -765,7 +764,6 @@ TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
   views_delegate().set_use_desktop_native_widgets(true);
 #endif  // !defined(OS_WIN)
 
-  wm::DefaultScreenPositionClient screen_position_client;
   Widget widget;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -782,10 +780,6 @@ TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
   textfield->RequestFocus();
   textfield->SelectAll(true);
   TextfieldTestApi textfield_test_api(textfield);
-#if defined(USE_AURA)
-  aura::client::SetScreenPositionClient(widget.GetNativeView()->GetRootWindow(),
-                                        &screen_position_client);
-#endif  // !defined(USE_AURA)
 
   RunPendingMessages();
 
@@ -798,8 +792,6 @@ TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
   EXPECT_TRUE(widget.IsActive());
   EXPECT_TRUE(IsQuickMenuVisible(static_cast<TouchSelectionControllerImpl*>(
       textfield_test_api.touch_selection_controller())));
-  aura::client::SetScreenPositionClient(widget.GetNativeView()->GetRootWindow(),
-                                        nullptr);
 }
 
 TEST_F(WidgetTestInteractive, DisableViewDoesNotActivateWidget) {

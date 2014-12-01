@@ -22,7 +22,6 @@
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 #include "ui/views/views_touch_selection_controller_factory.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/default_screen_position_client.h"
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
@@ -77,7 +76,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
 
   void SetUp() override {
     ViewsTestBase::SetUp();
-    SetUpRootWindowClients(GetContext());
+    test_cursor_client_.reset(new aura::test::TestCursorClient(GetContext()));
   }
 
   void TearDown() override {
@@ -277,19 +276,9 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
   Textfield* textfield_;
   scoped_ptr<TextfieldTestApi> textfield_test_api_;
   scoped_ptr<ViewsTouchSelectionControllerFactory> views_tsc_factory_;
-  scoped_ptr<wm::DefaultScreenPositionClient> screen_position_client_;
   scoped_ptr<aura::test::TestCursorClient> test_cursor_client_;
 
  private:
-  void SetUpRootWindowClients(aura::Window* root_window) {
-    if (!screen_position_client_) {
-      screen_position_client_.reset(new wm::DefaultScreenPositionClient());
-      aura::client::SetScreenPositionClient(root_window,
-                                            screen_position_client_.get());
-      test_cursor_client_.reset(new aura::test::TestCursorClient(root_window));
-    }
-  }
-
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionControllerImplTest);
 };
 
