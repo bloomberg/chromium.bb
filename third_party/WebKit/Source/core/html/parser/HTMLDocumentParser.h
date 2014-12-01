@@ -200,6 +200,7 @@ private:
     bool m_isPinnedToMainThread;
     bool m_endWasDelayed;
     bool m_haveBackgroundParser;
+    bool m_tasksWereSuspended;
     unsigned m_pumpSessionNestingLevel;
     unsigned m_pumpSpeculationsSessionNestingLevel;
 };

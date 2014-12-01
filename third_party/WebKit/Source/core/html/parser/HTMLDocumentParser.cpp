@@ -116,6 +116,7 @@ HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, bool reportErrors
     , m_isPinnedToMainThread(false)
     , m_endWasDelayed(false)
     , m_haveBackgroundParser(false)
+    , m_tasksWereSuspended(false)
     , m_pumpSessionNestingLevel(0)
     , m_pumpSpeculationsSessionNestingLevel(0)
 {
@@ -135,6 +136,7 @@ HTMLDocumentParser::HTMLDocumentParser(DocumentFragment* fragment, Element* cont
     , m_isPinnedToMainThread(true)
     , m_endWasDelayed(false)
     , m_haveBackgroundParser(false)
+    , m_tasksWereSuspended(false)
     , m_pumpSessionNestingLevel(0)
     , m_pumpSpeculationsSessionNestingLevel(0)
 {
@@ -329,7 +331,9 @@ void HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser(PassOwnPtr<Pa
     // alert(), runModalDialog, and the JavaScript Debugger all run nested event loops
     // which can cause this method to be re-entered. We detect re-entry using
     // hasActiveParser(), save the chunk as a speculation, and return.
-    if (isWaitingForScripts() || !m_speculations.isEmpty() || document()->activeParserCount() > 0) {
+    if (isWaitingForScripts() || !m_speculations.isEmpty() || document()->activeParserCount() > 0 || m_tasksWereSuspended || isScheduledForResume()) {
+        if (m_tasksWereSuspended)
+            m_parserScheduler->forceResumeAfterYield();
         m_preloader->takeAndPreload(chunk->preloads);
         m_speculations.append(chunk);
         return;
@@ -1012,12 +1016,16 @@ void HTMLDocumentParser::parseDocumentFragment(const String& source, DocumentFra
 
 void HTMLDocumentParser::suspendScheduledTasks()
 {
+    ASSERT(!m_tasksWereSuspended);
+    m_tasksWereSuspended = true;
     if (m_parserScheduler)
         m_parserScheduler->suspend();
 }
 
 void HTMLDocumentParser::resumeScheduledTasks()
 {
+    ASSERT(m_tasksWereSuspended);
+    m_tasksWereSuspended = false;
     if (m_parserScheduler)
         m_parserScheduler->resume();
 }

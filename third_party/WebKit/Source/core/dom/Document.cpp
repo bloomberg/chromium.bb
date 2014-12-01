@@ -545,6 +545,12 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     // m_fetcher.
     m_styleEngine = StyleEngine::create(*this);
 
+    // The parent's parser should be suspended together with all the other objects,
+    // else this new Document would have a new ExecutionContext which suspended state
+    // would not match the one from the parent, and could start loading resources
+    // ignoring the defersLoading flag.
+    ASSERT(!parentDocument() || !parentDocument()->activeDOMObjectsAreSuspended());
+
 #ifndef NDEBUG
     liveDocumentSet().add(this);
 #endif

@@ -43,13 +43,6 @@ ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion)
             // showing anything modal, to prevent spoofs while the modal window or sheet is visible.
             page->deprecatedLocalMainFrame()->loader().notifyIfInitialDocumentAccessed();
         }
-
-        // This code is not logically part of load deferring, but we do not want JS code executed
-        // beneath modal windows or sheets, which is exactly when ScopedPageLoadDeferrer is used.
-        for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-            if (frame->isLocalFrame())
-                toLocalFrame(frame)->document()->suspendScheduledTasks();
-        }
     }
 
     size_t count = m_deferredFrames.size();
@@ -62,14 +55,8 @@ ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion)
 void ScopedPageLoadDeferrer::detach()
 {
     for (size_t i = 0; i < m_deferredFrames.size(); ++i) {
-        if (Page* page = m_deferredFrames[i]->page()) {
+        if (Page* page = m_deferredFrames[i]->page())
             page->setDefersLoading(false);
-
-            for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
-                if (frame->isLocalFrame())
-                    toLocalFrame(frame)->document()->resumeScheduledTasks();
-            }
-        }
     }
 }
 

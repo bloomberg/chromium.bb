@@ -166,6 +166,13 @@ void FrameLoader::setDefersLoading(bool defers)
     if (m_policyDocumentLoader)
         m_policyDocumentLoader->setDefersLoading(defers);
 
+    if (Document* document = m_frame->document()) {
+        if (defers)
+            document->suspendScheduledTasks();
+        else
+            document->resumeScheduledTasks();
+    }
+
     if (!defers) {
         if (m_deferredHistoryLoad.isValid()) {
             loadHistoryItem(m_deferredHistoryLoad.m_item.get(), FrameLoadTypeBackForward,

@@ -100,6 +100,7 @@ void HTMLParserScheduler::continueNextChunkTimerFired(Timer<HTMLParserScheduler>
 
 void HTMLParserScheduler::scheduleForResume()
 {
+    ASSERT(!m_isSuspendedWithActiveTimer);
     m_continueNextChunkTimer.startOneShot(0, FROM_HERE);
 }
 
@@ -153,6 +154,12 @@ bool HTMLParserScheduler::yieldIfNeeded(const SpeculationsPumpSession& session, 
     }
 
     return false;
+}
+
+void HTMLParserScheduler::forceResumeAfterYield()
+{
+    ASSERT(!m_continueNextChunkTimer.isActive());
+    m_isSuspendedWithActiveTimer = true;
 }
 
 }

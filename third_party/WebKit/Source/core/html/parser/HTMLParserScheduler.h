@@ -81,6 +81,15 @@ public:
     void scheduleForResume();
     bool yieldIfNeeded(const SpeculationsPumpSession&, bool startingScript);
 
+    /**
+     * Can only be called if this scheduler is suspended. If this is called,
+     * then after the scheduler is resumed by calling resume(), this call
+     * ensures that HTMLDocumentParser::resumeAfterYield will be called. Used to
+     * signal this scheduler that the background html parser sent chunks to
+     * HTMLDocumentParser while it was suspended.
+     */
+    void forceResumeAfterYield();
+
     void suspend();
     void resume();
 

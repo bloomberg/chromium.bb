@@ -87,12 +87,14 @@ bool ExecutionContext::hasPendingActivity()
 
 void ExecutionContext::suspendActiveDOMObjects()
 {
+    ASSERT(!m_activeDOMObjectsAreSuspended);
     lifecycleNotifier().notifySuspendingActiveDOMObjects();
     m_activeDOMObjectsAreSuspended = true;
 }
 
 void ExecutionContext::resumeActiveDOMObjects()
 {
+    ASSERT(m_activeDOMObjectsAreSuspended);
     m_activeDOMObjectsAreSuspended = false;
     lifecycleNotifier().notifyResumingActiveDOMObjects();
 }
