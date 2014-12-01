@@ -68,8 +68,8 @@ enum Precedence {
   kPrecedenceAnd,
   kPrecedenceCompare,
   kPrecedenceAdd,
-  kPrecedenceSuffix,
   kPrecedenceUnary,
+  kPrecedenceSuffix,
 };
 
 int CountLines(const std::string& str) {
@@ -178,15 +178,23 @@ class Printer {
   }
 
   struct IndentState {
-    IndentState() : margin(0), continuation_requires_indent(false) {}
-    IndentState(int margin, bool continuation_requires_indent)
+    IndentState()
+        : margin(0),
+          continuation_requires_indent(false),
+          parent_is_boolean_or(false) {}
+    IndentState(int margin,
+                bool continuation_requires_indent,
+                bool parent_is_boolean_or)
         : margin(margin),
-          continuation_requires_indent(continuation_requires_indent) {}
+          continuation_requires_indent(continuation_requires_indent),
+          parent_is_boolean_or(parent_is_boolean_or) {}
 
     // The left margin (number of spaces).
     int margin;
 
     bool continuation_requires_indent;
+
+    bool parent_is_boolean_or;
   };
   // Stack used to track
   std::vector<IndentState> stack_;
@@ -239,7 +247,7 @@ void Printer::Newline() {
     // Save the margin, and temporarily set it to where the first comment
     // starts so that multiple suffix comments are vertically aligned. This
     // will need to be fancier once we enforce 80 col.
-    stack_.push_back(IndentState(CurrentColumn(), false));
+    stack_.push_back(IndentState(CurrentColumn(), false, false));
     int i = 0;
     for (const auto& c : comments_) {
       if (i > 0) {
@@ -413,8 +421,26 @@ int Printer::Expr(const ParseNode* root,
   } else if (const BinaryOpNode* binop = root->AsBinaryOp()) {
     CHECK(precedence_.find(binop->op().value()) != precedence_.end());
     AnnotatePreferedMultilineAssignment(binop);
+
     Precedence prec = precedence_[binop->op().value()];
-    AddParen(prec, outer_prec, &parenthesized);
+
+    // Since binary operators format left-to-right, it is ok for the left side
+    // use the same operator without parentheses, so the left uses prec. For the
+    // same reason, the right side cannot reuse the same operator, or else "x +
+    // (y + z)" would format as "x + y + z" which means "(x + y) + z". So, treat
+    // the right expression as appearing one precedence level higher.
+    // However, because the source parens are not in the parse tree, as a
+    // special case for && and || we insert strictly-redundant-but-helpful-for-
+    // human-readers parentheses.
+    int prec_left = prec;
+    int prec_right = prec + 1;
+    if (binop->op().value() == "&&" && stack_.back().parent_is_boolean_or) {
+      Print("(");
+      parenthesized = true;
+    } else {
+      AddParen(prec_left, outer_prec, &parenthesized);
+    }
+
     int start_line = CurrentLine();
     int start_column = CurrentColumn();
     bool is_assignment = binop->op().value() == "=" ||
@@ -434,11 +460,12 @@ int Printer::Expr(const ParseNode* root,
     if (stack_.back().continuation_requires_indent)
       indent_column += kIndentSize * 2;
 
-    stack_.push_back(IndentState(indent_column, false));
+    stack_.push_back(
+        IndentState(indent_column, false, binop->op().value() == "||"));
     Printer sub_left;
     InitializeSub(&sub_left);
     sub_left.Expr(binop->left(),
-                  prec,
+                  prec_left,
                   std::string(" ") + binop->op().value().as_string());
     bool left_is_multiline = CountLines(sub_left.String()) > 1;
     // Avoid walking the whole left redundantly times (see timing of Format.046)
@@ -453,7 +480,7 @@ int Printer::Expr(const ParseNode* root,
     InitializeSub(&sub1);
     sub1.Print(" ");
     int penalty_current_line =
-        sub1.Expr(binop->right(), prec + 1, std::string());
+        sub1.Expr(binop->right(), prec_right, std::string());
     sub1.Print(suffix);
     penalty_current_line += AssessPenalty(sub1.String());
     if (!is_assignment && left_is_multiline) {
@@ -467,19 +494,20 @@ int Printer::Expr(const ParseNode* root,
     Printer sub2;
     InitializeSub(&sub2);
     sub2.Newline();
-    int penalty_next_line = sub2.Expr(binop->right(), prec + 1, std::string());
+    int penalty_next_line =
+        sub2.Expr(binop->right(), prec_right, std::string());
     sub2.Print(suffix);
     penalty_next_line += AssessPenalty(sub2.String());
 
     if (penalty_current_line < penalty_next_line) {
       Print(" ");
-      Expr(binop->right(), prec + 1, std::string());
+      Expr(binop->right(), prec_right, std::string());
     } else {
       // Otherwise, put first argument and op, and indent next.
       Newline();
       penalty += std::abs(CurrentColumn() - start_column) *
                  kPenaltyHorizontalSeparation;
-      Expr(binop->right(), prec + 1, std::string());
+      Expr(binop->right(), prec_right, std::string());
     }
     stack_.pop_back();
     penalty += (CurrentLine() - start_line) * GetPenaltyForLineBreak();
@@ -570,8 +598,9 @@ void Printer::Sequence(SequenceStyle style,
     CHECK(!list[0]->comments() || list[0]->comments()->after().empty());
     Print(" ");
   } else {
-    stack_.push_back(
-        IndentState(margin() + kIndentSize, style == kSequenceStyleList));
+    stack_.push_back(IndentState(margin() + kIndentSize,
+                                 style == kSequenceStyleList,
+                                 false));
     size_t i = 0;
     for (const auto& x : list) {
       Newline();
@@ -660,7 +689,7 @@ int Printer::FunctionCall(const FunctionCallNode* func_call,
   // 1: Same line.
   Printer sub1;
   InitializeSub(&sub1);
-  sub1.stack_.push_back(IndentState(CurrentColumn(), true));
+  sub1.stack_.push_back(IndentState(CurrentColumn(), true, false));
   int penalty_one_line = 0;
   for (size_t i = 0; i < list.size(); ++i) {
     penalty_one_line += sub1.Expr(list[i], kPrecedenceLowest,
@@ -677,7 +706,7 @@ int Printer::FunctionCall(const FunctionCallNode* func_call,
   // 2: Starting on same line, broken at commas.
   Printer sub2;
   InitializeSub(&sub2);
-  sub2.stack_.push_back(IndentState(CurrentColumn(), true));
+  sub2.stack_.push_back(IndentState(CurrentColumn(), true, false));
   int penalty_multiline_start_same_line = 0;
   for (size_t i = 0; i < list.size(); ++i) {
     penalty_multiline_start_same_line += sub2.Expr(
@@ -692,7 +721,7 @@ int Printer::FunctionCall(const FunctionCallNode* func_call,
   // 3: Starting on next line, broken at commas.
   Printer sub3;
   InitializeSub(&sub3);
-  sub3.stack_.push_back(IndentState(margin() + kIndentSize * 2, true));
+  sub3.stack_.push_back(IndentState(margin() + kIndentSize * 2, true, false));
   sub3.Newline();
   int penalty_multiline_start_next_line = 0;
   for (size_t i = 0; i < list.size(); ++i) {
@@ -728,10 +757,10 @@ int Printer::FunctionCall(const FunctionCallNode* func_call,
     // No elements, and not forcing newlines, print nothing.
   } else {
     if (penalty_multiline_start_next_line < penalty_multiline_start_same_line) {
-      stack_.push_back(IndentState(margin() + kIndentSize * 2, true));
+      stack_.push_back(IndentState(margin() + kIndentSize * 2, true, false));
       Newline();
     } else {
-      stack_.push_back(IndentState(CurrentColumn(), true));
+      stack_.push_back(IndentState(CurrentColumn(), true, false));
     }
 
     for (size_t i = 0; i < list.size(); ++i) {
