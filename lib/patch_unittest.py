@@ -440,6 +440,8 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
                       git1, cid1, [], 'CQ-DEPENDS=1')
     self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
                       git1, cid1, [], 'CQ_DEPEND=1')
+    self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
+                      git1, cid1, [], ' CQ-DEPEND=1')
 
 
 class TestApplyAgainstManifest(GitRepoPatchTestCase,
