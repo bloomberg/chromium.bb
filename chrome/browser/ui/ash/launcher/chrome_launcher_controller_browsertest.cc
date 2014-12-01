@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/settings_window_manager.h"
@@ -60,6 +61,7 @@
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
 
@@ -220,10 +222,8 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
         service->GetExtensionById(last_loaded_extension_id(), false);
     EXPECT_TRUE(extension);
 
-    OpenApplication(AppLaunchParams(profile(),
-                                    extension,
-                                    container,
-                                    disposition));
+    OpenApplication(AppLaunchParams(profile(), extension, container,
+                                    disposition, extensions::SOURCE_UNTRACKED));
     return extension;
   }
 
@@ -2078,10 +2078,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, V1AppNavigation) {
 
   // Create a windowed application.
   AppLaunchParams params(
-      profile(),
-      controller_->GetExtensionForAppID(extensions::kWebStoreAppId),
-      0,
-      chrome::HOST_DESKTOP_TYPE_ASH);
+      profile(), controller_->GetExtensionForAppID(extensions::kWebStoreAppId),
+      CURRENT_TAB, chrome::HOST_DESKTOP_TYPE_ASH, extensions::SOURCE_UNTRACKED);
   params.container = extensions::LAUNCH_CONTAINER_WINDOW;
   OpenApplication(params);
   EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(id)->status);

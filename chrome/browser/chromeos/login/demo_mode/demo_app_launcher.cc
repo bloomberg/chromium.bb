@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -22,6 +23,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -92,8 +94,9 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
                                 false,
                                 chromeos::network_handler::ErrorCallback());
 
-  OpenApplication(AppLaunchParams(
-      profile, extension, extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW));
+  OpenApplication(
+      AppLaunchParams(profile, extension, extensions::LAUNCH_CONTAINER_WINDOW,
+                      NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
   InitAppSession(profile, extension_id);
 
   user_manager::UserManager::Get()->SessionStarted();

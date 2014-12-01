@@ -69,6 +69,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
@@ -2435,10 +2437,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
   // Launch an app that tries to open a fullscreen window.
   TestAddAppWindowObserver add_window_observer(
       extensions::AppWindowRegistry::Get(browser()->profile()));
-  OpenApplication(AppLaunchParams(browser()->profile(),
-                                  extension,
-                                  extensions::LAUNCH_CONTAINER_NONE,
-                                  NEW_WINDOW));
+  OpenApplication(AppLaunchParams(browser()->profile(), extension,
+                                  extensions::LAUNCH_CONTAINER_NONE, NEW_WINDOW,
+                                  extensions::SOURCE_UNTRACKED));
   extensions::AppWindow* window = add_window_observer.WaitForAppWindow();
   ASSERT_TRUE(window);
 

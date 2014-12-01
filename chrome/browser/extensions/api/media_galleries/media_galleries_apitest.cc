@@ -21,12 +21,15 @@
 #include "chrome/browser/media_galleries/media_galleries_scan_result_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
 #include "chrome/browser/media_galleries/media_scan_manager.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/result_catcher.h"
 #include "media/base/test_data_util.h"
@@ -470,10 +473,9 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppPpapiTest, SendFilesystem) {
   ASSERT_TRUE(extension);
 
   extensions::ResultCatcher catcher;
-  AppLaunchParams params(browser()->profile(),
-                         extension,
-                         extensions::LAUNCH_CONTAINER_NONE,
-                         NEW_WINDOW);
+  AppLaunchParams params(browser()->profile(), extension,
+                         extensions::LAUNCH_CONTAINER_NONE, NEW_WINDOW,
+                         extensions::SOURCE_UNTRACKED);
   params.command_line = *CommandLine::ForCurrentProcess();
   OpenApplication(params);
 

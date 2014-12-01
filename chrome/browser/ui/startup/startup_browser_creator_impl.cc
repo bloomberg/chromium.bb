@@ -57,6 +57,7 @@
 #include "chrome/browser/ui/browser_tabrestore.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/startup/autolaunch_prompt.h"
@@ -336,7 +337,8 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     if (extension) {
       RecordCmdLineAppHistogram(extensions::Manifest::TYPE_PLATFORM_APP);
       AppLaunchParams params(profile, extension,
-                             extensions::LAUNCH_CONTAINER_NONE, NEW_WINDOW);
+                             extensions::LAUNCH_CONTAINER_NONE, NEW_WINDOW,
+                             extensions::SOURCE_COMMAND_LINE);
       params.command_line = command_line_;
       params.current_directory = cur_dir_;
       // If we are being launched from the command line, default to native
@@ -424,9 +426,9 @@ bool StartupBrowserCreatorImpl::OpenApplicationTab(Profile* profile) {
 
   RecordCmdLineAppHistogram(extension->GetType());
 
-  WebContents* app_tab = OpenApplication(AppLaunchParams(
-      profile, extension, extensions::LAUNCH_CONTAINER_TAB,
-      NEW_FOREGROUND_TAB));
+  WebContents* app_tab = OpenApplication(
+      AppLaunchParams(profile, extension, extensions::LAUNCH_CONTAINER_TAB,
+                      NEW_FOREGROUND_TAB, extensions::SOURCE_COMMAND_LINE));
   return (app_tab != NULL);
 }
 
@@ -460,7 +462,8 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
 
     RecordCmdLineAppHistogram(extension->GetType());
 
-    AppLaunchParams params(profile, extension, launch_container, NEW_WINDOW);
+    AppLaunchParams params(profile, extension, launch_container, NEW_WINDOW,
+                           extensions::SOURCE_COMMAND_LINE);
     params.command_line = command_line_;
     params.current_directory = cur_dir_;
     WebContents* tab_in_app_window = OpenApplication(params);

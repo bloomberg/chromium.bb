@@ -25,10 +25,15 @@ namespace app.runtime {
     command_line,
     file_handler,
     url_handler,
-
     system_tray,
     about_page,
-    keyboard
+    keyboard,
+    extensions_page,
+    management_api,
+    ephemeral_app,
+    background,
+    kiosk,
+    chrome_internal
   };
 
   // Optional data for the launch. Either <code>items</code>, or

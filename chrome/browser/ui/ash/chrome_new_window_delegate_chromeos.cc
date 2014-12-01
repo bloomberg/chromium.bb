@@ -12,12 +12,15 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
+#include "ui/base/window_open_disposition.h"
 
 ChromeNewWindowDelegateChromeos::ChromeNewWindowDelegateChromeos() {}
 ChromeNewWindowDelegateChromeos::~ChromeNewWindowDelegateChromeos() {}
@@ -35,12 +38,9 @@ void ChromeNewWindowDelegateChromeos::OpenFileManager() {
 
   const extensions::Extension* const extension =
       service->GetInstalledExtension(kFileManagerAppId);
-  // event_flags = 0 means this invokes the same behavior as the launcher
-  // item is clicked without any keyboard modifiers.
-  OpenApplication(AppLaunchParams(profile,
-                                  extension,
-                                  0 /* event_flags */,
-                                  chrome::HOST_DESKTOP_TYPE_ASH));
+  OpenApplication(AppLaunchParams(profile, extension, CURRENT_TAB,
+                                  chrome::HOST_DESKTOP_TYPE_ASH,
+                                  extensions::SOURCE_CHROME_INTERNAL));
 }
 
 void ChromeNewWindowDelegateChromeos::OpenCrosh() {

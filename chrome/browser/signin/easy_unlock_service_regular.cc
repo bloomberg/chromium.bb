@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_toggle_flow.h"
 #include "chrome/browser/signin/screenlock_bridge.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -21,6 +22,7 @@
 #include "components/proximity_auth/switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/constants.h"
 
 #if defined(OS_CHROMEOS)
 #include "apps/app_lifetime_monitor_factory.h"
@@ -135,8 +137,9 @@ void EasyUnlockServiceRegular::OpenSetupApp() {
   const extensions::Extension* extension =
       service->GetExtensionById(extension_misc::kEasyUnlockAppId, false);
 
-  OpenApplication(AppLaunchParams(
-      profile(), extension, extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW));
+  OpenApplication(
+      AppLaunchParams(profile(), extension, extensions::LAUNCH_CONTAINER_WINDOW,
+                      NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
 }
 
 const base::DictionaryValue* EasyUnlockServiceRegular::GetPermitAccess() const {

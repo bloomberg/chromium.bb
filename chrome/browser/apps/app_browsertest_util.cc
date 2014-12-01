@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
@@ -19,6 +20,7 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 
@@ -112,8 +114,9 @@ const Extension* PlatformAppBrowserTest::InstallAndLaunchPlatformApp(
 }
 
 void PlatformAppBrowserTest::LaunchPlatformApp(const Extension* extension) {
-  OpenApplication(AppLaunchParams(
-      browser()->profile(), extension, LAUNCH_CONTAINER_NONE, NEW_WINDOW));
+  OpenApplication(AppLaunchParams(browser()->profile(), extension,
+                                  LAUNCH_CONTAINER_NONE, NEW_WINDOW,
+                                  extensions::SOURCE_UNTRACKED));
 }
 
 WebContents* PlatformAppBrowserTest::GetFirstAppWindowWebContents() {

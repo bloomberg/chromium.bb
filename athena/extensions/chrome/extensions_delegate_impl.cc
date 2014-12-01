@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "extensions/browser/extension_registry.h"
@@ -19,6 +20,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extension_urls.h"
 #include "net/base/url_util.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace athena {
 namespace {
@@ -58,11 +60,9 @@ class ChromeExtensionsDelegate : public ExtensionsDelegate {
     if (!extensions::util::IsAppLaunchableWithoutEnabling(app_id, context))
       return false;
 
-    int event_flags = 0;
-    AppLaunchParams params(Profile::FromBrowserContext(context),
-                           extension,
-                           event_flags,
-                           chrome::HOST_DESKTOP_TYPE_ASH);
+    AppLaunchParams params(Profile::FromBrowserContext(context), extension,
+                           CURRENT_TAB, chrome::HOST_DESKTOP_TYPE_ASH,
+                           extensions::SOURCE_APP_LAUNCHER);
     // TODO(oshima): rename HOST_DESTOP_TYPE_ASH to non native desktop.
 
     if (app_id == extensions::kWebStoreAppId) {
