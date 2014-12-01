@@ -96,6 +96,11 @@ DEFAULT_BLACKLIST = (
 )
 
 
+# A class to use to communicate with the server by default. Can be changed by
+# 'set_storage_api_class'. Default is IsolateServer.
+_storage_api_cls = None
+
+
 class Error(Exception):
   """Generic runtime error."""
   pass
@@ -1009,11 +1014,7 @@ class IsolateServer(StorageApi):
     source_url = self.get_fetch_url(digest)
     logging.debug('download_file(%s, %d)', source_url, offset)
 
-    connection = net.url_open(
-        source_url,
-        read_timeout=DOWNLOAD_READ_TIMEOUT,
-        headers={'Range': 'bytes=%d-' % offset} if offset else None)
-
+    connection = self.do_fetch(source_url, offset)
     if not connection:
       raise IOError('Request failed - %s' % source_url)
 
@@ -1072,19 +1073,9 @@ class IsolateServer(StorageApi):
     # This push operation may be a retry after failed finalization call below,
     # no need to reupload contents in that case.
     if not push_state.uploaded:
-      # A cheezy way to avoid memcpy of (possibly huge) file, until streaming
-      # upload support is implemented.
-      if isinstance(content, list) and len(content) == 1:
-        content = content[0]
-      else:
-        content = ''.join(content)
       # PUT file to |upload_url|.
-      response = net.url_read(
-          url=push_state.upload_url,
-          data=content,
-          content_type='application/octet-stream',
-          method='PUT')
-      if response is None:
+      success = self.do_push(push_state.upload_url, content)
+      if not success:
         raise IOError('Failed to upload a file %s to %s' % (
             item.digest, push_state.upload_url))
       push_state.uploaded = True
@@ -1098,7 +1089,7 @@ class IsolateServer(StorageApi):
       # send it to isolated server. That way isolate server can verify that
       # the data safely reached Google Storage (GS provides MD5 and CRC32C of
       # stored files).
-      # TODO(maruel): Fix the server to accept propery data={} so
+      # TODO(maruel): Fix the server to accept properly data={} so
       # url_read_json() can be used.
       response = net.url_read(
           url=push_state.finalize_url,
@@ -1154,6 +1145,50 @@ class IsolateServer(StorageApi):
     logging.info('Queried %d files, %d cache hit',
         len(items), len(items) - len(missing_items))
     return missing_items
+
+  def do_fetch(self, url, offset):
+    """Fetches isolated data from the URL.
+
+    Used only for fetching files, not for API calls. Can be overridden in
+    subclasses.
+
+    Args:
+      url: URL to fetch the data from, can possibly return http redirect.
+      offset: byte offset inside the file to start fetching from.
+
+    Returns:
+      net.HttpResponse compatible object, with 'read' and 'get_header' calls.
+    """
+    return net.url_open(
+        url,
+        read_timeout=DOWNLOAD_READ_TIMEOUT,
+        headers={'Range': 'bytes=%d-' % offset} if offset else None)
+
+  def do_push(self, url, content):
+    """Uploads isolated file to the URL.
+
+    Used only for storing files, not for API calls. Can be overridden in
+    subclasses.
+
+    Args:
+      url: URL to upload the data to.
+      content: an iterable that yields 'str' chunks.
+
+    Returns:
+      True on success, False on failure.
+    """
+    # A cheezy way to avoid memcpy of (possibly huge) file, until streaming
+    # upload support is implemented.
+    if isinstance(content, list) and len(content) == 1:
+      content = content[0]
+    else:
+      content = ''.join(content)
+    response = net.url_read(
+          url=url,
+          data=content,
+          content_type='application/octet-stream',
+          method='PUT')
+    return response is not None
 
 
 class FileSystem(StorageApi):
@@ -1710,6 +1745,14 @@ class IsolatedBundle(object):
       self.relative_cwd = node.data['relative_cwd']
 
 
+def set_storage_api_class(cls):
+  """Replaces StorageApi implementation used by default."""
+  global _storage_api_cls
+  assert _storage_api_cls is None
+  assert issubclass(cls, StorageApi)
+  _storage_api_cls = cls
+
+
 def get_storage_api(file_or_url, namespace):
   """Returns an object that implements low-level StorageApi interface.
 
@@ -1728,7 +1771,8 @@ def get_storage_api(file_or_url, namespace):
     Instance of StorageApi subclass.
   """
   if file_path.is_url(file_or_url):
-    return IsolateServer(file_or_url, namespace)
+    cls = _storage_api_cls or IsolateServer
+    return cls(file_or_url, namespace)
   else:
     return FileSystem(file_or_url, namespace)
 
