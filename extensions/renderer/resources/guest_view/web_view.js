@@ -9,9 +9,6 @@
 var DocumentNatives = requireNative('document_natives');
 var GuestView = require('guestView').GuestView;
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
-var GuestViewInternal =
-    require('binding').Binding.create('guestViewInternal').generate();
-var GuestViewInternalNatives = requireNative('guest_view_internal');
 var IdGenerator = requireNative('id_generator');
 var WebViewConstants = require('webViewConstants').WebViewConstants;
 var WebViewEvents = require('webViewEvents').WebViewEvents;
@@ -223,10 +220,9 @@ WebViewImpl.prototype.createGuest = function() {
       WebViewConstants.ATTRIBUTE_PARTITION].getValue()
   };
 
-  this.guest.create(params,
-                    function() {
-                      this.attachWindow();
-                    }.bind(this));
+  this.guest.create(params, function() {
+    this.attachWindow();
+  }.bind(this));
 };
 
 WebViewImpl.prototype.onFrameNameChanged = function(name) {
@@ -301,7 +297,7 @@ WebViewImpl.prototype.attachWindow = function(guestInstanceId) {
   // attached to this webview, and the current one will get destroyed.
   if (guestInstanceId) {
     if (this.guest.getId() == guestInstanceId) {
-      return;
+      return true;
     }
     this.guest.destroy();
     this.guest = new GuestView('webview', guestInstanceId);

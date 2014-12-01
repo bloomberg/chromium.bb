@@ -3,16 +3,14 @@
 // found in the LICENSE file.
 
 var DocumentNatives = requireNative('document_natives');
+var GuestView = require('guestView').GuestView;
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
-var GuestViewInternal =
-    require('binding').Binding.create('guestViewInternal').generate();
 var IdGenerator = requireNative('id_generator');
-var guestViewInternalNatives = requireNative('guest_view_internal');
 
 function AppViewImpl(appviewElement) {
   GuestViewContainer.call(this, appviewElement)
 
-  this.pendingGuestCreation = false;
+  this.guest = new GuestView('appview');
 
   var shadowRoot = this.element.createShadowRoot();
   shadowRoot.appendChild(this.browserPluginElement);
@@ -34,10 +32,7 @@ AppViewImpl.setupElement = function(proto) {
 }
 
 AppViewImpl.prototype.onElementDetached = function() {
-  if (this.guestInstanceId) {
-    GuestViewInternal.destroyGuest(this.guestInstanceId);
-    this.guestInstanceId = undefined;
-  }
+  this.guest.destroy();
 };
 
 AppViewImpl.prototype.getErrorNode = function() {
@@ -55,7 +50,7 @@ AppViewImpl.prototype.getErrorNode = function() {
 };
 
 AppViewImpl.prototype.connect = function(app, data, callback) {
-  if (!this.elementAttached || this.pendingGuestCreation) {
+  if (!this.elementAttached) {
     if (callback) {
       callback(false);
     }
@@ -65,47 +60,40 @@ AppViewImpl.prototype.connect = function(app, data, callback) {
     'appId': app,
     'data': data || {}
   };
-  GuestViewInternal.createGuest(
-    'appview',
-    createParams,
-    function(guestInstanceId) {
-      this.pendingGuestCreation = false;
-      if (guestInstanceId && !this.elementAttached) {
-        GuestViewInternal.destroyGuest(guestInstanceId);
-        guestInstanceId = 0;
-      }
-      if (!guestInstanceId) {
-        this.browserPluginElement.style.visibility = 'hidden';
-        var errorMsg = 'Unable to connect to app "' + app + '".';
-        window.console.warn(errorMsg);
-        this.getErrorNode().innerText = errorMsg;
-        if (callback) {
-          callback(false);
-        }
-        return;
-      }
-      this.attachWindow(guestInstanceId);
+
+  this.guest.create(createParams, function() {
+    if (!this.guest.getId()) {
+      this.browserPluginElement.style.visibility = 'hidden';
+      var errorMsg = 'Unable to connect to app "' + app + '".';
+      window.console.warn(errorMsg);
+      this.getErrorNode().innerText = errorMsg;
       if (callback) {
-        callback(true);
+        callback(false);
       }
-    }.bind(this)
-  );
-  this.pendingGuestCreation = true;
+      return;
+    }
+    this.attachWindow();
+    if (callback) {
+      callback(true);
+    }
+  }.bind(this));
 };
 
-AppViewImpl.prototype.attachWindow = function(guestInstanceId) {
-  this.guestInstanceId = guestInstanceId;
-  if (!this.internalInstanceId) {
-    return;
-  }
+AppViewImpl.prototype.buildAttachParams = function() {
   var params = {
     'instanceId': this.viewInstanceId
   };
+  return params;
+};
+
+AppViewImpl.prototype.attachWindow = function() {
+  if (!this.internalInstanceId) {
+    return true;
+  }
+
   this.browserPluginElement.style.visibility = 'visible';
-  return guestViewInternalNatives.AttachGuest(
-      this.internalInstanceId,
-      guestInstanceId,
-      params);
+  this.guest.attach(this.internalInstanceId, this.buildAttachParams());
+  return true;
 };
 
 AppViewImpl.prototype.handleBrowserPluginAttributeMutation =
@@ -114,16 +102,10 @@ AppViewImpl.prototype.handleBrowserPluginAttributeMutation =
     this.browserPluginElement.removeAttribute('internalinstanceid');
     this.internalInstanceId = parseInt(newValue);
 
-    if (!!this.guestInstanceId && this.guestInstanceId != 0) {
-      var params = {
-        'instanceId': this.viewInstanceId
-      };
-      guestViewInternalNatives.AttachGuest(
-          this.internalInstanceId,
-          this.guestInstanceId,
-          params);
+    if (!this.guest.getId()) {
+      return;
     }
-    return;
+    this.guest.attach(this.internalInstanceId, this.buildAttachParams());
   }
 };
 
