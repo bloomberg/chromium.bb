@@ -1397,8 +1397,7 @@ TEST_F(PipelineIntegrationTest, EncryptedPlayback_MP4_CENC_KeyRotation_Audio) {
 }
 #endif
 
-// TODO(acolwell): Fix flakiness http://crbug.com/117921
-TEST_F(PipelineIntegrationTest, DISABLED_SeekWhilePaused) {
+TEST_F(PipelineIntegrationTest, SeekWhilePaused) {
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-320x240.webm"), PIPELINE_OK));
 
   base::TimeDelta duration(pipeline_->GetMediaDuration());
@@ -1409,20 +1408,19 @@ TEST_F(PipelineIntegrationTest, DISABLED_SeekWhilePaused) {
   ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(start_seek_time));
   Pause();
   ASSERT_TRUE(Seek(seek_time));
-  EXPECT_EQ(pipeline_->GetMediaTime(), seek_time);
+  EXPECT_EQ(seek_time, pipeline_->GetMediaTime());
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 
   // Make sure seeking after reaching the end works as expected.
   Pause();
   ASSERT_TRUE(Seek(seek_time));
-  EXPECT_EQ(pipeline_->GetMediaTime(), seek_time);
+  EXPECT_EQ(seek_time, pipeline_->GetMediaTime());
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
-// TODO(acolwell): Fix flakiness http://crbug.com/117921
-TEST_F(PipelineIntegrationTest, DISABLED_SeekWhilePlaying) {
+TEST_F(PipelineIntegrationTest, SeekWhilePlaying) {
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-320x240.webm"), PIPELINE_OK));
 
   base::TimeDelta duration(pipeline_->GetMediaDuration());

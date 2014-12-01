@@ -357,13 +357,13 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
         start_timestamp_ = demuxer_->GetStartTime();
       }
 
-      base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
-
       DCHECK(start_timestamp_ >= base::TimeDelta());
       renderer_->StartPlayingFrom(start_timestamp_);
 
       if (text_renderer_)
         text_renderer_->StartPlaying();
+
+      base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
 
       PlaybackRateChangedTask(GetPlaybackRate());
       VolumeChangedTask(GetVolume());

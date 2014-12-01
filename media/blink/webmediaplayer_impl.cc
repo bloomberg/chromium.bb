@@ -325,7 +325,7 @@ bool WebMediaPlayerImpl::supportsSave() const {
 }
 
 void WebMediaPlayerImpl::seek(double seconds) {
-  DVLOG(1) << __FUNCTION__ << "(" << seconds << ")";
+  DVLOG(1) << __FUNCTION__ << "(" << seconds << "s)";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   ended_ = false;

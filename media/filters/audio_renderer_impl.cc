@@ -138,7 +138,7 @@ void AudioRendererImpl::StopRendering_Locked() {
 }
 
 void AudioRendererImpl::SetMediaTime(base::TimeDelta time) {
-  DVLOG(1) << __FUNCTION__ << "(" << time.InMicroseconds() << ")";
+  DVLOG(1) << __FUNCTION__ << "(" << time << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
@@ -162,13 +162,12 @@ base::TimeDelta AudioRendererImpl::CurrentMediaTime() {
     current_media_time = audio_clock_->front_timestamp();
   }
 
-  DVLOG(3) << __FUNCTION__ << ": " << current_media_time.InMilliseconds()
-           << " ms";
+  DVLOG(2) << __FUNCTION__ << ": " << current_media_time;
   return current_media_time;
 }
 
 base::TimeDelta AudioRendererImpl::CurrentMediaTimeForSyncingVideo() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(3) << __FUNCTION__;
 
   base::AutoLock auto_lock(lock_);
   if (last_render_ticks_.is_null())

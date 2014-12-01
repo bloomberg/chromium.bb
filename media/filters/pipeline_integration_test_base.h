@@ -113,7 +113,7 @@ class PipelineIntegrationTestBase {
   AudioHardwareConfig hardware_config_;
   PipelineMetadata metadata_;
 
-  void SaveStatus(PipelineStatus status);
+  void OnSeeked(base::TimeDelta seek_time, PipelineStatus status);
   void OnStatusCallbackChecked(PipelineStatus expected_status,
                                PipelineStatus status);
   void OnStatusCallback(PipelineStatus status);

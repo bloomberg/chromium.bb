@@ -48,7 +48,9 @@ PipelineIntegrationTestBase::~PipelineIntegrationTestBase() {
   Stop();
 }
 
-void PipelineIntegrationTestBase::SaveStatus(PipelineStatus status) {
+void PipelineIntegrationTestBase::OnSeeked(base::TimeDelta seek_time,
+                                           PipelineStatus status) {
+  EXPECT_EQ(seek_time, pipeline_->GetMediaTime());
   pipeline_status_ = status;
 }
 
@@ -190,9 +192,8 @@ bool PipelineIntegrationTestBase::Seek(base::TimeDelta seek_time) {
 
   EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
       .WillOnce(InvokeWithoutArgs(&message_loop_, &base::MessageLoop::QuitNow));
-  pipeline_->Seek(seek_time,
-                  base::Bind(&PipelineIntegrationTestBase::SaveStatus,
-                             base::Unretained(this)));
+  pipeline_->Seek(seek_time, base::Bind(&PipelineIntegrationTestBase::OnSeeked,
+                                        base::Unretained(this), seek_time));
   message_loop_.Run();
   return (pipeline_status_ == PIPELINE_OK);
 }
