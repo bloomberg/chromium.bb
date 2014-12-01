@@ -436,7 +436,8 @@ class HttpService(object):
       read_timeout=URL_READ_TIMEOUT,
       stream=True,
       method=None,
-      headers=None):
+      headers=None,
+      follow_redirects=True):
     """Attempts to open the given url multiple times.
 
     |urlpath| is relative to the server root, i.e. '/some/request?param=1'.
@@ -461,6 +462,10 @@ class HttpService(object):
 
     If |headers| is given, it should be a dict with HTTP headers to append
     to request. Caller is responsible for providing headers that make sense.
+
+    If |follow_redirects| is True, will transparently follow HTTP redirects,
+    otherwise redirect response will be returned as is. It can be recognized
+    by the presence of 'Location' response header.
 
     If |read_timeout| is not None will configure underlying socket to
     raise TimeoutError exception whenever there's no response from the server
@@ -512,7 +517,7 @@ class HttpService(object):
         # Prepare and send a new request.
         request = HttpRequest(
             method, resource_url, query_params, body,
-            headers, read_timeout, stream)
+            headers, read_timeout, stream, follow_redirects)
         if self.authenticator:
           self.authenticator.authorize(request)
         response = self.engine.perform_request(request)
@@ -604,7 +609,9 @@ class HttpService(object):
 class HttpRequest(object):
   """Request to HttpService."""
 
-  def __init__(self, method, url, params, body, headers, timeout, stream):
+  def __init__(
+      self, method, url, params, body,
+      headers, timeout, stream, follow_redirects):
     """Arguments:
       |method| - HTTP method to use
       |url| - relative URL to the resource, without query parameters
@@ -613,6 +620,7 @@ class HttpRequest(object):
       |headers| - dict with request headers
       |timeout| - socket read timeout (None to disable)
       |stream| - True to stream response from socket
+      |follow_redirects| - True to follow HTTP redirects.
     """
     self.method = method
     self.url = url
@@ -621,6 +629,7 @@ class HttpRequest(object):
     self.headers = headers.copy()
     self.timeout = timeout
     self.stream = stream
+    self.follow_redirects = follow_redirects
     self._cookies = None
 
   @property
@@ -758,7 +767,8 @@ class RequestsLibEngine(object):
           headers=request.headers,
           cookies=request.cookies,
           timeout=request.timeout,
-          stream=request.stream)
+          stream=request.stream,
+          allow_redirects=request.follow_redirects)
       response.raise_for_status()
       if request.stream:
         stream = response.raw
