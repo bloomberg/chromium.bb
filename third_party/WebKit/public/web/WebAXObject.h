@@ -109,7 +109,6 @@ public:
     BLINK_EXPORT bool isRequired() const;
     BLINK_EXPORT bool isSelected() const;
     BLINK_EXPORT bool isSelectedOptionActive() const;
-    BLINK_EXPORT bool isVertical() const;
     BLINK_EXPORT bool isVisible() const;
     BLINK_EXPORT bool isVisited() const;
 

@@ -389,14 +389,6 @@ bool WebAXObject::isSelectedOptionActive() const
     return m_private->isSelectedOptionActive();
 }
 
-bool WebAXObject::isVertical() const
-{
-    if (isDetached())
-        return 0;
-
-    return m_private->orientation() == AccessibilityOrientationVertical;
-}
-
 WebAXOrientation WebAXObject::orientation() const
 {
     if (isDetached())
