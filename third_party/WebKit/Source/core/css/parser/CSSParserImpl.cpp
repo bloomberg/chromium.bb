@@ -24,16 +24,16 @@ bool CSSParserImpl::parseValue(MutableStylePropertySet* declaration, CSSProperty
     CSSRuleSourceData::Type ruleType = CSSRuleSourceData::STYLE_RULE;
     if (declaration->cssParserMode() == CSSViewportRuleMode)
         ruleType = CSSRuleSourceData::VIEWPORT_RULE;
-    parser.consumeDeclarationValue(parser.m_tokens.begin(), parser.m_tokens.end() - 1, propertyID, important, ruleType);
+    parser.consumeDeclarationValue(CSSParserTokenRange(parser.m_tokens), propertyID, important, ruleType);
     if (parser.m_parsedProperties.isEmpty())
         return false;
     declaration->addParsedProperties(parser.m_parsedProperties);
     return true;
 }
 
-void CSSParserImpl::consumeDeclarationValue(CSSParserTokenIterator start, CSSParserTokenIterator end, CSSPropertyID propertyID, bool important, CSSRuleSourceData::Type ruleType)
+void CSSParserImpl::consumeDeclarationValue(CSSParserTokenRange range, CSSPropertyID propertyID, bool important, CSSRuleSourceData::Type ruleType)
 {
-    CSSParserValueList valueList(start, end);
+    CSSParserValueList valueList(range);
     if (!valueList.size())
         return; // Parser error
     bool inViewport = ruleType == CSSRuleSourceData::VIEWPORT_RULE;

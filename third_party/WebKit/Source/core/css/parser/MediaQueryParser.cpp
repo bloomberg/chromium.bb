@@ -18,12 +18,12 @@ PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaQuerySet(const
     // or better yet, replace the MediaQueryParser with a generic thread-safe CSS parser.
     Vector<CSSParserToken> tokens;
     CSSTokenizer::tokenize(queryString, tokens);
-    return MediaQueryParser(MediaQuerySetParser).parseImpl(tokens.begin(), tokens.end());
+    return MediaQueryParser(MediaQuerySetParser).parseImpl(CSSParserTokenRange(tokens));
 }
 
-PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaCondition(CSSParserTokenIterator token, CSSParserTokenIterator endToken)
+PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaCondition(CSSParserTokenRange range)
 {
-    return MediaQueryParser(MediaConditionParser).parseImpl(token, endToken);
+    return MediaQueryParser(MediaConditionParser).parseImpl(range);
 }
 
 const MediaQueryParser::State MediaQueryParser::ReadRestrictor = &MediaQueryParser::readRestrictor;
@@ -197,10 +197,14 @@ void MediaQueryParser::processToken(const CSSParserToken& token)
 }
 
 // The state machine loop
-PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseImpl(CSSParserTokenIterator token, CSSParserTokenIterator endToken)
+PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseImpl(CSSParserTokenRange range)
 {
-    for (; token != endToken; ++token)
-        processToken(*token);
+    while (!range.atEnd())
+        processToken(range.consume());
+
+    // FIXME: Can we get rid of this special case?
+    if (m_parserType == MediaQuerySetParser)
+        processToken(CSSParserToken(EOFToken));
 
     if (m_state != ReadAnd && m_state != ReadRestrictor && m_state != Done && m_state != ReadMediaNot)
         m_querySet->addMediaQuery(MediaQuery::createNotAll());

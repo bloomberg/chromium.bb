@@ -30,7 +30,6 @@ TEST(MediaConditionParserTest, Basic)
         {"screen and (color)", "not all"},
         {"all and (min-width:500px)", "not all"},
         {"(min-width:500px)", "(min-width: 500px)"},
-        {"screen and (color), projection and (color)", "not all"},
         {"(min-width: -100px)", "not all"},
         {"(min-width: 100px) and print", "not all"},
         {"(min-width: 100px) and (max-width: 900px)", "(max-width: 900px) and (min-width: 100px)"},
@@ -40,13 +39,11 @@ TEST(MediaConditionParserTest, Basic)
         {0, 0} // Do not remove the terminator line.
     };
 
+    // FIXME: We should test comma-seperated media conditions
     for (unsigned i = 0; testCases[i].input; ++i) {
         Vector<CSSParserToken> tokens;
         CSSTokenizer::tokenize(testCases[i].input, tokens);
-        CSSParserTokenIterator endToken;
-        // Stop the input once we hit a comma token
-        for (endToken = tokens.begin(); endToken != tokens.end() && endToken->type() != CommaToken; ++endToken) { }
-        RefPtrWillBeRawPtr<MediaQuerySet> mediaConditionQuerySet = MediaQueryParser::parseMediaCondition(tokens.begin(), endToken);
+        RefPtrWillBeRawPtr<MediaQuerySet> mediaConditionQuerySet = MediaQueryParser::parseMediaCondition(CSSParserTokenRange(tokens));
         ASSERT_EQ(mediaConditionQuerySet->queryVector().size(), (unsigned)1);
         String queryText = mediaConditionQuerySet->queryVector()[0]->cssText();
         ASSERT_STREQ(testCases[i].output, queryText.ascii().data());

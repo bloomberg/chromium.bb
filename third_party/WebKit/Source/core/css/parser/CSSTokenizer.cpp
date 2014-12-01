@@ -253,9 +253,9 @@ void CSSTokenizer::tokenize(String string, Vector<CSSParserToken>& outTokens)
     CSSTokenizer tokenizer(input);
     while (true) {
         CSSParserToken token = tokenizer.nextToken();
-        outTokens.append(token);
         if (token.type() == EOFToken)
             return;
+        outTokens.append(token);
     }
 }
 

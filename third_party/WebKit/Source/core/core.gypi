@@ -877,6 +877,8 @@
             'css/parser/CSSParserMode.cpp',
             'css/parser/CSSParserMode.h',
             'css/parser/CSSParserToken.cpp',
+            'css/parser/CSSParserTokenRange.cpp',
+            'css/parser/CSSParserTokenRange.h',
             'css/parser/CSSParserValues.cpp',
             'css/parser/CSSPropertyParser.cpp',
             'css/parser/CSSPropertyParser.h',

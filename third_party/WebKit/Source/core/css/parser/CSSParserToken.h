@@ -98,8 +98,6 @@ private:
     BlockType m_blockType;
 };
 
-typedef Vector<CSSParserToken>::iterator CSSParserTokenIterator;
-
 } // namespace
 
-#endif // MediaQueryToken_h
+#endif // CSSSParserToken_h

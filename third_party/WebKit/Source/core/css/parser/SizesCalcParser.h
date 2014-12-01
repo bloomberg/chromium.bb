@@ -7,6 +7,7 @@
 
 #include "core/css/MediaValues.h"
 #include "core/css/parser/CSSParserToken.h"
+#include "core/css/parser/CSSParserTokenRange.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -34,13 +35,13 @@ struct SizesCalcValue {
 class SizesCalcParser {
 
 public:
-    SizesCalcParser(CSSParserTokenIterator start, CSSParserTokenIterator end, PassRefPtr<MediaValues>);
+    SizesCalcParser(CSSParserTokenRange, PassRefPtr<MediaValues>);
 
     float result() const;
     bool isValid() const { return m_isValid; }
 
 private:
-    bool calcToReversePolishNotation(CSSParserTokenIterator start, CSSParserTokenIterator end);
+    bool calcToReversePolishNotation(CSSParserTokenRange);
     bool calculate();
     void appendNumber(const CSSParserToken&);
     bool appendLength(const CSSParserToken&);

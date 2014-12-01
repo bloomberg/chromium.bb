@@ -63,9 +63,6 @@ void testTokens(const String& string, const CSSParserToken& token1, const CSSPar
 
     Vector<CSSParserToken> actualTokens;
     CSSTokenizer::tokenize(string, actualTokens);
-    ASSERT_FALSE(actualTokens.isEmpty());
-    ASSERT_EQ(EOFToken, actualTokens.last().type());
-    actualTokens.removeLast();
 
     ASSERT_EQ(expectedTokens.size(), actualTokens.size());
     for (size_t i = 0; i < expectedTokens.size(); ++i)

@@ -25,13 +25,13 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSValueList.h"
-#include "core/css/parser/CSSParserToken.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class QualifiedName;
+class CSSParserTokenRange;
 
 struct CSSParserString {
     void init(const LChar* characters, unsigned length)
@@ -169,7 +169,7 @@ public:
         : m_current(0)
     {
     }
-    CSSParserValueList(CSSParserTokenIterator start, CSSParserTokenIterator end);
+    CSSParserValueList(CSSParserTokenRange);
     ~CSSParserValueList();
 
     void addValue(const CSSParserValue&);

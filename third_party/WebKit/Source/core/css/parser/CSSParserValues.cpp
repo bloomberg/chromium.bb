@@ -23,6 +23,8 @@
 
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSSelectorList.h"
+#include "core/css/parser/CSSParserToken.h"
+#include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSPropertyParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 
@@ -30,7 +32,7 @@ namespace blink {
 
 using namespace WTF;
 
-CSSParserValueList::CSSParserValueList(CSSParserTokenIterator start, CSSParserTokenIterator end)
+CSSParserValueList::CSSParserValueList(CSSParserTokenRange range)
 : m_current(0)
 {
     Vector<CSSParserValueList*> stack;
@@ -38,27 +40,27 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenIterator start, CSSParserTo
     stack.append(this);
     bracketCounts.append(0);
     unsigned calcDepth = 0;
-    for (CSSParserTokenIterator it = start; it != end; ++it) {
+    while (!range.atEnd()) {
         ASSERT(stack.size() == bracketCounts.size());
         ASSERT(!stack.isEmpty());
-        const CSSParserToken& token = *it;
+        const CSSParserToken& token = range.consume();
         CSSParserValue value;
         switch (token.type()) {
         case FunctionToken: {
-            if (token.value() == "url" && it + 2 < end && (it + 2)->type() == RightParenthesisToken) {
-                ++it;
-                if (it->type() == BadStringToken) {
+            if (token.value() == "url" && range.peek(1).type() == RightParenthesisToken) {
+                const CSSParserToken& next = range.consume();
+                range.consume();
+                if (next.type() == BadStringToken) {
                     destroyAndClear();
                     return;
                 }
-                ASSERT(it->type() == StringToken);
+                ASSERT(next.type() == StringToken);
                 CSSParserString string;
-                string.init(it->value());
+                string.init(next.value());
                 value.id = CSSValueInvalid;
                 value.isInt = false;
                 value.unit = CSSPrimitiveValue::CSS_URI;
                 value.string = string;
-                ++it;
             }
 
             CSSParserFunction* function = new CSSParserFunction;
@@ -149,7 +151,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenIterator start, CSSParserTo
         }
         case DelimiterToken:
             value.setFromOperator(token.delimiter());
-            if (calcDepth && token.delimiter() == '+' && (it - 1)->type() != WhitespaceToken) {
+            if (calcDepth && token.delimiter() == '+' && (&token - 1)->type() != WhitespaceToken) {
                 // calc(1px+ 2px) is invalid
                 destroyAndClear();
                 return;
@@ -173,10 +175,11 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenIterator start, CSSParserTo
         case WhitespaceToken:
         case CommentToken:
             continue;
+        case EOFToken:
+            ASSERT_NOT_REACHED();
         case BadStringToken:
         case BadUrlToken:
         case ColonToken:
-        case EOFToken:
         case SemicolonToken:
             destroyAndClear();
             return;

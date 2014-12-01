@@ -9,7 +9,7 @@
 #include "core/css/CSSProperty.h"
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/parser/CSSParserMode.h"
-#include "core/css/parser/CSSParserToken.h"
+#include "core/css/parser/CSSParserTokenRange.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -25,7 +25,7 @@ public:
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const CSSParserContext&);
 
 private:
-    void consumeDeclarationValue(CSSParserTokenIterator start, CSSParserTokenIterator end, CSSPropertyID, bool important, CSSRuleSourceData::Type);
+    void consumeDeclarationValue(CSSParserTokenRange, CSSPropertyID, bool important, CSSRuleSourceData::Type);
 
     // FIXME: Can we build StylePropertySets directly?
     // FIXME: Investigate using a smaller inline buffer

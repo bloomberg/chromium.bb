@@ -28,61 +28,30 @@ float SizesAttributeParser::length()
     return effectiveSizeDefaultValue();
 }
 
-bool SizesAttributeParser::calculateLengthInPixels(CSSParserTokenIterator startToken, CSSParserTokenIterator endToken, float& result)
+bool SizesAttributeParser::calculateLengthInPixels(CSSParserTokenRange range, float& result)
 {
-    if (startToken == endToken)
-        return false;
-    CSSParserTokenType type = startToken->type();
+    const CSSParserToken& startToken = range.peek();
+    CSSParserTokenType type = startToken.type();
     if (type == DimensionToken) {
         double length;
-        if (!CSSPrimitiveValue::isLength(startToken->unitType()))
+        if (!CSSPrimitiveValue::isLength(startToken.unitType()))
             return false;
-        if ((m_mediaValues->computeLength(startToken->numericValue(), startToken->unitType(), length)) && (length >= 0)) {
+        if ((m_mediaValues->computeLength(startToken.numericValue(), startToken.unitType(), length)) && (length >= 0)) {
             result = clampTo<float>(length);
             return true;
         }
     } else if (type == FunctionToken) {
-        SizesCalcParser calcParser(startToken, endToken, m_mediaValues);
+        SizesCalcParser calcParser(range, m_mediaValues);
         if (!calcParser.isValid())
             return false;
         result = calcParser.result();
         return true;
-    } else if (type == NumberToken && !startToken->numericValue()) {
+    } else if (type == NumberToken && !startToken.numericValue()) {
         result = 0;
         return true;
     }
 
     return false;
-}
-
-static void reverseSkipIrrelevantTokens(CSSParserTokenIterator& token, CSSParserTokenIterator startToken)
-{
-    CSSParserTokenIterator endToken = token;
-    while (token != startToken && (token->type() == WhitespaceToken || token->type() == CommentToken || token->type() == EOFToken))
-        --token;
-    if (token != endToken)
-        ++token;
-}
-
-static void reverseSkipUntilComponentStart(CSSParserTokenIterator& token, CSSParserTokenIterator startToken)
-{
-    if (token == startToken)
-        return;
-    --token;
-    if (token->blockType() != CSSParserToken::BlockEnd)
-        return;
-    unsigned blockLevel = 0;
-    while (token != startToken) {
-        if (token->blockType() == CSSParserToken::BlockEnd) {
-            ++blockLevel;
-        } else if (token->blockType() == CSSParserToken::BlockStart) {
-            --blockLevel;
-            if (!blockLevel)
-                break;
-        }
-
-        --token;
-    }
 }
 
 bool SizesAttributeParser::mediaConditionMatches(PassRefPtrWillBeRawPtr<MediaQuerySet> mediaCondition)
@@ -92,46 +61,34 @@ bool SizesAttributeParser::mediaConditionMatches(PassRefPtrWillBeRawPtr<MediaQue
     return mediaQueryEvaluator.eval(mediaCondition.get());
 }
 
-bool SizesAttributeParser::parseMediaConditionAndLength(CSSParserTokenIterator startToken, CSSParserTokenIterator endToken)
+bool SizesAttributeParser::parse(Vector<CSSParserToken>& tokens)
 {
-    CSSParserTokenIterator lengthTokenStart;
-    CSSParserTokenIterator lengthTokenEnd;
+    CSSParserTokenRange range(tokens);
+    // Split on a comma token and parse the result tokens as (media-condition, length) pairs
+    while (!range.atEnd()) {
+        const CSSParserToken* mediaConditionStart = &range.peek();
+        // The length is the last component value before the comma which isn't whitespace or a comment
+        const CSSParserToken* lengthTokenStart = &range.peek();
+        const CSSParserToken* lengthTokenEnd = &range.peek();
+        while (!range.atEnd() && range.peek().type() != CommaToken) {
+            lengthTokenStart = &range.peek();
+            range.consumeComponentValue();
+            lengthTokenEnd = &range.peek();
+            range.consumeWhitespaceAndComments();
+        }
+        range.consume();
 
-    reverseSkipIrrelevantTokens(endToken, startToken);
-    lengthTokenEnd = endToken;
-    reverseSkipUntilComponentStart(endToken, startToken);
-    lengthTokenStart = endToken;
-    float length;
-    if (!calculateLengthInPixels(lengthTokenStart, lengthTokenEnd, length))
-        return false;
-    RefPtrWillBeRawPtr<MediaQuerySet> mediaCondition = MediaQueryParser::parseMediaCondition(startToken, endToken);
-    if (mediaCondition && mediaConditionMatches(mediaCondition)) {
+        float length;
+        if (!calculateLengthInPixels(range.makeSubRange(lengthTokenStart, lengthTokenEnd), length))
+            continue;
+        RefPtrWillBeRawPtr<MediaQuerySet> mediaCondition = MediaQueryParser::parseMediaCondition(range.makeSubRange(mediaConditionStart, lengthTokenStart));
+        if (!mediaCondition || !mediaConditionMatches(mediaCondition))
+            continue;
         m_length = length;
         m_lengthWasSet = true;
         return true;
     }
     return false;
-}
-
-bool SizesAttributeParser::parse(Vector<CSSParserToken>& tokens)
-{
-    if (tokens.isEmpty())
-        return false;
-    CSSParserTokenIterator startToken = tokens.begin();
-    CSSParserTokenIterator endToken;
-    // Split on a comma token, and send the result tokens to be parsed as (media-condition, length) pairs
-    for (auto& token : tokens) {
-        m_blockWatcher.handleToken(token);
-        if (token.type() == CommaToken && !m_blockWatcher.blockLevel()) {
-            endToken = &token;
-            if (parseMediaConditionAndLength(startToken, endToken))
-                return true;
-            startToken = &token;
-            ++startToken;
-        }
-    }
-    endToken = tokens.end();
-    return parseMediaConditionAndLength(startToken, --endToken);
 }
 
 float SizesAttributeParser::effectiveSize()

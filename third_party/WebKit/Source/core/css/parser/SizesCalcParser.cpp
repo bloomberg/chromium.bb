@@ -10,11 +10,11 @@
 
 namespace blink {
 
-SizesCalcParser::SizesCalcParser(CSSParserTokenIterator start, CSSParserTokenIterator end, PassRefPtr<MediaValues> mediaValues)
+SizesCalcParser::SizesCalcParser(CSSParserTokenRange range, PassRefPtr<MediaValues> mediaValues)
     : m_mediaValues(mediaValues)
     , m_result(0)
 {
-    m_isValid = calcToReversePolishNotation(start, end) && calculate();
+    m_isValid = calcToReversePolishNotation(range) && calculate();
 }
 
 float SizesCalcParser::result() const
@@ -85,33 +85,33 @@ void SizesCalcParser::appendOperator(const CSSParserToken& token)
     m_valueList.append(value);
 }
 
-bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenIterator start, CSSParserTokenIterator end)
+bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenRange range)
 {
     // This method implements the shunting yard algorithm, to turn the calc syntax into a reverse polish notation.
     // http://en.wikipedia.org/wiki/Shunting-yard_algorithm
 
     Vector<CSSParserToken> stack;
-    for (CSSParserTokenIterator it = start; it != end; ++it) {
-        CSSParserTokenType type = it->type();
-        switch (type) {
+    while (!range.atEnd()) {
+        const CSSParserToken& token = range.consume();
+        switch (token.type()) {
         case NumberToken:
-            appendNumber(*it);
+            appendNumber(token);
             break;
         case DimensionToken:
-            if (!CSSPrimitiveValue::isLength(it->unitType()) || !appendLength(*it))
+            if (!CSSPrimitiveValue::isLength(token.unitType()) || !appendLength(token))
                 return false;
             break;
         case DelimiterToken:
-            if (!handleOperator(stack, *it))
+            if (!handleOperator(stack, token))
                 return false;
             break;
         case FunctionToken:
-            if (it->value() != "calc")
+            if (token.value() != "calc")
                 return false;
             // "calc(" is the same as "("
         case LeftParenthesisToken:
             // If the token is a left parenthesis, then push it onto the stack.
-            stack.append(*it);
+            stack.append(token);
             break;
         case RightParenthesisToken:
             // If the token is a right parenthesis:

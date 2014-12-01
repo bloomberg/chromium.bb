@@ -118,7 +118,7 @@ TEST(SizesCalcParserTest, Basic)
     for (unsigned i = 0; testCases[i].input; ++i) {
         Vector<CSSParserToken> tokens;
         CSSTokenizer::tokenize(testCases[i].input, tokens);
-        SizesCalcParser calcParser(tokens.begin(), tokens.end(), mediaValues);
+        SizesCalcParser calcParser(CSSParserTokenRange(tokens), mediaValues);
         ASSERT_EQ(testCases[i].valid, calcParser.isValid());
         if (calcParser.isValid())
             ASSERT_EQ(testCases[i].output, calcParser.result());

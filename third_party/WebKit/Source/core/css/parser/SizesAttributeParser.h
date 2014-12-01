@@ -22,9 +22,8 @@ public:
 
 private:
     bool parse(Vector<CSSParserToken>& tokens);
-    bool parseMediaConditionAndLength(CSSParserTokenIterator startToken, CSSParserTokenIterator endToken);
     float effectiveSize();
-    bool calculateLengthInPixels(CSSParserTokenIterator startToken, CSSParserTokenIterator endToken, float& result);
+    bool calculateLengthInPixels(CSSParserTokenRange, float& result);
     bool mediaConditionMatches(PassRefPtrWillBeRawPtr<MediaQuerySet> mediaCondition);
     unsigned effectiveSizeDefaultValue();
 
@@ -34,7 +33,6 @@ private:
     bool m_lengthWasSet;
     Vector<CSSParserToken> m_tokens;
     bool m_isValid;
-    MediaQueryBlockWatcher m_blockWatcher;
 };
 
 } // namespace
