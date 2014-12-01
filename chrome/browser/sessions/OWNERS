@@ -1,7 +1,7 @@
 marja@chromium.org
 sky@chromium.org
 
-per-file restore_on_startup_policy_handler*=joaodasilva@chromium.org
+per-file restore_on_startup_policy_handler*=mnissler@chromium.org
 per-file restore_on_startup_policy_handler*=dconnelly@chromium.org
 
 per-file session_restore_android*=dfalcantara@chromium.org

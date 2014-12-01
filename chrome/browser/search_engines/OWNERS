@@ -3,5 +3,5 @@ stevet@chromium.org
 
 per-file *_android.*=mariakhomenko@chromium.org
 
-per-file default_search_policy_handler*=joaodasilva@chromium.org
+per-file default_search_policy_handler*=mnissler@chromium.org
 per-file default_search_policy_handler*=dconnelly@chromium.org

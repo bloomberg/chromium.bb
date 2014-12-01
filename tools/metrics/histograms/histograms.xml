@@ -6259,7 +6259,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Enterprise.AutoEnrollmentExtraTime" units="milliseconds">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>
     Time since the user logged in until the auto-enrollment protocol completed.
     0 is sampled when the protocol is done by the time the user logs in.
@@ -6267,13 +6267,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Enterprise.AutoEnrollmentProtocolTime" units="milliseconds">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>Total duration time of the auto-enrollment protocol.</summary>
 </histogram>
 
 <histogram name="Enterprise.AutoEnrollmentRequestNetworkErrorCode"
     enum="NetErrorCodes">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>
     Network error code (if applicable) for auto-enrollment requests.
   </summary>
@@ -6281,7 +6281,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Enterprise.AutoEnrollmentRequestStatus"
     enum="EnterpriseDeviceManagementStatus">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>URL fetcher status for auto-enrollment requests.</summary>
 </histogram>
 
@@ -6307,7 +6307,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Enterprise.DMToken" enum="EnterpriseDMTokenType">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>
     Events related to fetching, saving and loading DM server tokens. These are
     used to retrieve cloud policies.
@@ -6353,7 +6353,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Enterprise.Enrollment" enum="EnterpriseEnrollmentType">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>
     Events related to device enrollment on new installs of Chrome OS devices.
   </summary>
@@ -6397,7 +6397,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Enterprise.IOSPolicies">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>
     Number of policies loaded at startup on iOS, and when a change is detected
     at runtime.
@@ -6405,12 +6405,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Enterprise.ONC.PolicyValidation" enum="BooleanSuccess">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>Result of the OpenNetworkConfiguration policy validation.</summary>
 </histogram>
 
 <histogram name="Enterprise.Policies" enum="EnterprisePolicies">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>
     A set of enterprise policy rules that are in use. This is recorded every 24
     hours and at startup, if the last recording was earlier than a day before.
@@ -6418,7 +6418,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Enterprise.Policy" enum="EnterprisePolicyType">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>
     Events related to fetching, saving and loading user policies, and also
     device policies on Chrome OS.
@@ -6435,7 +6435,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Enterprise.PolicyInvalidations"
     enum="EnterprisePolicyInvalidations">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>
     Events for counting user policy invalidations received with and without
     payloads. Invalidations indicate that a policy has been updated and should
@@ -6446,7 +6446,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Enterprise.PolicyInvalidationsStartupTime"
     units="milliseconds">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>
     Time since startup of the cloud policy code until the policy invalidation
     service first reported its online status.
@@ -6454,7 +6454,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Enterprise.PolicyLoadStatus" enum="EnterprisePolicyLoadStatus">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>
     Load status from the policy loaders which pull policy settings from the
     underlying platform, such as Windows Group Policy.
@@ -6462,7 +6462,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Enterprise.PolicyRefresh" enum="EnterprisePolicyRefresh">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>
     Events measuring effectiveness of refreshing user policy when invalidations
     are received from a service. For each refresh, indicates whether the policy
@@ -6497,50 +6497,50 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Enterprise.UserPolicyChromeOS.DelayInitialization"
     units="milliseconds">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>Initialization delay due to loading the user policy cache.</summary>
 </histogram>
 
 <histogram name="Enterprise.UserPolicyChromeOS.InitialFetch.ClientError"
     enum="EnterpriseDeviceManagementStatus">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>Policy client error during initial policy fetch.</summary>
 </histogram>
 
 <histogram
     name="Enterprise.UserPolicyChromeOS.InitialFetch.DelayClientRegister"
     units="milliseconds">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>Delay for registering the client with the policy server.</summary>
 </histogram>
 
 <histogram name="Enterprise.UserPolicyChromeOS.InitialFetch.DelayOAuth2Token"
     units="milliseconds">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>Delay for minting an OAuth2 acccess token.</summary>
 </histogram>
 
 <histogram name="Enterprise.UserPolicyChromeOS.InitialFetch.DelayPolicyFetch"
     units="milliseconds">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>Delay for fetching policy from the policy server.</summary>
 </histogram>
 
 <histogram name="Enterprise.UserPolicyChromeOS.InitialFetch.DelayTotal"
     units="milliseconds">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>Total delay for the initial policy fetch.</summary>
 </histogram>
 
 <histogram name="Enterprise.UserPolicyChromeOS.InitialFetch.OAuth2Error"
     enum="GoogleServiceAuthError">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>Service error during OAuth2 access token fetch.</summary>
 </histogram>
 
 <histogram name="Enterprise.UserPolicyChromeOS.InitialFetch.OAuth2NetworkError"
     enum="NetErrorCodes">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>Network error during OAuth2 access token fetch.</summary>
 </histogram>
 
@@ -6575,27 +6575,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Enterprise.WildcardLoginCheck.DelayPolicyTokenFetch"
     units="milliseconds">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>
     Delay incurred by the token fetching step of the wildcard login check.
   </summary>
 </histogram>
 
 <histogram name="Enterprise.WildcardLoginCheck.DelayTotal" units="milliseconds">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>Total delay incurred by the wildcard login check.</summary>
 </histogram>
 
 <histogram name="Enterprise.WildcardLoginCheck.DelayUserInfoFetch"
     units="milliseconds">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>
     Delay incurred by the user info fetching step of the wildcard login check.
   </summary>
 </histogram>
 
 <histogram name="EnterpriseCheck.DomainBindSucceeded" enum="BooleanSuccess">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
     Whether we were able to contact the AD Domain Controller. This check is
@@ -6604,7 +6604,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="EnterpriseCheck.DomainCheckFailed" enum="EnterpriseCheckError">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
     Enum of possible things that can fail while checking for enterprise env.
@@ -6613,7 +6613,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="EnterpriseCheck.InDomain" enum="BooleanEnabled">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
     Whether the machine is part of an AD domain. This check is performed once at
@@ -6622,7 +6622,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="EnterpriseCheck.InvalidPolicies" enum="EnterprisePolicies">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <summary>
     A set of policy rules that were ignored due to integrity violations while
     parsing the policy data which happens on start-up and when the policy has
@@ -6632,7 +6632,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="EnterpriseCheck.InvalidPoliciesDetected"
     units="disabled policies">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
     The number of disabled policy entries on Windows due to integrity violations
@@ -6642,7 +6642,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="EnterpriseCheck.OSType" enum="OsSuite">
-  <owner>joaodasilva@chromium.org</owner>
+  <owner>mnissler@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
     The rough Windows suite we are runnnig on. This check is performed once at

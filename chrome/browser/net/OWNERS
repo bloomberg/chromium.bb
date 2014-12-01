@@ -16,6 +16,6 @@ wtc@chromium.org
 willchan@chromium.org
 
 per-file disk_cache_dir_policy_handler*=dconnelly@chromium.org
-per-file disk_cache_dir_policy_handler*=joaodasilva@chromium.org
-per-file proxy_policy_handler*=joaodasilva@chromium.org
+per-file disk_cache_dir_policy_handler*=mnissler@chromium.org
+per-file proxy_policy_handler*=mnissler@chromium.org
 per-file proxy_policy_handler*=dconnelly@chromium.org

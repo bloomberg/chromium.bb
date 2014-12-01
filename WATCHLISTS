@@ -561,9 +561,6 @@
       'filepath': 'chrome/browser/plugin|chrome/plugin/|'\
         'chrome/common/plugin|webkit/glue/webplugin|webkit/glue/plugins/',
     },
-    'policy_templates': {
-      'filepath': 'components/policy/resources/policy_templates.json',
-    },
     'predictors': {
       'filepath': 'predictors',
     },
@@ -972,7 +969,6 @@
                    'tzik@chromium.org'],
     'plugin': ['jam@chromium.org',
                'stuartmorgan+watch@chromium.org'],
-    'policy_templates': ['joaodasilva+watch@chromium.org'],
     'predictors': ['shishir+watch@chromium.org'],
     'prepopulated_engines': ['vasilii+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org', 'tburkard+watch@chromium.org',

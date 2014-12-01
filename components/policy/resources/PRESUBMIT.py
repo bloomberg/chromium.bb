@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # If this presubmit check fails or misbehaves, please complain to
-# mnissler@chromium.org, pastarmovj@chromium.org or joaodasilva@chromium.org.
+# mnissler@chromium.org, bartfab@chromium.org or atwilson@chromium.org.
 
 import itertools
 import sys
