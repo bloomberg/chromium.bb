@@ -951,6 +951,7 @@ public:
     virtual void imageChanged(ImageResource*, const IntRect* = 0) override final;
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) { }
     virtual bool willRenderImage(ImageResource*) override final;
+    virtual bool getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy&) override final;
 
     void selectionStartEnd(int& spos, int& epos) const;
 

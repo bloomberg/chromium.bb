@@ -100,6 +100,7 @@ public:
     virtual void setFullscreenSupported(bool) override;
     virtual void setHyperlinkAuditingEnabled(bool) override;
     virtual void setIgnoreMainFrameOverflowHiddenQuirk(bool) override;
+    virtual void setImageAnimationPolicy(ImageAnimationPolicy) override;
     virtual void setImagesEnabled(bool) override;
     virtual void setInlineTextBoxAccessibilityEnabled(bool) override;
     virtual void setJavaEnabled(bool) override;

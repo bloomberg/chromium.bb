@@ -248,6 +248,7 @@ mediaTypeOverride type=String, initial="screen", invalidate=MediaType
 # the image URL. A cached image will still be rendered if requested.
 loadsImagesAutomatically initial=false, invalidate=ImageLoading
 imagesEnabled initial=true, invalidate=ImageLoading
+imageAnimationPolicy type=ImageAnimationPolicy, initial=ImageAnimationPolicyAllowed
 
 javaEnabled initial=false
 pluginsEnabled initial=false

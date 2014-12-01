@@ -271,6 +271,11 @@ void WebSettingsImpl::setLoadsImagesAutomatically(bool loadsImagesAutomatically)
     m_settings->setLoadsImagesAutomatically(loadsImagesAutomatically);
 }
 
+void WebSettingsImpl::setImageAnimationPolicy(ImageAnimationPolicy policy)
+{
+    m_settings->setImageAnimationPolicy(static_cast<blink::ImageAnimationPolicy>(policy));
+}
+
 void WebSettingsImpl::setImagesEnabled(bool enabled)
 {
     m_settings->setImagesEnabled(enabled);

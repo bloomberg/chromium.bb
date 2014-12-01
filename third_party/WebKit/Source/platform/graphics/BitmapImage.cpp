@@ -58,6 +58,7 @@ BitmapImage::BitmapImage(ImageObserver* observer)
     , m_repetitionsComplete(0)
     , m_desiredFrameStartTime(0)
     , m_frameCount(0)
+    , m_animationPolicy(ImageAnimationPolicyAllowed)
     , m_isSolidColor(false)
     , m_checkedForSolidColor(false)
     , m_animationFinished(false)
@@ -79,6 +80,7 @@ BitmapImage::BitmapImage(PassRefPtr<NativeImageSkia> nativeImage, ImageObserver*
     , m_repetitionCountStatus(Unknown)
     , m_repetitionsComplete(0)
     , m_frameCount(1)
+    , m_animationPolicy(ImageAnimationPolicyAllowed)
     , m_isSolidColor(false)
     , m_checkedForSolidColor(false)
     , m_animationFinished(true)
@@ -439,7 +441,13 @@ int BitmapImage::repetitionCount(bool imageKnownToBeComplete)
 
 bool BitmapImage::shouldAnimate()
 {
-    return (repetitionCount(false) != cAnimationNone && !m_animationFinished && imageObserver());
+    bool animated = repetitionCount(false) != cAnimationNone && !m_animationFinished && imageObserver();
+    if (imageObserver()) {
+        imageObserver()->imageAnimationPolicy(this, m_animationPolicy);
+        if (animated && m_animationPolicy == ImageAnimationPolicyNoAnimation)
+            animated = false;
+    }
+    return animated;
 }
 
 void BitmapImage::startAnimation(CatchUpAnimation catchUpIfNecessary)
@@ -461,7 +469,9 @@ void BitmapImage::startAnimation(CatchUpAnimation catchUpIfNecessary)
     // yet and our repetition count is potentially unset.  The repetition count
     // in a GIF can potentially come after all the rest of the image data, so
     // wait on it.
-    if (!m_allDataReceived && repetitionCount(false) == cAnimationLoopOnce && m_currentFrame >= (frameCount() - 1))
+    if (!m_allDataReceived
+        && (repetitionCount(false) == cAnimationLoopOnce || m_animationPolicy == ImageAnimationPolicyAnimateOnce)
+        && m_currentFrame >= (frameCount() - 1))
         return;
 
     // Determine time for next frame to start.  By ignoring paint and timer lag
@@ -596,7 +606,8 @@ bool BitmapImage::internalAdvanceAnimation(bool skippingFrames)
         // now, so it should now be available.
         // Note that we don't need to special-case cAnimationLoopOnce here
         // because it is 0 (see comments on its declaration in ImageSource.h).
-        if (repetitionCount(true) != cAnimationLoopInfinite && m_repetitionsComplete > m_repetitionCount) {
+        if ((repetitionCount(true) != cAnimationLoopInfinite && m_repetitionsComplete > m_repetitionCount)
+            || (m_animationPolicy == ImageAnimationPolicyAnimateOnce && m_repetitionsComplete > 0)) {
             m_animationFinished = true;
             m_desiredFrameStartTime = 0;
             --m_currentFrame;

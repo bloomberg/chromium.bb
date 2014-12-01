@@ -517,6 +517,7 @@
       'graphics/GraphicsTypes3D.h',
       'graphics/Image.cpp',
       'graphics/Image.h',
+      'graphics/ImageAnimationPolicy.h',
       'graphics/ImageBuffer.cpp',
       'graphics/ImageBuffer.h',
       'graphics/ImageBufferClient.h',

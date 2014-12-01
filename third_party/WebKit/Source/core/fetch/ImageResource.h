@@ -110,6 +110,7 @@ public:
 
     virtual bool shouldPauseAnimation(const blink::Image*) override;
     virtual void animationAdvanced(const blink::Image*) override;
+    virtual void imageAnimationPolicy(const blink::Image*, ImageAnimationPolicy&) override;
     virtual void changedInRect(const blink::Image*, const IntRect&) override;
 
 protected:

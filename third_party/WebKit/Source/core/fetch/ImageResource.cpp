@@ -470,6 +470,18 @@ void ImageResource::animationAdvanced(const blink::Image* image)
     notifyObservers();
 }
 
+void ImageResource::imageAnimationPolicy(const blink::Image* image, ImageAnimationPolicy& policy)
+{
+    if (!image || image != m_image)
+        return;
+
+    ResourceClientWalker<ImageResourceClient> w(m_clients);
+    while (ImageResourceClient* c = w.next()) {
+        if (c->getImageAnimationPolicy(this, policy))
+            return;
+    }
+}
+
 void ImageResource::changedInRect(const blink::Image* image, const IntRect& rect)
 {
     if (!image || image != m_image)

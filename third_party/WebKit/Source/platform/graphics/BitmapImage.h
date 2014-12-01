@@ -32,6 +32,7 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/FrameData.h"
 #include "platform/graphics/Image.h"
+#include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/ImageSource.h"
 #include "wtf/Forward.h"
@@ -179,6 +180,8 @@ private:
     Color m_solidColor;  // If we're a 1x1 solid color, this is the color to use to fill.
 
     size_t m_frameCount;
+
+    ImageAnimationPolicy m_animationPolicy; // Whether or not we can play animation.
 
     bool m_isSolidColor : 1; // Whether or not we are a 1x1 solid image.
     bool m_checkedForSolidColor : 1; // Whether we've checked the frame for solid color.

@@ -45,6 +45,12 @@ class WebURL;
 // these functions have a 1:1 mapping with the methods in WebCore/page/Settings.h.
 class WebSettings {
 public:
+    enum ImageAnimationPolicy {
+        ImageAnimationPolicyAllowed,
+        ImageAnimationPolicyAnimateOnce,
+        ImageAnimationPolicyNoAnimation
+    };
+
     enum EditingBehavior {
         EditingBehaviorMac,
         EditingBehaviorWin,
@@ -156,6 +162,7 @@ public:
     virtual void setFullscreenSupported(bool) = 0;
     virtual void setHyperlinkAuditingEnabled(bool) = 0;
     virtual void setIgnoreMainFrameOverflowHiddenQuirk(bool) = 0;
+    virtual void setImageAnimationPolicy(ImageAnimationPolicy) = 0;
     virtual void setImagesEnabled(bool) = 0;
     virtual void setInlineTextBoxAccessibilityEnabled(bool) = 0;
     virtual void setJavaEnabled(bool) = 0;

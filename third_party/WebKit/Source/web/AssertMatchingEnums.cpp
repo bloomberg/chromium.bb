@@ -633,6 +633,10 @@ COMPILE_ASSERT_MATCHING_ENUM(WebSelectionBound::Caret, CompositedSelectionBound:
 COMPILE_ASSERT_MATCHING_ENUM(WebSelectionBound::SelectionLeft, CompositedSelectionBound::SelectionLeft);
 COMPILE_ASSERT_MATCHING_ENUM(WebSelectionBound::SelectionRight, CompositedSelectionBound::SelectionRight);
 
+COMPILE_ASSERT_MATCHING_ENUM(WebSettings::ImageAnimationPolicyAllowed, ImageAnimationPolicyAllowed);
+COMPILE_ASSERT_MATCHING_ENUM(WebSettings::ImageAnimationPolicyAnimateOnce, ImageAnimationPolicyAnimateOnce);
+COMPILE_ASSERT_MATCHING_ENUM(WebSettings::ImageAnimationPolicyNoAnimation, ImageAnimationPolicyNoAnimation);
+
 COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsDefault, V8CacheOptionsDefault);
 COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsParse, V8CacheOptionsParse);
 COMPILE_ASSERT_MATCHING_ENUM(WebSettings::V8CacheOptionsCode, V8CacheOptionsCode);

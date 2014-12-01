@@ -27,6 +27,7 @@
 #define ImageObserver_h
 
 #include "platform/PlatformExport.h"
+#include "platform/graphics/ImageAnimationPolicy.h"
 
 namespace blink {
 
@@ -44,6 +45,7 @@ public:
 
     virtual bool shouldPauseAnimation(const Image*) = 0;
     virtual void animationAdvanced(const Image*) = 0;
+    virtual void imageAnimationPolicy(const Image*, ImageAnimationPolicy&) = 0;
 
     virtual void changedInRect(const Image*, const IntRect&) = 0;
 };

@@ -24,6 +24,7 @@
 #define ImageResourceClient_h
 
 #include "core/fetch/ResourceClient.h"
+#include "platform/graphics/ImageAnimationPolicy.h"
 
 namespace blink {
 
@@ -45,6 +46,9 @@ public:
     // but RenderImages would (assuming they have visibility: visible and their render tree isn't hidden
     // e.g., in the b/f cache or in a background tab).
     virtual bool willRenderImage(ImageResource*) { return false; }
+
+    // Called to get imageAnimation policy from settings
+    virtual bool getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy&) { return false; }
 };
 
 }

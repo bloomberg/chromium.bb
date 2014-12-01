@@ -2782,6 +2782,15 @@ bool RenderObject::willRenderImage(ImageResource*)
     return document().view()->isVisible();
 }
 
+bool RenderObject::getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy& policy)
+{
+    if (!document().settings())
+        return false;
+
+    policy = document().settings()->imageAnimationPolicy();
+    return true;
+}
+
 int RenderObject::caretMinOffset() const
 {
     return 0;
