@@ -3465,10 +3465,10 @@
             '../ui/app_list/app_list.gyp:app_list',
           ]
         }],
-        ['enable_managed_users==1', {
+        ['enable_supervised_users==1', {
           'sources': [ '<@(chrome_browser_supervised_user_sources)' ],
         }],
-        ['enable_managed_users==1 and enable_themes==1', {
+        ['enable_supervised_users==1 and enable_themes==1', {
           'sources': [ '<@(chrome_browser_supervised_user_and_themes_sources)' ],
         }],
         ['enable_webrtc==1', {

@@ -2340,7 +2340,7 @@
             ['exclude', '^browser/ui/webui/app_list/'],
           ],
         }],
-        ['enable_managed_users==0', {
+        ['enable_supervised_users==0', {
           'sources/': [
             ['exclude', '^browser/supervised_user/'],
             ['exclude', '^browser/ui/webui/downloads_ui_supervised_browsertest.cc'],
@@ -2753,7 +2753,7 @@
             'browser/sync/test/integration/two_client_app_list_sync_test.cc',
           ],
         }],
-        ['enable_managed_users==0', {
+        ['enable_supervised_users==0', {
           'sources!': [
             'browser/sync/test/integration/single_client_supervised_user_settings_sync_test.cc',
           ],

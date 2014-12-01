@@ -19,7 +19,7 @@ class DictionaryValue;
 class ListValue;
 }
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 class SupervisedUserRegistrationUtility;
 #endif
 
@@ -49,7 +49,7 @@ class CreateProfileHandler: public OptionsPageUIHandler {
   // It is used to map the type of the profile creation operation to the
   // correct UMA metric name.
   enum ProfileCreationOperationType {
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
     SUPERVISED_PROFILE_CREATION,
     SUPERVISED_PROFILE_IMPORT,
 #endif
@@ -100,7 +100,7 @@ class CreateProfileHandler: public OptionsPageUIHandler {
   void RecordProfileCreationMetrics(Profile::CreateStatus status);
 
   base::string16 GetProfileCreationErrorMessageLocal() const;
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
   // The following error messages only apply to supervised profiles.
   base::string16 GetProfileCreationErrorMessageRemote() const;
   base::string16 GetProfileCreationErrorMessageSignin() const;
@@ -120,7 +120,7 @@ class CreateProfileHandler: public OptionsPageUIHandler {
   // The value is only relevant while we are creating/importing a profile.
   ProfileCreationOperationType profile_creation_type_;
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
   // Extracts the supervised user ID from the args passed into CreateProfile,
   // sets |profile_creation_type_| if necessary, and returns true if the
   // supervised user id specified in |args| are valid.

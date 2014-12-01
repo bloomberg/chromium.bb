@@ -3053,7 +3053,7 @@
         ['enable_google_now==1 and OS!="android"', {
           'sources': [ '<@(chrome_browser_ui_google_now_non_android_sources)' ],
         }],
-        ['enable_managed_users==0', {
+        ['enable_supervised_users==0', {
           'sources!': [
             'browser/ui/views/profiles/supervised_user_avatar_label.cc',
             'browser/ui/views/profiles/supervised_user_avatar_label.h',

@@ -24,7 +24,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/background.h"
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/ui/views/profiles/supervised_user_avatar_label.h"
 #endif
 
@@ -33,7 +33,7 @@ BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
     : frame_(frame),
       browser_view_(browser_view),
       avatar_button_(nullptr),
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
       supervised_user_avatar_label_(nullptr),
 #endif
       new_avatar_button_(nullptr) {
@@ -80,7 +80,7 @@ void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
     OnProfileAvatarChanged(base::FilePath());
 }
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 void BrowserNonClientFrameView::OnThemeChanged() {
   if (supervised_user_avatar_label_)
     supervised_user_avatar_label_->UpdateLabelStyle();
@@ -90,7 +90,7 @@ void BrowserNonClientFrameView::OnThemeChanged() {
 void BrowserNonClientFrameView::UpdateAvatarInfo() {
   if (browser_view_->ShouldShowAvatar()) {
     if (!avatar_button_) {
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
       Profile* profile = browser_view_->browser()->profile();
       if (profile->IsSupervised() && !supervised_user_avatar_label_) {
         supervised_user_avatar_label_ =
@@ -109,7 +109,7 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
       frame_->GetRootView()->Layout();
     }
   } else if (avatar_button_) {
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
     // The avatar label can just be there if there is also an avatar button.
     if (supervised_user_avatar_label_) {
       RemoveChildView(supervised_user_avatar_label_);

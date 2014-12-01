@@ -70,7 +70,7 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/ui/webui/options/supervised_user_create_confirm_handler.h"
 #include "chrome/browser/ui/webui/options/supervised_user_import_handler.h"
 #include "chrome/browser/ui/webui/options/supervised_user_learn_more_handler.h"
@@ -305,7 +305,7 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings, new SearchEngineManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new ImportDataHandler());
   AddOptionsPageUIHandler(localized_strings, new StartupPagesHandler());
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
   AddOptionsPageUIHandler(localized_strings,
                           new SupervisedUserCreateConfirmHandler());
   AddOptionsPageUIHandler(localized_strings, new SupervisedUserImportHandler());

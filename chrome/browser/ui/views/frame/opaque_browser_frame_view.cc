@@ -50,7 +50,7 @@
 #include "ui/views/window/frame_background.h"
 #include "ui/views/window/window_shape.h"
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/ui/views/profiles/supervised_user_avatar_label.h"
 #endif
 
@@ -227,7 +227,7 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // See if the point is within the avatar menu button.
   if (IsWithinAvatarMenuButtons(point))
     return HTCLIENT;
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
   // ...or within the avatar label, if it's a supervised user.
   if ((supervised_user_avatar_label() &&
        supervised_user_avatar_label()->GetMirroredBounds().Contains(point)))

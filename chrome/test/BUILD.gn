@@ -326,7 +326,7 @@ test("sync_integration_tests") {
       "../browser/sync/test/integration/two_client_app_list_sync_test.cc",
     ]
   }
-  if (!enable_managed_users) {
+  if (!enable_supervised_users) {
     sources -= [
       "../browser/sync/test/integration/single_client_supervised_user_settings_sync_test.cc",
     ]

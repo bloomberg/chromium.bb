@@ -2744,7 +2744,7 @@
             'common/net/x509_certificate_model_unittest.cc',
           ],
         }],
-        ['enable_managed_users!=1', {
+        ['enable_supervised_users!=1', {
           'sources/': [
             ['exclude', '^browser/supervised_user/'],
           ],

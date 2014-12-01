@@ -125,7 +125,7 @@
 #include "extensions/browser/extension_prefs.h"
 #endif
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_shared_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service.h"
@@ -446,7 +446,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   printing::StickySettings::RegisterProfilePrefs(registry);
 #endif
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
   SupervisedUserService::RegisterProfilePrefs(registry);
   SupervisedUserSharedSettingsService::RegisterProfilePrefs(registry);
   SupervisedUserSyncService::RegisterProfilePrefs(registry);

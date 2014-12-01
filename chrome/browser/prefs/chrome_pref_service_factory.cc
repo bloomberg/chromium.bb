@@ -62,7 +62,7 @@
 #include "extensions/browser/pref_names.h"
 #endif
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_pref_store.h"
 #endif
 
@@ -386,7 +386,7 @@ void PrepareFactory(
           policy::POLICY_LEVEL_RECOMMENDED)));
 #endif  // ENABLE_CONFIGURATION_POLICY
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
   if (supervised_user_settings) {
     factory->set_supervised_user_prefs(
         make_scoped_refptr(

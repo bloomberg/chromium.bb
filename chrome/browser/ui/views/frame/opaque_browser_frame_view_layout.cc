@@ -14,7 +14,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/ui/views/profiles/supervised_user_avatar_label.h"
 #endif
 
@@ -55,7 +55,7 @@ const int kAvatarOuterSpacing = 2;
 // Space between the edge of the avatar and the tabstrip.
 const int kAvatarInnerSpacing = 4;
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 // Space between the trailing edge of the avatar label and the tabstrip.
 const int kSupervisedUserAvatarLabelInnerSpacing = 10;
 #endif
@@ -120,7 +120,7 @@ OpaqueBrowserFrameViewLayout::OpaqueBrowserFrameViewLayout(
       close_button_(nullptr),
       window_icon_(nullptr),
       window_title_(nullptr),
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
       supervised_user_avatar_label_(nullptr),
 #endif
       avatar_button_(nullptr),
@@ -153,7 +153,7 @@ gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStrip(
 
   int leading_tabstrip_indent = kTabStripIndent;
   if (delegate_->ShouldShowAvatar() && !ShouldAvatarBeOnRight()) {
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
     if (supervised_user_avatar_label_ &&
         supervised_user_avatar_label_->bounds().width())
       leading_tabstrip_indent += kSupervisedUserAvatarLabelInnerSpacing;
@@ -444,7 +444,7 @@ void OpaqueBrowserFrameViewLayout::LayoutAvatar(views::View* host) {
     avatar_button_->SetBoundsRect(avatar_bounds_);
 
     int edge_offset;
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
     if (supervised_user_avatar_label_) {
       supervised_user_avatar_label_->SetLabelOnRight(avatar_on_right);
       // Space between the bottom of the avatar and the bottom of the avatar
@@ -647,7 +647,7 @@ void OpaqueBrowserFrameViewLayout::SetView(int id, views::View* view) {
       }
       window_title_ = static_cast<views::Label*>(view);
       break;
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
     case VIEW_ID_SUPERVISED_USER_AVATAR_LABEL:
       supervised_user_avatar_label_ =
           static_cast<SupervisedUserAvatarLabel*>(view);

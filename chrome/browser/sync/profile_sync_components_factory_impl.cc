@@ -83,7 +83,7 @@
 #include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
 #endif
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_shared_settings_service.h"
@@ -283,7 +283,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
             this));
   }
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
   pss->RegisterDataTypeController(
       new SupervisedUserSyncDataTypeController(
           syncer::SUPERVISED_USER_SETTINGS,
@@ -405,7 +405,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
   }
 #endif
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
   pss->RegisterDataTypeController(
       new SupervisedUserSyncDataTypeController(
           syncer::SUPERVISED_USERS,
@@ -528,7 +528,7 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
       return favicons ? favicons->AsWeakPtr()
                       : base::WeakPtr<syncer::SyncableService>();
     }
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
     case syncer::SUPERVISED_USER_SETTINGS:
       return SupervisedUserSettingsServiceFactory::GetForProfile(profile_)->
           AsWeakPtr();

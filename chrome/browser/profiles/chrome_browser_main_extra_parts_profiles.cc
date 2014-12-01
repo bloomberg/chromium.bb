@@ -87,7 +87,7 @@
 #endif
 #endif
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service_factory.h"
 #if defined(OS_CHROMEOS)
@@ -203,7 +203,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(ENABLE_SERVICE_DISCOVERY)
   local_discovery::PrivetNotificationServiceFactory::GetInstance();
 #endif
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 #if defined(OS_CHROMEOS)
   chromeos::SupervisedUserPasswordServiceFactory::GetInstance();
   chromeos::ManagerPasswordServiceFactory::GetInstance();

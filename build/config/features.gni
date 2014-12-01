@@ -129,7 +129,7 @@ enable_plugin_installation = is_win || is_mac
 enable_app_list = !is_ios && !is_android
 enable_settings_app = enable_app_list && !is_chromeos
 
-enable_managed_users = !is_ios
+enable_supervised_users = !is_ios
 
 enable_service_discovery = enable_mdns || is_mac
 

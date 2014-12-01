@@ -35,7 +35,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_theme.h"
 #endif
 
@@ -171,7 +171,7 @@ SkColor ThemeService::GetColor(int id) const {
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.86);
     case Properties::COLOR_NTP_TEXT_LIGHT:
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.40);
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
     case Properties::COLOR_SUPERVISED_USER_LABEL:
       return color_utils::GetReadableColor(
           SK_ColorWHITE,
@@ -401,7 +401,7 @@ void ThemeService::RemoveUnusedThemes(bool ignore_infobars) {
 void ThemeService::UseDefaultTheme() {
   if (ready_)
     content::RecordAction(UserMetricsAction("Themes_Reset"));
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
   if (IsSupervisedUser()) {
     SetSupervisedUserTheme();
     return;
@@ -462,7 +462,7 @@ void ThemeService::LoadThemePrefs() {
 
   std::string current_id = GetThemeID();
   if (current_id == kDefaultThemeID) {
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
     // Supervised users have a different default theme.
     if (IsSupervisedUser()) {
       SetSupervisedUserTheme();
@@ -617,7 +617,7 @@ void ThemeService::BuildFromExtension(const Extension* extension) {
   SwapThemeSupplier(pack);
 }
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 bool ThemeService::IsSupervisedUser() const {
   return profile_->IsSupervised();
 }

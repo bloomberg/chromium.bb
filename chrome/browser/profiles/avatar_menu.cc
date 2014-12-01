@@ -33,7 +33,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
@@ -53,7 +53,7 @@ AvatarMenu::AvatarMenu(ProfileInfoInterface* profile_cache,
                        Browser* browser)
     : profile_list_(ProfileList::Create(profile_cache)),
       menu_actions_(AvatarMenuActions::Create()),
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
       supervised_user_observer_(this),
 #endif
       profile_info_(profile_cache),
@@ -68,7 +68,7 @@ AvatarMenu::AvatarMenu(ProfileInfoInterface* profile_cache,
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
       content::NotificationService::AllSources());
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
   // Register this as an observer of the SupervisedUserService to be notified
   // of changes to the custodian info.
   if (browser_) {
@@ -203,7 +203,7 @@ size_t AvatarMenu::GetActiveProfileIndex() {
 base::string16 AvatarMenu::GetSupervisedUserInformation() const {
   // |browser_| can be NULL in unit_tests.
   if (browser_ && browser_->profile()->IsSupervised()) {
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
     SupervisedUserService* service =
         SupervisedUserServiceFactory::GetForProfile(browser_->profile());
     base::string16 custodian =
@@ -247,7 +247,7 @@ void AvatarMenu::Observe(int type,
     observer_->OnAvatarMenuChanged(this);
 }
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 void AvatarMenu::OnCustodianInfoChanged() {
   RebuildMenu();
   if (observer_)

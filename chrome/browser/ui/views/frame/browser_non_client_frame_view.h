@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/views/profiles/new_avatar_button.h"
 #include "ui/views/window/non_client_view.h"
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 class SupervisedUserAvatarLabel;
 #endif
 class AvatarMenuButton;
@@ -28,7 +28,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   NewAvatarButton* new_avatar_button() const { return new_avatar_button_; }
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
   SupervisedUserAvatarLabel* supervised_user_avatar_label() const {
     return supervised_user_avatar_label_;
   }
@@ -97,7 +97,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // icon.  May be null for some frame styles.
   AvatarMenuButton* avatar_button_;
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
   SupervisedUserAvatarLabel* supervised_user_avatar_label_;
 #endif
 

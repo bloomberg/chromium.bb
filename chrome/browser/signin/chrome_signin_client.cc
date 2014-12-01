@@ -25,7 +25,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #endif
 

@@ -72,7 +72,7 @@
 #include "extensions/browser/view_type_utils.h"
 #endif
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
 #endif
 
@@ -200,7 +200,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   extensions::TabHelper::CreateForWebContents(web_contents);
 #endif
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
   SupervisedUserNavigationObserver::CreateForWebContents(web_contents);
 #endif
 

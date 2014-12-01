@@ -20,7 +20,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
@@ -65,7 +65,7 @@ NotificationServiceSessionsRouter::NotificationServiceSessionsRouter(
         base::Bind(&NotificationServiceSessionsRouter::OnFaviconChanged,
                    base::Unretained(this)));
   }
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
   if (profile_->IsSupervised()) {
     SupervisedUserService* supervised_user_service =
         SupervisedUserServiceFactory::GetForProfile(profile_);

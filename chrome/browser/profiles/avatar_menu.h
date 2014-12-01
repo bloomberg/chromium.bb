@@ -20,7 +20,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/image/image.h"
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #endif
 
@@ -38,7 +38,7 @@ class SupervisedUserService;
 // data changes, and the view for this model should forward actions
 // back to it in response to user events.
 class AvatarMenu :
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
     public SupervisedUserServiceObserver,
 #endif
     public content::NotificationObserver {
@@ -146,7 +146,7 @@ class AvatarMenu :
                const content::NotificationDetails& details) override;
 
  private:
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
   // SupervisedUserServiceObserver:
   void OnCustodianInfoChanged() override;
 #endif
@@ -157,7 +157,7 @@ class AvatarMenu :
   // The controller for avatar menu actions.
   scoped_ptr<AvatarMenuActions> menu_actions_;
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
   // Observes changes to a supervised user's custodian info.
   ScopedObserver<SupervisedUserService, SupervisedUserServiceObserver>
       supervised_user_observer_;

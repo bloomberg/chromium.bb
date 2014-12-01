@@ -23,7 +23,7 @@
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
@@ -237,7 +237,7 @@ TEST_F(ThemeServiceTest, ThemeUpgrade) {
                                           ExtensionRegistry::DISABLED));
 }
 
-#if defined(ENABLE_MANAGED_USERS)
+#if defined(ENABLE_SUPERVISED_USERS)
 class ThemeServiceSupervisedUserTest : public ThemeServiceTest {
  public:
   ThemeServiceSupervisedUserTest() {}
@@ -275,6 +275,6 @@ TEST_F(ThemeServiceSupervisedUserTest, SupervisedUserThemeReplacesNativeTheme) {
             CustomThemeSupplier::SUPERVISED_USER_THEME);
 }
 #endif // defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#endif // defined(ENABLE_MANAGED_USERS)
+#endif // defined(ENABLE_SUPERVISED_USERS)
 
 }; // namespace theme_service_internal

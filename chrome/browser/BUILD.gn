@@ -658,12 +658,12 @@ static_library("browser") {
       "//ui/app_list",
     ]
   }
-  if (enable_managed_users) {
+  if (enable_supervised_users) {
     sources += rebase_path(
         gypi_values.chrome_browser_supervised_user_sources,
         ".", "//chrome")
   }
-  if (enable_managed_users && enable_themes) {
+  if (enable_supervised_users && enable_themes) {
     sources += rebase_path(
         gypi_values.chrome_browser_supervised_user_and_themes_sources,
         ".", "//chrome")

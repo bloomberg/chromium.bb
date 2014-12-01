@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USERS_H_
 
 // Compile-time check to make sure that we don't include supervised user source
-// files when ENABLE_MANAGED_USERS is not defined.
-#if !defined(ENABLE_MANAGED_USERS)
+// files when ENABLE_SUPERVISED_USERS is not defined.
+#if !defined(ENABLE_SUPERVISED_USERS)
 #error "Supervised users aren't enabled."
 #endif
 
