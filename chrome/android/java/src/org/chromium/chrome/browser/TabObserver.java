@@ -183,6 +183,18 @@ public interface TabObserver {
      */
     public void onDidChangeThemeColor(int color);
 
+    /**
+     * Called when an interstitial page gets attached to the tab content.
+     * @param tab The notifying {@link Tab}.
+     */
+    public void onDidAttachInterstitialPage(Tab tab);
+
+    /**
+     * Called when an interstitial page gets detached from the tab content.
+     * @param tab The notifying {@link Tab}.
+     */
+    public void onDidDetachInterstitialPage(Tab tab);
+
     public void webContentsCreated(Tab tab, long sourceWebContents, long openerRenderFrameId,
             String frameName, String targetUrl, long newWebContents);
 }
