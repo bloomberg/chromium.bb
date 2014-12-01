@@ -1,6 +1,11 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 * Noteworthy changes in release 2.6.1 (2014-12-01)
+This release focuses on table and documentation improvements. The
+documentation has been restructured to cater to people starting with
+writing Braille tables. End users will see improvements to Braille for
+Danish, Dutch, Hungarian, Irish and UK English.
+
 ** New features
 *** New Braille tables
 - New grade 1 and grade 2 Gaeilge tables implementing the 2014 UIB
@@ -13,11 +18,14 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   thanks to Paul Wood, Mesar Hameed
 - Vastly improved Danish tables thanks to Bue Vester-Andersen
   - back-translation, both in 6 dots grade 2 and 8 dots grade 2.
-  - Better handling of dash, slash, and other punctuation within words in 8 dots grade 2.
+  - Better handling of dash, slash, and other punctuation within words
+    in 8 dots grade 2.
 - New table for Dutch (Netherlands) thanks to Henri Apperloo from CBB
 
 ** Backwards incompatible changes
 - Deleted ga.ctb now superseded by ga-g1.utb and ga.g2.ctb.
+- Nl-Nl-g1.utb has been removed. It is superseded by nl-NL-g1.ctb.
+- nl-be-g1.utb has been removed. It is superseded by nl-BE-g1.ctb.
 
 ** Bug fixes
 - fix a compiler warning in the logging code. Thanks Peter Lundblad
@@ -30,7 +38,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
 ** Other changes
 - When compiling with mingw or cygwin resulting dll is liblouis.dll.
-- runHarness.py: add new output format, conpact output mode suitable
+- runHarness.py: add new output format, compact output mode suitable
   for grepping.
 
 * Noteworthy changes in release 2.6.0 (2014-09-01)
