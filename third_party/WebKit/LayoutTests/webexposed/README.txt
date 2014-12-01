@@ -2,6 +2,5 @@ DumpRenderTree runs with a default set of runtime flags enabled.
 Thus the results in this directory serve to document Blink's
 complete API as visible during testing.
 
-Eventually we should add a virtual/stable test suite which runs only
-with the flags exposed in the stable channel for more precise
-web API testing. See http://crbug.com/234853
+virtual/stable/webexposed/ runs the same tests without the experimental and test
+flags enabled. It is testing what is exposed to the stable channel.
