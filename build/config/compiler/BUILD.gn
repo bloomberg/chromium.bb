@@ -517,7 +517,7 @@ config("runtime_library") {
       "-isystem" + rebase_path("$android_stlport_root/stlport",
                                root_build_dir)
     ]
-    if (arm_use_thumb) {
+    if (cpu_arch == "arm" && arm_use_thumb) {
       lib_dirs += [ "$android_stlport_root/libs/$android_app_abi/thumb" ]
     } else {
       lib_dirs += [ "$android_stlport_root/libs/$android_app_abi" ]
