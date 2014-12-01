@@ -112,7 +112,8 @@ class DeviceLocalAccountPolicyBroker
 
  private:
   void CreateComponentCloudPolicyService(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
+      const scoped_refptr<net::URLRequestContextGetter>& request_context,
+      CloudPolicyClient* client);
 
   const std::string account_id_;
   const std::string user_id_;

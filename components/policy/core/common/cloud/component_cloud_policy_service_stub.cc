@@ -15,6 +15,7 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
     Delegate* delegate,
     SchemaRegistry* schema_registry,
     CloudPolicyCore* core,
+    CloudPolicyClient* client,
     scoped_refptr<net::URLRequestContextGetter> request_context,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)

@@ -84,7 +84,8 @@ class POLICY_EXPORT CloudPolicyManager
 
   void CreateComponentCloudPolicyService(
       const base::FilePath& policy_cache_path,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
+      const scoped_refptr<net::URLRequestContextGetter>& request_context,
+      CloudPolicyClient* client);
 
   void ClearAndDestroyComponentCloudPolicyService();
 

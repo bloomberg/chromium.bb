@@ -173,11 +173,11 @@ void DeviceLocalAccountPolicyBroker::ConnectIfPossible(
   if (!client)
     return;
 
+  CreateComponentCloudPolicyService(request_context, client.get());
   core_.Connect(client.Pass());
   external_data_manager_->Connect(request_context);
   core_.StartRefreshScheduler();
   UpdateRefreshDelay();
-  CreateComponentCloudPolicyService(request_context);
 }
 
 void DeviceLocalAccountPolicyBroker::UpdateRefreshDelay() {
@@ -213,7 +213,8 @@ void DeviceLocalAccountPolicyBroker::OnComponentCloudPolicyUpdated() {
 }
 
 void DeviceLocalAccountPolicyBroker::CreateComponentCloudPolicyService(
-    const scoped_refptr<net::URLRequestContextGetter>& request_context) {
+    const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    CloudPolicyClient* client) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableComponentCloudPolicy)) {
     // Disabled via the command line.
@@ -229,6 +230,7 @@ void DeviceLocalAccountPolicyBroker::CreateComponentCloudPolicyService(
       this,
       &schema_registry_,
       core(),
+      client,
       resource_cache.Pass(),
       request_context,
       content::BrowserThread::GetMessageLoopProxyForThread(

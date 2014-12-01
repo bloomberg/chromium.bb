@@ -65,6 +65,12 @@ class POLICY_EXPORT ComponentCloudPolicyService
   // and registration credentials; the client will be used to fetch cloud
   // policy. It must outlive this object.
   //
+  // The |core| MUST not be connected yet when this service is created;
+  // |client| must be the client that will be connected to the |core|. This
+  // is important to make sure that this service appends any necessary policy
+  // fetch types to the |client| before the |core| gets connected and before
+  // the initial policy fetch request is sent out.
+  //
   // |cache| is used to load and store local copies of the downloaded policies.
   //
   // Download scheduling, validation and caching of policies are done via the
@@ -76,6 +82,7 @@ class POLICY_EXPORT ComponentCloudPolicyService
       Delegate* delegate,
       SchemaRegistry* schema_registry,
       CloudPolicyCore* core,
+      CloudPolicyClient* client,
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
       scoped_ptr<ResourceCache> cache,
 #endif

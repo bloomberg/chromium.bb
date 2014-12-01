@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -25,9 +26,19 @@
 
 namespace em = enterprise_management;
 
+typedef base::ScopedPtrHashMap<policy::PolicyNamespace, em::PolicyFetchResponse>
+    ScopedResponseMap;
+
 namespace policy {
 
 namespace {
+
+bool NotInResponseMap(const ScopedResponseMap& map,
+                      const std::string& component_id) {
+  // This helper only works for POLICY_DOMAIN_EXTENSIONS for now. Parameterize
+  // this and update SetCurrentPolicies() below later if appropriate.
+  return !map.contains(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, component_id));
+}
 
 bool NotInSchemaMap(const scoped_refptr<SchemaMap> schema_map,
                     PolicyDomain domain,
@@ -72,9 +83,12 @@ class ComponentCloudPolicyService::Backend
   // Loads the |store_| and starts downloading updates.
   void Init(scoped_refptr<SchemaMap> schema_map);
 
-  // Passes a policy protobuf to the backend, to start its validation and
-  // eventual download of the policy data on the background thread.
-  void UpdateExternalPolicy(scoped_ptr<em::PolicyFetchResponse> response);
+  // Passes a map with all the PolicyFetchResponses for components currently
+  // set at the server. Any components without an entry in |responses|
+  // will have their cache purged after this call.
+  // Otherwise the backend will start the validation and eventual download of
+  // the policy data for each PolicyFetchResponse in |responses|.
+  void SetCurrentPolicies(scoped_ptr<ScopedResponseMap> responses);
 
   // ComponentCloudPolicyStore::Delegate implementation:
   void OnComponentCloudPolicyStoreUpdated() override;
@@ -163,9 +177,16 @@ void ComponentCloudPolicyService::Backend::Init(
   initialized_ = true;
 }
 
-void ComponentCloudPolicyService::Backend::UpdateExternalPolicy(
-    scoped_ptr<em::PolicyFetchResponse> response) {
-  updater_->UpdateExternalPolicy(response.Pass());
+void ComponentCloudPolicyService::Backend::SetCurrentPolicies(
+    scoped_ptr<ScopedResponseMap> responses) {
+  // Purge any components that don't have a policy configured at the server.
+  store_.Purge(POLICY_DOMAIN_EXTENSIONS,
+               base::Bind(&NotInResponseMap, base::ConstRef(*responses)));
+
+  for (ScopedResponseMap::iterator it = responses->begin();
+       it != responses->end(); ++it) {
+    updater_->UpdateExternalPolicy(responses->take(it));
+  }
 }
 
 void ComponentCloudPolicyService::Backend::
@@ -205,6 +226,7 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
     Delegate* delegate,
     SchemaRegistry* schema_registry,
     CloudPolicyCore* core,
+    CloudPolicyClient* client,
     scoped_ptr<ResourceCache> cache,
     scoped_refptr<net::URLRequestContextGetter> request_context,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
@@ -221,6 +243,8 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
       loaded_initial_policy_(false),
       is_registered_for_cloud_policy_(false),
       weak_ptr_factory_(this) {
+  CHECK(!core_->client());
+
   external_policy_data_fetcher_backend_.reset(
       new ExternalPolicyDataFetcherBackend(io_task_runner_, request_context));
 
@@ -244,8 +268,11 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
 
   // Start observing the core and tracking the state of the client.
   core_->AddObserver(this);
-  if (core_->client())
-    OnCoreConnected(core_);
+  client->AddObserver(this);
+
+  // Register the supported policy domains at the client.
+  client->AddPolicyTypeToFetch(dm_protocol::kChromeExtensionPolicyType,
+                               std::string());
 }
 
 ComponentCloudPolicyService::~ComponentCloudPolicyService() {
@@ -302,13 +329,6 @@ void ComponentCloudPolicyService::OnSchemaRegistryUpdated(
 void ComponentCloudPolicyService::OnCoreConnected(CloudPolicyCore* core) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(core_, core);
-
-  core_->client()->AddObserver(this);
-
-  // Register the supported policy domains at the client.
-  core_->client()->AddPolicyTypeToFetch(
-      dm_protocol::kChromeExtensionPolicyType, std::string());
-
   // Immediately load any PolicyFetchResponses that the client may already
   // have if the backend is ready.
   if (loaded_initial_policy_)
@@ -394,23 +414,34 @@ void ComponentCloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
     return;
   }
 
-  // Pass each PolicyFetchResponse whose policy type is registered to the
-  // Backend.
+  if (core_->client()->responses().empty()) {
+    // The client's responses will be empty if it hasn't fetched policy from the
+    // DMServer yet. Make sure we don't purge the caches in this case.
+    return;
+  }
+
+  // Pass a complete list of all the currently managed extensions to the
+  // backend. The cache will purge the storage for any extensions that are not
+  // in this list.
+  scoped_ptr<ScopedResponseMap> valid_responses(new ScopedResponseMap());
+
   const CloudPolicyClient::ResponseMap& responses =
       core_->client()->responses();
   for (auto it = responses.begin(); it != responses.end(); ++it) {
     PolicyNamespace ns;
-    if (ToPolicyNamespace(it->first, &ns) &&
-        current_schema_map_->GetSchema(ns)) {
-      scoped_ptr<em::PolicyFetchResponse> response(
-          new em::PolicyFetchResponse(*it->second));
-      backend_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&Backend::UpdateExternalPolicy,
-                     base::Unretained(backend_.get()),
-                     base::Passed(&response)));
+    if (!ToPolicyNamespace(it->first, &ns) ||
+        !current_schema_map_->GetSchema(ns)) {
+      continue;
     }
+    valid_responses->set(
+        ns, make_scoped_ptr(new em::PolicyFetchResponse(*it->second)));
   }
+
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&Backend::SetCurrentPolicies,
+                 base::Unretained(backend_.get()),
+                 base::Passed(&valid_responses)));
 }
 
 void ComponentCloudPolicyService::OnRegistrationStateChanged(

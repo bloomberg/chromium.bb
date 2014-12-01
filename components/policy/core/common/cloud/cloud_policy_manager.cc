@@ -108,12 +108,16 @@ void CloudPolicyManager::GetChromePolicy(PolicyMap* policy_map) {
 
 void CloudPolicyManager::CreateComponentCloudPolicyService(
     const base::FilePath& policy_cache_path,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context) {
+    const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    CloudPolicyClient* client) {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Init() must have been called.
-  DCHECK(schema_registry());
+  CHECK(schema_registry());
   // Called at most once.
-  DCHECK(!component_policy_service_);
+  CHECK(!component_policy_service_);
+  // The core can't be connected yet.
+  // See the comments on ComponentCloudPolicyService for the details.
+  CHECK(!core()->client());
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableComponentCloudPolicy) ||
@@ -130,6 +134,7 @@ void CloudPolicyManager::CreateComponentCloudPolicyService(
       this,
       schema_registry(),
       core(),
+      client,
       resource_cache.Pass(),
       request_context,
       file_task_runner_,

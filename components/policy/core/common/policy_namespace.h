@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_POLICY_NAMESPACE_H_
 #define COMPONENTS_POLICY_CORE_COMMON_POLICY_NAMESPACE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "components/policy/policy_export.h"
 
 namespace policy {
@@ -48,5 +51,19 @@ struct POLICY_EXPORT PolicyNamespace {
 typedef std::vector<PolicyNamespace> PolicyNamespaceList;
 
 }  // namespace policy
+
+// Define a custom std::hash for PolicyNamespace so that it can be used as
+// a key in hash_maps, and in particular in ScopedPtrHashMaps (which uses the
+// default std::hash).
+namespace BASE_HASH_NAMESPACE {
+
+template <>
+struct hash<policy::PolicyNamespace> {
+  std::size_t operator()(const policy::PolicyNamespace& ns) const {
+    return hash<std::string>()(ns.component_id) ^ (UINT64_C(1) << ns.domain);
+  }
+};
+
+}  // namespace BASE_HASH_NAMESPACE
 
 #endif  // COMPONENTS_POLICY_CORE_COMMON_POLICY_NAMESPACE_H_

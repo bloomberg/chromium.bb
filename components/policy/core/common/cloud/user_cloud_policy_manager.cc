@@ -53,15 +53,14 @@ void UserCloudPolicyManager::Connect(
     PrefService* local_state,
     scoped_refptr<net::URLRequestContextGetter> request_context,
     scoped_ptr<CloudPolicyClient> client) {
+  CreateComponentCloudPolicyService(component_policy_cache_path_,
+                                    request_context, client.get());
   core()->Connect(client.Pass());
   core()->StartRefreshScheduler();
   core()->TrackRefreshDelayPref(local_state,
                                 policy_prefs::kUserPolicyRefreshRate);
   if (external_data_manager_)
     external_data_manager_->Connect(request_context);
-
-  CreateComponentCloudPolicyService(component_policy_cache_path_,
-                                    request_context);
 }
 
 // static
