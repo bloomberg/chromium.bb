@@ -72,6 +72,34 @@ class InfoBarResponder : public infobars::InfoBarManager::Observer {
   bool accept_;
   bool has_observed_;
 };
+
+// Class to instantiate on the stack that is meant to be used with
+// FakeGCMProfileService. The ::Run() method follows the signature of
+// FakeGCMProfileService::UnregisterCallback.
+class UnregistrationCallback {
+ public:
+  UnregistrationCallback() : done_(false) {}
+
+  void Run(const std::string& app_id) {
+    app_id_ = app_id;
+    done_ = true;
+    base::MessageLoop::current()->Quit();
+  }
+
+  void WaitUntilSatisfied() {
+    while (!done_)
+      content::RunMessageLoop();
+  }
+
+  const std::string& app_id() {
+    return app_id_;
+  }
+
+ private:
+  bool done_;
+  std::string app_id_;
+};
+
 }  // namespace
 
 class PushMessagingBrowserTest : public InProcessBrowserTest {
@@ -235,6 +263,55 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
   push_service()->OnMessage(app_id.ToString(), message);
   ASSERT_TRUE(RunScript("pushData.get()", &script_result));
   EXPECT_EQ("testdata", script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
+
+  InfoBarResponder accepting_responder(browser(), true);
+  ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
+  ASSERT_EQ("permission status - granted", script_result);
+
+  ASSERT_TRUE(RunScript("registerPush()", &script_result));
+  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1", script_result);
+
+  PushMessagingApplicationId app_id(https_server()->GetURL(""), 0L);
+  EXPECT_EQ(app_id.ToString(), gcm_service()->last_registered_app_id());
+  EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("false - is not controlled", script_result);
+
+  loadTestPage();  // Reload to become controlled.
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("true - is controlled", script_result);
+
+  // Unregister service worker. Sending a message should now fail.
+  ASSERT_TRUE(RunScript("unregisterServiceWorker()", &script_result));
+  ASSERT_EQ("service worker unregistration status: true", script_result);
+
+  // When the push service will receive it next message, given that there is no
+  // SW available, it should unregister |app_id|.
+  UnregistrationCallback callback;
+  gcm_service()->SetUnregisterCallback(base::Bind(&UnregistrationCallback::Run,
+                                                  base::Unretained(&callback)));
+
+  GCMClient::IncomingMessage message;
+  GCMClient::MessageData messageData;
+  messageData.insert(std::pair<std::string, std::string>("data", "testdata"));
+  message.data = messageData;
+  push_service()->OnMessage(app_id.ToString(), message);
+
+  callback.WaitUntilSatisfied();
+  EXPECT_EQ(app_id.ToString(), callback.app_id());
+
+  // No push data should have been received.
+  ASSERT_TRUE(RunScript("pushData.getImmediately()", &script_result));
+  EXPECT_EQ("null", script_result);
 }
 
 }  // namespace gcm

@@ -48,6 +48,10 @@
       }
     };
 
+    FutureData.prototype.getImmediately = function() {
+      sendResultToTest(this.data);
+    };
+
     function requestNotificationPermission() {
       Notification.requestPermission(function(permission) {
         sendResultToTest('permission status - ' + permission);
@@ -59,6 +63,14 @@
           function(swRegistration) {
             sendResultToTest('ok - service worker registered');
           }, sendErrorToTest);
+    }
+
+    function unregisterServiceWorker() {
+      navigator.serviceWorker.getRegistration().then(function(swRegistration) {
+        swRegistration.unregister().then(function(result) {
+          sendResultToTest('service worker unregistration status: ' + result);
+        })
+      }).catch(sendErrorToTest);
     }
 
     function removeManifest() {

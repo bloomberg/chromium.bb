@@ -143,6 +143,9 @@ void FakeGCMProfileService::UnregisterFinished(const std::string& app_id) {
   CustomFakeGCMDriver* custom_driver =
       static_cast<CustomFakeGCMDriver*>(driver());
   custom_driver->OnUnregisterFinished(app_id, result);
+
+  if (!unregister_callback_.is_null())
+    unregister_callback_.Run(app_id);
 }
 
 void FakeGCMProfileService::SendFinished(
@@ -162,6 +165,11 @@ void FakeGCMProfileService::SendFinished(
 void FakeGCMProfileService::AddExpectedUnregisterResponse(
     GCMClient::Result result) {
   unregister_responses_.push_back(result);
+}
+
+void FakeGCMProfileService::SetUnregisterCallback(
+    const UnregisterCallback& callback) {
+  unregister_callback_ = callback;
 }
 
 }  // namespace gcm

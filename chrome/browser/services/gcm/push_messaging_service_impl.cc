@@ -184,6 +184,15 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     content::PushDeliveryStatus status) {
   // TODO(mvanouwerkerk): UMA logging.
   // TODO(mvanouwerkerk): Is there a way to recover from failure?
+  switch (status) {
+    case content::PUSH_DELIVERY_STATUS_SUCCESS:
+    case content::PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR:
+    case content::PUSH_DELIVERY_STATUS_EVENT_WAITUNTIL_REJECTED:
+      break;
+    case content::PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER:
+      Unregister(application_id);
+      break;
+  }
 }
 
 void PushMessagingServiceImpl::OnMessagesDeleted(const std::string& app_id) {
@@ -356,6 +365,23 @@ void PushMessagingServiceImpl::DidRequestPermission(
                  register_callback));
 }
 
-// TODO(johnme): Unregister should call DecreasePushRegistrationCount.
+void PushMessagingServiceImpl::Unregister(
+    const PushMessagingApplicationId& application_id) {
+  DCHECK(gcm_profile_service_->driver());
+
+  gcm_profile_service_->driver()->Unregister(
+      application_id.ToString(),
+      base::Bind(&PushMessagingServiceImpl::DidUnregister,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void PushMessagingServiceImpl::DidUnregister(GCMClient::Result result) {
+  if (result != GCMClient::SUCCESS) {
+    DVLOG(1) << "GCM unregistration failed.";
+    return;
+  }
+
+  DecreasePushRegistrationCount(1);
+}
 
 }  // namespace gcm

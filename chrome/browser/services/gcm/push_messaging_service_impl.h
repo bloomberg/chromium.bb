@@ -90,6 +90,12 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const content::PushMessagingService::RegisterCallback& callback,
       bool allow);
 
+  // TODO(mvanouwerkerk): this will need to be extended and move to the
+  // PushMessagingService interface later.
+  void Unregister(const PushMessagingApplicationId& application_id);
+
+  void DidUnregister(GCMClient::Result result);
+
   GCMProfileService* gcm_profile_service_;  // It owns us.
 
   Profile* profile_;  // It owns our owner.
