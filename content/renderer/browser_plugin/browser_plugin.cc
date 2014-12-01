@@ -447,10 +447,7 @@ void BrowserPlugin::PopulateResizeGuestParameters(
     BrowserPluginHostMsg_ResizeGuest_Params* params) {
   params->view_size = view_size;
   params->scale_factor = GetDeviceScaleFactor();
-  if (last_device_scale_factor_ != params->scale_factor) {
-    last_device_scale_factor_ = params->scale_factor;
-    params->repaint = true;
-  }
+  last_device_scale_factor_ = params->scale_factor;
 }
 
 void BrowserPlugin::updateFocus(bool focused) {

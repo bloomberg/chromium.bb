@@ -666,12 +666,14 @@ void BrowserPluginGuest::OnResizeGuest(
     const BrowserPluginHostMsg_ResizeGuest_Params& params) {
   // If we are setting the size for the first time before navigating then
   // BrowserPluginGuest does not yet have a RenderViewHost.
+  bool repaint = false;
   if (guest_device_scale_factor_ != params.scale_factor &&
       GetWebContents()->GetRenderViewHost()) {
     RenderWidgetHostImpl* render_widget_host =
         RenderWidgetHostImpl::From(GetWebContents()->GetRenderViewHost());
     guest_device_scale_factor_ = params.scale_factor;
     render_widget_host->NotifyScreenInfoChanged();
+    repaint = true;
   }
 
   if (last_seen_browser_plugin_size_ != params.view_size) {
@@ -683,7 +685,7 @@ void BrowserPluginGuest::OnResizeGuest(
   // Just resize the WebContents and repaint if needed.
   if (!params.view_size.IsEmpty())
     GetWebContents()->GetView()->SizeContents(params.view_size);
-  if (params.repaint)
+  if (repaint)
     Send(new ViewMsg_Repaint(routing_id(), params.view_size));
 }
 

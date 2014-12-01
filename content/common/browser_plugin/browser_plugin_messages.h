@@ -41,10 +41,6 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_ResizeGuest_Params)
   IPC_STRUCT_MEMBER(gfx::Size, view_size)
   // Indicates the scale factor of the embedder WebView.
   IPC_STRUCT_MEMBER(float, scale_factor)
-  // Indicates a request for a full repaint of the page.
-  // This is required for switching from compositing to the software
-  // rendering path.
-  IPC_STRUCT_MEMBER(bool, repaint)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_Attach_Params)
