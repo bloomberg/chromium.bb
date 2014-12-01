@@ -37,17 +37,6 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
   if (opt_metadata.external && opt_metadata.external.customIconUrl)
     this.fallbackUrl_ = opt_metadata.external.customIconUrl;
 
-  // Fetch the rotation from the external properties (if available).
-  var externalTransform;
-  if (opt_metadata.external &&
-      opt_metadata.external.imageRotation !== undefined) {
-    externalTransform = {
-      scaleX: 1,
-      scaleY: 1,
-      rotate90: opt_metadata.external.imageRotation / 90
-    };
-  }
-
   if (((opt_metadata.thumbnail && opt_metadata.thumbnail.url) ||
        (opt_metadata.external && opt_metadata.external.thumbnailUrl)) &&
       opt_useEmbedded === ThumbnailLoader.UseEmbedded.USE_EMBEDDED) {
@@ -57,12 +46,11 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
     this.thumbnailUrl_ =
         (opt_metadata.thumbnail && opt_metadata.thumbnail.url) ||
         (opt_metadata.external && opt_metadata.external.thumbnailUrl);
-    this.transform_ = externalTransform !== undefined ? externalTransform :
-        (opt_metadata.thumbnail && opt_metadata.thumbnail.transform);
+    this.transform_ =
+        opt_metadata.thumbnail && opt_metadata.thumbnail.transform;
   } else if (FileType.isImage(entry)) {
     this.thumbnailUrl_ = entry.toURL();
-    this.transform_ = externalTransform !== undefined ? externalTransform :
-        opt_metadata.media && opt_metadata.media.imageTransform;
+    this.transform_ = opt_metadata.media && opt_metadata.media.imageTransform;
   } else if (this.fallbackUrl_) {
     // Use fallback as the primary thumbnail.
     this.thumbnailUrl_ = this.fallbackUrl_;
