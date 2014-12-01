@@ -40,6 +40,37 @@ class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
 
 }  // namespace
 
+VideoResourceUpdater::PlaneResource::PlaneResource(
+    unsigned int resource_id,
+    const gfx::Size& resource_size,
+    ResourceFormat resource_format,
+    gpu::Mailbox mailbox)
+    : resource_id(resource_id),
+      resource_size(resource_size),
+      resource_format(resource_format),
+      mailbox(mailbox),
+      frame_ptr(nullptr),
+      plane_index(0) {
+}
+
+bool VideoResourceUpdater::PlaneResourceMatchesUniqueID(
+    const PlaneResource& plane_resource,
+    const media::VideoFrame* video_frame,
+    int plane_index) {
+  return plane_resource.frame_ptr == video_frame &&
+         plane_resource.plane_index == plane_index &&
+         plane_resource.timestamp == video_frame->timestamp();
+}
+
+void VideoResourceUpdater::SetPlaneResourceUniqueId(
+    const media::VideoFrame* video_frame,
+    int plane_index,
+    PlaneResource* plane_resource) {
+  plane_resource->frame_ptr = video_frame;
+  plane_resource->plane_index = plane_index;
+  plane_resource->timestamp = video_frame->timestamp();
+}
+
 VideoFrameExternalResources::VideoFrameExternalResources() : type(NONE) {}
 
 VideoFrameExternalResources::~VideoFrameExternalResources() {}
@@ -171,56 +202,55 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       break;
     }
 
-    ResourceProvider::ResourceId resource_id = 0;
-    gpu::Mailbox mailbox;
-
     // Try recycle a previously-allocated resource.
-    for (size_t i = 0; i < recycled_resources_.size(); ++i) {
-      bool resource_matches =
-          recycled_resources_[i].resource_format == output_resource_format &&
-          recycled_resources_[i].resource_size == output_plane_resource_size;
-      bool not_in_use =
-          !software_compositor || !resource_provider_->InUseByConsumer(
-                                       recycled_resources_[i].resource_id);
-      if (resource_matches && not_in_use) {
-        resource_id = recycled_resources_[i].resource_id;
-        mailbox = recycled_resources_[i].mailbox;
-        recycled_resources_.erase(recycled_resources_.begin() + i);
-        break;
+    auto recycled_it = recycled_resources_.end();
+    for (auto it = recycled_resources_.begin(); it != recycled_resources_.end();
+         ++it) {
+      const bool resource_matches =
+          it->resource_format == output_resource_format &&
+          it->resource_size == output_plane_resource_size;
+      const bool in_use = software_compositor &&
+                          resource_provider_->InUseByConsumer(it->resource_id);
+      if (resource_matches && !in_use) {
+        // We found a recycled resource with the allocation size and format we
+        // are looking for.
+        recycled_it = it;
+        // Keep looking for a recycled resource that also contains the data we
+        // are planning to put in it.
+        if (PlaneResourceMatchesUniqueID(*it, video_frame.get(), i))
+          break;
       }
     }
 
-    if (resource_id == 0) {
-      // TODO(danakj): Abstract out hw/sw resource create/delete from
-      // ResourceProvider and stop using ResourceProvider in this class.
-      resource_id = resource_provider_->CreateResource(
-          output_plane_resource_size,
-          GL_CLAMP_TO_EDGE,
-          ResourceProvider::TextureHintImmutable,
-          output_resource_format);
-
-      DCHECK(mailbox.IsZero());
-
-      if (!software_compositor) {
-        DCHECK(context_provider_);
-
-        gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
-
-        GLC(gl, gl->GenMailboxCHROMIUM(mailbox.name));
-        ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
-                                                 resource_id);
-        GLC(gl,
-            gl->ProduceTextureDirectCHROMIUM(
-                lock.texture_id(), GL_TEXTURE_2D, mailbox.name));
-      }
-
-      if (resource_id)
-        all_resources_.push_back(resource_id);
+    // Check if we can avoid allocating a new resource.
+    if (recycled_it != recycled_resources_.end()) {
+      plane_resources.push_back(*recycled_it);
+      recycled_resources_.erase(recycled_it);
+      continue;
     }
 
+    // TODO(danakj): Abstract out hw/sw resource create/delete from
+    // ResourceProvider and stop using ResourceProvider in this class.
+    const ResourceProvider::ResourceId resource_id =
+        resource_provider_->CreateResource(
+            output_plane_resource_size, GL_CLAMP_TO_EDGE,
+            ResourceProvider::TextureHintImmutable, output_resource_format);
     if (resource_id == 0) {
       allocation_success = false;
       break;
+    }
+    all_resources_.push_back(resource_id);
+
+    gpu::Mailbox mailbox;
+    if (!software_compositor) {
+      DCHECK(context_provider_);
+
+      gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+
+      GLC(gl, gl->GenMailboxCHROMIUM(mailbox.name));
+      ResourceProvider::ScopedWriteLockGL lock(resource_provider_, resource_id);
+      GLC(gl, gl->ProduceTextureDirectCHROMIUM(lock.texture_id(), GL_TEXTURE_2D,
+                                               mailbox.name));
     }
 
     DCHECK(software_compositor || !mailbox.IsZero());
@@ -243,26 +273,23 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     DCHECK_EQ(plane_resources[0].resource_format, kRGBResourceFormat);
     DCHECK(plane_resources[0].mailbox.IsZero());
 
-    if (!video_renderer_)
-      video_renderer_.reset(new media::SkCanvasVideoRenderer);
+    if (!PlaneResourceMatchesUniqueID(plane_resources[0], video_frame.get(),
+                                      0)) {
+      // We need to transfer data from |video_frame| to the plane resource.
+      if (!video_renderer_)
+        video_renderer_.reset(new media::SkCanvasVideoRenderer);
 
-    {
       ResourceProvider::ScopedWriteLockSoftware lock(
           resource_provider_, plane_resources[0].resource_id);
       SkCanvas canvas(lock.sk_bitmap());
       video_renderer_->Copy(video_frame, &canvas);
+      SetPlaneResourceUniqueId(video_frame.get(), 0, &plane_resources[0]);
     }
 
-    RecycleResourceData recycle_data = {
-      plane_resources[0].resource_id,
-      plane_resources[0].resource_size,
-      plane_resources[0].resource_format,
-      gpu::Mailbox()
-    };
     external_resources.software_resources.push_back(
         plane_resources[0].resource_id);
     external_resources.software_release_callback =
-        base::Bind(&RecycleResource, AsWeakPtr(), recycle_data);
+        base::Bind(&RecycleResource, AsWeakPtr(), plane_resources[0]);
     external_resources.type = VideoFrameExternalResources::SOFTWARE_RESOURCE;
 
     return external_resources;
@@ -272,30 +299,24 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     // Update each plane's resource id with its content.
     DCHECK_EQ(plane_resources[i].resource_format, kYUVResourceFormat);
 
-    const uint8_t* input_plane_pixels = video_frame->data(i);
+    if (!PlaneResourceMatchesUniqueID(plane_resources[i], video_frame.get(),
+                                      i)) {
+      // We need to transfer data from |video_frame| to the plane resource.
+      const uint8_t* input_plane_pixels = video_frame->data(i);
 
-    gfx::Rect image_rect(0,
-                         0,
-                         video_frame->stride(i),
-                         plane_resources[i].resource_size.height());
-    gfx::Rect source_rect(plane_resources[i].resource_size);
-    resource_provider_->SetPixels(plane_resources[i].resource_id,
-                                  input_plane_pixels,
-                                  image_rect,
-                                  source_rect,
-                                  gfx::Vector2d());
-
-    RecycleResourceData recycle_data = {
-      plane_resources[i].resource_id,
-      plane_resources[i].resource_size,
-      plane_resources[i].resource_format,
-      plane_resources[i].mailbox
-    };
+      gfx::Rect image_rect(0, 0, video_frame->stride(i),
+                           plane_resources[i].resource_size.height());
+      gfx::Rect source_rect(plane_resources[i].resource_size);
+      resource_provider_->SetPixels(plane_resources[i].resource_id,
+                                    input_plane_pixels, image_rect, source_rect,
+                                    gfx::Vector2d());
+      SetPlaneResourceUniqueId(video_frame.get(), i, &plane_resources[i]);
+    }
 
     external_resources.mailboxes.push_back(
         TextureMailbox(plane_resources[i].mailbox, GL_TEXTURE_2D, 0));
     external_resources.release_callbacks.push_back(
-        base::Bind(&RecycleResource, AsWeakPtr(), recycle_data));
+        base::Bind(&RecycleResource, AsWeakPtr(), plane_resources[i]));
   }
 
   external_resources.type = VideoFrameExternalResources::YUV_RESOURCE;
@@ -362,7 +383,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
 // static
 void VideoResourceUpdater::RecycleResource(
     base::WeakPtr<VideoResourceUpdater> updater,
-    RecycleResourceData data,
+    PlaneResource data,
     uint32 sync_point,
     bool lost_resource,
     BlockingTaskRunner* main_thread_task_runner) {
@@ -385,16 +406,12 @@ void VideoResourceUpdater::RecycleResource(
   // Drop recycled resources that are the wrong format.
   while (!updater->recycled_resources_.empty() &&
          updater->recycled_resources_.back().resource_format !=
-         data.resource_format) {
+             data.resource_format) {
     updater->DeleteResource(updater->recycled_resources_.back().resource_id);
     updater->recycled_resources_.pop_back();
   }
 
-  PlaneResource recycled_resource(data.resource_id,
-                                  data.resource_size,
-                                  data.resource_format,
-                                  data.mailbox);
-  updater->recycled_resources_.push_back(recycled_resource);
+  updater->recycled_resources_.push_back(data);
 }
 
 }  // namespace cc
