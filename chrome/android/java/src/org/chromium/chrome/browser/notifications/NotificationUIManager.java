@@ -29,7 +29,24 @@ public class NotificationUIManager {
     private static final int NOTIFICATION_ICON_BG_COLOR = Color.rgb(150, 150, 150);
     private static final int NOTIFICATION_TEXT_SIZE_DP = 28;
 
+    /**
+     * The application has the ability to observe the UI manager by providing an Observer.
+     */
+    public interface Observer {
+        /**
+         * Will be called right before a notification is being displayed. The implementation may
+         * modify the Notification's builder.
+         *
+         * @param notificationBuilder The NotificationBuilder which is about to be shown.
+         * @param origin The origin which is displaying the notification.
+         */
+        void onBeforeDisplayNotification(Notification.Builder notificationBuilder,
+                                         String origin);
+    }
+
     private static NotificationUIManager sInstance;
+    private static Observer sObserver;
+
     private final long mNativeNotificationManager;
 
     private final Context mAppContext;
@@ -53,6 +70,19 @@ public class NotificationUIManager {
 
         sInstance = new NotificationUIManager(nativeNotificationManager, context);
         return sInstance;
+    }
+
+    /**
+     * Sets the optional observer to be used when displaying notifications. May be NULL.
+     *
+     * @param observer The observer to call when displaying notifications.
+     */
+    public static void setObserver(Observer observer) {
+        if (sObserver != null && observer != null) {
+            throw new IllegalStateException("There must only be one active Observer at a time.");
+        }
+
+        sObserver = observer;
     }
 
     private NotificationUIManager(long nativeNotificationManager, Context context) {
@@ -131,7 +161,7 @@ public class NotificationUIManager {
             icon = getIconGenerator().generateIconForUrl(origin);
         }
 
-        Notification notification = new Notification.Builder(mAppContext)
+        Notification.Builder notificationBuilder = new Notification.Builder(mAppContext)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setStyle(new Notification.BigTextStyle().bigText(body))
@@ -143,10 +173,13 @@ public class NotificationUIManager {
                 .setDeleteIntent(getPendingIntent(
                         notificationId, mLastNotificationId,
                         NotificationConstants.ACTION_CLOSE_NOTIFICATION))
-                .setSubText(origin)
-                .build();
+                .setSubText(origin);
 
-        mNotificationManager.notify(mLastNotificationId, notification);
+        if (sObserver != null) {
+            sObserver.onBeforeDisplayNotification(notificationBuilder, origin);
+        }
+
+        mNotificationManager.notify(mLastNotificationId, notificationBuilder.build());
 
         return mLastNotificationId++;
     }
