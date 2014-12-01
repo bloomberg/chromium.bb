@@ -115,9 +115,10 @@ PageHandler::PageHandler()
       screencast_max_width_(-1),
       screencast_max_height_(-1),
       capture_retry_count_(0),
-      has_last_compositor_frame_metadata_(false),
+      has_compositor_frame_metadata_(false),
       screencast_frame_sent_(0),
       screencast_frame_acked_(0),
+      processing_screencast_frame_(false),
       color_picker_(new ColorPicker(base::Bind(
           &PageHandler::OnColorPicked, base::Unretained(this)))),
       host_(nullptr),
@@ -146,8 +147,10 @@ void PageHandler::Detached() {
 
 void PageHandler::OnSwapCompositorFrame(
     const cc::CompositorFrameMetadata& frame_metadata) {
-  last_compositor_frame_metadata_ = frame_metadata;
-  has_last_compositor_frame_metadata_ = true;
+  last_compositor_frame_metadata_ = has_compositor_frame_metadata_ ?
+      next_compositor_frame_metadata_ : frame_metadata;
+  next_compositor_frame_metadata_ = frame_metadata;
+  has_compositor_frame_metadata_ = true;
 
   if (screencast_enabled_)
     InnerSwapCompositorFrame();
@@ -377,7 +380,7 @@ Response PageHandler::StartScreencast(const std::string* format,
   bool visible = !host_->is_hidden();
   NotifyScreencastVisibility(visible);
   if (visible) {
-    if (has_last_compositor_frame_metadata_)
+    if (has_compositor_frame_metadata_)
       InnerSwapCompositorFrame();
     else
       host_->Send(new ViewMsg_ForceRedraw(host_->GetRoutingID(), 0));
@@ -470,7 +473,7 @@ void PageHandler::NotifyScreencastVisibility(bool visible) {
 
 void PageHandler::InnerSwapCompositorFrame() {
   if (screencast_frame_sent_ - screencast_frame_acked_ >
-      kMaxScreencastFramesInFlight) {
+      kMaxScreencastFramesInFlight || processing_screencast_frame_) {
     return;
   }
 
@@ -508,6 +511,7 @@ void PageHandler::InnerSwapCompositorFrame() {
       gfx::ScaleSize(viewport_size_dip, scale)));
 
   if (snapshot_size_dip.width() > 0 && snapshot_size_dip.height() > 0) {
+    processing_screencast_frame_ = true;
     gfx::Rect viewport_bounds_dip(gfx::ToRoundedSize(viewport_size_dip));
     view->CopyFromCompositingSurface(
         viewport_bounds_dip,
@@ -524,6 +528,7 @@ void PageHandler::ScreencastFrameCaptured(
     const SkBitmap& bitmap,
     ReadbackResponse response) {
   if (response != READBACK_SUCCESS) {
+    processing_screencast_frame_ = false;
     if (capture_retry_count_) {
       --capture_retry_count_;
       base::MessageLoop::current()->PostDelayedTask(
@@ -546,6 +551,8 @@ void PageHandler::ScreencastFrameCaptured(
 void PageHandler::ScreencastFrameEncoded(
     const cc::CompositorFrameMetadata& metadata,
     const std::string& data) {
+  processing_screencast_frame_ = false;
+
   // Consider metadata empty in case it has no device scale factor.
   if (metadata.device_scale_factor == 0 || !host_ || data.empty())
     return;
