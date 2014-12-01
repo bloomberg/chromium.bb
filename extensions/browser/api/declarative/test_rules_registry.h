@@ -14,13 +14,12 @@ class TestRulesRegistry : public RulesRegistry {
  public:
   TestRulesRegistry(content::BrowserThread::ID owner_thread,
                     const std::string& event_name,
-                    const WebViewKey& webview_key);
-  TestRulesRegistry(
-      content::BrowserContext* browser_context,
-      const std::string& event_name,
-      content::BrowserThread::ID owner_thread,
-      RulesCacheDelegate* cache_delegate,
-      const WebViewKey& webview_key);
+                    int rules_registry_id);
+  TestRulesRegistry(content::BrowserContext* browser_context,
+                    const std::string& event_name,
+                    content::BrowserThread::ID owner_thread,
+                    RulesCacheDelegate* cache_delegate,
+                    int rules_registry_id);
 
   // RulesRegistry implementation:
   std::string AddRulesImpl(

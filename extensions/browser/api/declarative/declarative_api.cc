@@ -139,23 +139,26 @@ bool RulesFunction::RunAsync() {
   std::string event_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
 
-  int webview_instance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &webview_instance_id));
+  int web_view_instance_id = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &web_view_instance_id));
   int embedder_process_id = render_view_host()->GetProcess()->GetID();
 
-  bool has_webview = webview_instance_id != 0;
-  if (has_webview != IsWebViewEvent(event_name))
+  bool has_web_view = web_view_instance_id != 0;
+  if (has_web_view != IsWebViewEvent(event_name))
     EXTENSION_FUNCTION_ERROR(kWebViewExpectedError);
   event_name = GetWebRequestEventName(event_name);
 
-  // If we are not operating on a particular <webview>, then the key is (0, 0).
-  RulesRegistry::WebViewKey key(
-      webview_instance_id ? embedder_process_id : 0, webview_instance_id);
+  // If we are not operating on a particular <webview>, then the key is 0.
+  int rules_registry_id = RulesRegistryService::kDefaultRulesRegistryID;
+  if (has_web_view) {
+    rules_registry_id = WebViewGuest::GetOrGenerateRulesRegistryID(
+        embedder_process_id, web_view_instance_id, browser_context());
+  }
 
   // The following call will return a NULL pointer for apps_shell, but should
   // never be called there anyways.
   rules_registry_ = RulesRegistryService::Get(browser_context())->
-      GetRulesRegistry(key, event_name);
+      GetRulesRegistry(rules_registry_id, event_name);
   DCHECK(rules_registry_.get());
   // Raw access to this function is not available to extensions, therefore
   // there should never be a request for a nonexisting rules registry.

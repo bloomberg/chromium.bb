@@ -57,6 +57,13 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   static const char Type[];
 
+  // Return the stored rules registry ID of the given webview. Will generate
+  // an ID for the first query.
+  static int GetOrGenerateRulesRegistryID(
+      int embedder_process_id,
+      int web_view_instance_id,
+      content::BrowserContext* browser_context);
+
   // Request navigating the guest to the provided |src| URL.
   void NavigateGuest(const std::string& src, bool force_navigation);
 
@@ -236,6 +243,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
  private:
   friend class WebViewPermissionHelper;
+
   WebViewGuest(content::BrowserContext* browser_context,
                int guest_instance_id);
 
@@ -314,6 +322,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   bool HandleKeyboardShortcuts(const content::NativeWebKeyboardEvent& event);
 
   void SetUpAutoSize();
+
+  // Identifies the set of rules registries belonging to this guest.
+  int rules_registry_id_;
 
   // Handles find requests and replies for the webview find API.
   WebViewFindHelper find_helper_;

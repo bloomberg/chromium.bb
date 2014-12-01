@@ -39,12 +39,12 @@ namespace extensions {
 WebRequestRulesRegistry::WebRequestRulesRegistry(
     content::BrowserContext* browser_context,
     RulesCacheDelegate* cache_delegate,
-    const WebViewKey& webview_key)
+    int rules_registry_id)
     : RulesRegistry(browser_context,
                     declarative_webrequest_constants::kOnRequest,
                     content::BrowserThread::IO,
                     cache_delegate,
-                    webview_key),
+                    rules_registry_id),
       browser_context_(browser_context) {
   if (browser_context_)
     extension_info_map_ = ExtensionSystem::Get(browser_context_)->info_map();
@@ -180,10 +180,9 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
     DCHECK(registered_rules.find(rule_id) == registered_rules.end());
 
     scoped_ptr<WebRequestRule> webrequest_rule(WebRequestRule::Create(
-        url_matcher_.condition_factory(),
-        browser_context(), extension, extension_installation_time, *rule,
-        base::Bind(&Checker, base::Unretained(extension)),
-        &error));
+        url_matcher_.condition_factory(), browser_context(), extension,
+        extension_installation_time, *rule,
+        base::Bind(&Checker, base::Unretained(extension)), &error));
     if (!error.empty()) {
       // We don't return here, because we want to clear temporary
       // condition sets in the url_matcher_.

@@ -23,6 +23,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/api/activity_log/web_request_constants.h"
+#include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_rules_registry.h"
@@ -661,9 +662,9 @@ ExtensionWebRequestEventRouter::~ExtensionWebRequestEventRouter() {
 
 void ExtensionWebRequestEventRouter::RegisterRulesRegistry(
     void* browser_context,
-    const extensions::RulesRegistry::WebViewKey& webview_key,
+    int rules_registry_id,
     scoped_refptr<extensions::WebRequestRulesRegistry> rules_registry) {
-  RulesRegistryKey key(browser_context, webview_key);
+  RulesRegistryKey key(browser_context, rules_registry_id);
   if (rules_registry.get())
     rules_registries_[key] = rules_registry;
   else
@@ -1966,11 +1967,11 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     const net::HttpResponseHeaders* original_response_headers) {
   extensions::WebViewRendererState::WebViewInfo web_view_info;
   bool is_web_view_guest = GetWebViewInfo(request, &web_view_info);
+  int rules_registry_id = is_web_view_guest
+                              ? web_view_info.rules_registry_id
+                              : RulesRegistryService::kDefaultRulesRegistryID;
 
-  extensions::RulesRegistry::WebViewKey webview_key(
-      is_web_view_guest ? web_view_info.embedder_process_id : 0,
-      is_web_view_guest ? web_view_info.instance_id : 0);
-  RulesRegistryKey rules_key(browser_context, webview_key);
+  RulesRegistryKey rules_key(browser_context, rules_registry_id);
   // If this check fails, check that the active stages are up-to-date in
   // extensions/browser/api/declarative_webrequest/request_stage.h .
   DCHECK(request_stage & extensions::kActiveStages);
@@ -1992,8 +1993,8 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
   }
 
   void* cross_browser_context = GetCrossBrowserContext(browser_context);
-  RulesRegistryKey cross_browser_context_rules_key(
-      cross_browser_context, webview_key);
+  RulesRegistryKey cross_browser_context_rules_key(cross_browser_context,
+                                                   rules_registry_id);
   if (cross_browser_context &&
       rules_registries_.find(cross_browser_context_rules_key) !=
           rules_registries_.end()) {

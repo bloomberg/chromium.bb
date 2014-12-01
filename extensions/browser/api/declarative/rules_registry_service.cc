@@ -9,10 +9,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/declarative/rules_cache_delegate.h"
 #include "extensions/browser/api/declarative_content/content_rules_registry.h"
@@ -30,65 +26,66 @@ namespace {
 // Registers |web_request_rules_registry| on the IO thread.
 void RegisterToExtensionWebRequestEventRouterOnIO(
     content::BrowserContext* browser_context,
-    const RulesRegistryService::WebViewKey& webview_key,
+    int rules_registry_id,
     scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry) {
   ExtensionWebRequestEventRouter::GetInstance()->RegisterRulesRegistry(
-      browser_context, webview_key, web_request_rules_registry);
-}
-
-bool IsWebView(const RulesRegistryService::WebViewKey& webview_key) {
-  return webview_key.embedder_process_id && webview_key.webview_instance_id;
+      browser_context, rules_registry_id, web_request_rules_registry);
 }
 
 }  // namespace
 
+const int RulesRegistryService::kDefaultRulesRegistryID = 0;
+const int RulesRegistryService::kInvalidRulesRegistryID = -1;
+
 RulesRegistryService::RulesRegistryService(content::BrowserContext* context)
-    : content_rules_registry_(NULL),
+    : current_rules_registry_id_(kDefaultRulesRegistryID),
+      content_rules_registry_(NULL),
       extension_registry_observer_(this),
       browser_context_(context) {
   if (browser_context_) {
     extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
-    registrar_.Add(
-        this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        content::NotificationService::AllBrowserContextsAndSources());
-    EnsureDefaultRulesRegistriesRegistered(WebViewKey(0, 0));
+    EnsureDefaultRulesRegistriesRegistered(kDefaultRulesRegistryID);
   }
 }
 
 RulesRegistryService::~RulesRegistryService() {}
 
+int RulesRegistryService::GetNextRulesRegistryID() {
+  return ++current_rules_registry_id_;
+}
+
 void RulesRegistryService::EnsureDefaultRulesRegistriesRegistered(
-    const WebViewKey& webview_key) {
+    int rules_registry_id) {
   if (!browser_context_)
     return;
-
   RulesRegistryKey key(declarative_webrequest_constants::kOnRequest,
-                       webview_key);
+                       rules_registry_id);
   // If we can find the key in the |rule_registries_| then we have already
   // installed the default registries.
   if (ContainsKey(rule_registries_, key))
     return;
 
-
+  // Only cache rules for regular pages.
   RulesCacheDelegate* web_request_cache_delegate = NULL;
-  if (!IsWebView(webview_key)) {
+  if (rules_registry_id == kDefaultRulesRegistryID) {
+    // Create a RulesCacheDelegate.
     web_request_cache_delegate =
         new RulesCacheDelegate(true /*log_storage_init_delay*/);
     cache_delegates_.push_back(web_request_cache_delegate);
   }
   scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry(
-      new WebRequestRulesRegistry(browser_context_,
-                                  web_request_cache_delegate,
-                                  webview_key));
+      new WebRequestRulesRegistry(browser_context_, web_request_cache_delegate,
+                                  rules_registry_id));
 
   RegisterRulesRegistry(web_request_rules_registry);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&RegisterToExtensionWebRequestEventRouterOnIO,
-          browser_context_, webview_key, web_request_rules_registry));
+                 browser_context_, rules_registry_id,
+                 web_request_rules_registry));
 
-  // Only create a ContentRulesRegistry for regular pages and not webviews.
-  if (!IsWebView(webview_key)) {
+  // Only create a ContentRulesRegistry for regular pages.
+  if (rules_registry_id == kDefaultRulesRegistryID) {
     RulesCacheDelegate* content_rules_cache_delegate =
         new RulesCacheDelegate(false /*log_storage_init_delay*/);
     cache_delegates_.push_back(content_rules_cache_delegate);
@@ -113,8 +110,9 @@ void RulesRegistryService::Shutdown() {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&RegisterToExtensionWebRequestEventRouterOnIO,
-          browser_context_, WebViewKey(0, 0),
-          scoped_refptr<WebRequestRulesRegistry>(NULL)));
+                 browser_context_,
+                 RulesRegistryService::kDefaultRulesRegistryID,
+                 scoped_refptr<WebRequestRulesRegistry>(NULL)));
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<RulesRegistryService> >
@@ -135,44 +133,35 @@ RulesRegistryService* RulesRegistryService::Get(
 void RulesRegistryService::RegisterRulesRegistry(
     scoped_refptr<RulesRegistry> rule_registry) {
   const std::string event_name(rule_registry->event_name());
-  RulesRegistryKey key(event_name, rule_registry->webview_key());
+  RulesRegistryKey key(event_name, rule_registry->id());
   DCHECK(rule_registries_.find(key) == rule_registries_.end());
   rule_registries_[key] = rule_registry;
 }
 
 scoped_refptr<RulesRegistry> RulesRegistryService::GetRulesRegistry(
-    const WebViewKey& webview_key,
+    int rules_registry_id,
     const std::string& event_name) {
-  EnsureDefaultRulesRegistriesRegistered(webview_key);
+  EnsureDefaultRulesRegistriesRegistered(rules_registry_id);
 
-  RulesRegistryKey key(event_name, webview_key);
+  RulesRegistryKey key(event_name, rules_registry_id);
   RulesRegistryMap::const_iterator i = rule_registries_.find(key);
   if (i == rule_registries_.end())
     return scoped_refptr<RulesRegistry>();
   return i->second;
 }
 
-void RulesRegistryService::RemoveWebViewRulesRegistries(int process_id) {
-  DCHECK_NE(0, process_id);
-
+void RulesRegistryService::RemoveRulesRegistriesByID(int rules_registry_id) {
   std::set<RulesRegistryKey> registries_to_delete;
   for (RulesRegistryMap::iterator it = rule_registries_.begin();
        it != rule_registries_.end(); ++it) {
     const RulesRegistryKey& key = it->first;
-    const WebViewKey& webview_key = key.webview_key;
-    int embedder_process_id = webview_key.embedder_process_id;
-    // |process_id| will always be non-zero.
-    // |embedder_process_id| will only be non-zero if the key corresponds to a
-    // webview registry.
-    // Thus, |embedder_process_id| == |process_id| ==> the process ID is a
-    // webview embedder.
-    if (embedder_process_id != process_id)
+    if (key.rules_registry_id != rules_registry_id)
       continue;
-
-    // Modifying the container while iterating is bad so we'll save the keys we
-    // wish to delete in another container, and delete them in another loop.
+    // Modifying a container while iterating over it can lead to badness. So we
+    // save the keys in another container and delete them in another loop.
     registries_to_delete.insert(key);
   }
+
   for (std::set<RulesRegistryKey>::iterator it = registries_to_delete.begin();
        it != registries_to_delete.end(); ++it) {
     rule_registries_.erase(*it);
@@ -220,17 +209,6 @@ void RulesRegistryService::OnExtensionUninstalled(
     extensions::UninstallReason reason) {
   NotifyRegistriesHelper(&RulesRegistry::OnExtensionUninstalled,
                          extension->id());
-}
-
-void RulesRegistryService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_RENDERER_PROCESS_TERMINATED, type);
-
-  content::RenderProcessHost* process =
-      content::Source<content::RenderProcessHost>(source).ptr();
-  RemoveWebViewRulesRegistries(process->GetID());
 }
 
 }  // namespace extensions

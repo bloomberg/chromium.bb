@@ -29,12 +29,12 @@ class ContentRulesRegistry : public RulesRegistry {
                        const std::string& event_name,
                        content::BrowserThread::ID owner_thread,
                        RulesCacheDelegate* cache_delegate,
-                       const WebViewKey& webview_key)
+                       int rules_registry_id)
       : RulesRegistry(browser_context,
                       event_name,
                       owner_thread,
                       cache_delegate,
-                      webview_key) {}
+                      rules_registry_id) {}
 
   // Applies all content rules given an update (CSS match change or
   // page navigation, for now) from the renderer.

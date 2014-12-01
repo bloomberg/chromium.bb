@@ -18,6 +18,7 @@
 #include "chrome/common/extensions/extension_test_util.h"
 #include "components/url_matcher/url_matcher_constants.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "net/base/request_priority.h"
@@ -50,11 +51,10 @@ namespace keys2 = url_matcher::url_matcher_constants;
 
 class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
  public:
-  TestWebRequestRulesRegistry(
-      scoped_refptr<InfoMap> extension_info_map)
+  TestWebRequestRulesRegistry(scoped_refptr<InfoMap> extension_info_map)
       : WebRequestRulesRegistry(NULL /*profile*/,
                                 NULL /* cache_delegate */,
-                                WebViewKey(0, 0)),
+                                RulesRegistryService::kDefaultRulesRegistryID),
         num_clear_cache_calls_(0) {
     SetExtensionInfoMapForTesting(extension_info_map);
   }

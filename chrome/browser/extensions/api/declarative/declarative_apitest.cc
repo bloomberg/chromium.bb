@@ -114,7 +114,7 @@ class DeclarativeApiTest : public ExtensionApiTest {
         extensions::RulesRegistryService::Get(browser()->profile());
     scoped_refptr<RulesRegistry> rules_registry =
         rules_registry_service->GetRulesRegistry(
-            RulesRegistry::WebViewKey(0, 0),
+            RulesRegistryService::kDefaultRulesRegistryID,
             extensions::declarative_webrequest_constants::kOnRequest);
     std::vector<linked_ptr<RulesRegistry::Rule> > rules;
     BrowserThread::PostTask(

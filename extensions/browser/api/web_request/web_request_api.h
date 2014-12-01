@@ -173,7 +173,7 @@ class ExtensionWebRequestEventRouter
   // the rule registry for |browser_context|.
   void RegisterRulesRegistry(
       void* browser_context,
-      const extensions::RulesRegistry::WebViewKey& webview_key,
+      int rules_registry_id,
       scoped_refptr<extensions::WebRequestRulesRegistry> rules_registry);
 
   // Dispatches the OnBeforeRequest event to any extensions whose filters match
@@ -476,8 +476,7 @@ class ExtensionWebRequestEventRouter
 
   CallbacksForPageLoad callbacks_for_page_load_;
 
-  typedef std::pair<void*, extensions::RulesRegistry::WebViewKey>
-      RulesRegistryKey;
+  typedef std::pair<void*, int> RulesRegistryKey;
   // Maps each browser_context (and OTRBrowserContext) and a webview key to its
   // respective rules registry.
   std::map<RulesRegistryKey,

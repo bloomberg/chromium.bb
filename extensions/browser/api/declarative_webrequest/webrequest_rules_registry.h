@@ -80,7 +80,7 @@ class WebRequestRulesRegistry : public RulesRegistry {
   // storage functionality suspended.
   WebRequestRulesRegistry(content::BrowserContext* browser_context,
                           RulesCacheDelegate* cache_delegate,
-                          const WebViewKey& webview_key);
+                          int rules_registry_id);
 
   // TODO(battre): This will become an implementation detail, because we need
   // a way to also execute the actions of the rules.

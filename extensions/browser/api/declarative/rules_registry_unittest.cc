@@ -8,12 +8,14 @@
 
 #include "base/message_loop/message_loop.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/declarative/test_rules_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 const char kExtensionId[] = "foobar";
 const char kRuleId[] = "foo";
+const int key = extensions::RulesRegistryService::kDefaultRulesRegistryID;
 }  // namespace
 
 namespace extensions {
@@ -22,7 +24,6 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
   base::MessageLoopForUI message_loop;
   content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
 
-  const RulesRegistry::WebViewKey key(0, 0);
   std::string error;
   scoped_refptr<RulesRegistry> registry =
       new TestRulesRegistry(content::BrowserThread::UI, "" /*event_name*/, key);
@@ -132,7 +133,6 @@ TEST(RulesRegistryTest, FillOptionalPriority) {
   base::MessageLoopForUI message_loop;
   content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
 
-  const RulesRegistry::WebViewKey key(0, 0);
   std::string error;
   scoped_refptr<RulesRegistry> registry =
       new TestRulesRegistry(content::BrowserThread::UI, "" /*event_name*/, key);

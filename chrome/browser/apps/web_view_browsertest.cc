@@ -27,10 +27,15 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
 #include "content/public/test/test_renderer_host.h"
+#include "extensions/browser/api/declarative/rules_registry.h"
+#include "extensions/browser/api/declarative/rules_registry_service.h"
+#include "extensions/browser/api/declarative/test_rules_registry.h"
+#include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/guest_view_manager_factory.h"
 #include "extensions/browser/guest_view/test_guest_view_manager.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -117,6 +122,34 @@ class WebContentsHiddenObserver : public content::WebContentsObserver {
   bool hidden_observed_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsHiddenObserver);
+};
+
+class EmbedderWebContentsObserver : public content::WebContentsObserver {
+ public:
+  EmbedderWebContentsObserver(content:: WebContents* web_contents)
+      : WebContentsObserver(web_contents),
+        terminated_(false) {
+   }
+
+  // WebContentsObserver.
+  void RenderProcessGone(base::TerminationStatus status) override {
+    terminated_ = true;
+    if (message_loop_runner_.get())
+      message_loop_runner_->Quit();
+  }
+
+  void WaitForEmbedderRenderProcessTerminate() {
+    if (terminated_)
+      return;
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+  }
+
+ private:
+  bool terminated_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(EmbedderWebContentsObserver);
 };
 
 void ExecuteScriptWaitForTitle(content::WebContents* web_contents,
@@ -2293,6 +2326,79 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestFindAPI_findupdate) {
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadDataAPI) {
   TestHelper("testLoadDataAPI", "web_view/shim", NEEDS_TEST_SERVER);
+}
+
+// This test verify that the set of rules registries of a webview will be
+// removed from RulesRegistryService after the webview is gone.
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       Shim_TestRulesRegistryIDAreRemovedAfterWebViewIsGone) {
+  LoadAppWithGuest("web_view/rules_registry");
+
+  content::WebContents* embedder_web_contents = GetEmbedderWebContents();
+  ASSERT_TRUE(embedder_web_contents);
+  scoped_ptr<EmbedderWebContentsObserver> observer(
+      new EmbedderWebContentsObserver(embedder_web_contents));
+
+  content::WebContents* guest_web_contents = GetGuestWebContents();
+  ASSERT_TRUE(guest_web_contents);
+  extensions::WebViewGuest* guest =
+      extensions::WebViewGuest::FromWebContents(guest_web_contents);
+  ASSERT_TRUE(guest);
+
+  // Register rule for the guest.
+  Profile* profile = browser()->profile();
+  int rules_registry_id =
+      extensions::WebViewGuest::GetOrGenerateRulesRegistryID(
+          guest->owner_render_process_id(),
+          guest->view_instance_id(),
+          profile);
+
+  extensions::RulesRegistryService* registry_service =
+      extensions::RulesRegistryService::Get(profile);
+  extensions::TestRulesRegistry* rules_registry =
+      new extensions::TestRulesRegistry(
+          content::BrowserThread::UI, "ui", rules_registry_id);
+  registry_service->RegisterRulesRegistry(make_scoped_refptr(rules_registry));
+
+  EXPECT_TRUE(registry_service->GetRulesRegistry(
+      rules_registry_id, "ui").get());
+
+  // Kill the embedder's render process, so the webview will go as well.
+  content::RenderProcessHost* host =
+      embedder_web_contents->GetRenderProcessHost();
+  base::KillProcess(host->GetHandle(), 0, false);
+  observer->WaitForEmbedderRenderProcessTerminate();
+
+  EXPECT_FALSE(registry_service->GetRulesRegistry(
+      rules_registry_id, "ui").get());
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_WebViewWebRequestRegistryHasNoCache) {
+  LoadAppWithGuest("web_view/rules_registry");
+
+  content::WebContents* guest_web_contents = GetGuestWebContents();
+  ASSERT_TRUE(guest_web_contents);
+  extensions::WebViewGuest* guest =
+      extensions::WebViewGuest::FromWebContents(guest_web_contents);
+  ASSERT_TRUE(guest);
+
+  Profile* profile = browser()->profile();
+  extensions::RulesRegistryService* registry_service =
+      extensions::RulesRegistryService::Get(profile);
+  int rules_registry_id =
+      extensions::WebViewGuest::GetOrGenerateRulesRegistryID(
+          guest->owner_render_process_id(),
+          guest->view_instance_id(),
+          profile);
+
+  // Get an existing registered rule for the guest.
+  extensions::RulesRegistry* registry =
+      registry_service->GetRulesRegistry(
+          rules_registry_id,
+          extensions::declarative_webrequest_constants::kOnRequest).get();
+
+  EXPECT_TRUE(registry);
+  EXPECT_FALSE(registry->rules_cache_delegate_for_testing());
 }
 
 // <webview> screenshot capture fails with ubercomp.

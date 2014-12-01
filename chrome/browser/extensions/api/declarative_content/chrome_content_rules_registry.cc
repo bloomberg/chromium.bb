@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_messages.h"
@@ -29,7 +30,7 @@ ChromeContentRulesRegistry::ChromeContentRulesRegistry(
                            declarative_content_constants::kOnPageChanged,
                            content::BrowserThread::UI,
                            cache_delegate,
-                           WebViewKey(0, 0)) {
+                           RulesRegistryService::kDefaultRulesRegistryID) {
   extension_info_map_ = ExtensionSystem::Get(browser_context)->info_map();
 
   registrar_.Add(this,
@@ -166,13 +167,9 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
     DCHECK(content_rules_.find(rule_id) == content_rules_.end());
 
     scoped_ptr<ContentRule> content_rule(
-        ContentRule::Create(url_matcher_.condition_factory(),
-                            browser_context(),
-                            extension,
-                            extension_installation_time,
-                            *rule,
-                            ContentRule::ConsistencyChecker(),
-                            &error));
+        ContentRule::Create(url_matcher_.condition_factory(), browser_context(),
+                            extension, extension_installation_time, *rule,
+                            ContentRule::ConsistencyChecker(), &error));
     if (!error.empty()) {
       // Clean up temporary condition sets created during rule creation.
       url_matcher_.ClearUnusedConditionSets();

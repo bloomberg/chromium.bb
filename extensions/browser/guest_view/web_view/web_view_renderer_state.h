@@ -22,6 +22,7 @@ class WebViewRendererState {
   struct WebViewInfo {
     int embedder_process_id;
     int instance_id;
+    int rules_registry_id;
     std::string partition_id;
     std::string embedder_extension_id;
   };
