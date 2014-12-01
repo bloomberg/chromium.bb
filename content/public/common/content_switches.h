@@ -126,7 +126,7 @@ CONTENT_EXPORT extern const char kEnablePreciseMemoryInfo[];
 CONTENT_EXPORT extern const char kEnableRegionBasedColumns[];
 CONTENT_EXPORT extern const char kEnableRendererMojoChannel[];
 CONTENT_EXPORT extern const char kEnableSandboxLogging[];
-extern const char kEnableSeccompFilterSandbox[];
+CONTENT_EXPORT extern const char kEnableSeccompFilterSandbox[];
 extern const char kEnableSkiaBenchmarking[];
 extern const char kEnableSlimmingPaint[];
 CONTENT_EXPORT extern const char kEnableSmoothScrolling[];

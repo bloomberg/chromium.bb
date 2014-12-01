@@ -35,6 +35,12 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
           switches::kEnableSeccompFilterSandbox)) {
     return true;
   }
+  if (!sandbox::SandboxBPF::SupportsSeccompSandbox(
+          sandbox::SandboxBPF::SeccompLevel::MULTI_THREADED)) {
+    LOG(WARNING) << "Seccomp-BPF sandbox enabled without kernel support. "
+                 << "Ignoring flag and proceeding without seccomp sandbox.";
+    return true;
+  }
 
   sandbox::SandboxBPF sandbox(new SandboxBPFBasePolicyAndroid());
   CHECK(

@@ -822,6 +822,9 @@
         'renderer/media/crypto/renderer_cdm_manager.h',
       ],
     }],
+    ['use_seccomp_bpf==1', {
+      'defines': ['USE_SECCOMP_BPF'],
+    }],
   ],
   'target_conditions': [
     ['OS=="android"', {

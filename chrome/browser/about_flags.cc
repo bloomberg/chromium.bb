@@ -2041,6 +2041,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableCaptivePortalBypassProxy)
   },
 #endif  // defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
+  {
+    "enable-seccomp-filter-sandbox",
+    IDS_FLAGS_ENABLE_SECCOMP_FILTER_SANDBOX_ANDROID_NAME,
+    IDS_FLAGS_ENABLE_SECCOMP_FILTER_SANDBOX_ANDROID_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kEnableSeccompFilterSandbox)
+  },
+#endif
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in

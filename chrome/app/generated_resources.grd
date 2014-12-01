@@ -14865,6 +14865,14 @@ Do you accept?
         <message name="IDS_FLAGS_ENABLE_APP_INSTALL_ALERTS_DESCRIPTION" desc="Description to allow app install alerts">
           If enabled, websites will be parsed for app install alert meta tags.
         </message>
+
+        <!-- Flag strings for seccomp-bpf sandbox flag. -->
+        <message name="IDS_FLAGS_ENABLE_SECCOMP_FILTER_SANDBOX_ANDROID_NAME" desc="Title for the flag to enable the seccomp-bpf sandbox on Android.">
+          Enable seccomp-bpf renderer sandbox
+        </message>
+        <message name="IDS_FLAGS_ENABLE_SECCOMP_FILTER_SANDBOX_ANDROID_DESCRIPTION" desc="Description for the flag to enable the seccomp-bpf sandbox on Android.">
+          If enabled, renderers will have a second-layer sandbox provided by seccomp-bpf. This requires kernel features only available on select Android versions.
+        </message>
       </if>
 
      <!-- Extension Content Verification -->
