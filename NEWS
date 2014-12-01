@@ -22,11 +22,6 @@ Danish, Dutch, Hungarian, Irish and UK English.
     in 8 dots grade 2.
 - New table for Dutch (Netherlands) thanks to Henri Apperloo from CBB
 
-** Backwards incompatible changes
-- Deleted ga.ctb now superseded by ga-g1.utb and ga.g2.ctb.
-- Nl-Nl-g1.utb has been removed. It is superseded by nl-NL-g1.ctb.
-- nl-be-g1.utb has been removed. It is superseded by nl-BE-g1.ctb.
-
 ** Bug fixes
 - fix a compiler warning in the logging code. Thanks Peter Lundblad
   for reporting it and Michael Whapples for fixing the problem.
@@ -40,6 +35,11 @@ Danish, Dutch, Hungarian, Irish and UK English.
 - When compiling with mingw or cygwin resulting dll is liblouis.dll.
 - runHarness.py: add new output format, compact output mode suitable
   for grepping.
+
+** Backwards incompatible changes
+- Deleted ga.ctb now superseded by ga-g1.utb and ga.g2.ctb.
+- Nl-Nl-g1.utb has been removed. It is superseded by nl-NL-g1.ctb.
+- nl-be-g1.utb has been removed. It is superseded by nl-BE-g1.ctb.
 
 * Noteworthy changes in release 2.6.0 (2014-09-01)
 This is the first release by the new maintainer team. A lot of work by
