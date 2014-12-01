@@ -1455,12 +1455,22 @@ bool RenderViewHostImpl::CanAccessFilesOfPageState(
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   const std::vector<base::FilePath>& file_paths = state.GetReferencedFiles();
-  for (std::vector<base::FilePath>::const_iterator file = file_paths.begin();
-       file != file_paths.end(); ++file) {
-    if (!policy->CanReadFile(GetProcess()->GetID(), *file))
+  for (const auto& file : file_paths) {
+    if (!policy->CanReadFile(GetProcess()->GetID(), file))
       return false;
   }
   return true;
+}
+
+void RenderViewHostImpl::GrantFileAccessFromPageState(const PageState& state) {
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  const std::vector<base::FilePath>& file_paths = state.GetReferencedFiles();
+  for (const auto& file : file_paths) {
+    if (!policy->CanReadFile(GetProcess()->GetID(), file))
+      policy->GrantReadFile(GetProcess()->GetID(), file);
+  }
 }
 
 void RenderViewHostImpl::AttachToFrameTree() {

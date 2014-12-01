@@ -1214,6 +1214,15 @@ void RenderFrameHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
     }
   }
 
+  // We may be returning to an existing NavigationEntry that had been granted
+  // file access.  If this is a different process, we will need to grant the
+  // access again.  The files listed in the page state are validated when they
+  // are received from the renderer to prevent abuse.
+  if (params.commit_params.page_state.IsValid()) {
+    render_view_host_->GrantFileAccessFromPageState(
+        params.commit_params.page_state);
+  }
+
   // Only send the message if we aren't suspended at the start of a cross-site
   // request.
   if (navigations_suspended_) {

@@ -3611,14 +3611,12 @@ void WebContentsImpl::RenderViewDeleted(RenderViewHost* rvh) {
 void WebContentsImpl::UpdateState(RenderViewHost* rvh,
                                   int32 page_id,
                                   const PageState& page_state) {
-  // Ensure that this state update comes from either the active RVH or one of
-  // the swapped out RVHs.  We don't expect to hear from any other RVHs.
+  // Ensure that this state update comes from a RenderViewHost that belongs to
+  // this WebContents.
   // TODO(nasko): This should go through RenderFrameHost.
   // TODO(creis): We can't update state for cross-process subframes until we
   // have FrameNavigationEntries.  Once we do, this should be a DCHECK.
-  if (rvh != GetRenderViewHost() &&
-      !GetRenderManager()->IsRVHOnSwappedOutList(
-          static_cast<RenderViewHostImpl*>(rvh)))
+  if (rvh->GetDelegate()->GetAsWebContents() != this)
     return;
 
   // We must be prepared to handle state updates for any page, these occur

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -22,6 +23,9 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/file_chooser_file_info.h"
+#include "content/public/common/file_chooser_params.h"
+#include "content/public/common/page_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -1509,6 +1513,87 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   NavigateToURL(shell(), regular_page_url);
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
       shell()->web_contents()->GetRenderProcessHost()->GetID()));
+}
+
+class FileChooserDelegate : public WebContentsDelegate {
+ public:
+  FileChooserDelegate(const base::FilePath& file)
+      : file_(file), file_chosen_(false) {}
+
+  void RunFileChooser(WebContents* web_contents,
+                      const FileChooserParams& params) override {
+    // Send the selected file to the renderer process.
+    FileChooserFileInfo file_info;
+    file_info.file_path = file_;
+    std::vector<FileChooserFileInfo> files;
+    files.push_back(file_info);
+    web_contents->GetRenderViewHost()->FilesSelectedInChooser(
+        files, FileChooserParams::Open);
+
+    file_chosen_ = true;
+  }
+
+  bool file_chosen() { return file_chosen_; }
+
+ private:
+  base::FilePath file_;
+  bool file_chosen_;
+};
+
+// Test for http://crbug.com/262948.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       RestoreFileAccessForHistoryNavigation) {
+  StartServer();
+  base::FilePath file_path;
+  EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &file_path));
+  file_path = file_path.AppendASCII("bar");
+
+  // Navigate to url and get it to reference a file in its PageState.
+  GURL url1(test_server()->GetURL("files/file_input.html"));
+  NavigateToURL(shell(), url1);
+  int process_id = shell()->web_contents()->GetRenderProcessHost()->GetID();
+  scoped_ptr<FileChooserDelegate> delegate(new FileChooserDelegate(file_path));
+  shell()->web_contents()->SetDelegate(delegate.get());
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "document.getElementById('fileinput').click();"));
+  EXPECT_TRUE(delegate->file_chosen());
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      process_id, file_path));
+
+  // Navigate to a different process without access to the file, and wait for
+  // the old process to exit.
+  RenderProcessHostWatcher exit_observer(
+      shell()->web_contents()->GetRenderProcessHost(),
+      RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
+  NavigateToURL(shell(), GetCrossSiteURL("files/title1.html"));
+  exit_observer.Wait();
+  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      shell()->web_contents()->GetRenderProcessHost()->GetID(), file_path));
+
+  // Ensure that the file ended up in the PageState of the previous entry.
+  NavigationEntry* prev_entry =
+      shell()->web_contents()->GetController().GetEntryAtIndex(0);
+  EXPECT_EQ(url1, prev_entry->GetURL());
+  const std::vector<base::FilePath>& file_paths =
+      prev_entry->GetPageState().GetReferencedFiles();
+  ASSERT_EQ(1U, file_paths.size());
+  EXPECT_EQ(file_path, file_paths.at(0));
+
+  // Go back, ending up in a different RenderProcessHost than before.
+  TestNavigationObserver back_nav_load_observer(shell()->web_contents());
+  shell()->web_contents()->GetController().GoBack();
+  back_nav_load_observer.Wait();
+  EXPECT_NE(process_id,
+            shell()->web_contents()->GetRenderProcessHost()->GetID());
+
+  // Ensure that the file access still exists in the new process ID.
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      shell()->web_contents()->GetRenderProcessHost()->GetID(), file_path));
+
+  // Navigate to a same site page to trigger a PageState update and ensure the
+  // renderer is not killed.
+  EXPECT_TRUE(
+      NavigateToURL(shell(), test_server()->GetURL("files/title2.html")));
 }
 
 }  // namespace content

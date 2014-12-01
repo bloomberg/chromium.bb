@@ -1073,19 +1073,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
     // focused tab will be loaded by Browser, and TabLoader will load the rest.
     DCHECK(web_contents->GetController().NeedsReload());
 
-    // Set up the file access rights for the selected navigation entry.
-    const int id = web_contents->GetRenderProcessHost()->GetID();
-    const content::PageState& page_state =
-        content::PageState::CreateFromEncodedData(
-            tab.navigations.at(selected_index).encoded_page_state());
-    const std::vector<base::FilePath>& file_paths =
-        page_state.GetReferencedFiles();
-    for (std::vector<base::FilePath>::const_iterator file = file_paths.begin();
-         file != file_paths.end(); ++file) {
-      content::ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(id,
-                                                                        *file);
-    }
-
     if (!is_selected_tab)
       tab_loader_->ScheduleLoad(&web_contents->GetController());
     return web_contents;
