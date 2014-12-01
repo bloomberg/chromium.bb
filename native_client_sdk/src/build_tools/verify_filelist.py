@@ -202,7 +202,8 @@ def main(args):
     version = build_version.ChromeMajorVersion()
     args.append(os.path.join(OUT_DIR, 'pepper_%s' % version))
 
-  rule_path, directory_path = args
+  rule_path = args[0]
+  directory_path = args[1]
   if options.platform:
     if options.platform not in VALID_PLATFORMS:
       parser.error('Unknown platform: %s' % options.platform)
