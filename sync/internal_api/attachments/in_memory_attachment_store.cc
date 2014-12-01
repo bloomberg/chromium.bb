@@ -11,6 +11,16 @@
 
 namespace syncer {
 
+namespace {
+
+void AppendMetadata(AttachmentMetadataList* list,
+                    const Attachment& attachment) {
+  list->push_back(
+      AttachmentMetadata(attachment.GetId(), attachment.GetData()->size()));
+}
+
+}  // namespace
+
 InMemoryAttachmentStore::InMemoryAttachmentStore(
     const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner)
     : callback_task_runner_(callback_task_runner) {
@@ -85,14 +95,40 @@ void InMemoryAttachmentStore::Drop(const AttachmentIdList& ids,
 void InMemoryAttachmentStore::ReadMetadata(
     const AttachmentIdList& ids,
     const ReadMetadataCallback& callback) {
-  // TODO(stanisc): implement this.
-  NOTIMPLEMENTED();
+  DCHECK(CalledOnValidThread());
+  Result result_code = SUCCESS;
+  scoped_ptr<AttachmentMetadataList> metadata_list(
+      new AttachmentMetadataList());
+  AttachmentIdList::const_iterator ids_iter = ids.begin();
+  AttachmentIdList::const_iterator ids_end = ids.end();
+
+  for (; ids_iter != ids_end; ++ids_iter) {
+    AttachmentMap::iterator attachments_iter = attachments_.find(*ids_iter);
+    if (attachments_iter != attachments_.end()) {
+      AppendMetadata(metadata_list.get(), attachments_iter->second);
+    } else {
+      result_code = UNSPECIFIED_ERROR;
+    }
+  }
+  callback_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(callback, result_code, base::Passed(&metadata_list)));
 }
 
 void InMemoryAttachmentStore::ReadAllMetadata(
     const ReadMetadataCallback& callback) {
-  // TODO(stanisc): implement this.
-  NOTIMPLEMENTED();
+  DCHECK(CalledOnValidThread());
+  Result result_code = SUCCESS;
+  scoped_ptr<AttachmentMetadataList> metadata_list(
+      new AttachmentMetadataList());
+
+  for (AttachmentMap::const_iterator iter = attachments_.begin();
+       iter != attachments_.end(); ++iter) {
+    AppendMetadata(metadata_list.get(), iter->second);
+  }
+  callback_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(callback, result_code, base::Passed(&metadata_list)));
 }
 
 }  // namespace syncer

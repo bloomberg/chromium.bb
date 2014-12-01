@@ -13,6 +13,10 @@
 #include "sync/api/attachments/attachment_store.h"
 #include "sync/base/sync_export.h"
 
+namespace attachment_store_pb {
+class RecordMetadata;
+}  // namespace attachment_store_pb
+
 namespace base {
 class SequencedTaskRunner;
 }  // namespace base
@@ -56,11 +60,19 @@ class SYNC_EXPORT OnDiskAttachmentStore : public AttachmentStoreBase,
       const AttachmentId& attachment_id);
   // Writes single attachment to store. Returns false in case of errors.
   bool WriteSingleAttachment(const Attachment& attachment);
+  // Reads single store_pb::RecordMetadata from levelDB into the provided
+  // buffer. Returns false in case of an error.
+  bool ReadSingleRecordMetadata(
+      const AttachmentId& attachment_id,
+      attachment_store_pb::RecordMetadata* record_metadata);
 
   static std::string MakeDataKeyFromAttachmentId(
       const AttachmentId& attachment_id);
   static std::string MakeMetadataKeyFromAttachmentId(
       const AttachmentId& attachment_id);
+  static AttachmentMetadata MakeAttachmentMetadata(
+      const AttachmentId& attachment_id,
+      const attachment_store_pb::RecordMetadata& record_metadata);
 
   scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
   const base::FilePath path_;

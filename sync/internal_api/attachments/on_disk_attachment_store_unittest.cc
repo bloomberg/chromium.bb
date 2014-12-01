@@ -62,10 +62,17 @@ INSTANTIATE_TYPED_TEST_CASE_P(OnDisk,
 class OnDiskAttachmentStoreSpecificTest : public testing::Test {
  public:
   base::ScopedTempDir temp_dir_;
+  base::FilePath db_path_;
   base::MessageLoop message_loop_;
   scoped_refptr<AttachmentStore> store_;
 
   OnDiskAttachmentStoreSpecificTest() {}
+
+  void SetUp() override {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    db_path_ = temp_dir_.path().Append(FILE_PATH_LITERAL("leveldb"));
+    base::CreateDirectory(db_path_);
+  }
 
   void CopyResult(AttachmentStore::Result* destination_result,
                   const AttachmentStore::Result& source_result) {
@@ -82,25 +89,44 @@ class OnDiskAttachmentStoreSpecificTest : public testing::Test {
     *destination_failed_attachment_ids = *source_failed_attachment_ids;
   }
 
-  scoped_ptr<leveldb::DB> OpenLevelDB(const base::FilePath& path) {
+  void CopyResultMetadata(
+      AttachmentStore::Result* destination_result,
+      scoped_ptr<AttachmentMetadataList>* destination_metadata,
+      const AttachmentStore::Result& source_result,
+      scoped_ptr<AttachmentMetadataList> source_metadata) {
+    CopyResult(destination_result, source_result);
+    *destination_metadata = source_metadata.Pass();
+  }
+
+  scoped_ptr<leveldb::DB> OpenLevelDB() {
     leveldb::DB* db;
     leveldb::Options options;
     options.create_if_missing = true;
-    leveldb::Status s = leveldb::DB::Open(options, path.AsUTF8Unsafe(), &db);
+    leveldb::Status s =
+        leveldb::DB::Open(options, db_path_.AsUTF8Unsafe(), &db);
     EXPECT_TRUE(s.ok());
     return make_scoped_ptr(db);
   }
 
-  void UpdateStoreMetadataRecord(const base::FilePath& path,
-                                 const std::string& content) {
-    scoped_ptr<leveldb::DB> db = OpenLevelDB(path);
-    leveldb::Status s =
-        db->Put(leveldb::WriteOptions(), "database-metadata", content);
+  void UpdateRecord(const std::string& key, const std::string& content) {
+    scoped_ptr<leveldb::DB> db = OpenLevelDB();
+    leveldb::Status s = db->Put(leveldb::WriteOptions(), key, content);
     EXPECT_TRUE(s.ok());
   }
 
-  std::string ReadStoreMetadataRecord(const base::FilePath& path) {
-    scoped_ptr<leveldb::DB> db = OpenLevelDB(path);
+  void UpdateStoreMetadataRecord(const std::string& content) {
+    UpdateRecord("database-metadata", content);
+  }
+
+  void UpdateAttachmentMetadataRecord(const AttachmentId& attachment_id,
+                                      const std::string& content) {
+    std::string metadata_key =
+        OnDiskAttachmentStore::MakeMetadataKeyFromAttachmentId(attachment_id);
+    UpdateRecord(metadata_key, content);
+  }
+
+  std::string ReadStoreMetadataRecord() {
+    scoped_ptr<leveldb::DB> db = OpenLevelDB();
     std::string content;
     leveldb::Status s =
         db->Get(leveldb::ReadOptions(), "database-metadata", &content);
@@ -108,10 +134,9 @@ class OnDiskAttachmentStoreSpecificTest : public testing::Test {
     return content;
   }
 
-  void VerifyAttachmentRecordsPresent(const base::FilePath& path,
-                                      const AttachmentId& attachment_id,
+  void VerifyAttachmentRecordsPresent(const AttachmentId& attachment_id,
                                       bool expect_records_present) {
-    scoped_ptr<leveldb::DB> db = OpenLevelDB(path);
+    scoped_ptr<leveldb::DB> db = OpenLevelDB();
 
     std::string metadata_key =
         OnDiskAttachmentStore::MakeMetadataKeyFromAttachmentId(attachment_id);
@@ -139,7 +164,6 @@ class OnDiskAttachmentStoreSpecificTest : public testing::Test {
 // Ensure that store can be closed and reopen while retaining stored
 // attachments.
 TEST_F(OnDiskAttachmentStoreSpecificTest, CloseAndReopen) {
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   AttachmentStore::Result result;
 
   result = AttachmentStore::UNSPECIFIED_ERROR;
@@ -186,16 +210,10 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, CloseAndReopen) {
 
 // Ensure loading corrupt attachment store fails.
 TEST_F(OnDiskAttachmentStoreSpecificTest, FailToOpen) {
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  base::FilePath db_path =
-      temp_dir_.path().Append(FILE_PATH_LITERAL("leveldb"));
-  base::CreateDirectory(db_path);
-
   // To simulate corrupt database write empty CURRENT file.
   std::string current_file_content = "";
-  base::WriteFile(db_path.Append(FILE_PATH_LITERAL("CURRENT")),
-                  current_file_content.c_str(),
-                  current_file_content.size());
+  base::WriteFile(db_path_.Append(FILE_PATH_LITERAL("CURRENT")),
+                  current_file_content.c_str(), current_file_content.size());
 
   AttachmentStore::Result result = AttachmentStore::SUCCESS;
   store_ = AttachmentStore::CreateOnDiskStore(
@@ -208,13 +226,8 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, FailToOpen) {
 // Ensure that attachment store works correctly when store metadata is missing,
 // corrupt or has unknown schema version.
 TEST_F(OnDiskAttachmentStoreSpecificTest, StoreMetadata) {
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  base::FilePath db_path =
-      temp_dir_.path().Append(FILE_PATH_LITERAL("leveldb"));
-  base::CreateDirectory(db_path);
-
   // Create and close empty database.
-  OpenLevelDB(db_path);
+  OpenLevelDB();
   // Open database with AttachmentStore.
   AttachmentStore::Result result = AttachmentStore::UNSPECIFIED_ERROR;
   store_ = AttachmentStore::CreateOnDiskStore(
@@ -227,7 +240,7 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, StoreMetadata) {
   RunLoop();
 
   // AttachmentStore should create metadata record.
-  std::string data = ReadStoreMetadataRecord(db_path);
+  std::string data = ReadStoreMetadataRecord();
   attachment_store_pb::StoreMetadata metadata;
   EXPECT_TRUE(metadata.ParseFromString(data));
   EXPECT_EQ(1, metadata.schema_version());
@@ -235,7 +248,7 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, StoreMetadata) {
   // Set unknown future schema version.
   metadata.set_schema_version(2);
   data = metadata.SerializeAsString();
-  UpdateStoreMetadataRecord(db_path, data);
+  UpdateStoreMetadataRecord(data);
 
   // AttachmentStore should fail to load.
   result = AttachmentStore::SUCCESS;
@@ -246,7 +259,7 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, StoreMetadata) {
   EXPECT_EQ(AttachmentStore::UNSPECIFIED_ERROR, result);
 
   // Write garbage into metadata record.
-  UpdateStoreMetadataRecord(db_path, "abra.cadabra");
+  UpdateStoreMetadataRecord("abra.cadabra");
 
   // AttachmentStore should fail to load.
   result = AttachmentStore::SUCCESS;
@@ -260,10 +273,6 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, StoreMetadata) {
 // Ensure that attachment store correctly maintains metadata records for
 // attachments.
 TEST_F(OnDiskAttachmentStoreSpecificTest, RecordMetadata) {
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  base::FilePath db_path =
-      temp_dir_.path().Append(FILE_PATH_LITERAL("leveldb"));
-
   // Create attachment store.
   AttachmentStore::Result create_result = AttachmentStore::UNSPECIFIED_ERROR;
   store_ = AttachmentStore::CreateOnDiskStore(
@@ -298,14 +307,12 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, RecordMetadata) {
   EXPECT_EQ(AttachmentStore::SUCCESS, drop_result);
 
   // Verify that attachment store contains only records for second attachment.
-  VerifyAttachmentRecordsPresent(db_path, attachments[0].GetId(), false);
-  VerifyAttachmentRecordsPresent(db_path, attachments[1].GetId(), true);
+  VerifyAttachmentRecordsPresent(attachments[0].GetId(), false);
+  VerifyAttachmentRecordsPresent(attachments[1].GetId(), true);
 }
 
 // Ensure that attachment store fails to load attachment with mismatched crc.
 TEST_F(OnDiskAttachmentStoreSpecificTest, MismatchedCrc) {
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
   // Create attachment store.
   AttachmentStore::Result create_result = AttachmentStore::UNSPECIFIED_ERROR;
   store_ = AttachmentStore::CreateOnDiskStore(
@@ -344,14 +351,9 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, MismatchedCrc) {
 // Ensure that after store initialization failure ReadWrite/Drop operations fail
 // with correct error.
 TEST_F(OnDiskAttachmentStoreSpecificTest, OpsAfterInitializationFailed) {
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  base::FilePath db_path =
-      temp_dir_.path().Append(FILE_PATH_LITERAL("leveldb"));
-  base::CreateDirectory(db_path);
-
   // To simulate corrupt database write empty CURRENT file.
   std::string current_file_content = "";
-  base::WriteFile(db_path.Append(FILE_PATH_LITERAL("CURRENT")),
+  base::WriteFile(db_path_.Append(FILE_PATH_LITERAL("CURRENT")),
                   current_file_content.c_str(), current_file_content.size());
 
   AttachmentStore::Result create_result = AttachmentStore::SUCCESS;
@@ -395,6 +397,81 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, OpsAfterInitializationFailed) {
   EXPECT_THAT(failed_attachment_ids, testing::ElementsAre(attachment_ids[0]));
   EXPECT_EQ(AttachmentStore::STORE_INITIALIZATION_FAILED, drop_result);
   EXPECT_EQ(AttachmentStore::STORE_INITIALIZATION_FAILED, write_result);
+}
+
+// Ensure that attachment store handles the case of having an unexpected
+// record at the end without crashing.
+TEST_F(OnDiskAttachmentStoreSpecificTest, ReadAllMetadataWithUnexpectedRecord) {
+  // Write a bogus entry at the end of the database.
+  UpdateRecord("zzz", "foobar");
+
+  // Create attachment store.
+  AttachmentStore::Result create_result = AttachmentStore::UNSPECIFIED_ERROR;
+  store_ = AttachmentStore::CreateOnDiskStore(
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&AttachmentStoreCreated, &create_result));
+
+  // Read all metadata. Should be getting no error and zero entries.
+  AttachmentStore::Result metadata_result = AttachmentStore::UNSPECIFIED_ERROR;
+  scoped_ptr<AttachmentMetadataList> metadata_list;
+  store_->ReadAllMetadata(
+      base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResultMetadata,
+                 base::Unretained(this), &metadata_result, &metadata_list));
+  RunLoop();
+  EXPECT_EQ(AttachmentStore::SUCCESS, create_result);
+  EXPECT_EQ(AttachmentStore::SUCCESS, metadata_result);
+  EXPECT_EQ(0U, metadata_list->size());
+  metadata_list.reset();
+
+  // Write 3 attachments to the store
+  AttachmentList attachments;
+
+  for (int i = 0; i < 3; i++) {
+    std::string some_data = "data";
+    Attachment attachment =
+        Attachment::Create(base::RefCountedString::TakeString(&some_data));
+    attachments.push_back(attachment);
+  }
+  AttachmentStore::Result write_result = AttachmentStore::UNSPECIFIED_ERROR;
+  store_->Write(attachments,
+                base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResult,
+                           base::Unretained(this), &write_result));
+
+  // Read all metadata back. We should be getting 3 entries.
+  store_->ReadAllMetadata(
+      base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResultMetadata,
+                 base::Unretained(this), &metadata_result, &metadata_list));
+  RunLoop();
+  EXPECT_EQ(AttachmentStore::SUCCESS, write_result);
+  EXPECT_EQ(AttachmentStore::SUCCESS, metadata_result);
+  EXPECT_EQ(3U, metadata_list->size());
+  // Get Id of the attachment in the middle.
+  AttachmentId id = (*metadata_list.get())[1].GetId();
+  metadata_list.reset();
+
+  // Close the store.
+  store_ = nullptr;
+  RunLoop();
+
+  // Modify the middle attachment metadata entry so that it isn't valid anymore.
+  UpdateAttachmentMetadataRecord(id, "foobar");
+
+  // Reopen the store.
+  create_result = AttachmentStore::UNSPECIFIED_ERROR;
+  metadata_result = AttachmentStore::UNSPECIFIED_ERROR;
+  store_ = AttachmentStore::CreateOnDiskStore(
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&AttachmentStoreCreated, &create_result));
+
+  // Read all metadata back. We should be getting a failure and
+  // only 2 entries now.
+  store_->ReadAllMetadata(
+      base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResultMetadata,
+                 base::Unretained(this), &metadata_result, &metadata_list));
+  RunLoop();
+  EXPECT_EQ(AttachmentStore::SUCCESS, create_result);
+  EXPECT_EQ(AttachmentStore::UNSPECIFIED_ERROR, metadata_result);
+  EXPECT_EQ(2U, metadata_list->size());
 }
 
 }  // namespace syncer

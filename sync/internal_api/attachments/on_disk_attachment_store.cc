@@ -41,16 +41,14 @@ leveldb::WriteOptions MakeWriteOptions() {
   return write_options;
 }
 
-leveldb::ReadOptions MakeDataReadOptions() {
+leveldb::ReadOptions MakeNonCachingReadOptions() {
   leveldb::ReadOptions read_options;
-  // Attachment content is typically large and only read once. Don't cache it on
-  // db level.
   read_options.fill_cache = false;
   read_options.verify_checksums = true;
   return read_options;
 }
 
-leveldb::ReadOptions MakeMetadataReadOptions() {
+leveldb::ReadOptions MakeCachingReadOptions() {
   leveldb::ReadOptions read_options;
   read_options.fill_cache = true;
   read_options.verify_checksums = true;
@@ -63,7 +61,7 @@ leveldb::Status ReadStoreMetadata(
   std::string data_str;
 
   leveldb::Status status =
-      db->Get(MakeMetadataReadOptions(), kDatabaseMetadataKey, &data_str);
+      db->Get(MakeCachingReadOptions(), kDatabaseMetadataKey, &data_str);
   if (!status.ok())
     return status;
   if (!metadata->ParseFromString(data_str))
@@ -177,14 +175,72 @@ void OnDiskAttachmentStore::Drop(const AttachmentIdList& ids,
 
 void OnDiskAttachmentStore::ReadMetadata(const AttachmentIdList& ids,
                                          const ReadMetadataCallback& callback) {
-  // TODO(stanisc): implement this.
-  NOTIMPLEMENTED();
+  DCHECK(CalledOnValidThread());
+  Result result_code = STORE_INITIALIZATION_FAILED;
+  scoped_ptr<AttachmentMetadataList> metadata_list(
+      new AttachmentMetadataList());
+  if (db_) {
+    result_code = SUCCESS;
+    AttachmentIdList::const_iterator iter = ids.begin();
+    const AttachmentIdList::const_iterator end = ids.end();
+    for (; iter != end; ++iter) {
+      attachment_store_pb::RecordMetadata record_metadata;
+      if (ReadSingleRecordMetadata(*iter, &record_metadata)) {
+        metadata_list->push_back(
+            MakeAttachmentMetadata(*iter, record_metadata));
+      } else {
+        result_code = UNSPECIFIED_ERROR;
+      }
+    }
+  }
+  callback_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(callback, result_code, base::Passed(&metadata_list)));
 }
 
 void OnDiskAttachmentStore::ReadAllMetadata(
     const ReadMetadataCallback& callback) {
-  // TODO(stanisc): implement this.
-  NOTIMPLEMENTED();
+  DCHECK(CalledOnValidThread());
+  Result result_code = STORE_INITIALIZATION_FAILED;
+  scoped_ptr<AttachmentMetadataList> metadata_list(
+      new AttachmentMetadataList());
+
+  if (db_) {
+    result_code = SUCCESS;
+    scoped_ptr<leveldb::Iterator> db_iterator(
+        db_->NewIterator(MakeNonCachingReadOptions()));
+    DCHECK(db_iterator);
+    for (db_iterator->Seek(kMetadataPrefix); db_iterator->Valid();
+         db_iterator->Next()) {
+      leveldb::Slice key = db_iterator->key();
+      if (!key.starts_with(kMetadataPrefix)) {
+        break;
+      }
+      // Make AttachmentId from levelDB key.
+      key.remove_prefix(strlen(kMetadataPrefix));
+      sync_pb::AttachmentIdProto id_proto;
+      id_proto.set_unique_id(key.ToString());
+      AttachmentId id = AttachmentId::CreateFromProto(id_proto);
+      // Parse metadata record.
+      attachment_store_pb::RecordMetadata record_metadata;
+      if (!record_metadata.ParseFromString(db_iterator->value().ToString())) {
+        DVLOG(1) << "RecordMetadata::ParseFromString failed";
+        result_code = UNSPECIFIED_ERROR;
+        continue;
+      }
+      metadata_list->push_back(MakeAttachmentMetadata(id, record_metadata));
+    }
+
+    if (!db_iterator->status().ok()) {
+      DVLOG(1) << "DB Iterator failed: status="
+               << db_iterator->status().ToString();
+      result_code = UNSPECIFIED_ERROR;
+    }
+  }
+
+  callback_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(callback, result_code, base::Passed(&metadata_list)));
 }
 
 AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
@@ -239,24 +295,14 @@ AttachmentStore::Result OnDiskAttachmentStore::OpenOrCreate(
 scoped_ptr<Attachment> OnDiskAttachmentStore::ReadSingleAttachment(
     const AttachmentId& attachment_id) {
   scoped_ptr<Attachment> attachment;
-
-  const std::string key = MakeDataKeyFromAttachmentId(attachment_id);
-  const std::string metadata_key =
-      MakeMetadataKeyFromAttachmentId(attachment_id);
-  leveldb::Status status;
-  std::string metadata_str;
-  status = db_->Get(MakeMetadataReadOptions(), metadata_key, &metadata_str);
-  if (!status.ok()) {
-    DVLOG(1) << "DB::Get for metadata failed: status=" << status.ToString();
-    return attachment.Pass();
-  }
   attachment_store_pb::RecordMetadata record_metadata;
-  if (!record_metadata.ParseFromString(metadata_str)) {
-    DVLOG(1) << "RecordMetadata::ParseFromString failed";
+  if (!ReadSingleRecordMetadata(attachment_id, &record_metadata)) {
     return attachment.Pass();
   }
+  const std::string key = MakeDataKeyFromAttachmentId(attachment_id);
   std::string data_str;
-  status = db_->Get(MakeDataReadOptions(), key, &data_str);
+  leveldb::Status status = db_->Get(
+      MakeNonCachingReadOptions(), key, &data_str);
   if (!status.ok()) {
     DVLOG(1) << "DB::Get for data failed: status=" << status.ToString();
     return attachment.Pass();
@@ -281,7 +327,7 @@ bool OnDiskAttachmentStore::WriteSingleAttachment(
 
   std::string metadata_str;
   leveldb::Status status =
-      db_->Get(MakeMetadataReadOptions(), metadata_key, &metadata_str);
+      db_->Get(MakeCachingReadOptions(), metadata_key, &metadata_str);
   if (status.ok()) {
     // Entry exists, don't overwrite.
     return true;
@@ -313,6 +359,26 @@ bool OnDiskAttachmentStore::WriteSingleAttachment(
   return true;
 }
 
+bool OnDiskAttachmentStore::ReadSingleRecordMetadata(
+    const AttachmentId& attachment_id,
+    attachment_store_pb::RecordMetadata* record_metadata) {
+  DCHECK(record_metadata);
+  const std::string metadata_key =
+      MakeMetadataKeyFromAttachmentId(attachment_id);
+  std::string metadata_str;
+  leveldb::Status status =
+      db_->Get(MakeCachingReadOptions(), metadata_key, &metadata_str);
+  if (!status.ok()) {
+    DVLOG(1) << "DB::Get for metadata failed: status=" << status.ToString();
+    return false;
+  }
+  if (!record_metadata->ParseFromString(metadata_str)) {
+    DVLOG(1) << "RecordMetadata::ParseFromString failed";
+    return false;
+  }
+  return true;
+}
+
 std::string OnDiskAttachmentStore::MakeDataKeyFromAttachmentId(
     const AttachmentId& attachment_id) {
   std::string key = kDataPrefix + attachment_id.GetProto().unique_id();
@@ -323,6 +389,12 @@ std::string OnDiskAttachmentStore::MakeMetadataKeyFromAttachmentId(
     const AttachmentId& attachment_id) {
   std::string key = kMetadataPrefix + attachment_id.GetProto().unique_id();
   return key;
+}
+
+AttachmentMetadata OnDiskAttachmentStore::MakeAttachmentMetadata(
+    const AttachmentId& attachment_id,
+    const attachment_store_pb::RecordMetadata& record_metadata) {
+  return AttachmentMetadata(attachment_id, record_metadata.attachment_size());
 }
 
 }  // namespace syncer
