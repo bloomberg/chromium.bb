@@ -53,29 +53,6 @@ void FindCommonTransientAncestor(Window** window1, Window** window2) {
   }
 }
 
-// Adjusts |target| so that we don't attempt to stack on top of a window with a
-// NULL delegate.
-void SkipNullDelegates(Window::StackDirection direction, Window** target) {
-  const Window::Windows& children((*target)->parent()->children());
-  size_t target_i =
-      std::find(children.begin(), children.end(), *target) -
-      children.begin();
-
-  // By convention we don't stack on top of windows with layers with NULL
-  // delegates.  Walk backward to find a valid target window.  See tests
-  // TransientWindowManagerTest.StackingMadrigal and StackOverClosingTransient
-  // for an explanation of this.
-  while (target_i > 0) {
-    const size_t index = direction == Window::STACK_ABOVE ?
-        target_i : target_i - 1;
-    if (!children[index]->layer() ||
-        children[index]->layer()->delegate() != NULL)
-      break;
-    --target_i;
-  }
-  *target = children[target_i];
-}
-
 }  // namespace
 
 // static
@@ -116,8 +93,6 @@ bool TransientWindowStackingClient::AdjustStacking(
     }
     *target = siblings[target_i];
   }
-
-  SkipNullDelegates(*direction, target);
 
   // If we couldn't find a valid target position, don't move anything.
   if (*direction == Window::STACK_ABOVE &&
