@@ -961,11 +961,6 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
       return result;
   }
 
-  if (result == ERR_QUIC_HANDSHAKE_FAILED) {
-    ResetConnectionAndRequestForResend();
-    return OK;
-  }
-
   // ERR_CONNECTION_CLOSED is treated differently at this point; if partial
   // response headers were received, we do the best we can to make sense of it
   // and send it back up the stack.
