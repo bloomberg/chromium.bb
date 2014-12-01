@@ -3769,6 +3769,15 @@ TEST_F(ExtensionServiceTest, WillNotLoadExtensionsWhenBlocked) {
   ASSERT_TRUE(IsBlocked(good0));
 }
 
+// Tests that IsEnabledExtension won't crash on an uninstalled extension.
+TEST_F(ExtensionServiceTest, IsEnabledExtensionBlockedAndNotInstalled) {
+  InitializeEmptyExtensionService();
+
+  service()->BlockAllExtensions();
+
+  service()->IsExtensionEnabled(theme_crx);
+}
+
 // Will not install extension blacklisted by policy.
 TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
   InitializeEmptyExtensionServiceWithTestingPrefs();

@@ -793,9 +793,14 @@ bool ExtensionService::IsExtensionEnabled(
     return false;
   }
 
-  if (block_extensions_ &&
-      CanBlockExtension(GetInstalledExtension(extension_id)))
-    return false;
+  // Blocked extensions aren't marked as such in prefs, thus if
+  // |block_extensions_| is true then CanBlockExtension() must be called with an
+  // Extension object. If the |extension_id| is not loaded, assume not enabled.
+  if (block_extensions_) {
+    const Extension* extension = GetInstalledExtension(extension_id);
+    if (!extension || CanBlockExtension(extension))
+      return false;
+  }
 
   // If the extension hasn't been loaded yet, check the prefs for it. Assume
   // enabled unless otherwise noted.
@@ -2248,6 +2253,7 @@ int ExtensionService::GetDisableReasonsOnInstalled(const Extension* extension) {
 
 // Helper method to determine if an extension can be blocked.
 bool ExtensionService::CanBlockExtension(const Extension* extension) const {
+  DCHECK(extension);
   return extension->location() != Manifest::COMPONENT &&
          extension->location() != Manifest::EXTERNAL_COMPONENT &&
          !system_->management_policy()->MustRemainEnabled(extension, NULL);
