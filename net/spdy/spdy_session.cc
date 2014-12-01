@@ -655,7 +655,7 @@ SpdySession::SpdySession(
       check_ping_status_pending_(false),
       send_connection_header_prefix_(false),
       flow_control_state_(FLOW_CONTROL_NONE),
-      stream_initial_send_window_size_(kSpdyStreamInitialWindowSize),
+      stream_initial_send_window_size_(GetInitialWindowSize(default_protocol)),
       stream_initial_recv_window_size_(stream_initial_recv_window_size == 0
                                            ? kDefaultInitialRecvWindowSize
                                            : stream_initial_recv_window_size),
@@ -729,6 +729,7 @@ void SpdySession::InitializeWithSocket(
       connection_->socket()->GetNegotiatedProtocol();
   if (protocol_negotiated != kProtoUnknown) {
     protocol_ = protocol_negotiated;
+    stream_initial_send_window_size_ = GetInitialWindowSize(protocol_);
   }
   DCHECK_GE(protocol_, kProtoSPDYMinimumVersion);
   DCHECK_LE(protocol_, kProtoSPDYMaximumVersion);
@@ -739,8 +740,8 @@ void SpdySession::InitializeWithSocket(
 
   if (protocol_ >= kProtoSPDY31) {
     flow_control_state_ = FLOW_CONTROL_STREAM_AND_SESSION;
-    session_send_window_size_ = kSpdySessionInitialWindowSize;
-    session_recv_window_size_ = kSpdySessionInitialWindowSize;
+    session_send_window_size_ = GetInitialWindowSize(protocol_);
+    session_recv_window_size_ = GetInitialWindowSize(protocol_);
   } else if (protocol_ >= kProtoSPDY3) {
     flow_control_state_ = FLOW_CONTROL_STREAM;
   } else {
@@ -2778,7 +2779,7 @@ void SpdySession::SendInitialData() {
   settings_map[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxConcurrentPushedStreams);
   if (flow_control_state_ >= FLOW_CONTROL_STREAM &&
-      stream_initial_recv_window_size_ != kSpdyStreamInitialWindowSize) {
+      stream_initial_recv_window_size_ != GetInitialWindowSize(protocol_)) {
     settings_map[SETTINGS_INITIAL_WINDOW_SIZE] =
         SettingsFlagsAndValue(SETTINGS_FLAG_NONE,
                               stream_initial_recv_window_size_);
@@ -3195,7 +3196,8 @@ void SpdySession::IncreaseRecvWindowSize(int32 delta_window_size) {
                  delta_window_size, session_recv_window_size_));
 
   session_unacked_recv_window_bytes_ += delta_window_size;
-  if (session_unacked_recv_window_bytes_ > kSpdySessionInitialWindowSize / 2) {
+  if (session_unacked_recv_window_bytes_ >
+      GetInitialWindowSize(protocol_) / 2) {
     SendWindowUpdateFrame(kSessionFlowControlStreamId,
                           session_unacked_recv_window_bytes_,
                           HIGHEST);

@@ -754,16 +754,18 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
 
   // Verify that the window size has decreased.
   ASSERT_TRUE(http_stream->stream() != NULL);
-  EXPECT_NE(static_cast<int>(kSpdyStreamInitialWindowSize),
-            http_stream->stream()->send_window_size());
+  EXPECT_NE(
+      static_cast<int>(SpdySession::GetInitialWindowSize(session_->protocol())),
+      http_stream->stream()->send_window_size());
 
   // Read window update.
   deterministic_data_->RunFor(1);
 
   // Verify the window update.
   ASSERT_TRUE(http_stream->stream() != NULL);
-  EXPECT_EQ(static_cast<int>(kSpdyStreamInitialWindowSize),
-            http_stream->stream()->send_window_size());
+  EXPECT_EQ(
+      static_cast<int>(SpdySession::GetInitialWindowSize(session_->protocol())),
+      http_stream->stream()->send_window_size());
 
   // Read response headers.
   deterministic_data_->RunFor(1);

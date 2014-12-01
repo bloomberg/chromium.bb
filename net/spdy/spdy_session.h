@@ -511,6 +511,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     return buffered_spdy_framer_->GetDataFrameMaximumPayload();
   }
 
+  static int32 GetInitialWindowSize(NextProto protocol) {
+    return protocol < kProtoSPDY4MinimumVersion ? 65536 : 65535;
+  }
+
   // https://http2.github.io/http2-spec/#TLSUsage mandates minimum security
   // standards for TLS.
   bool HasAcceptableTransportSecurity() const;

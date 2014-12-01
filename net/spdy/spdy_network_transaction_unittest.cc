@@ -4416,7 +4416,8 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
   scoped_ptr<SpdyFrame> initial_window_update(
       spdy_util_.ConstructSpdyWindowUpdate(
           kSessionFlowControlStreamId,
-          kDefaultInitialRecvWindowSize - kSpdySessionInitialWindowSize));
+          kDefaultInitialRecvWindowSize -
+              SpdySession::GetInitialWindowSize(GetParam().protocol)));
 
   // Construct the persisted SETTINGS frame.
   const SettingsMap& settings =
@@ -5909,10 +5910,10 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
   SpdyHttpStream* stream = static_cast<SpdyHttpStream*>(trans->stream_.get());
   ASSERT_TRUE(stream != NULL);
   ASSERT_TRUE(stream->stream() != NULL);
-  EXPECT_EQ(static_cast<int>(kSpdyStreamInitialWindowSize) +
-            kDeltaWindowSize * kDeltaCount -
-            kMaxSpdyFrameChunkSize * kFrameCount,
-            stream->stream()->send_window_size());
+  EXPECT_EQ(
+      static_cast<int>(SpdySession::GetInitialWindowSize(GetParam().protocol)) +
+          kDeltaWindowSize * kDeltaCount - kMaxSpdyFrameChunkSize * kFrameCount,
+      stream->stream()->send_window_size());
 
   data.RunFor(1);
 
@@ -5925,8 +5926,10 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
 // Test that received data frames and sent WINDOW_UPDATE frames change
 // the recv_window_size_ correctly.
 TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
+  const int32 initial_window_size =
+      SpdySession::GetInitialWindowSize(GetParam().protocol);
   // Amount of body required to trigger a sent window update.
-  const size_t kTargetSize = kSpdyStreamInitialWindowSize / 2 + 1;
+  const size_t kTargetSize = initial_window_size / 2 + 1;
 
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
@@ -5955,7 +5958,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
     reads.push_back(CreateMockRead(*body_frames.back()));
     remaining -= frame_size;
   }
-  reads.push_back(MockRead(ASYNC, ERR_IO_PENDING, 0)); // Yield.
+  reads.push_back(MockRead(ASYNC, ERR_IO_PENDING, 0));  // Yield.
 
   DelayedSocketData data(1, vector_as_array(&reads), reads.size(),
                          vector_as_array(&writes), writes.size());
@@ -5979,7 +5982,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
   ASSERT_TRUE(stream->stream() != NULL);
 
   // All data has been read, but not consumed. The window reflects this.
-  EXPECT_EQ(static_cast<int>(kSpdyStreamInitialWindowSize - kTargetSize),
+  EXPECT_EQ(static_cast<int>(initial_window_size - kTargetSize),
             stream->stream()->recv_window_size());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
@@ -5993,7 +5996,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kTargetSize));
   EXPECT_EQ(static_cast<int>(kTargetSize),
             trans->Read(buf.get(), kTargetSize, CompletionCallback()));
-  EXPECT_EQ(static_cast<int>(kSpdyStreamInitialWindowSize),
+  EXPECT_EQ(static_cast<int>(initial_window_size),
             stream->stream()->recv_window_size());
   EXPECT_THAT(base::StringPiece(buf->data(), kTargetSize), Each(Eq('x')));
 
@@ -6083,22 +6086,22 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
 // After that, next read is artifically enforced, which causes a
 // WINDOW_UPDATE to be read and I/O process resumes.
 TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
+  const int32 initial_window_size =
+      SpdySession::GetInitialWindowSize(GetParam().protocol);
   // Number of frames we need to send to zero out the window size: data
   // frames plus SYN_STREAM plus the last data frame; also we need another
   // data frame that we will send once the WINDOW_UPDATE is received,
   // therefore +3.
-  size_t num_writes = kSpdyStreamInitialWindowSize / kMaxSpdyFrameChunkSize + 3;
+  size_t num_writes = initial_window_size / kMaxSpdyFrameChunkSize + 3;
 
   // Calculate last frame's size; 0 size data frame is legal.
-  size_t last_frame_size =
-      kSpdyStreamInitialWindowSize % kMaxSpdyFrameChunkSize;
+  size_t last_frame_size = initial_window_size % kMaxSpdyFrameChunkSize;
 
   // Construct content for a data frame of maximum size.
   std::string content(kMaxSpdyFrameChunkSize, 'a');
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
-      kRequestUrl, 1, kSpdyStreamInitialWindowSize + kUploadDataSize,
-      LOWEST, NULL, 0));
+      kRequestUrl, 1, initial_window_size + kUploadDataSize, LOWEST, NULL, 0));
 
   // Full frames.
   scoped_ptr<SpdyFrame> body1(
@@ -6151,7 +6154,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
                          writes.get(), num_writes);
 
   ScopedVector<UploadElementReader> element_readers;
-  std::string upload_data_string(kSpdyStreamInitialWindowSize, 'a');
+  std::string upload_data_string(initial_window_size, 'a');
   upload_data_string.append(kUploadData, kUploadDataSize);
   element_readers.push_back(new UploadBytesElementReader(
       upload_data_string.c_str(), upload_data_string.size()));
@@ -6194,21 +6197,22 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
 // Test we correctly handle the case where the SETTINGS frame results in
 // unstalling the send window.
 TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
+  const int32 initial_window_size =
+      SpdySession::GetInitialWindowSize(GetParam().protocol);
+
   // Number of frames we need to send to zero out the window size: data
   // frames plus SYN_STREAM plus the last data frame; also we need another
   // data frame that we will send once the SETTING is received, therefore +3.
-  size_t num_writes = kSpdyStreamInitialWindowSize / kMaxSpdyFrameChunkSize + 3;
+  size_t num_writes = initial_window_size / kMaxSpdyFrameChunkSize + 3;
 
   // Calculate last frame's size; 0 size data frame is legal.
-  size_t last_frame_size =
-      kSpdyStreamInitialWindowSize % kMaxSpdyFrameChunkSize;
+  size_t last_frame_size = initial_window_size % kMaxSpdyFrameChunkSize;
 
   // Construct content for a data frame of maximum size.
   std::string content(kMaxSpdyFrameChunkSize, 'a');
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
-      kRequestUrl, 1, kSpdyStreamInitialWindowSize + kUploadDataSize,
-      LOWEST, NULL, 0));
+      kRequestUrl, 1, initial_window_size + kUploadDataSize, LOWEST, NULL, 0));
 
   // Full frames.
   scoped_ptr<SpdyFrame> body1(
@@ -6236,8 +6240,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
   // rest of the data.
   SettingsMap settings;
   settings[SETTINGS_INITIAL_WINDOW_SIZE] =
-      SettingsFlagsAndValue(
-          SETTINGS_FLAG_NONE, kSpdyStreamInitialWindowSize * 2);
+      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, initial_window_size * 2);
   scoped_ptr<SpdyFrame> settings_frame_large(
       spdy_util_.ConstructSpdySettings(settings));
 
@@ -6265,7 +6268,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
                                vector_as_array(&writes), writes.size());
 
   ScopedVector<UploadElementReader> element_readers;
-  std::string upload_data_string(kSpdyStreamInitialWindowSize, 'a');
+  std::string upload_data_string(initial_window_size, 'a');
   upload_data_string.append(kUploadData, kUploadDataSize);
   element_readers.push_back(new UploadBytesElementReader(
       upload_data_string.c_str(), upload_data_string.size()));
@@ -6312,21 +6315,21 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
 // Test we correctly handle the case where the SETTINGS frame results in a
 // negative send window size.
 TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
+  const int32 initial_window_size =
+      SpdySession::GetInitialWindowSize(GetParam().protocol);
   // Number of frames we need to send to zero out the window size: data
   // frames plus SYN_STREAM plus the last data frame; also we need another
   // data frame that we will send once the SETTING is received, therefore +3.
-  size_t num_writes = kSpdyStreamInitialWindowSize / kMaxSpdyFrameChunkSize + 3;
+  size_t num_writes = initial_window_size / kMaxSpdyFrameChunkSize + 3;
 
   // Calculate last frame's size; 0 size data frame is legal.
-  size_t last_frame_size =
-      kSpdyStreamInitialWindowSize % kMaxSpdyFrameChunkSize;
+  size_t last_frame_size = initial_window_size % kMaxSpdyFrameChunkSize;
 
   // Construct content for a data frame of maximum size.
   std::string content(kMaxSpdyFrameChunkSize, 'a');
 
   scoped_ptr<SpdyFrame> req(spdy_util_.ConstructSpdyPost(
-      kRequestUrl, 1, kSpdyStreamInitialWindowSize + kUploadDataSize,
-      LOWEST, NULL, 0));
+      kRequestUrl, 1, initial_window_size + kUploadDataSize, LOWEST, NULL, 0));
 
   // Full frames.
   scoped_ptr<SpdyFrame> body1(
@@ -6354,16 +6357,15 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
   // negative.
   SettingsMap new_settings;
   new_settings[SETTINGS_INITIAL_WINDOW_SIZE] =
-      SettingsFlagsAndValue(
-          SETTINGS_FLAG_NONE, kSpdyStreamInitialWindowSize / 2);
+      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, initial_window_size / 2);
   scoped_ptr<SpdyFrame> settings_frame_small(
       spdy_util_.ConstructSpdySettings(new_settings));
   // Construct read frames for WINDOW_UPDATE that makes the send_window_size
   // positive.
   scoped_ptr<SpdyFrame> session_window_update_init_size(
-      spdy_util_.ConstructSpdyWindowUpdate(0, kSpdyStreamInitialWindowSize));
+      spdy_util_.ConstructSpdyWindowUpdate(0, initial_window_size));
   scoped_ptr<SpdyFrame> window_update_init_size(
-      spdy_util_.ConstructSpdyWindowUpdate(1, kSpdyStreamInitialWindowSize));
+      spdy_util_.ConstructSpdyWindowUpdate(1, initial_window_size));
 
   reads.push_back(CreateMockRead(*settings_frame_small, i++));
   reads.push_back(CreateMockRead(*session_window_update_init_size, i++));
@@ -6386,7 +6388,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
                                vector_as_array(&writes), writes.size());
 
   ScopedVector<UploadElementReader> element_readers;
-  std::string upload_data_string(kSpdyStreamInitialWindowSize, 'a');
+  std::string upload_data_string(initial_window_size, 'a');
   upload_data_string.append(kUploadData, kUploadDataSize);
   element_readers.push_back(new UploadBytesElementReader(
       upload_data_string.c_str(), upload_data_string.size()));

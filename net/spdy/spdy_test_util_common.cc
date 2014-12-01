@@ -367,7 +367,8 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
       protocol(protocol),
-      stream_initial_recv_window_size(kSpdyStreamInitialWindowSize),
+      stream_initial_recv_window_size(
+          SpdySession::GetInitialWindowSize(protocol)),
       time_func(&base::TimeTicks::Now),
       force_spdy_over_ssl(false),
       force_spdy_always(false),
@@ -384,8 +385,8 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
   host_resolver->set_synchronous_mode(true);
 }
 
-SpdySessionDependencies::SpdySessionDependencies(
-    NextProto protocol, ProxyService* proxy_service)
+SpdySessionDependencies::SpdySessionDependencies(NextProto protocol,
+                                                 ProxyService* proxy_service)
     : host_resolver(new MockHostResolver),
       cert_verifier(new MockCertVerifier),
       transport_security_state(new TransportSecurityState),
@@ -400,7 +401,8 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
       protocol(protocol),
-      stream_initial_recv_window_size(kSpdyStreamInitialWindowSize),
+      stream_initial_recv_window_size(
+          SpdySession::GetInitialWindowSize(protocol)),
       time_func(&base::TimeTicks::Now),
       force_spdy_over_ssl(false),
       force_spdy_always(false),
