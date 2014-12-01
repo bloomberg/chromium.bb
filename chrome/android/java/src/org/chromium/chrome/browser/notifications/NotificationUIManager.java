@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.notifications;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -15,8 +15,6 @@ import android.graphics.Color;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.chrome.browser.notifications.NotificationConstants;
-import org.chromium.chrome.browser.notifications.NotificationService;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 /**
