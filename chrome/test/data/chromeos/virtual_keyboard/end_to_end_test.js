@@ -4,28 +4,97 @@
  * found in the LICENSE file.
  */
 
-var kb = document.getElementById('keyboard');
+/**
+ * Defers continuation of a test until a keyset is loaded.
+ * @param {string} keyset Name of the target keyset.
+ * @param {Function} continueTestCallback Callback function to invoke in order
+ *     to resume the test.
+ */
+function onKeysetReady(keyset, continueTestCallback) {
+  var container = document.querySelector('.inputview-container');
+  var bounds = container.getBoundingClientRect();
+  if (bounds.bottom > 0 && keyset in controller.container_.keysetViewMap &&
+      keyset == controller.currentKeyset_) {
+    continueTestCallback();
+    return;
+  }
+  setTimeout(function() {
+    onKeysetReady(keyset, continueTestCallback);
+  }, 100);
+}
+
 
 /**
- * Finds the character specified and types it. Assumes that the default
- * layout is qwerty, and the default keyset is lower.
- * @param {{string}} char The character to type.
+ * Display an error message and abort the test.
+ * @param {string} message The error message.
  */
-var type = function(char) {
-  var keyset = kb.querySelector('#qwerty-lower');
-  var keys = Array.prototype.slice.call(keyset.querySelectorAll('kb-key'));
-  var key = keys.filter(function(key) {
-    return key.charValue == char;
-  })[0];
-  key.down({pointerId: 1});
-  key.up({pointerId: 1});
+function fail(message) {
+  console.error(message);
+  window.domAutomationController.send(false);
 }
 
-if (kb.isReady()) {
-  type('a');
-} else {
-  kb.addKeysetChangedObserver(function() {
-    if (kb.isReady())
-      type('a');
-  });
+
+/**
+ * Mocks a touch event targeted on a key.
+ * @param {!Element} key .
+ * @param {string} eventType .
+ */
+function mockTouchEvent(key, eventType) {
+  var rect = key.getBoundingClientRect();
+  var x = rect.left + rect.width/2;
+  var y = rect.top + rect.height/2;
+  var e = document.createEvent('UIEvent');
+  e.initUIEvent(eventType, true, true);
+  e.touches = [{pageX: x, pageY: y}];
+  e.target = key;
+  key.dispatchEvent(e);
 }
+
+
+/**
+ * Simulates tapping on a key.
+ * @param {!Element} key .
+ */
+function mockTap(key) {
+  mockTouchEvent(key, 'touchstart');
+  mockTouchEvent(key, 'touchend');
+}
+
+
+/**
+ * Returns the active keyboard view.
+ * @return {!HTMLElement}
+ */
+function getActiveView() {
+  var container = document.querySelector('.inputview-container');
+  var views = container.querySelectorAll('.inputview-view');
+  for (var i = 0; i < views.length; i++) {
+    var display = views[i].style.display;
+    if (!display || display != 'none')
+      return views[i];
+  }
+  fail('Unable to find active keyboard view');
+}
+
+
+/**
+ * Locates a key by label.
+ * @param {string} label The label on the key. If the key has multiple labels,
+ *    |label| can match any of them.
+ * @returns {?Element} .
+ */
+function findKey(label) {
+  var view = getActiveView();
+  candidates = view.querySelectorAll('.inputview-special-key-name');
+  for (var i = 0; i < candidates.length; i++) {
+    if (candidates[i].textContent == label)
+      return candidates[i];
+  }
+  fail('Cannot find key labeled \'' + label + '\'');
+}
+
+
+// Wait for keyboard to finish loading asynchronously before tapping key.
+onKeysetReady('us.compact.qwerty', function() {
+  mockTap(findKey('a'));
+});

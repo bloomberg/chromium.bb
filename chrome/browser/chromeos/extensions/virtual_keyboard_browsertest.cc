@@ -65,7 +65,7 @@ void VirtualKeyboardBrowserTest::RunTest(
   ui_test_utils::NavigateToURL(browser(), GURL(config.url_));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   ASSERT_TRUE(web_contents);
 
   // Inject testing scripts.
@@ -103,8 +103,8 @@ content::RenderViewHost* VirtualKeyboardBrowserTest::GetKeyboardRenderViewHost(
       if (url == view->GetSiteInstance()->GetSiteURL()) {
         content::WebContents* wc =
             content::WebContents::FromRenderViewHost(view);
-        // Waits for Polymer to load.
-        content::WaitForLoadStop(wc);
+        // Waits for virtual keyboard to load.
+        EXPECT_TRUE(content::WaitForLoadStop(wc));
         return view;
       }
     }
@@ -122,13 +122,6 @@ void VirtualKeyboardBrowserTest::InjectJavascript(const base::FilePath& dir,
   utf8_content_.append(";\n");
 }
 
-// crbug.com/367817. Either this feature or just the test are depending
-// on the presense of Object.observe which is presently disabled by default.
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_AttributesTest) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL("attributes_test.js")),
-          VirtualKeyboardBrowserTestConfig());
-}
-
 IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, TypingTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("typing_test.js")),
           VirtualKeyboardBrowserTestConfig());
@@ -144,31 +137,12 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, ModifierTest) {
           VirtualKeyboardBrowserTestConfig());
 }
 
-// crbug.com/387372. This test started failing at Blink r176582.
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_ControlKeysTest) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL("control_keys_test.js")),
-          VirtualKeyboardBrowserTestConfig());
-}
-
 IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, HideKeyboardKeyTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("hide_keyboard_key_test.js")),
           VirtualKeyboardBrowserTestConfig());
 }
 
-// http://crbug.com/396326
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest,
-                       DISABLED_KeysetTransitionTest) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL("keyset_transition_test.js")),
-          VirtualKeyboardBrowserTestConfig());
-}
-
-// Fails when enabling Object.observe. See http://crbug.com/370004
-#if defined(OS_CHROMEOS)
-#define MAYBE_IsKeyboardLoaded DISABLED_IsKeyboardLoaded
-#else
-#define MAYBE_IsKeyboardLoaded IsKeyboardLoaded
-#endif
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, MAYBE_IsKeyboardLoaded) {
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, IsKeyboardLoaded) {
   content::RenderViewHost* keyboard_rvh =
       GetKeyboardRenderViewHost(kExtensionId);
   ASSERT_TRUE(keyboard_rvh);
@@ -182,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, MAYBE_IsKeyboardLoaded) {
   ASSERT_TRUE(loaded);
 }
 
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_EndToEndTest) {
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, EndToEndTest) {
   // Get the virtual keyboard's render view host.
   content::RenderViewHost* keyboard_rvh =
       GetKeyboardRenderViewHost(kExtensionId);
