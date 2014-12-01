@@ -210,18 +210,10 @@ void GinJavaBridgeDispatcherHost::RemoveNamedObject(
   named_objects_.erase(iter);
   object->RemoveName();
 
-  // Not erasing from the objects map, as we can still receive method
-  // invocation requests for this object, and they should work until the
-  // java object is gone.
-  if (!object->IsNamed()) {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    base::android::ScopedJavaLocalRef<jobject> retained_object_set =
-        retained_object_set_.get(env);
-    if (!retained_object_set.is_null()) {
-      JNI_Java_HashSet_remove(
-          env, retained_object_set, object->GetLocalRef(env));
-    }
-  }
+  // As the object isn't going to be removed from the JavaScript side until the
+  // next page reload, calls to it must still work, thus we should continue to
+  // hold it. All the transient objects and removed named objects will be purged
+  // during the cleansing caused by DocumentAvailableInMainFrame event.
 
   web_contents()->SendToAllFrames(
       new GinJavaBridgeMsg_RemoveNamedObject(MSG_ROUTING_NONE, copied_name));

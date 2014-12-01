@@ -172,15 +172,27 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testRemovalNotReflectedUntilReload() throws Throwable {
-        injectObjectAndReload(new Object(), "testObject");
+        injectObjectAndReload(new Object() {
+            public void method() {
+                mTestController.setStringValue("I'm here");
+            }
+        }, "testObject");
         assertEquals("object", executeJavaScriptAndGetStringResult("typeof testObject"));
+        executeJavaScript("testObject.method()");
+        assertEquals("I'm here", mTestController.waitForStringValue());
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 getContentViewCore().removeJavascriptInterface("testObject");
             }
         });
+        // Check that the Java object is being held by the Java bridge, thus it's not
+        // collected. Note that despite that what JavaDoc says about invoking "gc()", both Dalvik
+        // and ART actually run the collector if called via Runtime.
+        Runtime.getRuntime().gc();
         assertEquals("object", executeJavaScriptAndGetStringResult("typeof testObject"));
+        executeJavaScript("testObject.method()");
+        assertEquals("I'm here", mTestController.waitForStringValue());
         synchronousPageReload();
         assertEquals("undefined", executeJavaScriptAndGetStringResult("typeof testObject"));
     }
