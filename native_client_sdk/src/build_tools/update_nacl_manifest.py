@@ -896,7 +896,7 @@ def main(args):
   parser.add_option('--bundle-version',
       help='Manually set a bundle version. This can be passed more than once. '
       'format: --bundle-version pepper_24=24.0.1312.25', action='append')
-  options, args = parser.parse_args(args[1:])
+  options, args = parser.parse_args(args)
 
   if (options.mailfrom is None) != (not options.mailto):
     options.mailfrom = None
