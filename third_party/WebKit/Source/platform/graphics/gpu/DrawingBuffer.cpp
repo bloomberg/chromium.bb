@@ -905,7 +905,7 @@ bool DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height, So
 
     GLint fbo = 0;
     if (sourceBuffer == FrontBuffer && m_frontColorBuffer.texInfo.textureId) {
-        GLint fbo = m_context->createFramebuffer();
+        fbo = m_context->createFramebuffer();
         m_context->bindFramebuffer(GL_FRAMEBUFFER, fbo);
         m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_frontColorBuffer.texInfo.textureId, 0);
     } else {
