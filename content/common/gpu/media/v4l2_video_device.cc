@@ -5,7 +5,7 @@
 #include <linux/videodev2.h>
 
 #include "base/numerics/safe_conversions.h"
-#include "content/common/gpu/media/generic_v4l2_video_device.h"
+#include "content/common/gpu/media/exynos_v4l2_video_device.h"
 #include "content/common/gpu/media/tegra_v4l2_video_device.h"
 
 namespace content {
@@ -16,9 +16,9 @@ V4L2Device::~V4L2Device() {}
 scoped_ptr<V4L2Device> V4L2Device::Create(Type type) {
   DVLOG(3) << __PRETTY_FUNCTION__;
 
-  scoped_ptr<GenericV4L2Device> generic_device(new GenericV4L2Device(type));
-  if (generic_device->Initialize())
-    return generic_device.Pass();
+  scoped_ptr<ExynosV4L2Device> exynos_device(new ExynosV4L2Device(type));
+  if (exynos_device->Initialize())
+    return exynos_device.Pass();
 
   scoped_ptr<TegraV4L2Device> tegra_device(new TegraV4L2Device(type));
   if (tegra_device->Initialize())
