@@ -443,6 +443,8 @@ function testType() {
   assertValid("Type", false, {type:"boolean"});
   assertValid("Type", null, {type:"null"});
   assertValid("Type", undefined, {type:"undefined"});
+  assertValid("Type", new ArrayBuffer(1), {type:"binary"});
+  assertValid("Type", otherContextArrayBufferContainer.value, {type:"binary"});
 
   // not valid
   assertNotValid("Type", [], {type: "object"},

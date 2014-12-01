@@ -132,8 +132,8 @@ JSONSchemaValidator.getType = function(value) {
       return "null";
     } else if (Object.prototype.toString.call(value) == "[object Array]") {
       return "array";
-    } else if (typeof(ArrayBuffer) != "undefined" &&
-               value.constructor == ArrayBuffer) {
+    } else if (Object.prototype.toString.call(value) ==
+               "[object ArrayBuffer]") {
       return "binary";
     }
   } else if (s == "number") {

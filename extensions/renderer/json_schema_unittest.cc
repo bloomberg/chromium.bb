@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/module_system_test.h"
 #include "extensions/renderer/v8_schema_registry.h"
+#include "gin/dictionary.h"
 #include "grit/extensions_renderer_resources.h"
 
 namespace extensions {
@@ -72,6 +73,18 @@ TEST_F(JsonSchemaTest, TestIntegerBounds) {
 }
 
 TEST_F(JsonSchemaTest, TestType) {
+  gin::Dictionary array_buffer_container(
+      env()->isolate(),
+      env()->CreateGlobal("otherContextArrayBufferContainer"));
+  {
+    // Create an ArrayBuffer in another v8 context and pass it to the test
+    // through a global.
+    scoped_ptr<ModuleSystemTestEnvironment> other_env(CreateEnvironment());
+    v8::Context::Scope scope(other_env->context()->v8_context());
+    v8::Handle<v8::ArrayBuffer> array_buffer(
+        v8::ArrayBuffer::New(env()->isolate(), 1));
+    array_buffer_container.Set("value", array_buffer);
+  }
   TestFunction("testType");
 }
 
