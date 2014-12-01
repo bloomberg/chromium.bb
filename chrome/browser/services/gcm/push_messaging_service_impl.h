@@ -96,6 +96,9 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   void DidUnregister(GCMClient::Result result);
 
+  // Helper method that checks if a given origin is allowed to use Push.
+  bool HasPermission(const GURL& origin);
+
   GCMProfileService* gcm_profile_service_;  // It owns us.
 
   Profile* profile_;  // It owns our owner.

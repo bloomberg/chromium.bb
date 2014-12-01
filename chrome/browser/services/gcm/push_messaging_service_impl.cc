@@ -155,6 +155,13 @@ void PushMessagingServiceImpl::OnMessage(
   DCHECK(application_id.IsValid());
   GCMClient::MessageData::const_iterator it = message.data.find("data");
   if (application_id.IsValid() && it != message.data.end()) {
+    if (!HasPermission(application_id.origin)) {
+      // The |origin| lost push permission. We need to unregister and drop this
+      // message.
+      Unregister(application_id);
+      return;
+    }
+
     const std::string& data = it->second;
     content::BrowserContext::DeliverPushMessage(
         profile_,
@@ -382,6 +389,15 @@ void PushMessagingServiceImpl::DidUnregister(GCMClient::Result result) {
   }
 
   DecreasePushRegistrationCount(1);
+}
+
+bool PushMessagingServiceImpl::HasPermission(const GURL& origin) {
+  gcm::PushMessagingPermissionContext* permission_context =
+      gcm::PushMessagingPermissionContextFactory::GetForProfile(profile_);
+  DCHECK(permission_context);
+
+  return permission_context->GetPermissionStatus(origin, origin) ==
+      CONTENT_SETTING_ALLOW;
 }
 
 }  // namespace gcm
