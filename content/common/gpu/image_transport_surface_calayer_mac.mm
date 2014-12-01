@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/mac/sdk_forward_declarations.h"
-#include "content/common/gpu/surface_handle_types_mac.h"
+#include "ui/accelerated_widget_mac/surface_handle_types.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -363,7 +363,7 @@ void CALayerStorageProvider::UnblockBrowserIfNeeded() {
   pending_draw_weak_factory_.InvalidateWeakPtrs();
   has_pending_draw_ = false;
   transport_surface_->SendSwapBuffers(
-      SurfaceHandleFromCAContextID([context_ contextId]),
+      ui::SurfaceHandleFromCAContextID([context_ contextId]),
       fbo_pixel_size_,
       fbo_scale_factor_);
 }

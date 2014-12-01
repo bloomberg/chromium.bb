@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_LAYER_MAC_H_
-#define CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_LAYER_MAC_H_
+#ifndef UI_ACCELERATED_WIDGET_MAC_IO_SURFACE_LAYER_H_
+#define UI_ACCELERATED_WIDGET_MAC_IO_SURFACE_LAYER_H_
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 
 @class IOSurfaceLayer;
 
-namespace content {
+namespace ui {
+
 class IOSurfaceTexture;
 class IOSurfaceContext;
 
@@ -44,7 +45,7 @@ class IOSurfaceLayerClient {
 class IOSurfaceLayerHelper {
  public:
   IOSurfaceLayerHelper(IOSurfaceLayerClient* client,
-                                  IOSurfaceLayer* layer);
+                       IOSurfaceLayer* layer);
   ~IOSurfaceLayerHelper();
 
   // Called when the IOSurfaceLayer gets a new frame.
@@ -84,7 +85,7 @@ class IOSurfaceLayerHelper {
   void TimerFired();
 
   // The client that the owning layer was created with.
-  content::IOSurfaceLayerClient* const client_;
+  IOSurfaceLayerClient* const client_;
 
   // The layer that owns this helper.
   IOSurfaceLayer* const layer_;
@@ -111,19 +112,20 @@ class IOSurfaceLayerHelper {
   base::DelayTimer<IOSurfaceLayerHelper> timer_;
 };
 
-}  // namespace content
+}  // namespace ui
 
 // The CoreAnimation layer for drawing accelerated content.
 @interface IOSurfaceLayer : CAOpenGLLayer {
  @private
-  scoped_refptr<content::IOSurfaceTexture> iosurface_;
-  scoped_refptr<content::IOSurfaceContext> context_;
+  scoped_refptr<ui::IOSurfaceTexture> iosurface_;
+  scoped_refptr<ui::IOSurfaceContext> context_;
 
-  scoped_ptr<content::IOSurfaceLayerHelper> helper_;
+  scoped_ptr<ui::IOSurfaceLayerHelper> helper_;
 }
 
-- (id)initWithClient:(content::IOSurfaceLayerClient*)client
-     withScaleFactor:(float)scale_factor;
+- (id)initWithClient:(ui::IOSurfaceLayerClient*)client
+            withScaleFactor:(float)scale_factor
+    needsGLFinishWorkaround:(bool)needs_gl_finish_workaround;
 
 - (bool)gotFrameWithIOSurface:(IOSurfaceID)io_surface_id
                 withPixelSize:(gfx::Size)pixel_size
@@ -158,4 +160,4 @@ class IOSurfaceLayerHelper {
 - (void)endPumpingFrames;
 @end
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_LAYER_MAC_H_
+#endif  // UI_ACCELERATED_WIDGET_MAC_IO_SURFACE_LAYER_H_

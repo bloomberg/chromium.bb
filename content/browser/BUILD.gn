@@ -336,6 +336,7 @@ source_set("browser") {
       "geolocation/empty_wifi_data_provider.cc",
       "geolocation/empty_wifi_data_provider.h",
     ]
+    deps += [ "//ui/accelerated_widget_mac" ]
     libs += [ "bsm" ]
   }
 

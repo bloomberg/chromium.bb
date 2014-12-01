@@ -17,10 +17,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "content/browser/compositor/browser_compositor_ca_layer_tree_mac.h"
 #include "content/browser/compositor/browser_compositor_view_mac.h"
 #include "content/browser/compositor/delegated_frame_host.h"
-#include "content/browser/compositor/io_surface_layer_mac.h"
 #include "content/browser/renderer_host/display_link_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
@@ -29,6 +27,8 @@
 #import "content/public/browser/render_widget_host_view_mac_base.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
+#include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
+#include "ui/accelerated_widget_mac/io_surface_layer.h"
 #include "ui/base/cocoa/base_view.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/gfx/display_observer.h"
@@ -204,7 +204,7 @@ class RenderWidgetHostImpl;
 class CONTENT_EXPORT RenderWidgetHostViewMac
     : public RenderWidgetHostViewBase,
       public DelegatedFrameHostClient,
-      public AcceleratedWidgetMacNSView,
+      public ui::AcceleratedWidgetMacNSView,
       public IPC::Sender,
       public gfx::DisplayObserver {
  public:

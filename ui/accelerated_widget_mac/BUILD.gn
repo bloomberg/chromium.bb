@@ -1,0 +1,37 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac
+component("accelerated_widget_mac") {
+  sources = [
+    "accelerated_widget_mac.h",
+    "accelerated_widget_mac.mm",
+    "accelerated_widget_mac_export.h",
+    "io_surface_context.h",
+    "io_surface_context.mm",
+    "io_surface_layer.h",
+    "io_surface_layer.mm",
+    "io_surface_texture.h",
+    "io_surface_texture.mm",
+    "software_layer.h",
+    "software_layer.mm",
+    "surface_handle_types.cc",
+    "surface_handle_types.h",
+  ]
+
+  defines = [ "ACCELERATED_WIDGET_MAC_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//skia",
+    "//ui/base",
+    "//ui/events",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+  ]
+
+  libs = [
+    "QuartzCore.framework",
+  ]
+}

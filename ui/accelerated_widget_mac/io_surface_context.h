@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_CONTEXT_MAC_H_
-#define CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_CONTEXT_MAC_H_
+#ifndef UI_ACCELERATED_WIDGET_MAC_IO_SURFACE_CONTEXT_H_
+#define UI_ACCELERATED_WIDGET_MAC_IO_SURFACE_CONTEXT_H_
 
 #include <OpenGL/OpenGL.h>
 #include <map>
@@ -16,7 +16,7 @@
 #include "ui/gl/gpu_switching_observer.h"
 #include "ui/gl/scoped_cgl.h"
 
-namespace content {
+namespace ui {
 
 class IOSurfaceContext
     : public base::RefCounted<IOSurfaceContext>,
@@ -44,7 +44,7 @@ class IOSurfaceContext
 
   CGLContextObj cgl_context() const { return cgl_context_; }
 
-  // content::GpuDataManagerObserver implementation.
+  // ui::GpuSwitchingObserver implementation.
   void OnGpuSwitched() override;
 
  private:
@@ -67,6 +67,6 @@ class IOSurfaceContext
   static TypeMap* type_map();
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_CONTEXT_MAC_H_
+#endif  // UI_ACCELERATED_WIDGET_MAC_IO_SURFACE_CONTEXT_H_

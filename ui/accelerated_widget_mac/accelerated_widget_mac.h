@@ -2,30 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_ACCELERATED_WIDGET_HELPER_MAC_H_
-#define CONTENT_BROWSER_COMPOSITOR_ACCELERATED_WIDGET_HELPER_MAC_H_
+#ifndef UI_ACCELERATED_WIDGET_MAC_ACCELERATED_WIDGET_MAC_H_
+#define UI_ACCELERATED_WIDGET_MAC_ACCELERATED_WIDGET_MAC_H_
 
 #include <IOSurface/IOSurfaceAPI.h>
 #include <vector>
 
-#include "skia/ext/platform_canvas.h"
+#include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(__OBJC__)
-#include <Cocoa/Cocoa.h>
-#include "base/mac/scoped_nsobject.h"
-#include "content/browser/compositor/io_surface_layer_mac.h"
-#include "content/browser/compositor/software_layer_mac.h"
+#import <Cocoa/Cocoa.h>
+#import "base/mac/scoped_nsobject.h"
+#import "ui/accelerated_widget_mac/io_surface_layer.h"
+#import "ui/accelerated_widget_mac/software_layer.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #endif  // __OBJC__
+
+class SkCanvas;
 
 namespace cc {
 class SoftwareFrameData;
 }
 
-namespace content {
+namespace ui {
 
 class AcceleratedWidgetMac;
 
@@ -47,9 +49,10 @@ class AcceleratedWidgetMacNSView {
 // to a ui::Compositor, which will cause, through its output surface, calls to
 // GotAcceleratedFrame and GotSoftwareFrame. The CALayers may be installed
 // in an NSView by setting the AcceleratedWidgetMacNSView for the helper.
-class AcceleratedWidgetMac : public IOSurfaceLayerClient {
+class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
+    : public IOSurfaceLayerClient {
  public:
-  AcceleratedWidgetMac();
+  explicit AcceleratedWidgetMac(bool needs_gl_finish_workaround);
   virtual ~AcceleratedWidgetMac();
 
   gfx::AcceleratedWidget accelerated_widget() { return native_widget_; }
@@ -78,10 +81,9 @@ class AcceleratedWidgetMac : public IOSurfaceLayerClient {
       float scale_factor,
       const base::Closure& drawn_callback);
 
-  void GotSoftwareFrame(
-      cc::SoftwareFrameData* frame_data, float scale_factor, SkCanvas* canvas);
+  void GotSoftwareFrame(float scale_factor, SkCanvas* canvas);
 
-private:
+ private:
   // IOSurfaceLayerClient implementation:
   bool IOSurfaceLayerShouldAckImmediately() const override;
   void IOSurfaceLayerDidDrawFrame() override;
@@ -138,11 +140,16 @@ private:
   // The size in DIP of the last swap received from |compositor_|.
   gfx::Size last_swap_size_dip_;
 
+  // Whether surfaces created by the widget should use the glFinish() workaround
+  // after compositing.
+  bool needs_gl_finish_workaround_;
+
   DISALLOW_COPY_AND_ASSIGN(AcceleratedWidgetMac);
 };
 
 #endif  // __OBJC__
 
+ACCELERATED_WIDGET_MAC_EXPORT
 void AcceleratedWidgetMacGotAcceleratedFrame(
     gfx::AcceleratedWidget widget, uint64 surface_handle,
     const std::vector<ui::LatencyInfo>& latency_info,
@@ -150,10 +157,10 @@ void AcceleratedWidgetMacGotAcceleratedFrame(
     const base::Closure& drawn_callback,
     bool* disable_throttling, int* renderer_id);
 
+ACCELERATED_WIDGET_MAC_EXPORT
 void AcceleratedWidgetMacGotSoftwareFrame(
-    gfx::AcceleratedWidget widget,
-    cc::SoftwareFrameData* frame_data, float scale_factor, SkCanvas* canvas);
+    gfx::AcceleratedWidget widget, float scale_factor, SkCanvas* canvas);
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_ACCELERATED_WIDGET_HELPER_MAC_H_
+#endif  // UI_ACCELERATED_WIDGET_MAC_ACCELERATED_WIDGET_MAC_H_

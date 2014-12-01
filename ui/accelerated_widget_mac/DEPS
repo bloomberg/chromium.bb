@@ -1,0 +1,8 @@
+include_rules = [
+  "+third_party/skia",
+  "+ui/base/cocoa",
+  "+ui/events",
+  "+ui/gfx/geometry",
+  "+ui/gfx/native_widget_types.h",
+  "+ui/gl",
+]

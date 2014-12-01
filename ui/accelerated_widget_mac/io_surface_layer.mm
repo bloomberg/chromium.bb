@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/io_surface_layer_mac.h"
+#include "ui/accelerated_widget_mac/io_surface_layer.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <OpenGL/CGLIOSurface.h>
@@ -13,16 +13,16 @@
 #include "base/debug/trace_event.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
-#include "content/browser/compositor/io_surface_context_mac.h"
-#include "content/browser/compositor/io_surface_texture_mac.h"
+#include "ui/accelerated_widget_mac/io_surface_context.h"
+#include "ui/accelerated_widget_mac/io_surface_texture.h"
 #include "ui/base/cocoa/animation_utils.h"
-#include "ui/gfx/size_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gl/gpu_switching_manager.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // IOSurfaceLayerHelper
 
-namespace content {
+namespace ui {
 
 IOSurfaceLayerHelper::IOSurfaceLayerHelper(
     IOSurfaceLayerClient* client,
@@ -160,21 +160,22 @@ void IOSurfaceLayerHelper::EndPumpingFrames() {
   DisplayIfNeededAndAck();
 }
 
-}  // namespace content
+}  // namespace ui
 
 ////////////////////////////////////////////////////////////////////////////////
 // IOSurfaceLayer
 
 @implementation IOSurfaceLayer
 
-- (id)initWithClient:(content::IOSurfaceLayerClient*)client
-     withScaleFactor:(float)scale_factor {
+- (id)initWithClient:(ui::IOSurfaceLayerClient*)client
+            withScaleFactor:(float)scale_factor
+    needsGLFinishWorkaround:(bool)needs_gl_finish_workaround {
   if (self = [super init]) {
-    helper_.reset(new content::IOSurfaceLayerHelper(client, self));
+    helper_.reset(new ui::IOSurfaceLayerHelper(client, self));
 
-    iosurface_ = content::IOSurfaceTexture::Create();
-    context_ = content::IOSurfaceContext::Get(
-        content::IOSurfaceContext::kCALayerContext);
+    iosurface_ = ui::IOSurfaceTexture::Create(needs_gl_finish_workaround);
+    context_ = ui::IOSurfaceContext::Get(
+        ui::IOSurfaceContext::kCALayerContext);
     if (!iosurface_.get() || !context_.get()) {
       LOG(ERROR) << "Failed create CompositingIOSurface or context";
       [self resetClient];

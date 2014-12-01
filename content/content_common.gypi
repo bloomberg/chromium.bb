@@ -324,8 +324,6 @@
       'common/gpu/null_transport_surface.h',
       'common/gpu/stream_texture_android.cc',
       'common/gpu/stream_texture_android.h',
-      'common/gpu/surface_handle_types_mac.cc',
-      'common/gpu/surface_handle_types_mac.h',
       'common/handle_enumerator_win.cc',
       'common/handle_enumerator_win.h',
       'common/host_discardable_shared_memory_manager.cc',
@@ -606,6 +604,7 @@
       'dependencies': [
         '../media/media.gyp:media',
         'app/resources/content_resources.gyp:content_resources',
+        '../ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac'
       ],
       'sources': [
         'common/gpu/client/gpu_memory_buffer_impl_io_surface.cc',

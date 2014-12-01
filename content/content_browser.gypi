@@ -1472,8 +1472,6 @@
       'browser/renderer_host/p2p/socket_dispatcher_host.h',
     ],
     'compositor_browser_sources': [
-      'browser/compositor/browser_compositor_ca_layer_tree_mac.mm',
-      'browser/compositor/browser_compositor_ca_layer_tree_mac.h',
       'browser/compositor/browser_compositor_output_surface.cc',
       'browser/compositor/browser_compositor_output_surface.h',
       'browser/compositor/browser_compositor_output_surface_proxy.cc',
@@ -1488,12 +1486,6 @@
       'browser/compositor/gpu_process_transport_factory.h',
       'browser/compositor/image_transport_factory.cc',
       'browser/compositor/image_transport_factory.h',
-      'browser/compositor/io_surface_context_mac.h',
-      'browser/compositor/io_surface_context_mac.mm',
-      'browser/compositor/io_surface_layer_mac.h',
-      'browser/compositor/io_surface_layer_mac.mm',
-      'browser/compositor/io_surface_texture_mac.h',
-      'browser/compositor/io_surface_texture_mac.mm',
       'browser/compositor/overlay_candidate_validator_ozone.cc',
       'browser/compositor/overlay_candidate_validator_ozone.h',
       'browser/compositor/owned_mailbox.h',
@@ -1502,8 +1494,6 @@
       'browser/compositor/reflector_impl.h',
       'browser/compositor/resize_lock.cc',
       'browser/compositor/resize_lock.h',
-      'browser/compositor/software_layer_mac.mm',
-      'browser/compositor/software_layer_mac.h',
       'browser/compositor/gpu_browser_compositor_output_surface.cc',
       'browser/compositor/gpu_browser_compositor_output_surface.h',
       'browser/compositor/gpu_surfaceless_browser_compositor_output_surface.cc',
@@ -1863,6 +1853,7 @@
       'dependencies': [
         '../third_party/mozilla/mozilla.gyp:mozilla',
         '../third_party/sudden_motion_sensor/sudden_motion_sensor.gyp:sudden_motion_sensor',
+        '../ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac',
       ],
       'link_settings': {
         'libraries': [

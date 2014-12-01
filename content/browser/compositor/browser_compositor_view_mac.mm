@@ -6,9 +6,11 @@
 
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
-#include "content/browser/compositor/browser_compositor_ca_layer_tree_mac.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/render_widget_resize_helper.h"
 #include "content/public/browser/context_factory.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCompositorMac
@@ -26,10 +28,16 @@ uint32 g_placeholder_count = 0;
 base::LazyInstance<scoped_ptr<BrowserCompositorMac>>
   g_recyclable_browser_compositor;
 
+bool WidgetNeedsGLFinishWorkaround() {
+  return GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
+      gpu::FORCE_GL_FINISH_AFTER_COMPOSITING);
+}
+
 }  // namespace
 
 BrowserCompositorMac::BrowserCompositorMac()
-    : compositor_(
+    : accelerated_widget_mac_(WidgetNeedsGLFinishWorkaround()),
+      compositor_(
           accelerated_widget_mac_.accelerated_widget(),
           content::GetContextFactory(),
           RenderWidgetResizeHelper::Get()->task_runner()) {

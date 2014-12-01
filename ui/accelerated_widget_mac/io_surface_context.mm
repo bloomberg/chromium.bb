@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/io_surface_context_mac.h"
+#include "ui/accelerated_widget_mac/io_surface_context.h"
 
 #include <OpenGL/gl.h>
 #include <OpenGL/OpenGL.h>
@@ -11,11 +11,10 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
 
-namespace content {
+namespace ui {
 
 // static
 scoped_refptr<IOSurfaceContext>
@@ -118,4 +117,4 @@ IOSurfaceContext::TypeMap*
 base::LazyInstance<IOSurfaceContext::TypeMap>
     IOSurfaceContext::type_map_;
 
-}  // namespace content
+}  // namespace ui

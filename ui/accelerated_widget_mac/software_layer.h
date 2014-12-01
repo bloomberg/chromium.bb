@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_SOFTWARE_LAYER_MAC_H_
-#define CONTENT_BROWSER_RENDERER_HOST_SOFTWARE_LAYER_MAC_H_
+#ifndef UI_ACCELERATED_WIDGET_MAC_SOFTWARE_LAYER_H_
+#define UI_ACCELERATED_WIDGET_MAC_SOFTWARE_LAYER_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -19,4 +19,4 @@
 @end
 
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_SOFTWARE_LAYER_MAC_H_
+#endif  // UI_ACCELERATED_WIDGET_MAC_SOFTWARE_LAYER_H_

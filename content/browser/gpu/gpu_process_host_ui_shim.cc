@@ -25,7 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_MACOSX)
-#include "content/browser/compositor/browser_compositor_ca_layer_tree_mac.h"
+#include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -279,7 +279,7 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
   DCHECK(IsDelegatedRendererEnabled());
   gfx::AcceleratedWidget native_widget =
       content::GpuSurfaceTracker::Get()->AcquireNativeWidget(params.surface_id);
-  AcceleratedWidgetMacGotAcceleratedFrame(
+  ui::AcceleratedWidgetMacGotAcceleratedFrame(
       native_widget,
       params.surface_handle,
       params.latency_info,

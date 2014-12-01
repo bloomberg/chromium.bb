@@ -75,6 +75,7 @@ include_rules = [
   "+third_party/WebKit/public/platform",
   "+third_party/WebKit/public/web",
 
+  "+ui/accelerated_widget_mac",
   "+ui/accessibility",
   "+ui/android",
   # Aura is analogous to Win32 or a Gtk, so it is allowed.

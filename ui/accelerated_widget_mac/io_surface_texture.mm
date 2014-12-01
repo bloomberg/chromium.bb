@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/io_surface_texture_mac.h"
+#include "ui/accelerated_widget_mac/io_surface_texture.h"
 
 #include <OpenGL/CGLIOSurface.h>
 #include <OpenGL/CGLRenderers.h>
-#include <OpenGL/OpenGL.h>
 #include <OpenGL/gl.h>
+#include <OpenGL/OpenGL.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -18,23 +18,17 @@
 #include "base/mac/mac_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/platform_thread.h"
-#include "content/browser/compositor/io_surface_context_mac.h"
-#include "content/browser/gpu/gpu_data_manager_impl.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_view_mac.h"
-#include "content/common/content_constants_internal.h"
-#include "gpu/config/gpu_driver_bug_workaround_type.h"
-#include "media/base/video_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
-#include "ui/gfx/size_conversions.h"
+#include "ui/accelerated_widget_mac/io_surface_context.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gl/gl_context.h"
 
-namespace content {
+namespace ui {
 
 // static
-scoped_refptr<IOSurfaceTexture> IOSurfaceTexture::Create() {
+scoped_refptr<IOSurfaceTexture> IOSurfaceTexture::Create(
+    bool needs_gl_finish_workaround) {
   scoped_refptr<IOSurfaceContext> offscreen_context =
       IOSurfaceContext::Get(
           IOSurfaceContext::kOffscreenContext);
@@ -43,16 +37,18 @@ scoped_refptr<IOSurfaceTexture> IOSurfaceTexture::Create() {
     return NULL;
   }
 
-  return new IOSurfaceTexture(offscreen_context);
+  return new IOSurfaceTexture(offscreen_context, needs_gl_finish_workaround);
 }
 
 IOSurfaceTexture::IOSurfaceTexture(
-    const scoped_refptr<IOSurfaceContext>& offscreen_context)
+    const scoped_refptr<IOSurfaceContext>& offscreen_context,
+    bool needs_gl_finish_workaround)
     : offscreen_context_(offscreen_context),
       texture_(0),
       gl_error_(GL_NO_ERROR),
       eviction_queue_iterator_(eviction_queue_.Get().end()),
-      eviction_has_been_drawn_since_updated_(false) {
+      eviction_has_been_drawn_since_updated_(false),
+      needs_gl_finish_workaround_(needs_gl_finish_workaround) {
   CHECK(offscreen_context_.get());
 }
 
@@ -110,10 +106,7 @@ bool IOSurfaceTexture::DrawIOSurface() {
   glBegin(GL_TRIANGLES);
   glEnd();
 
-  bool workaround_needed =
-      GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
-          gpu::FORCE_GL_FINISH_AFTER_COMPOSITING);
-  if (workaround_needed) {
+  if (needs_gl_finish_workaround_) {
     TRACE_EVENT0("gpu", "glFinish");
     glFinish();
   }
@@ -294,4 +287,4 @@ base::LazyInstance<IOSurfaceTexture::EvictionQueue>
 // static
 bool IOSurfaceTexture::eviction_scheduled_ = false;
 
-}  // namespace content
+}  // namespace ui

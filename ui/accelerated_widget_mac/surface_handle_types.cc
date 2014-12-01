@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/surface_handle_types_mac.h"
+#include "ui/accelerated_widget_mac/surface_handle_types.h"
 
 #include "base/logging.h"
 
-namespace content {
+namespace ui {
 namespace {
 
 // The type of the handle is stored in the upper 64 bits.
@@ -50,4 +50,4 @@ uint64 SurfaceHandleFromCAContextID(CAContextID ca_context_id) {
   return kTypeCAContext | (ca_context_id ^ kXORMaskCAContext);
 }
 
-}  //  namespace content
+}  //  namespace ui

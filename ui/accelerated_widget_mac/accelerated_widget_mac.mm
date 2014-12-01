@@ -2,23 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/browser_compositor_ca_layer_tree_mac.h"
+#include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 
 #include <map>
 
-#include "cc/output/software_frame_data.h"
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
-#include "content/browser/compositor/io_surface_layer_mac.h"
-#include "content/browser/compositor/software_layer_mac.h"
-#include "content/common/gpu/surface_handle_types_mac.h"
-#include "content/public/browser/context_factory.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/accelerated_widget_mac/io_surface_layer.h"
+#include "ui/accelerated_widget_mac/surface_handle_types.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gl/scoped_cgl.h"
 
-namespace content {
+namespace ui {
 namespace {
 
 typedef std::map<gfx::AcceleratedWidget,AcceleratedWidgetMac*>
@@ -37,13 +35,14 @@ AcceleratedWidgetMac* GetHelperFromAcceleratedWidget(
   return found->second;
 }
 
-}
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratedWidgetMac
 
-AcceleratedWidgetMac::AcceleratedWidgetMac()
-    : view_(NULL) {
+AcceleratedWidgetMac::AcceleratedWidgetMac(bool needs_gl_finish_workaround)
+    : view_(NULL),
+      needs_gl_finish_workaround_(needs_gl_finish_workaround) {
   // Disable the fade-in animation as the layers are added.
   ScopedCAActionDisabler disabler;
 
@@ -215,7 +214,8 @@ void AcceleratedWidgetMac::GotAcceleratedIOSurfaceFrame(
   if (needs_new_layer) {
     io_surface_layer_.reset(
         [[IOSurfaceLayer alloc] initWithClient:this
-                               withScaleFactor:scale_factor]);
+                               withScaleFactor:scale_factor
+                       needsGLFinishWorkaround:needs_gl_finish_workaround_]);
     if (io_surface_layer_)
       [flipped_layer_ addSublayer:io_surface_layer_];
     else
@@ -266,11 +266,9 @@ void AcceleratedWidgetMac::GotAcceleratedIOSurfaceFrame(
   DestroySoftwareLayer();
 }
 
-void AcceleratedWidgetMac::GotSoftwareFrame(
-    cc::SoftwareFrameData* frame_data,
-    float scale_factor,
-    SkCanvas* canvas) {
-  if (!frame_data || !canvas || !view_)
+void AcceleratedWidgetMac::GotSoftwareFrame(float scale_factor,
+                                            SkCanvas* canvas) {
+  if (!canvas || !view_)
     return;
 
   // Disable the fade-in or fade-out effect if we create or remove layers.
@@ -379,12 +377,11 @@ void AcceleratedWidgetMacGotAcceleratedFrame(
 }
 
 void AcceleratedWidgetMacGotSoftwareFrame(
-    gfx::AcceleratedWidget widget,
-    cc::SoftwareFrameData* frame_data, float scale_factor, SkCanvas* canvas) {
+    gfx::AcceleratedWidget widget, float scale_factor, SkCanvas* canvas) {
   AcceleratedWidgetMac* accelerated_widget_mac =
       GetHelperFromAcceleratedWidget(widget);
   if (accelerated_widget_mac)
-    accelerated_widget_mac->GotSoftwareFrame(frame_data, scale_factor, canvas);
+    accelerated_widget_mac->GotSoftwareFrame(scale_factor, canvas);
 }
 
-}  // namespace content
+}  // namespace ui

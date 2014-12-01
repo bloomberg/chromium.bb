@@ -152,6 +152,7 @@ source_set("common") {
       "//content/app/resources",
       "//content:resources",
       "//third_party/WebKit/public:resources",
+      "//ui/accelerated_widget_mac",
     ]
     libs += [ "QuartzCore.framework" ]
   }

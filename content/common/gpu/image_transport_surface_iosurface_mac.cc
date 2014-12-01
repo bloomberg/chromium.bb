@@ -5,7 +5,7 @@
 #include "content/common/gpu/image_transport_surface_iosurface_mac.h"
 
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/gpu/surface_handle_types_mac.h"
+#include "ui/accelerated_widget_mac/surface_handle_types.h"
 
 namespace content {
 namespace {
@@ -115,7 +115,7 @@ void IOSurfaceStorageProvider::SwapBuffers(
   pending_swapped_surfaces_.push_back(io_surface_);
 
   transport_surface_->SendSwapBuffers(
-      SurfaceHandleFromIOSurfaceID(io_surface_id_), size, scale_factor);
+      ui::SurfaceHandleFromIOSurfaceID(io_surface_id_), size, scale_factor);
 }
 
 void IOSurfaceStorageProvider::WillWriteToBackbuffer() {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_TEXTURE_MAC_H_
-#define CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_TEXTURE_MAC_H_
+#ifndef UI_ACCELERATED_WIDGET_MAC_IO_SURFACE_TEXTURE_H_
+#define UI_ACCELERATED_WIDGET_MAC_IO_SURFACE_TEXTURE_H_
 
 #include <deque>
 #include <list>
@@ -19,11 +19,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "media/base/video_frame.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/rect_conversions.h"
-#include "ui/gfx/size.h"
 
 class SkBitmap;
 
@@ -31,7 +28,7 @@ namespace gfx {
 class Rect;
 }
 
-namespace content {
+namespace ui {
 
 class IOSurfaceContext;
 class RenderWidgetHostViewFrameSubscriber;
@@ -44,7 +41,8 @@ class IOSurfaceTexture
     : public base::RefCounted<IOSurfaceTexture> {
  public:
   // Returns NULL if IOSurfaceTexture or GL API calls fail.
-  static scoped_refptr<IOSurfaceTexture> Create();
+  static scoped_refptr<IOSurfaceTexture> Create(
+      bool needs_gl_finish_workaround);
 
   // Set IOSurfaceTexture that will be drawn on the next NSView drawRect.
   bool SetIOSurface(
@@ -65,7 +63,8 @@ class IOSurfaceTexture
   friend class base::RefCounted<IOSurfaceTexture>;
 
   IOSurfaceTexture(
-      const scoped_refptr<IOSurfaceContext>& context);
+      const scoped_refptr<IOSurfaceContext>& context,
+      bool needs_gl_finish_workaround);
   ~IOSurfaceTexture();
 
   // Unref the IOSurfaceTexture and delete the associated GL texture. If the GPU
@@ -109,6 +108,7 @@ class IOSurfaceTexture
   void EvictionMarkEvicted();
   EvictionQueue::iterator eviction_queue_iterator_;
   bool eviction_has_been_drawn_since_updated_;
+  const bool needs_gl_finish_workaround_;
 
   static void EvictionScheduleDoEvict();
   static void EvictionDoEvict();
@@ -116,6 +116,6 @@ class IOSurfaceTexture
   static bool eviction_scheduled_;
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_IO_SURFACE_TEXTURE_MAC_H_
+#endif  // UI_ACCELERATED_WIDGET_MAC_IO_SURFACE_TEXTURE_H_
