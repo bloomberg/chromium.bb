@@ -28,12 +28,16 @@
       <output filename="remoting/resources/en-AU.pak" lang="en-AU" type="data_package"/>
     </if>
     <output filename="remoting/resources/en-GB.pak" lang="en-GB" type="data_package"/>
-    <if expr="chromeos">
+    <if expr="chromeos or is_ios">
       <output filename="remoting/resources/en-US.pak" lang="en" type="data_package"/>
     </if>
     <output filename="remoting/resources/en.pak" lang="en" type="data_package"/>
     <if expr="use_third_party_translations">
       <output filename="remoting/resources/eo.pak" lang="eo" type="data_package"/>
+    </if>
+    <if expr="is_ios">
+      <!-- iOS uses es-MX for es-419 -->
+      <output filename="remoting/resources/es-MX.pak" lang="es-419" type="data_package"/>
     </if>
     <output filename="remoting/resources/es-419.pak" lang="es-419" type="data_package"/>
     <output filename="remoting/resources/es.pak" lang="es" type="data_package"/>
@@ -79,6 +83,10 @@
     <output filename="remoting/resources/nb.pak" lang="no" type="data_package"/>
     <output filename="remoting/resources/nl.pak" lang="nl" type="data_package"/>
     <output filename="remoting/resources/pl.pak" lang="pl" type="data_package"/>
+    <if expr="is_ios">
+      <!-- iOS uses pt for pt-BR -->
+      <output filename="remoting/resources/pt.pak" lang="pt-BR" type="data_package"/>
+    </if>
     <output filename="remoting/resources/pt-BR.pak" lang="pt-BR" type="data_package"/>
     <output filename="remoting/resources/pt-PT.pak" lang="pt-PT" type="data_package"/>
     <output filename="remoting/resources/ro.pak" lang="ro" type="data_package"/>
@@ -254,7 +262,7 @@
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
       <if expr="_google_chrome">
-        <if expr="is_android">
+        <if expr="is_android or is_ios">
           <message desc="Message shown in popup dialog on Android when there are no Google accounts on the device" name="IDS_NOACCOUNTS_MESSAGE" formatter_data="android_java">
           To use Chrome Remote Desktop, you'll need to add a Google Account to your device.
           </message>
@@ -356,7 +364,7 @@
       </if>
 
       <if expr="not _google_chrome">
-        <if expr="is_android">
+        <if expr="is_android or is_ios">
           <message desc="Message shown in popup dialog on Android when there are no Google accounts on the device" name="IDS_NOACCOUNTS_MESSAGE" formatter_data="android_java">
             To use Chromoting, you'll need to add a Google Account to your device.
           </message>
@@ -457,7 +465,7 @@
         </message>
       </if>
 
-      <if expr="is_android">
+      <if expr="is_android or is_ios">
         <message desc="Button to show or hide the on-screen keyboard." name="IDS_SHOW_HIDE_KEYBOARD" formatter_data="android_java">
           Show/hide keyboard.
         </message>
