@@ -36,10 +36,6 @@ class AutoEnrollmentCheckScreen
 
   static AutoEnrollmentCheckScreen* Get(ScreenManager* manager);
 
-  // Hands over OOBE control to this AutoEnrollmentCheckStep. It'll return the
-  // flow back to the caller via the |base_screen_delegate_|'s OnExit function.
-  void Start();
-
   // Clears the cached state causing the forced enrollment check to be retried.
   void ClearState();
 
@@ -55,7 +51,6 @@ class AutoEnrollmentCheckScreen
   virtual std::string GetName() const override;
 
   // AutoEnrollmentCheckScreenActor::Delegate implementation:
-  virtual void OnExit() override;
   virtual void OnActorDestroyed(AutoEnrollmentCheckScreenActor* actor) override;
 
   // NetworkPortalDetector::Observer implementation:
@@ -68,9 +63,7 @@ class AutoEnrollmentCheckScreen
   void OnAutoEnrollmentCheckProgressed(policy::AutoEnrollmentState state);
 
   // Handles a state update, updating the UI and saving the state.
-  void UpdateState(
-      NetworkPortalDetector::CaptivePortalStatus new_captive_portal_status,
-      policy::AutoEnrollmentState new_auto_enrollment_state);
+  void UpdateState();
 
   // Configures the UI to reflect |new_captive_portal_status|. Returns true if
   // and only if a UI change has been made.
@@ -92,10 +85,6 @@ class AutoEnrollmentCheckScreen
 
   // Returns whether enrollment check was completed and decision was made.
   bool IsCompleted() const;
-
-  // Checks if the enrollment status check is needed. It can be disabled either
-  // by command line flags, build configuration or might have finished already.
-  bool IsStartNeeded();
 
   AutoEnrollmentCheckScreenActor* actor_;
   AutoEnrollmentController* auto_enrollment_controller_;

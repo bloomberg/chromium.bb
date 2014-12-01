@@ -161,6 +161,8 @@ void AutoEnrollmentController::Cancel() {
 void AutoEnrollmentController::Retry() {
   if (client_)
     client_->Retry();
+  else
+    Start();
 }
 
 scoped_ptr<AutoEnrollmentController::ProgressCallbackList::Subscription>
