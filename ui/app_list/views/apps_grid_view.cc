@@ -110,15 +110,6 @@ gfx::Size GetTileViewSize() {
              : gfx::Size(kPreferredTileWidth, kPreferredTileHeight);
 }
 
-// Returns the size of a tile view inccluding its padding.
-gfx::Size GetTotalTileSize() {
-  gfx::Size size = GetTileViewSize();
-  if (switches::IsExperimentalAppListEnabled())
-    size.Enlarge(2 * kExperimentalTileLeftRightPadding,
-                 2 * kExperimentalTileTopBottomPadding);
-  return size;
-}
-
 // RowMoveAnimationDelegate is used when moving an item into a different row.
 // Before running the animation, the item's layer is re-created and kept in
 // the original position, then the item is moved to just before its target
@@ -423,6 +414,16 @@ void AppsGridView::SetLayout(int cols, int rows_per_page) {
     SetBorder(views::Border::CreateEmptyBorder(
         0, kLeftRightPadding, kBottomPadding, kLeftRightPadding));
   }
+}
+
+// static
+gfx::Size AppsGridView::GetTotalTileSize() {
+  gfx::Size size = GetTileViewSize();
+  if (switches::IsExperimentalAppListEnabled()) {
+    size.Enlarge(2 * kExperimentalTileLeftRightPadding,
+                 2 * kExperimentalTileTopBottomPadding);
+  }
+  return size;
 }
 
 void AppsGridView::ResetForShowApps() {

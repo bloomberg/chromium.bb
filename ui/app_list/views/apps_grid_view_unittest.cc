@@ -35,9 +35,6 @@ const int kCols = 2;
 const int kRows = 2;
 const int kTilesPerPage = kCols * kRows;
 
-const int kWidth = 320;
-const int kHeight = 240;
-
 class PageFlipWaiter : public PaginationModelObserver {
  public:
   PageFlipWaiter(base::MessageLoopForUI* ui_loop, PaginationModel* model)
@@ -96,7 +93,8 @@ class AppsGridViewTest : public views::ViewsTestBase {
 
     apps_grid_view_.reset(new AppsGridView(NULL));
     apps_grid_view_->SetLayout(kCols, kRows);
-    apps_grid_view_->SetBoundsRect(gfx::Rect(gfx::Size(kWidth, kHeight)));
+    apps_grid_view_->SetBoundsRect(
+        gfx::Rect(apps_grid_view_->GetPreferredSize()));
     apps_grid_view_->SetModel(model_.get());
     apps_grid_view_->SetItemList(model_->top_level_item_list());
 
@@ -133,7 +131,7 @@ class AppsGridViewTest : public views::ViewsTestBase {
 
     gfx::Insets insets(apps_grid_view_->GetInsets());
     gfx::Rect rect(gfx::Point(insets.left(), insets.top()),
-                   GetItemViewAt(0)->bounds().size());
+                   AppsGridView::GetTotalTileSize());
     rect.Offset(col * rect.width(), row * rect.height());
     return rect;
   }
@@ -437,6 +435,7 @@ TEST_F(AppsGridViewTest, MouseDragMaxItemsInFolderWithMovement) {
   // Drag the new item to the left so that the grid reorders.
   gfx::Point from = GetItemTileRectAt(0, 1).CenterPoint();
   gfx::Point to = GetItemTileRectAt(0, 0).bottom_left();
+  to.Offset(0, -1);  // Get a point inside the rect.
   AppListItemView* dragged_view = SimulateDrag(AppsGridView::MOUSE, from, to);
   test_api_->LayoutToIdealBounds();
 
