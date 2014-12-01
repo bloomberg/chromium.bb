@@ -9,6 +9,11 @@
 #include "components/autofill/core/common/password_form.h"
 #include "ui/views/controls/button/label_button.h"
 
+namespace views {
+class ImageView;
+class Label;
+}
+
 // CredentialsItemView represents a credential view in the account chooser
 // bubble.
 class CredentialsItemView : public views::LabelButton {
@@ -20,7 +25,16 @@ class CredentialsItemView : public views::LabelButton {
   const autofill::PasswordForm& form() const { return form_; }
 
  private:
+  // views::LabelButton:
+  gfx::Size GetPreferredSize() const override;
+  int GetHeightForWidth(int w) const override;
+  void Layout() override;
+
   autofill::PasswordForm form_;
+
+  views::ImageView* image_view_;
+  views::Label* full_name_label_;
+  views::Label* username_label_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialsItemView);
 };

@@ -123,7 +123,7 @@ void ManagePasswordsBubbleModel::OnBubbleShown(
 }
 
 void ManagePasswordsBubbleModel::OnBubbleHidden() {
-  if (password_manager::ui::IsCredentialsState(state_)) {
+  if (password_manager::ui::IsCredentialsState(state_) && web_contents()) {
     // It's time to run the pending callback if it wasn't called in
     // OnChooseCredentials().
     ManagePasswordsUIController* manage_passwords_ui_controller =
