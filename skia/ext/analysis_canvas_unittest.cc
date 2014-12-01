@@ -78,8 +78,7 @@ TEST(AnalysisCanvasTest, ComplexActions) {
   canvas.drawPaint(paint);
 
   SkColor outputColor;
-  //TODO(vmpstr): This should return true. (crbug.com/180597)
-  EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
+  EXPECT_TRUE(canvas.GetColorIfSolid(&outputColor));
 
   // Draw points test.
   SkPoint points[4] = {

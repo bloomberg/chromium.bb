@@ -15,6 +15,23 @@ namespace {
 
 const int kNoLayer = -1;
 
+bool ActsLikeClear(SkXfermode::Mode mode, unsigned src_alpha) {
+  switch (mode) {
+    case SkXfermode::kClear_Mode:
+      return true;
+    case SkXfermode::kSrc_Mode:
+    case SkXfermode::kSrcIn_Mode:
+    case SkXfermode::kDstIn_Mode:
+    case SkXfermode::kSrcOut_Mode:
+    case SkXfermode::kDstATop_Mode:
+      return src_alpha == 0;
+    case SkXfermode::kDstOut_Mode:
+      return src_alpha == 0xFF;
+    default:
+      return false;
+  }
+}
+
 bool IsSolidColorPaint(const SkPaint& paint) {
   SkXfermode::Mode xfermode;
 
@@ -90,14 +107,9 @@ void AnalysisCanvas::clear(SkColor color) {
 }
 
 void AnalysisCanvas::drawPaint(const SkPaint& paint) {
-  // This check is in SkCanvas::drawPaint(), and some of our unittests rely on
-  // on this, so we reproduce it here.
-  if (isClipEmpty())
-    return;
-
-  is_solid_color_ = false;
-  is_transparent_ = false;
-  ++draw_op_count_;
+  SkRect rect;
+  getClipBounds(&rect);
+  drawRect(rect, paint);
 }
 
 void AnalysisCanvas::drawPoints(SkCanvas::PointMode mode,
@@ -137,7 +149,7 @@ void AnalysisCanvas::drawRect(const SkRect& rect, const SkPaint& paint) {
   // In all other cases, we keep the current transparent value
   if (does_cover_canvas &&
       !is_forced_not_transparent_ &&
-      xfermode == SkXfermode::kClear_Mode) {
+      ActsLikeClear(xfermode, paint.getAlpha())) {
     is_transparent_ = true;
   } else if (paint.getAlpha() != 0 || xfermode != SkXfermode::kSrc_Mode) {
     is_transparent_ = false;
