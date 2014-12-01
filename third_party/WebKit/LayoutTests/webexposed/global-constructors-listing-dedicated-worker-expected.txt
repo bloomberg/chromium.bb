@@ -18,6 +18,7 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] Blob
 [Worker] Boolean
 [Worker] CircularGeofencingRegion
+[Worker] DOMException
 [Worker] DataView
 [Worker] Date
 [Worker] DedicatedWorkerGlobalScope

@@ -27,6 +27,7 @@
  */
 
 [
+    Exposed=(Window,Worker),
     DoNotCheckConstants,
     WillBeGarbageCollected,
 ] exception DOMException {
