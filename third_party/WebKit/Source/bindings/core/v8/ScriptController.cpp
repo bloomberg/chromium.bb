@@ -163,7 +163,10 @@ v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v
         int scriptId = 0;
         String resourceName;
         int lineNumber = 1;
-        GetDevToolsFunctionInfo(function, isolate, scriptId, resourceName, lineNumber);
+        if (InspectorInstrumentation::timelineAgentEnabled(context))
+            GetDevToolsFunctionInfo(function, isolate, scriptId, resourceName, lineNumber);
+        else
+            scriptId = getBoundFunction(function)->ScriptId();
         cookie = InspectorInstrumentation::willCallFunction(context, scriptId, resourceName, lineNumber);
     }
 

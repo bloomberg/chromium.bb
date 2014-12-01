@@ -84,7 +84,10 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(v8::
         int scriptId = 0;
         String resourceName;
         int lineNumber = 1;
-        GetDevToolsFunctionInfo(handlerFunction, isolate(), scriptId, resourceName, lineNumber);
+        if (InspectorInstrumentation::timelineAgentEnabled(scriptState()->executionContext()))
+            GetDevToolsFunctionInfo(handlerFunction, isolate(), scriptId, resourceName, lineNumber);
+        else
+            scriptId = getBoundFunction(handlerFunction)->ScriptId();
         cookie = InspectorInstrumentation::willCallFunction(scriptState()->executionContext(), scriptId, resourceName, lineNumber);
     }
 

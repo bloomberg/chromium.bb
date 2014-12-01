@@ -1251,6 +1251,9 @@ void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directive
 void InspectorDebuggerAgent::willCallFunction(ExecutionContext*, int scriptId, const String&, int)
 {
     changeRecursionLevelForStepOut(+1);
+    // Fast return.
+    if (m_scheduledDebuggerStep != StepInto)
+        return;
     // Skip unknown scripts (e.g. InjectedScript).
     if (!m_scripts.contains(String::number(scriptId)))
         return;
