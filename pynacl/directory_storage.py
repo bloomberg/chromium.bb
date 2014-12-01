@@ -10,6 +10,7 @@ embellish with methods for storing and retrieving directories (using tar).
 """
 
 import collections
+import gzip
 import os
 import posixpath
 import subprocess
@@ -58,23 +59,31 @@ class DirectoryStorageAdapter(object):
     if hasher is None:
       hasher = hashing_tools.HashFileContents
 
-    handle, tmp_tgz = tempfile.mkstemp(prefix='dirstore', suffix='.tmp.tgz')
+    tar_hnd, tmptar = tempfile.mkstemp(prefix='dirstore', suffix='.tmp.tar')
+    tgz_hnd, tmptgz = tempfile.mkstemp(prefix='dirstore', suffix='.tmp.tar.tgz')
     try:
-      os.close(handle)
+      os.close(tar_hnd)
+      os.close(tgz_hnd)
       # Calling cygtar thru subprocess as it's cwd handling is not currently
       # usable.
       subprocess.check_call([sys.executable, CYGTAR_PATH,
-                             '-c', '-z', '-f', os.path.abspath(tmp_tgz), '.'],
+                             '-c', '-f', os.path.abspath(tmptar), '.'],
                              cwd=os.path.abspath(path))
 
-      url = self._storage.PutFile(tmp_tgz, key)
+      # To make gzip deterministic, modify the timestamp to a constant value.
+      with gzip.GzipFile(tmptgz, 'wb', mtime=1000000000) as f_tgz:
+        with open(tmptar, 'rb') as f_tar:
+          f_tgz.write(f_tar.read())
+
+      url = self._storage.PutFile(tmptgz, key)
 
       name = posixpath.basename(key)
-      hash_value = hasher(tmp_tgz)
+      hash_value = hasher(tmptgz)
 
       return DirectoryStorageItem(name, hash_value, url)
     finally:
-      os.remove(tmp_tgz)
+      os.remove(tmptar)
+      os.remove(tmptgz)
 
   def GetDirectory(self, key, path, hasher=None):
     """Read a directory from storage.
