@@ -37,7 +37,7 @@ class MockHotwordService : public HotwordService {
     return HotwordService::UninstallHotwordExtension(extension_service);
   }
 
-  void InstallHotwordExtensionFromWebstore() override {
+  void InstallHotwordExtensionFromWebstore(int num_tries) override {
     scoped_ptr<base::DictionaryValue> manifest =
         extensions::DictionaryBuilder()
         .Set("name", "Hotword Test Extension")
@@ -251,7 +251,7 @@ TEST_P(HotwordServiceTest, PreviousLanguageSetOnInstall) {
 
   SetApplicationLocale(profile(), "test_locale");
 
-  hotword_service->InstallHotwordExtensionFromWebstore();
+  hotword_service->InstallHotwordExtensionFromWebstore(1);
   base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ("test_locale",
@@ -283,7 +283,7 @@ TEST_P(HotwordServiceTest, UninstallReinstallTriggeredCorrectly) {
   EXPECT_FALSE(hotword_service->MaybeReinstallHotwordExtension());
 
    // Do an initial installation.
-  hotword_service->InstallHotwordExtensionFromWebstore();
+  hotword_service->InstallHotwordExtensionFromWebstore(1);
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ("en",
             profile()->GetPrefs()->GetString(prefs::kHotwordPreviousLanguage));
@@ -372,7 +372,7 @@ TEST_P(HotwordServiceTest, DisableAlwaysOnOnLanguageChange) {
   EXPECT_TRUE(hotword_service->IsAlwaysOnEnabled());
 
   // Do an initial installation.
-  hotword_service->InstallHotwordExtensionFromWebstore();
+  hotword_service->InstallHotwordExtensionFromWebstore(1);
   base::MessageLoop::current()->RunUntilIdle();
 
   // The previous locale should be set but should match the current

@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"
+#include "chrome/common/extensions/webstore_install_result.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -100,7 +101,7 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   // Helper functions pulled out for testing purposes.
   // UninstallHotwordExtension returns true if the extension was uninstalled.
   virtual bool UninstallHotwordExtension(ExtensionService* extension_service);
-  virtual void InstallHotwordExtensionFromWebstore();
+  virtual void InstallHotwordExtensionFromWebstore(int num_tries);
 
   // Sets the pref value of the previous language.
   void SetPreviousLanguagePref();
@@ -142,6 +143,13 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   void SetAudioHistoryHandler(HotwordAudioHistoryHandler* handler);
 
  private:
+  // Callback for webstore extension installer.
+  void InstalledFromWebstoreCallback(
+      int num_tries,
+      bool success,
+      const std::string& error,
+      extensions::webstore_install::Result result);
+
   // Returns the ID of the extension that may need to be reinstalled.
   std::string ReinstalledExtensionId();
 

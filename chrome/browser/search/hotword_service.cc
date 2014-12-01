@@ -54,6 +54,14 @@ static const char* kSupportedLocales[] = {
   "ru"
 };
 
+// Maximum number of retries for installing the hotword shared module from the
+// web store.
+static const int kMaxInstallRetries = 2;
+
+// Delay between retries for installing the hotword shared module from the web
+// store.
+static const int kInstallRetryDelaySeconds = 5;
+
 // Enum describing the state of the hotword preference.
 // This is used for UMA stats -- do not reorder or delete items; only add to
 // the end.
@@ -282,7 +290,7 @@ void HotwordService::OnExtensionUninstalled(
   if (!reinstall_pending_)
     return;
 
-  InstallHotwordExtensionFromWebstore();
+  InstallHotwordExtensionFromWebstore(kMaxInstallRetries);
   SetPreviousLanguagePref();
 }
 
@@ -293,12 +301,31 @@ std::string HotwordService::ReinstalledExtensionId() {
   return extension_misc::kHotwordExtensionId;
 }
 
-void HotwordService::InstallHotwordExtensionFromWebstore() {
+void HotwordService::InstalledFromWebstoreCallback(
+    int num_tries,
+    bool success,
+    const std::string& error,
+    extensions::webstore_install::Result result) {
+  if (result != extensions::webstore_install::SUCCESS && num_tries) {
+    // Try again on failure.
+    content::BrowserThread::PostDelayedTask(
+        content::BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&HotwordService::InstallHotwordExtensionFromWebstore,
+                   weak_factory_.GetWeakPtr(),
+                   num_tries),
+        base::TimeDelta::FromSeconds(kInstallRetryDelaySeconds));
+  }
+}
+
+void HotwordService::InstallHotwordExtensionFromWebstore(int num_tries) {
   installer_ = new extensions::WebstoreStartupInstaller(
       ReinstalledExtensionId(),
       profile_,
       false,
-      extensions::WebstoreStandaloneInstaller::Callback());
+      base::Bind(&HotwordService::InstalledFromWebstoreCallback,
+                 weak_factory_.GetWeakPtr(),
+                 num_tries - 1));
   installer_->BeginInstall();
 }
 
