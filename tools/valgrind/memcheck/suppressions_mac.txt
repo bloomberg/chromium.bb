@@ -242,3 +242,10 @@
    fun:_ZN7content45PluginLoaderPosixTest_PluginLaunchFailed_TestC1Ev
    fun:_ZN7testing8internal15TestFactoryImplIN7content45PluginLoaderPosixTest_PluginLaunchFailed_TestEE10CreateTestEv
 }
+{
+   bug_437807
+   Memcheck:Leak
+   ...
+   fun:_ZN4base3mac30PathForFrameworkBundleResourceEPK10__CFString
+   fun:_ZN3gin13IsolateHolder14LoadV8SnapshotEv
+}
