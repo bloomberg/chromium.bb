@@ -172,12 +172,9 @@ void InitLocaleAndInputMethodsForNewUser(
   }
 
   // Save the preferred languages in the user's preferences.
-  prefs->SetString(prefs::kLanguagePreferredLanguages,
-                   JoinString(language_codes, ','));
-
-  // Indicate that we need to merge the syncable input methods when we sync,
-  // since we have not applied the synced prefs before.
-  prefs->SetBoolean(prefs::kLanguageShouldMergeInputMethods, true);
+  StringPrefMember language_preferred_languages;
+  language_preferred_languages.Init(prefs::kLanguagePreferredLanguages, prefs);
+  language_preferred_languages.SetValue(JoinString(language_codes, ','));
 }
 
 #if defined(ENABLE_RLZ)
@@ -1486,10 +1483,6 @@ void UserSessionManager::RunCallbackOnLocaleLoaded(
     InputEventsBlocker* /* input_events_blocker */,
     const locale_util::LanguageSwitchResult& /* result */) {
   callback.Run();
-}
-
-void UserSessionManager::RemoveProfileForTesting(Profile* profile) {
-  default_ime_states_.erase(profile);
 }
 
 }  // namespace chromeos
