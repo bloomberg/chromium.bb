@@ -21,7 +21,7 @@ void PolicyServiceStub::RemoveObserver(PolicyDomain domain,
 const PolicyMap& PolicyServiceStub::GetPolicies(
     const PolicyNamespace& ns) const {
   return kEmpty_;
-};
+}
 
 bool PolicyServiceStub::IsInitializationComplete(PolicyDomain domain) const {
   return true;

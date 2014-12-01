@@ -51,4 +51,4 @@ IN_PROC_BROWSER_TEST_F(VariationsServiceDevicePolicyTest, VariationsURLValid) {
   EXPECT_EQ("restricted", value);
 }
 
-} // namespace policy
+}  // namespace policy

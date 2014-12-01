@@ -18,7 +18,7 @@ namespace policy {
 
 class UserNetworkConfigurationUpdater;
 
- // Factory to create UserNetworkConfigurationUpdater.
+// Factory to create UserNetworkConfigurationUpdater.
 class UserNetworkConfigurationUpdaterFactory
     : public BrowserContextKeyedServiceFactory {
  public:

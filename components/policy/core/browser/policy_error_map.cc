@@ -110,7 +110,7 @@ class SchemaValidatingPendingError : public SimplePendingError {
                                const std::string& error_path,
                                const std::string& replacement)
       : SimplePendingError(policy_name, -1, replacement),
-        error_path_(error_path) {};
+        error_path_(error_path) {}
   ~SchemaValidatingPendingError() override {}
 
   base::string16 GetMessage() const override {

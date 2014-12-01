@@ -41,6 +41,7 @@ class CouldExternalDataStoreTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   scoped_ptr<ResourceCache> resource_cache_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(CouldExternalDataStoreTest);
 };
 

@@ -104,7 +104,7 @@ SchemaOnErrorStrategy StrategyForNextLevel(SchemaOnErrorStrategy strategy) {
     SCHEMA_ALLOW_UNKNOWN,  // SCHEMA_ALLOW_INVALID_TOPLEVEL_AND_ALLOW_UNKNOWN
     SCHEMA_ALLOW_INVALID,  // SCHEMA_ALLOW_INVALID
   };
-  return next_level_strategy[(int)strategy];
+  return next_level_strategy[static_cast<int>(strategy)];
 }
 
 void SchemaErrorFound(std::string* error_path,

@@ -97,7 +97,7 @@ class SigninManagerFake : public FakeSigninManager {
 
 UserCloudPolicyManager* BuildCloudPolicyManager(
     content::BrowserContext* context) {
-  MockUserCloudPolicyStore *store = new MockUserCloudPolicyStore();
+  MockUserCloudPolicyStore* store = new MockUserCloudPolicyStore();
   EXPECT_CALL(*store, Load()).Times(AnyNumber());
 
   return new UserCloudPolicyManager(

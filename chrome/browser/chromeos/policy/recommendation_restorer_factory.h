@@ -37,6 +37,6 @@ class RecommendationRestorerFactory : public BrowserContextKeyedServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(RecommendationRestorerFactory);
 };
 
-} //  namespace policy
+}  //  namespace policy
 
 #endif  // CHROME_BROWSER_CHROMEOS_POLICY_RECOMMENDATION_RESTORER_FACTORY_H_

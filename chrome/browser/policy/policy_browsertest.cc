@@ -1459,7 +1459,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_DEV_TOOLS));
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  DevToolsWindow *devtools_window =
+  DevToolsWindow* devtools_window =
       DevToolsWindow::GetInstanceForInspectedWebContents(contents);
   EXPECT_TRUE(devtools_window);
 

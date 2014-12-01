@@ -159,6 +159,7 @@ class PowerPolicyLoginScreenBrowserTest : public PowerPolicyBrowserTestBase {
   virtual void SetUpOnMainThread() override;
   virtual void TearDownOnMainThread() override;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(PowerPolicyLoginScreenBrowserTest);
 };
 
@@ -169,6 +170,7 @@ class PowerPolicyInSessionBrowserTest : public PowerPolicyBrowserTestBase {
   // PowerPolicyBrowserTestBase:
   virtual void SetUpOnMainThread() override;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(PowerPolicyInSessionBrowserTest);
 };
 

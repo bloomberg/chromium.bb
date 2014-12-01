@@ -55,7 +55,6 @@ void PolicyHeaderIOHelper::SetServerURLForTest(const std::string& server_url) {
       FROM_HERE,
       base::Bind(&PolicyHeaderIOHelper::SetServerURLOnIOThread,
                  base::Unretained(this), server_url));
-
 }
 
 void PolicyHeaderIOHelper::SetServerURLOnIOThread(

@@ -40,6 +40,7 @@ class ProxyPolicyProviderTest : public testing::Test {
     return copy.Pass();
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ProxyPolicyProviderTest);
 };
 

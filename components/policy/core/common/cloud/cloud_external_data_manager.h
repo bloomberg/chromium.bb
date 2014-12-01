@@ -67,6 +67,7 @@ class POLICY_EXPORT CloudExternalDataManager : public ExternalDataManager {
 
   base::WeakPtrFactory<CloudExternalDataManager> weak_factory_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(CloudExternalDataManager);
 };
 

@@ -308,7 +308,7 @@ TEST_F(DeviceStatusCollectorTest, AllActive) {
   GetStatus();
   EXPECT_EQ(1, status_.active_period_size());
   EXPECT_EQ(1 * ActivePeriodMilliseconds(), GetActiveMilliseconds(status_));
-  status_.clear_active_period(); // Clear the result protobuf.
+  status_.clear_active_period();  // Clear the result protobuf.
 
   // Test multiple consecutive active samples.
   status_collector_->Simulate(test_states,
@@ -659,7 +659,7 @@ struct FakeDeviceData {
   const char* mac_address;
   const char* meid;
   const char* imei;
-  int expected_type; // proto enum type value, -1 for not present.
+  int expected_type;  // proto enum type value, -1 for not present.
 };
 
 static const FakeDeviceData kFakeDevices[] = {
@@ -727,7 +727,7 @@ class DeviceStatusCollectorNetworkInterfacesTest
 TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NetworkInterfaces) {
   // Interfaces should be reported by default.
   GetStatus();
-  EXPECT_TRUE(status_.network_interface_size() > 0);
+  EXPECT_LT(0, status_.network_interface_size());
 
   // No interfaces should be reported if the policy is off.
   cros_settings_->SetBoolean(chromeos::kReportDeviceNetworkInterfaces, false);

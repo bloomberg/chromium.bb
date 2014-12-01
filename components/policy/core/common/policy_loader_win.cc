@@ -218,7 +218,7 @@ class Wow64Functions {
     return is_wow_64_process_ &&
         wow_64_disable_wow_64_fs_redirection_ &&
         wow_64_revert_wow_64_fs_redirection_;
- }
+  }
 
   bool IsWow64() {
     BOOL result = 0;

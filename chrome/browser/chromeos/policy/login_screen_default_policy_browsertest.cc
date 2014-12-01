@@ -463,4 +463,4 @@ IN_PROC_BROWSER_TEST_F(LoginScreenDefaultPolicyLoginScreenBrowsertest,
   EXPECT_TRUE(accessibility_manager->IsVirtualKeyboardEnabled());
 }
 
-} // namespace policy
+}  // namespace policy

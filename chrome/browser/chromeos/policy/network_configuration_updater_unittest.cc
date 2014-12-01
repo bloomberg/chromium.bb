@@ -84,14 +84,14 @@ class FakeWebTrustedCertsObserver
 };
 
 class FakeNetworkDeviceHandler : public chromeos::FakeNetworkDeviceHandler {
-  public:
-   FakeNetworkDeviceHandler() : allow_roaming_(false) {}
+ public:
+  FakeNetworkDeviceHandler() : allow_roaming_(false) {}
 
-   virtual void SetCellularAllowRoaming(bool allow_roaming) override {
-     allow_roaming_ = allow_roaming;
-   }
+  virtual void SetCellularAllowRoaming(bool allow_roaming) override {
+    allow_roaming_ = allow_roaming;
+  }
 
-   bool allow_roaming_;
+  bool allow_roaming_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeNetworkDeviceHandler);

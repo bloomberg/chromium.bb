@@ -61,6 +61,7 @@ class ExternalPolicyDataFetcherTest : public testing::Test {
   ExternalPolicyDataFetcher::Result callback_result_;
   scoped_ptr<std::string> callback_data_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ExternalPolicyDataFetcherTest);
 };
 

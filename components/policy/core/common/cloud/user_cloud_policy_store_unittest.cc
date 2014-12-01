@@ -35,7 +35,7 @@ void RunUntilIdle() {
 }
 
 bool WriteStringToFile(const base::FilePath path, const std::string& data) {
- if (!base::CreateDirectory(path.DirName())) {
+  if (!base::CreateDirectory(path.DirName())) {
     DLOG(WARNING) << "Failed to create directory " << path.DirName().value();
     return false;
   }
@@ -140,6 +140,7 @@ class UserCloudPolicyStoreTest : public testing::Test {
 
   base::ScopedTempDir tmp_dir_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStoreTest);
 };
 

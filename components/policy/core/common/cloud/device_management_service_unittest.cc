@@ -595,7 +595,7 @@ TEST_F(DeviceManagementServiceTest, RetryOnProxyError) {
   scoped_ptr<DeviceManagementRequestJob> request_job(StartRegistrationJob());
   net::TestURLFetcher* fetcher = GetFetcher();
   ASSERT_TRUE(fetcher);
-  EXPECT_TRUE((fetcher->GetLoadFlags() & net::LOAD_BYPASS_PROXY) == 0);
+  EXPECT_EQ(0, fetcher->GetLoadFlags() & net::LOAD_BYPASS_PROXY);
   const GURL original_url(fetcher->GetOriginalURL());
   const std::string upload_data(fetcher->upload_data());
 
@@ -620,7 +620,7 @@ TEST_F(DeviceManagementServiceTest, RetryOnBadResponseFromProxy) {
   scoped_ptr<DeviceManagementRequestJob> request_job(StartRegistrationJob());
   net::TestURLFetcher* fetcher = GetFetcher();
   ASSERT_TRUE(fetcher);
-  EXPECT_TRUE((fetcher->GetLoadFlags() & net::LOAD_BYPASS_PROXY) == 0);
+  EXPECT_EQ(0, fetcher->GetLoadFlags() & net::LOAD_BYPASS_PROXY);
   const GURL original_url(fetcher->GetOriginalURL());
   const std::string upload_data(fetcher->upload_data());
   fetcher->set_was_fetched_via_proxy(true);
@@ -637,7 +637,7 @@ TEST_F(DeviceManagementServiceTest, RetryOnBadResponseFromProxy) {
   // Verify that a new URLFetcher was started that bypasses the proxy.
   fetcher = GetFetcher();
   ASSERT_TRUE(fetcher);
-  EXPECT_TRUE((fetcher->GetLoadFlags() & net::LOAD_BYPASS_PROXY) != 0);
+  EXPECT_NE(0, fetcher->GetLoadFlags() & net::LOAD_BYPASS_PROXY);
   EXPECT_EQ(original_url, fetcher->GetOriginalURL());
   EXPECT_EQ(upload_data, fetcher->upload_data());
 }

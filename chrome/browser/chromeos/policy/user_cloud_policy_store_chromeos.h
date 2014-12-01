@@ -68,7 +68,7 @@ class UserCloudPolicyStoreChromeOS : public UserCloudPolicyStoreBase {
   void OnPolicyToStoreValidated(UserCloudPolicyValidator* validator);
 
   // Called back from SessionManagerClient for policy store operations.
-  void OnPolicyStored(bool);
+  void OnPolicyStored(bool success);
 
   // Called back from SessionManagerClient for policy load operations.
   void OnPolicyRetrieved(const std::string& policy_blob);

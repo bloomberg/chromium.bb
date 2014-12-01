@@ -138,6 +138,7 @@ class CloudExternalDataManagerBaseTest : public testing::Test {
   std::map<int, std::string*> callback_data_;
   PolicyDetailsMap policy_details_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(CloudExternalDataManagerBaseTest);
 };
 

@@ -244,7 +244,8 @@ TEST(RegistryDictTest, ConvertToJSON) {
   expected.Set("int-to-double", new base::FundamentalValue(42.0));
   expected.Set("string-to-bool", new base::FundamentalValue(false));
   expected.Set("string-to-double", new base::FundamentalValue(0.0));
-  expected.Set("string-to-int", new base::FundamentalValue((int) 0));
+  expected.Set("string-to-int",
+               new base::FundamentalValue(static_cast<int>(0)));
   expected_list.reset(new base::ListValue());
   expected_list->Append(new base::StringValue("value"));
   expected_subdict.reset(new base::DictionaryValue());

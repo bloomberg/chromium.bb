@@ -80,7 +80,7 @@ class DeviceCloudPolicyInvalidatorTest : public testing::Test {
   virtual void TearDown() override;
 
   // Ownership is not passed. The Profile is owned by the global ProfileManager.
-  Profile *LogInAndReturnProfile(const std::string& user_id);
+  Profile* LogInAndReturnProfile(const std::string& user_id);
 
   invalidation::TiclInvalidationService* GetDeviceInvalidationService();
   bool HasDeviceInvalidationServiceObserver() const;
@@ -180,7 +180,7 @@ void DeviceCloudPolicyInvalidatorTest::TearDown() {
   chromeos::SystemSaltGetter::Shutdown();
 }
 
-Profile *DeviceCloudPolicyInvalidatorTest::LogInAndReturnProfile(
+Profile* DeviceCloudPolicyInvalidatorTest::LogInAndReturnProfile(
     const std::string& user_id) {
   fake_user_manager_->AddUser(user_id);
   Profile* profile = profile_manager_.CreateTestingProfile(user_id);
@@ -196,8 +196,8 @@ DeviceCloudPolicyInvalidatorTest::GetDeviceInvalidationService() {
   return invalidator_->device_invalidation_service_.get();
 }
 
-bool DeviceCloudPolicyInvalidatorTest::HasDeviceInvalidationServiceObserver(
-    ) const {
+bool DeviceCloudPolicyInvalidatorTest::HasDeviceInvalidationServiceObserver()
+    const {
   return invalidator_->device_invalidation_service_observer_.get();
 }
 
