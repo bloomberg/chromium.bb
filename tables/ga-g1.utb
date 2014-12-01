@@ -17,7 +17,7 @@
 
 include text_nabcc.dis All display opcodes
 include ukchardefs.cti
-punctuation \x2022 456-256	# filled round bullet point
+punctuation • 456-256	# filled round bullet point
 
 # Braille indicators
 numsign 3456  number sign, just a dots operand
@@ -100,133 +100,133 @@ always \s­\s 36-36
 
 
 # Irish long accent signs sínte fada 
-uplow \x00C1\x00E1 12346				# á a fada (a with acute accent sign)
-uplow \x00C9\x00E9 123456				# é e fada (e with acute accent sign)
-uplow \x00CD\x00ED 12356				# í i fada, (i with acute accent)
-uplow \x00D3\x00F3 2346			# ó o fada (o with acute accent sign)
-uplow \x00DA\x00FA 23456			#ú u fada (u with acute accent)
+uplow Áá 12346				# á a fada (a with acute accent sign)
+uplow Éé 123456				# é e fada (e with acute accent sign)
+uplow Íí 12356				# í i fada, (i with acute accent)
+uplow Óó 2346			# ó o fada (o with acute accent sign)
+uplow Úú 23456			#ú u fada (u with acute accent)
 
 # non-Irish letter symbols
 
-uplow \x00C0\x00E0 1				# a with grave
-uplow \x00C2\x00E2 1				# a with circumflex
-uplow \x00C3\x00E3 1				# a with tilde
-uplow \x00C4\x00E4 1				# a with dieresis
-uplow \x00C5\x00E5 1				# a with ring above
-uplow \x00C6\x00E6 1				# letter ae
-uplow \x00C7\x00E7 14				# c with cedilla
-uplow \x00C8\x00E8 15				# e with grave
-uplow \x00CA\x00EA 15				# e with circumflex
-uplow \x00CB\x00EB 15				# e with dieresis
-uplow \x00CC\x00EC 24				# i with grave above
-uplow \x00CE\x00EE 24				# i with circumflex
-uplow \x00CF\x00EF 24				# i with dieresis
-uplow \x00D0\x00F0 15				# letter eth
-uplow \x00D1\x00F1 1345			# n with tilde
-uplow \x00D2\x00F2 135			# o with grave above
-uplow \x00D4\x00F4 135			# o with circumflex
-uplow \x00D5\x00F5 135			# o with tilde
-uplow \x00D6\x00F6 135			# o with dieresis
-uplow \x00D8\x00F8 135			# o with stroke
-uplow \x00D9\x00F9 136			# u with grave above
-uplow \x00DB\x00FB 136			# u with circumflex above
-uplow \x00DC\x00FC 136				# u with dieeresis
-uplow \x00DD\x00FD 13456		# y with acute above
-uplow \x00DE\x00FE 2345			# letter thorn
-letter \x00DF 2346		# small sharp s
-uplow \x0174\x0175 2456 w with circumflex
-uplow \x0176\x0177 13456 # y with circumflex
-uplow \x0178\x00ff 13456 # y with diaeresis
-uplow \x1ef2\x1ef3 13456 # y with grave
+uplow Àà 1				# a with grave
+uplow Ââ 1				# a with circumflex
+uplow Ãã 1				# a with tilde
+uplow Ää 1				# a with dieresis
+uplow Åå 1				# a with ring above
+uplow Ææ 1				# letter ae
+uplow Çç 14				# c with cedilla
+uplow Èè 15				# e with grave
+uplow Êê 15				# e with circumflex
+uplow Ëë 15				# e with dieresis
+uplow Ìì 24				# i with grave above
+uplow Îî 24				# i with circumflex
+uplow Ïï 24				# i with dieresis
+uplow Ðð 15				# letter eth
+uplow Ññ 1345			# n with tilde
+uplow Òò 135			# o with grave above
+uplow Ôô 135			# o with circumflex
+uplow Õõ 135			# o with tilde
+uplow Öö 135			# o with dieresis
+uplow Øø 135			# o with stroke
+uplow Ùù 136			# u with grave above
+uplow Ûû 136			# u with circumflex above
+uplow Üü 136				# u with dieeresis
+uplow Ýý 13456		# y with acute above
+uplow Þþ 2345			# letter thorn
+letter ß 2346		# small sharp s
+uplow Ŵŵ 2456 w with circumflex
+uplow Ŷŷ 13456 # y with circumflex
+uplow Ÿÿ 13456 # y with diaeresis
+uplow Ỳỳ 13456 # y with grave
 
-largesign \x00C0 45-16-1      [C0] upper a grave
-largesign \x00E0   45-16-1      [E0] lower a grave
+largesign À 45-16-1      [C0] upper a grave
+largesign à   45-16-1      [E0] lower a grave
 
 
-largesign \x00C2 45-146-1      [C2] upper a circumflex
-largesign \x00E2   45-146-1      [E2] lower a circumflex
+largesign Â 45-146-1      [C2] upper a circumflex
+largesign â   45-146-1      [E2] lower a circumflex
 
-largesign \x00C3 45-12456-1      [C3] upper a tilde
-largesign \x00E3   45-12456-1      [E3] lower a tilde
+largesign Ã 45-12456-1      [C3] upper a tilde
+largesign ã   45-12456-1      [E3] lower a tilde
 
-largesign \x00C4 45-25-1      [C4] upper a dieresis
-largesign \x00E4   45-25-1      [E4] lower a dieresis
+largesign Ä 45-25-1      [C4] upper a dieresis
+largesign ä   45-25-1      [E4] lower a dieresis
 
-largesign \x00C5 45-1246-1      [C5] upper a ring
-largesign \x00E5   45-1246-1      [E5] lower a ring
+largesign Å 45-1246-1      [C5] upper a ring
+largesign å   45-1246-1      [E5] lower a ring
 
-largesign \x00C6 1-45-235-15     [C6] upper ae
-largesign \x00E6   1-45-235-15			[E6] lower ae
+largesign Æ 1-45-235-15     [C6] upper ae
+largesign æ   1-45-235-15			[E6] lower ae
 
-largesign \x00C7 45-12346-14     [C7] upper c cedilla
-largesign \x00E7   45-12346-14     [E7] lower c cedilla
+largesign Ç 45-12346-14     [C7] upper c cedilla
+largesign ç   45-12346-14     [E7] lower c cedilla
 
-largesign \x00C8 45-16-15     [C8] upper e grave
-largesign \x00E8   45-16-15     [E8] lower e grave
+largesign È 45-16-15     [C8] upper e grave
+largesign è   45-16-15     [E8] lower e grave
 
 #dlargesign \x00E9   45-34-15     [E9] lower e acute
 
-largesign \x00CA 45-146-15     [CA] upper e circumflex
-largesign \x00EA   45-146-15     [EA] lower e circumflex
+largesign Ê 45-146-15     [CA] upper e circumflex
+largesign ê   45-146-15     [EA] lower e circumflex
 
-largesign \x00CB 45-25-15     [CB] upper e dieresis
-largesign \x00EB   45-25-15     [EB] lower e dieresis
+largesign Ë 45-25-15     [CB] upper e dieresis
+largesign ë   45-25-15     [EB] lower e dieresis
 
-largesign \x00CC 45-16-24     [CC] upper i grave
-largesign \x00EC   45-16-24     [EC] lower i grave
-
-
-largesign \x00CE 45-146-24     [CE] upper i circumflex
-largesign \x00EE   45-146-24     [EE] lower i circumflex
-
-largesign \x00CF 45-25-24     [CF] upper i dieresis
-largesign \x00EF   45-25-24     [EF] lower i dieresis
+largesign Ì 45-16-24     [CC] upper i grave
+largesign ì   45-16-24     [EC] lower i grave
 
 
-largesign \x00D1 45-12456-1345   [D1] upper n tilde
-largesign \x00F1   45-12456-1345   [F1] lower n tilde
+largesign Î 45-146-24     [CE] upper i circumflex
+largesign î   45-146-24     [EE] lower i circumflex
 
-largesign \x00D2 45-16-135    [D2] upper o grave
-largesign \x00F2   45-16-135    [F2] lower o grave
+largesign Ï 45-25-24     [CF] upper i dieresis
+largesign ï   45-25-24     [EF] lower i dieresis
+
+
+largesign Ñ 45-12456-1345   [D1] upper n tilde
+largesign ñ   45-12456-1345   [F1] lower n tilde
+
+largesign Ò 45-16-135    [D2] upper o grave
+largesign ò   45-16-135    [F2] lower o grave
 
 #dlargesign \x00F3   45-34-135    [F3] lower o acute
 
-largesign \x00D4 45-146-135    [D4] upper o circumflex
-largesign \x00F4   45-146-135    [F4] lower o circumflex
+largesign Ô 45-146-135    [D4] upper o circumflex
+largesign ô   45-146-135    [F4] lower o circumflex
 
-largesign \x00D5 45-12456-135    [D5] upper o tilde
-largesign \x00F5   45-12456-135    [F5] lower o tilde
+largesign Õ 45-12456-135    [D5] upper o tilde
+largesign õ   45-12456-135    [F5] lower o tilde
 
-largesign \x00D6 45-25-135    [D6] upper o dieresis
-largesign \x00F6   45-25-135			[F6] lower o dieresis
+largesign Ö 45-25-135    [D6] upper o dieresis
+largesign ö   45-25-135			[F6] lower o dieresis
 
 #largesign \x00f8   4-135    [F8] lower o slash
 
-largesign \x00D9 45-16-136    [D9] upper u grave
-largesign \x00F9   45-16-136    [F9] lower u grave
+largesign Ù 45-16-136    [D9] upper u grave
+largesign ù   45-16-136    [F9] lower u grave
 
 #dlargesign \x00FA   45-25-136    [FA] lower u acute
 
-largesign \x00DB 45-146-136    [DB] upper u circumflex
-largesign \x00FB   45-146-136    [FB] lower u circumflex
+largesign Û 45-146-136    [DB] upper u circumflex
+largesign û   45-146-136    [FB] lower u circumflex
 
-largesign \x00DC 45-25-136    [DC] upper u dieresis
-largesign \x00FC   45-25-136    [FC] lower u dieresis
+largesign Ü 45-25-136    [DC] upper u dieresis
+largesign ü   45-25-136    [FC] lower u dieresis
 
-largesign \x00DD 45-34-13456  [DD] upper y acute
-largesign \x00FD   45-34-13456  [FD] lower y acute
+largesign Ý 45-34-13456  [DD] upper y acute
+largesign ý   45-34-13456  [FD] lower y acute
 
 
-largesign \x00DF 234-234 (DF) lower ss
+largesign ß 234-234 (DF) lower ss
 
-largesign \x0174 45-146-2456 lower w circumflex
-largesign \x0175 45-146-2456 upper w circumflex
+largesign Ŵ 45-146-2456 lower w circumflex
+largesign ŵ 45-146-2456 upper w circumflex
 
-largesign \x0176 45-146-13456 upper y circumflex
-largesign \x0177 45-146-13456 lower y circumflex
+largesign Ŷ 45-146-13456 upper y circumflex
+largesign ŷ 45-146-13456 lower y circumflex
 
-largesign \x0178 45-26-13456 upper y dieresis
-largesign \x00FF 45-25-13456 lower y dieresis
+largesign Ÿ 45-26-13456 upper y dieresis
+largesign ÿ 45-25-13456 lower y dieresis
 
 #largesign \x1EF3 45-16-13456 lower y with grave
 
@@ -234,7 +234,7 @@ largesign \x00FF 45-25-13456 lower y dieresis
 hyphen 	\x2010 36		 # 8208			hyphen
 
 # always	\x2011 46		 # 8209			non-breaking hyphen
-punctuation \x2011 36		 # 8209			non-breaking hyphen
+punctuation ‑ 36		 # 8209			non-breaking hyphen
 
 always	\x2013 5-36		 # 8211		smart minus sign
 
