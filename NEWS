@@ -12,6 +12,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
   Attila.
 - Correction to English UK grade 2 braille tables and new tests,
   thanks to Paul Wood, Mesar Hameed
+- Vastly improved Danish tables thanks to Bue Vester-Andersen
+  - back-translation, both in 6 dots grade 2 and 8 dots grade 2.
+  - Better handling of dash, slash, and other punctuation within words in 8 dots grade 2.
 
 ** Backwards incompatible changes
 - Deleted ga.ctb now superseded by ga-g1.utb and ga.g2.ctb.
