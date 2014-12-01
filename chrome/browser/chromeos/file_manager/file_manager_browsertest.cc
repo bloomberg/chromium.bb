@@ -826,14 +826,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDrive"),
                       TestParameter(NOT_IN_GUEST_MODE, "fileDisplayMtp")));
 
-// http://crbug.com/327719
-WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_OpenZipFiles,
-    FileManagerBrowserTest,
-    ::testing::Values(TestParameter(IN_GUEST_MODE, "zipOpenDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "zipOpenDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "zipOpenDrive")));
-
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
 #if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
