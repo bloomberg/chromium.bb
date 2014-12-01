@@ -709,6 +709,13 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     }
 #endif
 
+    auto create_blocked_plugin =
+        [&render_frame, &frame, &params, &plugin, &identifier, &group_name](
+            int template_id, const base::string16& message) {
+      return ChromePluginPlaceholder::CreateBlockedPlugin(
+          render_frame, frame, params, plugin, identifier, group_name,
+          template_id, message);
+    };
     switch (status_value) {
       case ChromeViewHostMsg_GetPluginInfo_Status::kNotFound: {
         NOTREACHED();
@@ -764,13 +771,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             frame->addMessageToConsole(
                 WebConsoleMessage(WebConsoleMessage::LevelError,
                                   error_message));
-            placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-                render_frame,
-                frame,
-                params,
-                plugin,
-                identifier,
-                group_name,
+            placeholder = create_blocked_plugin(
                 IDR_BLOCKED_PLUGIN_HTML,
   #if defined(OS_CHROMEOS)
                 l10n_util::GetStringUTF16(IDS_NACL_PLUGIN_BLOCKED));
@@ -791,8 +792,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         //                reduce the chance of future regressions.
         if (prerender::PrerenderHelper::IsPrerendering(render_frame) ||
             poster_url.is_valid()) {
-          placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-              render_frame, frame, params, plugin, identifier, group_name,
+          placeholder = create_blocked_plugin(
               poster_url.is_valid() ? IDR_PLUGIN_POSTER_HTML
                                     : IDR_CLICK_TO_PLAY_PLUGIN_HTML,
               l10n_util::GetStringFUTF16(IDS_PLUGIN_LOAD, group_name));
@@ -808,13 +808,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       case ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported: {
         RenderThread::Get()->RecordAction(
             UserMetricsAction("Plugin_NPAPINotSupported"));
-        placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-            render_frame,
-            frame,
-            params,
-            plugin,
-            identifier,
-            group_name,
+        placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_SUPPORTED_METRO));
         render_frame->Send(new ChromeViewHostMsg_NPAPINotSupported(
@@ -824,26 +818,14 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       case ChromeViewHostMsg_GetPluginInfo_Status::kDisabled: {
         PluginUMAReporter::GetInstance()->ReportPluginDisabled(orig_mime_type,
                                                                url);
-        placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-            render_frame,
-            frame,
-            params,
-            plugin,
-            identifier,
-            group_name,
+        placeholder = create_blocked_plugin(
             IDR_DISABLED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_DISABLED, group_name));
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked: {
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-        placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-            render_frame,
-            frame,
-            params,
-            plugin,
-            identifier,
-            group_name,
+        placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED, group_name));
         placeholder->set_allow_loading(true);
@@ -856,25 +838,13 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedDisallowed: {
-        placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-            render_frame,
-            frame,
-            params,
-            plugin,
-            identifier,
-            group_name,
+        placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED, group_name));
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized: {
-        placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-            render_frame,
-            frame,
-            params,
-            plugin,
-            identifier,
-            group_name,
+        placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_NOT_AUTHORIZED, group_name));
         placeholder->set_allow_loading(true);
@@ -894,13 +864,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay: {
-        placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-            render_frame,
-            frame,
-            params,
-            plugin,
-            identifier,
-            group_name,
+        placeholder = create_blocked_plugin(
             IDR_CLICK_TO_PLAY_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_LOAD, group_name));
         placeholder->set_allow_loading(true);
@@ -910,13 +874,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kBlocked: {
-        placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-            render_frame,
-            frame,
-            params,
-            plugin,
-            identifier,
-            group_name,
+        placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name));
         placeholder->set_allow_loading(true);
@@ -925,13 +883,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kBlockedByPolicy: {
-        placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
-            render_frame,
-            frame,
-            params,
-            plugin,
-            identifier,
-            group_name,
+        placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name));
         placeholder->set_allow_loading(false);
