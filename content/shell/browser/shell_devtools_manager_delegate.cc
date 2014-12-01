@@ -232,8 +232,6 @@ ShellDevToolsManagerDelegate::CreateHttpHandler(
   std::string frontend_url;
 #if defined(OS_ANDROID)
   frontend_url = base::StringPrintf(kFrontEndURL, GetWebKitRevision().c_str());
-#else
-  frontend_url = "/devtools/devtools.html";
 #endif
   return DevToolsHttpHandler::Start(CreateSocketFactory(),
                                     frontend_url,

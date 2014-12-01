@@ -72,8 +72,8 @@ class DevToolsHttpHandler {
       DevToolsHttpHandlerDelegate* delegate,
       const base::FilePath& active_port_output_directory);
 
-  // Returns the URL for the address to debug |agent_host|.
-  virtual GURL GetFrontendURL() = 0;
+  // Returns the URL for the file at |path| in frontend.
+  virtual GURL GetFrontendURL(const std::string& path) = 0;
 
   virtual ~DevToolsHttpHandler() {}
 };

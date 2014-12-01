@@ -43,7 +43,7 @@ ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
   DevToolsHttpHandler* http_handler = ShellContentBrowserClient::Get()
                                           ->shell_browser_main_parts()
                                           ->devtools_http_handler();
-  shell->LoadURL(http_handler->GetFrontendURL());
+  shell->LoadURL(http_handler->GetFrontendURL("/devtools/devtools.html"));
 
   return devtools_frontend;
 }
