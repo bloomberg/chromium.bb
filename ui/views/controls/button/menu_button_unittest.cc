@@ -4,11 +4,9 @@
 
 #include "ui/views/controls/button/menu_button.h"
 
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/drag_controller.h"
@@ -28,12 +26,6 @@ class MenuButtonTest : public ViewsTestBase {
  public:
   MenuButtonTest() : widget_(nullptr), button_(nullptr) {}
   ~MenuButtonTest() override {}
-
-  void SetUp() override {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableTouchFeedback);
-    ViewsTestBase::SetUp();
-  }
 
   void TearDown() override {
     if (widget_ && !widget_->IsClosed())

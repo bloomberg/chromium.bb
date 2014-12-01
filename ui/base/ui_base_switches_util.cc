@@ -47,8 +47,8 @@ bool IsTouchEditingEnabled() {
 }
 
 bool IsTouchFeedbackEnabled() {
-  static bool touch_feedback_enabled = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableTouchFeedback);
+  static bool touch_feedback_enabled = !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kDisableTouchFeedback);
   return touch_feedback_enabled;
 }
 

@@ -15,11 +15,9 @@
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "ash/test/ash_test_base.h"
-#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/window.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -108,12 +106,6 @@ class TrayDetailsViewTest : public AshTestBase {
 
     return static_cast<HoverHighlightView*>(test_item->detailed_view()->
         footer()->content());
-  }
-
-  void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableTouchFeedback);
-    test::AshTestBase::SetUp();
   }
 
  private:

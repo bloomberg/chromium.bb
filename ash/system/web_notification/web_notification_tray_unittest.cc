@@ -19,12 +19,10 @@
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "ash/wm/window_state.h"
-#include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
@@ -93,12 +91,6 @@ class WebNotificationTrayTest : public test::AshTestBase {
  public:
   WebNotificationTrayTest() {}
   ~WebNotificationTrayTest() override {}
-
-  void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableTouchFeedback);
-    test::AshTestBase::SetUp();
-  }
 
   void TearDown() override {
     GetMessageCenter()->RemoveAllNotifications(false);

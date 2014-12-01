@@ -18,11 +18,9 @@
 #include "ash/system/tray/tray_popup_item_container.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
-#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
@@ -146,20 +144,7 @@ class ModalWidgetDelegate : public views::WidgetDelegateView {
 
 }  // namespace
 
-class SystemTrayTest : public AshTestBase {
- public:
-  SystemTrayTest() {}
-  ~SystemTrayTest() override {}
-
-  void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableTouchFeedback);
-    test::AshTestBase::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SystemTrayTest);
-};
+typedef AshTestBase SystemTrayTest;
 
 TEST_F(SystemTrayTest, SystemTrayDefaultView) {
   SystemTray* tray = GetSystemTray();
