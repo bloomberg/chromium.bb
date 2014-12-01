@@ -483,7 +483,8 @@ def RunProcessAndRetrieveOutput(command, cwd=None):
 
   # On Windows, use shell=True to get PATH interpretation.
   shell = IsWindowsHost()
-  proc = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE)
+  proc = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE,
+      stderr=subprocess.STDOUT)
   (output, _) = proc.communicate()
 
   if cwd:

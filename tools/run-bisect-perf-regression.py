@@ -14,6 +14,7 @@ bisect scrip there.
 import optparse
 import os
 import platform
+import re
 import subprocess
 import sys
 import traceback
@@ -236,19 +237,22 @@ def _CreateBisectOptionsFromConfig(config):
   return bisect_perf_regression.BisectOptions.FromDict(opts_dict)
 
 
-def _ParseCloudLinksFromOutput(output, bucket):
-  cloud_file_links = [t for t in output.splitlines()
-      if 'storage.googleapis.com/chromium-telemetry/%s/' % bucket in t]
+def _ParseCloudLinksFromOutput(output):
+  html_results_pattern = re.compile(
+      r'\s(?P<VALUES>http://storage.googleapis.com/' +
+          'chromium-telemetry/html-results/results-[a-z0-9-_]+)\s',
+      re.MULTILINE)
+  profiler_pattern = re.compile(
+      r'\s(?P<VALUES>https://console.developers.google.com/' +
+          'm/cloudstorage/b/[a-z-]+/o/profiler-[a-z0-9-_.]+)\s',
+      re.MULTILINE)
 
-  # What we're getting here is basically "View online at http://..." so parse
-  # out just the URL portion.
-  for i in xrange(len(cloud_file_links)):
-    cloud_file_link = cloud_file_links[i]
-    cloud_file_link = [t for t in cloud_file_link.split(' ')
-        if 'storage.googleapis.com/chromium-telemetry/%s/' % bucket in t]
-    assert cloud_file_link, 'Couldn\'t parse URL from output.'
-    cloud_file_links[i] = cloud_file_link[0]
-  return cloud_file_links
+  results = {
+      'html-results': html_results_pattern.findall(output),
+      'profiler': profiler_pattern.findall(output),
+  }
+
+  return results
 
 
 def _RunPerformanceTest(config):
@@ -317,16 +321,16 @@ def _RunPerformanceTest(config):
     raise RuntimeError('Unpatched version failed to run performance test.')
 
   # Find the link to the cloud stored results file.
-  cloud_file_link = _ParseCloudLinksFromOutput(
-      results_without_patch[2], 'html-results')
+  cloud_links_without_patch = _ParseCloudLinksFromOutput(
+      results_without_patch[2])
+  cloud_links_with_patch = _ParseCloudLinksFromOutput(
+      results_with_patch[2])
 
-  cloud_file_link = cloud_file_link[0] if cloud_file_link else ''
+  cloud_file_link = (cloud_links_without_patch['html-results'][0]
+      if cloud_links_without_patch['html-results'] else '')
 
-  profiler_file_links_with_patch = _ParseCloudLinksFromOutput(
-      results_with_patch[2], 'profiling-results')
-
-  profiler_file_links_without_patch = _ParseCloudLinksFromOutput(
-      results_without_patch[2], 'profiling-results')
+  profiler_file_links_with_patch = cloud_links_with_patch['profiler']
+  profiler_file_links_without_patch = cloud_links_without_patch['profiler']
 
   # Calculate the % difference in the means of the 2 runs.
   percent_diff_in_means = None
