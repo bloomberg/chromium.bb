@@ -55,9 +55,9 @@ def DecodeEscaping(data):
   escape = False
   for byte in data:
     if escape:
-      ret += chr(ord(byte) ^ 0x20)
+      last = chr(ord(byte) ^ 0x20)
+      ret += last
       escape = False
-      last = byte
     elif repeat:
       count = ord(byte) - 29
       assert count >= 3 and count <= 97
