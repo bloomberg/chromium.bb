@@ -371,16 +371,19 @@ void PNGImageDecoder::headerAvailable()
     }
 #endif
 
-    // Deal with gamma and keep it under our control.
-    double gamma;
-    if (!m_ignoreGammaAndColorProfile && png_get_gAMA(png, info, &gamma)) {
-        if ((gamma <= 0.0) || (gamma > cMaxGamma)) {
-            gamma = cInverseGamma;
-            png_set_gAMA(png, info, gamma);
+    if (!m_hasColorProfile) {
+        // Deal with gamma and keep it under our control.
+        double gamma;
+        if (!m_ignoreGammaAndColorProfile && png_get_gAMA(png, info, &gamma)) {
+            if ((gamma <= 0.0) || (gamma > cMaxGamma)) {
+                gamma = cInverseGamma;
+                png_set_gAMA(png, info, gamma);
+            }
+            png_set_gamma(png, cDefaultGamma, gamma);
+        } else {
+            png_set_gamma(png, cDefaultGamma, cInverseGamma);
         }
-        png_set_gamma(png, cDefaultGamma, gamma);
-    } else
-        png_set_gamma(png, cDefaultGamma, cInverseGamma);
+    }
 
     // Tell libpng to send us rows for interlaced pngs.
     if (interlaceType == PNG_INTERLACE_ADAM7)
