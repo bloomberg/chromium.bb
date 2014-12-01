@@ -130,7 +130,29 @@ class SmoothnessGpuRasterizationPolymer(benchmark.Benchmark):
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
+
 class SmoothnessToughFastScrollingCases(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughScrollingCasesPageSet
   options = {'page_label_filter' : 'fastscrolling'}
+
+
+class SmoothnessImageDecodingCases(benchmark.Benchmark):
+  """Measures decoding statistics for jpeg images.
+  """
+  test = smoothness.Smoothness
+  page_set = page_sets.ImageDecodingCasesPageSet
+  def CustomizeBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
+
+
+class SmoothnessGpuImageDecodingCases(benchmark.Benchmark):
+  """Measures decoding statistics for jpeg images with GPU rasterization
+  """
+  tag = 'gpu_rasterization_and_decoding'
+  test = smoothness.Smoothness
+  page_set = page_sets.ImageDecodingCasesPageSet
+  def CustomizeBrowserOptions(self, options):
+    silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
+    options.AppendExtraBrowserArgs('--enable-accelerated-jpeg-decoding')
+
