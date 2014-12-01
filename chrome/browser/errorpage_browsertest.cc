@@ -932,6 +932,28 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, AutoReload) {
   EXPECT_EQ(kRequestsToFail + 1, interceptor()->requests());
 }
 
+IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, ManualReloadNotSuppressed) {
+  GURL test_url("http://error.page.auto.reload");
+  const int kRequestsToFail = 3;
+  InstallInterceptor(test_url, kRequestsToFail);
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), test_url, 2);
+
+  EXPECT_EQ(2, interceptor()->failures());
+  EXPECT_EQ(2, interceptor()->requests());
+
+  ToggleHelpBox(browser());
+  EXPECT_TRUE(IsDisplayingNetError(browser(), net::ERR_CONNECTION_RESET));
+
+  content::WebContents* web_contents =
+    browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver nav_observer(web_contents, 1);
+  web_contents->GetMainFrame()->ExecuteJavaScript(
+      base::ASCIIToUTF16("document.getElementById('reload-button').click();"));
+  nav_observer.Wait();
+  EXPECT_FALSE(IsDisplayingNetError(browser(), net::ERR_CONNECTION_RESET));
+}
+
 // Interceptor that fails all requests with net::ERR_ADDRESS_UNREACHABLE.
 class AddressUnreachableInterceptor : public net::URLRequestInterceptor {
  public:

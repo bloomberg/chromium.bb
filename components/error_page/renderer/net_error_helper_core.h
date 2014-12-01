@@ -243,6 +243,9 @@ class NetErrorHelperCore {
   // offline->online network transition.
   bool auto_reload_paused_;
 
+  // Whether an auto-reload-initiated Reload() attempt is in flight.
+  bool auto_reload_in_flight_;
+
   // True if there is an uncommitted-but-started load, error page or not. This
   // is used to inhibit starting auto-reload when an error page finishes, in
   // case this happens:

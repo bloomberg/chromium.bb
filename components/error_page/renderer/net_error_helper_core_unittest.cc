@@ -2196,12 +2196,14 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, ShouldSuppressErrorPage) {
   DoErrorLoad(net::ERR_CONNECTION_RESET);
   timer()->Fire();
 
+  // Sub-frame load.
   EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::SUB_FRAME,
                                               GURL(kFailedUrl)));
-  EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                              GURL("http://some.other.url")));
   EXPECT_TRUE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                             GURL(kFailedUrl)));
+                                              GURL(kFailedUrl)));
+  // No auto-reload attempt in flight.
+  EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
+                                               GURL(kFailedUrl)));
 }
 
 TEST_F(NetErrorHelperCoreAutoReloadTest, HiddenAndShown) {
@@ -2242,6 +2244,15 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, ShownWhileNotReloading) {
   EXPECT_FALSE(timer()->IsRunning());
   core()->OnWasShown();
   EXPECT_TRUE(timer()->IsRunning());
+}
+
+TEST_F(NetErrorHelperCoreAutoReloadTest, ManualReloadShowsError) {
+  SetUpCore(true, true, true);
+  DoErrorLoad(net::ERR_CONNECTION_RESET);
+  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
+                      NetErrorHelperCore::ERROR_PAGE);
+  EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
+                                               GURL(kFailedUrl)));
 }
 
 class NetErrorHelperCoreHistogramTest
@@ -2294,7 +2305,6 @@ TEST_F(NetErrorHelperCoreHistogramTest, SuccessAtSecondAttempt) {
   timer()->Fire();
   EXPECT_TRUE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
                                              default_url()));
-//  DoErrorLoad(net::ERR_CONNECTION_RESET);
   timer()->Fire();
   DoSuccessLoad();
 

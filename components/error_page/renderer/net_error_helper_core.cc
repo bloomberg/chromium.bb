@@ -454,6 +454,7 @@ NetErrorHelperCore::NetErrorHelperCore(Delegate* delegate,
       auto_reload_visible_only_(auto_reload_visible_only),
       auto_reload_timer_(new base::Timer(false, false)),
       auto_reload_paused_(false),
+      auto_reload_in_flight_(false),
       uncommitted_load_started_(false),
       // TODO(ellyjones): Make online_ accurate at object creation.
       online_(true),
@@ -492,6 +493,7 @@ void NetErrorHelperCore::OnStop() {
   CancelPendingFetches();
   uncommitted_load_started_ = false;
   auto_reload_count_ = 0;
+  auto_reload_in_flight_ = false;
 }
 
 void NetErrorHelperCore::OnWasShown() {
@@ -524,6 +526,11 @@ void NetErrorHelperCore::OnStartLoad(FrameType frame_type, PageType page_type) {
 void NetErrorHelperCore::OnCommitLoad(FrameType frame_type, const GURL& url) {
   if (frame_type != MAIN_FRAME)
     return;
+
+  // If a page is committing, either it's an error page and autoreload will be
+  // started again below, or it's a success page and we need to clear autoreload
+  // state.
+  auto_reload_in_flight_ = false;
 
   // uncommitted_load_started_ could already be false, since RenderFrameImpl
   // calls OnCommitLoad once for each in-page navigation (like a fragment
@@ -825,7 +832,15 @@ void NetErrorHelperCore::StartAutoReloadTimer() {
 }
 
 void NetErrorHelperCore::AutoReloadTimerFired() {
+  // AutoReloadTimerFired only runs if:
+  // 1. StartAutoReloadTimer was previously called, which requires that
+  //    committed_error_page_info_ is populated;
+  // 2. No other page load has started since (1), since OnStartLoad stops the
+  //    auto-reload timer.
+  DCHECK(committed_error_page_info_);
+
   auto_reload_count_++;
+  auto_reload_in_flight_ = true;
   Reload();
 }
 
@@ -860,40 +875,16 @@ bool NetErrorHelperCore::ShouldSuppressErrorPage(FrameType frame_type,
   if (frame_type != MAIN_FRAME)
     return false;
 
-  if (!auto_reload_enabled_)
+  // If there's no auto reload attempt in flight, this error page didn't come
+  // from auto reload, so don't suppress it.
+  if (!auto_reload_in_flight_)
     return false;
 
-  // If there's no committed error page, this error page wasn't from an auto
-  // reload.
-  if (!committed_error_page_info_)
-    return false;
-
-  // If the error page wasn't reloadable, display it.
-  if (!IsReloadableError(*committed_error_page_info_))
-    return false;
-
-  // If |auto_reload_timer_| is still running or is paused, this error page
-  // isn't from an auto reload.
-  if (auto_reload_timer_->IsRunning() || auto_reload_paused_)
-    return false;
-
-  // If the error page was reloadable, and the timer isn't running or paused, an
-  // auto-reload has already been triggered.
-  DCHECK(committed_error_page_info_->auto_reload_triggered);
-
-  GURL error_url = committed_error_page_info_->error.unreachableURL;
-  // TODO(ellyjones): also plumb the error code down to CCRC and check that
-  if (error_url != url)
-    return false;
-
-  // Suppressed an error-page load; the previous uncommitted load was the error
-  // page load starting, so forget about it.
   uncommitted_load_started_ = false;
-
-  // The first iteration of the timer is started by OnFinishLoad calling
-  // MaybeStartAutoReloadTimer, but since error pages for subsequent loads are
-  // suppressed in this function, subsequent iterations of the timer have to be
-  // started here.
+  // This serves to terminate the auto-reload in flight attempt. If
+  // ShouldSuppressErrorPage is called, the auto-reload yielded an error, which
+  // means the request was already sent.
+  auto_reload_in_flight_ = false;
   MaybeStartAutoReloadTimer();
   return true;
 }
