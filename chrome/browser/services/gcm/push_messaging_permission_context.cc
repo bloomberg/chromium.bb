@@ -27,6 +27,9 @@ PushMessagingPermissionContext::~PushMessagingPermissionContext() {
 ContentSetting PushMessagingPermissionContext::GetPermissionStatus(
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
+  if (requesting_origin != embedding_origin)
+    return CONTENT_SETTING_BLOCK;
+
   ContentSetting push_content_setting =
       profile_->GetHostContentSettingsMap()->GetContentSetting(
           requesting_origin, embedding_origin, kPushSettingType, std::string());
@@ -50,6 +53,7 @@ ContentSetting PushMessagingPermissionContext::GetPermissionStatus(
 }
 
 // Unlike other permissions, push is decided by the following algorithm
+//  - You need to request it from a top level domain
 //  - You need to have notification permission granted.
 //  - You need to not have push permission explicitly blocked.
 //  - If those two things are true it is granted without prompting.
@@ -61,6 +65,10 @@ void PushMessagingPermissionContext::DecidePermission(
     const GURL& embedding_origin,
     bool user_gesture,
     const BrowserPermissionCallback& callback) {
+  if (requesting_origin != embedding_origin) {
+    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
+                        false /* persist */, false /* granted */);
+  }
   ContentSetting notifications_content_setting =
       profile_->GetHostContentSettingsMap()
           ->GetContentSettingAndMaybeUpdateLastUsage(

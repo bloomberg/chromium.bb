@@ -11,7 +11,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-const char kEmbedder[] = "https://example.org";
+const char kOriginA[] = "https://origina.org";
+const char kOriginB[] = "https://originb.org";
 
 namespace gcm {
 
@@ -70,7 +71,7 @@ class PushMessagingPermissionContextTest : public testing::Test {
  protected:
   void SetContentSetting(ContentSettingsType setting, ContentSetting value) {
     ContentSettingsPattern pattern =
-        ContentSettingsPattern::FromString(kEmbedder);
+        ContentSettingsPattern::FromString(kOriginA);
     HostContentSettingsMap* host_content_settings_map =
         profile_.GetHostContentSettingsMap();
     host_content_settings_map->SetContentSetting(pattern, pattern, setting,
@@ -84,13 +85,13 @@ class PushMessagingPermissionContextTest : public testing::Test {
 TEST_F(PushMessagingPermissionContextTest, HasPermissionPrompt) {
   PushMessagingPermissionContext context(&profile_);
   EXPECT_EQ(CONTENT_SETTING_ASK,
-            context.GetPermissionStatus(GURL(kEmbedder), GURL(kEmbedder)));
+            context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
 
   // Just granting notifications should still prompt
   SetContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
 
   EXPECT_EQ(CONTENT_SETTING_ASK,
-            context.GetPermissionStatus(GURL(kEmbedder), GURL(kEmbedder)));
+            context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
 
   // Just granting push should still prompt
   SetContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ASK);
@@ -98,28 +99,37 @@ TEST_F(PushMessagingPermissionContextTest, HasPermissionPrompt) {
                     CONTENT_SETTING_ALLOW);
 
   EXPECT_EQ(CONTENT_SETTING_ASK,
-            context.GetPermissionStatus(GURL(kEmbedder), GURL(kEmbedder)));
+            context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
 }
 
-TEST_F(PushMessagingPermissionContextTest, HasPermissionDeny) {
+TEST_F(PushMessagingPermissionContextTest, HasPermissionDenySettingsMismatch) {
   PushMessagingPermissionContext context(&profile_);
   SetContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            context.GetPermissionStatus(GURL(kEmbedder), GURL(kEmbedder)));
+            context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
   SetContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ASK);
   SetContentSetting(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
                     CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            context.GetPermissionStatus(GURL(kEmbedder), GURL(kEmbedder)));
+            context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
   SetContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            context.GetPermissionStatus(GURL(kEmbedder), GURL(kEmbedder)));
+            context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
 
   SetContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ASK);
   SetContentSetting(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
                     CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            context.GetPermissionStatus(GURL(kEmbedder), GURL(kEmbedder)));
+            context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
+}
+
+TEST_F(PushMessagingPermissionContextTest, HasPermissionDenyDifferentOrigins) {
+  PushMessagingPermissionContext context(&profile_);
+  SetContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
+  SetContentSetting(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, CONTENT_SETTING_ASK);
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            context.GetPermissionStatus(GURL(kOriginB), GURL(kOriginA)));
 }
 
 TEST_F(PushMessagingPermissionContextTest, HasPermissionAccept) {
@@ -128,36 +138,40 @@ TEST_F(PushMessagingPermissionContextTest, HasPermissionAccept) {
   SetContentSetting(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
                     CONTENT_SETTING_ALLOW);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
-            context.GetPermissionStatus(GURL(kEmbedder), GURL(kEmbedder)));
+            context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
 }
 
 TEST_F(PushMessagingPermissionContextTest, DecidePermission) {
   TestPushMessagingPermissionContext context(&profile_);
-  PermissionRequestID request_id(-1, -1, -1, GURL(kEmbedder));
+  PermissionRequestID request_id(-1, -1, -1, GURL(kOriginA));
   BrowserPermissionCallback callback;
 
-  context.DecidePermission(NULL, request_id, GURL(kEmbedder), GURL(kEmbedder),
+  context.DecidePermission(NULL, request_id, GURL(kOriginA), GURL(kOriginA),
                            true, callback);
   EXPECT_FALSE(context.was_persisted());
   EXPECT_FALSE(context.was_granted());
 
   SetContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_BLOCK);
-  context.DecidePermission(NULL, request_id, GURL(kEmbedder), GURL(kEmbedder),
+  context.DecidePermission(NULL, request_id, GURL(kOriginA), GURL(kOriginA),
                            true, callback);
   EXPECT_FALSE(context.was_persisted());
   EXPECT_FALSE(context.was_granted());
   SetContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
   SetContentSetting(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
                     CONTENT_SETTING_BLOCK);
-  context.DecidePermission(NULL, request_id, GURL(kEmbedder), GURL(kEmbedder),
+  context.DecidePermission(NULL, request_id, GURL(kOriginA), GURL(kOriginA),
                            true, callback);
   EXPECT_FALSE(context.was_persisted());
   EXPECT_FALSE(context.was_granted());
   SetContentSetting(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, CONTENT_SETTING_ASK);
-  context.DecidePermission(NULL, request_id, GURL(kEmbedder), GURL(kEmbedder),
+  context.DecidePermission(NULL, request_id, GURL(kOriginA), GURL(kOriginA),
                            true, callback);
   EXPECT_TRUE(context.was_persisted());
   EXPECT_TRUE(context.was_granted());
+  context.DecidePermission(NULL, request_id, GURL(kOriginB), GURL(kOriginA),
+                           true, callback);
+  EXPECT_FALSE(context.was_persisted());
+  EXPECT_FALSE(context.was_granted());
 }
 
 }  // namespace gcm
