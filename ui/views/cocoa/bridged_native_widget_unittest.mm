@@ -17,6 +17,7 @@
 #import "testing/gtest_mac.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 #import "ui/views/cocoa/bridged_content_view.h"
+#import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/view.h"
@@ -132,7 +133,7 @@ NSRange EmptyRange() {
 // NSWindow's behavior when attempting to toggle fullscreen state again, when
 // the last attempt failed but Cocoa has not yet sent
 // windowDidFailToEnterFullScreen:.
-@interface BridgedNativeWidgetTestFullScreenWindow : NSWindow {
+@interface BridgedNativeWidgetTestFullScreenWindow : NativeWidgetMacNSWindow {
  @private
   int ignoredToggleFullScreenCount_;
 }

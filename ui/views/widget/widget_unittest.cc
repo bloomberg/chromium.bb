@@ -24,6 +24,7 @@
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/test_views_delegate.h"
+#include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_delegate.h"
@@ -287,15 +288,27 @@ TEST_F(WidgetTest, Visibility) {
   EXPECT_FALSE(toplevel->IsVisible());
   EXPECT_FALSE(child->IsVisible());
 
+  // Showing a child with a hidden parent keeps the child hidden.
   child->Show();
-
   EXPECT_FALSE(toplevel->IsVisible());
   EXPECT_FALSE(child->IsVisible());
 
+  // Showing a hidden parent with a visible child shows both.
   toplevel->Show();
-
   EXPECT_TRUE(toplevel->IsVisible());
   EXPECT_TRUE(child->IsVisible());
+
+  // Hiding a parent hides both parent and child.
+  toplevel->Hide();
+  EXPECT_FALSE(toplevel->IsVisible());
+  EXPECT_FALSE(child->IsVisible());
+
+  // Hiding a child while the parent is hidden keeps the child hidden when the
+  // parent is shown.
+  child->Hide();
+  toplevel->Show();
+  EXPECT_TRUE(toplevel->IsVisible());
+  EXPECT_FALSE(child->IsVisible());
 
   toplevel->CloseNow();
   // |child| should be automatically destroyed with |toplevel|.
@@ -695,20 +708,26 @@ TEST_F(WidgetWithDestroyedNativeViewTest, Test) {
 class WidgetObserverTest : public WidgetTest, public WidgetObserver {
  public:
   WidgetObserverTest()
-      : active_(NULL),
-        widget_closed_(NULL),
-        widget_activated_(NULL),
-        widget_shown_(NULL),
-        widget_hidden_(NULL),
-        widget_bounds_changed_(NULL) {
+      : active_(nullptr),
+        widget_closed_(nullptr),
+        widget_activated_(nullptr),
+        widget_shown_(nullptr),
+        widget_hidden_(nullptr),
+        widget_bounds_changed_(nullptr),
+        widget_to_close_on_hide_(nullptr) {
   }
 
   ~WidgetObserverTest() override {}
 
+  // Set a widget to Close() the next time the Widget being observed is hidden.
+  void CloseOnNextHide(Widget* widget) {
+    widget_to_close_on_hide_ = widget;
+  }
+
   // Overridden from WidgetObserver:
   void OnWidgetDestroying(Widget* widget) override {
     if (active_ == widget)
-      active_ = NULL;
+      active_ = nullptr;
     widget_closed_ = widget;
   }
 
@@ -720,16 +739,21 @@ class WidgetObserverTest : public WidgetTest, public WidgetObserver {
       active_ = widget;
     } else {
       if (widget_activated_ == widget)
-        widget_activated_ = NULL;
+        widget_activated_ = nullptr;
       widget_deactivated_ = widget;
     }
   }
 
   void OnWidgetVisibilityChanged(Widget* widget, bool visible) override {
-    if (visible)
+    if (visible) {
       widget_shown_ = widget;
-    else
-      widget_hidden_ = widget;
+      return;
+    }
+    widget_hidden_ = widget;
+    if (widget_to_close_on_hide_) {
+      widget_to_close_on_hide_->Close();
+      widget_to_close_on_hide_ = nullptr;
+    }
   }
 
   void OnWidgetBoundsChanged(Widget* widget,
@@ -738,13 +762,13 @@ class WidgetObserverTest : public WidgetTest, public WidgetObserver {
   }
 
   void reset() {
-    active_ = NULL;
-    widget_closed_ = NULL;
-    widget_activated_ = NULL;
-    widget_deactivated_ = NULL;
-    widget_shown_ = NULL;
-    widget_hidden_ = NULL;
-    widget_bounds_changed_ = NULL;
+    active_ = nullptr;
+    widget_closed_ = nullptr;
+    widget_activated_ = nullptr;
+    widget_deactivated_ = nullptr;
+    widget_shown_ = nullptr;
+    widget_hidden_ = nullptr;
+    widget_bounds_changed_ = nullptr;
   }
 
   Widget* NewWidget() {
@@ -770,6 +794,8 @@ class WidgetObserverTest : public WidgetTest, public WidgetObserver {
   Widget* widget_shown_;
   Widget* widget_hidden_;
   Widget* widget_bounds_changed_;
+
+  Widget* widget_to_close_on_hide_;
 };
 
 TEST_F(WidgetObserverTest, DISABLED_ActivationChange) {
@@ -900,6 +926,33 @@ TEST_F(WidgetObserverTest, WidgetBoundsChangedNative) {
   // No bounds change when closing.
   widget->CloseNow();
   EXPECT_FALSE(widget_bounds_changed());
+}
+
+// Test correct behavior when widgets close themselves in response to visibility
+// changes.
+TEST_F(WidgetObserverTest, ClosingOnHiddenParent) {
+  Widget* parent = NewWidget();
+  Widget* child = CreateChildPlatformWidget(parent->GetNativeView());
+
+  TestWidgetObserver child_observer(child);
+
+  EXPECT_FALSE(parent->IsVisible());
+  EXPECT_FALSE(child->IsVisible());
+
+  // Note |child| is TYPE_CONTROL, which start shown. So no need to show the
+  // child separately.
+  parent->Show();
+  EXPECT_TRUE(parent->IsVisible());
+  EXPECT_TRUE(child->IsVisible());
+
+  // Simulate a child widget that closes itself when the parent is hidden.
+  CloseOnNextHide(child);
+  EXPECT_FALSE(child_observer.widget_closed());
+  parent->Hide();
+  RunPendingMessages();
+  EXPECT_TRUE(child_observer.widget_closed());
+
+  parent->CloseNow();
 }
 
 // Tests that SetBounds() and GetWindowBoundsInScreen() is symmetric when the

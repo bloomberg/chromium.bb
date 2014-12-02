@@ -14,39 +14,9 @@
 #include "ui/native_theme/native_theme.h"
 #import "ui/views/cocoa/bridged_content_view.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
+#import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #include "ui/views/window/native_frame_view.h"
-
-@interface NativeWidgetMacNSWindow : NSWindow
-- (ViewsNSWindowDelegate*)viewsNSWindowDelegate;
-@end
-
-@implementation NativeWidgetMacNSWindow
-
-- (ViewsNSWindowDelegate*)viewsNSWindowDelegate {
-  return base::mac::ObjCCastStrict<ViewsNSWindowDelegate>([self delegate]);
-}
-
-// Override canBecome{Key,Main}Window to always return YES, otherwise Windows
-// with a styleMask of NSBorderlessWindowMask default to NO.
-- (BOOL)canBecomeKeyWindow {
-  return YES;
-}
-
-- (BOOL)canBecomeMainWindow {
-  return YES;
-}
-
-// Override orderWindow to intercept visibility changes, since there is no way
-// to observe these changes via NSWindowDelegate.
-- (void)orderWindow:(NSWindowOrderingMode)orderingMode
-         relativeTo:(NSInteger)otherWindowNumber {
-  [[self viewsNSWindowDelegate] onWindowOrderWillChange:orderingMode];
-  [super orderWindow:orderingMode relativeTo:otherWindowNumber];
-  [[self viewsNSWindowDelegate] onWindowOrderChanged];
-}
-
-@end
 
 namespace views {
 namespace {
@@ -346,7 +316,10 @@ void NativeWidgetMac::Show() {
 }
 
 void NativeWidgetMac::Hide() {
-  NOTIMPLEMENTED();
+  if (!bridge_)
+    return;
+
+  bridge_->SetVisibilityState(BridgedNativeWidget::HIDE_WINDOW);
 }
 
 void NativeWidgetMac::ShowMaximizedWithBounds(
@@ -355,6 +328,9 @@ void NativeWidgetMac::ShowMaximizedWithBounds(
 }
 
 void NativeWidgetMac::ShowWithWindowState(ui::WindowShowState state) {
+  if (!bridge_)
+    return;
+
   switch (state) {
     case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_NORMAL:
@@ -369,12 +345,9 @@ void NativeWidgetMac::ShowWithWindowState(ui::WindowShowState state) {
       NOTREACHED();
       break;
   }
-  if (state == ui::SHOW_STATE_INACTIVE) {
-    if (!IsVisible())
-      [GetNativeWindow() orderBack:nil];
-  } else {
-    Activate();
-  }
+  bridge_->SetVisibilityState(state == ui::SHOW_STATE_INACTIVE
+      ? BridgedNativeWidget::SHOW_INACTIVE
+      : BridgedNativeWidget::SHOW_AND_ACTIVATE_WINDOW);
 }
 
 bool NativeWidgetMac::IsVisible() const {
@@ -382,8 +355,10 @@ bool NativeWidgetMac::IsVisible() const {
 }
 
 void NativeWidgetMac::Activate() {
-  [GetNativeWindow() makeKeyAndOrderFront:nil];
-  [NSApp activateIgnoringOtherApps:YES];
+  if (!bridge_)
+    return;
+
+  bridge_->SetVisibilityState(BridgedNativeWidget::SHOW_AND_ACTIVATE_WINDOW);
 }
 
 void NativeWidgetMac::Deactivate() {

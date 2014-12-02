@@ -34,6 +34,14 @@ class View;
 class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
                                          public FocusChangeListener {
  public:
+  // Ways of changing the visibility of the bridged NSWindow.
+  enum WindowVisibilityState {
+    HIDE_WINDOW,               // Hides with -[NSWindow orderOut:].
+    SHOW_AND_ACTIVATE_WINDOW,  // Shows with -[NSWindow makeKeyAndOrderFront:].
+    SHOW_INACTIVE,             // Shows with -[NSWindow orderWindow:..]. Orders
+                               // the window above its parent if it has one.
+  };
+
   // Creates one side of the bridge. |parent| must not be NULL.
   explicit BridgedNativeWidget(NativeWidgetMac* parent);
   virtual ~BridgedNativeWidget();
@@ -53,6 +61,10 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
   // take ownership of |view|.
   void SetRootView(views::View* view);
 
+  // Sets the desired visibility of the window and updates the visibility of
+  // descendant windows where necessary.
+  void SetVisibilityState(WindowVisibilityState new_state);
+
   // Called internally by the NSWindowDelegate when the window is closing.
   void OnWindowWillClose();
 
@@ -71,6 +83,11 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
 
   // Called by the NSWindowDelegate when the size of the window changes.
   void OnSizeChanged();
+
+  // Called by the NSWindowDelegate when the visibility of the window may have
+  // changed. For example, due to a (de)miniaturize operation, or the window
+  // being reordered in (or out of) the screen list.
+  void OnVisibilityChanged();
 
   // See widget.h for documentation.
   InputMethod* CreateInputMethod();
@@ -104,6 +121,9 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
   // Remove the given |child| from |child_windows_|.
   void RemoveChildWindow(BridgedNativeWidget* child);
 
+  // Notify descendants of a visibility change.
+  void NotifyVisibilityChangeDown();
+
   // Overridden from FocusChangeListener:
   void OnWillChangeFocus(View* focused_before,
                          View* focused_now) override;
@@ -133,6 +153,13 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
   // can not currently be changed.
   bool in_fullscreen_transition_;
 
+  // Stores the value last read from -[NSWindow isVisible], to detect visibility
+  // changes.
+  bool window_visible_;
+
+  // If true, the window is either visible, or wants to be visible but is
+  // currently hidden due to having a hidden parent.
+  bool wants_to_be_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidget);
 };

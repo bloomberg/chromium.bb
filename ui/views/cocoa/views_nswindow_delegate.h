@@ -33,8 +33,9 @@ class BridgedNativeWidget;
 // Notify that the window has been reordered in (or removed from) the window
 // server's screen list. This is a substitute for -[NSWindowDelegate
 // windowDidExpose:], which is only sent for nonretained windows (those without
-// a backing store).
-- (void)onWindowOrderChanged;
+// a backing store). |notification| is optional and can be set when redirecting
+// a notification such as NSApplicationDidHideNotification.
+- (void)onWindowOrderChanged:(NSNotification*)notification;
 
 @end
 

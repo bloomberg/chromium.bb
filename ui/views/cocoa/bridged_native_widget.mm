@@ -26,7 +26,9 @@ BridgedNativeWidget::BridgedNativeWidget(NativeWidgetMac* parent)
       focus_manager_(NULL),
       parent_(nullptr),
       target_fullscreen_state_(false),
-      in_fullscreen_transition_(false) {
+      in_fullscreen_transition_(false),
+      window_visible_(false),
+      wants_to_be_visible_(false) {
   DCHECK(parent);
   window_delegate_.reset(
       [[ViewsNSWindowDelegate alloc] initWithBridgedNativeWidget:this]);
@@ -52,6 +54,18 @@ void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
   window_.swap(window);
   [window_ setDelegate:window_delegate_];
 
+  // Register for application hide notifications so that visibility can be
+  // properly tracked. This is not done in the delegate so that the lifetime is
+  // tied to the C++ object, rather than the delegate (which may be reference
+  // counted). This is required since the application hides do not send an
+  // orderOut: to individual windows. Unhide, however, does send an order
+  // message.
+  [[NSNotificationCenter defaultCenter]
+      addObserver:window_delegate_
+         selector:@selector(onWindowOrderChanged:)
+             name:NSApplicationDidHideNotification
+           object:nil];
+
   // Validate the window's initial state, otherwise the bridge's initial
   // tracking state will be incorrect.
   DCHECK(![window_ isVisible]);
@@ -69,6 +83,10 @@ void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
     parent_ = parent;
     parent->child_windows_.push_back(this);
   }
+
+  // Widgets for UI controls (usually layered above web contents) start visible.
+  if (params.type == Widget::InitParams::TYPE_CONTROL)
+    SetVisibilityState(SHOW_INACTIVE);
 }
 
 void BridgedNativeWidget::SetFocusManager(FocusManager* focus_manager) {
@@ -109,10 +127,54 @@ void BridgedNativeWidget::SetRootView(views::View* view) {
   [window_ setContentView:bridged_view_];
 }
 
+void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
+  // Ensure that:
+  //  - A window with an invisible parent is not made visible.
+  //  - A parent changing visibility updates child window visibility.
+  //    * But only when changed via this function - ignore changes via the
+  //      NSWindow API, or changes propagating out from here.
+  wants_to_be_visible_ = new_state != HIDE_WINDOW;
+
+  if (new_state == HIDE_WINDOW) {
+    [window_ orderOut:nil];
+    DCHECK(!window_visible_);
+    NotifyVisibilityChangeDown();
+    return;
+  }
+
+  DCHECK(wants_to_be_visible_);
+
+  // If there's a hidden ancestor, return and wait for it to become visible.
+  for (BridgedNativeWidget* ancestor = parent();
+       ancestor;
+       ancestor = ancestor->parent()) {
+    if (!ancestor->window_visible_)
+      return;
+  }
+
+  if (new_state == SHOW_AND_ACTIVATE_WINDOW) {
+    [window_ makeKeyAndOrderFront:nil];
+    [NSApp activateIgnoringOtherApps:YES];
+  } else {
+    // ui::SHOW_STATE_INACTIVE is typically used to avoid stealing focus from a
+    // parent window. So, if there's a parent, order above that. Otherwise, this
+    // will order above all windows at the same level.
+    NSInteger parent_window_number = 0;
+    if (parent())
+      parent_window_number = [parent()->ns_window() windowNumber];
+
+    [window_ orderWindow:NSWindowAbove
+              relativeTo:parent_window_number];
+  }
+  DCHECK(window_visible_);
+  NotifyVisibilityChangeDown();
+}
+
 void BridgedNativeWidget::OnWindowWillClose() {
   if (parent_)
     parent_->RemoveChildWindow(this);
   [window_ setDelegate:nil];
+  [[NSNotificationCenter defaultCenter] removeObserver:window_delegate_];
   native_widget_mac_->OnWindowWillClose();
 }
 
@@ -176,6 +238,23 @@ void BridgedNativeWidget::OnSizeChanged() {
   native_widget_mac_->GetWidget()->OnNativeWidgetSizeChanged(
       gfx::Size(new_size.width, new_size.height));
   // TODO(tapted): If there's a layer, resize it here.
+}
+
+void BridgedNativeWidget::OnVisibilityChanged() {
+  if (window_visible_ == [window_ isVisible])
+    return;
+
+  window_visible_ = [window_ isVisible];
+
+  // If arriving via SetVisible(), |wants_to_be_visible_| should already be set.
+  // If made visible externally (e.g. Cmd+H), just roll with it. Don't try (yet)
+  // to distinguish being *hidden* externally from being hidden by a parent
+  // window - we might not need that.
+  if (window_visible_)
+    wants_to_be_visible_ = true;
+
+  native_widget_mac_->GetWidget()->OnNativeWidgetVisibilityChanged(
+      window_visible_);
 }
 
 InputMethod* BridgedNativeWidget::CreateInputMethod() {
@@ -248,6 +327,36 @@ void BridgedNativeWidget::RemoveChildWindow(BridgedNativeWidget* child) {
   DCHECK(location != child_windows_.end());
   child_windows_.erase(location);
   child->parent_ = nullptr;
+}
+
+void BridgedNativeWidget::NotifyVisibilityChangeDown() {
+  // Child windows sometimes like to close themselves in response to visibility
+  // changes. That's supported, but only with the asynchronous Widget::Close().
+  // Perform a heuristic to detect child removal that would break these loops.
+  const size_t child_count = child_windows_.size();
+  if (!window_visible_) {
+    for (BridgedNativeWidget* child : child_windows_) {
+      if (child->window_visible_) {
+        [child->ns_window() orderOut:nil];
+        child->NotifyVisibilityChangeDown();
+        CHECK_EQ(child_count, child_windows_.size());
+      }
+    }
+    return;
+  }
+
+  NSInteger parent_window_number = [window_ windowNumber];
+  for (BridgedNativeWidget* child: child_windows_) {
+    // Note: order the child windows on top, regardless of whether or not they
+    // are currently visible. They probably aren't, since the parent was hidden
+    // prior to this, but they could have been made visible in other ways.
+    if (child->wants_to_be_visible_) {
+      [child->ns_window() orderWindow:NSWindowAbove
+                           relativeTo:parent_window_number];
+      child->NotifyVisibilityChangeDown();
+      CHECK_EQ(child_count, child_windows_.size());
+    }
+  }
 }
 
 }  // namespace views

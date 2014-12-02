@@ -28,8 +28,9 @@
     [parent_->ns_view() setWillShow:YES];
 }
 
-- (void)onWindowOrderChanged {
+- (void)onWindowOrderChanged:(NSNotification*)notification {
   [parent_->ns_view() setWillShow:NO];
+  parent_->OnVisibilityChanged();
 }
 
 // NSWindowDelegate implementation.
