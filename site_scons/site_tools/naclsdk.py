@@ -101,6 +101,12 @@ def _SetEnvForNativeSdk(env, sdk_path):
 
   cc = 'clang' if env.Bit('nacl_clang') else 'gcc'
   cxx = 'clang++' if env.Bit('nacl_clang') else 'g++'
+  # Eventually nacl-clang will default to -no-integrated-as but for now we have
+  # to use the integrated as for compilation because of
+  # https://code.google.com/p/nativeclient/issues/detail?id=3966
+  # However clang's as' support of some of the nacl syntax is incomplete, so for
+  # now use binutils as for our asm files.
+  as_flags = '-no-integrated-as' if env.Bit('nacl_clang') else []
 
   env.Replace(# Replace header and lib paths.
               # where to put nacl extra sdk headers
@@ -142,7 +148,7 @@ def _SetEnvForNativeSdk(env, sdk_path):
                        '-pedantic',
                        '-D__linux__',
                        ],
-              ASFLAGS=[],
+              ASFLAGS=as_flags,
               )
 
   # NaClSdk environment seems to be inherited from the host environment.
