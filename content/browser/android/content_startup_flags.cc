@@ -61,7 +61,12 @@ void SetContentCommandLineFlags(bool single_process,
 
   // Run the GPU service as a thread in the browser instead of as a
   // standalone process.
+  // TODO(sievers): Remove this
   parsed_command_line->AppendSwitch(switches::kInProcessGPU);
+
+  // There is no software fallback on Android, so don't limit GPU crashes.
+  parsed_command_line->AppendSwitch(switches::kDisableGpuProcessCrashLimit);
+
   parsed_command_line->AppendSwitch(switches::kDisableGpuShaderDiskCache);
 
   parsed_command_line->AppendSwitch(switches::kEnableViewport);
