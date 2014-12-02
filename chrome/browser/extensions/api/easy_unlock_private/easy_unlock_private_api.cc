@@ -244,9 +244,10 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       "setupAndroidSmartLockHeaderTitle",
       l10n_util::GetStringUTF16(
           IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_HEADER_TITLE));
-  strings->SetString("setupAndroidSmartLockHeaderText",
-                     l10n_util::GetStringUTF16(
-                         IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_HEADER_TEXT));
+  strings->SetString(
+      "setupAndroidSmartLockHeaderText",
+      l10n_util::GetStringFUTF16(
+          IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_HEADER_TEXT, device_type));
   strings->SetString(
       "setupAndroidSmartLockDoneButtonText",
       l10n_util::GetStringUTF16(
