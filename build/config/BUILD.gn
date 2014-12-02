@@ -30,8 +30,8 @@ declare_args() {
 config("feature_flags") {
   # TODO(brettw) most of these need to be parameterized.
   defines = [
-      "CHROMIUM_BUILD",
-      "V8_DEPRECATION_WARNINGS",  # Don't use deprecated V8 APIs anywhere.
+    "CHROMIUM_BUILD",
+    "V8_DEPRECATION_WARNINGS",  # Don't use deprecated V8 APIs anywhere.
   ]
 
   if (cld_version > 0) {
@@ -234,9 +234,7 @@ config("debug") {
 }
 
 config("release") {
-  defines = [
-    "NDEBUG",
-  ]
+  defines = [ "NDEBUG" ]
 }
 
 # Default libraries ------------------------------------------------------------
@@ -271,6 +269,7 @@ config("default_libs") {
       "winmm.lib",
       "winspool.lib",
       "ws2_32.lib",
+
       # Please don't add more stuff here. We should actually be making this
       # list smaller, since all common things should be covered. If you need
       # some extra libraries, please just add a libs = [ "foo.lib" ] to your
@@ -287,7 +286,7 @@ config("default_libs") {
       #   '<!(<(android_toolchain)/*-gcc -print-libgcc-file-name)',
       "c",
       "dl",
-      "m"
+      "m",
     ]
   } else if (is_mac) {
     libs = [
@@ -308,8 +307,6 @@ config("default_libs") {
       "UIKit.framework",
     ]
   } else if (is_linux) {
-    libs = [
-      "dl",
-    ]
+    libs = [ "dl" ]
   }
 }

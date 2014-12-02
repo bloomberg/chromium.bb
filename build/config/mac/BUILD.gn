@@ -6,8 +6,9 @@ import("//build/config/sysroot.gni")
 
 config("sdk") {
   common_flags = [
-    "-isysroot", sysroot,
-    "-mmacosx-version-min=10.6"
+    "-isysroot",
+    sysroot,
+    "-mmacosx-version-min=10.6",
   ]
 
   cflags = common_flags
@@ -19,8 +20,10 @@ config("mac_dynamic_flags") {
   ldflags = [
     "-Wl,-search_paths_first",
     "-L.",
+
     # Path for loading shared libraries for unbundled binaries.
     "-Wl,-rpath,@loader_path/.",
+
     # Path for loading shared libraries for bundled binaries. Get back from
     # Binary.app/Contents/MacOS.
     "-Wl,-rpath,@loader_path/../../..",
@@ -29,7 +32,5 @@ config("mac_dynamic_flags") {
 
 # On Mac, this is used only for executables.
 config("mac_executable_flags") {
-  ldflags = [
-    "-Wl,-pie",  # Position independent.
-  ]
+  ldflags = [ "-Wl,-pie" ]  # Position independent.
 }

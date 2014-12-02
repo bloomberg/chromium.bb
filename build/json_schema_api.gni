@@ -57,8 +57,8 @@ template("json_schema_api") {
 
   schemas = defined(invoker.schemas) && invoker.schemas
   bundle = defined(invoker.bundle) && invoker.bundle
-  bundle_registration = defined(invoker.bundle_registration) &&
-      invoker.bundle_registration
+  bundle_registration =
+      defined(invoker.bundle_registration) && invoker.bundle_registration
 
   schema_include_rules = ""
   if (defined(invoker.schema_include_rules)) {
@@ -108,11 +108,15 @@ template("json_schema_api") {
         "--destdir=" + rebase_path(root_gen_dir, root_build_dir),
         "--namespace=$root_namespace",
         "--generator=cpp",
-        "--include-rules=$schema_include_rules" ]
+        "--include-rules=$schema_include_rules",
+      ]
 
       if (defined(invoker.visibility)) {
         # If visibility is restricted, add our own target to it.
-        visibility = [ invoker.visibility, target_visibility ]
+        visibility = [
+          invoker.visibility,
+          target_visibility,
+        ]
       }
     }
   }
@@ -120,7 +124,7 @@ template("json_schema_api") {
   if (bundle) {
     uncompiled_sources = []
     if (defined(invoker.uncompiled_sources)) {
-     uncompiled_sources = invoker.uncompiled_sources
+      uncompiled_sources = invoker.uncompiled_sources
     }
 
     bundle_generator_schema_name = target_name + "_bundle_generator_schema"
@@ -132,28 +136,28 @@ template("json_schema_api") {
         "$target_gen_dir/generated_schemas.h",
       ]
       args = [
-        "--root=" + rebase_path("//", root_build_dir),
-        "--destdir=" + rebase_path(root_gen_dir, root_build_dir),
-        "--namespace=$root_namespace",
-        "--generator=cpp-bundle-schema",
-        "--include-rules=$schema_include_rules" ]
-        + rebase_path(sources, root_build_dir)
-        + rebase_path(uncompiled_sources, root_build_dir)
+               "--root=" + rebase_path("//", root_build_dir),
+               "--destdir=" + rebase_path(root_gen_dir, root_build_dir),
+               "--namespace=$root_namespace",
+               "--generator=cpp-bundle-schema",
+               "--include-rules=$schema_include_rules",
+             ] + rebase_path(sources, root_build_dir) +
+             rebase_path(uncompiled_sources, root_build_dir)
     }
   }
 
   if (bundle_registration) {
     uncompiled_sources = []
     if (defined(invoker.uncompiled_sources)) {
-     uncompiled_sources = invoker.uncompiled_sources
+      uncompiled_sources = invoker.uncompiled_sources
     }
 
     assert(defined(invoker.impl_dir),
            "\"impl_dir\" must be defined for the $target_name template.")
     impl_dir = invoker.impl_dir
 
-    bundle_generator_registration_name = target_name +
-        "_bundle_generator_registration"
+    bundle_generator_registration_name =
+        target_name + "_bundle_generator_registration"
     action(bundle_generator_registration_name) {
       script = compiler_script
       inputs = compiler_sources + sources + uncompiled_sources
@@ -162,14 +166,14 @@ template("json_schema_api") {
         "$root_gen_dir/$impl_dir/generated_api_registration.h",
       ]
       args = [
-        "--root=" + rebase_path("//", root_build_dir),
-        "--destdir=" + rebase_path(root_gen_dir, root_build_dir),
-        "--namespace=$root_namespace",
-        "--generator=cpp-bundle-registration",
-        "--impl-dir=" + rebase_path(impl_dir, "//"),
-        "--include-rules=$schema_include_rules" ]
-        + rebase_path(sources, root_build_dir)
-        + rebase_path(uncompiled_sources, root_build_dir)
+               "--root=" + rebase_path("//", root_build_dir),
+               "--destdir=" + rebase_path(root_gen_dir, root_build_dir),
+               "--namespace=$root_namespace",
+               "--generator=cpp-bundle-registration",
+               "--impl-dir=" + rebase_path(impl_dir, "//"),
+               "--include-rules=$schema_include_rules",
+             ] + rebase_path(sources, root_build_dir) +
+             rebase_path(uncompiled_sources, root_build_dir)
     }
   }
 

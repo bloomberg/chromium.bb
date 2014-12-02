@@ -8,17 +8,24 @@
 group("deps") {
   if (is_asan) {
     public_configs = [ ":sanitizer_options_link_helper" ]
-    deps = [ ":options_sources" ]
+    deps = [
+      ":options_sources",
+    ]
   }
 }
 
 config("sanitizer_options_link_helper") {
-  ldflags = [ "-Wl,-u_sanitizer_options_link_helper", "-fsanitize=address" ]
+  ldflags = [
+    "-Wl,-u_sanitizer_options_link_helper",
+    "-fsanitize=address",
+  ]
 }
 
 source_set("options_sources") {
   visibility = [ ":deps" ]
-  sources = [ "//build/sanitizers/sanitizer_options.cc" ]
+  sources = [
+    "//build/sanitizers/sanitizer_options.cc",
+  ]
 
   if (is_tsan) {
     sources += [ "//build/sanitizers/tsan_suppressions.cc" ]

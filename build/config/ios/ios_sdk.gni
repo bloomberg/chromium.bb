@@ -25,6 +25,6 @@ if (ios_sdk_path == "") {
     _ios_sdk_to_query = "iphoneos"
   }
   _ios_sdk_result =
-    exec_script("ios_sdk.py", [ _ios_sdk_to_query ], "list lines")
+      exec_script("ios_sdk.py", [ _ios_sdk_to_query ], "list lines")
   ios_sdk_path = _ios_sdk_result[0]
 }

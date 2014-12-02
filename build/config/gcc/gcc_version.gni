@@ -11,11 +11,21 @@ if (is_android) {
   }
 } else if (current_toolchain == "//build/toolchain/cros:target") {
   # TODO(benchan): Generalize the check for platforms other than Chrome OS.
-  gcc_version = exec_script("../../compiler_version.py", [ "target", "compiler" ], "value")
+  gcc_version = exec_script("../../compiler_version.py",
+                            [
+                              "target",
+                              "compiler",
+                            ],
+                            "value")
 } else if (current_toolchain == "//build/toolchain/linux:x64" ||
            current_toolchain == "//build/toolchain/linux:x86") {
   # These are both the same and just use the default gcc on the system.
-  gcc_version = exec_script("../../compiler_version.py", [ "host", "compiler" ], "value")
+  gcc_version = exec_script("../../compiler_version.py",
+                            [
+                              "host",
+                              "compiler",
+                            ],
+                            "value")
 } else {
   gcc_version = 0
 }

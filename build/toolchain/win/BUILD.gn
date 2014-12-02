@@ -13,14 +13,14 @@ assert(is_win)
 # Its arguments are the VS path and the compiler wrapper tool. It will write
 # "environment.x86" and "environment.x64" to the build directory and return a
 # list to us.
-gyp_win_tool_path = rebase_path("//tools/gyp/pylib/gyp/win_tool.py",
-                                root_build_dir)
+gyp_win_tool_path =
+    rebase_path("//tools/gyp/pylib/gyp/win_tool.py", root_build_dir)
 exec_script("setup_toolchain.py",
             [
               visual_studio_path,
               gyp_win_tool_path,
               windows_sdk_path,
-              visual_studio_runtime_dirs
+              visual_studio_runtime_dirs,
             ])
 
 # This value will be inherited in the toolchain below.
@@ -41,62 +41,67 @@ template("msvc_toolchain") {
   } else {
     configuration = "Release"
   }
-  exec_script("../../vs_toolchain.py", ["copy_dlls",
-                                        rebase_path(root_build_dir),
-                                        configuration,
-                                        invoker.cpu_arch])
+  exec_script("../../vs_toolchain.py",
+              [
+                "copy_dlls",
+                rebase_path(root_build_dir),
+                configuration,
+                invoker.cpu_arch,
+              ])
 
   toolchain(target_name) {
     # Make these apply to all tools below.
     lib_switch = ""
-    lib_dir_switch="/LIBPATH:"
+    lib_dir_switch = "/LIBPATH:"
 
     tool("cc") {
       rspfile = "{{output}}.rsp"
       pdbname = "{{target_out_dir}}/{{target_output_name}}_c.pdb"
-      command = "ninja -t msvc -e $env -- cl.exe /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd$pdbname"
+      command =
+          "ninja -t msvc -e $env -- cl.exe /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd$pdbname"
       depsformat = "msvc"
       description = "CC {{output}}"
-      outputs = [
-        "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj",
-      ]
+      outputs =
+          [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj" ]
       rspfile_content = "{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}}"
     }
 
     tool("cxx") {
       rspfile = "{{output}}.rsp"
+
       # The PDB name needs to be different between C and C++ compiled files.
       pdbname = "{{target_out_dir}}/{{target_output_name}}_cc.pdb"
-      command = "ninja -t msvc -e $env -- cl.exe /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd$pdbname"
+      command =
+          "ninja -t msvc -e $env -- cl.exe /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd$pdbname"
       depsformat = "msvc"
       description = "CXX {{output}}"
-      outputs = [
-        "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj",
-      ]
+      outputs =
+          [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj" ]
       rspfile_content = "{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}}"
     }
 
     tool("rc") {
-      command = "$python_path gyp-win-tool rc-wrapper $env rc.exe {{defines}} {{include_dirs}} /fo{{output}} {{source}}"
-      outputs = [
-        "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.res",
-      ]
+      command =
+          "$python_path gyp-win-tool rc-wrapper $env rc.exe {{defines}} {{include_dirs}} /fo{{output}} {{source}}"
+      outputs =
+          [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.res" ]
       description = "RC {{output}}"
     }
 
     tool("asm") {
       # TODO(brettw): "/safeseh" assembler argument is hardcoded here. Extract
       # assembler flags to a variable like cflags. crbug.com/418613
-      command = "$python_path gyp-win-tool asm-wrapper $env ml.exe {{defines}} {{include_dirs}} /safeseh /c /Fo {{output}} {{source}}"
+      command =
+          "$python_path gyp-win-tool asm-wrapper $env ml.exe {{defines}} {{include_dirs}} /safeseh /c /Fo {{output}} {{source}}"
       description = "ASM {{output}}"
-      outputs = [
-        "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj",
-      ]
+      outputs =
+          [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.obj" ]
     }
 
     tool("alink") {
       rspfile = "{{output}}.rsp"
-      command = "$python_path gyp-win-tool link-wrapper $env False lib.exe /nologo /ignore:4221 /OUT:{{output}} @$rspfile"
+      command =
+          "$python_path gyp-win-tool link-wrapper $env False lib.exe /nologo /ignore:4221 /OUT:{{output}} @$rspfile"
       description = "LIB {{output}}"
       outputs = [
         # Ignore {{output_extension}} and always use .lib, there's no reason to
@@ -104,6 +109,7 @@ template("msvc_toolchain") {
         "{{target_out_dir}}/{{target_output_name}}.lib",
       ]
       default_output_extension = ".lib"
+
       # The use of inputs_newline is to work around a fixed per-line buffer
       # size in the linker.
       rspfile_content = "{{inputs_newline}}"
@@ -111,10 +117,12 @@ template("msvc_toolchain") {
 
     tool("solink") {
       dllname = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"  # e.g. foo.dll
-      libname = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.lib"  # e.g. foo.dll.lib
+      libname =
+          "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.lib"  # e.g. foo.dll.lib
       rspfile = "${dllname}.rsp"
 
-      link_command = "$python_path gyp-win-tool link-wrapper $env False link.exe /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:${dllname}.pdb @$rspfile"
+      link_command =
+          "$python_path gyp-win-tool link-wrapper $env False link.exe /nologo /IMPLIB:$libname /DLL /OUT:$dllname /PDB:${dllname}.pdb @$rspfile"
 
       # TODO(brettw) support manifests
       #manifest_command = "$python_path gyp-win-tool manifest-wrapper $env mt.exe -nologo -manifest $manifests -out:${dllname}.manifest"
@@ -129,6 +137,7 @@ template("msvc_toolchain") {
       ]
       link_output = libname
       depend_output = libname
+
       # The use of inputs_newline is to work around a fixed per-line buffer
       # size in the linker.
       rspfile_content = "{{libs}} {{solibs}} {{inputs_newline}} {{ldflags}}"
@@ -137,7 +146,8 @@ template("msvc_toolchain") {
     tool("link") {
       rspfile = "{{output}}.rsp"
 
-      link_command = "$python_path gyp-win-tool link-wrapper $env False link.exe /nologo /OUT:{{output}} /PDB:{{output}}.pdb @$rspfile"
+      link_command =
+          "$python_path gyp-win-tool link-wrapper $env False link.exe /nologo /OUT:{{output}} /PDB:{{output}}.pdb @$rspfile"
 
       # TODO(brettw) support manifests
       #manifest_command = "$python_path gyp-win-tool manifest-wrapper $env mt.exe -nologo -manifest $manifests -out:{{output}}.manifest"
@@ -146,9 +156,9 @@ template("msvc_toolchain") {
 
       default_output_extension = ".exe"
       description = "LINK {{output}}"
-      outputs = [
-        "{{root_out_dir}}/{{target_output_name}}{{output_extension}}",
-      ]
+      outputs =
+          [ "{{root_out_dir}}/{{target_output_name}}{{output_extension}}" ]
+
       # The use of inputs_newline is to work around a fixed per-line buffer
       # size in the linker.
       rspfile_content = "{{inputs_newline}} {{libs}} {{solibs}} {{ldflags}}"
@@ -160,7 +170,8 @@ template("msvc_toolchain") {
     }
 
     tool("copy") {
-      command =  "$python_path gyp-win-tool recursive-mirror {{source}} {{output}}"
+      command =
+          "$python_path gyp-win-tool recursive-mirror {{source}} {{output}}"
       description = "COPY {{source}} {{output}}"
     }
 

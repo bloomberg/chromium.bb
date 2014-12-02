@@ -7,23 +7,26 @@ import("clang.gni")
 config("find_bad_constructs") {
   if (clang_use_chrome_plugins) {
     cflags = [
-      "-Xclang", "-load",
+      "-Xclang",
+      "-load",
       "-Xclang",
     ]
 
     if (is_mac || is_ios) {
       cflags += [ rebase_path(
-        "//third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.dylib",
-        root_build_dir) ]
+              "//third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.dylib",
+              root_build_dir) ]
     } else if (is_linux) {
       cflags += [ rebase_path(
-        "//third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.so",
-        root_build_dir) ]
+              "//third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.so",
+              root_build_dir) ]
     }
 
     cflags += [
-      "-Xclang", "-add-plugin",
-      "-Xclang", "find-bad-constructs",
+      "-Xclang",
+      "-add-plugin",
+      "-Xclang",
+      "find-bad-constructs",
     ]
   }
 }

@@ -40,23 +40,24 @@ template("go_test_binary") {
     ]
     script = "//build/go/go.py"
     outputs = [ "${target_out_dir}/${target_name}" ]
+
     # Since go test does not permit specifying an output directory or output
     # binary name, we create a temporary build directory, and the python
     # script will later identify the output, copy it to the target location,
     # and clean up the temporary build directory.
     build_dir = "${target_out_dir}/${target_name}_build"
     args = [
-      "--", 
-      "${go_build_tool}",
-      rebase_path(build_dir, root_build_dir),
-      rebase_path(target_out_dir, root_build_dir) + "/${target_name}",
-      rebase_path("//", root_build_dir),
-      "-I" + rebase_path("//"),
-      " -L" + rebase_path(target_out_dir) +
-      " -l" + static_library_name +
-      " -lstdc++ -lpthread -lm -lglib-2.0",
-      "test", "-c",
-    ] + rebase_path(invoker.sources, build_dir)
+             "--",
+             "${go_build_tool}",
+             rebase_path(build_dir, root_build_dir),
+             rebase_path(target_out_dir, root_build_dir) + "/${target_name}",
+             rebase_path("//", root_build_dir),
+             "-I" + rebase_path("//"),
+             " -L" + rebase_path(target_out_dir) + " -l" + static_library_name +
+                 " -lstdc++ -lpthread -lm -lglib-2.0",
+             "test",
+             "-c",
+           ] + rebase_path(invoker.sources, build_dir)
   }
 }
 
@@ -74,24 +75,27 @@ template("go_shared_library") {
   }
 
   action(target_name) {
-    deps = [ ":$static_library_name" ]
+    deps = [
+      ":$static_library_name",
+    ]
     script = "//build/go/go.py"
     outputs = [ "${target_out_dir}/${target_name}" ]
+
     # Since go test does not permit specifying an output directory or output
     # binary name, we create a temporary build directory, and the python
     # script will later identify the output, copy it to the target location,
     # and clean up the temporary build directory.
     build_dir = "${target_out_dir}/${target_name}_build"
     args = [
-      "--", 
-      "CGO_ENABLED=1 GOOS=android GOARCH=arm GOARM=7 ${go_build_tool}",
-      rebase_path(build_dir, root_build_dir),
-      rebase_path(target_out_dir, root_build_dir) + "/${target_name}",
-      rebase_path("//", root_build_dir),
-      "-I" + rebase_path("//"),
-      " -L" + rebase_path(target_out_dir) +
-       " -l" + static_library_name + "",
-      "build -ldflags=-shared",
-    ] + rebase_path(invoker.sources, build_dir)
+             "--",
+             "CGO_ENABLED=1 GOOS=android GOARCH=arm GOARM=7 ${go_build_tool}",
+             rebase_path(build_dir, root_build_dir),
+             rebase_path(target_out_dir, root_build_dir) + "/${target_name}",
+             rebase_path("//", root_build_dir),
+             "-I" + rebase_path("//"),
+             " -L" + rebase_path(target_out_dir) + " -l" + static_library_name +
+                 "",
+             "build -ldflags=-shared",
+           ] + rebase_path(invoker.sources, build_dir)
   }
 }

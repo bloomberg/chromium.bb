@@ -19,8 +19,7 @@ config("dl_config") {
       # Enable run-time NEON selection.
       defines = [ "DL_ARM_NEON_OPTIONAL" ]
     }
-  }
-  else if (cpu_arch == "arm64") {
+  } else if (cpu_arch == "arm64") {
     # Enable build-time NEON selection.
     defines = [ "DL_ARM_NEON" ]
   }
@@ -40,9 +39,7 @@ source_set("dl") {
   defines = []
 
   if (openmax_big_float_fft) {
-    defines += [
-      "BIG_FFT_TABLE",
-    ]
+    defines += [ "BIG_FFT_TABLE" ]
   }
 
   if (cpu_arch == "arm" || cpu_arch == "arm64") {
@@ -63,14 +60,10 @@ source_set("dl") {
 
   if (cpu_arch == "arm") {
     if (arm_use_neon || is_android) {
-      deps += [
-        ":openmax_dl_armv7"
-      ]
+      deps += [ ":openmax_dl_armv7" ]
     }
     configs -= [ "//build/config/compiler:compiler_arm_fpu" ]
-    cflags += [
-      "-mfpu=neon"
-    ]
+    cflags += [ "-mfpu=neon" ]
 
     if (arm_use_neon || is_android) {
       sources += [
@@ -95,10 +88,12 @@ source_set("dl") {
         "sp/src/arm/neon/armSP_FFT_CToC_SC32_Radix8_fs_unsafe_s.S",
         "sp/src/arm/neon/omxSP_FFTFwd_CToC_SC32_Sfs_s.S",
         "sp/src/arm/neon/omxSP_FFTInv_CToC_SC32_Sfs_s.S",
+
         # Real 32-bit fixed-point FFT
         "sp/src/arm/neon/armSP_FFTInv_CCSToR_S32_preTwiddleRadix2_unsafe_s.S",
         "sp/src/arm/neon/omxSP_FFTFwd_RToCCS_S32_Sfs_s.S",
         "sp/src/arm/neon/omxSP_FFTInv_CCSToR_S32_Sfs_s.S",
+
         # Complex 16-bit fixed-point FFT
         "sp/src/arm/neon/armSP_FFTInv_CCSToR_S16_preTwiddleRadix2_unsafe_s.S",
         "sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix2_fs_unsafe_s.S",
@@ -111,11 +106,13 @@ source_set("dl") {
         "sp/src/arm/neon/armSP_FFT_CToC_SC16_Radix8_fs_unsafe_s.S",
         "sp/src/arm/neon/omxSP_FFTFwd_CToC_SC16_Sfs_s.S",
         "sp/src/arm/neon/omxSP_FFTInv_CToC_SC16_Sfs_s.S",
+
         # Real 16-bit fixed-point FFT
         "sp/src/arm/neon/omxSP_FFTFwd_RToCCS_S16_Sfs_s.S",
         "sp/src/arm/neon/omxSP_FFTInv_CCSToR_S16_Sfs_s.S",
         "sp/src/arm/neon/omxSP_FFTFwd_RToCCS_S16S32_Sfs_s.S",
         "sp/src/arm/neon/omxSP_FFTInv_CCSToR_S32S16_Sfs_s.S",
+
         # Complex floating-point FFT
         "sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix2_fs_unsafe_s.S",
         "sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix2_ls_unsafe_s.S",
@@ -126,6 +123,7 @@ source_set("dl") {
         "sp/src/arm/neon/armSP_FFT_CToC_FC32_Radix8_fs_unsafe_s.S",
         "sp/src/arm/neon/omxSP_FFTFwd_CToC_FC32_Sfs_s.S",
         "sp/src/arm/neon/omxSP_FFTInv_CToC_FC32_Sfs_s.S",
+
         # Real floating-point FFT
         "sp/src/arm/neon/armSP_FFTInv_CCSToR_F32_preTwiddleRadix2_unsafe_s.S",
         "sp/src/arm/neon/omxSP_FFTFwd_RToCCS_F32_Sfs_s.S",
@@ -135,9 +133,7 @@ source_set("dl") {
   }
 
   if (cpu_arch == "ia32" || cpu_arch == "x64") {
-    cflags += [
-      "-msse2"
-    ]
+    cflags += [ "-msse2" ]
 
     sources += [
       # Real 32-bit floating-point FFT.
@@ -185,6 +181,7 @@ source_set("dl") {
       "sp/src/arm/arm64/armSP_FFT_CToC_FC32_Radix8_fs_s.S",
       "sp/src/arm/arm64/omxSP_FFTInv_CToC_FC32.c",
       "sp/src/arm/arm64/omxSP_FFTFwd_CToC_FC32.c",
+
       # Real floating-point FFT
       "sp/src/arm/arm64/armSP_FFTInv_CCSToR_F32_preTwiddleRadix2_s.S",
       "sp/src/arm/arm64/omxSP_FFTFwd_RToCCS_F32.c",
@@ -193,12 +190,8 @@ source_set("dl") {
     ]
   }
   if (cpu_arch == "mipsel") {
-    cflags += [
-      "-std=c99",
-    ]
-    sources -= [
-      "sp/src/armSP_FFT_F32TwiddleTable.c",
-    ]
+    cflags += [ "-std=c99" ]
+    sources -= [ "sp/src/armSP_FFT_F32TwiddleTable.c" ]
 
     sources += [
       "sp/api/mipsSP.h",
@@ -236,6 +229,7 @@ if (cpu_arch == "arm") {
       "sp/src/arm/armv7/armSP_FFT_CToC_FC32_Radix8_fs_unsafe_s.S",
       "sp/src/arm/armv7/omxSP_FFTInv_CToC_FC32_Sfs_s.S",
       "sp/src/arm/armv7/omxSP_FFTFwd_CToC_FC32_Sfs_s.S",
+
       # Real floating-point FFT
       "sp/src/arm/armv7/armSP_FFTInv_CCSToR_F32_preTwiddleRadix2_unsafe_s.S",
       "sp/src/arm/armv7/omxSP_FFTFwd_RToCCS_F32_Sfs_s.S",
@@ -243,8 +237,11 @@ if (cpu_arch == "arm") {
     ]
     if (is_android) {
       # We only do run-time NEON detection on Android.
-      deps = [ "//third_party/android_tools:cpu_features" ]
+      deps = [
+        "//third_party/android_tools:cpu_features",
+      ]
       libs = [ "log" ]
+
       # Detection routine
       sources += [ "sp/src/arm/detect.c" ]
     }

@@ -7,5 +7,7 @@ source_set("gmock_mutant") {
     "gmock_mutant.h",  # gMock helpers
   ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+  ]
 }

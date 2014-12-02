@@ -14,7 +14,10 @@ if (is_linux) {
   # platform and build config.
   pkg_config("system_nss_no_ssl_config") {
     packages = [ "nss" ]
-    extra_args = [ "-v", "-lssl3" ]
+    extra_args = [
+      "-v",
+      "-lssl3",
+    ]
   }
 } else {
   include_nss_root_certs = is_ios
@@ -207,9 +210,7 @@ if (is_linux) {
 
     public_configs = [ ":nspr_config" ]
 
-    configs -= [
-      "//build/config/compiler:chromium_code",
-    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
     if (is_win) {
       configs -= [
         "//build/config/win:unicode",  # Requires 8-bit mode.
@@ -224,9 +225,7 @@ if (is_linux) {
       "FORCE_PR_LOG",
     ]
 
-    include_dirs = [
-      "nspr/pr/include/private",
-    ]
+    include_dirs = [ "nspr/pr/include/private" ]
 
     if (is_win) {
       cflags = [
@@ -314,9 +313,7 @@ if (is_linux) {
     }
 
     if (is_mac) {
-      defines += [
-        "HAVE_CRT_EXTERNS_H",
-      ]
+      defines += [ "HAVE_CRT_EXTERNS_H" ]
       libs = [
         "CoreFoundation.framework",
         "CoreServices.framework",
@@ -328,8 +325,10 @@ if (is_linux) {
         # nspr uses a bunch of deprecated functions (NSLinkModule etc) in
         # prlink.c on mac.
         "-Wno-deprecated-declarations",
+
         # nspr passes "const char*" through "void*".
         "-Wno-incompatible-pointer-types",
+
         # nspr passes "int*" through "unsigned int*".
         "-Wno-pointer-sign",
       ]
@@ -348,7 +347,9 @@ if (is_linux) {
       "nss/lib/nss/nssver.c",
     ]
 
-    public_deps = [ ":nss_static" ]
+    public_deps = [
+      ":nss_static",
+    ]
 
     if (include_nss_root_certs) {
       public_deps += [ ":nssckbi" ]
@@ -359,9 +360,8 @@ if (is_linux) {
         ldflags = [ "-all_load" ]
       } else if (is_win) {
         # Pass the def file to the linker.
-        ldflags = [
-          "/DEF:" + rebase_path("nss/exports_win.def", root_build_dir)
-        ]
+        ldflags =
+            [ "/DEF:" + rebase_path("nss/exports_win.def", root_build_dir) ]
       }
     }
   }
@@ -429,14 +429,10 @@ if (is_linux) {
       "nss/lib/ckfw/wrap.c",
     ]
 
-    configs -= [
-      "//build/config/compiler:chromium_code"
-    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
 
     if (is_win) {
-      configs -= [
-        "//build/config/win:unicode",  # Requires 8-bit mode.
-      ]
+      configs -= [ "//build/config/win:unicode" ]  # Requires 8-bit mode.
     }
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
@@ -870,22 +866,21 @@ if (is_linux) {
       # NOTE: mpi_arm.c can be used directly on Linux. mpi_arm.c will need
       # to be excluded conditionally if we start to build NSS on Linux.
       "nss/lib/freebl/mpi/mpi_arm.c",
+
       # primes.c is included by mpprime.c.
       "nss/lib/freebl/mpi/primes.c",
+
       # unix_rand.c and win_rand.c are included by sysrand.c.
       "nss/lib/freebl/unix_rand.c",
       "nss/lib/freebl/win_rand.c",
+
       # debug_module.c is included by pk11load.c.
       "nss/lib/pk11wrap/debug_module.c",
     ]
 
-    configs -= [
-      "//build/config/compiler:chromium_code"
-    ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
     if (is_win) {
-      configs -= [
-        "//build/config/win:unicode",  # Requires 8-bit mode.
-      ]
+      configs -= [ "//build/config/win:unicode" ]  # Requires 8-bit mode.
     }
     configs += [ "//build/config/compiler:no_chromium_code" ]
     public_configs = [ ":nss_static_config" ]
@@ -1112,9 +1107,7 @@ if (is_linux) {
     }
 
     if (is_mac || is_ios) {
-      sources -= [
-        "nss/lib/freebl/mpi/mpi_amd64.c",
-      ]
+      sources -= [ "nss/lib/freebl/mpi/mpi_amd64.c" ]
       cflags += [
         "-include",
         rebase_path("//third_party/nss/nss/lib/freebl/nss_build_config_mac.h",
@@ -1159,10 +1152,7 @@ if (is_linux) {
           "USE_HW_AES",
           "INTEL_GCM",
         ]
-        sources -= [
-          "nss/lib/freebl/mpi/mpi_amd64.c",
-        ]
-
+        sources -= [ "nss/lib/freebl/mpi/mpi_amd64.c" ]
       } else if (cpu_arch == "x64") {
         sources -= [
           "nss/lib/freebl/intel-aes-x86-masm.asm",
@@ -1191,12 +1181,16 @@ if (is_linux) {
       cflags += [
         # nss doesn"t explicitly cast between different enum types.
         "-Wno-conversion",
+
         # nss passes "const char*" through "void*".
         "-Wno-incompatible-pointer-types",
+
         # nss prefers `a && b || c` over `(a && b) || c`.
         "-Wno-logical-op-parentheses",
+
         # nss doesn"t use exhaustive switches on enums
         "-Wno-switch",
+
         # nss has some `unsigned < 0` checks.
         "-Wno-tautological-compare",
       ]
@@ -1215,4 +1209,3 @@ if (is_linux) {
     }
   }
 }  # Windows/Mac/iOS.
-

@@ -25,4 +25,3 @@ proto_library("cacheinvalidation_proto_cpp") {
 
   proto_out_dir = "google/cacheinvalidation"
 }
-

@@ -70,6 +70,7 @@ static_library("leveldatabase") {
     "src/include/leveldb/write_batch.h",
     "src/port/port.h",
     "src/port/port_example.h",
+
     #"src/port/port_posix.cc",  # We use the chromium port instead of this.
     #"src/port/port_posix.h",
     "src/table/block.cc",
@@ -205,7 +206,7 @@ if (!is_android) {
 
   test("leveldb_crc32c_test") {
     sources = [
-      "src/util/crc32c_test.cc"
+      "src/util/crc32c_test.cc",
     ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]

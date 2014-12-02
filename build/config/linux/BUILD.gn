@@ -8,11 +8,10 @@ import("//build/config/sysroot.gni")
 import("//build/config/ui.gni")
 import("//tools/generate_library_loader/generate_library_loader.gni")
 
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("../../linux/system.gyp") ],
-    "scope",
-    [ "../../linux/system.gyp" ])
+gypi_values = exec_script("//build/gypi_to_gn.py",
+                          [ rebase_path("../../linux/system.gyp") ],
+                          "scope",
+                          [ "../../linux/system.gyp" ])
 
 config("sdk") {
   if (sysroot != "") {
@@ -21,9 +20,12 @@ config("sdk") {
 
     # Need to get some linker flags out of the sysroot.
     ldflags += [ exec_script("sysroot_ld_path.py",
-        [ rebase_path("//build/linux/sysroot_ld_path.sh", root_build_dir),
-          sysroot ],
-        "value") ]
+                             [
+                               rebase_path("//build/linux/sysroot_ld_path.sh",
+                                           root_build_dir),
+                               sysroot,
+                             ],
+                             "value") ]
   }
 
   # Set here because OS_CHROMEOS cannot be autodetected in build_config.h like
@@ -42,7 +44,12 @@ pkg_config("freetype2") {
 }
 
 pkg_config("glib") {
-  packages = [ "glib-2.0", "gmodule-2.0", "gobject-2.0", "gthread-2.0" ]
+  packages = [
+    "glib-2.0",
+    "gmodule-2.0",
+    "gobject-2.0",
+    "gthread-2.0",
+  ]
 }
 
 pkg_config("pangocairo") {
@@ -148,6 +155,7 @@ if (use_brlapi) {
 
 pkg_config("gio_config") {
   packages = [ "gio-2.0" ]
+
   # glib >=2.40 deprecate g_settings_list_schemas in favor of
   # g_settings_schema_source_list_schemas. This function is not available on
   # earlier versions that we still need to support (specifically, 2.32), so
@@ -155,7 +163,10 @@ pkg_config("gio_config") {
   # TODO(mgiuca): Remove this suppression when we drop support for Ubuntu 13.10
   # (saucy) and earlier. Update the code to use
   # g_settings_schema_source_list_schemas instead.
-  defines = [ "USE_GIO", "GLIB_DISABLE_DEPRECATION_WARNINGS" ]
+  defines = [
+    "USE_GIO",
+    "GLIB_DISABLE_DEPRECATION_WARNINGS",
+  ]
 
   # TODO(brettw) Theoretically I think ignore_libs should be set so that we
   # don't link directly to GIO and use the loader generated below. But the gio

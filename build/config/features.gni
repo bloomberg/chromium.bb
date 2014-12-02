@@ -75,7 +75,7 @@ enable_print_preview = !is_android
 # Do not disable seccomp_bpf anywhere without talking to
 # security@chromium.org!
 use_seccomp_bpf = (is_linux || is_android) &&
-  (cpu_arch == "x86" || cpu_arch == "x64" || cpu_arch == "arm")
+                  (cpu_arch == "x86" || cpu_arch == "x64" || cpu_arch == "arm")
 
 # Enable notifications everywhere except iOS.
 enable_notifications = !is_ios
@@ -83,11 +83,11 @@ enable_notifications = !is_ios
 # TODO(brettw) this should be moved to net and only dependents get this define.
 disable_ftp_support = is_ios
 
-enable_web_speech = (!is_android && !is_ios)
+enable_web_speech = !is_android && !is_ios
 
 use_dbus = is_linux
 
-enable_extensions = (!is_android && !is_ios)
+enable_extensions = !is_android && !is_ios
 
 # Variable safe_browsing is used to control the build time configuration for
 # safe browsing feature. Safe browsing can be compiled in 3 different levels: 0

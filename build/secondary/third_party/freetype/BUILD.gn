@@ -39,9 +39,7 @@ source_set("freetype") {
     "DARWIN_NO_CARBON",
   ]
 
-  include_dirs = [
-    "build",
-  ]
+  include_dirs = [ "build" ]
 
   public_configs = [ ":freetype_config" ]
 

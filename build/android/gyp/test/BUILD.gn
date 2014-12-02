@@ -5,7 +5,9 @@ java_library("hello_world_java") {
 }
 
 java_binary("hello_world") {
-  deps = [ ":hello_world_java" ]
+  deps = [
+    ":hello_world_java",
+  ]
   java_files = [ "java/org/chromium/helloworld/HelloWorldMain.java" ]
   main_class = "org.chromium.helloworld.HelloWorldMain"
 }

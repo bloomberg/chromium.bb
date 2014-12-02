@@ -39,16 +39,24 @@ pkg_config_script = "//build/config/linux/pkg-config.py"
 # need to invoke it manually.
 if (sysroot != "") {
   # Pass the sysroot if we're using one (it requires the CPU arch also).
-  pkg_config_args = ["-s", sysroot, "-a", cpu_arch]
+  pkg_config_args = [
+    "-s",
+    sysroot,
+    "-a",
+    cpu_arch,
+  ]
 } else if (pkg_config != "") {
-  pkg_config_args = ["-p", pkg_config]
+  pkg_config_args = [
+    "-p",
+    pkg_config,
+  ]
 } else {
   pkg_config_args = []
 }
 
 template("pkg_config") {
   assert(defined(invoker.packages),
-        "Variable |packages| must be defined to be a list in pkg_config.")
+         "Variable |packages| must be defined to be a list in pkg_config.")
   config(target_name) {
     args = pkg_config_args + invoker.packages
     if (defined(invoker.extra_args)) {

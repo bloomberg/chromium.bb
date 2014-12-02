@@ -71,131 +71,215 @@
 #     # You can also put deps here if the grit source depends on generated
 #     # files.
 #   }
-import ("//build/config/crypto.gni")
-import ("//build/config/features.gni")
-import ("//build/config/ui.gni")
+import("//build/config/crypto.gni")
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
 
 grit_defines = []
 
 # Mac and iOS want Title Case strings.
 use_titlecase_in_grd_files = is_mac || is_ios
 if (use_titlecase_in_grd_files) {
-  grit_defines += [ "-D", "use_titlecase" ]
+  grit_defines += [
+    "-D",
+    "use_titlecase",
+  ]
 }
 
 if (is_chrome_branded) {
   grit_defines += [
-    "-D", "_google_chrome",
-    "-E", "CHROMIUM_BUILD=google_chrome",
+    "-D",
+    "_google_chrome",
+    "-E",
+    "CHROMIUM_BUILD=google_chrome",
   ]
 } else {
   grit_defines += [
-    "-D", "_chromium",
-    "-E", "CHROMIUM_BUILD=chromium",
+    "-D",
+    "_chromium",
+    "-E",
+    "CHROMIUM_BUILD=chromium",
   ]
 }
 
 if (is_chromeos) {
   grit_defines += [
-    "-D", "chromeos",
-    "-D", "scale_factors=2x"
+    "-D",
+    "chromeos",
+    "-D",
+    "scale_factors=2x",
   ]
 }
 
 if (is_desktop_linux) {
-  grit_defines += [ "-D", "desktop_linux" ]
+  grit_defines += [
+    "-D",
+    "desktop_linux",
+  ]
 }
 
 if (toolkit_views) {
-  grit_defines += [ "-D", "toolkit_views" ]
+  grit_defines += [
+    "-D",
+    "toolkit_views",
+  ]
 }
 
 if (use_aura) {
-  grit_defines += [ "-D", "use_aura" ]
+  grit_defines += [
+    "-D",
+    "use_aura",
+  ]
 }
 
 if (use_ash) {
-  grit_defines += [ "-D", "use_ash" ]
+  grit_defines += [
+    "-D",
+    "use_ash",
+  ]
 }
 
 if (use_nss_certs) {
-  grit_defines += [ "-D", "use_nss" ]
+  grit_defines += [
+    "-D",
+    "use_nss",
+  ]
 }
 
 if (use_ozone) {
-  grit_defines += [ "-D", "use_ozone" ]
+  grit_defines += [
+    "-D",
+    "use_ozone",
+  ]
 }
 
 if (enable_image_loader_extension) {
-  grit_defines += [ "-D", "image_loader_extension" ]
+  grit_defines += [
+    "-D",
+    "image_loader_extension",
+  ]
 }
 
 if (enable_remoting) {
-  grit_defines += [ "-D", "remoting" ]
+  grit_defines += [
+    "-D",
+    "remoting",
+  ]
 }
 
 if (is_android) {
   grit_defines += [
-    "-t", "android",
-    "-E", "ANDROID_JAVA_TAGGED_ONLY=true",
+    "-t",
+    "android",
+    "-E",
+    "ANDROID_JAVA_TAGGED_ONLY=true",
   ]
 }
 
 if (is_mac || is_ios) {
-  grit_defines += [ "-D", "scale_factors=2x" ]
+  grit_defines += [
+    "-D",
+    "scale_factors=2x",
+  ]
 }
 
 if (is_ios) {
   grit_defines += [
-    "-t", "ios",
+    "-t",
+    "ios",
+
     # iOS uses a whitelist to filter resources.
-    "-w", rebase_path("//build/ios/grit_whitelist.txt", root_build_dir),
+    "-w",
+    rebase_path("//build/ios/grit_whitelist.txt", root_build_dir),
   ]
 }
 
 if (enable_extensions) {
-  grit_defines += [ "-D", "enable_extensions" ]
+  grit_defines += [
+    "-D",
+    "enable_extensions",
+  ]
 }
 if (enable_plugins) {
-  grit_defines += [ "-D", "enable_plugins" ]
+  grit_defines += [
+    "-D",
+    "enable_plugins",
+  ]
 }
 if (enable_basic_printing || enable_print_preview) {
-  grit_defines += [ "-D", "enable_printing" ]
+  grit_defines += [
+    "-D",
+    "enable_printing",
+  ]
   if (enable_print_preview) {
-    grit_defines += [ "-D", "enable_print_preview" ]
+    grit_defines += [
+      "-D",
+      "enable_print_preview",
+    ]
   }
 }
 if (enable_themes) {
-  grit_defines += [ "-D", "enable_themes" ]
+  grit_defines += [
+    "-D",
+    "enable_themes",
+  ]
 }
 if (enable_app_list) {
-  grit_defines += [ "-D", "enable_app_list" ]
+  grit_defines += [
+    "-D",
+    "enable_app_list",
+  ]
 }
 if (enable_settings_app) {
-  grit_defines += [ "-D", "enable_settings_app" ]
+  grit_defines += [
+    "-D",
+    "enable_settings_app",
+  ]
 }
 if (enable_google_now) {
-  grit_defines += [ "-D", "enable_google_now" ]
+  grit_defines += [
+    "-D",
+    "enable_google_now",
+  ]
 }
+
 # Note: use_concatenated_impulse_responses is omitted. It is never used and
 # should probably be removed from GYP build.
 if (enable_webrtc) {
-  grit_defines += [ "-D", "enable_webrtc" ]
+  grit_defines += [
+    "-D",
+    "enable_webrtc",
+  ]
 }
 if (enable_hangout_services_extension) {
-  grit_defines += [ "-D", "enable_hangout_services_extension" ]
+  grit_defines += [
+    "-D",
+    "enable_hangout_services_extension",
+  ]
 }
 if (enable_task_manager) {
-  grit_defines += [ "-D", "enable_task_manager" ]
+  grit_defines += [
+    "-D",
+    "enable_task_manager",
+  ]
 }
 if (enable_notifications) {
-  grit_defines += [ "-D", "enable_notifications" ]
+  grit_defines += [
+    "-D",
+    "enable_notifications",
+  ]
 }
 if (enable_wifi_bootstrapping) {
-  grit_defines += [ "-D", "enable_wifi_bootstrapping" ]
+  grit_defines += [
+    "-D",
+    "enable_wifi_bootstrapping",
+  ]
 }
 if (enable_service_discovery) {
-  grit_defines += [ "-D", "enable_service_discovery" ]
+  grit_defines += [
+    "-D",
+    "enable_service_discovery",
+  ]
 }
 
 grit_resource_id_file = "//tools/gritsettings/resource_ids"
@@ -249,12 +333,10 @@ template("grit") {
       "$target_out_dir/${grit_output_name}_expected_outputs.txt"
   write_file(asserted_list_file,
              rebase_path(invoker.outputs, root_build_dir, output_dir))
-  assert_files_flags += [
-    "--assert-file-list=" + rebase_path(asserted_list_file, root_build_dir),
-  ]
-  grit_outputs = get_path_info(
-      rebase_path(invoker.outputs, ".", output_dir),
-      "abspath")
+  assert_files_flags += [ "--assert-file-list=" +
+                          rebase_path(asserted_list_file, root_build_dir) ]
+  grit_outputs =
+      get_path_info(rebase_path(invoker.outputs, ".", output_dir), "abspath")
 
   # The config and the action below get this visibility son only the generated
   # source set can depend on them. The variable "target_name" will get
@@ -282,21 +364,32 @@ template("grit") {
     depfile = "$output_dir/${grit_output_name}.d"
 
     args = [
-      "-i", source_path, "build",
+      "-i",
+      source_path,
+      "build",
     ]
     if (resource_ids != "") {
-      args += [ "-f", resource_ids ]
+      args += [
+        "-f",
+        resource_ids,
+      ]
     }
     args += [
-      "-o", rebased_output_dir,
-      "--depdir", ".",
-      "--depfile", rebase_path(depfile, root_build_dir),
-    ] + grit_defines
+              "-o",
+              rebased_output_dir,
+              "--depdir",
+              ".",
+              "--depfile",
+              rebase_path(depfile, root_build_dir),
+            ] + grit_defines
 
     # Add extra defines with -D flags.
     if (defined(invoker.defines)) {
-      foreach (i, invoker.defines) {
-        args += [ "-D", i ]
+      foreach(i, invoker.defines) {
+        args += [
+          "-D",
+          i,
+        ]
       }
     }
 
@@ -313,7 +406,9 @@ template("grit") {
       visibility = target_visibility + invoker.visibility
     }
 
-    deps = [ "//tools/grit:grit_sources" ]
+    deps = [
+      "//tools/grit:grit_sources",
+    ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
@@ -328,7 +423,9 @@ template("grit") {
 
     # Deps set on the template invocation will go on the grit script running
     # target rather than this library.
-    deps = [ ":$grit_custom_target" ]
+    deps = [
+      ":$grit_custom_target",
+    ]
     public_configs = [ ":$grit_config" ]
 
     if (defined(invoker.public_configs)) {

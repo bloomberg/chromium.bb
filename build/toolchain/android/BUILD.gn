@@ -24,8 +24,8 @@ template("android_gcc_toolchain") {
   gcc_toolchain(target_name) {
     # Make our manually injected libs relative to the build dir.
     android_ndk_lib = rebase_path(
-      invoker.android_ndk_sysroot + "/" + invoker.android_ndk_lib_dir,
-      root_build_dir)
+            invoker.android_ndk_sysroot + "/" + invoker.android_ndk_lib_dir,
+            root_build_dir)
 
     libs_section_prefix = "$android_ndk_lib/crtbegin_dynamic.o"
     libs_section_postfix = "$android_ndk_lib/crtend_android.o"
@@ -63,8 +63,10 @@ template("android_gcc_toolchain") {
     android_strip = "${tool_prefix}strip"
 
     mkdir_command = "mkdir -p lib.stripped"
-    strip_command = "$android_strip --strip-unneeded -o $temp_stripped_soname $soname"
-    replace_command = "if ! cmp -s $temp_stripped_soname $stripped_soname; then mv $temp_stripped_soname $stripped_soname; fi"
+    strip_command =
+        "$android_strip --strip-unneeded -o $temp_stripped_soname $soname"
+    replace_command =
+        "if ! cmp -s $temp_stripped_soname $stripped_soname; then mv $temp_stripped_soname $stripped_soname; fi"
     postsolink = "$mkdir_command && $strip_command && $replace_command"
     solink_outputs = [ stripped_soname ]
 

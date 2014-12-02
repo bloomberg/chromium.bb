@@ -14,10 +14,15 @@ declare_args() {
 
 find_sdk_args = [ "--print_sdk_path" ]
 if (is_chrome_branded && is_official_build) {
-  find_sdk_args += [ "--verify", mac_sdk_min, "--sdk_path=" + mac_sdk_path ]
+  find_sdk_args += [
+    "--verify",
+    mac_sdk_min,
+    "--sdk_path=" + mac_sdk_path,
+  ]
 } else {
   find_sdk_args += [ mac_sdk_min ]
 }
+
 # The tool will print the SDK path on the first line, and the version on the
 # second line.
 find_sdk_lines =

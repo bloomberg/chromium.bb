@@ -67,7 +67,8 @@ template("midl") {
     }
 
     args = [
-      "midl-wrapper", win_tool_arch,
+      "midl-wrapper",
+      win_tool_arch,
       rebase_path(out_dir, root_build_dir),
       type_library_file,
       header_file,
@@ -75,13 +76,18 @@ template("midl") {
       interface_identifier_file,
       proxy_file,
       "{{source}}",
-      "/char", "signed",
-      "/env", idl_target_platform,
+      "/char",
+      "signed",
+      "/env",
+      idl_target_platform,
       "/Oicf",
     ]
 
     foreach(include, system_include_dirs) {
-      args += [ "/I", include ]
+      args += [
+        "/I",
+        include,
+      ]
     }
   }
 
@@ -91,10 +97,11 @@ template("midl") {
     }
 
     # We only compile the IID files from the IDL tool rather than all outputs.
-    sources = process_file_template(
-        invoker.sources,
-        [ "$out_dir/$interface_identifier_file" ])
+    sources = process_file_template(invoker.sources,
+                                    [ "$out_dir/$interface_identifier_file" ])
 
-    deps = [ ":$action_name" ]
+    deps = [
+      ":$action_name",
+    ]
   }
 }

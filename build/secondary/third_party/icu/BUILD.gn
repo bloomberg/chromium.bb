@@ -224,9 +224,7 @@ component("icui18n") {
     "source/i18n/zrule.cpp",
     "source/i18n/ztrans.cpp",
   ]
-  defines = [
-    "U_I18N_IMPLEMENTATION",
-  ]
+  defines = [ "U_I18N_IMPLEMENTATION" ]
   deps = [
     ":icuuc",
   ]
@@ -259,6 +257,7 @@ component("icui18n") {
 
     cflags += [
       "-Wno-header-hygiene",
+
       # Looks like a real issue, see http://crbug.com/114660
       "-Wno-return-type-c-linkage",
     ]
@@ -439,9 +438,7 @@ component("icuuc") {
     "source/common/uvectr64.cpp",
     "source/common/wintz.c",
   ]
-  defines = [
-    "U_COMMON_IMPLEMENTATION",
-  ]
+  defines = [ "U_COMMON_IMPLEMENTATION" ]
   deps = [
     ":icudata",
   ]
@@ -475,9 +472,13 @@ if (icu_use_data_file) {
   } else {
     copy("icudata") {
       if (is_android) {
-        sources = [ "android/icudtl.dat" ]
+        sources = [
+          "android/icudtl.dat",
+        ]
       } else {
-        sources = [ "source/data/in/icudtl.dat" ]
+        sources = [
+          "source/data/in/icudtl.dat",
+        ]
       }
 
       outputs = [ "$root_out_dir/icudtl.dat" ]
@@ -487,7 +488,9 @@ if (icu_use_data_file) {
   if (is_win) {
     # On Windows the target DLL is pre-built so just use a copy rule.
     copy("icudata") {
-      sources = [ "windows/icudt.dll" ]
+      sources = [
+        "windows/icudt.dll",
+      ]
       outputs = [ "$root_out_dir/icudt.dll" ]
     }
   } else {
@@ -497,11 +500,17 @@ if (icu_use_data_file) {
       # TODO(GYP): Gyp has considerations here for QNX and for the host toolchain
       #  that have not been ported over.
       if (is_linux) {
-        sources = [ "linux/icudtl_dat.S" ]
+        sources = [
+          "linux/icudtl_dat.S",
+        ]
       } else if (is_mac) {
-        sources = [ "mac/icudtl_dat.S" ]
+        sources = [
+          "mac/icudtl_dat.S",
+        ]
       } else if (is_android) {
-        sources = [ "android/icudtl_dat.S" ]
+        sources = [
+          "android/icudtl_dat.S",
+        ]
       } else {
         assert(false, "No icu data for this platform")
       }
