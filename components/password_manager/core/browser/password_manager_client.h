@@ -16,6 +16,7 @@ namespace password_manager {
 
 struct CredentialInfo;
 class PasswordFormManager;
+class PasswordManager;
 class PasswordManagerDriver;
 class PasswordStore;
 
@@ -109,9 +110,6 @@ class PasswordManagerClient {
   // Returns the PasswordStore associated with this instance.
   virtual PasswordStore* GetPasswordStore() = 0;
 
-  // Returns the PasswordManagerDriver instance associated with this instance.
-  virtual PasswordManagerDriver* GetDriver() = 0;
-
   // Returns the probability that the experiment identified by |experiment_name|
   // should be enabled. The default implementation returns 0.
   virtual base::FieldTrial::Probability GetProbabilityForExperiment(
@@ -142,6 +140,16 @@ class PasswordManagerClient {
   // Only relevant on OSX.
   virtual PasswordStore::AuthorizationPromptPolicy GetAuthorizationPromptPolicy(
       const autofill::PasswordForm& form);
+
+  // Returns whether any SSL certificate errors were encountered as a result of
+  // the last page load.
+  virtual bool DidLastPageLoadEncounterSSLErrors();
+
+  // If this browsing session should not be persisted.
+  virtual bool IsOffTheRecord();
+
+  // Returns the PasswordManager associated with this client.
+  virtual PasswordManager* GetPasswordManager();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

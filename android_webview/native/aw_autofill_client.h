@@ -84,10 +84,12 @@ class AwAutofillClient : public autofill::AutofillClient,
   virtual void HideAutofillPopup() override;
   virtual bool IsAutocompleteEnabled() override;
   virtual void DetectAccountCreationForms(
+      content::RenderFrameHost* rfh,
       const std::vector<autofill::FormStructure*>& forms) override;
   virtual void DidFillOrPreviewField(
       const base::string16& autofilled_value,
       const base::string16& profile_full_name) override;
+  virtual void OnFirstUserGestureObserved() override;
 
   void SuggestionSelected(JNIEnv* env, jobject obj, jint position);
 

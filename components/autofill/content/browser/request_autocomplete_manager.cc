@@ -9,7 +9,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/form_data.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "url/gurl.h"
@@ -66,13 +66,7 @@ void RequestAutocompleteManager::ReturnAutocompleteResult(
     AutofillClient::RequestAutocompleteResult result,
     const base::string16& debug_message,
     const FormStructure* form_structure) {
-  // autofill_driver_->web_contents() will be NULL when the interactive
-  // autocomplete is closed due to a tab or browser window closing.
-  if (!autofill_driver_->web_contents())
-    return;
-
-  content::RenderViewHost* host =
-      autofill_driver_->web_contents()->GetRenderViewHost();
+  content::RenderFrameHost* host = autofill_driver_->render_frame_host();
   if (!host)
     return;
 

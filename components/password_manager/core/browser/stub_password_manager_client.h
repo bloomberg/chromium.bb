@@ -32,7 +32,6 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       scoped_ptr<PasswordFormManager> saved_manager) override;
   PrefService* GetPrefs() override;
   PasswordStore* GetPasswordStore() override;
-  PasswordManagerDriver* GetDriver() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubPasswordManagerClient);

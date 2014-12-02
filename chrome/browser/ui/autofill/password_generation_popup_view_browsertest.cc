@@ -25,8 +25,9 @@ class TestPasswordGenerationPopupController :
             gfx::RectF(0, 0, 10, 10),
             PasswordForm(),
             10,
-            NULL /* PasswordManager*/,
-            NULL /* PasswordGenerationPopupObserver*/,
+            nullptr /* PasswordManager*/,
+            nullptr /* PasswordManagerDriver*/,
+            nullptr /* PasswordGenerationPopupObserver*/,
             web_contents,
             native_view) {}
 

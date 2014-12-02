@@ -133,6 +133,12 @@ void AwContentRendererClient::RenderFrameCreated(
     RenderThread::Get()->Send(new AwViewHostMsg_SubFrameCreated(
         parent_frame->GetRoutingID(), render_frame->GetRoutingID()));
   }
+
+  // TODO(sgurun) do not create a password autofill agent (change
+  // autofill agent to store a weakptr).
+  autofill::PasswordAutofillAgent* password_autofill_agent =
+      new autofill::PasswordAutofillAgent(render_frame);
+  new autofill::AutofillAgent(render_frame, password_autofill_agent, NULL);
 }
 
 void AwContentRendererClient::RenderViewCreated(
@@ -140,11 +146,6 @@ void AwContentRendererClient::RenderViewCreated(
   AwRenderViewExt::RenderViewCreated(render_view);
 
   new printing::PrintWebViewHelper(render_view);
-  // TODO(sgurun) do not create a password autofill agent (change
-  // autofill agent to store a weakptr).
-  autofill::PasswordAutofillAgent* password_autofill_agent =
-      new autofill::PasswordAutofillAgent(render_view);
-  new autofill::AutofillAgent(render_view, password_autofill_agent, NULL);
 }
 
 bool AwContentRendererClient::HasErrorPage(int http_status_code,

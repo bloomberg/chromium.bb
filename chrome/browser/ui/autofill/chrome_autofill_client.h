@@ -67,9 +67,11 @@ class ChromeAutofillClient
   void HideAutofillPopup() override;
   bool IsAutocompleteEnabled() override;
   void DetectAccountCreationForms(
+      content::RenderFrameHost* rfh,
       const std::vector<autofill::FormStructure*>& forms) override;
   void DidFillOrPreviewField(const base::string16& autofilled_value,
                              const base::string16& profile_full_name) override;
+  void OnFirstUserGestureObserved() override;
 
   // content::WebContentsObserver implementation.
   void WebContentsDestroyed() override;

@@ -15,6 +15,7 @@ namespace password_manager {
 
 class ContentCredentialManagerDispatcher;
 class PasswordManagerClient;
+class PasswordManagerDriver;
 
 // A PasswordFormManager built to handle PassworForm objects synthesized
 // by the Credential Manager API.
@@ -28,6 +29,7 @@ class CredentialManagerPasswordFormManager : public PasswordFormManager {
   // This class does not take ownership of |dispatcher|.
   CredentialManagerPasswordFormManager(
       PasswordManagerClient* client,
+      PasswordManagerDriver* driver,
       const autofill::PasswordForm& observed_form,
       ContentCredentialManagerDispatcher* dispatcher);
   ~CredentialManagerPasswordFormManager() override;

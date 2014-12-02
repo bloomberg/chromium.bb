@@ -33,6 +33,8 @@ class TestAutofillDriver : public AutofillDriver {
                               RendererFormDataAction action,
                               const FormData& data) override;
   void PingRenderer() override;
+  void DetectAccountCreationForms(
+      const std::vector<autofill::FormStructure*>& forms) override;
   void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) override;
   void RendererShouldAcceptDataListSuggestion(

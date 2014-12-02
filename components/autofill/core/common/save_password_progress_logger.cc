@@ -113,8 +113,6 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
       return "Submitted password replaced with the provisionally saved one";
     case SavePasswordProgressLogger::STRING_DID_START_PROVISIONAL_LOAD_METHOD:
       return "PasswordAutofillAgent::DidStartProvisionalLoad";
-    case SavePasswordProgressLogger::STRING_FORM_FRAME_EQ_FRAME:
-      return "form_frame == frame";
     case SavePasswordProgressLogger::STRING_FRAME_NOT_MAIN_FRAME:
       return "|frame| is not the main frame";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVED_FORM_FOR_FRAME:

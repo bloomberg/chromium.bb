@@ -17,6 +17,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/login/login_interstitial_delegate.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -133,6 +134,14 @@ WebContents* LoginHandler::GetWebContentsForLogin() const {
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
       render_process_host_id_, render_frame_id_);
   return WebContents::FromRenderFrameHost(rfh);
+}
+
+password_manager::ContentPasswordManagerDriver*
+LoginHandler::GetPasswordManagerDriverForLogin() {
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      render_process_host_id_, render_frame_id_);
+  return password_manager::ContentPasswordManagerDriver::GetForRenderFrameHost(
+      rfh);
 }
 
 void LoginHandler::SetAuth(const base::string16& username,
@@ -460,14 +469,17 @@ void ShowLoginPrompt(const GURL& request_url,
     return;
   }
 
-  password_manager::PasswordManager* password_manager =
-      ChromePasswordManagerClient::GetManagerFromWebContents(parent_contents);
-  if (!password_manager) {
+  password_manager::ContentPasswordManagerDriver* driver =
+      handler->GetPasswordManagerDriverForLogin();
+
+  if (!driver) {
     // Same logic as above.
     handler->CancelAuth();
     return;
   }
 
+  password_manager::PasswordManager* password_manager =
+      driver->GetPasswordManager();
   if (password_manager && password_manager->client()->IsLoggingActive()) {
     password_manager::BrowserSavePasswordProgressLogger logger(
         password_manager->client());
@@ -478,8 +490,8 @@ void ShowLoginPrompt(const GURL& request_url,
   // Tell the password manager to look for saved passwords.
   std::vector<PasswordForm> v;
   MakeInputForPasswordManager(request_url, auth_info, handler, &v);
-  password_manager->OnPasswordFormsParsed(v);
-  handler->SetPasswordManager(password_manager);
+  driver->OnPasswordFormsParsed(v);
+  handler->SetPasswordManager(driver->GetPasswordManager());
 
   // The realm is controlled by the remote server, so there is no reason
   // to believe it is of a reasonable length.
@@ -494,7 +506,8 @@ void ShowLoginPrompt(const GURL& request_url,
       l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION,
                                  host_and_port,
                                  elided_realm);
-  handler->BuildViewForPasswordManager(password_manager, explanation);
+  handler->BuildViewForPasswordManager(driver->GetPasswordManager(),
+                                       explanation);
 }
 
 // This callback is run on the UI thread and creates a constrained window with

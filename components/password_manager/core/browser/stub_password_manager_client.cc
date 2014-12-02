@@ -47,6 +47,4 @@ PrefService* StubPasswordManagerClient::GetPrefs() { return NULL; }
 
 PasswordStore* StubPasswordManagerClient::GetPasswordStore() { return NULL; }
 
-PasswordManagerDriver* StubPasswordManagerClient::GetDriver() { return NULL; }
-
 }  // namespace password_manager

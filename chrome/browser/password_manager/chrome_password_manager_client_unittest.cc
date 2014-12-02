@@ -172,7 +172,8 @@ TEST_F(ChromePasswordManagerClientTest, AnswerToPingsAboutLoggingState_Active) {
 
   // Ping the client for logging activity update.
   AutofillHostMsg_PasswordAutofillAgentConstructed msg(0);
-  static_cast<IPC::Listener*>(GetClient())->OnMessageReceived(msg);
+  static_cast<content::WebContentsObserver*>(GetClient())->OnMessageReceived(
+      msg, web_contents()->GetMainFrame());
 
   bool logging_active = false;
   EXPECT_TRUE(WasLoggingActivationMessageSent(&logging_active));
@@ -187,7 +188,8 @@ TEST_F(ChromePasswordManagerClientTest,
 
   // Ping the client for logging activity update.
   AutofillHostMsg_PasswordAutofillAgentConstructed msg(0);
-  static_cast<IPC::Listener*>(GetClient())->OnMessageReceived(msg);
+  static_cast<content::WebContentsObserver*>(GetClient())->OnMessageReceived(
+      msg, web_contents()->GetMainFrame());
 
   bool logging_active = true;
   EXPECT_TRUE(WasLoggingActivationMessageSent(&logging_active));

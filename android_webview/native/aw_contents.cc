@@ -43,7 +43,7 @@
 #include "base/pickle.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
-#include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
@@ -72,7 +72,7 @@
 
 struct AwDrawSWFunctionTable;
 
-using autofill::ContentAutofillDriver;
+using autofill::ContentAutofillDriverFactory;
 using autofill::AutofillManager;
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -241,7 +241,7 @@ void AwContents::SetSaveFormData(bool enabled) {
   InitAutofillIfNecessary(enabled);
   // We need to check for the existence, since autofill_manager_delegate
   // may not be created when the setting is false.
-  if (ContentAutofillDriver::FromWebContents(web_contents_.get())) {
+  if (AwAutofillClient::FromWebContents(web_contents_.get())) {
     AwAutofillClient::FromWebContents(web_contents_.get())->
         SetSaveFormData(enabled);
   }
@@ -257,17 +257,16 @@ void AwContents::InitAutofillIfNecessary(bool enabled) {
   // Do not initialize if the feature is not enabled.
   if (!enabled)
     return;
-  // Check if the autofill driver already exists.
+  // Check if the autofill driver factory already exists.
   content::WebContents* web_contents = web_contents_.get();
-  if (ContentAutofillDriver::FromWebContents(web_contents))
+  if (ContentAutofillDriverFactory::FromWebContents(web_contents))
     return;
 
   AwBrowserContext::FromWebContents(web_contents)->
       CreateUserPrefServiceIfNecessary();
   AwAutofillClient::CreateForWebContents(web_contents);
-  ContentAutofillDriver::CreateForWebContentsAndDelegate(
-      web_contents,
-      AwAutofillClient::FromWebContents(web_contents),
+  ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
+      web_contents, AwAutofillClient::FromWebContents(web_contents),
       base::android::GetDefaultLocale(),
       AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
 }

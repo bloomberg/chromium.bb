@@ -15,9 +15,10 @@
 namespace password_manager {
 
 PasswordGenerationManager::PasswordGenerationManager(
-    PasswordManagerClient* client)
-    : client_(client),
-      driver_(client->GetDriver()) {}
+    PasswordManagerClient* client,
+    PasswordManagerDriver* driver)
+    : client_(client), driver_(driver) {
+}
 
 PasswordGenerationManager::~PasswordGenerationManager() {}
 

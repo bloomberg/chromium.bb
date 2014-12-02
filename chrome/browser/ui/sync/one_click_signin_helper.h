@@ -171,10 +171,6 @@ class OneClickSigninHelper
 
   static void LogHistogramValue(signin::Source source, int action);
 
-  static void CreateForWebContentsWithPasswordManager(
-      content::WebContents* contents,
-      password_manager::PasswordManager* password_manager);
-
   // Returns true if the one-click signin feature can be offered at this time.
   // If |email| is not empty, then the profile is checked to see if it's
   // already connected to a google account or if the user has already rejected
@@ -282,8 +278,7 @@ class OneClickSigninHelper
   // SAML-based accounts, but causes bug crbug.com/181163.
   static const int kMaxNavigationsSince;
 
-  OneClickSigninHelper(content::WebContents* web_contents,
-                       password_manager::PasswordManager* password_manager);
+  explicit OneClickSigninHelper(content::WebContents* web_contents);
 
   ~OneClickSigninHelper() override;
 

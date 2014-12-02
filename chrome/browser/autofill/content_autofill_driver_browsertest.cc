@@ -11,6 +11,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "content/public/browser/navigation_controller.h"
@@ -58,10 +59,10 @@ class MockAutofillClient : public TestAutofillClient {
 // instance.
 class TestContentAutofillDriver : public ContentAutofillDriver {
  public:
-  TestContentAutofillDriver(content::WebContents* web_contents,
+  TestContentAutofillDriver(content::RenderFrameHost* rfh,
                             AutofillClient* client)
       : ContentAutofillDriver(
-            web_contents,
+            rfh,
             client,
             g_browser_process->GetApplicationLocale(),
             AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {}
@@ -86,14 +87,12 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
     Observe(web_contents);
     AutofillManager::RegisterProfilePrefs(autofill_client_.GetPrefRegistry());
 
-    autofill_driver_.reset(
-        new TestContentAutofillDriver(web_contents, &autofill_client_));
-  }
-
-  // Normally the WebContents will automatically delete the driver, but here
-  // the driver is owned by this test, so we have to manually destroy.
-  virtual void WebContentsDestroyed() override {
-    autofill_driver_.reset();
+    web_contents->RemoveUserData(
+        ContentAutofillDriverFactory::
+            kContentAutofillDriverFactoryWebContentsUserDataKey);
+    ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
+        web_contents, &autofill_client_, "en-US",
+        AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
   }
 
   virtual void WasHidden() override {
@@ -114,7 +113,6 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
   base::Closure nav_entry_committed_callback_;
 
   testing::NiceMock<MockAutofillClient> autofill_client_;
-  scoped_ptr<TestContentAutofillDriver> autofill_driver_;
 };
 
 IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,

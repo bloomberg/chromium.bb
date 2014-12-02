@@ -361,6 +361,8 @@
           'sources': [
             'autofill/content/browser/content_autofill_driver.cc',
             'autofill/content/browser/content_autofill_driver.h',
+            'autofill/content/browser/content_autofill_driver_factory.cc',
+            'autofill/content/browser/content_autofill_driver_factory.h',
             'autofill/content/browser/request_autocomplete_manager.cc',
             'autofill/content/browser/request_autocomplete_manager.h',
             'autofill/content/browser/risk/fingerprint.cc',

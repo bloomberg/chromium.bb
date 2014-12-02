@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
 #include "chrome/browser/prerender/prerender_local_predictor.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -43,30 +44,18 @@ void ReportTabHelperURLSeenToLocalPredictor(
 
 }  // namespace
 
-// static
-void PrerenderTabHelper::CreateForWebContentsWithPasswordManager(
-    content::WebContents* web_contents,
-    password_manager::PasswordManager* password_manager) {
-  if (!FromWebContents(web_contents)) {
-    web_contents->SetUserData(UserDataKey(),
-                              new PrerenderTabHelper(web_contents,
-                                                     password_manager));
-  }
-}
-
-PrerenderTabHelper::PrerenderTabHelper(
-    content::WebContents* web_contents,
-    password_manager::PasswordManager* password_manager)
+PrerenderTabHelper::PrerenderTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       origin_(ORIGIN_NONE),
       next_load_is_control_prerender_(false),
       next_load_origin_(ORIGIN_NONE),
       weak_factory_(this) {
-  if (password_manager) {
-    // May be NULL in testing.
-    password_manager->AddSubmissionCallback(
-        base::Bind(&PrerenderTabHelper::PasswordSubmitted,
-                   weak_factory_.GetWeakPtr()));
+  ChromePasswordManagerClient* client =
+      ChromePasswordManagerClient::FromWebContents(web_contents);
+  // May be NULL during testing.
+  if (client) {
+    client->GetPasswordManager()->AddSubmissionCallback(base::Bind(
+        &PrerenderTabHelper::PasswordSubmitted, weak_factory_.GetWeakPtr()));
   }
 
   // Determine if this is a prerender.

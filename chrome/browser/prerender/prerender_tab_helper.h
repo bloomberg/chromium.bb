@@ -44,10 +44,6 @@ class PrerenderTabHelper
     EVENT_MAX_VALUE
   };
 
-  static void CreateForWebContentsWithPasswordManager(
-      content::WebContents* web_contents,
-      password_manager::PasswordManager* password_manager);
-
   ~PrerenderTabHelper() override;
 
   // content::WebContentsObserver implementation.
@@ -79,8 +75,7 @@ class PrerenderTabHelper
   void WouldHavePrerenderedNextLoad(Origin origin);
 
  private:
-  PrerenderTabHelper(content::WebContents* web_contents,
-                     password_manager::PasswordManager* password_manager);
+  explicit PrerenderTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<PrerenderTabHelper>;
 
   void RecordEvent(Event event) const;

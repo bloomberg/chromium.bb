@@ -64,13 +64,16 @@ void ChromeRenderViewTest::SetUp() {
 
   content::RenderViewTest::SetUp();
 
-  // RenderView doesn't expose its Agent objects, because it has no need to
-  // store them directly (they're stored as RenderViewObserver*).  So just
+  // RenderFrame doesn't expose its Agent objects, because it has no need to
+  // store them directly (they're stored as RenderFrameObserver*).  So just
   // create another set.
-  password_autofill_agent_ = new autofill::TestPasswordAutofillAgent(view_);
-  password_generation_ = new autofill::TestPasswordGenerationAgent(view_);
+  password_autofill_agent_ =
+      new autofill::TestPasswordAutofillAgent(view_->GetMainRenderFrame());
+  password_generation_ =
+      new autofill::TestPasswordGenerationAgent(view_->GetMainRenderFrame());
   autofill_agent_ =
-      new AutofillAgent(view_, password_autofill_agent_, password_generation_);
+      new AutofillAgent(view_->GetMainRenderFrame(), password_autofill_agent_,
+                        password_generation_);
 }
 
 void ChromeRenderViewTest::TearDown() {

@@ -486,6 +486,13 @@ void ChromeContentRendererClient::RenderFrameCreated(
     new NetErrorHelper(render_frame);
     new prefetch::PrefetchHelper(render_frame);
   }
+
+  PasswordGenerationAgent* password_generation_agent =
+      new PasswordGenerationAgent(render_frame);
+  PasswordAutofillAgent* password_autofill_agent =
+      new PasswordAutofillAgent(render_frame);
+  new AutofillAgent(render_frame, password_autofill_agent,
+                    password_generation_agent);
 }
 
 void ChromeContentRendererClient::RenderViewCreated(
@@ -505,14 +512,6 @@ void ChromeContentRendererClient::RenderViewCreated(
 #if defined(FULL_SAFE_BROWSING)
   safe_browsing::MalwareDOMDetails::Create(render_view);
 #endif
-
-  PasswordGenerationAgent* password_generation_agent =
-      new PasswordGenerationAgent(render_view);
-  PasswordAutofillAgent* password_autofill_agent =
-      new PasswordAutofillAgent(render_view);
-  new AutofillAgent(render_view,
-                    password_autofill_agent,
-                    password_generation_agent);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kInstantProcess))

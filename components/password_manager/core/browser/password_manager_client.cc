@@ -64,4 +64,16 @@ PasswordManagerClient::GetAuthorizationPromptPolicy(
   return PasswordStore::DISALLOW_PROMPT;
 }
 
+bool PasswordManagerClient::DidLastPageLoadEncounterSSLErrors() {
+  return false;
+}
+
+bool PasswordManagerClient::IsOffTheRecord() {
+  return false;
+}
+
+PasswordManager* PasswordManagerClient::GetPasswordManager() {
+  return nullptr;
+}
+
 }  // namespace password_manager

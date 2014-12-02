@@ -11,7 +11,6 @@
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
-#include "content/public/browser/web_contents_observer.h"
 
 namespace autofill {
 class AutofillManager;
@@ -19,24 +18,34 @@ struct PasswordForm;
 }
 
 namespace content {
+struct FrameNavigateParams;
+struct LoadCommittedDetails;
+class RenderFrameHost;
 class WebContents;
+}
+
+namespace IPC {
+class Message;
 }
 
 namespace password_manager {
 
-class ContentPasswordManagerDriver : public PasswordManagerDriver,
-                                     public content::WebContentsObserver {
+// There is one ContentPasswordManagerDriver per RenderFrameHost.
+// The lifetime is managed by the ContentPasswordManagerDriverFactory.
+class ContentPasswordManagerDriver : public PasswordManagerDriver {
  public:
-  ContentPasswordManagerDriver(content::WebContents* web_contents,
+  ContentPasswordManagerDriver(content::RenderFrameHost* render_frame_host,
                                PasswordManagerClient* client,
                                autofill::AutofillClient* autofill_client);
   ~ContentPasswordManagerDriver() override;
 
+  // Gets the driver for |render_frame_host|.
+  static ContentPasswordManagerDriver* GetForRenderFrameHost(
+      content::RenderFrameHost* render_frame_host);
+
   // PasswordManagerDriver implementation.
   void FillPasswordForm(
       const autofill::PasswordFormFillData& form_data) override;
-  bool DidLastPageLoadEncounterSSLErrors() override;
-  bool IsOffTheRecord() override;
   void AllowPasswordGenerationForForm(
       const autofill::PasswordForm& form) override;
   void AccountCreationFormsFound(
@@ -52,14 +61,20 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver,
   autofill::AutofillManager* GetAutofillManager() override;
   PasswordAutofillManager* GetPasswordAutofillManager() override;
 
-  // content::WebContentsObserver overrides.
-  bool OnMessageReceived(const IPC::Message& message) override;
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  bool HandleMessage(const IPC::Message& message);
+  void DidNavigateFrame(const content::LoadCommittedDetails& details,
+                        const content::FrameNavigateParams& params);
+
+  // Pass-throughs to PasswordManager.
+  void OnPasswordFormsParsed(const std::vector<autofill::PasswordForm>& forms);
+  void OnPasswordFormsRendered(
+      const std::vector<autofill::PasswordForm>& visible_forms,
+      bool did_stop_loading);
+  void OnPasswordFormSubmitted(const autofill::PasswordForm& password_form);
 
  private:
-  PasswordManager password_manager_;
+  content::RenderFrameHost* render_frame_host_;
+  PasswordManagerClient* client_;
   PasswordGenerationManager password_generation_manager_;
   PasswordAutofillManager password_autofill_manager_;
 

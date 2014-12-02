@@ -29,7 +29,7 @@
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/dom_distiller/content/web_contents_main_frame_observer.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -129,7 +129,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // --- Common tab helpers ---
 
   autofill::ChromeAutofillClient::CreateForWebContents(web_contents);
-  autofill::ContentAutofillDriver::CreateForWebContentsAndDelegate(
+  autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
       web_contents,
       autofill::ChromeAutofillClient::FromWebContents(web_contents),
       g_browser_process->GetApplicationLocale(),
@@ -148,9 +148,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
   PopupBlockerTabHelper::CreateForWebContents(web_contents);
   PrefsTabHelper::CreateForWebContents(web_contents);
-  prerender::PrerenderTabHelper::CreateForWebContentsWithPasswordManager(
-      web_contents,
-      ChromePasswordManagerClient::GetManagerFromWebContents(web_contents));
+  prerender::PrerenderTabHelper::CreateForWebContents(web_contents);
   SearchTabHelper::CreateForWebContents(web_contents);
   // TODO(vabr): Remove TabSpecificContentSettings from here once their function
   // is taken over by ChromeContentSettingsClient. http://crbug.com/387075
@@ -230,9 +228,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
                                      OneClickSigninHelper::CAN_OFFER_FOR_ALL,
                                      std::string(),
                                      NULL)) {
-    OneClickSigninHelper::CreateForWebContentsWithPasswordManager(
-        web_contents,
-        ChromePasswordManagerClient::GetManagerFromWebContents(web_contents));
+    OneClickSigninHelper::CreateForWebContents(web_contents);
   }
 #endif
 

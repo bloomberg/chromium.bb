@@ -54,7 +54,7 @@ struct FormData;
 struct FormFieldData;
 
 // Manages saving and restoring the user's personal information entered into web
-// forms.
+// forms. One per frame; owned by the AutofillDriver.
 class AutofillManager : public AutofillDownloadManager::Observer {
  public:
   enum AutofillDownloadManagerState {

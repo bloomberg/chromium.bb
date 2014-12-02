@@ -26,13 +26,13 @@
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/content/common/credential_manager_types.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
-#include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_url_collection_experiment.h"
@@ -48,6 +48,7 @@
 #include "chrome/browser/password_manager/generated_password_saved_infobar_delegate_android.h"
 #endif
 
+using password_manager::ContentPasswordManagerDriverFactory;
 using password_manager::PasswordManagerInternalsService;
 using password_manager::PasswordManagerInternalsServiceFactory;
 
@@ -74,12 +75,18 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
     autofill::AutofillClient* autofill_client)
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      driver_(web_contents, this, autofill_client),
+      password_manager_(this),
+      driver_factory_(nullptr),
       credential_manager_dispatcher_(web_contents, this),
-      observer_(NULL),
+      observer_(nullptr),
       can_use_log_router_(false),
       autofill_sync_state_(ALLOW_SYNC_CREDENTIALS),
       sync_credential_was_filtered_(false) {
+  ContentPasswordManagerDriverFactory::CreateForWebContents(web_contents, this,
+                                                            autofill_client);
+  driver_factory_ =
+      ContentPasswordManagerDriverFactory::FromWebContents(web_contents);
+
   PasswordManagerInternalsService* service =
       PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile_);
   if (service)
@@ -255,11 +262,6 @@ ChromePasswordManagerClient::GetPasswordStore() {
       .get();
 }
 
-password_manager::PasswordManagerDriver*
-ChromePasswordManagerClient::GetDriver() {
-  return &driver_;
-}
-
 base::FieldTrial::Probability
 ChromePasswordManagerClient::GetProbabilityForExperiment(
     const std::string& experiment_name) {
@@ -343,26 +345,22 @@ bool ChromePasswordManagerClient::WasLastNavigationHTTPError() const {
   return false;
 }
 
-// static
-password_manager::PasswordGenerationManager*
-ChromePasswordManagerClient::GetGenerationManagerFromWebContents(
-    content::WebContents* contents) {
-  ChromePasswordManagerClient* client =
-      ChromePasswordManagerClient::FromWebContents(contents);
-  if (!client)
-    return NULL;
-  return client->GetDriver()->GetPasswordGenerationManager();
+bool ChromePasswordManagerClient::DidLastPageLoadEncounterSSLErrors() {
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  if (!entry)
+    return false;
+
+  return net::IsCertStatusError(entry->GetSSL().cert_status);
 }
 
-// static
+bool ChromePasswordManagerClient::IsOffTheRecord() {
+  return web_contents()->GetBrowserContext()->IsOffTheRecord();
+}
+
 password_manager::PasswordManager*
-ChromePasswordManagerClient::GetManagerFromWebContents(
-    content::WebContents* contents) {
-  ChromePasswordManagerClient* client =
-      ChromePasswordManagerClient::FromWebContents(contents);
-  if (!client)
-    return NULL;
-  return client->GetDriver()->GetPasswordManager();
+ChromePasswordManagerClient::GetPasswordManager() {
+  return &password_manager_;
 }
 
 void ChromePasswordManagerClient::SetTestObserver(
@@ -371,22 +369,27 @@ void ChromePasswordManagerClient::SetTestObserver(
 }
 
 bool ChromePasswordManagerClient::OnMessageReceived(
-    const IPC::Message& message) {
+    const IPC::Message& message,
+    content::RenderFrameHost* render_frame_host) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ChromePasswordManagerClient, message)
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(ChromePasswordManagerClient, message,
+                                   render_frame_host)
     // Autofill messages:
     IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowPasswordGenerationPopup,
                         ShowPasswordGenerationPopup)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowPasswordEditingPopup,
                         ShowPasswordEditingPopup)
+    IPC_END_MESSAGE_MAP()
+
+    IPC_BEGIN_MESSAGE_MAP(ChromePasswordManagerClient, message)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_HidePasswordGenerationPopup,
                         HidePasswordGenerationPopup)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordAutofillAgentConstructed,
                         NotifyRendererOfLoggingAvailability)
-
     // Default:
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
   return handled;
 }
 
@@ -397,6 +400,7 @@ gfx::RectF ChromePasswordManagerClient::GetBoundsInScreenSpace(
 }
 
 void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
+    content::RenderFrameHost* render_frame_host,
     const gfx::RectF& bounds,
     int max_length,
     const autofill::PasswordForm& form) {
@@ -406,31 +410,25 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
 
   popup_controller_ =
       autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
-          popup_controller_,
-          element_bounds_in_screen_space,
-          form,
-          max_length,
-          driver_.GetPasswordManager(),
-          observer_,
-          web_contents(),
-          web_contents()->GetNativeView());
+          popup_controller_, element_bounds_in_screen_space, form, max_length,
+          &password_manager_,
+          driver_factory_->GetDriverForFrame(render_frame_host), observer_,
+          web_contents(), web_contents()->GetNativeView());
   popup_controller_->Show(true /* display_password */);
 }
 
 void ChromePasswordManagerClient::ShowPasswordEditingPopup(
+    content::RenderFrameHost* render_frame_host,
     const gfx::RectF& bounds,
     const autofill::PasswordForm& form) {
   gfx::RectF element_bounds_in_screen_space = GetBoundsInScreenSpace(bounds);
   popup_controller_ =
       autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
-          popup_controller_,
-          element_bounds_in_screen_space,
-          form,
+          popup_controller_, element_bounds_in_screen_space, form,
           0,  // Unspecified max length.
-          driver_.GetPasswordManager(),
-          observer_,
-          web_contents(),
-          web_contents()->GetNativeView());
+          &password_manager_,
+          driver_factory_->GetDriverForFrame(render_frame_host), observer_,
+          web_contents(), web_contents()->GetNativeView());
   popup_controller_->Show(false /* display_password */);
 }
 

@@ -20,11 +20,13 @@ class RectF;
 namespace password_manager {
 
 class PasswordManagerClient;
+class PasswordManagerDriver;
 
 // This class is responsible for filling password forms.
 class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
  public:
   PasswordAutofillManager(PasswordManagerClient* password_manager_client,
+                          PasswordManagerDriver* password_manager_driver,
                           autofill::AutofillClient* autofill_client);
   virtual ~PasswordAutofillManager();
 
@@ -91,6 +93,9 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
 
   // Provides embedder-level operations on passwords. Must outlive |this|.
   PasswordManagerClient* const password_manager_client_;  // weak
+
+  // The driver that owns |this|.
+  PasswordManagerDriver* password_manager_driver_;
 
   autofill::AutofillClient* const autofill_client_;  // weak
 

@@ -16,48 +16,20 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/common/frame_navigate_params.h"
+#include "content/public/browser/site_instance.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace autofill {
 
-namespace {
-
-const char kContentAutofillDriverWebContentsUserDataKey[] =
-    "web_contents_autofill_driver_impl";
-
-}  // namespace
-
-// static
-void ContentAutofillDriver::CreateForWebContentsAndDelegate(
-    content::WebContents* contents,
-    AutofillClient* client,
-    const std::string& app_locale,
-    AutofillManager::AutofillDownloadManagerState enable_download_manager) {
-  if (FromWebContents(contents))
-    return;
-
-  contents->SetUserData(
-      kContentAutofillDriverWebContentsUserDataKey,
-      new ContentAutofillDriver(
-          contents, client, app_locale, enable_download_manager));
-}
-
-// static
-ContentAutofillDriver* ContentAutofillDriver::FromWebContents(
-    content::WebContents* contents) {
-  return static_cast<ContentAutofillDriver*>(
-      contents->GetUserData(kContentAutofillDriverWebContentsUserDataKey));
-}
-
 ContentAutofillDriver::ContentAutofillDriver(
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     AutofillClient* client,
     const std::string& app_locale,
     AutofillManager::AutofillDownloadManagerState enable_download_manager)
-    : content::WebContentsObserver(web_contents),
+    : render_frame_host_(render_frame_host),
+      client_(client),
       autofill_manager_(new AutofillManager(this,
                                             client,
                                             app_locale,
@@ -70,11 +42,15 @@ ContentAutofillDriver::ContentAutofillDriver(
 ContentAutofillDriver::~ContentAutofillDriver() {}
 
 bool ContentAutofillDriver::IsOffTheRecord() const {
-  return web_contents()->GetBrowserContext()->IsOffTheRecord();
+  return render_frame_host_->GetSiteInstance()
+      ->GetBrowserContext()
+      ->IsOffTheRecord();
 }
 
 net::URLRequestContextGetter* ContentAutofillDriver::GetURLRequestContext() {
-  return web_contents()->GetBrowserContext()->GetRequestContext();
+  return render_frame_host_->GetSiteInstance()
+      ->GetBrowserContext()
+      ->GetRequestContext();
 }
 
 base::SequencedWorkerPool* ContentAutofillDriver::GetBlockingPool() {
@@ -82,7 +58,7 @@ base::SequencedWorkerPool* ContentAutofillDriver::GetBlockingPool() {
 }
 
 bool ContentAutofillDriver::RendererIsAvailable() {
-  return (web_contents()->GetRenderViewHost() != NULL);
+  return render_frame_host_->GetRenderViewHost() != NULL;
 }
 
 void ContentAutofillDriver::SendFormDataToRenderer(
@@ -91,15 +67,14 @@ void ContentAutofillDriver::SendFormDataToRenderer(
     const FormData& data) {
   if (!RendererIsAvailable())
     return;
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   switch (action) {
     case FORM_DATA_ACTION_FILL:
-      host->Send(
-          new AutofillMsg_FillForm(host->GetRoutingID(), query_id, data));
+      render_frame_host_->Send(new AutofillMsg_FillForm(
+          render_frame_host_->GetRoutingID(), query_id, data));
       break;
     case FORM_DATA_ACTION_PREVIEW:
-      host->Send(
-          new AutofillMsg_PreviewForm(host->GetRoutingID(), query_id, data));
+      render_frame_host_->Send(new AutofillMsg_PreviewForm(
+          render_frame_host_->GetRoutingID(), query_id, data));
       break;
   }
 }
@@ -107,8 +82,14 @@ void ContentAutofillDriver::SendFormDataToRenderer(
 void ContentAutofillDriver::PingRenderer() {
   if (!RendererIsAvailable())
     return;
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  host->Send(new AutofillMsg_Ping(host->GetRoutingID()));
+  render_frame_host_->Send(
+      new AutofillMsg_Ping(render_frame_host_->GetRoutingID()));
+}
+
+void ContentAutofillDriver::DetectAccountCreationForms(
+    const std::vector<FormStructure*>& forms) {
+  autofill_manager_->client()->DetectAccountCreationForms(render_frame_host_,
+                                                          forms);
 }
 
 void ContentAutofillDriver::SendAutofillTypePredictionsToRenderer(
@@ -119,56 +100,56 @@ void ContentAutofillDriver::SendAutofillTypePredictionsToRenderer(
 
   if (!RendererIsAvailable())
     return;
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
 
   std::vector<FormDataPredictions> type_predictions;
   FormStructure::GetFieldTypePredictions(forms, &type_predictions);
-  host->Send(new AutofillMsg_FieldTypePredictionsAvailable(host->GetRoutingID(),
-                                                           type_predictions));
+  render_frame_host_->Send(new AutofillMsg_FieldTypePredictionsAvailable(
+      render_frame_host_->GetRoutingID(), type_predictions));
 }
 
 void ContentAutofillDriver::RendererShouldAcceptDataListSuggestion(
     const base::string16& value) {
   if (!RendererIsAvailable())
     return;
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  host->Send(
-      new AutofillMsg_AcceptDataListSuggestion(host->GetRoutingID(), value));
+  render_frame_host_->Send(new AutofillMsg_AcceptDataListSuggestion(
+      render_frame_host_->GetRoutingID(), value));
 }
 
 void ContentAutofillDriver::RendererShouldClearFilledForm() {
   if (!RendererIsAvailable())
     return;
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  host->Send(new AutofillMsg_ClearForm(host->GetRoutingID()));
+  render_frame_host_->Send(
+      new AutofillMsg_ClearForm(render_frame_host_->GetRoutingID()));
 }
 
 void ContentAutofillDriver::RendererShouldClearPreviewedForm() {
   if (!RendererIsAvailable())
     return;
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  host->Send(new AutofillMsg_ClearPreviewedForm(host->GetRoutingID()));
+  render_frame_host_->Send(
+      new AutofillMsg_ClearPreviewedForm(render_frame_host_->GetRoutingID()));
 }
 
 void ContentAutofillDriver::RendererShouldFillFieldWithValue(
     const base::string16& value) {
   if (!RendererIsAvailable())
     return;
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  host->Send(new AutofillMsg_FillFieldWithValue(host->GetRoutingID(), value));
+  render_frame_host_->Send(new AutofillMsg_FillFieldWithValue(
+      render_frame_host_->GetRoutingID(), value));
 }
+
 void ContentAutofillDriver::RendererShouldPreviewFieldWithValue(
     const base::string16& value) {
   if (!RendererIsAvailable())
     return;
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  host->Send(new AutofillMsg_PreviewFieldWithValue(host->GetRoutingID(),
-                                                   value));
+  render_frame_host_->Send(new AutofillMsg_PreviewFieldWithValue(
+      render_frame_host_->GetRoutingID(), value));
 }
 
-bool ContentAutofillDriver::OnMessageReceived(const IPC::Message& message) {
+bool ContentAutofillDriver::HandleMessage(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ContentAutofillDriver, message)
+  IPC_MESSAGE_FORWARD(AutofillHostMsg_FirstUserGestureObserved, client_,
+                      AutofillClient::OnFirstUserGestureObserved)
   IPC_MESSAGE_FORWARD(AutofillHostMsg_FormsSeen,
                       autofill_manager_.get(),
                       AutofillManager::OnFormsSeen)
@@ -210,7 +191,7 @@ bool ContentAutofillDriver::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ContentAutofillDriver::DidNavigateMainFrame(
+void ContentAutofillDriver::DidNavigateFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   if (details.is_navigation_to_different_page())
@@ -221,15 +202,6 @@ void ContentAutofillDriver::SetAutofillManager(
     scoped_ptr<AutofillManager> manager) {
   autofill_manager_ = manager.Pass();
   autofill_manager_->SetExternalDelegate(&autofill_external_delegate_);
-}
-
-void ContentAutofillDriver::NavigationEntryCommitted(
-    const content::LoadCommittedDetails& load_details) {
-  autofill_manager_->client()->HideAutofillPopup();
-}
-
-void ContentAutofillDriver::WasHidden() {
-  autofill_manager_->client()->HideAutofillPopup();
 }
 
 }  // namespace autofill

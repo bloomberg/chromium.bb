@@ -6,6 +6,7 @@
 #include "components/autofill/content/browser/request_autocomplete_manager.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -71,9 +72,9 @@ class CustomTestAutofillClient : public TestAutofillClient {
 
 class TestContentAutofillDriver : public ContentAutofillDriver {
  public:
-  TestContentAutofillDriver(content::WebContents* contents,
+  TestContentAutofillDriver(content::RenderFrameHost* rfh,
                             AutofillClient* client)
-      : ContentAutofillDriver(contents, client, kAppLocale, kDownloadState) {
+      : ContentAutofillDriver(rfh, client, kAppLocale, kDownloadState) {
     SetAutofillManager(make_scoped_ptr<AutofillManager>(
         new TestAutofillManager(this, client)));
   }
@@ -82,8 +83,6 @@ class TestContentAutofillDriver : public ContentAutofillDriver {
   TestAutofillManager* mock_autofill_manager() {
     return static_cast<TestAutofillManager*>(autofill_manager());
   }
-
-  using ContentAutofillDriver::DidNavigateMainFrame;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentAutofillDriver);
 };
@@ -98,8 +97,8 @@ class RequestAutocompleteManagerTest :
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
 
-    driver_.reset(
-        new TestContentAutofillDriver(web_contents(), &autofill_client_));
+    driver_.reset(new TestContentAutofillDriver(web_contents()->GetMainFrame(),
+                                                &autofill_client_));
     request_autocomplete_manager_.reset(
         new RequestAutocompleteManager(driver_.get()));
   }

@@ -47,9 +47,9 @@ class MockAutofillManager : public AutofillManager {
 
 class TestContentAutofillDriver : public ContentAutofillDriver {
  public:
-  TestContentAutofillDriver(content::WebContents* contents,
+  TestContentAutofillDriver(content::RenderFrameHost* rfh,
                             AutofillClient* client)
-      : ContentAutofillDriver(contents, client, kAppLocale, kDownloadState) {
+      : ContentAutofillDriver(rfh, client, kAppLocale, kDownloadState) {
     scoped_ptr<AutofillManager> autofill_manager(
         new MockAutofillManager(this, client));
     SetAutofillManager(autofill_manager.Pass());
@@ -60,7 +60,7 @@ class TestContentAutofillDriver : public ContentAutofillDriver {
     return static_cast<MockAutofillManager*>(autofill_manager());
   }
 
-  using ContentAutofillDriver::DidNavigateMainFrame;
+  using ContentAutofillDriver::DidNavigateFrame;
 };
 
 class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
@@ -69,7 +69,7 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
     content::RenderViewHostTestHarness::SetUp();
 
     test_autofill_client_.reset(new TestAutofillClient());
-    driver_.reset(new TestContentAutofillDriver(web_contents(),
+    driver_.reset(new TestContentAutofillDriver(web_contents()->GetMainFrame(),
                                                 test_autofill_client_.get()));
   }
 
@@ -210,7 +210,7 @@ TEST_F(ContentAutofillDriverTest, NavigatedToDifferentPage) {
   details.is_in_page = false;
   ASSERT_TRUE(details.is_navigation_to_different_page());
   content::FrameNavigateParams params = content::FrameNavigateParams();
-  driver_->DidNavigateMainFrame(details, params);
+  driver_->DidNavigateFrame(details, params);
 }
 
 TEST_F(ContentAutofillDriverTest, NavigatedWithinSamePage) {
@@ -219,7 +219,7 @@ TEST_F(ContentAutofillDriverTest, NavigatedWithinSamePage) {
   details.is_main_frame = false;
   ASSERT_TRUE(!details.is_navigation_to_different_page());
   content::FrameNavigateParams params = content::FrameNavigateParams();
-  driver_->DidNavigateMainFrame(details, params);
+  driver_->DidNavigateFrame(details, params);
 }
 
 TEST_F(ContentAutofillDriverTest, FormDataSentToRenderer_FillForm) {

@@ -23,7 +23,8 @@ class PageClickListener;
 // This is useful for password/form autofill where we want to trigger a
 // suggestion popup when a text input is clicked.
 //
-// There is one PageClickTracker per RenderView.
+// There is one PageClickTracker per AutofillAgent.
+// TODO(estade): migrate to content::RenderFrameObserver.
 class PageClickTracker : public content::RenderViewObserver {
  public:
   // The |listener| will be notified when an element is clicked.  It must
@@ -34,6 +35,7 @@ class PageClickTracker : public content::RenderViewObserver {
 
  private:
   // RenderView::Observer implementation.
+  void OnDestruct() override;
   void DidHandleMouseEvent(const blink::WebMouseEvent& event) override;
   void DidHandleGestureEvent(const blink::WebGestureEvent& event) override;
   void FocusedNodeChanged(const blink::WebNode& node) override;

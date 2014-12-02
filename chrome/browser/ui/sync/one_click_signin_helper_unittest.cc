@@ -673,7 +673,7 @@ TEST_F(OneClickSigninHelperIncognitoTest, ShowInfoBarUIThreadIncognito) {
 TEST_F(OneClickSigninHelperTest, CleanTransientStateOnNavigate) {
   content::WebContents* contents = web_contents();
 
-  OneClickSigninHelper::CreateForWebContentsWithPasswordManager(contents, NULL);
+  OneClickSigninHelper::CreateForWebContents(contents);
   OneClickSigninHelper* helper =
       OneClickSigninHelper::FromWebContents(contents);
   helper->SetDoNotClearPendingEmailForTesting();

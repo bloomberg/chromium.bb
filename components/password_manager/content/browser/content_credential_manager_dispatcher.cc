@@ -8,6 +8,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/content/browser/content_password_manager_driver.h"
+#include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/content/browser/credential_manager_password_form_manager.h"
 #include "components/password_manager/content/common/credential_manager_messages.h"
 #include "components/password_manager/content/common/credential_manager_types.h"
@@ -24,8 +26,14 @@ ContentCredentialManagerDispatcher::ContentCredentialManagerDispatcher(
     PasswordManagerClient* client)
     : WebContentsObserver(web_contents),
       client_(client),
+      driver_(nullptr),
       pending_request_id_(0) {
   DCHECK(web_contents);
+
+  ContentPasswordManagerDriverFactory* driver_factory =
+      ContentPasswordManagerDriverFactory::FromWebContents(web_contents);
+  if (driver_factory)
+    driver_ = driver_factory->GetDriverForFrame(web_contents->GetMainFrame());
 }
 
 ContentCredentialManagerDispatcher::~ContentCredentialManagerDispatcher() {}
@@ -68,7 +76,7 @@ void ContentCredentialManagerDispatcher::OnNotifySignedIn(
   // determine whether or not the credential exists, and calling UpdateLogin
   // accordingly.
   form_manager_.reset(
-      new CredentialManagerPasswordFormManager(client_, *form, this));
+      new CredentialManagerPasswordFormManager(client_, driver_, *form, this));
 
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_AcknowledgeSignedIn(

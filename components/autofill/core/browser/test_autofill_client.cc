@@ -73,12 +73,16 @@ bool TestAutofillClient::IsAutocompleteEnabled() {
 }
 
 void TestAutofillClient::DetectAccountCreationForms(
+    content::RenderFrameHost* rfh,
     const std::vector<autofill::FormStructure*>& forms) {
 }
 
 void TestAutofillClient::DidFillOrPreviewField(
     const base::string16& autofilled_value,
     const base::string16& profile_full_name) {
+}
+
+void TestAutofillClient::OnFirstUserGestureObserved() {
 }
 
 }  // namespace autofill

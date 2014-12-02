@@ -24,6 +24,7 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "content/public/browser/render_view_host.h"
 #include "ui/gfx/rect.h"
 
@@ -205,12 +206,11 @@ void ChromeAutofillClient::OnZoomChanged(
 }
 
 void ChromeAutofillClient::DetectAccountCreationForms(
+    content::RenderFrameHost* rfh,
     const std::vector<autofill::FormStructure*>& forms) {
-  password_manager::PasswordGenerationManager* manager =
-      ChromePasswordManagerClient::GetGenerationManagerFromWebContents(
-          web_contents_);
-  if (manager)
-    manager->DetectAccountCreationForms(forms);
+  password_manager::ContentPasswordManagerDriver::GetForRenderFrameHost(rfh)
+      ->GetPasswordGenerationManager()
+      ->DetectAccountCreationForms(forms);
 }
 
 void ChromeAutofillClient::DidFillOrPreviewField(
@@ -220,6 +220,11 @@ void ChromeAutofillClient::DidFillOrPreviewField(
   AutofillLoggerAndroid::DidFillOrPreviewField(autofilled_value,
                                                profile_full_name);
 #endif  // defined(OS_ANDROID)
+}
+
+void ChromeAutofillClient::OnFirstUserGestureObserved() {
+  web_contents()->SendToAllFrames(
+      new AutofillMsg_FirstUserGestureObservedInTab(routing_id()));
 }
 
 }  // namespace autofill

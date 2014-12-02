@@ -46,8 +46,6 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
 
 class TestPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  PasswordManagerDriver* GetDriver() override { return &driver_; }
-
   MockPasswordManagerDriver* mock_driver() { return &driver_; }
 
  private:
@@ -90,10 +88,10 @@ class PasswordAutofillManagerTest : public testing::Test {
   }
 
   void InitializePasswordAutofillManager(
-      PasswordManagerClient* client,
+      TestPasswordManagerClient* client,
       autofill::AutofillClient* autofill_client) {
-    password_autofill_manager_.reset(
-        new PasswordAutofillManager(client, autofill_client));
+    password_autofill_manager_.reset(new PasswordAutofillManager(
+        client, client->mock_driver(), autofill_client));
     password_autofill_manager_->OnAddPasswordFormMapping(fill_data_id_,
                                                          fill_data_);
   }

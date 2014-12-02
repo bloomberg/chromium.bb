@@ -12,6 +12,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 
+namespace content {
+class RenderFrameHost;
+}
+
 namespace gfx {
 class Rect;
 class RectF;
@@ -119,12 +123,16 @@ class AutofillClient {
   // Pass the form structures to the password generation manager to detect
   // account creation forms.
   virtual void DetectAccountCreationForms(
+      content::RenderFrameHost* rfh,
       const std::vector<autofill::FormStructure*>& forms) = 0;
 
   // Inform the client that the field has been filled.
   virtual void DidFillOrPreviewField(
       const base::string16& autofilled_value,
       const base::string16& profile_full_name) = 0;
+
+  // Informs the client that a user gesture has been observed.
+  virtual void OnFirstUserGestureObserved() = 0;
 };
 
 }  // namespace autofill

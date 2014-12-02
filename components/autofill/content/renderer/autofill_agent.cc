@@ -27,6 +27,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "net/cert/cert_status_flags.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -128,27 +129,23 @@ AutofillAgent::ShowSuggestionsOptions::ShowSuggestionsOptions()
       show_password_suggestions_only(false) {
 }
 
-AutofillAgent::AutofillAgent(content::RenderView* render_view,
+AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
                              PasswordAutofillAgent* password_autofill_agent,
                              PasswordGenerationAgent* password_generation_agent)
-    : content::RenderViewObserver(render_view),
+    : content::RenderFrameObserver(render_frame),
       password_autofill_agent_(password_autofill_agent),
       password_generation_agent_(password_generation_agent),
+      legacy_(render_frame->GetRenderView(), this),
+      page_click_tracker_(render_frame->GetRenderView(), this),
       autofill_query_id_(0),
-      web_view_(render_view->GetWebView()),
       display_warning_if_disabled_(false),
       was_query_node_autofilled_(false),
       has_shown_autofill_popup_for_current_edit_(false),
       did_set_node_text_(false),
       ignore_text_changes_(false),
       is_popup_possibly_visible_(false),
-      main_frame_processed_(false),
       weak_ptr_factory_(this) {
-  render_view->GetWebView()->setAutofillClient(this);
-
-  // The PageClickTracker is a RenderViewObserver, and hence will be freed when
-  // the RenderView is destroyed.
-  new PageClickTracker(render_view, this);
+  render_frame->GetWebFrame()->setAutofillClient(this);
 }
 
 AutofillAgent::~AutofillAgent() {}
@@ -156,6 +153,8 @@ AutofillAgent::~AutofillAgent() {}
 bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutofillAgent, message)
+  IPC_MESSAGE_HANDLER(AutofillMsg_FirstUserGestureObservedInTab,
+                      OnFirstUserGestureObservedInTab)
     IPC_MESSAGE_HANDLER(AutofillMsg_Ping, OnPing)
     IPC_MESSAGE_HANDLER(AutofillMsg_FillForm, OnFillForm)
     IPC_MESSAGE_HANDLER(AutofillMsg_PreviewForm, OnPreviewForm)
@@ -179,38 +178,27 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void AutofillAgent::DidFinishDocumentLoad(WebLocalFrame* frame) {
-  // If the main frame just finished loading, we should process it.
-  if (!frame->parent())
-    main_frame_processed_ = false;
-
-  ProcessForms(*frame);
+void AutofillAgent::DidCommitProvisionalLoad(bool is_new_navigation) {
+  // TODO(estade): |form_cache_| shouldn't track multiple frames.
+  form_cache_.ResetFrame(*render_frame()->GetWebFrame());
 }
 
-void AutofillAgent::DidCommitProvisionalLoad(WebLocalFrame* frame,
-                                             bool is_new_navigation) {
-  form_cache_.ResetFrame(*frame);
+void AutofillAgent::DidFinishDocumentLoad() {
+  ProcessForms();
 }
 
 void AutofillAgent::FrameDetached(WebFrame* frame) {
-  form_cache_.ResetFrame(*frame);
-}
-
-void AutofillAgent::FrameWillClose(WebFrame* frame) {
-  if (in_flight_request_form_.isNull())
+  if (frame != render_frame()->GetWebFrame())
     return;
 
-  for (WebFrame* temp = in_flight_request_form_.document().frame();
-       temp; temp = temp->parent()) {
-    if (temp == frame) {
-      Send(new AutofillHostMsg_CancelRequestAutocomplete(routing_id()));
-      break;
-    }
-  }
+  form_cache_.ResetFrame(*frame);
 }
 
 void AutofillAgent::WillSubmitForm(WebLocalFrame* frame,
                                    const WebFormElement& form) {
+  if (frame != render_frame()->GetWebFrame())
+    return;
+
   FormData form_data;
   if (WebFormElementToFormData(form,
                                WebFormControlElement(),
@@ -224,8 +212,21 @@ void AutofillAgent::WillSubmitForm(WebLocalFrame* frame,
   }
 }
 
+void AutofillAgent::DidChangeScrollOffset(WebLocalFrame* frame) {
+  if (frame != render_frame()->GetWebFrame())
+    return;
+
+  HidePopup();
+}
+
 void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
   HidePopup();
+
+  if (node.isNull() || !node.isElementNode())
+    return;
+
+  if (node.document().frame() != render_frame()->GetWebFrame())
+    return;
 
   if (password_generation_agent_ &&
       password_generation_agent_->FocusedNodeHasChanged(node)) {
@@ -233,13 +234,10 @@ void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
     return;
   }
 
-  if (node.isNull() || !node.isElementNode())
-    return;
-
   WebElement web_element = node.toConst<WebElement>();
 
   if (!web_element.document().frame())
-      return;
+    return;
 
   const WebInputElement* element = toWebInputElement(&web_element);
 
@@ -258,19 +256,31 @@ void AutofillAgent::Resized() {
   HidePopup();
 }
 
-void AutofillAgent::DidChangeScrollOffset(WebLocalFrame*) {
-  HidePopup();
+void AutofillAgent::LegacyFrameWillClose(blink::WebFrame* frame) {
+  if (in_flight_request_form_.isNull())
+    return;
+
+  for (blink::WebFrame* temp = render_frame()->GetWebFrame(); temp;
+       temp = temp->parent()) {
+    if (temp == frame) {
+      Send(new AutofillHostMsg_CancelRequestAutocomplete(routing_id()));
+      break;
+    }
+  }
 }
 
 void AutofillAgent::didRequestAutocomplete(
     const WebFormElement& form) {
+  DCHECK_EQ(form.document().frame(), render_frame()->GetWebFrame());
+
   // Disallow the dialog over non-https or broken https, except when the
   // ignore SSL flag is passed. See http://crbug.com/272512.
   // TODO(palmer): this should be moved to the browser process after frames
   // get their own processes.
   GURL url(form.document().url());
   content::SSLStatus ssl_status =
-      render_view()->GetSSLStatusOfFrame(form.document().frame());
+      render_frame()->GetRenderView()->GetSSLStatusOfFrame(
+          form.document().frame());
   bool is_safe = url.SchemeIs(url::kHttpsScheme) &&
       !net::IsCertStatusError(ssl_status.cert_status);
   bool allow_unsafe = base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -321,6 +331,10 @@ void AutofillAgent::setIgnoreTextChanges(bool ignore) {
 void AutofillAgent::FormControlElementClicked(
     const WebFormControlElement& element,
     bool was_focused) {
+  // TODO(estade): Remove this check when PageClickTracker is per-frame.
+  if (element.document().frame() != render_frame()->GetWebFrame())
+    return;
+
   const WebInputElement* input_element = toWebInputElement(&element);
   if (!input_element && !IsTextAreaElement(element))
     return;
@@ -437,6 +451,7 @@ void AutofillAgent::openTextDataListChooser(const WebInputElement& element) {
 
 void AutofillAgent::firstUserGestureObserved() {
   password_autofill_agent_->FirstUserGestureObserved();
+  Send(new AutofillHostMsg_FirstUserGestureObserved(routing_id()));
 }
 
 void AutofillAgent::AcceptDataListSuggestion(
@@ -477,7 +492,7 @@ void AutofillAgent::OnFieldTypePredictionsAvailable(
 }
 
 void AutofillAgent::OnFillForm(int query_id, const FormData& form) {
-  if (!render_view()->GetWebView() || query_id != autofill_query_id_)
+  if (query_id != autofill_query_id_)
     return;
 
   was_query_node_autofilled_ = element_.isAutofilled();
@@ -486,12 +501,16 @@ void AutofillAgent::OnFillForm(int query_id, const FormData& form) {
                                                    base::TimeTicks::Now()));
 }
 
+void AutofillAgent::OnFirstUserGestureObservedInTab() {
+  password_autofill_agent_->FirstUserGestureObserved();
+}
+
 void AutofillAgent::OnPing() {
   Send(new AutofillHostMsg_PingAck(routing_id()));
 }
 
 void AutofillAgent::OnPreviewForm(int query_id, const FormData& form) {
-  if (!render_view()->GetWebView() || query_id != autofill_query_id_)
+  if (query_id != autofill_query_id_)
     return;
 
   was_query_node_autofilled_ = element_.isAutofilled();
@@ -678,8 +697,9 @@ void AutofillAgent::QueryAutofillSuggestions(
   if (datalist_only)
     field.should_autocomplete = false;
 
-  gfx::RectF bounding_box_scaled =
-      GetScaledBoundingBox(web_view_->pageScaleFactor(), &element_);
+  gfx::RectF bounding_box_scaled = GetScaledBoundingBox(
+      render_frame()->GetRenderView()->GetWebView()->pageScaleFactor(),
+      &element_);
 
   std::vector<base::string16> data_list_values;
   std::vector<base::string16> data_list_labels;
@@ -722,22 +742,19 @@ void AutofillAgent::PreviewFieldWithValue(const base::string16& value,
                           node->suggestedValue().length());
 }
 
-void AutofillAgent::ProcessForms(const WebLocalFrame& frame) {
+void AutofillAgent::ProcessForms() {
   // Record timestamp of when the forms are first seen. This is used to
   // measure the overhead of the Autofill feature.
   base::TimeTicks forms_seen_timestamp = base::TimeTicks::Now();
 
-  std::vector<FormData> forms = form_cache_.ExtractNewForms(frame);
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
+  std::vector<FormData> forms = form_cache_.ExtractNewForms(*frame);
 
   // Always communicate to browser process for topmost frame.
-  if (!forms.empty() ||
-      (!frame.parent() && !main_frame_processed_)) {
+  if (!forms.empty() || !frame->parent()) {
     Send(new AutofillHostMsg_FormsSeen(routing_id(), forms,
                                        forms_seen_timestamp));
   }
-
-  if (!frame.parent())
-    main_frame_processed_ = true;
 }
 
 void AutofillAgent::HidePopup() {
@@ -758,14 +775,62 @@ void AutofillAgent::didAssociateFormControls(const WebVector<WebNode>& nodes) {
     // inserted in iframes are not captured yet. Frame is only processed
     // if it has finished loading, otherwise you can end up with a partially
     // parsed form.
-    if (frame && !frame->parent() && !frame->isLoading()) {
-      ProcessForms(*frame);
-      password_autofill_agent_->OnDynamicFormsSeen(frame);
+    if (frame && !frame->isLoading()) {
+      ProcessForms();
+      password_autofill_agent_->OnDynamicFormsSeen();
       if (password_generation_agent_)
-        password_generation_agent_->OnDynamicFormsSeen(frame);
+        password_generation_agent_->OnDynamicFormsSeen();
       return;
     }
   }
+}
+
+// LegacyAutofillAgent ---------------------------------------------------------
+
+AutofillAgent::LegacyAutofillAgent::LegacyAutofillAgent(
+    content::RenderView* render_view,
+    AutofillAgent* agent)
+    : content::RenderViewObserver(render_view), agent_(agent) {
+}
+
+AutofillAgent::LegacyAutofillAgent::~LegacyAutofillAgent() {
+}
+
+void AutofillAgent::LegacyAutofillAgent::OnDestruct() {
+  // No-op. Don't delete |this|.
+}
+
+void AutofillAgent::LegacyAutofillAgent::FrameDetached(WebFrame* frame) {
+  agent_->FrameDetached(frame);
+}
+
+void AutofillAgent::LegacyAutofillAgent::WillSubmitForm(
+    WebLocalFrame* frame,
+    const WebFormElement& form) {
+  agent_->WillSubmitForm(frame, form);
+}
+
+void AutofillAgent::LegacyAutofillAgent::DidChangeScrollOffset(
+    WebLocalFrame* frame) {
+  agent_->DidChangeScrollOffset(frame);
+}
+
+void AutofillAgent::LegacyAutofillAgent::FocusedNodeChanged(
+    const WebNode& node) {
+  agent_->FocusedNodeChanged(node);
+}
+
+void AutofillAgent::LegacyAutofillAgent::OrientationChangeEvent() {
+  agent_->OrientationChangeEvent();
+}
+
+void AutofillAgent::LegacyAutofillAgent::Resized() {
+  agent_->Resized();
+}
+
+void AutofillAgent::LegacyAutofillAgent::FrameWillClose(
+    blink::WebFrame* frame) {
+  agent_->LegacyFrameWillClose(frame);
 }
 
 }  // namespace autofill

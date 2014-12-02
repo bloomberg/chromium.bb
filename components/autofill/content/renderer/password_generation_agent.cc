@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -104,9 +105,8 @@ void CopyValueToAllInputElements(
 }  // namespace
 
 PasswordGenerationAgent::PasswordGenerationAgent(
-    content::RenderView* render_view)
-    : content::RenderViewObserver(render_view),
-      render_view_(render_view),
+    content::RenderFrame* render_frame)
+    : content::RenderFrameObserver(render_frame),
       password_is_generated_(false),
       password_edited_(false),
       generation_popup_shown_(false),
@@ -116,8 +116,10 @@ PasswordGenerationAgent::PasswordGenerationAgent(
 }
 PasswordGenerationAgent::~PasswordGenerationAgent() {}
 
-void PasswordGenerationAgent::DidFinishDocumentLoad(
-    blink::WebLocalFrame* frame) {
+void PasswordGenerationAgent::DidFinishDocumentLoad() {
+  if (render_frame()->GetWebFrame()->parent())
+    return;
+
   // In every navigation, the IPC message sent by the password autofill manager
   // to query whether the current form is blacklisted or not happens when the
   // document load finishes, so we need to clear previous states here before we
@@ -125,58 +127,55 @@ void PasswordGenerationAgent::DidFinishDocumentLoad(
   // as we don't want subframe loads to clear state that we have received from
   // the main frame. Note that we assume there is only one account creation
   // form, but there could be multiple password forms in each frame.
-  if (!frame->parent()) {
-    not_blacklisted_password_form_origins_.clear();
-    generation_enabled_forms_.clear();
-    generation_element_.reset();
-    possible_account_creation_form_.reset(new PasswordForm());
+  not_blacklisted_password_form_origins_.clear();
+  generation_enabled_forms_.clear();
+  generation_element_.reset();
+  possible_account_creation_form_.reset(new PasswordForm());
 
-    // Log statistics after navigation so that we only log once per page.
-    if (password_elements_.empty()) {
-      password_generation::LogPasswordGenerationEvent(
-          password_generation::NO_SIGN_UP_DETECTED);
-    } else {
-      password_generation::LogPasswordGenerationEvent(
-          password_generation::SIGN_UP_DETECTED);
-    }
-    password_elements_.clear();
-    password_is_generated_ = false;
-    if (password_edited_) {
-      password_generation::LogPasswordGenerationEvent(
-          password_generation::PASSWORD_EDITED);
-    }
-    password_edited_ = false;
-
-    if (generation_popup_shown_) {
-      password_generation::LogPasswordGenerationEvent(
-          password_generation::GENERATION_POPUP_SHOWN);
-    }
-    generation_popup_shown_ = false;
-
-    if (editing_popup_shown_) {
-      password_generation::LogPasswordGenerationEvent(
-          password_generation::EDITING_POPUP_SHOWN);
-    }
-    editing_popup_shown_ = false;
+  // Log statistics after navigation so that we only log once per page.
+  if (password_elements_.empty()) {
+    password_generation::LogPasswordGenerationEvent(
+        password_generation::NO_SIGN_UP_DETECTED);
+  } else {
+    password_generation::LogPasswordGenerationEvent(
+        password_generation::SIGN_UP_DETECTED);
   }
+  password_elements_.clear();
+  password_is_generated_ = false;
+  if (password_edited_) {
+    password_generation::LogPasswordGenerationEvent(
+        password_generation::PASSWORD_EDITED);
+  }
+  password_edited_ = false;
+
+  if (generation_popup_shown_) {
+    password_generation::LogPasswordGenerationEvent(
+        password_generation::GENERATION_POPUP_SHOWN);
+  }
+  generation_popup_shown_ = false;
+
+  if (editing_popup_shown_) {
+    password_generation::LogPasswordGenerationEvent(
+        password_generation::EDITING_POPUP_SHOWN);
+  }
+  editing_popup_shown_ = false;
 }
 
-void PasswordGenerationAgent::OnDynamicFormsSeen(blink::WebLocalFrame* frame) {
-  FindPossibleGenerationForm(frame);
+void PasswordGenerationAgent::OnDynamicFormsSeen() {
+  FindPossibleGenerationForm();
 }
 
-void PasswordGenerationAgent::DidFinishLoad(blink::WebLocalFrame* frame) {
-  FindPossibleGenerationForm(frame);
+void PasswordGenerationAgent::DidFinishLoad() {
+  FindPossibleGenerationForm();
 }
 
-void PasswordGenerationAgent::FindPossibleGenerationForm(
-    blink::WebLocalFrame* frame) {
+void PasswordGenerationAgent::FindPossibleGenerationForm() {
   if (!enabled_)
     return;
 
   // We don't want to generate passwords if the browser won't store or sync
   // them.
-  if (!ShouldAnalyzeDocument(frame->document()))
+  if (!ShouldAnalyzeDocument())
     return;
 
   // If we have already found a signup form for this page, no need to continue.
@@ -184,7 +183,7 @@ void PasswordGenerationAgent::FindPossibleGenerationForm(
     return;
 
   blink::WebVector<blink::WebFormElement> forms;
-  frame->document().forms(forms);
+  render_frame()->GetWebFrame()->document().forms(forms);
   for (size_t i = 0; i < forms.size(); ++i) {
     if (forms[i].isNull())
       continue;
@@ -216,11 +215,11 @@ void PasswordGenerationAgent::FindPossibleGenerationForm(
   }
 }
 
-bool PasswordGenerationAgent::ShouldAnalyzeDocument(
-    const blink::WebDocument& document) const {
+bool PasswordGenerationAgent::ShouldAnalyzeDocument() const {
   // Make sure that this security origin is allowed to use password manager.
   // Generating a password that can't be saved is a bad idea.
-  blink::WebSecurityOrigin origin = document.securityOrigin();
+  blink::WebSecurityOrigin origin =
+      render_frame()->GetWebFrame()->document().securityOrigin();
   if (!origin.canAccessPasswordManager()) {
     DVLOG(1) << "No PasswordManager access";
     return false;
@@ -260,7 +259,7 @@ void PasswordGenerationAgent::OnPasswordAccepted(
     it->setAutofilled(true);
     // Advance focus to the next input field. We assume password fields in
     // an account creation form are always adjacent.
-    render_view_->GetWebView()->advanceFocus(false);
+    render_frame()->GetRenderView()->GetWebView()->advanceFocus(false);
   }
 }
 
@@ -379,9 +378,9 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
 }
 
 void PasswordGenerationAgent::ShowGenerationPopup() {
-  gfx::RectF bounding_box_scaled =
-      GetScaledBoundingBox(render_view_->GetWebView()->pageScaleFactor(),
-                           &generation_element_);
+  gfx::RectF bounding_box_scaled = GetScaledBoundingBox(
+      render_frame()->GetRenderView()->GetWebView()->pageScaleFactor(),
+      &generation_element_);
 
   Send(new AutofillHostMsg_ShowPasswordGenerationPopup(
       routing_id(),
@@ -393,9 +392,9 @@ void PasswordGenerationAgent::ShowGenerationPopup() {
 }
 
 void PasswordGenerationAgent::ShowEditingPopup() {
-  gfx::RectF bounding_box_scaled =
-      GetScaledBoundingBox(render_view_->GetWebView()->pageScaleFactor(),
-                           &generation_element_);
+  gfx::RectF bounding_box_scaled = GetScaledBoundingBox(
+      render_frame()->GetRenderView()->GetWebView()->pageScaleFactor(),
+      &generation_element_);
 
   Send(new AutofillHostMsg_ShowPasswordEditingPopup(
       routing_id(),

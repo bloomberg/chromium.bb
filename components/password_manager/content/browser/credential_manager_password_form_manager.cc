@@ -15,11 +15,12 @@ namespace password_manager {
 
 CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
     PasswordManagerClient* client,
+    PasswordManagerDriver* driver,
     const PasswordForm& observed_form,
     ContentCredentialManagerDispatcher* dispatcher)
-    : PasswordFormManager(client->GetDriver()->GetPasswordManager(),
+    : PasswordFormManager(driver->GetPasswordManager(),
                           client,
-                          client->GetDriver(),
+                          driver,
                           observed_form,
                           true),
       dispatcher_(dispatcher) {

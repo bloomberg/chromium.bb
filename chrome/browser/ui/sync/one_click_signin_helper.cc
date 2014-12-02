@@ -29,6 +29,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -672,9 +673,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(OneClickSigninHelper);
 // static
 const int OneClickSigninHelper::kMaxNavigationsSince = 10;
 
-OneClickSigninHelper::OneClickSigninHelper(
-    content::WebContents* web_contents,
-    password_manager::PasswordManager* password_manager)
+OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       showing_signin_(false),
       auto_accept_(AUTO_ACCEPT_NONE),
@@ -685,9 +684,11 @@ OneClickSigninHelper::OneClickSigninHelper(
       do_not_clear_pending_email_(false),
       do_not_start_sync_for_testing_(false),
       weak_pointer_factory_(this) {
+  ChromePasswordManagerClient* client =
+      ChromePasswordManagerClient::FromWebContents(web_contents);
   // May be NULL during testing.
-  if (password_manager) {
-    password_manager->AddSubmissionCallback(
+  if (client) {
+    client->GetPasswordManager()->AddSubmissionCallback(
         base::Bind(&OneClickSigninHelper::PasswordSubmitted,
                    weak_pointer_factory_.GetWeakPtr()));
   }
@@ -756,16 +757,6 @@ void OneClickSigninHelper::LogHistogramValue(
   }
   UMA_HISTOGRAM_ENUMERATION("Signin.AllAccessPointActions", action,
                             one_click_signin::HISTOGRAM_MAX);
-}
-
-// static
-void OneClickSigninHelper::CreateForWebContentsWithPasswordManager(
-    content::WebContents* contents,
-    password_manager::PasswordManager* password_manager) {
-  if (!FromWebContents(contents)) {
-    contents->SetUserData(UserDataKey(),
-                          new OneClickSigninHelper(contents, password_manager));
-  }
 }
 
 // static

@@ -33,7 +33,8 @@ class PasswordManagerDriver;
 // generate a password.
 class PasswordGenerationManager {
  public:
-  explicit PasswordGenerationManager(PasswordManagerClient* client);
+  PasswordGenerationManager(PasswordManagerClient* client,
+                            PasswordManagerDriver* driver);
   virtual ~PasswordGenerationManager();
 
   // Detect account creation forms from forms with autofill type annotated.

@@ -13,12 +13,14 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/components_scaled_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -129,13 +131,13 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    ContentAutofillDriver::CreateForWebContentsAndDelegate(
-        web_contents(),
-        autofill_client_.get(),
-        "en-US",
+    ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
+        web_contents(), autofill_client_.get(), "en-US",
         AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
+    ContentAutofillDriverFactory* factory =
+        ContentAutofillDriverFactory::FromWebContents(web_contents());
     ContentAutofillDriver* driver =
-        ContentAutofillDriver::FromWebContents(web_contents());
+        factory->DriverForFrame(web_contents()->GetMainFrame());
     external_delegate_.reset(
         new NiceMock<MockAutofillExternalDelegate>(
             driver->autofill_manager(),
@@ -425,8 +427,10 @@ TEST_F(AutofillPopupControllerUnitTest, PopupsWithOnlyDataLists) {
 }
 
 TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
+  ContentAutofillDriverFactory* factory =
+      ContentAutofillDriverFactory::FromWebContents(web_contents());
   ContentAutofillDriver* driver =
-      ContentAutofillDriver::FromWebContents(web_contents());
+      factory->DriverForFrame(web_contents()->GetMainFrame());
   MockAutofillExternalDelegate delegate(driver->autofill_manager(), driver);
 
   WeakPtr<AutofillPopupControllerImpl> controller =

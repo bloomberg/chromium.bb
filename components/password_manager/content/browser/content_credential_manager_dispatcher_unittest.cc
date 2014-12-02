@@ -42,10 +42,6 @@ class TestPasswordManagerClient
     return store_;
   }
 
-  password_manager::PasswordManagerDriver* GetDriver() override {
-    return &driver_;
-  }
-
   bool PromptUserToSavePassword(
       scoped_ptr<password_manager::PasswordFormManager> manager) override {
     did_prompt_user_to_save_ = true;
@@ -78,7 +74,6 @@ class TestPasswordManagerClient
   bool did_prompt_user_to_save_;
   bool did_prompt_user_to_choose_;
   password_manager::PasswordStore* store_;
-  password_manager::StubPasswordManagerDriver driver_;
   scoped_ptr<password_manager::PasswordFormManager> manager_;
 };
 
@@ -104,6 +99,7 @@ class ContentCredentialManagerDispatcherTest
     client_.reset(new TestPasswordManagerClient(store_.get()));
     dispatcher_.reset(
         new ContentCredentialManagerDispatcher(web_contents(), client_.get()));
+    dispatcher_->set_password_manager_driver(&stub_driver_);
 
     NavigateAndCommit(GURL("https://example.com/test.html"));
 
@@ -130,6 +126,7 @@ class ContentCredentialManagerDispatcherTest
   scoped_refptr<TestPasswordStore> store_;
   scoped_ptr<ContentCredentialManagerDispatcher> dispatcher_;
   scoped_ptr<TestPasswordManagerClient> client_;
+  StubPasswordManagerDriver stub_driver_;
 };
 
 TEST_F(ContentCredentialManagerDispatcherTest,

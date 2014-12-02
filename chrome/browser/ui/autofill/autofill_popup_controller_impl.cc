@@ -74,9 +74,8 @@ WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
     gfx::NativeView container_view,
     const gfx::RectF& element_bounds,
     base::i18n::TextDirection text_direction) {
-  DCHECK(!previous.get() || previous->delegate_.get() == delegate.get());
-
   if (previous.get() && previous->web_contents() == web_contents &&
+      previous->delegate_.get() == delegate.get() &&
       previous->container_view() == container_view &&
       previous->element_bounds() == element_bounds) {
     previous->ClearState();

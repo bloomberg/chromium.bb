@@ -12,6 +12,7 @@
 #include "components/autofill/content/renderer/test_password_autofill_agent.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "content/public/renderer/render_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -178,13 +179,21 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   void SimulateOnFillPasswordForm(
       const PasswordFormFillData& fill_data) {
     AutofillMsg_FillPasswordForm msg(0, kPasswordFillFormDataId, fill_data);
-    static_cast<content::RenderViewObserver*>(password_autofill_agent_)
+    static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
         ->OnMessageReceived(msg);
   }
 
+  // As above, but fills for an iframe.
+  void SimulateOnFillPasswordFormForFrame(
+      WebFrame* frame,
+      const PasswordFormFillData& fill_data) {
+    AutofillMsg_FillPasswordForm msg(0, kPasswordFillFormDataId, fill_data);
+    content::RenderFrame::FromWebFrame(frame)->OnMessageReceived(msg);
+  }
+
   void SendVisiblePasswordForms() {
-    static_cast<content::RenderViewObserver*>(password_autofill_agent_)
-        ->DidFinishLoad(GetMainFrame());
+    static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+        ->DidFinishLoad();
   }
 
   void SetUp() override {
@@ -280,10 +289,15 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
       input_frame->document().frame()->view()->advanceFocus(false);
     if (move_caret_to_end)
       input.setSelectionRange(new_value.length(), new_value.length());
-    if (is_user_input)
-      password_autofill_agent_->FirstUserGestureObserved();
-    static_cast<blink::WebAutofillClient*>(autofill_agent_)
-        ->textFieldDidChange(input);
+    if (is_user_input) {
+      AutofillMsg_FirstUserGestureObservedInTab msg(0);
+      content::RenderFrame::FromWebFrame(input_frame)->OnMessageReceived(msg);
+
+      // Also pass the message to the testing object.
+      if (input_frame == GetMainFrame())
+        password_autofill_agent_->FirstUserGestureObserved();
+    }
+    input_frame->toWebLocalFrame()->autofillClient()->textFieldDidChange(input);
     // Processing is delayed because of a Blink bug:
     // https://bugs.webkit.org/show_bug.cgi?id=16976
     // See PasswordAutofillAgent::TextDidChangeInTextField() for details.
@@ -308,7 +322,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         ->FormControlElementClicked(username_input, false);
 
     AutofillMsg_FillPasswordSuggestion msg(0, username, password);
-    static_cast<content::RenderViewObserver*>(autofill_agent_)
+    static_cast<content::RenderFrameObserver*>(autofill_agent_)
         ->OnMessageReceived(msg);
   }
 
@@ -855,12 +869,13 @@ TEST_F(PasswordAutofillAgentTest, IframeNoFillTest) {
   fill_data_.origin = GURL(origin);
   fill_data_.action = GURL(origin);
 
-  SimulateOnFillPasswordForm(fill_data_);
-
   // Retrieve the input elements from the iframe since that is where we want to
   // test the autofill.
   WebFrame* iframe = GetMainFrame()->findChildByName(kIframeName);
   ASSERT_TRUE(iframe);
+
+  SimulateOnFillPasswordFormForFrame(iframe, fill_data_);
+
   WebDocument document = iframe->document();
 
   WebElement username_element = document.getElementById(kUsernameName);
@@ -1408,7 +1423,7 @@ TEST_F(PasswordAutofillAgentTest,
   // site's JavaScript before submit.
   username_element_.setValue(WebString());
   password_element_.setValue(WebString());
-  static_cast<content::RenderViewObserver*>(password_autofill_agent_)
+  static_cast<content::RenderViewObserver*>(&password_autofill_agent_->legacy_)
       ->WillSubmitForm(GetMainFrame(), username_element_.form());
 
   // Observe that the PasswordAutofillAgent still remembered the last non-empty
@@ -1432,7 +1447,7 @@ TEST_F(PasswordAutofillAgentTest,
                                 true);
   SimulateInputChangeForElement(
       "", true, GetMainFrame(), password_element_, true);
-  static_cast<content::RenderViewObserver*>(password_autofill_agent_)
+  static_cast<content::RenderViewObserver*>(&password_autofill_agent_->legacy_)
       ->WillSubmitForm(GetMainFrame(), username_element_.form());
 
   // Observe that the PasswordAutofillAgent respects the user having cleared the
@@ -1462,7 +1477,7 @@ TEST_F(PasswordAutofillAgentTest,
   // the site's JavaScript before submit.
   username_element_.setValue(WebString());
   password_element_.setValue(WebString());
-  static_cast<content::RenderViewObserver*>(password_autofill_agent_)
+  static_cast<content::RenderViewObserver*>(&password_autofill_agent_->legacy_)
       ->WillSubmitForm(GetMainFrame(), username_element_.form());
 
   // Observe that the PasswordAutofillAgent still remembered the last non-empty

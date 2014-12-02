@@ -123,8 +123,7 @@ void DummyPrerenderContents::StartPrerendering(
   prerender_contents_.reset(content::WebContents::CreateWithSessionStorage(
       content::WebContents::CreateParams(profile_),
       session_storage_namespace_map_));
-  PrerenderTabHelper::CreateForWebContentsWithPasswordManager(
-      prerender_contents_.get(), NULL);
+  PrerenderTabHelper::CreateForWebContents(prerender_contents_.get());
   content::NavigationController::LoadURLParams params(url_);
   prerender_contents_->GetController().LoadURLWithParams(params);
   SearchTabHelper::CreateForWebContents(prerender_contents_.get());

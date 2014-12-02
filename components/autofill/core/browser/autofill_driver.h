@@ -61,6 +61,11 @@ class AutofillDriver {
   // Pings renderer. The renderer will return an IPC acknowledging the ping.
   virtual void PingRenderer() = 0;
 
+  // Pass the form structures to the password generation manager to detect
+  // account creation forms.
+  virtual void DetectAccountCreationForms(
+      const std::vector<autofill::FormStructure*>& forms) = 0;
+
   // Sends the field type predictions specified in |forms| to the renderer. This
   // method is a no-op if the renderer is not available or the appropriate
   // command-line flag is not set.

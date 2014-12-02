@@ -45,12 +45,12 @@ class TestAutofillClient : public AutofillClient {
       const std::vector<base::string16>& labels) override;
   void HideAutofillPopup() override;
   bool IsAutocompleteEnabled() override;
-
   void DetectAccountCreationForms(
+      content::RenderFrameHost* rfh,
       const std::vector<autofill::FormStructure*>& forms) override;
-
   void DidFillOrPreviewField(const base::string16& autofilled_value,
                              const base::string16& profile_full_name) override;
+  void OnFirstUserGestureObserved() override;
 
   void SetPrefs(scoped_ptr<PrefService> prefs) { prefs_ = prefs.Pass(); }
 

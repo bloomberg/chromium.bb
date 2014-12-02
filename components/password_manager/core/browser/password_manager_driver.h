@@ -34,13 +34,6 @@ class PasswordManagerDriver {
   virtual void FillPasswordForm(
       const autofill::PasswordFormFillData& form_data) = 0;
 
-  // Returns whether any SSL certificate errors were encountered as a result of
-  // the last page load.
-  virtual bool DidLastPageLoadEncounterSSLErrors() = 0;
-
-  // If this browsing session should not be persisted.
-  virtual bool IsOffTheRecord() = 0;
-
   // Informs the driver that |form| can be used for password generation.
   virtual void AllowPasswordGenerationForForm(
       const autofill::PasswordForm& form) = 0;

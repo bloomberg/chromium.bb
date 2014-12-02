@@ -59,8 +59,10 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
 
 PasswordAutofillManager::PasswordAutofillManager(
     PasswordManagerClient* password_manager_client,
+    PasswordManagerDriver* password_manager_driver,
     autofill::AutofillClient* autofill_client)
     : password_manager_client_(password_manager_client),
+      password_manager_driver_(password_manager_driver),
       autofill_client_(autofill_client),
       weak_ptr_factory_(this) {
 }
@@ -74,8 +76,7 @@ bool PasswordAutofillManager::FillSuggestion(int key,
   base::string16 password;
   if (FindLoginInfo(key, &fill_data) &&
       GetPasswordForUsername(username, fill_data, &password)) {
-    PasswordManagerDriver* driver = password_manager_client_->GetDriver();
-    driver->FillSuggestion(username, password);
+    password_manager_driver_->FillSuggestion(username, password);
     return true;
   }
   return false;
@@ -88,8 +89,7 @@ bool PasswordAutofillManager::PreviewSuggestion(
   base::string16 password;
   if (FindLoginInfo(key, &fill_data) &&
       GetPasswordForUsername(username, fill_data, &password)) {
-    PasswordManagerDriver* driver = password_manager_client_->GetDriver();
-    driver->PreviewSuggestion(username, password);
+    password_manager_driver_->PreviewSuggestion(username, password);
     return true;
   }
   return false;
@@ -184,8 +184,7 @@ void PasswordAutofillManager::RemoveSuggestion(const base::string16& value,
 }
 
 void PasswordAutofillManager::ClearPreviewedForm() {
-  PasswordManagerDriver* driver = password_manager_client_->GetDriver();
-  driver->ClearPreviewedForm();
+  password_manager_driver_->ClearPreviewedForm();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

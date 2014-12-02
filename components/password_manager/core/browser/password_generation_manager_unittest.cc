@@ -33,13 +33,11 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
  public:
   TestPasswordManagerDriver(PasswordManagerClient* client)
       : password_manager_(client),
-        password_generation_manager_(client),
-        password_autofill_manager_(client, NULL),
-        is_off_the_record_(false) {}
+        password_generation_manager_(client, this),
+        password_autofill_manager_(client, this, NULL) {}
   ~TestPasswordManagerDriver() override {}
 
   // PasswordManagerDriver implementation.
-  bool IsOffTheRecord() override { return is_off_the_record_; }
   PasswordGenerationManager* GetPasswordGenerationManager() override {
     return &password_generation_manager_;
   }
@@ -56,16 +54,12 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
   const std::vector<autofill::FormData>& GetFoundAccountCreationForms() {
     return found_account_creation_forms_;
   }
-  void set_is_off_the_record(bool is_off_the_record) {
-    is_off_the_record_ = is_off_the_record;
-  }
 
  private:
   PasswordManager password_manager_;
   PasswordGenerationManager password_generation_manager_;
   PasswordAutofillManager password_autofill_manager_;
   std::vector<autofill::FormData> found_account_creation_forms_;
-  bool is_off_the_record_;
 };
 
 class TestPasswordManagerClient : public StubPasswordManagerClient {
@@ -74,15 +68,16 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
       : prefs_(prefs.Pass()),
         store_(new TestPasswordStore),
         driver_(this),
-        is_sync_enabled_(false) {}
+        is_sync_enabled_(false),
+        is_off_the_record_(false) {}
 
   ~TestPasswordManagerClient() override {
     store_->Shutdown();
   }
 
+  bool IsOffTheRecord() override { return is_off_the_record_; }
   PasswordStore* GetPasswordStore() override { return store_.get(); }
   PrefService* GetPrefs() override { return prefs_.get(); }
-  PasswordManagerDriver* GetDriver() override { return &driver_; }
   bool IsPasswordSyncEnabled(CustomPassphraseState state) override {
     return is_sync_enabled_;
   }
@@ -91,11 +86,15 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
     is_sync_enabled_ = enabled;
   }
 
+  TestPasswordManagerDriver* test_driver() { return &driver_; }
+  void set_is_off_the_record(bool is_otr) { is_off_the_record_ = is_otr; }
+
  private:
   scoped_ptr<PrefService> prefs_;
   scoped_refptr<TestPasswordStore> store_;
   TestPasswordManagerDriver driver_;
   bool is_sync_enabled_;
+  bool is_off_the_record_;
 };
 
 // Unlike the base AutofillMetrics, exposes copy and assignment constructors,
@@ -124,12 +123,10 @@ class PasswordGenerationManagerTest : public testing::Test {
   void TearDown() override { client_.reset(); }
 
   PasswordGenerationManager* GetGenerationManager() {
-    return client_->GetDriver()->GetPasswordGenerationManager();
+    return client_->test_driver()->GetPasswordGenerationManager();
   }
 
-  TestPasswordManagerDriver* GetTestDriver() {
-    return static_cast<TestPasswordManagerDriver*>(client_->GetDriver());
-  }
+  TestPasswordManagerDriver* GetTestDriver() { return client_->test_driver(); }
 
   bool IsGenerationEnabled() {
     return GetGenerationManager()->IsGenerationEnabled();
@@ -217,7 +214,7 @@ TEST_F(PasswordGenerationManagerTest, UpdatePasswordSyncStateIncognito) {
   // Disable password manager by going incognito. Even though password
   // syncing is enabled, generation should still
   // be disabled.
-  GetTestDriver()->set_is_off_the_record(true);
+  client_->set_is_off_the_record(true);
   PrefService* prefs = client_->GetPrefs();
   prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled, true);
   client_->set_is_password_sync_enabled(true);

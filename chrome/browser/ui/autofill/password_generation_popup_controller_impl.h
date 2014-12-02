@@ -24,6 +24,7 @@ class WebContents;
 
 namespace password_manager {
 class PasswordManager;
+class PasswordManagerDriver;
 }
 
 namespace autofill {
@@ -52,6 +53,7 @@ class PasswordGenerationPopupControllerImpl
       const PasswordForm& form,
       int max_length,
       password_manager::PasswordManager* password_manager,
+      password_manager::PasswordManagerDriver* driver,
       PasswordGenerationPopupObserver* observer,
       content::WebContents* web_contents,
       gfx::NativeView container_view);
@@ -77,6 +79,7 @@ class PasswordGenerationPopupControllerImpl
       const PasswordForm& form,
       int max_length,
       password_manager::PasswordManager* password_manager,
+      password_manager::PasswordManagerDriver* driver,
       PasswordGenerationPopupObserver* observer,
       content::WebContents* web_contents,
       gfx::NativeView container_view);
@@ -121,6 +124,7 @@ class PasswordGenerationPopupControllerImpl
 
   PasswordForm form_;
   password_manager::PasswordManager* password_manager_;
+  password_manager::PasswordManagerDriver* driver_;
 
   // May be NULL.
   PasswordGenerationPopupObserver* observer_;

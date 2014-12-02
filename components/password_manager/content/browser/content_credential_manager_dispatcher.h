@@ -25,6 +25,7 @@ namespace password_manager {
 
 class CredentialManagerPasswordFormManager;
 class PasswordManagerClient;
+class PasswordManagerDriver;
 class PasswordStore;
 struct CredentialInfo;
 
@@ -55,6 +56,11 @@ class ContentCredentialManagerDispatcher : public CredentialManagerDispatcher,
   void OnGetPasswordStoreResults(
       const std::vector<autofill::PasswordForm*>& results) override;
 
+  // For testing only.
+  void set_password_manager_driver(PasswordManagerDriver* driver) {
+    driver_ = driver;
+  }
+
   using CredentialCallback =
       base::Callback<void(const autofill::PasswordForm&)>;
 
@@ -64,6 +70,7 @@ class ContentCredentialManagerDispatcher : public CredentialManagerDispatcher,
   void SendCredential(int request_id, const CredentialInfo& info);
 
   PasswordManagerClient* client_;
+  PasswordManagerDriver* driver_;
   scoped_ptr<CredentialManagerPasswordFormManager> form_manager_;
 
   // When 'OnRequestCredential' is called, it in turn calls out to the

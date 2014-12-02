@@ -75,6 +75,10 @@ PageClickTracker::PageClickTracker(content::RenderView* render_view,
 PageClickTracker::~PageClickTracker() {
 }
 
+void PageClickTracker::OnDestruct() {
+  // No-op. Don't delete |this|.
+}
+
 void PageClickTracker::DidHandleMouseEvent(const WebMouseEvent& event) {
   if (event.type != WebInputEvent::MouseDown ||
       event.button != WebMouseEvent::ButtonLeft) {

@@ -11,6 +11,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/renderer/render_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -55,11 +56,11 @@ class AutofillRendererTest : public ChromeRenderViewTest {
   }
 
   void SimulateRequestAutocompleteResult(
+      blink::WebFrame* invoking_frame,
       const blink::WebFormElement::AutocompleteResult& result,
       const base::string16& message) {
     AutofillMsg_RequestAutocompleteResult msg(0, result, message, FormData());
-    static_cast<content::RenderViewObserver*>(autofill_agent_)
-        ->OnMessageReceived(msg);
+    content::RenderFrame::FromWebFrame(invoking_frame)->OnMessageReceived(msg);
   }
 
  private:
@@ -287,8 +288,7 @@ class RequestAutocompleteRendererTest : public AutofillRendererTest {
     render_thread_->sink().ClearMessages();
 
     // Invoke requestAutocomplete to show the dialog.
-    static_cast<blink::WebAutofillClient*>(autofill_agent_)
-        ->didRequestAutocomplete(invoking_form());
+    invoking_frame_->autofillClient()->didRequestAutocomplete(invoking_form());
     ASSERT_TRUE(render_thread_->sink().GetFirstMessageMatching(
         AutofillHostMsg_RequestAutocomplete::ID));
 
@@ -309,11 +309,12 @@ class RequestAutocompleteRendererTest : public AutofillRendererTest {
   WebLocalFrame* invoking_frame() { return invoking_frame_; }
   WebFrame* sibling_frame() { return sibling_frame_; }
 
- private:
+ protected:
   WebFormElement invoking_form_;
   WebLocalFrame* invoking_frame_;
   WebFrame* sibling_frame_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(RequestAutocompleteRendererTest);
 };
 
@@ -341,7 +342,7 @@ TEST_F(RequestAutocompleteRendererTest, MainFrameNavigateCancels) {
 TEST_F(RequestAutocompleteRendererTest, NoCancelOnSubframeNavigateAfterDone) {
   // Pretend that the dialog was cancelled.
   SimulateRequestAutocompleteResult(
-      WebFormElement::AutocompleteResultErrorCancel,
+      invoking_frame_, WebFormElement::AutocompleteResultErrorCancel,
       base::ASCIIToUTF16("Print me to the console"));
 
   // Additional navigations should not crash nor send cancels.
@@ -353,7 +354,7 @@ TEST_F(RequestAutocompleteRendererTest, NoCancelOnSubframeNavigateAfterDone) {
 TEST_F(RequestAutocompleteRendererTest, NoCancelOnMainFrameNavigateAfterDone) {
   // Pretend that the dialog was cancelled.
   SimulateRequestAutocompleteResult(
-      WebFormElement::AutocompleteResultErrorCancel,
+      invoking_frame_, WebFormElement::AutocompleteResultErrorCancel,
       base::ASCIIToUTF16("Print me to the console"));
 
   // Additional navigations should not crash nor send cancels.
@@ -364,8 +365,7 @@ TEST_F(RequestAutocompleteRendererTest, NoCancelOnMainFrameNavigateAfterDone) {
 
 TEST_F(RequestAutocompleteRendererTest, InvokingTwiceOnlyShowsOnce) {
   // Attempting to show the requestAutocomplete dialog again should be ignored.
-  static_cast<blink::WebAutofillClient*>(autofill_agent_)
-      ->didRequestAutocomplete(invoking_form());
+  invoking_frame_->autofillClient()->didRequestAutocomplete(invoking_form());
   EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_RequestAutocomplete::ID));
 }

@@ -355,7 +355,7 @@ void PasswordFormManager::ProvisionallySave(
 
 void PasswordFormManager::Save() {
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
-  DCHECK(!driver_->IsOffTheRecord());
+  DCHECK(!client_->IsOffTheRecord());
 
   if (IsNewLogin())
     SaveAsNewLogin(true);
@@ -516,16 +516,15 @@ void PasswordFormManager::OnRequestDone(
   // Note that we provide the choices but don't actually prefill a value if:
   // (1) we are in Incognito mode, (2) the ACTION paths don't match,
   // or (3) if it matched using public suffix domain matching.
-  bool wait_for_username =
-      driver_->IsOffTheRecord() ||
-      observed_form_.action.GetWithEmptyPath() !=
-          preferred_match_->action.GetWithEmptyPath() ||
-          preferred_match_->IsPublicSuffixMatch();
+  bool wait_for_username = client_->IsOffTheRecord() ||
+                           observed_form_.action.GetWithEmptyPath() !=
+                               preferred_match_->action.GetWithEmptyPath() ||
+                           preferred_match_->IsPublicSuffixMatch();
   if (wait_for_username)
     manager_action_ = kManagerActionNone;
   else
     manager_action_ = kManagerActionAutofilled;
-  password_manager_->Autofill(observed_form_, best_matches_,
+  password_manager_->Autofill(driver_, observed_form_, best_matches_,
                               *preferred_match_, wait_for_username);
 }
 
@@ -574,7 +573,7 @@ void PasswordFormManager::SaveAsNewLogin(bool reset_preferred_login) {
   // new_form contains the same basic data as observed_form_ (because its the
   // same form), but with the newly added credentials.
 
-  DCHECK(!driver_->IsOffTheRecord());
+  DCHECK(!client_->IsOffTheRecord());
 
   PasswordStore* password_store = client_->GetPasswordStore();
   if (!password_store) {
@@ -648,7 +647,7 @@ void PasswordFormManager::UpdateLogin() {
   // username, or the user selected one of the non-preferred matches,
   // thus requiring a swap of preferred bits.
   DCHECK(!IsNewLogin() && pending_credentials_.preferred);
-  DCHECK(!driver_->IsOffTheRecord());
+  DCHECK(!client_->IsOffTheRecord());
 
   PasswordStore* password_store = client_->GetPasswordStore();
   if (!password_store) {

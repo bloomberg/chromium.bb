@@ -15,10 +15,10 @@ namespace autofill {
 
 class TestPasswordGenerationAgent : public PasswordGenerationAgent {
  public:
-  explicit TestPasswordGenerationAgent(content::RenderView* render_view);
+  explicit TestPasswordGenerationAgent(content::RenderFrame* render_frame);
   ~TestPasswordGenerationAgent() override;
 
-  // content::RenderViewObserver implementation:
+  // content::RenderFrameObserver implementation:
   bool OnMessageReceived(const IPC::Message& message) override;
   bool Send(IPC::Message* message) override;
 
@@ -30,7 +30,7 @@ class TestPasswordGenerationAgent : public PasswordGenerationAgent {
 
   // PasswordGenreationAgent implementation:
   // Always return true to allow loading of data URLs.
-  bool ShouldAnalyzeDocument(const blink::WebDocument& document) const override;
+  bool ShouldAnalyzeDocument() const override;
 
  private:
   ScopedVector<IPC::Message> messages_;

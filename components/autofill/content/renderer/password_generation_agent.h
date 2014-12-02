@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "url/gurl.h"
 
@@ -26,9 +26,9 @@ struct PasswordForm;
 // This class is responsible for controlling communication for password
 // generation between the browser (which shows the popup and generates
 // passwords) and WebKit (shows the generation icon in the password field).
-class PasswordGenerationAgent : public content::RenderViewObserver {
+class PasswordGenerationAgent : public content::RenderFrameObserver {
  public:
-  explicit PasswordGenerationAgent(content::RenderView* render_view);
+  explicit PasswordGenerationAgent(content::RenderFrame* render_frame);
   ~PasswordGenerationAgent() override;
 
   // Returns true if the field being changed is one where a generated password
@@ -39,15 +39,15 @@ class PasswordGenerationAgent : public content::RenderViewObserver {
   bool FocusedNodeHasChanged(const blink::WebNode& node);
 
   // Called when new form controls are inserted.
-  void OnDynamicFormsSeen(blink::WebLocalFrame* frame);
+  void OnDynamicFormsSeen();
 
   // The length that a password can be before the UI is hidden.
   static const size_t kMaximumOfferSize = 5;
 
  protected:
-  // Returns true if this document is one that we should consider analyzing.
-  // Virtual so that it can be overriden during testing.
-  virtual bool ShouldAnalyzeDocument(const blink::WebDocument& document) const;
+  // Returns true if the document for |render_frame()| is one that we should
+  // consider analyzing. Virtual so that it can be overriden during testing.
+  virtual bool ShouldAnalyzeDocument() const;
 
   // RenderViewObserver:
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -56,9 +56,9 @@ class PasswordGenerationAgent : public content::RenderViewObserver {
   void set_enabled(bool enabled) { enabled_ = enabled; }
 
  private:
-  // RenderViewObserver:
-  void DidFinishDocumentLoad(blink::WebLocalFrame* frame) override;
-  void DidFinishLoad(blink::WebLocalFrame* frame) override;
+  // RenderFrameObserver:
+  void DidFinishDocumentLoad() override;
+  void DidFinishLoad() override;
 
   // Message handlers.
   void OnFormNotBlacklisted(const PasswordForm& form);
@@ -68,7 +68,7 @@ class PasswordGenerationAgent : public content::RenderViewObserver {
 
   // Helper function that will try and populate |password_elements_| and
   // |possible_account_creation_form_|.
-  void FindPossibleGenerationForm(blink::WebLocalFrame* frame);
+  void FindPossibleGenerationForm();
 
   // Helper function to decide if |passwords_| contains password fields for
   // an account creation form. Sets |generation_element_| to the field that
@@ -83,8 +83,6 @@ class PasswordGenerationAgent : public content::RenderViewObserver {
 
   // Hides a password generation popup if one exists.
   void HidePopup();
-
-  content::RenderView* render_view_;
 
   // Stores the origin of the account creation form we detected.
   scoped_ptr<PasswordForm> possible_account_creation_form_;
