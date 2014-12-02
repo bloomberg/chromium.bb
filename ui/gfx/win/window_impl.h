@@ -51,6 +51,7 @@ class GFX_EXPORT WindowImpl : public MessageMapInterface {
 
   // Returns the default window icon to use for windows of this type.
   virtual HICON GetDefaultWindowIcon() const;
+  virtual HICON GetSmallWindowIcon() const;
 
   // Returns the HWND associated with this Window.
   HWND hwnd() const { return hwnd_; }

@@ -216,6 +216,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // Overridden from WindowImpl:
   virtual HICON GetDefaultWindowIcon() const override;
+  virtual HICON GetSmallWindowIcon() const override;
   virtual LRESULT OnWndProc(UINT message,
                             WPARAM w_param,
                             LPARAM l_param) override;

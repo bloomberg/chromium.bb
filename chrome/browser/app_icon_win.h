@@ -12,6 +12,7 @@
 class SkBitmap;
 
 HICON GetAppIcon();
+HICON GetSmallAppIcon();
 
 // Retrieve the application icon for the given size. Note that if you specify a
 // size other than what is contained in chrome.dll (16x16, 32x32, 48x48), this
