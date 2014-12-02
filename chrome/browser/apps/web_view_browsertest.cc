@@ -2330,8 +2330,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadDataAPI) {
 
 // This test verify that the set of rules registries of a webview will be
 // removed from RulesRegistryService after the webview is gone.
-IN_PROC_BROWSER_TEST_F(WebViewTest,
-                       Shim_TestRulesRegistryIDAreRemovedAfterWebViewIsGone) {
+// http://crbug.com/438327
+IN_PROC_BROWSER_TEST_F(
+    WebViewTest,
+    DISABLED_Shim_TestRulesRegistryIDAreRemovedAfterWebViewIsGone) {
   LoadAppWithGuest("web_view/rules_registry");
 
   content::WebContents* embedder_web_contents = GetEmbedderWebContents();
