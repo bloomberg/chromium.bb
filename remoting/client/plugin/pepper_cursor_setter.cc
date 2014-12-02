@@ -29,10 +29,11 @@ void PepperCursorSetter::SetCursorShape(
     // Clear PPAPI cursor and fall-back to rendering cursor via delegate.
     pp::MouseCursor::SetCursor(instance_, PP_MOUSECURSOR_TYPE_NONE);
     delegate_stub_->SetCursorShape(cursor_shape);
+  } else {
+    // TODO(wez): Fall-back to cropping & re-trying the cursor iff there is no
+    // delegate and the cursor is >32x32?
+    DLOG(FATAL) << "Failed to set PPAPI cursor, and no delegate provided.";
   }
-  // TODO(wez): Fall-back to cropping & re-trying the cursor iff there is no
-  // delegate and the cursor is >32x32?
-  DLOG(FATAL) << "Failed to set PPAPI cursor, and no delegate provided.";
 }
 
 bool PepperCursorSetter::SetInstanceCursor(
