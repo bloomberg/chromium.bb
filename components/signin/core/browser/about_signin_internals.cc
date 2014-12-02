@@ -223,6 +223,9 @@ void AboutSigninInternals::Shutdown() {
 }
 
 void AboutSigninInternals::NotifyObservers() {
+  if (!signin_observers_.might_have_observers())
+    return;
+
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
