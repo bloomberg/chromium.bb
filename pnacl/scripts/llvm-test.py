@@ -242,7 +242,7 @@ def SetupEnvironment(options):
   # and IRT used to run the tests (they are controlled by run.py)
   env['PNACL_TOOLCHAIN_DIR'] = (
     os.environ.get('PNACL_TOOLCHAIN_DIR',
-                   '{BUILD_PLATFORM}_x86/pnacl_newlib'.format(**env)))
+                   '{BUILD_PLATFORM}_x86/pnacl_newlib_raw'.format(**env)))
   env['PNACL_BIN'] = (
     '{NACL_ROOT}/toolchain/{PNACL_TOOLCHAIN_DIR}/bin'.format(**env))
   env['PNACL_SDK_DIR'] = (

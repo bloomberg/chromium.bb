@@ -65,8 +65,7 @@ def ToolchainBuildCmd(python_executable=None, sync=False, extra_flags=[]):
   # The path to the script is a relative path with forward slashes so it is
   # interpreted properly when it uses __file__ inside cygwin
   executable_args = ['toolchain_build/toolchain_build_pnacl.py',
-                     '--verbose', '--clobber',
-                     '--install', toolchain_install_dir]
+                     '--verbose', '--clobber']
 
   if args.buildbot:
     executable_args.append('--buildbot')
@@ -169,6 +168,9 @@ if args.buildbot or args.trybot:
       with open(TEMP_PACKAGES_FILE, 'w') as f:
         f.write('\n'.join(converted))
     packages.UploadPackages(TEMP_PACKAGES_FILE, args.trybot)
+
+  # Extract packages for bot testing
+  packages.ExtractPackages(TEMP_PACKAGES_FILE)
 
 sys.stdout.flush()
 

@@ -1283,7 +1283,7 @@ def GetToolchainDir(env, platform_build_dir=None, toolchain_name=None,
       target_env = 'pnacl'
     else:
       target_env = 'nacl_%s' % target_arch
-    toolchain_name = '%s_%s' % (target_env, lib_name)
+    toolchain_name = '%s_%s_raw' % (target_env, lib_name)
 
   # Get the absolute path for the platform build directory and toolchain.
   toolchain_sub_dir = os.path.join('toolchain',
@@ -3987,7 +3987,7 @@ def DumpEnvironmentInfo(selected_envs):
       print 'ASPPCOM:', asppcom
       DumpCompilerVersion(cc, env)
       print
-    rev_file = 'toolchain/linux_x86_pnacl/pnacl_newlib/REV'
+    rev_file = 'toolchain/linux_x86/pnacl_newlib_raw/REV'
     if os.path.exists(rev_file):
       for line in open(rev_file).read().split('\n'):
         if "Revision:" in line:

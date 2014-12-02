@@ -103,8 +103,8 @@ def GetToolchainPath(tool):
 
   return os.path.join(
       TOOLCHAIN_DIR,
-      '%s_x86_nacl_x86' % (os_name),
-      'nacl_x86_%s' % lib_name
+      '%s_x86' % (os_name),
+      'nacl_x86_%s_raw' % lib_name
   )
 
 

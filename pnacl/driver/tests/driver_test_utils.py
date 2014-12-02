@@ -38,7 +38,7 @@ def SetupToolchainDir(env):
   os_name = driver_tools.GetOSName()
 
   toolchain_dir = os.path.join(nacl_dir, 'toolchain', '%s_x86' % os_name,
-                               'pnacl_newlib')
+                               'pnacl_newlib_raw')
   env.set('BASE_TOOLCHAIN', toolchain_dir)
 
 def SetupHostDir(env):
@@ -51,7 +51,7 @@ def SetupHostDir(env):
   os_shortname = driver_tools.GetOSName()
   host_dir = os.path.join(nacl_dir, 'toolchain',
                           '%s_x86' % os_shortname,
-                          'pnacl_newlib')
+                          'pnacl_newlib_raw')
   driver_tools.AddHostBinarySearchPath(host_dir)
 
 # A collection of override methods that mock driver_env.Environment.

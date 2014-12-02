@@ -190,7 +190,7 @@ def BuildLibgccEhCmd(sourcefile, output, arch):
     os_name = pynacl.platform.GetOS()
     arch_name = pynacl.platform.GetArch()
     platform_dir = '%s_%s' % (os_name, arch_name)
-    newlib_dir = 'nacl_x86_newlib'
+    newlib_dir = 'nacl_x86_newlib_raw'
 
     nnacl_dir = os.path.join(NACL_DIR, 'toolchain', platform_dir,
                              newlib_dir, 'bin')
@@ -377,8 +377,9 @@ def TargetLibs(bias_arch, is_canonical):
                    '-DLLVM_LIT_ARGS=--verbose  --param shell_prefix="' +
                     os.path.join(NACL_DIR,'run.py') +' -arch env --retries=1" '+
                     '--param exe_suffix=".pexe" --param use_system_lib=true ' +
-                    '--param cxx_under_test="' +  os.path.join(NACL_DIR,
-                        'toolchain/linux_x86/pnacl_newlib/bin/pnacl-clang++') +
+                    '--param cxx_under_test="' + os.path.join(NACL_DIR,
+                        'toolchain/linux_x86/pnacl_newlib',
+                        'bin/pnacl-clang++') +
                     '" '+
                     '--param link_flags="-std=gnu++11 --pnacl-exceptions=sjlj"',
                    '-DLIBCXX_ENABLE_CXX0X=0',

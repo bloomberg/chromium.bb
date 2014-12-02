@@ -85,7 +85,7 @@ def main(argv):
   parser.add_argument('-t', '--toolchaindir',
                       default=os.path.join(
                           os.getcwd(),
-                          'toolchain', 'linux_x86', 'pnacl_newlib'))
+                          'toolchain', 'linux_x86', 'pnacl_newlib_raw'))
   args = parser.parse_args()
 
   print 'Using cwd:', args.cwd

@@ -7,6 +7,9 @@ import os
 import subprocess
 import sys
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.platform
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 BUILD_DIR = os.path.join(NACL_DIR, 'build')
@@ -61,3 +64,44 @@ def UploadPackages(filename, is_try):
                              '--upload-package', full_package_name,
                              '--revision', upload_rev,
                              '--package-file', package_file])
+
+def ExtractPackages(filename, overlay_packages=True, skip_missing=True):
+  """ Extracts packages into the standard toolchain directory.
+
+  Args:
+    filename: File to read package descriptions from.
+    overlay_packages: Uses packages overlaid on top of default packages.
+    skip_missing: If not overlaying packages, do not error on missing tar files.
+  """
+  print '@@@BUILD_STEP extract_packages@@@'
+  sys.stdout.flush()
+
+  platform = pynacl.platform.GetOS()
+  with open(filename, 'rt') as f:
+    for package_file in f.readlines():
+      package_file = package_file.strip()
+      pkg_target_dir = os.path.dirname(package_file)
+      tar_dir = os.path.dirname(pkg_target_dir)
+
+      pkg_name, pkg_ext = os.path.splitext(os.path.basename(package_file))
+      pkg_target = os.path.basename(pkg_target_dir)
+
+      # Do not extract other platforms
+      if not pkg_target.startswith(platform):
+        continue
+
+      full_package_name = '%s/%s' % (pkg_target, pkg_name)
+
+      if overlay_packages:
+        extract_args = ['--overlay-tar-dir', tar_dir]
+      elif skip_missing:
+        extract_args = ['--skip-missing']
+      else:
+        extract_args = []
+
+      subprocess.check_call([sys.executable,
+                             PACKAGE_VERSION_SCRIPT,
+                             '--annotate',
+                             '--packages', full_package_name,
+                             'extract'] +
+                            extract_args)

@@ -942,12 +942,12 @@ html, body { background: #fff; color: #000; } /* body for Windows IE3 */
 
 
 ======================================================================
-toolchain/linux_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
-  (Cf. toolchain/linux_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING):
-toolchain/mac_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
-  (Cf. toolchain/mac_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING):
-toolchain/win_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
-  (Cf. toolchain/win_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING):
+toolchain/linux_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
+  (Cf. toolchain/linux_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING):
+toolchain/mac_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
+  (Cf. toolchain/mac_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING):
+toolchain/win_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
+  (Cf. toolchain/win_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING):
 ../third_party/binutils is licensed as follows
   (Cf. ../third_party/binutils/COPYING):
 ../third_party/binutils is licensed as follows
@@ -1335,12 +1335,12 @@ Public License instead of this License.
 
 
 ======================================================================
-toolchain/linux_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
-  (Cf. toolchain/linux_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING.LIB):
-toolchain/mac_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
-  (Cf. toolchain/mac_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING.LIB):
-toolchain/win_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
-  (Cf. toolchain/win_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING.LIB):
+toolchain/linux_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
+  (Cf. toolchain/linux_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING.LIB):
+toolchain/mac_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
+  (Cf. toolchain/mac_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING.LIB):
+toolchain/win_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
+  (Cf. toolchain/win_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING.LIB):
 ../third_party/gcc is licensed as follows
   (Cf. ../third_party/gcc/COPYING.LIB):
 ../third_party/gcc is licensed as follows
@@ -1862,12 +1862,12 @@ That's all there is to it!
 
 
 ======================================================================
-toolchain/linux_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
-  (Cf. toolchain/linux_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING.RUNTIME):
-toolchain/mac_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
-  (Cf. toolchain/mac_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING.RUNTIME):
-toolchain/win_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
-  (Cf. toolchain/win_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING.RUNTIME):
+toolchain/linux_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
+  (Cf. toolchain/linux_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING.RUNTIME):
+toolchain/mac_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
+  (Cf. toolchain/mac_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING.RUNTIME):
+toolchain/win_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
+  (Cf. toolchain/win_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING.RUNTIME):
 ../third_party/gcc is licensed as follows
   (Cf. ../third_party/gcc/COPYING.RUNTIME):
 ../third_party/gcc is licensed as follows
@@ -1949,12 +1949,12 @@ requirements of the license of GCC.
 
 
 ======================================================================
-toolchain/linux_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
-  (Cf. toolchain/linux_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING3):
-toolchain/mac_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
-  (Cf. toolchain/mac_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING3):
-toolchain/win_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
-  (Cf. toolchain/win_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING3):
+toolchain/linux_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
+  (Cf. toolchain/linux_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING3):
+toolchain/mac_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
+  (Cf. toolchain/mac_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING3):
+toolchain/win_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
+  (Cf. toolchain/win_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING3):
 ../third_party/binutils is licensed as follows
   (Cf. ../third_party/binutils/COPYING3):
 ../third_party/binutils is licensed as follows
@@ -2672,12 +2672,12 @@ Public License instead of this License.  But first, please read
 
 
 ======================================================================
-toolchain/linux_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
-  (Cf. toolchain/linux_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING3.LIB):
-toolchain/mac_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
-  (Cf. toolchain/mac_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING3.LIB):
-toolchain/win_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
-  (Cf. toolchain/win_x86_nacl_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING3.LIB):
+toolchain/linux_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
+  (Cf. toolchain/linux_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING3.LIB):
+toolchain/mac_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
+  (Cf. toolchain/mac_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING3.LIB):
+toolchain/win_x86/nacl_x86_glibc/sdk/nacl-sdk is licensed as follows
+  (Cf. toolchain/win_x86/nacl_x86_glibc/sdk/nacl-sdk/COPYING3.LIB):
 ../third_party/binutils is licensed as follows
   (Cf. ../third_party/binutils/COPYING3.LIB):
 ../third_party/binutils is licensed as follows

@@ -96,7 +96,7 @@ llc-install() {
   # This just works on linux and assumes release builds...
   # TODO(pnacl-team): Make this path configurable.
   cp ${TC_BUILD_LLVM}/Release+Asserts/bin/llc \
-    toolchain/linux_x86/pnacl_newlib/host_x86_32/bin/llc
+    toolchain/linux_x86/pnacl_newlib_raw/host_x86_32/bin/llc
 }
 
 

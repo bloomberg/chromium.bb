@@ -330,8 +330,7 @@ class PackageBuilder(object):
                   name=archive_name,
                   hash=cache_item.dir_item.hash,
                   url=cache_item.dir_item.url,
-                  log_url=cache_item.log_url,
-              )
+                  log_url=cache_item.log_url)
 
           package_desc.AppendArchive(archive_desc)
 
