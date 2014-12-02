@@ -17,7 +17,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
-#include "native_client/src/trusted/desc/nacl_desc_quota.h"
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
@@ -49,17 +48,6 @@ struct NaClDesc* OpenHostFileCommon(const char* fname, int flags, int mode) {
     return NULL;
   }
   return reinterpret_cast<struct NaClDesc*>(ndiodp);
-}
-
-struct NaClDesc* MakeQuotaCommon(const uint8_t* file_id,
-                                 struct NaClDesc* desc) {
-  NaClDescQuota* ndqp =
-      reinterpret_cast<NaClDescQuota*>(calloc(1, sizeof *ndqp));
-  if ((NULL == ndqp) || !NaClDescQuotaCtor(ndqp, desc, file_id, NULL)) {
-    free(ndqp);
-    return NULL;
-  }
-  return reinterpret_cast<struct NaClDesc*>(ndqp);
 }
 
 }  // namespace
@@ -264,21 +252,6 @@ DescWrapper* DescWrapperFactory::MakeFileDesc(int host_os_desc, int mode) {
   return MakeGenericCleanup(desc);
 }
 
-DescWrapper* DescWrapperFactory::MakeFileDescQuota(int host_os_desc,
-                                                   int mode,
-                                                   const uint8_t* file_id) {
-  struct NaClDesc* desc = NaClDescIoDescFromDescAllocCtor(host_os_desc, mode);
-  if (NULL == desc) {
-    return NULL;
-  }
-  struct NaClDesc* desc_quota = MakeQuotaCommon(file_id, desc);
-  if (desc_quota == NULL) {
-    NaClDescSafeUnref(desc);
-    return NULL;
-  }
-  return MakeGenericCleanup(desc_quota);
-}
-
 DescWrapper* DescWrapperFactory::OpenHostFile(const char* fname,
                                               int flags,
                                               int mode) {
@@ -287,22 +260,6 @@ DescWrapper* DescWrapperFactory::OpenHostFile(const char* fname,
     return NULL;
   }
   return MakeGenericCleanup(desc);
-}
-
-DescWrapper* DescWrapperFactory::OpenHostFileQuota(const char* fname,
-                                                   int flags,
-                                                   int mode,
-                                                   const uint8_t* file_id) {
-  struct NaClDesc* desc = OpenHostFileCommon(fname, flags, mode);
-  if (NULL == desc) {
-    return NULL;
-  }
-  struct NaClDesc* desc_quota = MakeQuotaCommon(file_id, desc);
-  if (NULL == desc_quota) {
-    NaClDescSafeUnref(desc);
-    return NULL;
-  }
-  return MakeGenericCleanup(desc_quota);
 }
 
 DescWrapper* DescWrapperFactory::MakeInvalid() {

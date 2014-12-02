@@ -296,7 +296,6 @@ int raii_main(int argc, char* argv[]) {
   // possible platform specific stuff
   loop.AddHandler("readonly_file", HandlerReadonlyFile);
   loop.AddHandler("readwrite_file", HandlerReadwriteFile);
-  loop.AddHandler("readwrite_quota_file", HandlerReadwriteFileQuota);
   loop.AddHandler("sleep", HandlerSleep);
   loop.AddHandler("save_to_file", HandlerSaveToFile);
   loop.AddHandler("load_from_file", HandlerLoadFromFile);

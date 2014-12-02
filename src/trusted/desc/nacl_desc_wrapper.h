@@ -29,14 +29,8 @@ class DescWrapperFactory {
   DescWrapper* MakeImcSock(NaClHandle handle);
   // Create a file descriptor object.
   DescWrapper* MakeFileDesc(int host_os_desc, int mode);
-  // As with MakeFileDesc, but with quota management.
-  DescWrapper* MakeFileDescQuota(int host_os_desc, int mode,
-                                 const uint8_t* file_id);
   // Create a DescWrapper from opening a host file.
   DescWrapper* OpenHostFile(const char* fname, int flags, int mode);
-  // As with OpenHostFile, but with quota management.
-  DescWrapper* OpenHostFileQuota(const char* fname, int flags, int mode,
-                                 const uint8_t* file_id);
   // Create a DescWrapper for the designated invalid descriptor
   DescWrapper* MakeInvalid();
 
