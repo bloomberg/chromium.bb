@@ -45,6 +45,7 @@ class ChildSharedBitmapManager;
 class FileSystemDispatcher;
 class GeofencingMessageFilter;
 class NotificationDispatcher;
+class PushDispatcher;
 class ServiceWorkerMessageFilter;
 class QuotaDispatcher;
 class QuotaMessageFilter;
@@ -128,6 +129,10 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   NotificationDispatcher* notification_dispatcher() const {
     return notification_dispatcher_.get();
+  }
+
+  PushDispatcher* push_dispatcher() const {
+    return push_dispatcher_.get();
   }
 
   IPC::SyncMessageFilter* sync_message_filter() const {
@@ -251,6 +256,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   scoped_refptr<QuotaMessageFilter> quota_message_filter_;
 
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
+
+  scoped_refptr<PushDispatcher> push_dispatcher_;
 
   scoped_ptr<ChildSharedBitmapManager> shared_bitmap_manager_;
 

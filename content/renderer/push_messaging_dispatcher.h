@@ -41,6 +41,8 @@ class PushMessagingDispatcher : public RenderFrameObserver,
   virtual void registerPushMessaging(
       blink::WebPushRegistrationCallbacks* callbacks,
       blink::WebServiceWorkerProvider* service_worker_provider);  // override
+  // TODO(mvanouwerkerk): Delete once the Push API flows through platform.
+  // https://crbug.com/389194
   virtual void getPermissionStatus(
       blink::WebPushPermissionStatusCallback* callback,
       blink::WebServiceWorkerProvider* service_worker_provider);  // override
@@ -49,18 +51,25 @@ class PushMessagingDispatcher : public RenderFrameObserver,
                   blink::WebServiceWorkerProvider* service_worker_provider,
                   const Manifest& manifest);
 
-  void OnRegisterSuccess(int32 callbacks_id,
-                         const GURL& endpoint,
-                         const std::string& registration_id);
+  void OnRegisterFromDocumentSuccess(int32 request_id,
+                                     const GURL& endpoint,
+                                     const std::string& registration_id);
 
-  void OnRegisterError(int32 callbacks_id, PushRegistrationStatus status);
+  void OnRegisterFromDocumentError(int32 request_id,
+                                   PushRegistrationStatus status);
 
+  // TODO(mvanouwerkerk): Delete once the Push API flows through platform.
+  // https://crbug.com/389194
   void OnPermissionStatus(int32 callback_id,
                           blink::WebPushPermissionStatus status);
+  // TODO(mvanouwerkerk): Delete once the Push API flows through platform.
+  // https://crbug.com/389194
   void OnPermissionStatusFailure(int32 callback_id);
 
   IDMap<blink::WebPushRegistrationCallbacks, IDMapOwnPointer>
       registration_callbacks_;
+  // TODO(mvanouwerkerk): Delete once the Push API flows through platform.
+  // https://crbug.com/389194
   IDMap<blink::WebPushPermissionStatusCallback, IDMapOwnPointer>
       permission_check_callbacks_;
 

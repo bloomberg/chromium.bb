@@ -36,6 +36,8 @@
 #include "content/child/geofencing/web_geofencing_provider_impl.h"
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/notifications/notification_manager.h"
+#include "content/child/push_messaging/push_dispatcher.h"
+#include "content/child/push_messaging/push_provider.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_discardable_memory_impl.h"
 #include "content/child/web_gesture_curve_impl.h"
@@ -448,6 +450,7 @@ void BlinkPlatformImpl::InternalInit() {
     thread_safe_sender_ = ChildThread::current()->thread_safe_sender();
     notification_dispatcher_ =
         ChildThread::current()->notification_dispatcher();
+    push_dispatcher_ = ChildThread::current()->push_dispatcher();
   }
 
   if (main_thread_task_runner_.get()) {
@@ -1062,6 +1065,14 @@ BlinkPlatformImpl::notificationManager() {
       thread_safe_sender_.get(),
       main_thread_task_runner_.get(),
       notification_dispatcher_.get());
+}
+
+blink::WebPushProvider* BlinkPlatformImpl::pushProvider() {
+  if (!thread_safe_sender_.get() || !push_dispatcher_.get())
+    return nullptr;
+
+  return PushProvider::ThreadSpecificInstance(thread_safe_sender_.get(),
+                                              push_dispatcher_.get());
 }
 
 WebThemeEngine* BlinkPlatformImpl::themeEngine() {

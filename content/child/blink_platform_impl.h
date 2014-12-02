@@ -34,6 +34,7 @@ class MessageLoop;
 namespace content {
 class FlingCurveConfiguration;
 class NotificationDispatcher;
+class PushDispatcher;
 class ThreadSafeSender;
 class WebBluetoothImpl;
 class WebCryptoImpl;
@@ -156,6 +157,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual blink::WebGeofencingProvider* geofencingProvider();
   virtual blink::WebBluetooth* bluetooth();
   virtual blink::WebNotificationManager* notificationManager();
+  virtual blink::WebPushProvider* pushProvider();
 
   void SuspendSharedTimer();
   void ResumeSharedTimer();
@@ -190,6 +192,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
+  scoped_refptr<PushDispatcher> push_dispatcher_;
 };
 
 }  // namespace content

@@ -32,31 +32,41 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   // BrowserMessageFilter implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void OnRegister(int render_frame_id,
-                  int callbacks_id,
-                  const std::string& sender_id,
-                  bool user_gesture,
-                  int service_worker_provider_id);
+  void OnRegisterFromDocument(int render_frame_id,
+                              int request_id,
+                              const std::string& sender_id,
+                              bool user_gesture,
+                              int service_worker_provider_id);
 
+  void OnRegisterFromWorker(int request_id,
+                            int64 service_worker_registration_id);
+
+  // TODO(mvanouwerkerk): Delete once the Push API flows through platform.
+  // https://crbug.com/389194
   void OnPermissionStatusRequest(int render_frame_id,
                                  int service_worker_provider_id,
                                  int permission_callback_id);
 
-  void DoRegister(int render_frame_id,
-                  int callbacks_id,
-                  const std::string& sender_id,
-                  bool user_gesture,
-                  const GURL& origin,
-                  int64 service_worker_registration_id);
+  void OnGetPermissionStatus(int request_id,
+                             int64 service_worker_registration_id);
 
+  void DoRegisterFromDocument(int render_frame_id,
+                              int request_id,
+                              const std::string& sender_id,
+                              bool user_gesture,
+                              const GURL& requesting_origin,
+                              int64 service_worker_registration_id);
+
+  // TODO(mvanouwerkerk): Delete once the Push API flows through platform.
+  // https://crbug.com/389194
   void DoPermissionStatusRequest(const GURL& requesting_origin,
                                  int render_frame_id,
                                  int callback_id);
 
-  void DidRegister(int render_frame_id,
-                   int callbacks_id,
-                   const std::string& push_registration_id,
-                   PushRegistrationStatus status);
+  void DidRegisterFromDocument(int render_frame_id,
+                               int request_id,
+                               const std::string& push_registration_id,
+                               PushRegistrationStatus status);
 
   PushMessagingService* service();
 

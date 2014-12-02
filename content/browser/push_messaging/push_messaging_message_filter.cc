@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -44,19 +45,25 @@ bool PushMessagingMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PushMessagingMessageFilter, message)
-    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_Register, OnRegister)
+    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_RegisterFromDocument,
+                        OnRegisterFromDocument)
+    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_RegisterFromWorker,
+                        OnRegisterFromWorker)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_PermissionStatus,
                         OnPermissionStatusRequest)
+    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_GetPermissionStatus,
+                        OnGetPermissionStatus)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void PushMessagingMessageFilter::OnRegister(int render_frame_id,
-                                            int callbacks_id,
-                                            const std::string& sender_id,
-                                            bool user_gesture,
-                                            int service_worker_provider_id) {
+void PushMessagingMessageFilter::OnRegisterFromDocument(
+    int render_frame_id,
+    int request_id,
+    const std::string& sender_id,
+    bool user_gesture,
+    int service_worker_provider_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(mvanouwerkerk): Validate arguments?
   ServiceWorkerProviderHost* service_worker_host =
@@ -65,24 +72,28 @@ void PushMessagingMessageFilter::OnRegister(int render_frame_id,
   if (!service_worker_host || !service_worker_host->active_version()) {
     PushRegistrationStatus status =
         PUSH_REGISTRATION_STATUS_NO_SERVICE_WORKER;
-    Send(new PushMessagingMsg_RegisterError(
-        render_frame_id,
-        callbacks_id,
-        status));
+    Send(new PushMessagingMsg_RegisterFromDocumentError(render_frame_id,
+                                                        request_id, status));
     RecordRegistrationStatus(status);
     return;
   }
+
+  // TODO(mvanouwerkerk): Persist sender id in Service Worker storage.
+  // https://crbug.com/437298
+
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&PushMessagingMessageFilter::DoRegister,
-                 weak_factory_.GetWeakPtr(),
-                 render_frame_id,
-                 callbacks_id,
-                 sender_id,
-                 user_gesture,
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PushMessagingMessageFilter::DoRegisterFromDocument,
+                 weak_factory_.GetWeakPtr(), render_frame_id, request_id,
+                 sender_id, user_gesture,
                  service_worker_host->active_version()->scope().GetOrigin(),
                  service_worker_host->active_version()->registration_id()));
+}
+
+void PushMessagingMessageFilter::OnRegisterFromWorker(
+    int request_id,
+    int64 service_worker_registration_id) {
+  NOTIMPLEMENTED();
 }
 
 void PushMessagingMessageFilter::OnPermissionStatusRequest(
@@ -109,34 +120,33 @@ void PushMessagingMessageFilter::OnPermissionStatusRequest(
   }
 }
 
-void PushMessagingMessageFilter::DoRegister(
+void PushMessagingMessageFilter::OnGetPermissionStatus(
+    int request_id,
+    int64 service_worker_registration_id) {
+  NOTIMPLEMENTED();
+}
+
+void PushMessagingMessageFilter::DoRegisterFromDocument(
     int render_frame_id,
-    int callbacks_id,
+    int request_id,
     const std::string& sender_id,
     bool user_gesture,
-    const GURL& origin,
+    const GURL& requesting_origin,
     int64 service_worker_registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!service()) {
     PushRegistrationStatus status =
         PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE;
-    Send(new PushMessagingMsg_RegisterError(
-        render_frame_id,
-        callbacks_id,
-        status));
+    Send(new PushMessagingMsg_RegisterFromDocumentError(render_frame_id,
+                                                        request_id, status));
     RecordRegistrationStatus(status);
     return;
   }
-  service()->Register(origin,
-                      service_worker_registration_id,
-                      sender_id,
-                      render_process_id_,
-                      render_frame_id,
-                      user_gesture,
-                      base::Bind(&PushMessagingMessageFilter::DidRegister,
-                                 weak_factory_.GetWeakPtr(),
-                                 render_frame_id,
-                                 callbacks_id));
+  service()->Register(
+      requesting_origin, service_worker_registration_id, sender_id,
+      render_process_id_, render_frame_id, user_gesture,
+      base::Bind(&PushMessagingMessageFilter::DidRegisterFromDocument,
+                 weak_factory_.GetWeakPtr(), render_frame_id, request_id));
 }
 
 void PushMessagingMessageFilter::DoPermissionStatusRequest(
@@ -152,19 +162,19 @@ void PushMessagingMessageFilter::DoPermissionStatusRequest(
       render_frame_id, callback_id, permission_value));
 }
 
-void PushMessagingMessageFilter::DidRegister(
+void PushMessagingMessageFilter::DidRegisterFromDocument(
     int render_frame_id,
-    int callbacks_id,
+    int request_id,
     const std::string& push_registration_id,
     PushRegistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (status == PUSH_REGISTRATION_STATUS_SUCCESS) {
     GURL push_endpoint(service()->PushEndpoint());
-    Send(new PushMessagingMsg_RegisterSuccess(
-        render_frame_id, callbacks_id, push_endpoint, push_registration_id));
+    Send(new PushMessagingMsg_RegisterFromDocumentSuccess(
+        render_frame_id, request_id, push_endpoint, push_registration_id));
   } else {
-    Send(new PushMessagingMsg_RegisterError(
-        render_frame_id, callbacks_id, status));
+    Send(new PushMessagingMsg_RegisterFromDocumentError(render_frame_id,
+                                                        request_id, status));
   }
   RecordRegistrationStatus(status);
 }
