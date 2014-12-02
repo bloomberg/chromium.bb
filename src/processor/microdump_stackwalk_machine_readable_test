@@ -29,9 +29,15 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+source "${0%/*}/microdump_stackwalk_test_vars"  # for MICRODUMP_SUPPORTED_ARCHS.
 testdata_dir=$srcdir/src/processor/testdata
-./src/processor/microdump_stackwalk -m $testdata_dir/microdump.dmp \
-                                       $testdata_dir/symbols/microdump | \
- tr -d '\015' | \
- diff -u $testdata_dir/microdump.stackwalk.machine_readable.out -
-exit $?
+
+set -e  # Bail out with an error if any of the commands below fails.
+for ARCH in $MICRODUMP_SUPPORTED_ARCHS; do
+  echo "Testing microdump_stackwalk -m for arch $ARCH"
+  ./src/processor/microdump_stackwalk -m $testdata_dir/microdump-${ARCH}.dmp \
+                                         $testdata_dir/symbols/microdump | \
+   tr -d '\015' | \
+   diff -u $testdata_dir/microdump.stackwalk.machine_readable-${ARCH}.out -
+done
+exit 0

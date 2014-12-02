@@ -46,6 +46,7 @@
 #include "common/using_std_string.h"
 #include "google_breakpad/processor/dump_context.h"
 #include "google_breakpad/processor/memory_region.h"
+#include "google_breakpad/processor/system_info.h"
 #include "processor/basic_code_modules.h"
 
 namespace google_breakpad {
@@ -64,6 +65,7 @@ class MicrodumpModules : public BasicCodeModules {
 class MicrodumpContext : public DumpContext {
  public:
   virtual void SetContextARM(MDRawContextARM* arm);
+  virtual void SetContextARM64(MDRawContextARM64* arm64);
 };
 
 // This class provides access to microdump memory regions.
@@ -109,11 +111,13 @@ class Microdump {
   DumpContext* GetContext() { return context_.get(); }
   MicrodumpMemoryRegion* GetMemory() { return stack_region_.get(); }
   MicrodumpModules* GetModules() { return modules_.get(); }
+  SystemInfo* GetSystemInfo() { return system_info_.get(); }
 
  private:
   scoped_ptr<MicrodumpContext> context_;
   scoped_ptr<MicrodumpMemoryRegion> stack_region_;
   scoped_ptr<MicrodumpModules> modules_;
+  scoped_ptr<SystemInfo> system_info_;
 };
 
 }  // namespace google_breakpad

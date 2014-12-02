@@ -143,21 +143,42 @@ class MicrodumpWriter {
     struct utsname uts;
     if (uname(&uts))
       return false;
+    const uint8_t n_cpus = static_cast<uint8_t>(sysconf(_SC_NPROCESSORS_CONF));
 
 #if defined(__ANDROID__)
     const char kOSId[] = "A";
 #else
     const char kOSId[] = "L";
 #endif
+
+// We cannot depend on uts.machine. On multiarch devices it always returns the
+// primary arch, not the one that match the executable being run.
+#if defined(__aarch64__)
+    const char kArch[] = "arm64";
+#elif defined(__ARMEL__)
+    const char kArch[] = "arm";
+#elif defined(__x86_64__)
+    const char kArch[] = "x86_64";
+#elif defined(__i386__)
+    const char kArch[] = "x86";
+#elif defined(__mips__)
+    const char kArch[] = "mips";
+#else
+#error "This code has not been ported to your platform yet"
+#endif
+
     LogAppend("O ");
     LogAppend(kOSId);
-    LogAppend(" \"");
+    LogAppend(" ");
+    LogAppend(kArch);
+    LogAppend(" ");
+    LogAppend(n_cpus);
+    LogAppend(" ");
     LogAppend(uts.machine);
-    LogAppend("\" \"");
+    LogAppend(" ");
     LogAppend(uts.release);
-    LogAppend(" \"");
+    LogAppend(" ");
     LogAppend(uts.version);
-    LogAppend("\"");
     LogCommitLine();
     return true;
   }
@@ -316,14 +337,12 @@ class MicrodumpWriter {
     // First write all the mappings from the dumper
     for (unsigned i = 0; i < dumper_->mappings().size(); ++i) {
       const MappingInfo& mapping = *dumper_->mappings()[i];
-      // Skip mappings which don't look like libraries.
-      if (!strstr(mapping.name, ".so") ||  // dump only libs (skip fonts, apks).
-          mapping.size < 4096) { // too small to get a signature for.
+      if (mapping.name[0] == 0 ||  // only want modules with filenames.
+          !mapping.exec ||  // only want executable mappings.
+          mapping.size < 4096 || // too small to get a signature for.
+          HaveMappingInfo(mapping)) {
         continue;
       }
-
-      if (HaveMappingInfo(mapping))
-        continue;
 
       DumpModule(mapping, true, i, NULL);
     }

@@ -86,6 +86,26 @@ class MicrodumpProcessorTest : public ::testing::Test {
     return processor.Process(microdump_contents, state);
   }
 
+  void AnalyzeDump(const string& microdump_file_name, ProcessState* state,
+                   bool omit_symbols) {
+    string symbols_file = omit_symbols ? "" : files_path_ + "symbols/microdump";
+    string microdump_file_path = files_path_ + microdump_file_name;
+    string microdump_contents;
+    ReadFile(microdump_file_path, &microdump_contents);
+
+    google_breakpad::ProcessResult result =
+        ProcessMicrodump(symbols_file, microdump_contents, state);
+
+    ASSERT_EQ(google_breakpad::PROCESS_OK, result);
+    ASSERT_TRUE(state->crashed());
+    ASSERT_EQ(0, state->requesting_thread());
+    ASSERT_EQ(1U, state->threads()->size());
+
+    ASSERT_EQ(2, state->system_info()->cpu_count);
+    ASSERT_EQ("android", state->system_info()->os_short);
+    ASSERT_EQ("Android", state->system_info()->os);
+  }
+
   string files_path_;
 };
 
@@ -104,23 +124,14 @@ TEST_F(MicrodumpProcessorTest, TestProcess_Invalid) {
 }
 
 TEST_F(MicrodumpProcessorTest, TestProcess_MissingSymbols) {
-  string microdump_file = files_path_ + "microdump.dmp";
-  string microdump_contents;
-  ReadFile(microdump_file, &microdump_contents);
-
   ProcessState state;
+  AnalyzeDump("microdump-arm64.dmp", &state, true /* omit_symbols */);
 
-  google_breakpad::ProcessResult result =
-      ProcessMicrodump("", microdump_contents, &state);
-
-  ASSERT_EQ(google_breakpad::PROCESS_OK, result);
-
-  ASSERT_TRUE(state.crashed());
-  ASSERT_EQ(0, state.requesting_thread());
-
-  ASSERT_EQ(104U, state.modules()->module_count());
+  ASSERT_EQ(8U, state.modules()->module_count());
+  ASSERT_EQ("aarch64", state.system_info()->cpu);
+  ASSERT_EQ("OS 64 VERSION INFO", state.system_info()->os_version);
   ASSERT_EQ(1U, state.threads()->size());
-  ASSERT_EQ(4U, state.threads()->at(0)->frames()->size());
+  ASSERT_EQ(12U, state.threads()->at(0)->frames()->size());
 
   ASSERT_EQ("",
             state.threads()->at(0)->frames()->at(0)->function_name);
@@ -142,34 +153,40 @@ TEST_F(MicrodumpProcessorTest, TestProcess_UnsupportedArch) {
   ASSERT_EQ(google_breakpad::PROCESS_ERROR_NO_THREAD_LIST, result);
 }
 
-TEST_F(MicrodumpProcessorTest, TestProcess) {
-  string symbols_file = files_path_ + "symbols/microdump";
-
-  string microdump_file = files_path_ + "microdump.dmp";
-  string microdump_contents;
-  ReadFile(microdump_file, &microdump_contents);
-
+TEST_F(MicrodumpProcessorTest, TestProcessArm) {
   ProcessState state;
+  AnalyzeDump("microdump-arm.dmp", &state, false /* omit_symbols */);
 
-  google_breakpad::ProcessResult result =
-      ProcessMicrodump(symbols_file, microdump_contents, &state);
-
-  ASSERT_EQ(google_breakpad::PROCESS_OK, result);
-  ASSERT_TRUE(state.crashed());
-  ASSERT_EQ(0, state.requesting_thread());
-  ASSERT_EQ(104U, state.modules()->module_count());
-  ASSERT_EQ(1U, state.threads()->size());
-
-  ASSERT_EQ(21U, state.threads()->at(0)->frames()->size());
-
-  ASSERT_EQ("content::::CrashIntentionally",
+  ASSERT_EQ(6U, state.modules()->module_count());
+  ASSERT_EQ("armv7l", state.system_info()->cpu);
+  ASSERT_EQ("OS VERSION INFO", state.system_info()->os_version);
+  ASSERT_EQ(8U, state.threads()->at(0)->frames()->size());
+  ASSERT_EQ("MicrodumpWriterTest_Setup_Test::TestBody",
             state.threads()->at(0)->frames()->at(0)->function_name);
-  ASSERT_EQ("content::::MaybeHandleDebugURL",
+  ASSERT_EQ("testing::Test::Run",
             state.threads()->at(0)->frames()->at(1)->function_name);
-  ASSERT_EQ("content::Start",
-            state.threads()->at(0)->frames()->at(19)->function_name);
-  ASSERT_EQ("libchromeshell.so",
-            state.threads()->at(0)->frames()->at(19)->module->code_file());
+  ASSERT_EQ("main",
+            state.threads()->at(0)->frames()->at(6)->function_name);
+  ASSERT_EQ("breakpad_unittests",
+            state.threads()->at(0)->frames()->at(6)->module->code_file());
+}
+
+TEST_F(MicrodumpProcessorTest, TestProcessArm64) {
+  ProcessState state;
+  AnalyzeDump("microdump-arm64.dmp", &state, false /* omit_symbols */);
+
+  ASSERT_EQ(8U, state.modules()->module_count());
+  ASSERT_EQ("aarch64", state.system_info()->cpu);
+  ASSERT_EQ("OS 64 VERSION INFO", state.system_info()->os_version);
+  ASSERT_EQ(9U, state.threads()->at(0)->frames()->size());
+  ASSERT_EQ("MicrodumpWriterTest_Setup_Test::TestBody",
+            state.threads()->at(0)->frames()->at(0)->function_name);
+  ASSERT_EQ("testing::Test::Run",
+            state.threads()->at(0)->frames()->at(2)->function_name);
+  ASSERT_EQ("main",
+            state.threads()->at(0)->frames()->at(7)->function_name);
+  ASSERT_EQ("breakpad_unittests",
+            state.threads()->at(0)->frames()->at(7)->module->code_file());
 }
 
 }  // namespace

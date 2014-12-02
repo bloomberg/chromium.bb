@@ -119,9 +119,16 @@ TEST(MicrodumpWriterTest, Setup) {
       buf.get(), "-----BEGIN BREAKPAD MICRODUMP-----"));
   ASSERT_NE(static_cast<char*>(0), strstr(
       buf.get(), "-----END BREAKPAD MICRODUMP-----"));
+
+#ifdef __LP64__
   ASSERT_NE(static_cast<char*>(0), strstr(
       buf.get(), "M 0000000000001000 000000000000002A 0000000000001000 "
       "33221100554477668899AABBCCDDEEFF0 libfoo.so"));
+#else
+  ASSERT_NE(static_cast<char*>(0), strstr(
+      buf.get(), "M 00001000 0000002A 00001000 "
+      "33221100554477668899AABBCCDDEEFF0 libfoo.so"));
+#endif
 
   close(err_fd);
   close(fds[1]);

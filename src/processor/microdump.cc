@@ -57,7 +57,8 @@ static const char kCpuKey[] = ": C ";
 static const char kMmapKey[] = ": M ";
 static const char kStackKey[] = ": S ";
 static const char kStackFirstLineKey[] = ": S 0 ";
-static const char kArmArchitecture[] = "armv7l";
+static const char kArmArchitecture[] = "arm";
+static const char kArm64Architecture[] = "arm64";
 
 template<typename T>
 T HexStrToL(const string& str) {
@@ -99,6 +100,12 @@ void MicrodumpModules::Add(const CodeModule* module) {
 void MicrodumpContext::SetContextARM(MDRawContextARM* arm) {
   DumpContext::SetContextFlags(MD_CONTEXT_ARM);
   DumpContext::SetContextARM(arm);
+  valid_ = true;
+}
+
+void MicrodumpContext::SetContextARM64(MDRawContextARM64* arm64) {
+  DumpContext::SetContextFlags(MD_CONTEXT_ARM64);
+  DumpContext::SetContextARM64(arm64);
   valid_ = true;
 }
 
@@ -165,7 +172,8 @@ void MicrodumpMemoryRegion::Print() const {
 Microdump::Microdump(const string& contents)
   : context_(new MicrodumpContext()),
     stack_region_(new MicrodumpMemoryRegion()),
-    modules_(new MicrodumpModules()) {
+    modules_(new MicrodumpModules()),
+    system_info_(new SystemInfo()) {
   assert(!contents.empty());
 
   bool in_microdump = false;
@@ -195,10 +203,32 @@ Microdump::Microdump(const string& contents)
     if ((pos = line.find(kOsKey)) != string::npos) {
       string os_str(line, pos + strlen(kOsKey));
       std::istringstream os_tokens(os_str);
-      string unused_id;
-      os_tokens >> unused_id;
+      string os_id;
+      string num_cpus;
+      string os_version;
+      // This reflect the actual HW arch and might not match the arch emulated
+      // for the execution (e.g., running a 32-bit binary on a 64-bit cpu).
+      string hw_arch;
+
+      os_tokens >> os_id;
       os_tokens >> arch;
-      arch = arch.substr(1, arch.length() - 2);  // remove quotes
+      os_tokens >> num_cpus;
+      os_tokens >> hw_arch;
+      std::getline(os_tokens, os_version);
+      os_version.erase(0, 1);  // remove leading space.
+
+      system_info_->cpu = hw_arch;
+      system_info_->cpu_count = HexStrToL<uint8_t>(num_cpus);
+      system_info_->os_version = os_version;
+
+      if (os_id == "L") {
+        system_info_->os = "Linux";
+        system_info_->os_short = "linux";
+      } else if (os_id == "A") {
+        system_info_->os = "Android";
+        system_info_->os_short = "android";
+      }
+
       // OS line also contains release and version for future use.
     } else if ((pos = line.find(kStackKey)) != string::npos) {
       if (line.find(kStackFirstLineKey) != string::npos) {
@@ -229,9 +259,23 @@ Microdump::Microdump(const string& contents)
       string cpu_state_str(line, pos + strlen(kCpuKey));
       std::vector<uint8_t> cpu_state_raw = ParseHexBuf(cpu_state_str);
       if (strcmp(arch.c_str(), kArmArchitecture) == 0) {
+        if (cpu_state_raw.size() != sizeof(MDRawContextARM)) {
+          std::cerr << "Malformed CPU context. Got " << cpu_state_raw.size() <<
+              " bytes instead of " << sizeof(MDRawContextARM) << std::endl;
+          continue;
+        }
         MDRawContextARM* arm = new MDRawContextARM();
         memcpy(arm, &cpu_state_raw[0], cpu_state_raw.size());
         context_->SetContextARM(arm);
+      } else if (strcmp(arch.c_str(), kArm64Architecture) == 0) {
+        if (cpu_state_raw.size() != sizeof(MDRawContextARM64)) {
+          std::cerr << "Malformed CPU context. Got " << cpu_state_raw.size() <<
+              " bytes instead of " << sizeof(MDRawContextARM64) << std::endl;
+          continue;
+        }
+        MDRawContextARM64* arm = new MDRawContextARM64();
+        memcpy(arm, &cpu_state_raw[0], cpu_state_raw.size());
+        context_->SetContextARM64(arm);
       } else {
         std::cerr << "Unsupported architecture: " << arch << std::endl;
       }

@@ -92,6 +92,7 @@ ProcessResult MicrodumpProcessor::Process(const string &microdump_contents,
   process_state->thread_memory_regions_.push_back(microdump.GetMemory());
   process_state->crashed_ = true;
   process_state->requesting_thread_ = 0;
+  process_state->system_info_ = *microdump.GetSystemInfo();
 
   return PROCESS_OK;
 }
