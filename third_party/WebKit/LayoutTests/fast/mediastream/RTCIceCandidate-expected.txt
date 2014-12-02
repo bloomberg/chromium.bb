@@ -13,8 +13,8 @@ PASS candidate.candidate is "foo"
 PASS candidate.sdpMid is "bar"
 PASS candidate.sdpMLineIndex is 6
 PASS new RTCIceCandidate({}); threw exception TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty..
-PASS new RTCIceCandidate(5); threw exception TypeError: Failed to construct 'RTCIceCandidate': parameter 1 ('dictionary') is not an object..
-PASS new RTCIceCandidate("foobar"); threw exception TypeError: Failed to construct 'RTCIceCandidate': parameter 1 ('dictionary') is not an object..
+PASS new RTCIceCandidate(5); threw exception TypeError: Failed to construct 'RTCIceCandidate': parameter 1 ('candidateInitDict') is not an object..
+PASS new RTCIceCandidate("foobar"); threw exception TypeError: Failed to construct 'RTCIceCandidate': parameter 1 ('candidateInitDict') is not an object..
 PASS new RTCIceCandidate({candidate:""}); threw exception TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty..
 PASS new RTCIceCandidate({candidate:"x"}); did not throw exception.
 PASS candidate.candidate is "bar"

@@ -31,29 +31,29 @@
 #include "config.h"
 #include "modules/mediastream/RTCIceCandidate.h"
 
-#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/mediastream/RTCIceCandidateInit.h"
 
 namespace blink {
 
-RTCIceCandidate* RTCIceCandidate::create(const Dictionary& dictionary, ExceptionState& exceptionState)
+RTCIceCandidate* RTCIceCandidate::create(const RTCIceCandidateInit& candidateInit, ExceptionState& exceptionState)
 {
-    String candidate;
-    bool ok = DictionaryHelper::get(dictionary, "candidate", candidate);
-    if (!ok || !candidate.length()) {
+    if (!candidateInit.hasCandidate() || !candidateInit.candidate().length()) {
         exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::incorrectPropertyType("candidate", "is not a string, or is empty."));
         return nullptr;
     }
 
     String sdpMid;
-    DictionaryHelper::get(dictionary, "sdpMid", sdpMid);
+    if (candidateInit.hasSdpMid())
+        sdpMid = candidateInit.sdpMid();
 
     unsigned short sdpMLineIndex = 0;
-    DictionaryHelper::get(dictionary, "sdpMLineIndex", sdpMLineIndex);
+    if (candidateInit.hasSdpMLineIndex())
+        sdpMLineIndex = candidateInit.sdpMLineIndex();
 
-    return new RTCIceCandidate(WebRTCICECandidate(candidate, sdpMid, sdpMLineIndex));
+    return new RTCIceCandidate(WebRTCICECandidate(candidateInit.candidate(), sdpMid, sdpMLineIndex));
 }
 
 RTCIceCandidate* RTCIceCandidate::create(WebRTCICECandidate webCandidate)

@@ -30,7 +30,7 @@
 
 [
     GarbageCollected,
-    Constructor(Dictionary dictionary),
+    Constructor(RTCIceCandidateInit candidateInitDict),
     RaisesException=Constructor
 ] interface RTCIceCandidate {
     [TreatNullAs=NullString] attribute DOMString candidate;
