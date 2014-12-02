@@ -20,6 +20,7 @@
 #include "chrome/installer/util/install_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/widget.h"
 
 using content::BrowserThread;
@@ -28,8 +29,7 @@ namespace {
 
 // Windows implementation of version update functionality, used by the WebUI
 // About/Help page.
-class VersionUpdaterWin : public VersionUpdater,
-                          public GoogleUpdateStatusListener {
+class VersionUpdaterWin : public VersionUpdater {
  private:
   friend class VersionReader;
   friend class VersionUpdater;
@@ -42,11 +42,11 @@ class VersionUpdaterWin : public VersionUpdater,
   virtual void CheckForUpdate(const StatusCallback& callback) override;
   virtual void RelaunchBrowser() const override;
 
-  // GoogleUpdateStatusListener implementation.
-  virtual void OnReportResults(GoogleUpdateUpgradeResult result,
-                               GoogleUpdateErrorCode error_code,
-                               const base::string16& error_message,
-                               const base::string16& version) override;
+  // chrome::UpdateCheckCallback.
+  void OnUpdateCheckResults(GoogleUpdateUpgradeResult result,
+                            GoogleUpdateErrorCode error_code,
+                            const base::string16& error_message,
+                            const base::string16& version);
 
   // Update the UI to show the status of the upgrade.
   void UpdateStatus(GoogleUpdateUpgradeResult result,
@@ -57,18 +57,10 @@ class VersionUpdaterWin : public VersionUpdater,
   // result case can now be completeb on the UI thread.
   void GotInstalledVersion(const Version& version);
 
-  // Little helper function to create google_updater_.
-  void CreateGoogleUpdater();
-
-  // Helper function to clear google_updater_.
-  void ClearGoogleUpdater();
-
   // Returns a window that can be used for elevation.
-  HWND GetElevationParent();
+  gfx::AcceleratedWidget GetElevationParent();
 
-  // The class that communicates with Google Update to find out if an update is
-  // available and asks it to start an upgrade.
-  scoped_refptr<GoogleUpdate> google_updater_;
+  void BeginUpdateCheckOnFileThread(bool install_if_newer);
 
   // Used for callbacks.
   base::WeakPtrFactory<VersionUpdaterWin> weak_factory_;
@@ -122,13 +114,9 @@ class VersionReader
 
 VersionUpdaterWin::VersionUpdaterWin()
     : weak_factory_(this) {
-  CreateGoogleUpdater();
 }
 
 VersionUpdaterWin::~VersionUpdaterWin() {
-  // The Google Updater will hold a pointer to the listener until it reports
-  // status, so that pointer must be cleared when the listener is destoyed.
-  ClearGoogleUpdater();
 }
 
 void VersionUpdaterWin::CheckForUpdate(const StatusCallback& callback) {
@@ -142,13 +130,10 @@ void VersionUpdaterWin::CheckForUpdate(const StatusCallback& callback) {
   if (!(base::win::GetVersion() == base::win::VERSION_VISTA &&
         (base::win::OSInfo::GetInstance()->service_pack().major == 0) &&
         !base::win::UserAccountControlIsEnabled())) {
-    // This could happen if the page got refreshed after results were returned.
-    if (!google_updater_.get())
-      CreateGoogleUpdater();
     UpdateStatus(UPGRADE_CHECK_STARTED, GOOGLE_UPDATE_NO_ERROR,
                  base::string16());
     // Specify false to not upgrade yet.
-    google_updater_->CheckForUpdate(false, GetElevationParent());
+    BeginUpdateCheckOnFileThread(false);
   }
 }
 
@@ -156,11 +141,11 @@ void VersionUpdaterWin::RelaunchBrowser() const {
   chrome::AttemptRestart();
 }
 
-void VersionUpdaterWin::OnReportResults(
-    GoogleUpdateUpgradeResult result, GoogleUpdateErrorCode error_code,
-    const base::string16& error_message, const base::string16& version) {
-  // Drop the last reference to the object so that it gets cleaned up here.
-  ClearGoogleUpdater();
+void VersionUpdaterWin::OnUpdateCheckResults(
+    GoogleUpdateUpgradeResult result,
+    GoogleUpdateErrorCode error_code,
+    const base::string16& error_message,
+    const base::string16& version) {
   UpdateStatus(result, error_code, error_message);
 }
 
@@ -184,11 +169,9 @@ void VersionUpdaterWin::UpdateStatus(GoogleUpdateUpgradeResult result,
       break;
     }
     case UPGRADE_IS_AVAILABLE: {
-      DCHECK(!google_updater_.get());  // Should have been nulled out already.
-      CreateGoogleUpdater();
       UpdateStatus(UPGRADE_STARTED, GOOGLE_UPDATE_NO_ERROR, base::string16());
       // Specify true to upgrade now.
-      google_updater_->CheckForUpdate(true, GetElevationParent());
+      BeginUpdateCheckOnFileThread(true);
       return;
     }
     case UPGRADE_ALREADY_UP_TO_DATE: {
@@ -252,19 +235,6 @@ void VersionUpdaterWin::GotInstalledVersion(const Version& version) {
                 base::string16());
 }
 
-void VersionUpdaterWin::CreateGoogleUpdater() {
-  ClearGoogleUpdater();
-  google_updater_ = new GoogleUpdate();
-  google_updater_->set_status_listener(this);
-}
-
-void VersionUpdaterWin::ClearGoogleUpdater() {
-  if (google_updater_.get()) {
-    google_updater_->set_status_listener(NULL);
-    google_updater_ = NULL;
-  }
-}
-
 BOOL CALLBACK WindowEnumeration(HWND window, LPARAM param) {
   if (IsWindowVisible(window)) {
     HWND* returned_window = reinterpret_cast<HWND*>(param);
@@ -274,7 +244,7 @@ BOOL CALLBACK WindowEnumeration(HWND window, LPARAM param) {
   return TRUE;
 }
 
-HWND VersionUpdaterWin::GetElevationParent() {
+gfx::AcceleratedWidget VersionUpdaterWin::GetElevationParent() {
   // Look for a visible window belonging to the UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   HWND window = NULL;
@@ -288,6 +258,15 @@ HWND VersionUpdaterWin::GetElevationParent() {
                          << GetCurrentThreadId();
 #endif
   return window;
+}
+
+void VersionUpdaterWin::BeginUpdateCheckOnFileThread(bool install_if_newer) {
+  scoped_refptr<base::TaskRunner> task_runner(
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::FILE));
+  BeginUpdateCheck(task_runner, install_if_newer, GetElevationParent(),
+                   base::Bind(&VersionUpdaterWin::OnUpdateCheckResults,
+                              weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace

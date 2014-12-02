@@ -450,6 +450,7 @@
       'browser/google/google_search_counter_android_unittest.cc',
       'browser/google/google_search_counter_unittest.cc',
       'browser/google/google_update_settings_unittest.cc',
+      'browser/google/google_update_win_unittest.cc',
       'browser/history/android/android_cache_database_unittest.cc',
       'browser/history/android/android_history_provider_service_unittest.cc',
       'browser/history/android/android_provider_backend_unittest.cc',
