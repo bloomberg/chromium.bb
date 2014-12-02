@@ -50,6 +50,8 @@ _NEGATIVE_FILTER = [
     # This test is flaky since it uses setTimeout.
     # Re-enable once crbug.com/177511 is fixed and we can remove setTimeout.
     'ChromeDriverTest.testAlert',
+    # https://code.google.com/p/chromedriver/issues/detail?id=980
+    'ChromeDriverTest.testGoBackAndGoForward',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
@@ -83,8 +85,6 @@ _OS_SPECIFIC_FILTER['linux'] = [
     'ChromeDriverTest.testWindowSize',
 ]
 _OS_SPECIFIC_FILTER['mac'] = [
-    # https://code.google.com/p/chromedriver/issues/detail?id=304
-    'ChromeDriverTest.testGoBackAndGoForward',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
