@@ -13,6 +13,8 @@
 #include "content/public/common/main_function_params.h"
 #include "ui/aura/window_tree_host_observer.h"
 
+class PrefService;
+
 namespace content {
 class BrowserContext;
 class DevToolsHttpHandler;
@@ -71,7 +73,8 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   // This class takes ownership of the returned objects.
   virtual ExtensionsClient* CreateExtensionsClient();
   virtual ExtensionsBrowserClient* CreateExtensionsBrowserClient(
-      content::BrowserContext* context);
+      content::BrowserContext* context,
+      PrefService* service);
 
  private:
   // Creates and initializes the ExtensionSystem.
@@ -83,6 +86,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
 #endif
   scoped_ptr<DesktopController> desktop_controller_;
   scoped_ptr<ShellBrowserContext> browser_context_;
+  scoped_ptr<PrefService> pref_service_;
   scoped_ptr<ShellDeviceClient> device_client_;
   scoped_ptr<AppWindowClient> app_window_client_;
   scoped_ptr<ExtensionsClient> extensions_client_;

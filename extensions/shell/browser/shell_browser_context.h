@@ -37,6 +37,7 @@ class ShellBrowserContext : public content::ShellBrowserContext {
 
  private:
   void InitURLRequestContextOnIOThread();
+
   net::NetLog* net_log_;
   scoped_refptr<storage::SpecialStoragePolicy> storage_policy_;
 

@@ -4,18 +4,12 @@
 
 #include "extensions/shell/browser/shell_extensions_browser_client.h"
 
-#include "base/prefs/pref_service.h"
-#include "base/prefs/pref_service_factory.h"
-#include "base/prefs/testing_pref_store.h"
-#include "components/pref_registry/pref_registry_syncable.h"
-#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/generated_api_registration.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
-#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/null_app_sorting.h"
 #include "extensions/browser/updater/null_extension_cache.h"
 #include "extensions/browser/url_request_util.h"
@@ -28,33 +22,14 @@ using content::BrowserContext;
 using content::BrowserThread;
 
 namespace extensions {
-namespace {
-
-// See chrome::RegisterProfilePrefs() in chrome/browser/prefs/browser_prefs.cc
-void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) {
-  ExtensionPrefs::RegisterProfilePrefs(registry);
-}
-
-}  // namespace
 
 ShellExtensionsBrowserClient::ShellExtensionsBrowserClient(
-    BrowserContext* context)
+    BrowserContext* context,
+    PrefService* pref_service)
     : browser_context_(context),
+      pref_service_(pref_service),
       api_client_(new ExtensionsAPIClient),
       extension_cache_(new NullExtensionCache()) {
-  // Set up the preferences service.
-  base::PrefServiceFactory factory;
-  factory.set_user_prefs(new TestingPrefStore);
-  factory.set_extension_prefs(new TestingPrefStore);
-  // app_shell should not require syncable preferences, but for now we need to
-  // recycle some of the RegisterProfilePrefs() code in Chrome.
-  // TODO(jamescook): Convert this to PrefRegistrySimple.
-  user_prefs::PrefRegistrySyncable* pref_registry =
-      new user_prefs::PrefRegistrySyncable;
-  // Prefs should be registered before the PrefService is created.
-  RegisterPrefs(pref_registry);
-  prefs_ = factory.Create(pref_registry).Pass();
-  user_prefs::UserPrefs::Set(browser_context_, prefs_.get());
 }
 
 ShellExtensionsBrowserClient::~ShellExtensionsBrowserClient() {
@@ -139,7 +114,7 @@ bool ShellExtensionsBrowserClient::AllowCrossRendererResourceLoad(
 
 PrefService* ShellExtensionsBrowserClient::GetPrefServiceForContext(
     BrowserContext* context) {
-  return prefs_.get();
+  return pref_service_;
 }
 
 void ShellExtensionsBrowserClient::GetEarlyExtensionPrefsObservers(

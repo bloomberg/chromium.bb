@@ -19,15 +19,15 @@ grit("resources") {
 }
 
 source_set("app_shell_lib") {
-  # This library is testonly because it depends on testonly libarries,
-  # namely //base:prefs_test_support and //content/shell:content_shell_lib
-  # TODO(jamescook): investigate and get rid of test dependencies.
+  # TODO(jamescook): investigate and get rid of test dependencies. This library
+  # is testonly because it depends on testonly libraries, namely
+  # //content/shell:content_shell_lib. See http://crbug.com/438283
   testonly = true
   deps = [
     ":resources",
     ":version_header",
     "//base",
-    "//base:prefs_test_support",
+    "//base:prefs",
     "//components/omaha_client",
     "//components/pref_registry",
     "//components/user_prefs",
@@ -108,6 +108,8 @@ source_set("app_shell_lib") {
     "browser/shell_oauth2_token_service.h",
     "browser/shell_omaha_query_params_delegate.cc",
     "browser/shell_omaha_query_params_delegate.h",
+    "browser/shell_prefs.cc",
+    "browser/shell_prefs.h",
     "browser/shell_runtime_api_delegate.cc",
     "browser/shell_runtime_api_delegate.h",
     "browser/shell_special_storage_policy.cc",

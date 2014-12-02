@@ -13,7 +13,7 @@
       'dependencies': [
         'app_shell_version_header',
         '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/base/base.gyp:base_prefs_test_support',
+        '<(DEPTH)/base/base.gyp:base_prefs',
         '<(DEPTH)/components/components.gyp:omaha_client',
         '<(DEPTH)/components/components.gyp:pref_registry',
         '<(DEPTH)/components/components.gyp:user_prefs',
@@ -95,6 +95,8 @@
         'browser/shell_oauth2_token_service.h',
         'browser/shell_omaha_query_params_delegate.cc',
         'browser/shell_omaha_query_params_delegate.h',
+        'browser/shell_prefs.cc',
+        'browser/shell_prefs.h',
         'browser/shell_runtime_api_delegate.cc',
         'browser/shell_runtime_api_delegate.h',
         'browser/shell_special_storage_policy.cc',
@@ -251,6 +253,7 @@
       'dependencies': [
         'app_shell_lib',
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/base/base.gyp:base_prefs_test_support',
         '<(DEPTH)/base/base.gyp:test_support_base',
         '<(DEPTH)/content/content.gyp:content_app_both',
         '<(DEPTH)/content/content_shell_and_tests.gyp:test_support_content',
@@ -265,6 +268,7 @@
         'browser/shell_audio_controller_chromeos_unittest.cc',
         'browser/shell_native_app_window_aura_unittest.cc',
         'browser/shell_oauth2_token_service_unittest.cc',
+        'browser/shell_prefs_unittest.cc',
         'common/shell_content_client_unittest.cc'
       ],
       'conditions': [

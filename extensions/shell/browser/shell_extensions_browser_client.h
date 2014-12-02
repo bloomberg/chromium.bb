@@ -19,7 +19,9 @@ class ExtensionsAPIClient;
 class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
  public:
   // |context| is the single BrowserContext used for IsValidContext() below.
-  explicit ShellExtensionsBrowserClient(content::BrowserContext* context);
+  // |pref_service| is used for GetPrefServiceForContext() below.
+  ShellExtensionsBrowserClient(content::BrowserContext* context,
+                               PrefService* pref_service);
   ~ShellExtensionsBrowserClient() override;
 
   // ExtensionsBrowserClient overrides:
@@ -82,11 +84,11 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
   // The single BrowserContext for app_shell. Not owned.
   content::BrowserContext* browser_context_;
 
+  // The PrefService for |browser_context_|. Not owned.
+  PrefService* pref_service_;
+
   // Support for extension APIs.
   scoped_ptr<ExtensionsAPIClient> api_client_;
-
-  // The PrefService for |browser_context_|.
-  scoped_ptr<PrefService> prefs_;
 
   // The extension cache used for download and installation.
   scoped_ptr<ExtensionCache> extension_cache_;

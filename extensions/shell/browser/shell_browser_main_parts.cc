@@ -4,7 +4,10 @@
 
 #include "extensions/shell/browser/shell_browser_main_parts.h"
 
+#include <string>
+
 #include "base/command_line.h"
+#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/omaha_client/omaha_query_params.h"
@@ -31,6 +34,7 @@
 #include "extensions/shell/browser/shell_extensions_browser_client.h"
 #include "extensions/shell/browser/shell_oauth2_token_service.h"
 #include "extensions/shell/browser/shell_omaha_query_params_delegate.h"
+#include "extensions/shell/browser/shell_prefs.h"
 #include "extensions/shell/common/shell_extensions_client.h"
 #include "extensions/shell/common/switches.h"
 #include "ui/base/ime/input_method_initializer.h"
@@ -128,6 +132,7 @@ int ShellBrowserMainParts::PreCreateThreads() {
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // Initialize our "profile" equivalent.
   browser_context_.reset(new ShellBrowserContext(net_log_.get()));
+  pref_service_ = ShellPrefs::CreatePrefService(browser_context_.get());
 
 #if defined(USE_AURA)
   aura::Env::GetInstance()->set_context_factory(content::GetContextFactory());
@@ -146,8 +151,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   extensions_client_.reset(CreateExtensionsClient());
   ExtensionsClient::Set(extensions_client_.get());
 
-  extensions_browser_client_.reset(
-      CreateExtensionsBrowserClient(browser_context_.get()));
+  extensions_browser_client_.reset(CreateExtensionsBrowserClient(
+      browser_context_.get(), pref_service_.get()));
   ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 
   omaha_query_params_delegate_.reset(new ShellOmahaQueryParamsDelegate);
@@ -221,6 +226,7 @@ bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
+  // NOTE: Please destroy objects in the reverse order of their creation.
   browser_main_delegate_->Shutdown();
   devtools_http_handler_.reset();
 
@@ -235,11 +241,14 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   extension_system_ = NULL;
   ExtensionsBrowserClient::Set(NULL);
   extensions_browser_client_.reset();
-  browser_context_.reset();
 
   desktop_controller_.reset();
 
   storage_monitor::StorageMonitor::Destroy();
+
+  pref_service_->CommitPendingWrite();
+  pref_service_.reset();
+  browser_context_.reset();
 }
 
 void ShellBrowserMainParts::PostDestroyThreads() {
@@ -257,8 +266,9 @@ ExtensionsClient* ShellBrowserMainParts::CreateExtensionsClient() {
 }
 
 ExtensionsBrowserClient* ShellBrowserMainParts::CreateExtensionsBrowserClient(
-    content::BrowserContext* context) {
-  return new ShellExtensionsBrowserClient(context);
+    content::BrowserContext* context,
+    PrefService* service) {
+  return new ShellExtensionsBrowserClient(context, service);
 }
 
 void ShellBrowserMainParts::CreateExtensionSystem() {
