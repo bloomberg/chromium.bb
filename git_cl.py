@@ -284,6 +284,7 @@ class Settings(object):
     self.is_gerrit = None
     self.git_editor = None
     self.project = None
+    self.force_https_commit_url = None
     self.pending_ref_prefix = None
 
   def LazyUpdateIfNeeded(self):
@@ -454,6 +455,12 @@ class Settings(object):
     if not self.project:
       self.project = self._GetRietveldConfig('project', error_ok=True)
     return self.project
+
+  def GetForceHttpsCommitUrl(self):
+    if not self.force_https_commit_url:
+      self.force_https_commit_url = self._GetRietveldConfig(
+          'force-https-commit-url', error_ok=True)
+    return self.force_https_commit_url
 
   def GetPendingRefPrefix(self):
     if not self.pending_ref_prefix:
@@ -673,6 +680,19 @@ or verify this branch is set up to track another (via the --track argument to
     """
     return RunGit(['config', 'branch.%s.base-url' % self.GetBranch()],
                   error_ok=True).strip()
+
+  def GetGitSvnRemoteUrl(self):
+    """Return the configured git-svn remote URL parsed from git svn info.
+
+    Returns None if it is not set.
+    """
+    # URL is dependent on the current directory.
+    data = RunGit(['svn', 'info'], cwd=settings.GetRoot())
+    if data:
+      keys = dict(line.split(': ', 1) for line in data.splitlines()
+                  if ': ' in line)
+      return keys.get('URL', None)
+    return None
 
   def GetRemoteUrl(self):
     """Return the configured remote URL, e.g. 'git://example.org/foo.git/'.
@@ -1170,6 +1190,8 @@ def LoadCodereviewSettingsFromFile(fileobj):
   SetProperty('viewvc-url', 'VIEW_VC', unset_error_ok=True)
   SetProperty('bug-prefix', 'BUG_PREFIX', unset_error_ok=True)
   SetProperty('cpplint-regex', 'LINT_REGEX', unset_error_ok=True)
+  SetProperty('force-https-commit-url', 'FORCE_HTTPS_COMMIT_URL',
+              unset_error_ok=True)
   SetProperty('cpplint-ignore-regex', 'LINT_IGNORE_REGEX', unset_error_ok=True)
   SetProperty('project', 'PROJECT', unset_error_ok=True)
   SetProperty('pending-ref-prefix', 'PENDING_REF_PREFIX', unset_error_ok=True)
@@ -1718,12 +1740,7 @@ def RietveldUpload(options, args, cl, change):
   remote_url = cl.GetGitBaseUrlFromConfig()
   if not remote_url:
     if settings.GetIsGitSvn():
-      # URL is dependent on the current directory.
-      data = RunGit(['svn', 'info'], cwd=settings.GetRoot())
-      if data:
-        keys = dict(line.split(': ', 1) for line in data.splitlines()
-                    if ': ' in line)
-        remote_url = keys.get('URL', None)
+      remote_url = cl.GetGitSvnRemoteUrl()
     else:
       if cl.GetRemoteUrl() and '/' in cl.GetUpstreamBranch():
         remote_url = (cl.GetRemoteUrl() + '@'
@@ -2098,9 +2115,19 @@ def SendUpstream(parser, args, cmd):
         revision = RunGit(['rev-parse', 'HEAD']).strip()
     else:
       # dcommit the merge branch.
-      _, output = RunGitWithCode(['svn', 'dcommit',
-                                  '-C%s' % options.similarity,
-                                  '--no-rebase', '--rmdir'])
+      cmd = [
+        'svn', 'dcommit',
+        '-C%s' % options.similarity,
+        '--no-rebase', '--rmdir',
+      ]
+      if settings.GetForceHttpsCommitUrl():
+        # Allow forcing https commit URLs for some projects that don't allow
+        # committing to http URLs (like Google Code).
+        remote_url = cl.GetGitSvnRemoteUrl()
+        if urlparse.urlparse(remote_url).scheme == 'http':
+          remote_url = remote_url.replace('http://', 'https://')
+        cmd.append('--commit-url=%s' % remote_url)
+      _, output = RunGitWithCode(cmd)
       if 'Committed r' in output:
         revision = re.match(
           '.*?\nCommitted r(\\d+)', output, re.DOTALL).group(1)

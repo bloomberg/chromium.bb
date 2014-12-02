@@ -350,6 +350,7 @@ class TestGitCl(TestCase):
          'Issue: 12345\n\nR=john@chromium.org\n\n'
          'Review URL: https://codereview.example.com/12345'],),
        ''),
+      ((['git', 'config', 'rietveld.force-https-commit-url'],), ''),
       ((['git',
          'svn', 'dcommit', '-C50', '--no-rebase', '--rmdir'],),
        (('', None), 0)),
@@ -686,6 +687,8 @@ class TestGitCl(TestCase):
            'rietveld.bug-prefix'],), ''),
         ((['git', 'config', '--unset-all',
            'rietveld.cpplint-regex'],), ''),
+        ((['git', 'config', '--unset-all',
+           'rietveld.force-https-commit-url'],), ''),
         ((['git', 'config', '--unset-all',
            'rietveld.cpplint-ignore-regex'],), ''),
         ((['git', 'config', '--unset-all',
