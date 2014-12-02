@@ -102,7 +102,6 @@ AXObjectCacheImpl::~AXObjectCacheImpl()
     HashMap<AXID, RefPtr<AXObject> >::iterator end = m_objects.end();
     for (HashMap<AXID, RefPtr<AXObject> >::iterator it = m_objects.begin(); it != end; ++it) {
         AXObject* obj = (*it).value.get();
-        detachWrapper(obj);
         obj->detach();
         removeAXID(obj);
     }
@@ -346,7 +345,6 @@ AXObject* AXObjectCacheImpl::getOrCreate(Widget* widget)
     m_widgetObjectMapping.set(widget, newObj->axObjectID());
     m_objects.set(newObj->axObjectID(), newObj);
     newObj->init();
-    attachWrapper(newObj.get());
     return newObj.get();
 }
 
@@ -381,7 +379,6 @@ AXObject* AXObjectCacheImpl::getOrCreate(Node* node)
     m_nodeObjectMapping.set(node, newObj->axObjectID());
     m_objects.set(newObj->axObjectID(), newObj);
     newObj->init();
-    attachWrapper(newObj.get());
     newObj->setLastKnownIsIgnoredValue(newObj->accessibilityIsIgnored());
 
     return newObj.get();
@@ -405,7 +402,6 @@ AXObject* AXObjectCacheImpl::getOrCreate(RenderObject* renderer)
     m_renderObjectMapping.set(renderer, newObj->axObjectID());
     m_objects.set(newObj->axObjectID(), newObj);
     newObj->init();
-    attachWrapper(newObj.get());
     newObj->setLastKnownIsIgnoredValue(newObj->accessibilityIsIgnored());
 
     return newObj.get();
@@ -429,7 +425,6 @@ AXObject* AXObjectCacheImpl::getOrCreate(AbstractInlineTextBox* inlineTextBox)
     m_inlineTextBoxObjectMapping.set(inlineTextBox, newObj->axObjectID());
     m_objects.set(newObj->axObjectID(), newObj);
     newObj->init();
-    attachWrapper(newObj.get());
     newObj->setLastKnownIsIgnoredValue(newObj->accessibilityIsIgnored());
 
     return newObj.get();
@@ -484,7 +479,6 @@ AXObject* AXObjectCacheImpl::getOrCreate(AccessibilityRole role)
 
     m_objects.set(obj->axObjectID(), obj);
     obj->init();
-    attachWrapper(obj.get());
     return obj.get();
 }
 
@@ -498,7 +492,6 @@ void AXObjectCacheImpl::remove(AXID axID)
     if (!obj)
         return;
 
-    detachWrapper(obj);
     obj->detach();
     removeAXID(obj);
 
@@ -956,16 +949,6 @@ bool isNodeAriaVisible(Node* node)
         return false;
 
     return equalIgnoringCase(toElement(node)->getAttribute(aria_hiddenAttr), "false");
-}
-
-void AXObjectCacheImpl::detachWrapper(AXObject* obj)
-{
-    // In Chromium, AXObjects are not wrapped.
-}
-
-void AXObjectCacheImpl::attachWrapper(AXObject*)
-{
-    // In Chromium, AXObjects are not wrapped.
 }
 
 void AXObjectCacheImpl::postPlatformNotification(AXObject* obj, AXNotification notification)

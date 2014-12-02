@@ -125,8 +125,6 @@ public:
     void remove(AXID);
     void remove(AbstractInlineTextBox*);
 
-    void detachWrapper(AXObject*);
-    void attachWrapper(AXObject*);
     void childrenChanged(AXObject*);
     void selectedChildrenChanged(RenderObject*);
 
