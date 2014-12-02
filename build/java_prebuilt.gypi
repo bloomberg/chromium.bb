@@ -27,6 +27,7 @@
     'intermediate_dir': '<(SHARED_INTERMEDIATE_DIR)/<(_target_name)',
     'android_jar': '<(android_sdk)/android.jar',
     'input_jars_paths': [ '<(android_jar)' ],
+    'neverlink%': 0,
     'proguard_config%': '',
     'proguard_preprocess%': '0',
     'variables': {
@@ -46,7 +47,13 @@
   'all_dependent_settings': {
     'variables': {
       'input_jars_paths': ['<(dex_input_jar_path)'],
-      'library_dexed_jars_paths': ['<(dex_path)'],
+      'conditions': [
+        ['neverlink == 1', {
+          'library_dexed_jars_paths': [],
+        }, {
+          'library_dexed_jars_paths': ['<(dex_path)'],
+        }],
+      ],
     },
   },
   'conditions' : [
@@ -76,18 +83,20 @@
         },
       ],
     }],
-  ],
-  'actions': [
-    {
-      'action_name': 'dex_<(_target_name)',
-      'message': 'Dexing <(_target_name) jar',
-      'variables': {
-        'dex_input_paths': [
-          '<(dex_input_jar_path)',
-        ],
-        'output_path': '<(dex_path)',
-      },
-      'includes': [ 'android/dex_action.gypi' ],
-    },
+    ['neverlink == 0', {
+      'actions': [
+        {
+          'action_name': 'dex_<(_target_name)',
+          'message': 'Dexing <(_target_name) jar',
+          'variables': {
+            'dex_input_paths': [
+              '<(dex_input_jar_path)',
+            ],
+            'output_path': '<(dex_path)',
+          },
+          'includes': [ 'android/dex_action.gypi' ],
+        },
+      ],
+    }],
   ],
 }
