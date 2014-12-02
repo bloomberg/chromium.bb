@@ -50,10 +50,15 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void OnGetPermissionStatus(int request_id,
                              int64 service_worker_registration_id);
 
-  void DoRegisterFromDocument(int render_frame_id,
-                              int request_id,
+  void RegisterFromDocumentOnUI(int render_frame_id,
+                                int request_id,
+                                const std::string& sender_id,
+                                bool user_gesture,
+                                const GURL& requesting_origin,
+                                int64 service_worker_registration_id);
+
+  void RegisterFromWorkerOnUI(int request_id,
                               const std::string& sender_id,
-                              bool user_gesture,
                               const GURL& requesting_origin,
                               int64 service_worker_registration_id);
 
@@ -63,10 +68,16 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
                                  int render_frame_id,
                                  int callback_id);
 
+  void GetPermissionStatusOnUI(const GURL& requesting_origin, int request_id);
+
   void DidRegisterFromDocument(int render_frame_id,
                                int request_id,
                                const std::string& push_registration_id,
                                PushRegistrationStatus status);
+
+  void DidRegisterFromWorker(int request_id,
+                             const std::string& push_registration_id,
+                             PushRegistrationStatus status);
 
   PushMessagingService* service();
 

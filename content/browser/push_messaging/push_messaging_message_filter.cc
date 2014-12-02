@@ -83,7 +83,7 @@ void PushMessagingMessageFilter::OnRegisterFromDocument(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PushMessagingMessageFilter::DoRegisterFromDocument,
+      base::Bind(&PushMessagingMessageFilter::RegisterFromDocumentOnUI,
                  weak_factory_.GetWeakPtr(), render_frame_id, request_id,
                  sender_id, user_gesture,
                  service_worker_host->active_version()->scope().GetOrigin(),
@@ -93,7 +93,24 @@ void PushMessagingMessageFilter::OnRegisterFromDocument(
 void PushMessagingMessageFilter::OnRegisterFromWorker(
     int request_id,
     int64 service_worker_registration_id) {
-  NOTIMPLEMENTED();
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ServiceWorkerRegistration* service_worker_registration =
+      service_worker_context_->context()->GetLiveRegistration(
+          service_worker_registration_id);
+  DCHECK(service_worker_registration);
+  if (!service_worker_registration)
+    return;
+
+  // TODO(mvanouwerkerk): Get sender id from Service Worker storage.
+  // https://crbug.com/437298
+  std::string sender_id = "";
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PushMessagingMessageFilter::RegisterFromWorkerOnUI,
+                 weak_factory_.GetWeakPtr(), request_id, sender_id,
+                 service_worker_registration->pattern().GetOrigin(),
+                 service_worker_registration_id));
 }
 
 void PushMessagingMessageFilter::OnPermissionStatusRequest(
@@ -123,10 +140,23 @@ void PushMessagingMessageFilter::OnPermissionStatusRequest(
 void PushMessagingMessageFilter::OnGetPermissionStatus(
     int request_id,
     int64 service_worker_registration_id) {
-  NOTIMPLEMENTED();
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ServiceWorkerRegistration* service_worker_registration =
+      service_worker_context_->context()->GetLiveRegistration(
+          service_worker_registration_id);
+  DCHECK(service_worker_registration);
+  if (!service_worker_registration)
+    return;
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PushMessagingMessageFilter::GetPermissionStatusOnUI,
+                 weak_factory_.GetWeakPtr(),
+                 service_worker_registration->pattern().GetOrigin(),
+                 request_id));
 }
 
-void PushMessagingMessageFilter::DoRegisterFromDocument(
+void PushMessagingMessageFilter::RegisterFromDocumentOnUI(
     int render_frame_id,
     int request_id,
     const std::string& sender_id,
@@ -142,11 +172,30 @@ void PushMessagingMessageFilter::DoRegisterFromDocument(
     RecordRegistrationStatus(status);
     return;
   }
-  service()->Register(
+  service()->RegisterFromDocument(
       requesting_origin, service_worker_registration_id, sender_id,
       render_process_id_, render_frame_id, user_gesture,
       base::Bind(&PushMessagingMessageFilter::DidRegisterFromDocument,
                  weak_factory_.GetWeakPtr(), render_frame_id, request_id));
+}
+
+void PushMessagingMessageFilter::RegisterFromWorkerOnUI(
+    int request_id,
+    const std::string& sender_id,
+    const GURL& requesting_origin,
+    int64 service_worker_registration_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!service()) {
+    PushRegistrationStatus status =
+        PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE;
+    Send(new PushMessagingMsg_RegisterFromWorkerError(request_id, status));
+    RecordRegistrationStatus(status);
+    return;
+  }
+  service()->RegisterFromWorker(
+      requesting_origin, service_worker_registration_id, sender_id,
+      base::Bind(&PushMessagingMessageFilter::DidRegisterFromWorker,
+                 weak_factory_.GetWeakPtr(), request_id));
 }
 
 void PushMessagingMessageFilter::DoPermissionStatusRequest(
@@ -162,6 +211,17 @@ void PushMessagingMessageFilter::DoPermissionStatusRequest(
       render_frame_id, callback_id, permission_value));
 }
 
+void PushMessagingMessageFilter::GetPermissionStatusOnUI(
+    const GURL& requesting_origin,
+    int request_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GURL embedding_origin = requesting_origin;
+  blink::WebPushPermissionStatus permission_status =
+      service()->GetPermissionStatus(requesting_origin, embedding_origin);
+  Send(new PushMessagingMsg_GetPermissionStatusSuccess(request_id,
+                                                       permission_status));
+}
+
 void PushMessagingMessageFilter::DidRegisterFromDocument(
     int render_frame_id,
     int request_id,
@@ -175,6 +235,21 @@ void PushMessagingMessageFilter::DidRegisterFromDocument(
   } else {
     Send(new PushMessagingMsg_RegisterFromDocumentError(render_frame_id,
                                                         request_id, status));
+  }
+  RecordRegistrationStatus(status);
+}
+
+void PushMessagingMessageFilter::DidRegisterFromWorker(
+    int request_id,
+    const std::string& push_registration_id,
+    PushRegistrationStatus status) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (status == PUSH_REGISTRATION_STATUS_SUCCESS) {
+    GURL push_endpoint(service()->PushEndpoint());
+    Send(new PushMessagingMsg_RegisterFromWorkerSuccess(
+        request_id, push_endpoint, push_registration_id));
+  } else {
+    Send(new PushMessagingMsg_RegisterFromWorkerError(request_id, status));
   }
   RecordRegistrationStatus(status);
 }

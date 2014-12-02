@@ -81,7 +81,7 @@ void PushMessagingServiceImpl::InitializeForProfile(Profile* profile) {
 
   // Create the GCMProfileService, and hence instantiate this class.
   GCMProfileService* gcm_service =
-      gcm::GCMProfileServiceFactory::GetForProfile(profile);
+      GCMProfileServiceFactory::GetForProfile(profile);
   PushMessagingServiceImpl* push_service =
       static_cast<PushMessagingServiceImpl*>(
           gcm_service->push_messaging_service());
@@ -223,8 +223,8 @@ GURL PushMessagingServiceImpl::PushEndpoint() {
   return GURL(std::string(kPushMessagingEndpoint));
 }
 
-void PushMessagingServiceImpl::Register(
-    const GURL& origin,
+void PushMessagingServiceImpl::RegisterFromDocument(
+    const GURL& requesting_origin,
     int64 service_worker_registration_id,
     const std::string& sender_id,
     int renderer_id,
@@ -233,10 +233,11 @@ void PushMessagingServiceImpl::Register(
     const content::PushMessagingService::RegisterCallback& callback) {
   if (!gcm_profile_service_->driver()) {
     NOTREACHED() << "There is no GCMDriver. Has GCMProfileService shut down?";
+    return;
   }
 
-  PushMessagingApplicationId application_id =
-      PushMessagingApplicationId(origin, service_worker_registration_id);
+  PushMessagingApplicationId application_id = PushMessagingApplicationId(
+      requesting_origin, service_worker_registration_id);
   DCHECK(application_id.IsValid());
 
   if (push_registration_count_ >= kMaxRegistrations) {
@@ -251,22 +252,15 @@ void PushMessagingServiceImpl::Register(
   // interfere with auto-removing the app handler, so should be removed.
   // If this is registering for the first time then the driver does not have
   // this as an app handler and registration would fail.
-  if (gcm_profile_service_->driver()->GetAppHandler(
-          kPushMessagingApplicationIdPrefix) != this)
-    gcm_profile_service_->driver()->AddAppHandler(
-        kPushMessagingApplicationIdPrefix, this);
+  AddAppHandlerIfNecessary();
 
   content::RenderFrameHost* render_frame_host =
       content::RenderFrameHost::FromID(renderer_id, render_frame_id);
-
-  // The frame doesn't exist any more, or we received a bad frame id.
   if (!render_frame_host)
     return;
 
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
-
-  // The page doesn't exist any more or we got a bad render frame host.
   if (!web_contents)
     return;
 
@@ -277,7 +271,7 @@ void PushMessagingServiceImpl::Register(
   const PermissionRequestID id(
       renderer_id, web_contents->GetRoutingID(), bridge_id, GURL());
 
-  GURL embedder = web_contents->GetLastCommittedURL();
+  GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
   gcm::PushMessagingPermissionContext* permission_context =
       gcm::PushMessagingPermissionContextFactory::GetForProfile(profile_);
 
@@ -289,15 +283,52 @@ void PushMessagingServiceImpl::Register(
   }
 
   permission_context->RequestPermission(
-      web_contents,
-      id,
-      embedder,
-      user_gesture,
+      web_contents, id, embedding_origin, user_gesture,
       base::Bind(&PushMessagingServiceImpl::DidRequestPermission,
-                 weak_factory_.GetWeakPtr(),
-                 application_id,
-                 sender_id,
+                 weak_factory_.GetWeakPtr(), application_id, sender_id,
                  callback));
+}
+
+void PushMessagingServiceImpl::RegisterFromWorker(
+    const GURL& requesting_origin,
+    int64 service_worker_registration_id,
+    const std::string& sender_id,
+    const content::PushMessagingService::RegisterCallback& register_callback) {
+  if (!gcm_profile_service_->driver()) {
+    NOTREACHED() << "There is no GCMDriver. Has GCMProfileService shut down?";
+    return;
+  }
+
+  PushMessagingApplicationId application_id = PushMessagingApplicationId(
+      requesting_origin, service_worker_registration_id);
+  DCHECK(application_id.IsValid());
+
+  if (profile_->GetPrefs()->GetInteger(
+          prefs::kPushMessagingRegistrationCount) >= kMaxRegistrations) {
+    RegisterEnd(register_callback, std::string(),
+                content::PUSH_REGISTRATION_STATUS_LIMIT_REACHED);
+    return;
+  }
+
+  // If this is registering for the first time then the driver does not have
+  // this as an app handler and registration would fail.
+  AddAppHandlerIfNecessary();
+
+  GURL embedding_origin = requesting_origin;
+  blink::WebPushPermissionStatus permission_status =
+      PushMessagingServiceImpl::GetPermissionStatus(requesting_origin,
+                                                    embedding_origin);
+  if (permission_status != blink::WebPushPermissionStatusGranted) {
+    RegisterEnd(register_callback, std::string(),
+                content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
+    return;
+  }
+
+  std::vector<std::string> sender_ids(1, sender_id);
+  gcm_profile_service_->driver()->Register(
+      application_id.ToString(), sender_ids,
+      base::Bind(&PushMessagingServiceImpl::DidRegister,
+                 weak_factory_.GetWeakPtr(), register_callback));
 }
 
 blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
@@ -306,15 +337,11 @@ blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
     int render_frame_id) {
   content::RenderFrameHost* render_frame_host =
       content::RenderFrameHost::FromID(renderer_id, render_frame_id);
-
-  // The frame doesn't exist any more, or we received a bad frame id.
   if (!render_frame_host)
     return blink::WebPushPermissionStatusDenied;
 
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
-
-  // The page doesn't exist any more or we got a bad render frame host.
   if (!web_contents)
     return blink::WebPushPermissionStatusDenied;
 
@@ -324,6 +351,15 @@ blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
   return ToPushPermission(
       permission_context->GetPermissionStatus(
           requesting_origin, embedder_origin));
+}
+
+blink::WebPushPermissionStatus PushMessagingServiceImpl::GetPermissionStatus(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {
+  PushMessagingPermissionContext* permission_context =
+      PushMessagingPermissionContextFactory::GetForProfile(profile_);
+  return ToPushPermission(permission_context->GetPermissionStatus(
+      requesting_origin, embedding_origin));
 }
 
 void PushMessagingServiceImpl::RegisterEnd(
@@ -398,6 +434,13 @@ bool PushMessagingServiceImpl::HasPermission(const GURL& origin) {
 
   return permission_context->GetPermissionStatus(origin, origin) ==
       CONTENT_SETTING_ALLOW;
+}
+
+void PushMessagingServiceImpl::AddAppHandlerIfNecessary() {
+  if (gcm_profile_service_->driver()->GetAppHandler(
+          kPushMessagingApplicationIdPrefix) != this)
+    gcm_profile_service_->driver()->AddAppHandler(
+        kPushMessagingApplicationIdPrefix, this);
 }
 
 }  // namespace gcm
