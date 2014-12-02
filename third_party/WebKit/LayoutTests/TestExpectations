@@ -397,6 +397,9 @@ crbug.com/396945 ietestcenter/css3/namespaces/syntax-021.xml [ ImageOnlyFailure 
 crbug.com/378610 [ Win7 ] svg/transforms/transformed-text-fill-gradient.html [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ ImageOnlyFailure ]
 
+crbug.com/432129 virtual/slimmingpaint/fast/inline/whitespace-reattaching.html [ NeedsRebaseline ]
+crbug.com/432129 fast/inline/whitespace-reattaching.html [ NeedsRebaseline ]
+
 crbug.com/371725 http/tests/webfont/slow-loading.html [ Pass ImageOnlyFailure Timeout ]
 
 # Issues on the mac-antialiased fonts virtual test suite.

@@ -958,12 +958,7 @@ void Node::reattachWhitespaceSiblingsIfNeeded(Text* start)
 {
     for (Node* sibling = start; sibling; sibling = sibling->nextSibling()) {
         if (sibling->isTextNode() && toText(sibling)->containsOnlyWhitespace()) {
-            bool hadRenderer = !!sibling->renderer();
             toText(sibling)->reattachIfNeeded();
-            // If sibling's renderer status didn't change we don't need to continue checking
-            // other siblings since their renderer status won't change either.
-            if (!!sibling->renderer() == hadRenderer)
-                return;
         } else if (sibling->renderer()) {
             return;
         }
