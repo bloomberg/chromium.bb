@@ -1628,7 +1628,7 @@ TEST_F(InputRouterImplTest, TouchpadPinchUpdate) {
   EXPECT_EQ(25, wheel_event->windowY);
   EXPECT_EQ(PinchScaleToWheelDelta(1.5), wheel_event->deltaY);
   EXPECT_EQ(0, wheel_event->deltaX);
-  EXPECT_EQ(1, wheel_event->hasPreciseScrollingDeltas);
+  EXPECT_TRUE(wheel_event->hasPreciseScrollingDeltas);
   EXPECT_EQ(1, wheel_event->wheelTicksY);
   EXPECT_EQ(0, wheel_event->wheelTicksX);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
@@ -1651,7 +1651,7 @@ TEST_F(InputRouterImplTest, TouchpadPinchUpdate) {
   ASSERT_EQ(WebInputEvent::MouseWheel, input_event->type);
   wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_FLOAT_EQ(PinchScaleToWheelDelta(0.3f), wheel_event->deltaY);
-  EXPECT_EQ(1, wheel_event->hasPreciseScrollingDeltas);
+  EXPECT_TRUE(wheel_event->hasPreciseScrollingDeltas);
   EXPECT_EQ(-1, wheel_event->wheelTicksY);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
