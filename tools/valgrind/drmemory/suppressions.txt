@@ -462,7 +462,7 @@ name=http://crbug.com/371348
 system call NtCreateSection
 KERNELBASE.dll!CreateFileMappingW
 base.dll!base::SharedMemory::Create
-base.dll!base::SharedMemory::CreateAndMapAnonymous
+base.dll!base::SharedMemory::CreateAnonymous
 content.dll!content::ChildThread::AllocateSharedMemory
 content.dll!content::ChildSharedBitmapManager::AllocateSharedBitmap
 cc.dll!cc::ResourceProvider::CreateBitmap
