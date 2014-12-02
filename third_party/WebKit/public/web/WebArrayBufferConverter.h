@@ -31,7 +31,7 @@
 #ifndef WebArrayBufferConverter_h
 #define WebArrayBufferConverter_h
 
-#include "public/platform/WebArrayBuffer.h"
+#include "public/web/WebArrayBuffer.h"
 
 namespace v8 {
 class Isolate;

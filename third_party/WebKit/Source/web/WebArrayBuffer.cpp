@@ -29,17 +29,16 @@
  */
 
 #include "config.h"
-#include "public/platform/WebArrayBuffer.h"
+#include "public/web/WebArrayBuffer.h"
 
-#include "wtf/ArrayBuffer.h"
+#include "core/dom/DOMArrayBuffer.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
 WebArrayBuffer WebArrayBuffer::create(unsigned numElements, unsigned elementByteSize)
 {
-    RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(numElements, elementByteSize);
-    return WebArrayBuffer(buffer);
+    return WebArrayBuffer(DOMArrayBuffer::create(numElements, elementByteSize));
 }
 
 void WebArrayBuffer::reset()
@@ -66,18 +65,18 @@ unsigned WebArrayBuffer::byteLength() const
     return 0;
 }
 
-WebArrayBuffer::WebArrayBuffer(const PassRefPtr<ArrayBuffer>& blob)
-    : m_private(blob)
+WebArrayBuffer::WebArrayBuffer(const PassRefPtr<DOMArrayBuffer>& buffer)
+    : m_private(buffer)
 {
 }
 
-WebArrayBuffer& WebArrayBuffer::operator=(const PassRefPtr<ArrayBuffer>& blob)
+WebArrayBuffer& WebArrayBuffer::operator=(const PassRefPtr<DOMArrayBuffer>& buffer)
 {
-    m_private = blob;
+    m_private = buffer;
     return *this;
 }
 
-WebArrayBuffer::operator PassRefPtr<ArrayBuffer>() const
+WebArrayBuffer::operator PassRefPtr<DOMArrayBuffer>() const
 {
     return m_private.get();
 }

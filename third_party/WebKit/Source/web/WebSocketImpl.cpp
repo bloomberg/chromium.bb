@@ -36,9 +36,9 @@
 #include "core/frame/ConsoleTypes.h"
 #include "modules/websockets/DocumentWebSocketChannel.h"
 #include "modules/websockets/WebSocketChannel.h"
-#include "public/platform/WebArrayBuffer.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/web/WebArrayBuffer.h"
 #include "public/web/WebDocument.h"
 #include "web/WebSocketChannelClientProxy.h"
 #include "wtf/text/CString.h"
@@ -121,7 +121,7 @@ bool WebSocketImpl::sendArrayBuffer(const WebArrayBuffer& webArrayBuffer)
     if (m_isClosingOrClosed)
         return true;
 
-    RefPtr<DOMArrayBuffer> arrayBuffer = DOMArrayBuffer::create(webArrayBuffer);
+    RefPtr<DOMArrayBuffer> arrayBuffer = PassRefPtr<DOMArrayBuffer>(webArrayBuffer);
     m_private->send(*arrayBuffer, 0, arrayBuffer->byteLength());
     return true;
 }
@@ -170,7 +170,7 @@ void WebSocketImpl::didReceiveBinaryMessage(PassOwnPtr<Vector<char> > payload)
         // FIXME: Handle Blob after supporting WebBlob.
         break;
     case BinaryTypeArrayBuffer:
-        m_client->didReceiveArrayBuffer(WebArrayBuffer(ArrayBuffer::create(payload->data(), payload->size())));
+        m_client->didReceiveArrayBuffer(WebArrayBuffer(DOMArrayBuffer::create(payload->data(), payload->size())));
         break;
     }
 }

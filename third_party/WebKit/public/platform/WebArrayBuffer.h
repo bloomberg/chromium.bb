@@ -39,14 +39,16 @@ class Value;
 template <class T> class Handle;
 }
 
-namespace WTF { class ArrayBuffer; }
-
 #if INSIDE_BLINK
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace blink {
 
+class DOMArrayBuffer;
+
+// FIXME: This file should be removed once the clients get the transition to
+// public/web/WebArrayBuffer.h done.
 class WebArrayBuffer {
 public:
     ~WebArrayBuffer() { reset(); }
@@ -59,23 +61,23 @@ public:
         return *this;
     }
 
-    BLINK_PLATFORM_EXPORT static WebArrayBuffer create(unsigned numElements, unsigned elementByteSize);
+    BLINK_EXPORT static WebArrayBuffer create(unsigned numElements, unsigned elementByteSize);
 
-    BLINK_PLATFORM_EXPORT void reset();
-    BLINK_PLATFORM_EXPORT void assign(const WebArrayBuffer&);
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebArrayBuffer&);
 
     bool isNull() const { return m_private.isNull(); }
-    BLINK_PLATFORM_EXPORT void* data() const;
-    BLINK_PLATFORM_EXPORT unsigned byteLength() const;
+    BLINK_EXPORT void* data() const;
+    BLINK_EXPORT unsigned byteLength() const;
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebArrayBuffer(const WTF::PassRefPtr<WTF::ArrayBuffer>&);
-    BLINK_PLATFORM_EXPORT WebArrayBuffer& operator=(const WTF::PassRefPtr<WTF::ArrayBuffer>&);
-    BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<WTF::ArrayBuffer>() const;
+    BLINK_EXPORT WebArrayBuffer(const WTF::PassRefPtr<DOMArrayBuffer>&);
+    BLINK_EXPORT WebArrayBuffer& operator=(const WTF::PassRefPtr<DOMArrayBuffer>&);
+    BLINK_EXPORT operator WTF::PassRefPtr<DOMArrayBuffer>() const;
 #endif
 
 protected:
-    WebPrivatePtr<WTF::ArrayBuffer> m_private;
+    WebPrivatePtr<DOMArrayBuffer> m_private;
 };
 
 } // namespace blink

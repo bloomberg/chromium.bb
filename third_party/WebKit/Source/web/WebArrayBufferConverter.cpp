@@ -39,15 +39,14 @@ v8::Handle<v8::Value> WebArrayBufferConverter::toV8Value(WebArrayBuffer* buffer,
 {
     if (!buffer)
         return v8::Handle<v8::Value>();
-    return toV8(DOMArrayBuffer::create(*buffer), creationContext, isolate);
+    return toV8(PassRefPtr<DOMArrayBuffer>(*buffer), creationContext, isolate);
 }
 
 WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
     if (!V8ArrayBuffer::hasInstance(value, isolate))
         return 0;
-    DOMArrayBuffer* buffer = V8ArrayBuffer::toImpl(value->ToObject(isolate));
-    return new WebArrayBuffer(buffer->buffer());
+    return new WebArrayBuffer(V8ArrayBuffer::toImpl(value->ToObject(isolate)));
 }
 
 } // namespace blink

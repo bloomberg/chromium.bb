@@ -45,7 +45,7 @@
 #include "core/dom/Range.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "public/platform/WebArrayBuffer.h"
+#include "public/web/WebArrayBuffer.h"
 #include "public/web/WebArrayBufferView.h"
 #include "public/web/WebElement.h"
 #include "public/web/WebRange.h"
@@ -289,7 +289,7 @@ static bool getArrayBufferImpl(NPObject* object, WebArrayBuffer* arrayBuffer, v8
     if (!impl)
         return false;
 
-    *arrayBuffer = WebArrayBuffer(impl->buffer());
+    *arrayBuffer = WebArrayBuffer(impl);
     return true;
 }
 

@@ -267,7 +267,6 @@
       'exported/Platform.cpp',
       'exported/WebActiveGestureAnimation.cpp',
       'exported/WebActiveGestureAnimation.h',
-      'exported/WebArrayBuffer.cpp',
       'exported/WebAudioBus.cpp',
       'exported/WebAudioDevice.cpp',
       'exported/WebBlobData.cpp',
