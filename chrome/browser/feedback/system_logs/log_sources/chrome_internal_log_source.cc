@@ -5,6 +5,7 @@
 #include "chrome/browser/feedback/system_logs/log_sources/chrome_internal_log_source.h"
 
 #include "base/json/json_string_value_serializer.h"
+#include "base/prefs/pref_service.h"
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_version_info.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -22,6 +24,7 @@ namespace {
 
 const char kSyncDataKey[] = "about_sync_data";
 const char kExtensionsListKey[] = "extensions";
+const char kDataReductionProxyKey[] = "data_reduction_proxy";
 const char kChromeVersionTag[] = "CHROME VERSION";
 #if !defined(OS_CHROMEOS)
 const char kOsVersionTag[] = "OS VERSION";
@@ -56,6 +59,7 @@ void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
 
   PopulateSyncLogs(&response);
   PopulateExtensionInfoLogs(&response);
+  PopulateDataReductionProxyLogs(&response);
 
   callback.Run(&response);
 }
@@ -124,6 +128,17 @@ void ChromeInternalLogSource::PopulateExtensionInfoLogs(
 
   if (!extensions_list.empty())
     (*response)[kExtensionsListKey] = extensions_list;
+}
+
+void ChromeInternalLogSource::PopulateDataReductionProxyLogs(
+    SystemLogsResponse* response) {
+  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  bool is_data_reduction_proxy_enabled = prefs->HasPrefPath(
+          data_reduction_proxy::prefs::kDataReductionProxyEnabled) &&
+      prefs->GetBoolean(
+          data_reduction_proxy::prefs::kDataReductionProxyEnabled);
+  (*response)[kDataReductionProxyKey] = is_data_reduction_proxy_enabled ?
+      "enabled" : "disabled";
 }
 
 }  // namespace system_logs

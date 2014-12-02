@@ -21,6 +21,7 @@ class ChromeInternalLogSource : public SystemLogsSource {
  private:
   void PopulateSyncLogs(SystemLogsResponse* response);
   void PopulateExtensionInfoLogs(SystemLogsResponse* response);
+  void PopulateDataReductionProxyLogs(SystemLogsResponse* response);
 
   DISALLOW_COPY_AND_ASSIGN(ChromeInternalLogSource);
 };
