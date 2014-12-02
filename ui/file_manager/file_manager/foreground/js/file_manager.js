@@ -311,6 +311,12 @@ FileManager.prototype = /** @struct */ {
     return this.historyLoader_;
   },
   /**
+   * @return {MetadataCache}
+   */
+  get metadataCache() {
+    return this.metadataCache_;
+  },
+  /**
    * @return {FileManagerUI}
    */
   get ui() {
