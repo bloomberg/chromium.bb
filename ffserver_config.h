@@ -106,12 +106,18 @@ typedef struct FFServerConfig {
     struct sockaddr_in rtsp_addr;
     int errors;
     int warnings;
+    int use_defaults;
     // Following variables MUST NOT be used outside configuration parsing code.
-    AVCodecContext audio_enc;
-    AVCodecContext video_enc;
-    enum AVCodecID audio_id;
-    enum AVCodecID video_id;
-
+    enum AVCodecID guessed_audio_codec_id;
+    enum AVCodecID guessed_video_codec_id;
+    AVDictionary *video_opts;     /* AVOptions for video encoder */
+    AVDictionary *audio_opts;     /* AVOptions for audio encoder */
+    AVCodecContext *dummy_actx;   /* Used internally to test audio AVOptions. */
+    AVCodecContext *dummy_vctx;   /* Used internally to test video AVOptions. */
+    int no_audio;
+    int no_video;
+    int line_num;
+    int stream_use_defaults;
 } FFServerConfig;
 
 void ffserver_get_arg(char *buf, int buf_size, const char **pp);
@@ -121,5 +127,7 @@ void ffserver_parse_acl_row(FFServerStream *stream, FFServerStream* feed,
                             const char *p, const char *filename, int line_num);
 
 int ffserver_parse_ffconfig(const char *filename, FFServerConfig *config);
+
+void ffserver_free_child_args(void *argsp);
 
 #endif /* FFSERVER_CONFIG_H */

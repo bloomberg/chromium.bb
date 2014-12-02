@@ -254,6 +254,7 @@ External library support:
   --enable-libxcb          enable X11 grabbing using XCB [auto]
   --enable-libxcb-shm      enable X11 grabbing shm communication [auto]
   --enable-libxcb-xfixes   enable X11 grabbing mouse rendering [auto]
+  --enable-libxcb-shape    enable X11 grabbing shape rendering [auto]
   --enable-libxvid         enable Xvid encoding via xvidcore,
                            native MPEG-4/Xvid encoder exists [no]
   --enable-libzmq          enable message passing via libzmq [no]
@@ -1386,6 +1387,7 @@ EXTERNAL_LIBRARY_LIST="
     libxavs
     libxcb
     libxcb_shm
+    libxcb_shape
     libxcb_xfixes
     libxvid
     libzmq
@@ -1659,6 +1661,7 @@ HEADERS_LIST="
     sys_un_h
     sys_videoio_h
     termios_h
+    udplite_h
     unistd_h
     windows_h
     winsock2_h
@@ -1677,7 +1680,6 @@ MATH_FUNCS="
     exp2
     exp2f
     expf
-    fminf
     isinf
     isnan
     ldexpf
@@ -1730,6 +1732,7 @@ SYSTEM_FUNCS="
     lzo1x_999_compress
     mach_absolute_time
     MapViewOfFile
+    MoveFileExA
     memalign
     mkstemp
     mmap
@@ -2068,6 +2071,7 @@ amrwb_decoder_select="lsp"
 amv_decoder_select="sp5x_decoder exif"
 amv_encoder_select="aandcttables mpegvideoenc"
 ape_decoder_select="bswapdsp llauddsp"
+apng_decoder_select="zlib"
 asv1_decoder_select="blockdsp bswapdsp idctdsp"
 asv1_encoder_select="bswapdsp fdctdsp pixblockdsp"
 asv2_decoder_select="blockdsp bswapdsp idctdsp"
@@ -2397,6 +2401,7 @@ avi_muxer_select="riffenc"
 avisynth_demuxer_deps="avisynth"
 avisynth_demuxer_select="riffdec"
 caf_demuxer_select="riffdec"
+dash_muxer_select="mp4_muxer"
 dirac_demuxer_select="dirac_parser"
 dts_demuxer_select="dca_parser"
 dtshd_demuxer_select="dca_parser"
@@ -2542,6 +2547,7 @@ tcp_protocol_select="network"
 tls_protocol_deps_any="openssl gnutls"
 tls_protocol_select="tcp_protocol"
 udp_protocol_select="network"
+udplite_protocol_select="network"
 unix_protocol_deps="sys_un_h"
 unix_protocol_select="network"
 
@@ -2564,19 +2570,16 @@ drawtext_filter_deps="libfreetype"
 ebur128_filter_deps="gpl"
 flite_filter_deps="libflite"
 frei0r_filter_deps="frei0r dlopen"
-frei0r_filter_extralibs='$ldl'
 frei0r_src_filter_deps="frei0r dlopen"
-frei0r_src_filter_extralibs='$ldl'
 geq_filter_deps="gpl"
 histeq_filter_deps="gpl"
 hqdn3d_filter_deps="gpl"
 interlace_filter_deps="gpl"
 kerndeint_filter_deps="gpl"
 ladspa_filter_deps="ladspa dlopen"
-ladspa_filter_extralibs='$ldl'
 mcdeint_filter_deps="avcodec gpl"
 movie_filter_deps="avcodec avformat"
-mp_filter_deps="gpl avcodec swscale inline_asm"
+mp_filter_deps="gpl avcodec swscale"
 mpdecimate_filter_deps="gpl"
 mpdecimate_filter_select="pixelutils"
 mptestsrc_filter_deps="gpl"
@@ -3442,29 +3445,6 @@ probe_cc(){
         # 4509: "This form of conditional instruction is deprecated"
         _flags="-nologo -ignore 4509"
         _flags_filter=armasm_flags
-    elif $_cc 2>&1 | grep -q Microsoft; then
-        _type=msvc
-        _ident=$($cc 2>&1 | head -n1)
-        _DEPCMD='$(DEP$(1)) $(DEP$(1)FLAGS) $($(1)DEP_FLAGS) $< 2>&1 | awk '\''/including/ { sub(/^.*file: */, ""); gsub(/\\/, "/"); if (!match($$0, / /)) print "$@:", $$0 }'\'' > $(@:.o=.d)'
-        _DEPFLAGS='$(CPPFLAGS) $(CFLAGS) -showIncludes -Zs'
-        _cflags_speed="-O2"
-        _cflags_size="-O1"
-        if $_cc 2>&1 | grep -q Linker; then
-            _ld_o='-out:$@'
-        else
-            _ld_o='-Fe$@'
-        fi
-        _cc_o='-Fo$@'
-        _cc_e='-P -Fi$@'
-        _flags_filter=msvc_flags
-        _ld_lib='lib%.a'
-        _ld_path='-libpath:'
-        _flags='-nologo'
-        _cflags='-D_USE_MATH_DEFINES -D_CRT_SECURE_NO_WARNINGS -Dinline=__inline -FIstdlib.h -Dstrtoll=_strtoi64'
-        if [ $pfx = hostcc ]; then
-            append _cflags -Dsnprintf=_snprintf
-        fi
-        disable stripping
     elif $_cc 2>&1 | grep -q Intel; then
         _type=icl
         _ident=$($cc 2>&1 | head -n1)
@@ -3491,6 +3471,30 @@ probe_cc(){
         if [ $pfx = hostcc ]; then
             append _cflags -Dsnprintf=_snprintf
         fi
+        disable stripping
+    elif $_cc 2>&1 | grep -q Microsoft; then
+        _type=msvc
+        _ident=$($cc 2>&1 | head -n1)
+        _DEPCMD='$(DEP$(1)) $(DEP$(1)FLAGS) $($(1)DEP_FLAGS) $< 2>&1 | awk '\''/including/ { sub(/^.*file: */, ""); gsub(/\\/, "/"); if (!match($$0, / /)) print "$@:", $$0 }'\'' > $(@:.o=.d)'
+        _DEPFLAGS='$(CPPFLAGS) $(CFLAGS) -showIncludes -Zs'
+        _cflags_speed="-O2"
+        _cflags_size="-O1"
+        if $_cc 2>&1 | grep -q Linker; then
+            _ld_o='-out:$@'
+        else
+            _ld_o='-Fe$@'
+        fi
+        _cc_o='-Fo$@'
+        _cc_e='-P -Fi$@'
+        _flags_filter=msvc_flags
+        _ld_lib='lib%.a'
+        _ld_path='-libpath:'
+        _flags='-nologo'
+        _cflags='-D_USE_MATH_DEFINES -D_CRT_SECURE_NO_WARNINGS -Dinline=__inline -FIstdlib.h -Dstrtoll=_strtoi64'
+        if [ $pfx = hostcc ]; then
+            append _cflags -Dsnprintf=_snprintf
+        fi
+        disable stripping
     elif $_cc --version 2>/dev/null | grep -q ^cparser; then
         _type=cparser
         _ident=$($_cc --version | head -n1)
@@ -3948,6 +3952,9 @@ case "$arch" in
     ;;
     x86)
         check_64bit x86_32 x86_64 'sizeof(void *) > 4'
+        # Treat x32 as x64 for now. Note it also needs spic=$shared
+        test "$subarch" = "x86_32" && check_cpp_condition stddef.h 'defined(__x86_64__)' &&
+            subarch=x86_64
         if test "$subarch" = "x86_64"; then
             spic=$shared
         fi
@@ -4525,7 +4532,7 @@ elif enabled parisc; then
 
     if enabled gcc; then
         case $($cc -dumpversion) in
-            4.[3-8].*) check_cflags -fno-optimize-sibling-calls ;;
+            4.[3-9].*) check_cflags -fno-optimize-sibling-calls ;;
         esac
     fi
 
@@ -4641,6 +4648,10 @@ elif check_func dlopen -ldl; then
     ldl=-ldl
 fi
 
+frei0r_filter_extralibs='$ldl'
+frei0r_src_filter_extralibs='$ldl'
+ladspa_filter_extralibs='$ldl'
+
 if ! disabled network; then
     check_func getaddrinfo $network_extralibs
     check_func getservbyport $network_extralibs
@@ -4727,6 +4738,7 @@ check_func_headers windows.h GetProcessAffinityMask
 check_func_headers windows.h GetProcessTimes
 check_func_headers windows.h GetSystemTimeAsFileTime
 check_func_headers windows.h MapViewOfFile
+check_func_headers windows.h MoveFileExA
 check_func_headers windows.h PeekNamedPipe
 check_func_headers windows.h SetConsoleTextAttribute
 check_func_headers windows.h Sleep
@@ -4745,6 +4757,7 @@ check_header io.h
 check_header libcrystalhd/libcrystalhd_if.h
 check_header mach/mach_time.h
 check_header malloc.h
+check_header net/udplite.h
 check_header poll.h
 check_header sys/mman.h
 check_header sys/param.h
@@ -4810,7 +4823,6 @@ disabled crystalhd || check_lib libcrystalhd/libcrystalhd_if.h DtsCrystalHDVersi
 atan2f_args=2
 ldexpf_args=2
 powf_args=2
-fminf_args=2
 
 for func in $MATH_FUNCS; do
     eval check_mathfunc $func \${${func}_args:-1}
@@ -5030,18 +5042,23 @@ if ! disabled libxcb; then
     } && disable x11grab && enable libxcb
 
 if enabled libxcb; then
-    disabled libxcb_shm ||
+    disabled libxcb_shm || {
         check_pkg_config xcb-shm xcb/shm.h xcb_shm_attach || {
             enabled libxcb_shm && die "ERROR: libxcb_shm not found";
-        } && check_header sys/shm.h && enable libxcb_shm
+        } && check_header sys/shm.h && enable libxcb_shm; }
 
-    disabled libxcb_xfixes ||
+    disabled libxcb_xfixes || {
         check_pkg_config xcb-xfixes xcb/xfixes.h xcb_xfixes_get_cursor_image || {
             enabled libxcb_xfixes && die "ERROR: libxcb_xfixes not found";
-        } && enable libxcb_xfixes
+        } && enable libxcb_xfixes; }
 
-    add_cflags "$xcb_event_cflags $xcb_shm_cflags $xcb_xfixes_cflags"
-    add_extralibs "$xcb_event_libs $xcb_shm_libs $xcb_xfixes_libs"
+    disabled libxcb_shape || {
+        check_pkg_config xcb-shape xcb/shape.h xcb_shape_get_rectangles || {
+            enabled libxcb_shape && die "ERROR: libxcb_shape not found";
+        } && enable libxcb_shape; }
+
+    add_cflags $xcb_cflags $xcb_shm_cflags $xcb_xfixes_cflags $xcb_shape_cflags
+    add_extralibs $xcb_libs $xcb_shm_libs $xcb_xfixes_libs $xcb_shape_libs
 fi
 fi
 

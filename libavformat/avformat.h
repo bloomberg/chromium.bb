@@ -916,7 +916,7 @@ typedef struct AVStream {
     /**
      * Stream information used internally by av_find_stream_info()
      */
-#define MAX_STD_TIMEBASES (60*12+6)
+#define MAX_STD_TIMEBASES (30*12+7+6)
     struct {
         int64_t last_dts;
         int64_t duration_gcd;
@@ -1097,11 +1097,26 @@ typedef struct AVStream {
      */
     int inject_global_side_data;
 
+    /**
+     * String containing paris of key and values describing recommended encoder configuration.
+     * Paris are separated by ','.
+     * Keys are separated from values by '='.
+     */
+    char *recommended_encoder_configuration;
+
+    /**
+     * display aspect ratio (0 if unknown)
+     * - encoding: unused
+     * - decoding: Set by libavformat to calculate sample_aspect_ratio internally
+     */
+    AVRational display_aspect_ratio;
 } AVStream;
 
 AVRational av_stream_get_r_frame_rate(const AVStream *s);
 void       av_stream_set_r_frame_rate(AVStream *s, AVRational r);
 struct AVCodecParserContext *av_stream_get_parser(const AVStream *s);
+char* av_stream_get_recommended_encoder_configuration(const AVStream *s);
+void  av_stream_set_recommended_encoder_configuration(AVStream *s, char *configuration);
 
 /**
  * Returns the pts of the last muxed packet + its duration
@@ -1475,6 +1490,18 @@ typedef struct AVFormatContext {
      */
     int max_ts_probe;
 
+    /**
+     * Avoid negative timestamps during muxing.
+     * Any value of the AVFMT_AVOID_NEG_TS_* constants.
+     * Note, this only works when using av_interleaved_write_frame. (interleave_packet_per_dts is in use)
+     * - muxing: Set by user
+     * - demuxing: unused
+     */
+    int avoid_negative_ts;
+#define AVFMT_AVOID_NEG_TS_AUTO             -1 ///< Enabled when required by target format
+#define AVFMT_AVOID_NEG_TS_MAKE_NON_NEGATIVE 1 ///< Shift timestamps so they are non negative
+#define AVFMT_AVOID_NEG_TS_MAKE_ZERO         2 ///< Shift timestamps so that they start at 0
+
 
     /**
      * Transport stream id.
@@ -1513,17 +1540,6 @@ typedef struct AVFormatContext {
      * - decoding: Set by user via AVOptions (NO direct access)
      */
     int use_wallclock_as_timestamps;
-
-    /**
-     * Avoid negative timestamps during muxing.
-     *  0 -> allow negative timestamps
-     *  1 -> avoid negative timestamps
-     * -1 -> choose automatically (default)
-     * Note, this only works when interleave_packet_per_dts is in use.
-     * - encoding: Set by user via AVOptions (NO direct access)
-     * - decoding: unused
-     */
-    int avoid_negative_ts;
 
     /**
      * avio flags, used to force AVIO_FLAG_DIRECT.
@@ -1585,7 +1601,7 @@ typedef struct AVFormatContext {
     int format_probesize;
 
     /**
-     * ',' seperated list of allowed decoders.
+     * ',' separated list of allowed decoders.
      * If NULL then all are allowed
      * - encoding: unused
      * - decoding: set by user through AVOptions (NO direct access)
@@ -1593,7 +1609,7 @@ typedef struct AVFormatContext {
     char *codec_whitelist;
 
     /**
-     * ',' seperated list of allowed demuxers.
+     * ',' separated list of allowed demuxers.
      * If NULL then all are allowed
      * - encoding: unused
      * - decoding: set by user through AVOptions (NO direct access)

@@ -9,6 +9,15 @@ version <next>:
 - STL subtitle demuxer and decoder
 - libutvideo YUV 4:2:2 10bit support
 - XCB-based screen-grabber
+- UDP-Lite support (RFC 3828)
+- xBR scaling filter
+- AVFoundation screen capturing support
+- ffserver supports codec private options
+- creating DASH compatible fragmented MP4, MPEG-DASH segmenting muxer
+- WebP muxer with animated WebP support
+- zygoaudio decoding support
+- APNG demuxer
+
 
 version 2.4:
 - Icecast protocol
