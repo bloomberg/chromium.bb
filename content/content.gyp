@@ -461,13 +461,6 @@
             'R_package': 'org.chromium.content',
             'R_package_relpath': 'org/chromium/content',
           },
-          'conditions': [
-            ['android_webview_build == 0', {
-              'dependencies': [
-                '../third_party/eyesfree/eyesfree.gyp:eyesfree_java',
-              ],
-            }],
-          ],
           'includes': [ '../build/java.gypi' ],
         },
         {

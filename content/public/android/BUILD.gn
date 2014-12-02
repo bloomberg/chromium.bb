@@ -49,11 +49,6 @@ android_library("content_java") {
   ]
 
   DEPRECATED_java_in_dir = "java/src"
-  if (!is_android_webview_build) {
-    deps += [
-      "//third_party/eyesfree:eyesfree_java",
-    ]
-  }
 }
 
 java_strings_grd("content_strings_grd") {

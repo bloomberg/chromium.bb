@@ -11,13 +11,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.speech.tts.TextToSpeech;
-import android.util.Log;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
-
-import com.googlecode.eyesfree.braille.selfbraille.SelfBrailleClient;
-import com.googlecode.eyesfree.braille.selfbraille.WriteData;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -39,8 +35,6 @@ import java.util.List;
  * Responsible for accessibility injection and management of a {@link ContentViewCore}.
  */
 public class AccessibilityInjector extends WebContentsObserver {
-    private static final String TAG = "AccessibilityInjector";
-
     // The ContentView this injector is responsible for managing.
     protected ContentViewCore mContentViewCore;
 
@@ -401,14 +395,11 @@ public class AccessibilityInjector extends WebContentsObserver {
      */
     protected static class TextToSpeechWrapper {
         protected final TextToSpeech mTextToSpeech;
-        private final SelfBrailleClient mSelfBrailleClient;
         private final View mView;
 
         protected TextToSpeechWrapper(View view, Context context) {
             mView = view;
             mTextToSpeech = new TextToSpeech(context, null, null);
-            mSelfBrailleClient = new SelfBrailleClient(context, CommandLine.getInstance().hasSwitch(
-                    ContentSwitches.ACCESSIBILITY_DEBUG_BRAILLE_SERVICE));
         }
 
         @JavascriptInterface
@@ -455,23 +446,13 @@ public class AccessibilityInjector extends WebContentsObserver {
         @JavascriptInterface
         @SuppressWarnings("unused")
         public void braille(String jsonString) {
-            try {
-                JSONObject jsonObj = new JSONObject(jsonString);
-
-                WriteData data = WriteData.forView(mView);
-                data.setText(jsonObj.getString("text"));
-                data.setSelectionStart(jsonObj.getInt("startIndex"));
-                data.setSelectionEnd(jsonObj.getInt("endIndex"));
-                mSelfBrailleClient.write(data);
-            } catch (JSONException ex) {
-                Log.w(TAG, "Error parsing JS JSON object", ex);
-            }
+            // This is here because AndroidVox depends on the existence
+            // of this method.
         }
 
         @SuppressWarnings("unused")
         protected void shutdownInternal() {
             mTextToSpeech.shutdown();
-            mSelfBrailleClient.shutdown();
         }
     }
 }

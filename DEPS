@@ -494,8 +494,6 @@ deps_os = {
     'src/third_party/lss':
       Var('chromium_git') + '/external/linux-syscall-support/lss.git' + '@' + Var('lss_revision'),
 
-    'src/third_party/eyesfree/src/android/java/src/com/googlecode/eyesfree/braille':
-      Var('chromium_git') + '/external/eyes-free/braille/client/src/com/googlecode/eyesfree/braille.git' + '@' + '77bf6edb0138e3a38a2772248696f130dab45e34',
   },
 }
 

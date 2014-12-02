@@ -27,10 +27,6 @@ public abstract class ContentSwitches {
     // Change the url of the JavaScript that gets injected when accessibility mode is enabled.
     public static final String ACCESSIBILITY_JAVASCRIPT_URL = "accessibility-js-url";
 
-    // Whether to ignore signature mismatches when connecting to BrailleBack's
-    // SelfBrailleService.
-    public static final String ACCESSIBILITY_DEBUG_BRAILLE_SERVICE = "debug-braille-service";
-
     // Indicates Chrome is running for performance benchmark.
     public static final String RUNNING_PERFORMANCE_BENCHMARK =
             "running-performance-benchmark";

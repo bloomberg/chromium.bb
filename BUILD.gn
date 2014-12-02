@@ -192,7 +192,6 @@ group("root") {
       "//third_party/android_tools:android_support_v13_java",
       "//third_party/android_tools:android_support_v7_appcompat_java",
       "//third_party/android_tools:android_support_v7_mediarouter_java",
-      "//third_party/eyesfree:eyesfree_java",
     ]
 
     if (has_chrome_android_internal) {
