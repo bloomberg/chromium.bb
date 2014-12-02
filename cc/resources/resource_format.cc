@@ -17,7 +17,6 @@ SkColorType ResourceFormatToSkColorType(ResourceFormat format) {
     case ALPHA_8:
     case LUMINANCE_8:
     case RGB_565:
-    case RED_8:
       NOTREACHED();
       break;
   }

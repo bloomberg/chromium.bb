@@ -610,7 +610,6 @@ inline unsigned BitsPerPixel(ResourceFormat format) {
       return 16;
     case ALPHA_8:
     case LUMINANCE_8:
-    case RED_8:
       return 8;
     case ETC1:
       return 4;
@@ -622,14 +621,13 @@ inline unsigned BitsPerPixel(ResourceFormat format) {
 inline GLenum GLDataType(ResourceFormat format) {
   DCHECK_LE(format, RESOURCE_FORMAT_MAX);
   static const unsigned format_gl_data_type[RESOURCE_FORMAT_MAX + 1] = {
-      GL_UNSIGNED_BYTE,           // RGBA_8888
-      GL_UNSIGNED_SHORT_4_4_4_4,  // RGBA_4444
-      GL_UNSIGNED_BYTE,           // BGRA_8888
-      GL_UNSIGNED_BYTE,           // ALPHA_8
-      GL_UNSIGNED_BYTE,           // LUMINANCE_8
-      GL_UNSIGNED_SHORT_5_6_5,    // RGB_565,
-      GL_UNSIGNED_BYTE,           // ETC1
-      GL_UNSIGNED_BYTE            // RED_8
+    GL_UNSIGNED_BYTE,           // RGBA_8888
+    GL_UNSIGNED_SHORT_4_4_4_4,  // RGBA_4444
+    GL_UNSIGNED_BYTE,           // BGRA_8888
+    GL_UNSIGNED_BYTE,           // ALPHA_8
+    GL_UNSIGNED_BYTE,           // LUMINANCE_8
+    GL_UNSIGNED_SHORT_5_6_5,    // RGB_565,
+    GL_UNSIGNED_BYTE            // ETC1
   };
   return format_gl_data_type[format];
 }
@@ -637,14 +635,13 @@ inline GLenum GLDataType(ResourceFormat format) {
 inline GLenum GLDataFormat(ResourceFormat format) {
   DCHECK_LE(format, RESOURCE_FORMAT_MAX);
   static const unsigned format_gl_data_format[RESOURCE_FORMAT_MAX + 1] = {
-      GL_RGBA,           // RGBA_8888
-      GL_RGBA,           // RGBA_4444
-      GL_BGRA_EXT,       // BGRA_8888
-      GL_ALPHA,          // ALPHA_8
-      GL_LUMINANCE,      // LUMINANCE_8
-      GL_RGB,            // RGB_565
-      GL_ETC1_RGB8_OES,  // ETC1
-      GL_RED_EXT         // RED_8
+    GL_RGBA,           // RGBA_8888
+    GL_RGBA,           // RGBA_4444
+    GL_BGRA_EXT,       // BGRA_8888
+    GL_ALPHA,          // ALPHA_8
+    GL_LUMINANCE,      // LUMINANCE_8
+    GL_RGB,            // RGB_565
+    GL_ETC1_RGB8_OES   // ETC1
   };
   return format_gl_data_format[format];
 }
