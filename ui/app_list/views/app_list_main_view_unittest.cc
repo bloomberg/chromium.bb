@@ -154,14 +154,14 @@ class AppListMainViewTest : public views::ViewsTestBase {
     grid_view->UpdateDragFromItem(pointer, drag_event);
   }
 
-  ContentsView* ContentsView() { return main_view_->contents_view(); }
+  ContentsView* GetContentsView() { return main_view_->contents_view(); }
 
   AppsGridView* RootGridView() {
-    return ContentsView()->apps_container_view()->apps_grid_view();
+    return GetContentsView()->apps_container_view()->apps_grid_view();
   }
 
   AppListFolderView* FolderView() {
-    return ContentsView()->apps_container_view()->app_list_folder_view();
+    return GetContentsView()->apps_container_view()->app_list_folder_view();
   }
 
   AppsGridView* FolderGridView() { return FolderView()->items_grid_view(); }
@@ -298,7 +298,7 @@ TEST_F(AppListMainViewTest, DragReparentItemOntoPageSwitcher) {
   const int kNumApps = 30;
 
   // Ensure we are on the apps grid view page.
-  app_list::ContentsView* contents_view = ContentsView();
+  app_list::ContentsView* contents_view = GetContentsView();
   contents_view->SetActivePage(
       contents_view->GetPageIndexForState(AppListModel::STATE_APPS));
   contents_view->Layout();
