@@ -845,8 +845,6 @@ void FreeList<Header>::addToFreeList(Address address, size_t size)
 #endif
     int index = bucketIndexForSize(size);
     entry->link(&m_freeLists[index]);
-    if (!m_lastFreeListEntries[index])
-        m_lastFreeListEntries[index] = entry;
     if (index > m_biggestFreeListIndex)
         m_biggestFreeListIndex = index;
 }
@@ -1520,10 +1518,8 @@ template<typename Header>
 void FreeList<Header>::clear()
 {
     m_biggestFreeListIndex = 0;
-    for (size_t i = 0; i < blinkPageSizeLog2; i++) {
+    for (size_t i = 0; i < blinkPageSizeLog2; i++)
         m_freeLists[i] = 0;
-        m_lastFreeListEntries[i] = 0;
-    }
 }
 
 template<typename Header>

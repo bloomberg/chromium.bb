@@ -732,7 +732,6 @@ private:
 
     // All FreeListEntries in the nth list have size >= 2^n.
     FreeListEntry* m_freeLists[blinkPageSizeLog2];
-    FreeListEntry* m_lastFreeListEntries[blinkPageSizeLog2];
 
     friend class ThreadHeap<Header>;
 };
