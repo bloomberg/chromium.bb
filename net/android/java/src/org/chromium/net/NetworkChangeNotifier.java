@@ -33,21 +33,12 @@ public class NetworkChangeNotifier {
         public void onConnectionTypeChanged(int connectionType);
     }
 
-    // These constants must always match the ones in network_change_notifier.h.
-    public static final int CONNECTION_UNKNOWN = 0;
-    public static final int CONNECTION_ETHERNET = 1;
-    public static final int CONNECTION_WIFI = 2;
-    public static final int CONNECTION_2G = 3;
-    public static final int CONNECTION_3G = 4;
-    public static final int CONNECTION_4G = 5;
-    public static final int CONNECTION_NONE = 6;
-    public static final int CONNECTION_BLUETOOTH = 7;
-
     private final Context mContext;
     private final ArrayList<Long> mNativeChangeNotifiers;
     private final ObserverList<ConnectionTypeObserver> mConnectionTypeObservers;
     private NetworkChangeNotifierAutoDetect mAutoDetector;
-    private int mCurrentConnectionType = CONNECTION_UNKNOWN;
+    private int mCurrentConnectionType = ConnectionType.CONNECTION_UNKNOWN;
+    private double mCurrentMaxBandwidth = Double.POSITIVE_INFINITY;
 
     private static NetworkChangeNotifier sInstance;
 
@@ -79,6 +70,18 @@ public class NetworkChangeNotifier {
     @CalledByNative
     public int getCurrentConnectionType() {
         return mCurrentConnectionType;
+    }
+
+    @CalledByNative
+    public double getCurrentMaxBandwidth() {
+        return mCurrentMaxBandwidth;
+    }
+
+    /**
+     * Calls a native map lookup of subtype to max bandwidth.
+     */
+    public static double getMaxBandwidthForConnectionSubtype(int subtype) {
+        return nativeGetMaxBandwidthForConnectionSubtype(subtype);
     }
 
     /**
@@ -144,11 +147,13 @@ public class NetworkChangeNotifier {
                     new NetworkChangeNotifierAutoDetect.Observer() {
                         @Override
                         public void onConnectionTypeChanged(int newConnectionType) {
+                            updateCurrentMaxBandwidth(mAutoDetector.getCurrentMaxBandwidthInMbps());
                             updateCurrentConnectionType(newConnectionType);
                         }
                     },
                     mContext,
                     alwaysWatchForChanges);
+                updateCurrentMaxBandwidth(mAutoDetector.getCurrentMaxBandwidthInMbps());
                 updateCurrentConnectionType(mAutoDetector.getCurrentConnectionType());
             }
         } else {
@@ -169,15 +174,22 @@ public class NetworkChangeNotifier {
     }
 
     private void forceConnectivityStateInternal(boolean forceOnline) {
-        boolean connectionCurrentlyExists = mCurrentConnectionType != CONNECTION_NONE;
+        boolean connectionCurrentlyExists =
+                mCurrentConnectionType != ConnectionType.CONNECTION_NONE;
         if (connectionCurrentlyExists != forceOnline) {
-            updateCurrentConnectionType(forceOnline ? CONNECTION_UNKNOWN : CONNECTION_NONE);
+            updateCurrentMaxBandwidth(forceOnline ? Double.POSITIVE_INFINITY : 0.0);
+            updateCurrentConnectionType(forceOnline ? ConnectionType.CONNECTION_UNKNOWN
+                    : ConnectionType.CONNECTION_NONE);
         }
     }
 
     private void updateCurrentConnectionType(int newConnectionType) {
         mCurrentConnectionType = newConnectionType;
         notifyObserversOfConnectionTypeChange(newConnectionType);
+    }
+
+    private void updateCurrentMaxBandwidth(double maxBandwidth) {
+        mCurrentMaxBandwidth = maxBandwidth;
     }
 
     /**
@@ -217,6 +229,8 @@ public class NetworkChangeNotifier {
     @NativeClassQualifiedName("NetworkChangeNotifierDelegateAndroid")
     private native void nativeNotifyConnectionTypeChanged(long nativePtr, int newConnectionType);
 
+    private static native double nativeGetMaxBandwidthForConnectionSubtype(int subtype);
+
     // For testing only.
     public static NetworkChangeNotifierAutoDetect getAutoDetectorForTest() {
         return getInstance().mAutoDetector;
@@ -227,6 +241,7 @@ public class NetworkChangeNotifier {
      */
     public static boolean isOnline() {
         int connectionType = getInstance().getCurrentConnectionType();
-        return connectionType != CONNECTION_UNKNOWN && connectionType != CONNECTION_NONE;
+        return connectionType != ConnectionType.CONNECTION_UNKNOWN
+                && connectionType != ConnectionType.CONNECTION_NONE;
     }
 }

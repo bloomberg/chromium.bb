@@ -213,4 +213,17 @@ TEST_F(NetworkChangeNotifierAndroidTest,
             other_connection_type_observer_.notifications_count());
 }
 
+TEST_F(NetworkChangeNotifierAndroidTest, MaxBandwidth) {
+  SetOnline();
+  EXPECT_EQ(NetworkChangeNotifier::CONNECTION_UNKNOWN,
+            notifier_.GetConnectionType());
+  EXPECT_EQ(std::numeric_limits<double>::infinity(),
+            notifier_.GetMaxBandwidth());
+
+  SetOffline();
+  EXPECT_EQ(NetworkChangeNotifier::CONNECTION_NONE,
+            notifier_.GetConnectionType());
+  EXPECT_EQ(0.0, notifier_.GetMaxBandwidth());
+}
+
 }  // namespace net

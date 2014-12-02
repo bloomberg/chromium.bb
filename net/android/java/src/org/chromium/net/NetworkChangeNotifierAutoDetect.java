@@ -4,10 +4,12 @@
 
 package org.chromium.net;
 
+import android.Manifest.permission;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
@@ -77,15 +79,27 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
     /** Queries the WifiManager for SSID of the current Wifi connection. */
     static class WifiManagerDelegate {
         private final Context mContext;
+        private final WifiManager mWifiManager;
+        private final boolean mHasWifiPermission;
 
         WifiManagerDelegate(Context context) {
             mContext = context;
+            // TODO(jkarlin): If the embedder doesn't have ACCESS_WIFI_STATE permission then inform
+            // native code and fail if native NetworkChangeNotifierAndroid::GetMaxBandwidth() is
+            // called.
+            mHasWifiPermission = mContext.getPackageManager().checkPermission(
+                    permission.ACCESS_WIFI_STATE, mContext.getPackageName())
+                    == PackageManager.PERMISSION_GRANTED;
+            mWifiManager = mHasWifiPermission
+                    ? (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE) : null;
         }
 
         // For testing.
         WifiManagerDelegate() {
             // All the methods below should be overridden.
             mContext = null;
+            mWifiManager = null;
+            mHasWifiPermission = false;
         }
 
         String getWifiSSID() {
@@ -102,10 +116,24 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
             }
             return "";
         }
+
+        /*
+         * Requires ACCESS_WIFI_STATE permission to get the real link speed, else returns
+         * UNKNOWN_LINK_SPEED.
+         */
+        int getLinkSpeedInMbps() {
+            if (!mHasWifiPermission || mWifiManager == null) return UNKNOWN_LINK_SPEED;
+            final WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
+            if (wifiInfo == null) return UNKNOWN_LINK_SPEED;
+
+            // wifiInfo.getLinkSpeed returns the current wifi linkspeed, which can change even
+            // though the connection type hasn't changed.
+            return wifiInfo.getLinkSpeed();
+        }
     }
 
     private static final String TAG = "NetworkChangeNotifierAutoDetect";
-
+    private static final int UNKNOWN_LINK_SPEED = -1;
     private final NetworkConnectivityIntentFilter mIntentFilter =
             new NetworkConnectivityIntentFilter();
 
@@ -187,18 +215,18 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
         // Track exactly what type of connection we have.
         final NetworkState networkState = mConnectivityManagerDelegate.getNetworkState();
         if (!networkState.isConnected()) {
-            return NetworkChangeNotifier.CONNECTION_NONE;
+            return ConnectionType.CONNECTION_NONE;
         }
 
         switch (networkState.getNetworkType()) {
             case ConnectivityManager.TYPE_ETHERNET:
-                return NetworkChangeNotifier.CONNECTION_ETHERNET;
+                return ConnectionType.CONNECTION_ETHERNET;
             case ConnectivityManager.TYPE_WIFI:
-                return NetworkChangeNotifier.CONNECTION_WIFI;
+                return ConnectionType.CONNECTION_WIFI;
             case ConnectivityManager.TYPE_WIMAX:
-                return NetworkChangeNotifier.CONNECTION_4G;
+                return ConnectionType.CONNECTION_4G;
             case ConnectivityManager.TYPE_BLUETOOTH:
-                return NetworkChangeNotifier.CONNECTION_BLUETOOTH;
+                return ConnectionType.CONNECTION_BLUETOOTH;
             case ConnectivityManager.TYPE_MOBILE:
                 // Use information from TelephonyManager to classify the connection.
                 switch (networkState.getNetworkSubType()) {
@@ -207,7 +235,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
                     case TelephonyManager.NETWORK_TYPE_CDMA:
                     case TelephonyManager.NETWORK_TYPE_1xRTT:
                     case TelephonyManager.NETWORK_TYPE_IDEN:
-                        return NetworkChangeNotifier.CONNECTION_2G;
+                        return ConnectionType.CONNECTION_2G;
                     case TelephonyManager.NETWORK_TYPE_UMTS:
                     case TelephonyManager.NETWORK_TYPE_EVDO_0:
                     case TelephonyManager.NETWORK_TYPE_EVDO_A:
@@ -217,19 +245,94 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
                     case TelephonyManager.NETWORK_TYPE_EVDO_B:
                     case TelephonyManager.NETWORK_TYPE_EHRPD:
                     case TelephonyManager.NETWORK_TYPE_HSPAP:
-                        return NetworkChangeNotifier.CONNECTION_3G;
+                        return ConnectionType.CONNECTION_3G;
                     case TelephonyManager.NETWORK_TYPE_LTE:
-                        return NetworkChangeNotifier.CONNECTION_4G;
+                        return ConnectionType.CONNECTION_4G;
                     default:
-                        return NetworkChangeNotifier.CONNECTION_UNKNOWN;
+                        return ConnectionType.CONNECTION_UNKNOWN;
                 }
             default:
-                return NetworkChangeNotifier.CONNECTION_UNKNOWN;
+                return ConnectionType.CONNECTION_UNKNOWN;
+        }
+    }
+
+    /*
+     * Returns the bandwidth of the current connection in Mbps.  The result is
+     * derived from the NetInfo v3 specification's mapping from network type to
+     * max link speed. In cases where more information is available, such as wifi,
+     * that is used instead. For more on NetInfo, see http://w3c.github.io/netinfo/.
+     *
+     * TODO(jkarlin): Add a notification of bandwidth change to the NetworkChangeNotifier.
+     * Without that the MaxBandwidth value will be stale until the network type or address
+     * changes again.
+     */
+    public double getCurrentMaxBandwidthInMbps() {
+        if (getCurrentConnectionType() == ConnectionType.CONNECTION_WIFI) {
+            final int link_speed = mWifiManagerDelegate.getLinkSpeedInMbps();
+            if (link_speed != UNKNOWN_LINK_SPEED) {
+                return link_speed;
+            }
+        }
+
+        return NetworkChangeNotifier.getMaxBandwidthForConnectionSubtype(
+                getCurrentConnectionSubtype());
+    }
+
+    private int getCurrentConnectionSubtype() {
+        final NetworkState networkState = mConnectivityManagerDelegate.getNetworkState();
+        if (!networkState.isConnected()) {
+            return ConnectionSubtype.SUBTYPE_NONE;
+        }
+
+        switch (networkState.getNetworkType()) {
+            case ConnectivityManager.TYPE_ETHERNET:
+            case ConnectivityManager.TYPE_WIFI:
+            case ConnectivityManager.TYPE_WIMAX:
+            case ConnectivityManager.TYPE_BLUETOOTH:
+                return ConnectionSubtype.SUBTYPE_UNKNOWN;
+            case ConnectivityManager.TYPE_MOBILE:
+                // Use information from TelephonyManager to classify the connection.
+                switch (networkState.getNetworkSubType()) {
+                    case TelephonyManager.NETWORK_TYPE_GPRS:
+                        return ConnectionSubtype.SUBTYPE_GPRS;
+                    case TelephonyManager.NETWORK_TYPE_EDGE:
+                        return ConnectionSubtype.SUBTYPE_EDGE;
+                    case TelephonyManager.NETWORK_TYPE_CDMA:
+                        return ConnectionSubtype.SUBTYPE_CDMA;
+                    case TelephonyManager.NETWORK_TYPE_1xRTT:
+                        return ConnectionSubtype.SUBTYPE_1XRTT;
+                    case TelephonyManager.NETWORK_TYPE_IDEN:
+                        return ConnectionSubtype.SUBTYPE_IDEN;
+                    case TelephonyManager.NETWORK_TYPE_UMTS:
+                        return ConnectionSubtype.SUBTYPE_UMTS;
+                    case TelephonyManager.NETWORK_TYPE_EVDO_0:
+                        return ConnectionSubtype.SUBTYPE_EVDO_REV_0;
+                    case TelephonyManager.NETWORK_TYPE_EVDO_A:
+                        return ConnectionSubtype.SUBTYPE_EVDO_REV_A;
+                    case TelephonyManager.NETWORK_TYPE_HSDPA:
+                        return ConnectionSubtype.SUBTYPE_HSDPA;
+                    case TelephonyManager.NETWORK_TYPE_HSUPA:
+                        return ConnectionSubtype.SUBTYPE_HSUPA;
+                    case TelephonyManager.NETWORK_TYPE_HSPA:
+                        return ConnectionSubtype.SUBTYPE_HSPA;
+                    case TelephonyManager.NETWORK_TYPE_EVDO_B:
+                        return ConnectionSubtype.SUBTYPE_EVDO_REV_B;
+                    case TelephonyManager.NETWORK_TYPE_EHRPD:
+                        return ConnectionSubtype.SUBTYPE_EHRPD;
+                    case TelephonyManager.NETWORK_TYPE_HSPAP:
+                        return ConnectionSubtype.SUBTYPE_HSPAP;
+                    case TelephonyManager.NETWORK_TYPE_LTE:
+                        return ConnectionSubtype.SUBTYPE_LTE;
+                    default:
+                        return ConnectionSubtype.SUBTYPE_UNKNOWN;
+                }
+            default:
+                return ConnectionSubtype.SUBTYPE_UNKNOWN;
         }
     }
 
     private String getCurrentWifiSSID() {
-        if (getCurrentConnectionType() != NetworkChangeNotifier.CONNECTION_WIFI)
+        if (getCurrentConnectionType() != ConnectionType.CONNECTION_WIFI)
             return "";
         return mWifiManagerDelegate.getWifiSSID();
     }

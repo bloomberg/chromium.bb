@@ -46,11 +46,18 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierAndroid
 
   // NetworkChangeNotifier:
   virtual ConnectionType GetCurrentConnectionType() const override;
+  // Requires ACCESS_WIFI_STATE permission in order to provide precise WiFi link
+  // speed.
+  virtual double GetCurrentMaxBandwidth() const override;
 
   // NetworkChangeNotifierDelegateAndroid::Observer:
   virtual void OnConnectionTypeChanged() override;
 
   static bool Register(JNIEnv* env);
+
+  // Promote GetMaxBandwidthForConnectionSubtype to public for the Android
+  // delegate class.
+  using NetworkChangeNotifier::GetMaxBandwidthForConnectionSubtype;
 
  private:
   friend class NetworkChangeNotifierAndroidTest;

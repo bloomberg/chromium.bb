@@ -55,6 +55,9 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
   // Can be called from any thread.
   ConnectionType GetCurrentConnectionType() const;
 
+  // Can be called from any thread.
+  double GetCurrentMaxBandwidth() const;
+
   // Initializes JNI bindings.
   static bool Register(JNIEnv* env);
 
@@ -62,6 +65,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
   friend class BaseNetworkChangeNotifierAndroidTest;
 
   void SetCurrentConnectionType(ConnectionType connection_type);
+  void SetCurrentMaxBandwidth(double max_bandwidth);
 
   // Methods calling the Java side exposed for testing.
   void SetOnline();
@@ -71,8 +75,9 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
   scoped_refptr<ObserverListThreadSafe<Observer> > observers_;
   scoped_refptr<base::SingleThreadTaskRunner> jni_task_runner_;
   base::android::ScopedJavaGlobalRef<jobject> java_network_change_notifier_;
-  mutable base::Lock connection_type_lock_;  // Protects the state below.
+  mutable base::Lock connection_lock_;  // Protects the state below.
   ConnectionType connection_type_;
+  double connection_max_bandwidth_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierDelegateAndroid);
 };

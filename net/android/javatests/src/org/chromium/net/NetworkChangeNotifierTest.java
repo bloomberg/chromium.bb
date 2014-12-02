@@ -13,6 +13,7 @@ import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ApplicationState;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.NetworkChangeNotifierAutoDetect.NetworkState;
 
@@ -74,6 +75,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     class MockWifiManagerDelegate
             extends NetworkChangeNotifierAutoDetect.WifiManagerDelegate {
         private String mWifiSSID;
+        private int mLinkSpeedMbps;
 
         @Override
         String getWifiSSID() {
@@ -83,6 +85,104 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         void setWifiSSID(String wifiSSID) {
             mWifiSSID = wifiSSID;
         }
+
+        @Override
+        int getLinkSpeedInMbps() {
+            return mLinkSpeedMbps;
+        }
+
+        void setLinkSpeedInMbps(int linkSpeedInMbps) {
+            mLinkSpeedMbps = linkSpeedInMbps;
+        }
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        LibraryLoader.ensureInitialized();
+        createTestNotifier();
+    }
+
+    private NetworkChangeNotifierAutoDetect mReceiver;
+    private MockConnectivityManagerDelegate mConnectivityDelegate;
+    private MockWifiManagerDelegate mWifiDelegate;
+
+    private void createTestNotifier() {
+        Context context = getInstrumentation().getTargetContext();
+        NetworkChangeNotifier.resetInstanceForTests(context);
+        NetworkChangeNotifier.setAutoDetectConnectivityState(true);
+
+        mReceiver = NetworkChangeNotifier.getAutoDetectorForTest();
+        assertNotNull(mReceiver);
+
+        mConnectivityDelegate =
+                new MockConnectivityManagerDelegate();
+        mConnectivityDelegate.setActiveNetworkExists(true);
+        mReceiver.setConnectivityManagerDelegateForTests(mConnectivityDelegate);
+
+        mWifiDelegate = new MockWifiManagerDelegate();
+        mReceiver.setWifiManagerDelegateForTests(mWifiDelegate);
+        mWifiDelegate.setWifiSSID("foo");
+    }
+
+    /**
+     * Tests that changing the network type changes the maxBandwidth.
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Android-AppBase"})
+    public void testNetworkChangeNotifierMaxBandwidthEthernet() throws InterruptedException {
+        // Show that for Ethernet the link speed is unknown (+Infinity).
+        mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_ETHERNET);
+        assertEquals(ConnectionType.CONNECTION_ETHERNET,
+                mReceiver.getCurrentConnectionType());
+        assertEquals(Double.POSITIVE_INFINITY, mReceiver.getCurrentMaxBandwidthInMbps());
+    }
+
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Android-AppBase"})
+    public void testNetworkChangeNotifierMaxBandwidthWifi() throws InterruptedException {
+        // Test that for wifi types the link speed is read from the WifiManager.
+        mWifiDelegate.setLinkSpeedInMbps(42);
+        mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_WIFI);
+        assertEquals(ConnectionType.CONNECTION_WIFI, mReceiver.getCurrentConnectionType());
+        assertEquals(42.0, mReceiver.getCurrentMaxBandwidthInMbps());
+    }
+
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Android-AppBase"})
+    public void testNetworkChangeNotifierMaxBandwidthWiMax() throws InterruptedException {
+        // Show that for WiMax the link speed is unknown (+Infinity), although the type is 4g.
+        // TODO(jkarlin): Add support for CONNECTION_WIMAX as specified in
+        // http://w3c.github.io/netinfo/.
+        mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_WIMAX);
+        assertEquals(ConnectionType.CONNECTION_4G,
+                mReceiver.getCurrentConnectionType());
+        assertEquals(Double.POSITIVE_INFINITY, mReceiver.getCurrentMaxBandwidthInMbps());
+    }
+
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Android-AppBase"})
+    public void testNetworkChangeNotifierMaxBandwidthBluetooth() throws InterruptedException {
+        // Show that for bluetooth the link speed is unknown (+Infinity).
+        mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_BLUETOOTH);
+        assertEquals(ConnectionType.CONNECTION_BLUETOOTH,
+                mReceiver.getCurrentConnectionType());
+        assertEquals(Double.POSITIVE_INFINITY, mReceiver.getCurrentMaxBandwidthInMbps());
+    }
+
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Android-AppBase"})
+    public void testNetworkChangeNotifierMaxBandwidthMobile() throws InterruptedException {
+        // Test that for mobile types the subtype is used to determine the maxBandwidth.
+        mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_MOBILE);
+        mConnectivityDelegate.setNetworkSubtype(TelephonyManager.NETWORK_TYPE_LTE);
+        assertEquals(ConnectionType.CONNECTION_4G, mReceiver.getCurrentConnectionType());
+        assertEquals(100.0, mReceiver.getCurrentMaxBandwidthInMbps());
     }
 
     /**
@@ -93,70 +193,50 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     @MediumTest
     @Feature({"Android-AppBase"})
     public void testNetworkChangeNotifierJavaObservers() throws InterruptedException {
-        // Create a new notifier that doesn't have a native-side counterpart.
-        Context context = getInstrumentation().getTargetContext();
-        NetworkChangeNotifier.resetInstanceForTests(context);
-
-        NetworkChangeNotifier.setAutoDetectConnectivityState(true);
-        NetworkChangeNotifierAutoDetect receiver = NetworkChangeNotifier.getAutoDetectorForTest();
-        assertTrue(receiver != null);
-
-        MockConnectivityManagerDelegate connectivityDelegate =
-                new MockConnectivityManagerDelegate();
-        connectivityDelegate.setActiveNetworkExists(true);
-        connectivityDelegate.setNetworkType(NetworkChangeNotifier.CONNECTION_UNKNOWN);
-        connectivityDelegate.setNetworkSubtype(TelephonyManager.NETWORK_TYPE_UNKNOWN);
-        receiver.setConnectivityManagerDelegateForTests(connectivityDelegate);
-
-        MockWifiManagerDelegate wifiDelegate = new MockWifiManagerDelegate();
-        wifiDelegate.setWifiSSID("foo");
-        receiver.setWifiManagerDelegateForTests(wifiDelegate);
-
         // Initialize the NetworkChangeNotifier with a connection.
         Intent connectivityIntent = new Intent(ConnectivityManager.CONNECTIVITY_ACTION);
-        receiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
 
         // We shouldn't be re-notified if the connection hasn't actually changed.
         NetworkChangeNotifierTestObserver observer = new NetworkChangeNotifierTestObserver();
         NetworkChangeNotifier.addConnectionTypeObserver(observer);
-        receiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
         assertFalse(observer.hasReceivedNotification());
 
         // We shouldn't be notified if we're connected to non-Wifi and the Wifi SSID changes.
-        wifiDelegate.setWifiSSID("bar");
-        receiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
+        mWifiDelegate.setWifiSSID("bar");
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
         assertFalse(observer.hasReceivedNotification());
         // We should be notified when we change to Wifi.
-        connectivityDelegate.setNetworkType(ConnectivityManager.TYPE_WIFI);
-        receiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
+        mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_WIFI);
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
         assertTrue(observer.hasReceivedNotification());
         observer.resetHasReceivedNotification();
         // We should be notified when the Wifi SSID changes.
-        wifiDelegate.setWifiSSID("foo");
-        receiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
+        mWifiDelegate.setWifiSSID("foo");
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
         assertTrue(observer.hasReceivedNotification());
         observer.resetHasReceivedNotification();
         // We shouldn't be re-notified if the Wifi SSID hasn't actually changed.
-        receiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
         assertFalse(observer.hasReceivedNotification());
 
         // Mimic that connectivity has been lost and ensure that Chrome notifies our observer.
-        connectivityDelegate.setActiveNetworkExists(false);
-        connectivityDelegate.setNetworkType(NetworkChangeNotifier.CONNECTION_NONE);
+        mConnectivityDelegate.setActiveNetworkExists(false);
         Intent noConnectivityIntent = new Intent(ConnectivityManager.CONNECTIVITY_ACTION);
-        receiver.onReceive(getInstrumentation().getTargetContext(), noConnectivityIntent);
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), noConnectivityIntent);
         assertTrue(observer.hasReceivedNotification());
 
         observer.resetHasReceivedNotification();
         // Pretend we got moved to the background.
-        receiver.onApplicationStateChange(ApplicationState.HAS_PAUSED_ACTIVITIES);
+        mReceiver.onApplicationStateChange(ApplicationState.HAS_PAUSED_ACTIVITIES);
         // Change the state.
-        connectivityDelegate.setActiveNetworkExists(true);
-        connectivityDelegate.setNetworkType(NetworkChangeNotifier.CONNECTION_WIFI);
+        mConnectivityDelegate.setActiveNetworkExists(true);
+        mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_WIFI);
         // The NetworkChangeNotifierAutoDetect doesn't receive any notification while we are in the
         // background, but when we get back to the foreground the state changed should be detected
         // and a notification sent.
-        receiver.onApplicationStateChange(ApplicationState.HAS_RUNNING_ACTIVITIES);
+        mReceiver.onApplicationStateChange(ApplicationState.HAS_RUNNING_ACTIVITIES);
         assertTrue(observer.hasReceivedNotification());
     }
 }

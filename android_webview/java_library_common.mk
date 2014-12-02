@@ -47,6 +47,8 @@ LOCAL_GENERATED_SOURCES := \
 $(call intermediates-dir-for,GYP,shared)/enums/bitmap_format_java/org/chromium/ui/gfx/BitmapFormat.java \
 $(call intermediates-dir-for,GYP,shared)/enums/cert_verify_status_android_java/org/chromium/net/CertVerifyStatusAndroid.java \
 $(call intermediates-dir-for,GYP,shared)/enums/certificate_mime_types_java/org/chromium/net/CertificateMimeType.java \
+$(call intermediates-dir-for,GYP,shared)/enums/network_change_notifier_types_java/org/chromium/net/ConnectionSubtype.java \
+$(call intermediates-dir-for,GYP,shared)/enums/network_change_notifier_types_java/org/chromium/net/ConnectionType.java \
 $(call intermediates-dir-for,GYP,shared)/enums/content_gamepad_mapping/org/chromium/content/browser/input/CanonicalAxisIndex.java \
 $(call intermediates-dir-for,GYP,shared)/enums/content_gamepad_mapping/org/chromium/content/browser/input/CanonicalButtonIndex.java \
 $(call intermediates-dir-for,GYP,shared)/enums/gesture_event_type_java/org/chromium/content/browser/GestureEventType.java \

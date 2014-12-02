@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "jni/NetworkChangeNotifier_jni.h"
+#include "net/android/network_change_notifier_android.h"
 
 namespace net {
 
@@ -32,7 +33,23 @@ NetworkChangeNotifier::ConnectionType ConvertConnectionType(
   return static_cast<NetworkChangeNotifier::ConnectionType>(connection_type);
 }
 
+// Converts a Java side connection type (integer) to
+// the native side NetworkChangeNotifier::ConnectionType.
+NetworkChangeNotifier::ConnectionSubtype ConvertConnectionSubtype(
+    jint subtype) {
+  DCHECK(subtype >= 0 && subtype <= NetworkChangeNotifier::SUBTYPE_LAST);
+
+  return static_cast<NetworkChangeNotifier::ConnectionSubtype>(subtype);
+}
+
 }  // namespace
+
+jdouble GetMaxBandwidthForConnectionSubtype(JNIEnv* env,
+                                            jclass caller,
+                                            jint subtype) {
+  return NetworkChangeNotifierAndroid::GetMaxBandwidthForConnectionSubtype(
+      ConvertConnectionSubtype(subtype));
+}
 
 NetworkChangeNotifierDelegateAndroid::NetworkChangeNotifierDelegateAndroid()
     : observers_(new ObserverListThreadSafe<Observer>()) {
@@ -47,6 +64,8 @@ NetworkChangeNotifierDelegateAndroid::NetworkChangeNotifierDelegateAndroid()
       ConvertConnectionType(
           Java_NetworkChangeNotifier_getCurrentConnectionType(
               env, java_network_change_notifier_.obj())));
+  SetCurrentMaxBandwidth(Java_NetworkChangeNotifier_getCurrentMaxBandwidth(
+      env, java_network_change_notifier_.obj()));
 }
 
 NetworkChangeNotifierDelegateAndroid::~NetworkChangeNotifierDelegateAndroid() {
@@ -60,8 +79,13 @@ NetworkChangeNotifierDelegateAndroid::~NetworkChangeNotifierDelegateAndroid() {
 
 NetworkChangeNotifier::ConnectionType
 NetworkChangeNotifierDelegateAndroid::GetCurrentConnectionType() const {
-  base::AutoLock auto_lock(connection_type_lock_);
+  base::AutoLock auto_lock(connection_lock_);
   return connection_type_;
+}
+
+double NetworkChangeNotifierDelegateAndroid::GetCurrentMaxBandwidth() const {
+  base::AutoLock auto_lock(connection_lock_);
+  return connection_max_bandwidth_;
 }
 
 void NetworkChangeNotifierDelegateAndroid::NotifyConnectionTypeChanged(
@@ -72,6 +96,8 @@ void NetworkChangeNotifierDelegateAndroid::NotifyConnectionTypeChanged(
   const ConnectionType actual_connection_type = ConvertConnectionType(
       new_connection_type);
   SetCurrentConnectionType(actual_connection_type);
+  SetCurrentMaxBandwidth(Java_NetworkChangeNotifier_getCurrentMaxBandwidth(
+      env, java_network_change_notifier_.obj()));
   observers_->Notify(&Observer::OnConnectionTypeChanged);
 }
 
@@ -98,8 +124,14 @@ bool NetworkChangeNotifierDelegateAndroid::Register(JNIEnv* env) {
 
 void NetworkChangeNotifierDelegateAndroid::SetCurrentConnectionType(
     ConnectionType new_connection_type) {
-  base::AutoLock auto_lock(connection_type_lock_);
+  base::AutoLock auto_lock(connection_lock_);
   connection_type_ = new_connection_type;
+}
+
+void NetworkChangeNotifierDelegateAndroid::SetCurrentMaxBandwidth(
+    double max_bandwidth) {
+  base::AutoLock auto_lock(connection_lock_);
+  connection_max_bandwidth_ = max_bandwidth;
 }
 
 void NetworkChangeNotifierDelegateAndroid::SetOnline() {

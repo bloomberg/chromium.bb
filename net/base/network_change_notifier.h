@@ -34,6 +34,9 @@ class NET_EXPORT NetworkChangeNotifier {
  public:
   // This is a superset of the connection types in the NetInfo v3 specification:
   // http://w3c.github.io/netinfo/.
+  //
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net
   enum ConnectionType {
     CONNECTION_UNKNOWN = 0,  // A connection exists, but its type is unknown.
                              // Also used as a default value.
@@ -45,6 +48,49 @@ class NET_EXPORT NetworkChangeNotifier {
     CONNECTION_NONE = 6,     // No connection.
     CONNECTION_BLUETOOTH = 7,
     CONNECTION_LAST = CONNECTION_BLUETOOTH
+  };
+
+  // This is the NetInfo v3 set of connection technologies as seen in
+  // http://w3c.github.io/netinfo/. This enum is copied in
+  // NetworkChangeNotifier.java so be sure to change both at once.
+  //
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net
+  enum ConnectionSubtype {
+    SUBTYPE_GSM = 0,
+    SUBTYPE_IDEN,
+    SUBTYPE_CDMA,
+    SUBTYPE_1XRTT,
+    SUBTYPE_GPRS,
+    SUBTYPE_EDGE,
+    SUBTYPE_UMTS,
+    SUBTYPE_EVDO_REV_0,
+    SUBTYPE_EVDO_REV_A,
+    SUBTYPE_HSPA,
+    SUBTYPE_EVDO_REV_B,
+    SUBTYPE_HSDPA,
+    SUBTYPE_HSUPA,
+    SUBTYPE_EHRPD,
+    SUBTYPE_HSPAP,
+    SUBTYPE_LTE,
+    SUBTYPE_LTE_ADVANCED,
+    SUBTYPE_BLUETOOTH_1_2,
+    SUBTYPE_BLUETOOTH_2_1,
+    SUBTYPE_BLUETOOTH_3_0,
+    SUBTYPE_BLUETOOTH_4_0,
+    SUBTYPE_ETHERNET,
+    SUBTYPE_FAST_ETHERNET,
+    SUBTYPE_GIGABIT_ETHERNET,
+    SUBTYPE_10_GIGABIT_ETHERNET,
+    SUBTYPE_WIFI_B,
+    SUBTYPE_WIFI_G,
+    SUBTYPE_WIFI_N,
+    SUBTYPE_WIFI_AC,
+    SUBTYPE_WIFI_AD,
+    SUBTYPE_UNKNOWN,
+    SUBTYPE_NONE,
+    SUBTYPE_OTHER,
+    SUBTYPE_LAST = SUBTYPE_OTHER
   };
 
   class NET_EXPORT IPAddressObserver {
@@ -162,7 +208,9 @@ class NET_EXPORT NetworkChangeNotifier {
   // Returns a theoretical upper limit on download bandwidth, potentially based
   // on underlying connection type, signal strength, or some other signal. The
   // default mapping of connection type to maximum bandwidth is provided in the
-  // NetInfo spec: http://w3c.github.io/netinfo/.
+  // NetInfo spec: http://w3c.github.io/netinfo/. Host-specific application
+  // permissions may be required, please see host-specific declaration for more
+  // information.
   static double GetMaxBandwidth();
 
   // Retrieve the last read DnsConfig. This could be expensive if the system has
@@ -305,6 +353,11 @@ class NET_EXPORT NetworkChangeNotifier {
   // Implementations must be thread-safe. Implementations must also be
   // cheap as it is called often.
   virtual double GetCurrentMaxBandwidth() const;
+
+  // Returns a theoretical upper limit on download bandwidth given a connection
+  // subtype. The mapping of connection type to maximum bandwidth is provided in
+  // the NetInfo spec: http://w3c.github.io/netinfo/.
+  static double GetMaxBandwidthForConnectionSubtype(ConnectionSubtype subtype);
 
   // Broadcasts a notification to all registered observers.  Note that this
   // happens asynchronously, even for observers on the current thread, even in

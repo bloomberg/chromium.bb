@@ -52,12 +52,15 @@ java_cpp_template("net_errors_java") {
 java_cpp_enum("net_android_java_enums_srcjar") {
   sources = [
     "../base/mime_util.h",
+    "../base/network_change_notifier.h",
     "cert_verify_result_android.h",
     "keystore.h"
   ]
   outputs = [
     "org/chromium/net/CertificateMimeType.java",
     "org/chromium/net/CertVerifyStatusAndroid.java",
+    "org/chromium/net/ConnectionSubtype.java",
+    "org/chromium/net/ConnectionType.java",
     "org/chromium/net/PrivateKeyType.java",
   ]
 }

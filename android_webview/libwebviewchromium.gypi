@@ -27,6 +27,7 @@
         '../media/media.gyp:media_android_imageformat',
         '../net/net.gyp:cert_verify_status_android_java',
         '../net/net.gyp:certificate_mime_types_java',
+        '../net/net.gyp:network_change_notifier_types_java',
         '../net/net.gyp:net_errors_java',
         '../net/net.gyp:private_key_types_java',
         '../ui/android/ui_android.gyp:bitmap_format_java',
