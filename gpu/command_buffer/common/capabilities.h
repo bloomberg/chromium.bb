@@ -91,6 +91,7 @@ struct GPU_EXPORT Capabilities {
   bool future_sync_points;
   bool blend_equation_advanced;
   bool blend_equation_advanced_coherent;
+  bool texture_rg;
 };
 
 }  // namespace gpu

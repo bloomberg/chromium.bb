@@ -37,7 +37,8 @@ Capabilities::Capabilities()
       image(false),
       future_sync_points(false),
       blend_equation_advanced(false),
-      blend_equation_advanced_coherent(false) {
+      blend_equation_advanced_coherent(false),
+      texture_rg(false) {
 }
 
 }  // namespace gpu
