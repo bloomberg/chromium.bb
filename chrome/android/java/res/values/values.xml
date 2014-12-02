@@ -14,4 +14,11 @@
     
     <!-- Menu Animation Constants -->
     <item type="fraction" format="fraction" name="menu_animation_pivot_x">95%</item>
+
+    <!-- Full Screen Constants -->
+    <!-- These constants were chosen empirically for their visually pleasant behavior.
+         Contact tedchoc@chromium.org or dtrainor@chromium.org for questions about
+         changing these values. -->
+    <item name="top_controls_show_threshold" format="float" type="floats">0.5</item>
+    <item name="top_controls_hide_threshold" format="float" type="floats">0.5</item>
 </resources>
