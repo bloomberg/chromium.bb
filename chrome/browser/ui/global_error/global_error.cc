@@ -63,6 +63,10 @@ gfx::Image GlobalErrorWithStandardBubble::GetBubbleViewIcon() {
       IDR_INPUT_ALERT);
 }
 
+bool GlobalErrorWithStandardBubble::ShouldAddElevationIconToAcceptButton() {
+  return false;
+}
+
 void GlobalErrorWithStandardBubble::BubbleViewDidClose(Browser* browser) {
   DCHECK(browser);
   bubble_view_ = NULL;

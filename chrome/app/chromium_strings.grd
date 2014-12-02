@@ -1286,6 +1286,20 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         Chromium could not update itself to the latest version, so you are missing out on awesome new features and security fixes. You need to update Chromium.
       </message>
 
+      <!-- Upgrade recovery bubble -->
+      <message name="IDS_RUN_RECOVERY" desc="Text for the button the user clicks to recover chromium and its updater.">
+        Update Chromium
+      </message>
+      <message name="IDS_DECLINE_RECOVERY" desc="Text for the button the user clicks to decline recovery request.">
+        No, thanks
+      </message>
+      <message name="IDS_RECOVERY_BUBBLE_TITLE" desc="Text for the title of the chrome recovery bubble view.">
+        Chromium is out of date
+      </message>
+      <message name="IDS_RECOVERY_BUBBLE_TEXT" desc="Text for the chrome recovery bubble view full description.">
+        Chromium could not update to the latest version, so you are missing out on new features and security fixes. You need to update Chromium.
+      </message>
+
       <!-- Dialog that asks whether user wants to participate in Safe Browsing Extended Reporting -->
       <message name="IDS_FEEDBACK_SERVICE_DIALOG_TITLE" desc="Title of the dialog asking whether the user wants to upload suspected malicious files for analysis">
         Help make Chromium better

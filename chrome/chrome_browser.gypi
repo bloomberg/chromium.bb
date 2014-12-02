@@ -738,6 +738,10 @@
       'browser/media_galleries/fileapi/safe_picasa_album_table_reader.h',
       'browser/media_galleries/fileapi/safe_picasa_albums_indexer.cc',
       'browser/media_galleries/fileapi/safe_picasa_albums_indexer.h',
+      'browser/recovery/recovery_install_global_error.cc',
+      'browser/recovery/recovery_install_global_error.h',
+      'browser/recovery/recovery_install_global_error_factory.cc',
+      'browser/recovery/recovery_install_global_error_factory.h',
     ],
     'chrome_browser_extensions_sources': [
       'browser/accessibility/accessibility_extension_api.cc',

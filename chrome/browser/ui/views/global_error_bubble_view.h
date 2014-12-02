@@ -11,6 +11,7 @@
 #include "ui/views/controls/button/button.h"
 
 class Browser;
+class ElevationIconSetter;
 class GlobalErrorWithStandardBubble;
 
 class GlobalErrorBubbleView : public views::ButtonListener,
@@ -36,6 +37,8 @@ class GlobalErrorBubbleView : public views::ButtonListener,
  private:
   Browser* browser_;
   base::WeakPtr<GlobalErrorWithStandardBubble> error_;
+
+  scoped_ptr<ElevationIconSetter> elevation_icon_setter_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalErrorBubbleView);
 };

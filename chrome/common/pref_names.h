@@ -811,6 +811,8 @@ extern const char kPasswordBubbleTimeStamp[];
 extern const char kPasswordBubbleNopesCount[];
 extern const char kPasswordBubbleLastInteractions[];
 
+extern const char kRecoveryComponentNeedsElevation[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

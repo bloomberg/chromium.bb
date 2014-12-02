@@ -179,4 +179,12 @@ void RegisterPrefsForRecoveryComponent(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kRecoveryComponentVersion, "0.0.0.0");
 }
 
+void AcceptedElevatedRecoveryInstall(PrefService* prefs) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+void DeclinedElevatedRecoveryInstall(PrefService* prefs) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 }  // namespace component_updater

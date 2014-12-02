@@ -2295,4 +2295,8 @@ const char kPasswordBubbleNopesCount[] = "password_bubble.nopes";
 // Last user's interaction with the password bubble.
 const char kPasswordBubbleLastInteractions[] = "password_bubble.interactions";
 
+// Boolean that indicates whether elevation is needed to recover Chrome upgrade.
+const char kRecoveryComponentNeedsElevation[] =
+    "recovery_component.needs_elevation";
+
 }  // namespace prefs

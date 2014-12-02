@@ -1079,17 +1079,20 @@ const char kSilentDebuggerExtensionAPI[]    = "silent-debugger-extension-api";
 // one wishes to use Chrome as an ash server.
 const char kSilentLaunch[]                  = "silent-launch";
 
-// Simulates an update being available.
-const char kSimulateUpgrade[]               = "simulate-upgrade";
+// Simulates that elevation is needed to recover upgrade channel.
+const char kSimulateElevatedRecovery[]      = "simulate-elevated-recovery";
 
 // Simulates a critical update being available.
 const char kSimulateCriticalUpdate[]        = "simulate-critical-update";
 
 // Simulates that current version is outdated.
-const char kSimulateOutdated[]               = "simulate-outdated";
+const char kSimulateOutdated[]              = "simulate-outdated";
 
 // Simulates that current version is outdated and auto-update is off.
-const char kSimulateOutdatedNoAU[]           = "simulate-outdated-no-au";
+const char kSimulateOutdatedNoAU[]          = "simulate-outdated-no-au";
+
+// Simulates an update being available.
+const char kSimulateUpgrade[]               = "simulate-upgrade";
 
 // Speculative resource prefetching.
 const char kSpeculativeResourcePrefetching[] =

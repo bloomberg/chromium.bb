@@ -212,6 +212,7 @@
 #define IDC_HELP_MENU                   40244
 #define IDC_EXTENSIONS_OVERFLOW_MENU    40245
 #define IDC_SHOW_SRT_BUBBLE             40246
+#define IDC_ELEVATED_RECOVERY_DIALOG    40247
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

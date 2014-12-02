@@ -74,6 +74,7 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(OS_WIN)
+#include "chrome/browser/recovery/recovery_install_global_error_factory.h"
 #include "chrome/browser/ui/views/conflicting_module_view_win.h"
 #include "chrome/browser/ui/views/critical_notification_bubble_view.h"
 #endif
@@ -234,7 +235,7 @@ void ToolbarView::Init() {
 
   LoadImages();
 
-  // Start global error services now so we badge the menu correctly in non-Ash.
+  // Start global error services now so we badge the menu correctly.
 #if !defined(OS_CHROMEOS)
   if (!HasAshShell()) {
     SigninGlobalErrorFactory::GetForProfile(browser_->profile());
@@ -242,6 +243,10 @@ void ToolbarView::Init() {
     SyncGlobalErrorFactory::GetForProfile(browser_->profile());
 #endif
   }
+
+#if defined(OS_WIN)
+  RecoveryInstallGlobalErrorFactory::GetForProfile(browser_->profile());
+#endif
 #endif  // OS_CHROMEOS
 
   // Add any necessary badges to the menu item based on the system state.
