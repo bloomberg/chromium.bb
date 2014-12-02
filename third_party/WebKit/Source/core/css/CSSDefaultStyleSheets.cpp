@@ -152,31 +152,30 @@ RuleSet* CSSDefaultStyleSheets::defaultXHTMLMobileProfileStyle()
 
 void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element, bool& changedDefaultStyle)
 {
-    if (element->isSVGElement()) {
-        // FIXME: We should assert that the sheet only styles SVG elements.
-        if (!m_svgStyleSheet) {
-            m_svgStyleSheet = parseUASheet(svgCss, sizeof(svgCss));
-            m_defaultStyle->addRulesFromSheet(svgStyleSheet(), screenEval());
-            m_defaultPrintStyle->addRulesFromSheet(svgStyleSheet(), printEval());
-            changedDefaultStyle = true;
-        }
-    } else if (element->namespaceURI() == MathMLNames::mathmlNamespaceURI) {
-        // FIXME: We should assert that the sheet only styles MathML elements.
-        if (!m_mathmlStyleSheet) {
-            m_mathmlStyleSheet = parseUASheet(mathmlCss, sizeof(mathmlCss));
-            m_defaultStyle->addRulesFromSheet(mathmlStyleSheet(), screenEval());
-            m_defaultPrintStyle->addRulesFromSheet(mathmlStyleSheet(), printEval());
-            changedDefaultStyle = true;
-        }
-    } else if (isHTMLVideoElement(*element) || isHTMLAudioElement(*element)) {
-        // FIXME: We should assert that this sheet only contains rules for <video> and <audio>.
-        if (!m_mediaControlsStyleSheet) {
-            String mediaRules = String(mediaControlsCss, sizeof(mediaControlsCss)) + RenderTheme::theme().extraMediaControlsStyleSheet();
-            m_mediaControlsStyleSheet = parseUASheet(mediaRules);
-            m_defaultStyle->addRulesFromSheet(mediaControlsStyleSheet(), screenEval());
-            m_defaultPrintStyle->addRulesFromSheet(mediaControlsStyleSheet(), printEval());
-            changedDefaultStyle = true;
-        }
+    // FIXME: We should assert that the sheet only styles SVG elements.
+    if (element->isSVGElement() && !m_svgStyleSheet) {
+        m_svgStyleSheet = parseUASheet(svgCss, sizeof(svgCss));
+        m_defaultStyle->addRulesFromSheet(svgStyleSheet(), screenEval());
+        m_defaultPrintStyle->addRulesFromSheet(svgStyleSheet(), printEval());
+        changedDefaultStyle = true;
+    }
+
+    // FIXME: We should assert that the sheet only styles MathML elements.
+    if (element->namespaceURI() == MathMLNames::mathmlNamespaceURI
+        && !m_mathmlStyleSheet) {
+        m_mathmlStyleSheet = parseUASheet(mathmlCss, sizeof(mathmlCss));
+        m_defaultStyle->addRulesFromSheet(mathmlStyleSheet(), screenEval());
+        m_defaultPrintStyle->addRulesFromSheet(mathmlStyleSheet(), printEval());
+        changedDefaultStyle = true;
+    }
+
+    // FIXME: We should assert that this sheet only contains rules for <video> and <audio>.
+    if (!m_mediaControlsStyleSheet && (isHTMLVideoElement(*element) || isHTMLAudioElement(*element))) {
+        String mediaRules = String(mediaControlsCss, sizeof(mediaControlsCss)) + RenderTheme::theme().extraMediaControlsStyleSheet();
+        m_mediaControlsStyleSheet = parseUASheet(mediaRules);
+        m_defaultStyle->addRulesFromSheet(mediaControlsStyleSheet(), screenEval());
+        m_defaultPrintStyle->addRulesFromSheet(mediaControlsStyleSheet(), printEval());
+        changedDefaultStyle = true;
     }
 
     // FIXME: This only works because we Force recalc the entire document so the new sheet
