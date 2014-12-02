@@ -337,8 +337,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
       dst->html_attributes.push_back(std::make_pair(name, value));
     }
 
-    if (dst->role == ui::AX_ROLE_EDITABLE_TEXT ||
-        dst->role == ui::AX_ROLE_TEXT_AREA ||
+    if (dst->role == ui::AX_ROLE_TEXT_AREA ||
         dst->role == ui::AX_ROLE_TEXT_FIELD) {
       dst->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, src.selectionStart());
       dst->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, src.selectionEnd());

@@ -289,19 +289,15 @@ var tests = [
                                 'docTitle': 'Google Chrome Terms of Service' },
           'intAttributes': { 'scrollY': 583,
                              'scrollYMax': 9336 },
-          'childIds': [2, 3, 4]
+          'childIds': [2, 3]
         },
         {
-          'id': 2, 'role': 'editableText',
-          'childIds': []
-        },
-        {
-          'id': 3, 'role': 'textField',
+          'id': 2, 'role': 'textField',
           'intAttributes': { 'textSelStart': 10, 'textSelEnd': 20 },
           'childIds': []
         },
         {
-          'id': 4, 'role': 'textArea',
+          'id': 3, 'role': 'textArea',
           'childIds': []
         },
 
@@ -312,10 +308,7 @@ var tests = [
     assertEq(true, tree.docLoaded);
     assertFalse('textSelStart' in tree);
     assertFalse('textSelEnd' in tree);
-    var editableText = tree.firstChild;
-    assertEq(-1, editableText.textSelStart);
-    assertEq(-1, editableText.textSelEnd);
-    var textField = editableText.nextSibling;
+    var textField = tree.firstChild;
     assertEq(10, textField.textSelStart);
     assertEq(20, textField.textSelEnd);
     var textArea = textField.nextSibling;

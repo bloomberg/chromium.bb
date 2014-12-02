@@ -146,8 +146,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_DIV;
     case blink::WebAXRoleDocument:
       return ui::AX_ROLE_DOCUMENT;
-    case blink::WebAXRoleEditableText:
-      return ui::AX_ROLE_EDITABLE_TEXT;
     case blink::WebAXRoleEmbeddedObject:
       return ui::AX_ROLE_EMBEDDED_OBJECT;
     case blink::WebAXRoleFigcaption:
@@ -162,8 +160,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_GRID;
     case blink::WebAXRoleGroup:
       return ui::AX_ROLE_GROUP;
-    case blink::WebAXRoleGrowArea:
-      return ui::AX_ROLE_GROW_AREA;
     case blink::WebAXRoleHeading:
       return ui::AX_ROLE_HEADING;
     case blink::WebAXRoleIframe:
@@ -272,8 +268,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_SPIN_BUTTON;
     case blink::WebAXRoleSpinButtonPart:
       return ui::AX_ROLE_SPIN_BUTTON_PART;
-    case blink::WebAXRoleSplitGroup:
-      return ui::AX_ROLE_SPLIT_GROUP;
     case blink::WebAXRoleSplitter:
       return ui::AX_ROLE_SPLITTER;
     case blink::WebAXRoleStaticText:

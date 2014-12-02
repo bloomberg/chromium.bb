@@ -169,8 +169,7 @@ bool BrowserAccessibilityAndroid::IsDismissable() const {
 }
 
 bool BrowserAccessibilityAndroid::IsEditableText() const {
-  return (GetRole() == ui::AX_ROLE_EDITABLE_TEXT ||
-          GetRole() == ui::AX_ROLE_TEXT_AREA ||
+  return (GetRole() == ui::AX_ROLE_TEXT_AREA ||
           GetRole() == ui::AX_ROLE_TEXT_FIELD);
 }
 
@@ -247,7 +246,6 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
   const char* class_name = NULL;
 
   switch(GetRole()) {
-    case ui::AX_ROLE_EDITABLE_TEXT:
     case ui::AX_ROLE_SPIN_BUTTON:
     case ui::AX_ROLE_TEXT_AREA:
     case ui::AX_ROLE_TEXT_FIELD:
@@ -334,7 +332,6 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
 
     switch (GetRole()) {
       case ui::AX_ROLE_COMBO_BOX:
-      case ui::AX_ROLE_EDITABLE_TEXT:
       case ui::AX_ROLE_POP_UP_BUTTON:
       case ui::AX_ROLE_TEXT_AREA:
       case ui::AX_ROLE_TEXT_FIELD:
@@ -371,7 +368,6 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
   base::string16 placeholder;
   switch (GetRole()) {
     case ui::AX_ROLE_DATE:
-    case ui::AX_ROLE_EDITABLE_TEXT:
     case ui::AX_ROLE_TEXT_AREA:
     case ui::AX_ROLE_TEXT_FIELD:
     case ui::AX_ROLE_TIME:

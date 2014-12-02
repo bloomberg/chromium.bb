@@ -80,8 +80,6 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("Div");
     case blink::WebAXRoleDocument:
       return result.append("Document");
-    case blink::WebAXRoleEditableText:
-      return result.append("EditableText");
     case blink::WebAXRoleEmbeddedObject:
       return result.append("EmbeddedObject");
     case blink::WebAXRoleFigcaption:
@@ -96,8 +94,6 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("Grid");
     case blink::WebAXRoleGroup:
       return result.append("Group");
-    case blink::WebAXRoleGrowArea:
-      return result.append("GrowArea");
     case blink::WebAXRoleHeading:
       return result.append("Heading");
     case blink::WebAXRoleIgnored:
@@ -204,8 +200,6 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("SpinButtonPart");
     case blink::WebAXRoleSpinButton:
       return result.append("SpinButton");
-    case blink::WebAXRoleSplitGroup:
-      return result.append("SplitGroup");
     case blink::WebAXRoleSplitter:
       return result.append("Splitter");
     case blink::WebAXRoleStaticText:

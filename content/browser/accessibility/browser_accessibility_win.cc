@@ -3508,11 +3508,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_EMBEDDED_OBJECT;
       break;
-    case ui::AX_ROLE_EDITABLE_TEXT:
-      ia_role_ = ROLE_SYSTEM_TEXT;
-      ia2_state_ |= IA2_STATE_SINGLE_LINE;
-      ia2_state_ |= IA2_STATE_EDITABLE;
-      break;
     case ui::AX_ROLE_FIGCAPTION:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_CAPTION;
@@ -3549,10 +3544,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       }
       break;
     }
-    case ui::AX_ROLE_GROW_AREA:
-      ia_role_ = ROLE_SYSTEM_GRIP;
-      ia_state_ |= STATE_SYSTEM_READONLY;
-      break;
     case ui::AX_ROLE_HEADING:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_HEADING;
@@ -3729,11 +3720,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_SPIN_BUTTON_PART:
       ia_role_ = ROLE_SYSTEM_PUSHBUTTON;
-      break;
-    case ui::AX_ROLE_SPLIT_GROUP:
-      ia_role_ = ROLE_SYSTEM_CLIENT;
-      ia2_role_ = IA2_ROLE_SPLIT_PANE;
-      ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_ANNOTATION:
     case ui::AX_ROLE_LIST_MARKER:
