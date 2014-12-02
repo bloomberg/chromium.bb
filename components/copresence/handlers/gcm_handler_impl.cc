@@ -47,14 +47,14 @@ GCMHandlerImpl::GCMHandlerImpl(gcm::GCMDriver* gcm_driver,
     : driver_(gcm_driver),
       directive_handler_(directive_handler),
       registration_callback_(base::Bind(&GCMHandlerImpl::RegistrationComplete,
-                                        AsWeakPtr())) {
+                                        base::Unretained(this))) {
   DCHECK(driver_);
   DCHECK(directive_handler_);
 
   driver_->AddAppHandler(kCopresenceAppId, this);
   driver_->Register(kCopresenceAppId,
                     std::vector<std::string>(1, kCopresenceSenderId),
-                    registration_callback_);
+                    registration_callback_.callback());
 }
 
 GCMHandlerImpl::~GCMHandlerImpl() {

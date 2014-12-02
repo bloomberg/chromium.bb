@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
-#include "base/memory/weak_ptr.h"
+#include "base/callback_forward.h"
+#include "base/cancelable_callback.h"
 #include "components/copresence/handlers/gcm_handler.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
@@ -24,8 +24,7 @@ class DirectiveHandler;
 
 // This class handles GCM messages from the Copresence server.
 class GCMHandlerImpl final : public GCMHandler,
-                             public gcm::GCMAppHandler,
-                             public base::SupportsWeakPtr<GCMHandlerImpl> {
+                             public gcm::GCMAppHandler {
  public:
   // Callback to report that registration has completed.
   // Returns an empty ID if registration failed.
@@ -67,12 +66,11 @@ class GCMHandlerImpl final : public GCMHandler,
   gcm::GCMDriver* driver_;
   DirectiveHandler* const directive_handler_;
 
-  // TODO(ckehoe): Change this to a CancelableCallback.
-  base::Callback<void(const std::string&,
-                      gcm::GCMClient::Result)> registration_callback_;
-
   std::string gcm_id_;
   std::vector<RegistrationCallback> pending_id_requests_;
+
+  base::CancelableCallback<void(const std::string&,
+                                gcm::GCMClient::Result)> registration_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMHandlerImpl);
 };
