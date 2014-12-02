@@ -69,9 +69,8 @@ private:
 
     inline void addBuiltinEffects()
     {
-        NamedFilterEffectMap::iterator end = m_builtinEffects.end();
-        for (NamedFilterEffectMap::iterator iterator = m_builtinEffects.begin(); iterator != end; ++iterator)
-             m_effectReferences.add(iterator->value, FilterEffectSet());
+        for (const auto& entry : m_builtinEffects)
+            m_effectReferences.add(entry.value, FilterEffectSet());
     }
 
     typedef WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<FilterEffect> > NamedFilterEffectMap;

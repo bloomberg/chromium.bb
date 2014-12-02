@@ -141,9 +141,8 @@ RenderObject* SVGFilterElement::createRenderer(RenderStyle*)
 {
     RenderSVGResourceFilter* renderer = new RenderSVGResourceFilter(this);
 
-    WillBeHeapHashSet<RefPtrWillBeMember<Node> >::iterator layerEnd = m_clientsToAdd.end();
-    for (WillBeHeapHashSet<RefPtrWillBeMember<Node> >::iterator it = m_clientsToAdd.begin(); it != layerEnd; ++it)
-        renderer->addClientRenderLayer(it->get());
+    for (const RefPtrWillBeMember<Node>& node : m_clientsToAdd)
+        renderer->addClientRenderLayer(node.get());
     m_clientsToAdd.clear();
 
     return renderer;

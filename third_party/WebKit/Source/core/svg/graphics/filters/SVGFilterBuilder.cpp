@@ -107,9 +107,8 @@ void SVGFilterBuilder::clearResultsRecursive(FilterEffect* effect)
     effect->clearResult();
 
     FilterEffectSet& effectReferences = this->effectReferences(effect);
-    FilterEffectSet::iterator end = effectReferences.end();
-    for (FilterEffectSet::iterator it = effectReferences.begin(); it != end; ++it)
-         clearResultsRecursive(*it);
+    for (FilterEffect* effectReference : effectReferences)
+        clearResultsRecursive(effectReference);
 }
 
 } // namespace blink

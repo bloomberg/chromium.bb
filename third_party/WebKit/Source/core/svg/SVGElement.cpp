@@ -426,10 +426,9 @@ void SVGElement::invalidateRelativeLengthClients(SubtreeLayoutScope* layoutScope
             renderer->setNeedsLayoutAndFullPaintInvalidation(MarkContainingBlockChain, layoutScope);
     }
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::iterator end = m_elementsWithRelativeLengths.end();
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::iterator it = m_elementsWithRelativeLengths.begin(); it != end; ++it) {
-        if (*it != this)
-            (*it)->invalidateRelativeLengthClients(layoutScope);
+    for (SVGElement* element : m_elementsWithRelativeLengths) {
+        if (element != this)
+            element->invalidateRelativeLengthClients(layoutScope);
     }
 }
 
@@ -754,9 +753,8 @@ bool SVGElement::addEventListener(const AtomicString& eventType, PassRefPtr<Even
     // Add event listener to all shadow tree DOM element instances
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > instances;
     collectInstancesForSVGElement(this, instances);
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator end = instances.end();
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator it = instances.begin(); it != end; ++it) {
-        bool result = (*it)->Node::addEventListener(eventType, listener, useCapture);
+    for (SVGElement* element : instances) {
+        bool result = element->Node::addEventListener(eventType, listener, useCapture);
         ASSERT_UNUSED(result, result);
     }
 
@@ -774,9 +772,7 @@ bool SVGElement::removeEventListener(const AtomicString& eventType, PassRefPtr<E
     // Remove event listener from all shadow tree DOM element instances
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > instances;
     collectInstancesForSVGElement(this, instances);
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator end = instances.end();
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator it = instances.begin(); it != end; ++it) {
-        SVGElement* shadowTreeElement = *it;
+    for (SVGElement* shadowTreeElement : instances) {
         ASSERT(shadowTreeElement);
 
         shadowTreeElement->Node::removeEventListener(eventType, listener, useCapture);
@@ -979,11 +975,10 @@ void SVGElement::invalidateInstances()
         return;
 
     // Mark all use elements referencing 'element' for rebuilding
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator end = set.end();
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator it = set.begin(); it != end; ++it) {
-        (*it)->setCorrespondingElement(0);
+    for (SVGElement* instance : set) {
+        instance->setCorrespondingElement(0);
 
-        if (SVGUseElement* element = (*it)->correspondingUseElement()) {
+        if (SVGUseElement* element = instance->correspondingUseElement()) {
             ASSERT(element->inDocument());
             element->invalidateShadowTree();
         }
@@ -1145,9 +1140,7 @@ void SVGElement::rebuildAllIncomingReferences()
     copyToVector(incomingReferences, incomingReferencesSnapshot);
 
     // Force rebuilding the |sourceElement| so it knows about this change.
-    for (WillBeHeapVector<RawPtrWillBeMember<SVGElement> >::iterator it = incomingReferencesSnapshot.begin(), itEnd = incomingReferencesSnapshot.end(); it != itEnd; ++it) {
-        SVGElement* sourceElement = *it;
-
+    for (SVGElement* sourceElement : incomingReferencesSnapshot) {
         // Before rebuilding |sourceElement| ensure it was not removed from under us.
         if (incomingReferences.contains(sourceElement))
             sourceElement->svgAttributeChanged(XLinkNames::hrefAttr);
@@ -1160,8 +1153,7 @@ void SVGElement::removeAllIncomingReferences()
         return;
 
     SVGElementSet& incomingReferences = svgRareData()->incomingReferences();
-    for (SVGElementSet::iterator it = incomingReferences.begin(), itEnd = incomingReferences.end(); it != itEnd; ++it) {
-        SVGElement* sourceElement = *it;
+    for (SVGElement* sourceElement: incomingReferences) {
         ASSERT(sourceElement->hasSVGRareData());
         sourceElement->ensureSVGRareData()->outgoingReferences().remove(this);
     }
@@ -1174,8 +1166,7 @@ void SVGElement::removeAllOutgoingReferences()
         return;
 
     SVGElementSet& outgoingReferences = svgRareData()->outgoingReferences();
-    for (SVGElementSet::iterator it = outgoingReferences.begin(), itEnd = outgoingReferences.end(); it != itEnd; ++it) {
-        SVGElement* targetElement = *it;
+    for (SVGElement* targetElement : outgoingReferences) {
         ASSERT(targetElement->hasSVGRareData());
         targetElement->ensureSVGRareData()->incomingReferences().remove(this);
     }

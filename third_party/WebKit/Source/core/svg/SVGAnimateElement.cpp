@@ -144,9 +144,8 @@ WillBeHeapVector<RawPtrWillBeMember<SVGElement> > findElementInstances(SVGElemen
     animatedElements.append(targetElement);
 
     const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = targetElement->instancesForElement();
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator end = instances.end();
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator it = instances.begin(); it != end; ++it) {
-        if (SVGElement* shadowTreeElement = *it)
+    for (SVGElement* shadowTreeElement : instances) {
+        if (shadowTreeElement)
             animatedElements.append(shadowTreeElement);
     }
 
@@ -171,9 +170,8 @@ void SVGAnimateElement::resetAnimatedType()
         WillBeHeapVector<RawPtrWillBeMember<SVGElement> > animatedElements = findElementInstances(targetElement);
         ASSERT(!animatedElements.isEmpty());
 
-        WillBeHeapVector<RawPtrWillBeMember<SVGElement> >::const_iterator end = animatedElements.end();
-        for (WillBeHeapVector<RawPtrWillBeMember<SVGElement> >::const_iterator it = animatedElements.begin(); it != end; ++it)
-            addReferenceTo(*it);
+        for (SVGElement* element : animatedElements)
+            addReferenceTo(element);
 
         if (!m_animatedProperty)
             m_animatedProperty = animator->startAnimValAnimation(animatedElements);
@@ -229,9 +227,8 @@ static inline void applyCSSPropertyToTargetAndInstances(SVGElement* targetElemen
 
     // If the target element has instances, update them as well, w/o requiring the <use> tree to be rebuilt.
     const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = targetElement->instancesForElement();
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator end = instances.end();
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator it = instances.begin(); it != end; ++it) {
-        if (SVGElement* shadowTreeElement = *it)
+    for (SVGElement* shadowTreeElement : instances) {
+        if (shadowTreeElement)
             applyCSSPropertyToTarget(shadowTreeElement, id, valueAsString);
     }
 }
@@ -249,9 +246,8 @@ static inline void removeCSSPropertyFromTargetAndInstances(SVGElement* targetEle
 
     // If the target element has instances, update them as well, w/o requiring the <use> tree to be rebuilt.
     const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = targetElement->instancesForElement();
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator end = instances.end();
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator it = instances.begin(); it != end; ++it) {
-        if (SVGElement* shadowTreeElement = *it)
+    for (SVGElement* shadowTreeElement : instances) {
+        if (shadowTreeElement)
             removeCSSPropertyFromTarget(shadowTreeElement, id);
     }
 }
@@ -276,9 +272,8 @@ static inline void notifyTargetAndInstancesAboutAnimValChange(SVGElement* target
 
     // If the target element has instances, update them as well, w/o requiring the <use> tree to be rebuilt.
     const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >& instances = targetElement->instancesForElement();
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator end = instances.end();
-    for (WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> >::const_iterator it = instances.begin(); it != end; ++it) {
-        notifyTargetAboutAnimValChange(*it, attributeName);
+    for (SVGElement* element : instances) {
+        notifyTargetAboutAnimValChange(element, attributeName);
     }
 }
 

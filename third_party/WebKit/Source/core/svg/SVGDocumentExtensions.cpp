@@ -98,9 +98,8 @@ void SVGDocumentExtensions::serviceAnimations(double monotonicAnimationStartTime
 {
     WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement> > timeContainers;
     timeContainers.appendRange(m_timeContainers.begin(), m_timeContainers.end());
-    WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement> >::iterator end = timeContainers.end();
-    for (WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement> >::iterator itr = timeContainers.begin(); itr != end; ++itr)
-        (*itr)->timeContainer()->serviceAnimations(monotonicAnimationStartTime);
+    for (const auto& container : timeContainers)
+        container->timeContainer()->serviceAnimations(monotonicAnimationStartTime);
 }
 
 void SVGDocumentExtensions::startAnimations()
@@ -111,9 +110,8 @@ void SVGDocumentExtensions::startAnimations()
     // In the future we should refactor the use-element to avoid this. See https://webkit.org/b/53704
     WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement> > timeContainers;
     timeContainers.appendRange(m_timeContainers.begin(), m_timeContainers.end());
-    WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement> >::iterator end = timeContainers.end();
-    for (WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement> >::iterator itr = timeContainers.begin(); itr != end; ++itr) {
-        SMILTimeContainer* timeContainer = (*itr)->timeContainer();
+    for (const auto& container : timeContainers) {
+        SMILTimeContainer* timeContainer = container->timeContainer();
         if (!timeContainer->isStarted())
             timeContainer->begin();
     }
@@ -121,9 +119,8 @@ void SVGDocumentExtensions::startAnimations()
 
 void SVGDocumentExtensions::pauseAnimations()
 {
-    WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> >::iterator end = m_timeContainers.end();
-    for (WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> >::iterator itr = m_timeContainers.begin(); itr != end; ++itr)
-        (*itr)->pauseAnimations();
+    for (SVGSVGElement* element : m_timeContainers)
+        element->pauseAnimations();
 }
 
 void SVGDocumentExtensions::dispatchSVGLoadEventToOutermostSVGElements()
@@ -131,9 +128,8 @@ void SVGDocumentExtensions::dispatchSVGLoadEventToOutermostSVGElements()
     WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement> > timeContainers;
     timeContainers.appendRange(m_timeContainers.begin(), m_timeContainers.end());
 
-    WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement> >::iterator end = timeContainers.end();
-    for (WillBeHeapVector<RefPtrWillBeMember<SVGSVGElement> >::iterator it = timeContainers.begin(); it != end; ++it) {
-        SVGSVGElement* outerSVG = it->get();
+    for (const auto& container : timeContainers) {
+        SVGSVGElement* outerSVG = container.get();
         if (!outerSVG->isOutermostSVGSVGElement())
             continue;
 
@@ -190,9 +186,8 @@ bool SVGDocumentExtensions::isElementPendingResources(Element* element) const
 
     ASSERT(element);
 
-    WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements> >::const_iterator end = m_pendingResources.end();
-    for (WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements> >::const_iterator it = m_pendingResources.begin(); it != end; ++it) {
-        SVGPendingElements* elements = it->value.get();
+    for (const auto& entry : m_pendingResources) {
+        SVGPendingElements* elements = entry.value.get();
         ASSERT(elements);
 
         if (elements->contains(element))
@@ -224,43 +219,39 @@ void SVGDocumentExtensions::removeElementFromPendingResources(Element* element)
     // Remove the element from pending resources.
     if (!m_pendingResources.isEmpty() && element->hasPendingResources()) {
         Vector<AtomicString> toBeRemoved;
-        WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements> >::iterator end = m_pendingResources.end();
-        for (WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements> >::iterator it = m_pendingResources.begin(); it != end; ++it) {
-            SVGPendingElements* elements = it->value.get();
+        for (const auto& entry : m_pendingResources) {
+            SVGPendingElements* elements = entry.value.get();
             ASSERT(elements);
             ASSERT(!elements->isEmpty());
 
             elements->remove(element);
             if (elements->isEmpty())
-                toBeRemoved.append(it->key);
+                toBeRemoved.append(entry.key);
         }
 
         clearHasPendingResourcesIfPossible(element);
 
         // We use the removePendingResource function here because it deals with set lifetime correctly.
-        Vector<AtomicString>::iterator itEnd = toBeRemoved.end();
-        for (Vector<AtomicString>::iterator it = toBeRemoved.begin(); it != itEnd; ++it)
-            removePendingResource(*it);
+        for (const AtomicString& id : toBeRemoved)
+            removePendingResource(id);
     }
 
     // Remove the element from pending resources that were scheduled for removal.
     if (!m_pendingResourcesForRemoval.isEmpty()) {
         Vector<AtomicString> toBeRemoved;
-        WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements> >::iterator end = m_pendingResourcesForRemoval.end();
-        for (WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements> >::iterator it = m_pendingResourcesForRemoval.begin(); it != end; ++it) {
-            SVGPendingElements* elements = it->value.get();
+        for (const auto& entry : m_pendingResourcesForRemoval) {
+            SVGPendingElements* elements = entry.value.get();
             ASSERT(elements);
             ASSERT(!elements->isEmpty());
 
             elements->remove(element);
             if (elements->isEmpty())
-                toBeRemoved.append(it->key);
+                toBeRemoved.append(entry.key);
         }
 
         // We use the removePendingResourceForRemoval function here because it deals with set lifetime correctly.
-        Vector<AtomicString>::iterator itEnd = toBeRemoved.end();
-        for (Vector<AtomicString>::iterator it = toBeRemoved.begin(); it != itEnd; ++it)
-            removePendingResourceForRemoval(*it);
+        for (const AtomicString& id : toBeRemoved)
+            removePendingResourceForRemoval(id);
     }
 }
 
@@ -332,9 +323,8 @@ void SVGDocumentExtensions::invalidateSVGRootsWithRelativeLengthDescendents(Subt
     TemporaryChange<bool> inRelativeLengthSVGRootsChange(m_inRelativeLengthSVGRootsInvalidation, true);
 #endif
 
-    WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> >::iterator end = m_relativeLengthSVGRoots.end();
-    for (WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> >::iterator it = m_relativeLengthSVGRoots.begin(); it != end; ++it)
-        (*it)->invalidateRelativeLengthClients(scope);
+    for (SVGSVGElement* element : m_relativeLengthSVGRoots)
+        element->invalidateRelativeLengthClients(scope);
 }
 
 bool SVGDocumentExtensions::zoomAndPanEnabled() const
