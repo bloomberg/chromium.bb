@@ -35,7 +35,6 @@
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/InjectedScriptBase.h"
 #include "core/inspector/InjectedScriptManager.h"
-#include "core/inspector/ScriptArguments.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
