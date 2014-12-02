@@ -48,7 +48,7 @@ interface Document : Node {
 
     // DOM Level 3 Core
 
-    [MeasureAs=DocumentInputEncoding] readonly attribute DOMString? inputEncoding; // Removed from DOM4.
+    [MeasureAs=DocumentInputEncoding, ImplementedAs=characterSet] readonly attribute DOMString? inputEncoding;
 
     [MeasureAs=DocumentXMLEncoding] readonly attribute DOMString? xmlEncoding; // Removed from DOM4.
     [RaisesException=Setter, MeasureAs=DocumentXMLVersion] attribute DOMString? xmlVersion; // Removed from DOM4.

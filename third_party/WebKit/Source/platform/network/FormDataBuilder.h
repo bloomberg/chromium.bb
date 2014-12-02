@@ -33,7 +33,7 @@ namespace blink {
 class PLATFORM_EXPORT FormDataBuilder {
     WTF_MAKE_NONCOPYABLE(FormDataBuilder);
 public:
-    static WTF::TextEncoding encodingFromAcceptCharset(const String& acceptCharset, const String& inputEncoding, const String& defaultCharset);
+    static WTF::TextEncoding encodingFromAcceptCharset(const String& acceptCharset, const String& charset, const String& defaultCharset);
 
     // Helper functions used by HTMLFormElement for multi-part form data
     static Vector<char> generateUniqueBoundaryString();

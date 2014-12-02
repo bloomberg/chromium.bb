@@ -89,7 +89,7 @@ inline void TextResourceDecoderBuilder::setupEncoding(TextResourceDecoder* decod
             decoder->setHintEncoding(parentFrame->document()->encoding());
 
         if (m_encoding.isEmpty())
-            decoder->setEncoding(parentFrame->document()->inputEncoding().string(), TextResourceDecoder::EncodingFromParentFrame);
+            decoder->setEncoding(parentFrame->document()->encoding(), TextResourceDecoder::EncodingFromParentFrame);
     }
 }
 

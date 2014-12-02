@@ -318,7 +318,6 @@ public:
 
     String defaultCharset() const;
 
-    AtomicString inputEncoding() const { return Document::encodingName(); }
     AtomicString charset() const { return Document::encodingName(); }
     AtomicString characterSet() const { return Document::encodingName(); }
 

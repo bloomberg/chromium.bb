@@ -789,7 +789,6 @@ void XMLHttpRequest::send(Document* document, ExceptionState& exceptionState)
         // from the HTML5 specification to serialize the document.
         String body = createMarkup(document);
 
-        // FIXME: This should use value of document.inputEncoding to determine the encoding to use.
         httpBody = FormData::create(UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
     }
 
