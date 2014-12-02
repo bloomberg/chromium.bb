@@ -224,7 +224,7 @@ class SpeechRecognitionAudioSinkTest : public testing::Test {
                        output_sample_rate,
                        kOutputBitsPerSample,
                        output_frames_per_buffer);
-    source_data_.reset(new int16[input_frames_per_buffer * kInputChannels]{});
+    source_data_.reset(new int16[input_frames_per_buffer * kInputChannels]());
 
     // Prepare the track and audio source.
     blink::WebMediaStreamTrack blink_track;
