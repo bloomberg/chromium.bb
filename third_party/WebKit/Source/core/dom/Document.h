@@ -349,6 +349,8 @@ public:
 
     virtual KURL baseURI() const override final;
 
+    String origin() const { return securityOrigin()->toString(); }
+
     String visibilityState() const;
     bool hidden() const;
     void didChangeVisibilityState();
