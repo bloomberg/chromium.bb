@@ -49,6 +49,7 @@ void ChromecastConfig::Create(PrefRegistrySimple* registry) {
   DCHECK(g_instance_ == NULL);
   g_instance_ = new ChromecastConfig();
   g_instance_->Load(registry);
+  g_instance_->OnConfigLoaded();
 }
 
 // static

@@ -68,6 +68,9 @@ class ChromecastConfig {
   // Registers any needed preferences for the current platform.
   void RegisterPlatformPrefs(PrefRegistrySimple* registry);
 
+  // Called after the pref config file has been loaded.
+  void OnConfigLoaded();
+
   // Global singleton instance.
   static ChromecastConfig* g_instance_;
 

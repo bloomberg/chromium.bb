@@ -9,4 +9,7 @@ namespace chromecast {
 void ChromecastConfig::RegisterPlatformPrefs(PrefRegistrySimple* registry) {
 }
 
+void ChromecastConfig::OnConfigLoaded() {
+}
+
 }  // namespace chromecast
