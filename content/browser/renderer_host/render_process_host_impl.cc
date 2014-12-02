@@ -1947,7 +1947,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
                                                          &exit_code) :
       base::TERMINATION_STATUS_NORMAL_TERMINATION;
 
-  RendererClosedDetails details(GetHandle(), status, exit_code);
+  RendererClosedDetails details(status, exit_code);
   mojo_application_host_->WillDestroySoon();
 
   child_process_launcher_.reset();

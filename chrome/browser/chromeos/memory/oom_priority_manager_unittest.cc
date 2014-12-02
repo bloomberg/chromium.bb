@@ -43,6 +43,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
     OomPriorityManager::TabStats stats;
     stats.is_pinned = true;
     stats.renderer_handle = kPinned;
+    stats.child_process_host_id = kPinned;
     test_list.push_back(stats);
   }
 
@@ -50,6 +51,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
     OomPriorityManager::TabStats stats;
     stats.is_app = true;
     stats.renderer_handle = kApp;
+    stats.child_process_host_id = kApp;
     test_list.push_back(stats);
   }
 
@@ -57,6 +59,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
     OomPriorityManager::TabStats stats;
     stats.is_playing_audio = true;
     stats.renderer_handle = kPlayingAudio;
+    stats.child_process_host_id = kPlayingAudio;
     test_list.push_back(stats);
   }
 
@@ -64,6 +67,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
     OomPriorityManager::TabStats stats;
     stats.last_active = now - base::TimeDelta::FromSeconds(10);
     stats.renderer_handle = kRecent;
+    stats.child_process_host_id = kRecent;
     test_list.push_back(stats);
   }
 
@@ -71,6 +75,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
     OomPriorityManager::TabStats stats;
     stats.last_active = now - base::TimeDelta::FromMinutes(15);
     stats.renderer_handle = kOld;
+    stats.child_process_host_id = kOld;
     test_list.push_back(stats);
   }
 
@@ -78,6 +83,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
     OomPriorityManager::TabStats stats;
     stats.last_active = now - base::TimeDelta::FromDays(365);
     stats.renderer_handle = kReallyOld;
+    stats.child_process_host_id = kReallyOld;
     test_list.push_back(stats);
   }
 
@@ -86,6 +92,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
     stats.is_pinned = true;
     stats.last_active = now - base::TimeDelta::FromDays(365);
     stats.renderer_handle = kOldButPinned;
+    stats.child_process_host_id = kOldButPinned;
     test_list.push_back(stats);
   }
 
@@ -93,6 +100,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
     OomPriorityManager::TabStats stats;
     stats.is_reloadable_ui = true;
     stats.renderer_handle = kReloadableUI;
+    stats.child_process_host_id = kReloadableUI;
     test_list.push_back(stats);
   }
 
@@ -102,6 +110,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
     OomPriorityManager::TabStats stats;
     stats.is_selected = true;
     stats.renderer_handle = kSelected;
+    stats.child_process_host_id = kSelected;
     test_list.push_back(stats);
   }
 
@@ -119,6 +128,17 @@ TEST_F(OomPriorityManagerTest, Comparator) {
   EXPECT_EQ(kOld, test_list[index++].renderer_handle);
   EXPECT_EQ(kReallyOld, test_list[index++].renderer_handle);
   EXPECT_EQ(kReloadableUI, test_list[index++].renderer_handle);
+
+  index = 0;
+  EXPECT_EQ(kSelected, test_list[index++].child_process_host_id);
+  EXPECT_EQ(kPinned, test_list[index++].child_process_host_id);
+  EXPECT_EQ(kOldButPinned, test_list[index++].child_process_host_id);
+  EXPECT_EQ(kApp, test_list[index++].child_process_host_id);
+  EXPECT_EQ(kPlayingAudio, test_list[index++].child_process_host_id);
+  EXPECT_EQ(kRecent, test_list[index++].child_process_host_id);
+  EXPECT_EQ(kOld, test_list[index++].child_process_host_id);
+  EXPECT_EQ(kReallyOld, test_list[index++].child_process_host_id);
+  EXPECT_EQ(kReloadableUI, test_list[index++].child_process_host_id);
 }
 
 TEST_F(OomPriorityManagerTest, IsReloadableUI) {
@@ -144,44 +164,58 @@ TEST_F(OomPriorityManagerTest, IsReloadableUI) {
 
 TEST_F(OomPriorityManagerTest, GetProcessHandles) {
   OomPriorityManager::TabStats stats;
-  std::vector<base::ProcessHandle> handles;
+  std::vector<OomPriorityManager::ProcessInfo> process_id_pairs;
 
-  // Empty stats list gives empty handles list.
+  // Empty stats list gives empty |process_id_pairs| list.
   OomPriorityManager::TabStatsList empty_list;
-  handles = OomPriorityManager::GetProcessHandles(empty_list);
-  EXPECT_EQ(0u, handles.size());
+  process_id_pairs =
+      OomPriorityManager::GetChildProcessInfos(empty_list);
+  EXPECT_EQ(0u, process_id_pairs.size());
 
-  // Two tabs in two different processes generates two handles out.
+  // Two tabs in two different processes generates two
+  // |child_process_host_id| out.
   OomPriorityManager::TabStatsList two_list;
-  stats.renderer_handle = 100;
-  two_list.push_back(stats);
+  stats.child_process_host_id = 100;
   stats.renderer_handle = 101;
   two_list.push_back(stats);
-  handles = OomPriorityManager::GetProcessHandles(two_list);
-  EXPECT_EQ(2u, handles.size());
-  EXPECT_EQ(100, handles[0]);
-  EXPECT_EQ(101, handles[1]);
+  stats.child_process_host_id = 200;
+  stats.renderer_handle = 201;
+  two_list.push_back(stats);
+  process_id_pairs = OomPriorityManager::GetChildProcessInfos(two_list);
+  EXPECT_EQ(2u, process_id_pairs.size());
+  EXPECT_EQ(100, process_id_pairs[0].first);
+  EXPECT_EQ(101, process_id_pairs[0].second);
+  EXPECT_EQ(200, process_id_pairs[1].first);
+  EXPECT_EQ(201, process_id_pairs[1].second);
 
   // Zero handles are removed.
   OomPriorityManager::TabStatsList zero_handle_list;
+  stats.child_process_host_id = 100;
   stats.renderer_handle = 0;
   zero_handle_list.push_back(stats);
-  handles = OomPriorityManager::GetProcessHandles(zero_handle_list);
-  EXPECT_EQ(0u, handles.size());
+  process_id_pairs =
+      OomPriorityManager::GetChildProcessInfos(zero_handle_list);
+  EXPECT_EQ(0u, process_id_pairs.size());
 
   // Two tabs in the same process generates one handle out. When a duplicate
   // occurs the later instance is dropped.
   OomPriorityManager::TabStatsList same_process_list;
-  stats.renderer_handle = 100;
-  same_process_list.push_back(stats);
+  stats.child_process_host_id = 100;
   stats.renderer_handle = 101;
   same_process_list.push_back(stats);
-  stats.renderer_handle = 100;  // Duplicate.
+  stats.child_process_host_id = 200;
+  stats.renderer_handle = 201;
   same_process_list.push_back(stats);
-  handles = OomPriorityManager::GetProcessHandles(same_process_list);
-  EXPECT_EQ(2u, handles.size());
-  EXPECT_EQ(100, handles[0]);
-  EXPECT_EQ(101, handles[1]);
+  stats.child_process_host_id = 300;
+  stats.renderer_handle = 101;  // Duplicate.
+  same_process_list.push_back(stats);
+  process_id_pairs =
+      OomPriorityManager::GetChildProcessInfos(same_process_list);
+  EXPECT_EQ(2u, process_id_pairs.size());
+  EXPECT_EQ(100, process_id_pairs[0].first);
+  EXPECT_EQ(101, process_id_pairs[0].second);
+  EXPECT_EQ(200, process_id_pairs[1].first);
+  EXPECT_EQ(201, process_id_pairs[1].second);
 }
 
 }  // namespace chromeos

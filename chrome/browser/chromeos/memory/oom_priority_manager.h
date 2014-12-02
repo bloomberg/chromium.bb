@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_MEMORY_OOM_PRIORITY_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_MEMORY_OOM_PRIORITY_MANAGER_H_
 
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -79,6 +80,7 @@ class OomPriorityManager : public content::NotificationObserver {
     bool is_discarded;
     base::TimeTicks last_active;
     base::ProcessHandle renderer_handle;
+    int child_process_host_id;
     base::string16 title;
     int64 tab_contents_id;  // unique ID per WebContents
   };
@@ -111,10 +113,14 @@ class OomPriorityManager : public content::NotificationObserver {
   // Called when the timer fires, sets oom_adjust_score for all renderers.
   void AdjustOomPriorities();
 
-  // Returns a list of unique process handles from |stats_list|. If multiple
-  // tabs use the same process, returns the first process handle. This implies
+  // Pair to hold child process host id and ProcessHandle
+  typedef std::pair<int, base::ProcessHandle> ProcessInfo;
+
+  // Returns a list of child process host ids and ProcessHandles from
+  // |stats_list| with unique pids. If multiple tabs use the same process,
+  // returns the first child process host id and corresponding pid. This implies
   // that the processes are selected based on their "most important" tab.
-  static std::vector<base::ProcessHandle> GetProcessHandles(
+  static std::vector<ProcessInfo> GetChildProcessInfos(
       const TabStatsList& stats_list);
 
   // Called by AdjustOomPriorities.
@@ -137,12 +143,13 @@ class OomPriorityManager : public content::NotificationObserver {
   base::RepeatingTimer<OomPriorityManager> recent_tab_discard_timer_;
   content::NotificationRegistrar registrar_;
 
-  // This lock is for pid_to_oom_score_ and focus_tab_pid_.
-  base::Lock pid_to_oom_score_lock_;
-  // map maintaining the process - oom_score mapping.
-  typedef base::hash_map<base::ProcessHandle, int> ProcessScoreMap;
-  ProcessScoreMap pid_to_oom_score_;
-  base::ProcessHandle focused_tab_pid_;
+  // This lock is for |oom_score_map_| and |focused_tab_process_info_|.
+  base::Lock oom_score_lock_;
+  // Map maintaining the child process host id - oom_score mapping.
+  typedef base::hash_map<int, int> ProcessScoreMap;
+  ProcessScoreMap oom_score_map_;
+  // Holds the focused tab's child process host id.
+  ProcessInfo focused_tab_process_info_;
 
   // Observer for the kernel low memory signal.  NULL if tab discarding is
   // disabled.

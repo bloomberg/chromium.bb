@@ -1405,7 +1405,6 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
 
   // Fake a process crash.
   RenderProcessHost::RendererClosedDetails details(
-      rvh1->GetProcess()->GetHandle(),
       base::TERMINATION_STATUS_PROCESS_CRASHED,
       0);
   NotificationService::current()->Notify(

@@ -171,7 +171,7 @@ OomPriorityManager::TabStats::~TabStats() {
 }
 
 OomPriorityManager::OomPriorityManager()
-    : focused_tab_pid_(0),
+    : focused_tab_process_info_(std::make_pair(0, 0)),
       low_memory_observer_(new LowMemoryObserver),
       discard_count_(0),
       recent_tab_discard_(false) {
@@ -218,14 +218,14 @@ void OomPriorityManager::Stop() {
 
 std::vector<base::string16> OomPriorityManager::GetTabTitles() {
   TabStatsList stats = GetTabStatsOnUIThread();
-  base::AutoLock pid_to_oom_score_autolock(pid_to_oom_score_lock_);
+  base::AutoLock oom_score_autolock(oom_score_lock_);
   std::vector<base::string16> titles;
   titles.reserve(stats.size());
   TabStatsList::iterator it = stats.begin();
   for ( ; it != stats.end(); ++it) {
     base::string16 str;
     str.reserve(4096);
-    int score = pid_to_oom_score_[it->renderer_handle];
+    int score = oom_score_map_[it->child_process_host_id];
     str += base::IntToString16(score);
     str += base::ASCIIToUTF16(" - ");
     str += it->title;
@@ -456,10 +456,12 @@ bool OomPriorityManager::CompareTabStats(TabStats first,
 
 void OomPriorityManager::AdjustFocusedTabScoreOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  base::AutoLock pid_to_oom_score_autolock(pid_to_oom_score_lock_);
+  base::AutoLock oom_score_autolock(oom_score_lock_);
+  base::ProcessHandle pid = focused_tab_process_info_.second;
   content::ZygoteHost::GetInstance()->AdjustRendererOOMScore(
-      focused_tab_pid_, chrome::kLowestRendererOomScore);
-  pid_to_oom_score_[focused_tab_pid_] = chrome::kLowestRendererOomScore;
+      pid, chrome::kLowestRendererOomScore);
+  oom_score_map_[focused_tab_process_info_.first] =
+      chrome::kLowestRendererOomScore;
 }
 
 void OomPriorityManager::OnFocusTabScoreAdjustmentTimeout() {
@@ -472,35 +474,30 @@ void OomPriorityManager::OnFocusTabScoreAdjustmentTimeout() {
 void OomPriorityManager::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  base::ProcessHandle handle = 0;
-  base::AutoLock pid_to_oom_score_autolock(pid_to_oom_score_lock_);
+  base::AutoLock oom_score_autolock(oom_score_lock_);
   switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      handle =
-          content::Details<content::RenderProcessHost::RendererClosedDetails>(
-              details)->handle;
-      pid_to_oom_score_.erase(handle);
-      break;
-    }
+    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
-      handle = content::Source<content::RenderProcessHost>(source)->
-          GetHandle();
-      pid_to_oom_score_.erase(handle);
+      content::RenderProcessHost* host =
+          content::Source<content::RenderProcessHost>(source).ptr();
+      oom_score_map_.erase(host->GetID());
       break;
     }
     case content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED: {
       bool visible = *content::Details<bool>(details).ptr();
       if (visible) {
-        focused_tab_pid_ =
+        content::RenderProcessHost* render_host =
             content::Source<content::RenderWidgetHost>(source).ptr()->
-            GetProcess()->GetHandle();
+            GetProcess();
+        focused_tab_process_info_ = std::make_pair(render_host->GetID(),
+                                                   render_host->GetHandle());
 
         // If the currently focused tab already has a lower score, do not
         // set it. This can happen in case the newly focused tab is script
         // connected to the previous tab.
         ProcessScoreMap::iterator it;
-        it = pid_to_oom_score_.find(focused_tab_pid_);
-        if (it == pid_to_oom_score_.end()
+        it = oom_score_map_.find(focused_tab_process_info_.first);
+        if (it == oom_score_map_.end()
             || it->second != chrome::kLowestRendererOomScore) {
           // By starting a timer we guarantee that the tab is focused for
           // certain amount of time. Secondly, it also does not add overhead
@@ -581,6 +578,7 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
         stats.is_discarded = model->IsTabDiscarded(i);
         stats.last_active = contents->GetLastActiveTime();
         stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
+        stats.child_process_host_id = contents->GetRenderProcessHost()->GetID();
         stats.title = contents->GetTitle();
         stats.tab_contents_id = IdFromWebContents(contents);
         stats_list.push_back(stats);
@@ -596,9 +594,10 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
 }
 
 // static
-std::vector<base::ProcessHandle> OomPriorityManager::GetProcessHandles(
+std::vector<OomPriorityManager::ProcessInfo>
+    OomPriorityManager::GetChildProcessInfos(
     const TabStatsList& stats_list) {
-  std::vector<base::ProcessHandle> process_handles;
+  std::vector<ProcessInfo> process_infos;
   std::set<base::ProcessHandle> already_seen;
   for (TabStatsList::const_iterator iterator = stats_list.begin();
        iterator != stats_list.end(); ++iterator) {
@@ -613,21 +612,21 @@ std::vector<base::ProcessHandle> OomPriorityManager::GetProcessHandles(
       continue;
     }
 
-    process_handles.push_back(iterator->renderer_handle);
+    process_infos.push_back(std::make_pair(
+        iterator->child_process_host_id, iterator->renderer_handle));
   }
-  return process_handles;
+  return process_infos;
 }
 
 void OomPriorityManager::AdjustOomPrioritiesOnFileThread(
     TabStatsList stats_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  base::AutoLock pid_to_oom_score_autolock(pid_to_oom_score_lock_);
+  base::AutoLock oom_score_autolock(oom_score_lock_);
 
   // Remove any duplicate PIDs. Order of the list is maintained, so each
   // renderer process will take on the oom_score_adj of the most important
   // (least likely to be killed) tab.
-  std::vector<base::ProcessHandle> process_handles =
-      GetProcessHandles(stats_list);
+  std::vector<ProcessInfo> process_infos = GetChildProcessInfos(stats_list);
 
   // Now we assign priorities based on the sorted list.  We're
   // assigning priorities in the range of kLowestRendererOomScore to
@@ -643,18 +642,17 @@ void OomPriorityManager::AdjustOomPrioritiesOnFileThread(
   const int kPriorityRange = chrome::kHighestRendererOomScore -
                              chrome::kLowestRendererOomScore;
   float priority_increment =
-      static_cast<float>(kPriorityRange) / process_handles.size();
-  for (std::vector<base::ProcessHandle>::iterator iterator =
-           process_handles.begin();
-       iterator != process_handles.end(); ++iterator) {
+      static_cast<float>(kPriorityRange) / process_infos.size();
+  for (const auto& process_info : process_infos) {
     int score = static_cast<int>(priority + 0.5f);
-    ProcessScoreMap::iterator it = pid_to_oom_score_.find(*iterator);
+    ProcessScoreMap::iterator it =
+        oom_score_map_.find(process_info.first);
     // If a process has the same score as the newly calculated value,
     // do not set it.
-    if (it == pid_to_oom_score_.end() || it->second != score) {
-      content::ZygoteHost::GetInstance()->AdjustRendererOOMScore(*iterator,
-                                                                 score);
-      pid_to_oom_score_[*iterator] = score;
+    if (it == oom_score_map_.end() || it->second != score) {
+      content::ZygoteHost::GetInstance()->AdjustRendererOOMScore(
+          process_info.second, score);
+      oom_score_map_[process_info.first] = score;
     }
     priority += priority_increment;
   }

@@ -195,11 +195,13 @@ void MachBroker::EnsureRunning() {
   }
 }
 
-void MachBroker::AddPlaceholderForPid(base::ProcessHandle pid) {
+void MachBroker::AddPlaceholderForPid(base::ProcessHandle pid,
+                                      int child_process_id) {
   lock_.AssertAcquired();
 
   DCHECK_EQ(0u, mach_map_.count(pid));
   mach_map_[pid] = MACH_PORT_NULL;
+  child_process_id_map_[child_process_id] = pid;
 }
 
 mach_port_t MachBroker::TaskForPid(base::ProcessHandle pid) const {
@@ -212,33 +214,27 @@ mach_port_t MachBroker::TaskForPid(base::ProcessHandle pid) const {
 
 void MachBroker::BrowserChildProcessHostDisconnected(
     const ChildProcessData& data) {
-  InvalidatePid(data.handle);
+  InvalidateChildProcessId(data.id);
 }
 
 void MachBroker::BrowserChildProcessCrashed(const ChildProcessData& data) {
-  InvalidatePid(data.handle);
+  InvalidateChildProcessId(data.id);
 }
 
 void MachBroker::Observe(int type,
                          const NotificationSource& source,
                          const NotificationDetails& details) {
-  // TODO(rohitrao): These notifications do not always carry the proper PIDs,
-  // especially when the renderer is already gone or has crashed.  Find a better
-  // way to listen for child process deaths.  http://crbug.com/55734
-  base::ProcessHandle handle = 0;
   switch (type) {
-    case NOTIFICATION_RENDERER_PROCESS_CLOSED:
-      handle = Details<RenderProcessHost::RendererClosedDetails>(
-          details)->handle;
-      break;
     case NOTIFICATION_RENDERER_PROCESS_TERMINATED:
-      handle = Source<RenderProcessHost>(source)->GetHandle();
+    case NOTIFICATION_RENDERER_PROCESS_CLOSED: {
+      RenderProcessHost* host = Source<RenderProcessHost>(source).ptr();
+      InvalidateChildProcessId(host->GetID());
       break;
+    }
     default:
       NOTREACHED() << "Unexpected notification";
       break;
   }
-  InvalidatePid(handle);
 }
 
 MachBroker::MachBroker() : listener_thread_started_(false) {
@@ -262,16 +258,21 @@ void MachBroker::FinalizePid(base::ProcessHandle pid,
     it->second = task_port;
 }
 
-void MachBroker::InvalidatePid(base::ProcessHandle pid) {
+void MachBroker::InvalidateChildProcessId(int child_process_id) {
   base::AutoLock lock(lock_);
-  MachBroker::MachMap::iterator it = mach_map_.find(pid);
-  if (it == mach_map_.end())
+  MachBroker::ChildProcessIdMap::iterator it =
+      child_process_id_map_.find(child_process_id);
+  if (it == child_process_id_map_.end())
     return;
 
-  kern_return_t kr = mach_port_deallocate(mach_task_self(),
-                                          it->second);
-  MACH_LOG_IF(WARNING, kr != KERN_SUCCESS, kr) << "mach_port_deallocate";
-  mach_map_.erase(it);
+  MachMap::iterator mach_it = mach_map_.find(it->second);
+  if (mach_it != mach_map_.end()) {
+    kern_return_t kr = mach_port_deallocate(mach_task_self(),
+                                            mach_it->second);
+    MACH_LOG_IF(WARNING, kr != KERN_SUCCESS, kr) << "mach_port_deallocate";
+    mach_map_.erase(mach_it);
+  }
+  child_process_id_map_.erase(it);
 }
 
 // static

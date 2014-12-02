@@ -429,7 +429,7 @@ void ChildProcessLauncher::Context::LaunchInternal(
     }
 
     if (launched)
-      broker->AddPlaceholderForPid(handle);
+      broker->AddPlaceholderForPid(handle, child_process_id);
 
     // After updating the broker, release the lock and let the child's
     // messasge be processed on the broker's thread.

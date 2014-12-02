@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_MACH_BROKER_MAC_H_
 #define CONTENT_BROWSER_MACH_BROKER_MAC_H_
 
+#include <mach/mach.h>
+
 #include <map>
 #include <string>
-
-#include <mach/mach.h>
 
 #include "base/memory/singleton.h"
 #include "base/process/process_handle.h"
@@ -61,7 +61,7 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
   // Callers are expected to later update the port with FinalizePid().  Callers
   // MUST acquire the lock given by GetLock() before calling this method (and
   // release the lock afterwards).
-  void AddPlaceholderForPid(base::ProcessHandle pid);
+  void AddPlaceholderForPid(base::ProcessHandle pid, int child_process_id);
 
   // Implement |ProcessMetrics::PortProvider|.
   mach_port_t TaskForPid(base::ProcessHandle process) const override;
@@ -90,8 +90,8 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
   // this method (and release the lock afterwards).
   void FinalizePid(base::ProcessHandle pid, mach_port_t task_port);
 
-  // Removes all mappings belonging to |pid| from the broker.
-  void InvalidatePid(base::ProcessHandle pid);
+  // Removes all mappings belonging to |child_process_id| from the broker.
+  void InvalidateChildProcessId(int child_process_id);
 
   // Returns the Mach port name to use when sending or receiving messages.
   // Does the Right Thing in the browser and in child processes.
@@ -110,7 +110,12 @@ class CONTENT_EXPORT MachBroker : public base::ProcessMetrics::PortProvider,
   typedef std::map<base::ProcessHandle, mach_port_t> MachMap;
   MachMap mach_map_;
 
-  // Mutex that guards |mach_map_|.
+  // Stores the Child process unique id (RenderProcessHost ID) for every
+  // process.
+  typedef std::map<int, base::ProcessHandle> ChildProcessIdMap;
+  ChildProcessIdMap child_process_id_map_;
+
+  // Mutex that guards |mach_map_| and |child_process_id_map_|.
   mutable base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(MachBroker);

@@ -12,13 +12,17 @@ namespace content {
 class MachBrokerTest : public testing::Test {
  public:
   // Helper function to acquire/release locks and call |PlaceholderForPid()|.
-  void AddPlaceholderForPid(base::ProcessHandle pid) {
+  void AddPlaceholderForPid(base::ProcessHandle pid, int child_process_id) {
     base::AutoLock lock(broker_.GetLock());
-    broker_.AddPlaceholderForPid(pid);
+    broker_.AddPlaceholderForPid(pid, child_process_id);
   }
 
-  void InvalidatePid(base::ProcessHandle pid) {
-    broker_.InvalidatePid(pid);
+  void InvalidateChildProcessId(int child_process_id) {
+    broker_.InvalidateChildProcessId(child_process_id);
+  }
+
+  int GetChildProcessCount(int child_process_id) {
+    return broker_.child_process_id_map_.count(child_process_id);
   }
 
   // Helper function to acquire/release locks and call |FinalizePid()|.
@@ -39,7 +43,7 @@ TEST_F(MachBrokerTest, Locks) {
 
 TEST_F(MachBrokerTest, AddPlaceholderAndFinalize) {
   // Add a placeholder for PID 1.
-  AddPlaceholderForPid(1);
+  AddPlaceholderForPid(1, 1);
   EXPECT_EQ(0u, broker_.TaskForPid(1));
 
   // Finalize PID 1.
@@ -50,13 +54,24 @@ TEST_F(MachBrokerTest, AddPlaceholderAndFinalize) {
   EXPECT_EQ(0u, broker_.TaskForPid(2));
 }
 
-TEST_F(MachBrokerTest, Invalidate) {
-  AddPlaceholderForPid(1);
+TEST_F(MachBrokerTest, InvalidateChildProcessId) {
+  // Add a placeholder for PID 1 and child process id 50.
+  AddPlaceholderForPid(1, 50);
   FinalizePid(1, 100u);
 
   EXPECT_EQ(100u, broker_.TaskForPid(1));
-  InvalidatePid(1u);
+  InvalidateChildProcessId(50);
   EXPECT_EQ(0u, broker_.TaskForPid(1));
+}
+
+TEST_F(MachBrokerTest, ValidateChildProcessIdMap) {
+  // Add a placeholder for PID 1 and child process id 50.
+  AddPlaceholderForPid(1, 50);
+  FinalizePid(1, 100u);
+
+  EXPECT_EQ(1, GetChildProcessCount(50));
+  InvalidateChildProcessId(50);
+  EXPECT_EQ(0, GetChildProcessCount(50));
 }
 
 TEST_F(MachBrokerTest, FinalizeUnknownPid) {
