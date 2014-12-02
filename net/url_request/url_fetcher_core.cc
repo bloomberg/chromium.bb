@@ -436,15 +436,35 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
   URLRequestThrottlerManager* throttler_manager =
       request->context()->throttler_manager();
   if (throttler_manager) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 URLFetcherCore::OnReadCompleted1"));
+
     url_throttler_entry_ = throttler_manager->RegisterRequestUrl(url_);
   }
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 URLFetcherCore::OnReadCompleted2"));
 
   do {
     if (!request_->status().is_success() || bytes_read <= 0)
       break;
 
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 URLFetcherCore::OnReadCompleted3"));
+
     current_response_bytes_ += bytes_read;
     InformDelegateDownloadProgress();
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 URLFetcherCore::OnReadCompleted4"));
 
     const int result =
         WriteBuffer(new DrainableIOBuffer(buffer_.get(), bytes_read));
@@ -456,17 +476,38 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
 
   const URLRequestStatus status = request_->status();
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile5(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 URLFetcherCore::OnReadCompleted5"));
+
   if (status.is_success())
     request_->GetResponseCookies(&cookies_);
 
   // See comments re: HEAD requests in ReadResponse().
   if (!status.is_io_pending() || request_type_ == URLFetcher::HEAD) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile6(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 URLFetcherCore::OnReadCompleted6"));
+
     status_ = status;
     ReleaseRequest();
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile7(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 URLFetcherCore::OnReadCompleted7"));
 
     // No more data to write.
     const int result = response_writer_->Finish(
         base::Bind(&URLFetcherCore::DidFinishWriting, this));
+
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile8(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 URLFetcherCore::OnReadCompleted8"));
+
     if (result != ERR_IO_PENDING)
       DidFinishWriting(result);
   }

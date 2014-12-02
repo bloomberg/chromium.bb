@@ -643,6 +643,10 @@ void ResourceLoader::CompleteResponseStarted() {
 }
 
 void ResourceLoader::StartReading(bool is_continuation) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 ResourceLoader::StartReading"));
+
   int bytes_read = 0;
   ReadMore(&bytes_read);
 
@@ -680,6 +684,10 @@ void ResourceLoader::ResumeReading() {
 }
 
 void ResourceLoader::ReadMore(int* bytes_read) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 ResourceLoader::ReadMore1"));
+
   DCHECK(!is_deferred());
 
   // Make sure we track the buffer in at least one place.  This ensures it gets
@@ -689,8 +697,8 @@ void ResourceLoader::ReadMore(int* bytes_read) {
   int buf_size;
   {
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 ResourceLoader::ReadMore"));
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 ResourceLoader::ReadMore2"));
 
     if (!handler_->OnWillRead(&buf, &buf_size, -1)) {
       Cancel();
