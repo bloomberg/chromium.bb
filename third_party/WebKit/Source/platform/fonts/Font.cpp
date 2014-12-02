@@ -39,6 +39,7 @@
 #include "platform/fonts/shaping/SimpleShaper.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/text/TextRun.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
@@ -717,7 +718,7 @@ void Font::paintGlyphsVertical(GraphicsContext* gc, const SimpleFontData* font,
     float initialAdvance = glyphBuffer.xOffsetAt(from);
     FloatPoint adjustedPoint(point.x() + initialAdvance, point.y());
 
-    AffineTransform savedMatrix = gc->getCTM();
+    GraphicsContextStateSaver stateSaver(*gc);
     gc->concatCTM(AffineTransform(0, -1, 1, 0, adjustedPoint.x(), adjustedPoint.y()));
     gc->concatCTM(AffineTransform(1, 0, 0, 1, -adjustedPoint.x(), -adjustedPoint.y()));
 
@@ -745,8 +746,6 @@ void Font::paintGlyphsVertical(GraphicsContext* gc, const SimpleFontData* font,
         }
         paintGlyphs(gc, font, glyphs, chunkLength, pos, textRect);
     }
-
-    gc->setCTM(savedMatrix);
 }
 
 void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
