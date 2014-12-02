@@ -1972,7 +1972,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
                 .id());
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
+// Test is disabled because it is flaky. crbug.com/438239
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_PolicyForExtensions) {
   // Set up a test update server for the Show Managed Storage app.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   TestingUpdateManifestProvider testing_update_manifest_provider(
