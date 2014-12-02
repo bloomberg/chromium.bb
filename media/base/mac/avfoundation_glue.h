@@ -26,8 +26,6 @@ class MEDIA_EXPORT AVFoundationGlue {
 
   static NSBundle const* AVFoundationBundle();
 
-  static void* AVFoundationLibraryHandle();
-
   // Originally coming from AVCaptureDevice.h but in global namespace.
   static NSString* AVCaptureDeviceWasConnectedNotification();
   static NSString* AVCaptureDeviceWasDisconnectedNotification();

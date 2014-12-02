@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/mac/mac_util.h"
-#include "base/metrics/field_trial.h"
 #include "media/base/media_switches.h"
 
 namespace {
@@ -57,7 +56,6 @@ class AVFoundationInternal {
   }
 
   NSBundle* bundle() const { return bundle_; }
-  void* library_handle() const { return library_handle_; }
 
   NSString* AVCaptureDeviceWasConnectedNotification() const {
     return AVCaptureDeviceWasConnectedNotification_;
@@ -100,43 +98,37 @@ class AVFoundationInternal {
   DISALLOW_COPY_AND_ASSIGN(AVFoundationInternal);
 };
 
-}  // namespace
-
-static base::LazyInstance<AVFoundationInternal> g_avfoundation_handle =
-    LAZY_INSTANCE_INITIALIZER;
-
-bool AVFoundationGlue::IsAVFoundationSupported() {
-  // DeviceMonitorMac will initialize this static bool from the main UI thread
-  // once, during Chrome startup so this construction is thread safe.
-  // Use AVFoundation if possible, enabled, and QTKit is not explicitly forced.
-  static CommandLine* command_line = CommandLine::ForCurrentProcess();
-
+// This contains the logic of checking whether AVFoundation is supported.
+// It's called only once and the results are cached in a static bool.
+bool IsAVFoundationSupportedHelper() {
   // AVFoundation is only available on OS Lion and above.
   if (!base::mac::IsOSLionOrLater())
     return false;
+
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   // The force-qtkit flag takes precedence over enable-avfoundation.
   if (command_line->HasSwitch(switches::kForceQTKit))
     return false;
 
-  // Next in precedence is the enable-avfoundation flag.
-  // TODO(vrk): Does this really need to be static?
-  static bool should_enable_avfoundation =
-      command_line->HasSwitch(switches::kEnableAVFoundation) ||
-      base::FieldTrialList::FindFullName("AVFoundationMacVideoCapture")
-          == "Enabled";
-  // Try to load AVFoundation. Save result in static bool to avoid loading
-  // AVFoundationBundle every call.
-  static bool loaded_successfully = [AVFoundationBundle() load];
-  return should_enable_avfoundation && loaded_successfully;
+  return command_line->HasSwitch(switches::kEnableAVFoundation) &&
+         [AVFoundationGlue::AVFoundationBundle() load];
+}
+
+}  // namespace
+
+static base::LazyInstance<AVFoundationInternal>::Leaky g_avfoundation_handle =
+    LAZY_INSTANCE_INITIALIZER;
+
+bool AVFoundationGlue::IsAVFoundationSupported() {
+  // DeviceMonitorMac will initialize this static bool from the main UI thread
+  // once, during Chrome startup so this construction is thread safe.
+  static const bool is_supported = IsAVFoundationSupportedHelper();
+  return is_supported;
 }
 
 NSBundle const* AVFoundationGlue::AVFoundationBundle() {
   return g_avfoundation_handle.Get().bundle();
-}
-
-void* AVFoundationGlue::AVFoundationLibraryHandle() {
-  return g_avfoundation_handle.Get().library_handle();
 }
 
 NSString* AVFoundationGlue::AVCaptureDeviceWasConnectedNotification() {
