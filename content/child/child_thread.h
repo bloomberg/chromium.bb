@@ -85,8 +85,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   MessageRouter* GetRouter();
 
-  // Allocates a block of shared memory of the given size and
-  // maps in into the address space. Returns NULL of failure.
+  // Allocates a block of shared memory of the given size. Returns NULL on
+  // failure.
   // Note: On posix, this requires a sync IPC to the browser process,
   // but on windows the child process directly allocates the block.
   base::SharedMemory* AllocateSharedMemory(size_t buf_size);

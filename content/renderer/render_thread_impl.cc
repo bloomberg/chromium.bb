@@ -1010,27 +1010,8 @@ void RenderThreadImpl::RecordComputedAction(const std::string& action) {
 
 scoped_ptr<base::SharedMemory>
     RenderThreadImpl::HostAllocateSharedMemoryBuffer(size_t size) {
-  if (size > static_cast<size_t>(std::numeric_limits<int>::max()))
-    return scoped_ptr<base::SharedMemory>();
-
-  base::SharedMemoryHandle handle;
-  bool success;
-  IPC::Message* message =
-      new ChildProcessHostMsg_SyncAllocateSharedMemory(size, &handle);
-
-  // Allow calling this from the compositor thread.
-  if (base::MessageLoop::current() == message_loop())
-    success = ChildThread::Send(message);
-  else
-    success = sync_message_filter()->Send(message);
-
-  if (!success)
-    return scoped_ptr<base::SharedMemory>();
-
-  if (!base::SharedMemory::IsHandleValid(handle))
-    return scoped_ptr<base::SharedMemory>();
-
-  return scoped_ptr<base::SharedMemory>(new base::SharedMemory(handle, false));
+  return make_scoped_ptr(
+      ChildThread::AllocateSharedMemory(size, thread_safe_sender()));
 }
 
 void RenderThreadImpl::RegisterExtension(v8::Extension* extension) {

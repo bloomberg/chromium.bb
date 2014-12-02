@@ -238,7 +238,11 @@ void RendererGpuVideoAcceleratorFactories::ReadPixels(
 base::SharedMemory* RendererGpuVideoAcceleratorFactories::CreateSharedMemory(
     size_t size) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  return ChildThread::AllocateSharedMemory(size, thread_safe_sender_.get());
+  scoped_ptr<base::SharedMemory> mem(
+      ChildThread::AllocateSharedMemory(size, thread_safe_sender_.get()));
+  if (mem && !mem->Map(size))
+    return nullptr;
+  return mem.release();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

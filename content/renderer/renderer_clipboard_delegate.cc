@@ -146,6 +146,8 @@ bool RendererClipboardDelegate::WriteImage(ui::ClipboardType clipboard_type,
     shared_buf.reset(ChildThread::current()->AllocateSharedMemory(buf_size));
     if (!shared_buf)
       return false;
+    if (!shared_buf->Map(buf_size))
+      return false;
     // Copy the bits into shared memory
     DCHECK(shared_buf->memory());
     memcpy(shared_buf->memory(), pixels, buf_size);

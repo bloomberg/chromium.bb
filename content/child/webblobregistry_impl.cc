@@ -134,6 +134,8 @@ void WebBlobRegistryImpl::SendDataForBlob(const std::string& uuid_str,
         ChildThread::AllocateSharedMemory(shared_memory_size,
                                           sender_.get()));
     CHECK(shared_memory.get());
+    if (!shared_memory->Map(shared_memory_size))
+      CHECK(false);
 
     size_t data_size = data.size();
     const char* data_ptr = data.data();
@@ -180,6 +182,8 @@ void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
         ChildThread::AllocateSharedMemory(shared_memory_size,
                                           sender_.get()));
     CHECK(shared_memory.get());
+    if (!shared_memory->Map(shared_memory_size))
+      CHECK(false);
 
     size_t remaining_bytes = length;
     const char* current_ptr = data;

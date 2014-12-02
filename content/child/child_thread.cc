@@ -427,6 +427,7 @@ MessageRouter* ChildThread::GetRouter() {
 }
 
 base::SharedMemory* ChildThread::AllocateSharedMemory(size_t buf_size) {
+  DCHECK(base::MessageLoop::current() == message_loop());
   return AllocateSharedMemory(buf_size, this);
 }
 
@@ -437,7 +438,7 @@ base::SharedMemory* ChildThread::AllocateSharedMemory(
   scoped_ptr<base::SharedMemory> shared_buf;
 #if defined(OS_WIN)
   shared_buf.reset(new base::SharedMemory);
-  if (!shared_buf->CreateAndMapAnonymous(buf_size)) {
+  if (!shared_buf->CreateAnonymous(buf_size)) {
     NOTREACHED();
     return NULL;
   }
@@ -449,10 +450,6 @@ base::SharedMemory* ChildThread::AllocateSharedMemory(
                            buf_size, &shared_mem_handle))) {
     if (base::SharedMemory::IsHandleValid(shared_mem_handle)) {
       shared_buf.reset(new base::SharedMemory(shared_mem_handle, false));
-      if (!shared_buf->Map(buf_size)) {
-        NOTREACHED() << "Map failed";
-        return NULL;
-      }
     } else {
       NOTREACHED() << "Browser failed to allocate shared memory";
       return NULL;
