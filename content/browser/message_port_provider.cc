@@ -63,6 +63,8 @@ void MessagePortProvider::CreateMessageChannel(WebContents* web_contents,
   MessagePortService* msp = MessagePortService::GetInstance();
   msp->Create(mf->GetNextRoutingID(), mf, port1);
   msp->Create(mf->GetNextRoutingID(), mf, port2);
+  msp->Entangle(*port1, *port2);
+  msp->Entangle(*port2, *port1);
 }
 
 } // namespace content

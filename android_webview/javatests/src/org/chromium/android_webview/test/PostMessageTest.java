@@ -12,23 +12,15 @@ import static org.chromium.content.browser.test.util.TestCallbackHelperContainer
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.MessageChannel;
+import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.test.util.TestWebServer;
 
 /**
  * The tests for content postMessage API.
  */
 public class PostMessageTest extends AwTestBase {
 
-    private static final String TEST_PAGE =
-            "<!DOCTYPE html><html><body>"
-            + "    <script type=\"text/javascript\">"
-            + "        onmessage = function (e) {"
-            + "            messageObject.setMessageParams(e.data, e.origin, e.ports);"
-            + "       }"
-            + "   </script>"
-            + "</body></html>";
-
-    private static final String MESSAGE = "Foo";
     private static final String SOURCE_ORIGIN = "android_webview";
 
     // Inject to the page to verify received messages.
@@ -75,6 +67,7 @@ public class PostMessageTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwTestContainerView mTestContainerView;
     private AwContents mAwContents;
+    private TestWebServer mWebServer;
 
     @Override
     protected void setUp() throws Exception {
@@ -96,25 +89,48 @@ public class PostMessageTest extends AwTestBase {
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
+        mWebServer = TestWebServer.start();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mWebServer.shutdown();
+        super.tearDown();
+    }
+
+    private static final String WEBVIEW_MESSAGE = "from_webview";
+
+    private static final String TEST_PAGE =
+            "<!DOCTYPE html><html><body>"
+            + "    <script type=\"text/javascript\">"
+            + "        onmessage = function (e) {"
+            + "            messageObject.setMessageParams(e.data, e.origin, e.ports);"
+            + "        }"
+            + "   </script>"
+            + "</body></html>";
+
+    private void loadPage(String page) throws Throwable {
+        final String url = mWebServer.setResponse("/test.html", page,
+                CommonResources.getTextHtmlHeaders(true));
         OnPageFinishedHelper onPageFinishedHelper = mContentsClient.getOnPageFinishedHelper();
         int currentCallCount = onPageFinishedHelper.getCallCount();
-        // Load test page
-        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                TEST_PAGE, "text/html", false);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
         onPageFinishedHelper.waitForCallback(currentCallCount);
     }
 
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testPostMessageToMainFrame() throws Throwable {
+        loadPage(TEST_PAGE);
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mAwContents.postMessageToFrame(null, MESSAGE, SOURCE_ORIGIN, "*", null);
+                mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
+                        mWebServer.getBaseUrl(), null);
             }
         });
         mMessageObject.waitForMessage();
-        assertEquals(MESSAGE, mMessageObject.getData());
+        assertEquals(WEBVIEW_MESSAGE, mMessageObject.getData());
         assertEquals(SOURCE_ORIGIN, mMessageObject.getOrigin());
     }
 
@@ -125,23 +141,80 @@ public class PostMessageTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
     public void testCreateChannel() throws Throwable {
+        loadPage(TEST_PAGE);
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
                 ValueCallback<MessageChannel> callback = new ValueCallback<MessageChannel>() {
                     @Override
                     public void onReceiveValue(MessageChannel channel) {
-                        mAwContents.postMessageToFrame(null, MESSAGE, SOURCE_ORIGIN, "*",
-                                new int[]{channel.port2()});
+                        mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
+                                mWebServer.getBaseUrl(), new int[]{channel.port2()});
                     }
                 };
                 mAwContents.createMessageChannel(callback);
             }
         });
         mMessageObject.waitForMessage();
-        assertEquals(MESSAGE, mMessageObject.getData());
+        assertEquals(WEBVIEW_MESSAGE, mMessageObject.getData());
         assertEquals(SOURCE_ORIGIN, mMessageObject.getOrigin());
         // verify that one message port is received.
         assertEquals(1, mMessageObject.getPorts().length);
+    }
+
+    private static final String WORKER_MESSAGE = "from_worker";
+
+    // Listen for messages. Pass port 1 to worker and use port 2 to receive messages from
+    // from worker.
+    private static final String TEST_PAGE_FOR_PORT_TRANSFER =
+            "<!DOCTYPE html><html><body>"
+            + "    <script type=\"text/javascript\">"
+            + "        var worker = new Worker(\"worker.js\");"
+            + "        onmessage = function (e) {"
+            + "            if (e.data == \"" + WEBVIEW_MESSAGE + "\") {"
+            + "                worker.postMessage(\"worker_port\", [e.ports[0]]);"
+            + "                var messageChannelPort = e.ports[1];"
+            + "                messageChannelPort.onmessage = receiveWorkerMessage;"
+            + "            }"
+            + "        };"
+            + "        function receiveWorkerMessage(e) {"
+            + "            if (e.data == \"" + WORKER_MESSAGE + "\") {"
+            + "                messageObject.setMessageParams(e.data, e.origin, e.ports);"
+            + "            }"
+            + "        };"
+            + "   </script>"
+            + "</body></html>";
+
+    private static final String WORKER_SCRIPT =
+            "onmessage = function(e) {"
+            + "    if (e.data == \"worker_port\") {"
+            + "        var toWindow = e.ports[0];"
+            + "        toWindow.postMessage(\"" + WORKER_MESSAGE + "\");"
+            + "        toWindow.start();"
+            + "    }"
+            + "}";
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testTransferPortsToWorker() throws Throwable {
+        mWebServer.setResponse("/worker.js", WORKER_SCRIPT,
+                CommonResources.getTextJavascriptHeaders(true));
+        loadPage(TEST_PAGE_FOR_PORT_TRANSFER);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ValueCallback<MessageChannel> callback = new ValueCallback<MessageChannel>() {
+                    @Override
+                    public void onReceiveValue(MessageChannel channel) {
+                        mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, SOURCE_ORIGIN,
+                                mWebServer.getBaseUrl(),
+                                new int[]{channel.port1(), channel.port2()});
+                    }
+                };
+                mAwContents.createMessageChannel(callback);
+            }
+        });
+        mMessageObject.waitForMessage();
+        assertEquals(WORKER_MESSAGE, mMessageObject.getData());
     }
 }
