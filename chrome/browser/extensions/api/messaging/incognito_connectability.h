@@ -16,6 +16,11 @@ class BrowserContext;
 class WebContents;
 }
 
+namespace infobars {
+class InfoBar;
+class InfoBarManager;
+}
+
 namespace extensions {
 class Extension;
 
@@ -64,6 +69,18 @@ class IncognitoConnectability : public BrowserContextKeyedAPI {
              const base::Callback<void(bool)>& callback);
 
  private:
+  struct TabContext {
+    TabContext();
+    ~TabContext();
+
+    // The infobar being shown in a given tab. The InfoBarManager maintains
+    // ownership of this object. This struct must always be destroyed before the
+    // infobar it tracks.
+    infobars::InfoBar* infobar;
+    // Connectability queries outstanding on this infobar.
+    std::vector<base::Callback<void(bool)>> callbacks;
+  };
+
   friend class BrowserContextKeyedAPIFactory<IncognitoConnectability>;
 
   explicit IncognitoConnectability(content::BrowserContext* context);
@@ -71,15 +88,15 @@ class IncognitoConnectability : public BrowserContextKeyedAPI {
 
   typedef std::map<std::string, std::set<GURL> > ExtensionToOriginsMap;
   typedef std::pair<std::string, GURL> ExtensionOriginPair;
-  typedef base::Callback<void(bool)> AuthorizationCallback;
-  typedef std::map<ExtensionOriginPair, std::vector<AuthorizationCallback>>
-      PendingAuthorizationMap;
+  typedef std::map<infobars::InfoBarManager*, TabContext> PendingOrigin;
+  typedef std::map<ExtensionOriginPair, PendingOrigin> PendingOriginMap;
 
   // Called with the user's selection from the infobar.
   // |response == INTERACTIVE| indicates that the user closed the infobar
   // without selecting allow or deny.
   void OnInteractiveResponse(const std::string& extension_id,
                              const GURL& origin,
+                             infobars::InfoBarManager* infobar_manager,
                              ScopedAlertTracker::Mode response);
 
   // Returns true if the (|extension|, |origin|) pair appears in the map.
@@ -102,8 +119,11 @@ class IncognitoConnectability : public BrowserContextKeyedAPI {
   ExtensionToOriginsMap allowed_origins_;
   ExtensionToOriginsMap disallowed_origins_;
 
-  // These are origin pairs that are currently being prompted for.
-  PendingAuthorizationMap pending_origins_;
+  // This maps extension/origin pairs to the tabs with an infobar prompting for
+  // incognito connectability on them. This also stores a reference to the
+  // infobar and the set of callbacks (passed to Query) that will be called when
+  // the query is resolved.
+  PendingOriginMap pending_origins_;
 
   base::WeakPtrFactory<IncognitoConnectability> weak_factory_;
 };

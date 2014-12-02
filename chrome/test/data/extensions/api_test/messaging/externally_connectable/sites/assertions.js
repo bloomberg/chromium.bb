@@ -250,6 +250,12 @@ window.assertions = {
     });
   },
 
+  trySendMessage: function(extensionId) {
+    chrome.runtime.sendMessage(extensionId, kMessage, function(response) {
+      // The result is unimportant. All that matters is the attempt.
+    });
+  },
+
   areAnyRuntimePropertiesDefined: function(names) {
     var result = false;
     if (chrome.runtime) {

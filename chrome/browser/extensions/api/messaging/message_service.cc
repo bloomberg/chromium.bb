@@ -118,7 +118,7 @@ struct MessageService::MessageChannel {
 };
 
 struct MessageService::OpenChannelParams {
-  content::RenderProcessHost* source;
+  int source_process_id;
   scoped_ptr<base::DictionaryValue> source_tab;
   int source_frame_id;
   scoped_ptr<MessagePort> receiver;
@@ -131,7 +131,7 @@ struct MessageService::OpenChannelParams {
   std::string tls_channel_id;
 
   // Takes ownership of receiver.
-  OpenChannelParams(content::RenderProcessHost* source,
+  OpenChannelParams(int source_process_id,
                     scoped_ptr<base::DictionaryValue> source_tab,
                     int source_frame_id,
                     MessagePort* receiver,
@@ -141,7 +141,7 @@ struct MessageService::OpenChannelParams {
                     const GURL& source_url,
                     const std::string& channel_name,
                     bool include_tls_channel_id)
-      : source(source),
+      : source_process_id(source_process_id),
         source_frame_id(source_frame_id),
         receiver(receiver),
         receiver_port_id(receiver_port_id),
@@ -321,9 +321,9 @@ void MessageService::OpenChannelToExtension(
   }
 
   scoped_ptr<OpenChannelParams> params(new OpenChannelParams(
-      source, source_tab.Pass(), source_frame_id, nullptr, receiver_port_id,
-      source_extension_id, target_extension_id, source_url, channel_name,
-      include_tls_channel_id));
+      source_process_id, source_tab.Pass(), source_frame_id, nullptr,
+      receiver_port_id, source_extension_id, target_extension_id, source_url,
+      channel_name, include_tls_channel_id));
 
   pending_incognito_channels_[GET_CHANNEL_ID(params->receiver_port_id)] =
       PendingMessagesQueue();
@@ -463,29 +463,27 @@ void MessageService::OpenChannelToTab(
   }
 
   scoped_ptr<OpenChannelParams> params(new OpenChannelParams(
-        source,
-        scoped_ptr<base::DictionaryValue>(),  // Source tab doesn't make sense
-                                              // for opening to tabs.
-        -1,  // If there is no tab, then there is no frame either.
-        receiver.release(),
-        receiver_port_id,
-        extension_id,
-        extension_id,
-        GURL(),  // Source URL doesn't make sense for opening to tabs.
-        channel_name,
-        false));  // Connections to tabs don't get TLS channel IDs.
+      source_process_id,
+      scoped_ptr<base::DictionaryValue>(),  // Source tab doesn't make sense
+                                            // for opening to tabs.
+      -1,  // If there is no tab, then there is no frame either.
+      receiver.release(), receiver_port_id, extension_id, extension_id,
+      GURL(),  // Source URL doesn't make sense for opening to tabs.
+      channel_name,
+      false));  // Connections to tabs don't get TLS channel IDs.
   OpenChannelImpl(params.Pass());
 }
 
-bool MessageService::OpenChannelImpl(scoped_ptr<OpenChannelParams> params) {
-  if (!params->source)
-    return false;  // Closed while in flight.
+void MessageService::OpenChannelImpl(scoped_ptr<OpenChannelParams> params) {
+  content::RenderProcessHost* source =
+      content::RenderProcessHost::FromID(params->source_process_id);
+  if (!source)
+    return;  // Closed while in flight.
 
   if (!params->receiver || !params->receiver->GetRenderProcessHost()) {
-    DispatchOnDisconnect(params->source,
-                         params->receiver_port_id,
+    DispatchOnDisconnect(source, params->receiver_port_id,
                          kReceivingEndDoesntExistError);
-    return false;
+    return;
   }
 
   // Add extra paranoid CHECKs, since we have crash reports of this being NULL.
@@ -493,8 +491,7 @@ bool MessageService::OpenChannelImpl(scoped_ptr<OpenChannelParams> params) {
   CHECK(params->receiver->GetRenderProcessHost());
 
   MessageChannel* channel(new MessageChannel);
-  channel->opener.reset(new ExtensionMessagePort(params->source,
-                                                 MSG_ROUTING_CONTROL,
+  channel->opener.reset(new ExtensionMessagePort(source, MSG_ROUTING_CONTROL,
                                                  params->source_extension_id));
   channel->receiver.reset(params->receiver.release());
 
@@ -518,7 +515,6 @@ bool MessageService::OpenChannelImpl(scoped_ptr<OpenChannelParams> params) {
   // Keep both ends of the channel alive until the channel is closed.
   channel->opener->IncrementLazyKeepaliveCount();
   channel->receiver->IncrementLazyKeepaliveCount();
-  return true;
 }
 
 void MessageService::AddChannel(MessageChannel* channel, int receiver_port_id) {
@@ -700,7 +696,7 @@ bool MessageService::MaybeAddPendingLazyBackgroundPageOpenChannelTask(
   int channel_id = GET_CHANNEL_ID((*params)->receiver_port_id);
   pending_lazy_background_page_channels_[channel_id] =
       PendingLazyBackgroundPageChannel(context, extension->id());
-  int source_id = (*params)->source->GetID();
+  int source_id = (*params)->source_process_id;
   lazy_background_task_queue_->AddPendingTask(
       context, extension->id(),
       base::Bind(&MessageService::PendingLazyBackgroundPageOpenChannel,
@@ -727,13 +723,20 @@ void MessageService::OnOpenChannelAllowed(scoped_ptr<OpenChannelParams> params,
   pending_messages.swap(pending_for_incognito->second);
   pending_incognito_channels_.erase(pending_for_incognito);
 
+  // Re-lookup the source process since it may no longer be valid.
+  content::RenderProcessHost* source =
+      content::RenderProcessHost::FromID(params->source_process_id);
+  if (!source) {
+    return;
+  }
+
   if (!allowed) {
-    DispatchOnDisconnect(params->source, params->receiver_port_id,
+    DispatchOnDisconnect(source, params->receiver_port_id,
                          kReceivingEndDoesntExistError);
     return;
   }
 
-  BrowserContext* context = params->source->GetBrowserContext();
+  BrowserContext* context = source->GetBrowserContext();
 
   // Note: we use the source's profile here. If the source is an incognito
   // process, we will use the incognito EPM to find the right extension process,
@@ -762,7 +765,7 @@ void MessageService::OnOpenChannelAllowed(scoped_ptr<OpenChannelParams> params,
   const Extension* target_extension =
       registry->enabled_extensions().GetByID(params->target_extension_id);
   if (!target_extension) {
-    DispatchOnDisconnect(params->source, params->receiver_port_id,
+    DispatchOnDisconnect(source, params->receiver_port_id,
                          kReceivingEndDoesntExistError);
     return;
   }
@@ -792,14 +795,20 @@ void MessageService::GotChannelID(scoped_ptr<OpenChannelParams> params,
   pending_messages.swap(pending_for_tls_channel_id->second);
   pending_tls_channel_id_channels_.erase(pending_for_tls_channel_id);
 
-  BrowserContext* context = params->source->GetBrowserContext();
+  // Re-lookup the source process since it may no longer be valid.
+  content::RenderProcessHost* source =
+      content::RenderProcessHost::FromID(params->source_process_id);
+  if (!source) {
+    return;
+  }
+
+  BrowserContext* context = source->GetBrowserContext();
   ExtensionRegistry* registry = ExtensionRegistry::Get(context);
   const Extension* target_extension =
       registry->enabled_extensions().GetByID(params->target_extension_id);
   if (!target_extension) {
-    DispatchOnDisconnect(
-        params->source, params->receiver_port_id,
-        kReceivingEndDoesntExistError);
+    DispatchOnDisconnect(source, params->receiver_port_id,
+                         kReceivingEndDoesntExistError);
     return;
   }
 
@@ -817,13 +826,6 @@ void MessageService::PendingLazyBackgroundPageOpenChannel(
   if (!host)
     return;  // TODO(mpcomplete): notify source of disconnect?
 
-  // Re-lookup the source process since it may no longer be valid.
-  content::RenderProcessHost* source =
-      content::RenderProcessHost::FromID(source_process_id);
-  if (!source)
-    return;
-
-  params->source = source;
   params->receiver.reset(new ExtensionMessagePort(host->render_process_host(),
                                                   MSG_ROUTING_CONTROL,
                                                   params->target_extension_id));

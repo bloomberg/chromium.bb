@@ -10,12 +10,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/messaging/incognito_connectability.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -771,6 +773,69 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   ExtensionPrefs::Get(profile())->SetIsIncognitoEnabled(app->id(), true);
   EXPECT_EQ(OK,
             CanConnectAndSendMessagesToFrame(incognito_frame, app.get(), NULL));
+}
+
+// Tests connection from incognito tabs when there are multiple tabs open to the
+// same origin. The user should only need to accept the connection request once.
+IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
+                       FromIncognitoPromptApp) {
+  InitializeTestServer();
+
+  scoped_refptr<const Extension> app = LoadChromiumConnectableApp();
+  ASSERT_TRUE(app->is_platform_app());
+
+  // Open an incognito browser with two tabs displaying "chromium.org".
+  Browser* incognito_browser = ui_test_utils::OpenURLOffTheRecord(
+      profile()->GetOffTheRecordProfile(), chromium_org_url());
+  content::RenderFrameHost* incognito_frame1 =
+      incognito_browser->tab_strip_model()
+          ->GetActiveWebContents()
+          ->GetMainFrame();
+  InfoBarService* infobar_service1 = InfoBarService::FromWebContents(
+      incognito_browser->tab_strip_model()->GetActiveWebContents());
+
+  CHECK(ui_test_utils::OpenURLOffTheRecord(profile()->GetOffTheRecordProfile(),
+                                           chromium_org_url()) ==
+        incognito_browser);
+  content::RenderFrameHost* incognito_frame2 =
+      incognito_browser->tab_strip_model()
+          ->GetActiveWebContents()
+          ->GetMainFrame();
+  InfoBarService* infobar_service2 = InfoBarService::FromWebContents(
+      incognito_browser->tab_strip_model()->GetActiveWebContents());
+  EXPECT_EQ(2, incognito_browser->tab_strip_model()->count());
+  EXPECT_NE(incognito_frame1, incognito_frame2);
+
+  // Trigger a infobars in both tabs by trying to send messages.
+  std::string script =
+      base::StringPrintf("assertions.trySendMessage('%s')", app->id().c_str());
+  CHECK(content::ExecuteScript(incognito_frame1, script));
+  CHECK(content::ExecuteScript(incognito_frame2, script));
+  EXPECT_EQ(1U, infobar_service1->infobar_count());
+  EXPECT_EQ(1U, infobar_service2->infobar_count());
+
+  // Navigating away will dismiss the infobar on the active tab only.
+  ui_test_utils::NavigateToURL(incognito_browser, google_com_url());
+  EXPECT_EQ(1U, infobar_service1->infobar_count());
+  EXPECT_EQ(0U, infobar_service2->infobar_count());
+
+  // Navigate back and accept the infobar this time. Both should be dismissed.
+  {
+    IncognitoConnectability::ScopedAlertTracker alert_tracker(
+        IncognitoConnectability::ScopedAlertTracker::ALWAYS_ALLOW);
+
+    ui_test_utils::NavigateToURL(incognito_browser, chromium_org_url());
+    incognito_frame2 = incognito_browser->tab_strip_model()
+                           ->GetActiveWebContents()
+                           ->GetMainFrame();
+    EXPECT_NE(incognito_frame1, incognito_frame2);
+
+    EXPECT_EQ(1U, infobar_service1->infobar_count());
+    EXPECT_EQ(OK, CanConnectAndSendMessagesToFrame(incognito_frame2, app.get(),
+                                                   NULL));
+    EXPECT_EQ(1, alert_tracker.GetAndResetAlertCount());
+    EXPECT_EQ(0U, infobar_service1->infobar_count());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,

@@ -182,7 +182,7 @@ class MessageService : public BrowserContextKeyedAPI,
       PendingLazyBackgroundPageChannelMap;
 
   // Common among OpenChannel* variants.
-  bool OpenChannelImpl(scoped_ptr<OpenChannelParams> params);
+  void OpenChannelImpl(scoped_ptr<OpenChannelParams> params);
 
   void CloseChannelImpl(MessageChannelMap::iterator channel_iter,
                         int port_id,
