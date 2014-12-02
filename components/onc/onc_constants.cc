@@ -279,6 +279,7 @@ const char kL2TP[] = "L2TP";
 const char kOpenVPN[] = "OpenVPN";
 const char kPassword[] = "Password";
 const char kSaveCredentials[] = "SaveCredentials";
+const char kThirdPartyVpn[] = "ThirdPartyVPN";
 const char kTypeL2TP_IPsec[] = "L2TP-IPsec";
 const char kType[] = "Type";
 const char kUsername[] = "Username";

@@ -298,7 +298,7 @@ void ShillToONCTranslator::TranslateVPN() {
     TranslateAndAddNestedObject(::onc::vpn::kIPsec, *provider);
     TranslateAndAddNestedObject(::onc::vpn::kL2TP, *provider);
     provider_type_dictionary = ::onc::vpn::kIPsec;
-  } else {
+  } else if (onc_provider_type != ::onc::vpn::kThirdPartyVpn) {
     TranslateAndAddNestedObject(onc_provider_type, *provider);
     provider_type_dictionary = onc_provider_type;
   }

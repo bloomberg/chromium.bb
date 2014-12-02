@@ -284,7 +284,9 @@ const StringTranslationEntry kNetworkTypeTable[] = {
 
 const StringTranslationEntry kVPNTypeTable[] = {
     { ::onc::vpn::kTypeL2TP_IPsec, shill::kProviderL2tpIpsec},
-    { ::onc::vpn::kOpenVPN, shill::kProviderOpenVpn}, {NULL}};
+    { ::onc::vpn::kOpenVPN, shill::kProviderOpenVpn},
+    { ::onc::vpn::kThirdPartyVpn, shill::kProviderThirdPartyVpn},
+    {NULL}};
 
 // The first matching line is chosen.
 const StringTranslationEntry kWiFiSecurityTable[] = {
