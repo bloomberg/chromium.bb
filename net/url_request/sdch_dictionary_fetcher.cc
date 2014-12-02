@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/thread_task_runner_handle.h"
+#include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/sdch_net_log_params.h"
 #include "net/url_request/url_request_context.h"

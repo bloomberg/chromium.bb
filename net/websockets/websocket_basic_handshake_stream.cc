@@ -25,6 +25,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "crypto/random.h"
+#include "net/base/io_buffer.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_body_drainer.h"
