@@ -55,12 +55,18 @@ function PDFViewer(streamDetails) {
                                 this.beforeZoom_.bind(this),
                                 this.afterZoom_.bind(this),
                                 getScrollbarWidth());
-
+  var isPrintPreview =
+      this.streamDetails.originalUrl.indexOf('chrome://print') == 0;
   // Create the plugin object dynamically so we can set its src. The plugin
   // element is sized to fill the entire window and is set to be fixed
   // positioning, acting as a viewport. The plugin renders into this viewport
   // according to the scroll position of the window.
-  this.plugin_ = document.createElement('embed');
+  //
+  // TODO(sammc): Remove special casing for print preview. This is currently
+  // necessary because setting the src for an embed element triggers origin
+  // checking and the PDF extension is not allowed to embed URLs with a scheme
+  // of "chrome", which is used by print preview.
+  this.plugin_ = document.createElement(isPrintPreview ? 'object' : 'embed');
   // NOTE: The plugin's 'id' field must be set to 'plugin' since
   // chrome/renderer/printing/print_web_view_helper.cc actually references it.
   this.plugin_.id = 'plugin';
