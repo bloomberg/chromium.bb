@@ -1,0 +1,4 @@
+This code is not considered security critical because it is used only
+for unit testing, and is not linked into chrome.
+
+Contact security@chromium.org before adding new uses.

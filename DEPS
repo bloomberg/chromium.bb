@@ -445,6 +445,9 @@ deps_os = {
     # Used for embedded builds. CrOS & Linux use the system version.
     'src/third_party/fontconfig/src':
      Var('chromium_git') + '/external/fontconfig.git' + '@' + 'f16c3118e25546c1b749f9823c51827a60aeb5c1',
+
+    'src/third_party/stp/src':
+     Var('chromium_git') + '/external/github.com/stp/stp.git' + '@' + 'fc94a599207752ab4d64048204f0c88494811b62',
   },
   'android': {
     'src/third_party/android_protobuf/src':
