@@ -424,8 +424,16 @@ void ContentsView::Layout() {
   gfx::Rect rect(GetDefaultContentsBounds());
   // Custom pages are aligned to the top of the window, not under the search
   // box.
-  if (IsStateActive(AppListModel::STATE_CUSTOM_LAUNCHER_PAGE))
+  double progress = 0;
+  if (IsStateActive(AppListModel::STATE_CUSTOM_LAUNCHER_PAGE)) {
     rect = GetContentsBounds();
+    progress = 1;
+  }
+
+  // Notify the custom launcher page that the active page has changed.
+  app_list_main_view_->view_delegate()->CustomLauncherPageAnimationChanged(
+      progress);
+
   if (rect.IsEmpty())
     return;
 
