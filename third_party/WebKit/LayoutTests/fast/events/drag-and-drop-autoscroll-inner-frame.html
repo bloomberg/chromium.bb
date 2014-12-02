@@ -8,24 +8,22 @@
     font-size: 80px;
 }
 </style>
+</head>
+<body>
+For manual testing, drag and drop "Drop Me" downwards and then upwards.
+<script src="../../resources/js-test.js"></script>
 <script>
 
 var x, y, middleTermScrollOffset;
 var iframe, iframeDocument, draggable;
 
-function log(msg)
-{
-    document.getElementById('console').appendChild(document.createTextNode(msg + '\n'));
-}
-
 function setUpTest()
 {
     if (!window.eventSender) {
-        log('Please run within DumpRenderTree');
+        debug('Please run within DumpRenderTree');
         return;
     }
 
-    window.jsTestIsAsync = true;
     iframe = document.getElementById('scrollable');
     // iframes start in readyState complete, but with the about:blank doc, make sure our doc is loaded.
     if (iframe.contentWindow.location.href == "about:blank" || iframe.contentDocument.readyState != "complete")
@@ -95,27 +93,19 @@ function autoscrollTestPart2()
 function finishTest()
 {
     eventSender.mouseUp();
+    document.body.removeChild(iframe);
     finishJSTest();
 }
 
-var successfullyParsed = true;
+description('Check autoscroll within an inner frame by drag-and-drop');
+window.jsTestIsAsync = true;
+window.onload = setUpTest;
 </script>
-</head>
-<body>
-For manual testing, drag and drop "Drop Me" downwards and then upwards.
 <iframe id="scrollable" src="data:text/html,
 <p id='draggable' draggable='true' style='cursor: hand;'>
     <b>Drag me!</b>
 </p>
 Try to drag and drop the text above in the input element at the bottom of this iframe. It should scroll. Then, try the way back.
 <br><br>more<br>more<br>more<br>more<br>more<br>more<br>more<br>more<br>more<br>more<br>more<br>more<br><input>
-"></iframe><br>
-</div>
-<div id="console"></div>
-<script src="../../resources/js-test.js"></script>
-<script>
-description('Check autoscroll within an inner frame by drag-and-drop');
-setUpTest();
-</script>
+"></iframe>
 </body>
-</html>
