@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTRATION_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTRATION_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
@@ -28,6 +30,9 @@ class CONTENT_EXPORT ServiceWorkerRegistration
       public ServiceWorkerVersion::Listener {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status)> StatusCallback;
+  typedef base::Callback<void(
+      const std::string& data,
+      ServiceWorkerStatusCode status)> GetUserDataCallback;
 
   class Listener {
    public:
@@ -114,6 +119,17 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   // The time of the most recent update check.
   base::Time last_update_check() const { return last_update_check_; }
   void set_last_update_check(base::Time last) { last_update_check_ = last; }
+
+  // Provide a storage mechanism to read/write arbitrary data associated with
+  // this registration in the storage. Stored data is deleted when this
+  // registration is deleted from the storage.
+  void GetUserData(const std::string& key,
+                   const GetUserDataCallback& callback);
+  void StoreUserData(const std::string& key,
+                     const std::string& data,
+                     const StatusCallback& callback);
+  void ClearUserData(const std::string& key,
+                     const StatusCallback& callback);
 
  private:
   friend class base::RefCounted<ServiceWorkerRegistration>;

@@ -8,6 +8,7 @@
 #include <deque>
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
@@ -57,6 +58,9 @@ class CONTENT_EXPORT ServiceWorkerStorage
   typedef base::Callback<
       void(ServiceWorkerStatusCode status, bool are_equal)>
           CompareCallback;
+  typedef base::Callback<
+      void(const std::string& data, ServiceWorkerStatusCode status)>
+          GetUserDataCallback;
 
   ~ServiceWorkerStorage() override;
 
@@ -136,6 +140,21 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void CompareScriptResources(int64 lhs_id, int64 rhs_id,
                               const CompareCallback& callback);
 
+  // Provide a storage mechanism to read/write arbitrary data associated with
+  // a registration. Each registration has its own key namespace. Stored data
+  // is deleted when the associated registraton is deleted.
+  void GetUserData(int64 registration_id,
+                   const std::string& key,
+                   const GetUserDataCallback& callback);
+  void StoreUserData(int64 registration_id,
+                     const GURL& origin,
+                     const std::string& key,
+                     const std::string& data,
+                     const StatusCallback& callback);
+  void ClearUserData(int64 registration_id,
+                     const std::string& key,
+                     const StatusCallback& callback);
+
   // Deletes the storage and starts over.
   void DeleteAndStartOver(const StatusCallback& callback);
 
@@ -163,6 +182,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void PurgeResources(const ResourceList& resources);
 
  private:
+  friend class ServiceWorkerStorageTest;
   friend class ServiceWorkerResourceStorageTest;
   friend class ServiceWorkerControlleeRequestHandlerTest;
   friend class ServiceWorkerContextRequestHandlerTest;
@@ -221,6 +241,9 @@ class CONTENT_EXPORT ServiceWorkerStorage
       const ServiceWorkerDatabase::RegistrationData& data,
       const ResourceList& resources,
       ServiceWorkerDatabase::Status status)> FindInDBCallback;
+  typedef base::Callback<void(
+      const std::string& data,
+      ServiceWorkerDatabase::Status)> GetUserDataInDBCallback;
   typedef base::Callback<void(const std::vector<int64>& resource_ids,
                               ServiceWorkerDatabase::Status status)>
       GetResourcesCallback;
@@ -278,6 +301,16 @@ class CONTENT_EXPORT ServiceWorkerStorage
       bool origin_is_deletable,
       const ServiceWorkerDatabase::RegistrationData& deleted_version,
       const std::vector<int64>& newly_purgeable_resources,
+      ServiceWorkerDatabase::Status status);
+  void DidStoreUserData(
+      const StatusCallback& callback,
+      ServiceWorkerDatabase::Status status);
+  void DidGetUserData(
+      const GetUserDataCallback& callback,
+      const std::string& data,
+      ServiceWorkerDatabase::Status status);
+  void DidDeleteUserData(
+      const StatusCallback& callback,
       ServiceWorkerDatabase::Status status);
   void ReturnFoundRegistration(
       const FindRegistrationCallback& callback,
@@ -350,6 +383,12 @@ class CONTENT_EXPORT ServiceWorkerStorage
       int64 registration_id,
       const GURL& origin,
       const FindInDBCallback& callback);
+  static void GetUserDataInDB(
+      ServiceWorkerDatabase* database,
+      scoped_refptr<base::SequencedTaskRunner> original_task_runner,
+      int64 registration_id,
+      const std::string& key,
+      const GetUserDataInDBCallback& callback);
   static void DeleteAllDataForOriginsFromDB(
       ServiceWorkerDatabase* database,
       const std::set<GURL>& origins);
