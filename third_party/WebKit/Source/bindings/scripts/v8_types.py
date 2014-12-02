@@ -442,6 +442,8 @@ def impl_includes_for_type(idl_type, interfaces_info):
         includes_for_type.add(interface_info['include_path'])
     if base_idl_type in INCLUDES_FOR_TYPE:
         includes_for_type.update(INCLUDES_FOR_TYPE[base_idl_type])
+    if idl_type.is_typed_array:
+        return set(['core/dom/DOMTypedArray.h'])
     return includes_for_type
 
 IdlTypeBase.impl_includes_for_type = impl_includes_for_type

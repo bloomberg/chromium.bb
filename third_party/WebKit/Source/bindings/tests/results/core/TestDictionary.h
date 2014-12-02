@@ -13,6 +13,7 @@
 #include "bindings/tests/idls/core/TestInterfaceGarbageCollected.h"
 #include "bindings/tests/idls/core/TestInterfaceImplementation.h"
 #include "bindings/tests/idls/core/TestInterfaceWillBeGarbageCollected.h"
+#include "core/dom/DOMTypedArray.h"
 #include "core/dom/Element.h"
 #include "core/testing/InternalDictionary.h"
 #include "platform/heap/Handle.h"
@@ -113,6 +114,10 @@ public:
     const Vector<InternalDictionary>& internalDictionarySequenceMember() const { return m_internalDictionarySequenceMember.get(); }
     void setInternalDictionarySequenceMember(const Vector<InternalDictionary>& value) { m_internalDictionarySequenceMember = value; }
 
+    bool hasUint8ArrayMember() const { return m_uint8ArrayMember; }
+    PassRefPtr<DOMUint8Array> uint8ArrayMember() const { return m_uint8ArrayMember; }
+    void setUint8ArrayMember(PassRefPtr<DOMUint8Array> value) { m_uint8ArrayMember = value; }
+
     virtual void trace(Visitor*);
 
 private:
@@ -136,6 +141,7 @@ private:
     Nullable<bool> m_createMember;
     DoubleOrString m_doubleOrStringMember;
     Nullable<Vector<InternalDictionary> > m_internalDictionarySequenceMember;
+    RefPtr<DOMUint8Array> m_uint8ArrayMember;
 
     friend class V8TestDictionary;
 };

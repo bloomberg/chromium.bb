@@ -15,6 +15,7 @@
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/core/v8/V8TestInterfaceGarbageCollected.h"
 #include "bindings/core/v8/V8TestInterfaceWillBeGarbageCollected.h"
+#include "bindings/core/v8/V8Uint8Array.h"
 
 namespace blink {
 
@@ -297,6 +298,18 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
         impl.setTestInterfaceWillBeGarbageCollectedOrNullMember(testInterfaceWillBeGarbageCollectedOrNullMember);
     }
 
+    v8::Local<v8::Value> uint8ArrayMemberValue = v8Object->Get(v8String(isolate, "uint8ArrayMember"));
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
+    }
+    if (uint8ArrayMemberValue.IsEmpty() || uint8ArrayMemberValue->IsUndefined()) {
+        // Do nothing.
+    } else {
+        DOMUint8Array* uint8ArrayMember = uint8ArrayMemberValue->IsUint8Array() ? V8Uint8Array::toImpl(v8::Handle<v8::Uint8Array>::Cast(uint8ArrayMemberValue)) : 0;
+        impl.setUint8ArrayMember(uint8ArrayMember);
+    }
+
 }
 
 v8::Handle<v8::Value> toV8(const TestDictionary& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -402,6 +415,10 @@ void toV8TestDictionary(const TestDictionary& impl, v8::Handle<v8::Object> dicti
 
     if (impl.hasTestInterfaceWillBeGarbageCollectedOrNullMember()) {
         dictionary->Set(v8String(isolate, "testInterfaceWillBeGarbageCollectedOrNullMember"), toV8(impl.testInterfaceWillBeGarbageCollectedOrNullMember(), creationContext, isolate));
+    }
+
+    if (impl.hasUint8ArrayMember()) {
+        dictionary->Set(v8String(isolate, "uint8ArrayMember"), toV8(impl.uint8ArrayMember(), creationContext, isolate));
     }
 
 }
