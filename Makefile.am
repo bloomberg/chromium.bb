@@ -73,7 +73,18 @@ if HAVE_TEGRA
 TEGRA_SUBDIR = tegra
 endif
 
-SUBDIRS = . $(LIBKMS_SUBDIR) $(INTEL_SUBDIR) $(NOUVEAU_SUBDIR) $(RADEON_SUBDIR) $(OMAP_SUBDIR) $(EXYNOS_SUBDIR) $(FREEDRENO_SUBDIR) $(TEGRA_SUBDIR) tests man
+SUBDIRS = \
+	. \
+	$(LIBKMS_SUBDIR) \
+	$(INTEL_SUBDIR) \
+	$(NOUVEAU_SUBDIR) \
+	$(RADEON_SUBDIR) \
+	$(OMAP_SUBDIR) \
+	$(EXYNOS_SUBDIR) \
+	$(FREEDRENO_SUBDIR) \
+	$(TEGRA_SUBDIR) \
+	tests \
+	man
 
 libdrm_la_LTLIBRARIES = libdrm.la
 libdrm_ladir = $(libdir)
