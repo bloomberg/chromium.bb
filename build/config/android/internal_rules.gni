@@ -896,6 +896,18 @@ template("java_library_impl") {
       ]
       output = _dex_path
     }
+
+    if (defined(invoker.standalone_dex_path)) {
+      _final_deps += [ ":${_template_name}__standalone_dex" ]
+      _rebased_build_config = rebase_path(_build_config, root_build_dir)
+      dex("${_template_name}__standalone_dex") {
+        sources = [_jar_path]
+        inputs = [_build_config]
+        output = invoker.standalone_dex_path
+        dex_arg_key = "${_rebased_build_config}:final_dex:dependency_dex_files"
+        args = [ "--inputs=@FileArg($dex_arg_key)" ]
+      }
+    }
   }
 
   group(target_name) {

@@ -920,6 +920,11 @@ template("java_prebuilt") {
 #     be used to remove unwanted parts of the library.
 #   proguard_config: Path to the proguard config for preprocessing.
 #
+#   dex_path: If set, the resulting .dex.jar file will be placed under this
+#     path.
+#   standalone_dex_path: If set, a standalone .dex.jar containing the code from
+#     the library and all dependencies will be placed under this path.
+#
 #
 # Example
 #   android_library("foo_java") {
@@ -980,6 +985,9 @@ template("android_library") {
     }
     if (defined(invoker.dex_path)) {
       dex_path = invoker.dex_path
+    }
+    if (defined(invoker.standalone_dex_path)) {
+      standalone_dex_path = invoker.standalone_dex_path
     }
 
     supports_android = true
@@ -1295,7 +1303,7 @@ template("android_apk") {
       _build_config,
     ]
     output = final_dex_path
-    dex_arg_key = "${_rebased_build_config}:apk_dex:dependency_dex_files"
+    dex_arg_key = "${_rebased_build_config}:final_dex:dependency_dex_files"
     args = [ "--inputs=@FileArg($dex_arg_key)" ]
   }
 

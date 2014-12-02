@@ -213,13 +213,17 @@ def main(argv):
         c['package_name'] for c in all_resources_deps if 'package_name' in c]
 
 
-  if options.type == 'android_apk':
-    config['apk_dex'] = {}
-    dex_config = config['apk_dex']
+  # Dependencies for the final dex file of an apk or the standalone .dex.jar
+  # output of a library.
+  if options.type == 'android_apk' or (options.type == "java_library"
+                                       and options.supports_android):
+    config['final_dex'] = {}
+    dex_config = config['final_dex']
     # TODO(cjhopman): proguard version
     dex_deps_files = [c['dex_path'] for c in all_library_deps]
     dex_config['dependency_dex_files'] = dex_deps_files
 
+  if options.type == 'android_apk':
     config['dist_jar'] = {
       'dependency_jars': [
         c['jar_path'] for c in all_library_deps
