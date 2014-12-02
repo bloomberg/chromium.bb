@@ -1000,6 +1000,7 @@ void ChunkDemuxerStream::Read(const ReadCB& read_cb) {
 DemuxerStream::Type ChunkDemuxerStream::type() const { return type_; }
 
 DemuxerStream::Liveness ChunkDemuxerStream::liveness() const {
+  base::AutoLock auto_lock(lock_);
   return liveness_;
 }
 
@@ -1017,14 +1018,19 @@ VideoDecoderConfig ChunkDemuxerStream::video_decoder_config() {
 
 bool ChunkDemuxerStream::SupportsConfigChanges() { return true; }
 
+VideoRotation ChunkDemuxerStream::video_rotation() {
+  return VIDEO_ROTATION_0;
+}
+
 TextTrackConfig ChunkDemuxerStream::text_track_config() {
   CHECK_EQ(type_, TEXT);
   base::AutoLock auto_lock(lock_);
   return stream_->GetCurrentTextTrackConfig();
 }
 
-VideoRotation ChunkDemuxerStream::video_rotation() {
-  return VIDEO_ROTATION_0;
+void ChunkDemuxerStream::SetLiveness(Liveness liveness) {
+  base::AutoLock auto_lock(lock_);
+  liveness_ = liveness;
 }
 
 void ChunkDemuxerStream::ChangeState_Locked(State state) {
@@ -1673,7 +1679,13 @@ void ChunkDemuxer::OnSourceInitDone(
       return;
     }
 
-    liveness_ = params.liveness;
+    if (liveness_ != params.liveness) {
+      liveness_ = params.liveness;
+      if (audio_)
+        audio_->SetLiveness(liveness_);
+      if (video_)
+        video_->SetLiveness(liveness_);
+    }
   }
 
   // Wait until all streams have initialized.

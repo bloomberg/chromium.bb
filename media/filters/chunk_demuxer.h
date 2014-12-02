@@ -102,6 +102,8 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
     return partial_append_window_trimming_enabled_;
   }
 
+  void SetLiveness(Liveness liveness);
+
  private:
   enum State {
     UNINITIALIZED,

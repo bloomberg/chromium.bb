@@ -2007,6 +2007,11 @@ TEST_F(ChunkDemuxerTest, WebMFile_LiveAudioAndVideo) {
 
   ASSERT_TRUE(ParseWebMFile("bear-320x240-live.webm", buffer_timestamps,
                             kInfiniteDuration()));
+
+  DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
+  EXPECT_EQ(DemuxerStream::LIVENESS_LIVE, audio->liveness());
+  DemuxerStream* video = demuxer_->GetStream(DemuxerStream::VIDEO);
+  EXPECT_EQ(DemuxerStream::LIVENESS_LIVE, video->liveness());
 }
 
 TEST_F(ChunkDemuxerTest, WebMFile_AudioOnly) {
