@@ -1019,21 +1019,11 @@ DeclareBit('build_mips32', 'Building binaries for the MIPS architecture',
            exclusive_groups='build_arch')
 DeclareBit('build_arm_arm', 'Building binaries for the ARM architecture',
            exclusive_groups='build_arch')
-DeclareBit('target_x86_32', 'Tools being built will process x86-32 binaries',
-           exclusive_groups='target_arch')
-DeclareBit('target_x86_64', 'Tools being built will process x86-36 binaries',
-           exclusive_groups='target_arch')
-DeclareBit('target_mips32', 'Tools being built will process MIPS binaries',
-           exclusive_groups='target_arch')
-DeclareBit('target_arm_arm', 'Tools being built will process ARM binaries',
-           exclusive_groups='target_arch')
 
 # Shorthand for either the 32 or 64 bit version of x86.
 DeclareBit('build_x86', 'Building binaries for the x86 architecture')
-DeclareBit('target_x86', 'Tools being built will process x86 binaries')
 
 DeclareBit('build_arm', 'Building binaries for the arm architecture')
-DeclareBit('target_arm', 'Tools being built will process arm binaries')
 
 
 def MakeArchSpecificEnv(platform=None):
@@ -1054,26 +1044,16 @@ def MakeArchSpecificEnv(platform=None):
   env.Replace(TARGET_ARCHITECTURE=arch)
   env.Replace(TARGET_SUBARCH=subarch)
 
-  # Example: PlatformBit('build', 'x86-32') -> build_x86_32
-  def PlatformBit(prefix, platform):
-    return "%s_%s" % (prefix, platform.replace('-', '_'))
-
-  env.SetBits(PlatformBit('build', platform))
-  env.SetBits(PlatformBit('target', platform))
+  env.SetBits('build_%s' % platform.replace('-', '_'))
 
   if env.Bit('build_x86_32') or env.Bit('build_x86_64'):
     env.SetBits('build_x86')
   if env.Bit('build_arm_arm'):
     env.SetBits('build_arm')
 
-  if env.Bit('target_x86_32') or env.Bit('target_x86_64'):
-    env.SetBits('target_x86')
-  if env.Bit('target_arm_arm'):
-    env.SetBits('target_arm')
-
   env.Replace(BUILD_ISA_NAME=platform)
 
-  if env.Bit('target_mips32'):
+  if env.Bit('build_mips32'):
     # This is a silent default on MIPS.
     env.SetBits('bitcode')
 
@@ -1481,7 +1461,7 @@ def SelUniversalTest(env,
     return []
 
   # TODO(petarj): Sel_universal hangs on qemu-mips. Enable when fixed.
-  if env.Bit('target_mips32') and env.UsingEmulator():
+  if env.Bit('build_mips32') and env.UsingEmulator():
     return []
 
   if sel_universal_flags is None:
@@ -2206,7 +2186,7 @@ pre_base_env.AddMethod(MakeGTestEnv)
 
 def MakeUntrustedNativeEnv(env):
   native_env = nacl_env.Clone()
-  if native_env.Bit('bitcode') and not native_env.Bit('target_mips32'):
+  if native_env.Bit('bitcode') and not native_env.Bit('build_mips32'):
     native_env = native_env.PNaClGetNNaClEnv()
   return native_env
 
@@ -2289,7 +2269,7 @@ def MakeBaseTrustedEnv(platform=None):
 
   # The ARM and MIPS validators can be built for any target that doesn't use
   # ELFCLASS64.
-  if not base_env.Bit('target_x86_64'):
+  if not base_env.Bit('build_x86_64'):
     base_env.Append(
         BUILD_SCONSCRIPTS = [
           'src/trusted/validator_mips/build.scons',
@@ -2893,13 +2873,13 @@ def BiasedBitcodeFlags(env):
   """ Return clang flags to use biased bitcode and generate native-ABI-compliant
       code. Does not imply pre-translation.
   """
-  if env.Bit('target_x86_32'):
+  if env.Bit('build_x86_32'):
     return ['--target=i686-unknown-nacl']
-  if env.Bit('target_x86_64'):
+  if env.Bit('build_x86_64'):
     return ['--target=x86_64-unknown-nacl']
-  if env.Bit('target_arm'):
+  if env.Bit('build_arm'):
     return ['--target=armv7-unknown-nacl-gnueabihf', '-mfloat-abi=hard']
-  if env.Bit('target_mips32'):
+  if env.Bit('build_mips32'):
     return []
   raise UserError('No known target bits set')
 
@@ -2991,7 +2971,7 @@ nacl_env = nacl_env.Clone(
 def UsesAbiNote(env):
   """Return True if using a new-style GCC with .note.NaCl.ABI.* notes.
 This means there will always be an RODATA segment, even if just for the note."""
-  return env.Bit('target_arm') and not env.Bit('bitcode')
+  return env.Bit('build_arm') and not env.Bit('bitcode')
 
 nacl_env.AddMethod(UsesAbiNote)
 
@@ -3042,7 +3022,7 @@ def AllowInlineAssembly(env):
     # with PNaCl/Clang at all.
     #
     # For Non-SFI NaCl we use inline assembly in PNaCl/Clang.
-    if not (env.Bit('target_arm') or env.Bit('target_mips32')
+    if not (env.Bit('build_arm') or env.Bit('build_mips32')
             or env.Bit('nonsfi_nacl')):
       return False
     # Inline assembly does not work in pexes.
@@ -3051,11 +3031,11 @@ def AllowInlineAssembly(env):
     env.AddBiasForPNaCl()
     env.PNaClForceNative()
 
-    if env.Bit('target_x86_32'):
+    if env.Bit('build_x86_32'):
       env.AppendUnique(CCFLAGS=['--target=i686-unknown-nacl'])
-    elif env.Bit('target_x86_64'):
+    elif env.Bit('build_x86_64'):
       env.AppendUnique(CCFLAGS=['--target=x86_64-unknown-nacl'])
-    elif env.Bit('target_arm'):
+    elif env.Bit('build_arm'):
       env.AppendUnique(CCFLAGS=['--target=armv7a-unknown-nacl-gnueabihf',
                                 '-mfloat-abi=hard'])
   return True
@@ -3243,7 +3223,7 @@ def GetLinkerScriptBaseName(env):
 if (nacl_env.Bit('nacl_glibc') and
     nacl_env.Bit('nacl_static_link')):
   nacl_env.Append(LINKFLAGS=['-static'])
-  if nacl_env.Bit('target_x86'):
+  if nacl_env.Bit('build_x86'):
     # The "-lc" is necessary because libgcc_eh depends on libc but for
     # some reason nacl-gcc is not linking with "--start-group/--end-group".
     nacl_env.Append(LINKFLAGS=[
@@ -3527,8 +3507,8 @@ nacl_irt_env.ClearBits('nacl_pic')
 # Windows (because pnacl-clang doesn't run on Windows XP. If we stop supporting
 # building on XP, we can remove this exception).  See
 # https://code.google.com/p/nativeclient/issues/detail?id=3936
-if (nacl_irt_env.Bit('target_mips32') or nacl_irt_env.Bit('target_x86_64') or
-    (nacl_irt_env.Bit('target_x86_32') and
+if (nacl_irt_env.Bit('build_mips32') or nacl_irt_env.Bit('build_x86_64') or
+    (nacl_irt_env.Bit('build_x86_32') and
      not nacl_irt_env.Bit('host_windows'))):
   nacl_irt_env.SetBits('bitcode')
 else:
@@ -3549,12 +3529,12 @@ FixWindowsAssembler(nacl_irt_env)
 nacl_irt_env.Replace(LIBPATH='${LIB_DIR}')
 
 if nacl_irt_env.Bit('bitcode'):
-  if nacl_irt_env.Bit('target_x86_64'):
+  if nacl_irt_env.Bit('build_x86_64'):
     nacl_irt_env.Append(CCFLAGS=['--target=x86_64-unknown-nacl'])
     nacl_irt_env.Append(LINKFLAGS=['--target=x86_64-unknown-nacl',
                                    '--pnacl-allow-translate',
                                    '-arch', 'x86-64'])
-  elif nacl_irt_env.Bit('target_x86_32'):
+  elif nacl_irt_env.Bit('build_x86_32'):
     nacl_irt_env.Append(CCFLAGS=['--target=i686-unknown-nacl'])
     # X86-32 IRT needs to be callable with an under-aligned stack, so we disable
     # SSE instructions, which can fault on misaligned addresses: see
@@ -3563,7 +3543,7 @@ if nacl_irt_env.Bit('bitcode'):
                                    '--pnacl-allow-translate',
                                    '-arch', 'x86-32',
                                    '-Wt,-mattr=-sse'])
-  elif nacl_irt_env.Bit('target_mips32'):
+  elif nacl_irt_env.Bit('build_mips32'):
     # Disable the PNaCl IRT verifier since it will complain about
     # __executable_start symbol not being a valid external symbol.
     nacl_irt_env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])
@@ -3583,7 +3563,7 @@ if nacl_irt_env.Bit('bitcode'):
 # IRT-private TLS from user TLS. This only applies to mips now, on
 # other platforms we modify the TLS register through tls_edit as a
 # post process.
-if nacl_irt_env.Bit('target_mips32'):
+if nacl_irt_env.Bit('build_mips32'):
   nacl_irt_env.Append(LINKFLAGS=['-Wt,-mtls-use-call'])
 
 # TODO(mcgrathr): Clean up uses of these methods.
@@ -3661,7 +3641,7 @@ def AddImplicitLibs(env):
   # Require the pnacl_irt_shim for pnacl x86-64 and arm.
   # Use -B to have the compiler look for the fresh libpnacl_irt_shim.a.
   if ( env.Bit('bitcode') and
-       (env.Bit('target_x86_64') or env.Bit('target_arm'))
+       (env.Bit('build_x86_64') or env.Bit('build_arm'))
        and env['NACL_BUILD_FAMILY'] != 'UNTRUSTED_IRT'):
     # Note: without this hack ibpnacl_irt_shim.a will be deleted
     #       when "built_elsewhere=1"

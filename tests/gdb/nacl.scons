@@ -13,7 +13,7 @@ if 'TRUSTED_ENV' not in env:
 if env.UnderWindowsCoverage():
   Return()
 
-if env.Bit('build_arm') or env.Bit('target_mips32'):
+if env.Bit('build_arm') or env.Bit('build_mips32'):
   if env.UsingEmulator():
     # nacl-gdb is built with ARM support but not MIPS support.
     if env.Bit('build_mips32'):

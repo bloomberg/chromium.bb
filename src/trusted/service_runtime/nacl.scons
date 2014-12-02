@@ -35,13 +35,13 @@ if env.Bit('bitcode'):
 # Tests that require a NaCl module
 # ----------------------------------------------------------
 
-if env.Bit('target_x86_32'):
+if env.Bit('build_x86_32'):
   nacl_text_pad_asm = 'arch/x86_32/nacl_text_pad_test.S'
-elif env.Bit('target_x86_64'):
+elif env.Bit('build_x86_64'):
   nacl_text_pad_asm = 'arch/x86_64/nacl_text_pad_test.S'
-elif env.Bit('target_arm'):
+elif env.Bit('build_arm'):
   nacl_text_pad_asm = 'arch/arm/nacl_text_pad_test.S'
-elif env.Bit('target_mips32'):
+elif env.Bit('build_mips32'):
   nacl_text_pad_asm = 'arch/mips/nacl_text_pad_test.S'
 else:
   raise Exception('unknown architecture')
@@ -53,13 +53,13 @@ def NewAsmEnv(env, defines, rodata_address, rwdata_address):
   link_cmd = ('${LD} -static -e _start ${TEXT_START} ${RO_START} ${RW_START}' +
                 ' -o ${TARGET} ${SOURCES}')
 
-  if env.Bit('target_x86_32'):
+  if env.Bit('build_x86_32'):
     link_cmd += ' -melf_i386_nacl'
-  elif env.Bit('target_x86_64'):
+  elif env.Bit('build_x86_64'):
     link_cmd += ' -melf_x86_64_nacl'
-  elif env.Bit('target_arm'):
+  elif env.Bit('build_arm'):
     link_cmd += ' -marmelf_nacl'
-  elif env.Bit('target_mips32'):
+  elif env.Bit('build_mips32'):
     link_cmd += ' -mmipselelf_nacl'
   else:
     raise Exception('unknown architecture')

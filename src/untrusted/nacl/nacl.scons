@@ -239,7 +239,7 @@ else:
              SRCS_NEWLIB_SYSCALL +
              SRCS_NEWLIB_STUBS +
              SRCS_NEWLIB_MISC)
-  if env.Bit('target_arm') and not env.Bit('bitcode'):
+  if env.Bit('build_arm') and not env.Bit('bitcode'):
     sources.append('aeabi_read_tp.S')
 
 # Do not make a shared version of libnacl.

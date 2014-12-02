@@ -16,14 +16,14 @@ sources = ['arch/arm/cpu_arm.c',
 # hosts. ARM and MIPS don't ahve these problems as of today because they
 # don't actually query their CPU.
 # Do the same in the gyp build.
-if env.Bit('target_x86'):
+if env.Bit('build_x86'):
   sources += ['arch/x86/cpu_x86.c',
               'arch/x86/cpu_xgetbv.S']
 
 env.ComponentLibrary('cpu_features', sources)
 
 # TODO(jfb) Also test ARM and MIPS.
-if env.Bit('target_x86'):
+if env.Bit('build_x86'):
   # Create environment for command-line tools and testing, rather than
   # part of the TCB. Then define compile-time flag that communicates
   # that we are compiling in the test environment (rather than for the TCB).

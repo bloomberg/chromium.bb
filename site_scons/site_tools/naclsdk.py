@@ -337,7 +337,7 @@ def PNaClForceNative(env):
 # Get an environment for nacl-gcc when in PNaCl mode.
 def PNaClGetNNaClEnv(env):
   assert(env.Bit('bitcode'))
-  assert(not env.Bit('target_mips32'))
+  assert(not env.Bit('build_mips32'))
 
   # This is kind of a hack. We clone the environment,
   # clear the bitcode bit, and then reload naclsdk.py
@@ -372,13 +372,13 @@ def AddBiasForPNaCl(env, temporarily_allow=True):
                 CXX='NO-NATIVE-CXX-INVOCATION-ALLOWED')
     return
 
-  if env.Bit('target_arm'):
+  if env.Bit('build_arm'):
     bias_flag = '--pnacl-bias=arm'
-  elif env.Bit('target_x86_32'):
+  elif env.Bit('build_x86_32'):
     bias_flag = '--pnacl-bias=x86-32'
-  elif env.Bit('target_x86_64'):
+  elif env.Bit('build_x86_64'):
     bias_flag = '--pnacl-bias=x86-64'
-  elif env.Bit('target_mips32'):
+  elif env.Bit('build_mips32'):
     bias_flag = '--pnacl-bias=mips32'
   else:
     raise Exception("Unknown architecture!")
@@ -689,7 +689,7 @@ def generate(env):
   else:
     _SetEnvForNativeSdk(env, root)
 
-  if (env.Bit('bitcode') or env.Bit('nacl_clang')) and env.Bit('target_x86'):
+  if (env.Bit('bitcode') or env.Bit('nacl_clang')) and env.Bit('build_x86'):
     # Get GDB from the nacl-gcc toolchain even when using PNaCl.
     # TODO(mseaborn): We really want the nacl-gdb binary to be in a
     # separate tarball from the nacl-gcc toolchain, then this step

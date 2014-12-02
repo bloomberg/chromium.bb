@@ -167,7 +167,7 @@ def AddLibDeps(env, platform, libraries):
         PLATFORM_LIBRARY_DEPENDENCIES.get(platform, {}).get(library, []))
     if env['NACL_BUILD_FAMILY'] != 'TRUSTED':
       ret.extend(UNTRUSTED_LIBRARY_DEPENDENCIES.get(library, []))
-    if library == 'validators' and env.Bit('target_x86'):
+    if library == 'validators' and env.Bit('build_x86'):
       ret.append(env.NaClTargetArchSuffix('dfa_validate_caller'))
     return ret
 

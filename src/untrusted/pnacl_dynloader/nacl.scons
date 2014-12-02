@@ -8,7 +8,7 @@ Import('env')
 if not env.Bit('bitcode'):
   Return()
 # TODO(mseaborn): Add support for x86-64 relocation types.
-if env.Bit('target_x86_64'):
+if env.Bit('build_x86_64'):
   Return()
 
 env.AddBiasForPNaCl()

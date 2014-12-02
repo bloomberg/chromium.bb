@@ -47,7 +47,7 @@ features = [
 # Glue library called from service runtime. The source file depends on the
 # target architecture.  In library_deps.py this library is marked as
 # dependant of dfa_validate_x86_xx.
-if env.Bit('target_x86'):
+if env.Bit('build_x86'):
   caller_lib = 'dfa_validate_caller_x86_%s' % env.get('TARGET_SUBARCH')
   env.ComponentLibrary(
       caller_lib,
@@ -499,7 +499,7 @@ for bits in ['32', '64']:
   else:
     update_option = []
 
-  if env.Bit('target_x86'):
+  if env.Bit('build_x86'):
     # In principle we can run these tests on ARM too, but first, there is no
     # reason to, and second, there are problems with those bots that build
     # on one machine and run tests on another (build machine does not recognize
@@ -560,5 +560,5 @@ for bits in ['32', '64']:
 
     # Spec test uses @dis section in test files, which in turn is updated
     # by dis_section_test.
-    if env.Bit('target_x86'):
+    if env.Bit('build_x86'):
       env.Depends(spec_test, dis_section_test)

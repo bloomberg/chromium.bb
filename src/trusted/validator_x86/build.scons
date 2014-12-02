@@ -15,7 +15,7 @@ Import('env')
 # Build x86 only pieces
 #
 #
-if not env.Bit('target_x86'): Return()
+if not env.Bit('build_x86'): Return()
 
 # The following are copycode routines for x86-32 and x86-64.
 # TODO(karl): Break this up so that we don't need to load

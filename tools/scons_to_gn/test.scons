@@ -9,9 +9,9 @@ defines = []
 
 if env.Bit('win'):
   sources += ['win']
-if env.Bit('target_x86_32'):
+if env.Bit('build_x86_32'):
   defines += ['_x86']
-if env.Bit('target_x86_64'):
+if env.Bit('build_x86_64'):
   defines += ['_x64']
 
 if True:

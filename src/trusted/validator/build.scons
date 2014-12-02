@@ -15,7 +15,7 @@ env.ComponentLibrary('validation_cache', ['validation_cache.c'])
 
 env.ComponentLibrary('validators', ['validator_init.c'])
 
-if env.Bit('target_x86') or env.Bit('target_mips32'):
+if env.Bit('build_x86') or env.Bit('build_mips32'):
   # TODO(ncbray) support ARM.  This will require making validation caching safe
   # for ARM and embedding ARM binary chunks in the test that can trigger various
   # validation scenarios.

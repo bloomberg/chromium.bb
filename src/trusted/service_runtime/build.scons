@@ -205,11 +205,11 @@ if env.Bit('windows'):
     'win/thread_suspension.c',
     'win/sel_addrspace_win.c',
   ]
-  if env.Bit('target_x86_32'):
+  if env.Bit('build_x86_32'):
     ldr_inputs += [
       'win/nacl_signal_32.c',
     ]
-  elif env.Bit('target_x86_64'):
+  elif env.Bit('build_x86_64'):
     ldr_inputs += [
       'win/exception_patch/exit_fast.S',
       'win/exception_patch/intercept.S',
@@ -225,19 +225,19 @@ if env.Bit('linux'):
       'posix/nacl_signal_stack.c',
       'posix/sel_addrspace_posix.c'
       ]
-  if env.Bit('target_arm'):
+  if env.Bit('build_arm'):
     ldr_inputs += ['linux/nacl_signal_arm.c']
-  elif env.Bit('target_mips32'):
+  elif env.Bit('build_mips32'):
     ldr_inputs += ['linux/nacl_signal_mips.c']
-  elif env.Bit('target_x86_32'):
+  elif env.Bit('build_x86_32'):
     ldr_inputs += ['linux/nacl_signal_32.c']
-  elif env.Bit('target_x86_64'):
+  elif env.Bit('build_x86_64'):
     ldr_inputs += ['linux/nacl_signal_64.c']
   else:
     raise Exception("Unsupported target")
 
   nacl_signal_env = env.Clone()
-  if env.Bit('target_x86_32'):
+  if env.Bit('build_x86_32'):
     # nacl_signal.c needs to be compiled without the stack protector
     # on i386.
     # See https://code.google.com/p/nativeclient/issues/detail?id=3581.
@@ -252,9 +252,9 @@ if env.Bit('mac'):
       'posix/nacl_signal_stack.c',
       'posix/sel_addrspace_posix.c'
       ]
-  if env.Bit('target_x86_32'):
+  if env.Bit('build_x86_32'):
     ldr_inputs += ['osx/nacl_signal_32.c']
-  elif env.Bit('target_x86_64'):
+  elif env.Bit('build_x86_64'):
     ldr_inputs += ['osx/nacl_signal_64.c']
   else:
     raise Exception("Unsupported target")
@@ -365,7 +365,7 @@ if not env.Bit('coverage_enabled') or not env.Bit('windows'):
 
   env.SDKInstallBin('sel_ldr', SEL_LDR_NODE)
 
-if env.Bit('linux') and env.Bit('target_x86_64'):
+if env.Bit('linux') and env.Bit('build_x86_64'):
   sel_ldr_seccomp_node = env.ComponentProgram('sel_ldr_seccomp',
                                               ['sel_ldr_seccomp_main.c'],
                                               EXTRA_LIBS=['sel_main',
@@ -391,7 +391,7 @@ if (env.Bit('linux') and not env.Bit('built_elsewhere')):
                                   '-D__STDC_HOSTED__=1',
                                   '-Qunused-arguments'])
 
-  if env.Bit('target_x86_64'):
+  if env.Bit('build_x86_64'):
     ld_emul = 'elf_x86_64'
     if env.Bit('x86_64_zero_based_sandbox'):
       # For the zero-based 64-bit sandbox, we want to reserve 44GB of address
@@ -420,13 +420,13 @@ if (env.Bit('linux') and not env.Bit('built_elsewhere')):
       bootstrap_env.Append(CCFLAGS=['-mcmodel=large'])
     else:
       reserve_top = '0x0'
-  elif env.Bit('target_x86_32'):
+  elif env.Bit('build_x86_32'):
     ld_emul = 'elf_i386'
     reserve_top = '0x40000000'
-  elif env.Bit('target_arm'):
+  elif env.Bit('build_arm'):
     ld_emul = 'armelf_linux_eabi'
     reserve_top = '0x40002000'
-  elif env.Bit('target_mips32'):
+  elif env.Bit('build_mips32'):
     ld_emul = 'elf32ltsmip'
     reserve_top = '0x40008000'
 
@@ -517,9 +517,9 @@ if not env.Bit('coverage_enabled') or not env.Bit('windows'):
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_format_string_test')
 
 
-if env.Bit('target_x86_32'):
+if env.Bit('build_x86_32'):
   arch_testdata_dir = 'testdata/x86_32'
-elif env.Bit('target_x86_64'):
+elif env.Bit('build_x86_64'):
   arch_testdata_dir = 'testdata/x86_64'
 else:
   arch_testdata_dir = 'testdata/' + env['TARGET_ARCHITECTURE']
@@ -628,8 +628,8 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_resource_test')
 # Test nacl_signal
 if env.Bit('linux'):
   if (not env.Bit('coverage_enabled') and
-      not env.Bit('target_arm') and
-      not env.Bit('target_mips32') and
+      not env.Bit('build_arm') and
+      not env.Bit('build_mips32') and
       not env.IsRunningUnderValgrind()):
     nacl_signal_exe = env.ComponentProgram(
         'nacl_signal_unittest', 'nacl_signal_unittest.c',
@@ -648,7 +648,7 @@ if env.Bit('linux'):
                          using_nacl_signal_handler=True)
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_signal_frame_test')
 
-if env.Bit('windows') and env.Bit('target_x86_64'):
+if env.Bit('windows') and env.Bit('build_x86_64'):
   test_prog = env.ComponentProgram('patch_ntdll_test',
                                    'win/exception_patch/ntdll_test.c',
                                    EXTRA_LIBS=['sel',
@@ -776,7 +776,7 @@ node = env.CommandSelLdrTestNacl(
     sel_ldr_flags=['-F'])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_fuzz_nullptr_test')
 
-if env.Bit('target_mips32'):
+if env.Bit('build_mips32'):
   text_region_start = 0x00020000
   # Use arbitrary non-page-aligned addresses for data and rodata.
   rodata_region_start = 0x10020094
@@ -824,7 +824,7 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_unaligned_data_irt_test')
 # Small tests with canned binaries
 # ----------------------------------------------------------
 
-if env.Bit('target_x86_64'):
+if env.Bit('build_x86_64'):
   node = env.CommandSelLdrTestNacl(
       'hello_x32.out',
       env.File(os.path.join(arch_testdata_dir, 'hello_x32.nexe')),
@@ -867,7 +867,7 @@ def AddIntegrationTest(test, location):
                          ['medium_tests'],
                          'run_%s_integration_test' % test)
 
-if env.Bit('target_x86') and env.Bit('nacl_static_link'):
+if env.Bit('build_x86') and env.Bit('nacl_static_link'):
   RE_HELLO = '^(Hello, World!)$'
   RE_IDENT = '^\[[0-9,:.]*\] (e_ident\+1 = ELF)$'
 
@@ -933,7 +933,7 @@ def AddDeathTest(test, skip):
                          'run_' + test + '_death_test')
 
 
-if env.Bit('target_x86'):
+if env.Bit('build_x86'):
   if env.Bit('build_x86_32'):
     skip = NOT_AVAIL_X86_32
   else:
