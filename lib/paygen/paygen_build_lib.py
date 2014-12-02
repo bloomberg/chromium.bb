@@ -26,6 +26,7 @@ import fixup_path
 fixup_path.FixupPath()
 
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import cbuildbot_config
 from chromite.lib import cros_build_lib
 from chromite.lib import parallel
@@ -946,6 +947,7 @@ class _PaygenBuild(object):
                                 suite=suite_name,
                                 file_bugs=True,
                                 pool='bvt',
+                                priority=constants.HWTEST_BUILD_PRIORITY,
                                 retry=True,
                                 wait_for_results=True,
                                 timeout_mins=timeout_mins,

@@ -21,6 +21,7 @@ fixup_path.FixupPath()
 
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import constants
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -1344,7 +1345,8 @@ DOC = "Faux doc"
     timeout_mins = cbuildbot_config.HWTestConfig.DEFAULT_HW_TEST_TIMEOUT / 60
     paygen_build_lib.commands.RunHWTestSuite(
         board='foo-board', build='foo-board-release/R99-1.2.3', file_bugs=True,
-        pool='bvt', suite='paygen_au_foo', timeout_mins=timeout_mins,
+        pool='bvt', priority=constants.HWTEST_BUILD_PRIORITY,
+        suite='paygen_au_foo', timeout_mins=timeout_mins,
         retry=True, wait_for_results=True, debug=False)
 
     self.mox.ReplayAll()
@@ -1368,7 +1370,8 @@ DOC = "Faux doc"
     timeout_mins = cbuildbot_config.HWTestConfig.DEFAULT_HW_TEST_TIMEOUT / 60
     paygen_build_lib.commands.RunHWTestSuite(
         board='foo-board', build='foo-board-release/R99-1.2.3', file_bugs=True,
-        pool='bvt', suite='paygen_au_foo', timeout_mins=timeout_mins,
+        pool='bvt', priority=constants.HWTEST_BUILD_PRIORITY,
+        suite='paygen_au_foo', timeout_mins=timeout_mins,
         retry=True, wait_for_results=True, debug=False).AndRaise(
           commands.TestWarning('** Suite passed with a warning code **'))
 
