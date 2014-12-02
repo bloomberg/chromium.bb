@@ -54,12 +54,6 @@ function test()
 
     function step5(uiSourceCode)
     {
-        function requestContent()
-        {
-            InspectorTest.addResult("Fallback content is requested.");
-        }
-        InspectorTest.addSniffer(WebInspector.Script.prototype, "requestContent", requestContent);
-
         uiSourceCode.requestContent(step6);
     }
 

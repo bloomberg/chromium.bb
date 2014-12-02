@@ -2,5 +2,4 @@ CONSOLE MESSAGE: line 10241: finished
 Tests long script content is correctly shown in source panel after page reload.
 
 Page reloaded.
-Fallback content is requested.
 
