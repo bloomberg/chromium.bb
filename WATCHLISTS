@@ -888,7 +888,7 @@
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
     'eme': ['eme-reviews@chromium.org'],
     'enhanced_bookmarks': ['noyau+watch@chromium.org'],
-    'events': ['tdresser+watch@chromium.org'],
+    'events': ['tdresser+watch@chromium.org', 'jdduke+watch@chromium.org'],
     'extension': ['chromium-apps-reviews@chromium.org',
                   'extensions-reviews@chromium.org'],
     'fileapi': ['kinuko+fileapi@chromium.org',
