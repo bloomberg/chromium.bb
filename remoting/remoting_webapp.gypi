@@ -27,7 +27,7 @@
         {
           'action_name': 'Verify remoting webapp',
           'inputs': [
-            '<@(remoting_webapp_all_js_files)',
+            '<@(remoting_webapp_crd_js_files)',
             '<@(remoting_webapp_js_proto_files)',
           ],
           'outputs': [
@@ -35,7 +35,7 @@
           ],
           'action': [
             'python', 'tools/jscompile.py',
-            '<@(remoting_webapp_all_js_files)',
+            '<@(remoting_webapp_crd_js_files)',
             '<@(remoting_webapp_js_proto_files)',
             '--success-stamp', '<(success_stamp)'
           ],
@@ -52,7 +52,7 @@
         '<(chrome_version_path)',
         '<(remoting_version_path)',
         '<@(generated_html_files)',
-        '<@(remoting_webapp_files)',
+        '<@(remoting_webapp_crd_files)',
         '<@(remoting_webapp_locale_files)',
         '<@(extra_files)',
       ],
@@ -69,7 +69,7 @@
         'webapp/crd/manifest.json.jinja2',
         '<(webapp_type)',
         '<@(generated_html_files)',
-        '<@(remoting_webapp_files)',
+        '<@(remoting_webapp_crd_files)',
         '<@(extra_files)',
         '--locales', '<@(remoting_webapp_locale_files)',
       ],

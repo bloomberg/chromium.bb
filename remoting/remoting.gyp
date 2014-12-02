@@ -171,7 +171,7 @@
           'host/win/version.rc.jinja2',
           'resources/play_store_resources.cc',
           'webapp/crd/manifest.json.jinja2',
-          '<@(remoting_webapp_all_js_files)',
+          '<@(remoting_webapp_crd_js_files)',
         ],
       },
       'actions': [

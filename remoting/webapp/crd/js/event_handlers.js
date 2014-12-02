@@ -7,7 +7,7 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-function onLoad() {
+remoting.initEventHandlers = function() {
   var goHome = function() {
     remoting.setMode(remoting.AppMode.HOME);
   };
@@ -115,7 +115,6 @@ function onLoad() {
   registerEventListeners(me2me_actions);
   registerEventListeners(host_actions);
   registerEventListeners(auth_actions);
-  remoting.init();
 
   window.addEventListener('resize', remoting.onResize, false);
   // When a window goes full-screen, a resize event is triggered, but the
@@ -157,5 +156,3 @@ function registerEventListener(id, eventname, fn) {
         ': element not found.');
   }
 }
-
-window.addEventListener('load', onLoad, false);
