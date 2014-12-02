@@ -118,7 +118,7 @@ Node* ComposedTreeTraversal::traverseBackToYoungerShadowRoot(const Node& node, T
 
 // FIXME: Use an iterative algorithm so that it can be inlined.
 // https://bugs.webkit.org/show_bug.cgi?id=90415
-Node* ComposedTreeTraversal::traverseParent(const Node& node, ParentTraversalDetails* details)
+ContainerNode* ComposedTreeTraversal::traverseParent(const Node& node, ParentTraversalDetails* details)
 {
     if (node.isPseudoElement())
         return node.parentOrShadowHostNode();
@@ -137,9 +137,9 @@ Node* ComposedTreeTraversal::traverseParent(const Node& node, ParentTraversalDet
     return traverseParentOrHost(node);
 }
 
-inline Node* ComposedTreeTraversal::traverseParentOrHost(const Node& node)
+inline ContainerNode* ComposedTreeTraversal::traverseParentOrHost(const Node& node)
 {
-    Node* parent = node.parentNode();
+    ContainerNode* parent = node.parentNode();
     if (!parent)
         return 0;
     if (!parent->isShadowRoot())

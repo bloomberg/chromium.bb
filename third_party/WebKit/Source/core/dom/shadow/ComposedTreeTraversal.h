@@ -33,6 +33,7 @@
 
 namespace blink {
 
+class ContainerNode;
 class Node;
 
 // FIXME: Make some functions inline to optimise the performance.
@@ -47,9 +48,9 @@ public:
     static Node* firstChild(const Node&);
     static Node* lastChild(const Node&);
 
-    static Node* parent(const Node&);
+    static ContainerNode* parent(const Node&);
     // FIXME: Make this private
-    static Node* traverseParent(const Node&, ParentTraversalDetails* = 0);
+    static ContainerNode* traverseParent(const Node&, ParentTraversalDetails* = 0);
 
     static Node* nextSibling(const Node&);
     static Node* previousSibling(const Node&);
@@ -97,13 +98,13 @@ private:
 
     static Node* traverseBackToYoungerShadowRoot(const Node&, TraversalDirection);
 
-    static Node* traverseParentOrHost(const Node&);
+    static ContainerNode* traverseParentOrHost(const Node&);
 };
 
-inline Node* ComposedTreeTraversal::parent(const Node& node)
+inline ContainerNode* ComposedTreeTraversal::parent(const Node& node)
 {
     assertPrecondition(node);
-    Node* result = traverseParent(node);
+    ContainerNode* result = traverseParent(node);
     assertPostcondition(result);
     return result;
 }

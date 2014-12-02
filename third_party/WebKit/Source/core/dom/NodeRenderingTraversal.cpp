@@ -57,7 +57,7 @@ ContainerNode* parent(const Node& node, ParentDetails* details)
     ASSERT(!node.document().childNeedsDistributionRecalc());
     if (isActiveInsertionPoint(node))
         return 0;
-    return toContainerNode(ComposedTreeTraversal::traverseParent(node, details));
+    return ComposedTreeTraversal::traverseParent(node, details);
 }
 
 bool contains(const ContainerNode& container, const Node& node)
