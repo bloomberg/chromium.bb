@@ -217,7 +217,7 @@ void WebPopupMenuImpl::paintContents(WebCanvas* canvas, const WebRect& rect, boo
         return;
 
     if (!rect.isEmpty()) {
-        GraphicsContext context(canvas,
+        GraphicsContext context(canvas, nullptr,
             contextStatus == WebContentLayerClient::GraphicsContextEnabled ? GraphicsContext::NothingDisabled : GraphicsContext::FullyDisabled);
         m_widget->paint(&context, rect);
     }
@@ -229,7 +229,7 @@ void WebPopupMenuImpl::paint(WebCanvas* canvas, const WebRect& rect)
         return;
 
     if (!rect.isEmpty()) {
-        GraphicsContext context(canvas);
+        GraphicsContext context(canvas, nullptr);
         float scaleFactor = m_client->deviceScaleFactor();
         context.scale(scaleFactor, scaleFactor);
         m_widget->paint(&context, rect);

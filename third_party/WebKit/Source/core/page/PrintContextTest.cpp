@@ -80,7 +80,7 @@ protected:
     void printSinglePage(SkCanvas& canvas)
     {
         IntRect pageRect(0, 0, kPageWidth, kPageHeight);
-        GraphicsContext context(&canvas);
+        GraphicsContext context(&canvas, nullptr);
         printContext().begin(kPageWidth, kPageHeight);
         printContext().outputLinkAndLinkedDestinations(context, &document(), pageRect);
         printContext().end();

@@ -22,7 +22,7 @@ public:
 
 protected:
     RenderView* renderView() { return m_renderView; }
-    DisplayItemList& rootDisplayItemList() { return renderView()->layer()->graphicsLayerBacking()->displayItemList(); }
+    DisplayItemList& rootDisplayItemList() { return *renderView()->layer()->graphicsLayerBacking()->displayItemList(); }
 
 private:
     virtual void SetUp() override
@@ -48,7 +48,7 @@ void drawClip(GraphicsContext* context, RenderView* renderer, PaintPhase phase, 
 
 TEST_F(LayerClipRecorderTest, LayerClipRecorderTest_Single)
 {
-    GraphicsContext context(nullptr);
+    GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = renderView()->viewRect();
     EXPECT_EQ((size_t)0, rootDisplayItemList().paintList().size());
 

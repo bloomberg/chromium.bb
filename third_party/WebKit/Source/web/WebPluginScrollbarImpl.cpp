@@ -229,7 +229,7 @@ void WebPluginScrollbarImpl::scroll(ScrollDirection direction, ScrollGranularity
 
 void WebPluginScrollbarImpl::paint(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas);
+    GraphicsContext context(canvas, nullptr);
     m_scrollbar->paint(&context, rect);
 }
 

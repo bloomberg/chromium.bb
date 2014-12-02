@@ -56,7 +56,7 @@ GraphicsContext* GraphicsContextRecorder::record(const IntSize& size, bool isCer
     m_isCertainlyOpaque = isCertainlyOpaque;
     m_recorder = adoptPtr(new SkPictureRecorder);
     SkCanvas* canvas = m_recorder->beginRecording(size.width(), size.height(), 0, 0);
-    m_context = adoptPtr(new GraphicsContext(canvas));
+    m_context = adoptPtr(new GraphicsContext(canvas, nullptr));
     m_context->setRegionTrackingMode(isCertainlyOpaque ? GraphicsContext::RegionTrackingOpaque : GraphicsContext::RegionTrackingDisabled);
     m_context->setCertainlyOpaque(isCertainlyOpaque);
     return m_context.get();

@@ -2074,7 +2074,7 @@ TEST_F(WebFrameTest, pageScaleFactorScalesPaintClip)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     EXPECT_RECT_EQ(IntRect(0, 0, 0, 0), context.opaqueRegion().asRect());

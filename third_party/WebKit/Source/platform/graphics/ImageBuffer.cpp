@@ -76,7 +76,7 @@ ImageBuffer::ImageBuffer(PassOwnPtr<ImageBufferSurface> surface)
     , m_client(0)
 {
     if (m_surface->canvas()) {
-        m_context = adoptPtr(new GraphicsContext(m_surface->canvas()));
+        m_context = adoptPtr(new GraphicsContext(m_surface->canvas(), nullptr));
         m_context->setAccelerated(m_surface->isAccelerated());
     }
     m_surface->setImageBuffer(this);

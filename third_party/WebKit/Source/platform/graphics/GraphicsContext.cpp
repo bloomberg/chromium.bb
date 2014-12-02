@@ -90,8 +90,9 @@ struct GraphicsContext::RecordingState {
     RegionTrackingMode m_regionTrackingMode;
 };
 
-GraphicsContext::GraphicsContext(SkCanvas* canvas, DisabledMode disableContextOrPainting)
+GraphicsContext::GraphicsContext(SkCanvas* canvas, DisplayItemList* displayItemList, DisabledMode disableContextOrPainting)
     : m_canvas(canvas)
+    , m_displayItemList(displayItemList)
     , m_paintStateStack()
     , m_paintStateIndex(0)
     , m_annotationMode(0)

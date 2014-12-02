@@ -96,7 +96,7 @@ void WebFontImpl::drawText(WebCanvas* canvas, const WebTextRun& run, const WebFl
     runInfo.from = from;
     runInfo.to = to == -1 ? textRun.length() : to;
     runInfo.bounds = textClipRect;
-    GraphicsContext gc(canvas);
+    GraphicsContext gc(canvas, nullptr);
 
     gc.save();
     gc.setCertainlyOpaque(canvasIsOpaque);

@@ -236,7 +236,6 @@ public:
     // GraphicsContextPainter implementation.
     virtual void paint(GraphicsContext&, const IntRect& clip) override;
     virtual IntSize displayItemListOffset() const override { return offsetFromRenderer(); }
-    virtual DisplayItemList* existingDisplayItemList() const override { return m_displayItemList.get(); }
 
     // WebCompositorAnimationDelegate implementation.
     virtual void notifyAnimationStarted(double monotonicTime, int group) override;
@@ -245,7 +244,7 @@ public:
     // WebLayerScrollClient implementation.
     virtual void didScroll() override;
 
-    DisplayItemList& displayItemList();
+    virtual DisplayItemList* displayItemList() override;
 
 protected:
     String debugName(WebLayer*) const;

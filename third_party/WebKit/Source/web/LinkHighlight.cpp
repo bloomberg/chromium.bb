@@ -240,7 +240,7 @@ void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect,
     if (!m_node || !m_node->renderer())
         return;
 
-    GraphicsContext gc(canvas,
+    GraphicsContext gc(canvas, nullptr,
         contextStatus == WebContentLayerClient::GraphicsContextEnabled ? GraphicsContext::NothingDisabled : GraphicsContext::FullyDisabled);
     IntRect clipRect(IntPoint(webClipRect.x, webClipRect.y), IntSize(webClipRect.width, webClipRect.height));
     gc.clip(clipRect);

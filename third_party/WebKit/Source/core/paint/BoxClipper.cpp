@@ -61,8 +61,8 @@ BoxClipper::BoxClipper(RenderBox& box, const PaintInfo& paintInfo, const LayoutP
         clipDisplayItem->roundedRectClips().append(clipRoundedRect);
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        if (RenderLayer* container = m_box.enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            container->graphicsLayerBacking()->displayItemList().add(clipDisplayItem.release());
+        ASSERT(m_paintInfo.context->displayItemList());
+        m_paintInfo.context->displayItemList()->add(clipDisplayItem.release());
     } else
         clipDisplayItem->replay(paintInfo.context);
 
@@ -79,8 +79,8 @@ BoxClipper::~BoxClipper()
     OwnPtr<EndClipDisplayItem> endClipDisplayItem = adoptPtr(new EndClipDisplayItem(&m_box));
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        if (RenderLayer* container = m_box.enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            container->graphicsLayerBacking()->displayItemList().add(endClipDisplayItem.release());
+        ASSERT(m_paintInfo.context->displayItemList());
+        m_paintInfo.context->displayItemList()->add(endClipDisplayItem.release());
     } else {
         endClipDisplayItem->replay(m_paintInfo.context);
     }

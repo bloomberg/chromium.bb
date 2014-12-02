@@ -30,9 +30,8 @@ LayerClipRecorder::LayerClipRecorder(const RenderLayerModelObject* renderer, Gra
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         clipDisplayItem->replay(graphicsContext);
     } else {
-        if (RenderLayer* container = m_renderer->enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            container->graphicsLayerBacking()->displayItemList().add(clipDisplayItem.release());
-
+        ASSERT(m_graphicsContext->displayItemList());
+        m_graphicsContext->displayItemList()->add(clipDisplayItem.release());
     }
 }
 
@@ -79,8 +78,8 @@ LayerClipRecorder::~LayerClipRecorder()
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         OwnPtr<EndClipDisplayItem> endClip = adoptPtr(new EndClipDisplayItem(m_renderer ? m_renderer->displayItemClient() : nullptr));
-        if (RenderLayer* container = m_renderer->enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            container->graphicsLayerBacking()->displayItemList().add(endClip.release());
+        ASSERT(m_graphicsContext->displayItemList());
+        m_graphicsContext->displayItemList()->add(endClip.release());
     } else {
         m_graphicsContext->restore();
     }

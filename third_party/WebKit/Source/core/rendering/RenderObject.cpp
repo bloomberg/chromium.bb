@@ -1114,7 +1114,7 @@ void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* p
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         if (RenderLayer* container = enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            container->graphicsLayerBacking()->displayItemList().invalidate(displayItemClient());
+            container->graphicsLayerBacking()->displayItemList()->invalidate(displayItemClient());
         setNeedsPaint();
     }
 

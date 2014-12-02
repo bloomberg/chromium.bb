@@ -1,3 +1,7 @@
+crbug.com/438356 virtual/slimmingpaint/fast/block/float/021.html [ ImageOnlyFailure ]
+crbug.com/438356 virtual/slimmingpaint/fast/block/positioning/relative-overflow-block.html [ ImageOnlyFailure ]
+crbug.com/438356 virtual/slimmingpaint/fast/block/positioning/relative-overflow-replaced-float.html [ ImageOnlyFailure ] 
+crbug.com/438356 virtual/slimmingpaint/fast/block/positioning/relative-overflow-replaced.html [ ImageOnlyFailure ]
 
 crbug.com/434560 virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 

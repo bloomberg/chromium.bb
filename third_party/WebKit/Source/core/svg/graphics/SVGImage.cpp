@@ -233,7 +233,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
 
     // Record using a dedicated GC, to avoid inheriting unwanted state (pending color filters
     // for example must be applied atomically during the final fill/composite phase).
-    GraphicsContext recordingContext(0);
+    GraphicsContext recordingContext(nullptr, nullptr);
     recordingContext.beginRecording(spacedTile);
     // When generating an expanded tile, make sure we don't draw into the spacing area.
     if (tile != spacedTile)

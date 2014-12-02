@@ -1327,7 +1327,7 @@ float WebLocalFrameImpl::printPage(int page, WebCanvas* canvas)
 #if ENABLE(PRINTING)
     ASSERT(m_printContext && page >= 0 && frame() && frame()->document());
 
-    GraphicsContext graphicsContext(canvas);
+    GraphicsContext graphicsContext(canvas, nullptr);
     graphicsContext.setPrinting(true);
     return m_printContext->spoolSinglePage(graphicsContext, page);
 #else
@@ -1507,7 +1507,7 @@ void WebLocalFrameImpl::printPagesWithBoundaries(WebCanvas* canvas, const WebSiz
 {
     ASSERT(m_printContext);
 
-    GraphicsContext graphicsContext(canvas);
+    GraphicsContext graphicsContext(canvas, nullptr);
     graphicsContext.setPrinting(true);
 
     m_printContext->spoolAllPagesWithBoundaries(graphicsContext, FloatSize(pageSizeInPixels.width, pageSizeInPixels.height));

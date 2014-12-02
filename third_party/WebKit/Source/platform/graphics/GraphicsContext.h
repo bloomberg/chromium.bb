@@ -54,6 +54,7 @@ struct SkRect;
 
 namespace blink {
 
+class DisplayItemList;
 class DisplayList;
 class ImageBuffer;
 class KURL;
@@ -74,12 +75,14 @@ public:
     // A 0 canvas is allowed, but in such cases the context must only have canvas
     // related commands called when within a beginRecording/endRecording block.
     // Furthermore, save/restore calls must be balanced any time the canvas is 0.
-    explicit GraphicsContext(SkCanvas*, DisabledMode = NothingDisabled);
+    explicit GraphicsContext(SkCanvas*, DisplayItemList*, DisabledMode = NothingDisabled);
 
     ~GraphicsContext();
 
     SkCanvas* canvas() { return m_canvas; }
     const SkCanvas* canvas() const { return m_canvas; }
+
+    DisplayItemList* displayItemList() { return m_displayItemList; }
 
     void resetCanvas(SkCanvas*);
 
@@ -464,6 +467,9 @@ private:
 
     // null indicates painting is contextDisabled. Never delete this object.
     SkCanvas* m_canvas;
+
+    // This being null indicates not to paint into a DisplayItemList, and instead directly into the canvas.
+    DisplayItemList* m_displayItemList;
 
     // Paint states stack. Enables local drawing state change with save()/restore() calls.
     // This state controls the appearance of drawn content.

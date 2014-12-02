@@ -46,70 +46,70 @@ void WebScrollbarThemePainter::paintScrollbarBackground(WebCanvas* canvas, const
     SkRect clip = SkRect::MakeXYWH(rect.x, rect.y, rect.width, rect.height);
     canvas->clipRect(clip);
 
-    GraphicsContext context(canvas);
+    GraphicsContext context(canvas, nullptr);
     context.setCertainlyOpaque(false);
     m_theme->paintScrollbarBackground(&context, m_scrollbar);
 }
 
 void WebScrollbarThemePainter::paintTrackBackground(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas);
+    GraphicsContext context(canvas, nullptr);
     context.setCertainlyOpaque(false);
     m_theme->paintTrackBackground(&context, m_scrollbar, IntRect(rect));
 }
 
 void WebScrollbarThemePainter::paintBackTrackPart(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas);
+    GraphicsContext context(canvas, nullptr);
     context.setCertainlyOpaque(false);
     m_theme->paintTrackPiece(&context, m_scrollbar, IntRect(rect), BackTrackPart);
 }
 
 void WebScrollbarThemePainter::paintForwardTrackPart(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas);
+    GraphicsContext context(canvas, nullptr);
     context.setCertainlyOpaque(false);
     m_theme->paintTrackPiece(&context, m_scrollbar, IntRect(rect), ForwardTrackPart);
 }
 
 void WebScrollbarThemePainter::paintBackButtonStart(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas);
+    GraphicsContext context(canvas, nullptr);
     context.setCertainlyOpaque(false);
     m_theme->paintButton(&context, m_scrollbar, IntRect(rect), BackButtonStartPart);
 }
 
 void WebScrollbarThemePainter::paintBackButtonEnd(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas);
+    GraphicsContext context(canvas, nullptr);
     context.setCertainlyOpaque(false);
     m_theme->paintButton(&context, m_scrollbar, IntRect(rect), BackButtonEndPart);
 }
 
 void WebScrollbarThemePainter::paintForwardButtonStart(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas);
+    GraphicsContext context(canvas, nullptr);
     context.setCertainlyOpaque(false);
     m_theme->paintButton(&context, m_scrollbar, IntRect(rect), ForwardButtonStartPart);
 }
 
 void WebScrollbarThemePainter::paintForwardButtonEnd(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas);
+    GraphicsContext context(canvas, nullptr);
     context.setCertainlyOpaque(false);
     m_theme->paintButton(&context, m_scrollbar, IntRect(rect), ForwardButtonEndPart);
 }
 
 void WebScrollbarThemePainter::paintTickmarks(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas);
+    GraphicsContext context(canvas, nullptr);
     context.setCertainlyOpaque(false);
     m_theme->paintTickmarks(&context, m_scrollbar, IntRect(rect));
 }
 
 void WebScrollbarThemePainter::paintThumb(WebCanvas* canvas, const WebRect& rect)
 {
-    GraphicsContext context(canvas);
+    GraphicsContext context(canvas, nullptr);
     context.setCertainlyOpaque(false);
     m_theme->paintThumb(&context, m_scrollbar, IntRect(rect));
 }

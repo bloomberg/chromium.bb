@@ -161,7 +161,7 @@ PassRefPtr<DisplayList> RenderSVGResourcePattern::asDisplayList(const FloatRect&
         contentTransform = tileTransform;
 
     // Draw the content into a DisplayList.
-    GraphicsContext recordingContext(nullptr);
+    GraphicsContext recordingContext(nullptr, nullptr);
     recordingContext.beginRecording(FloatRect(FloatPoint(), tileBounds.size()));
     recordingContext.concatCTM(tileTransform);
 

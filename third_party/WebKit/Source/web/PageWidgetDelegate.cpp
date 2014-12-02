@@ -65,7 +65,7 @@ void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas*
 {
     if (rect.isEmpty())
         return;
-    GraphicsContext gc(canvas);
+    GraphicsContext gc(canvas, nullptr);
     gc.setCertainlyOpaque(background == Opaque);
     float scaleFactor = page.deviceScaleFactor();
     gc.scale(scaleFactor, scaleFactor);

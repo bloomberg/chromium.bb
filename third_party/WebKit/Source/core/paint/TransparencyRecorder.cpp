@@ -19,8 +19,8 @@ TransparencyRecorder::TransparencyRecorder(GraphicsContext* graphicsContext, con
 {
     OwnPtr<BeginTransparencyDisplayItem> beginTransparencyDisplayItem = adoptPtr(new BeginTransparencyDisplayItem(renderer ? renderer->displayItemClient() : nullptr, DisplayItem::BeginTransparency, blendMode, opacity));
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        if (RenderLayer* container = renderer->enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            container->graphicsLayerBacking()->displayItemList().add(beginTransparencyDisplayItem.release());
+        ASSERT(m_graphicsContext->displayItemList());
+        m_graphicsContext->displayItemList()->add(beginTransparencyDisplayItem.release());
     } else {
         beginTransparencyDisplayItem->replay(graphicsContext);
     }
@@ -30,8 +30,8 @@ TransparencyRecorder::~TransparencyRecorder()
 {
     OwnPtr<EndTransparencyDisplayItem> endTransparencyDisplayItem = adoptPtr(new EndTransparencyDisplayItem(m_renderer ? m_renderer->displayItemClient() : nullptr, DisplayItem::EndTransparency));
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        if (RenderLayer* container = m_renderer->enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            container->graphicsLayerBacking()->displayItemList().add(endTransparencyDisplayItem.release());
+        ASSERT(m_graphicsContext->displayItemList());
+        m_graphicsContext->displayItemList()->add(endTransparencyDisplayItem.release());
     } else {
         endTransparencyDisplayItem->replay(m_graphicsContext);
     }

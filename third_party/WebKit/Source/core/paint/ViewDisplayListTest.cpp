@@ -23,7 +23,7 @@ public:
 
 protected:
     RenderView* renderView() { return m_renderView; }
-    DisplayItemList& rootDisplayItemList() { return renderView()->layer()->graphicsLayerBacking()->displayItemList(); }
+    DisplayItemList& rootDisplayItemList() { return *renderView()->layer()->graphicsLayerBacking()->displayItemList(); }
 
 private:
     virtual void SetUp() override
@@ -74,7 +74,7 @@ void drawClippedRect(GraphicsContext* context, RenderLayerModelObject* renderer,
 
 TEST_F(ViewDisplayListTest, ViewDisplayListTest_NestedRecorders)
 {
-    GraphicsContext context(nullptr);
+    GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = renderView()->viewRect();
 
     drawClippedRect(&context, renderView(), PaintPhaseForeground, bound);
@@ -90,7 +90,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateBasic)
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
     RenderObject* first = document().body()->firstChild()->renderer();
     RenderObject* second = document().body()->firstChild()->firstChild()->renderer();
-    GraphicsContext context(nullptr);
+    GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 300, 300));
     drawRect(&context, second, PaintPhaseChildBlockBackground, FloatRect(100, 100, 200, 200));
@@ -116,7 +116,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateSwapOrder)
     RenderObject* first = document().body()->firstChild()->renderer();
     RenderObject* second = document().body()->firstChild()->firstChild()->renderer();
     RenderObject* unaffected = document().body()->firstChild()->nextSibling()->renderer();
-    GraphicsContext context(nullptr);
+    GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
@@ -143,7 +143,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateNewItemInMiddle)
     RenderObject* first = document().body()->firstChild()->renderer();
     RenderObject* second = document().body()->firstChild()->firstChild()->renderer();
     RenderObject* third = document().body()->firstChild()->firstChild()->firstChild()->renderer();
-    GraphicsContext context(nullptr);
+    GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
@@ -169,7 +169,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateInvalidationWithPhases)
     RenderObject* first = document().body()->firstChild()->renderer();
     RenderObject* second = document().body()->firstChild()->firstChild()->renderer();
     RenderObject* third = document().body()->firstChild()->nextSibling()->renderer();
-    GraphicsContext context(nullptr);
+    GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
@@ -227,7 +227,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddFirstNoOverlap)
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
     RenderObject* first = document().body()->firstChild()->renderer();
     RenderObject* second = document().body()->firstChild()->nextSibling()->renderer();
-    GraphicsContext context(nullptr);
+    GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
     drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
@@ -258,7 +258,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddFirstOverlap)
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
     RenderObject* first = document().body()->firstChild()->renderer();
     RenderObject* second = document().body()->firstChild()->nextSibling()->renderer();
-    GraphicsContext context(nullptr);
+    GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
     drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
@@ -294,7 +294,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddLastNoOverlap)
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
     RenderObject* first = document().body()->firstChild()->renderer();
     RenderObject* second = document().body()->firstChild()->nextSibling()->renderer();
-    GraphicsContext context(nullptr);
+    GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 50));
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 50, 50));
@@ -325,7 +325,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddLastOverlap)
     setBodyInnerHTML("<div id='first'></div><div id='second'></div>");
     RenderObject* first = document().body()->firstChild()->renderer();
     RenderObject* second = document().body()->firstChild()->nextSibling()->renderer();
-    GraphicsContext context(nullptr);
+    GraphicsContext context(nullptr, &rootDisplayItemList());
 
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
@@ -362,7 +362,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
     RenderLayerModelObject* firstRenderer = toRenderLayerModelObject(document().body()->firstChild()->renderer());
     RenderLayerModelObject* secondRenderer = toRenderLayerModelObject(document().body()->firstChild()->firstChild()->renderer());
-    GraphicsContext context(nullptr);
+    GraphicsContext context(nullptr, &rootDisplayItemList());
 
     ClipRect firstClipRect(IntRect(1, 1, 2, 2));
     {

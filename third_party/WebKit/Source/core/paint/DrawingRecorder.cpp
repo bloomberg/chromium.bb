@@ -61,8 +61,8 @@ DrawingRecorder::~DrawingRecorder()
         drawingItem->setClientDebugString(String::format("renderer: \"%p\"", m_renderer));
 #endif
 
-    if (RenderLayer* container = m_renderer->enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-        container->graphicsLayerBacking()->displayItemList().add(drawingItem.release());
+    ASSERT(m_context->displayItemList());
+    m_context->displayItemList()->add(drawingItem.release());
 }
 
 } // namespace blink

@@ -73,7 +73,7 @@ TEST(GraphicsContextTest, trackOpaqueTest)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -130,7 +130,7 @@ TEST(GraphicsContextTest, trackOpaqueClipTest)
     bitmap.allocN32Pixels(400, 400);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -224,7 +224,7 @@ TEST(GraphicsContextTest, trackDisplayListRecording)
     bitmap.allocN32Pixels(100, 100);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -251,7 +251,7 @@ TEST(GraphicsContextTest, trackImageMask)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -289,7 +289,7 @@ TEST(GraphicsContextTest, trackImageMaskWithOpaqueRect)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -329,7 +329,7 @@ TEST(GraphicsContextTest, trackOpaqueJoinTest)
     bitmap.allocN32Pixels(400, 400);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -387,7 +387,7 @@ TEST(GraphicsContextTest, trackOpaqueLineTest)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -480,7 +480,7 @@ TEST(GraphicsContextTest, trackOpaquePathTest)
     bitmap.allocN32Pixels(200, 200);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -538,7 +538,7 @@ TEST(GraphicsContextTest, trackOpaqueImageTest)
     bitmap.allocN32Pixels(200, 200);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -621,7 +621,7 @@ TEST(GraphicsContextTest, trackOpaqueOvalTest)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -676,7 +676,7 @@ TEST(GraphicsContextTest, trackOpaqueRoundedRectTest)
     bitmap.allocN32Pixels(200, 200);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -723,7 +723,7 @@ TEST(GraphicsContextTest, trackOpaqueTextTest)
     SkCanvas canvas(bitmap);
     SkRect textRect = SkRect::MakeWH(width, height);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -772,7 +772,7 @@ TEST(GraphicsContextTest, trackOpaqueWritePixelsTest)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -824,7 +824,7 @@ TEST(GraphicsContextTest, trackOpaqueDrawBitmapTest)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -876,7 +876,7 @@ TEST(GraphicsContextTest, trackOpaqueDrawBitmapRectTest)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -924,7 +924,7 @@ TEST(GraphicsContextTest, contextTransparencyLayerTest)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -958,7 +958,7 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -1003,7 +1003,7 @@ TEST(GraphicsContextTest, PreserveOpaqueOnlyMattersForFirstLayer)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
@@ -1083,7 +1083,7 @@ TEST(GraphicsContextTest, OpaqueRegionForLayerWithNonRectDeviceClip)
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
 
@@ -1125,7 +1125,7 @@ TEST(GraphicsContextTest, OpaqueRegionForLayerWithRectDeviceClip)
 
     Color opaque(1.0f, 0.0f, 0.0f, 1.0f);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
     context.setRegionTrackingMode(GraphicsContext::RegionTrackingOpaque);
 
     context.fillRect(FloatRect(30, 30, 90, 90), opaque, CompositeSourceOver);
@@ -1160,10 +1160,10 @@ TEST(GraphicsContextTest, RecordingTotalMatrix)
     bitmap.allocN32Pixels(400, 400);
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
 
     SkCanvas controlCanvas(400, 400);
-    GraphicsContext controlContext(&controlCanvas);
+    GraphicsContext controlContext(&controlCanvas, nullptr);
 
     EXPECT_EQ(context.getCTM(), controlContext.getCTM());
     DISPATCH2(context, controlContext, scale, 2, 2);
@@ -1194,7 +1194,7 @@ TEST(GraphicsContextTest, RecordingCanvas)
     bitmap.allocN32Pixels(1, 1);
     bitmap.eraseColor(0);
     SkCanvas canvas(bitmap);
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
 
     FloatRect rect(0, 0, 1, 1);
 

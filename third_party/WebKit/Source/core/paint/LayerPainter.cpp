@@ -395,8 +395,8 @@ void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, co
         // the current matrix on the GraphicsContext, which is used for making conditional painting decisions such as anti-aliasing rotated borders.
         beginTransformDisplayItem->replay(context);
         if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-            if (RenderLayer* container = m_renderLayer.enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-                container->graphicsLayerBacking()->displayItemList().add(beginTransformDisplayItem.release());
+            ASSERT(context->displayItemList());
+            context->displayItemList()->add(beginTransformDisplayItem.release());
         }
     }
 
@@ -410,8 +410,8 @@ void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, co
         // FIXME: the same fix applies are as in the FIXME for BeginTransformDisplayItem above.
         endTransformDisplayItem->replay(context);
         if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-            if (RenderLayer* container = m_renderLayer.enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-                container->graphicsLayerBacking()->displayItemList().add(endTransformDisplayItem.release());
+            ASSERT(context->displayItemList());
+            context->displayItemList()->add(endTransformDisplayItem.release());
         }
     }
 }

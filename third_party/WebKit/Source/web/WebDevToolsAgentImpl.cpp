@@ -549,7 +549,7 @@ void WebDevToolsAgentImpl::paintPageOverlay(WebCanvas* canvas)
 {
     InspectorController* ic = inspectorController();
     if (ic) {
-        GraphicsContext context(canvas);
+        GraphicsContext context(canvas, nullptr);
         context.setCertainlyOpaque(false);
         ic->drawHighlight(context);
     }

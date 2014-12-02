@@ -347,7 +347,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent)
     SkCanvas canvas(bitmap);
     canvas.clear(kAlphaRed);
 
-    GraphicsContext context(&canvas);
+    GraphicsContext context(&canvas, nullptr);
 
     // Paint the root of the main frame in the way that CompositedLayerMapping would.
     FrameView* view = m_webViewHelper.webViewImpl()->mainFrameImpl()->frameView();

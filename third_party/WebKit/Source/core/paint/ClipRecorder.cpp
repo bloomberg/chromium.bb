@@ -25,8 +25,8 @@ ClipRecorder::ClipRecorder(RenderLayerModelObject& canvas, const PaintInfo& pain
     OwnPtr<ClipDisplayItem> clipDisplayItem = adoptPtr(new ClipDisplayItem(m_canvas.displayItemClient(), type, pixelSnappedIntRect(clipRect)));
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        if (RenderLayer* container = m_canvas.enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            container->graphicsLayerBacking()->displayItemList().add(clipDisplayItem.release());
+        ASSERT(m_paintInfo.context->displayItemList());
+        m_paintInfo.context->displayItemList()->add(clipDisplayItem.release());
     } else
         clipDisplayItem->replay(paintInfo.context);
 }
@@ -36,8 +36,8 @@ ClipRecorder::~ClipRecorder()
     OwnPtr<EndClipDisplayItem> endClipDisplayItem = adoptPtr(new EndClipDisplayItem(&m_canvas));
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        if (RenderLayer* container = m_canvas.enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            container->graphicsLayerBacking()->displayItemList().add(endClipDisplayItem.release());
+        ASSERT(m_paintInfo.context->displayItemList());
+        m_paintInfo.context->displayItemList()->add(endClipDisplayItem.release());
     } else {
         endClipDisplayItem->replay(m_paintInfo.context);
     }

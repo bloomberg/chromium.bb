@@ -1072,12 +1072,13 @@ void GraphicsLayer::didScroll()
     }
 }
 
-DisplayItemList& GraphicsLayer::displayItemList()
+DisplayItemList* GraphicsLayer::displayItemList()
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
+        return 0;
     if (!m_displayItemList)
         m_displayItemList = adoptPtr(new DisplayItemList());
-    return *m_displayItemList;
+    return m_displayItemList.get();
 }
 
 } // namespace blink

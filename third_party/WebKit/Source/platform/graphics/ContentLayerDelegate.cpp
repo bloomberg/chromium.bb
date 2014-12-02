@@ -58,7 +58,7 @@ void ContentLayerDelegate::paintContents(
     if (UNLIKELY(!annotationsEnabled))
         annotationsEnabled = EventTracer::getTraceCategoryEnabledFlag(TRACE_DISABLED_BY_DEFAULT("blink.graphics_context_annotations"));
 
-    GraphicsContext context(canvas, contextStatus == WebContentLayerClient::GraphicsContextEnabled ? GraphicsContext::NothingDisabled : GraphicsContext::FullyDisabled);
+    GraphicsContext context(canvas, m_painter->displayItemList(), contextStatus == WebContentLayerClient::GraphicsContextEnabled ? GraphicsContext::NothingDisabled : GraphicsContext::FullyDisabled);
     context.setCertainlyOpaque(m_opaque);
     context.setShouldSmoothFonts(canPaintLCDText);
     if (*annotationsEnabled)
@@ -89,8 +89,8 @@ void ContentLayerDelegate::paintContents(
     canvas->restore();
     picture = adoptRef(recorder.endRecording());
 
-    DisplayItemList* displayItemList = m_painter->existingDisplayItemList();
-    if (!displayItemList) {
+    DisplayItemList* displayItemList = m_painter->displayItemList();
+    if (displayItemList->paintList().size() == 0) {
         webDisplayItemList->appendDrawingItem(picture.get(), WebFloatPoint());
         return;
     }
