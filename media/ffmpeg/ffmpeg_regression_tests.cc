@@ -37,7 +37,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "media/base/test_data_util.h"
 
 namespace media {
 
@@ -368,8 +367,7 @@ FLAKY_FFMPEG_TEST_CASE(WEBM_2, "security/uninitialize.webm");
 
 TEST_P(FFmpegRegressionTest, BasicPlayback) {
   if (GetParam().init_status == PIPELINE_OK) {
-    ASSERT_TRUE(Start(GetTestDataFilePath(GetParam().filename),
-                      GetParam().init_status, kHashed));
+    ASSERT_EQ(PIPELINE_OK, Start(GetParam().filename, kHashed));
     Play();
     ASSERT_EQ(WaitUntilEndedOrError(), GetParam().end_status);
     EXPECT_EQ(GetParam().video_md5, GetVideoHash());
@@ -383,15 +381,16 @@ TEST_P(FFmpegRegressionTest, BasicPlayback) {
       Seek(base::TimeDelta::FromMilliseconds(0));
     }
   } else {
-    ASSERT_FALSE(Start(GetTestDataFilePath(GetParam().filename),
-                       GetParam().init_status, kHashed));
+    // Don't bother checking the exact status as we only care that the
+    // pipeline failed to start.
+    EXPECT_NE(PIPELINE_OK, Start(GetParam().filename, kHashed));
     EXPECT_EQ(GetParam().video_md5, GetVideoHash());
     EXPECT_EQ(GetParam().audio_md5, GetAudioHash());
   }
 }
 
 TEST_P(FlakyFFmpegRegressionTest, BasicPlayback) {
-  if (Start(GetTestDataFilePath(GetParam().filename))) {
+  if (Start(GetParam().filename) == PIPELINE_OK) {
     Play();
     WaitUntilEndedOrError();
   }

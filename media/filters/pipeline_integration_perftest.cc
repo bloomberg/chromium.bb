@@ -20,9 +20,9 @@ static void RunPlaybackBenchmark(const std::string& filename,
   for (int i = 0; i < iterations; ++i) {
     PipelineIntegrationTestBase pipeline;
 
-    ASSERT_TRUE(pipeline.Start(GetTestDataFilePath(filename),
-                               PIPELINE_OK,
-                               PipelineIntegrationTestBase::kClockless));
+    ASSERT_EQ(
+        PIPELINE_OK,
+        pipeline.Start(filename, PipelineIntegrationTestBase::kClockless));
 
     base::TimeTicks start = base::TimeTicks::HighResNow();
     pipeline.Play();

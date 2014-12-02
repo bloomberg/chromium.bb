@@ -404,8 +404,7 @@ class MockMediaSource {
   MockMediaSource(const std::string& filename,
                   const std::string& mimetype,
                   int initial_append_size)
-      : file_path_(GetTestDataFilePath(filename)),
-        current_position_(0),
+      : current_position_(0),
         initial_append_size_(initial_append_size),
         mimetype_(mimetype),
         chunk_demuxer_(new ChunkDemuxer(
@@ -416,7 +415,6 @@ class MockMediaSource {
             scoped_refptr<MediaLog>(new MediaLog()),
             true)),
         owned_chunk_demuxer_(chunk_demuxer_) {
-
     file_data_ = ReadTestDataFile(filename);
 
     if (initial_append_size_ == kAppendWholeFile)
@@ -551,7 +549,6 @@ class MockMediaSource {
   MOCK_METHOD0(InitSegmentReceived, void(void));
 
  private:
-  base::FilePath file_path_;
   scoped_refptr<DecoderBuffer> file_data_;
   int current_position_;
   int initial_append_size_;
@@ -578,7 +575,8 @@ class PipelineIntegrationTest
         demuxer_.get(), CreateRenderer(),
         base::Bind(&PipelineIntegrationTest::OnEnded, base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnError, base::Unretained(this)),
-        QuitOnStatusCB(PIPELINE_OK),
+        base::Bind(&PipelineIntegrationTest::OnStatusCallback,
+                   base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnMetadata,
                    base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnBufferingStateChanged,
@@ -588,6 +586,7 @@ class PipelineIntegrationTest
         base::Closure(), base::Bind(&PipelineIntegrationTest::OnAddTextTrack,
                                     base::Unretained(this)));
     message_loop_.Run();
+    EXPECT_EQ(PIPELINE_OK, pipeline_status_);
   }
 
   void StartHashedPipelineWithMediaSource(MockMediaSource* source) {
@@ -616,7 +615,8 @@ class PipelineIntegrationTest
         demuxer_.get(), CreateRenderer(),
         base::Bind(&PipelineIntegrationTest::OnEnded, base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnError, base::Unretained(this)),
-        QuitOnStatusCB(PIPELINE_OK),
+        base::Bind(&PipelineIntegrationTest::OnStatusCallback,
+                   base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnMetadata,
                    base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnBufferingStateChanged,
@@ -630,6 +630,7 @@ class PipelineIntegrationTest
                                        base::Unretained(encrypted_media)));
 
     message_loop_.Run();
+    EXPECT_EQ(PIPELINE_OK, pipeline_status_);
   }
 
   // Verifies that seeking works properly for ChunkDemuxer when the
@@ -665,7 +666,7 @@ class PipelineIntegrationTest
 };
 
 TEST_F(PipelineIntegrationTest, BasicPlayback) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear-320x240.webm"), PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm"));
 
   Play();
 
@@ -673,7 +674,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback) {
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOgg) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear-opus.ogg"), PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-opus.ogg"));
 
   Play();
 
@@ -681,8 +682,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOgg) {
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackHashed) {
-  ASSERT_TRUE(Start(
-      GetTestDataFilePath("bear-320x240.webm"), PIPELINE_OK, kHashed));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed));
 
   Play();
 
@@ -694,8 +694,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed) {
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackLive) {
-  ASSERT_TRUE(Start(
-      GetTestDataFilePath("bear-320x240-live.webm"), PIPELINE_OK, kHashed));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240-live.webm", kHashed));
 
   Play();
 
@@ -711,8 +710,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackLive) {
 }
 
 TEST_F(PipelineIntegrationTest, F32PlaybackHashed) {
-  ASSERT_TRUE(
-      Start(GetTestDataFilePath("sfx_f32le.wav"), PIPELINE_OK, kHashed));
+  ASSERT_EQ(PIPELINE_OK, Start("sfx_f32le.wav", kHashed));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   EXPECT_EQ(std::string(kNullVideoHash), GetVideoHash());
@@ -724,8 +722,8 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackEncrypted) {
   set_need_key_cb(base::Bind(&FakeEncryptedMedia::NeedKey,
                              base::Unretained(&encrypted_media)));
 
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear-320x240-av_enc-av.webm"),
-                    encrypted_media.GetCdmContext()));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240-av_enc-av.webm",
+                               encrypted_media.GetCdmContext()));
 
   Play();
 
@@ -1010,7 +1008,7 @@ TEST_F(PipelineIntegrationTest, MediaSource_ADTS_TimestampOffset) {
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_MP3) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("sfx.mp3"), PIPELINE_OK, kHashed));
+  ASSERT_EQ(PIPELINE_OK, Start("sfx.mp3", kHashed));
 
   Play();
 
@@ -1217,8 +1215,7 @@ TEST_F(PipelineIntegrationTest,
 
 // Verify files which change configuration midstream fail gracefully.
 TEST_F(PipelineIntegrationTest, MidStreamConfigChangesFail) {
-  ASSERT_TRUE(Start(
-      GetTestDataFilePath("midstream_config_change.mp3"), PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("midstream_config_change.mp3"));
   Play();
   ASSERT_EQ(WaitUntilEndedOrError(), PIPELINE_ERROR_DECODE);
 }
@@ -1226,8 +1223,7 @@ TEST_F(PipelineIntegrationTest, MidStreamConfigChangesFail) {
 #endif
 
 TEST_F(PipelineIntegrationTest, BasicPlayback_16x9AspectRatio) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear-320x240-16x9-aspect.webm"),
-                    PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240-16x9-aspect.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
@@ -1398,7 +1394,7 @@ TEST_F(PipelineIntegrationTest, EncryptedPlayback_MP4_CENC_KeyRotation_Audio) {
 #endif
 
 TEST_F(PipelineIntegrationTest, SeekWhilePaused) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear-320x240.webm"), PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm"));
 
   base::TimeDelta duration(pipeline_->GetMediaDuration());
   base::TimeDelta start_seek_time(duration / 4);
@@ -1421,7 +1417,7 @@ TEST_F(PipelineIntegrationTest, SeekWhilePaused) {
 }
 
 TEST_F(PipelineIntegrationTest, SeekWhilePlaying) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear-320x240.webm"), PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm"));
 
   base::TimeDelta duration(pipeline_->GetMediaDuration());
   base::TimeDelta start_seek_time(duration / 4);
@@ -1441,22 +1437,22 @@ TEST_F(PipelineIntegrationTest, SeekWhilePlaying) {
 
 #if defined(USE_PROPRIETARY_CODECS)
 TEST_F(PipelineIntegrationTest, Rotated_Metadata_0) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear_rotate_0.mp4"), PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear_rotate_0.mp4"));
   ASSERT_EQ(VIDEO_ROTATION_0, metadata_.video_rotation);
 }
 
 TEST_F(PipelineIntegrationTest, Rotated_Metadata_90) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear_rotate_90.mp4"), PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear_rotate_90.mp4"));
   ASSERT_EQ(VIDEO_ROTATION_90, metadata_.video_rotation);
 }
 
 TEST_F(PipelineIntegrationTest, Rotated_Metadata_180) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear_rotate_180.mp4"), PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear_rotate_180.mp4"));
   ASSERT_EQ(VIDEO_ROTATION_180, metadata_.video_rotation);
 }
 
 TEST_F(PipelineIntegrationTest, Rotated_Metadata_270) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear_rotate_270.mp4"), PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear_rotate_270.mp4"));
   ASSERT_EQ(VIDEO_ROTATION_270, metadata_.video_rotation);
 }
 #endif
@@ -1481,16 +1477,14 @@ TEST_F(PipelineIntegrationTest, ChunkDemuxerAbortRead_VideoOnly) {
 
 // Verify that Opus audio in WebM containers can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_AudioOnly_Opus_WebM) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear-opus-end-trimming.webm"),
-                    PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-opus-end-trimming.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
 // Verify that VP9 video in WebM containers can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_VideoOnly_VP9_WebM) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp9.webm"),
-                    PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp9.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
@@ -1498,16 +1492,14 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VideoOnly_VP9_WebM) {
 // Verify that VP9 video and Opus audio in the same WebM container can be played
 // back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_VP9_Opus_WebM) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp9-opus.webm"),
-                    PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp9-opus.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
 // Verify that VP8 video with alpha channel can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_WebM) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp8a.webm"),
-                    PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp8a.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   EXPECT_EQ(last_video_frame_format_, VideoFrame::YV12A);
@@ -1515,8 +1507,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_WebM) {
 
 // Verify that VP8A video with odd width/height can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_Odd_WebM) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp8a-odd-dimensions.webm"),
-                    PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp8a-odd-dimensions.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   EXPECT_EQ(last_video_frame_format_, VideoFrame::YV12A);
@@ -1524,8 +1515,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_Odd_WebM) {
 
 // Verify that VP9 video with odd width/height can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_VP9_Odd_WebM) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp9-odd-dimensions.webm"),
-                    PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp9-odd-dimensions.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
@@ -1533,16 +1523,14 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VP9_Odd_WebM) {
 // Verify that VP8 video with inband text track can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_VP8_WebVTT_WebM) {
   EXPECT_CALL(*this, OnAddTextTrack(_, _));
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp8-webvtt.webm"),
-                    PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp8-webvtt.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
 // Verify that VP9 video with 4:4:4 subsampling can be played back.
 TEST_F(PipelineIntegrationTest, P444_VP9_WebM) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear-320x240-P444.webm"),
-                    PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240-P444.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   EXPECT_EQ(last_video_frame_format_, VideoFrame::YV24);
@@ -1550,8 +1538,7 @@ TEST_F(PipelineIntegrationTest, P444_VP9_WebM) {
 
 // Verify that videos with an odd frame size playback successfully.
 TEST_F(PipelineIntegrationTest, BasicPlayback_OddVideoSize) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("butterfly-853x480.webm"),
-                    PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("butterfly-853x480.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
@@ -1559,7 +1546,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_OddVideoSize) {
 // Verify that OPUS audio in a webm which reports a 44.1kHz sample rate plays
 // correctly at 48kHz
 TEST_F(PipelineIntegrationTest, BasicPlayback_Opus441kHz) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("sfx-opus-441.webm"), PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("sfx-opus-441.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   EXPECT_EQ(48000,
@@ -1587,7 +1574,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus441kHz) {
 // Ensures audio-only playback with missing or negative timestamps works.  Tests
 // the common live-streaming case for chained ogg.  See http://crbug.com/396864.
 TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOgg) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("double-sfx.ogg"), PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("double-sfx.ogg"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   ASSERT_EQ(base::TimeDelta(), demuxer_->GetStartTime());
@@ -1596,7 +1583,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOgg) {
 // Ensures audio-video playback with missing or negative timestamps fails softly
 // instead of crashing.  See http://crbug.com/396864.
 TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOggVideo) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("double-bear.ogv"), PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("double-bear.ogv"));
   Play();
   EXPECT_EQ(PIPELINE_ERROR_DECODE, WaitUntilEndedOrError());
   ASSERT_EQ(base::TimeDelta(), demuxer_->GetStartTime());
@@ -1604,8 +1591,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackChainedOggVideo) {
 
 // Tests that we signal ended even when audio runs longer than video track.
 TEST_F(PipelineIntegrationTest, BasicPlaybackAudioLongerThanVideo) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear_audio_longer_than_video.ogv"),
-                    PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear_audio_longer_than_video.ogv"));
   // Audio track is 2000ms. Video track is 1001ms. Duration should be higher
   // of the two.
   EXPECT_EQ(2000, pipeline_->GetMediaDuration().InMilliseconds());
@@ -1615,8 +1601,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackAudioLongerThanVideo) {
 
 // Tests that we signal ended even when audio runs shorter than video track.
 TEST_F(PipelineIntegrationTest, BasicPlaybackAudioShorterThanVideo) {
-  ASSERT_TRUE(Start(GetTestDataFilePath("bear_audio_shorter_than_video.ogv"),
-                    PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("bear_audio_shorter_than_video.ogv"));
   // Audio track is 500ms. Video track is 1001ms. Duration should be higher of
   // the two.
   EXPECT_EQ(1001, pipeline_->GetMediaDuration().InMilliseconds());
@@ -1625,8 +1610,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackAudioShorterThanVideo) {
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackPositiveStartTime) {
-  ASSERT_TRUE(
-      Start(GetTestDataFilePath("nonzero-start-time.webm"), PIPELINE_OK));
+  ASSERT_EQ(PIPELINE_OK, Start("nonzero-start-time.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   ASSERT_EQ(base::TimeDelta::FromMicroseconds(396000),
