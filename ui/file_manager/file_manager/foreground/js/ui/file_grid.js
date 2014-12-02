@@ -216,7 +216,7 @@ FileGrid.decorateThumbnailBox = function(
   var locationInfo = volumeManager.getLocationInfo(entry);
   box.className = 'img-container';
 
-  if (importer.isEligibleEntry(entry, volumeManager)) {
+  if (importer.isEligibleEntry(volumeManager, entry)) {
     historyLoader.getHistory().then(
         FileGrid.applyHistoryBadges_.bind(
             null,

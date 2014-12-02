@@ -10,6 +10,8 @@
  * @param {MetadataCache} metadataCache Metadata cache.
  * @param {VolumeManagerWrapper} volumeManager Volume manager.
  * @param {!importer.HistoryLoader} historyLoader
+ * @param {function(string): boolean} commandEnabledTest A function
+ *     that returns true if the named command is enabled.
  * @constructor
  * @extends {cr.EventTarget}
  */
@@ -17,7 +19,8 @@ var PreviewPanel = function(element,
                             visibilityType,
                             metadataCache,
                             volumeManager,
-                            historyLoader) {
+                            historyLoader,
+                            commandEnabledTest) {
   /**
    * The cached height of preview panel.
    * @type {number}
@@ -95,6 +98,21 @@ var PreviewPanel = function(element,
    * @private
    */
   this.volumeManager_ = volumeManager;
+
+  /**
+   * List of command ids that are should be checked when determining
+   * auto-visibility.
+   *
+   * @private {Array.<string>}
+   */
+  this.autoVisibilityCommandIds_ = [];
+
+  /**
+   * A function that returns true if a named command is enabled.
+   * This is used when determining visibility of the preview panel.
+   * @private {function(string): boolean}
+   */
+  this.commandEnabled_ = commandEnabledTest;
 
   cr.EventTarget.call(this);
 };
@@ -186,10 +204,43 @@ PreviewPanel.prototype = {
 PreviewPanel.prototype.initialize = function() {
   this.element_.addEventListener('webkitTransitionEnd',
                                  this.onTransitionEnd_.bind(this));
+
+  this.autoVisibilityCommandIds_ = this.findAutoVisibilityCommandIds_();
   this.updateVisibility_();
   // Also update the preview area contents, because the update is suppressed
   // while the visibility is hiding or hidden.
   this.updatePreviewArea_();
+};
+
+/**
+ * @return {Array.<string>} List of command ids for the "AUTO" visibility type
+ * (which currently happen to correspond to "full-page" commands).
+ * @private
+ */
+PreviewPanel.prototype.findAutoVisibilityCommandIds_ = function() {
+  if (this.visibilityType_ != PreviewPanel.VisibilityType.AUTO) {
+    return [];
+  }
+  // Find all relevent command elements. Convert the resulting NodeList
+  // to an Array.
+  var elements = Array.prototype.slice.call(
+      this.element_.querySelectorAll('div[class~=buttonbar] button[command]'));
+
+  return elements.map(
+      function(e) {
+        // We can assume that the command attribute starts with '#';
+        return e.getAttribute('command').substring(1);
+      });
+};
+
+/**
+ * @return {boolean} True if one of the known "auto visibility"
+ *     (non-dialog mode) commands is enabled.
+ * @private
+ */
+PreviewPanel.prototype.hasEnabledAutoVisibilityCommand_ = function() {
+  return this.autoVisibilityCommandIds_.some(
+      this.commandEnabled_.bind(this));
 };
 
 /**
@@ -216,7 +267,8 @@ PreviewPanel.prototype.updateVisibility_ = function() {
       newVisible = true;
       break;
     case PreviewPanel.VisibilityType.AUTO:
-      newVisible = this.selection_.entries.length !== 0;
+      newVisible = this.selection_.entries.length !== 0 ||
+          this.hasEnabledAutoVisibilityCommand_();
       break;
     case PreviewPanel.VisibilityType.ALWAYS_HIDDEN:
       newVisible = false;

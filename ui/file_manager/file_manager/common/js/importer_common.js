@@ -15,19 +15,44 @@ importer.Destination = {
 /**
  * Returns true if the entry is cloud import eligible.
  *
+ * @param {VolumeManagerCommon.VolumeInfoProvider} volumeInfoProvider
  * @param {Entry} entry
- * @param  {!VolumeManagerCommon.VolumeInfoProvider} volumeInfoProvider
  * @return {boolean}
  */
-importer.isEligibleEntry = function(entry, volumeInfoProvider) {
-  // TODO(smckay): Check that entry is for media type.
-  if (entry && entry.isFile) {
-    var info = volumeInfoProvider.getVolumeInfo(entry);
-    if (info && info.volumeType == VolumeManagerCommon.VolumeType.REMOVABLE) {
-      return entry.fullPath.indexOf('/DCIM/') == 0;
+importer.isEligibleEntry = function(volumeInfoProvider, entry) {
+  assert(volumeInfoProvider != null);
+  if (entry && entry.isFile && FileType.isImageOrVideo(entry)) {
+    var volumeInfo = volumeInfoProvider.getVolumeInfo(entry);
+    if (volumeInfo &&
+      volumeInfo.volumeType == VolumeManagerCommon.VolumeType.REMOVABLE) {
+      return entry.fullPath.indexOf('/DCIM/') === 0;
     }
   }
   return false;
+};
+
+/**
+ * Returns true if the entry represents a media directory for the purposes
+ * of cloud import.
+ *
+ * @param {Entry} entry
+ * @param  {VolumeManagerCommon.VolumeInfoProvider} volumeInfoProvider
+ * @return {boolean}
+ */
+importer.isMediaDirectory = function(entry, volumeInfoProvider) {
+  if (!entry || !entry.isDirectory || !entry.fullPath) {
+    return false;
+  }
+
+  if (entry.fullPath !== '/DCIM') {
+    return false;
+  }
+
+  assert(volumeInfoProvider != null);
+  var volumeInfo = volumeInfoProvider.getVolumeInfo(entry);
+  return !!volumeInfo &&
+      volumeInfo.isType(VolumeManagerCommon.VolumeType.REMOVABLE) &&
+      volumeInfo.hasMedia;
 };
 
 /**
@@ -35,10 +60,30 @@ importer.isEligibleEntry = function(entry, volumeInfoProvider) {
  *     is enabled.
  */
 importer.importEnabled = function() {
+  // TODO(smckay): Also verify that Drive is enabled and we're
+  // not running in guest mode.
   return new Promise(
       function(resolve, reject) {
         chrome.commandLinePrivate.hasSwitch(
             'enable-cloud-backup',
-            resolve);
+            /**
+             * @param {boolean} enabled
+             */
+            function(enabled) {
+              importer.lastKnownImportEnabled = enabled;
+              resolve(enabled);
+            });
       });
 };
+
+/**
+ * The last known state for the cloud import feature being enabled.
+ *
+ * <p>NOTE: The "command" framework is fully synchronous, meaning
+ * we have to answer questions, like "can execute" synchronously.
+ * For this reason we cache the last result from importer.importEnabled().
+ * It might be wrong once, but it won't be wrong for long.
+ *
+ * @type {boolean}
+ */
+importer.lastKnownImportEnabled = false;

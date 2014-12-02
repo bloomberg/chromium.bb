@@ -74,7 +74,9 @@ MockVolumeManager.createMockVolumeInfo = function(type, volumeId, label) {
       '',     // devicePath
       false,  // isReadonly
       {isCurrentProfile: true, displayName: ''},  // profile
-      label);    // label
+      label,  // label
+      '',     // extensionId
+      false); // hasMedia
 
   return volumeInfo;
 };
