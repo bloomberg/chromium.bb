@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/cancelable_callback.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/observer_list.h"
@@ -86,7 +87,6 @@ class DomStorageDispatcher;
 class EmbeddedWorkerDispatcher;
 class GpuChannelHost;
 class IndexedDBDispatcher;
-class InputEventFilter;
 class InputHandlerManager;
 class MediaStreamCenter;
 class MemoryObserver;
@@ -547,8 +547,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // regardless of whether |compositor_thread_| is overriden.
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy_;
 
-  // May be null if unused by the |input_handler_manager_|.
-  scoped_refptr<InputEventFilter> input_event_filter_;
+  base::CancelableCallback<void(const IPC::Message&)> main_input_callback_;
+  scoped_refptr<IPC::MessageFilter> input_event_filter_;
   scoped_ptr<InputHandlerManager> input_handler_manager_;
   scoped_refptr<CompositorForwardingMessageFilter> compositor_message_filter_;
 

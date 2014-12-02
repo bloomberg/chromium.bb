@@ -126,18 +126,17 @@ void AddEventsToFilter(IPC::MessageFilter* message_filter,
 class InputEventFilterTest : public testing::Test {
  public:
   void SetUp() override {
-    filter_ = new InputEventFilter(&message_recorder_,
-                                   base::MessageLoopProxy::current(),
-                                   message_loop_.message_loop_proxy());
-    filter_->SetBoundHandler(
-        base::Bind(&InputEventRecorder::HandleInputEvent,
-            base::Unretained(&event_recorder_)));
+    filter_ = new InputEventFilter(
+        base::Bind(base::IgnoreResult(&IPCMessageRecorder::OnMessageReceived),
+                   base::Unretained(&message_recorder_)),
+        base::MessageLoopProxy::current(), message_loop_.message_loop_proxy());
+    filter_->SetBoundHandler(base::Bind(&InputEventRecorder::HandleInputEvent,
+                                        base::Unretained(&event_recorder_)));
 
     event_recorder_.set_filter(filter_.get());
 
     filter_->OnFilterAdded(&ipc_sink_);
   }
-
 
  protected:
   base::MessageLoop message_loop_;

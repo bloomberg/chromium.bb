@@ -80,6 +80,7 @@
 #include "content/renderer/gpu/compositor_output_surface.h"
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager.h"
+#include "content/renderer/input/main_thread_input_event_filter.h"
 #include "content/renderer/media/aec_dump_message_filter.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
@@ -670,6 +671,8 @@ void RenderThreadImpl::Shutdown() {
   audio_message_filter_ = NULL;
 
   compositor_thread_.reset();
+
+  main_input_callback_.Cancel();
   input_handler_manager_.reset();
   if (input_event_filter_.get()) {
     RemoveFilter(input_event_filter_.get());
@@ -896,6 +899,10 @@ const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   main_thread_compositor_task_runner_ =
       renderer_scheduler()->CompositorTaskRunner();
 
+  main_input_callback_.Reset(
+      base::Bind(base::IgnoreResult(&RenderThreadImpl::OnMessageReceived),
+                 base::Unretained(this)));
+
   bool enable = !command_line.HasSwitch(switches::kDisableThreadedCompositing);
   if (enable) {
 #if defined(OS_ANDROID)
@@ -926,17 +933,27 @@ const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     }
 #endif
     if (!input_handler_manager_client) {
-      input_event_filter_ =
-          new InputEventFilter(this,
+      scoped_refptr<InputEventFilter> compositor_input_event_filter(
+          new InputEventFilter(main_input_callback_.callback(),
                                main_thread_compositor_task_runner_,
-                               compositor_message_loop_proxy_);
-      AddFilter(input_event_filter_.get());
-      input_handler_manager_client = input_event_filter_.get();
+                               compositor_message_loop_proxy_));
+      input_handler_manager_client = compositor_input_event_filter.get();
+      input_event_filter_ = compositor_input_event_filter;
     }
     input_handler_manager_.reset(new InputHandlerManager(
         compositor_message_loop_proxy_, input_handler_manager_client,
         renderer_scheduler()));
   }
+
+  if (!input_event_filter_.get()) {
+    // Always provide an input event filter implementation to ensure consistent
+    // input event scheduling and prioritization.
+    // TODO(jdduke): Merge InputEventFilter, InputHandlerManager and
+    // MainThreadInputEventFilter, crbug.com/436057.
+    input_event_filter_ = new MainThreadInputEventFilter(
+        main_input_callback_.callback(), main_thread_compositor_task_runner_);
+  }
+  AddFilter(input_event_filter_.get());
 
   scoped_refptr<base::MessageLoopProxy> compositor_impl_side_loop;
   if (enable)

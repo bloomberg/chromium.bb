@@ -40,7 +40,7 @@ const char* GetInputMessageTypeName(const IPC::Message& message) {
 namespace content {
 
 InputEventFilter::InputEventFilter(
-    IPC::Listener* main_listener,
+    const base::Callback<void(const IPC::Message&)>& main_listener,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
     const scoped_refptr<base::MessageLoopProxy>& target_loop)
     : main_task_runner_(main_task_runner),
@@ -127,10 +127,6 @@ InputEventFilter::~InputEventFilter() {
   DCHECK(!current_overscroll_params_);
 }
 
-void InputEventFilter::ForwardToMainListener(const IPC::Message& message) {
-  main_listener_->OnMessageReceived(message);
-}
-
 void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   DCHECK(!handler_.is_null());
   DCHECK(target_loop_->BelongsToCurrentThread());
@@ -142,9 +138,7 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
         "input",
         "InputEventFilter::ForwardToHandler::ForwardToMainListener",
         TRACE_EVENT_SCOPE_THREAD);
-    main_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&InputEventFilter::ForwardToMainListener, this, message));
+    main_task_runner_->PostTask(FROM_HERE, base::Bind(main_listener_, message));
     return;
   }
 
@@ -176,9 +170,7 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
         TRACE_EVENT_SCOPE_THREAD);
     IPC::Message new_msg = InputMsg_HandleInputEvent(
         routing_id, event, latency_info, is_keyboard_shortcut);
-    main_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&InputEventFilter::ForwardToMainListener, this, new_msg));
+    main_task_runner_->PostTask(FROM_HERE, base::Bind(main_listener_, new_msg));
     return;
   }
 

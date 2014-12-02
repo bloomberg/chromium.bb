@@ -201,6 +201,8 @@
       'renderer/input/input_handler_wrapper.h',
       'renderer/input/input_scroll_elasticity_controller.cc',
       'renderer/input/input_scroll_elasticity_controller.h',
+      'renderer/input/main_thread_input_event_filter.cc',
+      'renderer/input/main_thread_input_event_filter.h',
       'renderer/internal_document_state_data.cc',
       'renderer/internal_document_state_data.h',
       'renderer/java/gin_java_bridge_dispatcher.cc',
