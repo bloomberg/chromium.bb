@@ -20,17 +20,6 @@
 // cause any kind of warnings or errors under tooling.
 //
 // Frame hashes must be generated with --video-threads=1 for correctness.
-//
-// Known issues:
-//    Cr47325 will generate an UninitValue error under Valgrind inside of the
-//    MD5 hashing code.  The error occurs due to some problematic error
-//    resilence code for H264 inside of FFmpeg.  See http://crbug.com/119020
-//
-//    Some OGG files leak ~30 bytes of memory, upstream tracking bug:
-//    https://ffmpeg.org/trac/ffmpeg/ticket/1244
-//
-//    Some OGG files leak hundreds of kilobytes of memory, upstream bug:
-//    https://ffmpeg.org/trac/ffmpeg/ticket/1931
 
 #include "media/filters/pipeline_integration_test_base.h"
 
@@ -247,65 +236,6 @@ FFMPEG_TEST_CASE(WEBM_4, "security/out.webm.68798.1929",
 FFMPEG_TEST_CASE(WEBM_5, "frame_size_change.webm", PIPELINE_OK,
                  PIPELINE_OK, "d8fcf2896b7400a2261bac9e9ea930f8",
                  kNullAudioHash);
-
-// Audio Functional Tests
-FFMPEG_TEST_CASE(AUDIO_GAMING_0, "gaming/a_220_00.mp3", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "0.36,1.25,2.98,4.29,4.19,2.76,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_1, "gaming/a_220_00_v2.ogg", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "2.17,3.31,5.15,6.33,5.97,4.35,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_2, "gaming/ai_laser1.ogg", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "7.70,10.81,13.19,10.07,7.39,7.56,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_3, "gaming/ai_laser2.ogg", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "5.99,8.04,9.71,8.69,7.81,7.52,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_4, "gaming/ai_laser3.ogg", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "-0.32,1.44,3.75,5.88,6.32,3.22,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_5, "gaming/ai_laser4.ogg", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "4.75,4.16,2.21,3.01,5.51,6.11,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_6, "gaming/ai_laser5.ogg", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "6.04,7.46,8.78,7.32,4.16,3.97,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_7, "gaming/footstep1.ogg", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "-0.50,0.29,2.35,4.79,5.14,2.24,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_8, "gaming/footstep3.ogg", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "-2.87,-3.05,-4.10,-3.20,-2.20,-2.20,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_9, "gaming/footstep4.ogg", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "10.35,10.74,11.60,12.83,12.69,10.67,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_10, "gaming/laser1.ogg", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "-9.48,-12.94,-1.75,7.66,5.61,-0.58,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_11, "gaming/laser2.ogg", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "-7.53,-6.28,3.37,0.73,-5.83,-4.70,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_12, "gaming/laser3.ogg", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "-13.62,-6.55,2.52,-10.10,-10.68,-5.43,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_13, "gaming/leg1.ogg", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "5.62,5.79,5.81,5.60,6.18,6.15,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_14, "gaming/leg2.ogg", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "-0.88,1.32,2.74,3.07,0.88,-0.03,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_15, "gaming/leg3.ogg", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "17.77,18.59,19.57,18.84,17.62,17.22,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_16, "gaming/lock_on.ogg", PIPELINE_OK,
-                 PIPELINE_OK, kNullVideoHash,
-                 "3.08,-4.33,-5.04,-0.24,1.83,5.16,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_17, "gaming/enemy_lock_on.ogg",
-                 PIPELINE_OK, PIPELINE_OK, kNullVideoHash,
-                 "-2.24,-1.00,-2.75,-0.87,1.11,-0.58,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_18, "gaming/rocket_launcher.mp3",
-                 PIPELINE_OK, PIPELINE_OK, kNullVideoHash,
-                 "-3.08,0.18,2.49,1.98,-2.20,-4.74,");
 
 // Allocate gigabytes of memory, likely can't be run on 32bit machines.
 FFMPEG_TEST_CASE(BIG_MEM_1, "security/bigmem1.mov",
