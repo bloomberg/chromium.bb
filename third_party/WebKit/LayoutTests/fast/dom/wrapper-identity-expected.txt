@@ -14,7 +14,6 @@ PASS var object = new String(); isEqualJS(object, object); is true
 PASS var object = window['CSSPrimitiveValue']; isEqualJS(object, object); is true
 PASS var object = window['CSSRule']; isEqualJS(object, object); is true
 PASS var object = window['CSSStyleDeclaration']; isEqualJS(object, object); is true
-PASS var object = window['CSSCharsetRule']; isEqualJS(object, object); is true
 PASS var object = window['CSSImportRule']; isEqualJS(object, object); is true
 PASS var object = window['CSSMediaRule']; isEqualJS(object, object); is true
 PASS var object = window['CSSFontFaceRule']; isEqualJS(object, object); is true

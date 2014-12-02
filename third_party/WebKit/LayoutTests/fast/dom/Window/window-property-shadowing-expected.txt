@@ -65,7 +65,6 @@ PASS: XSLTProcessor successfully shadowed
 PASS: StyleSheet successfully shadowed
 PASS: CSSStyleSheet successfully shadowed
 PASS: CSSRule successfully shadowed
-PASS: CSSCharsetRule successfully shadowed
 PASS: CSSFontFaceRule successfully shadowed
 PASS: CSSImportRule successfully shadowed
 PASS: CSSMediaRule successfully shadowed

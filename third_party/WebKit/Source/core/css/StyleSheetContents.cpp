@@ -75,7 +75,6 @@ StyleSheetContents::StyleSheetContents(StyleRuleImport* ownerRule, const String&
 StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
     : m_ownerRule(nullptr)
     , m_originalURL(o.m_originalURL)
-    , m_encodingFromCharsetRule(o.m_encodingFromCharsetRule)
     , m_importRules(o.m_importRules.size())
     , m_childRules(o.m_childRules.size())
     , m_namespaces(o.m_namespaces)
@@ -146,9 +145,8 @@ bool StyleSheetContents::isCacheable() const
 
 void StyleSheetContents::parserAppendRule(PassRefPtrWillBeRawPtr<StyleRuleBase> rule)
 {
-    ASSERT(!rule->isCharsetRule());
     if (rule->isImportRule()) {
-        // Parser enforces that @import rules come before anything else except @charset.
+        // Parser enforces that @import rules come before anything else
         ASSERT(m_childRules.isEmpty());
         StyleRuleImport* importRule = toStyleRuleImport(rule.get());
         if (importRule->mediaQueries())
@@ -179,31 +177,16 @@ StyleRuleBase* StyleSheetContents::ruleAt(unsigned index) const
 {
     ASSERT_WITH_SECURITY_IMPLICATION(index < ruleCount());
 
-    unsigned childVectorIndex = index;
-    if (hasCharsetRule()) {
-        if (index == 0)
-            return 0;
-        --childVectorIndex;
-    }
-    if (childVectorIndex < m_importRules.size())
-        return m_importRules[childVectorIndex].get();
+    if (index < m_importRules.size())
+        return m_importRules[index].get();
 
-    childVectorIndex -= m_importRules.size();
-    return m_childRules[childVectorIndex].get();
+    index -= m_importRules.size();
+    return m_childRules[index].get();
 }
 
 unsigned StyleSheetContents::ruleCount() const
 {
-    unsigned result = 0;
-    result += hasCharsetRule() ? 1 : 0;
-    result += m_importRules.size();
-    result += m_childRules.size();
-    return result;
-}
-
-void StyleSheetContents::clearCharsetRule()
-{
-    m_encodingFromCharsetRule = String();
+    return m_importRules.size() + m_childRules.size();
 }
 
 void StyleSheetContents::clearRules()
@@ -214,34 +197,14 @@ void StyleSheetContents::clearRules()
     }
     m_importRules.clear();
     m_childRules.clear();
-    clearCharsetRule();
-}
-
-void StyleSheetContents::parserSetEncodingFromCharsetRule(const String& encoding)
-{
-    // Parser enforces that there is ever only one @charset.
-    ASSERT(m_encodingFromCharsetRule.isNull());
-    m_encodingFromCharsetRule = encoding;
 }
 
 bool StyleSheetContents::wrapperInsertRule(PassRefPtrWillBeRawPtr<StyleRuleBase> rule, unsigned index)
 {
     ASSERT(m_isMutable);
     ASSERT_WITH_SECURITY_IMPLICATION(index <= ruleCount());
-    // Parser::parseRule doesn't currently allow @charset so we don't need to deal with it.
-    ASSERT(!rule->isCharsetRule());
 
-    unsigned childVectorIndex = index;
-    // m_childRules does not contain @charset which is always in index 0 if it exists.
-    if (hasCharsetRule()) {
-        if (childVectorIndex == 0) {
-            // Nothing can be inserted before @charset.
-            return false;
-        }
-        --childVectorIndex;
-    }
-
-    if (childVectorIndex < m_importRules.size() || (childVectorIndex == m_importRules.size() && rule->isImportRule())) {
+    if (index < m_importRules.size() || (index == m_importRules.size() && rule->isImportRule())) {
         // Inserting non-import rule before @import is not allowed.
         if (!rule->isImportRule())
             return false;
@@ -250,9 +213,9 @@ bool StyleSheetContents::wrapperInsertRule(PassRefPtrWillBeRawPtr<StyleRuleBase>
         if (importRule->mediaQueries())
             setHasMediaQueries();
 
-        m_importRules.insert(childVectorIndex, importRule);
-        m_importRules[childVectorIndex]->setParentStyleSheet(this);
-        m_importRules[childVectorIndex]->requestStyleSheet();
+        m_importRules.insert(index, importRule);
+        m_importRules[index]->setParentStyleSheet(this);
+        m_importRules[index]->requestStyleSheet();
         // FIXME: Stylesheet doesn't actually change meaningfully before the imported sheets are loaded.
         return true;
     }
@@ -263,11 +226,11 @@ bool StyleSheetContents::wrapperInsertRule(PassRefPtrWillBeRawPtr<StyleRuleBase>
     if (rule->isMediaRule())
         setHasMediaQueries();
 
-    childVectorIndex -= m_importRules.size();
+    index -= m_importRules.size();
 
     if (rule->isFontFaceRule())
         setHasFontFaceRule(true);
-    m_childRules.insert(childVectorIndex, rule);
+    m_childRules.insert(index, rule);
     return true;
 }
 
@@ -276,26 +239,18 @@ void StyleSheetContents::wrapperDeleteRule(unsigned index)
     ASSERT(m_isMutable);
     ASSERT_WITH_SECURITY_IMPLICATION(index < ruleCount());
 
-    unsigned childVectorIndex = index;
-    if (hasCharsetRule()) {
-        if (childVectorIndex == 0) {
-            clearCharsetRule();
-            return;
-        }
-        --childVectorIndex;
-    }
-    if (childVectorIndex < m_importRules.size()) {
-        m_importRules[childVectorIndex]->clearParentStyleSheet();
-        if (m_importRules[childVectorIndex]->isFontFaceRule())
-            notifyRemoveFontFaceRule(toStyleRuleFontFace(m_importRules[childVectorIndex].get()));
-        m_importRules.remove(childVectorIndex);
+    if (index < m_importRules.size()) {
+        m_importRules[index]->clearParentStyleSheet();
+        if (m_importRules[index]->isFontFaceRule())
+            notifyRemoveFontFaceRule(toStyleRuleFontFace(m_importRules[index].get()));
+        m_importRules.remove(index);
         return;
     }
-    childVectorIndex -= m_importRules.size();
+    index -= m_importRules.size();
 
-    if (m_childRules[childVectorIndex]->isFontFaceRule())
-        notifyRemoveFontFaceRule(toStyleRuleFontFace(m_childRules[childVectorIndex].get()));
-    m_childRules.remove(childVectorIndex);
+    if (m_childRules[index]->isFontFaceRule())
+        notifyRemoveFontFaceRule(toStyleRuleFontFace(m_childRules[index].get()));
+    m_childRules.remove(index);
 }
 
 void StyleSheetContents::parserAddNamespace(const AtomicString& prefix, const AtomicString& uri)

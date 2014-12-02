@@ -12,9 +12,6 @@
         @keyframes name { }
         @page { }
     </style>
-    <!-- @charset must be the first rule per spec, and additionally
-         with no leading whitespace per our parser. -->
-    <style>@charset "UTF-8";</style>
     <script>
         function printOut(msg) {
             var console = document.getElementById("console");
@@ -58,7 +55,6 @@
             var mediaRule = rules[1];
             var keyframesRule = rules[2];
             var pageRule = rules[3];
-            var charsetRule = document.styleSheets[2].cssRules[0];
             var style = rule.style;
             var mediaList = mediaRule.media;
 
@@ -69,13 +65,6 @@
                     attributes: [
                          // 'null' is not a valid rule, so the setter does nothing.
                         {name: 'cssText', expectedNull: '.foo { color: black; }'}
-                    ]
-                },
-                {
-                    type: 'CSSCharsetRule',
-                    elementToUse: charsetRule,
-                    attributes: [
-                        {name: 'encoding', expectedNull: 'null'}
                     ]
                 },
                 {

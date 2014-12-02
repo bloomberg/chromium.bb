@@ -465,24 +465,10 @@ semi_or_eof:
   | TOKEN_EOF
   ;
 
-before_charset_rule:
-  /* empty */ {
-      parser->startRule();
-      parser->startRuleHeader(CSSRuleSourceData::CHARSET_RULE);
-  }
-
 maybe_charset:
     /* empty */
-  | before_charset_rule CHARSET_SYM maybe_space STRING maybe_space semi_or_eof {
-       if (parser->m_styleSheet)
-           parser->m_styleSheet->parserSetEncodingFromCharsetRule($4);
-       parser->endRuleHeader();
-       parser->startRuleBody();
-       parser->endRule(true);
-    }
-  | before_charset_rule CHARSET_SYM at_rule_recovery {
-       parser->endRule(false);
-  }
+  | CHARSET_SYM maybe_space STRING maybe_space semi_or_eof
+  | CHARSET_SYM at_rule_recovery
   ;
 
 rule_list:

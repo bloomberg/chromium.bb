@@ -97,14 +97,11 @@ public:
 
     void parserAddNamespace(const AtomicString& prefix, const AtomicString& uri);
     void parserAppendRule(PassRefPtrWillBeRawPtr<StyleRuleBase>);
-    void parserSetEncodingFromCharsetRule(const String& encoding);
     void parserSetUsesRemUnits(bool b) { m_usesRemUnits = b; }
 
     void clearRules();
 
-    bool hasCharsetRule() const { return !m_encodingFromCharsetRule.isNull(); }
-    String encodingFromCharsetRule() const { return m_encodingFromCharsetRule; }
-    // Rules other than @charset and @import.
+    // Rules other than @import.
     const WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& childRules() const { return m_childRules; }
     const WillBeHeapVector<RefPtrWillBeMember<StyleRuleImport> >& importRules() const { return m_importRules; }
 
@@ -169,13 +166,11 @@ private:
     void notifyRemoveFontFaceRule(const StyleRuleFontFace*);
 
     Document* clientSingleOwnerDocument() const;
-    void clearCharsetRule();
 
     RawPtrWillBeMember<StyleRuleImport> m_ownerRule;
 
     String m_originalURL;
 
-    String m_encodingFromCharsetRule;
     WillBeHeapVector<RefPtrWillBeMember<StyleRuleImport> > m_importRules;
     WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> > m_childRules;
     typedef HashMap<AtomicString, AtomicString> PrefixNamespaceURIMap;

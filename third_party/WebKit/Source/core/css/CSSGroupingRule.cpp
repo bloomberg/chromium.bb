@@ -77,9 +77,8 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
     }
 
     if (newRule->isImportRule()) {
-        // FIXME: an HierarchyRequestError should also be thrown for a @charset or a nested
-        // @media rule. They are currently not getting parsed, resulting in a SyntaxError
-        // to get raised above.
+        // FIXME: an HierarchyRequestError should also be thrown for a nested @media rule. They are
+        // currently not getting parsed, resulting in a SyntaxError to get raised above.
         exceptionState.throwDOMException(HierarchyRequestError, "'@import' rules cannot be inserted inside a group rule.");
         return 0;
     }

@@ -3,7 +3,6 @@ var staticWindowProperties = [
     'CSSPrimitiveValue',
     'CSSRule',
     'CSSStyleDeclaration',
-    'CSSCharsetRule',
     'CSSImportRule',
     'CSSMediaRule',
     'CSSFontFaceRule',

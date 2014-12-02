@@ -43,7 +43,6 @@ BiquadFilterNode
 Blob
 Boolean
 CDATASection
-CSSCharsetRule
 CSSFontFaceRule
 CSSImportRule
 CSSKeyframeRule

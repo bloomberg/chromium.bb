@@ -377,7 +377,6 @@ public:
         DocumentPointerLockElement = 422,
         PrefixedCursorZoomIn = 424,
         PrefixedCursorZoomOut = 425,
-        CSSCharsetRuleEncoding = 426,
         DocumentSetCharset = 427,
         DocumentDefaultCharset = 428,
         TextEncoderConstructor = 429,

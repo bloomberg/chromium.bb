@@ -54,7 +54,6 @@ public:
 
     Type type() const { return static_cast<Type>(m_type); }
 
-    bool isCharsetRule() const { return type() == Charset; }
     bool isFontFaceRule() const { return type() == FontFace; }
     bool isKeyframesRule() const { return type() == Keyframes; }
     bool isMediaRule() const { return type() == Media; }

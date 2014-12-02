@@ -2,8 +2,6 @@ This test setting various attributes of a CSSOM elements to JavaScript null.
 
 TEST SUCCEEDED: The value was the string '.foo { color: black; }'. [tested CSSRule.cssText]
 
-TEST SUCCEEDED: The value was the string 'null'. [tested CSSCharsetRule.encoding]
-
 TEST SUCCEEDED: The value was the string 'null'. [tested CSSKeyframesRule.name]
 
 TEST SUCCEEDED: The value was the string '@page null'. [tested CSSPageRule.selectorText]
