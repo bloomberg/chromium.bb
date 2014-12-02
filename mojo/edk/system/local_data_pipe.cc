@@ -160,7 +160,10 @@ HandleSignalsState LocalDataPipe::ProducerGetHandleSignalsStateImplNoLock()
         !producer_in_two_phase_write_no_lock())
       rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_WRITABLE;
     rv.satisfiable_signals |= MOJO_HANDLE_SIGNAL_WRITABLE;
+  } else {
+    rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_PEER_CLOSED;
   }
+  rv.satisfiable_signals |= MOJO_HANDLE_SIGNAL_PEER_CLOSED;
   return rv;
 }
 
@@ -293,6 +296,9 @@ HandleSignalsState LocalDataPipe::ConsumerGetHandleSignalsStateImplNoLock()
   } else if (producer_open_no_lock()) {
     rv.satisfiable_signals |= MOJO_HANDLE_SIGNAL_READABLE;
   }
+  if (!producer_open_no_lock())
+    rv.satisfied_signals |= MOJO_HANDLE_SIGNAL_PEER_CLOSED;
+  rv.satisfiable_signals |= MOJO_HANDLE_SIGNAL_PEER_CLOSED;
   return rv;
 }
 

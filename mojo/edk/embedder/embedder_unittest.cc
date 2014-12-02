@@ -282,7 +282,13 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
 //  10.                          (close)
 //  11.                                      (wait/cl.)
 //  12.                                                  (wait/cl.)
-TEST_F(EmbedderTest, MultiprocessChannels) {
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_MultiprocessChannels DISABLED_MultiprocessChannels
+#else
+#define MAYBE_MultiprocessChannels MultiprocessChannels
+#endif  // defined(OS_ANDROID)
+TEST_F(EmbedderTest, MAYBE_MultiprocessChannels) {
   mojo::embedder::test::InitWithSimplePlatformSupport();
   mojo::test::MultiprocessTestHelper multiprocess_test_helper;
   multiprocess_test_helper.StartChild("MultiprocessChannelsClient");

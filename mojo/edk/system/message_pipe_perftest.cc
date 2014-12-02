@@ -140,7 +140,13 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PingPongClient) {
 // Repeatedly sends messages as previous one got replied by the child.
 // Waits for the child to close its end before quitting once specified
 // number of messages has been sent.
-TEST_F(MultiprocessMessagePipePerfTest, PingPong) {
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_PingPong DISABLED_PingPong
+#else
+#define MAYBE_PingPong PingPong
+#endif  // defined(OS_ANDROID)
+TEST_F(MultiprocessMessagePipePerfTest, MAYBE_PingPong) {
   helper()->StartChild("PingPongClient");
 
   scoped_refptr<ChannelEndpoint> ep;

@@ -21,14 +21,14 @@ MojoResult MojoMain(MojoHandle shell_handle) {
 
     // Construct an ApplicationImpl just for the GTEST commandline arguments.
     // GTEST command line arguments are supported amid application arguments:
-    // $ mojo_shell 'mojo:example_apptests arg1 --gtest_filter=foo arg2'
+    // $ mojo_shell mojo:example_apptests
+    //   --args-for='mojo:example_apptests arg1 --gtest_filter=foo arg2'
     mojo::ApplicationDelegate dummy_application_delegate;
     mojo::ApplicationImpl app(&dummy_application_delegate, shell_handle);
     MOJO_CHECK(app.WaitForInitialize());
 
     // InitGoogleTest expects (argc + 1) elements, including a terminating NULL.
     // It also removes GTEST arguments from |argv| and updates the |argc| count.
-    // TODO(msw): Provide tests access to these actual command line arguments.
     const std::vector<std::string>& args = app.args();
     MOJO_CHECK(args.size() <
                static_cast<size_t>(std::numeric_limits<int>::max()));
@@ -40,6 +40,7 @@ MojoResult MojoMain(MojoHandle shell_handle) {
 
     testing::InitGoogleTest(&argc, const_cast<char**>(&(argv[0])));
     mojo::test::SetShellHandle(app.UnbindShell());
+    mojo::test::InitializeArgs(argc, argv);
   }
 
   int result = RUN_ALL_TESTS();

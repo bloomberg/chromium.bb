@@ -149,6 +149,7 @@ const MojoDeadline MOJO_DEADLINE_INDEFINITE = static_cast<MojoDeadline>(-1);
 //       |MOJO_RESULT_FAILED_PRECONDITION| if you attempt to wait on this.
 //   |MOJO_HANDLE_SIGNAL_READABLE| - Can read (e.g., a message) from the handle.
 //   |MOJO_HANDLE_SIGNAL_WRITABLE| - Can write (e.g., a message) to the handle.
+//   |MOJO_HANDLE_SIGNAL_PEER_CLOSED| - The peer handle is closed.
 
 typedef uint32_t MojoHandleSignals;
 
@@ -156,10 +157,12 @@ typedef uint32_t MojoHandleSignals;
 const MojoHandleSignals MOJO_HANDLE_SIGNAL_NONE = 0;
 const MojoHandleSignals MOJO_HANDLE_SIGNAL_READABLE = 1 << 0;
 const MojoHandleSignals MOJO_HANDLE_SIGNAL_WRITABLE = 1 << 1;
+const MojoHandleSignals MOJO_HANDLE_SIGNAL_PEER_CLOSED = 1 << 2;
 #else
 #define MOJO_HANDLE_SIGNAL_NONE ((MojoHandleSignals)0)
 #define MOJO_HANDLE_SIGNAL_READABLE ((MojoHandleSignals)1 << 0)
 #define MOJO_HANDLE_SIGNAL_WRITABLE ((MojoHandleSignals)1 << 1)
+#define MOJO_HANDLE_SIGNAL_PEER_CLOSED ((MojoHandleSignals)1 << 2)
 #endif
 
 // TODO(vtl): Add out parameters with this to MojoWait/MojoWaitMany.

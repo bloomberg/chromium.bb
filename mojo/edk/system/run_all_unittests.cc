@@ -8,9 +8,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 int main(int argc, char** argv) {
-  // Silence death test thread warnings on Linux. We can afford to run our death
-  // tests a little more slowly (< 10 ms per death test on a Z620).
+// Silence death test thread warnings on Linux. We can afford to run our death
+// tests a little more slowly (< 10 ms per death test on a Z620).
+// On android, we need to run in the default mode, as the threadsafe mode
+// relies on execve which is not available.
+#if !defined(OS_ANDROID)
   testing::GTEST_FLAG(death_test_style) = "threadsafe";
+#endif
 
   base::TestSuite test_suite(argc, argv);
 

@@ -122,6 +122,7 @@ class MojoHandleSignals {
   static const int NONE = 0;
   static const int READABLE = 1 << 0;
   static const int WRITABLE = 1 << 1;
+  static const int PEER_CLOSED = 1 << 2;
   static const int READWRITE = READABLE | WRITABLE;
 
   static bool isNone(int mask) => mask == NONE;

@@ -44,20 +44,16 @@ class TransportData;
 class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
  public:
   typedef uint16_t Type;
-  // Messages that are forwarded to |MessagePipeEndpoint|s.
-  static const Type kTypeMessagePipeEndpoint = 0;
-  // Messages that are forwarded to |MessagePipe|s.
-  static const Type kTypeMessagePipe = 1;
+  // Messages that are forwarded to endpoints.
+  static const Type kTypeEndpoint = 0;
   // Messages that are consumed by the |Channel|.
-  static const Type kTypeChannel = 2;
+  static const Type kTypeChannel = 1;
   // Messages that are consumed by the |RawChannel| (implementation).
-  static const Type kTypeRawChannel = 3;
+  static const Type kTypeRawChannel = 2;
 
   typedef uint16_t Subtype;
-  // Subtypes for type |kTypeMessagePipeEndpoint|:
-  static const Subtype kSubtypeMessagePipeEndpointData = 0;
-  // Subtypes for type |kTypeMessagePipe|:
-  // Nothing currently.
+  // Subtypes for type |kTypeEndpoint|:
+  static const Subtype kSubtypeEndpointData = 0;
   // Subtypes for type |kTypeChannel|:
   static const Subtype kSubtypeChannelAttachAndRunEndpoint = 0;
   static const Subtype kSubtypeChannelRemoveMessagePipeEndpoint = 1;

@@ -8,6 +8,7 @@ import re
 from itertools import ifilter
 
 import mojom.generate.generator as generator
+import mojom.generate.data as data
 import mojom.generate.module as mojom
 from mojom.generate.template_expander import UseJinja
 
@@ -318,8 +319,9 @@ class Generator(generator.Generator):
     """
     interfaces = self.module.interfaces
     all_interfaces = [] + interfaces
-    for each in self.module.imports:
-      all_interfaces += each['module'].interfaces
+    for each in self.GetImports():
+      all_interfaces += [data.KindFromImport(x, each) for x in
+                         each['module'].interfaces];
     interfaces_by_name = dict((x.name, x) for x in all_interfaces)
     for interface in interfaces:
       if interface.client:

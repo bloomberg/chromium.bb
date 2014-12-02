@@ -117,10 +117,10 @@ class MojoStructType(type):
       return self._fields
     dictionary['AsDict'] = AsDict
 
-    def Deserialize(cls, data, handles):
+    def Deserialize(cls, context):
       result = cls.__new__(cls)
       fields = {}
-      serialization_object.Deserialize(fields, data, handles)
+      serialization_object.Deserialize(fields, context)
       result._fields = fields
       return result
     dictionary['Deserialize'] = classmethod(Deserialize)
@@ -476,8 +476,9 @@ def _ProxyMethodCall(method):
           try:
             assert message.header.message_type == method.ordinal
             payload = message.payload
-            response = method.response_struct.Deserialize(payload.data,
-                                                          payload.handles)
+            response = method.response_struct.Deserialize(
+                serialization.RootDeserializationContext(payload.data,
+                                                         payload.handles))
             as_dict = response.AsDict()
             if len(as_dict) == 1:
               value = as_dict.values()[0]
@@ -533,7 +534,8 @@ def _StubAccept(methods):
       method = methods_by_ordinal[header.message_type]
       payload = message.payload
       parameters = method.parameters_struct.Deserialize(
-          payload.data, payload.handles).AsDict()
+          serialization.RootDeserializationContext(
+              payload.data, payload.handles)).AsDict()
       response = getattr(self.impl, method.name)(**parameters)
       if header.expects_response:
         def SendResponse(response):

@@ -33,6 +33,7 @@ public interface Core {
         private static final int FLAG_NONE = 0;
         private static final int FLAG_READABLE = 1 << 0;
         private static final int FLAG_WRITABLE = 1 << 1;
+        private static final int FLAG_PEER_CLOSED = 1 << 2;
 
         /**
          * Immutable signals.
@@ -61,6 +62,16 @@ public interface Core {
          */
         public HandleSignals setWritable(boolean writable) {
             return setFlag(FLAG_WRITABLE, writable);
+        }
+
+        /**
+         * Change the peer closed bit of this signal.
+         *
+         * @param peerClosed the new value of the peer closed bit.
+         * @return this.
+         */
+        public HandleSignals setPeerClosed(boolean peerClosed) {
+            return setFlag(FLAG_PEER_CLOSED, peerClosed);
         }
 
         /**

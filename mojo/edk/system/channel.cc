@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
@@ -237,9 +236,8 @@ void Channel::OnReadMessage(
   DCHECK(creation_thread_checker_.CalledOnValidThread());
 
   switch (message_view.type()) {
-    case MessageInTransit::kTypeMessagePipeEndpoint:
-    case MessageInTransit::kTypeMessagePipe:
-      OnReadMessageForDownstream(message_view, platform_handles.Pass());
+    case MessageInTransit::kTypeEndpoint:
+      OnReadMessageForEndpoint(message_view, platform_handles.Pass());
       break;
     case MessageInTransit::kTypeChannel:
       OnReadMessageForChannel(message_view, platform_handles.Pass());
@@ -283,12 +281,11 @@ void Channel::OnError(Error error) {
   Shutdown();
 }
 
-void Channel::OnReadMessageForDownstream(
+void Channel::OnReadMessageForEndpoint(
     const MessageInTransit::View& message_view,
     embedder::ScopedPlatformHandleVectorPtr platform_handles) {
   DCHECK(creation_thread_checker_.CalledOnValidThread());
-  DCHECK(message_view.type() == MessageInTransit::kTypeMessagePipeEndpoint ||
-         message_view.type() == MessageInTransit::kTypeMessagePipe);
+  DCHECK(message_view.type() == MessageInTransit::kTypeEndpoint);
 
   ChannelEndpointId local_id = message_view.destination_id();
   if (!local_id.is_valid()) {
@@ -331,12 +328,16 @@ void Channel::OnReadMessageForDownstream(
     return;
   }
 
-  if (!endpoint->OnReadMessage(message_view, platform_handles.Pass())) {
-    HandleLocalError(
-        base::StringPrintf("Failed to enqueue message to local ID %u",
-                           static_cast<unsigned>(local_id.value())));
-    return;
+  scoped_ptr<MessageInTransit> message(new MessageInTransit(message_view));
+  if (message_view.transport_data_buffer_size() > 0) {
+    DCHECK(message_view.transport_data_buffer());
+    message->SetDispatchers(TransportData::DeserializeDispatchers(
+        message_view.transport_data_buffer(),
+        message_view.transport_data_buffer_size(), platform_handles.Pass(),
+        this));
   }
+
+  endpoint->OnReadMessage(message.Pass());
 }
 
 void Channel::OnReadMessageForChannel(

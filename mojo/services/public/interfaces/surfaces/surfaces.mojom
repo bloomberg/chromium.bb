@@ -6,6 +6,7 @@ module mojo;
 
 import "mojo/services/public/interfaces/geometry/geometry.mojom";
 import "mojo/services/public/interfaces/gpu/command_buffer.mojom";
+import "mojo/services/public/interfaces/gpu/viewport_parameter_listener.mojom";
 import "mojo/services/public/interfaces/surfaces/quads.mojom";
 import "mojo/services/public/interfaces/surfaces/surface_id.mojom";
 
@@ -61,11 +62,15 @@ interface Surface {
   // connection's namespace in the upper 32 bits.
   CreateSurface(SurfaceId id, Size size);
 
-  // The client can only submit frames to surfaces created with this connection.
-  SubmitFrame(SurfaceId id, Frame frame);
+  // The client can only submit frames to surfaces created with this
+  // connection.  After the submitted frame is drawn for the first time, the
+  // surface will respond to the SubmitFrame message. Clients should use this
+  // acknowledgement to ratelimit frame submissions.
+  SubmitFrame(SurfaceId id, Frame frame) => ();
   DestroySurface(SurfaceId id);
 
   CreateGLES2BoundSurface(CommandBuffer gles2_client,
                           SurfaceId id,
-                          Size size);
+                          Size size,
+                          ViewportParameterListener& listener);
 };

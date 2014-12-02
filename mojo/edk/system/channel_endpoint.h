@@ -9,9 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/system/channel_endpoint_id.h"
-#include "mojo/edk/system/message_in_transit.h"
 #include "mojo/edk/system/message_in_transit_queue.h"
 #include "mojo/edk/system/system_impl_export.h"
 
@@ -139,15 +137,14 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   // Methods called by |Channel|:
 
   // Called when the |Channel| takes a reference to this object. This will send
-  // all queue messages (in |paused_message_queue_|).
+  // all queue messages (in |channel_message_queue_|).
   // TODO(vtl): Maybe rename this "OnAttach"?
   void AttachAndRun(Channel* channel,
                     ChannelEndpointId local_id,
                     ChannelEndpointId remote_id);
 
   // Called when the |Channel| receives a message for the |ChannelEndpoint|.
-  bool OnReadMessage(const MessageInTransit::View& message_view,
-                     embedder::ScopedPlatformHandleVectorPtr platform_handles);
+  void OnReadMessage(scoped_ptr<MessageInTransit> message);
 
   // Called before the |Channel| gives up its reference to this object.
   void DetachFromChannel();
@@ -182,8 +179,8 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   ChannelEndpointId remote_id_;
 
   // This queue is used before we're running on a channel and ready to send
-  // messages.
-  MessageInTransitQueue paused_message_queue_;
+  // messages to the channel.
+  MessageInTransitQueue channel_message_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelEndpoint);
 };

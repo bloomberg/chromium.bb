@@ -142,8 +142,8 @@ MojoResult MessagePipe::WriteMessage(
   return EnqueueMessage(
       GetPeerPort(port),
       make_scoped_ptr(new MessageInTransit(
-          MessageInTransit::kTypeMessagePipeEndpoint,
-          MessageInTransit::kSubtypeMessagePipeEndpointData, num_bytes, bytes)),
+          MessageInTransit::kTypeEndpoint,
+          MessageInTransit::kSubtypeEndpointData, num_bytes, bytes)),
       transports);
 }
 
@@ -287,14 +287,16 @@ bool MessagePipe::EndSerialize(
   return true;
 }
 
-bool MessagePipe::OnReadMessage(unsigned port,
+void MessagePipe::OnReadMessage(unsigned port,
                                 scoped_ptr<MessageInTransit> message) {
   // This is called when the |ChannelEndpoint| for the
   // |ProxyMessagePipeEndpoint| |port| receives a message (from the |Channel|).
   // We need to pass this message on to its peer port (typically a
   // |LocalMessagePipeEndpoint|).
-  return EnqueueMessage(GetPeerPort(port), message.Pass(), nullptr) ==
-         MOJO_RESULT_OK;
+  MojoResult result =
+      EnqueueMessage(GetPeerPort(port), message.Pass(), nullptr);
+  DLOG_IF(WARNING, result != MOJO_RESULT_OK)
+      << "EnqueueMessage() failed (result  = " << result << ")";
 }
 
 void MessagePipe::OnDetachFromChannel(unsigned port) {
@@ -319,12 +321,7 @@ MojoResult MessagePipe::EnqueueMessage(
   DCHECK(port == 0 || port == 1);
   DCHECK(message);
 
-  if (message->type() == MessageInTransit::kTypeMessagePipe) {
-    DCHECK(!transports);
-    return HandleControlMessage(port, message.Pass());
-  }
-
-  DCHECK_EQ(message->type(), MessageInTransit::kTypeMessagePipeEndpoint);
+  DCHECK_EQ(message->type(), MessageInTransit::kTypeEndpoint);
 
   base::AutoLock locker(lock_);
   DCHECK(endpoints_[GetPeerPort(port)]);
@@ -386,14 +383,6 @@ MojoResult MessagePipe::AttachTransportsNoLock(
   }
   message->SetDispatchers(dispatchers.Pass());
   return MOJO_RESULT_OK;
-}
-
-MojoResult MessagePipe::HandleControlMessage(
-    unsigned /*port*/,
-    scoped_ptr<MessageInTransit> message) {
-  LOG(WARNING) << "Unrecognized MessagePipe control message subtype "
-               << message->subtype();
-  return MOJO_RESULT_UNKNOWN;
 }
 
 }  // namespace system

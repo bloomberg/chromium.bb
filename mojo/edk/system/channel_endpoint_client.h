@@ -38,7 +38,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpointClient
   // called by |Channel| when it receives a message for the |ChannelEndpoint|.
   // (|port| is the value passed to |ChannelEndpoint|'s constructor as
   // |client_port|.)
-  virtual bool OnReadMessage(unsigned port,
+  virtual void OnReadMessage(unsigned port,
                              scoped_ptr<MessageInTransit> message) = 0;
 
   // Called by |ChannelEndpoint| when the |Channel| is relinquishing its pointer

@@ -139,7 +139,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   void OnError(Error error) override;
 
   // Helpers for |OnReadMessage| (only called on the creation thread):
-  void OnReadMessageForDownstream(
+  void OnReadMessageForEndpoint(
       const MessageInTransit::View& message_view,
       embedder::ScopedPlatformHandleVectorPtr platform_handles);
   void OnReadMessageForChannel(

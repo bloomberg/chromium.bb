@@ -239,7 +239,8 @@ TEST(LocalDataPipeTest, BasicProducerWaiting) {
       MOJO_RESULT_FAILED_PRECONDITION,
       dp->ProducerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 12, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // Already writable.
   waiter.Init();
@@ -266,7 +267,8 @@ TEST(LocalDataPipeTest, BasicProducerWaiting) {
   hss = HandleSignalsState();
   dp->ProducerRemoveWaiter(&waiter, &hss);
   EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // Peek one element.
   elements[0] = -1;
@@ -289,7 +291,8 @@ TEST(LocalDataPipeTest, BasicProducerWaiting) {
   hss = HandleSignalsState();
   dp->ProducerRemoveWaiter(&waiter, &hss);
   EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // Do it again.
   waiter.Init();
@@ -314,7 +317,8 @@ TEST(LocalDataPipeTest, BasicProducerWaiting) {
   hss = HandleSignalsState();
   dp->ProducerRemoveWaiter(&waiter, &hss);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // Try writing, using a two-phase write.
   void* buffer = nullptr;
@@ -357,7 +361,8 @@ TEST(LocalDataPipeTest, BasicProducerWaiting) {
   hss = HandleSignalsState();
   dp->ProducerRemoveWaiter(&waiter, &hss);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // Write one element.
   elements[0] = 123;
@@ -381,10 +386,73 @@ TEST(LocalDataPipeTest, BasicProducerWaiting) {
   EXPECT_EQ(12u, context);
   hss = HandleSignalsState();
   dp->ProducerRemoveWaiter(&waiter, &hss);
-  EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(0u, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 
   dp->ProducerClose();
+}
+
+TEST(LocalDataPipeTest, PeerClosedWaiting) {
+  const MojoCreateDataPipeOptions options = {
+      kSizeOfOptions,                           // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+      static_cast<uint32_t>(sizeof(int32_t)),   // |element_num_bytes|.
+      2 * sizeof(int32_t)                       // |capacity_num_bytes|.
+  };
+  MojoCreateDataPipeOptions validated_options = {0};
+  EXPECT_EQ(MOJO_RESULT_OK, DataPipe::ValidateCreateOptions(
+                                MakeUserPointer(&options), &validated_options));
+
+  Waiter waiter;
+  HandleSignalsState hss;
+
+  // Check MOJO_HANDLE_SIGNAL_PEER_CLOSED on producer.
+  {
+    scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+    // Add a waiter.
+    waiter.Init();
+    ASSERT_EQ(MOJO_RESULT_OK,
+              dp->ProducerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_PEER_CLOSED, 12,
+                                    nullptr));
+
+    // Close the consumer.
+    dp->ConsumerClose();
+
+    // It should be signaled.
+    uint32_t context = 0;
+    EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(1000, &context));
+    EXPECT_EQ(12u, context);
+    hss = HandleSignalsState();
+    dp->ProducerRemoveWaiter(&waiter, &hss);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
+
+    dp->ProducerClose();
+  }
+
+  // Check MOJO_HANDLE_SIGNAL_PEER_CLOSED on consumer.
+  {
+    scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+    // Add a waiter.
+    waiter.Init();
+    ASSERT_EQ(MOJO_RESULT_OK,
+              dp->ConsumerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_PEER_CLOSED, 12,
+                                    nullptr));
+
+    // Close the producer.
+    dp->ProducerClose();
+
+    // It should be signaled.
+    uint32_t context = 0;
+    EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(1000, &context));
+    EXPECT_EQ(12u, context);
+    hss = HandleSignalsState();
+    dp->ConsumerRemoveWaiter(&waiter, &hss);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
+
+    dp->ConsumerClose();
+  }
 }
 
 TEST(LocalDataPipeTest, BasicConsumerWaiting) {
@@ -411,7 +479,8 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
         MOJO_RESULT_FAILED_PRECONDITION,
         dp->ConsumerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_WRITABLE, 12, &hss));
     EXPECT_EQ(0u, hss.satisfied_signals);
-    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+              hss.satisfiable_signals);
 
     // Not yet readable.
     waiter.Init();
@@ -422,7 +491,8 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
     hss = HandleSignalsState();
     dp->ConsumerRemoveWaiter(&waiter, &hss);
     EXPECT_EQ(0u, hss.satisfied_signals);
-    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+              hss.satisfiable_signals);
 
     // Write two elements.
     int32_t elements[2] = {123, 456};
@@ -438,7 +508,8 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
         MOJO_RESULT_ALREADY_EXISTS,
         dp->ConsumerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 56, &hss));
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
-    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+              hss.satisfiable_signals);
 
     // Discard one element.
     num_bytes = static_cast<uint32_t>(1u * sizeof(elements[0]));
@@ -453,7 +524,8 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
         MOJO_RESULT_ALREADY_EXISTS,
         dp->ConsumerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 78, &hss));
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
-    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+              hss.satisfiable_signals);
 
     // Peek one element.
     elements[0] = -1;
@@ -473,7 +545,8 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
         MOJO_RESULT_ALREADY_EXISTS,
         dp->ConsumerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 78, &hss));
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
-    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+              hss.satisfiable_signals);
 
     // Read one element.
     elements[0] = -1;
@@ -506,7 +579,8 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
     hss = HandleSignalsState();
     dp->ConsumerRemoveWaiter(&waiter, &hss);
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
-    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+              hss.satisfiable_signals);
 
     // Close the producer.
     dp->ProducerClose();
@@ -517,8 +591,10 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
     EXPECT_EQ(
         MOJO_RESULT_ALREADY_EXISTS,
         dp->ConsumerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 12, &hss));
-    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
-    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+              hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+              hss.satisfiable_signals);
 
     // Read one element.
     elements[0] = -1;
@@ -537,8 +613,8 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
     EXPECT_EQ(
         MOJO_RESULT_FAILED_PRECONDITION,
         dp->ConsumerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 34, &hss));
-    EXPECT_EQ(0u, hss.satisfied_signals);
-    EXPECT_EQ(0u, hss.satisfiable_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 
     dp->ConsumerClose();
   }
@@ -574,7 +650,8 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
         MOJO_RESULT_ALREADY_EXISTS,
         dp->ConsumerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 12, &hss));
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
-    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+              hss.satisfiable_signals);
 
     // Read one element.
     // Request two in all-or-none mode, but only read one.
@@ -597,7 +674,8 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
         MOJO_RESULT_ALREADY_EXISTS,
         dp->ConsumerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 34, &hss));
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
-    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+              hss.satisfiable_signals);
 
     // Read one element.
     // Request three, but not in all-or-none mode.
@@ -627,8 +705,8 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
     EXPECT_EQ(56u, context);
     hss = HandleSignalsState();
     dp->ConsumerRemoveWaiter(&waiter, &hss);
-    EXPECT_EQ(0u, hss.satisfied_signals);
-    EXPECT_EQ(0u, hss.satisfiable_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 
     dp->ConsumerClose();
   }
@@ -657,7 +735,8 @@ TEST(LocalDataPipeTest, BasicTwoPhaseWaiting) {
       MOJO_RESULT_ALREADY_EXISTS,
       dp->ProducerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_WRITABLE, 0, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   uint32_t num_bytes = static_cast<uint32_t>(1u * sizeof(int32_t));
   void* write_ptr = nullptr;
@@ -676,7 +755,8 @@ TEST(LocalDataPipeTest, BasicTwoPhaseWaiting) {
   hss = HandleSignalsState();
   dp->ProducerRemoveWaiter(&waiter, &hss);
   EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // It shouldn't be readable yet either.
   waiter.Init();
@@ -687,7 +767,8 @@ TEST(LocalDataPipeTest, BasicTwoPhaseWaiting) {
   hss = HandleSignalsState();
   dp->ConsumerRemoveWaiter(&waiter, &hss);
   EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   static_cast<int32_t*>(write_ptr)[0] = 123;
   EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerEndWriteData(
@@ -700,7 +781,8 @@ TEST(LocalDataPipeTest, BasicTwoPhaseWaiting) {
       MOJO_RESULT_ALREADY_EXISTS,
       dp->ProducerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_WRITABLE, 3, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // And readable.
   waiter.Init();
@@ -709,7 +791,8 @@ TEST(LocalDataPipeTest, BasicTwoPhaseWaiting) {
       MOJO_RESULT_ALREADY_EXISTS,
       dp->ConsumerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 4, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // Start another two-phase write and check that it's readable even in the
   // middle of it.
@@ -728,7 +811,8 @@ TEST(LocalDataPipeTest, BasicTwoPhaseWaiting) {
       MOJO_RESULT_ALREADY_EXISTS,
       dp->ConsumerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 5, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // End the two-phase write without writing anything.
   EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerEndWriteData(0u));
@@ -749,7 +833,8 @@ TEST(LocalDataPipeTest, BasicTwoPhaseWaiting) {
       MOJO_RESULT_ALREADY_EXISTS,
       dp->ProducerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_WRITABLE, 6, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // But not readable.
   waiter.Init();
@@ -760,7 +845,8 @@ TEST(LocalDataPipeTest, BasicTwoPhaseWaiting) {
   hss = HandleSignalsState();
   dp->ConsumerRemoveWaiter(&waiter, &hss);
   EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // End the two-phase read without reading anything.
   EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerEndReadData(0u));
@@ -772,7 +858,8 @@ TEST(LocalDataPipeTest, BasicTwoPhaseWaiting) {
       MOJO_RESULT_ALREADY_EXISTS,
       dp->ConsumerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 8, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   dp->ProducerClose();
   dp->ConsumerClose();
@@ -801,7 +888,8 @@ TEST(LocalDataPipeTest, BasicMayDiscardWaiting) {
       MOJO_RESULT_ALREADY_EXISTS,
       dp->ProducerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_WRITABLE, 0, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // Not readable.
   waiter.Init();
@@ -812,7 +900,8 @@ TEST(LocalDataPipeTest, BasicMayDiscardWaiting) {
   hss = HandleSignalsState();
   dp->ConsumerRemoveWaiter(&waiter, &hss);
   EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   uint32_t num_bytes = static_cast<uint32_t>(sizeof(int32_t));
   int32_t element = 123;
@@ -828,7 +917,8 @@ TEST(LocalDataPipeTest, BasicMayDiscardWaiting) {
       MOJO_RESULT_ALREADY_EXISTS,
       dp->ProducerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_WRITABLE, 2, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // Now readable.
   waiter.Init();
@@ -837,7 +927,8 @@ TEST(LocalDataPipeTest, BasicMayDiscardWaiting) {
       MOJO_RESULT_ALREADY_EXISTS,
       dp->ConsumerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 3, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // Overwrite that element.
   num_bytes = static_cast<uint32_t>(sizeof(int32_t));
@@ -854,7 +945,8 @@ TEST(LocalDataPipeTest, BasicMayDiscardWaiting) {
       MOJO_RESULT_ALREADY_EXISTS,
       dp->ProducerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_WRITABLE, 4, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // And still readable.
   waiter.Init();
@@ -863,7 +955,8 @@ TEST(LocalDataPipeTest, BasicMayDiscardWaiting) {
       MOJO_RESULT_ALREADY_EXISTS,
       dp->ConsumerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 5, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // Read that element.
   num_bytes = static_cast<uint32_t>(sizeof(int32_t));
@@ -881,7 +974,8 @@ TEST(LocalDataPipeTest, BasicMayDiscardWaiting) {
       MOJO_RESULT_ALREADY_EXISTS,
       dp->ProducerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_WRITABLE, 6, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // No longer readable.
   waiter.Init();
@@ -892,7 +986,8 @@ TEST(LocalDataPipeTest, BasicMayDiscardWaiting) {
   hss = HandleSignalsState();
   dp->ConsumerRemoveWaiter(&waiter, &hss);
   EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   dp->ProducerClose();
   dp->ConsumerClose();

@@ -288,6 +288,8 @@ v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
             .SetValue("HANDLE_SIGNAL_NONE", MOJO_HANDLE_SIGNAL_NONE)
             .SetValue("HANDLE_SIGNAL_READABLE", MOJO_HANDLE_SIGNAL_READABLE)
             .SetValue("HANDLE_SIGNAL_WRITABLE", MOJO_HANDLE_SIGNAL_WRITABLE)
+            .SetValue("HANDLE_SIGNAL_PEER_CLOSED",
+                      MOJO_HANDLE_SIGNAL_PEER_CLOSED)
 
             .SetValue("CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE",
                       MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE)

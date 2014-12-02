@@ -62,8 +62,8 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
     if (result != MOJO_RESULT_OK) {
       // It was closed, probably.
       CHECK_EQ(result, MOJO_RESULT_FAILED_PRECONDITION);
-      CHECK_EQ(hss.satisfied_signals, 0u);
-      CHECK_EQ(hss.satisfiable_signals, 0u);
+      CHECK_EQ(hss.satisfied_signals, MOJO_HANDLE_SIGNAL_PEER_CLOSED);
+      CHECK_EQ(hss.satisfiable_signals, MOJO_HANDLE_SIGNAL_PEER_CLOSED);
       break;
     } else {
       CHECK((hss.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE));
@@ -96,7 +96,13 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
 }
 
 // Sends "hello" to child, and expects "hellohello" back.
-TEST_F(MultiprocessMessagePipeTest, Basic) {
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif  // defined(OS_ANDROID)
+TEST_F(MultiprocessMessagePipeTest, MAYBE_Basic) {
   helper()->StartChild("EchoEcho");
 
   scoped_refptr<ChannelEndpoint> ep;
@@ -136,7 +142,13 @@ TEST_F(MultiprocessMessagePipeTest, Basic) {
 
 // Sends a bunch of messages to the child. Expects them "repeated" back. Waits
 // for the child to close its end before quitting.
-TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_QueueMessages DISABLED_QueueMessages
+#else
+#define MAYBE_QueueMessages QueueMessages
+#endif  // defined(OS_ANDROID)
+TEST_F(MultiprocessMessagePipeTest, DISABLED_QueueMessages) {
   helper()->StartChild("EchoEcho");
 
   scoped_refptr<ChannelEndpoint> ep;
@@ -184,8 +196,8 @@ TEST_F(MultiprocessMessagePipeTest, QueueMessages) {
   HandleSignalsState hss;
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             test::WaitIfNecessary(mp, MOJO_HANDLE_SIGNAL_READABLE, &hss));
-  EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(0u, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 
   mp->Close(0);
 
@@ -211,8 +223,9 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
   // pipe before we do.
   CHECK_EQ(hss.satisfied_signals,
            MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE);
-  CHECK_EQ(hss.satisfiable_signals,
-           MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE);
+  CHECK_EQ(hss.satisfiable_signals, MOJO_HANDLE_SIGNAL_READABLE |
+                                        MOJO_HANDLE_SIGNAL_WRITABLE |
+                                        MOJO_HANDLE_SIGNAL_PEER_CLOSED);
 
   // It should have a shared buffer.
   std::string read_buffer(100, '\0');
@@ -260,8 +273,9 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
            MOJO_RESULT_OK);
   CHECK_EQ(hss.satisfied_signals,
            MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE);
-  CHECK_EQ(hss.satisfiable_signals,
-           MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE);
+  CHECK_EQ(hss.satisfiable_signals, MOJO_HANDLE_SIGNAL_READABLE |
+                                        MOJO_HANDLE_SIGNAL_WRITABLE |
+                                        MOJO_HANDLE_SIGNAL_PEER_CLOSED);
 
   read_buffer = std::string(100, '\0');
   num_bytes = static_cast<uint32_t>(read_buffer.size());
@@ -282,10 +296,11 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckSharedBuffer) {
   return 0;
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
 #define MAYBE_SharedBufferPassing SharedBufferPassing
 #else
 // Not yet implemented (on Windows).
+// Android multi-process tests are not executing the new process. This is flaky.
 #define MAYBE_SharedBufferPassing DISABLED_SharedBufferPassing
 #endif
 TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
@@ -364,8 +379,8 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
   hss = HandleSignalsState();
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             test::WaitIfNecessary(mp, MOJO_HANDLE_SIGNAL_READABLE, &hss));
-  EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(0u, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 
   mp->Close(0);
 
@@ -387,8 +402,9 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckPlatformHandleFile) {
            MOJO_RESULT_OK);
   CHECK_EQ(hss.satisfied_signals,
            MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE);
-  CHECK_EQ(hss.satisfiable_signals,
-           MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE);
+  CHECK_EQ(hss.satisfiable_signals, MOJO_HANDLE_SIGNAL_READABLE |
+                                        MOJO_HANDLE_SIGNAL_WRITABLE |
+                                        MOJO_HANDLE_SIGNAL_PEER_CLOSED);
 
   std::string read_buffer(100, '\0');
   uint32_t num_bytes = static_cast<uint32_t>(read_buffer.size());
@@ -422,10 +438,11 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(CheckPlatformHandleFile) {
   return 0;
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
 #define MAYBE_PlatformHandlePassing PlatformHandlePassing
 #else
 // Not yet implemented (on Windows).
+// Android multi-process tests are not executing the new process. This is flaky.
 #define MAYBE_PlatformHandlePassing DISABLED_PlatformHandlePassing
 #endif
 TEST_F(MultiprocessMessagePipeTest, MAYBE_PlatformHandlePassing) {
@@ -471,8 +488,8 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_PlatformHandlePassing) {
   HandleSignalsState hss;
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             test::WaitIfNecessary(mp, MOJO_HANDLE_SIGNAL_READABLE, &hss));
-  EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(0u, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 
   mp->Close(0);
 

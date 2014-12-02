@@ -125,3 +125,62 @@ template("mojo_native_application") {
     outputs = [ "${root_out_dir}/${output}" ]
   }
 }
+
+if (is_android) {
+  # Declares an Android Mojo application consisting of an .so file and a
+  # corresponding .dex.jar file.
+  #
+  # Variables:
+  #   input_so: the .so file to bundle
+  #   input_dex_jar: the .dex.jar file to bundle
+  #   output_name (optional): override for the output file name
+  template("mojo_android_application") {
+    assert(defined(invoker.input_so))
+    assert(defined(invoker.input_dex_jar))
+
+    zip_action_name = "${target_name}_zip"
+    zip_action_output = "$target_gen_dir/${target_name}.zip"
+    action(zip_action_name) {
+      script = "//build/android/gn/zip.py"
+
+      inputs = [
+        invoker.input_so,
+        invoker.input_dex_jar,
+      ]
+
+      output = zip_action_output
+      outputs = [ output ]
+
+      rebase_inputs = rebase_path(inputs, root_build_dir)
+      rebase_output = rebase_path(output, root_build_dir)
+      args = [
+        "--inputs=$rebase_inputs",
+        "--output=$rebase_output",
+      ]
+    }
+
+    if (defined(invoker.output_name)) {
+      mojo_output = "$target_out_dir/" + invoker.output_name + ".mojo"
+    } else {
+      mojo_output = "$target_out_dir/" + target_name + ".mojo"
+    }
+
+    action(target_name) {
+      script = "//mojo/public/tools/prepend.py"
+
+      input = zip_action_output
+      inputs = [ input ]
+
+      output = mojo_output
+      outputs = [ output ]
+
+      rebase_input = rebase_path(input, root_build_dir)
+      rebase_output = rebase_path(output, root_build_dir)
+      args = [
+        "--input=$rebase_input",
+        "--output=$rebase_output",
+        "--line=#!mojo:android_handler",
+      ]
+    }
+  }
+}

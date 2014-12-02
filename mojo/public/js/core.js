@@ -55,6 +55,7 @@ var DEADLINE_INDEFINITE;
 var HANDLE_SIGNAL_NONE;
 var HANDLE_SIGNAL_READABLE;
 var HANDLE_SIGNAL_WRITABLE;
+var HANDLE_SIGNAL_PEER_CLOSED;
 
 /**
  * MojoCreateDataMessageOptions: Used to specify creation parameters for a data

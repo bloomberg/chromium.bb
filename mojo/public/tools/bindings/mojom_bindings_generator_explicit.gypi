@@ -13,6 +13,10 @@
       '<!@(python <(DEPTH)/mojo/public/tools/bindings/mojom_list_outputs.py --basedir <(mojom_base_output_dir) <@(mojom_files))',
     ],
   },
+  # Given mojom files as inputs, generate sources.  These sources will be
+  # exported to another target (via dependent_settings) to be compiled.  This
+  # keeps code generation separate from compilation, allowing the same sources
+  # to be compiled with multiple toolchains - target, NaCl, etc.
   'actions': [
     {
       'action_name': '<(_target_name)_mojom_bindings_generator',
@@ -39,10 +43,11 @@
         '--java_output_directory=<(java_out_dir)',
       ],
       'message': 'Generating Mojo bindings from <@(mojom_files)',
-      'process_outputs_as_sources': 1,
     }
   ],
   'direct_dependent_settings': {
+    # A target directly depending on this action will compile the generated
+    # sources.
     'sources': [
       '<@(mojom_generated_outputs)',
     ],
@@ -51,6 +56,9 @@
       '<(DEPTH)',
       '<(SHARED_INTERMEDIATE_DIR)',
     ],
+    # Make sure the generated header files are available for any static library
+    # that depends on a static library that depends on this generator.
+    'hard_dependency': 1,
     'direct_dependent_settings': {
       # Include paths needed to find the generated header files and their
       # transitive dependancies when using the library.
@@ -59,11 +67,10 @@
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'variables': {
-	'generated_src_dirs': [
-	  '<(PRODUCT_DIR)/java_mojo/<(_target_name)/src',
-	],
+        'generated_src_dirs': [
+          '<(PRODUCT_DIR)/java_mojo/<(_target_name)/src',
+        ],
       },
     }
   },
-  'hard_dependency': 1,
 }

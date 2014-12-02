@@ -237,11 +237,9 @@
       ],
       'dependencies': [
         'mojo_application_bindings',
-        'mojo_application_bindings_mojom',
       ],
       'export_dependent_settings': [
         'mojo_application_bindings',
-        'mojo_application_bindings_mojom',
       ],
     },
     {
@@ -331,6 +329,7 @@
           'interfaces/bindings/tests/no_module.mojom',
           'interfaces/bindings/tests/rect.mojom',
           'interfaces/bindings/tests/regression_tests.mojom',
+          'interfaces/bindings/tests/regression_tests_import.mojom',
           'interfaces/bindings/tests/sample_factory.mojom',
           'interfaces/bindings/tests/sample_import.mojom',
           'interfaces/bindings/tests/sample_import2.mojom',

@@ -9,6 +9,7 @@ mojom("gpu") {
    "command_buffer.mojom",
    "gpu.mojom",
    "gpu_capabilities.mojom",
+   "viewport_parameter_listener.mojom",
   ]
 
   deps = [

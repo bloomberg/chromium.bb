@@ -57,6 +57,7 @@ const (
 	MOJO_HANDLE_SIGNAL_NONE     MojoHandleSignals = 0
 	MOJO_HANDLE_SIGNAL_READABLE                   = 1 << 0
 	MOJO_HANDLE_SIGNAL_WRITABLE                   = 1 << 1
+	MOJO_HANDLE_SIGNAL_PEER_CLOSED                = 1 << 2
 
 	MOJO_WRITE_MESSAGE_FLAG_NONE       MojoWriteMessageFlags = 0
 	MOJO_READ_MESSAGE_FLAG_NONE        MojoReadMessageFlags  = 0

@@ -99,8 +99,7 @@ namespace media {
 class MojoRendererTest : public mojo::test::ApplicationTestBase {
  public:
   MojoRendererTest()
-      : ApplicationTestBase(mojo::Array<mojo::String>()),
-        service_provider_(NULL) {}
+      : service_provider_(NULL) {}
   ~MojoRendererTest() override {}
 
  protected:

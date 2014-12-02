@@ -93,36 +93,19 @@ class MojomProcessor(object):
   def __init__(self, should_generate):
     self._should_generate = should_generate
     self._processed_files = {}
+    self._parsed_files = {}
 
-  def ProcessFile(self, args, remaining_args, generator_modules, filename,
-                  _imported_filename_stack=None):
-    # Memoized results.
+  def ProcessFile(self, args, remaining_args, generator_modules, filename):
+    self._ParseFileAndImports(filename, args.import_directories, [])
+
+    return self._GenerateModule(args, remaining_args, generator_modules,
+        filename)
+
+  def _GenerateModule(self, args, remaining_args, generator_modules, filename):
+    # Return the already-generated module.
     if filename in self._processed_files:
       return self._processed_files[filename]
-
-    if _imported_filename_stack is None:
-      _imported_filename_stack = []
-
-    # Ensure we only visit each file once.
-    if filename in _imported_filename_stack:
-      print "%s: Error: Circular dependency" % filename + \
-          MakeImportStackMessage(_imported_filename_stack + [filename])
-      sys.exit(1)
-
-    try:
-      with open(filename) as f:
-        source = f.read()
-    except IOError as e:
-      print "%s: Error: %s" % (e.filename, e.strerror) + \
-          MakeImportStackMessage(_imported_filename_stack + [filename])
-      sys.exit(1)
-
-    try:
-      tree = Parse(source, filename)
-    except Error as e:
-      full_stack = _imported_filename_stack + [filename]
-      print str(e) + MakeImportStackMessage(full_stack)
-      sys.exit(1)
+    tree = self._parsed_files[filename]
 
     dirname, name = os.path.split(filename)
     mojom = Translate(tree, name)
@@ -135,9 +118,8 @@ class MojomProcessor(object):
       import_filename = FindImportFile(dirname,
                                        import_data['filename'],
                                        args.import_directories)
-      import_data['module'] = self.ProcessFile(
-          args, remaining_args, generator_modules, import_filename,
-          _imported_filename_stack=_imported_filename_stack + [filename])
+      import_data['module'] = self._GenerateModule(
+          args, remaining_args, generator_modules, import_filename)
 
     module = OrderedModuleFromData(mojom)
 
@@ -161,6 +143,42 @@ class MojomProcessor(object):
     # Save result.
     self._processed_files[filename] = module
     return module
+
+  def _ParseFileAndImports(self, filename, import_directories,
+      imported_filename_stack):
+    # Ignore already-parsed files.
+    if filename in self._parsed_files:
+      return
+
+    if filename in imported_filename_stack:
+      print "%s: Error: Circular dependency" % filename + \
+          MakeImportStackMessage(imported_filename_stack + [filename])
+      sys.exit(1)
+
+    try:
+      with open(filename) as f:
+        source = f.read()
+    except IOError as e:
+      print "%s: Error: %s" % (e.filename, e.strerror) + \
+          MakeImportStackMessage(imported_filename_stack + [filename])
+      sys.exit(1)
+
+    try:
+      tree = Parse(source, filename)
+    except Error as e:
+      full_stack = imported_filename_stack + [filename]
+      print str(e) + MakeImportStackMessage(full_stack)
+      sys.exit(1)
+
+    dirname = os.path.split(filename)[0]
+    for imp_entry in tree.import_list:
+      import_filename = FindImportFile(dirname,
+          imp_entry.import_filename, import_directories)
+      self._ParseFileAndImports(import_filename, import_directories,
+          imported_filename_stack + [filename])
+
+    self._parsed_files[filename] = tree
+
 
 def main():
   parser = argparse.ArgumentParser(

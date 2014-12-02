@@ -15,15 +15,13 @@ namespace mojo {
 namespace system {
 
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
-    MessageInTransit::kTypeMessagePipeEndpoint;
-STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
-    MessageInTransit::kTypeMessagePipe;
+    MessageInTransit::kTypeEndpoint;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
     MessageInTransit::kTypeChannel;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
     MessageInTransit::kTypeRawChannel;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
-    MessageInTransit::kSubtypeMessagePipeEndpointData;
+    MessageInTransit::kSubtypeEndpointData;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
     MessageInTransit::kSubtypeChannelAttachAndRunEndpoint;
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
@@ -110,6 +108,8 @@ MessageInTransit::MessageInTransit(Type type,
           base::AlignedAlloc(main_buffer_size_, kMessageAlignment))) {
   ConstructorHelper(type, subtype, num_bytes);
   bytes.GetArray(MessageInTransit::bytes(), num_bytes);
+  memset(static_cast<char*>(MessageInTransit::bytes()) + num_bytes, 0,
+         main_buffer_size_ - sizeof(Header) - num_bytes);
 }
 
 MessageInTransit::MessageInTransit(const View& message_view)

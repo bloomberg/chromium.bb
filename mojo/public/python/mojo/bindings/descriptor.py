@@ -72,7 +72,7 @@ class SerializableType(Type):
     """
     raise NotImplementedError()
 
-  def Deserialize(self, value, data, handles):
+  def Deserialize(self, value, context):
     """
     Deserialize a value of this type.
 
@@ -106,7 +106,7 @@ class NumericType(SerializableType):
   def Serialize(self, value, data_offset, data, handle_offset):
     return (value, [])
 
-  def Deserialize(self, value, data, handles):
+  def Deserialize(self, value, context):
     return value
 
 
@@ -161,21 +161,31 @@ class PointerType(SerializableType):
       return (0, [])
     return self.SerializePointer(value, data_offset, data, handle_offset)
 
-  def Deserialize(self, value, data, handles):
+  def Deserialize(self, value, context):
     if value == 0:
       if not self.nullable:
         raise serialization.DeserializationException(
             'Trying to deserialize null for non nullable type.')
       return None
-    pointed_data = buffer(data, value)
-    (size, nb_elements) = serialization.HEADER_STRUCT.unpack_from(pointed_data)
-    return self.DeserializePointer(size, nb_elements, pointed_data, handles)
+    if value % 8 != 0:
+      raise serialization.DeserializationException(
+          'Pointer alignment is incorrect.')
+    sub_context = context.GetSubContext(value)
+    if len(sub_context.data) < serialization.HEADER_STRUCT.size:
+      raise serialization.DeserializationException(
+          'Available data too short to contain header.')
+    (size, nb_elements) = serialization.HEADER_STRUCT.unpack_from(
+        sub_context.data)
+    if len(sub_context.data) < size or size < serialization.HEADER_STRUCT.size:
+      raise serialization.DeserializationException('Header size is incorrect.')
+    sub_context.ClaimMemory(0, size)
+    return self.DeserializePointer(size, nb_elements, sub_context)
 
   def SerializePointer(self, value, data_offset, data, handle_offset):
     """Serialize the not null value."""
     raise NotImplementedError()
 
-  def DeserializePointer(self, size, nb_elements, data, handles):
+  def DeserializePointer(self, size, nb_elements, context):
     raise NotImplementedError()
 
 
@@ -204,9 +214,8 @@ class StringType(PointerType):
     return self._array_type.SerializeArray(
         string_array, data_offset, data, handle_offset)
 
-  def DeserializePointer(self, size, nb_elements, data, handles):
-    string_array = self._array_type.DeserializeArray(
-        size, nb_elements, data, handles)
+  def DeserializePointer(self, size, nb_elements, context):
+    string_array = self._array_type.DeserializeArray(size, nb_elements, context)
     return unicode(string_array.tostring(), 'utf8')
 
 
@@ -226,14 +235,13 @@ class BaseHandleType(SerializableType):
       return (-1, [])
     return (handle_offset, [handle])
 
-  def Deserialize(self, value, data, handles):
+  def Deserialize(self, value, context):
     if value == -1:
       if not self.nullable:
         raise serialization.DeserializationException(
             'Trying to deserialize null for non nullable type.')
       return self.FromHandle(mojo.system.Handle())
-    # TODO(qsr) validate handle order
-    return self.FromHandle(handles[value])
+    return self.FromHandle(context.ClaimHandle(value))
 
   def FromHandle(self, handle):
     raise NotImplementedError()
@@ -326,12 +334,18 @@ class BaseArrayType(PointerType):
     """Serialize the not null array."""
     raise NotImplementedError()
 
-  def DeserializePointer(self, size, nb_elements, data, handles):
-    if self.length != 0 and size != self.length:
+  def DeserializePointer(self, size, nb_elements, context):
+    if self.length != 0 and nb_elements != self.length:
       raise serialization.DeserializationException('Incorrect array size')
-    return self.DeserializeArray(size, nb_elements, data, handles)
+    if (size <
+        serialization.HEADER_STRUCT.size + self.SizeForLength(nb_elements)):
+      raise serialization.DeserializationException('Incorrect array size')
+    return self.DeserializeArray(size, nb_elements, context)
 
-  def DeserializeArray(self, size, nb_elements, data, handles):
+  def DeserializeArray(self, size, nb_elements, context):
+    raise NotImplementedError()
+
+  def SizeForLength(self, nb_elements):
     raise NotImplementedError()
 
 
@@ -351,15 +365,17 @@ class BooleanArrayType(BaseArrayType):
     converted = array.array('B', [_ConvertBooleansToByte(x) for x in groups])
     return _SerializeNativeArray(converted, data_offset, data, len(value))
 
-  def DeserializeArray(self, size, nb_elements, data, handles):
-    converted = self._array_type.DeserializeArray(
-        size, nb_elements, data, handles)
+  def DeserializeArray(self, size, nb_elements, context):
+    converted = self._array_type.DeserializeArray(size, nb_elements, context)
     elements = list(itertools.islice(
         itertools.chain.from_iterable(
             [_ConvertByteToBooleans(x, 8) for x in converted]),
         0,
         nb_elements))
     return elements
+
+  def SizeForLength(self, nb_elements):
+    return (nb_elements + 7) // 8
 
 
 class GenericArrayType(BaseArrayType):
@@ -400,17 +416,21 @@ class GenericArrayType(BaseArrayType):
                      *to_pack)
     return (data_offset, returned_handles)
 
-  def DeserializeArray(self, size, nb_elements, data, handles):
+  def DeserializeArray(self, size, nb_elements, context):
     values = struct.unpack_from(
         '%d%s' % (nb_elements, self.sub_type.GetTypeCode()),
-        buffer(data, serialization.HEADER_STRUCT.size))
+        buffer(context.data, serialization.HEADER_STRUCT.size))
     result = []
-    position = serialization.HEADER_STRUCT.size
+    sub_context = context.GetSubContext(serialization.HEADER_STRUCT.size)
     for value in values:
-      result.append(
-          self.sub_type.Deserialize(value, buffer(data, position), handles))
-      position += self.sub_type.GetByteSize()
+      result.append(self.sub_type.Deserialize(
+          value,
+          sub_context))
+      sub_context = sub_context.GetSubContext(self.sub_type.GetByteSize())
     return result
+
+  def SizeForLength(self, nb_elements):
+    return nb_elements * self.sub_type.GetByteSize();
 
 
 class NativeArrayType(BaseArrayType):
@@ -419,6 +439,7 @@ class NativeArrayType(BaseArrayType):
   def __init__(self, typecode, nullable=False, length=0):
     BaseArrayType.__init__(self, nullable, length)
     self.array_typecode = typecode
+    self.element_size = struct.calcsize('<%s' % self.array_typecode)
 
   def Convert(self, value):
     if value is None:
@@ -431,12 +452,15 @@ class NativeArrayType(BaseArrayType):
   def SerializeArray(self, value, data_offset, data, handle_offset):
     return _SerializeNativeArray(value, data_offset, data, len(value))
 
-  def DeserializeArray(self, size, nb_elements, data, handles):
+  def DeserializeArray(self, size, nb_elements, context):
     result = array.array(self.array_typecode)
-    result.fromstring(buffer(data,
+    result.fromstring(buffer(context.data,
                              serialization.HEADER_STRUCT.size,
                              size - serialization.HEADER_STRUCT.size))
     return result
+
+  def SizeForLength(self, nb_elements):
+    return nb_elements * self.element_size
 
 
 class StructType(PointerType):
@@ -469,8 +493,8 @@ class StructType(PointerType):
     data.extend(new_data)
     return (data_offset, new_handles)
 
-  def DeserializePointer(self, size, nb_elements, data, handles):
-    return self.struct_type.Deserialize(data, handles)
+  def DeserializePointer(self, size, nb_elements, context):
+    return self.struct_type.Deserialize(context)
 
 
 class MapType(SerializableType):
@@ -511,8 +535,8 @@ class MapType(SerializableType):
       s = self.struct(keys=keys, values=values)
     return self.struct_type.Serialize(s, data_offset, data, handle_offset)
 
-  def Deserialize(self, value, data, handles):
-    s = self.struct_type.Deserialize(value, data, handles)
+  def Deserialize(self, value, context):
+    s = self.struct_type.Deserialize(value, context)
     if s:
       if len(s.keys) != len(s.values):
         raise serialization.DeserializationException(
@@ -590,7 +614,7 @@ class FieldGroup(object):
   def Serialize(self, obj, data_offset, data, handle_offset):
     raise NotImplementedError()
 
-  def Deserialize(self, value, data, handles):
+  def Deserialize(self, value, context):
     raise NotImplementedError()
 
 
@@ -615,8 +639,8 @@ class SingleFieldGroup(FieldGroup, FieldDescriptor):
     value = getattr(obj, self.name)
     return self.field_type.Serialize(value, data_offset, data, handle_offset)
 
-  def Deserialize(self, value, data, handles):
-    entity = self.field_type.Deserialize(value, data, handles)
+  def Deserialize(self, value, context):
+    entity = self.field_type.Deserialize(value, context)
     return { self.name: entity }
 
 
@@ -640,7 +664,7 @@ class BooleanGroup(FieldGroup):
         [getattr(obj, field.name) for field in self.GetDescriptors()])
     return (value, [])
 
-  def Deserialize(self, value, data, handles):
+  def Deserialize(self, value, context):
     values =  itertools.izip_longest([x.name for x in self.descriptors],
                                       _ConvertByteToBooleans(value),
                                      fillvalue=False)
@@ -663,7 +687,7 @@ def _ConvertBooleansToByte(booleans):
 
 
 def _ConvertByteToBooleans(value, min_size=0):
-  "Unpack an integer into a list of booleans."""
+  """Unpack an integer into a list of booleans."""
   res = []
   while value:
     res.append(bool(value&1))

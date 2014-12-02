@@ -18,6 +18,9 @@ namespace {
 
 const MojoHandleSignalsState kEmptyMojoHandleSignalsState = {0u, 0u};
 const MojoHandleSignalsState kFullMojoHandleSignalsState = {~0u, ~0u};
+const MojoHandleSignals kAllSignals = MOJO_HANDLE_SIGNAL_READABLE |
+                                      MOJO_HANDLE_SIGNAL_WRITABLE |
+                                      MOJO_HANDLE_SIGNAL_PEER_CLOSED;
 
 typedef test::CoreTestBase CoreTest;
 
@@ -545,11 +548,9 @@ TEST_F(CoreTest, MessagePipe) {
                        MakeUserPointer(&result_index), MakeUserPointer(hss)));
   EXPECT_EQ(static_cast<uint32_t>(-1), result_index);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss[0].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss[0].satisfiable_signals);
+  EXPECT_EQ(kAllSignals, hss[0].satisfiable_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss[1].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss[1].satisfiable_signals);
+  EXPECT_EQ(kAllSignals, hss[1].satisfiable_signals);
 
   // Try to read anyway.
   char buffer[1] = {'a'};
@@ -568,14 +569,12 @@ TEST_F(CoreTest, MessagePipe) {
   EXPECT_EQ(MOJO_RESULT_OK, core()->Wait(h[0], MOJO_HANDLE_SIGNAL_WRITABLE,
                                          1000000000, MakeUserPointer(&hss[0])));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss[0].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss[0].satisfiable_signals);
+  EXPECT_EQ(kAllSignals, hss[0].satisfiable_signals);
   hss[0] = kEmptyMojoHandleSignalsState;
   EXPECT_EQ(MOJO_RESULT_OK, core()->Wait(h[1], MOJO_HANDLE_SIGNAL_WRITABLE,
                                          1000000000, MakeUserPointer(&hss[0])));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss[0].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss[0].satisfiable_signals);
+  EXPECT_EQ(kAllSignals, hss[0].satisfiable_signals);
 
   // Also check that |h[1]| is writable using |WaitMany()|.
   signals[0] = MOJO_HANDLE_SIGNAL_READABLE;
@@ -590,11 +589,9 @@ TEST_F(CoreTest, MessagePipe) {
                        MakeUserPointer(hss)));
   EXPECT_EQ(1u, result_index);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss[0].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss[0].satisfiable_signals);
+  EXPECT_EQ(kAllSignals, hss[0].satisfiable_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss[1].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss[1].satisfiable_signals);
+  EXPECT_EQ(kAllSignals, hss[1].satisfiable_signals);
 
   // Write to |h[1]|.
   buffer[0] = 'b';
@@ -617,11 +614,9 @@ TEST_F(CoreTest, MessagePipe) {
   EXPECT_EQ(0u, result_index);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss[0].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss[0].satisfiable_signals);
+  EXPECT_EQ(kAllSignals, hss[0].satisfiable_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss[1].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss[1].satisfiable_signals);
+  EXPECT_EQ(kAllSignals, hss[1].satisfiable_signals);
 
   // Read from |h[0]|.
   // First, get only the size.
@@ -649,8 +644,7 @@ TEST_F(CoreTest, MessagePipe) {
             core()->Wait(h[0], MOJO_HANDLE_SIGNAL_READABLE, 0,
                          MakeUserPointer(&hss[0])));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss[0].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss[0].satisfiable_signals);
+  EXPECT_EQ(kAllSignals, hss[0].satisfiable_signals);
 
   // Write to |h[0]|.
   buffer[0] = 'd';
@@ -667,15 +661,19 @@ TEST_F(CoreTest, MessagePipe) {
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             core()->Wait(h[1], MOJO_HANDLE_SIGNAL_WRITABLE, 1000000000,
                          MakeUserPointer(&hss[0])));
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss[0].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss[0].satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss[0].satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss[0].satisfiable_signals);
 
   // Check that |h[1]| is still readable (for the moment).
   hss[0] = kEmptyMojoHandleSignalsState;
   EXPECT_EQ(MOJO_RESULT_OK, core()->Wait(h[1], MOJO_HANDLE_SIGNAL_READABLE,
                                          1000000000, MakeUserPointer(&hss[0])));
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss[0].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss[0].satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss[0].satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss[0].satisfiable_signals);
 
   // Discard a message from |h[1]|.
   EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
@@ -688,8 +686,8 @@ TEST_F(CoreTest, MessagePipe) {
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             core()->Wait(h[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000,
                          MakeUserPointer(&hss[0])));
-  EXPECT_EQ(0u, hss[0].satisfied_signals);
-  EXPECT_EQ(0u, hss[0].satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss[0].satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss[0].satisfiable_signals);
 
   // Try writing to |h[1]|.
   buffer[0] = 'e';
@@ -732,8 +730,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
                          MakeUserPointer(&hss)));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss.satisfiable_signals);
+  EXPECT_EQ(kAllSignals, hss.satisfiable_signals);
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -773,8 +770,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
                          MakeUserPointer(&hss)));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss.satisfiable_signals);
+  EXPECT_EQ(kAllSignals, hss.satisfiable_signals);
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -797,8 +793,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
                          MakeUserPointer(&hss)));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss.satisfiable_signals);
+  EXPECT_EQ(kAllSignals, hss.satisfiable_signals);
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -833,8 +828,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
                          MakeUserPointer(&hss)));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss.satisfiable_signals);
+  EXPECT_EQ(kAllSignals, hss.satisfiable_signals);
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -870,12 +864,14 @@ TEST_F(CoreTest, DataPipe) {
       MOJO_RESULT_FAILED_PRECONDITION,
       core()->Wait(ph, MOJO_HANDLE_SIGNAL_READABLE, 0, MakeUserPointer(&hss)));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
   hss = kEmptyMojoHandleSignalsState;
   EXPECT_EQ(MOJO_RESULT_OK, core()->Wait(ph, MOJO_HANDLE_SIGNAL_WRITABLE, 0,
                                          MakeUserPointer(&hss)));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // Consumer should be never-writable, and not yet readable.
   hss = kFullMojoHandleSignalsState;
@@ -883,16 +879,18 @@ TEST_F(CoreTest, DataPipe) {
       MOJO_RESULT_FAILED_PRECONDITION,
       core()->Wait(ch, MOJO_HANDLE_SIGNAL_WRITABLE, 0, MakeUserPointer(&hss)));
   EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
   hss = kFullMojoHandleSignalsState;
   EXPECT_EQ(
       MOJO_RESULT_DEADLINE_EXCEEDED,
       core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 0, MakeUserPointer(&hss)));
   EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // Write.
-  char elements[2] = {'A', 'B'};
+  signed char elements[2] = {'A', 'B'};
   uint32_t num_bytes = 2u;
   EXPECT_EQ(MOJO_RESULT_OK,
             core()->WriteData(ph, UserPointer<const void>(elements),
@@ -905,7 +903,8 @@ TEST_F(CoreTest, DataPipe) {
   EXPECT_EQ(MOJO_RESULT_OK, core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 0,
                                          MakeUserPointer(&hss)));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // Peek one character.
   elements[0] = -1;
@@ -1022,7 +1021,8 @@ TEST_F(CoreTest, DataPipe) {
       MOJO_RESULT_DEADLINE_EXCEEDED,
       core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 0, MakeUserPointer(&hss)));
   EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // TODO(vtl): More.
 
@@ -1034,8 +1034,8 @@ TEST_F(CoreTest, DataPipe) {
   EXPECT_EQ(
       MOJO_RESULT_FAILED_PRECONDITION,
       core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 0, MakeUserPointer(&hss)));
-  EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(0u, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(ch));
 }
@@ -1075,8 +1075,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
                          MakeUserPointer(&hss)));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss.satisfiable_signals);
+  EXPECT_EQ(kAllSignals, hss.satisfiable_signals);
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -1111,7 +1110,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
             core()->Wait(ch_received, MOJO_HANDLE_SIGNAL_READABLE, 1000000000,
                          MakeUserPointer(&hss)));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
   num_bytes = kBufferSize;
   EXPECT_EQ(MOJO_RESULT_OK,
             core()->ReadData(ch_received, UserPointer<void>(buffer),
@@ -1131,8 +1131,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
                          MakeUserPointer(&hss)));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss.satisfiable_signals);
+  EXPECT_EQ(kAllSignals, hss.satisfiable_signals);
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -1167,7 +1166,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
             core()->Wait(ch_received, MOJO_HANDLE_SIGNAL_READABLE, 1000000000,
                          MakeUserPointer(&hss)));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
   num_bytes = kBufferSize;
   EXPECT_EQ(MOJO_RESULT_OK,
             core()->ReadData(ch_received, UserPointer<void>(buffer),
@@ -1225,7 +1225,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
   EXPECT_EQ(MOJO_RESULT_OK, core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE,
                                          1000000000, MakeUserPointer(&hss)));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss.satisfiable_signals);
 
   // Make sure that |ch| can't be sent if it's in a two-phase read.
   const void* read_ptr = nullptr;
@@ -1251,8 +1252,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
                          MakeUserPointer(&hss)));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss.satisfiable_signals);
+  EXPECT_EQ(kAllSignals, hss.satisfiable_signals);
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   EXPECT_EQ(MOJO_RESULT_OK,

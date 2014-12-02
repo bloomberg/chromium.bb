@@ -42,7 +42,13 @@ bool ReadByte(const embedder::PlatformHandle& handle, char* c) {
 
 typedef testing::Test MultiprocessTestHelperTest;
 
-TEST_F(MultiprocessTestHelperTest, RunChild) {
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_RunChild DISABLED_RunChild
+#else
+#define MAYBE_RunChild RunChild
+#endif  // defined(OS_ANDROID)
+TEST_F(MultiprocessTestHelperTest, MAYBE_RunChild) {
   MultiprocessTestHelper helper;
   EXPECT_TRUE(helper.server_platform_handle.is_valid());
 
@@ -55,14 +61,26 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(RunChild) {
   return 123;
 }
 
-TEST_F(MultiprocessTestHelperTest, TestChildMainNotFound) {
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_TestChildMainNotFound DISABLED_TestChildMainNotFound
+#else
+#define MAYBE_TestChildMainNotFound TestChildMainNotFound
+#endif  // defined(OS_ANDROID)
+TEST_F(MultiprocessTestHelperTest, MAYBE_TestChildMainNotFound) {
   MultiprocessTestHelper helper;
   helper.StartChild("NoSuchTestChildMain");
   int result = helper.WaitForChildShutdown();
   EXPECT_FALSE(result >= 0 && result <= 127);
 }
 
-TEST_F(MultiprocessTestHelperTest, PassedChannel) {
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_PassedChannel DISABLED_PassedChannel
+#else
+#define MAYBE_PassedChannel PassedChannel
+#endif  // defined(OS_ANDROID)
+TEST_F(MultiprocessTestHelperTest, MAYBE_PassedChannel) {
   MultiprocessTestHelper helper;
   EXPECT_TRUE(helper.server_platform_handle.is_valid());
   helper.StartChild("PassedChannel");
@@ -109,7 +127,13 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PassedChannel) {
   return static_cast<int>(c);
 }
 
-TEST_F(MultiprocessTestHelperTest, ChildTestPasses) {
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_ChildTestPasses DISABLED_ChildTestPasses
+#else
+#define MAYBE_ChildTestPasses ChildTestPasses
+#endif  // defined(OS_ANDROID)
+TEST_F(MultiprocessTestHelperTest, MAYBE_ChildTestPasses) {
   MultiprocessTestHelper helper;
   EXPECT_TRUE(helper.server_platform_handle.is_valid());
   helper.StartChild("ChildTestPasses");
@@ -122,7 +146,13 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(ChildTestPasses) {
       IsNonBlocking(MultiprocessTestHelper::client_platform_handle.get()));
 }
 
-TEST_F(MultiprocessTestHelperTest, ChildTestFailsAssert) {
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_ChildTestFailsAssert DISABLED_ChildTestFailsAssert
+#else
+#define MAYBE_ChildTestFailsAssert ChildTestFailsAssert
+#endif  // defined(OS_ANDROID)
+TEST_F(MultiprocessTestHelperTest, MAYBE_ChildTestFailsAssert) {
   MultiprocessTestHelper helper;
   EXPECT_TRUE(helper.server_platform_handle.is_valid());
   helper.StartChild("ChildTestFailsAssert");
@@ -138,7 +168,13 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(ChildTestFailsAssert) {
   CHECK(false) << "Not reached";
 }
 
-TEST_F(MultiprocessTestHelperTest, ChildTestFailsExpect) {
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_ChildTestFailsExpect DISABLED_ChildTestFailsExpect
+#else
+#define MAYBE_ChildTestFailsExpect ChildTestFailsExpect
+#endif  // defined(OS_ANDROID)
+TEST_F(MultiprocessTestHelperTest, MAYBE_ChildTestFailsExpect) {
   MultiprocessTestHelper helper;
   EXPECT_TRUE(helper.server_platform_handle.is_valid());
   helper.StartChild("ChildTestFailsExpect");

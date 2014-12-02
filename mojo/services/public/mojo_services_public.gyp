@@ -83,6 +83,7 @@
         'interfaces/gpu/command_buffer.mojom',
         'interfaces/gpu/gpu.mojom',
         'interfaces/gpu/gpu_capabilities.mojom',
+        'interfaces/gpu/viewport_parameter_listener.mojom',
       ],
       'includes': [ '../../public/tools/bindings/mojom_bindings_generator.gypi' ],
       'dependencies': [

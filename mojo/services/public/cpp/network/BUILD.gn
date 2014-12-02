@@ -3,15 +3,6 @@
 # found in the LICENSE file.
 
 source_set("network") {
-  deps = [
-    "//base",
-    "//mojo/application",
-    "//mojo/common",
-    "//mojo/environment:chromium",
-    "//mojo/public/c/system:for_component",
-    "//mojo/services/public/interfaces/network",
-  ]
-
   sources = [
     "udp_socket_wrapper.cc",
     "udp_socket_wrapper.h",
@@ -19,5 +10,15 @@ source_set("network") {
     "web_socket_read_queue.h",
     "web_socket_write_queue.cc",
     "web_socket_write_queue.h",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/application",
+    "//mojo/common",
+    "//mojo/environment:chromium",
+    "//mojo/public/c/system:for_component",
+    "//mojo/public/cpp/system",
+    "//mojo/services/public/interfaces/network",
   ]
 }

@@ -243,8 +243,8 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
             waiter.Wait(MOJO_DEADLINE_INDEFINITE, nullptr));
   HandleSignalsState hss;
   mp->RemoveWaiter(0, &waiter, &hss);
-  EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(0u, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 
   mp->Close(0);
 
@@ -279,8 +279,8 @@ TEST_F(ChannelTest, WaitAfterAttachRunAndShutdown) {
   HandleSignalsState hss;
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             mp->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, &hss));
-  EXPECT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(0u, hss.satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 
   mp->Close(0);
 

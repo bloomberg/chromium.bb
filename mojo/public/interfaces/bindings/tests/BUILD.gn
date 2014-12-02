@@ -11,6 +11,7 @@ mojom("test_interfaces") {
     "no_module.mojom",
     "rect.mojom",
     "regression_tests.mojom",
+    "regression_tests_import.mojom",
     "sample_factory.mojom",
     "sample_import.mojom",
     "sample_import2.mojom",

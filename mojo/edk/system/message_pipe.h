@@ -107,7 +107,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe : public ChannelEndpointClient {
                     embedder::PlatformHandleVector* platform_handles);
 
   // |ChannelEndpointClient| methods:
-  bool OnReadMessage(unsigned port,
+  void OnReadMessage(unsigned port,
                      scoped_ptr<MessageInTransit> message) override;
   void OnDetachFromChannel(unsigned port) override;
 
@@ -127,11 +127,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipe : public ChannelEndpointClient {
       unsigned port,
       MessageInTransit* message,
       std::vector<DispatcherTransport>* transports);
-
-  // Used by |EnqueueMessage()| to handle control messages that are actually
-  // meant for us.
-  MojoResult HandleControlMessage(unsigned port,
-                                  scoped_ptr<MessageInTransit> message);
 
   base::Lock lock_;  // Protects the following members.
   scoped_ptr<MessagePipeEndpoint> endpoints_[2];

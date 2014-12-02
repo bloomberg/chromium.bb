@@ -56,6 +56,7 @@ cdef extern from "mojo/public/c/system/core.h" nogil:
   const MojoHandleSignals MOJO_HANDLE_SIGNAL_NONE
   const MojoHandleSignals MOJO_HANDLE_SIGNAL_READABLE
   const MojoHandleSignals MOJO_HANDLE_SIGNAL_WRITABLE
+  const MojoHandleSignals MOJO_HANDLE_SIGNAL_PEER_CLOSED
 
   # functions.h
   MojoTimeTicks MojoGetTimeTicksNow()
