@@ -102,6 +102,7 @@ test("gl_tests") {
     ":gpu",
     ":test_support",
     "//base",
+    "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
     "//testing/gmock",
     "//testing/gtest",
@@ -253,6 +254,7 @@ test("angle_unittests") {
 
   deps = [
     "//base",
+    "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
     "//testing/gmock",
     "//testing/gtest",

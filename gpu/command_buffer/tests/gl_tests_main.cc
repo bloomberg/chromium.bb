@@ -3,14 +3,17 @@
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
+#include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/test_suite.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
-#include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "gpu/config/gpu_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gl/gl_surface.h"
 
 #if defined(OS_ANDROID)
@@ -18,12 +21,20 @@
 #include "ui/gl/android/gl_jni_registrar.h"
 #endif
 
+namespace {
+
+int RunHelper(base::TestSuite* testSuite) {
+  base::MessageLoopForIO message_loop;
+  return testSuite->Run();
+}
+
+}  // namespace
+
 int main(int argc, char** argv) {
 #if defined(OS_ANDROID)
   ui::gl::android::RegisterJni(base::android::AttachCurrentThread());
-#else
-  base::AtExitManager exit_manager;
 #endif
+  base::TestSuite test_suite(argc, argv);
   CommandLine::Init(argc, argv);
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
@@ -31,8 +42,9 @@ int main(int argc, char** argv) {
   gfx::GLSurface::InitializeOneOff();
   ::gles2::Initialize();
   gpu::ApplyGpuDriverBugWorkarounds(CommandLine::ForCurrentProcess());
-  base::MessageLoop main_message_loop;
-  return GLTestHelper::RunTests(argc, argv);
+  testing::InitGoogleMock(&argc, argv);
+  return base::LaunchUnitTestsSerially(
+      argc,
+      argv,
+      base::Bind(&RunHelper, base::Unretained(&test_suite)));
 }
-
-

@@ -21,6 +21,8 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/test_suite.h"
 #include "base/time/time.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gl_helper_readback_support.h"
@@ -1950,6 +1952,16 @@ TEST_F(GLHelperTest, CheckOptimizations) {
   CheckOptimizationsTest();
 }
 
+}  // namespace content
+
+namespace {
+
+int RunHelper(base::TestSuite* test_suite) {
+  content::UnitTestTestSuite runner(test_suite);
+  base::MessageLoopForIO message_loop;
+  return runner.Run();
+}
+
 }  // namespace
 
 // These tests needs to run against a proper GL environment, so we
@@ -1961,7 +1973,8 @@ int main(int argc, char** argv) {
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
 
-  content::UnitTestTestSuite runner(suite);
-  base::MessageLoop message_loop;
-  return runner.Run();
+  return base::LaunchUnitTestsSerially(
+    argc,
+    argv,
+    base::Bind(&RunHelper, base::Unretained(suite)));
 }

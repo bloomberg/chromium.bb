@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // GCC requires these declarations, but MSVC requires they not be present.
@@ -239,9 +238,4 @@ bool GLTestHelper::SaveBackbufferAsBMP(
   fwrite(pixels, size, 1, fp);
   fclose(fp);
   return true;
-}
-
-int GLTestHelper::RunTests(int argc, char** argv) {
-  testing::InitGoogleMock(&argc, argv);
-  return RUN_ALL_TESTS();
 }
