@@ -5,6 +5,7 @@
 #ifndef CC_OUTPUT_BEGIN_FRAME_ARGS_H_
 #define CC_OUTPUT_BEGIN_FRAME_ARGS_H_
 
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -16,6 +17,22 @@ class ConvertableToTraceFormat;
 class TracedValue;
 }
 }
+
+/**
+ * In debug builds we trace the creation origin of BeginFrameArgs objects. We
+ * reuse the tracked_objects::Location system to do that.
+ *
+ * However, in release builds we don't want this as it doubles the size of the
+ * BeginFrameArgs object. As well it adds a number of largish strings to the
+ * binary. Despite the argument being unused, most compilers are unable to
+ * optimise it away even when unused. Instead we use the BEGINFRAME_FROM_HERE
+ * macro to prevent the data even getting referenced.
+ */
+#ifdef NDEBUG
+#define BEGINFRAME_FROM_HERE nullptr
+#else
+#define BEGINFRAME_FROM_HERE FROM_HERE
+#endif
 
 namespace cc {
 
@@ -31,9 +48,18 @@ struct CC_EXPORT BeginFrameArgs {
   // Creates an invalid set of values.
   BeginFrameArgs();
 
+#ifdef NDEBUG
+  typedef const void* CreationLocation;
+#else
+  typedef const tracked_objects::Location& CreationLocation;
+  tracked_objects::Location created_from;
+#endif
+
   // You should be able to find all instances where a BeginFrame has been
   // created by searching for "BeginFrameArgs::Create".
-  static BeginFrameArgs Create(base::TimeTicks frame_time,
+  // The location argument should **always** be BEGINFRAME_FROM_HERE macro.
+  static BeginFrameArgs Create(CreationLocation location,
+                               base::TimeTicks frame_time,
                                base::TimeTicks deadline,
                                base::TimeDelta interval,
                                BeginFrameArgsType type);

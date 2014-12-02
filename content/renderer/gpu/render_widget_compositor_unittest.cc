@@ -62,8 +62,9 @@ TEST_F(RenderWidgetCompositorTest, BeginMainFrame) {
                              base::TimeDelta::FromSeconds(1));
   base::TimeTicks deadline(base::TimeTicks() + base::TimeDelta::FromSeconds(2));
   base::TimeDelta interval(base::TimeDelta::FromSeconds(3));
-  cc::BeginFrameArgs args(cc::BeginFrameArgs::Create(
-      frame_time, deadline, interval, cc::BeginFrameArgs::NORMAL));
+  cc::BeginFrameArgs args(
+      cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
+                                 interval, cc::BeginFrameArgs::NORMAL));
 
   EXPECT_CALL(render_widget_->mock_webwidget_,
               beginFrame(AllOf(

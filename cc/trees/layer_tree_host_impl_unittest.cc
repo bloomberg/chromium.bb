@@ -1399,7 +1399,8 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
                           0) {}
 
   BeginFrameArgs CurrentBeginFrameArgs() const override {
-    return CreateBeginFrameArgsForTesting(fake_current_physical_time_);
+    return CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE,
+                                          fake_current_physical_time_);
   }
 
   void SetCurrentPhysicalTimeTicksForTest(base::TimeTicks fake_now) {

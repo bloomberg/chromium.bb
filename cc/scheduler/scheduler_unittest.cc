@@ -191,7 +191,7 @@ class FakeSchedulerClient : public SchedulerClient {
     // last one otherwise we violate the BeginFrameSource contract.
     now_src_->AdvanceNow(BeginFrameArgs::DefaultInterval());
     fake_external_begin_frame_source_->TestOnBeginFrame(
-        CreateBeginFrameArgsForTesting(now_src_));
+        CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, now_src_));
   }
 
   OrderedSimpleTaskRunner& task_runner() { return *task_runner_; }
@@ -1180,7 +1180,8 @@ TEST(SchedulerTest, PollForCommitCompletion) {
   scheduler->NotifyReadyToCommit();
   scheduler->SetNeedsRedraw();
 
-  BeginFrameArgs frame_args = CreateBeginFrameArgsForTesting(client.now_src());
+  BeginFrameArgs frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, client.now_src());
   frame_args.interval = base::TimeDelta::FromMilliseconds(1000);
   client.fake_external_begin_frame_source()->TestOnBeginFrame(frame_args);
 
@@ -1253,7 +1254,8 @@ TEST(SchedulerTest, BeginRetroFrame) {
 
   // Create a BeginFrame with a long deadline to avoid race conditions.
   // This is the first BeginFrame, which will be handled immediately.
-  BeginFrameArgs args = CreateBeginFrameArgsForTesting(client.now_src());
+  BeginFrameArgs args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, client.now_src());
   args.deadline += base::TimeDelta::FromHours(1);
   client.fake_external_begin_frame_source()->TestOnBeginFrame(args);
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
@@ -1331,7 +1333,8 @@ TEST(SchedulerTest, BeginRetroFrame_SwapThrottled) {
 
   // Create a BeginFrame with a long deadline to avoid race conditions.
   // This is the first BeginFrame, which will be handled immediately.
-  BeginFrameArgs args = CreateBeginFrameArgsForTesting(client.now_src());
+  BeginFrameArgs args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, client.now_src());
   args.deadline += base::TimeDelta::FromHours(1);
   client.fake_external_begin_frame_source()->TestOnBeginFrame(args);
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
@@ -1931,7 +1934,8 @@ TEST(SchedulerTest, DidLoseOutputSurfaceAfterBeginRetroFramePosted) {
   // Create a BeginFrame with a long deadline to avoid race conditions.
   // This is the first BeginFrame, which will be handled immediately.
   client.Reset();
-  BeginFrameArgs args = CreateBeginFrameArgsForTesting(client.now_src());
+  BeginFrameArgs args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, client.now_src());
   args.deadline += base::TimeDelta::FromHours(1);
   client.fake_external_begin_frame_source()->TestOnBeginFrame(args);
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
@@ -1990,7 +1994,8 @@ TEST(SchedulerTest, DidLoseOutputSurfaceDuringBeginRetroFrameRunning) {
   // Create a BeginFrame with a long deadline to avoid race conditions.
   // This is the first BeginFrame, which will be handled immediately.
   client.Reset();
-  BeginFrameArgs args = CreateBeginFrameArgsForTesting(client.now_src());
+  BeginFrameArgs args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, client.now_src());
   args.deadline += base::TimeDelta::FromHours(1);
   client.fake_external_begin_frame_source()->TestOnBeginFrame(args);
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);

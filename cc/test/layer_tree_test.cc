@@ -91,7 +91,7 @@ class ExternalBeginFrameSourceForTest
 
   void TestOnBeginFrame() {
     DCHECK(CalledOnValidThread());
-    CallOnBeginFrame(CreateBeginFrameArgsForTesting());
+    CallOnBeginFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
   }
 
  private:

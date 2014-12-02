@@ -10,57 +10,67 @@
 
 namespace cc {
 
-BeginFrameArgs CreateBeginFrameArgsForTesting() {
-  return CreateBeginFrameArgsForTesting(gfx::FrameTime::Now());
-}
-
-BeginFrameArgs CreateBeginFrameArgsForTesting(base::TimeTicks frame_time) {
-  return BeginFrameArgs::Create(
-      frame_time, frame_time + (BeginFrameArgs::DefaultInterval() / 2),
-      BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);
-}
-
-BeginFrameArgs CreateBeginFrameArgsForTesting(int64 frame_time,
-                                              int64 deadline,
-                                              int64 interval) {
-  return BeginFrameArgs::Create(base::TimeTicks::FromInternalValue(frame_time),
-                                base::TimeTicks::FromInternalValue(deadline),
-                                base::TimeDelta::FromInternalValue(interval),
-                                BeginFrameArgs::NORMAL);
+BeginFrameArgs CreateBeginFrameArgsForTesting(
+    BeginFrameArgs::CreationLocation location) {
+  return CreateBeginFrameArgsForTesting(location, gfx::FrameTime::Now());
 }
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(
+    BeginFrameArgs::CreationLocation location,
+    base::TimeTicks frame_time) {
+  return BeginFrameArgs::Create(
+      location, frame_time,
+      frame_time + (BeginFrameArgs::DefaultInterval() / 2),
+      BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);
+}
+
+BeginFrameArgs CreateBeginFrameArgsForTesting(
+    BeginFrameArgs::CreationLocation location,
+    int64 frame_time,
+    int64 deadline,
+    int64 interval) {
+  return BeginFrameArgs::Create(
+      location, base::TimeTicks::FromInternalValue(frame_time),
+      base::TimeTicks::FromInternalValue(deadline),
+      base::TimeDelta::FromInternalValue(interval), BeginFrameArgs::NORMAL);
+}
+
+BeginFrameArgs CreateBeginFrameArgsForTesting(
+    BeginFrameArgs::CreationLocation location,
     int64 frame_time,
     int64 deadline,
     int64 interval,
     BeginFrameArgs::BeginFrameArgsType type) {
-  return BeginFrameArgs::Create(base::TimeTicks::FromInternalValue(frame_time),
-                                base::TimeTicks::FromInternalValue(deadline),
-                                base::TimeDelta::FromInternalValue(interval),
-                                type);
+  return BeginFrameArgs::Create(
+      location, base::TimeTicks::FromInternalValue(frame_time),
+      base::TimeTicks::FromInternalValue(deadline),
+      base::TimeDelta::FromInternalValue(interval), type);
 }
 
-BeginFrameArgs CreateExpiredBeginFrameArgsForTesting() {
+BeginFrameArgs CreateExpiredBeginFrameArgsForTesting(
+    BeginFrameArgs::CreationLocation location) {
   base::TimeTicks now = gfx::FrameTime::Now();
-  return BeginFrameArgs::Create(now, now - BeginFrameArgs::DefaultInterval(),
-                                BeginFrameArgs::DefaultInterval(),
-                                BeginFrameArgs::NORMAL);
+  return BeginFrameArgs::Create(
+      location, now, now - BeginFrameArgs::DefaultInterval(),
+      BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);
 }
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(
+    BeginFrameArgs::CreationLocation location,
     scoped_refptr<TestNowSource> now_src) {
   base::TimeTicks now = now_src->Now();
   return BeginFrameArgs::Create(
-      now, now + (BeginFrameArgs::DefaultInterval() / 2),
+      location, now, now + (BeginFrameArgs::DefaultInterval() / 2),
       BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);
 }
 
 BeginFrameArgs CreateExpiredBeginFrameArgsForTesting(
+    BeginFrameArgs::CreationLocation location,
     scoped_refptr<TestNowSource> now_src) {
   base::TimeTicks now = now_src->Now();
-  return BeginFrameArgs::Create(now, now - BeginFrameArgs::DefaultInterval(),
-                                BeginFrameArgs::DefaultInterval(),
-                                BeginFrameArgs::NORMAL);
+  return BeginFrameArgs::Create(
+      location, now, now - BeginFrameArgs::DefaultInterval(),
+      BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);
 }
 
 bool operator==(const BeginFrameArgs& lhs, const BeginFrameArgs& rhs) {

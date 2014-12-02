@@ -400,7 +400,8 @@ class TileManagerPerfTest : public testing::Test {
     timer_.Reset();
     bool resourceless_software_draw = false;
     do {
-      BeginFrameArgs args = CreateBeginFrameArgsForTesting();
+      BeginFrameArgs args =
+          CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
       host_impl_.UpdateCurrentBeginFrameArgs(args);
       for (unsigned i = 0; i < layers.size(); ++i) {
         layers[i]->UpdateTiles(Occlusion(), resourceless_software_draw);

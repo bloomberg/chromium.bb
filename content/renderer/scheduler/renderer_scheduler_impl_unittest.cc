@@ -42,7 +42,7 @@ class RendererSchedulerImplTest : public testing::Test {
 
   void EnableIdleTasks() {
     scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-        clock_->Now(), base::TimeTicks(),
+        BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
         base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
     scheduler_->DidCommitFrameToCompositor();
   }
@@ -192,8 +192,8 @@ TEST_F(RendererSchedulerImplTest, TestPostIdleTask) {
   EXPECT_FALSE(task_run);  // Shouldn't run yet as no WillBeginFrame.
 
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      clock_->Now(), base::TimeTicks(), base::TimeDelta::FromMilliseconds(1000),
-      cc::BeginFrameArgs::NORMAL));
+      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
   RunUntilIdle();
   EXPECT_FALSE(task_run);  // Shouldn't run as no DidCommitFrameToCompositor.
 
@@ -203,8 +203,8 @@ TEST_F(RendererSchedulerImplTest, TestPostIdleTask) {
   EXPECT_FALSE(task_run);  // We missed the deadline.
 
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      clock_->Now(), base::TimeTicks(), base::TimeDelta::FromMilliseconds(1000),
-      cc::BeginFrameArgs::NORMAL));
+      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
   clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(800));
   scheduler_->DidCommitFrameToCompositor();
   RunUntilIdle();

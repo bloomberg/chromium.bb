@@ -15,23 +15,32 @@
 namespace cc {
 
 // Functions for quickly creating BeginFrameArgs
-BeginFrameArgs CreateBeginFrameArgsForTesting();
-BeginFrameArgs CreateBeginFrameArgsForTesting(base::TimeTicks frame_time);
-BeginFrameArgs CreateBeginFrameArgsForTesting(int64 frame_time,
-                                              int64 deadline,
-                                              int64 interval);
 BeginFrameArgs CreateBeginFrameArgsForTesting(
+    BeginFrameArgs::CreationLocation location);
+BeginFrameArgs CreateBeginFrameArgsForTesting(
+    BeginFrameArgs::CreationLocation location,
+    base::TimeTicks frame_time);
+BeginFrameArgs CreateBeginFrameArgsForTesting(
+    BeginFrameArgs::CreationLocation location,
+    int64 frame_time,
+    int64 deadline,
+    int64 interval);
+BeginFrameArgs CreateBeginFrameArgsForTesting(
+    BeginFrameArgs::CreationLocation location,
     int64 frame_time,
     int64 deadline,
     int64 interval,
     BeginFrameArgs::BeginFrameArgsType type);
-BeginFrameArgs CreateExpiredBeginFrameArgsForTesting();
+BeginFrameArgs CreateExpiredBeginFrameArgsForTesting(
+    BeginFrameArgs::CreationLocation location);
 
 // Creates a BeginFrameArgs using the fake Now value stored on the
 // OrderSimpleTaskRunner.
 BeginFrameArgs CreateBeginFrameArgsForTesting(
+    BeginFrameArgs::CreationLocation location,
     scoped_refptr<TestNowSource> now_src);
 BeginFrameArgs CreateExpiredBeginFrameArgsForTesting(
+    BeginFrameArgs::CreationLocation location,
     scoped_refptr<TestNowSource> now_src);
 
 // gtest helpers -- these *must* be in the same namespace as the types they

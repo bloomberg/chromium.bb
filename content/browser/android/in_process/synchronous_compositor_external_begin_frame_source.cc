@@ -33,9 +33,8 @@ SynchronousCompositorExternalBeginFrameSource::
 void SynchronousCompositorExternalBeginFrameSource::BeginFrame() {
   DCHECK(CalledOnValidThread());
   CallOnBeginFrame(cc::BeginFrameArgs::Create(
-      gfx::FrameTime::Now(), base::TimeTicks(),
-      cc::BeginFrameArgs::DefaultInterval(),
-      cc::BeginFrameArgs::SYNCHRONOUS));
+      BEGINFRAME_FROM_HERE, gfx::FrameTime::Now(), base::TimeTicks(),
+      cc::BeginFrameArgs::DefaultInterval(), cc::BeginFrameArgs::SYNCHRONOUS));
 }
 
 void SynchronousCompositorExternalBeginFrameSource::SetCompositor(

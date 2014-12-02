@@ -44,7 +44,8 @@ TEST(CompositorForwardingMessageFilterTest, BasicTest) {
       new base::TestSimpleTaskRunner);
   int route_id = 0;
 
-  ViewMsg_BeginFrame msg(route_id, cc::CreateBeginFrameArgsForTesting());
+  ViewMsg_BeginFrame msg(
+      route_id, cc::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
 
   CompositorForwardingMessageFilter::Handler plus_handler =
       base::Bind(&CompositorForwardingMessageFilterTestHandler::OnPlusMethod,

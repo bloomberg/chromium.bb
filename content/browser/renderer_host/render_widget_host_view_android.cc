@@ -1408,8 +1408,8 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(base::TimeTicks frame_time,
 
   host_->Send(new ViewMsg_BeginFrame(
       host_->GetRoutingID(),
-      cc::BeginFrameArgs::Create(frame_time, deadline, vsync_period,
-                                 cc::BeginFrameArgs::NORMAL)));
+      cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
+                                 vsync_period, cc::BeginFrameArgs::NORMAL)));
 }
 
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {

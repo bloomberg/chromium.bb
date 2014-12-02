@@ -24,7 +24,8 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(Proxy* proxy,
 
   // Avoid using Now() as the frame time in unit tests.
   base::TimeTicks time_ticks = base::TimeTicks::FromInternalValue(1);
-  SetCurrentBeginFrameArgs(CreateBeginFrameArgsForTesting(time_ticks));
+  SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 }
 
 FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(const LayerTreeSettings& settings,
@@ -42,7 +43,8 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(const LayerTreeSettings& settings,
 
   // Avoid using Now() as the frame time in unit tests.
   base::TimeTicks time_ticks = base::TimeTicks::FromInternalValue(1);
-  SetCurrentBeginFrameArgs(CreateBeginFrameArgsForTesting(time_ticks));
+  SetCurrentBeginFrameArgs(
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 }
 
 FakeLayerTreeHostImpl::~FakeLayerTreeHostImpl() {}

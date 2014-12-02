@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/debug/trace_event.h"
 #include "base/debug/trace_event_argument.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/scheduler/delay_based_time_source.h"
@@ -182,7 +183,7 @@ void BackToBackBeginFrameSource::BeginFrame() {
 
   base::TimeTicks now = Now();
   BeginFrameArgs args = BeginFrameArgs::Create(
-      now, now + BeginFrameArgs::DefaultInterval(),
+      BEGINFRAME_FROM_HERE, now, now + BeginFrameArgs::DefaultInterval(),
       BeginFrameArgs::DefaultInterval(), BeginFrameArgs::NORMAL);
   CallOnBeginFrame(args);
 }
@@ -242,8 +243,8 @@ BeginFrameArgs SyntheticBeginFrameSource::CreateBeginFrameArgs(
     base::TimeTicks frame_time,
     BeginFrameArgs::BeginFrameArgsType type) {
   base::TimeTicks deadline = time_source_->NextTickTime();
-  return BeginFrameArgs::Create(frame_time, deadline, time_source_->Interval(),
-                                type);
+  return BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
+                                time_source_->Interval(), type);
 }
 
 // TimeSourceClient support

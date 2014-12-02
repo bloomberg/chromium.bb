@@ -330,7 +330,7 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(400, 400);
 
@@ -347,7 +347,7 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
 
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   // Update tiles with viewport for tile priority as (0, 0, 100, 100) and the
   // identify transform for tile priority.
@@ -385,7 +385,7 @@ TEST_F(PictureLayerImplTest, ExternalViewportRectForPrioritizingTiles) {
   // should be (200, 200, 100, 100) applied with the said transform.
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   viewport_rect_for_tile_priority = gfx::Rect(200, 200, 100, 100);
   transform_for_tile_priority.Translate(100, 100);
@@ -426,7 +426,7 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(400, 400);
@@ -468,7 +468,7 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   // Should update viewport and transform, but not update visible rect.
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
   resourceless_software_draw = true;
   viewport = gfx::ScaleToEnclosingRect(viewport, 2);
   transform.Translate(1.f, 1.f);
@@ -492,7 +492,7 @@ TEST_F(PictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   // Keep expanded viewport but mark it valid. Should update tile viewport.
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
   resourceless_software_draw = false;
   host_impl_.SetExternalDrawConstraints(transform,
                                         viewport,
@@ -1561,7 +1561,7 @@ TEST_F(PictureLayerImplTest, MarkRequiredOffscreenTiles) {
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
   pending_layer_->UpdateTiles(Occlusion(), resourceless_software_draw);
   EXPECT_EQ(HIGH_RESOLUTION, tiling->resolution());
 
@@ -1589,7 +1589,7 @@ TEST_F(PictureLayerImplTest, TileOutsideOfViewportForTilePriorityNotRequired) {
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(400, 400);
@@ -1625,7 +1625,7 @@ TEST_F(PictureLayerImplTest, TileOutsideOfViewportForTilePriorityNotRequired) {
   pending_layer_->draw_properties().visible_content_rect = visible_content_rect;
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
   pending_layer_->UpdateTiles(Occlusion(), resourceless_software_draw);
 
   // Intersect the two rects. Any tile outside should not be required for
@@ -1678,7 +1678,7 @@ TEST_F(PictureLayerImplTest, HighResTileIsComplete) {
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(200, 200);
@@ -1714,7 +1714,7 @@ TEST_F(PictureLayerImplTest, HighResTileIsIncomplete) {
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(200, 200);
@@ -1745,7 +1745,7 @@ TEST_F(PictureLayerImplTest, HighResTileIsIncompleteLowResComplete) {
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(200, 200);
@@ -1779,7 +1779,7 @@ TEST_F(PictureLayerImplTest, LowResTileIsIncomplete) {
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(200, 200);
@@ -1822,7 +1822,7 @@ TEST_F(PictureLayerImplTest,
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(200, 200);
@@ -2767,7 +2767,7 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(1000, 1000);
@@ -2837,7 +2837,7 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
   // No NOW tiles.
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   pending_layer_->draw_properties().visible_content_rect =
       gfx::Rect(1100, 1100, 500, 500);
@@ -2868,7 +2868,7 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
 
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   pending_layer_->draw_properties().visible_content_rect =
       gfx::Rect(0, 0, 500, 500);
@@ -3370,7 +3370,7 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(400, 400);
@@ -3412,7 +3412,7 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   // Should update viewport and transform, but not update visible rect.
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
   resourceless_software_draw = true;
   viewport = gfx::ScaleToEnclosingRect(viewport, 2);
   transform.Translate(1.f, 1.f);
@@ -3436,7 +3436,7 @@ TEST_F(NoLowResPictureLayerImplTest, InvalidViewportForPrioritizingTiles) {
   // Keep expanded viewport but mark it valid. Should update tile viewport.
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
   resourceless_software_draw = false;
   host_impl_.SetExternalDrawConstraints(transform,
                                         viewport,
@@ -3881,7 +3881,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   gfx::Size tile_size(102, 102);
   gfx::Size layer_bounds(1000, 1000);
@@ -3927,7 +3927,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
   host_impl_.pending_tree()->UpdateDrawProperties();
 
   unoccluded_tile_count = 0;
@@ -3951,7 +3951,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
   host_impl_.pending_tree()->UpdateDrawProperties();
 
   unoccluded_tile_count = 0;
@@ -3976,7 +3976,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   gfx::Size tile_size(102, 102);
   gfx::Size layer_bounds(1000, 1000);
@@ -4027,7 +4027,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
   host_impl_.pending_tree()->UpdateDrawProperties();
 
   for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
@@ -4067,7 +4067,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   time_ticks += base::TimeDelta::FromMilliseconds(200);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
   host_impl_.pending_tree()->UpdateDrawProperties();
 
   for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
@@ -4496,7 +4496,7 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(200, 200);
@@ -4563,7 +4563,7 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(200, 200);
@@ -4620,7 +4620,7 @@ TEST_F(PictureLayerImplTest, ChangeInViewportAllowsTilingUpdates) {
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
-      CreateBeginFrameArgsForTesting(time_ticks));
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
 
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(400, 4000);
