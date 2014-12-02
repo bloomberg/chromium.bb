@@ -81,12 +81,13 @@ void OfflineAudioDestinationNode::uninitialize()
 void OfflineAudioDestinationNode::startRendering()
 {
     ASSERT(isMainThread());
-    ASSERT(m_renderTarget.get());
-    if (!m_renderTarget.get())
+    ASSERT(m_renderTarget);
+    if (!m_renderTarget)
         return;
 
     if (!m_startedRendering) {
         m_startedRendering = true;
+        context()->notifyNodeStartedProcessing(this);
         m_renderThread = adoptPtr(blink::Platform::current()->createThread("Offline Audio Renderer"));
         m_renderThread->postTask(new Task(bind(&OfflineAudioDestinationNode::offlineRender, this)));
     }
@@ -99,9 +100,16 @@ void OfflineAudioDestinationNode::stopRendering()
 
 void OfflineAudioDestinationNode::offlineRender()
 {
+    offlineRenderInternal();
+    context()->notifyNodeFinishedProcessing(this);
+    context()->handlePostRenderTasks();
+}
+
+void OfflineAudioDestinationNode::offlineRenderInternal()
+{
     ASSERT(!isMainThread());
-    ASSERT(m_renderBus.get());
-    if (!m_renderBus.get())
+    ASSERT(m_renderBus);
+    if (!m_renderBus)
         return;
 
     bool isAudioContextInitialized = context()->isInitialized();

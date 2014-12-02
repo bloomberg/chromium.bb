@@ -652,6 +652,11 @@ ScriptPromise AudioContext::resumeContext(ScriptState* scriptState)
     return promise;
 }
 
+void AudioContext::notifyNodeStartedProcessing(AudioNode* node)
+{
+    refNode(node);
+}
+
 void AudioContext::notifyNodeFinishedProcessing(AudioNode* node)
 {
     ASSERT(isAudioThread());
