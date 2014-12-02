@@ -7,7 +7,7 @@
 #
 # You can auto-update this file with ./pnacl/deps_update.py
 
-binutils=47b418f55091173059fec541f1907bd39baddd8d
+binutils=84c8183a55ddc46a4c2be03eef840cceb83d6bcb
 clang=8d61550042f8efb4845c03ffc257e0f3d5925c83
 llvm=216cf014e96d6de7794fcaf886fe56cf97cf7699
 gcc=574429118e460375c377728420c43aad4a3103dc

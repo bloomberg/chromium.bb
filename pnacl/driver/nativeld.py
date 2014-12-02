@@ -27,8 +27,10 @@ EXTRA_ENV = {
   'INPUTS'   : '',
   'OUTPUT'   : '',
 
-  # the INPUTS file coming from the llc translation step
+  # The INPUTS file coming from the llc translation step
   'LLC_TRANSLATED_FILE' : '',
+  # Number of separate modules used for multi-threaded translation. This should
+  # have been set by pnacl-translate, but default to 0 for checking.
   'SPLIT_MODULE' : '0',
   'USE_STDLIB': '1',
 
@@ -183,27 +185,27 @@ def RunLDSandboxed():
   outfile = env.getone('output')
 
   modules = int(env.getone('SPLIT_MODULE'))
-  if modules > 1:
-    first_mainfile = all_inputs.index(main_input)
-    first_extra = all_inputs.index(main_input) + modules
-    # Just the split module files
-    llc_outputs = all_inputs[first_mainfile:first_extra]
-    # everything else
-    all_inputs = all_inputs[:first_mainfile] + all_inputs[first_extra:]
-  else:
-    llc_outputs = [main_input]
+  assert modules >= 1
+  first_mainfile = all_inputs.index(main_input)
+  first_extra = all_inputs.index(main_input) + modules
+  # Have a list of just the split module files.
+  llc_outputs = all_inputs[first_mainfile:first_extra]
+  # Have a list of everything else.
+  other_inputs = all_inputs[:first_mainfile] + all_inputs[first_extra:]
 
-  files = LinkerFiles(all_inputs)
   ld_flags = env.get('LD_FLAGS')
 
   script = MakeSelUniversalScriptForLD(ld_flags,
                                        llc_outputs,
-                                       files,
                                        outfile)
 
-
+  native_libs_dirname = pathtools.tosys(GetNativeLibsDirname(other_inputs))
   Run('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
-      '${SEL_UNIVERSAL_FLAGS} -B ${IRT_BLOB} -- ${LD_SB}',
+      '${SEL_UNIVERSAL_FLAGS} -a -B ${IRT_BLOB} ' +
+      '-E NACL_IRT_OPEN_RESOURCE_BASE=' + native_libs_dirname + ' ' +
+      '-E NACL_IRT_OPEN_RESOURCE_REMAP=' +
+      'libpnacl_irt_shim.a:libpnacl_irt_shim_dummy.a' +
+      ' -- ${LD_SB}',
       stdin_contents=script,
       # stdout/stderr will be automatically dumped
       # upon failure
@@ -213,28 +215,14 @@ def RunLDSandboxed():
 
 def MakeSelUniversalScriptForLD(ld_flags,
                                 llc_outputs,
-                                files,
                                 outfile):
   """ Return sel_universal script text for invoking LD.nexe with the
-  given ld_flags, llc_outputs (which are treated specially), and
-  other input files (for native libraries). The output will be written
-  to outfile.  """
+  given ld_flags, and llc_outputs (which are treated specially).
+  The output will be written to outfile.  """
   script = []
 
   # Open the output file.
   script.append('readwrite_file nexefile %s' % outfile)
-
-  files_to_map = list(files)
-  # Create a reverse-service mapping for each input file and add it to
-  # the sel universal script.
-  for f in files_to_map:
-    basename = pathtools.basename(f)
-    # If we are using the dummy shim, map it with the filename of the real
-    # shim, so the baked-in commandline will work.
-    if basename == 'libpnacl_irt_shim_dummy.a':
-      basename = 'libpnacl_irt_shim.a'
-    script.append('reverse_service_add_manifest_mapping files/%s %s' %
-                  (basename, f))
 
   modules = len(llc_outputs)
   script.extend(['readonly_file objfile%d %s' % (i, f)
@@ -247,16 +235,22 @@ def MakeSelUniversalScriptForLD(ld_flags,
   script.append('')
   return '\n'.join(script)
 
-# Given linker arguments (including -L, -l, and filenames),
-# returns the list of files which are pulled by the linker,
-# with real path names set set up the real -> flat name mapping.
-def LinkerFiles(args):
-  ret = []
-  for f in args:
+
+def GetNativeLibsDirname(other_inputs):
+  """Check that native libs have a common directory and return the directory."""
+  dirname = None
+  for f in other_inputs:
     if IsFlag(f):
       continue
     else:
       if not pathtools.exists(f):
         Log.Fatal("Unable to open '%s'", pathtools.touser(f))
-      ret.append(f)
-  return ret
+      if dirname is None:
+        dirname = pathtools.dirname(f)
+      else:
+        if dirname != pathtools.dirname(f):
+          Log.Fatal('Need a common directory for native libs: %s != %s',
+                    dirname, pathtools.dirname(f))
+  if not dirname:
+    Log.Fatal('No native libraries found')
+  return dirname + '/'

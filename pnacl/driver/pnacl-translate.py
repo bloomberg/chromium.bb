@@ -354,14 +354,13 @@ def main(argv):
     # do module splitting when using it.
     env.set('SPLIT_MODULE', '1')
   else:
-    modules = env.getone('SPLIT_MODULE')
-    if modules != '1':
-      env.append('LLC_FLAGS_EXTRA', '-split-module=' + modules)
-      env.append('LD_FLAGS', '-split-module=' + modules)
+    # Do not set -streaming-bitcode for sandboxed mode, because it is already
+    # in the default command line.
     if not env.getbool('SANDBOXED') and env.getbool('STREAM_BITCODE'):
-      # Do not set -streaming-bitcode for sandboxed mode, because it is already
-      # in the default command line.
       env.append('LLC_FLAGS_EXTRA', '-streaming-bitcode')
+  modules = env.getone('SPLIT_MODULE')
+  env.append('LLC_FLAGS_EXTRA', '-split-module=' + modules)
+  env.append('LD_FLAGS', '-split-module=' + modules)
 
   # If there's a bitcode file, translate it now.
   tng = driver_tools.TempNameGen(inputs + bcfiles, output)
