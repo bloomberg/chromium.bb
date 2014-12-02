@@ -1129,9 +1129,6 @@ void RenderBlock::collapseAnonymousBlockChild(RenderBlock* parent, RenderBlock* 
     parent->setChildrenInline(child->childrenInline());
     RenderObject* nextSibling = child->nextSibling();
 
-    RenderFlowThread* childFlowThread = child->flowThreadContainingBlock();
-    CurrentRenderFlowThreadMaintainer flowThreadMaintainer(childFlowThread);
-
     parent->children()->removeChildNode(parent, child, child->hasLayer());
     // FIXME: Get rid of the temporary disabling of continuations. This is needed by the old
     // multicol implementation, because of buggy block continuation handling (which is hard and

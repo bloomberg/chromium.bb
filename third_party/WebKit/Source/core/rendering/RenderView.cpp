@@ -29,7 +29,6 @@
 #include "core/page/Page.h"
 #include "core/paint/ViewPainter.h"
 #include "core/rendering/ColumnInfo.h"
-#include "core/rendering/FlowThreadController.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGeometryMap.h"
@@ -832,36 +831,20 @@ void RenderView::setIsInWindow(bool isInWindow)
         m_compositor->setIsInWindow(isInWindow);
 }
 
-FlowThreadController* RenderView::flowThreadController()
-{
-    if (!m_flowThreadController)
-        m_flowThreadController = FlowThreadController::create();
-
-    return m_flowThreadController.get();
-}
-
 void RenderView::pushLayoutState(LayoutState& layoutState)
 {
-    if (m_flowThreadController) {
-        RenderFlowThread* currentFlowThread = m_flowThreadController->currentRenderFlowThread();
-        if (currentFlowThread)
-            currentFlowThread->pushFlowThreadLayoutState(layoutState.renderer());
-    }
+    if (RenderFlowThread* currentFlowThread = layoutState.flowThread())
+        currentFlowThread->pushFlowThreadLayoutState(layoutState.renderer());
     m_layoutState = &layoutState;
 }
 
 void RenderView::popLayoutState()
 {
     ASSERT(m_layoutState);
+    RenderFlowThread* currentFlowThread = m_layoutState->flowThread();
     m_layoutState = m_layoutState->next();
-    if (!m_flowThreadController)
-        return;
-
-    RenderFlowThread* currentFlowThread = m_flowThreadController->currentRenderFlowThread();
-    if (!currentFlowThread)
-        return;
-
-    currentFlowThread->popFlowThreadLayoutState();
+    if (currentFlowThread)
+        currentFlowThread->popFlowThreadLayoutState();
 }
 
 IntervalArena* RenderView::intervalArena()

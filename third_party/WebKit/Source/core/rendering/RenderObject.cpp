@@ -52,7 +52,6 @@
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/paint/ObjectPainter.h"
-#include "core/rendering/FlowThreadController.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderDeprecatedFlexibleBox.h"
@@ -626,9 +625,10 @@ RenderFlowThread* RenderObject::locateFlowThreadContainingBlock() const
     ASSERT(flowThreadState() != NotInsideFlowThread);
 
     // See if we have the thread cached because we're in the middle of layout.
-    RenderFlowThread* flowThread = view()->flowThreadController()->currentRenderFlowThread();
-    if (flowThread)
-        return flowThread;
+    if (LayoutState* layoutState = view()->layoutState()) {
+        if (RenderFlowThread* flowThread = layoutState->flowThread())
+            return flowThread;
+    }
 
     // Not in the middle of layout so have to find the thread the slow way.
     RenderObject* curr = const_cast<RenderObject*>(this);
@@ -2400,9 +2400,8 @@ void RenderObject::destroyAndCleanupAnonymousWrappers()
         // Anonymous block continuations are tracked and destroyed elsewhere (see the bottom of RenderBlock::removeChild)
         if (destroyRootParent->isRenderBlock() && toRenderBlock(destroyRootParent)->isAnonymousBlockContinuation())
             break;
-        // Render flow threads are tracked by the FlowThreadController, so we can't destroy them here.
-        // Column spans are tracked elsewhere.
-        if (destroyRootParent->isRenderFlowThread() || destroyRootParent->isAnonymousColumnSpanBlock())
+        // Column spans are tracked elsewhere, so we can't destroy them here.
+        if (destroyRootParent->isAnonymousColumnSpanBlock())
             break;
 
         if (destroyRootParent->slowFirstChild() != destroyRoot || destroyRootParent->slowLastChild() != destroyRoot)

@@ -31,7 +31,6 @@
 
 #include "core/rendering/RenderFlowThread.h"
 
-#include "core/rendering/FlowThreadController.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderMultiColumnSet.h"
 #include "core/rendering/RenderView.h"
@@ -64,27 +63,6 @@ void RenderFlowThread::invalidateRegions()
 
     m_regionsInvalidated = true;
 }
-
-class CurrentRenderFlowThreadDisabler {
-    WTF_MAKE_NONCOPYABLE(CurrentRenderFlowThreadDisabler);
-public:
-    CurrentRenderFlowThreadDisabler(RenderView* view)
-        : m_view(view)
-        , m_renderFlowThread(0)
-    {
-        m_renderFlowThread = m_view->flowThreadController()->currentRenderFlowThread();
-        if (m_renderFlowThread)
-            view->flowThreadController()->setCurrentRenderFlowThread(0);
-    }
-    ~CurrentRenderFlowThreadDisabler()
-    {
-        if (m_renderFlowThread)
-            m_view->flowThreadController()->setCurrentRenderFlowThread(m_renderFlowThread);
-    }
-private:
-    RenderView* m_view;
-    RenderFlowThread* m_renderFlowThread;
-};
 
 void RenderFlowThread::validateRegions()
 {
@@ -126,10 +104,7 @@ void RenderFlowThread::mapRectToPaintInvalidationBacking(const RenderLayerModelO
 void RenderFlowThread::layout()
 {
     m_pageLogicalSizeChanged = m_regionsInvalidated && everHadLayout();
-
-    CurrentRenderFlowThreadMaintainer currentFlowThreadSetter(this);
     RenderBlockFlow::layout();
-
     m_pageLogicalSizeChanged = false;
 }
 
@@ -353,26 +328,5 @@ void RenderFlowThread::RegionSearchAdapter::collectIfNeeded(const MultiColumnSet
     if (interval.low() <= m_offset && interval.high() > m_offset)
         m_result = interval.data();
 }
-
-CurrentRenderFlowThreadMaintainer::CurrentRenderFlowThreadMaintainer(RenderFlowThread* renderFlowThread)
-    : m_renderFlowThread(renderFlowThread)
-    , m_previousRenderFlowThread(0)
-{
-    if (!m_renderFlowThread)
-        return;
-    RenderView* view = m_renderFlowThread->view();
-    m_previousRenderFlowThread = view->flowThreadController()->currentRenderFlowThread();
-    view->flowThreadController()->setCurrentRenderFlowThread(m_renderFlowThread);
-}
-
-CurrentRenderFlowThreadMaintainer::~CurrentRenderFlowThreadMaintainer()
-{
-    if (!m_renderFlowThread)
-        return;
-    RenderView* view = m_renderFlowThread->view();
-    ASSERT(view->flowThreadController()->currentRenderFlowThread() == m_renderFlowThread);
-    view->flowThreadController()->setCurrentRenderFlowThread(m_previousRenderFlowThread);
-}
-
 
 } // namespace blink

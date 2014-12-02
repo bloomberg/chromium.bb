@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/rendering/LayoutState.h"
 
+#include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
@@ -37,6 +38,7 @@ LayoutState::LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightCha
     : m_isPaginated(pageLogicalHeight)
     , m_pageLogicalHeightChanged(pageLogicalHeightChanged)
     , m_containingBlockLogicalWidthChanged(false)
+    , m_flowThread(0)
     , m_columnInfo(0)
     , m_next(0)
     , m_pageLogicalHeight(pageLogicalHeight)
@@ -52,6 +54,7 @@ LayoutState::LayoutState(RenderBox& renderer, const LayoutSize& offset, LayoutUn
     , m_next(renderer.view()->layoutState())
     , m_renderer(renderer)
 {
+    m_flowThread = renderer.isRenderFlowThread() ? toRenderFlowThread(&renderer) : m_next->flowThread();
     renderer.view()->pushLayoutState(*this);
     bool fixed = renderer.isOutOfFlowPositioned() && renderer.style()->position() == FixedPosition;
     if (fixed) {
@@ -103,6 +106,7 @@ LayoutState::LayoutState(RenderObject& root)
     : m_isPaginated(false)
     , m_pageLogicalHeightChanged(false)
     , m_containingBlockLogicalWidthChanged(false)
+    , m_flowThread(0)
     , m_columnInfo(0)
     , m_next(root.view()->layoutState())
     , m_pageLogicalHeight(0)

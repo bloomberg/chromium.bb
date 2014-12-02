@@ -35,6 +35,7 @@ namespace blink {
 
 class ForceHorriblySlowRectMapping;
 class RenderBox;
+class RenderFlowThread;
 class RenderObject;
 class RenderView;
 
@@ -72,6 +73,8 @@ public:
 
     bool needsBlockDirectionLocationSetBeforeLayout() const { return m_isPaginated && m_pageLogicalHeight; }
 
+    RenderFlowThread* flowThread() const { return m_flowThread; }
+
     ColumnInfo* columnInfo() const { return m_columnInfo; }
 
     RenderObject& renderer() const { return m_renderer; }
@@ -84,6 +87,8 @@ private:
     // If our page height has changed, this will force all blocks to relayout.
     bool m_pageLogicalHeightChanged : 1;
     bool m_containingBlockLogicalWidthChanged : 1;
+
+    RenderFlowThread* m_flowThread;
 
     // If the enclosing pagination model is a column model, then this will store column information for easy retrieval/manipulation.
     ColumnInfo* m_columnInfo;

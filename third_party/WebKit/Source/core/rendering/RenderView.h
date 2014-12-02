@@ -33,7 +33,6 @@
 
 namespace blink {
 
-class FlowThreadController;
 class RenderLayerCompositor;
 class RenderQuote;
 
@@ -143,8 +142,6 @@ public:
     // Renderer that paints the root background has background-images which all have background-attachment: fixed.
     bool rootBackgroundIsEntirelyFixed() const;
 
-    FlowThreadController* flowThreadController();
-
     IntervalArena* intervalArena();
 
     void setRenderQuoteHead(RenderQuote* head) { m_renderQuoteHead = head; }
@@ -196,7 +193,6 @@ private:
     bool m_pageLogicalHeightChanged;
     LayoutState* m_layoutState;
     OwnPtr<RenderLayerCompositor> m_compositor;
-    OwnPtr<FlowThreadController> m_flowThreadController;
     RefPtr<IntervalArena> m_intervalArena;
 
     RawPtrWillBeMember<RenderQuote> m_renderQuoteHead;
