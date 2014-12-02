@@ -1552,6 +1552,7 @@ class Port(object):
             # For example, to turn on force-compositing-mode in the svg/ directory:
             # PhysicalTestSuite('svg',
             #                   ['--force-compositing-mode']),
+            PhysicalTestSuite('fast', ['--enable-impl-side-painting']),
             ]
 
     def virtual_test_suites(self):
