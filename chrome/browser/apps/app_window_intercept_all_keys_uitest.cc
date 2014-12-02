@@ -176,9 +176,10 @@ IN_PROC_BROWSER_TEST_F(AppWindowInterceptAllKeysTest,
 
 // Test that calling just disable has no effect in retaining keyboard intercept.
 // Currently this is implemented only for Windows.
+// Disabled test http://crbug.com/438209
 #if defined(OS_WIN)
 #define MAYBE_NoopCallingDisableInterceptAllKeys \
-  NoopCallingDisableInterceptAllKeys
+  DISABLED_NoopCallingDisableInterceptAllKeys
 #else
 #define MAYBE_NoopCallingDisableInterceptAllKeys \
   DISABLED_NoopCallingDisableInterceptAllKeys
@@ -206,7 +207,8 @@ IN_PROC_BROWSER_TEST_F(AppWindowInterceptAllKeysTest,
 
 // Test that intercept is disabled by default
 #if defined(OS_WIN)
-#define MAYBE_InterceptDisabledByDefault InterceptDisabledByDefault
+// Disabled test http://crbug.com/438209
+#define MAYBE_InterceptDisabledByDefault DISABLED_InterceptDisabledByDefault
 #else
 #define MAYBE_InterceptDisabledByDefault DISABLED_InterceptDisabledByDefault
 #endif
