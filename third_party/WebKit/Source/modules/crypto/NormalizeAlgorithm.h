@@ -31,6 +31,7 @@
 #ifndef NormalizeAlgorithm_h
 #define NormalizeAlgorithm_h
 
+#include "bindings/modules/v8/UnionTypesModules.h"
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoAlgorithm.h"
 #include "public/platform/WebString.h"
@@ -46,7 +47,9 @@ struct AlgorithmError {
     WebString errorDetails;
 };
 
-// Converts a javascript Dictionary to a WebCryptoAlgorithm object.
+typedef DictionaryOrString AlgorithmIdentifier;
+
+// Converts a javascript AlgorithmIdentifier to a WebCryptoAlgorithm object.
 //
 // This corresponds with "normalizing" [1] the algorithm, and then validating
 // the expected parameters for the algorithm/operation combination.
@@ -57,7 +60,7 @@ struct AlgorithmError {
 // a error type and a (non-localized) debug string.
 //
 // [1] http://www.w3.org/TR/WebCryptoAPI/#algorithm-normalizing-rules
-bool normalizeAlgorithm(const Dictionary&, WebCryptoOperation, WebCryptoAlgorithm&, AlgorithmError*) WARN_UNUSED_RETURN;
+bool normalizeAlgorithm(const AlgorithmIdentifier&, WebCryptoOperation, WebCryptoAlgorithm&, AlgorithmError*) WARN_UNUSED_RETURN;
 
 } // namespace blink
 

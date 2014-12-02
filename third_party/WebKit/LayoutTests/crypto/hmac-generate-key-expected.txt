@@ -5,8 +5,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 Generating a key with default length...
-error is: TypeError: Failed to execute 'generateKey' on 'SubtleCrypto': parameter 1 ('algorithm') is not an object.
-error is: SyntaxError: HmacKeyGenParams: hash: Missing or not a dictionary
+error is: SyntaxError: HmacKeyGenParams: hash: Missing or not an AlgorithmIdentifier
+error is: SyntaxError: HmacKeyGenParams: hash: Missing or not an AlgorithmIdentifier
 error is: SyntaxError: HmacKeyGenParams: length: Is not a number
 error is: SyntaxError: HmacKeyGenParams: length: Is not a number
 PASS key.type is 'secret'

@@ -50,7 +50,9 @@ WebCryptoAlgorithm normalizeCryptoAlgorithm(v8::Handle<v8::Object> algorithmObje
         return WebCryptoAlgorithm();
     WebCryptoAlgorithm algorithm;
     AlgorithmError error;
-    if (!normalizeAlgorithm(algorithmDictionary, operation, algorithm, &error)) {
+    AlgorithmIdentifier algorithmIdentifier;
+    algorithmIdentifier.setDictionary(algorithmDictionary);
+    if (!normalizeAlgorithm(algorithmIdentifier, operation, algorithm, &error)) {
         *exceptionCode = webCryptoErrorToExceptionCode(error.errorType);
         *errorDetails = error.errorDetails;
         return WebCryptoAlgorithm();

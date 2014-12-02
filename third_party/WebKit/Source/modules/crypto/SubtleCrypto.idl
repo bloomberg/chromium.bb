@@ -31,33 +31,23 @@
 // http://www.w3.org/TR/WebCryptoAPI/#subtlecrypto-interface
 
 typedef DOMString KeyFormat;
-typedef DOMString KeyUsage; // from CryptoKey interface
-
+typedef DOMString KeyUsage;
+typedef (Dictionary or DOMString) AlgorithmIdentifier;
 typedef (ArrayBuffer or ArrayBufferView) BufferSource;
 
 [
     GarbageCollected,
     NoInterfaceObject,
 ] interface SubtleCrypto {
-    [CallWith=ScriptState] Promise encrypt(Dictionary algorithm, CryptoKey key, BufferSource data);
-
-    [CallWith=ScriptState] Promise decrypt(Dictionary algorithm, CryptoKey key, BufferSource data);
-
-    [CallWith=ScriptState] Promise sign(Dictionary algorithm, CryptoKey key, BufferSource data);
-
-    [CallWith=ScriptState, ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, CryptoKey key, BufferSource signature, BufferSource data);
-
-    [CallWith=ScriptState] Promise digest(Dictionary algorithm, BufferSource data);
-
-    [CallWith=ScriptState] Promise generateKey(Dictionary algorithm, boolean extractable, sequence<KeyUsage> keyUsages);
-
-    [CallWith=ScriptState] Promise importKey(KeyFormat format, (ArrayBuffer or ArrayBufferView or Dictionary) keyData, Dictionary algorithm, boolean extractable, sequence<KeyUsage> keyUsages);
-
+    [CallWith=ScriptState] Promise encrypt(AlgorithmIdentifier algorithm, CryptoKey key, BufferSource data);
+    [CallWith=ScriptState] Promise decrypt(AlgorithmIdentifier algorithm, CryptoKey key, BufferSource data);
+    [CallWith=ScriptState] Promise sign(AlgorithmIdentifier algorithm, CryptoKey key, BufferSource data);
+    [CallWith=ScriptState, ImplementedAs=verifySignature] Promise verify(AlgorithmIdentifier algorithm, CryptoKey key, BufferSource signature, BufferSource data);
+    [CallWith=ScriptState] Promise digest(AlgorithmIdentifier algorithm, BufferSource data);
+    [CallWith=ScriptState] Promise generateKey(AlgorithmIdentifier algorithm, boolean extractable, sequence<KeyUsage> keyUsages);
+    [CallWith=ScriptState] Promise importKey(KeyFormat format, (ArrayBuffer or ArrayBufferView or Dictionary) keyData, AlgorithmIdentifier algorithm, boolean extractable, sequence<KeyUsage> keyUsages);
     [CallWith=ScriptState] Promise exportKey(KeyFormat format, CryptoKey key);
-
-    [CallWith=ScriptState] Promise wrapKey(KeyFormat format, CryptoKey key, CryptoKey wrappingKey, Dictionary wrapAlgorithm);
-
-    [CallWith=ScriptState] Promise unwrapKey(KeyFormat format, BufferSource wrappedKey, CryptoKey unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, sequence<KeyUsage> keyUsages);
-
-    [CallWith=ScriptState] Promise deriveBits(Dictionary algorithm, CryptoKey baseKey, unsigned long length);
+    [CallWith=ScriptState] Promise deriveBits(AlgorithmIdentifier algorithm, CryptoKey baseKey, unsigned long length);
+    [CallWith=ScriptState] Promise wrapKey(KeyFormat format, CryptoKey key, CryptoKey wrappingKey, AlgorithmIdentifier wrapAlgorithm);
+    [CallWith=ScriptState] Promise unwrapKey(KeyFormat format, BufferSource wrappedKey, CryptoKey unwrappingKey, AlgorithmIdentifier unwrapAlgorithm, AlgorithmIdentifier unwrappedKeyAlgorithm, boolean extractable, sequence<KeyUsage> keyUsages);
 };

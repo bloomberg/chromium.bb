@@ -414,6 +414,29 @@ bool getOptionalUint32(const Dictionary& raw, const char* propertyName, bool& ha
     return true;
 }
 
+bool getAlgorithmIdentifier(const Dictionary& raw, const char* propertyName, AlgorithmIdentifier& value, const ErrorContext& context, AlgorithmError* error)
+{
+    // FIXME: This is not correct: http://crbug.com/438060
+    //   (1) It may retrieve the property twice from the dictionary, whereas it
+    //       should be reading the v8 value once to avoid issues with getters.
+    //   (2) The value is stringified (whereas the spec says it should be an
+    //       instance of DOMString).
+    Dictionary dictionary;
+    if (DictionaryHelper::get(raw, propertyName, dictionary) && !dictionary.isUndefinedOrNull()) {
+        value.setDictionary(dictionary);
+        return true;
+    }
+
+    String algorithmName;
+    if (!DictionaryHelper::get(raw, propertyName, algorithmName)) {
+        setSyntaxError(context.toString(propertyName, "Missing or not an AlgorithmIdentifier"), error);
+        return false;
+    }
+
+    value.setString(algorithmName);
+    return true;
+}
+
 // Defined by the WebCrypto spec as:
 //
 //    dictionary AesCbcParams : Algorithm {
@@ -450,18 +473,16 @@ bool parseAesKeyGenParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams
     return true;
 }
 
-bool parseAlgorithm(const Dictionary&, WebCryptoOperation, WebCryptoAlgorithm&, ErrorContext, AlgorithmError*);
+bool parseAlgorithmIdentifier(const AlgorithmIdentifier&, WebCryptoOperation, WebCryptoAlgorithm&, ErrorContext, AlgorithmError*);
 
 bool parseHash(const Dictionary& raw, WebCryptoAlgorithm& hash, ErrorContext context, AlgorithmError* error)
 {
-    Dictionary rawHash;
-    if (!DictionaryHelper::get(raw, "hash", rawHash)) {
-        setSyntaxError(context.toString("hash", "Missing or not a dictionary"), error);
+    AlgorithmIdentifier rawHash;
+    if (!getAlgorithmIdentifier(raw, "hash", rawHash, context, error))
         return false;
-    }
 
     context.add("hash");
-    return parseAlgorithm(rawHash, WebCryptoOperationDigest, hash, context, error);
+    return parseAlgorithmIdentifier(rawHash, WebCryptoOperationDigest, hash, context, error);
 }
 
 // Defined by the WebCrypto spec as:
@@ -811,21 +832,8 @@ const char* operationToString(WebCryptoOperation op)
     return 0;
 }
 
-bool parseAlgorithm(const Dictionary& raw, WebCryptoOperation op, WebCryptoAlgorithm& algorithm, ErrorContext context, AlgorithmError* error)
+bool parseAlgorithmDictionary(const String& algorithmName, const Dictionary& raw, WebCryptoOperation op, WebCryptoAlgorithm& algorithm, ErrorContext context, AlgorithmError* error)
 {
-    context.add("Algorithm");
-
-    if (!raw.isObject()) {
-        setSyntaxError(context.toString("Not an object"), error);
-        return false;
-    }
-
-    String algorithmName;
-    if (!DictionaryHelper::get(raw, "name", algorithmName)) {
-        setSyntaxError(context.toString("name", "Missing or not a string"), error);
-        return false;
-    }
-
     WebCryptoAlgorithmId algorithmId;
     if (!lookupAlgorithmIdByName(algorithmName, algorithmId)) {
         // FIXME: The spec says to return a SyntaxError if the input contains
@@ -855,11 +863,37 @@ bool parseAlgorithm(const Dictionary& raw, WebCryptoOperation op, WebCryptoAlgor
     return true;
 }
 
+bool parseAlgorithmIdentifier(const AlgorithmIdentifier& raw, WebCryptoOperation op, WebCryptoAlgorithm& algorithm, ErrorContext context, AlgorithmError* error)
+{
+    context.add("Algorithm");
+
+    // If the AlgorithmIdentifier is a String, treat it the same as a Dictionary with a "name" attribute and nothing else.
+    if (raw.isString()) {
+        return parseAlgorithmDictionary(raw.getAsString(), Dictionary(), op, algorithm, context, error);
+    }
+
+    Dictionary params = raw.getAsDictionary();
+
+    // Get the name of the algorithm from the AlgorithmIdentifier.
+    if (!params.isObject()) {
+        setSyntaxError(context.toString("Not an object"), error);
+        return false;
+    }
+
+    String algorithmName;
+    if (!DictionaryHelper::get(params, "name", algorithmName)) {
+        setSyntaxError(context.toString("name", "Missing or not a string"), error);
+        return false;
+    }
+
+    return parseAlgorithmDictionary(algorithmName, params, op, algorithm, context, error);
+}
+
 } // namespace
 
-bool normalizeAlgorithm(const Dictionary& raw, WebCryptoOperation op, WebCryptoAlgorithm& algorithm, AlgorithmError* error)
+bool normalizeAlgorithm(const AlgorithmIdentifier& raw, WebCryptoOperation op, WebCryptoAlgorithm& algorithm, AlgorithmError* error)
 {
-    return parseAlgorithm(raw, op, algorithm, ErrorContext(), error);
+    return parseAlgorithmIdentifier(raw, op, algorithm, ErrorContext(), error);
 }
 
 } // namespace blink

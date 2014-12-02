@@ -9,7 +9,7 @@ error is: SyntaxError: Algorithm: Not an object
 error is: SyntaxError: Invalid keyFormat argument
 error is: SyntaxError: Invalid keyUsages argument
 error is: SyntaxError: Invalid keyFormat argument
-error is: SyntaxError: HmacImportParams: hash: Missing or not a dictionary
+error is: SyntaxError: HmacImportParams: hash: Missing or not an AlgorithmIdentifier
 error is: NotSupportedError: SHA-1: Unsupported operation: importKey
 PASS successfullyParsed is true
 
