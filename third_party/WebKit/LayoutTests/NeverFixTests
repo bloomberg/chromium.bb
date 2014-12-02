@@ -94,18 +94,23 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # These tests are specific to Linux.
 [ Mac Win ] editing/selection/linux_selection_color.html [ WontFix ]
 [ Mac Win ] fast/text/chromium-linux-fontconfig-renderstyle.html [ WontFix ]
+[ Mac Win ] virtual/slimmingpaint/fast/text/chromium-linux-fontconfig-renderstyle.html [ WontFix ]
 [ Mac Win ] virtual/textblob/fast/text/chromium-linux-fontconfig-renderstyle.html [ WontFix ]
 [ Mac Win ] fast/text/international/arabic-vertical-offset.html [ WontFix ]
+[ Mac Win ] virtual/slimmingpaint/fast/text/international/arabic-vertical-offset.html [ WontFix ]
 [ Mac Win ] virtual/textblob/fast/text/international/arabic-vertical-offset.html [ WontFix ]
 [ Mac Win ] fast/text/international/complex-joining-using-gpos.html [ WontFix ]
+[ Mac Win ] virtual/slimmingpaint/fast/text/international/complex-joining-using-gpos.html [ WontFix ]
 [ Mac Win ] virtual/textblob/fast/text/international/complex-joining-using-gpos.html [ WontFix ]
 [ Mac Win ] fast/text/international/draw-complex-text-from-to.html [ WontFix ]
+[ Mac Win ] virtual/slimmingpaint/fast/text/international/draw-complex-text-from-to.html [ WontFix ]
 [ Mac Win ] virtual/textblob/fast/text/international/draw-complex-text-from-to.html [ WontFix ]
 [ Mac Win ] svg/text/text-with-geometric-precision.svg [ WontFix ]
 [ Mac Win ] virtual/textblob/svg/text/text-with-geometric-precision.svg [ WontFix ]
 
 # Mac has different fallback behavior so that this test won't work there
 [ Mac ] fast/text/font-cachekey.html [ WontFix ]
+[ Mac ] virtual/slimmingpaint/fast/text/font-cachekey.html [ WontFix ]
 [ Mac ] virtual/textblob/fast/text/font-cachekey.html [ WontFix ]
 [ Mac ] virtual/antialiasedtext/fast/text/font-cachekey.html [ WontFix ]
 
@@ -116,6 +121,7 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # AAT/mortx shaping not supported on platforms other than Mac
 [ Linux Win Android ] fast/text/aat-morx.html [ WontFix ]
 [ Linux Win Android ] virtual/antialiasedtext/fast/text/aat-morx.html [ WontFix ]
+[ Linux Win Android ] virtual/slimmingpaint/fast/text/aat-morx.html [ WontFix ]
 [ Linux Win Android ] virtual/textblob/fast/text/aat-morx.html [ WontFix ]
 
 # This test crashes occasionally on Windows and we can't seem to repro locally.
@@ -151,19 +157,25 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 # Subpixel font scaling requires DirectWrite on windows (which isn't supported
 # on XP) and antialiasing on mac (which isn't enabled tests).
 [ XP Mac ] fast/text/sub-pixel/text-scaling-ltr.html [ WontFix ]
+[ XP Mac ] virtual/slimmingpaint/fast/text/sub-pixel/text-scaling-ltr.html [ WontFix ]
 [ XP Mac ] virtual/textblob/fast/text/sub-pixel/text-scaling-ltr.html [ WontFix ]
 [ XP Mac ] fast/text/sub-pixel/text-scaling-pixel.html [ WontFix ]
+[ XP Mac ] virtual/slimmingpaint/fast/text/sub-pixel/text-scaling-pixel.html [ WontFix ]
 [ XP Mac ] virtual/textblob/fast/text/sub-pixel/text-scaling-pixel.html [ WontFix ]
 [ XP Mac ] fast/text/sub-pixel/text-scaling-rtl.html [ WontFix ]
+[ XP Mac ] virtual/slimmingpaint/fast/text/sub-pixel/text-scaling-rtl.html [ WontFix ]
 [ XP Mac ] virtual/textblob/fast/text/sub-pixel/text-scaling-rtl.html [ WontFix ]
 [ XP Mac ] fast/text/sub-pixel/text-scaling-vertical.html [ WontFix ]
+[ XP Mac ] virtual/slimmingpaint/fast/text/sub-pixel/text-scaling-vertical.html [ WontFix ]
 [ XP Mac ] virtual/textblob/fast/text/sub-pixel/text-scaling-vertical.html [ WontFix ]
 [ XP Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ WontFix ]
+[ XP Mac ] virtual/slimmingpaint/fast/text/sub-pixel/text-scaling-webfont.html [ WontFix ]
 [ XP Mac ] virtual/textblob/fast/text/sub-pixel/text-scaling-webfont.html [ WontFix ]
 [ Mac ] fast/text/mixed-direction-bidi-wrap.html [ WontFix ]
 
 # We don't have full plane2 support on XP.
 [ XP ] fast/text/international/plane2.html [ WontFix ]
+[ XP ] virtual/slimmingpaint/fast/text/international/plane2.html [ WontFix ]
 [ XP ] virtual/textblob/fast/text/international/plane2.html [ WontFix ]
 
 # These two printing tests fail with the threaded compositor but they

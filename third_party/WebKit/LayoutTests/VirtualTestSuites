@@ -163,5 +163,10 @@
     "prefix": "slimmingpaint",
     "base": "fast/table",
     "args": ["--enable-slimming-paint"]
+  },
+  {
+    "prefix": "slimmingpaint",
+    "base": "fast/text",
+    "args": ["--enable-slimming-paint"]
   }
 ]
