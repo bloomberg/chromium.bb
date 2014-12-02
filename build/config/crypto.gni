@@ -8,9 +8,10 @@
 # the global build dependency on it should be removed.
 
 declare_args() {
-  # Use OpenSSL instead of NSS. This is used for Android, Mac, and NaCl untrusted
-  # code, and is experimental in other cases (see http://crbug.com/62803).
-  use_openssl = is_android || is_mac || is_nacl
+  # Use OpenSSL instead of NSS. This is used for Android, Mac, NaCl untrusted
+  # code, and Windows, and is experimental in other cases (see
+  # http://crbug.com/62803).
+  use_openssl = is_android || is_mac || is_nacl || is_win
 }
 
 # True when we're using OpenSSL for certificate verification and storage. We
