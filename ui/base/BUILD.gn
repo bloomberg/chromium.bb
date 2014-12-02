@@ -747,14 +747,8 @@ if (is_android) {
 
 # TODO(GYP): Make this work on Android and reenable it.
 if (!is_android) {
-# TODO(tfarina): Rename this target to ui_base_unittests.
-# In order to do this we will need to keep this target, add a dummy
-# ui_base_unittests target that just points to ui_unittests, change
-# buildbot code to reference the new 'ui_base_unittests' target.
-# After buildbot is updated, we can make the changes in Chromium and
-# remove 'ui_unittests' target. crbug.com/331829
-# GYP version: ui/base/ui_base_tests.gyp:ui_unittests
-test("ui_unittests") {
+# GYP version: ui/base/ui_base_tests.gyp:ui_base_unittests
+test("ui_base_unittests") {
   sources = [
     "l10n/l10n_util_mac_unittest.mm",
     "l10n/l10n_util_unittest.cc",
@@ -848,7 +842,7 @@ test("ui_unittests") {
   ]
 
   if (is_ios) {
-    # TODO(GYP) lots of iOS-only steps for ui_unittests
+    # TODO(GYP) lots of iOS-only steps for ui_base_unittests
   }
 
   if (is_win) {
@@ -918,7 +912,7 @@ test("ui_unittests") {
 
     deps += [
       "//third_party/mozilla",
-      #'ui_unittests_bundle',  TODO(GYP)
+      #'ui_base_tests_bundle',  TODO(GYP)
     ]
   }
 
@@ -944,4 +938,4 @@ test("ui_unittests") {
   }
 }
 }
-# TODO(GYP) Mac (ui_unittest_bundle) and Android (ui_unittests_apk).
+# TODO(GYP) Mac (ui_base_tests_bundle) and Android (ui_base_unittests_apk).

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file contains resources for the ui_unittests test bundle.
+# This file contains resources for the ui_base_unittests test bundle.
 # See chrome_dll_bundle.gypi for a description of the techniques here.
 {
   'product_name': 'ui_unittests Framework',
