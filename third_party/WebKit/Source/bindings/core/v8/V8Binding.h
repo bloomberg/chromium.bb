@@ -945,6 +945,11 @@ Vector<T> toImplArray(v8::Handle<v8::Value> value, int argumentIndex, v8::Isolat
         return Vector<T>();
     }
 
+    if (length > WTF::DefaultAllocatorQuantizer::kMaxUnquantizedAllocation / sizeof(T)) {
+        exceptionState.throwTypeError("Array length exceeds supported limit.");
+        return Vector<T>();
+    }
+
     Vector<T> result;
     result.reserveInitialCapacity(length);
     typedef NativeValueTraits<T> TraitsType;
