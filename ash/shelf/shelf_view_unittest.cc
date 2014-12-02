@@ -1437,6 +1437,9 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
   ReplaceShelfDelegateForRipOffTest();
 
   AddButtonsUntilOverflow();
+  // Add one more button to prevent the overflow bubble to disappear upon
+  // dragging an item out on windows (flakiness, see crbug.com/436131).
+  AddAppShortcut();
 
   // Show overflow bubble.
   test_api_->ShowOverflowBubble();
@@ -1654,6 +1657,9 @@ TEST_F(ShelfViewTest, CheckDragAndDropFromOverflowBubbleToShelf) {
   ReplaceShelfDelegateForRipOffTest();
 
   AddButtonsUntilOverflow();
+  // Add one more button to prevent the overflow bubble to disappear upon
+  // dragging an item out on windows (flakiness, see crbug.com/425097).
+  AddAppShortcut();
 
   TestDraggingAnItemFromOverflowToShelf(false);
   TestDraggingAnItemFromOverflowToShelf(true);
