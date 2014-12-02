@@ -84,7 +84,7 @@ class ShillToONCTranslator {
   void TranslateCellularDevice();
   void TranslateNetworkWithState();
   void TranslateIPConfig();
-  void TranslateSavedOrStaticIPConfig();
+  void TranslateSavedOrStaticIPConfig(const std::string& nameserver_property);
   void TranslateSavedIPConfig();
   void TranslateStaticIPConfig();
 
@@ -479,19 +479,8 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
                                  *shill_ipconfigs);
   }
 
-  const base::DictionaryValue* saved_ipconfig = nullptr;
-  if (shill_dictionary_->GetDictionaryWithoutPathExpansion(
-        shill::kSavedIPConfigProperty, &saved_ipconfig)) {
-    TranslateAndAddNestedObject(::onc::network_config::kSavedIPConfig,
-                                *saved_ipconfig);
-  }
-
-  const base::DictionaryValue* static_ipconfig = nullptr;
-  if (shill_dictionary_->GetDictionaryWithoutPathExpansion(
-        shill::kStaticIPConfigProperty, &static_ipconfig)) {
-    TranslateAndAddNestedObject(::onc::network_config::kStaticIPConfig,
-                                *static_ipconfig);
-  }
+  TranslateAndAddNestedObject(::onc::network_config::kSavedIPConfig);
+  TranslateAndAddNestedObject(::onc::network_config::kStaticIPConfig);
 }
 
 void ShillToONCTranslator::TranslateIPConfig() {
@@ -513,9 +502,24 @@ void ShillToONCTranslator::TranslateIPConfig() {
   onc_object_->SetStringWithoutPathExpansion(::onc::ipconfig::kType, type);
 }
 
-void ShillToONCTranslator::TranslateSavedOrStaticIPConfig() {
+void ShillToONCTranslator::TranslateSavedOrStaticIPConfig(
+    const std::string& nameserver_property) {
   CopyPropertiesAccordingToSignature();
-
+  // Saved/Static IP config nameservers are stored as a comma separated list.
+  std::string shill_nameservers;
+  shill_dictionary_->GetStringWithoutPathExpansion(
+      nameserver_property, &shill_nameservers);
+  std::vector<std::string> onc_nameserver_vector;
+  if (Tokenize(shill_nameservers, ",", &onc_nameserver_vector) > 0) {
+    scoped_ptr<base::ListValue> onc_nameservers(new base::ListValue);
+    for (std::vector<std::string>::iterator iter =
+             onc_nameserver_vector.begin();
+         iter != onc_nameserver_vector.end(); ++iter) {
+      onc_nameservers->AppendString(*iter);
+    }
+    onc_object_->SetWithoutPathExpansion(::onc::ipconfig::kNameServers,
+                                         onc_nameservers.release());
+  }
   // Static and Saved IPConfig in Shill are always of type IPv4. Set this type
   // in ONC, but not if the object would be empty except the type.
   if (!onc_object_->empty()) {
@@ -525,11 +529,11 @@ void ShillToONCTranslator::TranslateSavedOrStaticIPConfig() {
 }
 
 void ShillToONCTranslator::TranslateSavedIPConfig() {
-  TranslateSavedOrStaticIPConfig();
+  TranslateSavedOrStaticIPConfig(shill::kSavedIPNameServersProperty);
 }
 
 void ShillToONCTranslator::TranslateStaticIPConfig() {
-  TranslateSavedOrStaticIPConfig();
+  TranslateSavedOrStaticIPConfig(shill::kStaticIPNameServersProperty);
 }
 
 void ShillToONCTranslator::TranslateAndAddNestedObject(
