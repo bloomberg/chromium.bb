@@ -82,10 +82,7 @@ FFMPEG_TEST_CASE(Cr100492,
                  DECODER_ERROR_NOT_SUPPORTED,
                  DECODER_ERROR_NOT_SUPPORTED);
 FFMPEG_TEST_CASE(Cr100543, "security/100543.webm", PIPELINE_OK, PIPELINE_OK);
-FFMPEG_TEST_CASE(Cr101458,
-                 "security/101458.webm",
-                 DECODER_ERROR_NOT_SUPPORTED,
-                 DECODER_ERROR_NOT_SUPPORTED);
+FFMPEG_TEST_CASE(Cr101458, "security/101458.webm", PIPELINE_OK, PIPELINE_OK);
 FFMPEG_TEST_CASE(Cr108416, "security/108416.webm", PIPELINE_OK, PIPELINE_OK);
 FFMPEG_TEST_CASE(Cr110849,
                  "security/110849.mkv",
@@ -104,10 +101,7 @@ FFMPEG_TEST_CASE(Cr132779,
                  "security/132779.webm",
                  DEMUXER_ERROR_COULD_NOT_PARSE,
                  DEMUXER_ERROR_COULD_NOT_PARSE);
-FFMPEG_TEST_CASE(Cr140165,
-                 "security/140165.ogg",
-                 PIPELINE_ERROR_DECODE,
-                 PIPELINE_ERROR_DECODE);
+FFMPEG_TEST_CASE(Cr140165, "security/140165.ogg", PIPELINE_OK, PIPELINE_OK);
 FFMPEG_TEST_CASE(Cr140647,
                  "security/140647.ogv",
                  DEMUXER_ERROR_COULD_NOT_OPEN,
@@ -115,20 +109,20 @@ FFMPEG_TEST_CASE(Cr140647,
 FFMPEG_TEST_CASE(Cr142738, "crbug142738.ogg", PIPELINE_OK, PIPELINE_OK);
 FFMPEG_TEST_CASE(Cr152691,
                  "security/152691.mp3",
-                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_OK,
                  PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(Cr161639,
                  "security/161639.m4a",
-                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_OK,
                  PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(Cr222754,
                  "security/222754.mp4",
-                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_OK,
                  PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(Cr234630a, "security/234630a.mov", PIPELINE_OK, PIPELINE_OK);
 FFMPEG_TEST_CASE(Cr234630b,
                  "security/234630b.mov",
-                 PIPELINE_ERROR_DECODE,
+                 PIPELINE_OK,
                  PIPELINE_ERROR_DECODE);
 FFMPEG_TEST_CASE(Cr242786, "security/242786.webm", PIPELINE_OK, PIPELINE_OK);
 // Test for out-of-bounds access with slightly corrupt file (detection logic
@@ -161,8 +155,8 @@ FFMPEG_TEST_CASE(MP4_6,
                  PIPELINE_OK);
 FFMPEG_TEST_CASE(MP4_7,
                  "security/clockh264mp3_187697.mp4",
-                 DEMUXER_ERROR_NO_SUPPORTED_STREAMS,
-                 DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
+                 PIPELINE_OK,
+                 PIPELINE_OK);
 FFMPEG_TEST_CASE(MP4_8,
                  "security/h264.705767.mp4",
                  DEMUXER_ERROR_COULD_NOT_PARSE,
@@ -215,8 +209,8 @@ FFMPEG_TEST_CASE(OGV_12,
                  DECODER_ERROR_NOT_SUPPORTED);
 FFMPEG_TEST_CASE(OGV_14,
                  "security/smclocktheora_2_10405.ogv",
-                 DECODER_ERROR_NOT_SUPPORTED,
-                 DECODER_ERROR_NOT_SUPPORTED);
+                 PIPELINE_OK,
+                 PIPELINE_OK);
 FFMPEG_TEST_CASE(OGV_15,
                  "security/smclocktheora_2_10619.ogv",
                  DECODER_ERROR_NOT_SUPPORTED,
@@ -248,10 +242,6 @@ FFMPEG_TEST_CASE(OGV_22,
 
 // General WebM test cases.
 FFMPEG_TEST_CASE(WEBM_1, "security/no-bug.webm", PIPELINE_OK, PIPELINE_OK);
-FFMPEG_TEST_CASE(WEBM_3,
-                 "security/out.webm.139771.2965",
-                 DECODER_ERROR_NOT_SUPPORTED,
-                 DECODER_ERROR_NOT_SUPPORTED);
 FFMPEG_TEST_CASE(WEBM_4,
                  "security/out.webm.68798.1929",
                  DECODER_ERROR_NOT_SUPPORTED,
@@ -289,6 +279,7 @@ FLAKY_FFMPEG_TEST_CASE(OGV_13, "security/smclocktheora_1_790.ogv");
 FLAKY_FFMPEG_TEST_CASE(MP4_3, "security/clockh264aac_300413969.mp4");
 FLAKY_FFMPEG_TEST_CASE(MP4_4, "security/clockh264aac_301350139.mp4");
 FLAKY_FFMPEG_TEST_CASE(MP4_12, "security/assert1.mov");
+FLAKY_FFMPEG_TEST_CASE(WEBM_3, "security/out.webm.139771.2965");
 // Not really flaky, but can't pass the seek test.
 FLAKY_FFMPEG_TEST_CASE(MP4_10, "security/null1.m4a");
 
