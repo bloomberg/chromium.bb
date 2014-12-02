@@ -22,6 +22,12 @@ namespace gfx {
 
 namespace internal {
 
+// TODO(ckocagil): Make Range a template class and RangeF an instance of it.
+typedef std::pair<float, float> RangeF;
+
+// Applies std::round to the start and end values of the given RangeF.
+Range GFX_EXPORT RoundRangeF(const RangeF& range_f);
+
 struct GFX_EXPORT TextRunHarfBuzz {
   TextRunHarfBuzz();
   ~TextRunHarfBuzz();
@@ -42,8 +48,8 @@ struct GFX_EXPORT TextRunHarfBuzz {
   void GetClusterAt(size_t pos, Range* chars, Range* glyphs) const;
 
   // Returns the grapheme bounds at |text_index|. Handles multi-grapheme glyphs.
-  Range GetGraphemeBounds(base::i18n::BreakIterator* grapheme_iterator,
-                          size_t text_index);
+  RangeF GetGraphemeBounds(base::i18n::BreakIterator* grapheme_iterator,
+                           size_t text_index);
 
   // Returns whether the given shaped run contains any missing glyphs.
   bool HasMissingGlyphs() const;
@@ -116,7 +122,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   // Return the run index that contains the argument; or the length of the
   // |runs_| vector if argument exceeds the text length or width.
   size_t GetRunContainingCaret(const SelectionModel& caret) const;
-  size_t GetRunContainingXCoord(int x, int* offset) const;
+  size_t GetRunContainingXCoord(float x, float* offset) const;
 
   // Given a |run|, returns the SelectionModel that contains the logical first
   // or last caret position inside (not at a boundary of) the run.

@@ -2156,10 +2156,10 @@ TEST_F(RenderTextTest, HarfBuzz_SubglyphGraphemeCases) {
     internal::TextRunHarfBuzz* run = render_text.runs_[0];
 
     base::i18n::BreakIterator* iter = render_text.grapheme_iterator_.get();
-    Range first_grapheme_bounds = run->GetGraphemeBounds(iter, 0);
+    auto first_grapheme_bounds = run->GetGraphemeBounds(iter, 0);
     EXPECT_EQ(first_grapheme_bounds, run->GetGraphemeBounds(iter, 1));
-    Range second_grapheme_bounds = run->GetGraphemeBounds(iter, 2);
-    EXPECT_EQ(first_grapheme_bounds.end(), second_grapheme_bounds.start());
+    auto second_grapheme_bounds = run->GetGraphemeBounds(iter, 2);
+    EXPECT_EQ(first_grapheme_bounds.second, second_grapheme_bounds.first);
   }
 }
 
@@ -2213,7 +2213,8 @@ TEST_F(RenderTextTest, HarfBuzz_SubglyphGraphemePartition) {
 
     for (size_t j = 0; j < 4; ++j) {
       SCOPED_TRACE(base::StringPrintf("Case %" PRIuS ", char %" PRIuS, i, j));
-      EXPECT_EQ(cases[i].bounds[j], run.GetGraphemeBounds(iter.get(), j));
+      EXPECT_EQ(cases[i].bounds[j],
+                internal::RoundRangeF(run.GetGraphemeBounds(iter.get(), j)));
     }
   }
 }
@@ -2305,7 +2306,8 @@ TEST_F(RenderTextTest, HarfBuzz_EmptyRun) {
   run.range = Range(3, 8);
   run.glyph_count = 0;
   EXPECT_EQ(Range(0, 0), run.CharRangeToGlyphRange(Range(4, 5)));
-  EXPECT_EQ(Range(0, 0), run.GetGraphemeBounds(iter.get(), 4));
+  EXPECT_EQ(Range(0, 0),
+            internal::RoundRangeF(run.GetGraphemeBounds(iter.get(), 4)));
   Range chars;
   Range glyphs;
   run.GetClusterAt(4, &chars, &glyphs);
@@ -2372,5 +2374,36 @@ TEST_F(RenderTextTest, HarfBuzz_UniscribeFallback) {
   EXPECT_EQ(0U, render_text.runs_[0]->CountMissingGlyphs());
 }
 #endif  // defined(OS_WIN)
+
+// Ensure that the width reported by RenderText is sufficient for drawing. Draws
+// to a canvas and checks whether any pixel beyond the width is colored.
+TEST_F(RenderTextTest, TextDoesntClip) {
+  const wchar_t* kTestStrings[] = { L"Save", L"Remove", L"TEST", L"W", L"WWW" };
+
+  skia::RefPtr<SkCanvas> sk_canvas =
+      skia::AdoptRef(SkCanvas::NewRasterN32(300, 50));
+  scoped_ptr<Canvas> canvas(
+      Canvas::CreateCanvasWithoutScaling(sk_canvas.get(), 1.0f));
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->SetDisplayRect(Rect(300, 50));
+  render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  render_text->SetColor(SK_ColorBLACK);
+
+  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+    sk_canvas->clear(SK_ColorWHITE);
+    render_text->SetText(WideToUTF16(kTestStrings[i]));
+    render_text->SetStyle(BOLD, true);
+    render_text->Draw(canvas.get());
+    int width = render_text->GetStringSize().width();
+    ASSERT_LT(width, 300);
+    const uint32* buffer = static_cast<const uint32*>(
+        sk_canvas->peekPixels(NULL, NULL));
+    ASSERT_NE(nullptr, buffer);
+    for (int y = 0; y < 50; ++y) {
+      EXPECT_EQ(SK_ColorWHITE, buffer[width + y * 300])
+          << "String: " << kTestStrings[i];
+    }
+  }
+}
 
 }  // namespace gfx

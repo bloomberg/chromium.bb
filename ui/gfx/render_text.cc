@@ -722,7 +722,9 @@ SizeF RenderText::GetStringSizeF() {
 }
 
 float RenderText::GetContentWidth() {
-  return GetStringSizeF().width() + (cursor_enabled_ ? 1 : 0);
+  // The cursor is drawn one pixel beyond the int-enclosed text bounds.
+  return cursor_enabled_ ?
+      std::ceil(GetStringSizeF().width()) + 1 : GetStringSizeF().width();
 }
 
 int RenderText::GetBaseline() {
@@ -1071,7 +1073,7 @@ Vector2d RenderText::GetAlignmentOffset(size_t line_number) {
   HorizontalAlignment horizontal_alignment = GetCurrentHorizontalAlignment();
   if (horizontal_alignment != ALIGN_LEFT) {
 #if defined(OS_WIN)
-    const int width = lines_[line_number].size.width() +
+    const int width = std::ceil(lines_[line_number].size.width()) +
         (cursor_enabled_ ? 1 : 0);
 #else
     const int width = GetContentWidth();

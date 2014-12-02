@@ -1441,12 +1441,12 @@ TEST_F(TextfieldTest, TextCursorDisplayTest) {
   SendKeyEvent(0x05E1);
   EXPECT_EQ(WideToUTF16(L"ab\x05E1"), textfield_->text());
   x = GetCursorBounds().x();
-  EXPECT_EQ(prev_x, x);
+  EXPECT_GE(1, std::abs(x - prev_x));
 
   SendKeyEvent(0x05E2);
   EXPECT_EQ(WideToUTF16(L"ab\x05E1\x5E2"), textfield_->text());
   x = GetCursorBounds().x();
-  EXPECT_EQ(prev_x, x);
+  EXPECT_GE(1, std::abs(x - prev_x));
 
   // Clear text.
   SendKeyEvent(ui::VKEY_A, false, true);
@@ -1462,7 +1462,7 @@ TEST_F(TextfieldTest, TextCursorDisplayTest) {
   SendKeyEvent(0x05E2);
   EXPECT_EQ(WideToUTF16(L"\x05E1\x05E2"), textfield_->text());
   x = GetCursorBounds().x();
-  EXPECT_EQ(prev_x, x);
+  EXPECT_GE(1, std::abs(x - prev_x));
 
   SendKeyEvent('a');
   EXPECT_EQ(WideToUTF16(L"\x05E1\x5E2" L"a"), textfield_->text());
@@ -1491,7 +1491,7 @@ TEST_F(TextfieldTest, TextCursorDisplayInRTLTest) {
   SendKeyEvent('b');
   EXPECT_STR_EQ("ab", textfield_->text());
   x = GetCursorBounds().x();
-  EXPECT_EQ(prev_x, x);
+  EXPECT_GE(1, std::abs(x - prev_x));
 
   SendKeyEvent(0x05E1);
   EXPECT_EQ(WideToUTF16(L"ab\x05E1"), textfield_->text());
@@ -1522,7 +1522,7 @@ TEST_F(TextfieldTest, TextCursorDisplayInRTLTest) {
   SendKeyEvent('a');
   EXPECT_EQ(WideToUTF16(L"\x05E1\x5E2" L"a"), textfield_->text());
   x = GetCursorBounds().x();
-  EXPECT_EQ(prev_x, x);
+  EXPECT_GE(1, std::abs(x - prev_x));
   prev_x = x;
 
   SendKeyEvent('b');

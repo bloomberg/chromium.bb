@@ -4,11 +4,17 @@
 
 #include "ui/gfx/win/direct_write.h"
 
+#include <dwrite.h>
+
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
+#include "skia/ext/fontmgr_default_win.h"
+#include "third_party/skia/include/ports/SkTypeface_win.h"
+#include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/switches.h"
 #include "ui/gfx/win/dpi.h"
 
@@ -57,6 +63,50 @@ bool ShouldUseDirectWrite() {
   const std::string group_name =
       base::FieldTrialList::FindFullName("DirectWrite");
   return group_name != "Disabled";
+}
+
+void MaybeInitializeDirectWrite() {
+  static bool tried_dwrite_initialize = false;
+  if (tried_dwrite_initialize)
+    return;
+  tried_dwrite_initialize = true;
+
+  if (!ShouldUseDirectWrite() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableDirectWriteForUI) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableHarfBuzzRenderText)) {
+    return;
+  }
+
+  using DWriteCreateFactoryProc = decltype(DWriteCreateFactory)*;
+  HMODULE dwrite_dll = LoadLibraryW(L"dwrite.dll");
+  if (!dwrite_dll)
+    return;
+
+  DWriteCreateFactoryProc dwrite_create_factory_proc =
+      reinterpret_cast<DWriteCreateFactoryProc>(
+          GetProcAddress(dwrite_dll, "DWriteCreateFactory"));
+  // Not finding the DWriteCreateFactory function indicates a corrupt dll.
+  CHECK(dwrite_create_factory_proc);
+
+  base::win::ScopedComPtr<IDWriteFactory> factory;
+
+  CHECK(SUCCEEDED(
+      dwrite_create_factory_proc(
+          DWRITE_FACTORY_TYPE_SHARED,
+        __uuidof(IDWriteFactory),
+        reinterpret_cast<IUnknown**>(factory.Receive()))));
+  // The skia call to create a new DirectWrite font manager instance can fail
+  // if we are unable to get the system font collection from the DirectWrite
+  // factory. The GetSystemFontCollection method in the IDWriteFactory
+  // interface fails with E_INVALIDARG on certain Windows 7 gold versions
+  // (6.1.7600.*). We should just use GDI in these cases.
+  SkFontMgr* direct_write_font_mgr = SkFontMgr_New_DirectWrite(factory.get());
+  if (direct_write_font_mgr) {
+    SetDefaultSkiaFactory(direct_write_font_mgr);
+    gfx::PlatformFontWin::SetDirectWriteFactory(factory.get());
+  }
 }
 
 }  // namespace win

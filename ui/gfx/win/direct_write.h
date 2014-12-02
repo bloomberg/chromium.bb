@@ -13,6 +13,8 @@ namespace win {
 // Returns whether DirectWrite font rendering should be used.
 GFX_EXPORT bool ShouldUseDirectWrite();
 
+GFX_EXPORT void MaybeInitializeDirectWrite();
+
 }  // namespace win
 }  // namespace gfx
 
