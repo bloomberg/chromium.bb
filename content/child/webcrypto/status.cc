@@ -210,7 +210,7 @@ Status Status::ErrorUnexpected() {
 
 Status Status::ErrorInvalidAesGcmTagLength() {
   return Status(
-      blink::WebCryptoErrorTypeData,
+      blink::WebCryptoErrorTypeOperation,
       "The tag length is invalid: Must be 32, 64, 96, 104, 112, 120, or 128 "
       "bits");
 }
@@ -260,7 +260,7 @@ Status Status::ErrorGenerateHmacKeyLengthPartialByte() {
 
 Status Status::ErrorGenerateHmacKeyLengthZero() {
   return Status(blink::WebCryptoErrorTypeOperation,
-                "HMAC key length must be not be zero");
+                "HMAC key length must not be zero");
 }
 
 Status Status::ErrorCreateKeyBadUsages() {
