@@ -19,46 +19,30 @@
 #include "native_client/src/untrusted/nacl/tls_params.h"
 
 /*
- * Symbols defined by the linker, we copy those sections using them as
- * templates.  These are defined by older hacked-up nacl-binutils linkers,
- * but not by the next-generation (upstream) linkers.  To make this code
- * compatible with both kinds of linker, we use these only as weak
- * references.  With a linker that provides them, they will always be
- * defined.  With another linker, they will always be zero and we rely
- * on such a linker using a layout wherein the phdrs are visible in the
- * address space and the linker gives us __ehdr_start.
+ * We support two mechanisms for finding templates for TLS variables:
+ *
+ *  1) The PT_TLS header (in the ELF program headers), which is
+ *     located via the __ehdr_start symbol, which current binutils
+ *     linkers define when the ELF file headers and program headers
+ *     are mapped into the address space.
+ *
+ *  2) The __tls_template_* symbols, which are defined by PNaCl's
+ *     ExpandTls LLVM pass, which is used when linking ABI-stable
+ *     pexes.
+ *
+ * We use weak references to refer to these symbols so that the code
+ * can work with both mechanisms.
+ *
+ * The __tls_template_* symbols used to be defined by the binutils
+ * linker (using linker scripts), but this has been superseded by
+ * having the linker define __ehdr_start.
  */
 
-/* @IGNORE_LINES_FOR_CODE_HYGIENE[3] */
 extern char __tls_template_start __attribute__((weak));
 extern char __tls_template_tdata_end __attribute__((weak));
 extern char __tls_template_end __attribute__((weak));
-/*
- * __tls_template_alignment is defined by PNaCl's ExpandTls LLVM pass
- * but not by linker scripts.
- */
 extern uint32_t __tls_template_alignment __attribute__((weak));
 
-/*
- * In a proper implementation, there is no single fixed alignment for the
- * TLS data block.  The linker aligns .tdata as its particular constituents
- * require, and the PT_TLS phdr's p_align field tells the runtime what that
- * requirement is.  But in NaCl we do not have access to our own program's
- * phdrs at runtime in a statically-linked program.  Instead, we just know
- * that the linker has been hacked always to give it 16-byte alignment and
- * we hope that the actual requirement is no larger than that.
- */
-#define TLS_PRESUMED_ALIGNMENT   16
-
-/*
- * The next-generation (upstream) linkers define this symbol when
- * the ELF file and program headers are visible in the address space.
- * We can use this to bootstrap finding PT_TLS when it's available.
- * We use a weak reference to be compatible with the old nacl-binutils
- * linkers and layout, where this symbol is not defined and the headers
- * are not visible in the address space.
- */
-/* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
 extern union {
   Elf32_Ehdr ehdr32;
   Elf64_Ehdr ehdr64;
@@ -75,7 +59,7 @@ static char *aligned_addr(void *start, size_t alignment) {
 /*
  * Collect information about the TLS initializer data here.
  * The first call to get_tls_info() fills in all the data,
- * based either on PT_TLS or on link-time values and presumptions.
+ * based either on PT_TLS or on __tls_template_*.
  */
 
 struct tls_info {
@@ -164,14 +148,10 @@ static const struct tls_info *get_tls_info(void) {
 
     if (!did_read_phdr) {
       /*
-       * We didn't find anything that way, so we have to assume that
-       * we were built with the hacked-up linker that provides symbols
-       * and forces the alignment, or with PNaCl's ExpandTls LLVM
-       * pass, which defines the alignment properly.
+       * We didn't find anything that way, so assume that we were
+       * built with PNaCl's ExpandTls LLVM pass.
        */
-      cached_tls_info.tls_alignment =
-          &__tls_template_alignment
-          ? __tls_template_alignment : TLS_PRESUMED_ALIGNMENT;
+      cached_tls_info.tls_alignment = __tls_template_alignment;
       cached_tls_info.tdata_start = &__tls_template_start;
       cached_tls_info.tdata_size = (&__tls_template_tdata_end -
                                     &__tls_template_start);
