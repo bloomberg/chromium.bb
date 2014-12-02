@@ -30,13 +30,17 @@ var pollUnderProgress = false;
 var defaultAuthor = '';
 var isMultiCalendar = false;
 
+// The Calendar API identifies requests from this extension by the 'extid' get
+// parameter, set to this extension's ID.
+var API_KEY = 'extid=' + chrome.runtime.id;
+
 //URL for getting feed of individual calendar support.
 var SINGLE_CALENDAR_SUPPORT_URL = 'https://www.google.com/calendar/feeds' +
-    '/default/private/embed?toolbar=true&max-results=10';
+    '/default/private/embed?toolbar=true&max-results=10&' + API_KEY;
 
 //URL for getting feed of multiple calendar support.
 var MULTIPLE_CALENDAR_SUPPORT_URL = 'https://www.google.com/calendar/feeds' +
-    '/default/allcalendars/full';
+    '/default/allcalendars/full?' + API_KEY;
 
 //URL for opening Google Calendar in new tab.
 var GOOGLE_CALENDAR_URL = 'http://www.google.com/calendar/render';
@@ -63,13 +67,13 @@ function localStorageSet(key, value) {
 }
 
 /**
- * Gets the JavaScript object at |key| from localStorage. Assumes that the
- * value was written by localStorageSet (i.e. stored as JSON).
- * If the value is missing or undefined, returns undefined.
+ * Gets the JavaScript object at |key| from localStorage, defaulting to |deflt|
+ * if it hasn't been set. Assumes that the value was written by localStorageSet
+ * (i.e. stored as JSON).
  */
-function localStorageGet(key) {
+function localStorageGet(key, deflt) {
   var value = localStorage[key];
-  return (typeof value == 'undefined') ? undefined : JSON.parse(value);
+  return (typeof value == 'undefined') ? deflt : JSON.parse(value);
 }
 
 /**
@@ -336,7 +340,7 @@ CalendarManager.pollServer = function() {
     try {
       xhr.onreadystatechange = CalendarManager.genResponseChangeFunc(xhr);
       xhr.onerror = function(error) {
-        console.log('error: ' + error);
+        console.error('error:', error);
         localStorageSet('nextEvent', null);
         canvasAnimation_.drawFinal();
       };
@@ -349,7 +353,7 @@ CalendarManager.pollServer = function() {
       xhr.open('GET', url);
       xhr.send(null);
     } catch (e) {
-      console.log('ex: ' + e);
+      console.error('ex:', e);
       localStorageSet('nextEvent', null);
       canvasAnimation_.drawFinal();
     }
@@ -421,16 +425,18 @@ CalendarManager.getCalendarFeed = function(calendarId) {
     xmlhttp.onreadystatechange = CalendarManager.onCalendarResponse(xmlhttp,
                                      calendarId);
     xmlhttp.onerror = function(error) {
-      console.log('error: ' + error);
+      console.error('error:', error);
       localStorageSet('nextEvent', null);
       canvasAnimation_.drawFinal();
     };
 
-    xmlhttp.open('GET', localStorageGet('calendars)[calendarId]'));
+    // Augment the calendar's URL with the API key.
+    var calendarUrl = localStorageGet('calendars')[calendarId] + '&' + API_KEY;
+    xmlhttp.open('GET', calendarUrl);
     xmlhttp.send(null);
   }
   catch (e) {
-    console.log('ex: ' + e);
+    console.error('ex:', e);
     localStorageSet('nextEvent', null);
     canvasAnimation_.drawFinal();
   }
@@ -477,7 +483,7 @@ CalendarManager.parseCalendarEntry = function(responseXML, calendarId) {
   }
 
   if (entry_ && entry_.length > 0) {
-    var eventList = localStorageGet('eventList');
+    var eventList = localStorageGet('eventList', []);
     for (var i = 0, entry; entry = entry_[i]; ++i) {
      var event_ = CalendarManager.extractEvent(entry, mailId);
 
@@ -497,10 +503,10 @@ CalendarManager.parseCalendarEntry = function(responseXML, calendarId) {
 
   calendarId++;
   //get the next calendar
-  if (calendarId < localStorageGet('calendars).length')) {
+  if (calendarId < localStorageGet('calendars', []).length) {
     CalendarManager.getCalendarFeed(calendarId);
   } else {
-    CalendarManager.populateLatestEvent(localStorageGet('eventList)'));
+    CalendarManager.populateLatestEvent(localStorageGet('eventList', []));
   }
 };
 
@@ -667,7 +673,7 @@ function filterSpecialChar(data) {
  * Called from options.js page on saving the settings
  */
 function onSettingsChange() {
-  isMultiCalendar = localStorageGet('multiCalendar');
+  isMultiCalendar = localStorageGet('multiCalendar', false);
   badgeAnimation_.start();
   CalendarManager.pollServer();
 };
@@ -733,7 +739,7 @@ function onInstalled() {
  */
 badgeAnimation_ = new BadgeAnimation();
 canvasAnimation_ = new CanvasAnimation();
-isMultiCalendar = localStorageGet('multiCalendar || false');
+isMultiCalendar = localStorageGet('multiCalendar', false);
 chrome.browserAction.setIcon({path: '../images/icon-16.gif'});
 chrome.runtime.onInstalled.addListener(onInstalled);
 chrome.alarms.onAlarm.addListener(redraw)
