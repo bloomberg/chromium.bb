@@ -1297,6 +1297,8 @@
             'inspector/ScriptCallFrame.h',
             'inspector/ScriptCallStack.cpp',
             'inspector/ScriptCallStack.h',
+            'inspector/ScriptDebugListener.cpp',
+            'inspector/ScriptDebugListener.h',
             'inspector/ScriptGCEventListener.h',
             'inspector/ScriptProfile.cpp',
             'inspector/ScriptProfile.h',

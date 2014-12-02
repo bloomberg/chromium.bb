@@ -30,7 +30,6 @@
 #ifndef ScriptDebugListener_h
 #define ScriptDebugListener_h
 
-
 #include "bindings/core/v8/ScriptState.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
@@ -47,24 +46,45 @@ class ScriptDebugListener {
 public:
     class Script {
     public:
-        Script()
-            : startLine(0)
-            , startColumn(0)
-            , endLine(0)
-            , endColumn(0)
-            , isContentScript(false)
-        {
-        }
+        Script();
 
-        String url;
-        String sourceURL;
-        String sourceMappingURL;
-        String source;
-        int startLine;
-        int startColumn;
-        int endLine;
-        int endColumn;
-        bool isContentScript;
+        String url() const { return m_url; }
+        bool hasSourceURL() const { return !m_sourceURL.isEmpty(); }
+        String sourceURL() const;
+        String sourceMappingURL() const { return m_sourceMappingURL; }
+        String source() const { return m_source; }
+        int startLine() const { return m_startLine; }
+        int startColumn() const { return m_startColumn; }
+        int endLine() const { return m_endLine; }
+        int endColumn() const { return m_endColumn; }
+        bool isContentScript() const { return m_isContentScript; }
+
+        bool getBlackboxedState(unsigned blackboxGeneration, bool* isBlackboxed) const;
+        void setBlackboxedState(unsigned blackboxGeneration, bool isBlackboxed);
+
+        Script& setURL(const String&);
+        Script& setSourceURL(const String&);
+        Script& setSourceMappingURL(const String&);
+        Script& setSource(const String&);
+        Script& setStartLine(int);
+        Script& setStartColumn(int);
+        Script& setEndLine(int);
+        Script& setEndColumn(int);
+        Script& setIsContentScript(bool);
+
+    private:
+        String m_url;
+        String m_sourceURL;
+        String m_sourceMappingURL;
+        String m_source;
+        int m_startLine;
+        int m_startColumn;
+        int m_endLine;
+        int m_endColumn;
+        bool m_isContentScript;
+        // Used from outside for caching.
+        bool m_isBlackboxedURL;
+        unsigned m_blackboxGeneration;
     };
 
     enum SkipPauseRequest {

@@ -574,15 +574,15 @@ void ScriptDebugServer::dispatchDidParseSource(ScriptDebugListener* listener, v8
     String sourceID = String::number(id->Int32Value());
 
     ScriptDebugListener::Script script;
-    script.url = toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "name")));
-    script.sourceURL = toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "sourceURL")));
-    script.sourceMappingURL = toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "sourceMappingURL")));
-    script.source = toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "source")));
-    script.startLine = object->Get(v8AtomicString(m_isolate, "startLine"))->ToInteger(m_isolate)->Value();
-    script.startColumn = object->Get(v8AtomicString(m_isolate, "startColumn"))->ToInteger(m_isolate)->Value();
-    script.endLine = object->Get(v8AtomicString(m_isolate, "endLine"))->ToInteger(m_isolate)->Value();
-    script.endColumn = object->Get(v8AtomicString(m_isolate, "endColumn"))->ToInteger(m_isolate)->Value();
-    script.isContentScript = object->Get(v8AtomicString(m_isolate, "isContentScript"))->ToBoolean(m_isolate)->Value();
+    script.setURL(toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "name"))))
+        .setSourceURL(toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "sourceURL"))))
+        .setSourceMappingURL(toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "sourceMappingURL"))))
+        .setSource(toCoreStringWithUndefinedOrNullCheck(object->Get(v8AtomicString(m_isolate, "source"))))
+        .setStartLine(object->Get(v8AtomicString(m_isolate, "startLine"))->ToInteger(m_isolate)->Value())
+        .setStartColumn(object->Get(v8AtomicString(m_isolate, "startColumn"))->ToInteger(m_isolate)->Value())
+        .setEndLine(object->Get(v8AtomicString(m_isolate, "endLine"))->ToInteger(m_isolate)->Value())
+        .setEndColumn(object->Get(v8AtomicString(m_isolate, "endColumn"))->ToInteger(m_isolate)->Value())
+        .setIsContentScript(object->Get(v8AtomicString(m_isolate, "isContentScript"))->ToBoolean(m_isolate)->Value());
 
     listener->didParseSource(sourceID, script, compileResult);
 }

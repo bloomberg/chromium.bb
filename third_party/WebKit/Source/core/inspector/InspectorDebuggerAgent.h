@@ -254,6 +254,8 @@ private:
     AsyncCallStackTracker& asyncCallStackTracker() const { return *m_asyncCallStackTracker; };
     PromiseTracker& promiseTracker() const { return *m_promiseTracker; }
 
+    void increaseCachedSkipStackGeneration();
+
     typedef HashMap<String, Script> ScriptsMap;
     typedef HashMap<String, Vector<String> > BreakpointIdToDebugServerBreakpointIdsMap;
     typedef HashMap<String, std::pair<String, BreakpointSource> > DebugServerBreakpointToBreakpointIdAndSourceMap;
@@ -287,6 +289,7 @@ private:
     bool m_skipAllPauses;
     bool m_skipContentScripts;
     OwnPtr<ScriptRegexp> m_cachedSkipStackRegExp;
+    unsigned m_cachedSkipStackGeneration;
     OwnPtrWillBeMember<AsyncCallStackTracker> m_asyncCallStackTracker;
     OwnPtrWillBeMember<PromiseTracker> m_promiseTracker;
 };

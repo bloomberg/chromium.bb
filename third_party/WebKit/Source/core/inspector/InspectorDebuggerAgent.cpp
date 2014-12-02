@@ -132,6 +132,7 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_recursionLevelForStepOut(0)
     , m_skipAllPauses(false)
     , m_skipContentScripts(false)
+    , m_cachedSkipStackGeneration(0)
     , m_asyncCallStackTracker(adoptPtrWillBeNoop(new AsyncCallStackTracker()))
     , m_promiseTracker(PromiseTracker::create())
 {
@@ -220,6 +221,13 @@ static PassOwnPtr<ScriptRegexp> compileSkipCallFramePattern(String patternText)
     return result.release();
 }
 
+void InspectorDebuggerAgent::increaseCachedSkipStackGeneration()
+{
+    ++m_cachedSkipStackGeneration;
+    if (!m_cachedSkipStackGeneration)
+        m_cachedSkipStackGeneration = 1;
+}
+
 void InspectorDebuggerAgent::restore()
 {
     if (enabled()) {
@@ -229,6 +237,7 @@ void InspectorDebuggerAgent::restore()
         String error;
         setPauseOnExceptionsImpl(&error, pauseState);
         m_cachedSkipStackRegExp = compileSkipCallFramePattern(m_state->getString(DebuggerAgentState::skipStackPattern));
+        increaseCachedSkipStackGeneration();
         m_skipContentScripts = m_state->getBoolean(DebuggerAgentState::skipContentScripts);
         m_skipAllPauses = m_state->getBoolean(DebuggerAgentState::skipAllPauses);
         if (m_skipAllPauses && m_state->getBoolean(DebuggerAgentState::skipAllPausesExpiresOnReload)) {
@@ -313,12 +322,6 @@ static PassRefPtr<JSONObject> buildObjectForBreakpointCookie(const String& url, 
     return breakpointObject;
 }
 
-static String scriptSourceURL(const ScriptDebugListener::Script& script)
-{
-    bool hasSourceURL = !script.sourceURL.isEmpty();
-    return hasSourceURL ? script.sourceURL : script.url;
-}
-
 static bool matches(const String& url, const String& pattern, bool isRegex)
 {
     if (isRegex) {
@@ -365,7 +368,7 @@ void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int li
     if (!isAntiBreakpointValue) {
         ScriptBreakpoint breakpoint(lineNumber, columnNumber, condition);
         for (ScriptsMap::iterator it = m_scripts.begin(); it != m_scripts.end(); ++it) {
-            if (!matches(scriptSourceURL(it->value), url, isRegex))
+            if (!matches(it->value.sourceURL(), url, isRegex))
                 continue;
             RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(breakpointId, it->key, breakpoint, UserBreakpointSource);
             if (location)
@@ -492,9 +495,17 @@ PassRefPtrWillBeRawPtr<JavaScriptCallFrame> InspectorDebuggerAgent::topCallFrame
         ScriptsMap::iterator it = m_scripts.find(String::number(frame->sourceID()));
         if (it == m_scripts.end())
             continue;
-        *scriptURL = scriptSourceURL(it->value);
-        *isBlackboxed = (m_skipContentScripts && it->value.isContentScript)
-            || (m_cachedSkipStackRegExp && !scriptURL->isEmpty() && m_cachedSkipStackRegExp->match(*scriptURL) != -1);
+        *scriptURL = it->value.sourceURL();
+        if (m_skipContentScripts && it->value.isContentScript()) {
+            *isBlackboxed = true;
+        } else if (m_cachedSkipStackRegExp && !scriptURL->isEmpty()) {
+            if (!it->value.getBlackboxedState(m_cachedSkipStackGeneration, isBlackboxed)) {
+                *isBlackboxed = m_cachedSkipStackRegExp->match(*scriptURL) != -1;
+                it->value.setBlackboxedState(m_cachedSkipStackGeneration, *isBlackboxed);
+            }
+        } else {
+            *isBlackboxed = false;
+        }
         return frame.release();
     }
 }
@@ -607,7 +618,7 @@ PassRefPtr<TypeBuilder::Debugger::Location> InspectorDebuggerAgent::resolveBreak
     if (scriptIterator == m_scripts.end())
         return nullptr;
     Script& script = scriptIterator->value;
-    if (breakpoint.lineNumber < script.startLine || script.endLine < breakpoint.lineNumber)
+    if (breakpoint.lineNumber < script.startLine() || script.endLine() < breakpoint.lineNumber)
         return nullptr;
 
     int actualLineNumber;
@@ -635,7 +646,7 @@ void InspectorDebuggerAgent::searchInContent(ErrorString* error, const String& s
 {
     ScriptsMap::iterator it = m_scripts.find(scriptId);
     if (it != m_scripts.end())
-        results = ContentSearchUtils::searchInTextByLines(it->value.source, query, asBool(optionalCaseSensitive), asBool(optionalIsRegex));
+        results = ContentSearchUtils::searchInTextByLines(it->value.source(), query, asBool(optionalCaseSensitive), asBool(optionalIsRegex));
     else
         *error = "No script for id: " + scriptId;
 }
@@ -651,7 +662,7 @@ void InspectorDebuggerAgent::setScriptSource(ErrorString* error, RefPtr<TypeBuil
     ScriptsMap::iterator it = m_scripts.find(scriptId);
     if (it == m_scripts.end())
         return;
-    String url = it->value.url;
+    String url = it->value.url();
     if (url.isEmpty())
         return;
     if (InspectorPageAgent* pageAgent = m_instrumentingAgents->inspectorPageAgent())
@@ -684,7 +695,7 @@ void InspectorDebuggerAgent::getScriptSource(ErrorString* error, const String& s
         return;
     }
 
-    String url = it->value.url;
+    String url = it->value.url();
     if (!url.isEmpty()) {
         if (InspectorPageAgent* pageAgent = m_instrumentingAgents->inspectorPageAgent()) {
             bool success = pageAgent->getEditedResourceContent(url, scriptSource);
@@ -692,7 +703,7 @@ void InspectorDebuggerAgent::getScriptSource(ErrorString* error, const String& s
                 return;
         }
     }
-    *scriptSource = it->value.source;
+    *scriptSource = it->value.source();
 }
 
 void InspectorDebuggerAgent::getFunctionDetails(ErrorString* errorString, const String& functionId, RefPtr<FunctionDetails>& details)
@@ -1193,6 +1204,7 @@ void InspectorDebuggerAgent::skipStackFrames(ErrorString* errorString, const Str
     }
     m_state->setString(DebuggerAgentState::skipStackPattern, patternValue);
     m_cachedSkipStackRegExp = compiled.release();
+    increaseCachedSkipStackGeneration();
     m_skipContentScripts = asBool(skipContentScripts);
     m_state->setBoolean(DebuggerAgentState::skipContentScripts, m_skipContentScripts);
 }
@@ -1367,22 +1379,21 @@ String InspectorDebuggerAgent::sourceMapURLForScript(const Script& script, Compi
 {
     bool hasSyntaxError = compileResult != CompileSuccess;
     if (hasSyntaxError) {
-        bool deprecated;
-        String sourceMapURL = ContentSearchUtils::findSourceMapURL(script.source, ContentSearchUtils::JavaScriptMagicComment, &deprecated);
+        String sourceMapURL = ContentSearchUtils::findSourceMapURL(script.source(), ContentSearchUtils::JavaScriptMagicComment);
         if (!sourceMapURL.isEmpty())
             return sourceMapURL;
     }
 
-    if (!script.sourceMappingURL.isEmpty())
-        return script.sourceMappingURL;
+    if (!script.sourceMappingURL().isEmpty())
+        return script.sourceMappingURL();
 
-    if (script.url.isEmpty())
+    if (script.url().isEmpty())
         return String();
 
     InspectorPageAgent* pageAgent = m_instrumentingAgents->inspectorPageAgent();
     if (!pageAgent)
         return String();
-    return pageAgent->resourceSourceMapURL(script.url);
+    return pageAgent->resourceSourceMapURL(script.url());
 }
 
 // ScriptDebugListener functions
@@ -1390,25 +1401,23 @@ String InspectorDebuggerAgent::sourceMapURLForScript(const Script& script, Compi
 void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script& parsedScript, CompileResult compileResult)
 {
     Script script = parsedScript;
-    const bool* isContentScript = script.isContentScript ? &script.isContentScript : 0;
 
     bool hasSyntaxError = compileResult != CompileSuccess;
-    if (hasSyntaxError) {
-        bool deprecated;
-        script.sourceURL = ContentSearchUtils::findSourceURL(script.source, ContentSearchUtils::JavaScriptMagicComment, &deprecated);
-    }
+    if (hasSyntaxError)
+        script.setSourceURL(ContentSearchUtils::findSourceURL(script.source(), ContentSearchUtils::JavaScriptMagicComment));
 
-    bool hasSourceURL = !script.sourceURL.isEmpty();
-    String scriptURL = hasSourceURL ? script.sourceURL : script.url;
-
+    bool isContentScript = script.isContentScript();
+    bool hasSourceURL = script.hasSourceURL();
+    String scriptURL = script.sourceURL();
     String sourceMapURL = sourceMapURLForScript(script, compileResult);
-    String* sourceMapURLParam = sourceMapURL.isNull() ? 0 : &sourceMapURL;
 
-    bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : 0;
+    const String* sourceMapURLParam = sourceMapURL.isNull() ? 0 : &sourceMapURL;
+    const bool* isContentScriptParam = isContentScript ? &isContentScript : 0;
+    const bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : 0;
     if (!hasSyntaxError)
-        m_frontend->scriptParsed(scriptId, scriptURL, script.startLine, script.startColumn, script.endLine, script.endColumn, isContentScript, sourceMapURLParam, hasSourceURLParam);
+        m_frontend->scriptParsed(scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, sourceMapURLParam, hasSourceURLParam);
     else
-        m_frontend->scriptFailedToParse(scriptId, scriptURL, script.startLine, script.startColumn, script.endLine, script.endColumn, isContentScript, sourceMapURLParam, hasSourceURLParam);
+        m_frontend->scriptFailedToParse(scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, sourceMapURLParam, hasSourceURLParam);
 
     m_scripts.set(scriptId, script);
 
