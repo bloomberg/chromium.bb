@@ -561,13 +561,15 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
     StyleResolverParentScope::ensureParentStackIsPushed();
 
-    StyleResolverState state(document(), element, defaultParent);
+    ElementResolveContext elementContext(*element);
 
-    if (sharingBehavior == AllowStyleSharing && state.parentStyle()) {
-        SharedStyleFinder styleFinder(state.elementContext(), m_features, m_siblingRuleSet.get(), m_uncommonAttributeRuleSet.get(), *this);
+    if (sharingBehavior == AllowStyleSharing && (defaultParent || elementContext.parentStyle())) {
+        SharedStyleFinder styleFinder(elementContext, m_features, m_siblingRuleSet.get(), m_uncommonAttributeRuleSet.get(), *this);
         if (RefPtr<RenderStyle> sharedStyle = styleFinder.findSharedStyle())
             return sharedStyle.release();
     }
+
+    StyleResolverState state(document(), elementContext, defaultParent);
 
     ActiveAnimations* activeAnimations = element->activeAnimations();
     const RenderStyle* baseRenderStyle = activeAnimations ? activeAnimations->baseRenderStyle() : nullptr;

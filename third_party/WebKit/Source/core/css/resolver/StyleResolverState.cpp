@@ -29,8 +29,8 @@
 
 namespace blink {
 
-StyleResolverState::StyleResolverState(Document& document, Element* element, RenderStyle* parentStyle)
-    : m_elementContext(element ? ElementResolveContext(*element) : ElementResolveContext(document))
+StyleResolverState::StyleResolverState(Document& document, const ElementResolveContext& elementContext, RenderStyle* parentStyle)
+    : m_elementContext(elementContext)
     , m_document(document)
     , m_style(nullptr)
     , m_parentStyle(parentStyle)
@@ -39,11 +39,16 @@ StyleResolverState::StyleResolverState(Document& document, Element* element, Ren
     , m_fontBuilder(document)
     , m_styleMap(*this, m_elementStyleResources)
 {
-    if (!parentStyle && m_elementContext.parentNode())
-        m_parentStyle = m_elementContext.parentNode()->renderStyle();
+    if (!m_parentStyle)
+        m_parentStyle = m_elementContext.parentStyle();
 
     ASSERT(document.isActive());
     m_elementStyleResources.setDeviceScaleFactor(document.frameHost()->deviceScaleFactor());
+}
+
+StyleResolverState::StyleResolverState(Document& document, Element* element, RenderStyle* parentStyle)
+    : StyleResolverState(document, element ? ElementResolveContext(*element) : ElementResolveContext(document), parentStyle)
+{
 }
 
 StyleResolverState::~StyleResolverState()

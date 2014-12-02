@@ -45,6 +45,7 @@ class StyleResolverState {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(StyleResolverState);
 public:
+    StyleResolverState(Document&, const ElementResolveContext&, RenderStyle* parentStyle);
     StyleResolverState(Document&, Element*, RenderStyle* parentStyle = 0);
     ~StyleResolverState();
 
@@ -145,8 +146,8 @@ private:
 
     CSSToLengthConversionData m_cssToLengthConversionData;
 
-    // m_parentStyle is not always just element->parentNode()->style()
-    // so we keep it separate from m_elementContext.
+    // m_parentStyle is not always just ElementResolveContext::parentStyle,
+    // so we keep it separate.
     RefPtr<RenderStyle> m_parentStyle;
 
     OwnPtrWillBeMember<CSSAnimationUpdate> m_animationUpdate;

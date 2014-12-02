@@ -43,6 +43,7 @@ public:
     Element* element() const { return m_element; }
     const ContainerNode* parentNode() const { return m_parentNode; }
     const RenderStyle* rootElementStyle() const { return m_rootElementStyle; }
+    RenderStyle* parentStyle() const { return parentNode() ? parentNode()->renderStyle() : nullptr; }
     EInsideLink elementLinkState() const { return m_elementLinkState; }
     bool distributedToInsertionPoint() const { return m_distributedToInsertionPoint; }
 
