@@ -272,6 +272,14 @@
 #define GL_CONTEXT_LOST_KHR               0x0507
 #endif /* GL_KHR_robustness */
 
+#ifndef GL_EXT_texture_rg
+#define GL_EXT_texture_rg 1
+#define GL_RED_EXT 0x1903
+#define GL_RG_EXT 0x8227
+#define GL_R8_EXT 0x8229
+#define GL_RG8_EXT 0x822B
+#endif /* GL_EXT_texture_rg */
+
 #define GL_GLEXT_PROTOTYPES 1
 
 #if defined(OS_WIN)

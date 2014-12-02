@@ -73,6 +73,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool chromium_path_rendering;
     bool blend_equation_advanced;
     bool blend_equation_advanced_coherent;
+    bool ext_texture_rg;
   };
 
   struct Workarounds {
