@@ -109,8 +109,7 @@ function dispatchOptionTab(element, shiftKey)
 {
     var event = document.createEvent("KeyboardEvents");
     var tabKeyIdentifier = "U+0009";
-    var isMac = navigator.platform.indexOf('Mac') == 0;
-    event.initKeyboardEvent("keydown", true, true, document.defaultView, tabKeyIdentifier, 0, false, isMac, shiftKey, false, false);
+    event.initKeyboardEvent("keydown", true, true, document.defaultView, tabKeyIdentifier, 0, false, true, shiftKey, false, false);
     element.dispatchEvent(event);
 }
 

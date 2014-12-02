@@ -3409,13 +3409,6 @@ void EventHandler::defaultTabEventHandler(KeyboardEvent* event)
     if (event->ctrlKey() || event->metaKey())
         return;
 
-#if !OS(MACOSX)
-    // Option-Tab is a shortcut based on a system-wide preference on Mac but
-    // should be ignored on all other platforms.
-    if (event->altKey())
-        return;
-#endif
-
     Page* page = m_frame->page();
     if (!page)
         return;
