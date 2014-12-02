@@ -132,9 +132,6 @@ imported/web-platform-tests/workers [ Skip ]
 # Exceptions for individual files that fail due to bugs in the upstream tests
 # that we shouldn't bother importing until they are fixed.
 
-# Depends on spec bug: https://www.w3.org/Bugs/Public/show_bug.cgi?id=26492
-imported/web-platform-tests/IndexedDB/key_invalid.htm [ Skip ]
-
 # Many failures due to http://crbug.com/43394
 imported/web-platform-tests/IndexedDB/interfaces.html [ Skip ]
 
@@ -162,3 +159,7 @@ imported/web-platform-tests/shadow-dom/shadow-trees/hosting-multiple-shadow-tree
 imported/web-platform-tests/shadow-dom/shadow-trees/hosting-multiple-shadow-trees-006.html [ Skip ]
 imported/web-platform-tests/shadow-dom/shadow-trees/text-decoration-001.html [ Skip ]
 imported/web-platform-tests/shadow-dom/styles/not-apply-in-shadow-root-001.html [ Skip ]
+
+# Uses custom request handler
+imported/web-platform-tests/encoding/single-byte-decoder.html [ Skip ]
+imported/web-platform-tests/encoding/resources/single-byte-raw.py [ Skip ]
