@@ -23,10 +23,14 @@
                                                  createDOM('div', {'id': 'F'})),
                                 createDOM('div', {'id': 'B'}))));
 
+
         addEventListeners(['top', 'A', 'B', 'A/', 'A/C', 'A/D', 'A//', 'A//E', 'A//F']);
+        addEventListenersToNode(window);
+
         showSandboxTree();
 
         moveMouse('B', 'A');
+        moveMouse('A', 'A/D');
         moveMouse('A/D', 'A//F');
         moveMouse('B', 'A//F');
     </script>

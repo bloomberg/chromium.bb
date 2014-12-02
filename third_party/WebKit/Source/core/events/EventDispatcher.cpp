@@ -110,11 +110,15 @@ bool EventDispatcher::dispatch()
     ASSERT(!m_eventDispatched);
     m_eventDispatched = true;
 #endif
+    if (event().eventPath().isEmpty()) {
+        // eventPath() can be empty if event path is shrinked by relataedTarget retargeting.
+        return true;
+    }
 
     m_event->setTarget(EventPath::eventTargetRespectingTargetRules(*m_node));
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     ASSERT(m_event->target());
-    WindowEventContext windowEventContext(m_event.get(), m_node.get(), topNodeEventContext());
+    WindowEventContext windowEventContext(*m_event, topNodeEventContext());
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "EventDispatch", "data", InspectorEventDispatchEvent::data(*m_event));
     // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchEvent(&m_node->document(), *m_event, windowEventContext.window(), m_node.get(), m_event->eventPath());
@@ -148,7 +152,7 @@ inline EventDispatchContinuation EventDispatcher::dispatchEventAtCapturing(Windo
     // Trigger capturing event handlers, starting at the top and working our way down.
     m_event->setEventPhase(Event::CAPTURING_PHASE);
 
-    if (windowEventContext.handleLocalEvents(m_event.get()) && m_event->propagationStopped())
+    if (windowEventContext.handleLocalEvents(*m_event) && m_event->propagationStopped())
         return DoneDispatching;
 
     for (size_t i = m_event->eventPath().size() - 1; i > 0; --i) {
@@ -188,7 +192,7 @@ inline void EventDispatcher::dispatchEventAtBubbling(WindowEventContext& windowC
     }
     if (m_event->bubbles() && !m_event->cancelBubble()) {
         m_event->setEventPhase(Event::BUBBLING_PHASE);
-        windowContext.handleLocalEvents(m_event.get());
+        windowContext.handleLocalEvents(*m_event);
     }
 }
 
@@ -226,9 +230,10 @@ inline void EventDispatcher::dispatchEventPostProcess(void* preDispatchEventHand
     }
 }
 
-const NodeEventContext* EventDispatcher::topNodeEventContext()
+const NodeEventContext& EventDispatcher::topNodeEventContext()
 {
-    return m_event->eventPath().isEmpty() ? 0 : &m_event->eventPath().last();
+    ASSERT(!m_event->eventPath().isEmpty());
+    return m_event->eventPath().last();
 }
 
 }

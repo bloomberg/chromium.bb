@@ -59,7 +59,7 @@ public:
 
 private:
     EventDispatcher(Node&, PassRefPtrWillBeRawPtr<Event>);
-    const NodeEventContext* topNodeEventContext();
+    const NodeEventContext& topNodeEventContext();
 
     EventDispatchContinuation dispatchEventPreProcess(void*& preDispatchEventHandlerResult);
     EventDispatchContinuation dispatchEventAtCapturing(WindowEventContext&);

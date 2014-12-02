@@ -19,10 +19,22 @@ Moving mouse from B to A
      @younger-shadow-root (target: B) (related: A)
      @A (target: B) (related: A)
      @top (target: B) (related: A)
+     @[object Window] (target: B) (related: A)
 
   mouseover
      @A (target: A) (related: B)
      @top (target: A) (related: B)
+     @[object Window] (target: A) (related: B)
+
+Moving mouse from A to A/D
+
+  mouseout
+
+  mouseover
+     @D (target: D) (related: A)
+     @older-shadow-root (target: D) (related: A)
+     @E (target: D) (related: A)
+     @younger-shadow-root (target: D) (related: A)
 
 Moving mouse from A/D to A//F
 
@@ -46,12 +58,14 @@ Moving mouse from B to A//F
      @younger-shadow-root (target: B) (related: F)
      @A (target: B) (related: A)
      @top (target: B) (related: A)
+     @[object Window] (target: B) (related: A)
 
   mouseover
      @F (target: F) (related: B)
      @younger-shadow-root (target: F) (related: B)
      @A (target: A) (related: B)
      @top (target: A) (related: B)
+     @[object Window] (target: A) (related: B)
 PASS successfullyParsed is true
 
 TEST COMPLETE
