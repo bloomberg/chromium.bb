@@ -58,7 +58,7 @@ class QuicServer : public EpollCallbackInterface {
   // dropped packets.
   static bool ReadAndDispatchSinglePacket(int fd, int port,
                                           ProcessPacketInterface* processor,
-                                          uint32* packets_dropped);
+                                          QuicPacketCount* packets_dropped);
 
   void OnShutdown(EpollServer* eps, int fd) override {}
 
@@ -74,7 +74,7 @@ class QuicServer : public EpollCallbackInterface {
 
   bool overflow_supported() { return overflow_supported_; }
 
-  uint32 packets_dropped() { return packets_dropped_; }
+  QuicPacketCount packets_dropped() { return packets_dropped_; }
 
   int port() { return port_; }
 
@@ -110,7 +110,7 @@ class QuicServer : public EpollCallbackInterface {
   // If overflow_supported_ is true this will be the number of packets dropped
   // during the lifetime of the server.  This may overflow if enough packets
   // are dropped.
-  uint32 packets_dropped_;
+  QuicPacketCount packets_dropped_;
 
   // True if the kernel supports SO_RXQ_OVFL, the number of packets dropped
   // because the socket would otherwise overflow.

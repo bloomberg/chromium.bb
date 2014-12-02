@@ -246,9 +246,8 @@ class QuicClient : public EpollCallbackInterface,
   bool initialized_;
 
   // If overflow_supported_ is true, this will be the number of packets dropped
-  // during the lifetime of the server.  This may overflow if enough packets
-  // are dropped.
-  uint32 packets_dropped_;
+  // during the lifetime of the server.
+  QuicPacketCount packets_dropped_;
 
   // True if the kernel supports SO_RXQ_OVFL, the number of packets dropped
   // because the socket would otherwise overflow.

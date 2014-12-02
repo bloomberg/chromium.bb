@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_types.h"
 
 namespace net {
@@ -28,7 +29,7 @@ class QuicSocketUtils {
   // If the msghdr contains an SO_RXQ_OVFL entry, this will set dropped_packets
   // to the correct value and return true. Otherwise it will return false.
   static bool GetOverflowFromMsghdr(struct msghdr *hdr,
-                                    uint32 *dropped_packets);
+                                    QuicPacketCount *dropped_packets);
 
   // Sets either IP_PKTINFO or IPV6_PKTINFO on the socket, based on
   // address_family.  Returns the return code from setsockopt.
@@ -52,7 +53,7 @@ class QuicSocketUtils {
   static int ReadPacket(int fd,
                         char* buffer,
                         size_t buf_len,
-                        uint32* dropped_packets,
+                        QuicPacketCount* dropped_packets,
                         IPAddressNumber* self_address,
                         IPEndPoint* peer_address);
 

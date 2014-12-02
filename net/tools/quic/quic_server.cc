@@ -204,7 +204,7 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
 bool QuicServer::ReadAndDispatchSinglePacket(int fd,
                                              int port,
                                              ProcessPacketInterface* processor,
-                                             uint32* packets_dropped) {
+                                             QuicPacketCount* packets_dropped) {
   // Allocate some extra space so we can send an error if the client goes over
   // the limit.
   char buf[2 * kMaxPacketSize];

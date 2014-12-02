@@ -51,8 +51,9 @@ IPAddressNumber QuicSocketUtils::GetAddressFromMsghdr(struct msghdr *hdr) {
 }
 
 // static
-bool QuicSocketUtils::GetOverflowFromMsghdr(struct msghdr *hdr,
-                                            uint32 *dropped_packets) {
+bool QuicSocketUtils::GetOverflowFromMsghdr(
+    struct msghdr *hdr,
+    QuicPacketCount *dropped_packets) {
   if (hdr->msg_controllen > 0) {
     struct cmsghdr *cmsg;
     for (cmsg = CMSG_FIRSTHDR(hdr);
@@ -99,7 +100,7 @@ bool QuicSocketUtils::SetReceiveBufferSize(int fd, size_t size) {
 
 // static
 int QuicSocketUtils::ReadPacket(int fd, char* buffer, size_t buf_len,
-                                uint32* dropped_packets,
+                                QuicPacketCount* dropped_packets,
                                 IPAddressNumber* self_address,
                                 IPEndPoint* peer_address) {
   CHECK(peer_address != nullptr);
