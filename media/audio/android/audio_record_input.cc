@@ -125,8 +125,9 @@ double AudioRecordInputStream::GetVolume() {
   return 0.0;
 }
 
-void AudioRecordInputStream::SetAutomaticGainControl(bool enabled) {
+bool AudioRecordInputStream::SetAutomaticGainControl(bool enabled) {
   NOTIMPLEMENTED();
+  return false;
 }
 
 bool AudioRecordInputStream::GetAutomaticGainControl() {

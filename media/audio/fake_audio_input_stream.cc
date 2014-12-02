@@ -305,10 +305,12 @@ bool FakeAudioInputStream::IsMuted() {
   return false;
 }
 
-void FakeAudioInputStream::SetAutomaticGainControl(bool enabled) {}
+bool FakeAudioInputStream::SetAutomaticGainControl(bool enabled) {
+  return false;
+}
 
 bool FakeAudioInputStream::GetAutomaticGainControl() {
-  return true;
+  return false;
 }
 
 // static

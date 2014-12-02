@@ -382,8 +382,8 @@ double WebContentsAudioInputStream::GetVolume() {
   return impl_->mixer_stream()->GetVolume();
 }
 
-void WebContentsAudioInputStream::SetAutomaticGainControl(bool enabled) {
-  impl_->mixer_stream()->SetAutomaticGainControl(enabled);
+bool WebContentsAudioInputStream::SetAutomaticGainControl(bool enabled) {
+  return impl_->mixer_stream()->SetAutomaticGainControl(enabled);
 }
 
 bool WebContentsAudioInputStream::GetAutomaticGainControl() {

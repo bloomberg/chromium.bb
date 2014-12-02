@@ -215,9 +215,10 @@ double PCMWaveInAudioInputStream::GetVolume() {
   return 0.0;
 }
 
-void PCMWaveInAudioInputStream::SetAutomaticGainControl(bool enabled) {
+bool PCMWaveInAudioInputStream::SetAutomaticGainControl(bool enabled) {
   // TODO(henrika): Add AGC support when volume control has been added.
   NOTIMPLEMENTED();
+  return false;
 }
 
 bool PCMWaveInAudioInputStream::GetAutomaticGainControl() {

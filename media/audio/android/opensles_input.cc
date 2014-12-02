@@ -176,8 +176,9 @@ double OpenSLESInputStream::GetVolume() {
   return 0.0;
 }
 
-void OpenSLESInputStream::SetAutomaticGainControl(bool enabled) {
+bool OpenSLESInputStream::SetAutomaticGainControl(bool enabled) {
   NOTIMPLEMENTED();
+  return false;
 }
 
 bool OpenSLESInputStream::GetAutomaticGainControl() {

@@ -171,7 +171,9 @@ double VirtualAudioInputStream::GetVolume() {
   return 1.0;
 }
 
-void VirtualAudioInputStream::SetAutomaticGainControl(bool enabled) {}
+bool VirtualAudioInputStream::SetAutomaticGainControl(bool enabled) {
+  return false;
+}
 
 bool VirtualAudioInputStream::GetAutomaticGainControl() {
   return false;

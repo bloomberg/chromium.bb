@@ -43,7 +43,7 @@ class PCMWaveInAudioInputStream : public AudioInputStream {
   virtual double GetMaxVolume() override;
   virtual void SetVolume(double volume) override;
   virtual double GetVolume() override;
-  virtual void SetAutomaticGainControl(bool enabled) override;
+  virtual bool SetAutomaticGainControl(bool enabled) override;
   virtual bool GetAutomaticGainControl() override;
   virtual bool IsMuted() override;
 

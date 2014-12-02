@@ -46,7 +46,7 @@ class TestAudioInputStream : public media::AudioInputStream {
   double GetMaxVolume() override { return 1.0; }
   void SetVolume(double volume) override {}
   double GetVolume() override { return 1.0; }
-  void SetAutomaticGainControl(bool enabled) override {}
+  bool SetAutomaticGainControl(bool enabled) override { return false; }
   bool GetAutomaticGainControl() override { return true; }
   bool IsMuted() override { return false; }
 

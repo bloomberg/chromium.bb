@@ -329,7 +329,17 @@ void AudioInputController::DoCreateForStream(
 
   // Set AGC state using mode in |agc_is_enabled_| which can only be enabled in
   // CreateLowLatency().
+#if defined(AUDIO_POWER_MONITORING)
+  bool agc_is_supported = false;
+  agc_is_supported = stream_->SetAutomaticGainControl(agc_is_enabled_);
+  // Disable power measurements on platforms that does not support AGC at a
+  // lower level. AGC can fail on platforms where we don't support the
+  // functionality to modify the input volume slider. One such example is
+  // Windows XP.
+  power_measurement_is_enabled_ &= agc_is_supported;
+#else
   stream_->SetAutomaticGainControl(agc_is_enabled_);
+#endif
 
   // Create the data timer which will call FirstCheckForNoData(). The timer
   // is started in DoRecord() and restarted in each DoCheckForNoData()

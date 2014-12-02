@@ -38,7 +38,7 @@ class MEDIA_EXPORT FakeAudioInputStream
   void SetVolume(double volume) override;
   double GetVolume() override;
   bool IsMuted() override;
-  void SetAutomaticGainControl(bool enabled) override;
+  bool SetAutomaticGainControl(bool enabled) override;
   bool GetAutomaticGainControl() override;
 
   // Generate one beep sound. This method is called by

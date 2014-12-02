@@ -160,7 +160,7 @@ class MEDIA_EXPORT AudioInputStream {
   virtual double GetVolume() = 0;
 
   // Sets the Automatic Gain Control (AGC) state.
-  virtual void SetAutomaticGainControl(bool enabled) = 0;
+  virtual bool SetAutomaticGainControl(bool enabled) = 0;
 
   // Returns the Automatic Gain Control (AGC) state.
   virtual bool GetAutomaticGainControl() = 0;

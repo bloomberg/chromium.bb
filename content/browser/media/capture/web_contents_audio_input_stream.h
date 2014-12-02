@@ -44,7 +44,7 @@ class CONTENT_EXPORT WebContentsAudioInputStream
   double GetMaxVolume() override;
   void SetVolume(double volume) override;
   double GetVolume() override;
-  void SetAutomaticGainControl(bool enabled) override;
+  bool SetAutomaticGainControl(bool enabled) override;
   bool GetAutomaticGainControl() override;
   bool IsMuted() override;
 

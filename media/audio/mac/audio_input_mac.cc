@@ -141,8 +141,9 @@ bool PCMQueueInAudioInputStream::IsMuted() {
   return false;
 }
 
-void PCMQueueInAudioInputStream::SetAutomaticGainControl(bool enabled) {
+bool PCMQueueInAudioInputStream::SetAutomaticGainControl(bool enabled) {
   NOTREACHED() << "Only supported for low-latency mode.";
+  return false;
 }
 
 bool PCMQueueInAudioInputStream::GetAutomaticGainControl() {
