@@ -507,7 +507,7 @@ TEST_F(WebURLLoaderImplTest, DataURLDeleteOnReceiveData) {
   EXPECT_FALSE(bridge());
 }
 
-TEST_F(WebURLLoaderImplTest, DataURLDeleteOnFinish) {
+TEST_F(WebURLLoaderImplTest, DataURLDeleteOnFinisha) {
   blink::WebURLRequest request;
   request.initialize();
   request.setURL(GURL("data:text/html;charset=utf-8,blah!"));
@@ -518,25 +518,6 @@ TEST_F(WebURLLoaderImplTest, DataURLDeleteOnFinish) {
   EXPECT_EQ("blah!", client()->received_data());
   EXPECT_TRUE(client()->did_finish());
   EXPECT_FALSE(bridge());
-}
-
-TEST_F(WebURLLoaderImplTest, DataURLDefersLoading) {
-  blink::WebURLRequest request;
-  request.initialize();
-  request.setURL(GURL("data:text/html;charset=utf-8,blah!"));
-  client()->loader()->loadAsynchronously(request, client());
-
-  client()->loader()->setDefersLoading(true);
-  message_loop()->RunUntilIdle();
-  EXPECT_FALSE(client()->did_finish());
-
-  client()->loader()->setDefersLoading(false);
-  message_loop()->RunUntilIdle();
-  EXPECT_TRUE(client()->did_finish());
-
-  EXPECT_EQ("blah!", client()->received_data());
-  EXPECT_EQ(net::OK, client()->error().reason);
-  EXPECT_EQ("", client()->error().domain.utf8());
 }
 
 // FTP integration tests.  These are focused more on safe deletion than correct
