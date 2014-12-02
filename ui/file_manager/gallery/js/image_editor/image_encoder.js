@@ -34,7 +34,7 @@ ImageEncoder.registerMetadataEncoder = function(constructor, mimeType) {
  */
 ImageEncoder.createMetadataEncoder = function(metadata) {
   var constructor =
-      (metadata && ImageEncoder.metadataEncoders[metadata.mimeType]) ||
+      (metadata && ImageEncoder.metadataEncoders[metadata.media.mimeType]) ||
       ImageEncoder.MetadataEncoder;
   return new constructor(metadata);
 };
@@ -76,7 +76,7 @@ ImageEncoder.getBlob = function(canvas, metadataEncoder, opt_quality) {
   // WebKit does not support canvas.toBlob yet so canvas.toDataURL is
   // the only way to use the Chrome built-in image encoder.
   var dataURL =
-      canvas.toDataURL(metadataEncoder.getMetadata().mimeType, quality);
+      canvas.toDataURL(metadataEncoder.getMetadata().media.mimeType, quality);
   ImageUtil.trace.reportTimer('dataurl');
 
   var encodedImage = ImageEncoder.decodeDataURL(dataURL);
@@ -105,7 +105,8 @@ ImageEncoder.getBlob = function(canvas, metadataEncoder, opt_quality) {
     appendSlice(ImageEncoder.stringToArrayBuffer(
         encodedImage, 0, encodedImage.length));
   }
-  var blob = new Blob(slices, {type: metadataEncoder.getMetadata().mimeType});
+  var blob = new Blob(slices,
+      {type: metadataEncoder.getMetadata().media.mimeType});
   ImageUtil.trace.reportTimer('blob');
   return blob;
 };
@@ -180,10 +181,10 @@ ImageEncoder.stringToArrayBuffer = function(string, from, to) {
  */
 ImageEncoder.MetadataEncoder = function(original_metadata) {
   this.metadata_ = MetadataCache.cloneMetadata(original_metadata) || {};
-  if (this.metadata_.mimeType != 'image/jpeg') {
+  if (this.metadata_.media.mimeType !== 'image/jpeg') {
     // Chrome can only encode JPEG and PNG. Force PNG mime type so that we
     // can save to file and generate a thumbnail.
-    this.metadata_.mimeType = 'image/png';
+    this.metadata_.media.mimeType = 'image/png';
   }
 };
 
@@ -211,7 +212,7 @@ ImageEncoder.MetadataEncoder.prototype.setImageData = function(canvas) {
 ImageEncoder.MetadataEncoder.prototype.setThumbnailData =
     function(canvas, quality) {
   this.metadata_.thumbnailURL =
-      canvas.toDataURL(this.metadata_.mimeType, quality);
+      canvas.toDataURL(this.metadata_.media.mimeType, quality);
   delete this.metadata_.thumbnailTransform;
 };
 

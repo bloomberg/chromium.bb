@@ -87,7 +87,7 @@ ExifEncoder.prototype.setThumbnailData = function(canvas, quality) {
   var pixelCount = this.metadata_.width * this.metadata_.height;
   var maxEncodedSize = 5000 * Math.min(10, 1 + pixelCount / 1000000);
 
-  var DATA_URL_PREFIX = 'data:' + this.mimeType + ';base64,';
+  var DATA_URL_PREFIX = 'data:' + this.metadata_.media.mimeType + ';base64,';
   var BASE64_BLOAT = 4 / 3;
   var maxDataURLLength =
       DATA_URL_PREFIX.length + Math.ceil(maxEncodedSize * BASE64_BLOAT);
