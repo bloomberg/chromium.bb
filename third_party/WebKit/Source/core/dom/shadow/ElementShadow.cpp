@@ -242,14 +242,22 @@ const InsertionPoint* ElementShadow::finalDestinationInsertionPointFor(const Nod
 {
     ASSERT(key && !key->document().childNeedsDistributionRecalc());
     NodeToDestinationInsertionPoints::const_iterator it = m_nodeToInsertionPoints.find(key);
-    return it == m_nodeToInsertionPoints.end() ? 0: it->value.last().get();
+#if ENABLE(OILPAN)
+    return it == m_nodeToInsertionPoints.end() ? nullptr : it->value->last().get();
+#else
+    return it == m_nodeToInsertionPoints.end() ? nullptr : it->value.last().get();
+#endif
 }
 
 const DestinationInsertionPoints* ElementShadow::destinationInsertionPointsFor(const Node* key) const
 {
     ASSERT(key && !key->document().childNeedsDistributionRecalc());
     NodeToDestinationInsertionPoints::const_iterator it = m_nodeToInsertionPoints.find(key);
-    return it == m_nodeToInsertionPoints.end() ? 0: &it->value;
+#if ENABLE(OILPAN)
+    return it == m_nodeToInsertionPoints.end() ? nullptr : it->value.get();
+#else
+    return it == m_nodeToInsertionPoints.end() ? nullptr : &it->value;
+#endif
 }
 
 void ElementShadow::distribute()
@@ -297,8 +305,15 @@ void ElementShadow::distribute()
 
 void ElementShadow::didDistributeNode(const Node* node, InsertionPoint* insertionPoint)
 {
+#if ENABLE(OILPAN)
+    NodeToDestinationInsertionPoints::AddResult result = m_nodeToInsertionPoints.add(node, nullptr);
+    if (result.isNewEntry)
+        result.storedValue->value = adoptPtrWillBeNoop(new DestinationInsertionPoints());
+    result.storedValue->value->append(insertionPoint);
+#else
     NodeToDestinationInsertionPoints::AddResult result = m_nodeToInsertionPoints.add(node, DestinationInsertionPoints());
     result.storedValue->value.append(insertionPoint);
+#endif
 }
 
 const SelectRuleFeatureSet& ElementShadow::ensureSelectFeatureSet()

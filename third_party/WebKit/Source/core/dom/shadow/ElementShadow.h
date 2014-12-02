@@ -87,7 +87,13 @@ private:
     bool needsSelectFeatureSet() const { return m_needsSelectFeatureSet; }
     void setNeedsSelectFeatureSet() { m_needsSelectFeatureSet = true; }
 
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<const Node>, DestinationInsertionPoints> NodeToDestinationInsertionPoints;
+#if ENABLE(OILPAN)
+    // The cost of |new| in Oilpan is lower than non-Oilpan.  We should reduce
+    // the size of HashMap entry.
+    typedef HeapHashMap<Member<const Node>, Member<DestinationInsertionPoints>> NodeToDestinationInsertionPoints;
+#else
+    typedef HashMap<const Node*, DestinationInsertionPoints> NodeToDestinationInsertionPoints;
+#endif
     NodeToDestinationInsertionPoints m_nodeToInsertionPoints;
 
     SelectRuleFeatureSet m_selectFeatures;
