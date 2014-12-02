@@ -46,8 +46,6 @@ SANDBOX_TEST(BrokerFilePermission, CreateGoodRecursive) {
   BrokerFilePermission perm = BrokerFilePermission::ReadOnlyRecursive(kPath);
 }
 
-#if !defined(OS_CHROMEOS)
-// These tests failed on ChromeOS. See crbug.com/437312
 SANDBOX_DEATH_TEST(
     BrokerFilePermission,
     CreateBad,
@@ -79,7 +77,6 @@ SANDBOX_DEATH_TEST(
   const char kPath[] = "";
   BrokerFilePermission perm = BrokerFilePermission::ReadOnly(kPath);
 }
-#endif
 
 // CheckPerm tests |path| against |perm| given |access_flags|.
 // If |create| is true then file creation is tested for success.
