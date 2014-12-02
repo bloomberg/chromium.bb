@@ -32,6 +32,7 @@ from chromite.lib import gs
 from chromite.lib import locking
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import portage_util
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
 from chromite.scripts import pushimage
@@ -2032,7 +2033,6 @@ def PatchChrome(chrome_root, patch, subdir):
 class ChromeSDK(object):
   """Wrapper for the 'cros chrome-sdk' command."""
 
-  DEFAULT_TARGETS = ('chrome', 'chrome_sandbox', 'nacl_helper',)
   DEFAULT_JOBS = 24
   DEFAULT_JOBS_GOMA = 500
 
@@ -2065,6 +2065,17 @@ class ChromeSDK(object):
     self.target_tc = target_tc
     self.toolchain_url = toolchain_url
 
+  def _GetDefaultTargets(self):
+    """Get the default chrome targets to build."""
+    targets = ['chrome', 'chrome_sandbox']
+
+    use_flags = portage_util.GetInstalledPackageUseFlags(constants.CHROME_CP,
+                                                         self.board)
+    if 'nacl' in use_flags.get(constants.CHROME_CP, []):
+      targets += ['nacl_helper']
+
+    return targets
+
   def Run(self, cmd, extra_args=None):
     """Run a command inside the chrome-sdk context."""
     cros_cmd = ['cros']
@@ -2080,7 +2091,7 @@ class ChromeSDK(object):
     cros_cmd += (extra_args or []) + ['--'] + cmd
     cros_build_lib.RunCommand(cros_cmd, cwd=self.cwd)
 
-  def Ninja(self, jobs=None, debug=False, targets=DEFAULT_TARGETS):
+  def Ninja(self, jobs=None, debug=False, targets=None):
     """Run 'ninja' inside a chrome-sdk context.
 
     Args:
@@ -2090,6 +2101,8 @@ class ChromeSDK(object):
     """
     if jobs is None:
       jobs = self.DEFAULT_JOBS_GOMA if self.goma else self.DEFAULT_JOBS
+    if targets is None:
+      targets = self._GetDefaultTargets()
     flavor = 'Debug' if debug else 'Release'
     cmd = ['ninja', '-C', 'out_%s/%s' % (self.board, flavor) , '-j', str(jobs)]
     self.Run(cmd + list(targets))

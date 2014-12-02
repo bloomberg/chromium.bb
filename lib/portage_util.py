@@ -1370,6 +1370,34 @@ def FindPackageNameMatches(pkg_str, board=None):
   return matches
 
 
+def GetInstalledPackageUseFlags(pkg_str, board=None):
+  """Gets the list of USE flags for installed packages matching |pkg_str|.
+
+  Args:
+    pkg_str: The package name with optional category, version, and slot.
+    board: The board to inspect.
+
+  Returns:
+    A dictionary with the key being a package CP and the value being the list
+    of USE flags for that package.
+  """
+  cmd = ['qlist']
+  if board:
+    cmd = ['qlist-%s' % board]
+
+  cmd += ['-CqU', pkg_str]
+  result = cros_build_lib.RunCommand(
+      cmd, enter_chroot=True, capture_output=True, error_code_ok=True)
+
+  use_flags = {}
+  if result.returncode == 0:
+    for line in result.output.splitlines():
+      tokens = line.split()
+      use_flags[tokens[0]] = tokens[1:]
+
+  return use_flags
+
+
 def GetBinaryPackageDir(sysroot='/', packages_dir=None):
   """Returns the binary package directory of |sysroot|."""
   dir_name = packages_dir if packages_dir else 'packages'

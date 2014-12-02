@@ -169,10 +169,30 @@ class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     self.assertCommandContains(['debug', self.BOARD] + list(self.EXTRA_ARGS) +
                                list(self.EXTRA_ARGS2) + self.CMD, cwd=self.CWD)
 
-  def testNinja(self):
-    """Test that running ninja is possible."""
+  def testNinjaWithNaclUseFlag(self):
+    """Test that running ninja is possible.
+
+    Verify that nacl_helper is built when the 'nacl' USE flag is specified
+    for chromeos-base/chromeos-chrome.
+    """
+    self.rc.AddCmdResult(partial_mock.In('qlist-%s' % self.BOARD),
+                         output='%s ninja nacl gold' % constants.CHROME_CP)
     self.inst.Ninja(self.BOARD)
     self.assertCommandContains([self.BOARD], cwd=self.CWD)
+    self.assertCommandContains(['nacl_helper'])
+
+  def testNinjaWithoutNaclUseFlag(self):
+    """Test that running ninja is possible.
+
+    Verify that nacl_helper is not built when no 'nacl' USE flag is specified
+    for chromeos-base/chromeos-chrome.
+    """
+    self.rc.AddCmdResult(partial_mock.In('qlist-%s' % self.BOARD),
+                         output='%s' % constants.CHROME_CP)
+    self.inst.Ninja(self.BOARD)
+    self.assertCommandContains([self.BOARD], cwd=self.CWD)
+    self.assertCommandContains(['nacl_helper'], expected=False)
+
 
 class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
   """Test commands related to HWLab tests."""
