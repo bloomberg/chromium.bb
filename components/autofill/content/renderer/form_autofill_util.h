@@ -8,7 +8,10 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 #include "ui/gfx/rect.h"
+
+class GURL;
 
 namespace blink {
 class WebDocument;
@@ -84,12 +87,15 @@ const base::string16 GetFormIdentifier(const blink::WebFormElement& form);
 bool ClickElement(const blink::WebDocument& document,
                   const WebElementDescriptor& element_descriptor);
 
-// Fills |autofillable_elements| with all the auto-fillable form control
-// elements in |form_element|.
-void ExtractAutofillableElements(
+// Returns all the auto-fillable form control elements in |control_elements|.
+std::vector<blink::WebFormControlElement> ExtractAutofillableElementsFromSet(
+    const blink::WebVector<blink::WebFormControlElement>& control_elements,
+    RequirementsMask requirements);
+
+// Returns all the auto-fillable form control elements in |form_element|.
+std::vector<blink::WebFormControlElement> ExtractAutofillableElementsInForm(
     const blink::WebFormElement& form_element,
-    RequirementsMask requirements,
-    std::vector<blink::WebFormControlElement>* autofillable_elements);
+    RequirementsMask requirements);
 
 // Fills out a FormField object from a given WebFormControlElement.
 // |extract_mask|: See the enum ExtractMask above for details.
@@ -112,6 +118,16 @@ bool WebFormElementToFormData(
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field);
+
+// Fills |form| with the form data derived from |fieldsets|, |control_elements|
+// and |origin|. |extract_mask| usage and the return value are the same as
+// WebFormElementToFormData() above.
+bool UnownedFormElementsAndFieldSetsToFormData(
+    const std::vector<blink::WebElement>& fieldsets,
+    const std::vector<blink::WebFormControlElement>& control_elements,
+    const GURL& origin,
+    ExtractMask extract_mask,
+    FormData* form);
 
 // Finds the form that contains |element| and returns it in |form|.  Fills
 // |field| with the |FormField| representation for element.

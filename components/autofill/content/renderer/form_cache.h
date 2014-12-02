@@ -13,6 +13,8 @@
 
 namespace blink {
 class WebDocument;
+class WebElement;
+class WebElementCollection;
 class WebFormControlElement;
 class WebFrame;
 class WebInputElement;
@@ -29,6 +31,15 @@ class FormCache {
  public:
   FormCache();
   ~FormCache();
+
+  // Get all form control elements from |elements| that are not part of a form.
+  // If |fieldsets| is not NULL, also append the fieldsets encountered that are
+  // not part of a form.
+  // Exposed for sharing with tests.
+  static std::vector<blink::WebFormControlElement>
+      GetUnownedAutofillableFormFieldElements(
+          const blink::WebElementCollection& elements,
+          std::vector<blink::WebElement>* fieldsets);
 
   // Scans the DOM in |frame| extracting and storing forms that have not been
   // seen before. Returns the extracted forms.
@@ -56,8 +67,10 @@ class FormCache {
       const std::vector<blink::WebFormControlElement>& control_elements,
       bool log_deprecation_messages);
 
-  // The cached web frames.
-  std::set<blink::WebDocument> web_documents_;
+  // The cached web frames and their corresponding synthetic FormData.
+  // The synthetic FormData is for all the fieldsets in the document without a
+  // form owner.
+  std::map<blink::WebDocument, FormData> documents_to_synthetic_form_map_;
 
   // The cached forms per frame. Used to prevent re-extraction of forms.
   std::map<const blink::WebFrame*, std::set<FormData> > parsed_forms_;
