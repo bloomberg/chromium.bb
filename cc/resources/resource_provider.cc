@@ -76,6 +76,7 @@ GLenum TextureToStorageFormat(ResourceFormat format) {
     case LUMINANCE_8:
     case RGB_565:
     case ETC1:
+    case RED_8:
       NOTREACHED();
       break;
   }
@@ -94,6 +95,7 @@ bool IsFormatSupportedForStorage(ResourceFormat format, bool use_bgra) {
     case LUMINANCE_8:
     case RGB_565:
     case ETC1:
+    case RED_8:
       return false;
   }
   return false;
@@ -125,6 +127,7 @@ gfx::GpuMemoryBuffer::Format ToGpuMemoryBufferFormat(ResourceFormat format) {
     case LUMINANCE_8:
     case RGB_565:
     case ETC1:
+    case RED_8:
       break;
   }
   NOTREACHED();
