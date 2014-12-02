@@ -1111,9 +1111,9 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   command_updater_.UpdateCommandEnabled(
       IDC_CREATE_SHORTCUTS,
       CanCreateApplicationShortcuts(browser_));
+#endif
   command_updater_.UpdateCommandEnabled(IDC_CREATE_HOSTED_APP,
                                         CanCreateBookmarkApp(browser_));
-#endif
 
   command_updater_.UpdateCommandEnabled(
       IDC_TOGGLE_REQUEST_TABLET_SITE,

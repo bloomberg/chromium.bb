@@ -148,11 +148,7 @@ bool TabHelper::CanCreateApplicationShortcuts() const {
 }
 
 bool TabHelper::CanCreateBookmarkApp() const {
-#if defined(OS_MACOSX)
-  return false;
-#else
   return IsValidBookmarkAppUrl(web_contents()->GetURL());
-#endif
 }
 
 void TabHelper::AddScriptExecutionObserver(ScriptExecutionObserver* observer) {
@@ -295,7 +291,6 @@ void TabHelper::DidCloneToNewWebContents(WebContents* old_web_contents,
 }
 
 void TabHelper::OnDidGetWebApplicationInfo(const WebApplicationInfo& info) {
-#if !defined(OS_MACOSX)
   web_app_info_ = info;
 
   NavigationEntry* entry =
@@ -305,12 +300,14 @@ void TabHelper::OnDidGetWebApplicationInfo(const WebApplicationInfo& info) {
   last_committed_page_id_ = -1;
 
   switch (pending_web_app_action_) {
+#if !defined(OS_MACOSX)
     case CREATE_SHORTCUT: {
       chrome::ShowCreateWebAppShortcutsDialog(
           web_contents()->GetTopLevelNativeWindow(),
           web_contents());
       break;
     }
+#endif
     case CREATE_HOSTED_APP: {
       if (web_app_info_.app_url.is_empty())
         web_app_info_.app_url = web_contents()->GetURL();
@@ -340,7 +337,6 @@ void TabHelper::OnDidGetWebApplicationInfo(const WebApplicationInfo& info) {
   // fails.
   if (pending_web_app_action_ != CREATE_HOSTED_APP)
     pending_web_app_action_ = NONE;
-#endif
 }
 
 void TabHelper::OnInlineWebstoreInstall(int install_id,
