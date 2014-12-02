@@ -52,6 +52,8 @@
       sendResultToTest(this.data);
     };
 
+    // Notification permission has been coalesced with Push permission. After
+    // this is granted, Push API registration can succeed.
     function requestNotificationPermission() {
       Notification.requestPermission(function(permission) {
         sendResultToTest('permission status - ' + permission);
@@ -83,10 +85,22 @@
     }
 
     function registerPush() {
-      navigator.serviceWorker.ready.then(function() {
-        navigator.push.register().then(function(pushRegistration) {
+      navigator.serviceWorker.ready.then(function(swRegistration) {
+        // TODO(mvanouwerkerk): Cleanup once the final API is exposed.
+        var pushManager = swRegistration.pushManager || navigator.push;
+        pushManager.register().then(function(pushRegistration) {
           sendResultToTest(pushRegistration.pushEndpoint + ' - ' +
               pushRegistration.pushRegistrationId);
+        }, sendErrorToTest);
+      }, sendErrorToTest);
+    }
+
+    function hasPermission() {
+      navigator.serviceWorker.ready.then(function(swRegistration) {
+        // TODO(mvanouwerkerk): Cleanup once the final API is exposed.
+        var pushManager = swRegistration.pushManager || navigator.push;
+        pushManager.hasPermission().then(function(permission) {
+          sendResultToTest('permission status - ' + permission);
         }, sendErrorToTest);
       }, sendErrorToTest);
     }

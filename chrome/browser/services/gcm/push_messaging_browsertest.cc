@@ -365,4 +365,49 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoPermission) {
   EXPECT_EQ("null", script_result);
 }
 
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, HasPermissionSaysDefault) {
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  ASSERT_EQ("permission status - default", script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, HasPermissionSaysGranted) {
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
+
+  InfoBarResponder accepting_responder(browser(), true);
+  ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
+  EXPECT_EQ("permission status - granted", script_result);
+
+  ASSERT_TRUE(RunScript("registerPush()", &script_result));
+  EXPECT_EQ(std::string(kPushMessagingEndpoint) + " - 1", script_result);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - granted", script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, HasPermissionSaysDenied) {
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
+
+  InfoBarResponder cancelling_responder(browser(), false);
+  ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
+  EXPECT_EQ("permission status - denied", script_result);
+
+  ASSERT_TRUE(RunScript("registerPush()", &script_result));
+  EXPECT_EQ("AbortError - Registration failed - permission denied",
+            script_result);
+
+  ASSERT_TRUE(RunScript("hasPermission()", &script_result));
+  EXPECT_EQ("permission status - denied", script_result);
+}
+
 }  // namespace gcm
