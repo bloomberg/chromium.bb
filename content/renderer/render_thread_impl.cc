@@ -1010,8 +1010,7 @@ void RenderThreadImpl::RecordComputedAction(const std::string& action) {
 
 scoped_ptr<base::SharedMemory>
     RenderThreadImpl::HostAllocateSharedMemoryBuffer(size_t size) {
-  return make_scoped_ptr(
-      ChildThread::AllocateSharedMemory(size, thread_safe_sender()));
+  return ChildThread::AllocateSharedMemory(size, thread_safe_sender());
 }
 
 void RenderThreadImpl::RegisterExtension(v8::Extension* extension) {

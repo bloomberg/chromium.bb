@@ -39,8 +39,6 @@ class RTCVideoDecoderTest : public ::testing::Test,
         .WillRepeatedly(Return(vda_task_runner_));
     EXPECT_CALL(*mock_gpu_factories_.get(), DoCreateVideoDecodeAccelerator())
         .WillRepeatedly(Return(mock_vda_));
-    EXPECT_CALL(*mock_gpu_factories_.get(), CreateSharedMemory(_))
-        .WillRepeatedly(Return(static_cast<base::SharedMemory*>(NULL)));
     EXPECT_CALL(*mock_vda_, Initialize(_, _))
         .Times(1)
         .WillRepeatedly(Return(true));

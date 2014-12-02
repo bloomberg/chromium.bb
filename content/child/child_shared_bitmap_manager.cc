@@ -70,7 +70,7 @@ scoped_ptr<cc::SharedBitmap> ChildSharedBitmapManager::AllocateSharedBitmap(
   if (!memory->Map(memory_size))
     CHECK(false);
 #else
-  memory.reset(ChildThread::AllocateSharedMemory(memory_size, sender_.get()));
+  memory = ChildThread::AllocateSharedMemory(memory_size, sender_.get());
   CHECK(memory);
   if (!memory->Map(memory_size))
     CHECK(false);

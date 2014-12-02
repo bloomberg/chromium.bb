@@ -48,16 +48,19 @@ static const size_t kMaxNumOfPendingBuffers = 300;
 // of |shm|.
 class RTCVideoDecoder::SHMBuffer {
  public:
-  SHMBuffer(base::SharedMemory* shm, size_t size);
+  SHMBuffer(scoped_ptr<base::SharedMemory> shm, size_t size);
   ~SHMBuffer();
-  base::SharedMemory* const shm;
+  scoped_ptr<base::SharedMemory> const shm;
   const size_t size;
 };
 
-RTCVideoDecoder::SHMBuffer::SHMBuffer(base::SharedMemory* shm, size_t size)
-    : shm(shm), size(size) {}
+RTCVideoDecoder::SHMBuffer::SHMBuffer(scoped_ptr<base::SharedMemory> shm,
+                                      size_t size)
+    : shm(shm.Pass()), size(size) {
+}
 
-RTCVideoDecoder::SHMBuffer::~SHMBuffer() { shm->Close(); }
+RTCVideoDecoder::SHMBuffer::~SHMBuffer() {
+}
 
 RTCVideoDecoder::BufferData::BufferData(int32 bitstream_buffer_id,
                                         uint32_t timestamp,
@@ -761,12 +764,13 @@ void RTCVideoDecoder::CreateSHM(int number, size_t min_size) {
   }
   size_t size_to_allocate = std::max(min_size, kSharedMemorySegmentBytes);
   for (int i = 0; i < number_to_allocate; i++) {
-    base::SharedMemory* shm = factories_->CreateSharedMemory(size_to_allocate);
-    if (shm != NULL) {
+    scoped_ptr<base::SharedMemory> shm =
+        factories_->CreateSharedMemory(size_to_allocate);
+    if (shm) {
       base::AutoLock auto_lock(lock_);
       num_shm_buffers_++;
       PutSHM_Locked(
-          scoped_ptr<SHMBuffer>(new SHMBuffer(shm, size_to_allocate)));
+          scoped_ptr<SHMBuffer>(new SHMBuffer(shm.Pass(), size_to_allocate)));
     }
   }
   // Kick off the decoding.

@@ -356,7 +356,7 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
   input_frame_coded_size_ = input_coded_size;
 
   for (unsigned int i = 0; i < input_count + kInputBufferExtraCount; ++i) {
-    base::SharedMemory* shm =
+    scoped_ptr<base::SharedMemory> shm =
         gpu_factories_->CreateSharedMemory(media::VideoFrame::AllocationSize(
             media::VideoFrame::I420, input_coded_size));
     if (!shm) {
@@ -365,12 +365,12 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
       NOTIFY_ERROR(media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
-    input_buffers_.push_back(shm);
+    input_buffers_.push_back(shm.release());
     input_buffers_free_.push_back(i);
   }
 
   for (int i = 0; i < kOutputBufferCount; ++i) {
-    base::SharedMemory* shm =
+    scoped_ptr<base::SharedMemory> shm =
         gpu_factories_->CreateSharedMemory(output_buffer_size);
     if (!shm) {
       DLOG(ERROR) << "Impl::RequireBitstreamBuffers(): "
@@ -378,7 +378,7 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
       NOTIFY_ERROR(media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
-    output_buffers_.push_back(shm);
+    output_buffers_.push_back(shm.release());
   }
 
   // Immediately provide all output buffers to the VEA.

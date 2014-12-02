@@ -89,12 +89,13 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   // failure.
   // Note: On posix, this requires a sync IPC to the browser process,
   // but on windows the child process directly allocates the block.
-  base::SharedMemory* AllocateSharedMemory(size_t buf_size);
+  scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t buf_size);
 
   // A static variant that can be called on background threads provided
   // the |sender| passed in is safe to use on background threads.
-  static base::SharedMemory* AllocateSharedMemory(size_t buf_size,
-                                                  IPC::Sender* sender);
+  static scoped_ptr<base::SharedMemory> AllocateSharedMemory(
+      size_t buf_size,
+      IPC::Sender* sender);
 
   ChildSharedBitmapManager* shared_bitmap_manager() const {
     return shared_bitmap_manager_.get();

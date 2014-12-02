@@ -61,7 +61,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   void ReadPixels(uint32 texture_id,
                   const gfx::Rect& visible_rect,
                   const SkBitmap& pixels) override;
-  base::SharedMemory* CreateSharedMemory(size_t size) override;
+  scoped_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
   std::vector<media::VideoEncodeAccelerator::SupportedProfile>
   GetVideoEncodeAcceleratorSupportedProfiles() override;

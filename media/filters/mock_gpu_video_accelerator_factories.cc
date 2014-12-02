@@ -10,6 +10,11 @@ MockGpuVideoAcceleratorFactories::MockGpuVideoAcceleratorFactories() {}
 
 MockGpuVideoAcceleratorFactories::~MockGpuVideoAcceleratorFactories() {}
 
+scoped_ptr<base::SharedMemory>
+MockGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
+  return nullptr;
+}
+
 scoped_ptr<VideoDecodeAccelerator>
 MockGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
   return scoped_ptr<VideoDecodeAccelerator>(DoCreateVideoDecodeAccelerator());

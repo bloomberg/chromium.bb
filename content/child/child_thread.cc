@@ -426,13 +426,14 @@ MessageRouter* ChildThread::GetRouter() {
   return &router_;
 }
 
-base::SharedMemory* ChildThread::AllocateSharedMemory(size_t buf_size) {
+scoped_ptr<base::SharedMemory> ChildThread::AllocateSharedMemory(
+    size_t buf_size) {
   DCHECK(base::MessageLoop::current() == message_loop());
   return AllocateSharedMemory(buf_size, this);
 }
 
 // static
-base::SharedMemory* ChildThread::AllocateSharedMemory(
+scoped_ptr<base::SharedMemory> ChildThread::AllocateSharedMemory(
     size_t buf_size,
     IPC::Sender* sender) {
   scoped_ptr<base::SharedMemory> shared_buf;
@@ -459,7 +460,7 @@ base::SharedMemory* ChildThread::AllocateSharedMemory(
     return NULL;
   }
 #endif
-  return shared_buf.release();
+  return shared_buf;
 }
 
 bool ChildThread::OnMessageReceived(const IPC::Message& msg) {

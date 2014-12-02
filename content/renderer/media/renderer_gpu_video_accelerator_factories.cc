@@ -235,14 +235,14 @@ void RendererGpuVideoAcceleratorFactories::ReadPixels(
   gl_helper->DeleteTexture(tmp_texture);
 }
 
-base::SharedMemory* RendererGpuVideoAcceleratorFactories::CreateSharedMemory(
-    size_t size) {
+scoped_ptr<base::SharedMemory>
+RendererGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   scoped_ptr<base::SharedMemory> mem(
       ChildThread::AllocateSharedMemory(size, thread_safe_sender_.get()));
   if (mem && !mem->Map(size))
     return nullptr;
-  return mem.release();
+  return mem;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

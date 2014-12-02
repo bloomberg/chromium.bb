@@ -66,9 +66,8 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories
                           const gfx::Rect& visible_rect,
                           const SkBitmap& pixels) = 0;
 
-  // Allocate & return a shared memory segment.  Caller is responsible for
-  // Close()ing the returned pointer.
-  virtual base::SharedMemory* CreateSharedMemory(size_t size) = 0;
+  // Allocate & return a shared memory segment.
+  virtual scoped_ptr<base::SharedMemory> CreateSharedMemory(size_t size) = 0;
 
   // Returns the task runner the video accelerator runs on.
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
