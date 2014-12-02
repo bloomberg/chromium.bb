@@ -83,18 +83,6 @@ void ReportExitStatus(NaClReverseInterface* self,
   }
 }
 
-void DoPostMessage(NaClReverseInterface* self,
-                   char const* message,
-                   size_t message_bytes) {
-  ReverseInterfaceWrapper* wrapper =
-      reinterpret_cast<ReverseInterfaceWrapper*>(self);
-  if (NULL == wrapper->iface) {
-    NaClLog(1, "DoPostMessage, no reverse_interface.\n");
-  } else {
-    wrapper->iface->DoPostMessage(nacl::string(message, message_bytes));
-  }
-}
-
 int CreateProcess(NaClReverseInterface* self,
                   NaClDesc** out_sock_addr,
                   NaClDesc** out_app_addr) {
@@ -189,7 +177,6 @@ static NaClReverseInterfaceVtbl const kReverseInterfaceWrapperVtbl = {
   OpenManifestEntry,
   ReportCrash,
   ReportExitStatus,
-  DoPostMessage,
   CreateProcess,
   CreateProcessFunctorResult,
   FinalizeProcess,

@@ -129,19 +129,6 @@ struct NaClReverseInterfaceVtbl {
       int                           exit_status);
 
   /*
-   * Standard output and standard error redirection, via setting
-   * NACL_EXE_STDOUT to the string "DEBUG_ONLY:dev://postmessage" (see
-   * native_client/src/trusted/nacl_resource.* and sel_ldr).  NB: the
-   * contents of |message| is arbitrary bytes and not an Unicode
-   * string, so the implementation should take care to handle this
-   * appropriately.
-   */
-  void                          (*DoPostMessage)(
-      struct NaClReverseInterface   *self,
-      char const                    *message,
-      size_t                        message_bytes);
-
-  /*
    * Create new service runtime process and return secure command
    * channel and untrusted application channel socket addresses. Returns
    * 0 if successful or negative ABI error value otherwise (see
@@ -209,11 +196,6 @@ void NaClReverseInterfaceReportCrash(
 void NaClReverseInterfaceReportExitStatus(
     struct NaClReverseInterface   *self,
     int                           exit_status);
-
-void NaClReverseInterfaceDoPostMessage(
-    struct NaClReverseInterface   *self,
-    char const                    *message,
-    size_t                        message_bytes);
 
 void NaClReverseInterfaceCreateProcessFunctorResult(
     struct NaClReverseInterface *self,

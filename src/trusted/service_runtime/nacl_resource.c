@@ -16,7 +16,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nacl_desc_null.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
-#include "native_client/src/trusted/service_runtime/nacl_desc_postmessage.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 struct NaClDesc *NaClResourceOpen(struct NaClResource *self,
@@ -178,49 +177,6 @@ static struct NaClDesc *NaClResourceNaClAppFileOpen(
   return rv;
 }
 
-/*
- * We don't bother to make it a singleton postmessage device.  Thread
- * safety is handled when the device object gets the lock to use the
- * reverse channel.
- */
-static struct NaClDesc *NaClResourceNaClAppDevOpen(
-    struct NaClResource *vself,
-    char const          *resource_locator,
-    int                 nacl_flags,
-    int                 mode,
-    int                 allow_debug) {
-  struct NaClResourceNaClApp  *self = (struct NaClResourceNaClApp *) vself;
-  struct NaClDescPostMessage  *ndpm = NULL;
-
-  if (self->nap->resource_phase != NACL_RESOURCE_PHASE_RUNTIME_HOST
-      || !allow_debug) {
-    return NULL;
-  }
-
-  if (0 == strcmp(resource_locator, NACL_RESOURCE_DEV_POSTMESSAGE_LOCATOR)) {
-    /* disallow O_RDONLY or O_RDWR */
-    if ((NACL_ABI_O_ACCMODE & nacl_flags) != NACL_ABI_O_WRONLY) {
-      return NULL;
-    }
-    /* allow O_CREAT, O_APPEND, and O_TRUNC */
-    UNREFERENCED_PARAMETER(mode);  /* ignored; O_CREAT doesn't create. */
-
-    ndpm = malloc(sizeof *ndpm);
-    if (NULL != ndpm) {
-      if (!NaClDescPostMessageCtor(ndpm, self->nap->runtime_host_interface)) {
-        free(ndpm);
-        ndpm = NULL;
-      }
-    }
-    if (NULL == ndpm) {
-      NaClLog(LOG_ERROR,
-              "NaClResourceNaClAppDevOpen(%s) failed\n",
-              resource_locator);
-    }
-  }
-  return (struct NaClDesc *) ndpm;
-}
-
 int NaClResourceNaClAppInit(struct NaClResourceNaClApp  *rp,
                             struct NaClApp              *nap) {
   static struct NaClResourceSchemes const schemes[] = {
@@ -228,10 +184,6 @@ int NaClResourceNaClAppInit(struct NaClResourceNaClApp  *rp,
       NACL_RESOURCE_FILE_PREFIX,
       1,  /* default scheme */
       NaClResourceNaClAppFileOpen,
-    }, {
-      NACL_RESOURCE_DEV_PREFIX,
-      0,  /* not default scheme */
-      NaClResourceNaClAppDevOpen,
     },
   };
 

@@ -22,7 +22,6 @@
           'nacl_bootstrap_channel_error_reporter.c',
           'nacl_copy.c',
           'nacl_desc_effector_ldr.c',
-          'nacl_desc_postmessage.c',
           'nacl_error_gio.c',
           'nacl_error_log_hook.c',
           'nacl_globals.c',

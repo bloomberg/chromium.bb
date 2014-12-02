@@ -15,7 +15,6 @@
 #define NACL_REVERSE_CONTROL_ADD_CHANNEL      "add_channel::b"
 #define NACL_REVERSE_CONTROL_INIT_DONE        "init_done::"
 #define NACL_REVERSE_CONTROL_REPORT_STATUS    "exit_status:i:"
-#define NACL_REVERSE_CONTROL_POST_MESSAGE     "post_message:C:i"
 #define NACL_REVERSE_CONTROL_CREATE_PROCESS   "create_process::ihh"
 #define NACL_REVERSE_REQUEST_QUOTA_FOR_WRITE  "request_quota_for_write:Cll:l"
 #define NACL_REVERSE_CONTROL_CREATE_PROCESS_INTERLOCKED \

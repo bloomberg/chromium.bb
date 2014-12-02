@@ -52,9 +52,6 @@ class ReverseEmulate : public nacl::ReverseInterface {
   // any interested parties.
   virtual void ReportExitStatus(int exit_status);
 
-  // Send a string as a PostMessage to the browser.
-  virtual void DoPostMessage(nacl::string message);
-
   // Create new service runtime process and return secure command
   // channel and untrusted application channel socket addresses.
   virtual int CreateProcess(nacl::DescWrapper** out_sock_addr,
@@ -275,10 +272,6 @@ void ReverseEmulate::ReportExitStatus(int exit_status) {
   nacl::MutexLocker take(&g_exit_mu);
   g_exited = true;
   NaClXCondVarBroadcast(&g_exit_cv);
-}
-
-void ReverseEmulate::DoPostMessage(nacl::string message) {
-  NaClLog(1, "ReverseEmulate::DoPostMessage (message=%s)\n", message.c_str());
 }
 
 class CreateProcessBinder : public nacl::CreateProcessFunctorInterface {

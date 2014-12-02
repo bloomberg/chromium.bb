@@ -54,17 +54,6 @@ int NaClRuntimeHostInterfaceReportExitStatusNotImplemented(
   return -NACL_ABI_EINVAL;
 }
 
-ssize_t NaClRuntimeHostInterfacePostMessageNotImplemented(
-    struct NaClRuntimeHostInterface *self,
-    char const                      *message,
-    size_t                          message_bytes) {
-  NaClLog(LOG_ERROR,
-          ("NaClRuntimeHostInterfaceDoPostMessage(0x%08"NACL_PRIxPTR", %s"
-           ", %08"NACL_PRIuS")\n"),
-          (uintptr_t) self, message, message_bytes);
-  return -NACL_ABI_EINVAL;
-}
-
 int NaClRuntimeHostInterfaceCreateProcessNotImplemented(
     struct NaClRuntimeHostInterface *self,
     struct NaClDesc                 **out_sock_addr,
@@ -84,6 +73,5 @@ struct NaClRuntimeHostInterfaceVtbl const kNaClRuntimeHostInterfaceVtbl = {
   },
   NaClRuntimeHostInterfaceStartupInitializationCompleteNotImplemented,
   NaClRuntimeHostInterfaceReportExitStatusNotImplemented,
-  NaClRuntimeHostInterfacePostMessageNotImplemented,
   NaClRuntimeHostInterfaceCreateProcessNotImplemented,
 };

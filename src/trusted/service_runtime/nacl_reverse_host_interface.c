@@ -118,45 +118,6 @@ int NaClReverseHostInterfaceReportExitStatus(
   return status;
 }
 
-ssize_t NaClReverseHostInterfacePostMessage(
-    struct NaClRuntimeHostInterface *vself,
-    char const                      *message,
-    size_t                          message_bytes) {
-  struct NaClReverseHostInterface *self =
-      (struct NaClReverseHostInterface *) vself;
-  NaClSrpcError           rpc_result;
-  ssize_t                 num_written;
-
-  NaClLog(3,
-          ("NaClReverseHostInterfacePostMessage(0x%08"NACL_PRIxPTR", %s"
-           ", %08"NACL_PRIuS")\n"),
-          (uintptr_t) self, message, message_bytes);
-
-  NaClXMutexLock(&self->server->mu);
-  if (message_bytes > NACL_ABI_SIZE_T_MAX) {
-    message_bytes = NACL_ABI_SIZE_T_MAX;
-  }
-  if (NACL_REVERSE_CHANNEL_INITIALIZED ==
-      self->server->reverse_channel_initialization_state) {
-    rpc_result = NaClSrpcInvokeBySignature(&self->server->reverse_channel,
-                                           NACL_REVERSE_CONTROL_POST_MESSAGE,
-                                           message_bytes,
-                                           message,
-                                           &num_written);
-    if (NACL_SRPC_RESULT_OK != rpc_result) {
-      NaClLog(LOG_FATAL,
-              "NaClReverseHostInterfacePostMessage: RPC failed, result %d\n",
-              rpc_result);
-    }
-  } else {
-    NaClLog(4, "NaClReverseHostInterfacePostMessage: no reverse channel"
-            ", no plugin to talk to.\n");
-    num_written = -NACL_ABI_ENODEV;
-  }
-  NaClXMutexUnlock(&self->server->mu);
-  return num_written;
-}
-
 int NaClReverseHostInterfaceCreateProcess(
     struct NaClRuntimeHostInterface *vself,
     struct NaClDesc                 **out_sock_addr,
@@ -202,6 +163,5 @@ struct NaClRuntimeHostInterfaceVtbl const kNaClReverseHostInterfaceVtbl = {
   },
   NaClReverseHostInterfaceStartupInitializationComplete,
   NaClReverseHostInterfaceReportExitStatus,
-  NaClReverseHostInterfacePostMessage,
   NaClReverseHostInterfaceCreateProcess,
 };

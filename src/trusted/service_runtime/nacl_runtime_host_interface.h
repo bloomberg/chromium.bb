@@ -29,11 +29,6 @@ struct NaClRuntimeHostInterfaceVtbl {
       struct NaClRuntimeHostInterface *self,
       int                             exit_status);
 
-  ssize_t                       (*PostMessage)(
-      struct NaClRuntimeHostInterface *self,
-      char const                      *message,
-      size_t                          message_bytes);
-
   int                           (*CreateProcess)(
       struct NaClRuntimeHostInterface *self,
       struct NaClDesc                 **out_sock_addr,
@@ -55,11 +50,6 @@ int NaClRuntimeHostInterfaceStartupInitializationCompleteNotImplemented(
 int NaClRuntimeHostInterfaceReportExitStatusNotImplemented(
     struct NaClRuntimeHostInterface *self,
     int                             exit_status);
-
-ssize_t NaClRuntimeHostInterfacePostMessageNotImplemented(
-    struct NaClRuntimeHostInterface *self,
-    char const                      *message,
-    size_t                          message_bytes);
 
 int NaClRuntimeHostInterfaceCreateProcessNotImplemented(
     struct NaClRuntimeHostInterface *self,
