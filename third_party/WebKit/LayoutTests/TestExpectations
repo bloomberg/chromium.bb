@@ -1678,7 +1678,6 @@ crbug.com/435246 virtual/slimmingpaint/fast/images/pixel-crack-image-background-
 crbug.com/436551 virtual/slimmingpaint/fast/images/icon-decoding.html [ ImageOnlyFailure ]
 
 crbug.com/435240 virtual/slimmingpaint/fast/text/selection-hard-linebreak.html [ ImageOnlyFailure ]
-crbug.com/423071 [ Mac ] virtual/slimmingpaint/fast/text/drawBidiText.html [ NeedsRebaseline ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/normal-after-nowrap-breaking.html [ ImageOnlyFailure ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/international/pop-up-button-text-alignment-and-direction.html [ Pass ImageOnlyFailure ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/text-shadow-no-default-color.html [ ImageOnlyFailure ]
