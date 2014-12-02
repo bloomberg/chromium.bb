@@ -1326,7 +1326,9 @@ weston_wm_window_handle_state(struct weston_wm_window *window,
 								WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
 								0, NULL);
 		} else {
-			shell_interface->set_toplevel(window->shsurf);
+			if (window->shsurf)
+				shell_interface->set_toplevel(window->shsurf);
+
 			window->width = window->saved_width;
 			window->height = window->saved_height;
 			if (window->frame)
