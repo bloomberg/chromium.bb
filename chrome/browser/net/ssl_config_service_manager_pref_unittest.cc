@@ -18,6 +18,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_config_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -127,7 +128,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, BadDisabledCipherSuites) {
 }
 
 // Test that without command-line settings for minimum and maximum SSL versions,
-// TLS 1.0 ~ kDefaultSSLVersionMax are enabled.
+// TLS versions from 1.0 up to 1.1 or 1.2 are enabled.
 TEST_F(SSLConfigServiceManagerPrefTest, NoCommandLinePrefs) {
   scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
 
@@ -146,10 +147,12 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoCommandLinePrefs) {
 
   SSLConfig ssl_config;
   config_service->GetSSLConfig(&ssl_config);
-  // The default value in the absence of command-line options is that
-  // SSL 3.0 ~ kDefaultSSLVersionMax are enabled.
+  // In the absence of command-line options, TLS versions from 1.0 up to 1.1 or
+  // 1.2 (depending on the underlying library and cryptographic implementation)
+  // are enabled.
   EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1, ssl_config.version_min);
-  EXPECT_EQ(net::kDefaultSSLVersionMax, ssl_config.version_max);
+  EXPECT_EQ(net::SSLClientSocket::GetMaxSupportedSSLVersion(),
+            ssl_config.version_max);
 
   // The settings should not be added to the local_state.
   EXPECT_FALSE(local_state->HasPrefPath(prefs::kSSLVersionMin));
