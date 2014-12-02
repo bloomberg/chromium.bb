@@ -88,13 +88,19 @@ bool AppViewGuest::CompletePendingRequest(
 
 // static
 GuestViewBase* AppViewGuest::Create(content::BrowserContext* browser_context,
+                                    content::WebContents* owner_web_contents,
                                     int guest_instance_id) {
-  return new AppViewGuest(browser_context, guest_instance_id);
+  return new AppViewGuest(browser_context,
+                          owner_web_contents,
+                          guest_instance_id);
 }
 
 AppViewGuest::AppViewGuest(content::BrowserContext* browser_context,
+                           content::WebContents* owner_web_contents,
                            int guest_instance_id)
-    : GuestView<AppViewGuest>(browser_context, guest_instance_id),
+    : GuestView<AppViewGuest>(browser_context,
+                              owner_web_contents,
+                              guest_instance_id),
       app_view_guest_delegate_(
           ExtensionsAPIClient::Get()->CreateAppViewGuestDelegate()),
       weak_ptr_factory_(this) {
@@ -136,8 +142,6 @@ int AppViewGuest::GetTaskPrefix() const {
 }
 
 void AppViewGuest::CreateWebContents(
-    int owner_render_process_id,
-    const GURL& embedder_site_url,
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
   std::string app_id;
@@ -156,7 +160,7 @@ void AppViewGuest::CreateWebContents(
       ExtensionRegistry::Get(browser_context())->enabled_extensions();
   const Extension* guest_extension = enabled_extensions.GetByID(app_id);
   const Extension* embedder_extension =
-      enabled_extensions.GetByID(embedder_site_url.host());
+      enabled_extensions.GetByID(GetOwnerSiteURL().host());
 
   if (!guest_extension || !guest_extension->is_platform_app() ||
       !embedder_extension | !embedder_extension->is_platform_app()) {
@@ -248,7 +252,7 @@ void AppViewGuest::LaunchAppAndFireEvent(
 
   scoped_ptr<base::DictionaryValue> embed_request(new base::DictionaryValue());
   embed_request->SetInteger(appview::kGuestInstanceID, guest_instance_id());
-  embed_request->SetString(appview::kEmbedderID, embedder_extension_id());
+  embed_request->SetString(appview::kEmbedderID, owner_extension_id());
   embed_request->Set(appview::kData, data.release());
   AppRuntimeEventRouter::DispatchOnEmbedRequestedEvent(
       browser_context(), embed_request.Pass(), extension_host->extension());

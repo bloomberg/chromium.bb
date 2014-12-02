@@ -32,6 +32,7 @@ class AppViewGuest : public GuestView<AppViewGuest>,
       const std::string& guest_extension_id);
 
   static GuestViewBase* Create(content::BrowserContext* browser_context,
+                               content::WebContents* owner_web_contents,
                                int guest_instance_id);
 
   // ExtensionFunctionDispatcher::Delegate implementation.
@@ -47,15 +48,15 @@ class AppViewGuest : public GuestView<AppViewGuest>,
   // GuestViewBase implementation.
   const char* GetAPINamespace() const override;
   int GetTaskPrefix() const override;
-  void CreateWebContents(int owner_render_process_id,
-                         const GURL& embedder_site_url,
-                         const base::DictionaryValue& create_params,
+  void CreateWebContents(const base::DictionaryValue& create_params,
                          const WebContentsCreatedCallback& callback) override;
   void DidAttachToEmbedder() override;
   void DidInitialize() override;
 
  private:
-  AppViewGuest(content::BrowserContext* browser_context, int guest_instance_id);
+  AppViewGuest(content::BrowserContext* browser_context,
+               content::WebContents* owner_web_contents,
+               int guest_instance_id);
 
   ~AppViewGuest() override;
 

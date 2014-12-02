@@ -241,7 +241,7 @@ bool AppendMirrorRequestHeaderIfPossible(
   // embedded in a webui page, otherwise user may end up with a blank page as
   // gaia uses the header to decide whether it returns 204 for certain end
   // points.
-  if (is_guest && webview_info.embedder_extension_id.empty())
+  if (is_guest && webview_info.owner_extension_id.empty())
     return false;
 #endif // !OS_ANDROID && !OS_IOS
 

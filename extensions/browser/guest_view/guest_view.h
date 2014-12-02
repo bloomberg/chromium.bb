@@ -63,8 +63,9 @@ class GuestView : public GuestViewBase {
 
  protected:
   GuestView(content::BrowserContext* browser_context,
+            content::WebContents* owner_web_contents,
             int guest_instance_id)
-      : GuestViewBase(browser_context, guest_instance_id) {}
+      : GuestViewBase(browser_context, owner_web_contents, guest_instance_id) {}
   virtual ~GuestView() {}
 
  private:

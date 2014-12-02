@@ -58,21 +58,21 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   int GetNextInstanceID();
   int GetGuestInstanceIDForElementID(
-      content::WebContents* embedder_web_contents,
+      content::WebContents* owner_web_contents,
       int element_instance_id);
 
   typedef base::Callback<void(content::WebContents*)>
       WebContentsCreatedCallback;
   void CreateGuest(const std::string& view_type,
-                   const std::string& embedder_extension_id,
-                   content::WebContents* embedder_web_contents,
+                   const std::string& owner_extension_id,
+                   content::WebContents* owner_web_contents,
                    const base::DictionaryValue& create_params,
                    const WebContentsCreatedCallback& callback);
 
   content::WebContents* CreateGuestWithWebContentsParams(
       const std::string& view_type,
-      const std::string& embedder_extension_id,
-      content::WebContents* embedder_web_contents,
+      const std::string& owner_extension_id,
+      content::WebContents* owner_web_contents,
       const content::WebContents::CreateParams& create_params);
 
   content::SiteInstance* GetGuestSiteInstance(
@@ -80,9 +80,9 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   // BrowserPluginGuestManager implementation.
   content::WebContents* GetGuestByInstanceID(
-      content::WebContents* embedder_web_contents,
+      content::WebContents* owner_web_contents,
       int element_instance_id) override;
-  bool ForEachGuest(content::WebContents* embedder_web_contents,
+  bool ForEachGuest(content::WebContents* owner_web_contents,
                     const GuestCallback& callback) override;
 
  protected:
@@ -119,15 +119,15 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   GuestInstanceMap guest_web_contents_by_instance_id_;
 
   struct ElementInstanceKey {
-    content::WebContents* embedder_web_contents;
+    content::WebContents* owner_web_contents;
     int element_instance_id;
-    ElementInstanceKey(content::WebContents* embedder_web_contents,
+    ElementInstanceKey(content::WebContents* owner_web_contents,
                        int element_instance_id)
-        : embedder_web_contents(embedder_web_contents),
+        : owner_web_contents(owner_web_contents),
           element_instance_id(element_instance_id) {}
     bool operator<(const ElementInstanceKey& other) const {
-      if (embedder_web_contents != other.embedder_web_contents)
-        return embedder_web_contents < other.embedder_web_contents;
+      if (owner_web_contents != other.owner_web_contents)
+        return owner_web_contents < other.owner_web_contents;
       return element_instance_id < other.element_instance_id;
     }
   };

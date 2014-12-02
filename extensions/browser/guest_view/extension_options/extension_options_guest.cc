@@ -38,8 +38,11 @@ const char ExtensionOptionsGuest::Type[] = "extensionoptions";
 
 ExtensionOptionsGuest::ExtensionOptionsGuest(
     content::BrowserContext* browser_context,
+    content::WebContents* owner_web_contents,
     int guest_instance_id)
-    : GuestView<ExtensionOptionsGuest>(browser_context, guest_instance_id),
+    : GuestView<ExtensionOptionsGuest>(browser_context,
+                                       owner_web_contents,
+                                       guest_instance_id),
       extension_options_guest_delegate_(
           extensions::ExtensionsAPIClient::Get()
               ->CreateExtensionOptionsGuestDelegate(this)),
@@ -52,13 +55,14 @@ ExtensionOptionsGuest::~ExtensionOptionsGuest() {
 // static
 extensions::GuestViewBase* ExtensionOptionsGuest::Create(
     content::BrowserContext* browser_context,
+    content::WebContents* owner_web_contents,
     int guest_instance_id) {
-  return new ExtensionOptionsGuest(browser_context, guest_instance_id);
+  return new ExtensionOptionsGuest(browser_context,
+                                   owner_web_contents,
+                                   guest_instance_id);
 }
 
 void ExtensionOptionsGuest::CreateWebContents(
-    int owner_render_process_id,
-    const GURL& embedder_site_url,
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
   // Get the extension's base URL.
@@ -70,7 +74,7 @@ void ExtensionOptionsGuest::CreateWebContents(
     return;
   }
 
-  std::string embedder_extension_id = embedder_site_url.host();
+  std::string embedder_extension_id = GetOwnerSiteURL().host();
   if (crx_file::id_util::IdIsValid(embedder_extension_id) &&
       extension_id != embedder_extension_id) {
     // Extensions cannot embed other extensions' options pages.

@@ -134,9 +134,11 @@ class GuestViewBase::OpenerLifetimeObserver : public WebContentsObserver {
 };
 
 GuestViewBase::GuestViewBase(content::BrowserContext* browser_context,
+                             content::WebContents* owner_web_contents,
                              int guest_instance_id)
-    : owner_web_contents_(NULL),
-      owner_render_process_id_(0),
+    : owner_web_contents_(owner_web_contents),
+      owner_render_process_id_(
+          owner_web_contents_->GetRenderProcessHost()->GetID()),
       browser_context_(browser_context),
       guest_instance_id_(guest_instance_id),
       view_instance_id_(guestview::kInstanceIDNone),
@@ -149,8 +151,7 @@ GuestViewBase::GuestViewBase(content::BrowserContext* browser_context,
       weak_ptr_factory_(this) {
 }
 
-void GuestViewBase::Init(const std::string& embedder_extension_id,
-                         content::WebContents* embedder_web_contents,
+void GuestViewBase::Init(const std::string& owner_extension_id,
                          const base::DictionaryValue& create_params,
                          const WebContentsCreatedCallback& callback) {
   if (initialized_)
@@ -166,19 +167,14 @@ void GuestViewBase::Init(const std::string& embedder_extension_id,
 
   const Extension* embedder_extension = ExtensionRegistry::Get(browser_context_)
           ->enabled_extensions()
-          .GetByID(embedder_extension_id);
+          .GetByID(owner_extension_id);
+
   // Ok for |embedder_extension| to be NULL, the embedder might be WebUI.
-
-  CHECK(embedder_web_contents);
-  int embedder_process_id =
-      embedder_web_contents->GetRenderProcessHost()->GetID();
-
-  const GURL& embedder_site_url = embedder_web_contents->GetLastCommittedURL();
   Feature::Availability availability = feature->IsAvailableToContext(
       embedder_extension,
       process_map->GetMostLikelyContextType(embedder_extension,
-                                            embedder_process_id),
-      embedder_site_url);
+                                            owner_render_process_id()),
+      GetOwnerSiteURL());
   if (!availability.is_available()) {
     // The derived class did not create a WebContents so this class serves no
     // purpose. Let's self-destruct.
@@ -187,35 +183,25 @@ void GuestViewBase::Init(const std::string& embedder_extension_id,
     return;
   }
 
-  CreateWebContents(embedder_process_id,
-                    embedder_site_url,
-                    create_params,
+  CreateWebContents(create_params,
                     base::Bind(&GuestViewBase::CompleteInit,
                                weak_ptr_factory_.GetWeakPtr(),
-                               embedder_extension_id,
-                               embedder_web_contents,
+                               owner_extension_id,
                                callback));
 }
 
 void GuestViewBase::InitWithWebContents(
-    const std::string& embedder_extension_id,
-    content::WebContents* owner_web_contents,
+    const std::string& owner_extension_id,
     content::WebContents* guest_web_contents) {
   DCHECK(guest_web_contents);
-  DCHECK(owner_web_contents);
-  int owner_render_process_id =
-      owner_web_contents->GetRenderProcessHost()->GetID();
-  content::RenderProcessHost* owner_render_process_host =
-      content::RenderProcessHost::FromID(owner_render_process_id);
 
-  embedder_extension_id_ = embedder_extension_id;
-  owner_render_process_id_ = owner_render_process_host->GetID();
+  owner_extension_id_ = owner_extension_id;
 
   // At this point, we have just created the guest WebContents, we need to add
   // an observer to the embedder WebContents. This observer will be responsible
   // for destroying the guest WebContents if the embedder goes away.
   owner_lifetime_observer_.reset(
-      new OwnerLifetimeObserver(this, owner_web_contents));
+      new OwnerLifetimeObserver(this, owner_web_contents_));
 
   WebContentsObserver::Observe(guest_web_contents);
   guest_web_contents->SetDelegate(this);
@@ -269,6 +255,7 @@ void GuestViewBase::RegisterGuestViewType(
 // static
 GuestViewBase* GuestViewBase::Create(
     content::BrowserContext* browser_context,
+    content::WebContents* owner_web_contents,
     int guest_instance_id,
     const std::string& view_type) {
   if (guest_view_registry.Get().empty())
@@ -280,7 +267,7 @@ GuestViewBase* GuestViewBase::Create(
     NOTREACHED();
     return NULL;
   }
-  return it->second.Run(browser_context, guest_instance_id);
+  return it->second.Run(browser_context, owner_web_contents, guest_instance_id);
 }
 
 // static
@@ -346,6 +333,10 @@ void GuestViewBase::GuestSizeChanged(const gfx::Size& old_size,
     return;
   guest_size_ = new_size;
   GuestSizeChangedDueToAutoSize(old_size, new_size);
+}
+
+const GURL& GuestViewBase::GetOwnerSiteURL() const {
+  return owner_web_contents()->GetLastCommittedURL();
 }
 
 void GuestViewBase::Destroy() {
@@ -499,7 +490,7 @@ void GuestViewBase::DispatchEventToEmbedder(Event* event) {
   EventRouter::DispatchEvent(
       owner_web_contents_,
       browser_context_,
-      embedder_extension_id_,
+      owner_extension_id_,
       event->name(),
       args.Pass(),
       EventRouter::USER_GESTURE_UNKNOWN,
@@ -516,8 +507,7 @@ void GuestViewBase::SendQueuedEvents() {
   }
 }
 
-void GuestViewBase::CompleteInit(const std::string& embedder_extension_id,
-                                 content::WebContents* embedder_web_contents,
+void GuestViewBase::CompleteInit(const std::string& owner_extension_id,
                                  const WebContentsCreatedCallback& callback,
                                  content::WebContents* guest_web_contents) {
   if (!guest_web_contents) {
@@ -527,8 +517,7 @@ void GuestViewBase::CompleteInit(const std::string& embedder_extension_id,
     callback.Run(NULL);
     return;
   }
-  InitWithWebContents(
-      embedder_extension_id, embedder_web_contents, guest_web_contents);
+  InitWithWebContents(owner_extension_id, guest_web_contents);
   callback.Run(guest_web_contents);
 }
 

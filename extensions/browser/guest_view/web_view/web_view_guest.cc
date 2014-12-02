@@ -151,8 +151,11 @@ void RemoveWebViewEventListenersOnIOThread(
 
 // static
 GuestViewBase* WebViewGuest::Create(content::BrowserContext* browser_context,
+                                    content::WebContents* owner_web_contents,
                                     int guest_instance_id) {
-  return new WebViewGuest(browser_context, guest_instance_id);
+  return new WebViewGuest(browser_context,
+                          owner_web_contents,
+                          guest_instance_id);
 }
 
 // static
@@ -224,12 +227,10 @@ int WebViewGuest::GetTaskPrefix() const {
 }
 
 void WebViewGuest::CreateWebContents(
-    int owner_render_process_id,
-    const GURL& embedder_site_url,
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
   content::RenderProcessHost* owner_render_process_host =
-      content::RenderProcessHost::FromID(owner_render_process_id);
+      content::RenderProcessHost::FromID(owner_render_process_id());
   std::string storage_partition_id;
   bool persist_storage = false;
   std::string storage_partition_string;
@@ -249,7 +250,7 @@ void WebViewGuest::CreateWebContents(
   }
   std::string url_encoded_partition = net::EscapeQueryParamValue(
       storage_partition_id, false);
-  std::string partition_domain = embedder_site_url.host();
+  std::string partition_domain = GetOwnerSiteURL().host();
   GURL guest_site(base::StringPrintf("%s://%s/%s?%s",
                                      content::kGuestScheme,
                                      partition_domain.c_str(),
@@ -385,7 +386,7 @@ void WebViewGuest::EmbedderWillBeDestroyed() {
       base::Bind(
           &RemoveWebViewEventListenersOnIOThread,
           browser_context(),
-          embedder_extension_id(),
+          owner_extension_id(),
           owner_render_process_id(),
           view_instance_id()));
 }
@@ -547,7 +548,7 @@ void WebViewGuest::CreateNewGuestWebViewWindow(
   create_params.SetString(webview::kStoragePartitionId, storage_partition_id);
 
   guest_manager->CreateGuest(WebViewGuest::Type,
-                             embedder_extension_id(),
+                             owner_extension_id(),
                              embedder_web_contents(),
                              create_params,
                              base::Bind(&WebViewGuest::NewGuestWebViewCallback,
@@ -698,8 +699,11 @@ bool WebViewGuest::ClearData(const base::Time remove_since,
 }
 
 WebViewGuest::WebViewGuest(content::BrowserContext* browser_context,
+                           content::WebContents* owner_web_contents,
                            int guest_instance_id)
-    : GuestView<WebViewGuest>(browser_context, guest_instance_id),
+    : GuestView<WebViewGuest>(browser_context,
+                              owner_web_contents,
+                              guest_instance_id),
       rules_registry_id_(RulesRegistryService::kInvalidRulesRegistryID),
       find_helper_(this),
       is_overriding_user_agent_(false),
@@ -844,7 +848,7 @@ void WebViewGuest::PushWebViewStateToIOThread() {
   web_view_info.embedder_process_id = owner_render_process_id();
   web_view_info.instance_id = view_instance_id();
   web_view_info.partition_id = partition_id;
-  web_view_info.embedder_extension_id = embedder_extension_id();
+  web_view_info.owner_extension_id = owner_extension_id();
   web_view_info.rules_registry_id = rules_registry_id_;
 
   content::BrowserThread::PostTask(
@@ -875,7 +879,7 @@ content::WebContents* WebViewGuest::CreateNewGuestWindow(
       GuestViewManager::FromBrowserContext(browser_context());
   return guest_manager->CreateGuestWithWebContentsParams(
       WebViewGuest::Type,
-      embedder_extension_id(),
+      owner_extension_id(),
       embedder_web_contents(),
       create_params);
 }
@@ -1245,7 +1249,7 @@ GURL WebViewGuest::ResolveURL(const std::string& src) {
 
   GURL default_url(base::StringPrintf("%s://%s/",
                                       kExtensionScheme,
-                                      embedder_extension_id().c_str()));
+                                      owner_extension_id().c_str()));
   return default_url.Resolve(src);
 }
 

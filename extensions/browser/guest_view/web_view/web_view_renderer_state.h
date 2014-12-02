@@ -24,7 +24,7 @@ class WebViewRendererState {
     int instance_id;
     int rules_registry_id;
     std::string partition_id;
-    std::string embedder_extension_id;
+    std::string owner_extension_id;
   };
 
   static WebViewRendererState* GetInstance();

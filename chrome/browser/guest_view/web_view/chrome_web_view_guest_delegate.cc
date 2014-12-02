@@ -152,7 +152,7 @@ void ChromeWebViewGuestDelegate::OnGuestDestroyed() {
   MenuManager* menu_manager = MenuManager::Get(
       Profile::FromBrowserContext(web_view_guest()->browser_context()));
   menu_manager->RemoveAllContextItems(MenuItem::ExtensionKey(
-      web_view_guest()->embedder_extension_id(),
+      web_view_guest()->owner_extension_id(),
       web_view_guest()->view_instance_id()));
 }
 

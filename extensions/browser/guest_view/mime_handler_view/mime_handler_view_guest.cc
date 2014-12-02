@@ -29,14 +29,20 @@ const char MimeHandlerViewGuest::Type[] = "mimehandler";
 // static
 GuestViewBase* MimeHandlerViewGuest::Create(
     content::BrowserContext* browser_context,
+    content::WebContents* owner_web_contents,
     int guest_instance_id) {
-  return new MimeHandlerViewGuest(browser_context, guest_instance_id);
+  return new MimeHandlerViewGuest(browser_context,
+                                  owner_web_contents,
+                                  guest_instance_id);
 }
 
 MimeHandlerViewGuest::MimeHandlerViewGuest(
     content::BrowserContext* browser_context,
+    content::WebContents* owner_web_contents,
     int guest_instance_id)
-    : GuestView<MimeHandlerViewGuest>(browser_context, guest_instance_id),
+    : GuestView<MimeHandlerViewGuest>(browser_context,
+                                      owner_web_contents,
+                                      guest_instance_id),
       delegate_(ExtensionsAPIClient::Get()->CreateMimeHandlerViewGuestDelegate(
           this)) {
 }
@@ -60,10 +66,7 @@ int MimeHandlerViewGuest::GetTaskPrefix() const {
   return IDS_EXTENSION_TASK_MANAGER_MIMEHANDLERVIEW_TAG_PREFIX;
 }
 
-// |embedder_extension_id| is empty for mime handler view.
 void MimeHandlerViewGuest::CreateWebContents(
-    int owner_render_process_id,
-    const GURL& embedder_site_url,
     const base::DictionaryValue& create_params,
     const WebContentsCreatedCallback& callback) {
   std::string orig_mime_type;
@@ -105,7 +108,7 @@ void MimeHandlerViewGuest::CreateWebContents(
   ProcessManager* process_manager = ProcessManager::Get(browser_context());
   content::SiteInstance* guest_site_instance =
       process_manager->GetSiteInstanceForURL(
-          Extension::GetBaseURLFromExtensionId(embedder_site_url.host()));
+          Extension::GetBaseURLFromExtensionId(GetOwnerSiteURL().host()));
 
   WebContents::CreateParams params(browser_context(), guest_site_instance);
   params.guest_delegate = this;

@@ -84,11 +84,11 @@ void GuestViewManager::AttachGuest(
   // destroyed immediately after the guest is created).
   if (!rvh)
     return;
-  content::WebContents* embedder_web_contents =
+  content::WebContents* owner_web_contents =
       content::WebContents::FromRenderViewHost(rvh);
-  if (!embedder_web_contents)
+  if (!owner_web_contents)
     return;
-  ElementInstanceKey key(embedder_web_contents, element_instance_id);
+  ElementInstanceKey key(owner_web_contents, element_instance_id);
 
   GuestInstanceIDMap::iterator it = instance_id_map_.find(key);
   if (it != instance_id_map_.end()) {
@@ -118,44 +118,48 @@ int GuestViewManager::GetNextInstanceID() {
 }
 
 void GuestViewManager::CreateGuest(const std::string& view_type,
-                                   const std::string& embedder_extension_id,
+                                   const std::string& owner_extension_id,
                                    content::WebContents* owner_web_contents,
                                    const base::DictionaryValue& create_params,
                                    const WebContentsCreatedCallback& callback) {
   int guest_instance_id = GetNextInstanceID();
   GuestViewBase* guest =
-      GuestViewBase::Create(context_, guest_instance_id, view_type);
+      GuestViewBase::Create(context_,
+                            owner_web_contents,
+                            guest_instance_id,
+                            view_type);
   if (!guest) {
     callback.Run(NULL);
     return;
   }
-  guest->Init(
-      embedder_extension_id, owner_web_contents, create_params, callback);
+  guest->Init(owner_extension_id, create_params, callback);
 }
 
 content::WebContents* GuestViewManager::CreateGuestWithWebContentsParams(
     const std::string& view_type,
-    const std::string& embedder_extension_id,
-    content::WebContents* embedder_web_contents,
+    const std::string& owner_extension_id,
+    content::WebContents* owner_web_contents,
     const content::WebContents::CreateParams& create_params) {
   int guest_instance_id = GetNextInstanceID();
   GuestViewBase* guest =
-      GuestViewBase::Create(context_, guest_instance_id, view_type);
+      GuestViewBase::Create(context_,
+                            owner_web_contents,
+                            guest_instance_id,
+                            view_type);
   if (!guest)
     return NULL;
   content::WebContents::CreateParams guest_create_params(create_params);
   guest_create_params.guest_delegate = guest;
   content::WebContents* guest_web_contents =
       WebContents::Create(guest_create_params);
-  guest->InitWithWebContents(
-      embedder_extension_id, embedder_web_contents, guest_web_contents);
+  guest->InitWithWebContents(owner_extension_id, guest_web_contents);
   return guest_web_contents;
 }
 
 content::WebContents* GuestViewManager::GetGuestByInstanceID(
-    content::WebContents* embedder_web_contents,
+    content::WebContents* owner_web_contents,
     int element_instance_id) {
-  int guest_instance_id = GetGuestInstanceIDForElementID(embedder_web_contents,
+  int guest_instance_id = GetGuestInstanceIDForElementID(owner_web_contents,
                                                          element_instance_id);
   if (guest_instance_id == guestview::kInstanceIDNone)
     return NULL;
@@ -164,10 +168,10 @@ content::WebContents* GuestViewManager::GetGuestByInstanceID(
 }
 
 int GuestViewManager::GetGuestInstanceIDForElementID(
-    content::WebContents* embedder_web_contents,
+    content::WebContents* owner_web_contents,
     int element_instance_id) {
   GuestInstanceIDMap::iterator iter = instance_id_map_.find(
-      ElementInstanceKey(embedder_web_contents, element_instance_id));
+      ElementInstanceKey(owner_web_contents, element_instance_id));
   if (iter == instance_id_map_.end())
     return guestview::kInstanceIDNone;
   return iter->second;
@@ -184,14 +188,14 @@ SiteInstance* GuestViewManager::GetGuestSiteInstance(
   return NULL;
 }
 
-bool GuestViewManager::ForEachGuest(WebContents* embedder_web_contents,
+bool GuestViewManager::ForEachGuest(WebContents* owner_web_contents,
                                     const GuestCallback& callback) {
   for (GuestInstanceMap::iterator it =
            guest_web_contents_by_instance_id_.begin();
        it != guest_web_contents_by_instance_id_.end(); ++it) {
     WebContents* guest = it->second;
     GuestViewBase* guest_view = GuestViewBase::FromWebContents(guest);
-    if (embedder_web_contents != guest_view->embedder_web_contents())
+    if (owner_web_contents != guest_view->owner_web_contents())
       continue;
 
     if (callback.Run(guest))

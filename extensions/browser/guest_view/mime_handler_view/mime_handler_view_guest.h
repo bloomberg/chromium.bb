@@ -21,6 +21,7 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
                              public ExtensionFunctionDispatcher::Delegate {
  public:
   static GuestViewBase* Create(content::BrowserContext* browser_context,
+                               content::WebContents* owner_web_contents,
                                int guest_instance_id);
 
   static const char Type[];
@@ -32,9 +33,7 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
   // GuestViewBase implementation.
   const char* GetAPINamespace() const override;
   int GetTaskPrefix() const override;
-  void CreateWebContents(int owner_render_process_id,
-                         const GURL& embedder_site_url,
-                         const base::DictionaryValue& create_params,
+  void CreateWebContents(const base::DictionaryValue& create_params,
                          const WebContentsCreatedCallback& callback) override;
   void DidAttachToEmbedder() override;
   void DidInitialize() override;
@@ -63,6 +62,7 @@ class MimeHandlerViewGuest : public GuestView<MimeHandlerViewGuest>,
 
  private:
   MimeHandlerViewGuest(content::BrowserContext* browser_context,
+                       content::WebContents* owner_web_contents,
                        int guest_instance_id);
   ~MimeHandlerViewGuest() override;
 
