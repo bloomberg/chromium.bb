@@ -261,6 +261,8 @@ class TiledLayerTest : public testing::Test {
 };
 
 TEST_F(TiledLayerTest, PushDirtyTiles) {
+  layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000));
+
   scoped_refptr<FakeTiledLayer> layer =
       make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl =
@@ -290,6 +292,8 @@ TEST_F(TiledLayerTest, PushDirtyTiles) {
 }
 
 TEST_F(TiledLayerTest, Scale) {
+  layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000));
+
   layer_tree_host_->SetDeviceScaleFactor(1.5);
 
   scoped_refptr<FakeTiledLayer> layer =
@@ -352,6 +356,8 @@ TEST_F(TiledLayerTest, PushOccludedDirtyTiles) {
 }
 
 TEST_F(TiledLayerTest, PushDeletedTiles) {
+  layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000));
+
   scoped_refptr<FakeTiledLayer> layer =
       make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
   scoped_ptr<FakeTiledLayerImpl> layer_impl =
@@ -1201,6 +1207,8 @@ TEST_F(TiledLayerPartialUpdateTest, PartialUpdates) {
 }
 
 TEST_F(TiledLayerTest, TilesPaintedWithoutOcclusion) {
+  layer_tree_host_->SetViewportSize(gfx::Size(1000, 1000));
+
   scoped_refptr<FakeTiledLayer> layer =
       make_scoped_refptr(new FakeTiledLayer(resource_manager_.get()));
   RenderSurfaceLayerList render_surface_layer_list;

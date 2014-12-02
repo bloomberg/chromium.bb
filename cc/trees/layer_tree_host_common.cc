@@ -392,7 +392,7 @@ static gfx::Rect CalculateVisibleContentRect(
   gfx::Rect visible_rect_in_target_surface_space =
       layer->drawable_content_rect();
 
-  if (!layer->render_target()->render_surface()->clip_rect().IsEmpty()) {
+  if (layer->render_target()->render_surface()->is_clipped()) {
     // The |layer| L has a target T which owns a surface Ts. The surface Ts
     // has a target TsT.
     //
