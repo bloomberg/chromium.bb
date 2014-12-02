@@ -327,8 +327,6 @@ void TextFieldInputType::destroyShadowSubtree()
 
 void TextFieldInputType::listAttributeTargetChanged()
 {
-    if (Chrome* chrome = this->chrome())
-        chrome->client().textFieldDataListChanged(element());
     Element* picker = element().userAgentShadowRoot()->getElementById(ShadowElementNames::pickerIndicator());
     bool didHavePickerIndicator = picker;
     bool willHavePickerIndicator = element().hasValidDataListOptions();

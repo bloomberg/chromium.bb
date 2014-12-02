@@ -862,11 +862,4 @@ void ChromeClientImpl::openTextDataListChooser(HTMLInputElement& input)
         webframe->autofillClient()->openTextDataListChooser(WebInputElement(&input));
 }
 
-void ChromeClientImpl::textFieldDataListChanged(HTMLFormControlElement& element)
-{
-    if (!m_webView->autofillClient())
-        return;
-    m_webView->autofillClient()->textFieldDidChange(WebFormControlElement(&element));
-}
-
 } // namespace blink

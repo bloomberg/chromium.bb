@@ -167,7 +167,6 @@ public:
     virtual void didChangeValueInTextField(HTMLFormControlElement&) override;
     virtual void didEndEditingOnTextField(HTMLInputElement&) override;
     virtual void openTextDataListChooser(HTMLInputElement&) override;
-    virtual void textFieldDataListChanged(HTMLFormControlElement&) override;
 
     virtual void didCancelCompositionOnSelectionChange() override;
     virtual void willSetInputMethodState() override;
