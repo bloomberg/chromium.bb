@@ -1296,15 +1296,6 @@ static void warningHandler(void* closure, const char* message, ...)
 }
 
 WTF_ATTRIBUTE_PRINTF(2, 3)
-static void fatalErrorHandler(void* closure, const char* message, ...)
-{
-    va_list args;
-    va_start(args, message);
-    getParser(closure)->error(XMLErrors::ErrorTypeFatal, message, args);
-    va_end(args);
-}
-
-WTF_ATTRIBUTE_PRINTF(2, 3)
 static void normalErrorHandler(void* closure, const char* message, ...)
 {
     va_list args;
@@ -1433,8 +1424,12 @@ void XMLDocumentParser::initializeParserContext(const CString& chunk)
     xmlSAXHandler sax;
     memset(&sax, 0, sizeof(sax));
 
+    // According to http://xmlsoft.org/html/libxml-tree.html#xmlSAXHandler and
+    // http://xmlsoft.org/html/libxml-parser.html#fatalErrorSAXFunc the SAX
+    // fatalError callback is unused; error gets all the errors. Use normalErrorHandler
+    // for both the error and fatalError callbacks.
     sax.error = normalErrorHandler;
-    sax.fatalError = fatalErrorHandler;
+    sax.fatalError = normalErrorHandler;
     sax.characters = charactersHandler;
     sax.processingInstruction = processingInstructionHandler;
     sax.cdataBlock = cdataBlockHandler;
