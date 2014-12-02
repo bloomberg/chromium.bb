@@ -489,12 +489,7 @@ void AppListView::OnBeforeBubbleWidgetInit(
 }
 
 views::View* AppListView::GetInitiallyFocusedView() {
-  return app_list::switches::IsExperimentalAppListEnabled()
-             ? app_list_main_view_->contents_view()
-                   ->start_page_view()
-                   ->dummy_search_box_view()
-                   ->search_box()
-             : app_list_main_view_->search_box_view()->search_box();
+  return app_list_main_view_->search_box_view()->search_box();
 }
 
 gfx::ImageSkia AppListView::GetWindowIcon() {
@@ -564,6 +559,8 @@ void AppListView::Layout() {
   // GetDefaultSearchBoxBounds() returns the bounds in |contents_view|'s
   // coordinate, therefore convert it to this coordinate.
   ContentsView* contents_view = app_list_main_view_->contents_view();
+  // TODO(mgiuca): Position the search box in the center of the page, when
+  // in STATE_START.
   gfx::RectF search_box_bounds = contents_view->GetDefaultSearchBoxBounds();
   ConvertRectToTarget(contents_view, this, &search_box_bounds);
   search_box_view_->SetBoundsRect(gfx::ToNearestRect(search_box_bounds));

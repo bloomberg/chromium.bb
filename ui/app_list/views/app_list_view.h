@@ -95,6 +95,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // Returns true if the app list should be centered and in landscape mode.
   bool ShouldCenterWindow() const;
 
+  SearchBoxView* search_box_view() const { return search_box_view_; }
+
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
   void Paint(gfx::Canvas* canvas, const views::CullSet& cull_set) override;

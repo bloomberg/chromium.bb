@@ -205,9 +205,6 @@ void ContentsView::ActivePageChanged() {
   if (search_results_list_view_)
     search_results_list_view_->UpdateAutoLaunchState();
 
-  // Notify parent AppListMainView of the page change.
-  app_list_main_view_->UpdateSearchBoxVisibility();
-
   if (custom_page_view_) {
     custom_page_view_->SetFocusable(state ==
                                     AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);

@@ -180,7 +180,6 @@ void HomeCardView::SetStateWithAnimation(
     search_box_view_->SetBoundsRect(main_bounds);
   }
 
-  main_view_->UpdateSearchBoxVisibility();
   if (state == HomeCard::VISIBLE_BOTTOM) {
     app_list::ContentsView* contents_view = main_view_->contents_view();
     contents_view->SetActivePage(contents_view->GetPageIndexForState(
