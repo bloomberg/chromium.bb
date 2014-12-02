@@ -450,6 +450,10 @@ void Predictor::DiscardAllResults() {
 // Overloaded Resolve() to take a vector of names.
 void Predictor::ResolveList(const UrlList& urls,
                             UrlInfo::ResolutionMotivation motivation) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("436671 Predictor::ResolveList"));
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   for (UrlList::const_iterator it = urls.begin(); it < urls.end(); ++it) {
@@ -779,6 +783,11 @@ void Predictor::DnsPrefetchList(const NameList& hostnames) {
 void Predictor::DnsPrefetchMotivatedList(
     const UrlList& urls,
     UrlInfo::ResolutionMotivation motivation) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436671 Predictor::DnsPrefetchMotivatedList"));
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!predictor_enabled_)

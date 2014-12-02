@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/profiles/profile.h"
@@ -179,6 +180,11 @@ ChromeURLRequestContextGetter::~ChromeURLRequestContextGetter() {}
 // Lazily create a URLRequestContext using our factory.
 net::URLRequestContext*
 ChromeURLRequestContextGetter::GetURLRequestContext() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436671 ChromeURLRequestContextGetter::GetURLRequestContext"));
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (factory_.get()) {
