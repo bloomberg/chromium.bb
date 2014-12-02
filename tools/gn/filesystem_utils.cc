@@ -627,7 +627,7 @@ SourceDir SourceDirForPath(const base::FilePath& source_root,
   // See if path is inside the source root by looking for each of source root's
   // components at the beginning of path.
   bool is_inside_source;
-  if (path_comp.size() < source_comp.size()) {
+  if (path_comp.size() < source_comp.size() || source_root.empty()) {
     // Too small to fit.
     is_inside_source = false;
   } else {

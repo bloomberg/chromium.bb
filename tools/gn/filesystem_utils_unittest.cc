@@ -392,6 +392,11 @@ TEST(FilesystemUtils, SourceDirForPath) {
   EXPECT_EQ("//bar/", SourceDirForPath(root,
             base::FilePath(L"/C:/source/foo/bar")).value());
 
+  // Empty source dir.
+  base::FilePath empty;
+  EXPECT_EQ(
+      "/C:/source/foo/",
+      SourceDirForPath(empty, base::FilePath(L"C:\\source\\foo")).value());
 #else
   base::FilePath root("/source/foo/");
   EXPECT_EQ("/foo/bar/", SourceDirForPath(root,
@@ -408,6 +413,11 @@ TEST(FilesystemUtils, SourceDirForPath) {
   // Should be case-sensitive.
   EXPECT_EQ("/SOURCE/foo/bar/", SourceDirForPath(root,
             base::FilePath("/SOURCE/foo/bar/")).value());
+
+  // Empty source dir.
+  base::FilePath empty;
+  EXPECT_EQ("/source/foo",
+            SourceDirForPath(empty, base::FilePath("/source/foo")).value());
 #endif
 }
 
