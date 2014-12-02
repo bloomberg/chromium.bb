@@ -73,16 +73,6 @@ class BookmarkBarView : public DetachableToolbarView,
   // The internal view class name.
   static const char kViewClassName[];
 
-  // Constant used in Browser View, as well as here.
-  // How inset the bookmarks bar is when displayed on the new tab page.
-  static const int kNewtabHorizontalPadding;
-
-  // Maximum size of buttons on the bookmark bar.
-  static const int kMaxButtonWidth;
-
-  // Number of pixels the attached bookmark bar overlaps with the toolbar.
-  static const int kToolbarAttachedBookmarkBarOverlap;
-
   // |browser_view| can be NULL during tests.
   BookmarkBarView(Browser* browser, BrowserView* browser_view);
   ~BookmarkBarView() override;
