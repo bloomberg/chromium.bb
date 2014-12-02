@@ -56317,26 +56317,28 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="TrackedPreference" type="int">
-  <int value="0" label="prefs::kShowHomeButton"/>
-  <int value="1" label="prefs::kHomePageIsNewTabPage"/>
-  <int value="2" label="prefs::kHomePage"/>
-  <int value="3" label="prefs::kRestoreOnStartup"/>
-  <int value="4" label="prefs::kURLsToRestoreOnStartup"/>
+  <int value="0" label="kShowHomeButton"/>
+  <int value="1" label="kHomePageIsNewTabPage"/>
+  <int value="2" label="kHomePage"/>
+  <int value="3" label="kRestoreOnStartup"/>
+  <int value="4" label="kURLsToRestoreOnStartup"/>
   <int value="5" label="extensions::pref_names::kExtensions"/>
-  <int value="6" label="prefs::kGoogleServicesLastUsername"/>
-  <int value="7" label="prefs::kSearchProviderOverrides"/>
-  <int value="8" label="prefs::kDefaultSearchProviderSearchURL"/>
-  <int value="9" label="prefs::kDefaultSearchProviderKeyword"/>
-  <int value="10" label="prefs::kDefaultSearchProviderName"/>
-  <int value="11" label="prefs::kPinnedTabs"/>
-  <int value="12"
-      label="extensions::pref_names::kKnownDisabled (Obsolete 07/2014)"/>
-  <int value="13" label="prefs::kProfileResetPromptMemento"/>
-  <int value="14"
-      label="DefaultSearchManager::kDefaultSearchProviderDataPrefName"/>
-  <int value="15" label="prefs::kPreferenceResetTime"/>
-  <int value="16" label="prefs::kSafeBrowsingIncidentReportSent"/>
-  <int value="17" label="sync_driver::prefs::kSyncRemainingRollbackTries"/>
+  <int value="6" label="kGoogleServicesLastUsername"/>
+  <int value="7" label="kSearchProviderOverrides"/>
+  <int value="8" label="kDefaultSearchProviderSearchURL"/>
+  <int value="9" label="kDefaultSearchProviderKeyword"/>
+  <int value="10" label="kDefaultSearchProviderName"/>
+  <int value="11" label="kPinnedTabs"/>
+  <int value="12" label="kKnownDisabled (Obsolete 07/2014)"/>
+  <int value="13" label="kProfileResetPromptMemento"/>
+  <int value="14" label="kDefaultSearchProviderDataPrefName"/>
+  <int value="15" label="kPreferenceResetTime"/>
+  <int value="16" label="kSafeBrowsingIncidentReportSent"/>
+  <int value="17" label="kSyncRemainingRollbackTries"/>
+  <int value="18" label="kSafeBrowsingIncidentsSent"/>
+  <int value="19" label="kSwReporterPromptVersion"/>
+  <int value="20" label="kSwReporterPromptReason"/>
+  <int value="21" label="kGoogleServicesUsername"/>
 </enum>
 
 <enum name="TranslateError" type="int">
