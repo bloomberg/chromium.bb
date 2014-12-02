@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/waitable_event.h"
@@ -717,6 +718,11 @@ void ProxyResolverV8Tracing::Job::DoDnsOperation() {
 }
 
 void ProxyResolverV8Tracing::Job::OnDnsOperationComplete(int result) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436634 ProxyResolverV8Tracing::Job::OnDnsOperationComplete"));
+
   CheckIsOnOriginThread();
 
   DCHECK(!cancelled_.IsSet());

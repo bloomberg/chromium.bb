@@ -5,6 +5,7 @@
 #include "extensions/browser/api/dns/dns_api.h"
 
 #include "base/bind.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/values.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -80,6 +81,11 @@ void DnsResolveFunction::RespondOnUIThread() {
 }
 
 void DnsResolveFunction::OnLookupFinished(int resolve_result) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436634 DnsResolveFunction::OnLookupFinished"));
+
   scoped_ptr<ResolveCallbackResolveInfo> resolve_info(
       new ResolveCallbackResolveInfo());
   resolve_info->result_code = resolve_result;

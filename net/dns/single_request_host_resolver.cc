@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/profiler/scoped_tracker.h"
 #include "net/base/net_errors.h"
 
 namespace net {
@@ -63,6 +64,11 @@ void SingleRequestHostResolver::Cancel() {
 }
 
 void SingleRequestHostResolver::OnResolveCompletion(int result) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436634 SingleRequestHostResolver::OnResolveCompletion"));
+
   DCHECK(cur_request_);
   DCHECK_EQ(false, cur_request_callback_.is_null());
 
