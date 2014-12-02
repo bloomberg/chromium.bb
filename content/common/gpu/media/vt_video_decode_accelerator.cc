@@ -246,9 +246,10 @@ bool VTVideoDecodeAccelerator::Initialize(
 bool VTVideoDecodeAccelerator::FinishDelayedFrames() {
   DCHECK(decoder_thread_.message_loop_proxy()->BelongsToCurrentThread());
   if (session_) {
-    OSStatus status = VTDecompressionSessionFinishDelayedFrames(session_);
+    OSStatus status = VTDecompressionSessionWaitForAsynchronousFrames(session_);
     if (status) {
-      NOTIFY_STATUS("VTDecompressionSessionFinishDelayedFrames()", status);
+      NOTIFY_STATUS("VTDecompressionSessionWaitForAsynchronousFrames()",
+                    status);
       return false;
     }
   }
@@ -318,7 +319,8 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
   base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config(
       BuildImageConfig(coded_dimensions));
 
-  // TODO(sandersd): Does the old session need to be flushed first?
+  if (!FinishDelayedFrames())
+    return false;
   session_.reset();
   status = VTDecompressionSessionCreate(
       kCFAllocatorDefault,
