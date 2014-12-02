@@ -14,6 +14,7 @@
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_converter_evdev_impl.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
+#include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
 
 namespace ui {
 
@@ -23,6 +24,7 @@ class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
  public:
   MockEventConverterEvdevImpl(int fd,
                               EventModifiersEvdev* modifiers,
+                              MouseButtonMapEvdev* button_map,
                               CursorDelegateEvdev* cursor,
                               KeyboardEvdev* keyboard,
                               const EventDispatchCallback& callback)
@@ -30,6 +32,7 @@ class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
                                 base::FilePath(kTestDevicePath),
                                 1,
                                 modifiers,
+                                button_map,
                                 cursor,
                                 keyboard,
                                 callback) {
@@ -89,23 +92,22 @@ class EventConverterEvdevImplTest : public testing::Test {
 
     cursor_.reset(new ui::MockCursorEvdev());
     modifiers_.reset(new ui::EventModifiersEvdev());
+    button_map_.reset(new ui::MouseButtonMapEvdev());
 
     const ui::EventDispatchCallback callback =
         base::Bind(&EventConverterEvdevImplTest::DispatchEventForTest,
                    base::Unretained(this));
     keyboard_.reset(new ui::KeyboardEvdev(
         modifiers_.get(), callback));
-    device_.reset(
-        new ui::MockEventConverterEvdevImpl(events_in_,
-                                            modifiers_.get(),
-                                            cursor_.get(),
-                                            keyboard_.get(),
-                                            callback));
+    device_.reset(new ui::MockEventConverterEvdevImpl(
+        events_in_, modifiers_.get(), button_map_.get(), cursor_.get(),
+        keyboard_.get(), callback));
   }
   void TearDown() override {
     device_.reset();
     keyboard_.reset();
     modifiers_.reset();
+    button_map_.reset();
     cursor_.reset();
     close(events_in_);
     close(events_out_);
@@ -114,6 +116,7 @@ class EventConverterEvdevImplTest : public testing::Test {
   ui::MockCursorEvdev* cursor() { return cursor_.get(); }
   ui::MockEventConverterEvdevImpl* device() { return device_.get(); }
   ui::EventModifiersEvdev* modifiers() { return modifiers_.get(); }
+  ui::MouseButtonMapEvdev* button_map() { return button_map_.get(); }
 
   unsigned size() { return dispatched_events_.size(); }
   ui::KeyEvent* dispatched_event(unsigned index) {
@@ -138,6 +141,7 @@ class EventConverterEvdevImplTest : public testing::Test {
 
   scoped_ptr<ui::MockCursorEvdev> cursor_;
   scoped_ptr<ui::EventModifiersEvdev> modifiers_;
+  scoped_ptr<ui::MouseButtonMapEvdev> button_map_;
   scoped_ptr<ui::KeyboardEvdev> keyboard_;
   scoped_ptr<ui::MockEventConverterEvdevImpl> device_;
 

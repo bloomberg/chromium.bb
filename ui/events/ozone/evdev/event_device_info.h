@@ -19,6 +19,17 @@
 
 namespace ui {
 
+// Input device types.
+enum EVENTS_OZONE_EVDEV_EXPORT EventDeviceType {
+  DT_KEYBOARD,
+  DT_MOUSE,
+  DT_TOUCHPAD,
+  DT_TOUCHSCREEN,
+  DT_MULTITOUCH,
+  DT_MULTITOUCH_MOUSE,
+  DT_ALL,
+};
+
 // Device information for Linux input devices
 //
 // This stores and queries information about input devices; in

@@ -15,6 +15,7 @@ class Rect;
 namespace ui {
 
 class CursorFactoryOzone;
+class InputController;
 class GpuPlatformSupport;
 class GpuPlatformSupportHost;
 class NativeDisplayDelegate;
@@ -56,6 +57,7 @@ class OZONE_EXPORT OzonePlatform {
   // inject these objects themselves. Ownership is retained by OzonePlatform.
   virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() = 0;
   virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() = 0;
+  virtual ui::InputController* GetInputController() = 0;
   virtual ui::GpuPlatformSupport* GetGpuPlatformSupport() = 0;
   virtual ui::GpuPlatformSupportHost* GetGpuPlatformSupportHost() = 0;
   virtual scoped_ptr<SystemInputInjector> CreateSystemInputInjector() = 0;

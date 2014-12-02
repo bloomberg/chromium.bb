@@ -6,6 +6,7 @@
 
 #include <gestures/gestures.h>
 #include <libevdev/libevdev.h>
+#include <linux/input.h>
 
 #include "base/strings/stringprintf.h"
 #include "base/timer/timer.h"
@@ -16,6 +17,7 @@
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_property_provider.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_timer_provider.h"
+#include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace ui {
@@ -35,6 +37,24 @@ GestureInterpreterDeviceClass GestureDeviceClass(Evdev* evdev) {
       return GESTURES_DEVCLASS_TOUCHSCREEN;
     default:
       return GESTURES_DEVCLASS_UNKNOWN;
+  }
+}
+
+// Convert Linux button code to libgestures button code.
+int GetGestureButton(const MouseButtonMapEvdev::Button code) {
+  switch (code) {
+    case BTN_LEFT:
+      return GESTURES_BUTTON_LEFT;
+    case BTN_RIGHT:
+      return GESTURES_BUTTON_RIGHT;
+    case BTN_MIDDLE:
+      return GESTURES_BUTTON_MIDDLE;
+    case BTN_FORWARD:
+      return GESTURES_BUTTON_FORWARD;
+    case BTN_BACK:
+      return GESTURES_BUTTON_BACK;
+    default:
+      return GESTURES_BUTTON_NONE;
   }
 }
 
@@ -86,12 +106,14 @@ const int kGestureSwipeFingerCount = 3;
 GestureInterpreterLibevdevCros::GestureInterpreterLibevdevCros(
     int id,
     EventModifiersEvdev* modifiers,
+    MouseButtonMapEvdev* button_map,
     CursorDelegateEvdev* cursor,
     KeyboardEvdev* keyboard,
     GesturePropertyProvider* property_provider,
     const EventDispatchCallback& callback)
     : id_(id),
       modifiers_(modifiers),
+      button_map_(button_map),
       cursor_(cursor),
       keyboard_(keyboard),
       property_provider_(property_provider),
@@ -191,12 +213,18 @@ void GestureInterpreterLibevdevCros::OnLibEvdevCrosEvent(Evdev* evdev,
   hwstate.fingers = fingers;
 
   // Buttons.
-  if (Event_Get_Button_Left(evdev))
-    hwstate.buttons_down |= GESTURES_BUTTON_LEFT;
-  if (Event_Get_Button_Middle(evdev))
-    hwstate.buttons_down |= GESTURES_BUTTON_MIDDLE;
-  if (Event_Get_Button_Right(evdev))
-    hwstate.buttons_down |= GESTURES_BUTTON_RIGHT;
+  if (Event_Get_Button_Left(evdev)) {
+    hwstate.buttons_down |=
+        GetGestureButton(button_map_->GetMappedButton(BTN_LEFT));
+  }
+  if (Event_Get_Button_Middle(evdev)) {
+    hwstate.buttons_down |=
+        GetGestureButton(button_map_->GetMappedButton(BTN_MIDDLE));
+  }
+  if (Event_Get_Button_Right(evdev)) {
+    hwstate.buttons_down |=
+        GetGestureButton(button_map_->GetMappedButton(BTN_RIGHT));
+  }
 
   GestureInterpreterPushHardwareState(interpreter_, &hwstate);
 }

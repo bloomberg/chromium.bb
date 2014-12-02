@@ -20,6 +20,7 @@ namespace ui {
 
 class EventDeviceInfo;
 class EventModifiersEvdev;
+class MouseButtonMapEvdev;
 class CursorDelegateEvdev;
 class KeyboardEvdev;
 class GestureDeviceProperties;
@@ -43,6 +44,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
  public:
   GestureInterpreterLibevdevCros(int id,
                                  EventModifiersEvdev* modifiers,
+                                 MouseButtonMapEvdev* button_map,
                                  CursorDelegateEvdev* cursor,
                                  KeyboardEvdev* keyboard,
                                  GesturePropertyProvider* property_provider,
@@ -85,6 +87,9 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
 
   // Shared modifier state.
   EventModifiersEvdev* modifiers_;
+
+  // Shared mouse button map.
+  MouseButtonMapEvdev* button_map_;
 
   // Shared cursor state.
   CursorDelegateEvdev* cursor_;

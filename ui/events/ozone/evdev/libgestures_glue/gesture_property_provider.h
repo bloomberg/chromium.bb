@@ -9,10 +9,14 @@
 #include <libevdev/libevdev.h>
 
 #include <map>
+#include <ostream>
 #include <string>
+#include <vector>
 
+#include "base/basictypes.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_vector.h"
+#include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 namespace ui {
@@ -52,16 +56,6 @@ struct GestureDeviceProperties {
 // builds.
 class EVENTS_OZONE_EVDEV_EXPORT GesturePropertyProvider {
  public:
-  // Device types.
-  enum DeviceType {
-    DT_MOUSE,
-    DT_TOUCHPAD,
-    DT_TOUCHSCREEN,
-    DT_MULTITOUCH,
-    DT_MULTITOUCH_MOUSE,
-    DT_ALL,
-  };
-
   // Property types.
   enum PropertyType {
     PT_INT,
@@ -82,8 +76,10 @@ class EVENTS_OZONE_EVDEV_EXPORT GesturePropertyProvider {
   GesturePropertyProvider();
   ~GesturePropertyProvider();
 
-  // Get a list of device ids that matches a device type.
-  void GetDeviceIdsByType(const DeviceType type,
+  // Get a list of device ids that matches a device type. Return true if the
+  // list is not empty. |device_ids| can be NULL. Existing data in |device_ids|
+  // won't be deleted.
+  bool GetDeviceIdsByType(const EventDeviceType type,
                           std::vector<DeviceId>* device_ids);
 
   // Get the GesturesProp object. Returns NULL if not found.
@@ -259,5 +255,74 @@ class GesturesPropFunctionsWrapper {
 extern const GesturesPropProvider kGesturePropProvider;
 
 }  // namspace ui
+
+// GesturesProp logging function.
+std::ostream& operator<<(std::ostream& os, const GesturesProp& prop);
+
+// Implementation of GesturesProp declared in gestures.h
+//
+// libgestures requires that this be in the top level namespace. We have also
+// to put it in the header file so that other classes will be able to use the
+// gesture property objects.
+class GesturesProp {
+ public:
+  typedef ui::GesturePropertyProvider::PropertyType PropertyType;
+
+  GesturesProp(const std::string& name,
+               const PropertyType type,
+               const size_t count);
+  virtual ~GesturesProp() {}
+
+  // Variant-ish interfaces for accessing the property value. Each type of
+  // property should override the corresponding interfaces for it.
+  virtual std::vector<int> GetIntValue() const;
+  virtual bool SetIntValue(const std::vector<int>& value);
+  virtual std::vector<int16_t> GetShortValue() const;
+  virtual bool SetShortValue(const std::vector<int16_t>& value);
+  virtual std::vector<bool> GetBoolValue() const;
+  virtual bool SetBoolValue(const std::vector<bool>& value);
+  virtual std::string GetStringValue() const;
+  virtual bool SetStringValue(const std::string& value);
+  virtual std::vector<double> GetDoubleValue() const;
+  virtual bool SetDoubleValue(const std::vector<double>& value);
+
+  // Set property access handlers.
+  void SetHandlers(GesturesPropGetHandler get,
+                   GesturesPropSetHandler set,
+                   void* data);
+
+  // Accessors.
+  const std::string& name() const { return name_; }
+  PropertyType type() const { return type_; }
+  size_t count() const { return count_; }
+  virtual bool IsReadOnly() const = 0;
+
+ protected:
+  // Functions to be called when the property value was accessed.
+  void OnGet() const;
+  void OnSet() const;
+
+ private:
+  // For logging purpose.
+  friend std::ostream& operator<<(std::ostream& os,
+                                  const GesturesProp& property);
+
+  // Interfaces for getting internal pointers and stuff.
+  virtual const char** GetStringWritebackPtr() const;
+  virtual bool IsAllocated() const;
+
+  // Property name, type and number of elements.
+  std::string name_;
+  PropertyType type_;
+  size_t count_;
+
+  // Handler function pointers and the data to be passed to them when the
+  // property is accessed.
+  GesturesPropGetHandler get_;
+  GesturesPropSetHandler set_;
+  void* handler_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(GesturesProp);
+};
 
 #endif  // UI_EVENTS_OZONE_EVDEV_LIBGESTURES_GLUE_GESTURE_PROPERTY_PROVIDER_H_

@@ -28,6 +28,9 @@ class OzonePlatformCaca : public OzonePlatform {
   CursorFactoryOzone* GetCursorFactoryOzone() override {
     return cursor_factory_ozone_.get();
   }
+  InputController* GetInputController() override {
+    return nullptr;  // no input setting need
+  }
   GpuPlatformSupport* GetGpuPlatformSupport() override {
     return NULL;  // no GPU support
   }

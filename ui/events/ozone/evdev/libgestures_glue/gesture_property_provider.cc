@@ -11,10 +11,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <algorithm>
-#include <iostream>
-#include <vector>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -31,128 +28,104 @@
 #define GPROP_LOG DVLOG
 #define INFO_SEVERITY 1
 
-/* Implementation of GesturesProp declared in gestures.h
- *
- * libgestures requires that this be in the top level namespace.
- * */
-class GesturesProp {
- public:
-  typedef ui::GesturePropertyProvider::PropertyType PropertyType;
+// GesturesProp implementation.
+//
+// Check the header file for its definition.
+GesturesProp::GesturesProp(const std::string& name,
+                           const PropertyType type,
+                           const size_t count)
+    : name_(name),
+      type_(type),
+      count_(count),
+      get_(NULL),
+      set_(NULL),
+      handler_data_(NULL) {
+}
 
-  GesturesProp(const std::string& name,
-               const PropertyType type,
-               const size_t count)
-      : name_(name),
-        type_(type),
-        count_(count),
-        get_(NULL),
-        set_(NULL),
-        handler_data_(NULL) {}
-  virtual ~GesturesProp() {}
+std::vector<int> GesturesProp::GetIntValue() const {
+  NOTREACHED();
+  return std::vector<int>();
+}
 
-  // Variant-ish interfaces for accessing the property value. Each type of
-  // property should override the corresponding interfaces for it.
-  virtual std::vector<int> GetIntValue() const {
-    NOTREACHED();
-    return std::vector<int>();
-  }
-  virtual bool SetIntValue(const std::vector<int>& value) {
-    NOTREACHED();
-    return false;
-  }
-  virtual std::vector<int16_t> GetShortValue() const {
-    NOTREACHED();
-    return std::vector<int16_t>();
-  }
-  virtual bool SetShortValue(const std::vector<int16_t>& value) {
-    NOTREACHED();
-    return false;
-  }
-  virtual std::vector<bool> GetBoolValue() const {
-    NOTREACHED();
-    return std::vector<bool>();
-  }
-  virtual bool SetBoolValue(const std::vector<bool>& value) {
-    NOTREACHED();
-    return false;
-  }
-  virtual std::string GetStringValue() const {
-    NOTREACHED();
-    return std::string();
-  }
-  virtual bool SetStringValue(const std::string& value) {
-    NOTREACHED();
-    return false;
-  }
-  virtual std::vector<double> GetDoubleValue() const {
-    NOTREACHED();
-    return std::vector<double>();
-  }
-  virtual bool SetDoubleValue(const std::vector<double>& value) {
-    NOTREACHED();
-    return false;
-  }
+bool GesturesProp::SetIntValue(const std::vector<int>& value) {
+  NOTREACHED();
+  return false;
+}
 
-  // Set property access handlers.
-  void SetHandlers(GesturesPropGetHandler get,
-                   GesturesPropSetHandler set,
-                   void* data) {
-    get_ = get;
-    set_ = set;
-    handler_data_ = data;
-  }
+std::vector<int16_t> GesturesProp::GetShortValue() const {
+  NOTREACHED();
+  return std::vector<int16_t>();
+}
 
-  // Accessors.
-  const std::string& name() const { return name_; }
-  PropertyType type() const { return type_; }
-  size_t count() const { return count_; }
-  virtual bool IsReadOnly() const = 0;
+bool GesturesProp::SetShortValue(const std::vector<int16_t>& value) {
+  NOTREACHED();
+  return false;
+}
 
- protected:
-  void OnGet() const {
-    // We don't have the X server now so there is currently nothing to do when
-    // the get handler returns true.
-    // TODO(sheckylin): Re-visit this if we use handlers that modifies the
-    // property.
-    if (get_)
-      get_(handler_data_);
-  }
+std::vector<bool> GesturesProp::GetBoolValue() const {
+  NOTREACHED();
+  return std::vector<bool>();
+}
 
-  void OnSet() const {
-    // Call the property set handler if available.
-    if (set_)
-      set_(handler_data_);
-  }
+bool GesturesProp::SetBoolValue(const std::vector<bool>& value) {
+  NOTREACHED();
+  return false;
+}
 
- private:
-  // For logging purpose.
-  friend std::ostream& operator<<(std::ostream& os,
-                                  const GesturesProp& property);
+std::string GesturesProp::GetStringValue() const {
+  NOTREACHED();
+  return std::string();
+}
 
-  // Interfaces for getting internal pointers and stuff.
-  virtual const char** GetStringWritebackPtr() const {
-    NOTREACHED();
-    return NULL;
-  }
-  virtual bool IsAllocated() const {
-    NOTREACHED();
-    return false;
-  }
+bool GesturesProp::SetStringValue(const std::string& value) {
+  NOTREACHED();
+  return false;
+}
 
-  // Property name, type and number of elements.
-  std::string name_;
-  PropertyType type_;
-  size_t count_;
+std::vector<double> GesturesProp::GetDoubleValue() const {
+  NOTREACHED();
+  return std::vector<double>();
+}
 
-  // Handler function pointers and the data to be passed to them when the
-  // property is accessed.
-  GesturesPropGetHandler get_;
-  GesturesPropSetHandler set_;
-  void* handler_data_;
+bool GesturesProp::SetDoubleValue(const std::vector<double>& value) {
+  NOTREACHED();
+  return false;
+}
 
-  DISALLOW_COPY_AND_ASSIGN(GesturesProp);
-};
+void GesturesProp::SetHandlers(GesturesPropGetHandler get,
+                               GesturesPropSetHandler set,
+                               void* data) {
+  get_ = get;
+  set_ = set;
+  handler_data_ = data;
+}
 
+void GesturesProp::OnGet() const {
+  // We don't have the X server now so there is currently nothing to do when
+  // the get handler returns true.
+  // TODO(sheckylin): Re-visit this if we use handlers that modifies the
+  // property.
+  if (get_)
+    get_(handler_data_);
+}
+
+void GesturesProp::OnSet() const {
+  // Call the property set handler if available.
+  if (set_)
+    set_(handler_data_);
+}
+
+const char** GesturesProp::GetStringWritebackPtr() const {
+  NOTREACHED();
+  return NULL;
+}
+
+bool GesturesProp::IsAllocated() const {
+  NOTREACHED();
+  return false;
+}
+
+// Type-templated GesturesProp.
 template <typename T>
 class TypedGesturesProp : public GesturesProp {
  public:
@@ -458,34 +431,36 @@ const char* kFalse[] = {"off", "false", "no"};
 
 // Check if a device falls into one device type category.
 bool IsDeviceOfType(const ui::GesturePropertyProvider::DevicePtr device,
-                    const ui::GesturePropertyProvider::DeviceType type) {
+                    const ui::EventDeviceType type) {
   EvdevClass evdev_class = device->info.evdev_class;
   switch (type) {
-    case ui::GesturePropertyProvider::DT_MOUSE:
+    case ui::DT_KEYBOARD:
+      return (evdev_class == EvdevClassKeyboard);
+      break;
+    case ui::DT_MOUSE:
       return (evdev_class == EvdevClassMouse ||
               evdev_class == EvdevClassMultitouchMouse);
       break;
-    case ui::GesturePropertyProvider::DT_TOUCHPAD:
+    case ui::DT_TOUCHPAD:
       // Note that the behavior here is different from the inputcontrol script
       // which actually returns touchscreen devices as well.
       return (evdev_class == EvdevClassTouchpad);
       break;
-    case ui::GesturePropertyProvider::DT_TOUCHSCREEN:
+    case ui::DT_TOUCHSCREEN:
       return (evdev_class == EvdevClassTouchscreen);
       break;
-    case ui::GesturePropertyProvider::DT_MULTITOUCH:
+    case ui::DT_MULTITOUCH:
       return (evdev_class == EvdevClassTouchpad ||
               evdev_class == EvdevClassTouchscreen ||
               evdev_class == EvdevClassMultitouchMouse);
       break;
-    case ui::GesturePropertyProvider::DT_MULTITOUCH_MOUSE:
+    case ui::DT_MULTITOUCH_MOUSE:
       return (evdev_class == EvdevClassMultitouchMouse);
       break;
-    case ui::GesturePropertyProvider::DT_ALL:
+    case ui::DT_ALL:
       return true;
       break;
     default:
-      NOTREACHED();
       break;
   }
   return false;
@@ -874,14 +849,19 @@ GesturePropertyProvider::GesturePropertyProvider() {
 GesturePropertyProvider::~GesturePropertyProvider() {
 }
 
-void GesturePropertyProvider::GetDeviceIdsByType(
-    const DeviceType type,
+bool GesturePropertyProvider::GetDeviceIdsByType(
+    const EventDeviceType type,
     std::vector<DeviceId>* device_ids) {
-  device_ids->clear();
+  bool exists = false;
   DeviceMap::const_iterator it = device_map_.begin();
-  for (; it != device_map_.end(); ++it)
-    if (IsDeviceOfType(it->second, type))
-      device_ids->push_back(it->first);
+  for (; it != device_map_.end(); ++it) {
+    if (IsDeviceOfType(it->second, type)) {
+      exists = true;
+      if (device_ids)
+        device_ids->push_back(it->first);
+    }
+  }
+  return exists;
 }
 
 GesturesProp* GesturePropertyProvider::GetProperty(const DeviceId device_id,
@@ -1098,9 +1078,7 @@ void GesturePropertyProvider::ParseXorgConfFile(const std::string& content) {
           // Otherwise, look for valid entries according to the spec.
           if (has_checked_section_type) {
             if (piece == "Driver") {
-              // TODO(sheckylin): Support "Driver" so that we can force a device
-              // not to use the gesture lib.
-              NOTIMPLEMENTED();
+              // "Driver" field is meaningless for non-X11 setup.
               break;
             } else if (piece == "Identifier") {
               is_parsing = true;

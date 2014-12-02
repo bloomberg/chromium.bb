@@ -55,6 +55,9 @@ class OzonePlatformDri : public OzonePlatform {
   CursorFactoryOzone* GetCursorFactoryOzone() override {
     return cursor_factory_ozone_.get();
   }
+  InputController* GetInputController() override {
+    return event_factory_ozone_->input_controller();
+  }
   GpuPlatformSupport* GetGpuPlatformSupport() override {
     return gpu_platform_support_.get();
   }

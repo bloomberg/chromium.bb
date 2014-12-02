@@ -13,6 +13,7 @@
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
+#include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
 
 struct input_event;
 
@@ -25,6 +26,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
                           base::FilePath path,
                           int id,
                           EventModifiersEvdev* modifiers,
+                          MouseButtonMapEvdev* button_map,
                           CursorDelegateEvdev* cursor,
                           KeyboardEvdev* keyboard,
                           const EventDispatchCallback& callback);
@@ -63,6 +65,9 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
 
   // Modifier key state (shift, ctrl, etc).
   EventModifiersEvdev* modifiers_;
+
+  // Shared mouse button map.
+  MouseButtonMapEvdev* button_map_;
 
   // Callback for dispatching events.
   EventDispatchCallback callback_;

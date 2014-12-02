@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 
+#include "content/public/browser/browser_thread.h"
+#include "ui/ozone/public/input_controller.h"
+#include "ui/ozone/public/ozone_platform.h"
+
 namespace chromeos {
 namespace system {
 
@@ -36,6 +40,10 @@ class InputDeviceSettingsImplOzone : public InputDeviceSettings {
   void ReapplyTouchpadSettings() override;
   void ReapplyMouseSettings() override;
 
+  // Cached InputController pointer. It should be fixed throughout the browser
+  // session.
+  ui::InputController* input_controller_;
+
   // Respective device setting objects.
   TouchpadSettings current_touchpad_settings_;
   MouseSettings current_mouse_settings_;
@@ -43,12 +51,17 @@ class InputDeviceSettingsImplOzone : public InputDeviceSettings {
   DISALLOW_COPY_AND_ASSIGN(InputDeviceSettingsImplOzone);
 };
 
-InputDeviceSettingsImplOzone::InputDeviceSettingsImplOzone() {
+InputDeviceSettingsImplOzone::InputDeviceSettingsImplOzone()
+    : input_controller_(
+          ui::OzonePlatform::GetInstance()->GetInputController()) {
+  // Make sure the input controller does exist.
+  DCHECK(ui::OzonePlatform::GetInstance()->GetInputController());
 }
 
 void InputDeviceSettingsImplOzone::TouchpadExists(
     const DeviceExistsCallback& callback) {
-  NOTIMPLEMENTED();
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  callback.Run(input_controller_->HasTouchpad());
 }
 
 void InputDeviceSettingsImplOzone::UpdateTouchpadSettings(
@@ -60,28 +73,34 @@ void InputDeviceSettingsImplOzone::UpdateTouchpadSettings(
 void InputDeviceSettingsImplOzone::SetTouchpadSensitivity(int value) {
   DCHECK(value >= kMinPointerSensitivity && value <= kMaxPointerSensitivity);
   current_touchpad_settings_.SetSensitivity(value);
+  input_controller_->SetTouchpadSensitivity(value);
 }
 
 void InputDeviceSettingsImplOzone::SetNaturalScroll(bool enabled) {
   current_touchpad_settings_.SetNaturalScroll(enabled);
+  input_controller_->SetNaturalScroll(enabled);
 }
 
 void InputDeviceSettingsImplOzone::SetTapToClick(bool enabled) {
   current_touchpad_settings_.SetTapToClick(enabled);
+  input_controller_->SetTapToClick(enabled);
 }
 
 void InputDeviceSettingsImplOzone::SetThreeFingerClick(bool enabled) {
   // For Alex/ZGB.
   current_touchpad_settings_.SetThreeFingerClick(enabled);
+  input_controller_->SetThreeFingerClick(enabled);
 }
 
 void InputDeviceSettingsImplOzone::SetTapDragging(bool enabled) {
   current_touchpad_settings_.SetTapDragging(enabled);
+  input_controller_->SetTapDragging(enabled);
 }
 
 void InputDeviceSettingsImplOzone::MouseExists(
     const DeviceExistsCallback& callback) {
-  NOTIMPLEMENTED();
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  callback.Run(input_controller_->HasMouse());
 }
 
 void InputDeviceSettingsImplOzone::UpdateMouseSettings(
@@ -93,10 +112,12 @@ void InputDeviceSettingsImplOzone::UpdateMouseSettings(
 void InputDeviceSettingsImplOzone::SetMouseSensitivity(int value) {
   DCHECK(value >= kMinPointerSensitivity && value <= kMaxPointerSensitivity);
   current_mouse_settings_.SetSensitivity(value);
+  input_controller_->SetMouseSensitivity(value);
 }
 
 void InputDeviceSettingsImplOzone::SetPrimaryButtonRight(bool right) {
   current_mouse_settings_.SetPrimaryButtonRight(right);
+  input_controller_->SetPrimaryButtonRight(right);
 }
 
 void InputDeviceSettingsImplOzone::ReapplyTouchpadSettings() {

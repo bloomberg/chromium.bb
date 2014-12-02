@@ -19,6 +19,7 @@ EventConverterEvdevImpl::EventConverterEvdevImpl(
     base::FilePath path,
     int id,
     EventModifiersEvdev* modifiers,
+    MouseButtonMapEvdev* button_map,
     CursorDelegateEvdev* cursor,
     KeyboardEvdev* keyboard,
     const EventDispatchCallback& callback)
@@ -28,6 +29,7 @@ EventConverterEvdevImpl::EventConverterEvdevImpl(
       cursor_(cursor),
       keyboard_(keyboard),
       modifiers_(modifiers),
+      button_map_(button_map),
       callback_(callback) {
 }
 
@@ -98,11 +100,12 @@ void EventConverterEvdevImpl::DispatchMouseButton(const input_event& input) {
     return;
 
   unsigned int modifier;
-  if (input.code == BTN_LEFT)
+  const int button = button_map_->GetMappedButton(input.code);
+  if (button == BTN_LEFT)
     modifier = EVDEV_MODIFIER_LEFT_MOUSE_BUTTON;
-  else if (input.code == BTN_RIGHT)
+  else if (button == BTN_RIGHT)
     modifier = EVDEV_MODIFIER_RIGHT_MOUSE_BUTTON;
-  else if (input.code == BTN_MIDDLE)
+  else if (button == BTN_MIDDLE)
     modifier = EVDEV_MODIFIER_MIDDLE_MOUSE_BUTTON;
   else
     return;

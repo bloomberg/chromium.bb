@@ -8,6 +8,7 @@ include_rules = [
   "+device/bluetooth",
   "+media/audio/sounds",  # For system sounds
   "+media/base/media_switches.h",  # For media command line switches.
+  "+ui/ozone/public",
 
   # Other libraries.
   "+third_party/libjingle",

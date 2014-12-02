@@ -25,6 +25,8 @@
         '../gfx/gfx.gyp:gfx',
       ],
       'sources': [
+        'input_controller_test.cc',
+        'input_controller_test.h',
         'ozone_platform_test.cc',
         'ozone_platform_test.h',
         'test_window.cc',

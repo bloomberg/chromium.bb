@@ -17,7 +17,6 @@
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_converter_evdev_impl.h"
-#include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/input_injector_evdev.h"
 #include "ui/events/ozone/evdev/tablet_event_converter_evdev.h"
 #include "ui/events/ozone/evdev/touch_event_converter_evdev.h"
@@ -51,6 +50,7 @@ struct OpenInputDeviceParams {
 
   // State shared between devices. Must not be dereferenced on worker thread.
   EventModifiersEvdev* modifiers;
+  MouseButtonMapEvdev* button_map;
   KeyboardEvdev* keyboard;
   CursorDelegateEvdev* cursor;
 #if defined(USE_EVDEV_GESTURES)
@@ -79,13 +79,11 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
   // Touchpad or mouse: use gestures library.
   // EventReaderLibevdevCros -> GestureInterpreterLibevdevCros -> DispatchEvent
   if (UseGesturesLibraryForDevice(devinfo)) {
-    scoped_ptr<GestureInterpreterLibevdevCros> gesture_interp = make_scoped_ptr(
-        new GestureInterpreterLibevdevCros(params.id,
-                                           params.modifiers,
-                                           params.cursor,
-                                           params.keyboard,
-                                           params.gesture_property_provider,
-                                           params.dispatch_callback));
+    scoped_ptr<GestureInterpreterLibevdevCros> gesture_interp =
+        make_scoped_ptr(new GestureInterpreterLibevdevCros(
+            params.id, params.modifiers, params.button_map, params.cursor,
+            params.keyboard, params.gesture_property_provider,
+            params.dispatch_callback));
     return make_scoped_ptr(new EventReaderLibevdevCros(
           fd, params.path, params.id, gesture_interp.Pass()));
   }
@@ -106,14 +104,9 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
         params.dispatch_callback));
 
   // Everything else: use EventConverterEvdevImpl.
-  return make_scoped_ptr<EventConverterEvdevImpl>(
-      new EventConverterEvdevImpl(fd,
-                                  params.path,
-                                  params.id,
-                                  params.modifiers,
-                                  params.cursor,
-                                  params.keyboard,
-                                  params.dispatch_callback));
+  return make_scoped_ptr<EventConverterEvdevImpl>(new EventConverterEvdevImpl(
+      fd, params.path, params.id, params.modifiers, params.button_map,
+      params.cursor, params.keyboard, params.dispatch_callback));
 }
 
 // Open an input device. Opening may put the calling thread to sleep, and
@@ -179,6 +172,13 @@ EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor,
 #if defined(USE_EVDEV_GESTURES)
       gesture_property_provider_(new GesturePropertyProvider),
 #endif
+      input_controller_(this,
+                        &button_map_
+#if defined(USE_EVDEV_GESTURES)
+                        ,
+                        gesture_property_provider_.get()
+#endif
+                            ),
       weak_ptr_factory_(this) {
   DCHECK(device_manager_);
 }
@@ -235,6 +235,7 @@ void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
       params->path = event.path();
       params->dispatch_callback = dispatch_callback_;
       params->modifiers = &modifiers_;
+      params->button_map = &button_map_;
       params->keyboard = &keyboard_;
       params->cursor = cursor_;
 #if defined(USE_EVDEV_GESTURES)
@@ -334,6 +335,23 @@ void EventFactoryEvdev::NotifyHotplugEventObserver(
 
 int EventFactoryEvdev::NextDeviceId() {
   return ++last_device_id_;
+}
+
+bool EventFactoryEvdev::GetDeviceIdsByType(const EventDeviceType type,
+                                           std::vector<int>* device_ids) {
+  if (device_ids)
+    device_ids->clear();
+  std::vector<int> ids;
+
+#if defined(USE_EVDEV_GESTURES)
+  // Ask GesturePropertyProvider for matching devices.
+  gesture_property_provider_->GetDeviceIdsByType(type, &ids);
+#endif
+  // In the future we can add other device matching logics here.
+
+  if (device_ids)
+    device_ids->assign(ids.begin(), ids.end());
+  return !ids.empty();
 }
 
 }  // namespace ui
