@@ -265,50 +265,50 @@ public:
 
     void uniform1f(const WebGLUniformLocation*, GLfloat x);
     void uniform1fv(const WebGLUniformLocation*, DOMFloat32Array* v);
-    void uniform1fv(const WebGLUniformLocation*, GLfloat* v, GLsizei);
+    void uniform1fv(const WebGLUniformLocation*, Vector<GLfloat>&);
     void uniform1i(const WebGLUniformLocation*, GLint x);
     void uniform1iv(const WebGLUniformLocation*, DOMInt32Array* v);
-    void uniform1iv(const WebGLUniformLocation*, GLint* v, GLsizei);
+    void uniform1iv(const WebGLUniformLocation*, Vector<GLint>&);
     void uniform2f(const WebGLUniformLocation*, GLfloat x, GLfloat y);
     void uniform2fv(const WebGLUniformLocation*, DOMFloat32Array* v);
-    void uniform2fv(const WebGLUniformLocation*, GLfloat* v, GLsizei);
+    void uniform2fv(const WebGLUniformLocation*, Vector<GLfloat>&);
     void uniform2i(const WebGLUniformLocation*, GLint x, GLint y);
     void uniform2iv(const WebGLUniformLocation*, DOMInt32Array* v);
-    void uniform2iv(const WebGLUniformLocation*, GLint* v, GLsizei);
+    void uniform2iv(const WebGLUniformLocation*, Vector<GLint>&);
     void uniform3f(const WebGLUniformLocation*, GLfloat x, GLfloat y, GLfloat z);
     void uniform3fv(const WebGLUniformLocation*, DOMFloat32Array* v);
-    void uniform3fv(const WebGLUniformLocation*, GLfloat* v, GLsizei);
+    void uniform3fv(const WebGLUniformLocation*, Vector<GLfloat>&);
     void uniform3i(const WebGLUniformLocation*, GLint x, GLint y, GLint z);
     void uniform3iv(const WebGLUniformLocation*, DOMInt32Array* v);
-    void uniform3iv(const WebGLUniformLocation*, GLint* v, GLsizei);
+    void uniform3iv(const WebGLUniformLocation*, Vector<GLint>&);
     void uniform4f(const WebGLUniformLocation*, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
     void uniform4fv(const WebGLUniformLocation*, DOMFloat32Array* v);
-    void uniform4fv(const WebGLUniformLocation*, GLfloat* v, GLsizei);
+    void uniform4fv(const WebGLUniformLocation*, Vector<GLfloat>&);
     void uniform4i(const WebGLUniformLocation*, GLint x, GLint y, GLint z, GLint w);
     void uniform4iv(const WebGLUniformLocation*, DOMInt32Array* v);
-    void uniform4iv(const WebGLUniformLocation*, GLint* v, GLsizei);
+    void uniform4iv(const WebGLUniformLocation*, Vector<GLint>&);
     void uniformMatrix2fv(const WebGLUniformLocation*, GLboolean transpose, DOMFloat32Array* value);
-    void uniformMatrix2fv(const WebGLUniformLocation*, GLboolean transpose, GLfloat* value, GLsizei);
+    void uniformMatrix2fv(const WebGLUniformLocation*, GLboolean transpose, Vector<GLfloat>& value);
     void uniformMatrix3fv(const WebGLUniformLocation*, GLboolean transpose, DOMFloat32Array* value);
-    void uniformMatrix3fv(const WebGLUniformLocation*, GLboolean transpose, GLfloat* value, GLsizei);
+    void uniformMatrix3fv(const WebGLUniformLocation*, GLboolean transpose, Vector<GLfloat>& value);
     void uniformMatrix4fv(const WebGLUniformLocation*, GLboolean transpose, DOMFloat32Array* value);
-    void uniformMatrix4fv(const WebGLUniformLocation*, GLboolean transpose, GLfloat* value, GLsizei);
+    void uniformMatrix4fv(const WebGLUniformLocation*, GLboolean transpose, Vector<GLfloat>& value);
 
     void useProgram(WebGLProgram*);
     void validateProgram(WebGLProgram*);
 
     void vertexAttrib1f(GLuint index, GLfloat x);
     void vertexAttrib1fv(GLuint index, DOMFloat32Array* values);
-    void vertexAttrib1fv(GLuint index, GLfloat* values, GLsizei);
+    void vertexAttrib1fv(GLuint index, Vector<GLfloat>& values);
     void vertexAttrib2f(GLuint index, GLfloat x, GLfloat y);
     void vertexAttrib2fv(GLuint index, DOMFloat32Array* values);
-    void vertexAttrib2fv(GLuint index, GLfloat* values, GLsizei);
+    void vertexAttrib2fv(GLuint index, Vector<GLfloat>& values);
     void vertexAttrib3f(GLuint index, GLfloat x, GLfloat y, GLfloat z);
     void vertexAttrib3fv(GLuint index, DOMFloat32Array* values);
-    void vertexAttrib3fv(GLuint index, GLfloat* values, GLsizei);
+    void vertexAttrib3fv(GLuint index, Vector<GLfloat>& values);
     void vertexAttrib4f(GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
     void vertexAttrib4fv(GLuint index, DOMFloat32Array* values);
-    void vertexAttrib4fv(GLuint index, GLfloat* values, GLsizei);
+    void vertexAttrib4fv(GLuint index, Vector<GLfloat>& values);
     void vertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized,
         GLsizei stride, long long offset);
 
