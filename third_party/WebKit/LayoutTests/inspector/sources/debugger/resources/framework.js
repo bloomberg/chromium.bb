@@ -154,3 +154,9 @@ Framework.doSomeWorkDoNotChangeTopCallFrame = function()
     }
     return -1;
 }
+
+Framework.assert = function(var_args)
+{
+    var args = Array.prototype.slice.call(arguments, 0);
+    return console.assert.apply(console, args);
+}

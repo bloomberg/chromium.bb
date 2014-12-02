@@ -402,6 +402,10 @@ ScriptValue ScriptDebugServer::currentCallFramesForAsyncStack()
 
 PassRefPtrWillBeRawPtr<JavaScriptCallFrame> ScriptDebugServer::callFrameNoScopes(int index)
 {
+    if (!m_isolate->InContext())
+        return nullptr;
+    v8::HandleScope handleScope(m_isolate);
+
     v8::Handle<v8::Value> currentCallFrameV8;
     if (m_executionState.IsEmpty()) {
         v8::Handle<v8::Function> currentCallFrameFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "currentCallFrameByIndex")));

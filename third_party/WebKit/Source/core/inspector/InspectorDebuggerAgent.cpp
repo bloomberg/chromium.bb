@@ -486,10 +486,23 @@ void InspectorDebuggerAgent::getBacktrace(ErrorString* errorString, RefPtr<Array
     asyncStackTrace = currentAsyncStackTrace();
 }
 
-PassRefPtrWillBeRawPtr<JavaScriptCallFrame> InspectorDebuggerAgent::topCallFrameSkipUnknownSources(String* scriptURL, bool* isBlackboxed)
+bool InspectorDebuggerAgent::isCallStackEmptyOrBlackboxed()
 {
-    for (int index = 0; ; ++index) {
-        RefPtrWillBeRawPtr<JavaScriptCallFrame> frame = scriptDebugServer().callFrameNoScopes(index);
+    String scriptURL;
+    bool isBlackboxed = false;
+    for (int index = 0; topCallFrameSkipUnknownSources(&scriptURL, &isBlackboxed, &index); ++index) {
+        if (!isBlackboxed)
+            return false;
+    }
+    return true;
+}
+
+PassRefPtrWillBeRawPtr<JavaScriptCallFrame> InspectorDebuggerAgent::topCallFrameSkipUnknownSources(String* scriptURL, bool* isBlackboxed, int* index)
+{
+    for (int i = index ? *index : 0; ; ++i) {
+        if (index)
+            *index = i;
+        RefPtrWillBeRawPtr<JavaScriptCallFrame> frame = scriptDebugServer().callFrameNoScopes(i);
         if (!frame)
             return nullptr;
         ScriptsMap::iterator it = m_scripts.find(String::number(frame->sourceID()));
@@ -1528,7 +1541,7 @@ bool InspectorDebuggerAgent::canBreakProgram()
 
 void InspectorDebuggerAgent::breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data)
 {
-    if (m_skipAllPauses)
+    if (m_skipAllPauses || isCallStackEmptyOrBlackboxed())
         return;
     m_breakReason = breakReason;
     m_breakAuxData = data;

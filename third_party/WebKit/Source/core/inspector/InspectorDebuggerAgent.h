@@ -250,7 +250,8 @@ private:
 
     String sourceMapURLForScript(const Script&, CompileResult);
 
-    PassRefPtrWillBeRawPtr<JavaScriptCallFrame> topCallFrameSkipUnknownSources(String* scriptURL, bool* isBlackboxed);
+    bool isCallStackEmptyOrBlackboxed();
+    PassRefPtrWillBeRawPtr<JavaScriptCallFrame> topCallFrameSkipUnknownSources(String* scriptURL, bool* isBlackboxed, int* index = 0);
     AsyncCallStackTracker& asyncCallStackTracker() const { return *m_asyncCallStackTracker; };
     PromiseTracker& promiseTracker() const { return *m_promiseTracker; }
 
