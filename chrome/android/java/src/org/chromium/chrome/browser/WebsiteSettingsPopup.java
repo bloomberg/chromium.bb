@@ -222,9 +222,13 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
      *
      * @param toolbarModelSecurityLevel A valid ToolbarModelSecurityLevel, which is the security
      *                                  level of the page.
+     * @param isInternalPage Whether or not this page is an internal chrome page (e.g. the
+     *                       chrome://settings page).
      * @return The ID of the message to display in the connection message box.
      */
-    private int getConnectionMessageId(int toolbarModelSecurityLevel) {
+    private int getConnectionMessageId(int toolbarModelSecurityLevel, boolean isInternalPage) {
+        if (isInternalPage) return R.string.page_info_connection_internal_page;
+
         switch (toolbarModelSecurityLevel) {
             case ToolbarModelSecurityLevel.NONE:
                 return R.string.page_info_connection_http;
@@ -259,7 +263,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         SpannableStringBuilder messageBuilder = new SpannableStringBuilder();
         if (securityLevel != ToolbarModelSecurityLevel.SECURITY_ERROR) {
             messageBuilder.append(mContext.getResources().getString(
-                    getConnectionMessageId(securityLevel)));
+                    getConnectionMessageId(securityLevel, isInternalPage)));
         } else {
             String originToDisplay;
             try {
