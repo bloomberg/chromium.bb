@@ -2853,15 +2853,6 @@ void SSLClientSocket::ClearSessionCache() {
   SSL_ClearSessionCache();
 }
 
-// static
-uint16 SSLClientSocket::GetMaxSupportedSSLVersion() {
-  if (PK11_TokenExists(CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256)) {
-    return SSL_PROTOCOL_VERSION_TLS1_2;
-  } else {
-    return SSL_PROTOCOL_VERSION_TLS1_1;
-  }
-}
-
 bool SSLClientSocketNSS::GetSSLInfo(SSLInfo* ssl_info) {
   EnterFunction("");
   ssl_info->Reset();
