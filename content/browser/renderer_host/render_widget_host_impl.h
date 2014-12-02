@@ -23,7 +23,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "cc/base/rolling_time_delta_history.h"
 #include "cc/resources/shared_bitmap.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
@@ -481,8 +480,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // or create it if it doesn't already exist.
   BrowserAccessibilityManager* GetOrCreateRootBrowserAccessibilityManager();
 
-  base::TimeDelta GetEstimatedBrowserCompositeTime();
-
 #if defined(OS_WIN)
   gfx::NativeViewAccessible GetParentNativeViewAccessible();
 #endif
@@ -849,8 +846,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   typedef std::map<int,
       base::Callback<void(const unsigned char*, size_t)> > PendingSnapshotMap;
   PendingSnapshotMap pending_browser_snapshots_;
-
-  cc::RollingTimeDeltaHistory browser_composite_latency_history_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

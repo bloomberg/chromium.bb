@@ -26,10 +26,6 @@ void RollingTimeDeltaHistory::InsertSample(base::TimeDelta time) {
   chronological_sample_deque_.push_back(it);
 }
 
-size_t RollingTimeDeltaHistory::SampleCount() {
-  return sample_set_.size();
-}
-
 void RollingTimeDeltaHistory::Clear() {
   chronological_sample_deque_.clear();
   sample_set_.clear();
