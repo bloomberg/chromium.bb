@@ -26,6 +26,10 @@ void BrowserSideNavigationTearDown();
 // from the IO thread with a TestNavigationURLLoader.
 scoped_ptr<StreamHandle> MakeEmptyStream();
 
+// If a test needs to run with browser side navigation enabled, call this
+// function before doing any setup. In particular, for tests inheriting from
+// RenderViewHostTestHarness, call this function before calling
+// RenderViewHostTestHarness::SetUp.
 void EnableBrowserSideNavigation();
 
 }  // namespace content

@@ -33,14 +33,8 @@ class NavigatorTestWithBrowserSideNavigation
     : public RenderViewHostImplTestHarness {
  public:
   void SetUp() override {
-    RenderViewHostImplTestHarness::SetUp();
-    BrowserSideNavigationSetUp();
     EnableBrowserSideNavigation();
-  }
-
-  void TearDown() override {
-    BrowserSideNavigationTearDown();
-    RenderViewHostImplTestHarness::TearDown();
+    RenderViewHostImplTestHarness::SetUp();
   }
 
   TestNavigationURLLoader* GetLoaderForNavigationRequest(
