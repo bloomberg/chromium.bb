@@ -710,8 +710,6 @@ public:
     virtual size_t objectPayloadSizeForTesting() = 0;
 
     virtual void prepareHeapForTermination() = 0;
-
-    virtual int normalPageCount() = 0;
 };
 
 template<typename Header>
@@ -790,8 +788,6 @@ public:
 
     virtual void prepareHeapForTermination() override;
 
-    virtual int normalPageCount() override { return m_numberOfNormalPages; }
-
     void removePageFromHeap(HeapPage<Header>*);
 
     PLATFORM_EXPORT void promptlyFreeObject(Header*);
@@ -850,8 +846,6 @@ private:
     // Index into the page pools. This is used to ensure that the pages of the
     // same type go into the correct page pool and thus avoid type confusion.
     int m_index;
-
-    int m_numberOfNormalPages;
 
     // The promptly freed count contains the number of promptly freed objects
     // since the last sweep or since it was manually reset to delay coalescing.

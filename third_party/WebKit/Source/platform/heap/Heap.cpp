@@ -638,7 +638,6 @@ ThreadHeap<Header>::ThreadHeap(ThreadState* state, int index)
     , m_lastLargeObjectAllocatedDuringSweeping(0)
     , m_threadState(state)
     , m_index(index)
-    , m_numberOfNormalPages(0)
     , m_promptlyFreedCount(0)
 {
     clearFreeLists();
@@ -1341,7 +1340,6 @@ void ThreadHeap<Header>::allocatePage(const GCInfo* gcInfo)
     }
 
     Heap::increaseAllocatedSpace(blinkPageSize);
-    ++m_numberOfNormalPages;
     addToFreeList(page->payload(), HeapPage<Header>::payloadSize());
 }
 
@@ -1393,7 +1391,6 @@ void ThreadHeap<Header>::sweepNormalPages()
             page->unlink(previousNext);
             removePageFromHeap(page);
             page = next;
-            --m_numberOfNormalPages;
         } else {
             page->sweep(this);
             previousNext = &page->m_next;
