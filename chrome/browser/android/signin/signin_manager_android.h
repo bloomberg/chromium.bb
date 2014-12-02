@@ -64,6 +64,8 @@ class SigninManagerAndroid : public MergeSessionHelper::Observer {
 
   jboolean IsSigninAllowedByPolicy(JNIEnv* env, jobject obj);
 
+  jboolean IsSignedInOnNative(JNIEnv* env, jobject obj);
+
  private:
   virtual ~SigninManagerAndroid();
 

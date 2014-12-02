@@ -482,6 +482,13 @@ public class SigninManager {
     }
 
     /**
+     * @return Whether there is a signed in account on the native side.
+     */
+    public boolean isSignedInOnNative() {
+        return nativeIsSignedInOnNative(mNativeSigninManagerAndroid);
+    }
+
+    /**
      * @return Experiment group for the android signin promo that the current user falls into.
      * -1 if the sigin promo experiment is disabled, otherwise an integer between 0 and 7.
      * TODO(guohui): instead of group names, it is better to use experiment params to control
@@ -517,5 +524,6 @@ public class SigninManager {
     private native void nativeWipeProfileData(long nativeSigninManagerAndroid);
     private native void nativeClearLastSignedInUser(long nativeSigninManagerAndroid);
     private native void nativeLogInSignedInUser(long nativeSigninManagerAndroid);
+    private native boolean nativeIsSignedInOnNative(long nativeSigninManagerAndroid);
     private static native boolean nativeIsNewProfileManagementEnabled();
 }

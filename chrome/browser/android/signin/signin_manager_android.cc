@@ -298,6 +298,10 @@ jboolean SigninManagerAndroid::IsSigninAllowedByPolicy(JNIEnv* env,
   return SigninManagerFactory::GetForProfile(profile_)->IsSigninAllowed();
 }
 
+jboolean SigninManagerAndroid::IsSignedInOnNative(JNIEnv* env, jobject obj) {
+  return SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated();
+}
+
 void SigninManagerAndroid::OnSigninAllowedPrefChanged() {
   Java_SigninManager_onSigninAllowedByPolicyChanged(
       base::android::AttachCurrentThread(), java_signin_manager_.obj(),
