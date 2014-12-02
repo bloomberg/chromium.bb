@@ -63,6 +63,7 @@ SPECIAL_TESTS = {
     'scripts/cros_list_modified_packages_unittest.py': INSIDE,
     'scripts/cros_mark_as_stable_unittest.py': INSIDE,
     'scripts/cros_mark_chrome_as_stable_unittest.py': INSIDE,
+    'scripts/cros_mark_mojo_as_stable_unittest.py': INSIDE,
     'scripts/sync_package_status_unittest.py': INSIDE,
     'scripts/cros_portage_upgrade_unittest.py': INSIDE,
     'scripts/dep_tracker_unittest.py': INSIDE,

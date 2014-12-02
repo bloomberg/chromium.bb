@@ -11,6 +11,7 @@ from __future__ import print_function
 
 import base64
 import cookielib
+import datetime
 import httplib
 import json
 import logging
@@ -493,6 +494,39 @@ def GetTipOfTrunkRevision(git_url):
     msg = ('The json returned by https://%s%s has an unfamiliar structure:\n'
            '%s\n' % (parsed_url[1], path, j))
     raise GOBError(msg)
+
+
+def GetCommitDate(git_url, commit):
+  """Returns the date of a particular git commit.
+
+  The returned object is naive in the sense that it doesn't carry any timezone
+  information - you should assume UTC.
+
+  Args:
+     git_url: URL for the repository to get the commit date from.
+     commit: A git commit identifier (e.g. a sha1).
+
+  Returns:
+     A datetime object.
+  """
+  parsed_url = urlparse.urlparse(git_url)
+  path = '%s/+log/%s?n=1&format=JSON' % (parsed_url.path.rstrip('/'), commit)
+  j = FetchUrlJson(parsed_url.netloc, path, ignore_404=False)
+  if not j:
+    raise GOBError(
+        'Could not find revision information from %s' % git_url)
+  try:
+    commit_timestr = j['log'][0]['committer']['time']
+  except (IndexError, KeyError, TypeError):
+    msg = ('The json returned by https://%s%s has an unfamiliar structure:\n'
+           '%s\n' % (parsed_url.netloc, path, j))
+    raise GOBError(msg)
+  try:
+    # We're parsing a string of the form 'Tue Dec 02 17:48:06 2014'.
+    return datetime.datetime.strptime(commit_timestr,
+                                      constants.GOB_COMMIT_TIME_FORMAT)
+  except ValueError:
+    raise GOBError('Failed parsing commit time "%s"' % commit_timestr)
 
 
 def GetAccount(host):

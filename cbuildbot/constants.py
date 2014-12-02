@@ -212,6 +212,10 @@ INTERNAL_GERRIT_URL = 'https://%s' % INTERNAL_GERRIT_HOST
 
 GOB_COOKIE_PATH = os.path.expanduser('~/.git-credential-cache/cookie')
 
+# Timestamps in the JSON from GoB's web interface is of the form 'Tue
+# Dec 02 17:48:06 2014' and is assumed to be in UTC.
+GOB_COMMIT_TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
+
 REPO_PROJECT = 'external/repo'
 REPO_URL = '%s/%s' % (EXTERNAL_GOB_URL, REPO_PROJECT)
 
