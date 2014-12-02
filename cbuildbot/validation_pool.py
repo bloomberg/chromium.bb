@@ -1788,7 +1788,8 @@ class ValidationPool(object):
     for change in set(unmodified_changes) - set(filtered_changes):
       errors[change] = PatchNotCommitReady(change)
 
-    patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool)
+    patch_series = PatchSeries(self.build_root, helper_pool=self._helper_pool,
+                               is_submitting=True)
     patch_series.InjectLookupCache(filtered_changes)
 
     # Split up the patches into disjoint transactions so that we can submit in

@@ -1354,10 +1354,6 @@ class BaseSubmitPoolTestCase(MoxBase):
     actually_submitted = self.pool_mock.GetSubmittedChanges()
     self.assertEqual(list(submitted), actually_submitted)
 
-
-class SubmitPoolTest(BaseSubmitPoolTestCase):
-  """Test suite related to the Submit Pool."""
-
   def GetNotifyArg(self, change, key):
     """Look up a call to notify about |change| and grab |key| from it.
 
@@ -1381,6 +1377,10 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
   def assertEqualNotifyArg(self, value, change, idx):
     """Verify that |value| equals self.GetNotifyArg(|change|, |idx|)."""
     self.assertEqual(str(value), str(self.GetNotifyArg(change, idx)))
+
+
+class SubmitPoolTest(BaseSubmitPoolTestCase):
+  """Test suite related to the Submit Pool."""
 
   def testSubmitPool(self):
     """Test that we can submit a pool successfully."""
@@ -1460,6 +1460,8 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
     self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
                      side_effect=_ReloadPatches)
     self.SubmitPool(submitted=self.patches[:1], rejected=self.patches[1:])
+    error = validation_pool.PatchNotCommitReady(self.patches[1])
+    self.assertEqualNotifyArg(error, self.patches[1], 'error')
 
   def testAlreadyMerged(self):
     """Test that a CL that was chumped during the run was not rejected."""
@@ -1475,6 +1477,8 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
     self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
                      side_effect=_ReloadPatches)
     self.SubmitPool(submitted=self.patches[:1], rejected=self.patches[1:])
+    error = validation_pool.PatchModified(self.patches[1])
+    self.assertEqualNotifyArg(error, self.patches[1], 'error')
 
 
 class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
@@ -1512,11 +1516,16 @@ class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
     """Submit the first change in a series."""
     self._MarkPatchesVerified([self.patches[0]])
     self.SubmitPool(submitted=[self.patches[0]], rejected=[self.patches[1]])
+    self.assertEqual(len(self.pool_mock.notification_calls), 0)
 
   def testSubmitSecond(self):
     """Attempt to submit the second change in a series."""
     self._MarkPatchesVerified([self.patches[1]])
     self.SubmitPool(submitted=[], rejected=[self.patches[0]])
+    error = validation_pool.PatchRejected(self.patches[0])
+    dep_error = cros_patch.DependencyError(self.patches[1], error)
+    self.assertEqualNotifyArg(dep_error, self.patches[1], 'error')
+    self.assertEqual(len(self.pool_mock.notification_calls), 1)
 
 
 class LoadManifestTest(cros_test_lib.TempDirTestCase):
