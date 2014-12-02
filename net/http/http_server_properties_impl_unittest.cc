@@ -34,12 +34,10 @@ typedef HttpServerPropertiesImplTest SpdyServerPropertiesTest;
 
 TEST_F(SpdyServerPropertiesTest, Initialize) {
   HostPortPair spdy_server_google("www.google.com", 443);
-  std::string spdy_server_g =
-      HttpServerPropertiesImpl::GetFlattenedSpdyServer(spdy_server_google);
+  std::string spdy_server_g = spdy_server_google.ToString();
 
   HostPortPair spdy_server_docs("docs.google.com", 443);
-  std::string spdy_server_d =
-      HttpServerPropertiesImpl::GetFlattenedSpdyServer(spdy_server_docs);
+  std::string spdy_server_d = spdy_server_docs.ToString();
 
   // Check by initializing NULL spdy servers.
   impl_.InitializeSpdyServers(NULL, true);
@@ -155,11 +153,9 @@ TEST_F(SpdyServerPropertiesTest, GetSpdyServerList) {
   std::string string_value_g;
   std::string string_value_m;
   HostPortPair spdy_server_google("www.google.com", 443);
-  std::string spdy_server_g =
-      HttpServerPropertiesImpl::GetFlattenedSpdyServer(spdy_server_google);
+  std::string spdy_server_g = spdy_server_google.ToString();
   HostPortPair spdy_server_mail("mail.google.com", 443);
-  std::string spdy_server_m =
-      HttpServerPropertiesImpl::GetFlattenedSpdyServer(spdy_server_mail);
+  std::string spdy_server_m = spdy_server_mail.ToString();
 
   // Add www.google.com:443 as not supporting SPDY.
   impl_.SetSupportsSpdy(spdy_server_google, false);
@@ -204,11 +200,9 @@ TEST_F(SpdyServerPropertiesTest, MRUOfGetSpdyServerList) {
   std::string string_value_g;
   std::string string_value_m;
   HostPortPair spdy_server_google("www.google.com", 443);
-  std::string spdy_server_g =
-      HttpServerPropertiesImpl::GetFlattenedSpdyServer(spdy_server_google);
+  std::string spdy_server_g = spdy_server_google.ToString();
   HostPortPair spdy_server_mail("mail.google.com", 443);
-  std::string spdy_server_m =
-      HttpServerPropertiesImpl::GetFlattenedSpdyServer(spdy_server_mail);
+  std::string spdy_server_m = spdy_server_mail.ToString();
 
   // Add www.google.com:443 as supporting SPDY.
   impl_.SetSupportsSpdy(spdy_server_google, true);

@@ -1162,6 +1162,7 @@ CookieList CookieMonster::GetAllCookiesForURLWithOptions(
   std::sort(cookie_ptrs.begin(), cookie_ptrs.end(), CookieSorter);
 
   CookieList cookies;
+  cookies.reserve(cookie_ptrs.size());
   for (std::vector<CanonicalCookie*>::const_iterator it = cookie_ptrs.begin();
        it != cookie_ptrs.end(); it++)
     cookies.push_back(**it);
