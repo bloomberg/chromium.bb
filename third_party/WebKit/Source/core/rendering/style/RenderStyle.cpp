@@ -353,35 +353,6 @@ bool RenderStyle::inheritedDataShared(const RenderStyle* other) const
         && rareInheritedData.get() == other->rareInheritedData.get();
 }
 
-static bool positionedObjectMovedOnly(const LengthBox& a, const LengthBox& b, const Length& width)
-{
-    // If any unit types are different, then we can't guarantee
-    // that this was just a movement.
-    if (a.left().type() != b.left().type()
-        || a.right().type() != b.right().type()
-        || a.top().type() != b.top().type()
-        || a.bottom().type() != b.bottom().type())
-        return false;
-
-    // Only one unit can be non-auto in the horizontal direction and
-    // in the vertical direction.  Otherwise the adjustment of values
-    // is changing the size of the box.
-    if (!a.left().isIntrinsicOrAuto() && !a.right().isIntrinsicOrAuto())
-        return false;
-    if (!a.top().isIntrinsicOrAuto() && !a.bottom().isIntrinsicOrAuto())
-        return false;
-    // If our width is auto and left or right is specified and changed then this
-    // is not just a movement - we need to resize to our container.
-    if (width.isIntrinsicOrAuto()
-        && ((!a.left().isIntrinsicOrAuto() && a.left() != b.left())
-            || (!a.right().isIntrinsicOrAuto() && a.right() != b.right())))
-        return false;
-
-    // One of the units is fixed or percent in both directions and stayed
-    // that way in the new style.  Therefore all we are doing is moving.
-    return true;
-}
-
 StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other) const
 {
     // Note, we use .get() on each DataRef below because DataRef::operator== will do a deep
@@ -410,10 +381,7 @@ StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other) co
 
     if (!diff.needsFullLayout() && position() != StaticPosition && surround->offset != other.surround->offset) {
         // Optimize for the case where a positioned layer is moving but not changing size.
-        if (positionedObjectMovedOnly(surround->offset, other.surround->offset, m_box->width()))
-            diff.setNeedsPositionedMovementLayout();
-        else
-            diff.setNeedsFullLayout();
+        diff.setNeedsPositionedMovementLayout();
     }
 
     if (diffNeedsPaintInvalidationLayer(other))

@@ -507,8 +507,6 @@ public:
         LogicalExtentComputedValues computedValues;
         logicalExtentAfterUpdatingLogicalWidth(logicalTop(), computedValues);
         // If we shrink to fit our width may have changed, so we still need full layout.
-        // FIXME: We check for potential change of width when deciding to set needsPositionedMovementLayout.
-        // So either that check or this one is unnecessary, probably the former. crbug.com/428050
         if (oldWidth != computedValues.m_extent)
             return false;
         setLogicalWidth(computedValues.m_extent);
