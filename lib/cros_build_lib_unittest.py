@@ -332,7 +332,7 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     self.assertEqual(expected.returncode, actual.returncode)
 
   @_ForceLoggingLevel
-  def _TestCmd(self, cmd, real_cmd, sp_kv=dict(), rc_kv=dict(), sudo=False):
+  def _TestCmd(self, cmd, real_cmd, sp_kv=None, rc_kv=None, sudo=False):
     """Factor out common setup logic for testing RunCommand().
 
     Args:
@@ -343,6 +343,11 @@ class TestRunCommand(cros_test_lib.MockTestCase):
       rc_kv: key-value pairs passed to RunCommand().
       sudo: use SudoRunCommand() rather than RunCommand().
     """
+    if sp_kv is None:
+      sp_kv = {}
+    if rc_kv is None:
+      rc_kv = {}
+
     expected_result = cros_build_lib.CommandResult()
     expected_result.cmd = real_cmd
     expected_result.error = self.error
@@ -350,7 +355,8 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     expected_result.returncode = self.proc_mock.returncode
 
     arg_dict = dict()
-    for attr in 'close_fds cwd env stdin stdout stderr shell'.split():
+    for attr in ('close_fds', 'cwd', 'env', 'stdin', 'stdout', 'stderr',
+                 'shell'):
       if attr in sp_kv:
         arg_dict[attr] = sp_kv[attr]
       else:
@@ -941,7 +947,7 @@ class TestContextManagerStack(cros_test_lib.TestCase):
         def __enter__(self):
           return self
 
-        # pylint: disable=E0213
+        # pylint: disable=no-self-argument,bad-context-manager
         def __exit__(obj_self, exc_type, exc, traceback):
           invoked.append(obj_self.marker)
           if has_exception is not None:
