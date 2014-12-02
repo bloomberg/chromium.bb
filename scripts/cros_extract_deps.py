@@ -163,18 +163,12 @@ to stdout, in a serialized JSON format.""")
                       help='Output either traditional deps or CPE-only JSON.')
   parser.add_argument('--output-path', default=None,
                       help='Write output to the given path.')
-  # Even though this is really just a pass-through to DepGraphGenerator,
-  # handling it as a known arg here allows us to specify a default more
-  # elegantly than testing for its presence in the unknown_args later.
-  parser.add_argument('--root-deps', default='rdeps',
-                      help='Which deps to report (defaults to rdeps)')
   known_args, unknown_args = parser.parse_known_args(argv)
 
   lib_argv = []
   if known_args.board:
     lib_argv += ['--board=%s' % known_args.board]
-  lib_argv += ['--root-deps=%s' % known_args.root_deps,
-               '--quiet', '--pretend', '--emptytree']
+  lib_argv += ['--quiet', '--pretend', '--emptytree']
   lib_argv.extend(unknown_args)
 
   deps = DepGraphGenerator()
