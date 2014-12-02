@@ -1083,6 +1083,51 @@ bool InspectorStyleSheet::setRuleSelector(const InspectorCSSId& id, const String
     return true;
 }
 
+String InspectorStyleSheet::mediaRuleText(const InspectorCSSId& id, ExceptionState& exceptionState)
+{
+    CSSMediaRule* rule = mediaRuleForId(id);
+    if (!rule || !ensureParsedDataReady()) {
+        exceptionState.throwDOMException(NotFoundError, "No media rule was found for the given ID.");
+        return "";
+    }
+    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = ruleSourceDataAt(id.ordinal());
+    if (!sourceData || !sourceData->mediaSourceData) {
+        exceptionState.throwDOMException(NotFoundError, "No media rule was found for the given ID.");
+        return "";
+    }
+    String sheetText = m_parsedStyleSheet->text();
+    ASSERT(sourceData->ruleHeaderRange.start >= 0 && sourceData->ruleHeaderRange.end < sheetText.length());
+    return sheetText.substring(sourceData->ruleHeaderRange.start, sourceData->ruleHeaderRange.length());
+}
+
+bool InspectorStyleSheet::setMediaRuleText(const InspectorCSSId& id, const String& text, ExceptionState& exceptionState)
+{
+    CSSMediaRule* rule = mediaRuleForId(id);
+    if (!rule) {
+        exceptionState.throwDOMException(NotFoundError, "No media rule was found for the given ID.");
+        return false;
+    }
+    CSSStyleSheet* styleSheet = rule->parentStyleSheet();
+    if (!styleSheet || !ensureParsedDataReady()) {
+        exceptionState.throwDOMException(NotFoundError, "No stylesheet could be found in which to set the media text.");
+        return false;
+    }
+    if (!verifyMediaText(text)) {
+        exceptionState.throwDOMException(SyntaxError, "Media text is not valid.");
+        return false;
+    }
+
+    rule->media()->setMediaText(text);
+    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = ruleSourceDataAt(id.ordinal());
+    ASSERT(sourceData && sourceData->mediaSourceData);
+
+    String sheetText = m_parsedStyleSheet->text();
+    sheetText.replace(sourceData->ruleHeaderRange.start, sourceData->ruleHeaderRange.length(), text);
+    updateText(sheetText);
+    onStyleSheetTextChanged();
+    return true;
+}
+
 unsigned InspectorStyleSheet::ruleIndexBySourceRange(const CSSMediaRule* parentMediaRule, const SourceRange& sourceRange)
 {
     unsigned index = 0;
@@ -1174,6 +1219,39 @@ bool InspectorStyleSheet::verifyRuleText(const String& ruleText)
     unsigned propertyCount = propertyData.size();
 
     // Exactly one property should be in rule.
+    if (propertyCount != 1)
+        return false;
+
+    // Check for the property name.
+    if (propertyData.at(0).name != bogusPropertyName)
+        return false;
+
+    return true;
+}
+
+bool InspectorStyleSheet::verifyMediaText(const String& mediaText)
+{
+    DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
+    RuleSourceDataList sourceData;
+    RefPtrWillBeRawPtr<StyleSheetContents> styleSheetContents = StyleSheetContents::create(strictCSSParserContext());
+    String text = mediaText + " { div { " + bogusPropertyName + ": none; } }";
+    StyleSheetHandler handler(text, ownerDocument(), styleSheetContents.get(), &sourceData);
+    CSSParser::parseSheet(parserContextForDocument(ownerDocument()), styleSheetContents.get(), text, TextPosition::minimumPosition(), &handler);
+
+    // Exactly one media rule should be parsed.
+    unsigned ruleCount = sourceData.size();
+    if (ruleCount != 1 || sourceData.at(0)->type != CSSRuleSourceData::MEDIA_RULE)
+        return false;
+
+    // Media rule should have exactly one style rule child.
+    RuleSourceDataList& childSourceData = sourceData.at(0)->childRules;
+    ruleCount = childSourceData.size();
+    if (ruleCount != 1 || !childSourceData.at(0)->styleSourceData)
+        return false;
+
+    // Exactly one property should be in style rule.
+    WillBeHeapVector<CSSPropertySourceData>& propertyData = childSourceData.at(0)->styleSourceData->propertyData;
+    unsigned propertyCount = propertyData.size();
     if (propertyCount != 1)
         return false;
 
@@ -1284,6 +1362,13 @@ CSSStyleRule* InspectorStyleSheet::ruleForId(const InspectorCSSId& id) const
     ASSERT(!id.isEmpty());
     ensureFlatRules();
     return InspectorCSSAgent::asCSSStyleRule(id.ordinal() >= m_flatRules.size() ? 0 : m_flatRules.at(id.ordinal()).get());
+}
+
+CSSMediaRule* InspectorStyleSheet::mediaRuleForId(const InspectorCSSId& id) const
+{
+    ASSERT(!id.isEmpty());
+    ensureFlatRules();
+    return InspectorCSSAgent::asCSSMediaRule(id.ordinal() >= m_flatRules.size() ? 0 : m_flatRules.at(id.ordinal()).get());
 }
 
 PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObjectForStyleSheetInfo() const
@@ -1545,6 +1630,22 @@ bool InspectorStyleSheet::findRuleBySelectorRange(const SourceRange& sourceRange
     for (size_t i = 0; i < ruleCount(); ++i) {
         RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = ruleSourceDataAt(i);
         if (!ruleSourceData->styleSourceData)
+            continue;
+        if (ruleSourceData->ruleHeaderRange.start == sourceRange.start && ruleSourceData->ruleHeaderRange.end == sourceRange.end) {
+            *ruleId = InspectorCSSId(id(), i);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool InspectorStyleSheet::findMediaRuleByRange(const SourceRange& sourceRange, InspectorCSSId* ruleId)
+{
+    if (!ensureParsedDataReady())
+        return false;
+    for (size_t i = 0; i < ruleCount(); ++i) {
+        RefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceData = ruleSourceDataAt(i);
+        if (!ruleSourceData->mediaSourceData)
             continue;
         if (ruleSourceData->ruleHeaderRange.start == sourceRange.start && ruleSourceData->ruleHeaderRange.end == sourceRange.end) {
             *ruleId = InspectorCSSId(id(), i);

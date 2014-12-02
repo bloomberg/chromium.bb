@@ -200,6 +200,8 @@ public:
     virtual bool getText(String* result) const override;
     String ruleSelector(const InspectorCSSId&, ExceptionState&);
     bool setRuleSelector(const InspectorCSSId&, const String& selector, ExceptionState&);
+    String mediaRuleText(const InspectorCSSId&, ExceptionState&);
+    bool setMediaRuleText(const InspectorCSSId&, const String& text, ExceptionState&);
     CSSStyleRule* addRule(const String& ruleText, const SourceRange& location, ExceptionState&);
     bool deleteRule(const InspectorCSSId&, const String& oldText, ExceptionState&);
 
@@ -213,12 +215,14 @@ public:
 
     InspectorCSSId ruleId(CSSStyleRule*) const;
     CSSStyleRule* ruleForId(const InspectorCSSId&) const;
+    CSSMediaRule* mediaRuleForId(const InspectorCSSId&) const;
 
     virtual InspectorCSSId styleId(CSSStyleDeclaration*) const override;
     virtual CSSStyleDeclaration* styleForId(const InspectorCSSId&) const override;
     virtual bool setStyleText(const InspectorCSSId&, const String&) override;
 
     bool findRuleBySelectorRange(const SourceRange&, InspectorCSSId*);
+    bool findMediaRuleByRange(const SourceRange&, InspectorCSSId*);
 
     const CSSRuleVector& flatRules();
 
@@ -237,6 +241,7 @@ private:
     CSSStyleRule* insertCSSOMRuleInMediaRule(CSSMediaRule*, const SourceRange&, const String& ruleText, ExceptionState&);
     CSSStyleRule* insertCSSOMRuleBySourceRange(const SourceRange&, const String& ruleText, ExceptionState&);
     bool verifyRuleText(const String& ruleText);
+    bool verifyMediaText(const String& mediaText);
     unsigned ruleIndexByStyle(CSSStyleDeclaration*) const;
     String sourceMapURL() const;
     String sourceURL() const;

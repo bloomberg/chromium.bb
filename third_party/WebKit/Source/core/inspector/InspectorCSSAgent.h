@@ -92,6 +92,7 @@ public:
     };
 
     static CSSStyleRule* asCSSStyleRule(CSSRule*);
+    static CSSMediaRule* asCSSMediaRule(CSSRule*);
 
     static PassOwnPtrWillBeRawPtr<InspectorCSSAgent> create(InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent)
     {
@@ -130,6 +131,7 @@ public:
     virtual void setStyleSheetText(ErrorString*, const String& styleSheetId, const String& text) override;
     virtual void setPropertyText(ErrorString*, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& text, RefPtr<TypeBuilder::CSS::CSSStyle>& result) override;
     virtual void setRuleSelector(ErrorString*, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result) override;
+    virtual void setMediaText(ErrorString*, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& text, RefPtr<TypeBuilder::CSS::CSSMedia>& result) override;
     virtual void createStyleSheet(ErrorString*, const String& frameId, TypeBuilder::CSS::StyleSheetId* outStyleSheetId) override;
     virtual void addRule(ErrorString*, const String& styleSheetId, const String& ruleText, const RefPtr<JSONObject>& location, RefPtr<TypeBuilder::CSS::CSSRule>& result) override;
     virtual void forcePseudoState(ErrorString*, int nodeId, const RefPtr<JSONArray>& forcedPseudoClasses) override;
@@ -144,6 +146,7 @@ private:
     class SetStyleSheetTextAction;
     class SetPropertyTextAction;
     class SetRuleSelectorAction;
+    class SetMediaTextAction;
     class AddRuleAction;
     class InspectorResourceContentLoaderCallback;
 

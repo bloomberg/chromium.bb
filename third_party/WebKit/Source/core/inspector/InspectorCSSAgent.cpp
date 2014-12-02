@@ -321,6 +321,48 @@ private:
     String m_oldSelector;
 };
 
+class InspectorCSSAgent::SetMediaTextAction final : public InspectorCSSAgent::StyleSheetAction {
+    WTF_MAKE_NONCOPYABLE(SetMediaTextAction);
+public:
+    SetMediaTextAction(InspectorStyleSheet* styleSheet, const InspectorCSSId& cssId, const String& text)
+        : InspectorCSSAgent::StyleSheetAction("SetMediaText")
+        , m_styleSheet(styleSheet)
+        , m_cssId(cssId)
+        , m_text(text)
+    {
+    }
+
+    virtual bool perform(ExceptionState& exceptionState) override
+    {
+        m_oldText = m_styleSheet->mediaRuleText(m_cssId, exceptionState);
+        if (exceptionState.hadException())
+            return false;
+        return redo(exceptionState);
+    }
+
+    virtual bool undo(ExceptionState& exceptionState) override
+    {
+        return m_styleSheet->setMediaRuleText(m_cssId, m_oldText, exceptionState);
+    }
+
+    virtual bool redo(ExceptionState& exceptionState) override
+    {
+        return m_styleSheet->setMediaRuleText(m_cssId, m_text, exceptionState);
+    }
+
+    virtual void trace(Visitor* visitor) override
+    {
+        visitor->trace(m_styleSheet);
+        InspectorCSSAgent::StyleSheetAction::trace(visitor);
+    }
+
+private:
+    RefPtrWillBeMember<InspectorStyleSheet> m_styleSheet;
+    InspectorCSSId m_cssId;
+    String m_text;
+    String m_oldText;
+};
+
 class InspectorCSSAgent::AddRuleAction final : public InspectorCSSAgent::StyleSheetAction {
     WTF_MAKE_NONCOPYABLE(AddRuleAction);
 public:
@@ -375,6 +417,14 @@ CSSStyleRule* InspectorCSSAgent::asCSSStyleRule(CSSRule* rule)
     if (!rule || rule->type() != CSSRule::STYLE_RULE)
         return 0;
     return toCSSStyleRule(rule);
+}
+
+// static
+CSSMediaRule* InspectorCSSAgent::asCSSMediaRule(CSSRule* rule)
+{
+    if (!rule || rule->type() != CSSRule::MEDIA_RULE)
+        return 0;
+    return toCSSMediaRule(rule);
 }
 
 InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent)
@@ -909,8 +959,10 @@ void InspectorCSSAgent::setPropertyText(ErrorString* errorString, const String& 
 void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result)
 {
     InspectorStyleSheet* inspectorStyleSheet = assertInspectorStyleSheetForId(errorString, styleSheetId);
-    if (!inspectorStyleSheet)
+    if (!inspectorStyleSheet) {
+        *errorString = "Stylesheet not found";
         return;
+    }
     SourceRange selectorRange;
     if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range, &selectorRange))
         return;
@@ -925,6 +977,34 @@ void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const String& 
     if (success) {
         CSSStyleRule* rule = inspectorStyleSheet->ruleForId(compoundId);
         result = inspectorStyleSheet->buildObjectForRule(rule, buildMediaListChain(rule));
+    }
+    *errorString = InspectorDOMAgent::toErrorString(exceptionState);
+}
+
+void InspectorCSSAgent::setMediaText(ErrorString* errorString, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& text, RefPtr<TypeBuilder::CSS::CSSMedia>& result)
+{
+    InspectorStyleSheet* inspectorStyleSheet = assertInspectorStyleSheetForId(errorString, styleSheetId);
+    if (!inspectorStyleSheet) {
+        *errorString = "Stylesheet not found";
+        return;
+    }
+    SourceRange textRange;
+    if (!jsonRangeToSourceRange(errorString, inspectorStyleSheet, range, &textRange))
+        return;
+    InspectorCSSId compoundId;
+    if (!inspectorStyleSheet->findMediaRuleByRange(textRange, &compoundId)) {
+        *errorString = "Source range didn't match any media rule source range";
+        return;
+    }
+
+    TrackExceptionState exceptionState;
+    bool success = m_domAgent->history()->perform(adoptRefWillBeNoop(new SetMediaTextAction(inspectorStyleSheet, compoundId, text)), exceptionState);
+    if (success) {
+        CSSMediaRule* rule = inspectorStyleSheet->mediaRuleForId(compoundId);
+        String sourceURL = rule->parentStyleSheet()->contents()->baseURL();
+        if (sourceURL.isEmpty())
+            sourceURL = InspectorDOMAgent::documentURLString(rule->parentStyleSheet()->ownerDocument());
+        result = buildMediaObject(rule->media(), MediaListSourceMediaRule, sourceURL, rule->parentStyleSheet());
     }
     *errorString = InspectorDOMAgent::toErrorString(exceptionState);
 }
