@@ -135,7 +135,8 @@ class Browser : public TabStripModelObserver,
     FEATURE_LOCATIONBAR = 8,
     FEATURE_BOOKMARKBAR = 16,
     FEATURE_INFOBAR = 32,
-    FEATURE_DOWNLOADSHELF = 64
+    FEATURE_DOWNLOADSHELF = 64,
+    FEATURE_WEBAPPFRAME = 128
   };
 
   // The context for a download blocked notification from
@@ -793,6 +794,9 @@ class Browser : public TabStripModelObserver,
 
   // Returns true if the Browser window should show the location bar.
   bool ShouldShowLocationBar() const;
+
+  // Returns true if the Browser window should use a web app style frame.
+  bool ShouldUseWebAppFrame() const;
 
   // Implementation of SupportsWindowFeature and CanSupportWindowFeature. If
   // |check_fullscreen| is true, the set of features reflect the actual state of

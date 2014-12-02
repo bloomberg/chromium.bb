@@ -6,11 +6,15 @@
 
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "base/command_line.h"
+#include "base/values.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_model.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/common/chrome_switches.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest_constants.h"
 #include "grit/theme_resources.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/button/button.h"
@@ -48,6 +52,23 @@ class WebAppLeftHeaderViewTest : public TestWithBrowserView {
                       widget->non_client_view()->frame_view());
   }
 
+  Browser* CreateBrowser(Profile* profile,
+                         Browser::Type browser_type,
+                         bool hosted_app,
+                         chrome::HostDesktopType host_desktop_type,
+                         BrowserWindow* browser_window) override {
+    RegisterExtension(profile);
+
+    Browser::CreateParams params(profile, host_desktop_type);
+    params = Browser::CreateParams::CreateForApp("_crx_abc",
+                                                 true /* trusted_source */,
+                                                 gfx::Rect(),
+                                                 profile,
+                                                 host_desktop_type);
+    params.window = browser_window;
+    return new Browser(params);
+  }
+
  protected:
   // Owned by the browser view.
   BrowserNonClientFrameViewAsh* frame_view_;
@@ -56,6 +77,25 @@ class WebAppLeftHeaderViewTest : public TestWithBrowserView {
   TestToolbarModel* test_toolbar_model_;
 
  private:
+  void RegisterExtension(Profile* profile) {
+    base::DictionaryValue manifest;
+    manifest.SetString(extensions::manifest_keys::kName, "Test");
+    manifest.SetString(extensions::manifest_keys::kVersion, "1");
+    manifest.SetString(extensions::manifest_keys::kLaunchWebURL,
+        "http://www.google.com");
+
+    std::string error;
+    scoped_refptr<extensions::Extension> extension(
+        extensions::Extension::Create(
+            base::FilePath(), extensions::Manifest::UNPACKED, manifest,
+            extensions::Extension::NO_FLAGS, "abc", &error));
+
+    ASSERT_TRUE(extension.get()) << error;
+
+    extensions::ExtensionRegistry::Get(profile)->
+        AddEnabled(extension);
+  }
+
   DISALLOW_COPY_AND_ASSIGN(WebAppLeftHeaderViewTest);
 };
 

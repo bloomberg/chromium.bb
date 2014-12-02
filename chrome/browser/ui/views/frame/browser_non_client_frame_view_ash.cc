@@ -509,10 +509,8 @@ bool BrowserNonClientFrameViewAsh::UsePackagedAppHeaderStyle() const {
 }
 
 bool BrowserNonClientFrameViewAsh::UseWebAppHeaderStyle() const {
-  // Use of the experimental WebApp header style is guarded with the
-  // streamlined hosted app style.
-  return browser_view()->browser()->is_app() &&
-         extensions::util::IsStreamlinedHostedAppsEnabled();
+  return browser_view()->browser()->SupportsWindowFeature(
+      Browser::FEATURE_WEBAPPFRAME);
 }
 
 void BrowserNonClientFrameViewAsh::LayoutAvatar() {

@@ -568,8 +568,8 @@ base::string16 Browser::GetWindowTitleForCurrentTab() const {
   // |contents| can be NULL because GetWindowTitleForCurrentTab is called by the
   // window during the window's creation (before tabs have been added).
   if (contents) {
-    // Streamlined hosted apps use the host instead of the title.
-    if (is_app() && extensions::util::IsStreamlinedHostedAppsEnabled())
+    // The web app frame uses the host instead of the title.
+    if (ShouldUseWebAppFrame())
       return base::UTF8ToUTF16(contents->GetURL().host());
 
     title = contents->GetTitle();
@@ -2354,6 +2354,23 @@ bool Browser::ShouldShowLocationBar() const {
   return !is_trusted_source();
 }
 
+bool Browser::ShouldUseWebAppFrame() const {
+  // Only use the web app frame for apps in ash, and only if streamlined hosted
+  // apps are enabled.
+  if (!is_app() || host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH ||
+      !extensions::util::IsStreamlinedHostedAppsEnabled()) {
+    return false;
+  }
+
+  // Use the web app frame for hosted apps (which include bookmark apps).
+  const std::string extension_id =
+      web_app::GetExtensionIdFromApplicationName(app_name());
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
+          extension_id, extensions::ExtensionRegistry::EVERYTHING);
+  return extension && extension->is_hosted_app();
+}
+
 bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
                                         bool check_fullscreen) const {
   bool hide_ui_for_fullscreen = check_fullscreen && ShouldHideUIForFullscreen();
@@ -2375,6 +2392,9 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
 
     if (ShouldShowLocationBar())
       features |= FEATURE_LOCATIONBAR;
+
+    if (ShouldUseWebAppFrame())
+      features |= FEATURE_WEBAPPFRAME;
   }
   return !!(features & feature);
 }

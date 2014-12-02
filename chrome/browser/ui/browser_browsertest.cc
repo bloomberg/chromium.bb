@@ -1382,6 +1382,86 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
 }
 #endif
 
+// Open a normal browser window, a hosted app window, a legacy packaged app
+// window and a dev tools window, and check that the web app frame feature is
+// supported correctly.
+IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldUseWebAppFrame) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableStreamlinedHostedApps);
+
+  ASSERT_TRUE(test_server()->Start());
+
+  // Load a hosted app.
+  host_resolver()->AddRule("www.example.com", "127.0.0.1");
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
+  const Extension* hosted_app = GetExtension();
+
+  // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
+  WebContents* hosted_app_window = OpenApplication(AppLaunchParams(
+      browser()->profile(), hosted_app, extensions::LAUNCH_CONTAINER_WINDOW,
+      NEW_WINDOW, extensions::SOURCE_UNTRACKED));
+  ASSERT_TRUE(hosted_app_window);
+
+  //  Load a packaged app.
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("packaged_app/")));
+  const Extension* packaged_app = nullptr;
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  for (const scoped_refptr<const extensions::Extension>& extension :
+       registry->enabled_extensions()) {
+    if (extension->name() == "Packaged App Test")
+      packaged_app = extension.get();
+  }
+  ASSERT_TRUE(packaged_app);
+
+  // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
+  WebContents* packaged_app_window = OpenApplication(AppLaunchParams(
+      browser()->profile(), packaged_app, extensions::LAUNCH_CONTAINER_WINDOW,
+      NEW_WINDOW, extensions::SOURCE_UNTRACKED));
+  ASSERT_TRUE(packaged_app_window);
+
+  DevToolsWindow* devtools_window =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), false);
+
+  // The launch should have created a new app browser and a dev tools browser.
+  ASSERT_EQ(4u, chrome::GetBrowserCount(browser()->profile(),
+                                        browser()->host_desktop_type()));
+
+  // Find the new browsers.
+  Browser* hosted_app_browser = NULL;
+  Browser* packaged_app_browser = NULL;
+  Browser* dev_tools_browser = NULL;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    if (*it == browser()) {
+      continue;
+    } else if ((*it)->app_name() == DevToolsWindow::kDevToolsApp) {
+      dev_tools_browser = *it;
+    } else if ((*it)->tab_strip_model()->GetActiveWebContents() ==
+               hosted_app_window) {
+      hosted_app_browser = *it;
+    } else {
+      packaged_app_browser = *it;
+    }
+  }
+  ASSERT_TRUE(dev_tools_browser);
+  ASSERT_TRUE(hosted_app_browser);
+  ASSERT_TRUE(hosted_app_browser != browser());
+  ASSERT_TRUE(packaged_app_browser);
+  ASSERT_TRUE(packaged_app_browser != browser());
+  ASSERT_TRUE(packaged_app_browser != hosted_app_browser);
+
+  EXPECT_FALSE(browser()->SupportsWindowFeature(Browser::FEATURE_WEBAPPFRAME));
+  EXPECT_FALSE(
+      dev_tools_browser->SupportsWindowFeature(Browser::FEATURE_WEBAPPFRAME));
+  EXPECT_EQ(
+      browser()->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH,
+      hosted_app_browser->SupportsWindowFeature(Browser::FEATURE_WEBAPPFRAME));
+  EXPECT_FALSE(packaged_app_browser->SupportsWindowFeature(
+      Browser::FEATURE_WEBAPPFRAME));
+
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
+}
+
 // Tests that the CLD (Compact Language Detection) works properly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
   scoped_ptr<test::CldDataHarness> cld_data_harness =
