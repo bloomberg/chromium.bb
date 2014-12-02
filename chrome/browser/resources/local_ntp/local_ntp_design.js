@@ -14,9 +14,8 @@
 /**
  * Specifications for an NTP design (not comprehensive).
  *
- * name: A unique identifier for the style.
- * fontFamily: Font family to use for title and thumbnail <iframe>s.
- * fontSize: Font size to use for the <iframe>s, in px.
+ * fontFamily: Font family to use for title and thumbnail iframes.
+ * fontSize: Font size to use for the iframes, in px.
  * tileWidth: The width of each suggestion tile, in px.
  * tileMargin: Spacing between successive tiles, in px.
  * titleColor: The RRGGBBAA color of title text.
@@ -25,15 +24,13 @@
  *   default value is 'center'.
  * titleTextFade: (Optional) The number of pixels beyond which title
  *   text begins to fade. This overrides the default ellipsis style.
- * thumbnailTextColor: The RRGGBBAA color that thumbnail <iframe> may use to
+ * thumbnailTextColor: The RRGGBBAA color that thumbnail iframe may use to
  *   display text message in place of missing thumbnail.
  * thumbnailFallback: (Optional) A value in THUMBNAIL_FALLBACK to specify the
  *   thumbnail fallback strategy. If unassigned, then the thumbnail.html
- *   <iframe> would handle the fallback.
- * showFakeboxHint: Whether to display text in the fakebox.
+ *   iframe would handle the fallback.
  *
  * @typedef {{
- *   name: string,
  *   fontFamily: string,
  *   fontSize: number,
  *   tileWidth: number,
@@ -41,10 +38,9 @@
  *   titleColor: string,
  *   titleColorAgainstDark: string,
  *   titleTextAlign: string|null|undefined,
- *   titleTextFade: string|null|undefined,
+ *   titleTextFade: number|null|undefined,
  *   thumbnailTextColor: string,
  *   thumbnailFallback: string|null|undefined
- *   showFakeboxHint: string|null|undefined
  * }}
  */
 var NtpDesign;
@@ -58,9 +54,8 @@ var NtpDesign;
 function getNtpDesign(opt_name) {
   var ntpDesign = null;
 
-  if (opt_name === 'md') {
+  if (opt_name === 'des-mat') {
     ntpDesign = {
-      name: opt_name,
       fontFamily: 'arial, sans-serif',
       fontSize: 12,
       tileWidth: 156,
@@ -70,12 +65,10 @@ function getNtpDesign(opt_name) {
       titleTextAlign: 'inherit',
       titleTextFade: 122 - 36,  // 112px wide title with 32 pixel fade at end.
       thumbnailTextColor: '323232ff',  // Unused.
-      thumbnailFallback: THUMBNAIL_FALLBACK.DOT,
-      showFakeboxHint: true
+      thumbnailFallback: THUMBNAIL_FALLBACK.DOT
     };
   } else {
     ntpDesign = {
-      name: 'classical',
       fontFamily: 'arial, sans-serif',
       fontSize: 11,
       tileWidth: 140,
@@ -85,8 +78,7 @@ function getNtpDesign(opt_name) {
       titleTextAlign: 'center',
       titleTextFade: null,  // Default to ellipsis.
       thumbnailTextColor: '777777ff',
-      thumbnailFallback: null,  // Default to false.
-      showFakeboxHint: false
+      thumbnailFallback: null  // Default to false.
     };
   }
   return ntpDesign;

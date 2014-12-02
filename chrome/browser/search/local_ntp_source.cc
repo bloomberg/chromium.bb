@@ -37,8 +37,8 @@ const char kMaterialDesignNTPFieldTrialName[] = "MaterialDesignNTP";
 const char kMaterialDesignNTPFieldTrialEnabledPrefix[] = "Enabled";
 
 // Names of NTP designs in local resources, also used in CSS.
-const char kClassicalNTPName[] = "classical";
-const char kMaterialDesignNTPName[] = "md";
+const char kClassicalNTPName[] = "des-cla";
+const char kMaterialDesignNTPName[] = "des-mat";
 
 // Signifies a locally constructed resource, i.e. not from grit/.
 const int kLocalResource = -1;

@@ -338,8 +338,7 @@ function renderTheme() {
   var fakeboxText = $(IDS.FAKEBOX_TEXT);
   if (fakeboxText) {
     fakeboxText.innerHTML = '';
-    if (NTP_DESIGN.showFakeboxHint &&
-        configData.translatedStrings.searchboxPlaceholder) {
+    if (configData.translatedStrings.searchboxPlaceholder) {
       fakeboxText.textContent =
           configData.translatedStrings.searchboxPlaceholder;
     }
@@ -380,7 +379,7 @@ function renderTheme() {
 function onThemeChange() {
   renderTheme();
   tilesContainer.innerHTML = '';
-  renderAndShowTiles();
+  reloadAllTiles();
 }
 
 
@@ -543,7 +542,7 @@ function reloadAllTiles() {
 
 
 /**
- * Binds onload events for a tile's internal <iframe> elements.
+ * Binds onload events for a tile's internal iframe elements.
  * @param {Tile} tile The main tile to bind events to.
  * @param {Barrier} tileVisibilityBarrier A barrier to make all tiles visible
  *   the moment all tiles are loaded.
@@ -577,7 +576,7 @@ function renderAndShowTiles() {
   var numDesired = Math.min(tiles.length, numColumnsShown * NUM_ROWS);
 
   // If we need to render new tiles, manage the visibility to hide intermediate
-  // load states of the <iframe>s.
+  // load states of the iframes.
   if (numExisting < numDesired) {
     var showAll = function() {
       for (var i = 0; i < numDesired; ++i) {
@@ -662,7 +661,7 @@ function getMostVisitedThumbnailIframeUrl(rid, position) {
 /**
  * Creates a Tile with the specified page data. If no data is provided, a
  * filler Tile is created.
- * @param {Object} page The page data.
+ * @param {?Object} page The page data.
  * @param {number} position The position of the tile.
  * @return {Tile} The new Tile.
  */
@@ -670,93 +669,95 @@ function createTile(page, position) {
   var tileElem = document.createElement('div');
   tileElem.classList.add(CLASSES.TILE);
   // Prevent tile from being selected (and highlighted) when areas outside the
-  // <iframe>s are clicked.
+  // iframes are clicked.
   tileElem.addEventListener('mousedown', function(e) {
     e.preventDefault();
   });
-  var innerElem = createAndAppendElement(tileElem, 'div', CLASSES.TILE_INNER);
 
-  if (page) {
-    var rid = page.rid;
-    tileElem.classList.add(CLASSES.PAGE);
-
-    var navigateFunction = function(e) {
-      e.preventDefault();
-      ntpApiHandle.navigateContentWindow(rid, getDispositionFromEvent(e));
-    };
-
-    // The click handler for navigating to the page identified by the RID.
-    tileElem.addEventListener('click', navigateFunction);
-
-    // The iframe which renders the page title.
-    var titleElem = document.createElement('iframe');
-    // Enable tab navigation on the iframe, which will move the selection to the
-    // link element (which also has a tabindex).
-    titleElem.tabIndex = '0';
-
-    // Why iframes have IDs:
-    //
-    // On navigating back to the NTP we see several onmostvisitedchange() events
-    // in series with incrementing RIDs. After the first event, a set of iframes
-    // begins loading RIDs n, n+1, ..., n+k-1; after the second event, these get
-    // destroyed and a new set begins loading RIDs n+k, n+k+1, ..., n+2k-1.
-    // Now due to crbug.com/68841, Chrome incorrectly loads the content for the
-    // first set of iframes into the most recent set of iframes.
-    //
-    // Giving iframes distinct ids seems to cause some invalidation and prevent
-    // associating the incorrect data.
-    //
-    // TODO(jered): Find and fix the root (probably Blink) bug.
-
-    // Keep this ID here. See comment above.
-    titleElem.id = 'title-' + rid;
-    titleElem.className = CLASSES.TITLE;
-    titleElem.src = getMostVisitedTitleIframeUrl(rid, position);
-    innerElem.appendChild(titleElem);
-
-    // A fallback element for missing thumbnails.
-    if (NTP_DESIGN.thumbnailFallback) {
-      var fallbackElem = createAndAppendElement(
-          innerElem, 'div', CLASSES.THUMBNAIL_FALLBACK);
-      if (NTP_DESIGN.thumbnailFallback === THUMBNAIL_FALLBACK.DOT)
-        createAndAppendElement(fallbackElem, 'div', CLASSES.DOT);
-    }
-
-    // The iframe which renders either a thumbnail or domain element.
-    var thumbnailElem = document.createElement('iframe');
-    thumbnailElem.tabIndex = '-1';
-    thumbnailElem.setAttribute('aria-hidden', 'true');
-    // Keep this ID here. See comment above.
-    thumbnailElem.id = 'thumb-' + rid;
-    thumbnailElem.className = CLASSES.THUMBNAIL;
-    thumbnailElem.src = getMostVisitedThumbnailIframeUrl(rid, position);
-    innerElem.appendChild(thumbnailElem);
-
-    // The button used to blacklist this page.
-    var blacklistButton = createAndAppendElement(
-        innerElem, 'div', CLASSES.BLACKLIST_BUTTON);
-    createAndAppendElement(
-        blacklistButton, 'div', CLASSES.BLACKLIST_BUTTON_INNER);
-    var blacklistFunction = generateBlacklistFunction(rid);
-    blacklistButton.addEventListener('click', blacklistFunction);
-    blacklistButton.title = configData.translatedStrings.removeThumbnailTooltip;
-
-    // A helper mask on top of the tile that is used to create hover border
-    // and/or to darken the thumbnail on focus.
-    var maskElement = createAndAppendElement(
-        innerElem, 'div', CLASSES.THUMBNAIL_MASK);
-
-    // The page favicon, or a fallback.
-    var favicon = createAndAppendElement(innerElem, 'div', CLASSES.FAVICON);
-    if (page.faviconUrl) {
-      favicon.style.backgroundImage = 'url(' + page.faviconUrl + ')';
-    } else {
-      favicon.classList.add(CLASSES.FAVICON_FALLBACK);
-    }
-    return new Tile(tileElem, innerElem, titleElem, thumbnailElem, rid);
-  } else {
+  if (!page) {
     return new Tile(tileElem);
   }
+
+  var rid = page.rid;
+  tileElem.classList.add(CLASSES.PAGE);
+
+  var navigateFunction = function(e) {
+    e.preventDefault();
+    ntpApiHandle.navigateContentWindow(rid, getDispositionFromEvent(e));
+  };
+
+  // The click handler for navigating to the page identified by the RID.
+  tileElem.addEventListener('click', navigateFunction);
+
+  // Container of tile contents.
+  var innerElem = createAndAppendElement(tileElem, 'div', CLASSES.TILE_INNER);
+
+  // The iframe which renders the page title.
+  var titleElem = document.createElement('iframe');
+  // Enable tab navigation on the iframe, which will move the selection to the
+  // link element (which also has a tabindex).
+  titleElem.tabIndex = '0';
+
+  // Why iframes have IDs:
+  //
+  // On navigating back to the NTP we see several onmostvisitedchange() events
+  // in series with incrementing RIDs. After the first event, a set of iframes
+  // begins loading RIDs n, n+1, ..., n+k-1; after the second event, these get
+  // destroyed and a new set begins loading RIDs n+k, n+k+1, ..., n+2k-1.
+  // Now due to crbug.com/68841, Chrome incorrectly loads the content for the
+  // first set of iframes into the most recent set of iframes.
+  //
+  // Giving iframes distinct ids seems to cause some invalidation and prevent
+  // associating the incorrect data.
+  //
+  // TODO(jered): Find and fix the root (probably Blink) bug.
+
+  // Keep this ID here. See comment above.
+  titleElem.id = 'title-' + rid;
+  titleElem.className = CLASSES.TITLE;
+  titleElem.src = getMostVisitedTitleIframeUrl(rid, position);
+  innerElem.appendChild(titleElem);
+
+  // A fallback element for missing thumbnails.
+  if (NTP_DESIGN.thumbnailFallback) {
+    var fallbackElem = createAndAppendElement(
+        innerElem, 'div', CLASSES.THUMBNAIL_FALLBACK);
+    if (NTP_DESIGN.thumbnailFallback === THUMBNAIL_FALLBACK.DOT)
+      createAndAppendElement(fallbackElem, 'div', CLASSES.DOT);
+  }
+
+  // The iframe which renders either a thumbnail or domain element.
+  var thumbnailElem = document.createElement('iframe');
+  thumbnailElem.tabIndex = '-1';
+  thumbnailElem.setAttribute('aria-hidden', 'true');
+  // Keep this ID here. See comment above.
+  thumbnailElem.id = 'thumb-' + rid;
+  thumbnailElem.className = CLASSES.THUMBNAIL;
+  thumbnailElem.src = getMostVisitedThumbnailIframeUrl(rid, position);
+  innerElem.appendChild(thumbnailElem);
+
+  // The button used to blacklist this page.
+  var blacklistButton = createAndAppendElement(
+      innerElem, 'div', CLASSES.BLACKLIST_BUTTON);
+  createAndAppendElement(
+      blacklistButton, 'div', CLASSES.BLACKLIST_BUTTON_INNER);
+  var blacklistFunction = generateBlacklistFunction(rid);
+  blacklistButton.addEventListener('click', blacklistFunction);
+  blacklistButton.title = configData.translatedStrings.removeThumbnailTooltip;
+
+  // A helper mask on top of the tile that is used to create hover border
+  // and/or to darken the thumbnail on focus.
+  var maskElement = createAndAppendElement(
+      innerElem, 'div', CLASSES.THUMBNAIL_MASK);
+
+  // The page favicon, or a fallback.
+  var favicon = createAndAppendElement(innerElem, 'div', CLASSES.FAVICON);
+  if (page.faviconUrl) {
+    favicon.style.backgroundImage = 'url(' + page.faviconUrl + ')';
+  } else {
+    favicon.classList.add(CLASSES.FAVICON_FALLBACK);
+  }
+  return new Tile(tileElem, innerElem, titleElem, thumbnailElem, rid);
 }
 
 
@@ -1180,9 +1181,10 @@ function init() {
 
   if (searchboxApiHandle.rtl) {
     $(IDS.NOTIFICATION).dir = 'rtl';
-    document.body.setAttribute('dir', 'rtl');
+    // Grabbing the root HTML element.
+    document.documentElement.setAttribute('dir', 'rtl');
     // Add class for setting alignments based on language directionality.
-    document.body.classList.add(CLASSES.RTL);
+    document.documentElement.classList.add(CLASSES.RTL);
     $(IDS.TILES).dir = 'rtl';
   }
 
