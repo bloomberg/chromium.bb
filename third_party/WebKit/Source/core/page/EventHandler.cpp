@@ -2209,7 +2209,6 @@ bool EventHandler::handleGestureScrollEvent(const PlatformGestureEvent& gestureE
     case PlatformEvent::GestureScrollBegin:
         return handleGestureScrollBegin(gestureEvent);
     case PlatformEvent::GestureScrollUpdate:
-    case PlatformEvent::GestureScrollUpdateWithoutPropagation:
         return handleGestureScrollUpdate(gestureEvent);
     case PlatformEvent::GestureScrollEnd:
         return handleGestureScrollEnd(gestureEvent);
@@ -2379,8 +2378,7 @@ bool EventHandler::handleScrollGestureOnResizer(Node* eventTarget, const Platfor
             m_offsetFromResizeCorner = LayoutSize(m_resizeScrollableArea->offsetFromResizeCorner(p));
             return true;
         }
-    } else if (gestureEvent.type() == PlatformEvent::GestureScrollUpdate ||
-               gestureEvent.type() == PlatformEvent::GestureScrollUpdateWithoutPropagation) {
+    } else if (gestureEvent.type() == PlatformEvent::GestureScrollUpdate) {
         if (m_resizeScrollableArea && m_resizeScrollableArea->inResizeMode()) {
             m_resizeScrollableArea->resize(gestureEvent, m_offsetFromResizeCorner);
             return true;
@@ -2456,6 +2454,8 @@ static bool scrollAreaOnBothAxes(const FloatSize& delta, ScrollableArea& view)
 
 bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gestureEvent)
 {
+    ASSERT(gestureEvent.type() == PlatformEvent::GestureScrollUpdate);
+
     FloatSize delta(gestureEvent.deltaX(), gestureEvent.deltaY());
     if (delta.isZero())
         return false;
@@ -2469,18 +2469,17 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
         RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
 
         Node* stopNode = nullptr;
-        bool scrollShouldNotPropagate = gestureEvent.type() == PlatformEvent::GestureScrollUpdateWithoutPropagation
-            || (gestureEvent.type() == PlatformEvent::GestureScrollUpdate && gestureEvent.preventPropagation());
 
         // Try to send the event to the correct view.
         if (passScrollGestureEventToWidget(gestureEvent, renderer)) {
-            if (scrollShouldNotPropagate)
+            if (gestureEvent.preventPropagation())
                 m_previousGestureScrolledNode = m_scrollGestureHandlingNode;
 
             return true;
         }
 
-        if (scrollShouldNotPropagate)
+
+        if (gestureEvent.preventPropagation())
             stopNode = m_previousGestureScrolledNode.get();
 
         // First try to scroll the closest scrollable RenderBox ancestor of |node|.
@@ -2488,7 +2487,7 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
         bool horizontalScroll = scroll(ScrollLeft, granularity, node, &stopNode, delta.width());
         bool verticalScroll = scroll(ScrollUp, granularity, node, &stopNode, delta.height());
 
-        if (scrollShouldNotPropagate)
+        if (gestureEvent.preventPropagation())
             m_previousGestureScrolledNode = stopNode;
 
         if (horizontalScroll || verticalScroll) {

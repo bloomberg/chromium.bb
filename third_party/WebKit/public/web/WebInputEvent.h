@@ -113,7 +113,6 @@ public:
         GestureTypeFirst = GestureScrollBegin,
         GestureScrollEnd,
         GestureScrollUpdate,
-        GestureScrollUpdateWithoutPropagation,
         GestureFlingStart,
         GestureFlingCancel,
         GestureShowPress,

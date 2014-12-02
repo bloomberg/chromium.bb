@@ -41,7 +41,6 @@ PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr
     case PlatformEvent::GestureScrollEnd:
         eventType = EventTypeNames::gesturescrollend; break;
     case PlatformEvent::GestureScrollUpdate:
-    case PlatformEvent::GestureScrollUpdateWithoutPropagation:
         // Only deltaX/Y are used when converting this
         // back to a PlatformGestureEvent.
         eventType = EventTypeNames::gesturescrollupdate;

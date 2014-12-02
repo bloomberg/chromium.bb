@@ -184,14 +184,6 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
         m_data.m_scrollUpdate.m_velocityY = e.data.scrollUpdate.velocityY;
         m_data.m_scrollUpdate.m_preventPropagation = e.data.scrollUpdate.preventPropagation;
         break;
-    case WebInputEvent::GestureScrollUpdateWithoutPropagation:
-        m_type = PlatformEvent::GestureScrollUpdateWithoutPropagation;
-        m_data.m_scrollUpdate.m_deltaX = scaleDeltaToWindow(widget, e.data.scrollUpdate.deltaX);
-        m_data.m_scrollUpdate.m_deltaY = scaleDeltaToWindow(widget, e.data.scrollUpdate.deltaY);
-        m_data.m_scrollUpdate.m_velocityX = e.data.scrollUpdate.velocityX;
-        m_data.m_scrollUpdate.m_velocityY = e.data.scrollUpdate.velocityY;
-        m_data.m_scrollUpdate.m_preventPropagation = e.data.scrollUpdate.preventPropagation;
-        break;
     case WebInputEvent::GestureTap:
         m_type = PlatformEvent::GestureTap;
         m_area = expandedIntSize(scaleSizeToWindow(widget, FloatSize(e.data.tap.width, e.data.tap.height)));

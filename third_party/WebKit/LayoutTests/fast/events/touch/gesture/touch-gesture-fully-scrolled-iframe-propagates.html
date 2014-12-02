@@ -60,7 +60,7 @@ var scrollAmountY = ['50'];
 var wheelEventsOccurred = 0;
 var expectedWheelEventsOccurred = ['0'];
 var scrollEventsOccurred = 0;
-var scrolledElement = 'movedbox'
+var scrolledElement = 'movedbox';
 var scrollEventsOccurred = 0;
 var expectedScrollEventsOccurred = '1';
 
@@ -74,14 +74,15 @@ function firstGestureScroll()
 
     iframeDocumentElement.scrollTop = amountToScroll;
 
-    // Sanity - make sure the iframe is actually fully scrolled scrolled
+    // Sanity - make sure the iframe is actually fully scrolled
     shouldBe('iframeBody.scrollHeight - iframeDocumentElement.scrollTop', 'iframe.clientHeight');
 
     eventSender.gestureScrollBegin(10, 72);
-    eventSender.gestureScrollUpdateWithoutPropagation(0, -20);
-    eventSender.gestureScrollUpdateWithoutPropagation(0, -18);
-    eventSender.gestureScrollUpdateWithoutPropagation(0, -15);
-    eventSender.gestureScrollUpdateWithoutPropagation(0, -10);
+    // Prevent scroll to propagate by passing true for third parameter
+    eventSender.gestureScrollUpdate(0, -20, true);  
+    eventSender.gestureScrollUpdate(0, -18, true);
+    eventSender.gestureScrollUpdate(0, -15, true);
+    eventSender.gestureScrollUpdate(0, -10, true);
     eventSender.gestureScrollEnd(0, 0);
 
     amountToScroll = movedbox.scrollHeight - movedbox.clientHeight;
@@ -106,7 +107,7 @@ function runTest()
         description('This tests that a fling gesture sent to an iframe with no remaining scroll offset ' +
                     'is correctly targeting the parent container.');
         
-        if (checkTestDependencies() && window.eventSender.gestureScrollUpdateWithoutPropagation)
+        if (checkTestDependencies() && window.eventSender.gestureScrollUpdate)
             firstGestureScroll();
         else
             exitIfNecessary();

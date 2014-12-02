@@ -87,7 +87,7 @@ var scrollAmountY = ['0', '0'];
 var wheelEventsOccurred = 0;
 var expectedWheelEventsOccurred = ['0', '0'];
 var scrollEventsOccurred = 0;
-var scrolledElement = 'movedbox'
+var scrolledElement = 'movedbox';
 var scrollEventsOccurred = 0;
 var expectedScrollEventsOccurred = '1';
 
@@ -95,7 +95,7 @@ function firstGestureScroll()
 {
     debug("first gesture");
     eventSender.gestureScrollBegin(10, 72);
-    eventSender.gestureScrollUpdateWithoutPropagation(0, -150);
+    eventSender.gestureScrollUpdate(0, -150, true);
     eventSender.gestureScrollEnd(0, 0);
 
     // Wait for layout.
@@ -106,8 +106,8 @@ function secondGestureScroll()
 {
     debug("second gesture");
     eventSender.gestureScrollBegin(12, 40);
-    eventSender.gestureScrollUpdateWithoutPropagation(0, -50);
-    eventSender.gestureScrollUpdateWithoutPropagation(0, -10);
+    eventSender.gestureScrollUpdate(0, -50, true);
+    eventSender.gestureScrollUpdate(0, -10, true);
     eventSender.gestureScrollEnd(0, 0);
 
     // Wait for layout.
@@ -127,9 +127,9 @@ function runTest()
     if (window.eventSender) {
         description('This tests that a gesture scroll is not propagated from an ' +
                 'inner div to an outer div when the inner div has no ' +
-                'remaining scroll offset when the GestureScrollUpdateWithoutPropagation ' +
-                'event type is used.');
-        if (checkTestDependencies() && window.eventSender.gestureScrollUpdateWithoutPropagation)
+                'remaining scroll offset when the preventPropagation flag is set for ' +
+                'the GestureScrollUpdate event type.');
+        if (checkTestDependencies() && window.eventSender.gestureScrollUpdate)
             firstGestureScroll();
         else
             exitIfNecessary();

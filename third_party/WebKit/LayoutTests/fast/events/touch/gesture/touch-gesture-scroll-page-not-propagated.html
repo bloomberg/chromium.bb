@@ -107,7 +107,7 @@ function firstGestureScroll()
 {
     debug("first gesture");
     eventSender.gestureScrollBegin(10, 72);
-    eventSender.gestureScrollUpdateWithoutPropagation(0, -110);
+    eventSender.gestureScrollUpdate(0, -110, true);
     eventSender.gestureScrollEnd(0, 0);
 
     // Wait for layout.
@@ -118,8 +118,8 @@ function secondGestureScroll()
 {
     debug("second gesture");
     eventSender.gestureScrollBegin(12, 40);
-    eventSender.gestureScrollUpdateWithoutPropagation(0, -200);
-    eventSender.gestureScrollUpdateWithoutPropagation(0, -160);
+    eventSender.gestureScrollUpdate(0, -200, true);
+    eventSender.gestureScrollUpdate(0, -160, true);
     eventSender.gestureScrollEnd(0, 0);
 
     // Wait for layout.
@@ -139,8 +139,8 @@ function runTest()
     if (window.eventSender) {
         description('This tests that a gesture scroll is not propagated from a div ' + 
                 'to the page when the div has no remaining scroll offset when ' +
-                'the GestureScrollUpdateWithoutPropagation event type is used.');
-        if (checkTestDependencies() && window.eventSender.gestureScrollUpdateWithoutPropagation)
+                'the preventPropagation flag is set for the GestureScrollUpdate event.');
+        if (checkTestDependencies() && window.eventSender.gestureScrollUpdate)
             firstGestureScroll();
         else
             exitIfNecessary();

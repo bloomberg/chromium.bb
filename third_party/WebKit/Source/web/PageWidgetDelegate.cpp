@@ -129,7 +129,6 @@ bool PageWidgetDelegate::handleInputEvent(PageWidgetEventHandler& handler, const
     case WebInputEvent::GestureScrollBegin:
     case WebInputEvent::GestureScrollEnd:
     case WebInputEvent::GestureScrollUpdate:
-    case WebInputEvent::GestureScrollUpdateWithoutPropagation:
     case WebInputEvent::GestureFlingStart:
     case WebInputEvent::GestureFlingCancel:
     case WebInputEvent::GestureTap:

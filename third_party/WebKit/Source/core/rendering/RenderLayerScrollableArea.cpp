@@ -1338,7 +1338,6 @@ void RenderLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSiz
         pos = static_cast<const PlatformMouseEvent*>(&evt)->position();
         break;
     case PlatformEvent::GestureScrollUpdate:
-    case PlatformEvent::GestureScrollUpdateWithoutPropagation:
         pos = static_cast<const PlatformGestureEvent*>(&evt)->position();
         gevt = static_cast<const PlatformGestureEvent*>(&evt);
         pos = gevt->position();

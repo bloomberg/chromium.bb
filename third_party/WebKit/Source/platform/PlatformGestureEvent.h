@@ -52,8 +52,7 @@ public:
         memset(&m_data, 0, sizeof(m_data));
         if (type == PlatformEvent::GestureScrollBegin
             || type == PlatformEvent::GestureScrollEnd
-            || type == PlatformEvent::GestureScrollUpdate
-            || type == PlatformEvent::GestureScrollUpdateWithoutPropagation) {
+            || type == PlatformEvent::GestureScrollUpdate) {
             m_data.m_scrollUpdate.m_deltaX = deltaX;
             m_data.m_scrollUpdate.m_deltaY = deltaY;
             m_data.m_scrollUpdate.m_velocityX = velocityX;
@@ -69,15 +68,13 @@ public:
 
     float deltaX() const
     {
-        ASSERT(m_type == PlatformEvent::GestureScrollUpdate
-            || m_type == PlatformEvent::GestureScrollUpdateWithoutPropagation);
+        ASSERT(m_type == PlatformEvent::GestureScrollUpdate);
         return m_data.m_scrollUpdate.m_deltaX;
     }
 
     float deltaY() const
     {
-        ASSERT(m_type == PlatformEvent::GestureScrollUpdate
-            || m_type == PlatformEvent::GestureScrollUpdateWithoutPropagation);
+        ASSERT(m_type == PlatformEvent::GestureScrollUpdate);
         return m_data.m_scrollUpdate.m_deltaY;
     }
 
@@ -89,22 +86,19 @@ public:
 
     float velocityX() const
     {
-        ASSERT(m_type == PlatformEvent::GestureScrollUpdate
-            || m_type == PlatformEvent::GestureScrollUpdateWithoutPropagation);
+        ASSERT(m_type == PlatformEvent::GestureScrollUpdate);
         return m_data.m_scrollUpdate.m_velocityX;
     }
 
     float velocityY() const
     {
-        ASSERT(m_type == PlatformEvent::GestureScrollUpdate
-            || m_type == PlatformEvent::GestureScrollUpdateWithoutPropagation);
+        ASSERT(m_type == PlatformEvent::GestureScrollUpdate);
         return m_data.m_scrollUpdate.m_velocityY;
     }
 
     bool preventPropagation() const
     {
-        ASSERT(m_type == PlatformEvent::GestureScrollUpdate
-            || m_type == PlatformEvent::GestureScrollUpdateWithoutPropagation);
+        ASSERT(m_type == PlatformEvent::GestureScrollUpdate);
         return m_data.m_scrollUpdate.m_preventPropagation;
     }
 
@@ -130,7 +124,6 @@ public:
         case GestureScrollBegin:
         case GestureScrollEnd:
         case GestureScrollUpdate:
-        case GestureScrollUpdateWithoutPropagation:
         case GestureFlingStart:
         case GesturePinchBegin:
         case GesturePinchEnd:
