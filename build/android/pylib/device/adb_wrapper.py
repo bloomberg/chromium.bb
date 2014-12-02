@@ -9,6 +9,7 @@ should be delegated to a higher level (ex. DeviceUtils).
 """
 
 import errno
+import logging
 import os
 
 from pylib import cmd_helper
@@ -188,8 +189,7 @@ class AdbWrapper(object):
       try:
         status = int(output[output_end+1:])
       except ValueError:
-        output = '\n'.join([output.rstrip(),
-                            'adb shell error: exit status missing!'])
+        logging.warning('exit status of shell command %r missing.', command)
         raise device_errors.AdbCommandFailedError(
             args, output, device_serial=self._device_serial)
       output = output[:output_end]
