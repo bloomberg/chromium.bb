@@ -329,7 +329,13 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
   DCHECK([referenceButton isFlipped]);
   NSPoint anchor = NSMakePoint(NSMidX(bounds),
                                NSMaxY(bounds) - kBrowserActionBubbleYOffset);
-  return [referenceButton convertPoint:anchor toView:nil];
+  // Convert the point to the container view's frame, and adjust for animation.
+  NSPoint anchorInContainer =
+      [containerView_ convertPoint:anchor fromView:referenceButton];
+  anchorInContainer.x -= NSMinX([containerView_ frame]) -
+      NSMinX([containerView_ animationEndFrame]);
+
+  return [containerView_ convertPoint:anchorInContainer toView:nil];
 }
 
 - (BOOL)chevronIsHidden {
