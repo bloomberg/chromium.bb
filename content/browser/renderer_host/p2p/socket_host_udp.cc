@@ -77,7 +77,8 @@ P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender,
                                    net::NetLog::Source())),
       send_pending_(false),
       last_dscp_(net::DSCP_CS0),
-      throttler_(throttler) {
+      throttler_(throttler),
+      send_buffer_size_(0) {
 }
 
 P2PSocketHostUdp::~P2PSocketHostUdp() {
@@ -98,6 +99,8 @@ void P2PSocketHostUdp::SetSendBufferSize() {
     if (!SetOption(P2P_SOCKET_OPT_SNDBUF, send_buffer_size)) {
       LOG(WARNING) << "Failed to set socket send buffer size to "
                    << send_buffer_size;
+    } else {
+      send_buffer_size_ = send_buffer_size;
     }
   }
 }
@@ -358,6 +361,11 @@ bool P2PSocketHostUdp::SetOption(P2PSocketOption option, int value) {
     case P2P_SOCKET_OPT_RCVBUF:
       return socket_->SetReceiveBufferSize(value) == net::OK;
     case P2P_SOCKET_OPT_SNDBUF:
+      // Ignore any following call to set the send buffer size if we're under
+      // experiment.
+      if (send_buffer_size_ > 0) {
+        return true;
+      }
       return socket_->SetSendBufferSize(value) == net::OK;
     case P2P_SOCKET_OPT_DSCP:
       return (net::OK == socket_->SetDiffServCodePoint(
