@@ -32,6 +32,7 @@ class CastMetricsHelper {
    public:
     virtual ~MetricsSink() {}
 
+    virtual void OnAction(const std::string& action) = 0;
     virtual void OnEnumerationEvent(const std::string& name,
                                     int value, int num_buckets) = 0;
     virtual void OnTimeEvent(const std::string& name,
@@ -88,6 +89,7 @@ class CastMetricsHelper {
   CastMetricsHelper();
 
  private:
+  void LogAction(const std::string& action);
   void LogEnumerationHistogramEvent(const std::string& name,
                                     int value, int num_buckets);
   void LogTimeHistogramEvent(const std::string& name,
