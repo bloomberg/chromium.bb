@@ -52,7 +52,9 @@ void NetworkChangeNotifierChromeos::DnsConfigService::OnNetworkChange() {
 
 NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsChromeos()),
-      connection_type_(CONNECTION_NONE) {
+      connection_type_(CONNECTION_NONE),
+      poll_callback_(base::Bind(&NetworkChangeNotifierChromeos::PollForState,
+                                base::Unretained(this))) {
 }
 
 NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
@@ -66,6 +68,10 @@ void NetworkChangeNotifierChromeos::Initialize() {
   dns_config_service_->WatchConfig(
       base::Bind(net::NetworkChangeNotifier::SetDnsConfig));
 
+  PollForState();
+}
+
+void NetworkChangeNotifierChromeos::PollForState() {
   // Update initial connection state.
   DefaultNetworkChanged(
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork());
@@ -80,6 +86,13 @@ void NetworkChangeNotifierChromeos::Shutdown() {
 
 net::NetworkChangeNotifier::ConnectionType
 NetworkChangeNotifierChromeos::GetCurrentConnectionType() const {
+  // Re-evaluate connection state if we are offline since there is little
+  // cost to doing so.  Since we are in the context of a const method,
+  // this is done through a closure that holds a non-const reference to
+  // |this|, to allow PollForState() to modify our cached state.
+  // TODO(gauravsh): Figure out why we would have missed this notification.
+  if (connection_type_ == CONNECTION_NONE)
+    poll_callback_.Run();
   return connection_type_;
 }
 
@@ -117,8 +130,7 @@ void NetworkChangeNotifierChromeos::UpdateState(
   *dns_changed = false;
   if (!default_network || !default_network->IsConnectedState()) {
     // If we lost a default network, we must update our state and notify
-    // observers, otherwise we have nothing to do. (Under normal circumstances,
-    // we should never get duplicate no default network notifications).
+    // observers, otherwise we have nothing to do.
     if (connection_type_ != CONNECTION_NONE) {
       NET_LOG_EVENT("NCNDefaultNetworkLost", service_path_);
       *ip_address_changed = true;

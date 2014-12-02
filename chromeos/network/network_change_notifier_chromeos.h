@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
@@ -59,6 +60,10 @@ class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
                    bool* ip_address_changed,
                    bool* dns_changed);
 
+  // Proactively retrieves current network state from the network
+  // state handler and calls UpdateState with the result.
+  void PollForState();
+
   // Maps the shill network type and technology to its NetworkChangeNotifier
   // equivalent.
   static net::NetworkChangeNotifier::ConnectionType
@@ -77,6 +82,8 @@ class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
   std::vector<std::string> dns_servers_;
   // Service path for the current default network.
   std::string service_path_;
+  // Callback for refreshing network state.
+  base::Closure poll_callback_;
 
   scoped_ptr<DnsConfigService> dns_config_service_;
 
