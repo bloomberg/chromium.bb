@@ -274,6 +274,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     except cmd_helper.TimeoutError as e:
       exit_code = -1
       output = str(e)
+      json_output = ''
     finally:
       self._CleanupOutputDirectory()
       if self._options.single_step:
