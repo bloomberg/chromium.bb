@@ -329,9 +329,13 @@ input:disabled:-webkit-any([type='password'],
 
 :-webkit-any(.checkbox, .radio) label {
   /* Don't expand horizontally: <http://crbug.com/112091>. */
-  display: -webkit-inline-box;
+  display: inline-flex;
   padding-bottom: 7px;
   padding-top: 7px;
+}
+
+:-webkit-any(.checkbox, .radio) label input {
+  flex-shrink: 0;
 }
 
 :-webkit-any(.checkbox, .radio) label input ~ span {
