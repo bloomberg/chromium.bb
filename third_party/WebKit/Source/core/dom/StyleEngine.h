@@ -119,8 +119,7 @@ public:
     bool ignoringPendingStylesheets() const { return m_ignorePendingStylesheets; }
 
     unsigned maxDirectAdjacentSelectors() const { return m_maxDirectAdjacentSelectors; }
-    bool usesSiblingRules() const { return m_usesSiblingRules || m_usesSiblingRulesOverride; }
-    void setUsesSiblingRulesOverride(bool b) { m_usesSiblingRulesOverride = b; }
+    bool usesSiblingRules() const { return m_usesSiblingRules; }
     bool usesFirstLineRules() const { return m_usesFirstLineRules; }
     bool usesFirstLetterRules() const { return m_usesFirstLetterRules; }
     void setUsesFirstLetterRules(bool b) { m_usesFirstLetterRules = b; }
@@ -236,7 +235,6 @@ private:
     String m_selectedStylesheetSetName;
 
     bool m_usesSiblingRules;
-    bool m_usesSiblingRulesOverride;
     bool m_usesFirstLineRules;
     bool m_usesFirstLetterRules;
     bool m_usesRemUnits;
