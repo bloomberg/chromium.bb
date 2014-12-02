@@ -216,12 +216,8 @@ class EncryptedMediaIsTypeSupportedTest : public InProcessBrowserTest {
 #else
     pepper_plugin.append(pepper_type_for_key_system);
 #endif
-// TODO(sandersd): A component CDM registered this way declares support for
-// audio codecs, but not the other codecs we expect. http://crbug.com/356833.
-#if !defined(WIDEVINE_CDM_IS_COMPONENT)
     command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
                                      pepper_plugin);
-#endif
   }
 
   void LoadTestPage() {
@@ -347,28 +343,11 @@ class EncryptedMediaIsTypeSupportedExternalClearKeyTest
 #endif  // defined(ENABLE_PEPPER_CDMS)
 };
 
-// For Widevine tests, ensure that the Widevine adapter is loaded.
+// TODO(sandersd): Register the Widevine CDM if it is a component. A component
+// CDM registered using RegisterPepperCdm() declares support for audio codecs,
+// but not the other codecs we expect. http://crbug.com/356833.
 class EncryptedMediaIsTypeSupportedWidevineTest
     : public EncryptedMediaIsTypeSupportedTest {
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS) && \
-    defined(WIDEVINE_CDM_IS_COMPONENT)
- protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) override {
-    // File name of the adapter on different platforms.
-    const char adapter_file_name[] =
-#if defined(OS_MACOSX)
-        "widevinecdmadapter.plugin";
-#elif defined(OS_WIN)
-        "widevinecdmadapter.dll";
-#else  // OS_LINUX, etc.
-        "libwidevinecdmadapter.so";
-#endif
-
-    const std::string pepper_name("application/x-ppapi-widevine-cdm");
-    RegisterPepperCdm(command_line, adapter_file_name, pepper_name);
-  }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS) &&
-        // defined(WIDEVINE_CDM_IS_COMPONENT)
 };
 
 #if defined(ENABLE_PEPPER_CDMS)
