@@ -2,6 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+declare_args() {
+  # Path to the directory containing the VC binaries for the right
+  # combination of host and target architectures. Currently only the
+  # 64-bit host toolchain is supported, with either 32-bit or 64-bit targets.
+  # If vc_bin_dir is not specified on the command line (and it normally
+  # isn't), we will dynamically determine the right value to use at runtime.
+  vc_bin_dir = ""
+}
+
 import("//build/config/win/visual_studio_version.gni")
 import("//build/toolchain/goma.gni")
 
@@ -15,13 +24,20 @@ assert(is_win)
 # list to us.
 gyp_win_tool_path =
     rebase_path("//tools/gyp/pylib/gyp/win_tool.py", root_build_dir)
-exec_script("setup_toolchain.py",
-            [
-              visual_studio_path,
-              gyp_win_tool_path,
-              windows_sdk_path,
-              visual_studio_runtime_dirs,
-            ])
+
+toolchain_data = exec_script("setup_toolchain.py",
+                             [
+                               visual_studio_path,
+                               gyp_win_tool_path,
+                               windows_sdk_path,
+                               visual_studio_runtime_dirs,
+                               cpu_arch,
+                             ],
+                             "scope")
+
+if (vc_bin_dir == "") {
+  vc_bin_dir = toolchain_data.vc_bin_dir
+}
 
 # This value will be inherited in the toolchain below.
 concurrent_links = exec_script("../get_concurrent_links.py", [], "value")
@@ -49,6 +65,14 @@ template("msvc_toolchain") {
                 invoker.cpu_arch,
               ])
 
+  if (use_goma) {
+    goma_prefix = "$goma_dir/gomacc.exe "
+  } else {
+    goma_prefix = ""
+  }
+
+  cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
+
   toolchain(target_name) {
     # Make these apply to all tools below.
     lib_switch = ""
@@ -58,7 +82,7 @@ template("msvc_toolchain") {
       rspfile = "{{output}}.rsp"
       pdbname = "{{target_out_dir}}/{{target_output_name}}_c.pdb"
       command =
-          "ninja -t msvc -e $env -- cl.exe /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd$pdbname"
+          "ninja -t msvc -e $env -- $cl /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd$pdbname"
       depsformat = "msvc"
       description = "CC {{output}}"
       outputs =
@@ -72,7 +96,7 @@ template("msvc_toolchain") {
       # The PDB name needs to be different between C and C++ compiled files.
       pdbname = "{{target_out_dir}}/{{target_output_name}}_cc.pdb"
       command =
-          "ninja -t msvc -e $env -- cl.exe /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd$pdbname"
+          "ninja -t msvc -e $env -- $cl /nologo /showIncludes /FC @$rspfile /c {{source}} /Fo{{output}} /Fd$pdbname"
       depsformat = "msvc"
       description = "CXX {{output}}"
       outputs =

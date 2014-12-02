@@ -98,20 +98,26 @@ def _CopyTool(source_path):
 
 
 def main():
-  if len(sys.argv) != 5:
+  if len(sys.argv) != 6:
     print('Usage setup_toolchain.py '
-          '<visual studio path> <win tool path> <win sdk path> <runtime dirs>')
+          '<visual studio path> <win tool path> <win sdk path> '
+          '<runtime dirs> <cpu_arch>')
     sys.exit(2)
   vs_path = sys.argv[1]
   tool_source = sys.argv[2]
   win_sdk_path = sys.argv[3]
   runtime_dirs = sys.argv[4]
+  cpu_arch = sys.argv[5]
 
   _CopyTool(tool_source)
 
   archs = ('x86', 'x64')
+  assert cpu_arch in archs
+  vc_bin_dir = ''
+
   # TODO(scottmg|goma): Do we need an equivalent of
   # ninja_use_custom_environment_files?
+
   for arch in archs:
     # Extract environment variables for subprocesses.
     args = _SetupScript(arch, win_sdk_path)
@@ -122,12 +128,21 @@ def main():
     env = _ExtractImportantEnvironment(variables)
     env['PATH'] = runtime_dirs + ';' + env['PATH']
 
+    if arch == cpu_arch:
+      for path in env['PATH'].split(os.pathsep):
+        if os.path.exists(os.path.join(path, 'cl.exe')):
+          vc_bin_dir = os.path.realpath(path)
+          break
+
     # TODO(scottmg|thakis|dpranke): Is there an equivalent to
     # msvs_system_include_dirs that we need to inject into INCLUDE here?
 
     env_block = _FormatAsEnvironmentBlock(env)
     with open('environment.' + arch, 'wb') as f:
       f.write(env_block)
+
+  assert vc_bin_dir
+  print 'vc_bin_dir = "%s"' % vc_bin_dir
 
 
 if __name__ == '__main__':

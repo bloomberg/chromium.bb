@@ -955,7 +955,12 @@ config("optimize_max") {
 
 config("symbols") {
   if (is_win) {
-    cflags = [ "/Zi" ]  # Produce PDB file, no edit and continue.
+    import("//build/toolchain/goma.gni")
+    if (use_goma) {
+      cflags = [ "/Z7" ]  # No PDB file
+    } else {
+      cflags = [ "/Zi" ]  # Produce PDB file, no edit and continue.
+    }
     ldflags = [ "/DEBUG" ]
   } else {
     cflags = [ "-g2" ]
