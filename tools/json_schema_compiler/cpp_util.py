@@ -77,6 +77,7 @@ def GetParameterDeclaration(param, type_):
   """
   if param.type_.property_type in (PropertyType.ANY,
                                    PropertyType.ARRAY,
+                                   PropertyType.BINARY,
                                    PropertyType.CHOICES,
                                    PropertyType.OBJECT,
                                    PropertyType.REF,
