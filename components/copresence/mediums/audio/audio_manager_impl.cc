@@ -158,7 +158,7 @@ void AudioManagerImpl::SetToken(AudioType type,
 }
 
 const std::string AudioManagerImpl::GetToken(AudioType type) {
-  return playing_token_[type];
+  return playing_[type] ? playing_token_[type] : "";
 }
 
 bool AudioManagerImpl::IsRecording(AudioType type) {
