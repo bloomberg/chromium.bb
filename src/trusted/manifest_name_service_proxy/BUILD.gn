@@ -11,6 +11,7 @@ static_library("manifest_proxy") {
   ]
 
   deps = [
+    "//native_client/build/config/nacl:nacl_base",
     "//native_client/src/shared/platform:platform",
     "//native_client/src/shared/srpc:nonnacl_srpc",
     "//native_client/src/trusted/threading:thread_interface",

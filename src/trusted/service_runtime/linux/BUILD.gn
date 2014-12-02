@@ -97,6 +97,10 @@ static_library("nacl_bootstrap_lib") {
     "-fno-pie",
     "-fno-PIE",
   ]
+
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 
 

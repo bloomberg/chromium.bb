@@ -13,4 +13,7 @@ static_library("pthread") {
     "stack_end.c",
     "../valgrind/dynamic_annotations.c",
   ]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }

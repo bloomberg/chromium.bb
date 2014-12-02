@@ -11,6 +11,7 @@ static_library("desc_cacheability") {
   ]
 
   deps = [
+    "//native_client/build/config/nacl:nacl_base",
     "//native_client/src/trusted/nacl_base:nacl_base",
     "//native_client/src/trusted/desc:nrd_xfer",
     "//native_client/src/shared/platform:platform"

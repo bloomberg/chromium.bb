@@ -28,6 +28,9 @@ source_set("crt_x86_32") {
     "//native_client/src/untrusted/stubs/crti_x86_32.S",
     "//native_client/src/untrusted/stubs/crtn_x86_32.S",
   ]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 
 source_set("crt_x86_64") {
@@ -36,6 +39,9 @@ source_set("crt_x86_64") {
     "//native_client/src/untrusted/stubs/crti_x86_64.S",
     "//native_client/src/untrusted/stubs/crtn_x86_64.S",
   ]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 
 source_set("crt_arm") {
@@ -43,6 +49,9 @@ source_set("crt_arm") {
   sources = [
     "//native_client/src/untrusted/stubs/crti_arm.S",
     "//native_client/src/untrusted/stubs/crtn_arm.S",
+  ]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
   ]
 }
 

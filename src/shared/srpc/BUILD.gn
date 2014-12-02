@@ -7,6 +7,7 @@
 
 static_library("nonnacl_srpc") {
   deps = [
+    "//native_client/build/config/nacl:nacl_base",
     "//native_client/src/untrusted/nacl:imc_syscalls",
   ]
 
@@ -28,6 +29,7 @@ static_library("nonnacl_srpc") {
 
 static_library("srpc") {
   deps = [
+    "//native_client/build/config/nacl:nacl_base",
     "//native_client/src/untrusted/nacl:imc_syscalls",
   ]
 

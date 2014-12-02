@@ -8,6 +8,9 @@ static_library("validators") {
   sources = [
     "validator_init.c",
   ]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 
 static_library("validation_cache") {
@@ -15,6 +18,7 @@ static_library("validation_cache") {
     "validation_cache.c",
   ]
   deps = [
+    "//native_client/build/config/nacl:nacl_base",
     "//native_client/src/shared/platform:platform",
   ]
 }

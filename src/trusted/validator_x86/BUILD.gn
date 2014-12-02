@@ -9,4 +9,7 @@ static_library("nccopy") {
     "nccopycode.c",
     "nccopycode_stores.S",
   ]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }

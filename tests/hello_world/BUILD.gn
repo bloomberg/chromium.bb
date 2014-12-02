@@ -4,4 +4,7 @@
 
 executable("hello_world") {
   sources = ["hello_world.c"]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }

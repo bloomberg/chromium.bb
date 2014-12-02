@@ -41,4 +41,8 @@ static_library("nrd_xfer") {
       "win/nacl_desc.c",
     ]
   }
+
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }

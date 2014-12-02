@@ -8,11 +8,17 @@ static_library("sel_main") {
   sources = [
     "sel_main.c",
   ]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 
 static_library("sel_main_chrome") {
   sources = [
     "sel_main_chrome.c",
+  ]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
   ]
 }
 
@@ -20,11 +26,17 @@ static_library("env_cleanser") {
   sources = [
     "env_cleanser.c",
   ]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 
 static_library("nacl_error_code") {
   sources = [
     "nacl_error_code.c",
+  ]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
   ]
 }
 
@@ -193,7 +205,9 @@ static_library("sel") {
     ]
   }
 
-  deps = []
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
   if (cpu_arch == "arm") {
     deps += [
       "//native_client/src/trusted/validator_arm:ncvalidate_arm_v2"
@@ -224,6 +238,7 @@ static_library("sel") {
 executable("sel_ldr") {
   sources = ["nacl_test_injection_main.c"]
   deps = [
+    "//native_client/build/config/nacl:nacl_base",
     "//native_client/src/shared/gio:gio",
     "//native_client/src/shared/imc:imc",
     "//native_client/src/shared/platform:platform",

@@ -21,4 +21,8 @@ static_library("cpu_features") {
       "arch/x86/cpu_xgetbv.S",
     ]
   }
+
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }

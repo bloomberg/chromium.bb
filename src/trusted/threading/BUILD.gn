@@ -9,4 +9,7 @@ static_library("thread_interface") {
   sources = [
     "nacl_thread_interface.c",
   ]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }

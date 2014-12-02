@@ -60,6 +60,7 @@ static_library("platform_qual_lib") {
   }
 
   deps = [
+    "//native_client/build/config/nacl:nacl_base",
     "//native_client/src/trusted/cpu_features:cpu_features",
   ]
 }
@@ -82,5 +83,9 @@ if (cpu_arch != "arm") {
         "-mdynamic-no-pic",
       ]
     }
+
+    deps = [
+      "//native_client/build/config/nacl:nacl_base",
+    ]
   }
 }

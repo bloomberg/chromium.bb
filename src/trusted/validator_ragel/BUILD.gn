@@ -24,6 +24,9 @@ static_library("dfa_validate") {
       "dfa_validate_64.c",
     ]
   }
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 
 # Low-level platform-independent interface supporting both 32 and 64 bit,
@@ -36,4 +39,7 @@ static_library("rdfa_validator") {
     "validator_features_validator.c"
   ]
   defines = ["VALIDATOR_EXPORT=DLLEXPORT"]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }

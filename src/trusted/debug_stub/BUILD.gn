@@ -30,6 +30,9 @@ static_library("debug_stub") {
       "win/thread_impl.cc",
     ]
   }
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 
 executable("gdb_rsp_unittest") {
@@ -42,6 +45,7 @@ executable("gdb_rsp_unittest") {
   ]
 
   deps = [
+    "//native_client/build/config/nacl:nacl_base",
     "debug_stub",
   ]
 }

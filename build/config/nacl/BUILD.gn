@@ -16,3 +16,19 @@ config("nexe_defines") {
     "DYNAMIC_ANNOTATIONS_PREFIX=NACL_"
   ]
 }
+
+# The base target that all targets in the NaCl build should depend on.
+# This allows configs to be modified for everything in the NaCl build, even when
+# the NaCl build is composed into the Chrome build.  (GN has no functionality to
+# add flags to everythin in //native_client, having a base target works around
+# that limitation.)
+source_set("nacl_base") {
+  public_configs = [
+    ":nacl_defines"
+  ]
+  if (os == "nacl") {
+    public_configs += [
+      ":nexe_defines"
+    ]
+  }
+}

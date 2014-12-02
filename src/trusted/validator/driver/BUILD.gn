@@ -11,6 +11,7 @@ static_library("elf_load") {
   ]
 
   deps = [
+    "//native_client/build/config/nacl:nacl_base",
     "//native_client/src/shared/platform:platform",
   ]
 }
@@ -20,6 +21,7 @@ executable("ncval_new") {
   ]
 
   deps = [
+    "//native_client/build/config/nacl:nacl_base",
     ":elf_load",
     "//native_client/src/shared/platform:platform",
     "//native_client/src/trusted/cpu_features:cpu_features",

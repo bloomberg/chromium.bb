@@ -10,4 +10,7 @@ static_library("reverse_service") {
     "reverse_service.cc",
     "reverse_service_c.c",
   ]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }

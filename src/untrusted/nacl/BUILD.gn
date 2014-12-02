@@ -17,6 +17,9 @@ static_library("nacl_dyncode_private") {
       "-allow-asm",
     ]
   }
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 static_library("nacl_random_private") {
   cflags_c = []
@@ -31,6 +34,9 @@ static_library("nacl_random_private") {
       "-allow-asm",
     ]
   }
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 static_library("nacl_sys_private") {
   cflags_c = []
@@ -52,6 +58,9 @@ static_library("nacl_sys_private") {
       "-allow-asm",
     ]
   }
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 static_library("imc_syscalls") {
   cflags_c = []
@@ -72,6 +81,9 @@ static_library("imc_syscalls") {
       "-allow-asm",
     ]
   }
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 static_library("nacl_exception_private") {
   cflags_c = []
@@ -85,6 +97,9 @@ static_library("nacl_exception_private") {
       "-allow-asm",
     ]
   }
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 static_library("nacl_list_mappings_private") {
   cflags_c = []
@@ -98,6 +113,9 @@ static_library("nacl_list_mappings_private") {
       "-allow-asm",
     ]
   }
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 static_library("nacl_dyncode") {
   cflags_c = []
@@ -111,6 +129,9 @@ static_library("nacl_dyncode") {
       "-allow-asm",
     ]
   }
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 static_library("nacl") {
   cflags_c = ["-std=c99"]
@@ -330,6 +351,10 @@ static_library("nacl") {
       "-allow-asm",
     ]
   }
+
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 
 source_set("irt_random") {
@@ -344,6 +369,10 @@ source_set("irt_random") {
       "-allow-asm",
     ]
   }
+
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 source_set("irt_nameservice") {
   cflags_c = []
@@ -357,6 +386,10 @@ source_set("irt_nameservice") {
       "-allow-asm",
     ]
   }
+
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 static_library("nacl_exception") {
   cflags_c = []
@@ -370,6 +403,10 @@ static_library("nacl_exception") {
       "-allow-asm",
     ]
   }
+
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 static_library("nacl_list_mappings") {
   cflags_c = []
@@ -383,6 +420,10 @@ static_library("nacl_list_mappings") {
       "-allow-asm",
     ]
   }
+
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }
 
 if (os != "glibc") {
@@ -398,6 +439,10 @@ if (os != "glibc") {
         "-allow-asm",
       ]
     }
+
+    deps = [
+      "//native_client/build/config/nacl:nacl_base",
+    ]
   }
   source_set("gc_hooks_private") {
     cflags_c = []
@@ -411,6 +456,9 @@ if (os != "glibc") {
         "-allow-asm",
       ]
     }
+    deps = [
+      "//native_client/build/config/nacl:nacl_base",
+    ]
   }
   source_set("private_blockhook") {
     cflags_c = []
@@ -424,5 +472,9 @@ if (os != "glibc") {
         "-allow-asm",
       ]
     }
+
+    deps = [
+      "//native_client/build/config/nacl:nacl_base",
+    ]
   }
 }

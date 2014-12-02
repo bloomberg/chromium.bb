@@ -9,4 +9,7 @@ static_library("weak_ref") {
   sources = [
     "weak_ref.cc",
   ]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }

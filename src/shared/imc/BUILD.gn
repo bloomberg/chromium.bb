@@ -33,4 +33,8 @@ static_library("imc") {
       "win/nacl_shm.cc",
     ]
   }
+
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }

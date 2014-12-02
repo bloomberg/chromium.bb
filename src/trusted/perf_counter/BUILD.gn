@@ -9,4 +9,7 @@ static_library("nacl_perf_counter") {
   sources = [
     "nacl_perf_counter.c",
   ]
+  deps = [
+    "//native_client/build/config/nacl:nacl_base",
+  ]
 }

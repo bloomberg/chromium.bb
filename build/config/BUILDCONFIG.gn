@@ -330,15 +330,12 @@ if (!is_clang && (is_asan || is_lsan || is_tsan || is_msan)) {
 # toolchain targets.  For raw targets we inject a dependency on untarring.
 #
 _nacl_compiler_configs = [
-  "//native_client/build/config/nacl:nacl_defines",
-  "//native_client/build/config/nacl:nexe_defines",
   "//native_client/build/config/compiler:chromium_code",
 ]
 
 # Holds all configs used for making native executables and libraries, to avoid
 # duplication in each target below.
 _native_compiler_configs = [
-  "//native_client/build/config/nacl:nacl_defines",
   "//native_client/build/config/compiler:compiler",
   "//native_client/build/config/compiler:default_warnings",
   "//native_client/build/config/compiler:no_rtti",
