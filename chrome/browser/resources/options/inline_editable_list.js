@@ -138,9 +138,18 @@ cr.define('options', function() {
 
         cr.dispatchSimpleEvent(this, 'edit', true);
 
+        var isMouseClick = this.editClickTarget_;
         var focusElement = this.getEditFocusElement_();
-        if (focusElement)
-          this.focusAndMaybeSelect_(focusElement);
+        if (focusElement) {
+          if (isMouseClick) {
+            // Delay focus to fix http://crbug.com/436789
+            setTimeout(function() {
+              this.focusAndMaybeSelect_(focusElement);
+            }.bind(this), 0);
+          } else {
+            this.focusAndMaybeSelect_(focusElement);
+          }
+        }
       } else {
         if (!this.editCancelled_ && this.hasBeenEdited &&
             this.currentInputIsValid) {
