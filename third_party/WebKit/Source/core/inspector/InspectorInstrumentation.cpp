@@ -169,12 +169,6 @@ bool consoleAgentEnabled(ExecutionContext* executionContext)
     return consoleAgent && consoleAgent->enabled();
 }
 
-bool timelineAgentEnabled(ExecutionContext* executionContext)
-{
-    InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(executionContext);
-    return instrumentingAgents && instrumentingAgents->inspectorTimelineAgent();
-}
-
 void registerInstrumentingAgents(InstrumentingAgents* instrumentingAgents)
 {
     if (!instrumentingAgentsSet)
