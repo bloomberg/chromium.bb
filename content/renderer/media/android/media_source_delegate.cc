@@ -667,13 +667,13 @@ void MediaSourceDelegate::OnDemuxerOpened() {
       chunk_demuxer_.get(), base::Bind(&LogMediaSourceError, media_log_)));
 }
 
-void MediaSourceDelegate::OnNeedKey(const std::string& type,
+void MediaSourceDelegate::OnNeedKey(const std::string& init_data_type,
                                     const std::vector<uint8>& init_data) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (need_key_cb_.is_null())
     return;
 
-  need_key_cb_.Run(type, init_data);
+  need_key_cb_.Run(init_data_type, init_data);
 }
 
 bool MediaSourceDelegate::IsSeeking() const {

@@ -209,6 +209,10 @@ class MEDIA_EXPORT WebMediaPlayerImpl
   // compositor can return the frame.
   scoped_refptr<VideoFrame> GetCurrentFrameFromCompositor();
 
+  // Called when the demuxer encounters encrypted streams.
+  void OnNeedKey(const std::string& init_data_type,
+                 const std::vector<uint8>& init_data);
+
   void SetCdm(CdmContext* cdm_context, const CdmAttachedCB& cdm_attached_cb);
 
   // Called when a CDM has been attached to the |pipeline_|.

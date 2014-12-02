@@ -31,9 +31,7 @@ class WebContentDecryptionModuleImpl;
 
 // Provides support to prefixed EME implementation.
 // Do NOT add unprefixed EME functionality to this class!
-// TODO(xhwang): Move CreateNeedKeyCB() outside this class. Then when we
-// deprecate prefixed EME support, drop this whole file.
-
+// TODO(xhwang): When deprecating prefixed EME support, drop this whole file.
 class EncryptedMediaPlayerSupport
     : public base::SupportsWeakPtr<EncryptedMediaPlayerSupport> {
  public:
@@ -63,7 +61,7 @@ class EncryptedMediaPlayerSupport
       const blink::WebString& key_system,
       const blink::WebString& session_id);
 
-  Demuxer::NeedKeyCB CreateNeedKeyCB();
+  void SetInitDataType(const std::string& init_data_type);
 
   void OnPipelineDecryptError();
 
@@ -86,9 +84,6 @@ class EncryptedMediaPlayerSupport
     const std::string& key_system,
     const std::string& session_id);
 
-  void OnNeedKey(const std::string& type,
-                 const std::vector<uint8>& init_data);
-
   void OnKeyAdded(const std::string& session_id);
   void OnKeyError(const std::string& session_id,
                   MediaKeys::KeyError error_code,
@@ -105,8 +100,8 @@ class EncryptedMediaPlayerSupport
   // has been selected.
   std::string current_key_system_;
 
-  // Temporary for EME v0.1. In the future the init data type should be passed
-  // through GenerateKeyRequest() directly from WebKit.
+  // We assume all streams are from the same container, thus have the same
+  // init data type.
   std::string init_data_type_;
 
   SetCdmContextCB set_cdm_context_cb_;

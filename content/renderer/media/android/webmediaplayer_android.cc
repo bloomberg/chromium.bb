@@ -1731,7 +1731,7 @@ void WebMediaPlayerAndroid::OnMediaSourceOpened(
   client_->mediaSourceOpened(web_media_source);
 }
 
-void WebMediaPlayerAndroid::OnNeedKey(const std::string& type,
+void WebMediaPlayerAndroid::OnNeedKey(const std::string& init_data_type,
                                       const std::vector<uint8>& init_data) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
@@ -1743,13 +1743,16 @@ void WebMediaPlayerAndroid::OnNeedKey(const std::string& type,
 
   UMA_HISTOGRAM_COUNTS(kMediaEme + std::string("NeedKey"), 1);
 
-  DCHECK(init_data_type_.empty() || type.empty() || type == init_data_type_);
+  DCHECK(!init_data_type.empty());
+  DLOG_IF(WARNING,
+          !init_data_type_.empty() && init_data_type != init_data_type_)
+      << "Mixed init data type not supported. The new type is ignored.";
   if (init_data_type_.empty())
-    init_data_type_ = type;
+    init_data_type_ = init_data_type;
 
   const uint8* init_data_ptr = init_data.empty() ? NULL : &init_data[0];
-  client_->encrypted(
-      WebString::fromUTF8(type), init_data_ptr, init_data.size());
+  client_->encrypted(WebString::fromUTF8(init_data_type), init_data_ptr,
+                     init_data.size());
 }
 
 void WebMediaPlayerAndroid::SetDecryptorReadyCB(

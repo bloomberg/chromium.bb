@@ -136,7 +136,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
   void FinishResettingDecryptingDemuxerStreams();
 
   void OnDemuxerOpened();
-  void OnNeedKey(const std::string& type,
+  void OnNeedKey(const std::string& init_data_type,
                  const std::vector<uint8>& init_data);
   void NotifyDemuxerReady();
 

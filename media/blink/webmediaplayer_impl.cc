@@ -60,6 +60,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -699,6 +700,26 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
          BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnCdmAttached, result));
 }
 
+void WebMediaPlayerImpl::OnNeedKey(const std::string& init_data_type,
+                                   const std::vector<uint8>& init_data) {
+  DCHECK(!init_data_type.empty());
+
+  // Do not fire NeedKey event if encrypted media is not enabled.
+  // TODO(xhwang): Handle this in |client_|.
+  if (!blink::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled() &&
+      !blink::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
+    return;
+  }
+
+  UMA_HISTOGRAM_COUNTS("Media.EME.NeedKey", 1);
+
+  encrypted_media_support_.SetInitDataType(init_data_type);
+
+  const uint8* init_data_ptr = init_data.empty() ? nullptr : &init_data[0];
+  client_->encrypted(WebString::fromUTF8(init_data_type), init_data_ptr,
+                     base::saturated_cast<unsigned int>(init_data.size()));
+}
+
 void WebMediaPlayerImpl::SetCdm(CdmContext* cdm_context,
                                 const CdmAttachedCB& cdm_attached_cb) {
   pipeline_.SetCdm(cdm_context, cdm_attached_cb);
@@ -910,7 +931,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 
   LogCB mse_log_cb;
   Demuxer::NeedKeyCB need_key_cb =
-      encrypted_media_support_.CreateNeedKeyCB();
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNeedKey);
 
   // Figure out which demuxer to use.
   if (load_type_ != LoadTypeMediaSource) {

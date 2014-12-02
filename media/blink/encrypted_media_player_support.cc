@@ -20,7 +20,6 @@
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 
 using blink::WebMediaPlayer;
 using blink::WebMediaPlayerClient;
@@ -138,9 +137,8 @@ EncryptedMediaPlayerSupport::GenerateKeyRequest(
   std::string ascii_key_system =
       GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
 
-  WebMediaPlayer::MediaKeyException e =
-      GenerateKeyRequestInternal(frame, ascii_key_system, init_data,
-                                 init_data_length);
+  WebMediaPlayer::MediaKeyException e = GenerateKeyRequestInternal(
+      frame, ascii_key_system, init_data, init_data_length);
   ReportMediaKeyExceptionToUMA("generateKeyRequest", ascii_key_system, e);
   return e;
 }
@@ -185,11 +183,8 @@ EncryptedMediaPlayerSupport::GenerateKeyRequestInternal(
   if (init_data_type.empty())
     init_data_type = GuessInitDataType(init_data, init_data_length);
 
-  // TODO(xhwang): We assume all streams are from the same container (thus have
-  // the same "type") for now. In the future, the "type" should be passed down
-  // from the application.
-  if (!proxy_decryptor_->GenerateKeyRequest(
-           init_data_type, init_data, init_data_length)) {
+  if (!proxy_decryptor_->GenerateKeyRequest(init_data_type, init_data,
+                                            init_data_length)) {
     current_key_system_.clear();
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
   }
@@ -278,32 +273,18 @@ EncryptedMediaPlayerSupport::CancelKeyRequestInternal(
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
-Demuxer::NeedKeyCB EncryptedMediaPlayerSupport::CreateNeedKeyCB() {
-  return BIND_TO_RENDER_LOOP(&EncryptedMediaPlayerSupport::OnNeedKey);
+void EncryptedMediaPlayerSupport::SetInitDataType(
+    const std::string& init_data_type) {
+  DCHECK(!init_data_type.empty());
+  DLOG_IF(WARNING,
+          !init_data_type_.empty() && init_data_type != init_data_type_)
+      << "Mixed init data type not supported. The new type is ignored.";
+  if (init_data_type_.empty())
+    init_data_type_ = init_data_type;
 }
 
 void EncryptedMediaPlayerSupport::OnPipelineDecryptError() {
   EmeUMAHistogramCounts(current_key_system_, "DecryptError", 1);
-}
-
-void EncryptedMediaPlayerSupport::OnNeedKey(
-    const std::string& type,
-    const std::vector<uint8>& init_data) {
-  // Do not fire NeedKey event if encrypted media is not enabled.
-  if (!blink::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled() &&
-      !blink::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
-    return;
-  }
-
-  UMA_HISTOGRAM_COUNTS(kMediaEme + std::string("NeedKey"), 1);
-
-  DCHECK(init_data_type_.empty() || type.empty() || type == init_data_type_);
-  if (init_data_type_.empty())
-    init_data_type_ = type;
-
-  const uint8* init_data_ptr = init_data.empty() ? NULL : &init_data[0];
-  client_->encrypted(WebString::fromUTF8(type), init_data_ptr,
-                     base::saturated_cast<unsigned int>(init_data.size()));
 }
 
 void EncryptedMediaPlayerSupport::OnKeyAdded(const std::string& session_id) {
