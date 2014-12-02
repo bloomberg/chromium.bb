@@ -219,7 +219,7 @@ function test()
     tracingTimelineModel._addCpuProfile(WebInspector.targetManager.mainTarget().id(), cpuProfile);
     tracingTimelineModel.setEventsForTest(rawTraceEvents);
     var events = tracingTimelineModel.inspectedTargetEvents();
-    InspectorTest.assertEquals(20, events.length);
+    InspectorTest.assertEquals(21, events.length);
     events.forEach(function(e) {
         InspectorTest.addResult(e.name + ": " + e.startTime + " " + e.selfTime + "/" + e.duration);
     });

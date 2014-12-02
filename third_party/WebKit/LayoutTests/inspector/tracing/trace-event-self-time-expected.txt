@@ -18,4 +18,5 @@ JSSample: 427 0/undefined
 JSSample: 428 0/undefined
 JSSample: 429 0/undefined
 FunctionCall: 440 10/10
+CpuProfile: 500 0/undefined
 
