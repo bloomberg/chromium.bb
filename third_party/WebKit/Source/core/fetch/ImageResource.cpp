@@ -492,8 +492,10 @@ void ImageResource::changedInRect(const blink::Image* image, const IntRect& rect
 bool ImageResource::currentFrameKnownToBeOpaque(const RenderObject* renderer)
 {
     blink::Image* image = imageForRenderer(renderer);
-    if (image->isBitmapImage())
+    if (image->isBitmapImage()) {
+        TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(renderer, *this));
         image->nativeImageForCurrentFrame(); // force decode
+    }
     return image->currentFrameKnownToBeOpaque();
 }
 
