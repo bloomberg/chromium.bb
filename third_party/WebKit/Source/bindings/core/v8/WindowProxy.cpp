@@ -223,14 +223,13 @@ bool WindowProxy::initialize()
     }
 
     if (m_world->isMainWorld()) {
+        ASSERT(m_frame->document());
+
         // ActivityLogger for main world is updated within updateDocument().
         updateDocument();
-        if (m_frame->document()) {
-            setSecurityToken(m_frame->document()->securityOrigin());
-            ContentSecurityPolicy* csp = m_frame->document()->contentSecurityPolicy();
-            context->AllowCodeGenerationFromStrings(csp->allowEval(0, ContentSecurityPolicy::SuppressReport));
-            context->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, csp->evalDisabledErrorMessage()));
-        }
+        ContentSecurityPolicy* csp = m_frame->document()->contentSecurityPolicy();
+        context->AllowCodeGenerationFromStrings(csp->allowEval(0, ContentSecurityPolicy::SuppressReport));
+        context->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, csp->evalDisabledErrorMessage()));
     } else {
         updateActivityLogger();
         SecurityOrigin* origin = m_world->isolatedWorldSecurityOrigin();
@@ -412,7 +411,7 @@ void WindowProxy::updateDocument()
         return;
     updateActivityLogger();
     updateDocumentProperty();
-    updateSecurityOrigin(m_frame->document()->securityOrigin());
+    updateSecurityOrigin(m_frame->securityContext()->securityOrigin());
 }
 
 static v8::Handle<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const AtomicString& key, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
