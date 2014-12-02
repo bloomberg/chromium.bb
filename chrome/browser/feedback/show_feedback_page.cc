@@ -8,7 +8,10 @@
 #include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
@@ -60,6 +63,20 @@ void ShowFeedbackPage(Browser* browser,
   // We do not want to launch on an OTR profile.
   profile = profile->GetOriginalProfile();
   DCHECK(profile);
+
+#if defined(OS_CHROMEOS)
+  // Obtains the display profile ID on which the Feedback window should show.
+  chrome::MultiUserWindowManager* const window_manager =
+      chrome::MultiUserWindowManager::GetInstance();
+  const std::string display_profile_id =
+      window_manager && browser
+          ? window_manager->GetUserPresentingWindow(
+                browser->window()->GetNativeWindow())
+          : "";
+  profile = display_profile_id.empty()
+                ? profile
+                : multi_user_util::GetProfileFromUserID(display_profile_id);
+#endif
 
   extensions::FeedbackPrivateAPI* api =
       extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(profile);
