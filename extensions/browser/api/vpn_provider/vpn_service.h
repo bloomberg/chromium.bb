@@ -57,6 +57,7 @@ class VpnService : public KeyedService,
                           const std::string& error_message)>;
 
   VpnService(content::BrowserContext* browser_context,
+             const std::string& userid_hash,
              extensions::ExtensionRegistry* extension_registry,
              extensions::EventRouter* event_router,
              ShillThirdPartyVpnDriverClient* shill_client,
@@ -189,6 +190,7 @@ class VpnService : public KeyedService,
   void SetActiveConfiguration(VpnConfiguration* configuration);
 
   content::BrowserContext* browser_context_;
+  std::string userid_hash_;
 
   extensions::ExtensionRegistry* extension_registry_;
   extensions::EventRouter* event_router_;

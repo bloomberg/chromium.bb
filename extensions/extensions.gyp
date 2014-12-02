@@ -791,7 +791,6 @@
             'browser/api/vpn_provider/vpn_provider_api.h',
             'browser/api/vpn_provider/vpn_service.cc',
             'browser/api/vpn_provider/vpn_service.h',
-            'browser/api/vpn_provider/vpn_service_factory.cc',
             'browser/api/vpn_provider/vpn_service_factory.h'
           ]
         }],

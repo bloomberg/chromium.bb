@@ -134,6 +134,7 @@ void VpnService::VpnConfiguration::OnPlatformMessage(uint32_t message) {
 
 VpnService::VpnService(
     content::BrowserContext* browser_context,
+    const std::string& userid_hash,
     extensions::ExtensionRegistry* extension_registry,
     extensions::EventRouter* event_router,
     ShillThirdPartyVpnDriverClient* shill_client,
@@ -141,6 +142,7 @@ VpnService::VpnService(
     NetworkProfileHandler* network_profile_handler,
     NetworkStateHandler* network_state_handler)
     : browser_context_(browser_context),
+      userid_hash_(userid_hash),
       extension_registry_(extension_registry),
       event_router_(event_router),
       shill_client_(shill_client),
@@ -284,10 +286,8 @@ void VpnService::CreateConfiguration(const std::string& extension_id,
     return;
   }
 
-  // TODO(kaliamoorthi): GetDefaultUserProfile is unsafe. Start using
-  // GetProfileForUserhash after sorting out the dependency issues.
   const NetworkProfile* profile =
-      network_profile_handler_->GetDefaultUserProfile();
+      network_profile_handler_->GetProfileForUserhash(userid_hash_);
   if (!profile) {
     failure.Run(
         std::string(),

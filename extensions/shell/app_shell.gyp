@@ -139,6 +139,7 @@
           'sources': [
             'browser/api/shell_gcd/shell_gcd_api.cc',
             'browser/api/shell_gcd/shell_gcd_api.h',
+            'browser/api/vpn_provider/vpn_service_factory.cc',
           ],
         }],
         ['disable_nacl==0 and OS=="linux"', {

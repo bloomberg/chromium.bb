@@ -524,7 +524,6 @@ source_set("browser") {
         "api/vpn_provider/vpn_provider_api.h",
         "api/vpn_provider/vpn_service.cc",
         "api/vpn_provider/vpn_service.h",
-        "api/vpn_provider/vpn_service_factory.cc",
         "api/vpn_provider/vpn_service_factory.h",
       ]
     }
