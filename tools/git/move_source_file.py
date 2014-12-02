@@ -33,7 +33,7 @@ if __name__ == '__main__':
 sort_headers = __import__('sort-headers')
 
 
-HANDLED_EXTENSIONS = ['.cc', '.mm', '.h', '.hh']
+HANDLED_EXTENSIONS = ['.cc', '.mm', '.h', '.hh', '.cpp']
 
 
 def IsHandledFile(path):
@@ -84,7 +84,7 @@ def UpdatePostMove(from_path, to_path):
     files_with_changed_includes = mffr.MultiFileFindReplace(
         r'(#(include|import)\s*["<])%s([>"])' % re.escape(from_path),
         r'\1%s\3' % to_path,
-        ['*.cc', '*.h', '*.m', '*.mm'])
+        ['*.cc', '*.h', '*.m', '*.mm', '*.cpp'])
 
     # Reorder headers in files that changed.
     for changed_file in files_with_changed_includes:
@@ -100,7 +100,7 @@ def UpdatePostMove(from_path, to_path):
   mffr.MultiFileFindReplace(
       r'(//.*)%s' % re.escape(from_path),
       r'\1%s' % to_path,
-      ['*.cc', '*.h', '*.m', '*.mm'])
+      ['*.cc', '*.h', '*.m', '*.mm', '*.cpp'])
 
   # Update references in .gyp(i) files.
   def PathMinusFirstComponent(path):
