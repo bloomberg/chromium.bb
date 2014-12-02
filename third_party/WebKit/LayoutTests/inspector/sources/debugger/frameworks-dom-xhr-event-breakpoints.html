@@ -19,7 +19,7 @@ function sendXHR(url)
     Framework.sendXHR(url);
 }
 
-function addListenerAndClick()
+function addListenerAndClick(stop)
 {
     function testElementClicked()
     {
@@ -27,13 +27,22 @@ function addListenerAndClick()
     }
 
     var button = document.getElementById("test");
-    var remover = Framework.addEventListener(button, "click", Framework.empty, true); // Should be ignored.
+    var remover = Framework.addEventListener(button, "click", Framework.bind(Framework.empty, null), true); // Should be ignored.
+    if (stop)
+        debugger;
     button.click();
     remover();
 
     remover = Framework.addEventListener(button, "click", Framework.bind(testElementClicked, null), true);
     button.click();
     remover();
+
+    // Test both handlers together.
+    var remover1 = Framework.addEventListener(button, "click", Framework.bind(Framework.empty, null), true); // Should be ignored.
+    var remover2 = Framework.addEventListener(button, "click", Framework.bind(testElementClicked, null), true);
+    button.click();
+    remover1();
+    remover2();
 }
 
 function test()
@@ -69,8 +78,26 @@ function test()
         {
             var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
             pane._setBreakpoint("listener:click");
-            InspectorTest.evaluateInPageWithTimeout("addListenerAndClick()");
-            InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
+            InspectorTest.evaluateInPageWithTimeout("addListenerAndClick(false)");
+            InspectorTest.waitUntilPausedAndPerformSteppingActions([
+                "Print", "Resume",
+                "Print", "Resume",
+            ], next);
+        },
+
+        function testSteppingThroughEventListenerBreakpoint(next)
+        {
+            var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+            pane._setBreakpoint("listener:click");
+            InspectorTest.evaluateInPageWithTimeout("addListenerAndClick(true)");
+            InspectorTest.waitUntilPausedAndPerformSteppingActions([
+                "StepOver", "Print",
+                "StepOver", "Print", // should break at the first "remover()"
+                "StepOver", "StepOver", "StepOver", "Print", // enter testElementClicked()
+                "StepOut", "StepOver", "StepOver", "StepOver", "StepOver", "Print", // enter testElementClicked()
+                "StepOver", "StepOver", "Print",
+                "Resume",
+            ], next);
         },
 
         function tearDown(next)

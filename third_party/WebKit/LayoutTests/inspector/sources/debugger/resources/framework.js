@@ -83,8 +83,8 @@ Framework.addEventListener = function(element, eventType, listener, capture)
 {
     function Framework_eventListener()
     {
-        if (listener)
-            listener();
+        var result = listener ? listener() : void 0;
+        return result;
     }
 
     function Framework_remover()

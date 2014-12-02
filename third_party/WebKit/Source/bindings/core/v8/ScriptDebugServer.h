@@ -72,6 +72,7 @@ public:
     void stepIntoStatement();
     void stepOverStatement();
     void stepOutOfFunction();
+    void clearStepping();
 
     bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, ScriptValue* newCallFrames, RefPtr<JSONObject>* result);
     ScriptValue currentCallFrames();

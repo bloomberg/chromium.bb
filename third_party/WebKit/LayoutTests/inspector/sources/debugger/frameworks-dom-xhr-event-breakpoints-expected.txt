@@ -20,10 +20,60 @@ Running: testEventListenerBreakpoint
 Call stack:
     0) testElementClicked (frameworks-dom-xhr-event-breakpoints.html:26)
   * 1) Framework_bound (framework.js:105)
-  * 2) Framework_eventListener (framework.js:87)
-    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:35)
+  * 2) Framework_eventListener (framework.js:86)
+    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:37)
     4)  (:1)
-Paused on a "click" Event Listener.
+
+Executing Resume...
+Call stack:
+    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.html:26)
+  * 1) Framework_bound (framework.js:105)
+  * 2) Framework_eventListener (framework.js:86)
+    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:43)
+    4)  (:1)
+
+Executing Resume...
+
+Running: testSteppingThroughEventListenerBreakpoint
+Executing StepOver...
+Call stack:
+    0) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:33)
+    1)  (:1)
+
+Executing StepOver...
+Call stack:
+    0) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:34)
+    1)  (:1)
+
+Executing StepOver...
+Executing StepOver...
+Executing StepOver...
+Call stack:
+    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.html:26)
+  * 1) Framework_bound (framework.js:105)
+  * 2) Framework_eventListener (framework.js:86)
+    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:37)
+    4)  (:1)
+
+Executing StepOut...
+Executing StepOver...
+Executing StepOver...
+Executing StepOver...
+Executing StepOver...
+Call stack:
+    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.html:26)
+  * 1) Framework_bound (framework.js:105)
+  * 2) Framework_eventListener (framework.js:86)
+    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:43)
+    4)  (:1)
+
+Executing StepOver...
+Executing StepOver...
+Call stack:
+    0) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:44)
+    1)  (:1)
+
+Executing Resume...
 
 Running: tearDown
 

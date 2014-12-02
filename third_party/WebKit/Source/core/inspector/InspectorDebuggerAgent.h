@@ -232,7 +232,7 @@ private:
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> > currentCallFrames();
     PassRefPtr<TypeBuilder::Debugger::StackTrace> currentAsyncStackTrace();
 
-    void changeRecursionLevelForStepOut(int step);
+    void changeJavaScriptRecursionLevel(int step);
 
     virtual void didParseSource(const String& scriptId, const Script&, CompileResult) override final;
     virtual bool v8AsyncTaskEventsEnabled() const override final;
@@ -284,8 +284,8 @@ private:
     RawPtrWillBeMember<Listener> m_listener;
 
     int m_skippedStepFrameCount;
-    int m_minFrameCountForSkip;
     int m_recursionLevelForStepOut;
+    int m_recursionLevelForStepFrame;
     bool m_skipAllPauses;
     bool m_skipContentScripts;
     OwnPtr<ScriptRegexp> m_cachedSkipStackRegExp;

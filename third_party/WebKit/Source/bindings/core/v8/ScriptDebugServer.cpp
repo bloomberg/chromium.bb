@@ -251,6 +251,16 @@ void ScriptDebugServer::stepOutOfFunction()
     continueProgram();
 }
 
+void ScriptDebugServer::clearStepping()
+{
+    ensureDebuggerScriptCompiled();
+    v8::HandleScope scope(m_isolate);
+    v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
+
+    v8::Handle<v8::Value> argv[] = { v8Undefined() };
+    callDebuggerMethod("clearStepping", 0, argv);
+}
+
 bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, ScriptValue* newCallFrames, RefPtr<JSONObject>* result)
 {
     class EnableLiveEditScope {

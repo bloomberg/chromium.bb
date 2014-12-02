@@ -202,7 +202,7 @@ InspectorTest.waitUntilPausedAndPerformSteppingActions = function(actions, callb
             return;
         }
 
-        InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+        InspectorTest.waitUntilResumed(actions.length ? InspectorTest.waitUntilPaused.bind(InspectorTest, didPause) : callback);
     }
 };
 
