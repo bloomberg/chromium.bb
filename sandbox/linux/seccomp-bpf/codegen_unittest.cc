@@ -367,5 +367,37 @@ TEST_F(ProgramTest, FarBranches) {
   }
 }
 
+TEST_F(ProgramTest, JumpReuse) {
+  // As a code size optimization, we try to reuse jumps when possible
+  // instead of emitting new ones. Here we make sure that optimization
+  // is working as intended.
+  //
+  // NOTE: To simplify testing, we rely on implementation details
+  // about what CodeGen::Node values indicate (i.e., vector indices),
+  // but CodeGen users should treat them as opaque values.
+
+  // Populate with 260 initial instruction nodes.
+  std::vector<CodeGen::Node> nodes;
+  nodes.push_back(MakeInstruction(BPF_RET + BPF_K, 0));
+  for (size_t i = 1; i < 260; ++i) {
+    nodes.push_back(
+        MakeInstruction(BPF_ALU + BPF_ADD + BPF_K, i, nodes.back()));
+  }
+
+  // Branching to nodes[0] and nodes[1] should require 3 new
+  // instructions: two far jumps plus the branch itself.
+  CodeGen::Node one =
+      MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 0, nodes[0], nodes[1]);
+  EXPECT_EQ(nodes.back() + 3, one);  // XXX: Implementation detail!
+  RunTest(one);
+
+  // Branching again to the same target nodes should require only one
+  // new instruction, as we can reuse the previous branch's jumps.
+  CodeGen::Node two =
+      MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, nodes[0], nodes[1]);
+  EXPECT_EQ(one + 1, two);  // XXX: Implementation detail!
+  RunTest(two);
+}
+
 }  // namespace
 }  // namespace sandbox

@@ -106,6 +106,13 @@ class SANDBOX_EXPORT CodeGen {
   // indices remain stable as we add instructions.
   Program program_;
 
+  // equivalent_ stores the most recent semantically-equivalent node for each
+  // instruction in program_. A node is defined as semantically-equivalent to N
+  // if it has the same instruction code and constant as N and its successor
+  // nodes (if any) are semantically-equivalent to N's successor nodes, or
+  // if it's an unconditional jump to a node semantically-equivalent to N.
+  std::vector<Node> equivalent_;
+
   std::map<MemoKey, Node, MemoKeyLess> memos_;
 
   DISALLOW_COPY_AND_ASSIGN(CodeGen);
