@@ -276,21 +276,23 @@ FileOperationManager.prototype.paste = function(
 FileOperationManager.prototype.queueCopy_ = function(
     targetDirEntry, entries, isMove, opt_taskId) {
   var task;
+  var taskId = opt_taskId || this.generateTaskId();
   if (isMove) {
     // When moving between different volumes, moving is implemented as a copy
     // and delete. This is because moving between volumes is slow, and moveTo()
     // is not cancellable nor provides progress feedback.
     if (util.isSameFileSystem(entries[0].filesystem,
                               targetDirEntry.filesystem)) {
-      task = new fileOperationUtil.MoveTask(entries, targetDirEntry);
+      task = new fileOperationUtil.MoveTask(taskId, entries, targetDirEntry);
     } else {
-      task = new fileOperationUtil.CopyTask(entries, targetDirEntry, true);
+      task =
+          new fileOperationUtil.CopyTask(taskId, entries, targetDirEntry, true);
     }
   } else {
-    task = new fileOperationUtil.CopyTask(entries, targetDirEntry, false);
+    task =
+        new fileOperationUtil.CopyTask(taskId, entries, targetDirEntry, false);
   }
 
-  task.taskId = opt_taskId || this.generateTaskId();
   this.eventRouter_.sendProgressEvent('BEGIN', task.getStatus(), task.taskId);
   task.initialize(function() {
     this.copyTasks_.push(task);
@@ -477,9 +479,7 @@ FileOperationManager.prototype.serviceDeleteTask_ = function(task, callback) {
 FileOperationManager.prototype.zipSelection = function(
     dirEntry, selectionEntries) {
   var zipTask = new fileOperationUtil.ZipTask(
-      selectionEntries, dirEntry, dirEntry);
-  zipTask.taskId = this.generateTaskId();
-  zipTask.zip = true;
+      this.generateTaskId(), selectionEntries, dirEntry, dirEntry);
   this.eventRouter_.sendProgressEvent('BEGIN',
                                       zipTask.getStatus(),
                                       zipTask.taskId);

@@ -367,15 +367,25 @@ fileOperationUtil.zipSelection = function(
  * Tasks may be added while the queue is being serviced.  Though a
  * cancel operation cancels everything in the queue.
  *
+ * @param {string} taskId A unique ID for identifying this task.
  * @param {util.FileOperationType} operationType The type of this operation.
  * @param {Array.<Entry>} sourceEntries Array of source entries.
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @constructor
+ * @struct
  */
 fileOperationUtil.Task = function(
-    operationType, sourceEntries, targetDirEntry) {
+    taskId, operationType, sourceEntries, targetDirEntry) {
+  /** @type {string} */
+  this.taskId = taskId;
+
+  /** @type {util.FileOperationType} */
   this.operationType = operationType;
+
+  /** @type {Array.<Entry>} */
   this.sourceEntries = sourceEntries;
+
+  /** @type {DirectoryEntry} */
   this.targetDirEntry = targetDirEntry;
 
   /**
@@ -399,8 +409,7 @@ fileOperationUtil.Task = function(
 
   /**
    * Index of the progressing entry in sourceEntries.
-   * @type {number}
-   * @private
+   * @private {number}
    */
   this.processingSourceIndex_ = 0;
 
@@ -496,17 +505,20 @@ fileOperationUtil.Task.prototype.calcProcessedBytes_ = function() {
 /**
  * Task to copy entries.
  *
+ * @param {string} taskId A unique ID for identifying this task.
  * @param {Array.<Entry>} sourceEntries Array of source entries.
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @param {boolean} deleteAfterCopy Whether the delete original files after
  *     copy.
  * @constructor
  * @extends {fileOperationUtil.Task}
+ * @struct
  */
 fileOperationUtil.CopyTask = function(
-    sourceEntries, targetDirEntry, deleteAfterCopy) {
+    taskId, sourceEntries, targetDirEntry, deleteAfterCopy) {
   fileOperationUtil.Task.call(
       this,
+      taskId,
       deleteAfterCopy ?
           util.FileOperationType.MOVE : util.FileOperationType.COPY,
       sourceEntries,
@@ -739,14 +751,16 @@ fileOperationUtil.CopyTask.prototype.processEntry_ = function(
 /**
  * Task to move entries.
  *
+ * @param {string} taskId A unique ID for identifying this task.
  * @param {Array.<Entry>} sourceEntries Array of source entries.
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @constructor
  * @extends {fileOperationUtil.Task}
+ * @struct
  */
-fileOperationUtil.MoveTask = function(sourceEntries, targetDirEntry) {
+fileOperationUtil.MoveTask = function(taskId, sourceEntries, targetDirEntry) {
   fileOperationUtil.Task.call(
-      this, util.FileOperationType.MOVE, sourceEntries, targetDirEntry);
+      this, taskId, util.FileOperationType.MOVE, sourceEntries, targetDirEntry);
 };
 
 /**
@@ -867,18 +881,23 @@ fileOperationUtil.MoveTask.processEntry_ = function(
 /**
  * Task to create a zip archive.
  *
+ * @param {string} taskId A unique ID for identifying this task.
  * @param {Array.<Entry>} sourceEntries Array of source entries.
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @param {DirectoryEntry} zipBaseDirEntry Base directory dealt as a root
  *     in ZIP archive.
  * @constructor
  * @extends {fileOperationUtil.Task}
+ * @struct
  */
 fileOperationUtil.ZipTask = function(
-    sourceEntries, targetDirEntry, zipBaseDirEntry) {
+    taskId, sourceEntries, targetDirEntry, zipBaseDirEntry) {
   fileOperationUtil.Task.call(
-      this, util.FileOperationType.ZIP, sourceEntries, targetDirEntry);
+      this, taskId, util.FileOperationType.ZIP, sourceEntries, targetDirEntry);
   this.zipBaseDirEntry = zipBaseDirEntry;
+
+  /** @type {boolean} */
+  this.zip = true;
 };
 
 /**
