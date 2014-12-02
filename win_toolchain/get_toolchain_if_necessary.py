@@ -230,8 +230,12 @@ def main():
       should_use_gs = True
       if not CanAccessToolchainBucket():
         RequestGsAuthentication()
-    print('Windows toolchain out of date or doesn\'t exist, updating (%s)...' %
-          ('Pro' if should_use_gs else 'Express'))
+    if not should_use_gs:
+      print('Please follow the instructions at '
+            'http://www.chromium.org/developers/how-tos/'
+            'build-instructions-windows')
+      return 1
+    print('Windows toolchain out of date or doesn\'t exist, updating (Pro)...')
     print('  current_hash: %s' % current_hash)
     print('  desired_hashes: %s' % ', '.join(desired_hashes))
     sys.stdout.flush()
@@ -245,11 +249,8 @@ def main():
     args = [sys.executable,
             'toolchain2013.py',
             '--targetdir', target_dir,
-            '--sha1', desired_hashes[0]]
-    if should_use_gs:
-      args.append('--use-gs')
-    else:
-      args.append('--express')
+            '--sha1', desired_hashes[0],
+            '--use-gs']
     subprocess.check_call(args)
     current_hash = CalculateHash(target_dir)
     if current_hash not in desired_hashes:
