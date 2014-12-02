@@ -18,7 +18,7 @@
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
           '<(PRODUCT_DIR)/libppapi_tests.so',
-          '<(PRODUCT_DIR)/pyproto/',
+          '<(PRODUCT_DIR)/pyproto/google/',
         ],
       },
     }],
