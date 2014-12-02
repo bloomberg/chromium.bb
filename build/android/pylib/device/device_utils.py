@@ -177,11 +177,13 @@ class DeviceUtils(object):
       CommandFailedError if root could not be enabled.
       CommandTimeoutError on timeout.
     """
+    if self.IsUserBuild():
+      raise device_errors.CommandFailedError(
+          'Cannot enable root in user builds.', str(self))
     if 'needs_su' in self._cache:
       del self._cache['needs_su']
-    if not self.old_interface.EnableAdbRoot():
-      raise device_errors.CommandFailedError(
-          'Could not enable root.', str(self))
+    self.adb.Root()
+    self.adb.WaitForDevice()
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def IsUserBuild(self, timeout=None, retries=None):

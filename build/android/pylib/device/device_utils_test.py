@@ -295,29 +295,25 @@ class DeviceUtilsHasRootTest(DeviceUtilsNewImplTest):
       self.assertFalse(self.device.HasRoot())
 
 
-class DeviceUtilsEnableRootTest(DeviceUtilsOldImplTest):
+class DeviceUtilsEnableRootTest(DeviceUtilsNewImplTest):
 
   def testEnableRoot_succeeds(self):
-    with self.assertCallsSequence([
-        ('adb -s 0123456789abcdef shell getprop ro.build.type',
-         'userdebug\r\n'),
-        ('adb -s 0123456789abcdef root', 'restarting adbd as root\r\n'),
-        ('adb -s 0123456789abcdef wait-for-device', ''),
-        ('adb -s 0123456789abcdef wait-for-device', '')]):
+    with self.assertCalls(
+        (self.call.device.IsUserBuild(), False),
+        self.call.adb.Root(),
+        self.call.adb.WaitForDevice()):
       self.device.EnableRoot()
 
   def testEnableRoot_userBuild(self):
-    with self.assertCallsSequence([
-        ('adb -s 0123456789abcdef shell getprop ro.build.type', 'user\r\n')]):
+    with self.assertCalls(
+        (self.call.device.IsUserBuild(), True)):
       with self.assertRaises(device_errors.CommandFailedError):
         self.device.EnableRoot()
 
   def testEnableRoot_rootFails(self):
-    with self.assertCallsSequence([
-        ('adb -s 0123456789abcdef shell getprop ro.build.type',
-         'userdebug\r\n'),
-        ('adb -s 0123456789abcdef root', 'no\r\n'),
-        ('adb -s 0123456789abcdef wait-for-device', '')]):
+    with self.assertCalls(
+        (self.call.device.IsUserBuild(), False),
+        (self.call.adb.Root(), self.CommandError())):
       with self.assertRaises(device_errors.CommandFailedError):
         self.device.EnableRoot()
 
