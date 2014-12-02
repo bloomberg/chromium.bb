@@ -22,6 +22,7 @@ import traceback
 from auto_bisect import bisect_perf_regression
 from auto_bisect import bisect_utils
 from auto_bisect import math_utils
+from auto_bisect import source_control
 
 CROS_BOARD_ENV = 'BISECT_CROS_BOARD'
 CROS_IP_ENV = 'BISECT_CROS_IP'
@@ -255,72 +256,7 @@ def _ParseCloudLinksFromOutput(output):
   return results
 
 
-def _RunPerformanceTest(config):
-  """Runs a performance test with and without the current patch.
-
-  Args:
-    config: Contents of the config file, a dictionary.
-
-  Attempts to build and run the current revision with and without the
-  current patch, with the parameters passed in.
-  """
-  # Bisect script expects to be run from the src directory
-  os.chdir(SRC_DIR)
-
-  bisect_utils.OutputAnnotationStepStart('Building With Patch')
-
-  opts = _CreateBisectOptionsFromConfig(config)
-  b = bisect_perf_regression.BisectPerformanceMetrics(opts, os.getcwd())
-
-  if bisect_utils.RunGClient(['runhooks']):
-    raise RuntimeError('Failed to run gclient runhooks')
-
-  if not b.ObtainBuild('chromium'):
-    raise RuntimeError('Patched version failed to build.')
-
-  bisect_utils.OutputAnnotationStepClosed()
-  bisect_utils.OutputAnnotationStepStart('Running With Patch')
-
-  results_with_patch = b.RunPerformanceTestAndParseResults(
-      opts.command,
-      opts.metric,
-      reset_on_first_run=True,
-      upload_on_last_run=True,
-      results_label='Patch')
-
-  if results_with_patch[1]:
-    raise RuntimeError('Patched version failed to run performance test.')
-
-  bisect_utils.OutputAnnotationStepClosed()
-
-  bisect_utils.OutputAnnotationStepStart('Reverting Patch')
-  # TODO: When this is re-written to recipes, this should use bot_update's
-  # revert mechanism to fully revert the client. But for now, since we know that
-  # the perf try bot currently only supports src/ and src/third_party/WebKit, we
-  # simply reset those two directories.
-  bisect_utils.CheckRunGit(['reset', '--hard'])
-  bisect_utils.CheckRunGit(['reset', '--hard'],
-                           os.path.join('third_party', 'WebKit'))
-  bisect_utils.OutputAnnotationStepClosed()
-
-  bisect_utils.OutputAnnotationStepStart('Building Without Patch')
-
-  if bisect_utils.RunGClient(['runhooks']):
-    raise RuntimeError('Failed to run gclient runhooks')
-
-  if not b.ObtainBuild('chromium'):
-    raise RuntimeError('Unpatched version failed to build.')
-
-  bisect_utils.OutputAnnotationStepClosed()
-  bisect_utils.OutputAnnotationStepStart('Running Without Patch')
-
-  results_without_patch = b.RunPerformanceTestAndParseResults(
-      opts.command, opts.metric, upload_on_last_run=True, results_label='ToT')
-
-  if results_without_patch[1]:
-    raise RuntimeError('Unpatched version failed to run performance test.')
-
-  # Find the link to the cloud stored results file.
+def _ParseAndOutputCloudLinks(results_without_patch, results_with_patch):
   cloud_links_without_patch = _ParseCloudLinksFromOutput(
       results_without_patch[2])
   cloud_links_with_patch = _ParseCloudLinksFromOutput(
@@ -342,7 +278,6 @@ def _RunPerformanceTest(config):
     std_err = math_utils.PooledStandardError(
         [results_with_patch[0]['values'], results_without_patch[0]['values']])
 
-  bisect_utils.OutputAnnotationStepClosed()
   if percent_diff_in_means is not None and std_err is not None:
     bisect_utils.OutputAnnotationStepStart('Results - %.02f +- %0.02f delta' %
         (percent_diff_in_means, std_err))
@@ -369,6 +304,129 @@ def _RunPerformanceTest(config):
       bisect_utils.OutputAnnotationStepLink(
           'Without Patch - Profiler Data[%d]' % i,
           profiler_file_links_without_patch[i])
+
+
+def _ResolveRevisionsFromConfig(config):
+  if not 'good_revision' in config and not 'bad_revision' in config:
+    return (None, None)
+
+  bad_revision = source_control.ResolveToRevision(
+      config['bad_revision'], 'chromium', bisect_utils.DEPOT_DEPS_NAME, 100)
+  if not bad_revision:
+    raise RuntimeError('Failed to resolve [%s] to git hash.',
+        config['bad_revision'])
+  good_revision = source_control.ResolveToRevision(
+      config['good_revision'], 'chromium', bisect_utils.DEPOT_DEPS_NAME, -100)
+  if not good_revision:
+    raise RuntimeError('Failed to resolve [%s] to git hash.',
+        config['good_revision'])
+
+  return (good_revision, bad_revision)
+
+
+def _GetStepAnnotationStringsDict(config):
+  if 'good_revision' in config and 'bad_revision' in config:
+    return {
+        'build1': 'Building [%s]' % config['good_revision'],
+        'build2': 'Building [%s]' % config['bad_revision'],
+        'run1': 'Running [%s]' % config['good_revision'],
+        'run2': 'Running [%s]' % config['bad_revision'],
+        'results_label1': config['good_revision'],
+        'results_label2': config['bad_revision'],
+    }
+  else:
+    return {
+        'build1': 'Building With Patch',
+        'build2': 'Building Without Patch',
+        'run1': 'Running With Patch',
+        'run2': 'Running Without Patch',
+        'results_label1': 'Patch',
+        'results_label2': 'ToT',
+    }
+
+
+def _RunBuildStepForPerformanceTest(bisect_instance, build_string, revision):
+  if revision:
+    bisect_utils.OutputAnnotationStepStart('Syncing [%s]' % revision)
+    if not source_control.SyncToRevision(revision, 'gclient'):
+      raise RuntimeError('Failed to sync to [%s].' % revision)
+    bisect_utils.OutputAnnotationStepClosed()
+
+  bisect_utils.OutputAnnotationStepStart(build_string)
+
+  if bisect_utils.RunGClient(['runhooks']):
+    raise RuntimeError('Failed to run gclient runhooks')
+
+  if not bisect_instance.ObtainBuild('chromium'):
+    raise RuntimeError('Patched version failed to build.')
+
+  bisect_utils.OutputAnnotationStepClosed()
+
+
+def _RunCommandStepForPerformanceTest(bisect_instance,
+                                      opts,
+                                      reset_on_first_run,
+                                      upload_on_last_run,
+                                      results_label,
+                                      run_string):
+  bisect_utils.OutputAnnotationStepStart(run_string)
+
+  results = bisect_instance.RunPerformanceTestAndParseResults(
+      opts.command,
+      opts.metric,
+      reset_on_first_run=reset_on_first_run,
+      upload_on_last_run=upload_on_last_run,
+      results_label=results_label)
+
+  if results[1]:
+    raise RuntimeError('Patched version failed to run performance test.')
+
+  bisect_utils.OutputAnnotationStepClosed()
+
+  return results
+
+
+def _RunPerformanceTest(config):
+  """Runs a performance test with and without the current patch.
+
+  Args:
+    config: Contents of the config file, a dictionary.
+
+  Attempts to build and run the current revision with and without the
+  current patch, with the parameters passed in.
+  """
+  # Bisect script expects to be run from the src directory
+  os.chdir(SRC_DIR)
+
+  opts = _CreateBisectOptionsFromConfig(config)
+  revisions = _ResolveRevisionsFromConfig(config)
+  annotations_dict = _GetStepAnnotationStringsDict(config)
+  b = bisect_perf_regression.BisectPerformanceMetrics(opts, os.getcwd())
+
+  _RunBuildStepForPerformanceTest(b, annotations_dict['build1'], revisions[0])
+
+  results_with_patch = _RunCommandStepForPerformanceTest(
+      b, opts, True, True, annotations_dict['results_label1'],
+      annotations_dict['run1'])
+
+  bisect_utils.OutputAnnotationStepStart('Reverting Patch')
+  # TODO: When this is re-written to recipes, this should use bot_update's
+  # revert mechanism to fully revert the client. But for now, since we know that
+  # the perf try bot currently only supports src/ and src/third_party/WebKit, we
+  # simply reset those two directories.
+  bisect_utils.CheckRunGit(['reset', '--hard'])
+  bisect_utils.CheckRunGit(['reset', '--hard'],
+                           os.path.join('third_party', 'WebKit'))
+  bisect_utils.OutputAnnotationStepClosed()
+
+  _RunBuildStepForPerformanceTest(b, annotations_dict['build2'], revisions[1])
+
+  results_without_patch = _RunCommandStepForPerformanceTest(
+      b, opts, False, True, annotations_dict['results_label2'],
+      annotations_dict['run1'])
+
+  # Find the link to the cloud stored results file.
+  _ParseAndOutputCloudLinks(results_without_patch, results_with_patch)
 
 
 def _SetupAndRunPerformanceTest(config, path_to_goma):
