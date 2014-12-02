@@ -257,9 +257,7 @@ class AndroidCommands(object):
         result = self._executive.run_command(self.adb_command() + command, error_handler=error_handler, debug_logging=self._debug_logging)
 
         # We limit the length to avoid outputting too verbose commands, such as "adb logcat".
-        # Also make sure that the output is ascii-encoded to avoid confusing other parts of
-        # the system.
-        self._log_debug('Run adb result: ' + result[:80].encode('ascii', errors='replace'))
+        self._log_debug('Run adb result: ' + result[:80])
         return result
 
     def get_serial(self):
