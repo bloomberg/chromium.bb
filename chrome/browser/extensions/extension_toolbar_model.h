@@ -85,12 +85,6 @@ class ExtensionToolbarModel : public content::NotificationObserver,
     // can catch up.
     virtual void OnToolbarModelInitialized() = 0;
 
-    // Signals that the toolbar needs to be reordered for the given
-    // |web_contents|. This is caused by an overflowed action wanting to run,
-    // and needing to "pop itself out".
-    virtual void OnToolbarReorderNecessary(
-        content::WebContents* web_contents) = 0;
-
     // Returns the browser associated with the Observer.
     virtual Browser* GetBrowser() = 0;
 
@@ -134,16 +128,6 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   bool is_highlighting() const { return is_highlighting_; }
 
   void OnExtensionToolbarPrefChange();
-
-  // Returns the item order for a given tab. This can be different from the
-  // base item order if the action wants to run on the given page, and needs to
-  // be popped out of overflow.
-  ExtensionList GetItemOrderForTab(content::WebContents* web_contents) const;
-
-  // Returns the visible icon count for a given tab. This can be different from
-  // the base item order if the action wants to run on the given page and needs
-  // to be popped out of overflow.
-  size_t GetVisibleIconCountForTab(content::WebContents* web_contents) const;
 
   // Finds the Observer associated with |browser| and tells it to display a
   // popup for the given |extension|. If |grant_active_tab| is true, this

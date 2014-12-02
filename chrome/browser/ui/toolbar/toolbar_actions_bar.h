@@ -140,7 +140,6 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   void ToolbarVisibleCountChanged() override;
   void ToolbarHighlightModeChanged(bool is_highlighting) override;
   void OnToolbarModelInitialized() override;
-  void OnToolbarReorderNecessary(content::WebContents* web_contents) override;
   Browser* GetBrowser() override;
 
   // Resizes the delegate (if necessary) to the preferred size using the given
@@ -173,6 +172,11 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
 
   // The toolbar actions.
   ToolbarActions toolbar_actions_;
+
+  // The set of tabs for the given action (the key) is currently "popped out".
+  // "Popped out" actions are those that were in the overflow menu normally, but
+  // want to run and are moved to the main bar so the user can see them.
+  std::map<ToolbarActionViewController*, std::set<int>> popped_out_in_tabs_;
 
   ScopedObserver<extensions::ExtensionToolbarModel,
                  extensions::ExtensionToolbarModel::Observer> model_observer_;

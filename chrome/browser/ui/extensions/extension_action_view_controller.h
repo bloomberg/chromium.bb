@@ -49,6 +49,7 @@ class ExtensionActionViewController
       override;
   base::string16 GetTooltip(content::WebContents* web_contents) const override;
   bool IsEnabled(content::WebContents* web_contents) const override;
+  bool WantsToRun(content::WebContents* web_contents) const override;
   bool HasPopup(content::WebContents* web_contents) const override;
   void HidePopup() override;
   gfx::NativeView GetPopupNativeView() override;

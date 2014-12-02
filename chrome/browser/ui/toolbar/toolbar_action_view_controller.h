@@ -54,6 +54,10 @@ class ToolbarActionViewController {
   // Returns true if the action should be enabled on the given |web_contents|.
   virtual bool IsEnabled(content::WebContents* web_contents) const = 0;
 
+  // Returns true if the action wants to run, and should be popped out of the
+  // overflow menu on the given |web_contents|.
+  virtual bool WantsToRun(content::WebContents* web_contents) const = 0;
+
   // Returns true if the action has a popup for the given |web_contents|.
   virtual bool HasPopup(content::WebContents* web_contents) const = 0;
 

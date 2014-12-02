@@ -151,18 +151,10 @@ void ExtensionToolbarModel::OnExtensionActionUpdated(
       ExtensionRegistry::Get(profile_)->enabled_extensions().GetByID(
           extension_action->extension_id());
   // Notify observers if the extension exists and is in the model.
-  ExtensionList::const_iterator iter =
-      std::find(toolbar_items_.begin(), toolbar_items_.end(), extension);
-  if (iter != toolbar_items_.end()) {
+  if (std::find(toolbar_items_.begin(), toolbar_items_.end(), extension) !=
+          toolbar_items_.end()) {
     FOR_EACH_OBSERVER(
         Observer, observers_, ToolbarExtensionUpdated(extension));
-    // If the action was in the overflow menu, we have to alert observers that
-    // the toolbar needs to be reordered (to show the action).
-    if (static_cast<size_t>(iter - toolbar_items_.begin()) >=
-            visible_icon_count()) {
-      FOR_EACH_OBSERVER(
-          Observer, observers_, OnToolbarReorderNecessary(web_contents));
-    }
   }
 }
 
@@ -592,49 +584,6 @@ void ExtensionToolbarModel::OnExtensionToolbarPrefChange() {
         base::Bind(&ExtensionToolbarModel::UpdatePrefs,
                    weak_ptr_factory_.GetWeakPtr()));
   }
-}
-
-size_t ExtensionToolbarModel::GetVisibleIconCountForTab(
-    content::WebContents* web_contents) const {
-  if (all_icons_visible())
-    return visible_icon_count();  // Already displaying all actions.
-
-  ExtensionActionAPI* extension_action_api = ExtensionActionAPI::Get(profile_);
-  size_t total_icons = visible_icon_count();
-  for (size_t i = total_icons; i < toolbar_items_.size(); ++i) {
-    if (extension_action_api->ExtensionWantsToRun(toolbar_items_[i].get(),
-                                                  web_contents))
-      ++total_icons;
-  }
-  return total_icons;
-}
-
-ExtensionList ExtensionToolbarModel::GetItemOrderForTab(
-    content::WebContents* web_contents) const {
-  // If we're highlighting, the items are always the same.
-  if (is_highlighting_)
-    return highlighted_items_;
-
-  // Start by initializing the array to be the same as toolbar items (this isn't
-  // any more expensive than initializing it to be of the same size with all
-  // nulls, and saves us time at the end).
-  ExtensionList result = toolbar_items_;
-  if (toolbar_items_.empty())
-    return result;
-
-  ExtensionList overflowed_actions_wanting_to_run;
-  ExtensionActionAPI* extension_action_api = ExtensionActionAPI::Get(profile_);
-  size_t boundary = visible_icon_count();
-  // Rotate any actions that want to run to the boundary between visible and
-  // overflowed actions.
-  for (ExtensionList::iterator iter = result.begin() + boundary;
-       iter != result.end(); ++iter) {
-    if (extension_action_api->ExtensionWantsToRun(iter->get(), web_contents)) {
-      std::rotate(result.begin() + boundary, iter, iter + 1);
-      ++boundary;
-    }
-  }
-  return result;
 }
 
 bool ExtensionToolbarModel::ShowExtensionActionPopup(

@@ -117,6 +117,12 @@ bool ExtensionActionViewController::IsEnabled(
           ExtensionWantsToRun(extension(), web_contents);
 }
 
+bool ExtensionActionViewController::WantsToRun(
+    content::WebContents* web_contents) const {
+  return extensions::ExtensionActionAPI::Get(browser_->profile())->
+      ExtensionWantsToRun(extension(), web_contents);
+}
+
 bool ExtensionActionViewController::HasPopup(
     content::WebContents* web_contents) const {
   if (!ExtensionIsValid())

@@ -137,6 +137,8 @@ class ToolbarActionsBarBridge : public ToolbarActionsBarDelegate {
   explicit ToolbarActionsBarBridge(BrowserActionsController* controller);
   ~ToolbarActionsBarBridge() override;
 
+  BrowserActionsController* controller_for_test() { return controller_; }
+
  private:
   // ToolbarActionsBarDelegate:
   void AddViewForAction(ToolbarActionViewController* action,
@@ -703,6 +705,11 @@ bool ToolbarActionsBarBridge::IsPopupRunning() const {
 
 - (ToolbarActionsBar*)toolbarActionsBar {
   return toolbarActionsBar_.get();
+}
+
++ (BrowserActionsController*)fromToolbarActionsBarDelegate:
+    (ToolbarActionsBarDelegate*)delegate {
+  return static_cast<ToolbarActionsBarBridge*>(delegate)->controller_for_test();
 }
 
 @end

@@ -7,11 +7,10 @@
 
 #include <string>
 
-#include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
-class ExtensionAction;
+class ToolbarActionsBarDelegate;
 
 namespace gfx {
 class Image;
@@ -21,7 +20,16 @@ class Size;
 
 class BrowserActionTestUtil {
  public:
-  explicit BrowserActionTestUtil(Browser* browser) : browser_(browser) {}
+  // Constructs a BrowserActionTestUtil that uses the |browser|'s default
+  // browser action container.
+  explicit BrowserActionTestUtil(Browser* browser)
+      : browser_(browser), bar_delegate_(nullptr) {}
+
+  // Constructs a BrowserActionTestUtil that will use the |bar_delegate| as the
+  // browser action container to test.
+  BrowserActionTestUtil(Browser* browser,
+                        ToolbarActionsBarDelegate* bar_delegate)
+      : browser_(browser), bar_delegate_(bar_delegate) {}
 
   // Returns the number of browser action buttons in the window toolbar.
   int NumberOfBrowserActions();
@@ -82,6 +90,10 @@ class BrowserActionTestUtil {
 
  private:
   Browser* browser_;  // weak
+
+  // If non-null, this is a set view to test with, rather than using the
+  // |browser|'s default container.
+  ToolbarActionsBarDelegate* bar_delegate_;  // weak
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_BROWSER_ACTION_TEST_UTIL_H_
