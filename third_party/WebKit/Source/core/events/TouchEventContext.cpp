@@ -47,13 +47,13 @@ TouchEventContext::TouchEventContext()
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TouchEventContext)
 
-void TouchEventContext::handleLocalEvents(Event* event) const
+void TouchEventContext::handleLocalEvents(Event& event) const
 {
-    ASSERT(event->isTouchEvent());
-    TouchEvent* touchEvent = toTouchEvent(event);
-    touchEvent->setTouches(m_touches);
-    touchEvent->setTargetTouches(m_targetTouches);
-    touchEvent->setChangedTouches(m_changedTouches);
+    ASSERT(event.isTouchEvent());
+    TouchEvent& touchEvent = toTouchEvent(event);
+    touchEvent.setTouches(m_touches);
+    touchEvent.setTargetTouches(m_targetTouches);
+    touchEvent.setChangedTouches(m_changedTouches);
 }
 
 void TouchEventContext::trace(Visitor* visitor)

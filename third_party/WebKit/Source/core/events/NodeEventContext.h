@@ -55,7 +55,7 @@ public:
     TouchEventContext* touchEventContext() const { return m_treeScopeEventContext->touchEventContext(); }
 
     bool currentTargetSameAsTarget() const { return m_currentTarget.get() == target(); }
-    void handleLocalEvents(Event*) const;
+    void handleLocalEvents(Event&) const;
 
 private:
     RefPtrWillBeMember<Node> m_node;

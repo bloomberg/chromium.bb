@@ -128,7 +128,7 @@ private:
     virtual void removedFrom(ContainerNode*) override;
     virtual void finishParsingChildren() override;
 
-    virtual void handleLocalEvents(Event*) override;
+    virtual void handleLocalEvents(Event&) override;
 
     virtual void attributeWillChange(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue) override;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;

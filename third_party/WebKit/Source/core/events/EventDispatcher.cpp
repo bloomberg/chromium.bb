@@ -155,7 +155,7 @@ inline EventDispatchContinuation EventDispatcher::dispatchEventAtCapturing(Windo
         const NodeEventContext& eventContext = m_event->eventPath()[i];
         if (eventContext.currentTargetSameAsTarget())
             continue;
-        eventContext.handleLocalEvents(m_event.get());
+        eventContext.handleLocalEvents(*m_event);
         if (m_event->propagationStopped())
             return DoneDispatching;
     }
@@ -166,7 +166,7 @@ inline EventDispatchContinuation EventDispatcher::dispatchEventAtCapturing(Windo
 inline EventDispatchContinuation EventDispatcher::dispatchEventAtTarget()
 {
     m_event->setEventPhase(Event::AT_TARGET);
-    m_event->eventPath()[0].handleLocalEvents(m_event.get());
+    m_event->eventPath()[0].handleLocalEvents(*m_event);
     return m_event->propagationStopped() ? DoneDispatching : ContinueDispatching;
 }
 
@@ -182,7 +182,7 @@ inline void EventDispatcher::dispatchEventAtBubbling(WindowEventContext& windowC
             m_event->setEventPhase(Event::BUBBLING_PHASE);
         else
             continue;
-        eventContext.handleLocalEvents(m_event.get());
+        eventContext.handleLocalEvents(*m_event);
         if (m_event->propagationStopped())
             return;
     }

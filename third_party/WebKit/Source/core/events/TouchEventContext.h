@@ -41,7 +41,7 @@ class TouchEventContext : public RefCountedWillBeGarbageCollected<TouchEventCont
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TouchEventContext);
 public:
     static PassRefPtrWillBeRawPtr<TouchEventContext> create();
-    void handleLocalEvents(Event*) const;
+    void handleLocalEvents(Event&) const;
     TouchList& touches() { return *m_touches; }
     TouchList& targetTouches() { return *m_targetTouches; }
     TouchList& changedTouches() { return *m_changedTouches; }

@@ -51,19 +51,19 @@ void NodeEventContext::trace(Visitor* visitor)
     visitor->trace(m_treeScopeEventContext);
 }
 
-void NodeEventContext::handleLocalEvents(Event* event) const
+void NodeEventContext::handleLocalEvents(Event& event) const
 {
     if (touchEventContext()) {
         touchEventContext()->handleLocalEvents(event);
     } else if (relatedTarget()) {
-        if (event->isMouseEvent()) {
-            toMouseEvent(event)->setRelatedTarget(relatedTarget());
-        } else if (event->isFocusEvent()) {
-            toFocusEvent(event)->setRelatedTarget(relatedTarget());
+        if (event.isMouseEvent()) {
+            toMouseEvent(event).setRelatedTarget(relatedTarget());
+        } else if (event.isFocusEvent()) {
+            toFocusEvent(event).setRelatedTarget(relatedTarget());
         }
     }
-    event->setTarget(target());
-    event->setCurrentTarget(m_currentTarget.get());
+    event.setTarget(target());
+    event.setCurrentTarget(m_currentTarget.get());
     m_node->handleLocalEvents(event);
 }
 
