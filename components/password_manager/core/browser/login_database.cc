@@ -532,6 +532,11 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
 }
 
 bool LoginDatabase::RemoveLogin(const PasswordForm& form) {
+  if (form.IsPublicSuffixMatch()) {
+    // Do not try to remove |form|. It is a modified copy of a password stored
+    // for a different origin, and it is not contained in the database.
+    return false;
+  }
   // Remove a login by UNIQUE-constrained fields.
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM logins WHERE "

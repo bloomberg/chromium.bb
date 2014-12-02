@@ -305,6 +305,14 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
   EXPECT_EQ(1U, result.size());
   EXPECT_EQ("https://mobile.foo.com/", result[0]->signon_realm);
   EXPECT_EQ("https://foo.com/", result[0]->original_signon_realm);
+
+  // Try to remove PSL matched form
+  EXPECT_FALSE(db_.RemoveLogin(*result[0]));
+  delete result[0];
+  result.clear();
+  // Ensure that the original form is still there
+  EXPECT_TRUE(db_.GetLogins(form, &result));
+  EXPECT_EQ(1U, result.size());
   delete result[0];
   result.clear();
 }
