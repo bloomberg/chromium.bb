@@ -32,6 +32,12 @@ OFFICIAL_BASE_URL = 'http://%s/%s' % (GOOGLE_APIS_URL, GS_BUCKET_NAME)
 # URL template for viewing changelogs between revisions.
 CHANGELOG_URL = ('https://chromium.googlesource.com/chromium/src/+log/%s..%s')
 
+# GS bucket name for android unsigned official builds.
+ANDROID_BUCKET_NAME = 'chrome-unsigned/android-C4MPAR1'
+
+# The base URL for android official builds.
+ANDROID_OFFICIAL_BASE_URL = 'http://%s/%s' % (GOOGLE_APIS_URL, ANDROID_BUCKET_NAME)
+
 # URL to convert SVN revision to git hash.
 CRREV_URL = ('https://cr-rev.appspot.com/_ah/api/crrev/v1/redirect/')
 
@@ -85,6 +91,15 @@ SEARCH_PATTERN = {
 CREDENTIAL_ERROR_MESSAGE = ('You are attempting to access protected data with '
                             'no configured credentials')
 
+# Package name needed to uninstall chrome from Android devices.
+ANDROID_CHROME_PACKAGE_NAME = {
+  'Chrome.apk': 'com.google.android.apps.chrome',
+  'ChromeBeta.apk': 'com.chrome.beta',
+  'ChromeCanary.apk': 'com.chrome.canary',
+  'ChromeDev.apk': 'com.google.android.apps.chrome_dev',
+  'ChromeStable.apk': 'com.android.chrome',
+}
+
 ###############################################################################
 
 import httplib
@@ -109,7 +124,7 @@ class PathContext(object):
   paths when dealing with the storage server and archives."""
   def __init__(self, base_url, platform, good_revision, bad_revision,
                is_official, is_asan, use_local_repo, flash_path = None,
-               pdf_path = None):
+               pdf_path = None, android_apk = None):
     super(PathContext, self).__init__()
     # Store off the input parameters.
     self.base_url = base_url
@@ -126,7 +141,8 @@ class PathContext(object):
     # the build.
     self.githash_svn_dict = {}
     self.pdf_path = pdf_path
-
+    # android_apk defaults to Chrome.apk
+    self.android_apk = android_apk if android_apk else 'Chrome.apk'
     # The name of the ZIP file in a revision directory on the server.
     self.archive_name = None
 
@@ -135,6 +151,9 @@ class PathContext(object):
     # It uses "git svn find-rev <SHA1>" command to convert git hash to svn
     # revision number.
     self.use_local_repo = use_local_repo
+
+    # If the script is being used for android builds.
+    self.android = self.platform.startswith('android')
 
     # Set some internal members:
     #   _listing_platform_dir = Directory that holds revisions. Ends with a '/'.
@@ -149,6 +168,8 @@ class PathContext(object):
       self.archive_name = 'chrome-win32.zip'
       self._archive_extract_dir = 'chrome-win32'
       self._binary_name = 'chrome.exe'
+    elif self.android:
+      pass
     else:
       raise Exception('Invalid platform: %s' % self.platform)
 
@@ -175,6 +196,18 @@ class PathContext(object):
         self._listing_platform_dir = 'win64/'
         self.archive_name = 'chrome-win64.zip'
         self._archive_extract_dir = 'chrome-win64'
+      elif self.platform == 'android-arm':
+        self._listing_platform_dir = 'arm/'
+        self.archive_name = self.android_apk
+      elif self.platform == 'android-arm-64':
+        self._listing_platform_dir = 'arm_64/'
+        self.archive_name = self.android_apk
+      elif self.platform == 'android-x86':
+        self._listing_platform_dir = 'x86/'
+        self.archive_name = self.android_apk
+      elif self.platform == 'android-x64-64':
+        self._listing_platform_dir = 'x86_64/'
+        self.archive_name = self.android_apk
     else:
       if self.platform in ('linux', 'linux64', 'linux-arm'):
         self.archive_name = 'chrome-linux.zip'
@@ -219,8 +252,12 @@ class PathContext(object):
           ASAN_BASE_URL, self.GetASANPlatformDir(), self.build_type,
           self.GetASANBaseName(), revision)
     if self.is_official:
+      if self.android:
+        official_base_url = ANDROID_OFFICIAL_BASE_URL
+      else:
+        official_base_url = OFFICIAL_BASE_URL
       return '%s/%s/%s%s' % (
-          OFFICIAL_BASE_URL, revision, self._listing_platform_dir,
+          official_base_url, revision, self._listing_platform_dir,
           self.archive_name)
     else:
       if str(revision) in self.githash_svn_dict:
@@ -465,7 +502,11 @@ class PathContext(object):
     # Download the revlist and filter for just the range between good and bad.
     minrev = min(self.good_revision, self.bad_revision)
     maxrev = max(self.good_revision, self.bad_revision)
-    build_numbers = GsutilList(GS_BUCKET_NAME)
+    if self.android:
+      gs_bucket_name = ANDROID_BUCKET_NAME
+    else:
+      gs_bucket_name = GS_BUCKET_NAME
+    build_numbers = GsutilList(gs_bucket_name)
     revision_re = re.compile(r'(\d\d\.\d\.\d{4}\.\d+)')
     build_numbers = filter(lambda b: revision_re.search(b), build_numbers)
     final_list = []
@@ -476,7 +517,7 @@ class PathContext(object):
         break
       if build_number < minrev:
         continue
-      path = ('/' + GS_BUCKET_NAME + '/' + str(build_number) + '/' +
+      path = ('/' + gs_bucket_name + '/' + str(build_number) + '/' +
               self._listing_platform_dir + self.archive_name)
       connection.request('HEAD', path)
       response = connection.getresponse()
@@ -549,9 +590,55 @@ def FetchRevision(context, rev, filename, quit_event=None, progress_event=None):
     pass
 
 
+def IsADBInstalled():
+  """Checks if ADB is in the environment path."""
+  try:
+    adb_output = subprocess.check_output(['adb', 'version'])
+    return ('Android Debug Bridge' in adb_output)
+  except OSError:
+    return False
+
+
+def GetAndroidDeviceList():
+  """Returns the list of Android devices attached to the host machine."""
+  lines = subprocess.check_output(['adb', 'devices']).split('\n')[1:]
+  devices = []
+  for line in lines:
+    m = re.match('^(.*?)\s+device$', line)
+    if not m:
+      continue
+    devices.append(m.group(1))
+  return devices
+
+
+def RunAndroidRevision(context, revision, apk_file):
+  """Given a Chrome apk, install it on a local device, and launch Chrome."""
+  devices = GetAndroidDeviceList()
+  if len(devices) is not 1:
+    sys.exit('Please have 1 Android device plugged in. %d devices found'
+        % len(devices))
+
+  devnull = open(os.devnull, 'w')
+  package_name = ANDROID_CHROME_PACKAGE_NAME[context.android_apk]
+
+  print 'Installing new Chrome version...'
+  subprocess.call(['adb', 'install', '-r', '-d', apk_file],
+       stdout=devnull, stderr=devnull)
+
+  print 'Launching Chrome...\n'
+  subprocess.call(['adb', 'shell', 'am', 'start', '-a',
+      'android.intent.action.VIEW', '-n', package_name +
+      '/com.google.android.apps.chrome.Main'], stdout=devnull, stderr=devnull)
+
+
 def RunRevision(context, revision, zip_file, profile, num_runs, command, args):
   """Given a zipped revision, unzip it and run the test."""
   print 'Trying revision %s...' % str(revision)
+
+  if context.android:
+    RunAndroidRevision(context, revision, zip_file)
+    # TODO(mikecase): Support running command to auto-bisect Android.
+    return (None, None, None)
 
   # Create a temp directory and unzip the revision into it.
   cwd = os.getcwd()
@@ -999,8 +1086,11 @@ def main():
            'Tip: add "-- --no-first-run" to bypass the first run prompts.')
   parser = optparse.OptionParser(usage=usage)
   # Strangely, the default help output doesn't include the choice list.
-  choices = ['mac', 'mac64', 'win', 'win64', 'linux', 'linux64', 'linux-arm']
+  choices = ['mac', 'mac64', 'win', 'win64', 'linux', 'linux64', 'linux-arm',
+             'android-arm', 'android-arm-64', 'android-x86', 'android-x86-64']
             # linux-chromiumos lacks a continuous archive http://crbug.com/78158
+  apk_choices = ['Chrome.apk', 'ChromeBeta.apk', 'ChromeCanary.apk',
+                 'ChromeDev.apk', 'ChromeStable.apk']
   parser.add_option('-a', '--archive',
                     choices=choices,
                     help='The buildbot archive to bisect [%s].' %
@@ -1071,6 +1161,16 @@ def main():
                     help='Allow the script to convert git SHA1 to SVN '
                          'revision using "git svn find-rev <SHA1>" '
                          'command from a Chromium checkout.')
+  parser.add_option('--adb-path',
+                    dest='adb_path',
+                    help='Absolute path to adb. If you do not have adb in your '
+                         'enviroment PATH and want to bisect Android then '
+                         'you need to specify the path here.')
+  parser.add_option('--apk',
+                    dest='apk',
+                    choices=apk_choices,
+                    help='Name of apk you want to bisect. [%s]' %
+                    '|'.join(apk_choices))
 
   (opts, args) = parser.parse_args()
 
@@ -1100,7 +1200,21 @@ def main():
   # Create the context. Initialize 0 for the revisions as they are set below.
   context = PathContext(base_url, opts.archive, opts.good, opts.bad,
                         opts.official_builds, opts.asan, opts.use_local_repo,
-                        opts.flash_path, opts.pdf_path)
+                        opts.flash_path, opts.pdf_path, opts.apk)
+
+  # TODO(mikecase): Add support to bisect on nonofficial builds for Android.
+  if context.android and not opts.official_builds:
+    sys.exit('Can only bisect on official builds for Android.')
+
+  # If bisecting Android, we make sure we have ADB setup.
+  if context.android:
+    if opts.adb_path:
+      os.environ['PATH'] = '%s:%s' % (os.path.dirname(opts.adb_path),
+          os.environ['PATH'])
+    if not IsADBInstalled():
+      sys.exit('Please have "adb" in PATH or use adb_path command line option'
+          'to bisect Android builds.')
+
   # Pick a starting point, try to get HEAD for this.
   if not opts.bad:
     context.bad_revision = '999.0.0.0'
