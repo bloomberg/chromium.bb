@@ -24,22 +24,20 @@ const char kSwitchStdin[] = "stdin";
 
 const char kFormat[] = "format";
 const char kFormat_HelpShort[] =
-    "format: Format .gn file. (ALPHA, WILL DESTROY DATA!)";
+    "format: Format .gn file.";
 const char kFormat_Help[] =
     "gn format [--dump-tree] [--in-place] [--stdin] BUILD.gn\n"
     "\n"
-    "  Formats .gn file to a standard format. THIS IS NOT FULLY IMPLEMENTED\n"
-    "  YET! IT WILL EAT YOUR BEAUTIFUL .GN FILES. AND YOUR LAUNDRY.\n"
-    "  At a minimum, make sure everything is `git commit`d so you can\n"
-    "  `git checkout -f` to recover.\n"
+    "  Formats .gn file to a standard format.\n"
     "\n"
     "Arguments\n"
     "  --dump-tree\n"
     "      For debugging only, dumps the parse tree.\n"
     "\n"
     "  --in-place\n"
-    "      Instead writing the formatted file to stdout, replace the input\n"
-    "      with the formatted output.\n"
+    "      Instead of writing the formatted file to stdout, replace the input\n"
+    "      file with the formatted output. If no reformatting is required,\n"
+    "      the input file will not be touched, and nothing printed.\n"
     "\n"
     "  --stdin\n"
     "      Read input from stdin (and write to stdout). Not compatible with\n"
@@ -966,15 +964,24 @@ int RunFormat(const std::vector<std::string>& args) {
         base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchInPlace);
     if (in_place) {
       base::FilePath to_write = setup.build_settings().GetFullPath(file);
-      if (base::WriteFile(to_write,
-                          output_string.data(),
-                          static_cast<int>(output_string.size())) == -1) {
-        Err(Location(),
-            std::string("Failed to write formatted output back to \"") +
-                to_write.AsUTF8Unsafe() + std::string("\".")).PrintToStdout();
+      std::string original_contents;
+      if (!base::ReadFileToString(to_write, &original_contents)) {
+        Err(Location(), std::string("Couldn't read \"") +
+                            to_write.AsUTF8Unsafe() +
+                            std::string("\" for comparison.")).PrintToStdout();
         return 1;
       }
-      printf("Wrote formatted to '%s'.\n", to_write.AsUTF8Unsafe().c_str());
+      if (original_contents != output_string) {
+        if (base::WriteFile(to_write,
+                            output_string.data(),
+                            static_cast<int>(output_string.size())) == -1) {
+          Err(Location(),
+              std::string("Failed to write formatted output back to \"") +
+                  to_write.AsUTF8Unsafe() + std::string("\".")).PrintToStdout();
+          return 1;
+        }
+        printf("Wrote formatted to '%s'.\n", to_write.AsUTF8Unsafe().c_str());
+      }
     } else {
       printf("%s", output_string.c_str());
     }
