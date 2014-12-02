@@ -244,6 +244,15 @@ bool LaunchProcess(const CommandLine& cmdline,
   return rv;
 }
 
+Process LaunchProcess(const CommandLine& cmdline,
+                      const LaunchOptions& options) {
+  ProcessHandle process_handle;
+  if (LaunchProcess(cmdline, options, &process_handle))
+    return Process(process_handle);
+
+  return Process();
+}
+
 Process LaunchElevatedProcess(const CommandLine& cmdline,
                               const LaunchOptions& options) {
   const string16 file = cmdline.GetProgram().value();

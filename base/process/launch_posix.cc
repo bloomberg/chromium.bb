@@ -480,6 +480,15 @@ bool LaunchProcess(const CommandLine& cmdline,
   return LaunchProcess(cmdline.argv(), options, process_handle);
 }
 
+Process LaunchProcess(const CommandLine& cmdline,
+                      const LaunchOptions& options) {
+  ProcessHandle process_handle;
+  if (LaunchProcess(cmdline, options, &process_handle))
+    return Process(process_handle);
+
+  return Process();
+}
+
 void RaiseProcessToHighPriority() {
   // On POSIX, we don't actually do anything here.  We could try to nice() or
   // setpriority() or sched_getscheduler, but these all require extra rights.

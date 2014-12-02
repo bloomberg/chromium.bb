@@ -144,12 +144,7 @@ struct BASE_EXPORT LaunchOptions {
 // Launch a process via the command line |cmdline|.
 // See the documentation of LaunchOptions for details on |options|.
 //
-// Returns true upon success.
-//
-// Upon success, if |process_handle| is non-null, it will be filled in with the
-// handle of the launched process.  NOTE: In this case, the caller is
-// responsible for closing the handle so that it doesn't leak!
-// Otherwise, the process handle will be implicitly closed.
+// Returns a valid Process upon success.
 //
 // Unix-specific notes:
 // - All file descriptors open in the parent process will be closed in the
@@ -159,6 +154,11 @@ struct BASE_EXPORT LaunchOptions {
 //   parent's stdout and stderr.
 // - If the first argument on the command line does not contain a slash,
 //   PATH will be searched.  (See man execvp.)
+BASE_EXPORT Process LaunchProcess(const CommandLine& cmdline,
+                                  const LaunchOptions& options);
+
+// Deprecated version.
+// TODO(rvargas) crbug.com/417532: Remove this after migrating all consumers.
 BASE_EXPORT bool LaunchProcess(const CommandLine& cmdline,
                                const LaunchOptions& options,
                                ProcessHandle* process_handle);

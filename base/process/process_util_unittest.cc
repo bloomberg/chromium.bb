@@ -348,8 +348,8 @@ TEST_F(ProcessUtilTest, LaunchAsUser) {
   ASSERT_TRUE(OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &token));
   base::LaunchOptions options;
   options.as_user = token;
-  EXPECT_TRUE(base::LaunchProcess(MakeCmdLine("SimpleChildProcess"), options,
-                                  NULL));
+  EXPECT_TRUE(base::LaunchProcess(MakeCmdLine("SimpleChildProcess"),
+                                  options).IsValid());
 }
 
 static const char kEventToTriggerHandleSwitch[] = "event-to-trigger-handle";
@@ -393,12 +393,12 @@ TEST_F(ProcessUtilTest, InheritSpecifiedHandles) {
   // This functionality actually requires Vista or later. Make sure that it
   // fails properly on XP.
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    EXPECT_FALSE(base::LaunchProcess(cmd_line, options, NULL));
+    EXPECT_FALSE(base::LaunchProcess(cmd_line, options).IsValid());
     return;
   }
 
   // Launch the process and wait for it to trigger the event.
-  ASSERT_TRUE(base::LaunchProcess(cmd_line, options, NULL));
+  ASSERT_TRUE(base::LaunchProcess(cmd_line, options).IsValid());
   EXPECT_TRUE(event.TimedWait(TestTimeouts::action_max_timeout()));
 }
 #endif  // defined(OS_WIN)
