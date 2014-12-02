@@ -214,7 +214,12 @@ if test "x$drm_cv_atomic_primitives" = "xlibatomic-ops"; then
 	AC_DEFINE(HAVE_LIB_ATOMIC_OPS, 1, [Enable if you have libatomic-ops-dev installed])
 fi
 
-if test "x$INTEL" != "xno" -o "x$RADEON" != "xno" -o "x$NOUVEAU" != "xno"; then
+if test "x$INTEL" != "xno" -o \
+	"x$RADEON" != "xno" -o \
+	"x$NOUVEAU" != "xno" -o \
+	"x$OMAP" != "xno" -o \
+	"x$FREEDRENO" != "xno" -o \
+	"x$TEGRA" != "xno"; then
 	if test "x$drm_cv_atomic_primitives" = "xnone"; then
 		if test "x$INTEL" != "xauto"; then
 			if test "x$INTEL" != "xno"; then
@@ -240,6 +245,15 @@ if test "x$INTEL" != "xno" -o "x$RADEON" != "xno" -o "x$NOUVEAU" != "xno"; then
 			AC_MSG_WARN([Disabling libdrm_nouveau. It depends on atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package.])
 			NOUVEAU=no
 		fi
+		if test "x$OMAP" != "xauto"; then
+			AC_MSG_ERROR([libdrm_omap depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for OMAP GPUs by passing --disable-omap-experimental-api to ./configure])
+		fi
+		if test "x$FREEDRENO" != "xauto"; then
+			AC_MSG_ERROR([libdrm_freedreno depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for QCOM's Adreno GPUs by passing --disable-freedreno to ./configure])
+		fi
+		if test "x$TEGRA" != "xauto"; then
+			AC_MSG_ERROR([libdrm_tegra depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for NVIDIA's Tegra GPUs by passing --disable-tegra-experimental-api to ./configure])
+		fi
 	else
 		if test "x$INTEL" != "xno"; then
 			case $host_cpu in
@@ -252,6 +266,12 @@ if test "x$INTEL" != "xno" -o "x$RADEON" != "xno" -o "x$NOUVEAU" != "xno"; then
 		fi
 		if test "x$NOUVEAU" != "xno"; then
 			NOUVEAU=yes
+		fi
+		if test "x$FREEDRENO" != "xno"; then
+			case $host_cpu in
+				arm*|aarch64)	FREEDRENO=yes ;;
+				*)		FREEDRENO=no ;;
+			esac
 		fi
 	fi
 fi
@@ -274,13 +294,6 @@ if test "x$LIBKMS" = xauto ; then
 				LIBKMS="yes" ;;
 		dragonfly*)	LIBKMS="yes" ;;
 		*)		LIBKMS="no" ;;
-	esac
-fi
-
-if test "x$FREEDRENO" = xauto ; then
-	case $host_cpu in
-		arm*|aarch64)	FREEDRENO="yes" ;;
-		*)		FREEDRENO="no" ;;
 	esac
 fi
 
