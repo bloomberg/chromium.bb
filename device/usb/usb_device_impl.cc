@@ -157,6 +157,12 @@ UsbDeviceImpl::UsbDeviceImpl(
         continue;
       }
 
+#if defined(OS_CHROMEOS)
+      value = udev_device_get_devnode(device.get());
+      if (value) {
+        devnode_ = value;
+      }
+#endif
       value = udev_device_get_sysattr_value(device.get(), "manufacturer");
       if (value) {
         manufacturer_ = base::UTF8ToUTF16(value);
@@ -207,10 +213,9 @@ void UsbDeviceImpl::RequestUsbAccess(
 
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&chromeos::PermissionBrokerClient::RequestUsbAccess,
+        base::Bind(&chromeos::PermissionBrokerClient::RequestPathAccess,
                    base::Unretained(client),
-                   vendor_id(),
-                   product_id(),
+                   devnode_,
                    interface_id,
                    base::Bind(&OnRequestUsbAccessReplied,
                               base::ThreadTaskRunnerHandle::Get(),

@@ -76,6 +76,11 @@ class UsbDeviceImpl : public UsbDevice {
   void CacheStrings();
   bool strings_cached_;
 #endif
+#if defined(OS_CHROMEOS)
+  // On Chrome OS save the devnode string for requesting path access from
+  // permission broker.
+  std::string devnode_;
+#endif
 
   // The active configuration descriptor is not read immediately but cached for
   // later use.
