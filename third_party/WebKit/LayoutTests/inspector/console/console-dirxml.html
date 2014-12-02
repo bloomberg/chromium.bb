@@ -20,7 +20,7 @@ function test()
 {
     runtime.loadModulePromise("elements").then(function() {
         InspectorTest.evaluateInPage("logToConsole()", onLoggedToConsole);
-    }).done();
+    });
 
     function onLoggedToConsole()
     {

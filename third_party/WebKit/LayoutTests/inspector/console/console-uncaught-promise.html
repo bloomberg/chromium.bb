@@ -91,7 +91,7 @@ function promiseTest8()
 function test()
 {
     InspectorTest.addConsoleViewSniffer(checkConsoleMessages, true);
-    WebInspector.console.showPromise().done();
+    WebInspector.console.showPromise();
 
     checkConsoleMessages();
 
