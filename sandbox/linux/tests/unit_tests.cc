@@ -263,6 +263,16 @@ void UnitTests::DeathMessage(int status,
 
   bool subprocess_exited_without_matching_message =
       msg.find(expected_msg) == std::string::npos;
+
+// In official builds CHECK messages are dropped, so look for SIGABRT.
+// See https://code.google.com/p/chromium/issues/detail?id=437312
+#if defined(OFFICIAL_BUILD) && defined(NDEBUG) && !defined(OS_ANDROID)
+  if (subprocess_exited_without_matching_message) {
+    static const char kSigAbortMessage[] = "Received signal 6";
+    subprocess_exited_without_matching_message =
+        msg.find(kSigAbortMessage) == std::string::npos;
+  }
+#endif
   EXPECT_FALSE(subprocess_exited_without_matching_message) << details;
 }
 
