@@ -959,7 +959,7 @@ int SSLClientSocketOpenSSL::DoHandshake() {
     // Only record OCSP histograms if OCSP was requested.
     if (ssl_config_.signed_cert_timestamps_enabled ||
         IsOCSPStaplingSupported()) {
-      uint8_t* ocsp_response;
+      const uint8_t* ocsp_response;
       size_t ocsp_response_len;
       SSL_get0_ocsp_response(ssl_, &ocsp_response, &ocsp_response_len);
 
@@ -967,7 +967,7 @@ int SSLClientSocketOpenSSL::DoHandshake() {
       UMA_HISTOGRAM_BOOLEAN("Net.OCSPResponseStapled", ocsp_response_len != 0);
     }
 
-    uint8_t* sct_list;
+    const uint8_t* sct_list;
     size_t sct_list_len;
     SSL_get0_signed_cert_timestamp_list(ssl_, &sct_list, &sct_list_len);
     set_signed_cert_timestamps_received(sct_list_len != 0);
@@ -1200,13 +1200,13 @@ void SSLClientSocketOpenSSL::UpdateServerCert() {
     // update IsOCSPStaplingSupported for Mac. https://crbug.com/430714
     if (IsOCSPStaplingSupported()) {
 #if defined(OS_WIN)
-      uint8_t* ocsp_response_raw;
+      const uint8_t* ocsp_response_raw;
       size_t ocsp_response_len;
       SSL_get0_ocsp_response(ssl_, &ocsp_response_raw, &ocsp_response_len);
 
       CRYPT_DATA_BLOB ocsp_response_blob;
       ocsp_response_blob.cbData = ocsp_response_len;
-      ocsp_response_blob.pbData = ocsp_response_raw;
+      ocsp_response_blob.pbData = const_cast<BYTE*>(ocsp_response_raw);
       BOOL ok = CertSetCertificateContextProperty(
           server_cert_->os_cert_handle(),
           CERT_OCSP_RESPONSE_PROP_ID,
@@ -1227,7 +1227,7 @@ void SSLClientSocketOpenSSL::VerifyCT() {
   if (!cert_transparency_verifier_)
     return;
 
-  uint8_t* ocsp_response_raw;
+  const uint8_t* ocsp_response_raw;
   size_t ocsp_response_len;
   SSL_get0_ocsp_response(ssl_, &ocsp_response_raw, &ocsp_response_len);
   std::string ocsp_response;
@@ -1236,7 +1236,7 @@ void SSLClientSocketOpenSSL::VerifyCT() {
                          ocsp_response_len);
   }
 
-  uint8_t* sct_list_raw;
+  const uint8_t* sct_list_raw;
   size_t sct_list_len;
   SSL_get0_signed_cert_timestamp_list(ssl_, &sct_list_raw, &sct_list_len);
   std::string sct_list;
