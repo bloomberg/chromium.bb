@@ -273,6 +273,8 @@ PerformanceNavigation
 PerformanceResourceTiming
 PerformanceTiming
 PeriodicWave
+PermissionStatus
+Permissions
 Plugin
 PluginArray
 PopStateEvent

@@ -56,6 +56,8 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] Notification
 [Worker] Number
 [Worker] Object
+[Worker] PermissionStatus
+[Worker] Permissions
 [Worker] Promise
 [Worker] RangeError
 [Worker] ReadableStream

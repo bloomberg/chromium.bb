@@ -18,6 +18,7 @@ modules/mediastream/RTCDataChannel
 modules/mediastream/RTCPeerConnection
 modules/netinfo/NetworkInformation
 modules/notifications/Notification
+modules/permissions/PermissionStatus
 modules/presentation/Presentation
 modules/presentation/PresentationSession
 modules/screen_orientation/ScreenOrientation
