@@ -36,10 +36,6 @@
 #include "extensions/common/extension.h"
 #include "ui/app_list/app_list_switches.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/audio/cras_audio_handler.h"
-#endif
-
 using base::RecordAction;
 using base::UserMetricsAction;
 
@@ -52,7 +48,7 @@ bool InSpeechRecognition(SpeechRecognitionState state) {
       state == SPEECH_RECOGNITION_IN_SPEECH;
 }
 
-}  // namespace
+}
 
 class StartPageService::ProfileDestroyObserver
     : public content::NotificationObserver {
@@ -106,48 +102,6 @@ class StartPageService::StartPageWebContentsDelegate
   DISALLOW_COPY_AND_ASSIGN(StartPageWebContentsDelegate);
 };
 
-#if defined(OS_CHROMEOS)
-
-class StartPageService::AudioStatus
-    : public chromeos::CrasAudioHandler::AudioObserver {
- public:
-  explicit AudioStatus(StartPageService* start_page_service)
-      : start_page_service_(start_page_service) {
-    chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
-    CheckAndUpdate();
-  }
-
-  ~AudioStatus() override {
-    chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
-  }
-
-  bool CanListen() {
-    chromeos::CrasAudioHandler* audio_handler =
-        chromeos::CrasAudioHandler::Get();
-    return (audio_handler->GetPrimaryActiveInputNode() != 0) &&
-           !audio_handler->IsInputMuted();
-  }
-
- private:
-  void CheckAndUpdate() {
-    // TODO(mukai): If the system can listen, this should also restart the
-    // hotword recognition.
-    start_page_service_->OnSpeechRecognitionStateChanged(
-        CanListen() ? SPEECH_RECOGNITION_READY : SPEECH_RECOGNITION_OFF);
-  }
-
-  // chromeos::CrasAudioHandler::AudioObserver:
-  void OnInputMuteChanged() override { CheckAndUpdate(); }
-
-  void OnActiveInputNodeChanged() override { CheckAndUpdate(); }
-
-  StartPageService* start_page_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioStatus);
-};
-
-#endif  // OS_CHROMEOS
-
 // static
 StartPageService* StartPageService::Get(Profile* profile) {
   return StartPageServiceFactory::GetForProfile(profile);
@@ -165,9 +119,8 @@ StartPageService::StartPageService(Profile* profile)
   // If experimental hotwording is enabled, then we're always "ready".
   // Transitioning into the "hotword recognizing" state is handled by the
   // hotword extension.
-  if (HotwordService::IsExperimentalHotwordingEnabled()) {
+  if (HotwordService::IsExperimentalHotwordingEnabled())
     state_ = app_list::SPEECH_RECOGNITION_READY;
-  }
 
   if (app_list::switches::IsExperimentalAppListEnabled())
     LoadContents();
@@ -195,10 +148,6 @@ void StartPageService::AppListShown() {
         "appList.startPage.onAppListShown",
         base::FundamentalValue(HotwordEnabled()));
   }
-
-#if defined(OS_CHROMEOS)
-  audio_status_.reset(new AudioStatus(this));
-#endif
 }
 
 void StartPageService::AppListHidden() {
@@ -213,10 +162,6 @@ void StartPageService::AppListHidden() {
       speech_recognizer_) {
     speech_recognizer_->Stop();
   }
-
-#if defined(OS_CHROMEOS)
-  audio_status_.reset();
-#endif
 }
 
 void StartPageService::ToggleSpeechRecognition() {
@@ -306,14 +251,6 @@ void StartPageService::OnSpeechSoundLevelChanged(int16_t level) {
 
 void StartPageService::OnSpeechRecognitionStateChanged(
     SpeechRecognitionState new_state) {
-#if defined(OS_CHROMEOS)
-  // Sometimes this can be called even though there are no audio input devices.
-  if (!audio_status_->CanListen())
-    new_state = SPEECH_RECOGNITION_OFF;
-#endif
-
-  if (state_ == new_state)
-    return;
 
   if (HotwordService::IsExperimentalHotwordingEnabled() &&
       new_state == SPEECH_RECOGNITION_READY &&
@@ -346,9 +283,6 @@ content::WebContents* StartPageService::GetSpeechContents() {
 
 void StartPageService::Shutdown() {
   UnloadContents();
-#if defined(OS_CHROMEOS)
-  audio_status_.reset();
-#endif
 }
 
 void StartPageService::WebUILoaded() {
