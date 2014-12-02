@@ -181,20 +181,19 @@ TEST(ProcMapsTest, Permissions) {
   }
 }
 
-TEST(ProcMapsTest, ReadProcMaps) {
-  std::string proc_maps;
-  ASSERT_TRUE(ReadProcMaps(&proc_maps));
-
-  std::vector<MappedMemoryRegion> regions;
-  ASSERT_TRUE(ParseProcMaps(proc_maps, &regions));
-  ASSERT_FALSE(regions.empty());
-
+#if defined(ADDRESS_SANITIZER)
+// AddressSanitizer may move local variables to a dedicated "fake stack" which
+// is outside the stack region listed in /proc/self/maps. We disable ASan
+// instrumentation for this function to force the variable to be local.
+__attribute__((no_sanitize_address))
+#endif
+void CheckProcMapsRegions(const std::vector<MappedMemoryRegion> &regions) {
   // We should be able to find both the current executable as well as the stack
-  // mapped into memory. Use the address of |proc_maps| as a way of finding the
+  // mapped into memory. Use the address of |exe_path| as a way of finding the
   // stack.
   FilePath exe_path;
   EXPECT_TRUE(PathService::Get(FILE_EXE, &exe_path));
-  uintptr_t address = reinterpret_cast<uintptr_t>(&proc_maps);
+  uintptr_t address = reinterpret_cast<uintptr_t>(&exe_path);
   bool found_exe = false;
   bool found_stack = false;
   bool found_address = false;
@@ -244,6 +243,17 @@ TEST(ProcMapsTest, ReadProcMaps) {
     EXPECT_TRUE(found_stack);
     EXPECT_TRUE(found_address);
   }
+}
+
+TEST(ProcMapsTest, ReadProcMaps) {
+  std::string proc_maps;
+  ASSERT_TRUE(ReadProcMaps(&proc_maps));
+
+  std::vector<MappedMemoryRegion> regions;
+  ASSERT_TRUE(ParseProcMaps(proc_maps, &regions));
+  ASSERT_FALSE(regions.empty());
+
+  CheckProcMapsRegions(regions);
 }
 
 TEST(ProcMapsTest, ReadProcMapsNonEmptyString) {
