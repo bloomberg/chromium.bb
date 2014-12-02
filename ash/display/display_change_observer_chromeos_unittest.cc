@@ -319,24 +319,39 @@ TEST_F(DisplayChangeObserverTest, GetExternalDisplayModeList4K) {
   EXPECT_EQ(0u, display_modes.size());
 }
 
+namespace {
+
+float ComputeDeviceScaleFactor(float diagonal_inch,
+                               const gfx::Rect& resolution) {
+  // We assume that displays have square pixel.
+  float diagonal_pixel = std::sqrt(std::pow(resolution.width(), 2) +
+                                   std::pow(resolution.height(), 2));
+  float dpi = diagonal_pixel / diagonal_inch;
+  return DisplayChangeObserver::FindDeviceScaleFactor(dpi);
+}
+
+}  // namespace
+
 TEST_F(DisplayChangeObserverTest, FindDeviceScaleFactor) {
-  // 19.5" 1600x900
-  EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(94.14f));
+  EXPECT_EQ(1.0f, ComputeDeviceScaleFactor(19.5f, gfx::Rect(1600, 900)));
 
   // 21.5" 1920x1080
-  EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(102.46f));
+  EXPECT_EQ(1.0f, ComputeDeviceScaleFactor(21.5f, gfx::Rect(1920, 1080)));
 
   // 12.1" 1280x800
-  EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(124.75f));
+  EXPECT_EQ(1.0f, ComputeDeviceScaleFactor(12.1f, gfx::Rect(1280, 800)));
+
+  // 11.6" 1920x1080
+  EXPECT_EQ(1.25f, ComputeDeviceScaleFactor(11.6f, gfx::Rect(1920, 1080)));
 
   // 13.3" 1920x1080
-  EXPECT_EQ(1.25f, DisplayChangeObserver::FindDeviceScaleFactor(157.35f));
+  EXPECT_EQ(1.25f, ComputeDeviceScaleFactor(13.3f, gfx::Rect(1920, 1080)));
 
   // 14" 1920x1080
-  EXPECT_EQ(1.25f, DisplayChangeObserver::FindDeviceScaleFactor(165.63f));
+  EXPECT_EQ(1.25f, ComputeDeviceScaleFactor(14.0f, gfx::Rect(1920, 1080)));
 
   // 12.85" 2560x1700
-  EXPECT_EQ(2.0f, DisplayChangeObserver::FindDeviceScaleFactor(239.15f));
+  EXPECT_EQ(2.0f, ComputeDeviceScaleFactor(12.85f, gfx::Rect(2560, 1700)));
 
   // Erroneous values should still work.
   EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(-100.0f));
