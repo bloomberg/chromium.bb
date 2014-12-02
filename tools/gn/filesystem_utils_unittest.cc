@@ -416,7 +416,7 @@ TEST(FilesystemUtils, SourceDirForPath) {
 
   // Empty source dir.
   base::FilePath empty;
-  EXPECT_EQ("/source/foo",
+  EXPECT_EQ("/source/foo/",
             SourceDirForPath(empty, base::FilePath("/source/foo")).value());
 #endif
 }
