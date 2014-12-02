@@ -242,37 +242,79 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       listen_requests_(0),
       update_state_(IDLE),
       is_updating_byte_count_(false) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 TaskManagerModel::TaskManagerModel"));
+          "437890 TaskManagerModel::TaskManagerModel1"));
 
   AddResourceProvider(
       new task_manager::BrowserProcessResourceProvider(task_manager));
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "437890 TaskManagerModel::TaskManagerModel2"));
+
   AddResourceProvider(new task_manager::WebContentsResourceProvider(
       task_manager,
       scoped_ptr<WebContentsInformation>(
           new task_manager::BackgroundInformation())));
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "437890 TaskManagerModel::TaskManagerModel3"));
+
   AddResourceProvider(new task_manager::WebContentsResourceProvider(
       task_manager,
       scoped_ptr<WebContentsInformation>(
           new task_manager::TabContentsInformation())));
 #if defined(ENABLE_PRINT_PREVIEW)
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "437890 TaskManagerModel::TaskManagerModel4"));
+
   AddResourceProvider(new task_manager::WebContentsResourceProvider(
       task_manager,
       scoped_ptr<WebContentsInformation>(
           new task_manager::PrintingInformation())));
 #endif  // ENABLE_PRINT_PREVIEW
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is fixed.
+  tracked_objects::ScopedTracker tracking_profile5(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "437890 TaskManagerModel::TaskManagerModel5"));
+
   AddResourceProvider(new task_manager::WebContentsResourceProvider(
       task_manager,
       scoped_ptr<WebContentsInformation>(
           new task_manager::PanelInformation())));
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is fixed.
+  tracked_objects::ScopedTracker tracking_profile6(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "437890 TaskManagerModel::TaskManagerModel6"));
+
   AddResourceProvider(
       new task_manager::ChildProcessResourceProvider(task_manager));
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is fixed.
+  tracked_objects::ScopedTracker tracking_profile7(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "437890 TaskManagerModel::TaskManagerModel7"));
+
   AddResourceProvider(new task_manager::WebContentsResourceProvider(
       task_manager,
       scoped_ptr<WebContentsInformation>(
           new task_manager::ExtensionInformation())));
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is fixed.
+  tracked_objects::ScopedTracker tracking_profile8(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "437890 TaskManagerModel::TaskManagerModel8"));
+
   AddResourceProvider(new task_manager::WebContentsResourceProvider(
       task_manager,
       scoped_ptr<WebContentsInformation>(
