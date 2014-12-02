@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
 import android.app.Application;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SyncResult;
 import android.os.Bundle;
@@ -19,6 +20,9 @@ import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.signin.AccountManagerHelper;
 
+/**
+ * Tests for ChromiumSyncAdapter.
+ */
 public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
 
     private static final Account TEST_ACCOUNT =
@@ -66,19 +70,22 @@ public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
                 getActivity().getApplication());
     }
 
+    public void performSyncWithBundle(Bundle bundle) {
+        mSyncAdapter.onPerformSync(TEST_ACCOUNT, bundle,
+                SyncStatusHelper.get(getActivity()).getContractAuthority(),
+                null, new SyncResult());
+    }
+
     @MediumTest
     @Feature({"Sync"})
     public void testRequestSyncNoInvalidationData() {
-        SyncResult syncResult = new SyncResult();
-        mSyncAdapter.onPerformSync(TEST_ACCOUNT, new Bundle(),
-                SyncStatusHelper.get(getActivity()).getContractAuthority(), null, syncResult);
+        performSyncWithBundle(new Bundle());
         assertTrue(mSyncAdapter.mSyncRequestedForAllTypes);
         assertFalse(mSyncAdapter.mSyncRequested);
         assertTrue(CommandLine.isInitialized());
     }
 
     private void testRequestSyncSpecificDataType(boolean withObjectSource) {
-        SyncResult syncResult = new SyncResult();
         Bundle extras = new Bundle();
         if (withObjectSource) {
             extras.putInt(ChromiumSyncAdapter.INVALIDATION_OBJECT_SOURCE_KEY, 61);
@@ -86,8 +93,9 @@ public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
         extras.putString(ChromiumSyncAdapter.INVALIDATION_OBJECT_ID_KEY, "objectid_value");
         extras.putLong(ChromiumSyncAdapter.INVALIDATION_VERSION_KEY, 42);
         extras.putString(ChromiumSyncAdapter.INVALIDATION_PAYLOAD_KEY, "payload_value");
-        mSyncAdapter.onPerformSync(TEST_ACCOUNT, extras,
-                SyncStatusHelper.get(getActivity()).getContractAuthority(), null, syncResult);
+
+        performSyncWithBundle(extras);
+
         assertFalse(mSyncAdapter.mSyncRequestedForAllTypes);
         assertTrue(mSyncAdapter.mSyncRequested);
         if (withObjectSource) {
@@ -117,11 +125,19 @@ public class ChromiumSyncAdapterTest extends ChromeShellTestBase {
     @Feature({"Sync"})
     public void testRequestSyncWhenChromeInBackground() throws InterruptedException {
         DelayedSyncControllerTest.sendChromeToBackground(getActivity());
-        SyncResult syncResult = new SyncResult();
-        mSyncAdapter.onPerformSync(TEST_ACCOUNT, new Bundle(),
-                SyncStatusHelper.get(getActivity()).getContractAuthority(), null, syncResult);
+        performSyncWithBundle(new Bundle());
         assertFalse(mSyncAdapter.mSyncRequestedForAllTypes);
         assertFalse(mSyncAdapter.mSyncRequested);
         assertTrue(CommandLine.isInitialized());
+    }
+
+    @MediumTest
+    @Feature({"Sync"})
+    public void testRequestInitializeSync() throws InterruptedException {
+        Bundle extras = new Bundle();
+        extras.putBoolean(ContentResolver.SYNC_EXTRAS_INITIALIZE, true);
+        performSyncWithBundle(extras);
+        assertFalse(mSyncAdapter.mSyncRequestedForAllTypes);
+        assertFalse(mSyncAdapter.mSyncRequested);
     }
 }
