@@ -56,7 +56,13 @@
     ],
     'defines': [
       'EVENTS_OZONE_EVDEV_IMPLEMENTATION',
+      'USE_EVDEV',
     ],
+    'direct_dependent_settings': {
+      'defines': [
+        'USE_EVDEV',
+      ],
+    },
     'sources': [
       'evdev/libgestures_glue/event_reader_libevdev_cros.cc',
       'evdev/libgestures_glue/event_reader_libevdev_cros.h',

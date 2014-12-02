@@ -34,6 +34,10 @@ class CursorDelegateEvdev;
 class DeviceManager;
 class SystemInputInjector;
 
+#if !defined(USE_EVDEV)
+#error Missing dependency on ui/events/ozone:events_ozone_evdev
+#endif
+
 #if defined(USE_EVDEV_GESTURES)
 class GesturePropertyProvider;
 #endif

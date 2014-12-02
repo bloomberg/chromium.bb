@@ -44,6 +44,12 @@ component("events_ozone") {
   }
 }
 
+config("evdev") {
+  defines = [
+    "USE_EVDEV"
+  ]
+}
+
 config("evdev_gestures") {
   defines = [
     "USE_EVDEV_GESTURES"
@@ -89,6 +95,10 @@ component("events_ozone_evdev") {
     "//ui/gfx",
   ]
 
+  public_configs = [
+    ":evdev",
+  ]
+
   if (use_ozone_evdev && use_evdev_gestures) {
     sources += [
       "evdev/libgestures_glue/event_reader_libevdev_cros.cc",
@@ -103,7 +113,7 @@ component("events_ozone_evdev") {
       "evdev/libgestures_glue/gesture_timer_provider.h",
     ]
 
-    public_configs = [
+    public_configs += [
       ":evdev_gestures",
     ]
 
