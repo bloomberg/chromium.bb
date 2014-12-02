@@ -124,10 +124,6 @@ if (window.internals && internals.dictionaryTest) {
         doubleOrStringMember: null,
     });
     dict = dictionaryTest.get();
-    // This behavior doesn't match the spec. The spec says it should be "null"
-    // (of type string). This is an intentional mismatch; however, we might
-    // want to follow the spec at some time.
-    debug('This FAIL is intentional');
     shouldBeEqualToString('dict.doubleOrStringMember', 'null');
     dictionaryTest.set({
         doubleOrStringMember: undefined,
@@ -146,7 +142,9 @@ if (window.internals && internals.dictionaryTest) {
     });
     dict = dictionaryTest.get();
     shouldBeUndefined('dict.longMember');
-    shouldBe('dict.longMemberWithDefault', '42');
+    // ToNumber(null) results in 0.
+    shouldBe('dict.longMemberWithDefault', '0');
+    // Passing undefined shouldn't invoke any conversion.
     shouldBeUndefined('dict.longOrNullMember');
     // Nullable and its default value is null
     shouldBeNull('dict.longOrNullMemberWithDefault');

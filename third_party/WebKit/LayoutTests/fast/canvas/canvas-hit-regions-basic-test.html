@@ -77,19 +77,15 @@
   debug("NotSupportedError exception tests");
   shouldThrow("context.addHitRegion()");
   shouldThrow("context.addHitRegion({ id : '' })");
-  shouldThrow("context.addHitRegion({ id : null })");
   shouldThrow("context.addHitRegion({ id : undefined })");
   shouldThrow("context.addHitRegion({ control : {} })");
   shouldThrow("context.addHitRegion({ control : null })");
   shouldThrow("context.addHitRegion({ control : undefined })");
   shouldThrow("context.addHitRegion({ id : '', control : {} })");
-  shouldThrow("context.addHitRegion({ id : null, control : {} })");
   shouldThrow("context.addHitRegion({ id : undefined, control : {} })");
   shouldThrow("context.addHitRegion({ id : '', control : null })");
-  shouldThrow("context.addHitRegion({ id : null, control : null })");
   shouldThrow("context.addHitRegion({ id : undefined, control : null })");
   shouldThrow("context.addHitRegion({ id : '', control : undefined })");
-  shouldThrow("context.addHitRegion({ id : null, control : undefined })");
   shouldThrow("context.addHitRegion({ id : undefined, control : undefined })");
   debug("");
 

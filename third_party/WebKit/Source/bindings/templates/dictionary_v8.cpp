@@ -13,6 +13,8 @@
 
 namespace blink {
 
+{% macro convert_and_set_member(member) %}
+{% endmacro %}
 void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {{cpp_class}}& impl, ExceptionState& exceptionState)
 {
     if (isUndefinedOrNull(v8Value))
@@ -32,27 +34,34 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {
     v8::TryCatch block;
     {% for member in members %}
     v8::Local<v8::Value> {{member.name}}Value = v8Object->Get(v8String(isolate, "{{member.name}}"));
-    if (!{{member.name}}Value.IsEmpty() && !isUndefinedOrNull({{member.name}}Value)) {
-    {% if member.use_output_parameter_for_result %}
-        {{member.cpp_type}} {{member.name}};
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
+    }
+    if ({{member.name}}Value.IsEmpty() || {{member.name}}Value->IsUndefined()) {
+        // Do nothing.
+    {% if member.is_nullable %}
+    } else if ({{member.name}}Value->IsNull()) {
+        impl.{{member.null_setter_name}}();
     {% endif %}
+    } else {
+        {% if member.use_output_parameter_for_result %}
+        {{member.cpp_type}} {{member.name}};
+        {% endif %}
         {{member.v8_value_to_local_cpp_value}};
-    {% if member.enum_validation_expression %}
+        {% if member.enum_validation_expression %}
         String string = {{member.name}};
         if (!({{member.enum_validation_expression}})) {
             exceptionState.throwTypeError("member {{member.name}} ('" + string + "') is not a valid enum value.");
             return;
         }
-    {% elif member.is_object %}
+        {% elif member.is_object %}
         if (!{{member.name}}.isObject()) {
             exceptionState.throwTypeError("member {{member.name}} is not an object.");
             return;
         }
-    {% endif %}
+        {% endif %}
         impl.{{member.setter_name}}({{member.name}});
-    } else if (block.HasCaught()) {
-        exceptionState.rethrowV8Exception(block.Exception());
-        return;
     }
 
     {% endfor %}
