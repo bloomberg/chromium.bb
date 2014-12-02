@@ -36,7 +36,9 @@ function test()
 
     function onExpanded()
     {
-        InspectorTest.dumpConsoleMessages();
+        var result = InspectorTest.dumpConsoleMessagesIntoArray().join("\n");
+        result = result.replace(/(\(program\)):\d+/g, "$1");
+        InspectorTest.addResult(result);
         InspectorTest.completeDebuggerTest();
     }
 }
