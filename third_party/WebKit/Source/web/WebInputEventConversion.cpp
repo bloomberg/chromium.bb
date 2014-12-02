@@ -84,6 +84,34 @@ static FloatPoint convertHitPointToWindow(const Widget* widget, FloatPoint point
         (point.y() - offset.height()) / scale + pinchViewport.y());
 }
 
+static int toWebEventModifiers(unsigned platformModifiers)
+{
+    int newModifiers = 0;
+    if (platformModifiers & PlatformEvent::ShiftKey)
+        newModifiers |= WebInputEvent::ShiftKey;
+    if (platformModifiers & PlatformEvent::CtrlKey)
+        newModifiers |= WebInputEvent::ControlKey;
+    if (platformModifiers & PlatformEvent::AltKey)
+        newModifiers |= WebInputEvent::AltKey;
+    if (platformModifiers & PlatformEvent::MetaKey)
+        newModifiers |= WebInputEvent::MetaKey;
+    return newModifiers;
+}
+
+static unsigned toPlatformEventModifiers(int webModifiers)
+{
+    unsigned newModifiers = 0;
+    if (webModifiers & WebInputEvent::ShiftKey)
+        newModifiers |= PlatformEvent::ShiftKey;
+    if (webModifiers & WebInputEvent::ControlKey)
+        newModifiers |= PlatformEvent::CtrlKey;
+    if (webModifiers & WebInputEvent::AltKey)
+        newModifiers |= PlatformEvent::AltKey;
+    if (webModifiers & WebInputEvent::MetaKey)
+        newModifiers |= PlatformEvent::MetaKey;
+    return newModifiers;
+}
+
 // MakePlatformMouseEvent -----------------------------------------------------
 
 PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMouseEvent& e)
@@ -94,16 +122,7 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMo
     m_globalPosition = IntPoint(e.globalX, e.globalY);
     m_movementDelta = IntPoint(scaleDeltaToWindow(widget, e.movementX), scaleDeltaToWindow(widget, e.movementY));
     m_button = static_cast<MouseButton>(e.button);
-
-    m_modifiers = 0;
-    if (e.modifiers & WebInputEvent::ShiftKey)
-        m_modifiers |= PlatformEvent::ShiftKey;
-    if (e.modifiers & WebInputEvent::ControlKey)
-        m_modifiers |= PlatformEvent::CtrlKey;
-    if (e.modifiers & WebInputEvent::AltKey)
-        m_modifiers |= PlatformEvent::AltKey;
-    if (e.modifiers & WebInputEvent::MetaKey)
-        m_modifiers |= PlatformEvent::MetaKey;
+    m_modifiers = toPlatformEventModifiers(e.modifiers);
 
     m_timestamp = e.timeStampSeconds;
     m_clickCount = e.clickCount;
@@ -142,15 +161,7 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
 
     m_type = PlatformEvent::Wheel;
 
-    m_modifiers = 0;
-    if (e.modifiers & WebInputEvent::ShiftKey)
-        m_modifiers |= PlatformEvent::ShiftKey;
-    if (e.modifiers & WebInputEvent::ControlKey)
-        m_modifiers |= PlatformEvent::CtrlKey;
-    if (e.modifiers & WebInputEvent::AltKey)
-        m_modifiers |= PlatformEvent::AltKey;
-    if (e.modifiers & WebInputEvent::MetaKey)
-        m_modifiers |= PlatformEvent::MetaKey;
+    m_modifiers = toPlatformEventModifiers(e.modifiers);
 
     m_hasPreciseScrollingDeltas = e.hasPreciseScrollingDeltas;
 #if OS(MACOSX)
@@ -239,16 +250,7 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
     m_position = widget->convertFromContainingWindow(flooredIntPoint(convertHitPointToWindow(widget, FloatPoint(e.x, e.y))));
     m_globalPosition = IntPoint(e.globalX, e.globalY);
     m_timestamp = e.timeStampSeconds;
-
-    m_modifiers = 0;
-    if (e.modifiers & WebInputEvent::ShiftKey)
-        m_modifiers |= PlatformEvent::ShiftKey;
-    if (e.modifiers & WebInputEvent::ControlKey)
-        m_modifiers |= PlatformEvent::CtrlKey;
-    if (e.modifiers & WebInputEvent::AltKey)
-        m_modifiers |= PlatformEvent::AltKey;
-    if (e.modifiers & WebInputEvent::MetaKey)
-        m_modifiers |= PlatformEvent::MetaKey;
+    m_modifiers = toPlatformEventModifiers(e.modifiers);
 }
 
 // MakePlatformKeyboardEvent --------------------------------------------------
@@ -281,15 +283,7 @@ PlatformKeyboardEventBuilder::PlatformKeyboardEventBuilder(const WebKeyboardEven
     m_isKeypad = (e.modifiers & WebInputEvent::IsKeyPad);
     m_isSystemKey = e.isSystemKey;
 
-    m_modifiers = 0;
-    if (e.modifiers & WebInputEvent::ShiftKey)
-        m_modifiers |= PlatformEvent::ShiftKey;
-    if (e.modifiers & WebInputEvent::ControlKey)
-        m_modifiers |= PlatformEvent::CtrlKey;
-    if (e.modifiers & WebInputEvent::AltKey)
-        m_modifiers |= PlatformEvent::AltKey;
-    if (e.modifiers & WebInputEvent::MetaKey)
-        m_modifiers |= PlatformEvent::MetaKey;
+    m_modifiers = toPlatformEventModifiers(e.modifiers);
 
     // FIXME: PlatformKeyboardEvents expect a locational version of the keycode (e.g. VK_LSHIFT
     // instead of VK_SHIFT). This should be changed so the location/keycode are stored separately,
@@ -413,17 +407,7 @@ PlatformTouchPointBuilder::PlatformTouchPointBuilder(Widget* widget, const WebTo
 PlatformTouchEventBuilder::PlatformTouchEventBuilder(Widget* widget, const WebTouchEvent& event)
 {
     m_type = toPlatformTouchEventType(event.type);
-
-    m_modifiers = 0;
-    if (event.modifiers & WebInputEvent::ShiftKey)
-        m_modifiers |= PlatformEvent::ShiftKey;
-    if (event.modifiers & WebInputEvent::ControlKey)
-        m_modifiers |= PlatformEvent::CtrlKey;
-    if (event.modifiers & WebInputEvent::AltKey)
-        m_modifiers |= PlatformEvent::AltKey;
-    if (event.modifiers & WebInputEvent::MetaKey)
-        m_modifiers |= PlatformEvent::MetaKey;
-
+    m_modifiers = toPlatformEventModifiers(event.modifiers);
     m_timestamp = event.timeStampSeconds;
 
     for (unsigned i = 0; i < event.touchesLength; ++i)
@@ -590,16 +574,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const PlatformM
         return;
     }
 
-    modifiers = 0;
-    if (event.modifiers() & PlatformEvent::ShiftKey)
-        modifiers |= ShiftKey;
-    if (event.modifiers() & PlatformEvent::CtrlKey)
-        modifiers |= ControlKey;
-    if (event.modifiers() & PlatformEvent::AltKey)
-        modifiers |= AltKey;
-    if (event.modifiers() & PlatformEvent::MetaKey)
-        modifiers |= MetaKey;
-
+    modifiers = toWebEventModifiers(event.modifiers());
     timeStampSeconds = event.timestamp();
 
     // FIXME: Widget is always toplevel, unless it's a popup. We may be able
@@ -687,24 +662,10 @@ WebInputEvent::Type toWebKeyboardEventType(PlatformEvent::Type type)
     }
 }
 
-int toWebKeyboardEventModifiers(int modifiers)
-{
-    int newModifiers = 0;
-    if (modifiers & PlatformEvent::ShiftKey)
-        newModifiers |= WebInputEvent::ShiftKey;
-    if (modifiers & PlatformEvent::CtrlKey)
-        newModifiers |= WebInputEvent::ControlKey;
-    if (modifiers & PlatformEvent::AltKey)
-        newModifiers |= WebInputEvent::AltKey;
-    if (modifiers & PlatformEvent::MetaKey)
-        newModifiers |= WebInputEvent::MetaKey;
-    return newModifiers;
-}
-
 WebKeyboardEventBuilder::WebKeyboardEventBuilder(const PlatformKeyboardEvent& event)
 {
     type = toWebKeyboardEventType(event.type());
-    modifiers = toWebKeyboardEventModifiers(event.modifiers());
+    modifiers = toWebEventModifiers(event.modifiers());
     if (event.isAutoRepeat())
         modifiers |= WebInputEvent::IsAutoRepeat;
     if (event.isKeypad())
