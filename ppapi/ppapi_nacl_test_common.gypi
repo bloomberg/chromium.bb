@@ -163,7 +163,7 @@
                 'outputs': ['>(nmf_glibc)'],
                 'action': [
                   'python',
-                  '>(create_nmf)',
+                  '>@(_inputs)',
                   '--objdump=>(nacl_objdump)',
                   '--output=>(nmf_glibc)',
                   '--path-prefix=>(nexe_target)_libs',
@@ -174,7 +174,6 @@
                   ['enable_x86_64==1', {
                     'inputs': ['>(out_glibc64)'],
                     'action': [
-                      '>(out_glibc64)',
                       '--library-path=>(libdir_glibc64)',
                       '--library-path=>(tc_lib_dir_glibc64)',
                     ],
@@ -182,7 +181,6 @@
                   ['enable_x86_32==1', {
                     'inputs': ['>(out_glibc32)'],
                     'action': [
-                      '>(out_glibc32)',
                       '--library-path=>(libdir_glibc32)',
                       '--library-path=>(tc_lib_dir_glibc32)',
                     ],
