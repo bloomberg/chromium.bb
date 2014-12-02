@@ -1174,6 +1174,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableRendererMojoChannel,
     switches::kEnableSeccompFilterSandbox,
     switches::kEnableSkiaBenchmarking,
+    switches::kEnableSlimmingPaint,
     switches::kEnableSmoothScrolling,
     switches::kEnableStatsTable,
     switches::kEnableStrictSiteIsolation,

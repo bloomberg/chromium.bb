@@ -184,6 +184,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.report_overscroll_only_for_scrollable_axes = true;
   settings.accelerated_animation_enabled =
       !cmd->HasSwitch(cc::switches::kDisableThreadedAnimation);
+  settings.use_display_lists = cmd->HasSwitch(switches::kEnableSlimmingPaint);
 
   settings.default_tile_size = CalculateDefaultTileSize();
   if (cmd->HasSwitch(switches::kDefaultTileWidth)) {
