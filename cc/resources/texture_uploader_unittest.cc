@@ -111,6 +111,14 @@ class TextureUploadTestContext : public gpu::gles2::GLES2InterfaceStub {
         EXPECT_EQ(static_cast<unsigned>(GL_UNSIGNED_BYTE), type);
         bytes_per_pixel = 2;
         break;
+      case GL_RED_EXT:
+        EXPECT_EQ(static_cast<unsigned>(GL_UNSIGNED_BYTE), type);
+        bytes_per_pixel = 1;
+        break;
+      case GL_RG_EXT:
+        EXPECT_EQ(static_cast<unsigned>(GL_UNSIGNED_BYTE), type);
+        bytes_per_pixel = 2;
+        break;
     }
 
     // If NULL, we aren't checking texture contents.
@@ -232,6 +240,15 @@ TEST(TextureUploaderTest, UploadContentsTest) {
     buffer[(i + 1) * 82 - 1] = 0x2;
   }
   UploadTexture(uploader.get(), LUMINANCE_8, gfx::Size(82, 86), buffer);
+
+  // Upload a tightly packed 82x86 RED texture.
+  memset(buffer, 0, sizeof(buffer));
+  for (int i = 0; i < 86; ++i) {
+    // Mark the beginning and end of each row, for the test.
+    buffer[i * 1 * 82] = 0x1;
+    buffer[(i + 1) * 82 - 1] = 0x2;
+  }
+  UploadTexture(uploader.get(), RED_8, gfx::Size(82, 86), buffer);
 }
 
 }  // namespace

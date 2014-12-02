@@ -206,6 +206,7 @@ static bool IsSupportedPlaybackToMemoryFormat(ResourceFormat format) {
     case LUMINANCE_8:
     case RGB_565:
     case ETC1:
+    case RED_8:
       return false;
   }
   NOTREACHED();

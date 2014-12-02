@@ -19,6 +19,7 @@ static ui::SurfaceFactoryOzone::BufferFormat GetOzoneFormat(
     case cc::LUMINANCE_8:
     case cc::RGB_565:
     case cc::ETC1:
+    case cc::RED_8:
       break;
   }
   NOTREACHED();
