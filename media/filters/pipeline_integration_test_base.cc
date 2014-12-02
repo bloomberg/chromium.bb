@@ -154,13 +154,15 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
       .WillRepeatedly(SaveArg<0>(&metadata_));
   EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
       .Times(AtMost(1));
-  EXPECT_CALL(*this, DecryptorAttached(true));
-
   CreateDemuxer(file_path);
 
-  pipeline_->SetCdm(cdm_context,
-                    base::Bind(&PipelineIntegrationTestBase::DecryptorAttached,
-                               base::Unretained(this)));
+  if (cdm_context) {
+    EXPECT_CALL(*this, DecryptorAttached(true));
+    pipeline_->SetCdm(
+        cdm_context, base::Bind(&PipelineIntegrationTestBase::DecryptorAttached,
+                                base::Unretained(this)));
+  }
+
   pipeline_->Start(
       demuxer_.get(), CreateRenderer(),
       base::Bind(&PipelineIntegrationTestBase::OnEnded, base::Unretained(this)),
