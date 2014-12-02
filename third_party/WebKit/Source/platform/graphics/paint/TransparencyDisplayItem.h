@@ -6,6 +6,7 @@
 #define TransparencyDisplayItem_h
 
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "public/platform/WebBlendMode.h"
 #ifndef NDEBUG
@@ -16,8 +17,9 @@ namespace blink {
 
 class PLATFORM_EXPORT BeginTransparencyDisplayItem : public DisplayItem {
 public:
-    BeginTransparencyDisplayItem(DisplayItemClient client, Type type, const WebBlendMode& blendMode, const float opacity)
+    BeginTransparencyDisplayItem(DisplayItemClient client, Type type, const CompositeOperator compositeOperator, const WebBlendMode& blendMode, const float opacity)
         : DisplayItem(client, type)
+        , m_compositeOperator(compositeOperator)
         , m_blendMode(blendMode)
         , m_opacity(opacity) { }
     virtual void replay(GraphicsContext*) override;
@@ -30,6 +32,7 @@ private:
 
     bool hasBlendMode() const { return m_blendMode != WebBlendModeNormal; }
 
+    const CompositeOperator m_compositeOperator;
     const WebBlendMode m_blendMode;
     const float m_opacity;
 };

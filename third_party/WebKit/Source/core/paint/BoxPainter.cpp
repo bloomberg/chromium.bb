@@ -526,7 +526,6 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
     bool pushTransparencyLayer = false;
     bool compositedMask = m_renderBox.hasLayer() && m_renderBox.layer()->hasCompositedMask();
     bool flattenCompositingLayers = m_renderBox.view()->frameView() && m_renderBox.view()->frameView()->paintBehavior() & PaintBehaviorFlattenCompositingLayers;
-    CompositeOperator compositeOp = CompositeSourceOver;
 
     bool allMaskImagesLoaded = true;
 
@@ -546,8 +545,8 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
     }
 
     if (allMaskImagesLoaded) {
-        paintFillLayers(paintInfo, Color::transparent, m_renderBox.style()->maskLayers(), paintRect, BackgroundBleedNone, compositeOp);
-        paintNinePieceImage(m_renderBox, paintInfo.context, paintRect, m_renderBox.style(), m_renderBox.style()->maskBoxImage(), compositeOp);
+        paintFillLayers(paintInfo, Color::transparent, m_renderBox.style()->maskLayers(), paintRect, BackgroundBleedNone, CompositeSourceOver);
+        paintNinePieceImage(m_renderBox, paintInfo.context, paintRect, m_renderBox.style(), m_renderBox.style()->maskBoxImage(), CompositeSourceOver);
     }
 
     if (pushTransparencyLayer)
@@ -1067,7 +1066,6 @@ bool BoxPainter::paintNinePieceImage(RenderBoxModelObject& obj, GraphicsContext*
             IntRect(leftSlice, topSlice, sourceWidth, sourceHeight),
             middleScaleFactor, (Image::TileRule)hRule, (Image::TileRule)vRule, op);
     }
-
     return true;
 }
 

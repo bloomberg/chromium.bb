@@ -13,14 +13,9 @@ namespace blink {
 
 void BeginTransparencyDisplayItem::replay(GraphicsContext* context)
 {
-    bool hasBlendMode = this->hasBlendMode();
-    if (hasBlendMode)
-        context->setCompositeOperation(context->compositeOperation(), m_blendMode);
-
+    context->setCompositeOperation(m_compositeOperator, m_blendMode);
     context->beginTransparencyLayer(m_opacity);
-
-    if (hasBlendMode)
-        context->setCompositeOperation(context->compositeOperation(), WebBlendModeNormal);
+    context->setCompositeOperation(m_compositeOperator, WebBlendModeNormal);
 }
 
 void BeginTransparencyDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
