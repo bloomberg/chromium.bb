@@ -1538,8 +1538,14 @@ void RenderProcessHostImpl::Cleanup() {
     // away first, since deleting the channel proxy will post a
     // OnChannelClosed() to IPC::ChannelProxy::Context on the IO thread.
     channel_.reset();
+
+    // The following members should be cleared in ProcessDied() as well!
     gpu_message_filter_ = NULL;
     message_port_message_filter_ = NULL;
+#if defined(ENABLE_BROWSER_CDMS)
+    browser_cdm_manager_ = NULL;
+#endif
+
     RemoveUserData(kSessionStorageHolderKey);
 
     // Remove ourself from the list of renderer processes so that we can't be
@@ -1958,6 +1964,9 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
 
   gpu_message_filter_ = NULL;
   message_port_message_filter_ = NULL;
+#if defined(ENABLE_BROWSER_CDMS)
+  browser_cdm_manager_ = NULL;
+#endif
   RemoveUserData(kSessionStorageHolderKey);
 
   IDMap<IPC::Listener>::iterator iter(&listeners_);
