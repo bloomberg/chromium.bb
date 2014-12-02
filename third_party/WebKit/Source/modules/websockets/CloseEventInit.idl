@@ -1,0 +1,12 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// http://dev.w3.org/html5/websockets/#the-closeevent-interfaces
+// https://html.spec.whatwg.org/multipage/comms.html#the-closeevent-interfaces
+
+dictionary CloseEventInit : EventInit {
+    boolean wasClean;
+    unsigned short code;
+    DOMString reason;
+};

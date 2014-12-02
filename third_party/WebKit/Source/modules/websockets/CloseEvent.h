@@ -32,18 +32,10 @@
 #define CloseEvent_h
 
 #include "modules/EventModules.h"
+#include "modules/websockets/CloseEventInit.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
-
-struct CloseEventInit : public EventInit {
-    CloseEventInit()
-        : wasClean(false)
-        , code(0) { }
-
-    bool wasClean;
-    unsigned short code;
-    String reason;
-};
 
 class CloseEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
@@ -84,11 +76,7 @@ private:
         , m_code(code)
         , m_reason(reason) { }
 
-    CloseEvent(const AtomicString& type, const CloseEventInit& initializer)
-        : Event(type, initializer)
-        , m_wasClean(initializer.wasClean)
-        , m_code(initializer.code)
-        , m_reason(initializer.reason) { }
+    CloseEvent(const AtomicString& type, const CloseEventInit& initializer);
 
     bool m_wasClean;
     unsigned short m_code;

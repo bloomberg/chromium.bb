@@ -310,6 +310,7 @@
       'serviceworkers/RegistrationOptions.idl',
       'serviceworkers/ServiceWorkerClientQueryOptions.idl',
       'webmidi/MIDIOptions.idl',
+      'websockets/CloseEventInit.idl',
     ],
     'generated_modules_files': [
       # .cpp files from make_modules_generated actions.
@@ -351,6 +352,8 @@
       '<(blink_modules_output_dir)/serviceworkers/ServiceWorkerClientQueryOptions.h',
       '<(blink_modules_output_dir)/webmidi/MIDIOptions.cpp',
       '<(blink_modules_output_dir)/webmidi/MIDIOptions.h',
+      '<(blink_modules_output_dir)/websockets/CloseEventInit.cpp',
+      '<(blink_modules_output_dir)/websockets/CloseEventInit.h',
     ],
     'modules_files': [
       '<@(extra_blink_module_files)',
@@ -1095,6 +1098,7 @@
       'webmidi/MIDISuccessCallback.h',
       'webmidi/NavigatorWebMIDI.cpp',
       'webmidi/NavigatorWebMIDI.h',
+      'websockets/CloseEvent.cpp',
       'websockets/CloseEvent.h',
       'websockets/DOMWebSocket.cpp',
       'websockets/DOMWebSocket.h',
