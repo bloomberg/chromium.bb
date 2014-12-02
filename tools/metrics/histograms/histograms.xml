@@ -53467,6 +53467,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Registration limit reached"/>
   <int value="4" label="Permission denied"/>
   <int value="5" label="Push service error"/>
+  <int value="6" label="No sender id provided"/>
 </enum>
 
 <enum name="QuicAddressMismatch" type="int">
