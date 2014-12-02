@@ -140,8 +140,9 @@ class AppWindowInterceptAllKeysTest
 };
 
 // Currently this is implemented only for Windows.
+// Disabled test http://crbug.com/438209
 #if defined(OS_WIN)
-#define MAYBE_GetKeysAfterSwitchSequence GetKeysAfterSwitchSequence
+#define MAYBE_GetKeysAfterSwitchSequence DISABLED_GetKeysAfterSwitchSequence
 #else
 #define MAYBE_GetKeysAfterSwitchSequence DISABLED_GetKeysAfterSwitchSequence
 #endif
@@ -154,8 +155,9 @@ IN_PROC_BROWSER_TEST_F(AppWindowInterceptAllKeysTest,
 }
 
 // Test to make sure that keys not received after disable.
+// Disabled test http://crbug.com/438209
 #if defined(OS_WIN)
-#define MAYBE_NoKeysAfterDisableIsCalled NoKeysAfterDisableIsCalled
+#define MAYBE_NoKeysAfterDisableIsCalled DISABLED_NoKeysAfterDisableIsCalled
 #else
 #define MAYBE_NoKeysAfterDisableIsCalled DISABLED_NoKeysAfterDisableIsCalled
 #endif
@@ -235,8 +237,9 @@ IN_PROC_BROWSER_TEST_F(AppWindowInterceptAllKeysTest, CannotLoadOtherThanDev) {
 }
 
 // Inject different keyboard combos and make sure that the app get them all.
+// Disabled test http://crbug.com/438209
 #if defined(OS_WIN)
-#define MAYBE_ValidateKeyEvent ValidateKeyEvent
+#define MAYBE_ValidateKeyEvent DISABLED_ValidateKeyEvent
 #else
 #define MAYBE_ValidateKeyEvent DISABLED_ValidateKeyEvent
 #endif
