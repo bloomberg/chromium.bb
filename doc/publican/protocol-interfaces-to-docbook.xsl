@@ -34,21 +34,15 @@
 <!-- Interfaces summary -->
 <xsl:template match="interface" >
 <varlistentry>
-    <xsl:attribute name="id">protocol-summary-<xsl:value-of select="name()"/>-<xsl:value-of select="@name" />
-    </xsl:attribute>
-    <term>
+  <term>
+    <link linkend="protocol-spec-interface-{@name}">
       <xsl:value-of select="@name" />
       <xsl:if test="description/@summary">
         - <xsl:value-of select="description/@summary" />
       </xsl:if>
-    </term>
-    <listitem>
-    <para>
-      <xsl:value-of select="description"/>
-    </para>
-    </listitem>
-  </varlistentry>
-
+    </link>
+  </term>
+</varlistentry>
 </xsl:template>
 
 </xsl:stylesheet>
