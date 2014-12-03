@@ -125,7 +125,11 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
     , m_hasTouchEventHandler(false)
     , m_shouldRevealPassword(false)
     , m_needsToUpdateViewValue(true)
-    , m_inputType(InputType::createText(*this))
+    // |m_inputType| is lazily created when constructed by the parser to avoid
+    // constructing unnecessarily a text inputType and its shadow subtree, just
+    // to destroy them when the |type| attribute gets set by the parser to
+    // something else than 'text'.
+    , m_inputType(createdByParser ? nullptr : InputType::createText(*this))
     , m_inputTypeView(m_inputType)
 {
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
@@ -136,7 +140,8 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
 PassRefPtrWillBeRawPtr<HTMLInputElement> HTMLInputElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
 {
     RefPtrWillBeRawPtr<HTMLInputElement> inputElement = adoptRefWillBeNoop(new HTMLInputElement(document, form, createdByParser));
-    inputElement->ensureUserAgentShadowRoot();
+    if (!createdByParser)
+        inputElement->ensureUserAgentShadowRoot();
     return inputElement.release();
 }
 
@@ -405,10 +410,50 @@ void HTMLInputElement::setType(const AtomicString& type)
     setAttribute(typeAttr, type);
 }
 
+void HTMLInputElement::updateTouchEventHandlerRegistry()
+{
+    ASSERT(m_inputTypeView);
+
+    bool hasTouchEventHandler = m_inputTypeView->hasTouchEventHandler();
+    if (hasTouchEventHandler == m_hasTouchEventHandler)
+        return;
+    // If the Document is being or has been stopped, don't register any handlers.
+    if (document().frameHost() && document().lifecycle().state() < DocumentLifecycle::Stopping) {
+        EventHandlerRegistry& registry = document().frameHost()->eventHandlerRegistry();
+        if (hasTouchEventHandler)
+            registry.didAddEventHandler(*this, EventHandlerRegistry::TouchEvent);
+        else
+            registry.didRemoveEventHandler(*this, EventHandlerRegistry::TouchEvent);
+    }
+    m_hasTouchEventHandler = hasTouchEventHandler;
+}
+
+void HTMLInputElement::initializeTypeInParsing()
+{
+    ASSERT(m_parsingInProgress);
+    ASSERT(!m_inputType);
+    ASSERT(!m_inputTypeView);
+
+    const AtomicString& newTypeName = InputType::normalizeTypeName(fastGetAttribute(typeAttr));
+    m_inputType = InputType::create(*this, newTypeName);
+    m_inputTypeView = m_inputType;
+    ensureUserAgentShadowRoot();
+
+    updateTouchEventHandlerRegistry();
+
+    setNeedsWillValidateCheck();
+
+    m_inputType->warnIfValueIsInvalid(fastGetAttribute(valueAttr).string());
+
+    m_inputTypeView->updateView();
+}
+
 void HTMLInputElement::updateType()
 {
-    const AtomicString& newTypeName = InputType::normalizeTypeName(fastGetAttribute(typeAttr));
+    ASSERT(m_inputType);
+    ASSERT(m_inputTypeView);
 
+    const AtomicString& newTypeName = InputType::normalizeTypeName(fastGetAttribute(typeAttr));
     if (m_inputType->formControlType() == newTypeName)
         return;
 
@@ -428,18 +473,7 @@ void HTMLInputElement::updateType()
         m_inputTypeView = m_inputType;
     m_inputTypeView->createShadowSubtree();
 
-    bool hasTouchEventHandler = m_inputTypeView->hasTouchEventHandler();
-    if (hasTouchEventHandler != m_hasTouchEventHandler) {
-        // If the Document is being or has been stopped, don't register any handlers.
-        if (document().frameHost() && document().lifecycle().state() < DocumentLifecycle::Stopping) {
-            EventHandlerRegistry& registry = document().frameHost()->eventHandlerRegistry();
-            if (hasTouchEventHandler)
-                registry.didAddEventHandler(*this, EventHandlerRegistry::TouchEvent);
-            else
-                registry.didRemoveEventHandler(*this, EventHandlerRegistry::TouchEvent);
-        }
-        m_hasTouchEventHandler = hasTouchEventHandler;
-    }
+    updateTouchEventHandlerRegistry();
 
     setNeedsWillValidateCheck();
 
@@ -647,6 +681,9 @@ void HTMLInputElement::attributeWillChange(const QualifiedName& name, const Atom
 
 void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
+    ASSERT(m_inputType);
+    ASSERT(m_inputTypeView);
+
     if (name == nameAttr) {
         removeFromRadioButtonGroup();
         m_name = value;
@@ -755,9 +792,17 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
     m_inputTypeView->attributeChanged();
 }
 
+void HTMLInputElement::parserDidSetAttributes()
+{
+    ASSERT(m_parsingInProgress);
+    initializeTypeInParsing();
+}
+
 void HTMLInputElement::finishParsingChildren()
 {
     m_parsingInProgress = false;
+    ASSERT(m_inputType);
+    ASSERT(m_inputTypeView);
     HTMLTextFormControlElement::finishParsingChildren();
     if (!m_stateRestored) {
         bool checked = hasAttribute(checkedAttr);

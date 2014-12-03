@@ -3560,6 +3560,7 @@
             'frame/SubresourceIntegrityTest.cpp',
             'html/HTMLDimensionTest.cpp',
             'html/HTMLFormControlElementTest.cpp',
+            'html/HTMLInputElementTest.cpp',
             'html/HTMLLinkElementSizesAttributeTest.cpp',
             'html/HTMLSelectElementTest.cpp',
             'html/HTMLTextFormControlElementTest.cpp',

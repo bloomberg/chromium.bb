@@ -296,6 +296,7 @@ private:
     virtual bool isPresentationAttribute(const QualifiedName&) const override final;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override final;
     virtual void finishParsingChildren() override final;
+    virtual void parserDidSetAttributes() override final;
 
     virtual void copyNonAttributePropertiesFromElement(const Element&) override final;
 
@@ -334,6 +335,8 @@ private:
     virtual bool recalcWillValidate() const override final;
     virtual void requiredAttributeChanged() override final;
 
+    void updateTouchEventHandlerRegistry();
+    void initializeTypeInParsing();
     void updateType();
 
     virtual void subtreeHasChanged() override final;

@@ -532,6 +532,8 @@ protected:
 
     Node* insertAdjacent(const String& where, Node* newChild, ExceptionState&);
 
+    virtual void parserDidSetAttributes() { };
+
 private:
     bool hasElementFlag(ElementFlags mask) const { return hasRareData() && hasElementFlagInternal(mask); }
     void setElementFlag(ElementFlags, bool value = true);
