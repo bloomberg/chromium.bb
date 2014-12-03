@@ -2218,30 +2218,31 @@ bool WebRequestInternalAddEventListenerFunction::RunSync() {
   std::string extension_name =
       extension ? extension->name() : extension_id_safe();
 
-  bool is_web_view_guest = webview_instance_id != 0;
-  // We check automatically whether the extension has the 'webRequest'
-  // permission. For blocking calls we require the additional permission
-  // 'webRequestBlocking'.
-  if ((!is_web_view_guest &&
-       extra_info_spec &
-           (ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING |
-            ExtensionWebRequestEventRouter::ExtraInfoSpec::ASYNC_BLOCKING)) &&
-      !extension->permissions_data()->HasAPIPermission(
-          extensions::APIPermission::kWebRequestBlocking)) {
-    error_ = keys::kBlockingPermissionRequired;
-    return false;
-  }
+  if (webview_instance_id == 0) {
+    // We check automatically whether the extension has the 'webRequest'
+    // permission. For blocking calls we require the additional permission
+    // 'webRequestBlocking'.
+    if ((extra_info_spec &
+         (ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING |
+          ExtensionWebRequestEventRouter::ExtraInfoSpec::ASYNC_BLOCKING)) &&
+        !extension->permissions_data()->HasAPIPermission(
+            extensions::APIPermission::kWebRequestBlocking)) {
+      error_ = keys::kBlockingPermissionRequired;
+      return false;
+    }
 
-  // We allow to subscribe to patterns that are broader than the host
-  // permissions. E.g., we could subscribe to http://www.example.com/*
-  // while having host permissions for http://www.example.com/foo/* and
-  // http://www.example.com/bar/*.
-  // For this reason we do only a coarse check here to warn the extension
-  // developer if he does something obviously wrong.
-  if (!is_web_view_guest &&
-      extension->permissions_data()->GetEffectiveHostPermissions().is_empty()) {
-    error_ = keys::kHostPermissionsRequired;
-    return false;
+    // We allow to subscribe to patterns that are broader than the host
+    // permissions. E.g., we could subscribe to http://www.example.com/*
+    // while having host permissions for http://www.example.com/foo/* and
+    // http://www.example.com/bar/*.
+    // For this reason we do only a coarse check here to warn the extension
+    // developer if he does something obviously wrong.
+    if (extension->permissions_data()
+            ->GetEffectiveHostPermissions()
+            .is_empty()) {
+      error_ = keys::kHostPermissionsRequired;
+      return false;
+    }
   }
 
   bool success =

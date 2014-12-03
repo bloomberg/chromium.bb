@@ -15,6 +15,7 @@
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/scoped_persistent.h"
 #include "gin/runner.h"
+#include "url/gurl.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -180,6 +181,8 @@ class ScriptContext : public RequestSender::Source, public gin::Runner {
   SafeBuiltins safe_builtins_;
 
   v8::Isolate* isolate_;
+
+  GURL url_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptContext);
 };

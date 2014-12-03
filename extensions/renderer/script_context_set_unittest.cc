@@ -10,6 +10,8 @@
 #include "gin/public/context_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
@@ -24,9 +26,9 @@ TEST(ScriptContextSet, Lifecycle) {
   gin::ContextHolder context_holder(isolate);
   context_holder.SetContext(v8::Context::New(isolate));
 
-  // Dirty hack, but we don't actually need the frame, and this is easier than
-  // creating a whole webview.
-  blink::WebFrame* frame = reinterpret_cast<blink::WebFrame*>(1);
+  blink::WebView* webview = blink::WebView::create(nullptr);
+  blink::WebFrame* frame = blink::WebLocalFrame::create(nullptr);
+  webview->setMainFrame(frame);
   const Extension* extension = NULL;
   ScriptContext* context =
       new ScriptContext(context_holder.context(),

@@ -68,7 +68,8 @@ ScriptContext::ScriptContext(const v8::Handle<v8::Context>& v8_context,
       effective_extension_(effective_extension),
       effective_context_type_(effective_context_type),
       safe_builtins_(this),
-      isolate_(v8_context->GetIsolate()) {
+      isolate_(v8_context->GetIsolate()),
+      url_(web_frame_ ? GetDataSourceURLForFrame(web_frame_) : GURL()) {
   VLOG(1) << "Created context:\n"
           << "  extension id: " << GetExtensionID() << "\n"
           << "  frame:        " << web_frame_ << "\n"
@@ -176,7 +177,7 @@ std::string ScriptContext::GetEffectiveContextTypeDescription() {
 }
 
 GURL ScriptContext::GetURL() const {
-  return web_frame() ? GetDataSourceURLForFrame(web_frame()) : GURL();
+  return url_;
 }
 
 bool ScriptContext::IsAnyFeatureAvailableToContext(const Feature& api) {
