@@ -201,7 +201,7 @@ public class PersonalDataManagerTest extends ChromeShellTestBase {
                 streetAddress1,
                 "Tahiti", "Mahina", "Orofara",
                 "98709", "CEDEX 98703",
-                "French Polynesia", "50.71.53", "john@acme.inc", "");
+                "French Polynesia", "44.71.53", "john@acme.inc", "");
         String profileGuid1 = mHelper.setProfile(profile);
         assertEquals(1, mHelper.getNumberOfProfiles());
         AutofillProfile storedProfile1 = mHelper.getProfile(profileGuid1);
@@ -213,7 +213,7 @@ public class PersonalDataManagerTest extends ChromeShellTestBase {
         assertEquals("Orofara", storedProfile1.getDependentLocality());
         assertEquals("98709", storedProfile1.getPostalCode());
         assertEquals("CEDEX 98703", storedProfile1.getSortingCode());
-        assertEquals("50.71.53", storedProfile1.getPhoneNumber());
+        assertEquals("44.71.53", storedProfile1.getPhoneNumber());
         assertEquals("john@acme.inc", storedProfile1.getEmailAddress());
 
         profile.setStreetAddress(streetAddress2);
