@@ -294,7 +294,6 @@ crbug.com/248938 [ Linux Win ] virtual/threaded/animations/animation-border-over
 crbug.com/248938 virtual/threaded/animations/animation-direction-normal.html [ Pass ImageOnlyFailure Timeout ]
 crbug.com/248938 virtual/threaded/animations/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/animation-offscreen-to-onscreen.html [ Pass Timeout ]
-crbug.com/248938 virtual/threaded/animations/animation-welcome-safari.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/cascade-important.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Pass Failure ]
