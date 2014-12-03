@@ -146,7 +146,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       chromium_path_rendering(false),
       blend_equation_advanced(false),
       blend_equation_advanced_coherent(false),
-      ext_texture_rg(false) {
+      ext_texture_rg(false),
+      enable_subscribe_uniform(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds() :
@@ -179,6 +180,9 @@ void FeatureInfo::InitializeBasicState(const CommandLine& command_line) {
 
   feature_flags_.is_swiftshader =
       (command_line.GetSwitchValueASCII(switches::kUseGL) == "swiftshader");
+
+  feature_flags_.enable_subscribe_uniform =
+      command_line.HasSwitch(switches::kEnableSubscribeUniformExtension);
 
   static const GLenum kAlphaTypes[] = {
       GL_UNSIGNED_BYTE,
@@ -294,6 +298,10 @@ void FeatureInfo::InitializeFeatures() {
   AddExtensionString("GL_CHROMIUM_strict_attribs");
   AddExtensionString("GL_CHROMIUM_texture_mailbox");
   AddExtensionString("GL_EXT_debug_marker");
+
+  if (feature_flags_.enable_subscribe_uniform) {
+    AddExtensionString("GL_CHROMIUM_subscribe_uniform");
+  }
 
   // OES_vertex_array_object is emulated if not present natively,
   // so the extension string is always exposed.

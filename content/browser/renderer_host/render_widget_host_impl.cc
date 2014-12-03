@@ -60,6 +60,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/web_preferences.h"
+#include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
@@ -182,6 +184,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       allow_privileged_mouse_lock_(false),
       has_touch_handler_(false),
       last_input_number_(static_cast<int64>(GetProcess()->GetID()) << 32),
+      subscribe_uniform_enabled_(false),
       next_browser_snapshot_id_(1),
       weak_factory_(this) {
   CHECK(delegate_);
@@ -229,6 +232,10 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
         base::Bind(&RenderWidgetHostImpl::RendererIsUnresponsive,
                    weak_factory_.GetWeakPtr())));
   }
+
+  subscribe_uniform_enabled_ =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSubscribeUniformExtension);
 }
 
 RenderWidgetHostImpl::~RenderWidgetHostImpl() {
@@ -894,6 +901,21 @@ void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
 
   input_router_->SendMouseEvent(MouseEventWithLatencyInfo(mouse_event,
                                                           latency_info));
+
+  // Pass mouse state to gpu service if the subscribe uniform
+  // extension is enabled.
+  // TODO(orglofch): Only pass mouse information if one of the GL Contexts
+  // is subscribed to GL_MOUSE_POSITION_CHROMIUM
+  if (subscribe_uniform_enabled_) {
+    gpu::ValueState state;
+    state.int_value[0] = mouse_event.x;
+    state.int_value[1] = mouse_event.y;
+    GpuProcessHost::SendOnIO(
+        GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+        CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
+        new GpuMsg_UpdateValueState(
+            process_->GetID(), GL_MOUSE_POSITION_CHROMIUM, state));
+  }
 }
 
 void RenderWidgetHostImpl::OnPointerEventActivate() {

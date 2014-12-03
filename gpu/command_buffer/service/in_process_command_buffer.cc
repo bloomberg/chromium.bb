@@ -19,6 +19,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
@@ -197,6 +198,14 @@ InProcessCommandBuffer::Service::mailbox_manager() {
   return mailbox_manager_;
 }
 
+scoped_refptr<gpu::ValueStateMap>
+InProcessCommandBuffer::Service::pending_valuebuffer_state() {
+  if (!pending_valuebuffer_state_.get()) {
+    pending_valuebuffer_state_ = new gpu::ValueStateMap();
+  }
+  return pending_valuebuffer_state_;
+}
+
 InProcessCommandBuffer::InProcessCommandBuffer(
     const scoped_refptr<Service>& service)
     : context_lost_(false),
@@ -342,6 +351,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
                                     NULL,
                                     service_->shader_translator_cache(),
                                     NULL,
+                                    service_->pending_valuebuffer_state(),
                                     bind_generates_resource)));
 
   gpu_scheduler_.reset(

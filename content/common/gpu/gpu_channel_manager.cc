@@ -11,6 +11,7 @@
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/message_router.h"
+#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
@@ -177,6 +178,7 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_DestroyGpuMemoryBuffer, OnDestroyGpuMemoryBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_LoadedShader, OnLoadedShader)
     IPC_MESSAGE_HANDLER(GpuMsg_RelinquishResources, OnRelinquishResources)
+    IPC_MESSAGE_HANDLER(GpuMsg_UpdateValueState, OnUpdateValueState)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -283,6 +285,16 @@ void GpuChannelManager::OnDestroyGpuMemoryBuffer(
                    base::Unretained(this),
                    id,
                    client_id));
+  }
+}
+
+void GpuChannelManager::OnUpdateValueState(
+    int client_id, unsigned int target, const gpu::ValueState& state) {
+  // Only pass updated state to the channel corresponding to the
+  // render_widget_host where the event originated.
+  GpuChannelMap::const_iterator iter = gpu_channels_.find(client_id);
+  if (iter != gpu_channels_.end()) {
+    iter->second->HandleUpdateValueState(target, state);
   }
 }
 

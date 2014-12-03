@@ -34,6 +34,10 @@ class WaitableEvent;
 
 namespace gpu {
 class PreemptionFlag;
+union ValueState;
+class ValueStateMap;
+namespace gles2 {
+}
 }
 
 namespace IPC {
@@ -151,6 +155,14 @@ class GpuChannel : public IPC::Listener, public IPC::Sender {
 
   bool allow_future_sync_points() const { return allow_future_sync_points_; }
 
+  void HandleUpdateValueState(unsigned int target,
+                              const gpu::ValueState& state);
+
+  // Visible for testing.
+  const gpu::ValueStateMap* pending_valuebuffer_state() const {
+    return pending_valuebuffer_state_.get();
+  }
+
  private:
   friend class GpuChannelMessageFilter;
 
@@ -206,6 +218,8 @@ class GpuChannel : public IPC::Listener, public IPC::Sender {
   scoped_refptr<gfx::GLShareGroup> share_group_;
 
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
+
+  scoped_refptr<gpu::ValueStateMap> pending_valuebuffer_state_;
 
   typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;
   StubMap stubs_;

@@ -56,6 +56,10 @@ const char kDisableGpuShaderDiskCache[]     = "disable-gpu-shader-disk-cache";
 const char kEnableShareGroupAsyncTextureUpload[] =
     "enable-share-group-async-texture-upload";
 
+// Enable WebGL subscribe uniform extension.
+const char kEnableSubscribeUniformExtension[] =
+    "enable-subscribe-uniform-extension";
+
 // Simulates shared textures when share groups are not available. Not available
 // everywhere.
 const char kEnableThreadedTextureMailboxes[] =
@@ -81,6 +85,7 @@ const char* kGpuSwitches[] = {
   kDisableGpuShaderDiskCache,
   kEnableShareGroupAsyncTextureUpload,
   kEnableUnsafeES3APIs,
+  kEnableSubscribeUniformExtension,
 };
 
 const int kNumGpuSwitches = arraysize(kGpuSwitches);

@@ -145,6 +145,10 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     return group_->valuebuffer_manager();
   }
 
+  ValueStateMap* pending_valuebuffer_state() {
+    return group_->pending_valuebuffer_state();
+  }
+
   ImageManager* GetImageManager() { return decoder_->GetImageManager(); }
 
   void DoCreateProgram(GLuint client_id, GLuint service_id);

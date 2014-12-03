@@ -26,6 +26,7 @@ GPU_EXPORT extern const char kGpuDriverBugWorkarounds[];
 GPU_EXPORT extern const char kGpuProgramCacheSizeKb[];
 GPU_EXPORT extern const char kDisableGpuShaderDiskCache[];
 GPU_EXPORT extern const char kEnableShareGroupAsyncTextureUpload[];
+GPU_EXPORT extern const char kEnableSubscribeUniformExtension[];
 GPU_EXPORT extern const char kEnableThreadedTextureMailboxes[];
 GPU_EXPORT extern const char kEnableUnsafeES3APIs[];
 

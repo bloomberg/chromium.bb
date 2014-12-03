@@ -18,6 +18,7 @@
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
@@ -203,6 +204,7 @@ void GLManager::InitializeWithCommandLine(const GLManager::Options& options,
                                 NULL,
                                 new gpu::gles2::ShaderTranslatorCache,
                                 feature_info,
+                                NULL,
                                 options.bind_generates_resource);
   }
 

@@ -28,6 +28,8 @@ source_set("common") {
     "mailbox_holder.h",
     "thread_local.h",
     "time.h",
+    "value_state.cc",
+    "value_state.h",
   ]
 
   defines = [ "GPU_IMPLEMENTATION" ]

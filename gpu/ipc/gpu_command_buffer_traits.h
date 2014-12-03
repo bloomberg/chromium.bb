@@ -13,6 +13,7 @@
 namespace gpu {
 struct Mailbox;
 struct MailboxHolder;
+union ValueState;
 }
 
 namespace IPC {
@@ -36,6 +37,14 @@ struct GPU_EXPORT ParamTraits<gpu::Mailbox> {
 template <>
 struct GPU_EXPORT ParamTraits<gpu::MailboxHolder> {
   typedef gpu::MailboxHolder param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct GPU_EXPORT ParamTraits<gpu::ValueState> {
+  typedef gpu::ValueState param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

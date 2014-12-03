@@ -630,7 +630,13 @@ class GLES2DecoderImpl : public GLES2Decoder,
     return vertex_array_manager_.get();
   }
   ImageManager* GetImageManager() override { return image_manager_.get(); }
+
+  ValuebufferManager* GetValuebufferManager() override {
+    return valuebuffer_manager();
+  }
+
   bool ProcessPendingQueries(bool did_finish) override;
+
   bool HasMoreIdleWork() override;
   void PerformIdleWork() override;
 

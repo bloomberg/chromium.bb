@@ -8,7 +8,6 @@
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest.h"
-
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,7 +29,7 @@ TEST_P(GLES2DecoderWithShaderTest, ValuebufferBasic) {
   valuestate.int_value[0] = 111;
   valuestate.int_value[1] = 222;
   valuebuffer_manager()->CreateValuebuffer(kBufferId);
-  valuebuffer_manager()->UpdateValueState(
+  pending_valuebuffer_state()->UpdateState(
       GL_MOUSE_POSITION_CHROMIUM, valuestate);
   BindValuebufferCHROMIUM cmd1;
   cmd1.Init(GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM, kBufferId);
@@ -54,7 +53,7 @@ TEST_P(GLES2DecoderWithShaderTest, SubscribeValuebufferNotBound) {
   valuestate.int_value[0] = 111;
   valuestate.int_value[1] = 222;
   valuebuffer_manager()->CreateValuebuffer(kBufferId);
-  valuebuffer_manager()->UpdateValueState(
+  pending_valuebuffer_state()->UpdateState(
       GL_MOUSE_POSITION_CHROMIUM, valuestate);
   SubscribeValueCHROMIUM cmd1;
   cmd1.Init(GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM, GL_MOUSE_POSITION_CHROMIUM);
@@ -68,7 +67,7 @@ TEST_P(GLES2DecoderWithShaderTest, PopulateValuebufferNoSubscription) {
   valuestate.int_value[0] = 111;
   valuestate.int_value[1] = 222;
   valuebuffer_manager()->CreateValuebuffer(kBufferId);
-  valuebuffer_manager()->UpdateValueState(
+  pending_valuebuffer_state()->UpdateState(
       GL_MOUSE_POSITION_CHROMIUM, valuestate);
   BindValuebufferCHROMIUM cmd1;
   cmd1.Init(GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM, kBufferId);
@@ -85,7 +84,7 @@ TEST_P(GLES2DecoderWithShaderTest, UniformValuebufferNoState) {
   valuestate.int_value[0] = 111;
   valuestate.int_value[1] = 222;
   valuebuffer_manager()->CreateValuebuffer(kBufferId);
-  valuebuffer_manager()->UpdateValueState(
+  pending_valuebuffer_state()->UpdateState(
       GL_MOUSE_POSITION_CHROMIUM, valuestate);
   BindValuebufferCHROMIUM cmd1;
   cmd1.Init(GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM, kBufferId);
@@ -107,7 +106,7 @@ TEST_P(GLES2DecoderWithShaderTest, UniformValuebufferInvalidLocation) {
   valuestate.int_value[0] = 111;
   valuestate.int_value[1] = 222;
   valuebuffer_manager()->CreateValuebuffer(kBufferId);
-  valuebuffer_manager()->UpdateValueState(
+  pending_valuebuffer_state()->UpdateState(
       GL_MOUSE_POSITION_CHROMIUM, valuestate);
   BindValuebufferCHROMIUM cmd1;
   cmd1.Init(GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM, kBufferId);

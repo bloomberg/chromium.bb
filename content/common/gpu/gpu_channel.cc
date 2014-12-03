@@ -24,6 +24,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
@@ -451,6 +452,7 @@ void GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
                                   allow_future_sync_points_);
   io_message_loop_ = io_message_loop;
   channel_->AddFilter(filter_.get());
+  pending_valuebuffer_state_ = new gpu::ValueStateMap();
 
   devtools_gpu_agent_.reset(new DevToolsGpuAgent(this));
 }
@@ -579,6 +581,7 @@ CreateCommandBufferResult GpuChannel::CreateViewCommandBuffer(
                                share_group,
                                window,
                                mailbox_manager_.get(),
+                               pending_valuebuffer_state_.get(),
                                gfx::Size(),
                                disallowed_features_,
                                init_params.attribs,
@@ -737,6 +740,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       share_group,
       gfx::GLSurfaceHandle(),
       mailbox_manager_.get(),
+      pending_valuebuffer_state_.get(),
       size,
       disallowed_features_,
       init_params.attribs,
@@ -850,6 +854,11 @@ scoped_refptr<gfx::GLImage> GpuChannel::CreateImageForGpuMemoryBuffer(
                                           client_id_);
     }
   }
+}
+
+void GpuChannel::HandleUpdateValueState(
+    unsigned int target, const gpu::ValueState& state) {
+  pending_valuebuffer_state_->UpdateState(target, state);
 }
 
 }  // namespace content

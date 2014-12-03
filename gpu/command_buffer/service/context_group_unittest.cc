@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -39,7 +40,7 @@ class ContextGroupTest : public GpuServiceTest {
     GpuServiceTest::SetUp();
     decoder_.reset(new MockGLES2Decoder());
     group_ = scoped_refptr<ContextGroup>(
-        new ContextGroup(NULL, NULL, NULL, NULL, kBindGeneratesResource));
+        new ContextGroup(NULL, NULL, NULL, NULL, NULL, kBindGeneratesResource));
   }
 
   scoped_ptr<MockGLES2Decoder> decoder_;

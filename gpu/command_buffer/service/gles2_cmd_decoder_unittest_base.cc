@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/logger.h"
@@ -173,6 +174,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
                        memory_tracker_,
                        new ShaderTranslatorCache,
                        feature_info.get(),
+                       new ValueStateMap,
                        normalized_init.bind_generates_resource));
   bool use_default_textures = normalized_init.bind_generates_resource;
 

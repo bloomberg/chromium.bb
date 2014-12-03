@@ -15,6 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "build/build_config.h"
+#include "content/common/content_export.h"
+#include "content/common/content_param_traits.h"
 #include "content/common/gpu/devtools_gpu_instrumentation.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "ipc/ipc_listener.h"
@@ -34,6 +36,7 @@ struct GpuMemoryBufferHandle;
 
 namespace gpu {
 class SyncPointManager;
+union ValueState;
 namespace gles2 {
 class MailboxManager;
 class ProgramCache;
@@ -58,7 +61,7 @@ class MessageRouter;
 // A GpuChannelManager is a thread responsible for issuing rendering commands
 // managing the lifetimes of GPU channels and forwarding IPC requests from the
 // browser process to them based on the corresponding renderer ID.
-class GpuChannelManager : public IPC::Listener,
+class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
                           public IPC::Sender {
  public:
   GpuChannelManager(MessageRouter* router,
@@ -129,8 +132,13 @@ class GpuChannelManager : public IPC::Listener,
   void OnDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                 int client_id,
                                 int32 sync_point);
+
   void OnRelinquishResources();
   void OnResourcesRelinquished();
+
+  void OnUpdateValueState(int client_id,
+                          unsigned int target,
+                          const gpu::ValueState& state);
 
   void OnLoseAllContexts();
 

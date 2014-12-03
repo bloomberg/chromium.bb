@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_MESSAGE_ROUTER_H_
 
 #include "base/id_map.h"
+#include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 
@@ -29,7 +30,7 @@
 
 namespace content {
 
-class MessageRouter : public IPC::Listener, public IPC::Sender {
+class CONTENT_EXPORT MessageRouter : public IPC::Listener, public IPC::Sender {
  public:
   MessageRouter();
   ~MessageRouter() override;

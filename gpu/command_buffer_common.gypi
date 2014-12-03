@@ -31,5 +31,7 @@
     'command_buffer/common/mailbox_holder.h',
     'command_buffer/common/thread_local.h',
     'command_buffer/common/time.h',
+    'command_buffer/common/value_state.cc',
+    'command_buffer/common/value_state.h',
   ],
 }

@@ -22,6 +22,7 @@
 namespace gpu {
 
 class TransferBufferManagerInterface;
+class ValueStateMap;
 
 namespace gles2 {
 
@@ -47,6 +48,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
       const scoped_refptr<MemoryTracker>& memory_tracker,
       const scoped_refptr<ShaderTranslatorCache>& shader_translator_cache,
       const scoped_refptr<FeatureInfo>& feature_info,
+      const scoped_refptr<ValueStateMap>& pending_valuebuffer_state,
       bool bind_generates_resource);
 
   // This should only be called by GLES2Decoder. This must be paired with a
@@ -131,6 +133,10 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return valuebuffer_manager_.get();
   }
 
+  ValueStateMap* pending_valuebuffer_state() const {
+    return pending_valuebuffer_state_.get();
+  }
+
   TextureManager* texture_manager() const {
     return texture_manager_.get();
   }
@@ -182,6 +188,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   scoped_refptr<MemoryTracker> memory_tracker_;
   scoped_refptr<ShaderTranslatorCache> shader_translator_cache_;
   scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
+  scoped_refptr<gpu::ValueStateMap> pending_valuebuffer_state_;
 
   bool enforce_gl_minimums_;
   bool bind_generates_resource_;
@@ -204,13 +211,13 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   scoped_ptr<RenderbufferManager> renderbuffer_manager_;
 
-  scoped_ptr<ValuebufferManager> valuebuffer_manager_;
-
   scoped_ptr<TextureManager> texture_manager_;
 
   scoped_ptr<ProgramManager> program_manager_;
 
   scoped_ptr<ShaderManager> shader_manager_;
+
+  scoped_ptr<ValuebufferManager> valuebuffer_manager_;
 
   scoped_refptr<FeatureInfo> feature_info_;
 

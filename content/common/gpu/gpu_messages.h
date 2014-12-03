@@ -10,6 +10,7 @@
 
 #include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
+#include "content/common/content_param_traits.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/gpu/gpu_result_codes.h"
@@ -20,6 +21,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/value_state.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_channel_handle.h"
@@ -299,6 +301,12 @@ IPC_MESSAGE_CONTROL0(GpuMsg_GpuSwitched)
 // close the display and any other resources when the last GL surface is
 // deleted. GPU process will respond with GphHosMsg_ResourcesRelinquished.
 IPC_MESSAGE_CONTROL0(GpuMsg_RelinquishResources)
+
+// Sends an input event to the gpu service.
+IPC_MESSAGE_CONTROL3(GpuMsg_UpdateValueState,
+                     int, /* client_id */
+                     unsigned int, /* target */
+                     gpu::ValueState /* valuestate */)
 
 //------------------------------------------------------------------------------
 // GPU Host Messages
