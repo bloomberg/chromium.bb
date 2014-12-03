@@ -1468,3 +1468,5 @@ crbug.com/381919 virtual/textblob/fast/text/complex-text-opacity.html [ ImageOnl
 crbug.com/381919 virtual/textblob/fast/text/drawBidiText.html [ ImageOnlyFailure ]
 crbug.com/381919 virtual/textblob/fast/text/international/rtl-white-space-pre-wrap.html [ ImageOnlyFailure ]
 crbug.com/381919 virtual/textblob/fast/text/international/unicode-bidi-plaintext-in-textarea.html [ ImageOnlyFailure ]
+crbug.com/381919 fast/invalid/014.html [ ImageOnlyFailure ]
+crbug.com/381919 fast/text/textIteratorNilRenderer.html [ ImageOnlyFailure ]
