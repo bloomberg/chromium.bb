@@ -67,16 +67,7 @@ function test()
         {
             InspectorTest.invokeAsyncWithTimeline("changeStylesAndDisplay", function() {
                 var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles);
-                var invalidations = record._event.invalidationTrackingEvents;
-                InspectorTest.assertEquals(invalidations.length, 2);
-                InspectorTest.assertEquals(invalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(invalidations[0].nodeName, "DIV id='testElementOne' class='red'");
-                InspectorTest.assertEquals(invalidations[0].cause.reason, "StyleInvalidator");
-                InspectorTest.assertGreaterOrEqual(invalidations[0].cause.stackTrace.length, 1);
-                InspectorTest.assertEquals(invalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(invalidations[1].nodeName, "DIV id='testElementTwo' class='red'");
-                InspectorTest.assertEquals(invalidations[1].cause.reason, "StyleInvalidator");
-                InspectorTest.assertGreaterOrEqual(invalidations[1].cause.stackTrace.length, 1);
+                InspectorTest.addArray(record._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first recalculate styles");
                 next();
             });
         },
@@ -85,40 +76,13 @@ function test()
         {
             InspectorTest.invokeAsyncWithTimeline("changeMultipleStylesAndDisplay", function() {
                 var firstRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles, 0);
-                var firstInvalidations = firstRecord._event.invalidationTrackingEvents;
-                InspectorTest.assertEquals(firstInvalidations.length, 1);
-                InspectorTest.assertEquals(firstInvalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(firstInvalidations[0].nodeName, "DIV id='testElementOne' class='green'");
-                InspectorTest.assertEquals(firstInvalidations[0].cause.reason, "StyleInvalidator");
-                InspectorTest.assertGreaterOrEqual(firstInvalidations[0].cause.stackTrace.length, 1);
+                InspectorTest.addArray(firstRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first recalculate styles");
 
                 var secondRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles, 1);
-                var secondInvalidations = secondRecord._event.invalidationTrackingEvents;
-                InspectorTest.assertEquals(secondInvalidations.length, 2);
-                InspectorTest.assertEquals(secondInvalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(secondInvalidations[0].nodeName, "DIV id='testElementOne' class='blue'");
-                InspectorTest.assertEquals(secondInvalidations[0].cause.reason, "StyleInvalidator");
-                InspectorTest.assertGreaterOrEqual(secondInvalidations[0].cause.stackTrace.length, 1);
-                InspectorTest.assertEquals(secondInvalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(secondInvalidations[1].nodeName, "DIV id='testElementTwo' class='blue'");
-                InspectorTest.assertEquals(secondInvalidations[1].cause.reason, "StyleInvalidator");
-                InspectorTest.assertGreaterOrEqual(secondInvalidations[1].cause.stackTrace.length, 1);
+                InspectorTest.addArray(secondRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "second recalculate styles");
 
                 var thirdRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles, 2);
-                var thirdInvalidations = thirdRecord._event.invalidationTrackingEvents;
-                InspectorTest.assertEquals(thirdInvalidations.length, 3);
-                InspectorTest.assertEquals(thirdInvalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(thirdInvalidations[0].nodeName, "DIV id='testElementOne' class='snow'");
-                InspectorTest.assertEquals(thirdInvalidations[0].cause.reason, "StyleInvalidator");
-                InspectorTest.assertGreaterOrEqual(thirdInvalidations[0].cause.stackTrace.length, 1);
-                InspectorTest.assertEquals(thirdInvalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(thirdInvalidations[1].nodeName, "DIV id='testElementTwo' class='snow'");
-                InspectorTest.assertEquals(thirdInvalidations[1].cause.reason, "StyleInvalidator");
-                InspectorTest.assertGreaterOrEqual(thirdInvalidations[1].cause.stackTrace.length, 1);
-                InspectorTest.assertEquals(thirdInvalidations[2].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(thirdInvalidations[2].nodeName, "DIV id='testElementThree' class='snow'");
-                InspectorTest.assertEquals(thirdInvalidations[2].cause.reason, "StyleInvalidator");
-                InspectorTest.assertGreaterOrEqual(thirdInvalidations[2].cause.stackTrace.length, 1);
+                InspectorTest.addArray(thirdRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "third recalculate styles");
                 next();
             });
         },
@@ -127,40 +91,13 @@ function test()
         {
             InspectorTest.invokeAsyncWithTimeline("changeMultipleSubframeStylesAndDisplay", function() {
                 var firstRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles, 0);
-                var firstInvalidations = firstRecord._event.invalidationTrackingEvents;
-                InspectorTest.assertEquals(firstInvalidations.length, 1);
-                InspectorTest.assertEquals(firstInvalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(firstInvalidations[0].nodeName, "DIV id='testElementOne' class='green'");
-                InspectorTest.assertEquals(firstInvalidations[0].cause.reason, "StyleInvalidator");
-                InspectorTest.assertGreaterOrEqual(firstInvalidations[0].cause.stackTrace.length, 1);
+                InspectorTest.addArray(firstRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first recalculate styles");
 
                 var secondRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles, 1);
-                var secondInvalidations = secondRecord._event.invalidationTrackingEvents;
-                InspectorTest.assertEquals(secondInvalidations.length, 2);
-                InspectorTest.assertEquals(secondInvalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(secondInvalidations[0].nodeName, "DIV id='testElementOne' class='blue'");
-                InspectorTest.assertEquals(secondInvalidations[0].cause.reason, "StyleInvalidator");
-                InspectorTest.assertGreaterOrEqual(secondInvalidations[0].cause.stackTrace.length, 1);
-                InspectorTest.assertEquals(secondInvalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(secondInvalidations[1].nodeName, "DIV id='testElementTwo' class='blue'");
-                InspectorTest.assertEquals(secondInvalidations[1].cause.reason, "StyleInvalidator");
-                InspectorTest.assertGreaterOrEqual(secondInvalidations[1].cause.stackTrace.length, 1);
+                InspectorTest.addArray(secondRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "second recalculate styles");
 
                 var thirdRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles, 2);
-                var thirdInvalidations = thirdRecord._event.invalidationTrackingEvents;
-                InspectorTest.assertEquals(thirdInvalidations.length, 3);
-                InspectorTest.assertEquals(thirdInvalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(thirdInvalidations[0].nodeName, "DIV id='testElementOne' class='snow'");
-                InspectorTest.assertEquals(thirdInvalidations[0].cause.reason, "StyleInvalidator");
-                InspectorTest.assertGreaterOrEqual(thirdInvalidations[0].cause.stackTrace.length, 1);
-                InspectorTest.assertEquals(thirdInvalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(thirdInvalidations[1].nodeName, "DIV id='testElementTwo' class='snow'");
-                InspectorTest.assertEquals(thirdInvalidations[1].cause.reason, "StyleInvalidator");
-                InspectorTest.assertGreaterOrEqual(thirdInvalidations[1].cause.stackTrace.length, 1);
-                InspectorTest.assertEquals(thirdInvalidations[2].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(thirdInvalidations[2].nodeName, "DIV id='testElementThree' class='snow'");
-                InspectorTest.assertEquals(thirdInvalidations[2].cause.reason, "StyleInvalidator");
-                InspectorTest.assertGreaterOrEqual(thirdInvalidations[2].cause.stackTrace.length, 1);
+                InspectorTest.addArray(thirdRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "third recalculate styles");
                 next();
             });
         }
@@ -172,7 +109,6 @@ function test()
     .testHolder > .green { background-color: green; }
     .testHolder > .blue { background-color: blue; }
     .testHolder > .snow { background-color: snow; }
-</style>
 </style>
 </head>
 <body onload="runTest()">

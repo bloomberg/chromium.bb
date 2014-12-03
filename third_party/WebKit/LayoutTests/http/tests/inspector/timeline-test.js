@@ -34,6 +34,30 @@ InspectorTest.timelinePropertyFormatters = {
     thread: "formatAsTypeName"
 };
 
+InspectorTest.InvalidationFormatters = {
+    _tracingEvent: "skip",
+    cause: "formatAsInvalidationCause",
+    frame: "skip",
+    invalidatedSelectorId: "skip",
+    invalidationList: "skip",
+    invalidationSet: "skip",
+    linkedRecalcStyleEvent: "skip",
+    linkedLayoutEvent: "skip",
+    nodeId: "skip",
+    paintId: "skip",
+    startTime: "skip",
+};
+
+InspectorTest.formatters.formatAsInvalidationCause = function(cause)
+{
+    if (!cause)
+        return "<undefined>";
+    var stackTrace;
+    if (cause.stackTrace && cause.stackTrace.length)
+        stackTrace = InspectorTest.formatters.formatAsURL(cause.stackTrace[0].url) + ":" + cause.stackTrace[0].lineNumber;
+    return "{reason: " + cause.reason + ", stackTrace: " + stackTrace + "}";
+}
+
 InspectorTest.switchTimelineToWaterfallMode = function()
 {
     if (WebInspector.panels.timeline._flameChartToggleButton.toggled())

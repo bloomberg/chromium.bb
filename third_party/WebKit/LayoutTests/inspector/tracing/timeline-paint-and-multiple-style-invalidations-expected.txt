@@ -1,0 +1,84 @@
+Tests the Timeline API instrumentation of multiple style recalc invalidations and ensures they are all collected on the paint event.
+
+PASS
+PASS
+PASS
+first style recalc[
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint-and-multiple-style-invalidations.html:10}
+        changedAttribute : undefined
+        changedClass : "red"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='red'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+]
+second style recalc[
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint-and-multiple-style-invalidations.html:12}
+        changedAttribute : undefined
+        changedClass : "snow"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='snow'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint-and-multiple-style-invalidations.html:12}
+        changedAttribute : undefined
+        changedClass : "red"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='snow'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+]
+first paint[
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint-and-multiple-style-invalidations.html:10}
+        changedAttribute : undefined
+        changedClass : "red"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='red'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint-and-multiple-style-invalidations.html:12}
+        changedAttribute : undefined
+        changedClass : "snow"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='snow'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-paint-and-multiple-style-invalidations.html:12}
+        changedAttribute : undefined
+        changedClass : "red"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='snow'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+]
+
