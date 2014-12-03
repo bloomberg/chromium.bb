@@ -259,10 +259,16 @@ cr.define('hotword', function() {
 
         // Start the detector if there's a session and the user is unlocked, and
         // stops it otherwise.
-        if (this.sessions_.length && !this.isLocked_)
+        if (!this.hotwordStatus_.userIsActive) {
+          // If the user is no longer the active user, we need to shut down the
+          // detector so that we're no longer using the microphone. As a result,
+          // the microphone indicator in the task bar is not shown.
+          this.shutdownDetector_();
+        } else if (this.sessions_.length && !this.isLocked_) {
           this.startDetector_();
-        else
+        } else {
           this.stopDetector_();
+        }
 
         if (!chrome.idle.onStateChanged.hasListener(
                 this.idleStateChangedListener_)) {

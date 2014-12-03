@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/hotword_private/hotword_private_api.h"
 
+#include <string>
+
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
@@ -145,12 +147,14 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
     result.available = false;
     result.enabled = false;
     result.always_on_enabled = false;
+    result.user_is_active = false;
   } else {
     result.available = hotword_service->IsServiceAvailable();
     result.enabled = hotword_service->IsSometimesOnEnabled();
     result.audio_logging_enabled = hotword_service->IsOptedIntoAudioLogging();
     result.training_enabled = hotword_service->IsTraining();
     result.always_on_enabled = hotword_service->IsAlwaysOnEnabled();
+    result.user_is_active = hotword_service->UserIsActive();
   }
 
   PrefService* prefs = GetProfile()->GetPrefs();

@@ -24,6 +24,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/hotword_audio_history_handler.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
@@ -33,6 +34,8 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
@@ -275,6 +278,27 @@ bool HotwordService::IsExperimentalHotwordingEnabled() {
   return command_line->HasSwitch(switches::kEnableExperimentalHotwording);
 }
 
+#if defined(OS_CHROMEOS)
+class HotwordService::HotwordUserSessionStateObserver
+    : public user_manager::UserManager::UserSessionStateObserver {
+ public:
+  explicit HotwordUserSessionStateObserver(HotwordService* service)
+      : service_(service) {}
+
+  // Overridden from UserSessionStateObserver:
+  void ActiveUserChanged(const user_manager::User* active_user) override {
+    service_->ActiveUserChanged();
+  }
+
+ private:
+  HotwordService* service_;  // Not owned
+};
+#else
+// Dummy class to please the linker.
+class HotwordService::HotwordUserSessionStateObserver {
+};
+#endif
+
 HotwordService::HotwordService(Profile* profile)
     : profile_(profile),
       extension_registry_observer_(this),
@@ -343,9 +367,23 @@ HotwordService::HotwordService(Profile* profile)
           base::TimeDelta::FromMinutes(30));
     }
   }
+
+#if defined(OS_CHROMEOS)
+  if (user_manager::UserManager::IsInitialized()) {
+    session_observer_.reset(new HotwordUserSessionStateObserver(this));
+    user_manager::UserManager::Get()->AddSessionStateObserver(
+        session_observer_.get());
+  }
+#endif
 }
 
 HotwordService::~HotwordService() {
+#if defined(OS_CHROMEOS)
+  if (user_manager::UserManager::IsInitialized() && session_observer_) {
+    user_manager::UserManager::Get()->RemoveSessionStateObserver(
+        session_observer_.get());
+  }
+#endif
 }
 
 void HotwordService::ShowHotwordNotification() {
@@ -762,4 +800,24 @@ bool HotwordService::ShouldReinstallHotwordExtension() {
   // If it's a new locale, then the old extension should be uninstalled.
   return locale != previous_locale &&
       HotwordService::DoesHotwordSupportLanguage(profile_);
+}
+
+void HotwordService::ActiveUserChanged() {
+  // Do nothing for old hotwording.
+  if (!IsExperimentalHotwordingEnabled())
+    return;
+
+  // Don't bother notifying the extension if hotwording is completely off.
+  if (!IsSometimesOnEnabled() && !IsAlwaysOnEnabled())
+    return;
+
+  HotwordPrivateEventService* event_service =
+      BrowserContextKeyedAPIFactory<HotwordPrivateEventService>::Get(profile_);
+  // "enabled" isn't being changed, but piggy-back off the notification anyway.
+  if (event_service)
+    event_service->OnEnabledChanged(prefs::kHotwordSearchEnabled);
+}
+
+bool HotwordService::UserIsActive() {
+  return profile_ == ProfileManager::GetActiveUserProfile();
 }

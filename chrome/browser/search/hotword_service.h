@@ -136,6 +136,12 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   // Returns true if speaker training is currently in progress.
   bool IsTraining();
 
+  // Indicate that the currently active user has changed.
+  void ActiveUserChanged();
+
+  // Return true if this profile corresponds to the currently active user.
+  bool UserIsActive();
+
   // Returns a pointer to the audio history handler.
   HotwordAudioHistoryHandler* GetAudioHistoryHandler();
 
@@ -143,6 +149,8 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   void SetAudioHistoryHandler(HotwordAudioHistoryHandler* handler);
 
  private:
+  class HotwordUserSessionStateObserver;
+
   // Callback for webstore extension installer.
   void InstalledFromWebstoreCallback(
       int num_tries,
@@ -176,6 +184,7 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   bool reinstall_pending_;
   // Whether we are currently in the process of training the speaker model.
   bool training_;
+  scoped_ptr<HotwordUserSessionStateObserver> session_observer_;
 
   // Stores the launch mode for the Hotword Audio Verification App.
   LaunchMode hotword_audio_verification_launch_mode_;

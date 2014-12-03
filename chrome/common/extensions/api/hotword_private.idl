@@ -36,6 +36,9 @@
 
     // Whether training mode is enabled.
     boolean trainingEnabled;
+
+    // Whether the user corresponding to this profile is the active user.
+    boolean userIsActive;
   };
 
   dictionary LaunchState {
