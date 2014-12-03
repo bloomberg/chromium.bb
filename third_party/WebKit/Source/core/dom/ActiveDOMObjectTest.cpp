@@ -39,9 +39,11 @@ using namespace blink;
 
 namespace {
 
-class MockActiveDOMObject : public ActiveDOMObject {
+class MockActiveDOMObject final : public GarbageCollectedFinalized<MockActiveDOMObject>, public ActiveDOMObject {
 public:
-    MockActiveDOMObject(ExecutionContext* context) : ActiveDOMObject(context) { }
+    explicit MockActiveDOMObject(ExecutionContext* context) : ActiveDOMObject(context) { }
+
+    void trace(Visitor*) { }
 
     MOCK_METHOD0(suspend, void());
     MOCK_METHOD0(resume, void());
@@ -54,20 +56,20 @@ protected:
 
     Document& srcDocument() const { return m_srcPageHolder->document(); }
     Document& destDocument() const { return m_destPageHolder->document(); }
-    MockActiveDOMObject& activeDOMObject() { return m_activeDOMObject; }
+    MockActiveDOMObject& activeDOMObject() { return *m_activeDOMObject; }
 
 private:
     OwnPtr<DummyPageHolder> m_srcPageHolder;
     OwnPtr<DummyPageHolder> m_destPageHolder;
-    MockActiveDOMObject m_activeDOMObject;
+    Persistent<MockActiveDOMObject> m_activeDOMObject;
 };
 
 ActiveDOMObjectTest::ActiveDOMObjectTest()
     : m_srcPageHolder(DummyPageHolder::create(IntSize(800, 600)))
     , m_destPageHolder(DummyPageHolder::create(IntSize(800, 600)))
-    , m_activeDOMObject(&m_srcPageHolder->document())
+    , m_activeDOMObject(new MockActiveDOMObject(&m_srcPageHolder->document()))
 {
-    m_activeDOMObject.suspendIfNeeded();
+    m_activeDOMObject->suspendIfNeeded();
 }
 
 TEST_F(ActiveDOMObjectTest, NewContextObserved)
