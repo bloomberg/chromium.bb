@@ -24,7 +24,7 @@ function callback3()
     var func = Framework.bind(callback4, null, 1);
     func = Framework.bind(func, null, 2);
     func = Framework.bind(func, null, 3);
-    Framework.safeRun(func, Framework.doSomeWork);
+    Framework.safeRun(func, Framework.empty);
 }
 
 function callback4()
@@ -44,8 +44,7 @@ function test()
     var frameworkRegexString = "/framework\\.js$";
     WebInspector.settings.skipStackFramesPattern.set(frameworkRegexString);
 
-    InspectorTest.setQuiet(true);
-    InspectorTest.startDebuggerTest(step1);
+    InspectorTest.startDebuggerTest(step1, true);
 
     function step1()
     {

@@ -93,7 +93,7 @@ static const char skipAllPausesExpiresOnReload[] = "skipAllPausesExpiresOnReload
 
 };
 
-static const int maxSkipStepFrameCount = 50;
+static const int maxSkipStepFrameCount = 128;
 
 const char InspectorDebuggerAgent::backtraceObjectGroup[] = "backtrace";
 
