@@ -41,12 +41,13 @@ public class ClientOnReceivedErrorTest extends AwTestBase {
         int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
         loadUrlAsync(mAwContents, url);
 
+        // Verify that onReceivedError is called. The particular error code
+        // that is returned depends on the configuration of the device (such as
+        // existence of a proxy) so we don't test for it.
         onReceivedErrorHelper.waitForCallback(onReceivedErrorCallCount,
                                               1 /* numberOfCallsToWaitFor */,
                                               WAIT_TIMEOUT_MS,
                                               TimeUnit.MILLISECONDS);
-        assertEquals(ErrorCodeConversionHelper.ERROR_HOST_LOOKUP,
-                onReceivedErrorHelper.getErrorCode());
         assertEquals(url, onReceivedErrorHelper.getFailingUrl());
         assertNotNull(onReceivedErrorHelper.getDescription());
     }
