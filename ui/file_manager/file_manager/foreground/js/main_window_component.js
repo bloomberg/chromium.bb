@@ -3,12 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * @typedef {{dispatchSelectionAction: Function}}
- * TODO(hirono): Introduce real task controller.
- */
-var TaskController;
-
-/**
  * Component for the main window.
  *
  * The class receives UI events from UI components that does not have their own
@@ -25,7 +19,7 @@ var TaskController;
  * @param {!FileSelectionHandler} selectionHandler
  * @param {!NamingController} namingController
  * @param {!AppStateController} appStateController
- * @param {TaskController} taskController
+ * @param {!TaskController} taskController
  * @constructor
  * @struct
  */

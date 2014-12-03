@@ -188,6 +188,12 @@ function FileManager() {
    */
   this.mainWindowComponent_ = null;
 
+  /**
+   * @type {TaskController}
+   * @private
+   */
+  this.taskController_ = null;
+
   // --------------------------------------------------------------------------
   // DOM elements.
 
@@ -211,20 +217,6 @@ function FileManager() {
    * @private
    */
   this.document_ = null;
-
-  /**
-   * The menu item for doing an action.
-   * @type {HTMLMenuItemElement}
-   * @private
-   */
-  this.actionMenuItem_ = null;
-
-  /**
-   * Open-with command in the context menu.
-   * @type {cr.ui.Command}
-   * @private
-   */
-  this.openWithCommand_ = null;
 
   // --------------------------------------------------------------------------
   // Miscellaneous FileManager's states.
@@ -278,6 +270,12 @@ FileManager.prototype = /** @struct */ {
    */
   get namingController() {
     return this.namingController_;
+  },
+  /**
+   * @return {TaskController}
+   */
+  get taskController() {
+    return this.taskController_;
   },
   /**
    * @return {FileOperationManager}
@@ -453,6 +451,7 @@ Object.freeze(DialogType);
     assert(this.fileFilter_);
     assert(this.namingController_);
     assert(this.appStateController_);
+    assert(this.taskController_);
     this.mainWindowComponent_ = new MainWindowComponent(
         this.dialogType,
         this.ui_,
@@ -462,7 +461,7 @@ Object.freeze(DialogType);
         this.selectionHandler_,
         this.namingController_,
         this.appStateController_,
-        {dispatchSelectionAction: this.dispatchSelectionAction_.bind(this)});
+        this.taskController_);
 
     this.initDataTransferOperations_();
 
@@ -768,17 +767,6 @@ Object.freeze(DialogType);
     // Handle UI events.
     this.backgroundPage_.background.progressCenter.addPanel(
         this.ui_.progressCenterPanel);
-    this.ui_.taskMenuButton.addEventListener('select',
-        this.onTaskItemClicked_.bind(this));
-
-    this.actionMenuItem_ = /** @type {!HTMLMenuItemElement} */
-        (queryRequiredElement(this.dialogDom_, '#default-action'));
-
-    this.openWithCommand_ = /** @type {cr.ui.Command} */
-        (this.dialogDom_.querySelector('#open-with'));
-
-    this.actionMenuItem_.addEventListener('activate',
-        this.onActionMenuItemActivated_.bind(this));
 
     util.addIsFocusedMethod();
 
@@ -838,16 +826,31 @@ Object.freeze(DialogType);
 
     this.appStateController_.initialize(this.ui_, this.directoryModel_);
 
+    // Create metadata update controller.
+    this.metadataUpdateController_ = new MetadataUpdateController(
+        this.ui_.listContainer,
+        this.directoryModel_,
+        this.volumeManager_,
+        this.metadataCache_,
+        this.fileWatcher_,
+        this.fileOperationManager_);
+
+    // Create task controller.
+    this.taskController_ = new TaskController(
+        this.dialogType,
+        this.ui_,
+        this.metadataCache_,
+        this.selectionHandler_,
+        this.metadataUpdateController_,
+        function() { return new FileTasks(this); }.bind(this));
+
     // Create search controller.
     this.searchController_ = new SearchController(
         this.ui_.searchBox,
-        this.ui_.locationLine,
+        assert(this.ui_.locationLine),
         this.directoryModel_,
         this.volumeManager_,
-        {
-          // TODO (hirono): Make the real task controller and pass it here.
-          doAction: this.doEntryAction_.bind(this)
-        });
+        assert(this.taskController_));
 
     // Create naming controller.
     assert(this.ui_.alertDialog);
@@ -877,15 +880,6 @@ Object.freeze(DialogType);
         this.namingController_,
         this.selectionHandler_,
         this.launchParams_);
-
-    // Create metadata update controller.
-    this.metadataUpdateController_ = new MetadataUpdateController(
-        this.ui_.listContainer,
-        this.directoryModel_,
-        this.volumeManager_,
-        this.metadataCache_,
-        this.fileWatcher_,
-        this.fileOperationManager_);
   };
 
   /**
@@ -1166,69 +1160,6 @@ Object.freeze(DialogType);
   };
 
   /**
-   * Task combobox handler.
-   *
-   * @param {Object} event Event containing task which was clicked.
-   * @private
-   */
-  FileManager.prototype.onTaskItemClicked_ = function(event) {
-    var selection = this.getSelection();
-    if (!selection.tasks) return;
-
-    if (event.item.task) {
-      // Task field doesn't exist on change-default dropdown item.
-      selection.tasks.execute(event.item.task.taskId);
-    } else {
-      var extensions = [];
-
-      for (var i = 0; i < selection.entries.length; i++) {
-        var match = /\.(\w+)$/g.exec(selection.entries[i].toURL());
-        if (match) {
-          var ext = match[1].toUpperCase();
-          if (extensions.indexOf(ext) == -1) {
-            extensions.push(ext);
-          }
-        }
-      }
-
-      var format = '';
-
-      if (extensions.length == 1) {
-        format = extensions[0];
-      }
-
-      // Change default was clicked. We should open "change default" dialog.
-      selection.tasks.showTaskPicker(this.ui_.defaultTaskPicker,
-          loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM'),
-          strf('CHANGE_DEFAULT_CAPTION', format),
-          this.onDefaultTaskDone_.bind(this),
-          true);
-    }
-  };
-
-  /**
-   * Sets the given task as default, when this task is applicable.
-   *
-   * @param {Object} task Task to set as default.
-   * @private
-   */
-  FileManager.prototype.onDefaultTaskDone_ = function(task) {
-    // TODO(dgozman): move this method closer to tasks.
-    var selection = this.getSelection();
-    // TODO(mtomasz): Move conversion from entry to url to custom bindings.
-    // crbug.com/345527.
-    chrome.fileManagerPrivate.setDefaultTask(
-        task.taskId,
-        util.entriesToURLs(selection.entries),
-        selection.mimeTypes);
-    selection.tasks = new FileTasks(this);
-    selection.tasks.init(selection.entries, selection.mimeTypes);
-    selection.tasks.display(this.ui_.taskMenuButton);
-    this.metadataUpdateController_.refreshCurrentDirectoryMetadata();
-    this.selectionHandler_.onFileSelectionChanged();
-  };
-
-  /**
    * Tells whether the current directory is read only.
    * TODO(mtomasz): Remove and use EntryLocation directly.
    * @return {boolean} True if read only, false otherwise.
@@ -1245,92 +1176,6 @@ Object.freeze(DialogType);
    */
   FileManager.prototype.getCurrentDirectoryEntry = function() {
     return this.directoryModel_ && this.directoryModel_.getCurrentDirEntry();
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.dispatchSelectionAction_ = function() {
-    if (this.dialogType == DialogType.FULL_PAGE) {
-      var selection = this.getSelection();
-      var tasks = selection.tasks;
-      var mimeTypes = selection.mimeTypes;
-      if (tasks)
-        tasks.executeDefault();
-      return true;
-    }
-    if (!this.ui_.dialogFooter.okButton.disabled) {
-      this.ui_.dialogFooter.okButton.click();
-      return true;
-    }
-    return false;
-  };
-
-  /**
-   * Handles activate event of action menu item.
-   *
-   * @private
-   */
-  FileManager.prototype.onActionMenuItemActivated_ = function() {
-    var tasks = this.getSelection().tasks;
-    if (tasks)
-      tasks.execute(this.actionMenuItem_.taskId);
-  };
-
-  /**
-   * Opens the suggest file dialog.
-   *
-   * @param {Entry} entry Entry of the file.
-   * @param {function()} onSuccess Success callback.
-   * @param {function()} onCancelled User-cancelled callback.
-   * @param {function()} onFailure Failure callback.
-   * @private
-   */
-  FileManager.prototype.openSuggestAppsDialog =
-      function(entry, onSuccess, onCancelled, onFailure) {
-    if (!url) {
-      onFailure();
-      return;
-    }
-
-    this.metadataCache_.getOne(entry, 'external', function(prop) {
-      if (!prop || !prop.contentMimeType) {
-        onFailure();
-        return;
-      }
-
-      var basename = entry.name;
-      var splitted = util.splitExtension(basename);
-      var filename = splitted[0];
-      var extension = splitted[1];
-      var mime = prop.contentMimeType;
-
-      // Returns with failure if the file has neither extension nor mime.
-      if (!extension || !mime) {
-        onFailure();
-        return;
-      }
-
-      var onDialogClosed = function(result) {
-        switch (result) {
-          case SuggestAppsDialog.Result.INSTALL_SUCCESSFUL:
-            onSuccess();
-            break;
-          case SuggestAppsDialog.Result.FAILED:
-            onFailure();
-            break;
-          default:
-            onCancelled();
-        }
-      };
-
-      if (FileTasks.EXECUTABLE_EXTENSIONS.indexOf(extension) !== -1) {
-        this.ui_.suggestAppsDialog.showByFilename(filename, onDialogClosed);
-      } else {
-        this.ui_.suggestAppsDialog.showByExtensionAndMime(
-            extension, mime, onDialogClosed);
-      }
-    }.bind(this));
   };
 
   /**
@@ -1359,49 +1204,6 @@ Object.freeze(DialogType);
     window.closing = true;
     if (this.backgroundPage_)
       this.backgroundPage_.background.tryClose();
-  };
-
-  /**
-   * Updates action menu item to match passed task items.
-   *
-   * @param {Array.<Object>=} opt_items List of items.
-   */
-  FileManager.prototype.updateContextMenuActionItems = function(opt_items) {
-    var items = opt_items || [];
-
-    // When only one task is available, show it as default item.
-    if (items.length === 1) {
-      var actionItem = items[0];
-
-      if (actionItem.iconType) {
-        this.actionMenuItem_.style.backgroundImage = '';
-        this.actionMenuItem_.setAttribute('file-type-icon',
-                                          actionItem.iconType);
-      } else if (actionItem.iconUrl) {
-        this.actionMenuItem_.style.backgroundImage =
-            'url(' + actionItem.iconUrl + ')';
-      } else {
-        this.actionMenuItem_.style.backgroundImage = '';
-      }
-
-      this.actionMenuItem_.label =
-          actionItem.taskId === FileTasks.ZIP_UNPACKER_TASK_ID ?
-          str('ACTION_OPEN') : actionItem.title;
-      this.actionMenuItem_.disabled = !!actionItem.disabled;
-      this.actionMenuItem_.taskId = actionItem.taskId;
-    }
-
-    this.actionMenuItem_.hidden = items.length !== 1;
-
-    // When multiple tasks are available, show them in open with.
-    this.openWithCommand_.canExecuteChange();
-    this.openWithCommand_.setHidden(items.length < 2);
-    this.openWithCommand_.disabled = items.length < 2;
-
-    // Hide default action separator when there does not exist available task.
-    var defaultActionSeparator =
-        this.dialogDom_.querySelector('#default-action-separator');
-    defaultActionSeparator.hidden = items.length === 0;
   };
 
   /**
@@ -1444,26 +1246,6 @@ Object.freeze(DialogType);
    */
   FileManager.prototype.getCurrentList = function() {
     return this.ui.listContainer.currentList;
-  };
-
-  /**
-   * @param {FileEntry} entry
-   * @private
-   */
-  FileManager.prototype.doEntryAction_ = function(entry) {
-    if (this.dialogType == DialogType.FULL_PAGE) {
-      this.metadataCache_.get([entry], 'external', function(props) {
-        var tasks = new FileTasks(this);
-        tasks.init([entry], [props[0].contentMimeType || '']);
-        tasks.executeDefault_();
-      }.bind(this));
-    } else {
-      var selection = this.getSelection();
-      if (selection.entries.length === 1 &&
-          util.isSameEntry(selection.entries[0], entry)) {
-        this.ui_.dialogFooter.okButton.click();
-      }
-    }
   };
 
   /**

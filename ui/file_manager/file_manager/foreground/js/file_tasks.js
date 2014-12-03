@@ -11,7 +11,13 @@
  */
 function FileTasks(fileManager) {
   this.fileManager_ = fileManager;
+
+  /**
+   * @type {Array.<!Object>}
+   * @private
+   */
   this.tasks_ = null;
+
   this.defaultTask_ = null;
   this.entries_ = null;
 
@@ -96,8 +102,24 @@ FileTasks.prototype.init = function(entries, opt_mimeTypes) {
   // TODO(mtomasz): Move conversion from entry to url to custom bindings.
   // crbug.com/345527.
   var urls = util.entriesToURLs(entries);
-  if (urls.length > 0)
-    chrome.fileManagerPrivate.getFileTasks(urls, this.onTasks_.bind(this));
+  if (urls.length > 0) {
+    return new Promise(function(fulfill) {
+      chrome.fileManagerPrivate.getFileTasks(urls, function(taskItems) {
+        this.onTasks_(taskItems);
+        fulfill();
+      }.bind(this));
+    }.bind(this));
+  } else {
+    return Promise.resolve();
+  }
+};
+
+/**
+ * Obtains the task items.
+ * @return {Array.<!Object>}
+ */
+FileTasks.prototype.getTaskItems = function() {
+  return this.tasks_;
 };
 
 /**
@@ -368,7 +390,7 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
       return;
     }
 
-    fm.openSuggestAppsDialog(
+    fm.taskController.openSuggestAppsDialog(
         entries[0],
         function() {
           var newTasks = new FileTasks(fm);
@@ -703,14 +725,6 @@ FileTasks.prototype.createItems_ = function() {
 };
 
 /**
- * Updates context menu with default item.
- * @private
- */
-FileTasks.prototype.updateMenuItem_ = function() {
-  this.fileManager_.updateContextMenuActionItems(this.tasks_);
-};
-
-/**
  * Creates combobutton item based on task.
  *
  * @param {Object} task Task to convert.
@@ -777,16 +791,6 @@ FileTasks.prototype.display = function(combobutton) {
     this.display_(combobutton);
   else
     this.pendingInvocations_.push(['display_', [combobutton]]);
-};
-
-/**
- * Updates context menu with default item.
- */
-FileTasks.prototype.updateMenuItem = function() {
-  if (this.tasks_)
-    this.updateMenuItem_();
-  else
-    this.pendingInvocations_.push(['updateMenuItem_', []]);
 };
 
 /**

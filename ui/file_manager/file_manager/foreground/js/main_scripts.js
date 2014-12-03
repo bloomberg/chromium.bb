@@ -107,6 +107,7 @@
 //<include src="search_controller.js">
 //<include src="share_client.js">
 //<include src="spinner_controller.js">
+//<include src="task_controller.js">
 //<include src="thumbnail_loader.js">
 //<include src="ui/conflict_dialog.js">
 //<include src="ui/default_action_dialog.js">

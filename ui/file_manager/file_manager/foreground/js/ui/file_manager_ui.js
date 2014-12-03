@@ -185,6 +185,28 @@ function FileManagerUI(element, launchParam) {
       queryRequiredElement(this.element, '#format-panel > .error');
 
   /**
+   * @type {!cr.ui.Menu}
+   * @const
+   */
+  this.fileContextMenu = FileManagerUI.queryDecoratedElement_(
+      '#file-context-menu', cr.ui.Menu);
+
+  /**
+   * @type {!HTMLMenuItemElement}
+   * @const
+   */
+  this.fileContextMenu.defaultActionMenuItem =
+      /** @type {!HTMLMenuItemElement} */
+      (queryRequiredElement(this.fileContextMenu, '#default-action'));
+
+  /**
+   * @type {!HTMLElement}
+   * @const
+   */
+  this.fileContextMenu.defaultActionSeparator =
+      queryRequiredElement(this.fileContextMenu, '#default-action-separator');
+
+  /**
    * @type {PreviewPanel}
    */
   this.previewPanel = null;
@@ -291,13 +313,11 @@ FileManagerUI.prototype.initAdditionalUI = function(
   this.locationLine = locationLine;
 
   // Init context menus.
-  var fileContextMenu = FileManagerUI.queryDecoratedElement_(
-      '#file-context-menu', cr.ui.Menu);
-  cr.ui.contextMenuHandler.setContextMenu(grid, fileContextMenu);
-  cr.ui.contextMenuHandler.setContextMenu(table.list, fileContextMenu);
+  cr.ui.contextMenuHandler.setContextMenu(grid, this.fileContextMenu);
+  cr.ui.contextMenuHandler.setContextMenu(table.list, this.fileContextMenu);
   cr.ui.contextMenuHandler.setContextMenu(
       queryRequiredElement(document, '.drive-welcome.page'),
-      fileContextMenu);
+      this.fileContextMenu);
 
   // Add handlers.
   document.defaultView.addEventListener('resize', this.relayout.bind(this));

@@ -132,8 +132,8 @@ FileSelection.prototype.completeInit = function() {
   if (!this.asyncInitPromise_) {
     if (!this.fileManager_.isOnDrive()) {
       this.asyncInitPromise_ = Promise.resolve();
-      this.tasks.init(this.entries);
       this.allDriveFilesPresent = true;
+      return this.tasks.init(this.entries);
     } else {
       this.asyncInitPromise_ = new Promise(function(fulfill) {
         this.fileManager_.metadataCache.get(this.entries, 'external', fulfill);
@@ -147,7 +147,7 @@ FileSelection.prototype.completeInit = function() {
         this.mimeTypes = props.map(function(value) {
           return (value && value.contentMimeType) || '';
         });
-        this.tasks.init(this.entries, this.mimeTypes);
+        return this.tasks.init(this.entries, this.mimeTypes);
       }.bind(this));
     }
   }
@@ -274,31 +274,6 @@ FileSelectionHandler.EventType = {
 };
 
 /**
- * Create the temporary disabled action item.
- * @return {Object} Created disabled item.
- * @private
- */
-FileSelectionHandler.createTemporaryDisabledActionItem_ = function() {
-  if (!FileSelectionHandler.cachedDisabledActionItem_) {
-    FileSelectionHandler.cachedDisabledActionItem_ = {
-      title: str('ACTION_OPEN'),
-      disabled: true,
-      taskId: null
-    };
-  }
-
-  return FileSelectionHandler.cachedDisabledActionItem_;
-};
-
-/**
- * Cached the temporary disabled action item. Used inside
- * FileSelectionHandler.createTemporaryDisabledActionItem_().
- * @type {Object}
- * @private
- */
-FileSelectionHandler.cachedDisabledActionItem_ = null;
-
-/**
  * FileSelectionHandler extends cr.EventTarget.
  */
 FileSelectionHandler.prototype.__proto__ = cr.EventTarget.prototype;
@@ -348,17 +323,6 @@ FileSelectionHandler.prototype.onFileSelectionChanged = function() {
   }
   this.lastFileSelectionTime_ = now;
 
-  if (this.fileManager_.dialogType === DialogType.FULL_PAGE &&
-      selection.directoryCount === 0 && selection.fileCount > 0) {
-    // Show disabled items for position calculation of the menu. They will be
-    // overridden in this.updateFileSelectionAsync().
-    this.fileManager_.updateContextMenuActionItems(
-        [FileSelectionHandler.createTemporaryDisabledActionItem_()]);
-  } else {
-    // Update context menu.
-    this.fileManager_.updateContextMenuActionItems();
-  }
-
   this.selectionUpdateTimer_ = setTimeout(function() {
     this.selectionUpdateTimer_ = null;
     if (this.selection == selection)
@@ -377,19 +341,6 @@ FileSelectionHandler.prototype.onFileSelectionChanged = function() {
 FileSelectionHandler.prototype.updateFileSelectionAsync_ = function(selection) {
   if (this.selection !== selection)
     return;
-
-  // Update the file tasks.
-  if (this.fileManager_.dialogType === DialogType.FULL_PAGE &&
-      selection.directoryCount === 0 && selection.fileCount > 0) {
-    selection.completeInit().then(function() {
-      if (this.selection !== selection)
-        return;
-      selection.tasks.display(this.taskMenuButton_);
-      selection.tasks.updateMenuItem();
-    }.bind(this));
-  } else {
-    this.taskMenuButton_.hidden = true;
-  }
 
   // Update preview panels.
   var wasVisible = this.previewPanel_.visible;

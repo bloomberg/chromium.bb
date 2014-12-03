@@ -88,6 +88,7 @@
           './search_controller.js',
           './spinner_controller.js',
           './share_client.js',
+          './task_controller.js',
           './thumbnail_loader.js',
           './ui/conflict_dialog.js',
           './ui/default_action_dialog.js',
