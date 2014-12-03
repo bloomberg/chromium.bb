@@ -1197,14 +1197,20 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_COPY:
       return !!(params_.edit_flags & WebContextMenuData::CanCopy);
 
-    case IDC_CONTENT_CONTEXT_PASTE:
-    case IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE: {
+    case IDC_CONTENT_CONTEXT_PASTE: {
       std::vector<base::string16> types;
       bool ignore;
       ui::Clipboard::GetForCurrentThread()->ReadAvailableTypes(
           ui::CLIPBOARD_TYPE_COPY_PASTE, &types, &ignore);
       return !types.empty();
     }
+
+    case IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE: {
+      return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
+          ui::Clipboard::GetPlainTextFormatType(),
+          ui::CLIPBOARD_TYPE_COPY_PASTE);
+    }
+
     case IDC_CONTENT_CONTEXT_DELETE:
       return !!(params_.edit_flags & WebContextMenuData::CanDelete);
 
