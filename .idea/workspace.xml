@@ -2,27 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="73f62d8c-bf4b-46a3-be16-635fcf5d8e8d" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/codeStyleSettings.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/encodings.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/dictionaries/pmeenan.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/scopes/scope_settings.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/visualmetrics.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/visualmetrics.py" />
-      <change type="DELETED" beforePath="D:\src\github\visualmetrics\ffmpeg\manpages\ffmpeg-all.pdf" afterPath="" />
-      <change type="DELETED" beforePath="D:\src\github\visualmetrics\ffmpeg\manpages\ffmpeg-bitstream-filters.pdf" afterPath="" />
-      <change type="DELETED" beforePath="D:\src\github\visualmetrics\ffmpeg\manpages\ffmpeg-codecs.pdf" afterPath="" />
-      <change type="DELETED" beforePath="D:\src\github\visualmetrics\ffmpeg\manpages\ffmpeg-devices.pdf" afterPath="" />
-      <change type="DELETED" beforePath="D:\src\github\visualmetrics\ffmpeg\manpages\ffmpeg-filters.pdf" afterPath="" />
-      <change type="DELETED" beforePath="D:\src\github\visualmetrics\ffmpeg\manpages\ffmpeg-formats.pdf" afterPath="" />
-      <change type="DELETED" beforePath="D:\src\github\visualmetrics\ffmpeg\manpages\ffmpeg-protocols.pdf" afterPath="" />
-      <change type="DELETED" beforePath="D:\src\github\visualmetrics\ffmpeg\manpages\ffmpeg-resampler.pdf" afterPath="" />
-      <change type="DELETED" beforePath="D:\src\github\visualmetrics\ffmpeg\manpages\ffmpeg-scaler.pdf" afterPath="" />
-      <change type="DELETED" beforePath="D:\src\github\visualmetrics\ffmpeg\manpages\ffmpeg-utils.pdf" afterPath="" />
-      <change type="DELETED" beforePath="D:\src\github\visualmetrics\ffmpeg\manpages\ffmpeg.pdf" afterPath="" />
-      <change type="DELETED" beforePath="D:\src\github\visualmetrics\ffmpeg\manpages\ffprobe.pdf" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/codeStyleSettings.xml" afterPath="$PROJECT_DIR$/.idea/codeStyleSettings.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="visualmetrics.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -50,9 +31,7 @@
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0" vertical-offset="683" max-vertical-offset="1326">
               <caret line="67" column="0" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
-              <folding>
-                <element signature="e#1539#1549#0" expanded="true" />
-              </folding>
+              <folding />
             </state>
           </provider>
         </entry>
@@ -70,8 +49,8 @@
       <file leaf-file-name="video2frames.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/video2frames.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.6851211" vertical-offset="1100" max-vertical-offset="2091">
-              <caret line="88" column="17" selection-start-line="88" selection-start-column="17" selection-end-line="88" selection-end-column="17" />
+            <state vertical-scroll-proportion="0.2733564" vertical-offset="2851" max-vertical-offset="4216">
+              <caret line="177" column="19" selection-start-line="177" selection-start-column="19" selection-end-line="177" selection-end-column="19" />
               <folding>
                 <element signature="e#1521#1535#0" expanded="true" />
               </folding>
@@ -99,8 +78,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="175" />
-    <option name="y" value="26" />
+    <option name="x" value="159" />
+    <option name="y" value="24" />
     <option name="width" value="1540" />
     <option name="height" value="1096" />
   </component>
@@ -130,6 +109,7 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -178,7 +158,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -189,6 +168,7 @@
     <property name="options.searchVisible" value="true" />
     <property name="recentsLimit" value="5" />
     <property name="restartRequiresConfirmation" value="true" />
+    <property name="FullScreen" value="false" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -354,19 +334,19 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="175" y="26" width="1540" height="1096" extended-state="0" />
+    <frame x="159" y="24" width="1540" height="1096" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22703412" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.373444" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.41286308" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -394,10 +374,36 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="8" />
+      <option name="time" value="31" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/visualmetrics.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1326">
+          <caret line="67" column="0" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="119">
+          <caret line="0" column="26" selection-start-line="0" selection-start-column="26" selection-end-line="0" selection-end-column="26" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/video2frames.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="2800" max-vertical-offset="4131">
+          <caret line="176" column="0" selection-start-line="176" selection-start-column="0" selection-end-line="176" selection-end-column="0" />
+          <folding>
+            <element signature="e#1521#1535#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/lib/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="119">
@@ -410,16 +416,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="683" max-vertical-offset="1326">
           <caret line="67" column="0" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
-          <folding>
-            <element signature="e#1539#1549#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/video2frames.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6851211" vertical-offset="1100" max-vertical-offset="2091">
-          <caret line="88" column="17" selection-start-line="88" selection-start-column="17" selection-end-line="88" selection-end-column="17" />
+        <state vertical-scroll-proportion="0.2733564" vertical-offset="2851" max-vertical-offset="4216">
+          <caret line="177" column="19" selection-start-line="177" selection-start-column="19" selection-end-line="177" selection-end-column="19" />
           <folding>
             <element signature="e#1521#1535#0" expanded="true" />
           </folding>
