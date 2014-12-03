@@ -145,6 +145,9 @@ class Printer {
   // Generic penalties for exceeding maximum width, adding more lines, etc.
   int AssessPenalty(const std::string& output);
 
+  // Tests if any lines exceed the maximum width.
+  bool ExceedsMaximumWidth(const std::string& output);
+
   // Format a list of values using the given style.
   // |end| holds any trailing comments to be printed just before the closing
   // bracket.
@@ -374,6 +377,16 @@ int Printer::AssessPenalty(const std::string& output) {
   return penalty;
 }
 
+bool Printer::ExceedsMaximumWidth(const std::string& output) {
+  std::vector<std::string> lines;
+  base::SplitStringDontTrim(output, '\n', &lines);
+  for (const auto& line : lines) {
+    if (line.size() > kMaximumWidth)
+      return true;
+  }
+  return false;
+}
+
 void Printer::AddParen(int prec, int outer_prec, bool* parenthesized) {
   if (prec < outer_prec) {
     Print("(");
@@ -497,7 +510,16 @@ int Printer::Expr(const ParseNode* root,
     sub2.Print(suffix);
     penalty_next_line += AssessPenalty(sub2.String());
 
-    if (penalty_current_line < penalty_next_line) {
+    // If in both cases it was forced past 80col, then we don't break to avoid
+    // breaking after '=' in the case of:
+    //   variable = "... very long string ..."
+    // as breaking and indenting doesn't make things much more readable, even
+    // though there's less characters past the maximum width.
+    bool exceeds_maximum_either_way = ExceedsMaximumWidth(sub1.String()) &&
+                                      ExceedsMaximumWidth(sub2.String());
+
+    if (penalty_current_line < penalty_next_line ||
+        exceeds_maximum_either_way) {
       Print(" ");
       Expr(binop->right(), prec_right, std::string());
     } else {
