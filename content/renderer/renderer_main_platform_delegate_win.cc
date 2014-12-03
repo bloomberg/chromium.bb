@@ -99,9 +99,6 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
   }
   blink::WebFontRendering::setUseDirectWrite(use_direct_write);
   blink::WebFontRendering::setDeviceScaleFactor(gfx::GetDPIScale());
-  if (use_direct_write) {
-    blink::WebRuntimeFeatures::enableSubpixelFontScaling(true);
-  }
 }
 
 void RendererMainPlatformDelegate::PlatformUninitialize() {
