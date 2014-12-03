@@ -4,15 +4,17 @@
 
 from pylib.junit import test_runner
 
-def Setup(options):
+def Setup(args):
   """Creates a test runner factory for junit tests.
 
+  Args:
+    args: an argparse.Namespace object.
   Return:
     A (runner_factory, tests) tuple.
   """
 
   def TestRunnerFactory(_unused_device, _unused_shard_index):
-    return test_runner.JavaTestRunner(options)
+    return test_runner.JavaTestRunner(args)
 
   return (TestRunnerFactory, ['JUnit tests'])
 

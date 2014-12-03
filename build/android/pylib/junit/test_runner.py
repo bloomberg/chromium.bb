@@ -10,12 +10,12 @@ from pylib import constants
 class JavaTestRunner(object):
   """Runs java tests on the host."""
 
-  def __init__(self, options):
-    self._package_filter = options.package_filter
-    self._runner_filter = options.runner_filter
-    self._sdk_version = options.sdk_version
-    self._test_filter = options.test_filter
-    self._test_suite = options.test_suite
+  def __init__(self, args):
+    self._package_filter = args.package_filter
+    self._runner_filter = args.runner_filter
+    self._sdk_version = args.sdk_version
+    self._test_filter = args.test_filter
+    self._test_suite = args.test_suite
 
   def SetUp(self):
     pass
