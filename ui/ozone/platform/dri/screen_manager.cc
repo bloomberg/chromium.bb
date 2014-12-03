@@ -140,9 +140,7 @@ ScreenManager::FindActiveDisplayControllerByLocation(const gfx::Rect& bounds) {
        it != controllers_.end();
        ++it) {
     gfx::Rect controller_bounds((*it)->origin(), (*it)->GetModeSize());
-    // We don't perform a strict check since content_shell will have windows
-    // smaller than the display size.
-    if (controller_bounds.Contains(bounds) && !(*it)->IsDisabled())
+    if (controller_bounds == bounds && !(*it)->IsDisabled())
       return it;
   }
 

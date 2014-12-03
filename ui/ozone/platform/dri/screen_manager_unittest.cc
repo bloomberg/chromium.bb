@@ -250,3 +250,28 @@ TEST_F(ScreenManagerTest, MonitorGoneInMirrorMode) {
   EXPECT_TRUE(screen_manager_->GetDisplayController(GetPrimaryBounds()));
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
 }
+
+TEST_F(ScreenManagerTest, DoNotEnterMirrorModeUnlessSameBounds) {
+  screen_manager_->AddDisplayController(dri_.get(), kPrimaryCrtc,
+                                        kPrimaryConnector);
+  screen_manager_->AddDisplayController(dri_.get(), kSecondaryCrtc,
+                                        kSecondaryConnector);
+
+  // Configure displays in extended mode.
+  screen_manager_->ConfigureDisplayController(kPrimaryCrtc, kPrimaryConnector,
+                                              GetPrimaryBounds().origin(),
+                                              kDefaultMode);
+  screen_manager_->ConfigureDisplayController(
+      kSecondaryCrtc, kSecondaryConnector, GetSecondaryBounds().origin(),
+      kDefaultMode);
+
+  drmModeModeInfo new_mode = kDefaultMode;
+  new_mode.vdisplay = 10;
+  // Shouldn't enter mirror mode unless the display bounds are the same.
+  screen_manager_->ConfigureDisplayController(
+      kSecondaryCrtc, kSecondaryConnector, GetPrimaryBounds().origin(),
+      new_mode);
+
+  EXPECT_FALSE(
+      screen_manager_->GetDisplayController(GetPrimaryBounds())->IsMirrored());
+}
