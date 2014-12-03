@@ -441,8 +441,12 @@ int HttpCache::Transaction::Start(const HttpRequestInfo* request,
 
   // Setting this here allows us to check for the existence of a callback_ to
   // determine if we are still inside Start.
-  if (rv == ERR_IO_PENDING)
-    callback_ = callback;
+  if (rv == ERR_IO_PENDING) {
+    callback_ = tracked_objects::ScopedTracker::TrackCallback(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422516 HttpCache::Transaction::Start"),
+        callback);
+  }
 
   return rv;
 }
@@ -459,8 +463,12 @@ int HttpCache::Transaction::RestartIgnoringLastError(
 
   int rv = RestartNetworkRequest();
 
-  if (rv == ERR_IO_PENDING)
-    callback_ = callback;
+  if (rv == ERR_IO_PENDING) {
+    callback_ = tracked_objects::ScopedTracker::TrackCallback(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422516 HttpCache::Transaction::RestartIgnoringLastError"),
+        callback);
+  }
 
   return rv;
 }
@@ -478,8 +486,12 @@ int HttpCache::Transaction::RestartWithCertificate(
 
   int rv = RestartNetworkRequestWithCertificate(client_cert);
 
-  if (rv == ERR_IO_PENDING)
-    callback_ = callback;
+  if (rv == ERR_IO_PENDING) {
+    callback_ = tracked_objects::ScopedTracker::TrackCallback(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422516 HttpCache::Transaction::RestartWithCertificate"),
+        callback);
+  }
 
   return rv;
 }
@@ -501,8 +513,12 @@ int HttpCache::Transaction::RestartWithAuth(
 
   int rv = RestartNetworkRequestWithAuth(credentials);
 
-  if (rv == ERR_IO_PENDING)
-    callback_ = callback;
+  if (rv == ERR_IO_PENDING) {
+    callback_ = tracked_objects::ScopedTracker::TrackCallback(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422516 HttpCache::Transaction::RestartWithAuth"),
+        callback);
+  }
 
   return rv;
 }
@@ -560,7 +576,9 @@ int HttpCache::Transaction::Read(IOBuffer* buf, int buf_len,
 
   if (rv == ERR_IO_PENDING) {
     DCHECK(callback_.is_null());
-    callback_ = callback;
+    callback_ = tracked_objects::ScopedTracker::TrackCallback(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("422516 HttpCache::Transaction::Read"),
+        callback);
   }
   return rv;
 }
@@ -699,6 +717,11 @@ int HttpCache::Transaction::ResumeNetworkStart() {
 //-----------------------------------------------------------------------------
 
 void HttpCache::Transaction::DoCallback(int rv) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422516 HttpCache::Transaction::DoCallback"));
+
   DCHECK(rv != ERR_IO_PENDING);
   DCHECK(!callback_.is_null());
 
