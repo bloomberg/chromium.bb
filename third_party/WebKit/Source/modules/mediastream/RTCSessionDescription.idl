@@ -28,12 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/webrtc/#idl-def-RTCSessionDescription
+
+enum RTCSdpType {
+    "offer",
+    "pranswer",
+    "answer"
+};
+
 [
     GarbageCollected,
-    Constructor(optional Dictionary descriptionInitDict),
-    RaisesException=Constructor
+    Constructor(optional RTCSessionDescriptionInit descriptionInitDict)
 ] interface RTCSessionDescription {
-    [RaisesException=Setter] attribute DOMString? type;
+    attribute RTCSdpType? type;
     attribute DOMString? sdp;
 };
 

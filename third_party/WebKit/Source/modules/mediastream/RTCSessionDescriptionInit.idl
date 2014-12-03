@@ -1,0 +1,17 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// http://www.w3.org/TR/webrtc/#idl-def-RTCSessionDescription
+
+// FIXME: de-duplicate this when crbug.com/390758 is fixed.
+enum RTCSdpType {
+    "offer",
+    "pranswer",
+    "answer"
+};
+
+dictionary RTCSessionDescriptionInit {
+    RTCSdpType type;
+    DOMString sdp;
+};

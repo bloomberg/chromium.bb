@@ -37,17 +37,16 @@
 
 namespace blink {
 
-class Dictionary;
-class ExceptionState;
+class RTCSessionDescriptionInit;
 
 class RTCSessionDescription final : public GarbageCollectedFinalized<RTCSessionDescription>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RTCSessionDescription* create(const Dictionary&, ExceptionState&);
+    static RTCSessionDescription* create(const RTCSessionDescriptionInit&);
     static RTCSessionDescription* create(WebRTCSessionDescription);
 
     String type();
-    void setType(const String&, ExceptionState&);
+    void setType(const String&);
 
     String sdp();
     void setSdp(const String&);
