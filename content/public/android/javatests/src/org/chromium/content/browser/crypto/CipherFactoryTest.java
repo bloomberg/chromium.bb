@@ -7,6 +7,9 @@ package org.chromium.content.browser.crypto;
 import android.os.Bundle;
 import android.test.InstrumentationTestCase;
 
+import org.chromium.base.ThreadUtils;
+import org.chromium.content.browser.crypto.CipherFactory.CipherDataObserver;
+
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
@@ -44,7 +47,30 @@ public class CipherFactoryTest extends InstrumentationTestCase {
             return bytes;
         }
     }
+
+    /** A test implementation to verify observer is correctly notified. */
+    private static class TestCipherDataObserver implements CipherDataObserver {
+        private int mDataObserverNotifiedCount;
+
+        @Override
+        public void onCipherDataGenerated() {
+            mDataObserverNotifiedCount++;
+        }
+
+        /** Whether the cipher data observer has been notified that cipher data is generated. */
+        public int getTimesNotified() {
+            return mDataObserverNotifiedCount;
+        }
+    }
+
     private DeterministicParameterGenerator mNumberProvider;
+
+    private Runnable mEmptyRunnable = new Runnable() {
+        @Override
+        public void run() {
+            // Do nothing.
+        }
+    };
 
     /**
      * Overrides the {@link ByteArrayGenerator} used by the {@link CipherFactory} to ensure
@@ -205,6 +231,40 @@ public class CipherFactoryTest extends InstrumentationTestCase {
 
         // Confirm the saved keys match by restoring it.
         assertTrue(CipherFactory.getInstance().restoreFromBundle(afterBundle));
+    }
+
+    /**
+     * Checks that an observer is notified when cipher data is created.
+     */
+    public void testCipherFactoryObserver() throws Exception {
+        TestCipherDataObserver observer = new TestCipherDataObserver();
+        CipherFactory.getInstance().addCipherDataObserver(observer);
+        assertEquals(0, observer.getTimesNotified());
+        CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
+        ThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
+        assertEquals(1, observer.getTimesNotified());
+        CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
+        ThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
+        assertEquals(1, observer.getTimesNotified());
+        CipherFactory.getInstance().getCipher(Cipher.ENCRYPT_MODE);
+        ThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
+        assertEquals(1, observer.getTimesNotified());
+        CipherFactory.getInstance().removeCipherDataObserver(observer);
+    }
+
+    /**
+     * Verifies that if the observer is attached after cipher data has already been
+     * created the observer doesn't fire.
+     */
+    public void testCipherFactoryObserverTooLate() throws Exception {
+        CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
+        TestCipherDataObserver observer = new TestCipherDataObserver();
+        CipherFactory.getInstance().addCipherDataObserver(observer);
+        ThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
+        assertEquals(0, observer.getTimesNotified());
+        CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
+        ThreadUtils.runOnUiThreadBlocking(mEmptyRunnable);
+        assertEquals(0, observer.getTimesNotified());
     }
 
     /**
