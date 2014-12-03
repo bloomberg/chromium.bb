@@ -73,13 +73,6 @@ public abstract class InfoBar implements InfoBarView {
     }
 
     /**
-     * @return The message shown in the infobar, useful for accessibility.
-     */
-    public CharSequence getMessage() {
-        return mMessage;
-    }
-
-    /**
      * Stores a pointer to the native-side counterpart of this InfoBar.
      * @param nativeInfoBarPtr Pointer to the NativeInfoBar.
      */

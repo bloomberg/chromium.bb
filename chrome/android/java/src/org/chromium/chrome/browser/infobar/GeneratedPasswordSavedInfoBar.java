@@ -13,6 +13,7 @@ import android.view.View;
  * An infobar to notify that the generated password was saved.
  */
 public class GeneratedPasswordSavedInfoBar extends InfoBar {
+    private final String mMessageText;
     private final int mInlineLinkRangeStart;
     private final int mInlineLinkRangeEnd;
     private final String mButtonLabel;
@@ -28,8 +29,9 @@ public class GeneratedPasswordSavedInfoBar extends InfoBar {
      */
     public GeneratedPasswordSavedInfoBar(long nativeInfoBar, int iconDrawableId, String messageText,
             int inlineLinkRangeStart, int inlineLinkRangeEnd, String buttonLabel) {
-        super(null, iconDrawableId, messageText);
+        super(null, iconDrawableId, null);
         setNativeInfoBar(nativeInfoBar);
+        mMessageText = messageText;
         mInlineLinkRangeStart = inlineLinkRangeStart;
         mInlineLinkRangeEnd = inlineLinkRangeEnd;
         mButtonLabel = buttonLabel;
@@ -43,7 +45,7 @@ public class GeneratedPasswordSavedInfoBar extends InfoBar {
     @Override
     public void createContent(InfoBarLayout layout) {
         layout.setButtons(mButtonLabel, null);
-        SpannableString message = new SpannableString(getMessage());
+        SpannableString message = new SpannableString(mMessageText);
         message.setSpan(
                 new ClickableSpan() {
                     @Override
