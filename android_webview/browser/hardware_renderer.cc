@@ -142,6 +142,7 @@ void HardwareRenderer::DidBeginMainFrame() {
 }
 
 void HardwareRenderer::CommitFrame() {
+  TRACE_EVENT0("android_webview", "CommitFrame");
   scroll_offset_ = shared_renderer_state_->GetScrollOffsetOnRT();
   if (committed_frame_.get()) {
     TRACE_EVENT_INSTANT0("android_webview",

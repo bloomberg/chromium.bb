@@ -144,16 +144,23 @@ void BrowserViewRenderer::PrepareToDraw(const gfx::Vector2d& scroll,
 bool BrowserViewRenderer::OnDrawHardware() {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDrawHardware");
   shared_renderer_state_.InitializeHardwareDrawIfNeededOnUI();
-  if (!compositor_)
+  if (!compositor_) {
+    TRACE_EVENT_INSTANT0("android_webview", "EarlyOut_NoCompositor",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
+  }
 
   shared_renderer_state_.SetScrollOffsetOnUI(last_on_draw_scroll_offset_);
 
   if (!hardware_enabled_) {
+    TRACE_EVENT0("android_webview", "InitializeHwDraw");
     hardware_enabled_ = compositor_->InitializeHwDraw();
   }
-  if (!hardware_enabled_)
+  if (!hardware_enabled_) {
+    TRACE_EVENT_INSTANT0("android_webview", "EarlyOut_HardwareNotEnabled",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
+  }
 
   if (last_on_draw_global_visible_rect_.IsEmpty() &&
       parent_draw_constraints_.surface_rect.IsEmpty()) {
@@ -174,8 +181,11 @@ bool BrowserViewRenderer::OnDrawHardware() {
   }
 
   scoped_ptr<cc::CompositorFrame> frame = CompositeHw();
-  if (!frame.get())
+  if (!frame.get()) {
+    TRACE_EVENT_INSTANT0("android_webview", "NoNewFrame",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
+  }
 
   shared_renderer_state_.SetCompositorFrameOnUI(frame.Pass(), false);
   return true;

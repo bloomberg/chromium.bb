@@ -10,6 +10,7 @@
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/bind.h"
+#include "base/debug/trace_event_argument.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 
@@ -257,7 +258,10 @@ bool SharedRendererState::ReturnedResourcesEmptyOnUI() const {
 }
 
 void SharedRendererState::DrawGL(AwDrawGLInfo* draw_info) {
+  TRACE_EVENT0("android_webview", "DrawFunctor");
   if (draw_info->mode == AwDrawGLInfo::kModeSync) {
+    TRACE_EVENT_INSTANT0("android_webview", "kModeSync",
+                         TRACE_EVENT_SCOPE_THREAD);
     if (hardware_renderer_)
       hardware_renderer_->CommitFrame();
     return;

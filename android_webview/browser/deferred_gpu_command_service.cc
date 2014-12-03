@@ -152,6 +152,7 @@ DeferredGpuCommandService::shader_translator_cache() {
 }
 
 void DeferredGpuCommandService::RunTasks() {
+  TRACE_EVENT0("android_webview", "DeferredGpuCommandService::RunTasks");
   bool has_more_tasks;
   {
     base::AutoLock lock(tasks_lock_);

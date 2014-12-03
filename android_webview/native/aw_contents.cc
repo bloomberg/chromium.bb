@@ -881,8 +881,11 @@ bool AwContents::OnDraw(JNIEnv* env,
   }
 
   gfx::Size view_size = browser_view_renderer_.size();
-  if (view_size.IsEmpty())
+  if (view_size.IsEmpty()) {
+    TRACE_EVENT_INSTANT0("android_webview", "EarlyOut_EmptySize",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
+  }
 
   // TODO(hush): Right now webview size is passed in as the auxiliary bitmap
   // size, which might hurt performace (only for software draws with auxiliary
@@ -891,8 +894,11 @@ bool AwContents::OnDraw(JNIEnv* env,
   // viewspace.  Use the resulting rect as the auxiliary bitmap.
   scoped_ptr<SoftwareCanvasHolder> canvas_holder =
       SoftwareCanvasHolder::Create(canvas, scroll, view_size);
-  if (!canvas_holder || !canvas_holder->GetCanvas())
+  if (!canvas_holder || !canvas_holder->GetCanvas()) {
+    TRACE_EVENT_INSTANT0("android_webview", "EarlyOut_EmptySize",
+                         TRACE_EVENT_SCOPE_THREAD);
     return false;
+  }
   return browser_view_renderer_.OnDrawSoftware(canvas_holder->GetCanvas());
 }
 
