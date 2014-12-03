@@ -99,6 +99,8 @@
         'browser/shell_prefs.h',
         'browser/shell_runtime_api_delegate.cc',
         'browser/shell_runtime_api_delegate.h',
+        'browser/shell_screen.cc',
+        'browser/shell_screen.h',
         'browser/shell_special_storage_policy.cc',
         'browser/shell_special_storage_policy.h',
         'browser/shell_speech_recognition_manager_delegate.cc',
@@ -273,6 +275,7 @@
         'browser/shell_native_app_window_aura_unittest.cc',
         'browser/shell_oauth2_token_service_unittest.cc',
         'browser/shell_prefs_unittest.cc',
+        'browser/shell_screen_unittest.cc',
         'common/shell_content_client_unittest.cc'
       ],
       'conditions': [

@@ -20,7 +20,6 @@
 #endif
 
 namespace aura {
-class TestScreen;
 class Window;
 class WindowTreeHost;
 namespace client {
@@ -53,6 +52,7 @@ class UserActivityDetector;
 namespace extensions {
 class AppWindowClient;
 class Extension;
+class ShellScreen;
 
 // Handles desktop-related tasks for app_shell.
 class ShellDesktopControllerAura
@@ -114,7 +114,7 @@ class ShellDesktopControllerAura
   scoped_ptr<ui::DisplayConfigurator> display_configurator_;
 #endif
 
-  scoped_ptr<aura::TestScreen> test_screen_;
+  scoped_ptr<ShellScreen> screen_;
 
   scoped_ptr<aura::WindowTreeHost> host_;
 

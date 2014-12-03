@@ -13,11 +13,11 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/shell/browser/shell_app_delegate.h"
 #include "extensions/shell/browser/shell_app_window_client.h"
+#include "extensions/shell/browser/shell_screen.h"
 #include "extensions/shell/common/switches.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -301,14 +301,13 @@ void ShellDesktopControllerAura::CreateRootWindow() {
     size = GetPrimaryDisplaySize();
   }
   if (size.IsEmpty())
-    size = gfx::Size(1280, 720);
+    size = gfx::Size(1920, 1080);
 
-  test_screen_.reset(aura::TestScreen::Create(size));
-  // TODO(jamescook): Replace this with a real Screen implementation.
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
+  screen_.reset(new ShellScreen(size));
+  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
   // TODO(mukai): Set up input method.
 
-  host_.reset(test_screen_->CreateHostForPrimaryDisplay());
+  host_.reset(screen_->CreateHostForPrimaryDisplay());
   host_->InitHost();
   aura::client::SetWindowTreeClient(host_->window(), this);
   root_window_event_filter_.reset(new wm::CompoundEventFilter);
@@ -345,6 +344,7 @@ void ShellDesktopControllerAura::DestroyRootWindow() {
 #endif
   user_activity_detector_.reset();
   host_.reset();
+  screen_.reset();
 }
 
 gfx::Size ShellDesktopControllerAura::GetPrimaryDisplaySize() {
