@@ -71,9 +71,9 @@ PassRefPtr<Image> CSSGradientValue::image(RenderObject* renderer, const IntSize&
     RenderStyle* rootStyle = renderer->document().documentElement()->renderStyle();
     CSSToLengthConversionData conversionData(renderer->style(), rootStyle, renderer->view(), renderer->style()->effectiveZoom());
     if (isLinearGradientValue())
-        gradient = toCSSLinearGradientValue(this)->createGradient(conversionData, size);
+        gradient = toCSSLinearGradientValue(this)->createGradient(conversionData, size, *renderer);
     else
-        gradient = toCSSRadialGradientValue(this)->createGradient(conversionData, size);
+        gradient = toCSSRadialGradientValue(this)->createGradient(conversionData, size, *renderer);
 
     RefPtr<Image> newImage = GradientGeneratedImage::create(gradient, size);
     if (cacheable)
@@ -233,7 +233,7 @@ static void replaceColorHintsWithColorStops(WillBeHeapVector<GradientStop>& stop
     }
 }
 
-void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionData& conversionData, float maxLengthForRepeat)
+void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionData& conversionData, float maxLengthForRepeat, const RenderObject& object)
 {
     if (m_gradientType == CSSDeprecatedLinearGradient || m_gradientType == CSSDeprecatedRadialGradient) {
         sortStopsIfNeeded();
@@ -275,7 +275,7 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
         if (stop.isHint())
             hasHints = true;
         else
-            stops[i].color = stop.m_resolvedColor;
+            stops[i].color = object.document().textLinkColors().colorFromPrimitiveValue(stop.m_color.get(), object.style()->visitedDependentColor(CSSPropertyColor));
 
         if (stop.m_position) {
             if (stop.m_position->isPercentage())
@@ -767,7 +767,7 @@ static void endPointsFromAngle(float angleDeg, const IntSize& size, FloatPoint& 
     firstPoint.set(halfWidth - endX, halfHeight + endY);
 }
 
-PassRefPtr<Gradient> CSSLinearGradientValue::createGradient(const CSSToLengthConversionData& conversionData, const IntSize& size)
+PassRefPtr<Gradient> CSSLinearGradientValue::createGradient(const CSSToLengthConversionData& conversionData, const IntSize& size, const RenderObject& object)
 {
     ASSERT(!size.isEmpty());
 
@@ -828,7 +828,7 @@ PassRefPtr<Gradient> CSSLinearGradientValue::createGradient(const CSSToLengthCon
     gradient->setDrawsInPMColorSpace(true);
 
     // Now add the stops.
-    addStops(gradient.get(), conversionData, 1);
+    addStops(gradient.get(), conversionData, 1, object);
 
     return gradient.release();
 }
@@ -1112,7 +1112,7 @@ static inline float horizontalEllipseRadius(const FloatSize& p, float aspectRati
 }
 
 // FIXME: share code with the linear version
-PassRefPtr<Gradient> CSSRadialGradientValue::createGradient(const CSSToLengthConversionData& conversionData, const IntSize& size)
+PassRefPtr<Gradient> CSSRadialGradientValue::createGradient(const CSSToLengthConversionData& conversionData, const IntSize& size, const RenderObject& object)
 {
     ASSERT(!size.isEmpty());
 
@@ -1249,7 +1249,7 @@ PassRefPtr<Gradient> CSSRadialGradientValue::createGradient(const CSSToLengthCon
     }
 
     // Now add the stops.
-    addStops(gradient.get(), conversionData, maxExtent);
+    addStops(gradient.get(), conversionData, maxExtent, object);
 
     return gradient.release();
 }

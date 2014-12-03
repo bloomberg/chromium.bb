@@ -135,7 +135,7 @@ protected:
     {
     }
 
-    void addStops(Gradient*, const CSSToLengthConversionData&, float maxLengthForRepeat = 0);
+    void addStops(Gradient*, const CSSToLengthConversionData&, float maxLengthForRepeat, const RenderObject&);
 
     // Resolve points/radii to front end values.
     FloatPoint computeEndPoint(CSSPrimitiveValue*, CSSPrimitiveValue*, const CSSToLengthConversionData&, const IntSize&);
@@ -171,7 +171,7 @@ public:
     String customCSSText() const;
 
     // Create the gradient for a given size.
-    PassRefPtr<Gradient> createGradient(const CSSToLengthConversionData&, const IntSize&);
+    PassRefPtr<Gradient> createGradient(const CSSToLengthConversionData&, const IntSize&, const RenderObject&);
 
     PassRefPtrWillBeRawPtr<CSSLinearGradientValue> clone() const
     {
@@ -223,7 +223,7 @@ public:
     void setEndVerticalSize(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_endVerticalSize = val; }
 
     // Create the gradient for a given size.
-    PassRefPtr<Gradient> createGradient(const CSSToLengthConversionData&, const IntSize&);
+    PassRefPtr<Gradient> createGradient(const CSSToLengthConversionData&, const IntSize&, const RenderObject&);
 
     bool equals(const CSSRadialGradientValue&) const;
 
