@@ -36,7 +36,7 @@ PushMessagingMessageFilter::PushMessagingMessageFilter(
       render_process_id_(render_process_id),
       service_worker_context_(service_worker_context),
       service_(NULL),
-      weak_factory_(this) {
+      weak_factory_ui_to_ui_(this) {
 }
 
 PushMessagingMessageFilter::~PushMessagingMessageFilter() {}
@@ -84,8 +84,7 @@ void PushMessagingMessageFilter::OnRegisterFromDocument(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PushMessagingMessageFilter::RegisterFromDocumentOnUI,
-                 weak_factory_.GetWeakPtr(), render_frame_id, request_id,
-                 sender_id, user_gesture,
+                 this, render_frame_id, request_id, sender_id, user_gesture,
                  service_worker_host->active_version()->scope().GetOrigin(),
                  service_worker_host->active_version()->registration_id()));
 }
@@ -108,7 +107,7 @@ void PushMessagingMessageFilter::OnRegisterFromWorker(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PushMessagingMessageFilter::RegisterFromWorkerOnUI,
-                 weak_factory_.GetWeakPtr(), request_id, sender_id,
+                 this, request_id, sender_id,
                  service_worker_registration->pattern().GetOrigin(),
                  service_worker_registration_id));
 }
@@ -127,7 +126,7 @@ void PushMessagingMessageFilter::OnPermissionStatusRequest(
         BrowserThread::UI,
         FROM_HERE,
         base::Bind(&PushMessagingMessageFilter::DoPermissionStatusRequest,
-                   weak_factory_.GetWeakPtr(),
+                   this,
                    service_worker_host->active_version()->scope().GetOrigin(),
                    render_frame_id,
                    permission_callback_id));
@@ -151,7 +150,7 @@ void PushMessagingMessageFilter::OnGetPermissionStatus(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PushMessagingMessageFilter::GetPermissionStatusOnUI,
-                 weak_factory_.GetWeakPtr(),
+                 this,
                  service_worker_registration->pattern().GetOrigin(),
                  request_id));
 }
@@ -176,7 +175,8 @@ void PushMessagingMessageFilter::RegisterFromDocumentOnUI(
       requesting_origin, service_worker_registration_id, sender_id,
       render_process_id_, render_frame_id, user_gesture,
       base::Bind(&PushMessagingMessageFilter::DidRegisterFromDocument,
-                 weak_factory_.GetWeakPtr(), render_frame_id, request_id));
+                 weak_factory_ui_to_ui_.GetWeakPtr(),
+                 render_frame_id, request_id));
 }
 
 void PushMessagingMessageFilter::RegisterFromWorkerOnUI(
@@ -195,7 +195,7 @@ void PushMessagingMessageFilter::RegisterFromWorkerOnUI(
   service()->RegisterFromWorker(
       requesting_origin, service_worker_registration_id, sender_id,
       base::Bind(&PushMessagingMessageFilter::DidRegisterFromWorker,
-                 weak_factory_.GetWeakPtr(), request_id));
+                 weak_factory_ui_to_ui_.GetWeakPtr(), request_id));
 }
 
 void PushMessagingMessageFilter::DoPermissionStatusRequest(

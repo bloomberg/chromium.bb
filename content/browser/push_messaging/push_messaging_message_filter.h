@@ -87,7 +87,10 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   // Owned by the content embedder's browsing context.
   PushMessagingService* service_;
 
-  base::WeakPtrFactory<PushMessagingMessageFilter> weak_factory_;
+  // Should only be used for asynchronous calls to the PushMessagingService on
+  // the UI thread, which may have external dependencies that supersede the
+  // lifetime of this messaging filter.
+  base::WeakPtrFactory<PushMessagingMessageFilter> weak_factory_ui_to_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingMessageFilter);
 };
