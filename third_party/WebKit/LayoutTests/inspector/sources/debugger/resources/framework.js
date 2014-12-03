@@ -32,7 +32,7 @@ Framework.empty = function()
 
 Framework.doSomeWork = function()
 {
-    const numberOfSteps = 1024 / 8; // Should be in sync with maxSkipStepFrameCount in InspectorDebuggerAgent.cpp
+    const numberOfSteps = 50;
     for (var i = 0; i < numberOfSteps; ++i) {
         if (window["dummy property should not exist!" + i]) // Prevent optimizations.
             return i;
