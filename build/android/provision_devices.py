@@ -179,7 +179,7 @@ def ProvisionDevice(device, options, is_perf):
         logging.error('Unable to obtain battery info for %s, %s',
                       str(device), e)
 
-      while int(battery_info.get('level', 100)) < 95:
+      while int(battery_info.get('level', 100)) < options.min_battery_level:
         if not device.old_interface.IsDeviceCharging():
           if device.old_interface.CanControlUsbCharging():
             device.old_interface.EnableUsbCharging()
@@ -237,6 +237,9 @@ def main(argv):
   logging.getLogger().setLevel(logging.INFO)
 
   parser = optparse.OptionParser()
+  parser.add_option('--min-battery-level', default=95, type='int',
+                    help="Minimum battery level for performance testing "
+                         "(default: 95).")
   parser.add_option('--skip-wipe', action='store_true', default=False,
                     help="Don't wipe device data during provisioning.")
   parser.add_option('--disable-location', action='store_true', default=False,
