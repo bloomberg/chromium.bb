@@ -34,12 +34,8 @@ static_library("suggestions") {
   ]
 
   if (is_ios) {
-    sources += [
-      "image_encoder_ios.mm",
-    ]
+    sources += [ "image_encoder_ios.mm" ]
   } else {
-    sources += [
-      "image_encoder.cc",
-    ]
+    sources += [ "image_encoder.cc" ]
   }
 }

@@ -4,11 +4,10 @@
 
 import("//build/config/android/rules.gni")
 
-
 # GYP: //components/variations.gypi:variations_java
 android_library("variations_java") {
   deps = [
-    "//base:base_java"
+    "//base:base_java",
   ]
   DEPRECATED_java_in_dir = "java/src"
 }

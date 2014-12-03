@@ -16,6 +16,6 @@ static_library("common") {
     "//base",
     "//content/public/common",
     "//ipc",
-    "//url"
+    "//url",
   ]
 }

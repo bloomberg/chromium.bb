@@ -93,6 +93,7 @@ static_library("invalidation") {
 
     # TODO(sync): Remove this (http://crbug.com/133352);
     "//third_party/protobuf:protobuf_lite",
+
     # "//third_party/cacheinvalidation/src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
   ]
 
@@ -156,13 +157,12 @@ static_library("test_support") {
 
     # TODO(sync): Remove this (http://crbug.com/133352);
     "//third_party/protobuf:protobuf_lite",
+
     # "//third_party/cacheinvalidation/src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
   ]
 
   if (is_android) {
-    deps += [
-      ":jni_headers",
-    ]
+    deps += [ ":jni_headers" ]
   } else {
     sources += [
       "p2p_invalidation_service.cc",

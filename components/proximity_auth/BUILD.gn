@@ -65,6 +65,10 @@ source_set("unit_tests") {
 # Note: This is a convenience target for ease of rapid iteration during
 # development. It is not executed on any try or build bots.
 test("proximity_auth_unittests") {
-  sources = [ "run_all_unittests.cc" ]
-  deps = [ ":unit_tests" ]
+  sources = [
+    "run_all_unittests.cc",
+  ]
+  deps = [
+    ":unit_tests",
+  ]
 }

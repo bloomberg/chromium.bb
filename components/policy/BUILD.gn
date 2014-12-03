@@ -14,10 +14,14 @@ if (is_component_build) {
     ]
   }
   group("policy_component_browser") {
-    deps = [ ":policy_component" ]
+    deps = [
+      ":policy_component",
+    ]
   }
   group("policy_component_common") {
-    deps = [ ":policy_component" ]
+    deps = [
+      ":policy_component",
+    ]
   }
 } else {  # Compile to separate libraries.
   group("policy_component") {
@@ -27,10 +31,14 @@ if (is_component_build) {
     ]
   }
   component("policy_component_browser") {
-    deps = [ "//components/policy/core/browser" ]
+    deps = [
+      "//components/policy/core/browser",
+    ]
   }
   component("policy_component_common") {
-    deps = [ "//components/policy/core/common" ]
+    deps = [
+      "//components/policy/core/common",
+    ]
   }
 }
 
@@ -90,7 +98,9 @@ if (enable_configuration_policy) {
   }
 
   proto_library("cloud_policy_proto_generated_compile") {
-    sources = [ cloud_policy_proto_path ]
+    sources = [
+      cloud_policy_proto_path,
+    ]
 
     proto_out_dir = "policy/proto"
     cc_generator_options = "dllexport_decl=POLICY_PROTO_EXPORT:"
@@ -104,7 +114,9 @@ if (enable_configuration_policy) {
 
   # This target builds the "full" protobuf, used for tests only.
   proto_library("chrome_settings_proto_generated_compile") {
-    sources = [ chrome_settings_proto_path ]
+    sources = [
+      chrome_settings_proto_path,
+    ]
     proto_out_dir = "policy/proto"
 
     deps = [
@@ -182,5 +194,4 @@ if (enable_configuration_policy) {
     ]
   }
 }
-
 #TODO(GYP) policy templates, chrome_manifest_bundle

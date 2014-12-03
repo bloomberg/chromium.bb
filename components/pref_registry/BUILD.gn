@@ -9,9 +9,7 @@ component("pref_registry") {
     "pref_registry_syncable.h",
   ]
 
-  defines = [
-    "PREF_REGISTRY_IMPLEMENTATION",
-  ]
+  defines = [ "PREF_REGISTRY_IMPLEMENTATION" ]
 
   deps = [
     "//base",

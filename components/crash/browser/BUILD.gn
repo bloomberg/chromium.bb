@@ -14,6 +14,7 @@ source_set("browser") {
 
   if (is_linux || is_android) {
     set_sources_assignment_filter([])
+
     # Want this file on both Linux and Android.
     sources += [
       "crash_handler_host_linux.cc",
@@ -30,8 +31,7 @@ source_set("browser") {
 
   # This is not in the GYP build but this target includes breakpad client
   # headers, so add the dependency here.
-  if (is_posix && !is_ios &&
-             (!is_android || !is_android_webview_build)) {
+  if (is_posix && !is_ios && (!is_android || !is_android_webview_build)) {
     configs += [ "//breakpad:client_config" ]
     public_configs = [ "//breakpad:client_config" ]
   }

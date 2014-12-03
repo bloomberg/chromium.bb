@@ -43,9 +43,7 @@ source_set("enhanced_bookmarks") {
   ]
 
   if (is_ios) {
-    sources -= [
-      "image_store_util.cc",
-    ]
+    sources -= [ "image_store_util.cc" ]
   }
 }
 

@@ -16,6 +16,7 @@ group("resources") {
 #              (generate_components_resources action)
 grit("components_resources") {
   source = "components_resources.grd"
+
   # TODO(hashimoto): Remove this line.
   output_name = "components_resources_new"
   outputs = [
@@ -29,6 +30,7 @@ grit("components_resources") {
 #              (generate_scaled_components_resources action)
 grit("components_scaled_resources") {
   source = "components_scaled_resources.grd"
+
   # TODO(hashimoto): Remove this line.
   output_name = "components_scaled_resources_new"
   outputs = [

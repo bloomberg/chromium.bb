@@ -15,4 +15,3 @@ static_library("browser") {
     #'../ios/provider/ios_components.gyp:ios_components',  TODO(GYP)
   ]
 }
-

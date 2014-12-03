@@ -46,7 +46,7 @@ source_set("test_support") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
- ]
+  ]
 }
 
 source_set("unit_tests") {
@@ -70,5 +70,4 @@ source_set("unit_tests") {
 process_version("version_header") {
   source = "version.h.in"
   output = "$target_gen_dir/version.h"
-} 
-
+}

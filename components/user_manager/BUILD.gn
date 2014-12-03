@@ -19,9 +19,7 @@ component("user_manager") {
     "//ui/gfx",
   ]
 
-  defines = [
-    "USER_MANAGER_IMPLEMENTATION",
-  ]
+  defines = [ "USER_MANAGER_IMPLEMENTATION" ]
 
   if (is_chromeos) {
     sources += [

@@ -14,9 +14,7 @@ source_set("lib") {
     "crash_keys_win.h",
   ]
 
-  include_dirs = [
-    "../../../breakpad/src",
-  ]
+  include_dirs = [ "../../../breakpad/src" ]
 }
 
 # Note: if you depend on this target, you need to either link in
@@ -60,6 +58,7 @@ source_set("app") {
     deps += [
       "//sandbox",
       "//breakpad:breakpad_handler",
+
       #'../breakpad/breakpad.gyp:breakpad_sender',  TODO(GYP)
     ]
   } else if (is_posix && !is_ios && (!is_android || !is_android_webview_build)) {
@@ -68,5 +67,7 @@ source_set("app") {
 }
 
 source_set("test_support") {
-  deps = [ ":lib" ]
+  deps = [
+    ":lib",
+  ]
 }

@@ -19,6 +19,7 @@ source_set("os_crypt") {
   deps = [
     "//base",
     "//crypto",
+
     # TODO(tfarina): Remove this dep when http://crbug.com/363749 is fixed.
     "//crypto:platform",
   ]

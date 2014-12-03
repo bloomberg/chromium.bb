@@ -28,8 +28,6 @@ static_library("renderer") {
   ]
 
   if (is_win) {
-    cflags = [
-      "/wd4267"  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    ]
+    cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   }
 }

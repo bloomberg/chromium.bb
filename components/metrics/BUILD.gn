@@ -148,7 +148,9 @@ if (is_linux) {
       "serialization/metric_sample.cc",
       "serialization/metric_sample.h",
     ]
-    deps = [ "//base" ]
+    deps = [
+      "//base",
+    ]
   }
 }
 
@@ -179,5 +181,4 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
-
 # TODO(GYP): metrics_chromeos

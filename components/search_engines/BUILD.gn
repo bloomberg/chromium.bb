@@ -67,9 +67,7 @@ static_library("search_engines") {
       "default_search_policy_handler.cc",
       "default_search_policy_handler.h",
     ]
-    deps += [
-      "//components/policy",
-    ]
+    deps += [ "//components/policy" ]
   }
 }
 

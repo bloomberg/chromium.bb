@@ -10,14 +10,12 @@
 # it a properly-rebased path to //components so it can properly join the
 # paths relative to that and find the JSON files.
 
-baked_in_configs_gypi = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("baked_in_configs.gypi") ],
-    "scope",
-    [ "baked_in_configs.gypi" ])
-baked_in_configs = rebase_path(
-    baked_in_configs_gypi.baked_in_configs,
-    "domain_reliability")
+baked_in_configs_gypi = exec_script("//build/gypi_to_gn.py",
+                                    [ rebase_path("baked_in_configs.gypi") ],
+                                    "scope",
+                                    [ "baked_in_configs.gypi" ])
+baked_in_configs =
+    rebase_path(baked_in_configs_gypi.baked_in_configs, "domain_reliability")
 
 action("bake_in_configs") {
   visibility = [ ":*" ]

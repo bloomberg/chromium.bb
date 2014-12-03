@@ -23,5 +23,4 @@ static_library("browser") {
     "//components/translate/core/browser",
     "//content/public/browser",
   ]
-
 }

@@ -39,9 +39,7 @@ static_library("browser") {
     "//url",
   ]
   if (!is_android && !is_ios) {
-    deps += [ 
-      "//google_apis",
-    ]
+    deps += [ "//google_apis" ]
   }
 }
 

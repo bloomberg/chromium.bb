@@ -14,9 +14,7 @@ component("ownership") {
     "owner_settings_service.h",
   ]
 
-  defines = [
-    "OWNERSHIP_IMPLEMENTATION"
-  ]
+  defines = [ "OWNERSHIP_IMPLEMENTATION" ]
 
   deps = [
     "//base",
@@ -30,7 +28,9 @@ component("ownership") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = ["owner_key_util_impl_unittest.cc"]
+  sources = [
+    "owner_key_util_impl_unittest.cc",
+  ]
 
   deps = [
     ":ownership",

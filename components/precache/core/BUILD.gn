@@ -42,5 +42,7 @@ static_library("core") {
 }
 
 proto_library("proto") {
-  sources = [ "proto/precache.proto" ]
+  sources = [
+    "proto/precache.proto",
+  ]
 }

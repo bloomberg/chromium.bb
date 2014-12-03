@@ -13,7 +13,9 @@ source_set("android") {
     "component_jni_registrar.cc",
     "component_jni_registrar.h",
   ]
-  deps = [ ":bookmarks_jni_headers" ]
+  deps = [
+    ":bookmarks_jni_headers",
+  ]
 }
 
 # GYP: //components/bookmarks.gyp:bookmarks_java
@@ -21,9 +23,7 @@ android_library("bookmarks_java") {
   deps = [
     "//base:base_java",
   ]
-  srcjar_deps = [
-    ":bookmark_type_javagen",
-  ]
+  srcjar_deps = [ ":bookmark_type_javagen" ]
   DEPRECATED_java_in_dir = "java/src"
 }
 
@@ -31,7 +31,7 @@ android_library("bookmarks_java") {
 generate_jni("bookmarks_jni_headers") {
   jni_package = "components/bookmarks"
   sources = [
-    "java/src/org/chromium/components/bookmarks/BookmarkId.java"
+    "java/src/org/chromium/components/bookmarks/BookmarkId.java",
   ]
 }
 
@@ -40,7 +40,5 @@ java_cpp_enum("bookmark_type_javagen") {
   sources = [
     "bookmark_type.h",
   ]
-  outputs = [
-    "org/chromium/components/bookmarks/BookmarkType.java",
-  ]
+  outputs = [ "org/chromium/components/bookmarks/BookmarkType.java" ]
 }

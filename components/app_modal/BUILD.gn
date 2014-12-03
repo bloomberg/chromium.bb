@@ -16,7 +16,7 @@ static_library("app_modal") {
     "javascript_dialog_manager.cc",
     "javascript_dialog_manager.h",
     "javascript_native_dialog_factory.h",
-    "native_app_modal_dialog.h"
+    "native_app_modal_dialog.h",
   ]
 
   deps = [

@@ -10,9 +10,7 @@ component("login") {
     "screens/screen_context.h",
   ]
 
-  defines = [
-    "LOGIN_IMPLEMENTATION"
-  ]
+  defines = [ "LOGIN_IMPLEMENTATION" ]
 
   deps = [
     "//base",
@@ -21,7 +19,9 @@ component("login") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = ["screens/screen_context_unittest.cc"]
+  sources = [
+    "screens/screen_context_unittest.cc",
+  ]
 
   deps = [
     ":login",

@@ -61,9 +61,7 @@ static_library("browser") {
   }
 
   if (is_chromeos) {
-    sources -= [
-      "signin_manager.cc",
-    ]
+    sources -= [ "signin_manager.cc" ]
   }
 
   if (is_win) {

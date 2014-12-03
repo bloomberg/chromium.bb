@@ -47,7 +47,7 @@ source_set("unit_tests") {
 
   sources = [
     "google_url_tracker_unittest.cc",
-    "google_util_unittest.cc"
+    "google_util_unittest.cc",
   ]
 
   deps = [

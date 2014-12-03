@@ -4,7 +4,6 @@
 
 import("//build/config/android/rules.gni")
 
-
 # GYP: //components/dom_distiller.gypi:dom_distiller_core_java
 android_library("dom_distiller_core_java") {
   deps = [
@@ -23,10 +22,10 @@ android_library("dom_distiller_core_java") {
 java_cpp_template("dom_distiller_core_font_family_javagen") {
   package_name = "org/chromium/components/dom_distiller/core"
   sources = [
-    "java/src/org/chromium/components/dom_distiller/core/FontFamily.template"
+    "java/src/org/chromium/components/dom_distiller/core/FontFamily.template",
   ]
   inputs = [
-    "../core/font_family_list.h"
+    "../core/font_family_list.h",
   ]
 }
 
@@ -34,9 +33,9 @@ java_cpp_template("dom_distiller_core_font_family_javagen") {
 java_cpp_template("dom_distiller_core_theme_javagen") {
   package_name = "org/chromium/components/dom_distiller/core"
   sources = [
-    "java/src/org/chromium/components/dom_distiller/core/Theme.template"
+    "java/src/org/chromium/components/dom_distiller/core/Theme.template",
   ]
   inputs = [
-    "../core/theme_list.h"
+    "../core/theme_list.h",
   ]
 }

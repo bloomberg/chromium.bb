@@ -25,9 +25,7 @@ component("common") {
     "webdata_export.h",
   ]
 
-  defines = [
-    "WEBDATA_IMPLEMENTATION",
-  ]
+  defines = [ "WEBDATA_IMPLEMENTATION" ]
 
   deps = [
     "//base",
