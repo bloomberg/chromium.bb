@@ -506,7 +506,7 @@ int EcdsaMethodSign(const uint8_t* digest,
 
   // Ensure the DER-encoded signature fits in the bounds.
   int len = i2d_ECDSA_SIG(sig.get(), nullptr);
-  if (len < 0 || len > ECDSA_size(ec_key)) {
+  if (len < 0 || static_cast<size_t>(len) > ECDSA_size(ec_key)) {
     OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
     return 0;
   }

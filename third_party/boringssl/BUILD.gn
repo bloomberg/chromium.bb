@@ -46,6 +46,7 @@ component("boringssl") {
     "BORINGSSL_IMPLEMENTATION",
     "BORINGSSL_NO_STATIC_INITIALIZER",
   ]
+  deps = []
   if (is_component_build) {
     defines += [ "BORINGSSL_SHARED_LIBRARY" ]
   }

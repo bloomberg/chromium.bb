@@ -251,7 +251,7 @@ component("net") {
     }
     if (is_win) {
       sources -= [
-        "cert/cert/sha256_legacy_support_nss_win.cc",
+        "cert/sha256_legacy_support_nss_win.cc",
       ]
     }
   } else {
