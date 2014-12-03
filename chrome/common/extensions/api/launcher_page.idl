@@ -2,10 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The <code>chrome.launcherPage</code> API provides launcher pages in the App
-// Launcher with the capabilities and events they need.
+// The <code>chrome.launcherPage</code> API provides launcher pages in the
+// Chrome Launcher with the capabilities and events they need.
 namespace launcherPage {
+  callback PushSubpageCallback = void();
+  interface Functions {
+    // Pushes a subpage state onto a state stack for the launcher page. This
+    // state will be popped when the launcher's back button is pressed,
+    // preventing the launcher from hiding the launcher page and sending an
+    // onPopSubpage event to the launcher page. Once all states are popped, the
+    // next press of the back button will cause the launcher to be hidden.
+    //
+    // Note: All subpages are immediately popped when the launcher is closed or
+    // the launcher page is otherwise hidden.
+    static void pushSubpage(optional PushSubpageCallback callback);
+  };
+
   interface Events {
+    // Fired when the launcher page is transitioning between hidden and shown.
+    // It's possible for this to be called with a pushed subpage so this
+    // event handler should account for transitioning from any subpage to a
+    // collapsed view.
     static void onTransitionChanged(double progress);
+
+    // Fired when the launcher's back button is pressed if there are remaining
+    // subpages on the state stack pushed by pushSubpage().
+    static void onPopSubpage();
   };
 };

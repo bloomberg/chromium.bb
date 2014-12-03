@@ -986,6 +986,7 @@ enum HistogramValue {
   HOTWORDPRIVATE_SETAUDIOHISTORYENABLED,
   HOTWORDPRIVATE_GETAUDIOHISTORYENABLED,
   APP_CURRENTWINDOWINTERNAL_SETINTERCEPTALLKEYS,
+  LAUNCHERPAGE_PUSHSUBPAGE,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

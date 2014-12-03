@@ -3,10 +3,20 @@
 // found in the LICENSE file.
 
 chrome.launcherPage.onTransitionChanged.addListener(function(progress) {
-  if (progress == 0)
+  if (progress == 0) {
     chrome.test.sendMessage('onPageProgressAt0');
-  else if (progress == 1)
-    chrome.test.sendMessage('onPageProgressAt1');
+  } else if (progress == 1) {
+    // Push 2 launcher page subpages.
+    chrome.launcherPage.pushSubpage(function() {
+      chrome.launcherPage.pushSubpage(function() {
+        chrome.test.sendMessage('onPageProgressAt1');
+      });
+    });
+  }
 })
+
+chrome.launcherPage.onPopSubpage.addListener(function() {
+  chrome.test.sendMessage('onPopSubpage');
+});
 
 chrome.test.sendMessage('Launched');

@@ -55,6 +55,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate {
   std::vector<views::View*> CreateCustomPageWebViews(
       const gfx::Size& size) override;
   void CustomLauncherPageAnimationChanged(double progress) override;
+  void CustomLauncherPagePopSubpage() override;
   bool IsSpeechRecognitionEnabled() override;
   const Users& GetUsers() const override;
   bool ShouldCenterWindow() const override;

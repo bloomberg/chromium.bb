@@ -151,6 +151,9 @@ std::vector<views::View*> AppListViewDelegate::CreateCustomPageWebViews(
 void AppListViewDelegate::CustomLauncherPageAnimationChanged(double progress) {
 }
 
+void AppListViewDelegate::CustomLauncherPagePopSubpage() {
+}
+
 bool AppListViewDelegate::IsSpeechRecognitionEnabled() {
   return false;
 }

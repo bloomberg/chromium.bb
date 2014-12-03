@@ -61,6 +61,23 @@ class CustomLauncherPageBrowserTest
     service->ShowForProfile(browser()->profile());
   }
 
+  app_list::AppListView* GetAppListView() {
+    app_list::AppListView* app_list_view = nullptr;
+#if defined(OS_CHROMEOS)
+    ash::Shell* shell = ash::Shell::GetInstance();
+    app_list_view = shell->GetAppListView();
+    EXPECT_TRUE(shell->GetAppListTargetVisibility());
+#else
+    AppListServiceViews* service = static_cast<AppListServiceViews*>(
+        AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE));
+    // The app list should have loaded instantly since the profile is already
+    // loaded.
+    EXPECT_TRUE(service->IsAppListVisible());
+    app_list_view = service->shower().app_list();
+#endif
+    return app_list_view;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CustomLauncherPageBrowserTest);
 };
@@ -68,22 +85,7 @@ class CustomLauncherPageBrowserTest
 IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
                        OpenLauncherAndSwitchToCustomPage) {
   LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
-
-  app_list::AppListView* app_list_view = nullptr;
-#if defined(OS_CHROMEOS)
-  ash::Shell* shell = ash::Shell::GetInstance();
-  app_list_view = shell->GetAppListView();
-  EXPECT_TRUE(shell->GetAppListTargetVisibility());
-#else
-  AppListServiceViews* service = static_cast<AppListServiceViews*>(
-      AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE));
-  // The app list should have loaded instantly since the profile is already
-  // loaded.
-  EXPECT_TRUE(service->IsAppListVisible());
-  app_list_view = service->shower().app_list();
-#endif
-
-  ASSERT_NE(nullptr, app_list_view);
+  app_list::AppListView* app_list_view = GetAppListView();
   app_list::ContentsView* contents_view =
       app_list_view->app_list_main_view()->contents_view();
 
@@ -104,4 +106,53 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
 
     listener.WaitUntilSatisfied();
   }
+}
+
+IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSubpages) {
+  LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
+
+  app_list::AppListView* app_list_view = GetAppListView();
+  app_list::AppListModel* model = app_list_view->app_list_main_view()->model();
+  app_list::ContentsView* contents_view =
+      app_list_view->app_list_main_view()->contents_view();
+
+  ASSERT_TRUE(
+      contents_view->IsStateActive(app_list::AppListModel::STATE_START));
+
+  {
+    ExtensionTestMessageListener listener("onPageProgressAt1", false);
+    contents_view->SetActivePage(contents_view->GetPageIndexForState(
+        app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
+    listener.WaitUntilSatisfied();
+    EXPECT_TRUE(contents_view->IsStateActive(
+        app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
+    // The app pushes 2 subpages when the launcher page is shown.
+    EXPECT_EQ(2, model->custom_launcher_page_subpage_depth());
+  }
+
+  // Pop the subpages.
+  {
+    ExtensionTestMessageListener listener("onPopSubpage", false);
+    EXPECT_TRUE(contents_view->Back());
+    listener.WaitUntilSatisfied();
+    EXPECT_TRUE(contents_view->IsStateActive(
+        app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
+    EXPECT_EQ(1, model->custom_launcher_page_subpage_depth());
+  }
+  {
+    ExtensionTestMessageListener listener("onPopSubpage", false);
+    EXPECT_TRUE(contents_view->Back());
+    listener.WaitUntilSatisfied();
+    EXPECT_TRUE(contents_view->IsStateActive(
+        app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
+    EXPECT_EQ(0, model->custom_launcher_page_subpage_depth());
+  }
+
+  // Once all subpages are popped, the start page should show.
+  EXPECT_TRUE(contents_view->Back());
+
+  // Immediately finish the animation.
+  contents_view->Layout();
+  EXPECT_TRUE(
+      contents_view->IsStateActive(app_list::AppListModel::STATE_START));
 }

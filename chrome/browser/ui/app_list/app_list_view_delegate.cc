@@ -667,6 +667,11 @@ void AppListViewDelegate::CustomLauncherPageAnimationChanged(double progress) {
   if (launcher_page_event_dispatcher_)
     launcher_page_event_dispatcher_->ProgressChanged(progress);
 }
+
+void AppListViewDelegate::CustomLauncherPagePopSubpage() {
+  if (launcher_page_event_dispatcher_)
+    launcher_page_event_dispatcher_->PopSubpage();
+}
 #endif
 
 bool AppListViewDelegate::IsSpeechRecognitionEnabled() {

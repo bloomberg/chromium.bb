@@ -11,6 +11,7 @@
 
 namespace OnTransitionChanged =
     extensions::api::launcher_page::OnTransitionChanged;
+namespace OnPopSubpage = extensions::api::launcher_page::OnPopSubpage;
 
 namespace app_list {
 
@@ -26,6 +27,10 @@ LauncherPageEventDispatcher::~LauncherPageEventDispatcher() {
 void LauncherPageEventDispatcher::ProgressChanged(double progress) {
   SendEventToLauncherPage(OnTransitionChanged::kEventName,
                           OnTransitionChanged::Create(progress));
+}
+
+void LauncherPageEventDispatcher::PopSubpage() {
+  SendEventToLauncherPage(OnPopSubpage::kEventName, OnPopSubpage::Create());
 }
 
 void LauncherPageEventDispatcher::SendEventToLauncherPage(

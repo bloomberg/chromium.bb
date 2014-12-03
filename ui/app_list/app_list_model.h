@@ -129,6 +129,20 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   // false, removes any non-OEM folders.
   void SetFoldersEnabled(bool folders_enabled);
 
+  // Pushes a custom launcher page's subpage into the state stack in the model.
+  void PushCustomLauncherPageSubpage();
+
+  // If the state stack is not empty, pops a subpage from the stack and returns
+  // true. Returns false if the stack was empty.
+  bool PopCustomLauncherPageSubpage();
+
+  // Clears the custom launcher page's subpage state stack from the model.
+  void ClearCustomLauncherPageSubpages();
+
+  int custom_launcher_page_subpage_depth() {
+    return custom_launcher_page_subpage_depth_;
+  }
+
   // Filters the given |results| by |display_type|. The returned list is
   // truncated to |max_results|.
   static std::vector<SearchResult*> FilterSearchResultsByDisplayType(
@@ -184,6 +198,9 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   State state_;
   ObserverList<AppListModelObserver, true> observers_;
   bool folders_enabled_;
+
+  // The current number of subpages the custom launcher page has pushed.
+  int custom_launcher_page_subpage_depth_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListModel);
 };

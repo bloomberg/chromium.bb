@@ -144,8 +144,11 @@ class APP_LIST_EXPORT AppListViewDelegate {
   virtual std::vector<views::View*> CreateCustomPageWebViews(
       const gfx::Size& size) = 0;
 
-  // Invoked when the custom launcher's animation changes.
+  // Invoked when the custom launcher page's animation changes.
   virtual void CustomLauncherPageAnimationChanged(double progress) = 0;
+
+  // Invoked when the custom launcher page's subpage should be popped.
+  virtual void CustomLauncherPagePopSubpage() = 0;
 #endif
 
   // Returns true if the delegate supports speech recognition.

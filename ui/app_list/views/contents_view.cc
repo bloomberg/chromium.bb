@@ -188,12 +188,17 @@ void ContentsView::ActivePageChanged() {
 
   app_list_main_view_->model()->SetState(state);
 
-  // Set the visibility of the search box's back button.
   if (switches::IsExperimentalAppListEnabled()) {
     DCHECK(start_page_view_);
+
+    // Set the visibility of the search box's back button.
     app_list_main_view_->search_box_view()->back_button()->SetVisible(
         state != AppListModel::STATE_START);
     app_list_main_view_->search_box_view()->Layout();
+
+    // Whenever the page changes, the custom launcher page is considered to have
+    // been reset.
+    app_list_main_view_->model()->ClearCustomLauncherPageSubpages();
   }
 
   // TODO(xiyuan): Highlight default match instead of the first.
@@ -371,9 +376,10 @@ bool ContentsView::Back() {
       // Close the app list when Back() is called from the start page.
       return false;
     case AppListModel::STATE_CUSTOM_LAUNCHER_PAGE:
-      // TODO(calamity): send an API message to let the custom launcher page
-      // handle the back button if it wants to.
-      SetActivePage(GetPageIndexForState(AppListModel::STATE_START));
+      if (app_list_main_view_->model()->PopCustomLauncherPageSubpage())
+        app_list_main_view_->view_delegate()->CustomLauncherPagePopSubpage();
+      else
+        SetActivePage(GetPageIndexForState(AppListModel::STATE_START));
       break;
     case AppListModel::STATE_APPS:
       if (apps_container_view_->IsInFolderView())

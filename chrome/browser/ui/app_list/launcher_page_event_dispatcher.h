@@ -26,6 +26,7 @@ class LauncherPageEventDispatcher {
   ~LauncherPageEventDispatcher();
 
   void ProgressChanged(double progress);
+  void PopSubpage();
 
  private:
   void SendEventToLauncherPage(const std::string& event_name,
