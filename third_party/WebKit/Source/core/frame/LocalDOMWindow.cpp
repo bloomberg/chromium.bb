@@ -144,7 +144,7 @@ void LocalDOMWindow::WindowFrameObserver::willDetachFrameHost()
     m_window->willDetachFrameHost();
 }
 
-class PostMessageTimer final : public SuspendableTimer {
+class PostMessageTimer final : public NoBaseWillBeGarbageCollectedFinalized<PostMessageTimer>, public SuspendableTimer {
 public:
     PostMessageTimer(LocalDOMWindow& window, PassRefPtr<SerializedScriptValue> message, const String& sourceOrigin, PassRefPtrWillBeRawPtr<LocalDOMWindow> source, PassOwnPtr<MessagePortChannelArray> channels, SecurityOrigin* targetOrigin, PassRefPtrWillBeRawPtr<ScriptCallStack> stackTrace, UserGestureToken* userGestureToken)
         : SuspendableTimer(window.document())
@@ -170,6 +170,13 @@ public:
     UserGestureToken* userGestureToken() const { return m_userGestureToken.get(); }
     LocalDOMWindow* source() const { return m_source.get(); }
 
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_window);
+        visitor->trace(m_source);
+        visitor->trace(m_stackTrace);
+    }
+
 private:
     virtual void fired() override
     {
@@ -182,13 +189,13 @@ private:
     // FIXME: Oilpan: This raw pointer is safe because the PostMessageTimer is
     // owned by the LocalDOMWindow. Ideally PostMessageTimer should be moved to
     // the heap and use Member<LocalDOMWindow>.
-    LocalDOMWindow* m_window;
+    RawPtrWillBeMember<LocalDOMWindow> m_window;
     RefPtr<SerializedScriptValue> m_message;
     String m_origin;
-    RefPtrWillBePersistent<LocalDOMWindow> m_source;
+    RefPtrWillBeMember<LocalDOMWindow> m_source;
     OwnPtr<MessagePortChannelArray> m_channels;
     RefPtr<SecurityOrigin> m_targetOrigin;
-    RefPtrWillBePersistent<ScriptCallStack> m_stackTrace;
+    RefPtrWillBeMember<ScriptCallStack> m_stackTrace;
     RefPtr<UserGestureToken> m_userGestureToken;
     int m_asyncOperationId;
 };
@@ -896,7 +903,7 @@ void LocalDOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, cons
         stackTrace = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
 
     // Schedule the message.
-    OwnPtr<PostMessageTimer> timer = adoptPtr(new PostMessageTimer(*this, message, sourceOrigin, source, channels.release(), target.get(), stackTrace.release(), UserGestureIndicator::currentToken()));
+    OwnPtrWillBeRawPtr<PostMessageTimer> timer = adoptPtrWillBeNoop(new PostMessageTimer(*this, message, sourceOrigin, source, channels.release(), target.get(), stackTrace.release(), UserGestureIndicator::currentToken()));
     timer->startOneShot(0, FROM_HERE);
     timer->suspendIfNeeded();
     m_postMessageTimers.add(timer.release());
@@ -2004,6 +2011,7 @@ void LocalDOMWindow::trace(Visitor* visitor)
     visitor->trace(m_performance);
     visitor->trace(m_css);
     visitor->trace(m_eventQueue);
+    visitor->trace(m_postMessageTimers);
     HeapSupplementable<LocalDOMWindow>::trace(visitor);
 #endif
     DOMWindow::trace(visitor);

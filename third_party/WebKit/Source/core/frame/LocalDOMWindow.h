@@ -330,7 +330,7 @@ private:
     RefPtrWillBeMember<DOMWindowEventQueue> m_eventQueue;
     RefPtr<SerializedScriptValue> m_pendingStateObject;
 
-    HashSet<OwnPtr<PostMessageTimer> > m_postMessageTimers;
+    WillBeHeapHashSet<OwnPtrWillBeMember<PostMessageTimer> > m_postMessageTimers;
 };
 
 DEFINE_TYPE_CASTS(LocalDOMWindow, DOMWindow, x, x->isLocalDOMWindow(), x.isLocalDOMWindow());
