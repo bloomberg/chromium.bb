@@ -163,6 +163,8 @@ const char kVersion_HelpShort[] =
 // immediately if this switch is used.
 const char kVersion_Help[] = "";
 
+// -----------------------------------------------------------------------------
+
 SwitchInfo::SwitchInfo()
     : short_help(""),
       long_help("") {
@@ -173,23 +175,26 @@ SwitchInfo::SwitchInfo(const char* short_help, const char* long_help)
       long_help(long_help) {
 }
 
-const SwitchInfoMap& GetSwitches() {
-  static SwitchInfoMap* switches = NULL;
-  if (!switches) {
-    switches = new SwitchInfoMap;
+#define INSERT_VARIABLE(var) \
+    info_map[k##var] = SwitchInfo(k##var##_HelpShort, k##var##_Help);
 
-    (*switches)[kArgs] = SwitchInfo(kArgs_HelpShort, kArgs_Help);
-    (*switches)[kColor] = SwitchInfo(kColor_HelpShort, kColor_Help);
-    (*switches)[kDotfile] = SwitchInfo(kDotfile_HelpShort, kDotfile_Help);
-    (*switches)[kNoColor] = SwitchInfo(kNoColor_HelpShort, kNoColor_Help);
-    (*switches)[kRoot] = SwitchInfo(kRoot_HelpShort, kRoot_Help);
-    (*switches)[kQuiet] = SwitchInfo(kQuiet_HelpShort, kQuiet_Help);
-    (*switches)[kTime] = SwitchInfo(kTime_HelpShort, kTime_Help);
-    (*switches)[kTracelog] = SwitchInfo(kTracelog_HelpShort, kTracelog_Help);
-    (*switches)[kVerbose] = SwitchInfo(kVerbose_HelpShort, kVerbose_Help);
-    (*switches)[kVersion] = SwitchInfo(kVersion_HelpShort, kVersion_Help);
+const SwitchInfoMap& GetSwitches() {
+  static SwitchInfoMap info_map;
+  if (info_map.empty()) {
+    INSERT_VARIABLE(Args)
+    INSERT_VARIABLE(Color)
+    INSERT_VARIABLE(Dotfile)
+    INSERT_VARIABLE(NoColor)
+    INSERT_VARIABLE(Root)
+    INSERT_VARIABLE(Quiet)
+    INSERT_VARIABLE(Time)
+    INSERT_VARIABLE(Tracelog)
+    INSERT_VARIABLE(Verbose)
+    INSERT_VARIABLE(Version)
   }
-  return *switches;
+  return info_map;
 }
+
+#undef INSERT_VARIABLE
 
 }  // namespace switches

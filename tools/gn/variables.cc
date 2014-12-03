@@ -960,8 +960,8 @@ const char kVisibility_Help[] =
 // -----------------------------------------------------------------------------
 
 VariableInfo::VariableInfo()
-    : help_short(NULL),
-      help(NULL) {
+    : help_short(""),
+      help("") {
 }
 
 VariableInfo::VariableInfo(const char* in_help_short, const char* in_help)
