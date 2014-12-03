@@ -941,7 +941,7 @@ bool DesktopWindowTreeHostWin::HandleScrollEvent(
 
 void DesktopWindowTreeHostWin::HandleWindowSizeChanging() {
   if (compositor() && need_synchronous_paint_) {
-    compositor()->FinishAllRendering();
+    compositor()->DisableSwapUntilResize();
     // If we received the window size changing notification due to a restore or
     // maximize operation, then we can reset the need_synchronous_paint_ flag
     // here. For a sizing operation, the flag will be reset at the end of the

@@ -416,6 +416,9 @@ scoped_ptr<CompositorFrame> SurfaceAggregator::Aggregate(SurfaceId surface_id) {
   referenced_surfaces_.erase(it);
   DCHECK(referenced_surfaces_.empty());
 
+  if (dest_pass_list_->empty())
+    return nullptr;
+
   dest_pass_list_ = NULL;
   RemoveUnreferencedChildren();
   contained_surfaces_.swap(previous_contained_surfaces_);

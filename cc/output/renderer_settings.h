@@ -19,6 +19,7 @@ class CC_EXPORT RendererSettings {
   bool force_antialiasing;
   bool force_blending_with_shaders;
   bool partial_swap_enabled;
+  bool finish_rendering_on_resize;
   bool should_clear_root_render_pass;
   double refresh_rate;
   int highp_threshold_min;

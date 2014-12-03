@@ -51,9 +51,8 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
 
   // device_scale_factor is used to communicate to the external window system
   // what scale this was rendered at.
-  void Resize(SurfaceId id,
-              const gfx::Size& new_size,
-              float device_scale_factor);
+  void SetSurfaceId(SurfaceId id, float device_scale_factor);
+  void Resize(const gfx::Size& new_size);
   bool Draw();
 
   SurfaceId CurrentSurfaceId();

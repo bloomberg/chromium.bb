@@ -2301,8 +2301,15 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
     }
   }
 
-  if (DidClientAreaSizeChange(window_pos))
+  RECT window_rect;
+  gfx::Size old_size;
+  if (GetWindowRect(hwnd(), &window_rect))
+    old_size = gfx::Rect(window_rect).size();
+  gfx::Size new_size = gfx::Size(window_pos->cx, window_pos->cy);
+  if ((old_size != new_size && !(window_pos->flags & SWP_NOSIZE)) ||
+      window_pos->flags & SWP_FRAMECHANGED) {
     delegate_->HandleWindowSizeChanging();
+  }
 
   if (ScopedFullscreenVisibility::IsHiddenForFullscreen(hwnd())) {
     // Prevent the window from being made visible if we've been asked to do so.

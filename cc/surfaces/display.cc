@@ -49,12 +49,20 @@ bool Display::Initialize(scoped_ptr<OutputSurface> output_surface) {
   return output_surface_->BindToClient(this);
 }
 
-void Display::Resize(SurfaceId id,
-                     const gfx::Size& size,
-                     float device_scale_factor) {
+void Display::SetSurfaceId(SurfaceId id, float device_scale_factor) {
   current_surface_id_ = id;
-  current_surface_size_ = size;
   device_scale_factor_ = device_scale_factor;
+  client_->DisplayDamaged();
+}
+
+void Display::Resize(const gfx::Size& size) {
+  if (size == current_surface_size_)
+    return;
+  // Need to ensure all pending swaps have executed before the window is
+  // resized, or D3D11 will scale the swap output.
+  if (renderer_ && settings_.finish_rendering_on_resize)
+    renderer_->Finish();
+  current_surface_size_ = size;
   client_->DisplayDamaged();
 }
 
@@ -112,6 +120,9 @@ bool Display::Draw() {
   benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
   DelegatedFrameData* frame_data = frame->delegated_frame_data.get();
 
+  gfx::Size surface_size =
+      frame_data->render_pass_list.back()->output_rect.size();
+
   gfx::Rect device_viewport_rect = gfx::Rect(current_surface_size_);
   gfx::Rect device_clip_rect = device_viewport_rect;
   bool disable_picture_quad_image_filtering = false;
@@ -122,7 +133,14 @@ bool Display::Draw() {
                        device_viewport_rect,
                        device_clip_rect,
                        disable_picture_quad_image_filtering);
-  renderer_->SwapBuffers(frame->metadata);
+
+  bool disable_swap = surface_size != current_surface_size_;
+  if (disable_swap) {
+    DidSwapBuffers();
+  } else {
+    renderer_->SwapBuffers(frame->metadata);
+  }
+
   for (SurfaceAggregator::SurfaceIndexMap::iterator it =
            aggregator_->previous_contained_surfaces().begin();
        it != aggregator_->previous_contained_surfaces().end();
@@ -131,6 +149,8 @@ bool Display::Draw() {
     if (surface)
       surface->RunDrawCallbacks();
   }
+  if (disable_swap)
+    DidSwapBuffersComplete();
   return true;
 }
 

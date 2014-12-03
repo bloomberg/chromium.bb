@@ -15,6 +15,7 @@ RendererSettings::RendererSettings()
       force_antialiasing(false),
       force_blending_with_shaders(false),
       partial_swap_enabled(false),
+      finish_rendering_on_resize(false),
       should_clear_root_render_pass(true),
       refresh_rate(60.0),
       highp_threshold_min(0),

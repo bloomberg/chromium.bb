@@ -105,6 +105,10 @@ class COMPOSITOR_EXPORT ContextFactory {
 
   // Creates a Surface ID allocator with a new namespace.
   virtual scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() = 0;
+
+  // Resize the display corresponding to this compositor to a particular size.
+  virtual void ResizeDisplay(ui::Compositor* compositor,
+                             const gfx::Size& size) = 0;
 };
 
 // This class represents a lock on the compositor, that can be used to prevent
@@ -183,8 +187,9 @@ class COMPOSITOR_EXPORT Compositor
   // from changes to layer properties.
   void ScheduleRedrawRect(const gfx::Rect& damage_rect);
 
-  // Finishes all outstanding rendering on the GPU.
-  void FinishAllRendering();
+  // Finishes all outstanding rendering and disables swapping on this surface
+  // until it is resized.
+  void DisableSwapUntilResize();
 
   void SetLatencyInfo(const LatencyInfo& latency_info);
 

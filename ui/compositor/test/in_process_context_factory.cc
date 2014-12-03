@@ -165,4 +165,8 @@ InProcessContextFactory::CreateSurfaceIdAllocator() {
       new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
 }
 
+void InProcessContextFactory::ResizeDisplay(ui::Compositor* compositor,
+                                            const gfx::Size& size) {
+}
+
 }  // namespace ui

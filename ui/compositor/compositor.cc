@@ -109,6 +109,7 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
 #endif
 #if defined(OS_WIN)
   settings.disable_hi_res_timer_tasks_on_battery = true;
+  settings.renderer_settings.finish_rendering_on_resize = true;
 #endif
 
   // These flags should be mirrored by renderer versions in content/renderer/.
@@ -256,8 +257,9 @@ void Compositor::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
   host_->SetNeedsRedrawRect(damage_rect);
 }
 
-void Compositor::FinishAllRendering() {
+void Compositor::DisableSwapUntilResize() {
   host_->FinishAllRendering();
+  context_factory_->ResizeDisplay(this, gfx::Size());
 }
 
 void Compositor::SetLatencyInfo(const ui::LatencyInfo& latency_info) {
@@ -272,6 +274,7 @@ void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
     size_ = size_in_pixel;
     host_->SetViewportSize(size_in_pixel);
     root_web_layer_->SetBounds(size_in_pixel);
+    context_factory_->ResizeDisplay(this, size_in_pixel);
   }
   if (device_scale_factor_ != scale) {
     device_scale_factor_ = scale;

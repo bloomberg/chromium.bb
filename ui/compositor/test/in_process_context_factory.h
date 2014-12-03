@@ -47,6 +47,8 @@ class InProcessContextFactory : public ContextFactory {
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   base::MessageLoopProxy* GetCompositorMessageLoop() override;
   scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
+  void ResizeDisplay(ui::Compositor* compositor,
+                     const gfx::Size& size) override;
 
  private:
   scoped_ptr<base::Thread> compositor_thread_;
