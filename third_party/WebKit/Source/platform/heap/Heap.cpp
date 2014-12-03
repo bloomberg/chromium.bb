@@ -2006,6 +2006,17 @@ public:
         // when called within.
         ASSERT(!Heap::isInGC() || Heap::containedInHeapOrOrphanedPage(header));
 
+        if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))
+            return;
+
+        // If you hit this ASSERT, it means that there is a dangling pointer
+        // from a live thread heap to a dead thread heap. We must eliminate
+        // the dangling pointer.
+        // Release builds don't have the ASSERT, but it is OK because
+        // release builds will crash in the following header->isMarked()
+        // because all the entries of the orphaned heaps are zapped.
+        ASSERT(!pageFromObject(objectPointer)->orphaned());
+
         if (header->isMarked())
             return;
         header->mark();
@@ -2021,18 +2032,6 @@ public:
         ASSERT(result.isNewEntry);
         // fprintf(stderr, "%s[%p] -> %s[%p]\n", m_hostName.ascii().data(), m_hostObject, className.ascii().data(), objectPointer);
 #endif
-        // If you hit this ASSERT, it means that there is a dangling pointer
-        // from a live thread heap to a dead thread heap. We must eliminate
-        // the dangling pointer.
-        // Release builds don't have the ASSERT, but it is OK because
-        // release builds will crash upon invoking the trace callback
-        // as all the entries of the orphaned heaps are zeroed out
-        // (=> 'objectPointer' will not have a valid vtable.)
-        ASSERT(!pageFromObject(objectPointer)->orphaned());
-
-        if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))
-            return;
-
         if (callback)
             Heap::pushTraceCallback(m_markingStack, const_cast<void*>(objectPointer), callback);
     }
@@ -2087,6 +2086,8 @@ public:
     {
         if (!objectPointer)
             return false;
+        if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))
+            return false;
 #if ENABLE(ASSERT)
         if (isMarked(objectPointer))
             return false;
@@ -2101,8 +2102,6 @@ public:
             return false;
         header->mark();
 #endif
-        if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))
-            return false;
         return true;
     }
 
@@ -2113,11 +2112,11 @@ public:
         if (!objectPointer)                                                                     \
             return false;                                                                       \
         COMPILE_ASSERT(!NeedsAdjustAndMark<Type>::value, CanOnlyUseIsMarkedOnNonAdjustedTypes); \
+        if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))        \
+            return false;                                                                       \
         if (isMarked(objectPointer))                                                            \
             return false;                                                                       \
         markNoTracing(objectPointer);                                                           \
-        if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))        \
-            return false;                                                                       \
         return true;                                                                            \
     }
 #else
@@ -2126,13 +2125,13 @@ public:
     {                                                                                           \
         if (!objectPointer)                                                                     \
             return false;                                                                       \
+        if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))        \
+            return false;                                                                       \
         HeapObjectHeader* header =                                                              \
             HeapObjectHeader::fromPayload(objectPointer);                                       \
         if (header->isMarked())                                                                 \
             return false;                                                                       \
         header->mark();                                                                         \
-        if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))        \
-            return false;                                                                       \
         return true;                                                                            \
     }
 #endif
