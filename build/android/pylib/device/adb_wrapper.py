@@ -45,6 +45,8 @@ class AdbWrapper(object):
     Args:
       device_serial: The device serial number as a string.
     """
+    if not device_serial:
+      raise ValueError('A device serial must be specified')
     self._device_serial = str(device_serial)
 
   # pylint: disable=unused-argument

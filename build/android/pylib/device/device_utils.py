@@ -65,8 +65,8 @@ class DeviceUtils(object):
     """DeviceUtils constructor.
 
     Args:
-      device: Either a device serial, an existing AdbWrapper instance, an
-              an existing AndroidCommands instance, or nothing.
+      device: Either a device serial, an existing AdbWrapper instance, or an
+              an existing AndroidCommands instance.
       default_timeout: An integer containing the default number of seconds to
                        wait for an operation to complete if no explicit value
                        is provided.
@@ -85,11 +85,8 @@ class DeviceUtils(object):
     elif isinstance(device, pylib.android_commands.AndroidCommands):
       self.adb = adb_wrapper.AdbWrapper(device.GetDevice())
       self.old_interface = device
-    elif not device:
-      self.adb = adb_wrapper.AdbWrapper('')
-      self.old_interface = pylib.android_commands.AndroidCommands()
     else:
-      raise ValueError('Unsupported type passed for argument "device"')
+      raise ValueError('Unsupported device value: %r' % device)
     self._commands_installed = None
     self._default_timeout = default_timeout
     self._default_retries = default_retries
@@ -1145,12 +1142,7 @@ class DeviceUtils(object):
 
   def __str__(self):
     """Returns the device serial."""
-    s = self.old_interface.GetDevice()
-    if not s:
-      s = self.old_interface.Adb().GetSerialNumber()
-      if s == 'unknown':
-        raise device_errors.NoDevicesError()
-    return s
+    return self.adb.GetDeviceSerial()
 
   @staticmethod
   def parallel(devices=None, async=False):

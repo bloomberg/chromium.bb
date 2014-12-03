@@ -43,28 +43,30 @@ class DeviceUtilsTest(unittest.TestCase):
   def testInitWithStr(self):
     serial_as_str = str('0123456789abcdef')
     d = device_utils.DeviceUtils('0123456789abcdef')
-    self.assertEqual(serial_as_str, d.old_interface.GetDevice())
+    self.assertEqual(serial_as_str, d.adb.GetDeviceSerial())
 
   def testInitWithUnicode(self):
     serial_as_unicode = unicode('fedcba9876543210')
     d = device_utils.DeviceUtils(serial_as_unicode)
-    self.assertEqual(serial_as_unicode, d.old_interface.GetDevice())
+    self.assertEqual(serial_as_unicode, d.adb.GetDeviceSerial())
 
   def testInitWithAdbWrapper(self):
     serial = '123456789abcdef0'
     a = adb_wrapper.AdbWrapper(serial)
     d = device_utils.DeviceUtils(a)
-    self.assertEqual(serial, d.old_interface.GetDevice())
+    self.assertEqual(serial, d.adb.GetDeviceSerial())
 
   def testInitWithAndroidCommands(self):
     serial = '0fedcba987654321'
     a = android_commands.AndroidCommands(device=serial)
     d = device_utils.DeviceUtils(a)
-    self.assertEqual(serial, d.old_interface.GetDevice())
+    self.assertEqual(serial, d.adb.GetDeviceSerial())
 
-  def testInitWithNone(self):
-    d = device_utils.DeviceUtils(None)
-    self.assertIsNone(d.old_interface.GetDevice())
+  def testInitWithMissing_fails(self):
+    with self.assertRaises(ValueError):
+      device_utils.DeviceUtils(None)
+    with self.assertRaises(ValueError):
+      device_utils.DeviceUtils('')
 
 
 class MockTempFile(object):
@@ -246,7 +248,7 @@ class DeviceUtilsNewImplTest(mock_calls.TestCase):
     self.adb.GetDeviceSerial.return_value = test_serial
     self.device = device_utils.DeviceUtils(
         self.adb, default_timeout=10, default_retries=0)
-    self.watchMethodCalls(self.call.adb)
+    self.watchMethodCalls(self.call.adb, ignore=['GetDeviceSerial'])
 
   def ShellError(self, output=None, exit_code=1):
     def action(cmd, *args, **kwargs):
@@ -1524,22 +1526,12 @@ class DeviceUtilsGetMemoryUsageForPidTest(DeviceUtilsOldImplTest):
       self.assertEqual({}, self.device.GetMemoryUsageForPid(4321))
 
 
-class DeviceUtilsStrTest(DeviceUtilsOldImplTest):
+class DeviceUtilsStrTest(DeviceUtilsNewImplTest):
 
-  def testStr_noAdbCalls(self):
-    with self.assertNoAdbCalls():
+  def testStr_returnsSerial(self):
+    with self.assertCalls(
+        (self.call.adb.GetDeviceSerial(), '0123456789abcdef')):
       self.assertEqual('0123456789abcdef', str(self.device))
-
-  def testStr_noSerial(self):
-    self.device = device_utils.DeviceUtils(None)
-    with self.assertCalls('adb  get-serialno', '0123456789abcdef'):
-      self.assertEqual('0123456789abcdef', str(self.device))
-
-  def testStr_noSerial_noDevices(self):
-    self.device = device_utils.DeviceUtils(None)
-    with self.assertCalls('adb  get-serialno', 'unknown'), (
-         self.assertRaises(device_errors.NoDevicesError)):
-      str(self.device)
 
 
 if __name__ == '__main__':

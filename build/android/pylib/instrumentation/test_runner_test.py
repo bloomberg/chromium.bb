@@ -27,7 +27,8 @@ class InstrumentationTestRunnerTest(unittest.TestCase):
     options = mock.Mock()
     options.tool = ''
     package = mock.Mock()
-    self.instance = test_runner.TestRunner(options, None, 0, package)
+    self.instance = test_runner.TestRunner(
+        options, '123456789abcdef0', 0, package)
 
   def testParseAmInstrumentRawOutput_nothing(self):
     code, result, statuses = (
@@ -226,6 +227,8 @@ class InstrumentationTestRunnerTest(unittest.TestCase):
         'test': ['testMethod'],
       }),
     ]
+    self.instance.device.old_interface.DismissCrashDialogIfNeeded = mock.Mock(
+        return_value=None)
     result = self.instance._GenerateTestResult(
         'test.package.TestClass#testMethod', statuses, 0, 1000)
     self.assertEqual(base_test_result.ResultType.FAIL, result.GetType())
