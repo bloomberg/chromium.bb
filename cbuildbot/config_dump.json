@@ -35244,7 +35244,7 @@
         "description": "Release Builds (canary) (internal)",
         "dev_installer_prebuilts": true,
         "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"moblab\",\n    \"timeout\": 13200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"moblab\",\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"timeout\": 13200,\n    \"warn_only\": true\n}",
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"timeout\": 13200,\n    \"warn_only\": true\n}"
         ],
