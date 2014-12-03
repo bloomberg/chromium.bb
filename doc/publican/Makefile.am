@@ -93,12 +93,12 @@ en-US/%API.xml.tmp: $(top_builddir)/doc/doxygen/xml/%/index.xml
 
 # WaylandClientAPI.xml:
 # merge doxygen xml files into one single file, then transform the combined XML file into docbook format
-en-US/WaylandClientAPI.xml: en-US/clientAPI.xml.tmp $(top_builddir)/doc/doxygen/xml/client/index.xml $(srcdir)/doxygen-to-publican.xsl
+en-US/WaylandClientAPI.xml: en-US/clientAPI.xml.tmp $(srcdir)/doxygen-to-publican.xsl
 	$(AM_V_GEN)$(XSLTPROC)  --stringparam which Client $(srcdir)/doxygen-to-publican.xsl \
 		$(builddir)/en-US/clientAPI.xml.tmp > en-US/WaylandClientAPI.xml
 
 # WaylandServerAPI.xml: see WaylandClientAPI.xml
-en-US/WaylandServerAPI.xml: en-US/serverAPI.xml.tmp $(top_builddir)/doc/doxygen/xml/client/index.xml $(srcdir)/doxygen-to-publican.xsl
+en-US/WaylandServerAPI.xml: en-US/serverAPI.xml.tmp $(srcdir)/doxygen-to-publican.xsl
 	$(AM_V_GEN)$(XSLTPROC) --stringparam which Server $(srcdir)/doxygen-to-publican.xsl \
 		$(builddir)/en-US/serverAPI.xml.tmp > en-US/WaylandServerAPI.xml
 
