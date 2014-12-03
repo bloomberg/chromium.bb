@@ -108,26 +108,11 @@ public class OmniboxUrlEmphasizer {
 
     /**
      * Make the whole url greyed out (trailing url color).
-     * TODO(sashab): Remove this method. For backwards compatibility only.
      *
      * @param url The URL spannable to grey out. This variable is modified.
      * @param resources Resources for the given application context.
      */
     public static void greyOutUrl(Spannable url, Resources resources) {
-        UrlEmphasisColorSpan span = new UrlEmphasisColorSpan(
-                resources.getColor(R.color.url_emphasis_trailing_url));
-        url.setSpan(span, 0, url.toString().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-    }
-
-    /**
-     * Make the whole url greyed out (trailing url color).
-     *
-     * @param url The URL spannable to grey out. This variable is modified.
-     * @param resources Resources for the given application context.
-     * @param useDarkColors Whether the text colors should be dark (i.e.
-     *                      appropriate for use on a light background).
-     */
-    public static void greyOutUrl(Spannable url, Resources resources, boolean useDarkColors) {
         UrlEmphasisColorSpan span = new UrlEmphasisColorSpan(
                 resources.getColor(R.color.url_emphasis_trailing_url));
         url.setSpan(span, 0, url.toString().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -153,11 +138,6 @@ public class OmniboxUrlEmphasizer {
         EmphasizeComponentsResponse emphasizeResponse =
                 parseForEmphasizeComponents(profile, urlString);
 
-        int nonEmphasizedColorId = R.color.url_emphasis_non_emphasized_text;
-        if (!useDarkColors) {
-            nonEmphasizedColorId = R.color.url_emphasis_light_non_emphasized_text;
-        }
-
         int startSchemeIndex = emphasizeResponse.schemeStart;
         int endSchemeIndex = emphasizeResponse.schemeStart + emphasizeResponse.schemeLength;
 
@@ -167,11 +147,13 @@ public class OmniboxUrlEmphasizer {
         // Add the https scheme highlight
         ForegroundColorSpan span;
         if (emphasizeResponse.hasScheme()) {
-            int colorId = nonEmphasizedColorId;
-            if (!isInternalPage) {
+            int colorId = R.color.url_emphasis_scheme_to_domain;
+            if (isInternalPage) {
+                colorId = R.color.url_emphasis_trailing_url;
+            } else {
                 switch (securityLevel) {
                     case ToolbarModelSecurityLevel.NONE:
-                        colorId = nonEmphasizedColorId;
+                        colorId = R.color.url_emphasis_scheme_to_domain;
                         break;
                     case ToolbarModelSecurityLevel.SECURITY_WARNING:
                         colorId = R.color.url_emphasis_start_scheme_security_warning;
@@ -200,7 +182,8 @@ public class OmniboxUrlEmphasizer {
             // https, this will be ://. For normal pages, this will be empty as we trim off
             // http://.
             if (emphasizeResponse.hasHost()) {
-                span = new UrlEmphasisColorSpan(resources.getColor(nonEmphasizedColorId));
+                span = new UrlEmphasisColorSpan(
+                        resources.getColor(R.color.url_emphasis_scheme_to_domain));
                 url.setSpan(span, endSchemeIndex, startHostIndex,
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
@@ -217,7 +200,8 @@ public class OmniboxUrlEmphasizer {
 
             // Highlight the remainder of the URL.
             if (endHostIndex < urlString.length()) {
-                span = new UrlEmphasisColorSpan(resources.getColor(nonEmphasizedColorId));
+                span = new UrlEmphasisColorSpan(
+                        resources.getColor(R.color.url_emphasis_trailing_url));
                 url.setSpan(span, endHostIndex, urlString.length(),
                         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
