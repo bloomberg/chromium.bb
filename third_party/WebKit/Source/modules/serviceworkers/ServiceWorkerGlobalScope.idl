@@ -45,6 +45,8 @@ typedef (Request or USVString) RequestInfo;
 
   [RaisesException] void close();
 
+  [CallWith=ScriptState] Promise skipWaiting();
+
   attribute EventHandler onactivate;
   [RuntimeEnabled=ServiceWorkerOnFetch] attribute EventHandler onfetch;
   attribute EventHandler oninstall;

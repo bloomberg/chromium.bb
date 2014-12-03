@@ -50,10 +50,27 @@
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebServiceWorkerSkipWaitingCallbacks.h"
 #include "public/platform/WebURL.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
+
+class ServiceWorkerGlobalScope::SkipWaitingCallback final : public WebServiceWorkerSkipWaitingCallbacks {
+    WTF_MAKE_NONCOPYABLE(SkipWaitingCallback);
+public:
+    explicit SkipWaitingCallback(PassRefPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver) { }
+    ~SkipWaitingCallback() { }
+
+    void onSuccess() override
+    {
+        m_resolver->resolve();
+    }
+
+private:
+    RefPtr<ScriptPromiseResolver> m_resolver;
+};
 
 PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::create(ServiceWorkerThread* thread, PassOwnPtrWillBeRawPtr<WorkerThreadStartupData> startupData)
 {
@@ -125,6 +142,16 @@ ServiceWorkerClients* ServiceWorkerGlobalScope::clients()
 void ServiceWorkerGlobalScope::close(ExceptionState& exceptionState)
 {
     exceptionState.throwDOMException(InvalidAccessError, "Not supported.");
+}
+
+ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* scriptState)
+{
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    ExecutionContext* executionContext = scriptState->executionContext();
+    ServiceWorkerGlobalScopeClient::from(executionContext)->skipWaiting(new SkipWaitingCallback(resolver));
+    return promise;
 }
 
 bool ServiceWorkerGlobalScope::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)

@@ -33,10 +33,10 @@
 
 #include "core/dom/MessagePort.h"
 #include "core/workers/WorkerClients.h"
-#include "public/platform/WebCallbacks.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "public/platform/WebServiceWorkerEventResult.h"
+#include "public/platform/WebServiceWorkerSkipWaitingCallbacks.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
@@ -67,6 +67,7 @@ public:
     virtual void didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult) = 0;
     virtual void didHandleSyncEvent(int syncEventID) = 0;
     virtual void postMessageToClient(int clientID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) = 0;
+    virtual void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) = 0;
 
     static const char* supplementName();
     static ServiceWorkerGlobalScopeClient* from(ExecutionContext*);

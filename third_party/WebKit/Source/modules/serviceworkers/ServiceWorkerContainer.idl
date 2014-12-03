@@ -33,11 +33,12 @@
     RuntimeEnabled=ServiceWorker,
     GarbageCollected,
     TypeChecking=Interface,
-] interface ServiceWorkerContainer {
+] interface ServiceWorkerContainer : EventTarget {
     [Unforgeable] readonly attribute ServiceWorker? controller;
     [CallWith=ScriptState] readonly attribute Promise<ServiceWorkerRegistration> ready;
 
     [CallWith=ScriptState, ImplementedAs=registerServiceWorker] Promise<ServiceWorkerRegistration> register(USVString url, optional RegistrationOptions options);
-
     [CallWith=ScriptState] Promise<ServiceWorkerRegistration> getRegistration(optional USVString documentURL = "");
+
+    attribute EventHandler oncontrollerchange;
 };

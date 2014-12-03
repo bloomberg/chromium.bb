@@ -35,6 +35,7 @@
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "public/platform/WebServiceWorkerEventResult.h"
+#include "public/platform/WebServiceWorkerSkipWaitingCallbacks.h"
 #include "public/platform/WebURL.h"
 
 namespace blink {
@@ -149,6 +150,10 @@ public:
     // Callee receives ownership of the passed vector.
     // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
     virtual void postMessageToClient(int clientID, const WebString&, WebMessagePortChannelArray*) { BLINK_ASSERT_NOT_REACHED(); }
+
+    // Ownership of the passed callbacks is transferred to the callee, callee
+    // should delete the callbacks after run.
+    virtual void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
 } // namespace blink

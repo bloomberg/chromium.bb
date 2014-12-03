@@ -42,6 +42,7 @@
 #include "core/dom/MessagePort.h"
 #include "core/events/MessageEvent.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "modules/EventTargetModules.h"
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
@@ -100,6 +101,7 @@ void ServiceWorkerContainer::trace(Visitor* visitor)
     visitor->trace(m_controller);
     visitor->trace(m_readyRegistration);
     visitor->trace(m_ready);
+    EventTargetWithInlineData::trace(visitor);
 }
 
 ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptState, const String& url, const RegistrationOptions& options)
@@ -232,13 +234,15 @@ static void deleteIfNoExistingOwner(WebServiceWorker* serviceWorker)
         delete serviceWorker;
 }
 
-void ServiceWorkerContainer::setController(WebServiceWorker* serviceWorker)
+void ServiceWorkerContainer::setController(WebServiceWorker* serviceWorker, bool shouldNotifyControllerChange)
 {
     if (!executionContext()) {
         deleteIfNoExistingOwner(serviceWorker);
         return;
     }
     m_controller = ServiceWorker::from(executionContext(), serviceWorker);
+    if (shouldNotifyControllerChange)
+        dispatchEvent(Event::create(EventTypeNames::controllerchange));
 }
 
 void ServiceWorkerContainer::setReadyRegistration(WebServiceWorkerRegistration* registration)
@@ -269,6 +273,11 @@ void ServiceWorkerContainer::dispatchMessageEvent(const WebString& message, cons
     OwnPtrWillBeRawPtr<MessagePortArray> ports = MessagePort::toMessagePortArray(executionContext(), webChannels);
     RefPtr<SerializedScriptValue> value = SerializedScriptValueFactory::instance().createFromWire(message);
     executionContext()->executingWindow()->dispatchEvent(MessageEvent::create(ports.release(), value));
+}
+
+const AtomicString& ServiceWorkerContainer::interfaceName() const
+{
+    return EventTargetNames::ServiceWorkerContainer;
 }
 
 ServiceWorkerContainer::ServiceWorkerContainer(ExecutionContext* executionContext)

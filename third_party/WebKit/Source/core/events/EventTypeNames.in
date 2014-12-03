@@ -54,6 +54,7 @@ connecting
 contextlost
 contextmenu
 contextrestored
+controllerchange
 copy
 cuechange
 cut

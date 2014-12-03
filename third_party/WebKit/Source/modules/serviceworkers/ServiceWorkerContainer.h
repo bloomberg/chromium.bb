@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/events/EventTarget.h"
 #include "modules/serviceworkers/RegistrationOptions.h"
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
@@ -52,11 +53,13 @@ class WebServiceWorkerProvider;
 class WebServiceWorkerRegistration;
 
 class ServiceWorkerContainer final
-    : public GarbageCollectedFinalized<ServiceWorkerContainer>
-    , public ScriptWrappable
+    : public RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<ServiceWorkerContainer>
+    , public EventTargetWithInlineData
     , public ContextLifecycleObserver
     , public WebServiceWorkerProviderClient {
     DEFINE_WRAPPERTYPEINFO();
+    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<ServiceWorkerContainer>);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainer);
 public:
     static ServiceWorkerContainer* create(ExecutionContext*);
     ~ServiceWorkerContainer();
@@ -73,9 +76,15 @@ public:
     ScriptPromise getRegistration(ScriptState*, const String& documentURL);
 
     // WebServiceWorkerProviderClient overrides.
-    virtual void setController(WebServiceWorker*) override;
+    virtual void setController(WebServiceWorker*, bool shouldNotifyControllerChange) override;
     virtual void setReadyRegistration(WebServiceWorkerRegistration*) override;
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) override;
+
+    // EventTarget overrides.
+    virtual ExecutionContext* executionContext() const override { return ContextLifecycleObserver::executionContext(); }
+    virtual const AtomicString& interfaceName() const override;
+
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(controllerchange);
 
 private:
     explicit ServiceWorkerContainer(ExecutionContext*);

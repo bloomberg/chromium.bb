@@ -103,6 +103,11 @@ void ServiceWorkerGlobalScopeClientImpl::postMessageToClient(int clientID, const
     m_client.postMessageToClient(clientID, message, webChannels.leakPtr());
 }
 
+void ServiceWorkerGlobalScopeClientImpl::skipWaiting(WebServiceWorkerSkipWaitingCallbacks* callbacks)
+{
+    m_client.skipWaiting(callbacks);
+}
+
 ServiceWorkerGlobalScopeClientImpl::ServiceWorkerGlobalScopeClientImpl(WebServiceWorkerContextClient& client)
     : m_client(client)
 {

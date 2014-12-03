@@ -33,6 +33,7 @@
 
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"
+#include "public/platform/WebServiceWorkerSkipWaitingCallbacks.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -59,6 +60,7 @@ public:
     virtual void didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult) override;
     virtual void didHandleSyncEvent(int syncEventID) override;
     virtual void postMessageToClient(int clientID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) override;
+    virtual void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) override;
 
     virtual void trace(Visitor* visitor) override { ServiceWorkerGlobalScopeClient::trace(visitor); }
 

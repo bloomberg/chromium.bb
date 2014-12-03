@@ -74,6 +74,8 @@ public:
 
     void close(ExceptionState&);
 
+    ScriptPromise skipWaiting(ScriptState*);
+
     // EventTarget
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) override;
     virtual const AtomicString& interfaceName() const override;
@@ -90,6 +92,8 @@ public:
     virtual void trace(Visitor*) override;
 
 private:
+    class SkipWaitingCallback;
+
     ServiceWorkerGlobalScope(const KURL&, const String& userAgent, ServiceWorkerThread*, double timeOrigin, const SecurityOrigin*, PassOwnPtrWillBeRawPtr<WorkerClients>);
     virtual void importScripts(const Vector<String>& urls, ExceptionState&) override;
     virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override;
