@@ -584,7 +584,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_Escape) {
 }
 #undef MAYBE_ESCAPE
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DesiredTLD) {
+#if defined(OS_LINUX)
+#define MAYBE_DesiredTLD DISABLED_DesiredTLD
+#else
+#define MAYBE_DesiredTLD DesiredTLD
+#endif
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_DesiredTLD) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
@@ -610,7 +616,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DesiredTLD) {
   EXPECT_EQ("/", url.path());
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DesiredTLDWithTemporaryText) {
+#if defined(OS_LINUX)
+#define MAYBE_DesiredTLDWithTemporaryText DISABLED_DesiredTLDWithTemporaryText
+#else
+#define MAYBE_DesiredTLDWithTemporaryText DesiredTLDWithTemporaryText
+#endif
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_DesiredTLDWithTemporaryText) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
