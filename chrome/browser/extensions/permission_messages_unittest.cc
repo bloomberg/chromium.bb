@@ -4,19 +4,21 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/permissions_updater.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
+#include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/test_util.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -35,7 +37,7 @@ namespace extensions {
 // problematic functionality. These tests are prefixed with AntiTest_ and will
 // be changed as the correct behaviour is implemented. TODOs in the test explain
 // the currently problematic behaviour.
-class PermissionMessagesUnittest : public ExtensionServiceTestBase {
+class PermissionMessagesUnittest : public testing::Test {
  public:
   PermissionMessagesUnittest()
       : message_provider_(new ChromePermissionMessageProvider()) {}
@@ -43,8 +45,9 @@ class PermissionMessagesUnittest : public ExtensionServiceTestBase {
 
   // Overridden from testing::Test:
   void SetUp() override {
-    ExtensionServiceTestBase::SetUp();
-    InitializeExtensionService(CreateDefaultInitParams());
+    testing::Test::SetUp();
+    // Force creation of ExtensionPrefs before adding extensions.
+    env_.GetExtensionPrefs();
   }
 
  protected:
@@ -58,7 +61,7 @@ class PermissionMessagesUnittest : public ExtensionServiceTestBase {
                .SetID(crx_file::id_util::GenerateId("app"))
                .SetLocation(Manifest::INTERNAL)
                .Build();
-    service()->AddExtension(app_.get());
+    env_.GetExtensionService()->AddExtension(app_.get());
   }
 
   void CreateAndInstallExtensionWithPermissions(
@@ -72,14 +75,14 @@ class PermissionMessagesUnittest : public ExtensionServiceTestBase {
                .SetID(crx_file::id_util::GenerateId("extension"))
                .SetLocation(Manifest::INTERNAL)
                .Build();
-    service()->AddExtension(app_.get());
+    env_.GetExtensionService()->AddExtension(app_.get());
   }
 
   // Returns the permission messages that would display in the prompt that
   // requests all the optional permissions for the current |app_|.
   std::vector<base::string16> GetOptionalPermissionMessages() {
     scoped_refptr<const PermissionSet> granted_permissions =
-        ExtensionPrefs::Get(profile())->GetGrantedPermissions(app_->id());
+        env_.GetExtensionPrefs()->GetGrantedPermissions(app_->id());
     scoped_refptr<const PermissionSet> optional_permissions =
         PermissionsParser::GetOptionalPermissions(app_.get());
     scoped_refptr<const PermissionSet> requested_permissions =
@@ -89,7 +92,7 @@ class PermissionMessagesUnittest : public ExtensionServiceTestBase {
   }
 
   void GrantOptionalPermissions() {
-    PermissionsUpdater perms_updater(profile());
+    PermissionsUpdater perms_updater(env_.profile());
     perms_updater.AddPermissions(
         app_.get(),
         PermissionsParser::GetOptionalPermissions(app_.get()).get());
@@ -97,15 +100,6 @@ class PermissionMessagesUnittest : public ExtensionServiceTestBase {
 
   std::vector<base::string16> active_permissions() {
     return GetMessages(app_->permissions_data()->active_permissions());
-  }
-
-  std::vector<base::string16> withheld_permissions() {
-    return GetMessages(app_->permissions_data()->withheld_permissions());
-  }
-
-  std::vector<base::string16> granted_permissions() {
-    return GetMessages(
-        ExtensionPrefs::Get(profile())->GetGrantedPermissions(app_->id()));
   }
 
   std::vector<base::string16> required_permissions() {
@@ -123,6 +117,7 @@ class PermissionMessagesUnittest : public ExtensionServiceTestBase {
                                                  app_->GetType());
   }
 
+  extensions::TestExtensionEnvironment env_;
   scoped_ptr<ChromePermissionMessageProvider> message_provider_;
   scoped_refptr<const Extension> app_;
 
