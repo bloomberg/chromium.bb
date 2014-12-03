@@ -81,7 +81,9 @@ class CONTENT_EXPORT BrowserThread {
     // This is the thread to handle slow HTTP cache operations.
     CACHE,
 
-    // This is the thread that processes IPC and network messages.
+    // This is the thread that processes non-blocking IO, i.e. IPC and network.
+    // Blocking IO should happen on other threads like DB, FILE,
+    // FILE_USER_BLOCKING and CACHE depending on the usage.
     IO,
 
     // NOTE: do not add new threads here that are only used by a small number of
