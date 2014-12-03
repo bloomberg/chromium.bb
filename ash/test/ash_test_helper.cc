@@ -40,6 +40,11 @@
 #include "ui/aura/window_tree_host_x11.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/ui_thread_gpu.h"
+#endif
+
 namespace ash {
 namespace test {
 
@@ -51,6 +56,12 @@ AshTestHelper::AshTestHelper(base::MessageLoopForUI* message_loop)
   CHECK(message_loop_);
 #if defined(USE_X11)
   aura::test::SetUseOverrideRedirectWindowByDefault(true);
+#elif defined(USE_OZONE)
+  // On Ozone we need to setup the in process gpu-process components
+  // dealing with the display.
+  ui::OzonePlatform::InitializeForUI();
+  ui_thread_.reset(new ui::UiThreadGpu);
+  ui_thread_->Initialize();
 #endif
   aura::test::InitializeAuraEventGeneratorDelegate();
 }
