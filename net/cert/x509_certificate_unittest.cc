@@ -971,10 +971,10 @@ const CertificateNameVerifyTestData kNameVerifyTestData[] = {
     { false, "w.bar.foo.com", "w*.bar.foo.com" },
     { false, "www.bar.foo.com", "ww*ww.bar.foo.com" },
     { false, "wwww.bar.foo.com", "ww*ww.bar.foo.com" },
-    { true, "wwww.bar.foo.com", "w*w.bar.foo.com" },
+    { false, "wwww.bar.foo.com", "w*w.bar.foo.com" },
     { false, "wwww.bar.foo.com", "w*w.bar.foo.c0m" },
-    { true, "WALLY.bar.foo.com", "wa*.bar.foo.com" },
-    { true, "wally.bar.foo.com", "*Ly.bar.foo.com" },
+    { false, "WALLY.bar.foo.com", "wa*.bar.foo.com" },
+    { false, "wally.bar.foo.com", "*Ly.bar.foo.com" },
     { true, "ww%57.foo.com", "", "www.foo.com" },
     { true, "www&.foo.com", "www%26.foo.com" },
     // Common name must not be used if subject alternative name was provided.
@@ -998,12 +998,14 @@ const CertificateNameVerifyTestData kNameVerifyTestData[] = {
     { true, "foo.example.com", "*.example.com" },
     { false, "bar.foo.example.com", "*.example.com" },
     { false, "example.com", "*.example.com" },
-    //   (e.g., baz*.example.net and *baz.example.net and b*z.example.net would
-    //   be taken to match baz1.example.net and foobaz.example.net and
-    //   buzz.example.net, respectively
-    { true, "baz1.example.net", "baz*.example.net" },
-    { true, "foobaz.example.net", "*baz.example.net" },
-    { true, "buzz.example.net", "b*z.example.net" },
+    //   Partial wildcards are disallowed, though RFC 2818 rules allow them.
+    //   That is, forms such as baz*.example.net, *baz.example.net, and
+    //   b*z.example.net should NOT match domains. Instead, the wildcard must
+    //   always be the left-most label, and only a single label.
+    { false, "baz1.example.net", "baz*.example.net" },
+    { false, "foobaz.example.net", "*baz.example.net" },
+    { false, "buzz.example.net", "b*z.example.net" },
+    { false, "www.test.example.net", "www.*.example.net" },
     // Wildcards should not be valid for public registry controlled domains,
     // and unknown/unrecognized domains, at least three domain components must
     // be present.
