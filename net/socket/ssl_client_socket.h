@@ -149,6 +149,10 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // sessions.
   static void ClearSessionCache();
 
+  // Get the maximum SSL version supported by the underlying library and
+  // cryptographic implementation.
+  static uint16 GetMaxSupportedSSLVersion();
+
   virtual bool set_was_npn_negotiated(bool negotiated);
 
   virtual bool was_spdy_negotiated() const;
