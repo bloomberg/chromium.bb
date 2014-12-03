@@ -12,26 +12,13 @@
           # <(SHARED_LIB_DIR)
           'target_name': 'copy_system_libraries',
           'type': 'none',
-          'conditions': [
-            ['target_arch=="arm" and arm_thumb==1', {
-              'copies': [
-                {
-                  'destination': '<(SHARED_LIB_DIR)/',
-                  'files': [
-                    '<(android_stlport_libs_dir)/thumb/libstlport_shared.so',
-                  ],
-                },
+          'copies': [
+            {
+              'destination': '<(SHARED_LIB_DIR)/',
+              'files': [
+                '<(android_stlport_libs_dir)/libstlport_shared.so',
               ],
-            }, {
-              'copies': [
-                {
-                  'destination': '<(SHARED_LIB_DIR)/',
-                  'files': [
-                    '<(android_stlport_libs_dir)/libstlport_shared.so',
-                  ],
-                },
-              ],
-            }],
+            },
           ],
         },
       ],
