@@ -1257,13 +1257,6 @@ Address HeapObjectHeader::payloadEnd()
     return reinterpret_cast<Address>(this) + size();
 }
 
-NO_SANITIZE_ADDRESS
-void HeapObjectHeader::mark()
-{
-    checkHeader();
-    m_size = m_size | markBitMask;
-}
-
 Address FinalizedHeapObjectHeader::payload()
 {
     return reinterpret_cast<Address>(this) + finalizedHeaderSize;

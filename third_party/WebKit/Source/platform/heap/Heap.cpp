@@ -459,9 +459,18 @@ bool HeapObjectHeader::isMarked() const
 }
 
 NO_SANITIZE_ADDRESS inline
+void HeapObjectHeader::mark()
+{
+    checkHeader();
+    ASSERT(!isMarked());
+    m_size = m_size | markBitMask;
+}
+
+NO_SANITIZE_ADDRESS inline
 void HeapObjectHeader::unmark()
 {
     checkHeader();
+    ASSERT(isMarked());
     m_size &= ~markBitMask;
 }
 
@@ -475,8 +484,8 @@ bool HeapObjectHeader::isDead() const
 NO_SANITIZE_ADDRESS inline
 void HeapObjectHeader::markDead()
 {
-    ASSERT(!isMarked());
     checkHeader();
+    ASSERT(!isMarked());
     m_size |= deadBitMask;
 }
 
