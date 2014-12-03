@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/geolocation/simple_geolocation_provider.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -161,7 +161,7 @@ class GeolocationReceiver {
 
 class SimpleGeolocationTest : public testing::Test {
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
 };
 
 TEST_F(SimpleGeolocationTest, ResponseOK) {
