@@ -30,8 +30,11 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {
         return;
 
     {% endif %}
+    {# Declare local variables only when the dictionary has members to avoid unused variable warnings. #}
+    {% if members %}
     v8::Local<v8::Object> v8Object = v8Value->ToObject(isolate);
     v8::TryCatch block;
+    {% endif %}
     {% for member in members %}
     v8::Local<v8::Value> {{member.name}}Value = v8Object->Get(v8String(isolate, "{{member.name}}"));
     if (block.HasCaught()) {
