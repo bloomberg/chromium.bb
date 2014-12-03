@@ -799,6 +799,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case DOMImplementationHasFeatureReturnFalse:
         return "'DOMImplementation.hasFeature()' returning false is deprecated. Please do not use it, as per DOM it should always return true (https://dom.spec.whatwg.org/#dom-domimplementation-hasfeature).";
 
+    case GetMatchedCSSRules:
+        return "'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

@@ -141,8 +141,8 @@
     [TypeChecking=Interface] CSSStyleDeclaration getComputedStyle(Element element, optional DOMString pseudoElt);
 
     // WebKit extensions
-    [MeasureAs=GetMatchedCSSRules] CSSRuleList getMatchedCSSRules([Default=Undefined] optional Element element,
-                                                                  [TreatUndefinedAs=NullString, Default=Undefined] optional DOMString? pseudoElement);
+    [DeprecateAs=GetMatchedCSSRules] CSSRuleList getMatchedCSSRules([Default=Undefined] optional Element element,
+                                                                    [TreatUndefinedAs=NullString, Default=Undefined] optional DOMString? pseudoElement);
 
     [Replaceable] readonly attribute double devicePixelRatio;
 
