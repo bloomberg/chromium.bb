@@ -15,6 +15,23 @@
 
 namespace app_list {
 
+namespace {
+
+scoped_ptr<SearchBoxModel::SpeechButtonProperty> CreateNewProperty(
+    SpeechRecognitionState state) {
+  if (state == SPEECH_RECOGNITION_OFF)
+    return nullptr;
+
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  return make_scoped_ptr(new SearchBoxModel::SpeechButtonProperty(
+      *bundle.GetImageSkiaNamed(IDR_OMNIBOX_MIC_SEARCH),
+      l10n_util::GetStringUTF16(IDS_APP_LIST_HOTWORD_LISTENING),
+      *bundle.GetImageSkiaNamed(IDR_APP_LIST_MIC_HOTWORD_OFF),
+      l10n_util::GetStringUTF16(IDS_APP_LIST_START_SPEECH_RECOGNITION)));
+}
+
+}  // namespace
+
 SearchResourceManager::SearchResourceManager(Profile* profile,
                                              SearchBoxModel* search_box,
                                              SpeechUIModel* speech_ui)
@@ -24,18 +41,6 @@ SearchResourceManager::SearchResourceManager(Profile* profile,
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   search_box_->SetIcon(*bundle.GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
-  StartPageService* service = StartPageService::Get(profile);
-  if (service && service->GetSpeechRecognitionContents()) {
-    search_box_->SetSpeechRecognitionButton(
-        scoped_ptr<SearchBoxModel::SpeechButtonProperty>(
-            new SearchBoxModel::SpeechButtonProperty(
-                *bundle.GetImageSkiaNamed(IDR_OMNIBOX_MIC_SEARCH),
-                l10n_util::GetStringUTF16(
-                    IDS_APP_LIST_HOTWORD_LISTENING),
-                *bundle.GetImageSkiaNamed(IDR_APP_LIST_MIC_HOTWORD_OFF),
-                l10n_util::GetStringUTF16(
-                    IDS_APP_LIST_START_SPEECH_RECOGNITION))));
-  }
   OnSpeechRecognitionStateChanged(speech_ui_->state());
 }
 
@@ -48,6 +53,7 @@ void SearchResourceManager::OnSpeechRecognitionStateChanged(
   search_box_->SetHintText(l10n_util::GetStringUTF16(
       (new_state == SPEECH_RECOGNITION_HOTWORD_LISTENING) ?
       IDS_SEARCH_BOX_HOTWORD_HINT : IDS_SEARCH_BOX_HINT));
+  search_box_->SetSpeechRecognitionButton(CreateNewProperty(new_state));
 }
 
 }  // namespace app_list

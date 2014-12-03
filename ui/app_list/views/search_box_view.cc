@@ -266,6 +266,7 @@ void SearchBoxView::SpeechRecognitionButtonPropChanged() {
       speech_button_ = NULL;
     }
   }
+  Layout();
 }
 
 void SearchBoxView::HintTextChanged() {

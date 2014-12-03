@@ -88,6 +88,12 @@ class StartPageService : public KeyedService,
   // getUserMedia() request from the web contents.
   class StartPageWebContentsDelegate;
 
+#if defined(OS_CHROMEOS)
+  // This class observes the change of audio input device availability and
+  // checks if currently the system has valid audio input.
+  class AudioStatus;
+#endif
+
   void LoadContents();
   void UnloadContents();
 
@@ -108,6 +114,10 @@ class StartPageService : public KeyedService,
   std::vector<base::Closure> pending_webui_callbacks_;
 
   scoped_ptr<SpeechRecognizer> speech_recognizer_;
+
+#if defined(OS_CHROMEOS)
+  scoped_ptr<AudioStatus> audio_status_;
+#endif
 
   base::WeakPtrFactory<StartPageService> weak_factory_;
 

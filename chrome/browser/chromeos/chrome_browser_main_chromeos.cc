@@ -753,8 +753,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   SystemKeyEventListener::Shutdown();
 #endif
 
-  CrasAudioHandler::Shutdown();
-
   // Detach D-Bus clients before DBusThreadManager is shut down.
   power_button_observer_.reset();
   idle_action_warning_observer_.reset();
@@ -803,6 +801,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   // Stops all in-flight OAuth2 token fetchers before the IO thread stops.
   DeviceOAuth2TokenServiceFactory::Shutdown();
+
+  // Shutdown after PostMainMessageLoopRun() which should destroy all observers.
+  CrasAudioHandler::Shutdown();
 
   // Called after
   // ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() to be
