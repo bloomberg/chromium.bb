@@ -34,6 +34,7 @@
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLSummaryElement.h"
+#include "core/html/shadow/DetailsMarkerControl.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "platform/text/PlatformLocale.h"
@@ -127,12 +128,16 @@ void HTMLDetailsElement::parseAttribute(const QualifiedName& name, const AtomicS
             content->removeInlineStyleProperty(CSSPropertyDisplay);
         else
             content->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
-        Element* summary = ensureUserAgentShadowRoot().getElementById(ShadowElementNames::detailsSummary());
+
+        // Invalidate the RenderDetailsMarker in order to turn the arrow signifying if the
+        // details element is open or closed.
+        Element* summary = findMainSummary();
         ASSERT(summary);
-        // FIXME: DetailsMarkerControl's RenderDetailsMarker has no concept of being updated
-        // without recreating it causing a repaint. Instead we should change it so we can tell
-        // it to toggle the open/closed triangle state and avoid reattaching the entire summary.
-        summary->lazyReattachIfAttached();
+
+        DetailsMarkerControl* control = toHTMLSummaryElement(summary)->markerControl();
+        if (control && control->renderer())
+            control->renderer()->setShouldDoFullPaintInvalidation();
+
         return;
     }
     HTMLElement::parseAttribute(name, value);

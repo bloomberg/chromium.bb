@@ -44,6 +44,7 @@ PassRefPtrWillBeRawPtr<HTMLSummaryElement> HTMLSummaryElement::create(Document& 
 
 HTMLSummaryElement::HTMLSummaryElement(Document& document)
     : HTMLElement(summaryTag, document)
+    , m_markerControl(nullptr)
 {
 }
 
@@ -54,7 +55,8 @@ RenderObject* HTMLSummaryElement::createRenderer(RenderStyle*)
 
 void HTMLSummaryElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
-    root.appendChild(DetailsMarkerControl::create(document()));
+    m_markerControl = DetailsMarkerControl::create(document());
+    root.appendChild(m_markerControl);
     root.appendChild(HTMLContentElement::create(document()));
 }
 

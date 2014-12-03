@@ -25,6 +25,7 @@
 
 namespace blink {
 
+class DetailsMarkerControl;
 class HTMLDetailsElement;
 
 class HTMLSummaryElement final : public HTMLElement {
@@ -32,6 +33,8 @@ public:
     static PassRefPtrWillBeRawPtr<HTMLSummaryElement> create(Document&);
     bool isMainSummary() const;
     virtual bool willRespondToMouseClickEvents() override;
+
+    DetailsMarkerControl* markerControl() const { return m_markerControl.get(); }
 
 private:
     explicit HTMLSummaryElement(Document&);
@@ -42,6 +45,8 @@ private:
     HTMLDetailsElement* detailsElement() const;
 
     virtual bool supportsFocus() const override;
+
+    RefPtr<DetailsMarkerControl> m_markerControl;
 };
 
 }
