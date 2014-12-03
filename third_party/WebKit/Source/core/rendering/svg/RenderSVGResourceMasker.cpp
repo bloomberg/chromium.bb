@@ -23,8 +23,8 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGElement.h"
-#include "platform/graphics/DisplayList.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/Picture.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace blink {
@@ -40,7 +40,7 @@ RenderSVGResourceMasker::~RenderSVGResourceMasker()
 
 void RenderSVGResourceMasker::removeAllClientsFromCache(bool markForInvalidation)
 {
-    m_maskContentDisplayList.clear();
+    m_maskContentPicture.clear();
     m_maskContentBoundaries = FloatRect();
     markAllClientsForInvalidation(markForInvalidation ? LayoutAndBoundariesInvalidation : ParentOnlyInvalidation);
 }
@@ -113,15 +113,15 @@ void RenderSVGResourceMasker::drawMaskForRenderer(GraphicsContext* context, cons
         context->concatCTM(contentTransformation);
     }
 
-    if (!m_maskContentDisplayList) {
+    if (!m_maskContentPicture) {
         SubtreeContentTransformScope contentTransformScope(contentTransformation);
-        createDisplayList(context);
+        createPicture(context);
     }
-    ASSERT(m_maskContentDisplayList);
-    context->drawDisplayList(m_maskContentDisplayList.get());
+    ASSERT(m_maskContentPicture);
+    context->drawPicture(m_maskContentPicture.get());
 }
 
-void RenderSVGResourceMasker::createDisplayList(GraphicsContext* context)
+void RenderSVGResourceMasker::createPicture(GraphicsContext* context)
 {
     ASSERT(context);
 
@@ -140,7 +140,7 @@ void RenderSVGResourceMasker::createDisplayList(GraphicsContext* context)
 
         SVGRenderingContext::renderSubtree(context, renderer);
     }
-    m_maskContentDisplayList = context->endRecording();
+    m_maskContentPicture = context->endRecording();
 }
 
 void RenderSVGResourceMasker::calculateMaskContentPaintInvalidationRect()

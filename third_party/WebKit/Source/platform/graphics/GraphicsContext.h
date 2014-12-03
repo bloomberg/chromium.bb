@@ -55,7 +55,7 @@ struct SkRect;
 namespace blink {
 
 class DisplayItemList;
-class DisplayList;
+class Picture;
 class ImageBuffer;
 class KURL;
 
@@ -258,7 +258,7 @@ public:
         const IntRect&, const IntSize& innerTopLeft, const IntSize& innerTopRight, const IntSize& innerBottomLeft, const IntSize& innerBottomRight, const Color&);
     void fillBetweenRoundedRects(const RoundedRect&, const RoundedRect&, const Color&);
 
-    void drawDisplayList(DisplayList*);
+    void drawPicture(Picture*);
     void drawPicture(SkPicture*, const FloatPoint& location);
     void drawPicture(SkPicture*, const FloatRect& dest, const FloatRect& src, CompositeOperator, WebBlendMode);
 
@@ -325,7 +325,7 @@ public:
     // are stored in a display list that can be replayed at a later time. Pass in the bounding
     // rectangle for the content in the list.
     void beginRecording(const FloatRect&, uint32_t = 0);
-    PassRefPtr<DisplayList> endRecording();
+    PassRefPtr<Picture> endRecording();
 
     bool hasShadow() const;
     void setShadow(const FloatSize& offset, float blur, const Color&,

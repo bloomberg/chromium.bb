@@ -33,7 +33,7 @@
 namespace blink {
 
 class AffineTransform;
-class DisplayList;
+class Picture;
 class FloatRect;
 class SVGPatternElement;
 struct PatternData;
@@ -56,7 +56,7 @@ public:
 
 private:
     PassOwnPtr<PatternData> buildPatternData(const RenderObject&);
-    PassRefPtr<DisplayList> asDisplayList(const FloatRect& tileBounds, const AffineTransform&) const;
+    PassRefPtr<Picture> asPicture(const FloatRect& tileBounds, const AffineTransform&) const;
     PatternData* patternForRenderer(const RenderObject&);
 
     bool m_shouldCollectPatternAttributes : 1;

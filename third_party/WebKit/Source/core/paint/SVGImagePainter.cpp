@@ -14,9 +14,9 @@
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGImageElement.h"
-#include "platform/graphics/DisplayList.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/Picture.h"
 
 namespace blink {
 
@@ -46,14 +46,14 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
         if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC) {
             paintForeground(childPaintInfo);
         } else {
-            RefPtr<DisplayList>& bufferedForeground = m_renderSVGImage.bufferedForeground();
+            RefPtr<Picture>& bufferedForeground = m_renderSVGImage.bufferedForeground();
             if (!bufferedForeground) {
                 childPaintInfo.context->beginRecording(m_renderSVGImage.objectBoundingBox());
                 paintForeground(childPaintInfo);
                 bufferedForeground = childPaintInfo.context->endRecording();
             }
 
-            childPaintInfo.context->drawDisplayList(bufferedForeground.get());
+            childPaintInfo.context->drawPicture(bufferedForeground.get());
         }
     }
 

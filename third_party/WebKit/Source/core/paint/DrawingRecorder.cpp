@@ -8,9 +8,9 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/graphics/DisplayList.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/Picture.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 
@@ -46,12 +46,12 @@ DrawingRecorder::~DrawingRecorder()
     s_inDrawingRecorder = false;
 #endif
 
-    RefPtr<DisplayList> displayList = m_context->endRecording();
-    if (!displayList->picture() || !displayList->picture()->approximateOpCount())
+    RefPtr<Picture> picture = m_context->endRecording();
+    if (!picture->skPicture() || !picture->skPicture()->approximateOpCount())
         return;
-    ASSERT(displayList->bounds() == m_bounds);
+    ASSERT(picture->bounds() == m_bounds);
     OwnPtr<DrawingDisplayItem> drawingItem = adoptPtr(
-        new DrawingDisplayItem(m_renderer->displayItemClient(), (DisplayItem::Type)m_phase, displayList->picture(), m_bounds.location()));
+        new DrawingDisplayItem(m_renderer->displayItemClient(), (DisplayItem::Type)m_phase, picture->skPicture(), m_bounds.location()));
 #ifndef NDEBUG
     if (!m_renderer)
         drawingItem->setClientDebugString("nullptr");

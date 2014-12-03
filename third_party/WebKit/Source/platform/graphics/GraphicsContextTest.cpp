@@ -27,8 +27,8 @@
 #include "platform/graphics/GraphicsContext.h"
 
 #include "platform/graphics/BitmapImage.h"
-#include "platform/graphics/DisplayList.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/Picture.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -234,13 +234,13 @@ TEST(GraphicsContextTest, trackDisplayListRecording)
     FloatRect bounds(0, 0, 100, 100);
     context.beginRecording(bounds);
     context.fillRect(FloatRect(0, 0, 100, 100), opaque, CompositeSourceOver);
-    RefPtr<DisplayList> displayList = context.endRecording();
+    RefPtr<Picture> picture = context.endRecording();
 
-    // Make sure the opaque region was unaffected by the rect drawn during DisplayList recording.
+    // Make sure the opaque region was unaffected by the rect drawn during Picture recording.
     EXPECT_EQ_RECT(IntRect(0, 0, 50, 50), context.opaqueRegion().asRect());
 
-    // Make sure the opaque region *is* affected (reset) by drawing the DisplayList itself.
-    context.drawDisplayList(displayList.get());
+    // Make sure the opaque region *is* affected (reset) by drawing the Picture itself.
+    context.drawPicture(picture.get());
     EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
 }
 
@@ -1212,8 +1212,8 @@ TEST(GraphicsContextTest, RecordingCanvas)
     EXPECT_TRUE(canvas1->unique());
 
     // endRecording finally makes the picture accessible
-    RefPtr<DisplayList> dl = context.endRecording();
-    SkPicture* pic = dl->picture().get();
+    RefPtr<Picture> picture = context.endRecording();
+    SkPicture* pic = picture->skPicture().get();
     EXPECT_TRUE(pic);
     EXPECT_TRUE(pic->unique());
 

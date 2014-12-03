@@ -25,7 +25,7 @@
 
 namespace blink {
 
-class DisplayList;
+class Picture;
 
 class RenderSVGResourceClipper final : public RenderSVGResourceContainer {
 public:
@@ -66,10 +66,10 @@ public:
 private:
     bool tryPathOnlyClipping(GraphicsContext*, const AffineTransform&, const FloatRect&);
     void drawClipMaskContent(GraphicsContext*, const FloatRect& targetBoundingBox);
-    void createDisplayList(GraphicsContext*);
+    void createPicture(GraphicsContext*);
     void calculateClipContentPaintInvalidationRect();
 
-    RefPtr<DisplayList> m_clipContentDisplayList;
+    RefPtr<Picture> m_clipContentPicture;
     FloatRect m_clipBoundaries;
 
     // Reference cycle detection.

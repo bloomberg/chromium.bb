@@ -3,17 +3,17 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "platform/graphics/DisplayListPattern.h"
+#include "platform/graphics/PicturePattern.h"
 
-#include "platform/graphics/DisplayList.h"
+#include "platform/graphics/Picture.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkShader.h"
 
 namespace blink {
 
-DisplayListPattern::DisplayListPattern(PassRefPtr<DisplayList> displayList, RepeatMode mode)
+PicturePattern::PicturePattern(PassRefPtr<Picture> picture, RepeatMode mode)
     : Pattern(mode)
-    , m_tileDisplayList(displayList)
+    , m_tilePicture(picture)
 {
     // All current clients use RepeatModeXY, so we only support this mode for now.
     ASSERT(isRepeatXY());
@@ -21,17 +21,17 @@ DisplayListPattern::DisplayListPattern(PassRefPtr<DisplayList> displayList, Repe
     // FIXME: we don't have a good way to account for DL memory utilization.
 }
 
-DisplayListPattern::~DisplayListPattern()
+PicturePattern::~PicturePattern()
 {
 }
 
-PassRefPtr<SkShader> DisplayListPattern::createShader()
+PassRefPtr<SkShader> PicturePattern::createShader()
 {
     SkMatrix localMatrix = affineTransformToSkMatrix(m_patternSpaceTransformation);
-    SkRect tileBounds = SkRect::MakeWH(m_tileDisplayList->bounds().width(),
-        m_tileDisplayList->bounds().height());
+    SkRect tileBounds = SkRect::MakeWH(m_tilePicture->bounds().width(),
+        m_tilePicture->bounds().height());
 
-    return adoptRef(SkShader::CreatePictureShader(m_tileDisplayList->picture().get(),
+    return adoptRef(SkShader::CreatePictureShader(m_tilePicture->skPicture().get(),
         SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix, &tileBounds));
 }
 

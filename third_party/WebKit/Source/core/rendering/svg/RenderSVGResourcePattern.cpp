@@ -26,8 +26,8 @@
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGPatternElement.h"
-#include "platform/graphics/DisplayList.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/Picture.h"
 
 namespace blink {
 
@@ -109,7 +109,7 @@ PassOwnPtr<PatternData> RenderSVGResourcePattern::buildPatternData(const RenderO
     }
 
     OwnPtr<PatternData> patternData = adoptPtr(new PatternData);
-    patternData->pattern = Pattern::createDisplayListPattern(asDisplayList(tileBounds, tileTransform));
+    patternData->pattern = Pattern::createPicturePattern(asPicture(tileBounds, tileTransform));
 
     // Compute pattern space transformation.
     patternData->transform.translate(tileBounds.x(), tileBounds.y());
@@ -151,7 +151,7 @@ SVGPaintServer RenderSVGResourcePattern::preparePaintServer(const RenderObject& 
     return SVGPaintServer(patternData->pattern);
 }
 
-PassRefPtr<DisplayList> RenderSVGResourcePattern::asDisplayList(const FloatRect& tileBounds,
+PassRefPtr<Picture> RenderSVGResourcePattern::asPicture(const FloatRect& tileBounds,
     const AffineTransform& tileTransform) const
 {
     ASSERT(!m_shouldCollectPatternAttributes);
@@ -160,7 +160,7 @@ PassRefPtr<DisplayList> RenderSVGResourcePattern::asDisplayList(const FloatRect&
     if (m_attributes.patternContentUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
         contentTransform = tileTransform;
 
-    // Draw the content into a DisplayList.
+    // Draw the content into a Picture.
     GraphicsContext recordingContext(nullptr, nullptr);
     recordingContext.beginRecording(FloatRect(FloatPoint(), tileBounds.size()));
     recordingContext.concatCTM(tileTransform);

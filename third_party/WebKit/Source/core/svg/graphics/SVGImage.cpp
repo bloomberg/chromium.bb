@@ -49,10 +49,10 @@
 #include "platform/LengthFunctions.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/graphics/DisplayList.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/ImageObserver.h"
+#include "platform/graphics/Picture.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -240,13 +240,13 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
         recordingContext.clipRect(tile);
     drawForContainer(&recordingContext, containerSize, zoom, tile, srcRect, CompositeSourceOver,
         blink::WebBlendModeNormal);
-    RefPtr<DisplayList> tileDisplayList = recordingContext.endRecording();
+    RefPtr<Picture> tilePicture = recordingContext.endRecording();
 
     SkMatrix patternTransform;
     patternTransform.setTranslate(phase.x() + tile.x(), phase.y() + tile.y());
     SkRect tileRect = SkRect::MakeWH(spacedTile.width(), spacedTile.height());
     RefPtr<SkShader> patternShader = adoptRef(SkShader::CreatePictureShader(
-        tileDisplayList->picture().get(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode,
+        tilePicture->skPicture().get(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode,
         &patternTransform, &tileRect));
 
     SkPaint paint;

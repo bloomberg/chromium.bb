@@ -22,7 +22,7 @@
 #ifndef SourceGraphic_h
 #define SourceGraphic_h
 
-#include "platform/graphics/DisplayList.h"
+#include "platform/graphics/Picture.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
@@ -40,8 +40,7 @@ public:
     virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
     PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 
-    void setDisplayList(PassRefPtr<DisplayList>);
-
+    void setPicture(PassRefPtr<Picture>);
 
 private:
     SourceGraphic(Filter* filter)
@@ -50,7 +49,7 @@ private:
         setOperatingColorSpace(ColorSpaceDeviceRGB);
     }
 
-    RefPtr<DisplayList> m_displayList;
+    RefPtr<Picture> m_picture;
 };
 
 } //namespace blink

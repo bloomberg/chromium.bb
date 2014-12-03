@@ -47,17 +47,17 @@ FloatRect SourceGraphic::determineAbsolutePaintRect(const FloatRect& requestedRe
     return srcRect;
 }
 
-void SourceGraphic::setDisplayList(PassRefPtr<DisplayList> displayList)
+void SourceGraphic::setPicture(PassRefPtr<Picture> picture)
 {
-    m_displayList = displayList;
+    m_picture = picture;
 }
 
 PassRefPtr<SkImageFilter> SourceGraphic::createImageFilter(SkiaImageFilterBuilder*)
 {
-    if (!m_displayList)
+    if (!m_picture)
         return nullptr;
 
-    return adoptRef(SkPictureImageFilter::Create(m_displayList->picture().get(), m_displayList->bounds()));
+    return adoptRef(SkPictureImageFilter::Create(m_picture->skPicture().get(), m_picture->bounds()));
 }
 
 TextStream& SourceGraphic::externalRepresentation(TextStream& ts, int indent) const

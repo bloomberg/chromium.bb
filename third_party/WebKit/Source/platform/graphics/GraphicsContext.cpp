@@ -31,9 +31,9 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/RoundedRect.h"
 #include "platform/graphics/BitmapImage.h"
-#include "platform/graphics/DisplayList.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/Picture.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/text/BidiResolver.h"
@@ -74,8 +74,8 @@ namespace blink {
 
 struct GraphicsContext::RecordingState {
     RecordingState(SkPictureRecorder* recorder, SkCanvas* currentCanvas, const SkMatrix& currentMatrix,
-        PassRefPtr<DisplayList> displayList, RegionTrackingMode trackingMode)
-        : m_displayList(displayList)
+        PassRefPtr<Picture> picture, RegionTrackingMode trackingMode)
+        : m_picture(picture)
         , m_recorder(recorder)
         , m_savedCanvas(currentCanvas)
         , m_savedMatrix(currentMatrix)
@@ -83,7 +83,7 @@ struct GraphicsContext::RecordingState {
 
     ~RecordingState() { }
 
-    RefPtr<DisplayList> m_displayList;
+    RefPtr<Picture> m_picture;
     SkPictureRecorder* m_recorder;
     SkCanvas* m_savedCanvas;
     const SkMatrix m_savedMatrix;
@@ -515,14 +515,14 @@ void GraphicsContext::endLayer()
 
 void GraphicsContext::beginRecording(const FloatRect& bounds, uint32_t recordFlags)
 {
-    RefPtr<DisplayList> displayList = DisplayList::create(bounds);
+    RefPtr<Picture> picture = Picture::create(bounds);
 
     SkCanvas* savedCanvas = m_canvas;
     SkMatrix savedMatrix = getTotalMatrix();
     SkPictureRecorder* recorder = 0;
 
     if (!contextDisabled()) {
-        FloatRect bounds = displayList->bounds();
+        FloatRect bounds = picture->bounds();
         recorder = new SkPictureRecorder;
         m_canvas = recorder->beginRecording(bounds.width(), bounds.height(), 0, recordFlags);
 
@@ -535,27 +535,27 @@ void GraphicsContext::beginRecording(const FloatRect& bounds, uint32_t recordFla
         }
     }
 
-    m_recordingStateStack.append(RecordingState(recorder, savedCanvas, savedMatrix, displayList,
+    m_recordingStateStack.append(RecordingState(recorder, savedCanvas, savedMatrix, picture,
         static_cast<RegionTrackingMode>(m_regionTrackingMode)));
 
     // Disable region tracking during recording.
     setRegionTrackingMode(RegionTrackingDisabled);
 }
 
-PassRefPtr<DisplayList> GraphicsContext::endRecording()
+PassRefPtr<Picture> GraphicsContext::endRecording()
 {
     ASSERT(!m_recordingStateStack.isEmpty());
 
     RecordingState recording = m_recordingStateStack.last();
     if (!contextDisabled())
-        recording.m_displayList->setPicture(recording.m_recorder->endRecording());
+        recording.m_picture->setSkPicture(recording.m_recorder->endRecording());
 
     m_canvas = recording.m_savedCanvas;
     setRegionTrackingMode(recording.m_regionTrackingMode);
     delete recording.m_recorder;
     m_recordingStateStack.removeLast();
 
-    return recording.m_displayList;
+    return recording.m_picture;
 }
 
 bool GraphicsContext::isRecording() const
@@ -563,31 +563,21 @@ bool GraphicsContext::isRecording() const
     return !m_recordingStateStack.isEmpty();
 }
 
-void GraphicsContext::drawDisplayList(DisplayList* displayList)
+void GraphicsContext::drawPicture(Picture* picture)
 {
-    ASSERT(displayList);
+    ASSERT(picture);
     ASSERT(m_canvas);
 
-    if (contextDisabled() || displayList->bounds().isEmpty())
+    if (contextDisabled() || picture->bounds().isEmpty())
         return;
 
-    bool performClip = !displayList->clip().isEmpty();
-    bool performTransform = !displayList->transform().isIdentity();
-    if (performClip || performTransform) {
-        save();
-        if (performTransform)
-            concat(displayList->transform());
-        if (performClip)
-            clipRect(displayList->clip());
-    }
-
-    const FloatPoint& location = displayList->bounds().location();
+    const FloatPoint& location = picture->bounds().location();
     if (location.x() || location.y()) {
         SkMatrix m;
         m.setTranslate(location.x(), location.y());
-        m_canvas->drawPicture(displayList->picture().get(), &m, 0);
+        m_canvas->drawPicture(picture->skPicture().get(), &m, 0);
     } else {
-        m_canvas->drawPicture(displayList->picture().get());
+        m_canvas->drawPicture(picture->skPicture().get());
     }
 
     if (regionTrackingEnabled()) {
@@ -595,11 +585,8 @@ void GraphicsContext::drawDisplayList(DisplayList* displayList)
         // mark the bounds as non-opaque.
         SkPaint paint;
         paint.setXfermodeMode(SkXfermode::kClear_Mode);
-        m_trackedRegion.didDrawBounded(this, displayList->bounds(), paint);
+        m_trackedRegion.didDrawBounded(this, picture->bounds(), paint);
     }
-
-    if (performClip || performTransform)
-        restore();
 }
 
 void GraphicsContext::drawPicture(SkPicture* picture, const FloatPoint& location)

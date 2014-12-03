@@ -33,8 +33,8 @@
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGUseElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/graphics/DisplayList.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/Picture.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {
@@ -51,7 +51,7 @@ RenderSVGResourceClipper::~RenderSVGResourceClipper()
 
 void RenderSVGResourceClipper::removeAllClientsFromCache(bool markForInvalidation)
 {
-    m_clipContentDisplayList.clear();
+    m_clipContentPicture.clear();
     m_clipBoundaries = FloatRect();
     markAllClientsForInvalidation(markForInvalidation ? LayoutAndBoundariesInvalidation : ParentOnlyInvalidation);
 }
@@ -225,16 +225,16 @@ void RenderSVGResourceClipper::drawClipMaskContent(GraphicsContext* context, con
         context->concatCTM(contentTransformation);
     }
 
-    if (!m_clipContentDisplayList) {
+    if (!m_clipContentPicture) {
         SubtreeContentTransformScope contentTransformScope(contentTransformation);
-        createDisplayList(context);
+        createPicture(context);
     }
 
-    ASSERT(m_clipContentDisplayList);
-    context->drawDisplayList(m_clipContentDisplayList.get());
+    ASSERT(m_clipContentPicture);
+    context->drawPicture(m_clipContentPicture.get());
 }
 
-void RenderSVGResourceClipper::createDisplayList(GraphicsContext* context)
+void RenderSVGResourceClipper::createPicture(GraphicsContext* context)
 {
     ASSERT(context);
     ASSERT(frame());
@@ -283,7 +283,7 @@ void RenderSVGResourceClipper::createDisplayList(GraphicsContext* context)
         renderer->paint(info, IntPoint());
     }
 
-    m_clipContentDisplayList = context->endRecording();
+    m_clipContentPicture = context->endRecording();
 }
 
 void RenderSVGResourceClipper::calculateClipContentPaintInvalidationRect()

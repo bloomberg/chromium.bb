@@ -31,8 +31,8 @@
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
-#include "platform/graphics/DisplayList.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/Picture.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
@@ -176,9 +176,9 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForRenderer(RenderObject* re
     context->beginRecording(bounds);
     context->concatCTM(transform);
     SVGRenderingContext::renderSubtree(context, renderer);
-    RefPtr<DisplayList> displayList = context->endRecording();
+    RefPtr<Picture> picture = context->endRecording();
     context->restore();
-    RefPtr<SkImageFilter> result = adoptRef(SkPictureImageFilter::Create(displayList->picture().get(), dstRect));
+    RefPtr<SkImageFilter> result = adoptRef(SkPictureImageFilter::Create(picture->skPicture().get(), dstRect));
     return result.release();
 }
 

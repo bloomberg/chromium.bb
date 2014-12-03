@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class DisplayList;
+class Picture;
 class GraphicsContext;
 
 class RenderSVGResourceMasker final : public RenderSVGResourceContainer {
@@ -59,9 +59,9 @@ public:
 private:
     void calculateMaskContentPaintInvalidationRect();
     void drawMaskForRenderer(GraphicsContext*, const FloatRect& targetBoundingBox);
-    void createDisplayList(GraphicsContext*);
+    void createPicture(GraphicsContext*);
 
-    RefPtr<DisplayList> m_maskContentDisplayList;
+    RefPtr<Picture> m_maskContentPicture;
     FloatRect m_maskContentBoundaries;
 };
 

@@ -41,7 +41,7 @@ class SkShader;
 
 namespace blink {
 
-class DisplayList;
+class Picture;
 
 class PLATFORM_EXPORT Pattern : public RefCounted<Pattern> {
 public:
@@ -55,7 +55,7 @@ public:
 
     static PassRefPtr<Pattern> createBitmapPattern(PassRefPtr<Image> tileImage,
         RepeatMode = RepeatModeXY);
-    static PassRefPtr<Pattern> createDisplayListPattern(PassRefPtr<DisplayList>,
+    static PassRefPtr<Pattern> createPicturePattern(PassRefPtr<Picture>,
         RepeatMode = RepeatModeXY);
     virtual ~Pattern();
 

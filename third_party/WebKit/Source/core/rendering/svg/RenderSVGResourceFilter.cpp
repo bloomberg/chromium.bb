@@ -130,7 +130,7 @@ static void endDeferredFilter(GraphicsContext* context, FilterData* filterData)
     // FIXME: maybe filterData should just hold onto SourceGraphic after creation?
     SourceGraphic* sourceGraphic = static_cast<SourceGraphic*>(filterData->builder->getEffectById(SourceGraphic::effectName()));
     ASSERT(sourceGraphic);
-    sourceGraphic->setDisplayList(context->endRecording());
+    sourceGraphic->setPicture(context->endRecording());
 }
 
 static void drawDeferredFilter(GraphicsContext* context, FilterData* filterData, SVGFilterElement* filterElement)
