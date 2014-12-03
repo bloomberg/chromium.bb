@@ -401,7 +401,7 @@ TEST_F(HistoryQueryTest, TextSearchIDN) {
   } queries[] = {
     { "bad query", 0 },
     { std::string("xn--d1abbgf6aiiy.xn--p1ai"), 1 },
-    { base::WideToUTF8(std::wstring(L"\u043f\u0440\u0435\u0437") +
+    { base::WideToUTF8(L"\u043f\u0440\u0435\u0437"
                        L"\u0438\u0434\u0435\u043d\u0442.\u0440\u0444"), 1, },
   };
 

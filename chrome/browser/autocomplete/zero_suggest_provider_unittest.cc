@@ -98,6 +98,7 @@ class FakeEmptyTopSites : public history::TopSites {
   // A test-specific field for controlling when most visited callback is run
   // after top sites have been requested.
   GetMostVisitedURLsCallback mv_callback;
+
  protected:
   ~FakeEmptyTopSites() override {}
 };
@@ -108,7 +109,7 @@ void FakeEmptyTopSites::GetMostVisitedURLs(
   mv_callback = callback;
 }
 
-} // namespace
+}  // namespace
 
 
 class ZeroSuggestProviderTest : public testing::Test,
@@ -230,7 +231,7 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedCallback) {
                           ChromeAutocompleteSchemeClassifier(&profile_));
   history::MostVisitedURLList urls;
   history::MostVisitedURL url(GURL("http://foo.com/"),
-                              base::ASCIIToUTF16(std::string("Foo")));
+                              base::ASCIIToUTF16("Foo"));
   urls.push_back(url);
 
   provider_->Start(input, false);
@@ -263,7 +264,7 @@ TEST_F(ZeroSuggestProviderTest, TestMostVisitedNavigateToSearchPage) {
                           ChromeAutocompleteSchemeClassifier(&profile_));
   history::MostVisitedURLList urls;
   history::MostVisitedURL url(GURL("http://foo.com/"),
-                              base::ASCIIToUTF16(std::string("Foo")));
+                              base::ASCIIToUTF16("Foo"));
   urls.push_back(url);
 
   provider_->Start(input, false);

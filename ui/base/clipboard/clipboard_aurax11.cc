@@ -890,7 +890,8 @@ void ClipboardAuraX11::WriteBookmark(const char* title_data,
                                      size_t url_len) {
   // Write as a mozilla url (UTF16: URL, newline, title).
   base::string16 url = base::UTF8ToUTF16(std::string(url_data, url_len) + "\n");
-  base::string16 title = base::UTF8ToUTF16(std::string(title_data, title_len));
+  base::string16 title =
+      base::UTF8ToUTF16(base::StringPiece(title_data, title_len));
 
   std::vector<unsigned char> data;
   ui::AddString16ToVector(url, &data);

@@ -124,8 +124,7 @@ void CollectModuleVerificationData(
     ClientIncidentReport_EnvironmentData_Process_ModuleState* module_state =
         process->add_module_state();
 
-    module_state->set_name(
-        base::WideToUTF8(std::wstring(modules_to_verify[i])));
+    module_state->set_name(base::WideToUTF8(modules_to_verify[i]));
     // Add 1 to the ModuleState enum to get the corresponding value in the
     // protobuf's ModuleState enum.
     module_state->set_modified_state(static_cast<

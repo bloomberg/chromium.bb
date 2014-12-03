@@ -17,12 +17,12 @@ EmptyUserInfo::~EmptyUserInfo() {
 
 base::string16 EmptyUserInfo::GetDisplayName() const {
   NOTIMPLEMENTED();
-  return base::UTF8ToUTF16(std::string());
+  return base::string16();
 }
 
 base::string16 EmptyUserInfo::GetGivenName() const {
   NOTIMPLEMENTED();
-  return base::UTF8ToUTF16(std::string());
+  return base::string16();
 }
 
 std::string EmptyUserInfo::GetEmail() const {

@@ -207,7 +207,7 @@ TEST(SafeBrowsingEnvironmentDataCollectionWinTest, VerifyLoadedModules) {
   // the returned list of modules.
   EXPECT_EQ(1, process_report.module_state_size());
 
-  EXPECT_EQ(base::WideToUTF8(std::wstring(safe_browsing::kTestDllNames[0])),
+  EXPECT_EQ(base::WideToUTF8(safe_browsing::kTestDllNames[0]),
             process_report.module_state(0).name());
   EXPECT_EQ(
       safe_browsing::ClientIncidentReport_EnvironmentData_Process_ModuleState::

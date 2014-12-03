@@ -114,7 +114,7 @@ LPCITEMIDLIST BinaryReadItemIDList(size_t offset, size_t idlist_size,
 struct IEOrderBookmarkComparator {
   bool operator()(const ImportedBookmarkEntry& lhs,
                   const ImportedBookmarkEntry& rhs) const {
-    static const uint32 kNotSorted = 0xfffffffb; // IE uses this magic value.
+    static const uint32 kNotSorted = 0xfffffffb;  // IE uses this magic value.
     base::FilePath lhs_prefix;
     base::FilePath rhs_prefix;
     for (size_t i = 0; i <= lhs.path.size() && i <= rhs.path.size(); ++i) {
@@ -184,7 +184,7 @@ bool ParseFavoritesOrderBlob(
     // Read the size (number of bytes) of the current item.
     uint32 item_size = 0;
     if (!BinaryRead(&item_size, base_offset + kSizeOffset, blob) ||
-        base_offset + item_size <= base_offset || // checking overflow
+        base_offset + item_size <= base_offset ||  // checking overflow
         base_offset + item_size > blob.size())
       return false;
 
@@ -292,7 +292,7 @@ GURL ReadURLFromInternetShortcut(IUniformResourceLocator* url_locator) {
   base::win::ScopedCoMem<wchar_t> url;
   // GetURL can return S_FALSE (FAILED(S_FALSE) is false) when url == NULL.
   return (FAILED(url_locator->GetURL(&url)) || !url) ?
-      GURL() : GURL(base::WideToUTF16(std::wstring(url)));
+      GURL() : GURL(base::WideToUTF16(url.get()));
 }
 
 // Reads the URL of the favicon of the internet shortcut.

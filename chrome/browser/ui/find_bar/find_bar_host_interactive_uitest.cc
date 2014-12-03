@@ -30,12 +30,12 @@ class FindInPageInteractiveTest : public InProcessBrowserTest {
 
   // Platform independent FindInPage that takes |const wchar_t*|
   // as an input.
-  int FindInPageWchar(WebContents* web_contents,
-                      const wchar_t* search_str,
+  int FindInPageASCII(WebContents* web_contents,
+                      const base::StringPiece& search_str,
                       bool forward,
                       bool case_sensitive,
                       int* ordinal) {
-    base::string16 search_str16(WideToUTF16(std::wstring(search_str)));
+    base::string16 search_str16(ASCIIToUTF16(search_str));
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
     browser->GetFindBarController()->find_bar()->SetFindTextAndSelectedRange(
         search_str16, gfx::Range());
@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageInteractiveTest, FindInPageEndState) {
 
   // Search for a text that exists within a link on the page.
   int ordinal = 0;
-  EXPECT_EQ(1, FindInPageWchar(web_contents, L"nk",
+  EXPECT_EQ(1, FindInPageASCII(web_contents, "nk",
                                true, false, &ordinal));
   EXPECT_EQ(1, ordinal);
 
@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageInteractiveTest, FindInPageEndState) {
   EXPECT_STREQ("link1", result.c_str());
 
   // Search for a text that exists within a link on the page.
-  EXPECT_EQ(1, FindInPageWchar(web_contents, L"Google",
+  EXPECT_EQ(1, FindInPageASCII(web_contents, "Google",
                                true, false, &ordinal));
   EXPECT_EQ(1, ordinal);
 

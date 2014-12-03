@@ -42,7 +42,7 @@ std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
       false,  // Recursive.
       base::FileEnumerator::FILES);
 #if defined(OS_WIN)
-  base::FilePath::StringType extension = base::UTF8ToWide(std::string(".json"));
+  base::FilePath::StringType extension = base::UTF8ToWide(".json");
 #elif defined(OS_POSIX)
   base::FilePath::StringType extension(".json");
 #endif
@@ -252,11 +252,11 @@ void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
         base::UTF16ToASCII(
             extension_candidate_path.RemoveExtension().BaseName().value());
 #elif defined(OS_POSIX)
-        extension_candidate_path.RemoveExtension().BaseName().value().c_str();
+        extension_candidate_path.RemoveExtension().BaseName().value();
 #endif
 
     DVLOG(1) << "Reading json file: "
-             << extension_candidate_path.LossyDisplayName().c_str();
+             << extension_candidate_path.LossyDisplayName();
 
     JSONFileValueSerializer serializer(extension_candidate_path);
     scoped_ptr<base::DictionaryValue> ext_prefs(

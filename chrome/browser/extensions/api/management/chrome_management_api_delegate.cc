@@ -200,7 +200,7 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
       const GURL& launch_url,
       const favicon_base::FaviconImageResult& image_result) {
     WebApplicationInfo web_app;
-    web_app.title = base::UTF8ToUTF16(std::string(title));
+    web_app.title = base::UTF8ToUTF16(title);
     web_app.app_url = launch_url;
 
     if (!image_result.image.IsEmpty()) {

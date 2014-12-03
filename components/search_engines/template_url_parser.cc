@@ -291,7 +291,8 @@ void TemplateURLParsingContext::CharactersImpl(void* ctx,
                                                const xmlChar* ch,
                                                int len) {
   reinterpret_cast<TemplateURLParsingContext*>(ctx)->string_ +=
-      base::UTF8ToUTF16(std::string(reinterpret_cast<const char*>(ch), len));
+      base::UTF8ToUTF16(
+          base::StringPiece(reinterpret_cast<const char*>(ch), len));
 }
 
 TemplateURL* TemplateURLParsingContext::GetTemplateURL(
