@@ -253,7 +253,6 @@
       'dependencies': [
         'app_shell_lib',
         '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/base/base.gyp:base_prefs_test_support',
         '<(DEPTH)/base/base.gyp:test_support_base',
         '<(DEPTH)/content/content.gyp:content_app_both',
         '<(DEPTH)/content/content_shell_and_tests.gyp:test_support_content',

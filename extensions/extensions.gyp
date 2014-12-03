@@ -1017,6 +1017,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_prefs_test_support',
         '../components/components.gyp:user_prefs',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
@@ -1133,7 +1134,6 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/base.gyp:base_prefs_test_support',
         '../base/base.gyp:test_support_base',
         '../components/components.gyp:keyed_service_content',
         '../components/components.gyp:user_prefs',
