@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/user_metrics.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/browser_process.h"
@@ -158,6 +159,11 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
       profile_(NULL),
       model_(NULL),
       scoped_observer_(this) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListViewDelegate::AppListViewDelegate"));
+
   CHECK(controller_);
   // The SigninManagerFactor and the SigninManagers are observed to keep the
   // profile switcher menu up to date, with the correct list of profiles and the
@@ -206,6 +212,11 @@ AppListViewDelegate::~AppListViewDelegate() {
 }
 
 void AppListViewDelegate::SetProfile(Profile* new_profile) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListViewDelegate::SetProfile"));
+
   if (profile_ == new_profile)
     return;
 

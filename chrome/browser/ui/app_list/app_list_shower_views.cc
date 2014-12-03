@@ -115,10 +115,27 @@ bool AppListShower::HasView() const {
 }
 
 app_list::AppListView* AppListShower::MakeViewForCurrentProfile() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListShower::MakeViewForCurrentProfile1"));
+
   // The app list view manages its own lifetime.
   app_list::AppListView* view =
       new app_list::AppListView(delegate_->GetViewDelegateForCreate());
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListShower::MakeViewForCurrentProfile2"));
+
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "431326 AppListShower::MakeViewForCurrentProfile3"));
+
   view->InitAsBubbleAtFixedLocation(NULL,
                                     0,
                                     cursor,

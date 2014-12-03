@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
@@ -277,6 +278,10 @@ void AppListMainView::NotifySearchBoxVisibilityChanged() {
 }
 
 void AppListMainView::InitWidgets() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/431326 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("431326 AppListMainView::InitWidgets"));
+
   // The widget that receives click events to transition to the custom page.
   views::Widget::InitParams custom_page_clickzone_params(
       views::Widget::InitParams::TYPE_CONTROL);
