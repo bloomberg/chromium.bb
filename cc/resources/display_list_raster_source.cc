@@ -119,6 +119,10 @@ skia::RefPtr<SkPicture> DisplayListRasterSource::GetFlattenedPicture() {
   return picture;
 }
 
+size_t DisplayListRasterSource::GetPictureMemoryUsage() const {
+  return display_list_->PictureMemoryUsage();
+}
+
 void DisplayListRasterSource::PerformSolidColorAnalysis(
     const gfx::Rect& content_rect,
     float contents_scale,

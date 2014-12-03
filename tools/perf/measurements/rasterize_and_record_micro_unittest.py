@@ -89,3 +89,16 @@ class RasterizeAndRecordMicroUnitTest(page_test_test_case.PageTestTestCase):
     self.assertEquals(len(total_picture_layers_off_screen), 1)
     self.assertEqual(
         total_picture_layers_off_screen[0].GetRepresentativeNumber(), 0)
+
+    viewport_picture_size = \
+        results.FindAllPageSpecificValuesNamed('viewport_picture_size')
+    self.assertEquals(len(viewport_picture_size), 1)
+    self.assertGreater(
+        viewport_picture_size[0].GetRepresentativeNumber(), 0)
+
+    total_size_of_pictures_in_piles = \
+        results.FindAllPageSpecificValuesNamed(
+            'total_size_of_pictures_in_piles')
+    self.assertEquals(len(total_size_of_pictures_in_piles), 1)
+    self.assertGreater(
+        total_size_of_pictures_in_piles[0].GetRepresentativeNumber(), 0)

@@ -44,6 +44,10 @@ int FilterDisplayItem::ApproximateOpCount() const {
   return 1;
 }
 
+size_t FilterDisplayItem::PictureMemoryUsage() const {
+  return sizeof(skia::RefPtr<SkImageFilter>) + sizeof(gfx::RectF);
+}
+
 EndFilterDisplayItem::EndFilterDisplayItem() {
 }
 
@@ -61,6 +65,10 @@ bool EndFilterDisplayItem::IsSuitableForGpuRasterization() const {
 }
 
 int EndFilterDisplayItem::ApproximateOpCount() const {
+  return 0;
+}
+
+size_t EndFilterDisplayItem::PictureMemoryUsage() const {
   return 0;
 }
 

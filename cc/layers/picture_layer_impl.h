@@ -129,6 +129,9 @@ class CC_EXPORT PictureLayerImpl
   bool AllTilesRequiredForActivationAreReadyToDraw() const;
   bool AllTilesRequiredForDrawAreReadyToDraw() const;
 
+  // Used for benchmarking
+  const RasterSource* GetRasterSource() const { return raster_source_.get(); }
+
  protected:
   friend class LayerRasterTileIterator;
   using TileRequirementCheck = bool (PictureLayerTiling::*)(const Tile*) const;

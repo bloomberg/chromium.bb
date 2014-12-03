@@ -28,17 +28,6 @@ class RasterizeAndRecordMicro(page_test.PageTest):
         '--enable-gpu-benchmarking'
     ])
 
-  def DidStartBrowser(self, browser):
-    # TODO(vmpstr): Remove this temporary workaround when reference build has
-    # been updated to branch 1713 or later.
-    backend = browser._browser_backend # pylint: disable=W0212
-    self._chrome_branch_number = getattr(backend, 'chrome_branch_number', None)
-    if (not self._chrome_branch_number or
-        (sys.platform != 'android' and self._chrome_branch_number < 1713)):
-      raise page_test.TestNotSupportedOnPlatformFailure(
-          'rasterize_and_record_micro requires Chrome branch 1713 '
-          'or later. Skipping measurement.')
-
   def ValidateAndMeasurePage(self, page, tab, results):
     try:
       tab.WaitForDocumentReadyStateToBeComplete()
@@ -76,28 +65,32 @@ class RasterizeAndRecordMicro(page_test.PageTest):
     record_time = data['record_time_ms']
     pixels_rasterized = data['pixels_rasterized']
     rasterize_time = data['rasterize_time_ms']
+    # TODO(schenney): Remove this workaround when reference builds get past
+    # the change that adds this comment.
+    if ('picture_memory_usage' in data):
+      picture_memory_usage = data['picture_memory_usage']
+    else:
+      picture_memory_usage = 0
 
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'pixels_recorded', 'pixels', pixels_recorded))
     results.AddValue(scalar.ScalarValue(
-        results.current_page, 'record_time', 'ms', record_time))
-    results.AddValue(scalar.ScalarValue(
         results.current_page, 'pixels_rasterized', 'pixels', pixels_rasterized))
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'rasterize_time', 'ms', rasterize_time))
-
-    # TODO(skyostil): Remove this temporary workaround when reference build has
-    # been updated to branch 1931 or later.
-    if ((self._chrome_branch_number and self._chrome_branch_number >= 1931) or
-        sys.platform == 'android'):
-      record_time_sk_null_canvas = data['record_time_sk_null_canvas_ms']
-      record_time_painting_disabled = data['record_time_painting_disabled_ms']
-      results.AddValue(scalar.ScalarValue(
-          results.current_page, 'record_time_sk_null_canvas', 'ms',
-          record_time_sk_null_canvas))
-      results.AddValue(scalar.ScalarValue(
-          results.current_page, 'record_time_painting_disabled', 'ms',
-          record_time_painting_disabled))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'viewport_picture_size', 'bytes',
+        picture_memory_usage))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'record_time', 'ms', record_time))
+    record_time_sk_null_canvas = data['record_time_sk_null_canvas_ms']
+    record_time_painting_disabled = data['record_time_painting_disabled_ms']
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'record_time_sk_null_canvas', 'ms',
+        record_time_sk_null_canvas))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'record_time_painting_disabled', 'ms',
+        record_time_painting_disabled))
 
     if self._report_detailed_results:
       pixels_rasterized_with_non_solid_color = \
@@ -110,7 +103,16 @@ class RasterizeAndRecordMicro(page_test.PageTest):
           data['total_picture_layers_with_no_content']
       total_picture_layers_off_screen = \
           data['total_picture_layers_off_screen']
+      # TODO(schenney): Remove this workaround when reference builds get past
+      # the change that adds this comment.
+      if ('total_pictures_in_pile_size' in data):
+        total_pictures_in_pile_size = data['total_pictures_in_pile_size']
+      else:
+        total_pictures_in_pile_size = 0
 
+      results.AddValue(scalar.ScalarValue(
+          results.current_page, 'total_size_of_pictures_in_piles', 'bytes',
+          total_pictures_in_pile_size))
       results.AddValue(scalar.ScalarValue(
           results.current_page, 'pixels_rasterized_with_non_solid_color',
           'pixels', pixels_rasterized_with_non_solid_color))

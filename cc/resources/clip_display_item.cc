@@ -40,6 +40,14 @@ int ClipDisplayItem::ApproximateOpCount() const {
   return 1;
 }
 
+size_t ClipDisplayItem::PictureMemoryUsage() const {
+  size_t total_size = sizeof(gfx::Rect);
+  for (size_t i = 0; i < rounded_clip_rects_.size(); ++i) {
+    total_size += sizeof(rounded_clip_rects_[i]);
+  }
+  return total_size;
+}
+
 EndClipDisplayItem::EndClipDisplayItem() {
 }
 
@@ -56,6 +64,10 @@ bool EndClipDisplayItem::IsSuitableForGpuRasterization() const {
 }
 
 int EndClipDisplayItem::ApproximateOpCount() const {
+  return 0;
+}
+
+size_t EndClipDisplayItem::PictureMemoryUsage() const {
   return 0;
 }
 

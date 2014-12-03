@@ -35,6 +35,10 @@ int TransparencyDisplayItem::ApproximateOpCount() const {
   return 1;
 }
 
+size_t TransparencyDisplayItem::PictureMemoryUsage() const {
+  return sizeof(float) + sizeof(SkXfermode::Mode);
+}
+
 EndTransparencyDisplayItem::EndTransparencyDisplayItem() {
 }
 
@@ -51,6 +55,10 @@ bool EndTransparencyDisplayItem::IsSuitableForGpuRasterization() const {
 }
 
 int EndTransparencyDisplayItem::ApproximateOpCount() const {
+  return 0;
+}
+
+size_t EndTransparencyDisplayItem::PictureMemoryUsage() const {
   return 0;
 }
 

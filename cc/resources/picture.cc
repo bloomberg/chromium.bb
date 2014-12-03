@@ -25,6 +25,7 @@
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/utils/SkNullCanvas.h"
+#include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -190,6 +191,11 @@ bool Picture::IsSuitableForGpuRasterization() const {
 int Picture::ApproximateOpCount() const {
   DCHECK(picture_);
   return picture_->approximateOpCount();
+}
+
+size_t Picture::ApproximateMemoryUsage() const {
+  DCHECK(picture_);
+  return SkPictureUtils::ApproximateBytesUsed(picture_.get());
 }
 
 bool Picture::HasText() const {

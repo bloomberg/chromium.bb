@@ -67,6 +67,7 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
   void DidBeginTracing() override;
   void AsValueInto(base::debug::TracedValue* array) const override;
   skia::RefPtr<SkPicture> GetFlattenedPicture() override;
+  size_t GetPictureMemoryUsage() const override;
 
   // Iterator used to return SkPixelRefs from this picture pile.
   // Public for testing.

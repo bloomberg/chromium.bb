@@ -67,6 +67,7 @@ class CC_EXPORT Picture
 
   bool IsSuitableForGpuRasterization() const;
   int ApproximateOpCount() const;
+  size_t ApproximateMemoryUsage() const;
 
   bool HasText() const;
 

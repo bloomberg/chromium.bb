@@ -18,6 +18,7 @@
 #include "cc/resources/picture_pile.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
+#include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -64,6 +65,7 @@ void RasterizeAndRecordBenchmark::DidUpdateLayers(LayerTreeHost* host) {
   DCHECK(!results_.get());
   results_ = make_scoped_ptr(new base::DictionaryValue);
   results_->SetInteger("pixels_recorded", record_results_.pixels_recorded);
+  results_->SetInteger("picture_memory_usage", record_results_.bytes_used);
 
   for (int i = 0; i < Picture::RECORDING_MODE_COUNT; i++) {
     std::string name = base::StringPrintf("record_time%s_ms", kModeSuffixes[i]);
@@ -119,6 +121,7 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
     Picture::RecordingMode mode =
         static_cast<Picture::RecordingMode>(mode_index);
     base::TimeDelta min_time = base::TimeDelta::Max();
+    size_t memory_used = 0;
 
     // Parameters for LapTimer.
     const int kTimeLimitMillis = 1;
@@ -131,18 +134,21 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
       LapTimer timer(kWarmupRuns,
                      base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                      kTimeCheckInterval);
+      scoped_refptr<Picture> picture;
       do {
-        scoped_refptr<Picture> picture = Picture::Create(
-            visible_content_rect, painter, tile_grid_info, false, mode);
+        picture = Picture::Create(visible_content_rect, painter, tile_grid_info,
+                                  false, mode);
         timer.NextLap();
       } while (!timer.HasTimeLimitExpired());
       base::TimeDelta duration =
           base::TimeDelta::FromMillisecondsD(timer.MsPerLap());
       if (duration < min_time)
         min_time = duration;
+      memory_used = picture->ApproximateMemoryUsage();
     }
 
     if (mode == Picture::RECORD_NORMALLY) {
+      record_results_.bytes_used += memory_used;
       record_results_.pixels_recorded +=
           visible_content_rect.width() * visible_content_rect.height();
     }
@@ -151,7 +157,8 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
 }
 
 RasterizeAndRecordBenchmark::RecordResults::RecordResults()
-    : pixels_recorded(0) {}
+    : pixels_recorded(0), bytes_used(0) {
+}
 
 RasterizeAndRecordBenchmark::RecordResults::~RecordResults() {}
 

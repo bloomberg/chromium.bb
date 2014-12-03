@@ -49,6 +49,16 @@ int DisplayItemList::ApproximateOpCount() const {
   return approximate_op_count_;
 }
 
+size_t DisplayItemList::PictureMemoryUsage() const {
+  size_t total_size = 0;
+
+  for (const auto& item : items_) {
+    total_size += item->PictureMemoryUsage();
+  }
+
+  return total_size;
+}
+
 scoped_refptr<base::debug::ConvertableToTraceFormat> DisplayItemList::AsValue()
     const {
   scoped_refptr<base::debug::TracedValue> state =

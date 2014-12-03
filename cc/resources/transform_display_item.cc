@@ -30,6 +30,10 @@ int TransformDisplayItem::ApproximateOpCount() const {
   return 1;
 }
 
+size_t TransformDisplayItem::PictureMemoryUsage() const {
+  return sizeof(gfx::Transform);
+}
+
 EndTransformDisplayItem::EndTransformDisplayItem() {
 }
 
@@ -46,6 +50,10 @@ bool EndTransformDisplayItem::IsSuitableForGpuRasterization() const {
 }
 
 int EndTransformDisplayItem::ApproximateOpCount() const {
+  return 0;
+}
+
+size_t EndTransformDisplayItem::PictureMemoryUsage() const {
   return 0;
 }
 

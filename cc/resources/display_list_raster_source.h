@@ -52,6 +52,7 @@ class CC_EXPORT DisplayListRasterSource : public RasterSource {
   void DidBeginTracing() override;
   void AsValueInto(base::debug::TracedValue* array) const override;
   skia::RefPtr<SkPicture> GetFlattenedPicture() override;
+  size_t GetPictureMemoryUsage() const override;
   bool CanUseLCDText() const override;
 
  protected:

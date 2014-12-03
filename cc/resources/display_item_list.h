@@ -31,6 +31,7 @@ class CC_EXPORT DisplayItemList
 
   bool IsSuitableForGpuRasterization() const;
   int ApproximateOpCount() const;
+  size_t PictureMemoryUsage() const;
 
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
 

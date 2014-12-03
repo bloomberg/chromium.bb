@@ -32,6 +32,7 @@ class CC_EXPORT ClipDisplayItem : public DisplayItem {
 
   bool IsSuitableForGpuRasterization() const override;
   int ApproximateOpCount() const override;
+  size_t PictureMemoryUsage() const override;
 
  protected:
   ClipDisplayItem(gfx::Rect clip_rect,
@@ -54,6 +55,7 @@ class CC_EXPORT EndClipDisplayItem : public DisplayItem {
 
   bool IsSuitableForGpuRasterization() const override;
   int ApproximateOpCount() const override;
+  size_t PictureMemoryUsage() const override;
 
  protected:
   EndClipDisplayItem();

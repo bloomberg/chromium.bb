@@ -46,6 +46,7 @@ class RasterizeAndRecordBenchmark : public MicroBenchmark {
     ~RecordResults();
 
     int pixels_recorded;
+    size_t bytes_used;
     base::TimeDelta total_best_time[Picture::RECORDING_MODE_COUNT];
   };
 
