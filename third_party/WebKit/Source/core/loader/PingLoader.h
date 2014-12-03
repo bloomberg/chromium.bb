@@ -88,6 +88,8 @@ private:
 
     void didFailLoading(Page*);
 
+    void dispose();
+
     OwnPtr<blink::WebURLLoader> m_loader;
     Timer<PingLoader> m_timeout;
     String m_url;

@@ -159,6 +159,15 @@ PingLoader::~PingLoader()
         m_loader->cancel();
 }
 
+void PingLoader::dispose()
+{
+    if (m_loader) {
+        m_loader->cancel();
+        m_loader = nullptr;
+    }
+    deref();
+}
+
 void PingLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse& response)
 {
     if (Page* page = this->page()) {
@@ -167,7 +176,7 @@ void PingLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebURLRes
         InspectorInstrumentation::didReceiveResourceResponse(page->deprecatedLocalMainFrame(), m_identifier, 0, resourceResponse, 0);
         didFailLoading(page);
     }
-    deref();
+    dispose();
 }
 
 void PingLoader::didReceiveData(blink::WebURLLoader*, const char*, int, int)
@@ -176,7 +185,7 @@ void PingLoader::didReceiveData(blink::WebURLLoader*, const char*, int, int)
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
         didFailLoading(page);
     }
-    deref();
+    dispose();
 }
 
 void PingLoader::didFinishLoading(blink::WebURLLoader*, double, int64_t)
@@ -185,7 +194,7 @@ void PingLoader::didFinishLoading(blink::WebURLLoader*, double, int64_t)
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
         didFailLoading(page);
     }
-    deref();
+    dispose();
 }
 
 void PingLoader::didFail(blink::WebURLLoader*, const blink::WebURLError& resourceError)
@@ -194,7 +203,7 @@ void PingLoader::didFail(blink::WebURLLoader*, const blink::WebURLError& resourc
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
         didFailLoading(page);
     }
-    deref();
+    dispose();
 }
 
 void PingLoader::timeout(Timer<PingLoader>*)
@@ -203,7 +212,7 @@ void PingLoader::timeout(Timer<PingLoader>*)
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));
         didFailLoading(page);
     }
-    deref();
+    dispose();
 }
 
 void PingLoader::didFailLoading(Page* page)
