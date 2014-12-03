@@ -60,7 +60,7 @@ public:
 
     // If the key cannot be used with the indicated algorithm, returns false
     // and completes the CryptoResult with an error.
-    bool canBeUsedForAlgorithm(const WebCryptoAlgorithm&, WebCryptoOperation, CryptoResult*) const;
+    bool canBeUsedForAlgorithm(const WebCryptoAlgorithm&, WebCryptoKeyUsage, CryptoResult*) const;
 
     // On failure, these return false and complete the CryptoResult with an error.
     static bool parseFormat(const String&, WebCryptoKeyFormat&, CryptoResult*);
