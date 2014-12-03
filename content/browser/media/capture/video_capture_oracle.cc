@@ -50,7 +50,7 @@ const int kMaxLockInPeriodMicros = 83333;  // 12 FPS
 // The amount of time over which to fully correct the drift of the rewritten
 // frame timestamps from the presentation event timestamps.  The lower the
 // value, the higher the variance in frame timestamps.
-const int kDriftCorrectionMillis = 6000;
+const int kDriftCorrectionMillis = 2000;
 
 // Given the amount of time between frames, compare to the expected amount of
 // time between frames at |frame_rate| and return the fractional difference.
@@ -288,7 +288,8 @@ bool AnimatedContentSampler::ShouldSample() const {
 }
 
 void AnimatedContentSampler::RecordSample(base::TimeTicks frame_timestamp) {
-  recorded_frame_timestamp_ = frame_timestamp;
+  recorded_frame_timestamp_ =
+      HasProposal() ? frame_timestamp : base::TimeTicks();
   sequence_offset_ = base::TimeDelta();
 }
 
