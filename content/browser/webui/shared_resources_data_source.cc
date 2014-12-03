@@ -81,23 +81,20 @@ void SharedResourcesDataSource::StartDataRequest(
   DCHECK_NE(-1, idr) << " path: " << path;
   scoped_refptr<base::RefCountedMemory> bytes;
 
-  ContentClient* content_client = GetContentClient();
-
-  // TODO(dbeam): there's some comments in content/DEPS about disallowing
-  // grd-related code. Does using this IDR_* go against that spirit?
   if (idr == IDR_WEBUI_CSS_TEXT_DEFAULTS) {
     std::vector<std::string> placeholders;
     placeholders.push_back(webui::GetTextDirection());  // $1
     placeholders.push_back(webui::GetFontFamily());  // $2
     placeholders.push_back(webui::GetFontSize());  // $3
 
+    ContentClient* content_client = GetContentClient();
     const std::string& chrome_shared =
         content_client->GetDataResource(idr, ui::SCALE_FACTOR_NONE).as_string();
     std::string replaced =
         ReplaceStringPlaceholders(chrome_shared, placeholders, nullptr);
     bytes = base::RefCountedString::TakeString(&replaced);
   } else {
-    bytes = content_client->GetDataResourceBytes(idr);
+    bytes = GetContentClient()->GetDataResourceBytes(idr);
   }
 
   callback.Run(bytes.get());
