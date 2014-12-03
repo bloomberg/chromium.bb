@@ -6,6 +6,7 @@
   height: 100px;
   stroke: black;
   stroke-width: 20px;
+  color: blue;
 }
 .replica {
   stroke: green;
@@ -36,6 +37,26 @@ assertInterpolation({
   {at: 0.6, is: '#664299'},
   {at: 1, is: 'blue'},
   {at: 1.5, is: 'blue'}
+]);
+assertInterpolation({
+  property: 'fill',
+  from: 'orange',
+  to: 'currentColor'
+}, [
+  {at: 0, is: 'orange'},
+  {at: 0.2, is: '#cc8433'},
+  {at: 0.6, is: '#664299'},
+  {at: 1, is: 'blue'},
+]);
+assertInterpolation({
+  property: 'fill',
+  from: 'currentColor',
+  to: 'orange'
+}, [
+  {at: 0, is: 'blue'},
+  {at: 0.2, is: '#3321cc'},
+  {at: 0.6, is: '#996366'},
+  {at: 1, is: 'orange'},
 ]);
 assertInterpolation({
   property: 'fill',

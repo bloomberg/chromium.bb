@@ -275,6 +275,13 @@ static PassRefPtrWillBeRawPtr<AnimatableValue> createFromFontWeight(FontWeight f
     return createFromDouble(fontWeightToDouble(fontWeight));
 }
 
+static SVGPaintType normalizeSVGPaintType(SVGPaintType paintType)
+{
+    // If the <paint> is 'currentColor', then create an AnimatableSVGPaint with
+    // a <rgbcolor> type. This is similar in vein to the handling of colors.
+    return paintType == SVG_PAINTTYPE_CURRENTCOLOR ? SVG_PAINTTYPE_RGBCOLOR : paintType;
+}
+
 // FIXME: Generate this function.
 PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID property, const RenderStyle& style)
 {
@@ -340,7 +347,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return createFromDouble(style.fillOpacity());
     case CSSPropertyFill:
         return AnimatableSVGPaint::create(
-            style.svgStyle().fillPaintType(), style.svgStyle().visitedLinkFillPaintType(),
+            normalizeSVGPaintType(style.svgStyle().fillPaintType()), normalizeSVGPaintType(style.svgStyle().visitedLinkFillPaintType()),
             style.svgStyle().fillPaintColor(), style.svgStyle().visitedLinkFillPaintColor(),
             style.svgStyle().fillPaintUri(), style.svgStyle().visitedLinkFillPaintUri());
     case CSSPropertyFlexGrow:
@@ -429,7 +436,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return createFromDouble(style.strokeOpacity());
     case CSSPropertyStroke:
         return AnimatableSVGPaint::create(
-            style.svgStyle().strokePaintType(), style.svgStyle().visitedLinkStrokePaintType(),
+            normalizeSVGPaintType(style.svgStyle().strokePaintType()), normalizeSVGPaintType(style.svgStyle().visitedLinkStrokePaintType()),
             style.svgStyle().strokePaintColor(), style.svgStyle().visitedLinkStrokePaintColor(),
             style.svgStyle().strokePaintUri(), style.svgStyle().visitedLinkStrokePaintUri());
     case CSSPropertyTextDecorationColor:

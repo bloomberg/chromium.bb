@@ -5,6 +5,14 @@ PASS: stroke from [orange] to [blue] was [#cc8433] at 0.2
 PASS: stroke from [orange] to [blue] was [#664299] at 0.6
 PASS: stroke from [orange] to [blue] was [blue] at 1
 PASS: stroke from [orange] to [blue] was [blue] at 1.5
+PASS: stroke from [orange] to [currentColor] was [orange] at 0
+PASS: stroke from [orange] to [currentColor] was [#cc8433] at 0.2
+PASS: stroke from [orange] to [currentColor] was [#664299] at 0.6
+PASS: stroke from [orange] to [currentColor] was [blue] at 1
+PASS: stroke from [currentColor] to [orange] was [blue] at 0
+PASS: stroke from [currentColor] to [orange] was [#3321cc] at 0.2
+PASS: stroke from [currentColor] to [orange] was [#996366] at 0.6
+PASS: stroke from [currentColor] to [orange] was [orange] at 1
 PASS: stroke from [orange] to [url(#gradient)] was [orange] at 0.2
 PASS: stroke from [orange] to [url(#gradient)] was [url(#gradient)] at 0.6
 
@@ -15,6 +23,14 @@ PASS: stroke from [orange] to [blue] was [#cc8433] at 0.2
 PASS: stroke from [orange] to [blue] was [#664299] at 0.6
 PASS: stroke from [orange] to [blue] was [blue] at 1
 PASS: stroke from [orange] to [blue] was [blue] at 1.5
+PASS: stroke from [orange] to [currentColor] was [orange] at 0
+PASS: stroke from [orange] to [currentColor] was [#cc8433] at 0.2
+PASS: stroke from [orange] to [currentColor] was [#664299] at 0.6
+PASS: stroke from [orange] to [currentColor] was [blue] at 1
+PASS: stroke from [currentColor] to [orange] was [blue] at 0
+PASS: stroke from [currentColor] to [orange] was [#3321cc] at 0.2
+PASS: stroke from [currentColor] to [orange] was [#996366] at 0.6
+PASS: stroke from [currentColor] to [orange] was [orange] at 1
 PASS: stroke from [orange] to [url(#gradient)] was [orange] at 0.2
 PASS: stroke from [orange] to [url(#gradient)] was [url(#gradient)] at 0.6
 
