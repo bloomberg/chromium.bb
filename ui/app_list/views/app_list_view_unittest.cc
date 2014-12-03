@@ -142,6 +142,10 @@ class AppListViewTestContext {
   // Closes the app list. This sets |view_| to NULL.
   void Close();
 
+  // Checks the search box widget is at |expected| in the contents view's
+  // coordinate space.
+  bool CheckSearchBoxWidget(const gfx::Rect& expected);
+
   // Gets the PaginationModel owned by |view_|.
   PaginationModel* GetPaginationModel();
 
@@ -261,6 +265,15 @@ void AppListViewTestContext::Close() {
 
   // |view_| should have been deleted and set to NULL via ViewClosing().
   EXPECT_FALSE(view_);
+}
+
+bool AppListViewTestContext::CheckSearchBoxWidget(const gfx::Rect& expected) {
+  ContentsView* contents_view = view_->app_list_main_view()->contents_view();
+  gfx::Point point = expected.origin();
+  views::View::ConvertPointToScreen(contents_view, &point);
+
+  return gfx::Rect(point, expected.size()) ==
+         view_->search_box_widget()->GetWindowBoundsInScreen();
 }
 
 PaginationModel* AppListViewTestContext::GetPaginationModel() {
@@ -602,8 +615,8 @@ void AppListViewTestContext::RunSearchResultsTest() {
     EXPECT_EQ(default_contents_bounds,
               contents_view->start_page_view()->bounds());
     // TODO(mgiuca): The search box should be small and centered.
-    EXPECT_EQ(contents_view->GetDefaultSearchBoxBounds(),
-              view_->search_box_view()->bounds());
+    EXPECT_TRUE(
+        CheckSearchBoxWidget(contents_view->GetDefaultSearchBoxBounds()));
 
     base::string16 search_text = base::UTF8ToUTF16("test");
     main_view->search_box_view()->search_box()->SetText(base::string16());
@@ -614,16 +627,16 @@ void AppListViewTestContext::RunSearchResultsTest() {
     view_->Layout();
     EXPECT_TRUE(
         contents_view->IsStateActive(AppListModel::STATE_SEARCH_RESULTS));
-    EXPECT_EQ(contents_view->GetDefaultSearchBoxBounds(),
-              view_->search_box_view()->bounds());
+    EXPECT_TRUE(
+        CheckSearchBoxWidget(contents_view->GetDefaultSearchBoxBounds()));
 
     // Check that typing into the search box triggers the search page.
     EXPECT_TRUE(SetAppListState(AppListModel::STATE_APPS));
     view_->Layout();
     EXPECT_EQ(default_contents_bounds,
               contents_view->apps_container_view()->bounds());
-    EXPECT_EQ(contents_view->GetDefaultSearchBoxBounds(),
-              view_->search_box_view()->bounds());
+    EXPECT_TRUE(
+        CheckSearchBoxWidget(contents_view->GetDefaultSearchBoxBounds()));
 
     base::string16 new_search_text = base::UTF8ToUTF16("apple");
     main_view->search_box_view()->search_box()->SetText(base::string16());
@@ -635,8 +648,8 @@ void AppListViewTestContext::RunSearchResultsTest() {
     view_->Layout();
     EXPECT_TRUE(
         contents_view->IsStateActive(AppListModel::STATE_SEARCH_RESULTS));
-    EXPECT_EQ(contents_view->GetDefaultSearchBoxBounds(),
-              view_->search_box_view()->bounds());
+    EXPECT_TRUE(
+        CheckSearchBoxWidget(contents_view->GetDefaultSearchBoxBounds()));
   }
 
   Close();

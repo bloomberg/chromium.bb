@@ -95,7 +95,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // Returns true if the app list should be centered and in landscape mode.
   bool ShouldCenterWindow() const;
 
-  SearchBoxView* search_box_view() const { return search_box_view_; }
+  views::Widget* search_box_widget() const { return search_box_widget_; }
 
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
@@ -138,6 +138,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   void InitContents(gfx::NativeView parent, int initial_apps_page);
 
+  void InitChildWidgets();
+
   void InitAsBubbleInternal(gfx::NativeView parent,
                             int initial_apps_page,
                             views::BubbleBorder::Arrow arrow,
@@ -166,8 +168,10 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   AppListViewDelegate* delegate_;  // Weak. Owned by AppListService.
 
   AppListMainView* app_list_main_view_;
-  SearchBoxView* search_box_view_;
   SpeechView* speech_view_;
+
+  views::Widget* search_box_widget_;  // Owned by the app list's widget.
+  SearchBoxView* search_box_view_;    // Owned by |search_box_widget_|.
 
   // A semi-transparent white overlay that covers the app list while dialogs are
   // open.

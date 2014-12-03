@@ -316,11 +316,14 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateAppLauncher) {
   }
 
   SendKeyPress(ui::VKEY_RETURN);
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Chrom*,"));
-  EXPECT_EQ("text box", speech_monitor_.GetNextUtterance());
+  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), ", text box"));
 
   SendKeyPress(ui::VKEY_DOWN);
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "*, button"));
+  // Chrom* appears twice because the accessibility system uses the first app as
+  // the accessibility context.
+  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Chrom*,"));
+  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Chrom*,"));
+  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "button"));
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {
