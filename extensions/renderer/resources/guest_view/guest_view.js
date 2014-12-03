@@ -41,6 +41,7 @@ function GuestViewImpl(viewType, guestInstanceId) {
   this.contentWindow = null;
   this.pendingAction = null;
   this.viewType = viewType;
+  this.internalInstanceId = 0;
 }
 
 // Callback wrapper that is used to call the callback of the pending action (if
@@ -96,6 +97,7 @@ GuestViewImpl.prototype.attachImpl = function(
                                                            function() {
         if (this.state == GUEST_STATE_ATTACHED) {
           this.contentWindow = null;
+          this.internalInstanceId = 0;
           this.state = GUEST_STATE_CREATED;
         }
       }.bind(this));
@@ -109,6 +111,7 @@ GuestViewImpl.prototype.attachImpl = function(
                                        attachParams,
                                        callbackWrapper.bind(this, callback));
 
+  this.internalInstanceId = internalInstanceId;
   this.state = GUEST_STATE_ATTACHED;
 };
 
@@ -167,6 +170,7 @@ GuestViewImpl.prototype.destroyImpl = function(callback) {
 
   this.contentWindow = null;
   this.id = 0;
+  this.internalInstanceId = 0;
   this.state = GUEST_STATE_START;
 };
 
@@ -185,9 +189,12 @@ GuestViewImpl.prototype.detachImpl = function(callback) {
       return;
   }
 
-  // TODO(fsamuel): Implement DetachGuest() in c++.
-  this.handleCallback();
+  GuestViewInternalNatives.DetachGuest(
+      this.internalInstanceId,
+      this.handleCallback.bind(this, callback));
+
   this.contentWindow = null;
+  this.internalInstanceId = 0;
   this.state = GUEST_STATE_CREATED;
 };
 
@@ -224,6 +231,7 @@ GuestView.prototype.destroy = function(callback) {
 };
 
 // Detaches the guestview from its container.
+// Note: This is not currently used.
 GuestView.prototype.detach = function(callback) {
   var internal = privates(this).internal;
   internal.actionQueue.push(internal.detachImpl.bind(internal, callback));

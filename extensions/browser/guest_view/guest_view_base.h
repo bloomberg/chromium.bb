@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/common/guest_view/guest_view_constants.h"
 
 struct RendererContentSettingRules;
 
@@ -182,7 +183,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   bool initialized() const { return initialized_; }
 
   content::WebContents* embedder_web_contents() const {
-    return attached_ ? owner_web_contents_ : NULL;
+    return attached() ? owner_web_contents_ : NULL;
   }
 
   content::WebContents* owner_web_contents() const {
@@ -194,7 +195,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   base::DictionaryValue* attach_params() const { return attach_params_.get(); }
 
   // Returns whether this guest has an associated embedder.
-  bool attached() const { return attached_; }
+  bool attached() const {
+    return element_instance_id_ != guestview::kInstanceIDNone;
+  }
 
   // Returns the instance ID of the <*view> element.
   int view_instance_id() const { return view_instance_id_; }
@@ -235,6 +238,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // BrowserPluginGuestDelegate implementation.
   void DidAttach(int guest_proxy_routing_id) final;
+  void DidDetach() final;
   void ElementSizeChanged(const gfx::Size& old_size,
                           const gfx::Size& new_size) final;
   void GuestSizeChanged(const gfx::Size& old_size,
@@ -301,10 +305,6 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // |element_instance_id_| is an identifer that's unique to a particular
   // GuestViewContainer element.
   int element_instance_id_;
-
-  // |attached_| indicates whether this GuestViewBase has been attached to a
-  // container.
-  bool attached_;
 
   // |initialized_| indicates whether GuestViewBase::Init has been called for
   // this object.

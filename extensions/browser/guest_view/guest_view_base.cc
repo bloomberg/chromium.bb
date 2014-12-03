@@ -143,7 +143,6 @@ GuestViewBase::GuestViewBase(content::BrowserContext* browser_context,
       guest_instance_id_(guest_instance_id),
       view_instance_id_(guestview::kInstanceIDNone),
       element_instance_id_(guestview::kInstanceIDNone),
-      attached_(false),
       initialized_(false),
       is_being_destroyed_(false),
       auto_size_enabled_(false),
@@ -322,6 +321,15 @@ void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
   SendQueuedEvents();
 }
 
+void GuestViewBase::DidDetach() {
+  GuestViewManager::FromBrowserContext(browser_context_)->DetachGuest(
+      this, element_instance_id_);
+  owner_web_contents()->Send(new ExtensionMsg_GuestDetached(
+      owner_web_contents()->GetMainFrame()->GetRoutingID(),
+      element_instance_id_));
+  element_instance_id_ = guestview::kInstanceIDNone;
+}
+
 void GuestViewBase::ElementSizeChanged(const gfx::Size& old_size,
                                        const gfx::Size& new_size) {
   element_size_ = new_size;
@@ -393,7 +401,6 @@ void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
                                int element_instance_id,
                                bool is_full_page_plugin) {
   owner_web_contents_ = embedder_web_contents;
-  attached_ = true;
 
   // If we are attaching to a different WebContents than the one that created
   // the guest, we need to create a new LifetimeObserver.

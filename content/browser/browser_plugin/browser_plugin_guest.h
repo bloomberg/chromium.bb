@@ -226,7 +226,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   void OnCompositorFrameSwappedACK(
       int instance_id,
       const FrameHostMsg_CompositorFrameSwappedACK_Params& params);
-
+  void OnDetach(int instance_id);
   // Handles drag events from the embedder.
   // When dragging, the drag events go to the embedder first, and if the drag
   // happens on the browser plugin, then the plugin sends a corresponding

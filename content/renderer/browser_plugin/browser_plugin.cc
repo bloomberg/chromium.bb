@@ -120,14 +120,7 @@ void BrowserPlugin::UpdateDOMAttribute(const std::string& attribute_name,
 }
 
 void BrowserPlugin::Attach() {
-  if (attached()) {
-    guest_crashed_ = false;
-    EnableCompositing(false);
-    if (compositing_helper_.get()) {
-      compositing_helper_->OnContainerDestroy();
-      compositing_helper_ = NULL;
-    }
-  }
+  Detach();
 
   // TODO(fsamuel): Add support for reattachment.
   BrowserPluginHostMsg_Attach_Params attach_params;
@@ -153,6 +146,22 @@ void BrowserPlugin::Attach() {
   attached_ = true;
 }
 
+void BrowserPlugin::Detach() {
+  if (!attached())
+    return;
+
+  attached_ = false;
+  guest_crashed_ = false;
+  EnableCompositing(false);
+  if (compositing_helper_.get()) {
+    compositing_helper_->OnContainerDestroy();
+    compositing_helper_ = NULL;
+  }
+
+  browser_plugin_manager()->Send(new BrowserPluginHostMsg_Detach(
+      render_view_routing_id_, browser_plugin_instance_id_));
+}
+
 void BrowserPlugin::DidCommitCompositorFrame() {
   if (compositing_helper_.get())
     compositing_helper_->DidCommitCompositorFrame();
@@ -165,6 +174,9 @@ void BrowserPlugin::OnAdvanceFocus(int browser_plugin_instance_id,
 }
 
 void BrowserPlugin::OnCompositorFrameSwapped(const IPC::Message& message) {
+  if (!attached())
+    return;
+
   BrowserPluginMsg_CompositorFrameSwapped::Param param;
   if (!BrowserPluginMsg_CompositorFrameSwapped::Read(&message, &param))
     return;

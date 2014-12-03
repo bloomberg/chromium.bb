@@ -41,6 +41,9 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // embedder that will serve as a contentWindow proxy for the guest.
   virtual void DidAttach(int guest_proxy_routing_id) {}
 
+  // Notification that the guest has detached from its container.
+  virtual void DidDetach() {}
+
   // Notification that the BrowserPlugin has resized.
   virtual void ElementSizeChanged(const gfx::Size& old_size,
                                   const gfx::Size& new_size) {}

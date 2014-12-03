@@ -56,6 +56,10 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
                    int guest_instance_id,
                    const base::DictionaryValue& attach_params);
 
+  // Removes the association between |element_instance_id| and a guest instance
+  // ID if one exists.
+  void DetachGuest(GuestViewBase* guest, int element_instance_id);
+
   int GetNextInstanceID();
   int GetGuestInstanceIDForElementID(
       content::WebContents* owner_web_contents,
@@ -121,14 +125,25 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
   struct ElementInstanceKey {
     content::WebContents* owner_web_contents;
     int element_instance_id;
+
+    ElementInstanceKey()
+        : owner_web_contents(nullptr),
+          element_instance_id(0) {}
+
     ElementInstanceKey(content::WebContents* owner_web_contents,
                        int element_instance_id)
         : owner_web_contents(owner_web_contents),
           element_instance_id(element_instance_id) {}
+
     bool operator<(const ElementInstanceKey& other) const {
       if (owner_web_contents != other.owner_web_contents)
         return owner_web_contents < other.owner_web_contents;
       return element_instance_id < other.element_instance_id;
+    }
+
+    bool operator==(const ElementInstanceKey& other) const {
+      return (owner_web_contents == other.owner_web_contents) &&
+          (element_instance_id == other.element_instance_id);
     }
   };
 

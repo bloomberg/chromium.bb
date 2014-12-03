@@ -63,6 +63,17 @@ class ExtensionsGuestViewContainer : public GuestViewContainer {
     scoped_ptr<base::DictionaryValue> params_;
   };
 
+  class DetachRequest : public Request {
+   public:
+    DetachRequest(GuestViewContainer* container,
+                  v8::Handle<v8::Function> callback,
+                  v8::Isolate* isolate);
+    ~DetachRequest() override;
+
+    void PerformRequest() override;
+    void HandleResponse(const IPC::Message& message) override;
+  };
+
   explicit ExtensionsGuestViewContainer(content::RenderFrame* render_frame);
   ~ExtensionsGuestViewContainer() override;
 

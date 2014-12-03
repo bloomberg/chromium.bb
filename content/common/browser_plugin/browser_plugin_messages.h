@@ -97,13 +97,18 @@ IPC_MESSAGE_ROUTED3(BrowserPluginHostMsg_ExtendSelectionAndDelete,
                     int /* before */,
                     int /* after */)
 
-// This message is sent to the browser process to indicate that a BrowserPlugin
-// has taken ownership of the lifetime of the guest of the given
-// |browser_plugin_instance_id|. |params| is the state of the BrowserPlugin
-// taking ownership of the guest.
+// This message is sent to the browser process to indicate that the
+// BrowserPlugin identified by |browser_plugin_instance_id| is ready to serve
+// as container for a guest. |params| is the state of the BrowserPlugin.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_Attach,
                     int /* browser_plugin_instance_id */,
                     BrowserPluginHostMsg_Attach_Params /* params */)
+
+// This message is sent to the browser process to indicate that the
+// BrowserPlugin identified by |browser_plugin_instance_id| will no longer serve
+// as a container for a guest.
+IPC_MESSAGE_ROUTED1(BrowserPluginHostMsg_Detach,
+                    int /* browser_plugin_instance_id */)
 
 // Tells the guest to focus or defocus itself.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetFocus,

@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -15,6 +16,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/guest_view/guest_view_manager_factory.h"
+#include "extensions/common/extension_messages.h"
 #include "extensions/common/guest_view/guest_view_constants.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
@@ -109,8 +111,28 @@ void GuestViewManager::AttachGuest(
     old_guest_view->Destroy();
   }
   instance_id_map_[key] = guest_instance_id;
-  reverse_instance_id_map_.insert(std::make_pair(guest_instance_id, key));
+  reverse_instance_id_map_[guest_instance_id] = key;
   guest_view->SetAttachParams(attach_params);
+}
+
+void GuestViewManager::DetachGuest(GuestViewBase* guest,
+                                   int element_instance_id) {
+  if (!guest->attached())
+    return;
+
+  ElementInstanceKey key(guest->owner_web_contents(), element_instance_id);
+  auto it = instance_id_map_.find(key);
+  // There's nothing to do if this key does not exist in the map.
+  if (it == instance_id_map_.end())
+    return;
+
+  int guest_instance_id = it->second;
+  instance_id_map_.erase(key);
+
+  auto reverse_it = reverse_instance_id_map_.find(guest->guest_instance_id());
+  DCHECK(reverse_it != reverse_instance_id_map_.end());
+  DCHECK(reverse_it->second == key);
+  reverse_instance_id_map_.erase(guest_instance_id);
 }
 
 int GuestViewManager::GetNextInstanceID() {

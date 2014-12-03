@@ -1643,6 +1643,10 @@ void RenderFrameImpl::AttachGuest(int element_instance_id) {
   render_view_->GetBrowserPluginManager()->Attach(element_instance_id);
 }
 
+void RenderFrameImpl::DetachGuest(int element_instance_id) {
+  render_view_->GetBrowserPluginManager()->Detach(element_instance_id);
+}
+
 void RenderFrameImpl::SetSelectedText(const base::string16& selection_text,
                                       size_t offset,
                                       const gfx::Range& range) {

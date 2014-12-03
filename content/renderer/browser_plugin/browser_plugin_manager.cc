@@ -70,6 +70,12 @@ void BrowserPluginManager::Attach(int browser_plugin_instance_id) {
     plugin->Attach();
 }
 
+void BrowserPluginManager::Detach(int browser_plugin_instance_id) {
+  BrowserPlugin* plugin = GetBrowserPlugin(browser_plugin_instance_id);
+  if (plugin)
+    plugin->Detach();
+}
+
 BrowserPlugin* BrowserPluginManager::CreateBrowserPlugin(
     RenderViewImpl* render_view,
     blink::WebFrame* frame,

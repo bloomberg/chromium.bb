@@ -43,6 +43,8 @@ class CONTENT_EXPORT BrowserPluginManager
 
   void Attach(int browser_plugin_instance_id);
 
+  void Detach(int browser_plugin_instance_id);
+
   void AddBrowserPlugin(int browser_plugin_instance_id,
                         BrowserPlugin* browser_plugin);
   void RemoveBrowserPlugin(int browser_plugin_instance_id);

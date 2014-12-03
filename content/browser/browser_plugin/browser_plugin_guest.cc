@@ -167,6 +167,7 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CompositorFrameSwappedACK,
                         OnCompositorFrameSwappedACK)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_DragStatusUpdate,
                         OnDragStatusUpdate)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ExecuteEditCommand,
@@ -439,6 +440,7 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     const IPC::Message& message) {
   switch (message.type()) {
     case BrowserPluginHostMsg_CompositorFrameSwappedACK::ID:
+    case BrowserPluginHostMsg_Detach::ID:
     case BrowserPluginHostMsg_DragStatusUpdate::ID:
     case BrowserPluginHostMsg_ExecuteEditCommand::ID:
     case BrowserPluginHostMsg_ExtendSelectionAndDelete::ID:
@@ -531,6 +533,7 @@ void BrowserPluginGuest::Attach(
 
   Initialize(browser_plugin_instance_id, params, embedder_web_contents);
 
+  attached_ = true;
   SendQueuedMessages();
 
   // Create a swapped out RenderView for the guest in the embedder render
@@ -544,7 +547,6 @@ void BrowserPluginGuest::Attach(
             owner_web_contents_->GetSiteInstance());
   }
 
-  attached_ = true;
   delegate_->DidAttach(guest_proxy_routing_id_);
 
   has_render_view_ = true;
@@ -559,6 +561,17 @@ void BrowserPluginGuest::OnCompositorFrameSwappedACK(
                                                    params.output_surface_id,
                                                    params.producing_host_id,
                                                    params.ack);
+}
+
+void BrowserPluginGuest::OnDetach(int browser_plugin_instance_id) {
+  if (!attached())
+    return;
+
+  // This tells BrowserPluginGuest to queue up all IPCs to BrowserPlugin until
+  // it's attached again.
+  attached_ = false;
+
+  delegate_->DidDetach();
 }
 
 void BrowserPluginGuest::OnDragStatusUpdate(int browser_plugin_instance_id,

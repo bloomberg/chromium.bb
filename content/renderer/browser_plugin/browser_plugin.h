@@ -68,6 +68,10 @@ class CONTENT_EXPORT BrowserPlugin :
   // this BrowserPlugin instance to that guest.
   void Attach();
 
+  // This method detaches this BrowserPlugin instance from the guest that it's
+  // currently attached to, if any.
+  void Detach();
+
   // Notify the plugin about a compositor commit so that frame ACKs could be
   // sent, if needed.
   void DidCommitCompositorFrame();
