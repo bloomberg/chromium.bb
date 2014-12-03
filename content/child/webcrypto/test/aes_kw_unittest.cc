@@ -34,6 +34,12 @@ TEST(WebCryptoAesKwTest, GenerateKeyBadLength) {
   }
 }
 
+TEST(WebCryptoAesKwTest, GenerateKeyEmptyUsage) {
+  blink::WebCryptoKey key;
+  EXPECT_EQ(Status::ErrorCreateKeyEmptyUsages(),
+            GenerateSecretKey(CreateAesKwKeyGenAlgorithm(256), true, 0, &key));
+}
+
 TEST(WebCryptoAesKwTest, ImportKeyJwkKeyOpsWrapUnwrap) {
   blink::WebCryptoKey key;
   base::DictionaryValue dict;

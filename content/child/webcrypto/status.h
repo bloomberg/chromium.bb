@@ -220,6 +220,9 @@ class CONTENT_EXPORT Status {
   // and algorithm.
   static Status ErrorCreateKeyBadUsages();
 
+  // No usages were specified when creating a secret or private key.
+  static Status ErrorCreateKeyEmptyUsages();
+
   // An EC key imported using SPKI/PKCS8 format had the wrong curve specified in
   // the key.
   static Status ErrorImportedEcKeyIncorrectCurve();

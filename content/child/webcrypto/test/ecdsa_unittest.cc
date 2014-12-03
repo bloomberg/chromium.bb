@@ -64,8 +64,9 @@ TEST(WebCryptoEcdsaTest, GenerateKeyIsRandom) {
     blink::WebCryptoKey private_key;
 
     ASSERT_EQ(Status::Success(),
-              GenerateKeyPair(CreateEcdsaKeyGenAlgorithm(named_curve), true, 0,
-                              &public_key, &private_key));
+              GenerateKeyPair(CreateEcdsaKeyGenAlgorithm(named_curve), true,
+                              blink::WebCryptoKeyUsageSign, &public_key,
+                              &private_key));
 
     // Basic sanity checks on the generated key pair.
     EXPECT_EQ(blink::WebCryptoKeyTypePublic, public_key.type());
@@ -87,6 +88,18 @@ TEST(WebCryptoEcdsaTest, GenerateKeyIsRandom) {
   // Ensure all entries in the key sample set are unique. This is a simplistic
   // estimate of whether the generated keys appear random.
   EXPECT_FALSE(CopiesExist(serialized_keys));
+}
+
+TEST(WebCryptoEcdsaTest, GenerateKeyEmptyUsage) {
+  if (!SupportsEcdsa())
+    return;
+
+  blink::WebCryptoNamedCurve named_curve = blink::WebCryptoNamedCurveP256;
+  blink::WebCryptoKey public_key;
+  blink::WebCryptoKey private_key;
+  ASSERT_EQ(Status::ErrorCreateKeyEmptyUsages(),
+            GenerateKeyPair(CreateEcdsaKeyGenAlgorithm(named_curve), true, 0,
+                            &public_key, &private_key));
 }
 
 // Verify that ECDSA signatures are probabilistic. Signing the same message two

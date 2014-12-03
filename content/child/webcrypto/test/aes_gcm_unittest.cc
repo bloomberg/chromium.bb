@@ -111,8 +111,19 @@ TEST(WebCryptoAesGcmTest, GenerateKeyBadLength) {
     SCOPED_TRACE(i);
     EXPECT_EQ(Status::ErrorGenerateAesKeyLength(),
               GenerateSecretKey(CreateAesGcmKeyGenAlgorithm(kKeyLen[i]), true,
-                                0, &key));
+                                blink::WebCryptoKeyUsageDecrypt, &key));
   }
+}
+
+TEST(WebCryptoAesGcmTest, GenerateKeyEmptyUsage) {
+  if (!SupportsAesGcm()) {
+    LOG(WARNING) << "AES GCM not supported, skipping tests";
+    return;
+  }
+
+  blink::WebCryptoKey key;
+  EXPECT_EQ(Status::ErrorCreateKeyEmptyUsages(),
+            GenerateSecretKey(CreateAesGcmKeyGenAlgorithm(256), true, 0, &key));
 }
 
 TEST(WebCryptoAesGcmTest, ImportExportJwk) {

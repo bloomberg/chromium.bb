@@ -513,6 +513,9 @@ Status RsaHashedAlgorithm::GenerateKey(
   const blink::WebCryptoKeyUsageMask private_usages =
       combined_usages & all_private_key_usages_;
 
+  if (private_usages == 0)
+    return Status::ErrorCreateKeyEmptyUsages();
+
   unsigned int public_exponent = 0;
   unsigned int modulus_length_bits = 0;
   status = GetRsaKeyGenParameters(algorithm.rsaHashedKeyGenParams(),
