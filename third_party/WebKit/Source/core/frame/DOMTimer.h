@@ -58,6 +58,8 @@ public:
 
     void trace(Visitor*) { }
 
+    void dispose();
+
 private:
     friend class ExecutionContext; // For create().
 

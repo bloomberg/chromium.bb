@@ -108,6 +108,13 @@ DOMTimer::~DOMTimer()
 {
 }
 
+void DOMTimer::dispose()
+{
+    m_action = nullptr;
+    m_userGestureToken = nullptr;
+    stop();
+}
+
 int DOMTimer::timeoutID() const
 {
     return m_timeoutID;

@@ -205,6 +205,10 @@ void ExecutionContext::removeTimeoutByID(int timeoutID)
 {
     if (timeoutID <= 0)
         return;
+
+    if (DOMTimer* removedTimer = m_timeouts.get(timeoutID))
+        removedTimer->dispose();
+
     m_timeouts.remove(timeoutID);
 }
 
