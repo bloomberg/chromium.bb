@@ -8,14 +8,11 @@
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/events/event.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
-class StickyKeysOverlayTest : public test::AshTestBase {
- public:
-  StickyKeysOverlayTest() {}
-  virtual ~StickyKeysOverlayTest() {}
-};
+using StickyKeysOverlayTest = test::AshTestBase;
 
 TEST_F(StickyKeysOverlayTest, OverlayVisibility) {
   StickyKeysOverlay overlay;
@@ -39,6 +36,27 @@ TEST_F(StickyKeysOverlayTest, ModifierKeyState) {
             overlay.GetModifierKeyState(ui::EF_CONTROL_DOWN));
   EXPECT_EQ(STICKY_KEY_STATE_LOCKED,
             overlay.GetModifierKeyState(ui::EF_COMMAND_DOWN));
+}
+
+// This test attempts to simulate a crash report (see //crbug.com/435600).
+// The crash is speculated to be caused by the native window of the sticky keys
+// overlay widget being destroyed before the overlay object is. This test case
+// tests that the overlay object maintains full ownership of the widget and view
+// regardless.
+TEST_F(StickyKeysOverlayTest, OverlayViewOwnership) {
+  StickyKeysOverlay overlay;
+  views::Widget* widget = overlay.GetWidgetForTesting();
+  ASSERT_TRUE(widget);
+  delete widget->GetNativeWindow();
+
+  // States should still be valid even after the native window associated with
+  // the Widget is destroyed.
+  overlay.SetModifierKeyState(ui::EF_SHIFT_DOWN, STICKY_KEY_STATE_ENABLED);
+  EXPECT_EQ(STICKY_KEY_STATE_ENABLED,
+            overlay.GetModifierKeyState(ui::EF_SHIFT_DOWN));
+  overlay.SetModifierKeyState(ui::EF_SHIFT_DOWN, STICKY_KEY_STATE_DISABLED);
+  EXPECT_EQ(STICKY_KEY_STATE_DISABLED,
+            overlay.GetModifierKeyState(ui::EF_SHIFT_DOWN));
 }
 
 // Additional sticky key overlay tests that depend on chromeos::EventRewriter

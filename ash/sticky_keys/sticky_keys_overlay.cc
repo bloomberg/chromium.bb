@@ -109,6 +109,7 @@ class StickyKeysOverlayView : public views::WidgetDelegateView {
 
   // views::WidgetDelegateView overrides:
   void OnPaint(gfx::Canvas* canvas) override;
+  void DeleteDelegate() override;
 
   void SetKeyState(ui::EventFlags modifier, StickyKeyState state);
 
@@ -164,6 +165,13 @@ void StickyKeysOverlayView::OnPaint(gfx::Canvas* canvas) {
   paint.setColor(SkColorSetARGB(0xB3, 0x55, 0x55, 0x55));
   canvas->DrawRoundRect(GetLocalBounds(), 2, paint);
   views::WidgetDelegateView::OnPaint(canvas);
+}
+
+void StickyKeysOverlayView::DeleteDelegate() {
+  // The ownership of a WidgetDelegateView is kind of tricky. It has the
+  // lifetime semantics of both a View and a WidgetDelegate. We should just rely
+  // on the Views semantics and do nothing here. This object will be deleted
+  // when the parent widget is deleted.
 }
 
 void StickyKeysOverlayView::SetKeyState(ui::EventFlags modifier,
@@ -277,6 +285,10 @@ void StickyKeysOverlay::SetModifierKeyState(ui::EventFlags modifier,
 StickyKeyState StickyKeysOverlay::GetModifierKeyState(
     ui::EventFlags modifier) {
   return overlay_view_->GetKeyState(modifier);
+}
+
+views::Widget* StickyKeysOverlay::GetWidgetForTesting() {
+  return overlay_widget_.get();
 }
 
 gfx::Rect StickyKeysOverlay::CalculateOverlayBounds() {
