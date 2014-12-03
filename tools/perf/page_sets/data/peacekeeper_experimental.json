@@ -1,9 +1,0 @@
-{
-    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
-    "archives": {
-        "peacekeeper_experimental_000.wpr": [
-            "http://peacekeeper.futuremark.com/run.action?debug=true&repeat=false&forceSuiteName=experimental&forceTestName=experimentalRipple01", 
-            "http://peacekeeper.futuremark.com/run.action?debug=true&repeat=false&forceSuiteName=experimental&forceTestName=experimentalRipple02"
-        ]
-    }
-}

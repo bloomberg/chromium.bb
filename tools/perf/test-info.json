@@ -7,14 +7,6 @@
       "third_party/WebKit/PerformanceTests/"
     ]
   },
-  "browsermark": {
-    "description": "Runs Browsermark CSS, DOM, WebGL, JS, resize and page load benchmarks.\n\nAdditionally Browsermark will test your browsers conformance, but conformance tests are not included in this suite. [Browsermark 2.0 by Rightware](http://browsermark.rightware.com/)",
-    "code": ["chrome/src/tools/perf/benchmarks/browsermark.py"]
-  },
-  "canvasmark": {
-    "description": "Runs Canvasmark HTML5, Canvas 2D rendering and javascript benchmark.\n\nCanvasMark tests the HTML5 <canvas> rendering performance for commonly used operations in HTML5 games: bitmaps, canvas drawing, alpha blending, polygon fills, shadows and text functions.[HTML5 Canvas demo by Kevin Roast](http://www.kevs3d.co.uk/dev/canvasmark/)",
-    "code": ["chrome/src/tools/perf/benchmarks/canvasmark.py"]
-  },
   "cc_perftests":{
     "description":"Microbenchmarks for compositor (cc/) component.",
     "code":[
@@ -70,10 +62,6 @@
   "fast_path.key_mobile_sites":{
     "description":"Measures CPU usage on rendering critical threads. Both clock and CPU time is measured."
   },
-   "html5gaming": {
-    "description": "Impact HTML5 Gaming benchmark.\n\nTests one very specific use case: smooth running games rendered with the <canvas> element. The score for the HTML5-Benchmark takes the total time the browser spent rendering frames (formula is 1000000/(sqrt(totalTime) + lagTime * 0.1)). The benchmark automatically runs at a reasonable screen size. Final score is a indicator for the browser's ability to smoothly run HTML5 games.",
-    "code": ["chrome/src/tools/perf/benchmark/html5gaming.py"]
-  },
   "image_decoding.image_decoding_measurement ":{
     "description":"Milliseconds to decode a large image of various formats (gif, jpg, png, webp)."
   },
@@ -82,9 +70,6 @@
     "code":[
       "chrome/src/chrome/test/data/indexeddb/perf_test.html"
     ]
-  },
-  "jsgamebench":{
-    "description":"Score on [Facebook's JSGameBench benchmark](https://github.com/facebook/jsgamebench).\n\nThe focus is sprite performance a player is likely to see. Scoring is how many sprites are drawn, so large scores are better.\n\nFor each render path, JSGameBench draws as many moving, animating sprites as possible at 30fps against a background with both axis-aligned and rotated sprites. We try both because significant performance differences between the two indicate flaws or oversights in current rendering techniques. More importantly, while animation can be used instead of sprite rotations, it is often an unacceptable trade off that game developers should not be forced to make.\n\nThe final score is the geometric mean of the axis aligned and rotated scores. Geometric mean is used to prevent a high axis aligned score from hiding the poor rotated performance."
   },
   "kraken":{
     "description":"Score on [Mozilla's Kraken JavaScript benchmark](http://krakenbenchmark.mozilla.org/)"
@@ -169,12 +154,6 @@
   },
   "scheduler.tough_scheduling_cases":{
     "description":"This test measures rendering statistics while interacting with pages that have challenging scheduling properties. Mainly affected by changes to the compositor scheduler or the graphics pipeline."
-  },
-  "scirra":{
-    "description":"The Scirra WebGL performance test measures the number of 2D triangles represented onscreen when the animation reaches the 30 FPS threshold. [Scirra demos](https://www.scirra.com/)",
-    "code":[
-      "chrome/src/tools/perf/benchmark/scirra.py"
-    ]
   },
   "service_worker.service_worker":{
     "description":"This test measures the performance of pages using ServiceWorker. As a page set, two benchamrk page(many registration, many concurrent fetching) and one application (Trained-to-thrill: https://jakearchibald.github.io/trained-to-thrill/) are included. Execution time of these pages will be shown as Speed Index, and TRACE_EVENTs are subsidiary information to know more detail performance regression.",
