@@ -511,6 +511,7 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
             overlay_tar_dir,
             archive_desc.name,
             archive_desc.hash)
+        logging.info('Using overlaid tar: %s', archive_file)
       else:
         archive_file = package_locations.GetLocalPackageArchiveFile(
             tar_dir,
@@ -529,8 +530,8 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
             continue
           raise error.Error('Invalid archive file and URL: %s' % archive_file)
 
-        logging.warn('Expected archive missing, downloading: %s',
-                     archive_desc.name)
+        logging.warn('Archive missing, downloading: %s', archive_desc.name)
+        logging.info('Downloading %s: %s', archive_desc.name, archive_desc.url)
 
         pynacl.file_tools.MakeParentDirectoryIfAbsent(archive_file)
         downloader(archive_desc.url, archive_file)

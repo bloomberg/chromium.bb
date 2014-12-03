@@ -16,6 +16,8 @@ set -o errexit
 
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly TOOLCHAIN_BUILD="toolchain_build/toolchain_build_pnacl.py"
+readonly PACKAGES_SCRIPT="buildbot/packages.py"
+readonly TEMP_PACKAGES="toolchain_build/out/packages.txt"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 readonly TORTURE_TEST="tools/toolchain_tester/torture_test.py"
 readonly LLVM_TEST="pnacl/scripts/llvm-test.py"
@@ -159,7 +161,11 @@ tc-test-bot() {
   # Build the un-sandboxed toolchain. The build script outputs its own buildbot
   # annotations.
   ${TOOLCHAIN_BUILD} --verbose --sync --clobber --testsuite-sync \
-    --install ${INSTALL_SUBDIR}
+                     --packages-file ${TEMP_PACKAGES}
+
+  # Extract the built packages using the packages script.
+  python ${PACKAGES_SCRIPT} --overlay-packages --skip-missing \
+                            --packages ${TEMP_PACKAGES}
 
   # Linking the tests require additional sdk libraries like libnacl.
   # Do this once and for all early instead of attempting to do it within

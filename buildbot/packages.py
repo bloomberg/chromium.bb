@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import argparse
 import os
 import subprocess
 import sys
@@ -92,16 +93,63 @@ def ExtractPackages(filename, overlay_packages=True, skip_missing=True):
 
       full_package_name = '%s/%s' % (pkg_target, pkg_name)
 
-      if overlay_packages:
-        extract_args = ['--overlay-tar-dir', tar_dir]
-      elif skip_missing:
-        extract_args = ['--skip-missing']
-      else:
-        extract_args = []
+      package_version_args = []
+      extract_args = []
 
+      if overlay_packages:
+        extract_args += ['--overlay-tar-dir', tar_dir]
+      else:
+        package_version_args += ['--tar-dir', tar_dir]
+
+      if skip_missing:
+        extract_args += ['--skip-missing']
+
+      cmd_args = ([sys.executable,
+                  PACKAGE_VERSION_SCRIPT,
+                  '--annotate',
+                  '--packages', full_package_name] +
+                  package_version_args +
+                  ['extract'] +
+                  extract_args)
+
+      print 'Executing:', cmd_args
       subprocess.check_call([sys.executable,
                              PACKAGE_VERSION_SCRIPT,
                              '--annotate',
-                             '--packages', full_package_name,
-                             'extract'] +
-                            extract_args)
+                             '--packages', full_package_name] +
+                             package_version_args +
+                             ['extract'] +
+                             extract_args)
+
+def main(args):
+  parser = argparse.ArgumentParser()
+
+  command_parser = parser.add_subparsers(title='command', dest='command')
+
+  extract_cmd_parser = command_parser.add_parser('extract')
+  extract_cmd_parser.add_argument(
+    '--overlay-packages', dest='overlay_packages',
+    action='store_true', default=False,
+    help='Overlay packages on top of default packages')
+  extract_cmd_parser.add_argument(
+    '--skip-missing', dest='skip_missing',
+    action='store_true', default=False,
+    help='Skip missing packages upon extraction.')
+  extract_cmd_parser.add_argument(
+    '--packages', dest='packages_file',
+    metavar='FILE', required=True,
+    help='Packages file outputed by toolchain_build.')
+
+  arguments = parser.parse_args(args)
+
+  if arguments.command == 'extract':
+    ExtractPackages(arguments.packages_file,
+                    overlay_packages=arguments.overlay_packages,
+                    skip_missing=arguments.skip_missing)
+    return 0
+
+  print 'Unknown Command:', arguments.command
+  return 1
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv[1:]))
