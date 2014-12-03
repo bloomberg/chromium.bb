@@ -531,7 +531,7 @@ void ChildProcessLauncher::Context::TerminateInternal(
     ZygoteHostImpl::GetInstance()->EnsureProcessTerminated(process.Handle());
   } else
 #endif  // !OS_MACOSX
-  base::EnsureProcessTerminated(process.Handle());
+  base::EnsureProcessTerminated(process.Pass());
 #endif  // OS_POSIX
 #endif  // defined(OS_ANDROID)
 }

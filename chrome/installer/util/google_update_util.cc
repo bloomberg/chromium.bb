@@ -89,13 +89,13 @@ bool GetUserLevelGoogleUpdateInstallCommandLine(base::string16* cmd_string) {
 bool LaunchProcessAndWaitWithTimeout(const base::string16& cmd_string,
                                      base::TimeDelta timeout) {
   bool success = false;
-  base::win::ScopedHandle process;
   int exit_code = 0;
   VLOG(0) << "Launching: " << cmd_string;
-  if (!base::LaunchProcess(cmd_string, base::LaunchOptions(),
-                           &process)) {
+  base::Process process =
+      base::LaunchProcess(cmd_string, base::LaunchOptions());
+  if (!process.IsValid()) {
     PLOG(ERROR) << "Failed to launch (" << cmd_string << ")";
-  } else if (!base::WaitForExitCodeWithTimeout(process.Get(), &exit_code,
+  } else if (!base::WaitForExitCodeWithTimeout(process.Handle(), &exit_code,
                                                timeout)) {
     // The GetExitCodeProcess failed or timed-out.
     LOG(ERROR) <<"Command (" << cmd_string << ") is taking more than "

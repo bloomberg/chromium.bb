@@ -118,7 +118,7 @@ bool UninstallView::Accept() {
     std::advance(i, browsers_combo_->selected_index());
     base::LaunchOptions options;
     options.start_hidden = true;
-    base::LaunchProcess(i->second, options, NULL);
+    base::LaunchProcess(i->second, options);
   }
   return true;
 }

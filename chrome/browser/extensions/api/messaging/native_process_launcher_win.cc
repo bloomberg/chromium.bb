@@ -89,7 +89,7 @@ base::FilePath NativeProcessLauncher::FindManifest(
 // static
 bool NativeProcessLauncher::LaunchNativeProcess(
     const CommandLine& command_line,
-    base::ProcessHandle* process_handle,
+    base::Process* process,
     base::File* read_file,
     base::File* write_file) {
   // Timeout for the IO pipes.
@@ -151,8 +151,8 @@ bool NativeProcessLauncher::LaunchNativeProcess(
 
   base::LaunchOptions options;
   options.start_hidden = true;
-  base::win::ScopedHandle cmd_handle;
-  if (!base::LaunchProcess(command.c_str(), options, &cmd_handle)) {
+  base::Process cmd_process = base::LaunchProcess(command.c_str(), options);
+  if (!cmd_process.IsValid()) {
     LOG(ERROR) << "Error launching process "
                << command_line.GetProgram().MaybeAsASCII();
     return false;
@@ -163,13 +163,13 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   bool stdin_connected = ConnectNamedPipe(stdin_pipe.Get(), NULL) ?
       TRUE : GetLastError() == ERROR_PIPE_CONNECTED;
   if (!stdout_connected || !stdin_connected) {
-    base::KillProcess(cmd_handle.Get(), 0, false);
+    base::KillProcess(cmd_process.Handle(), 0, false);
     LOG(ERROR) << "Failed to connect IO pipes when starting "
                << command_line.GetProgram().MaybeAsASCII();
     return false;
   }
 
-  *process_handle = cmd_handle.Take();
+  *process = cmd_process.Pass();
   *read_file = base::File(stdout_pipe.Take());
   *write_file = base::File(stdin_pipe.Take());
 

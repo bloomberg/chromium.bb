@@ -9,6 +9,7 @@
 #define BASE_PROCESS_KILL_H_
 
 #include "base/files/file_path.h"
+#include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
 
@@ -146,10 +147,10 @@ BASE_EXPORT bool CleanupProcesses(const FilePath::StringType& executable_name,
 // On Linux this method does not block the calling thread.
 // On OS X this method may block for up to 2 seconds.
 //
-// NOTE: The process handle must have been opened with the PROCESS_TERMINATE
-// and SYNCHRONIZE permissions.
+// NOTE: The process must have been opened with the PROCESS_TERMINATE and
+// SYNCHRONIZE permissions.
 //
-BASE_EXPORT void EnsureProcessTerminated(ProcessHandle process_handle);
+BASE_EXPORT void EnsureProcessTerminated(Process process);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 // The nicer version of EnsureProcessTerminated() that is patient and will

@@ -34,7 +34,7 @@ class NativeProcessLauncher {
   // to false in case of a failure. Handler must take ownership of the IO
   // handles.
   typedef base::Callback<void(LaunchResult result,
-                              base::ProcessHandle process_handle,
+                              base::Process process,
                               base::File read_file,
                               base::File write_file)> LaunchedCallback;
 
@@ -68,7 +68,7 @@ class NativeProcessLauncher {
 
   // Launches native messaging process.
   static bool LaunchNativeProcess(const base::CommandLine& command_line,
-                                  base::ProcessHandle* process_handle,
+                                  base::Process* process,
                                   base::File* read_file,
                                   base::File* write_file);
 

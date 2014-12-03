@@ -50,7 +50,7 @@ base::FilePath NativeProcessLauncher::FindManifest(
 // static
 bool NativeProcessLauncher::LaunchNativeProcess(
     const CommandLine& command_line,
-    base::ProcessHandle* process_handle,
+    base::Process* process,
     base::File* read_file,
     base::File* write_file) {
   base::FileHandleMappingVector fd_map;
@@ -81,7 +81,8 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   options.allow_new_privs = true;
 #endif
 
-  if (!base::LaunchProcess(command_line, options, process_handle)) {
+  base::ProcessHandle process_handle;
+  if (!base::LaunchProcess(command_line, options, &process_handle)) {
     LOG(ERROR) << "Error launching process";
     return false;
   }
@@ -90,6 +91,7 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   write_pipe_read_fd.reset();
   read_pipe_write_fd.reset();
 
+  *process = base::Process(process_handle);
   *read_file = base::File(read_pipe_read_fd.release());
   *write_file = base::File(write_pipe_write_fd.release());
 
