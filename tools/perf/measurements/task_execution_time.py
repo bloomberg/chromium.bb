@@ -10,12 +10,13 @@ from telemetry.util import statistics
 from telemetry.value import scalar
 
 _CATEGORIES = ['webkit.console',
-              'blink.console',
-              'benchmark',
-              'toplevel',
-              'blink',
-              'cc',
-              'v8']
+               'blink.console',
+               'benchmark',
+               'toplevel',
+               'blink',
+               'blink_gc',
+               'cc',
+               'v8']
 
 class TaskExecutionTime(page_test.PageTest):
 
