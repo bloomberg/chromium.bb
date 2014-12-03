@@ -38,6 +38,10 @@ class DevToolsProtocolHandlerImpl;
 
 namespace devtools {
 
+extern const char kProtocolVersion[];
+
+bool IsSupportedProtocolVersion(const std::string& version);
+
 template<typename T>
 base::Value* CreateValue(const T& param) {
   return new base::FundamentalValue(param);
@@ -227,6 +231,7 @@ template_cc = string.Template(header + """\
 #include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
 
 #include "base/bind.h"
+#include "base/strings/string_number_conversions.h"
 ${includes}\
 
 namespace content {
@@ -270,6 +275,17 @@ bool CreateCommonResponse(
 ${methods}\
 
 namespace devtools {
+
+const char kProtocolVersion[] = "${major}.${minor}";
+
+bool IsSupportedProtocolVersion(const std::string& version) {
+  std::vector<std::string> tokens;
+  Tokenize(version, ".", &tokens);
+  int major, minor;
+  return tokens.size() == 2 &&
+      base::StringToInt(tokens[0], &major) && major == ${major} &&
+      base::StringToInt(tokens[1], &minor) && minor <= ${minor};
+}
 
 template<>
 base::Value* CreateValue(const std::string& param) {
@@ -730,6 +746,8 @@ output_h_file.write(template_h.substitute({},
 output_h_file.close()
 
 output_cc_file.write(template_cc.substitute({},
+    major = blink_protocol["version"]["major"],
+    minor = blink_protocol["version"]["minor"],
     includes = "".join(sorted(includes)),
     fields_init = ",\n      ".join(fields_init),
     methods = "\n".join(handler_method_impls),

@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_protocol.h"
-#include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
 #include "content/browser/devtools/protocol/system_info_handler.h"
 #include "content/browser/devtools/protocol/tethering_handler.h"

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 action("devtools_protocol_constants") {
-  script = "//content/public/browser/devtools_protocol_constants_generator.py"
+  script = "devtools_protocol_constants_generator.py"
 
   blink_protocol = "//third_party/WebKit/Source/devtools/protocol.json"
   browser_protocol = "//content/browser/devtools/browser_protocol.json"

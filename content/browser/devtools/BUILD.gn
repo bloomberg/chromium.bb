@@ -8,7 +8,6 @@ import("//tools/grit/grit_rule.gni")
 group("resources") {
   deps = [
     ":devtools_resources",
-    ":devtools_protocol_constants",
     ":devtools_protocol_handler",
   ]
 }
@@ -37,26 +36,6 @@ grit("devtools_resources") {
   ]
 }
 
-action("gen_devtools_protocol_constants") {
-  visibility = [ ":devtools_protocol_constants" ]
-
-  script = "//content/public/browser/devtools_protocol_constants_generator.py"
-
-  blink_protocol = "//third_party/WebKit/Source/devtools/protocol.json"
-  browser_protocol = "browser_protocol.json"
-  inputs = [ blink_protocol, browser_protocol ]
-
-  outputs = [
-    "$target_gen_dir/devtools_protocol_constants.cc",
-    "$target_gen_dir/devtools_protocol_constants.h",
-  ]
-
-  args = [ "content" ] + rebase_path(outputs, root_build_dir) + [
-    rebase_path(blink_protocol, root_build_dir),
-    rebase_path(browser_protocol, root_build_dir),
-  ]
-}
-
 action("gen_devtools_protocol_handler") {
   visibility = [ ":devtools_protocol_handler" ]
 
@@ -74,11 +53,6 @@ action("gen_devtools_protocol_handler") {
 
   args = rebase_path(inputs, root_build_dir) +
       rebase_path(outputs, root_build_dir)
-}
-
-source_set("devtools_protocol_constants") {
-  visibility = [ ":resources" ]
-  sources = get_target_outputs(":gen_devtools_protocol_constants")
 }
 
 source_set("devtools_protocol_handler") {

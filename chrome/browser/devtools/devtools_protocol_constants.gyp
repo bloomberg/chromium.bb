@@ -13,7 +13,7 @@
           'variables': {
             'blink_protocol': '../../../third_party/WebKit/Source/devtools/protocol.json',
             'browser_protocol': '../../../content/browser/devtools/browser_protocol.json',
-            'generator': '../../../content/public/browser/devtools_protocol_constants_generator.py',
+            'generator': 'devtools_protocol_constants_generator.py',
             'package': 'chrome'
           },
           'inputs': [
