@@ -29,6 +29,7 @@ class Value;
 
 namespace net {
 
+class CertPolicyEnforcer;
 class CertVerifier;
 class ChannelIDService;
 class ClientSocketFactory;
@@ -66,6 +67,7 @@ class NET_EXPORT HttpNetworkSession
     ClientSocketFactory* client_socket_factory;
     HostResolver* host_resolver;
     CertVerifier* cert_verifier;
+    CertPolicyEnforcer* cert_policy_enforcer;
     ChannelIDService* channel_id_service;
     TransportSecurityState* transport_security_state;
     CTVerifier* cert_transparency_verifier;

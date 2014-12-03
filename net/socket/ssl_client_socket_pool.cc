@@ -197,6 +197,7 @@ SSLConnectJob::SSLConnectJob(const std::string& group_name,
                context.channel_id_service,
                context.transport_security_state,
                context.cert_transparency_verifier,
+               context.cert_policy_enforcer,
                (params->privacy_mode() == PRIVACY_MODE_ENABLED
                     ? "pm/" + context.ssl_session_cache_shard
                     : context.ssl_session_cache_shard)),
@@ -634,6 +635,7 @@ SSLClientSocketPool::SSLClientSocketPool(
     ChannelIDService* channel_id_service,
     TransportSecurityState* transport_security_state,
     CTVerifier* cert_transparency_verifier,
+    CertPolicyEnforcer* cert_policy_enforcer,
     const std::string& ssl_session_cache_shard,
     ClientSocketFactory* client_socket_factory,
     TransportClientSocketPool* transport_pool,
@@ -661,6 +663,7 @@ SSLClientSocketPool::SSLClientSocketPool(
                                        channel_id_service,
                                        transport_security_state,
                                        cert_transparency_verifier,
+                                       cert_policy_enforcer,
                                        ssl_session_cache_shard),
                 base::Bind(
                     &SSLClientSocketPool::GetOrCreateSSLConnectJobMessenger,

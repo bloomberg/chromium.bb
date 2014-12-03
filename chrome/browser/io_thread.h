@@ -49,6 +49,7 @@ class EventRouterForwarder;
 }
 
 namespace net {
+class CertPolicyEnforcer;
 class CertVerifier;
 class ChannelIDService;
 class CookieStore;
@@ -132,6 +133,7 @@ class IOThread : public content::BrowserThreadDelegate {
     // pins.
     scoped_ptr<net::TransportSecurityState> transport_security_state;
     scoped_ptr<net::CTVerifier> cert_transparency_verifier;
+    scoped_ptr<net::CertPolicyEnforcer> cert_policy_enforcer;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
     scoped_ptr<net::HttpServerProperties> http_server_properties;

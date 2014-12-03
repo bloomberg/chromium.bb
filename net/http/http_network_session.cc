@@ -37,21 +37,14 @@ net::ClientSocketPoolManager* CreateSocketPoolManager(
   // TODO(yutak): Differentiate WebSocket pool manager and allow more
   // simultaneous connections for WebSockets.
   return new net::ClientSocketPoolManagerImpl(
-      params.net_log,
-      params.client_socket_factory
-          ? params.client_socket_factory
-          : net::ClientSocketFactory::GetDefaultFactory(),
-      params.host_resolver,
-      params.cert_verifier,
-      params.channel_id_service,
-      params.transport_security_state,
-      params.cert_transparency_verifier,
-      params.ssl_session_cache_shard,
-      params.proxy_service,
-      params.ssl_config_service,
-      params.enable_ssl_connect_job_waiting,
-      params.proxy_delegate,
-      pool_type);
+      params.net_log, params.client_socket_factory
+                          ? params.client_socket_factory
+                          : net::ClientSocketFactory::GetDefaultFactory(),
+      params.host_resolver, params.cert_verifier, params.channel_id_service,
+      params.transport_security_state, params.cert_transparency_verifier,
+      params.cert_policy_enforcer, params.ssl_session_cache_shard,
+      params.proxy_service, params.ssl_config_service,
+      params.enable_ssl_connect_job_waiting, params.proxy_delegate, pool_type);
 }
 
 }  // unnamed namespace
@@ -62,6 +55,7 @@ HttpNetworkSession::Params::Params()
     : client_socket_factory(NULL),
       host_resolver(NULL),
       cert_verifier(NULL),
+      cert_policy_enforcer(NULL),
       channel_id_service(NULL),
       transport_security_state(NULL),
       cert_transparency_verifier(NULL),

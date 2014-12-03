@@ -283,6 +283,7 @@ extern const char kQuicMaxPacketLength[];
 extern const char kQuicVersion[];
 extern const char kRecordMode[];
 extern const char kRememberCertErrorDecisions[];
+extern const char kRequireCTForEV[];
 extern const char kResetAppListInstallState[];
 extern const char kRestoreLastSession[];
 extern const char kSavePageAsMHTML[];

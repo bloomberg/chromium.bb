@@ -53,9 +53,11 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/net_util.h"
+#include "net/cert/cert_policy_enforcer.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/ct_known_logs.h"
+#include "net/cert/ct_known_logs_static.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
@@ -642,6 +644,15 @@ void IOThread::InitAsync() {
     }
   }
 
+  net::CertPolicyEnforcer* policy_enforcer = NULL;
+  // TODO(eranm): Control with Finch, crbug.com/437766
+  if (command_line.HasSwitch(switches::kRequireCTForEV)) {
+    policy_enforcer = new net::CertPolicyEnforcer(kNumKnownCTLogs, true);
+  } else {
+    policy_enforcer = new net::CertPolicyEnforcer(kNumKnownCTLogs, false);
+  }
+  globals_->cert_policy_enforcer.reset(policy_enforcer);
+
   globals_->ssl_config_service = GetSSLConfigService();
 
   SetupDataReductionProxy(network_delegate);
@@ -988,6 +999,7 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
     net::HttpNetworkSession::Params* params) {
   params->host_resolver = globals.host_resolver.get();
   params->cert_verifier = globals.cert_verifier.get();
+  params->cert_policy_enforcer = globals.cert_policy_enforcer.get();
   params->channel_id_service = globals.system_channel_id_service.get();
   params->transport_security_state = globals.transport_security_state.get();
   params->ssl_config_service = globals.ssl_config_service.get();

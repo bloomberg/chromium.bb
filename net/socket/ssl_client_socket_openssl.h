@@ -304,6 +304,8 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
 
   TransportSecurityState* transport_security_state_;
 
+  CertPolicyEnforcer* const policy_enforcer_;
+
   // pinning_failure_log contains a message produced by
   // TransportSecurityState::CheckPublicKeyPins in the event of a
   // pinning failure. It is a (somewhat) human-readable string.

@@ -403,16 +403,17 @@ CapturePreconnectsSSLSocketPool::CapturePreconnectsSocketPool(
                           nullptr,  // ssl_histograms
                           host_resolver,
                           cert_verifier,
-                          nullptr,           // channel_id_store
-                          nullptr,           // transport_security_state
-                          nullptr,           // cert_transparency_verifier
+                          nullptr,        // channel_id_store
+                          nullptr,        // transport_security_state
+                          nullptr,        // cert_transparency_verifier
+                          nullptr,        // cert_policy_enforcer
                           std::string(),  // ssl_session_cache_shard
-                          nullptr,           // deterministic_socket_factory
-                          nullptr,           // transport_socket_pool
+                          nullptr,        // deterministic_socket_factory
+                          nullptr,        // transport_socket_pool
                           nullptr,
                           nullptr,
                           nullptr,   // ssl_config_service
-                          false,  // enable_ssl_connect_job_waiting
+                          false,     // enable_ssl_connect_job_waiting
                           nullptr),  // net_log
       last_num_streams_(-1) {
 }

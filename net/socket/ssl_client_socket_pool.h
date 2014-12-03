@@ -23,6 +23,7 @@
 
 namespace net {
 
+class CertPolicyEnforcer;
 class CertVerifier;
 class ClientSocketFactory;
 class ConnectJobFactory;
@@ -285,6 +286,7 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
                       ChannelIDService* channel_id_service,
                       TransportSecurityState* transport_security_state,
                       CTVerifier* cert_transparency_verifier,
+                      CertPolicyEnforcer* cert_policy_enforcer,
                       const std::string& ssl_session_cache_shard,
                       ClientSocketFactory* client_socket_factory,
                       TransportClientSocketPool* transport_pool,

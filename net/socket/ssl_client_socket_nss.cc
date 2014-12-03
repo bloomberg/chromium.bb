@@ -91,6 +91,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/cert/asn1_util.h"
+#include "net/cert/cert_policy_enforcer.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_ev_whitelist.h"
@@ -2831,6 +2832,7 @@ SSLClientSocketNSS::SSLClientSocketNSS(
       nss_fd_(NULL),
       net_log_(transport_->socket()->NetLog()),
       transport_security_state_(context.transport_security_state),
+      policy_enforcer_(context.cert_policy_enforcer),
       valid_thread_id_(base::kInvalidThreadId) {
   EnterFunction("");
   InitCore();
@@ -3528,21 +3530,6 @@ int SSLClientSocketNSS::DoVerifyCertComplete(int result) {
     result = ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
   }
 
-  scoped_refptr<ct::EVCertsWhitelist> ev_whitelist =
-      SSLConfigService::GetEVCertsWhitelist();
-  if (server_cert_verify_result_.cert_status & CERT_STATUS_IS_EV) {
-    if (ev_whitelist.get() && ev_whitelist->IsValid()) {
-      const SHA256HashValue fingerprint(
-          X509Certificate::CalculateFingerprint256(
-              server_cert_verify_result_.verified_cert->os_cert_handle()));
-
-      UMA_HISTOGRAM_BOOLEAN(
-          "Net.SSL_EVCertificateInWhitelist",
-          ev_whitelist->ContainsCertificateHash(
-              std::string(reinterpret_cast<const char*>(fingerprint.data), 8)));
-    }
-  }
-
   if (result == OK) {
     // Only check Certificate Transparency if there were no other errors with
     // the connection.
@@ -3566,20 +3553,31 @@ void SSLClientSocketNSS::VerifyCT() {
   // Note that this is a completely synchronous operation: The CT Log Verifier
   // gets all the data it needs for SCT verification and does not do any
   // external communication.
-  int result = cert_transparency_verifier_->Verify(
+  cert_transparency_verifier_->Verify(
       server_cert_verify_result_.verified_cert.get(),
       core_->state().stapled_ocsp_response,
-      core_->state().sct_list_from_tls_extension,
-      &ct_verify_result_,
-      net_log_);
+      core_->state().sct_list_from_tls_extension, &ct_verify_result_, net_log_);
   // TODO(ekasper): wipe stapled_ocsp_response and sct_list_from_tls_extension
   // from the state after verification is complete, to conserve memory.
 
-  VLOG(1) << "CT Verification complete: result " << result
-          << " Invalid scts: " << ct_verify_result_.invalid_scts.size()
-          << " Verified scts: " << ct_verify_result_.verified_scts.size()
-          << " scts from unknown logs: "
-          << ct_verify_result_.unknown_logs_scts.size();
+  if (!policy_enforcer_) {
+    server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
+  } else {
+    if (server_cert_verify_result_.cert_status & CERT_STATUS_IS_EV) {
+      scoped_refptr<ct::EVCertsWhitelist> ev_whitelist =
+          SSLConfigService::GetEVCertsWhitelist();
+      if (!policy_enforcer_->DoesConformToCTEVPolicy(
+              server_cert_verify_result_.verified_cert.get(),
+              ev_whitelist.get(), ct_verify_result_)) {
+        // TODO(eranm): Log via the BoundNetLog, see crbug.com/437766
+        VLOG(1) << "EV certificate for "
+                << server_cert_verify_result_.verified_cert->subject()
+                       .GetDisplayName()
+                << " does not conform to CT policy, removing EV status.";
+        server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
+      }
+    }
+  }
 }
 
 void SSLClientSocketNSS::EnsureThreadIdAssigned() const {

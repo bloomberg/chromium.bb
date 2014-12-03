@@ -18801,6 +18801,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.SSL_EVCertificateCTCompliance"
+    enum="CTRequirementCompliance">
+  <owner>eranm@chromium.org</owner>
+  <owner>rsleevi@chromium.org</owner>
+  <summary>
+    The state of compliance with Certificate Transparency presence requirements
+    for each EV certificate. An EV certificate could be non-compliant (in which
+    case it loses the EV status), comply through inclusion in the EV whitelist
+    or have the required number of Signed Certificate Timestamps. This metric
+    will gauge adoption rate of Certificate Transparency and will help identify
+    when the EV whitelist is no longer needed. Emitted during every SSL
+    connection establishment, but only if the client is checking compliance with
+    Certificate Transparency requirements (currently guarded by a Finch
+    experiment).
+  </summary>
+</histogram>
+
 <histogram name="Net.SSL_EVCertificateInWhitelist" enum="Boolean">
   <owner>eranm@chromium.org</owner>
   <owner>rsleevi@chromium.org</owner>
@@ -42807,6 +42824,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="6" label="Sheets"/>
   <int value="7" label="Slides"/>
   <int value="8" label="PlayMusic"/>
+</enum>
+
+<enum name="CTRequirementCompliance" type="int">
+  <int value="0" label="Not Compliant"/>
+  <int value="1" label="Whitelisted"/>
+  <int value="2" label="Has enough SCTs"/>
 </enum>
 
 <enum name="DailyEventIntervalType" type="int">

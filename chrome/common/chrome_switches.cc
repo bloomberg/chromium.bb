@@ -1019,6 +1019,11 @@ const char kRecordMode[]                    = "record-mode";
 // time delta to remember certificates should be specified in seconds.
 const char kRememberCertErrorDecisions[]    = "remember-cert-error-decisions";
 
+// Requires presence of Certificate Transparency for Extended Validation
+// certificates. Enforce the policy detailed at:
+// http://dev.chromium.org/Home/chromium-security/certificate-transparency
+const char kRequireCTForEV[] = "require-ct-for-ev";
+
 // If set, the app list will forget it has been installed on startup. Note this
 // doesn't prevent the app list from running, it just makes Chrome think the app
 // list hasn't been enabled (as in kEnableAppList) yet.
