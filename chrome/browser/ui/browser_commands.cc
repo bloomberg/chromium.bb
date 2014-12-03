@@ -776,6 +776,7 @@ bool CanBookmarkCurrentPage(const Browser* browser) {
 }
 
 void BookmarkAllTabs(Browser* browser) {
+  content::RecordAction(UserMetricsAction("BookmarkAllTabs"));
   chrome::ShowBookmarkAllTabsDialog(browser);
 }
 
