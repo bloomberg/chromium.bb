@@ -109,8 +109,8 @@ bool PrefValueStore::GetValue(const std::string& name,
   // Check the |PrefStore|s in order of their priority from highest to lowest,
   // looking for the first preference value with the given |name| and |type|.
   for (size_t i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
-    if (GetValueFromStoreWithType(name.c_str(), type,
-                                  static_cast<PrefStoreType>(i), out_value))
+    if (GetValueFromStoreWithType(name, type, static_cast<PrefStoreType>(i),
+                                  out_value))
       return true;
   }
   return false;
@@ -119,12 +119,11 @@ bool PrefValueStore::GetValue(const std::string& name,
 bool PrefValueStore::GetRecommendedValue(const std::string& name,
                                          base::Value::Type type,
                                          const base::Value** out_value) const {
-  return GetValueFromStoreWithType(name.c_str(), type, RECOMMENDED_STORE,
-                                   out_value);
+  return GetValueFromStoreWithType(name, type, RECOMMENDED_STORE, out_value);
 }
 
 void PrefValueStore::NotifyPrefChanged(
-    const char* path,
+    const std::string& path,
     PrefValueStore::PrefStoreType new_store) {
   DCHECK(new_store != INVALID_STORE);
   // A notification is sent when the pref value in any store changes. If this
@@ -135,41 +134,44 @@ void PrefValueStore::NotifyPrefChanged(
     pref_changed_callback_.Run(path);
 }
 
-bool PrefValueStore::PrefValueInManagedStore(const char* name) const {
+bool PrefValueStore::PrefValueInManagedStore(const std::string& name) const {
   return PrefValueInStore(name, MANAGED_STORE);
 }
 
-bool PrefValueStore::PrefValueInExtensionStore(const char* name) const {
+bool PrefValueStore::PrefValueInExtensionStore(const std::string& name) const {
   return PrefValueInStore(name, EXTENSION_STORE);
 }
 
-bool PrefValueStore::PrefValueInUserStore(const char* name) const {
+bool PrefValueStore::PrefValueInUserStore(const std::string& name) const {
   return PrefValueInStore(name, USER_STORE);
 }
 
-bool PrefValueStore::PrefValueFromExtensionStore(const char* name) const {
+bool PrefValueStore::PrefValueFromExtensionStore(
+    const std::string& name) const {
   return ControllingPrefStoreForPref(name) == EXTENSION_STORE;
 }
 
-bool PrefValueStore::PrefValueFromUserStore(const char* name) const {
+bool PrefValueStore::PrefValueFromUserStore(const std::string& name) const {
   return ControllingPrefStoreForPref(name) == USER_STORE;
 }
 
-bool PrefValueStore::PrefValueFromRecommendedStore(const char* name) const {
+bool PrefValueStore::PrefValueFromRecommendedStore(
+    const std::string& name) const {
   return ControllingPrefStoreForPref(name) == RECOMMENDED_STORE;
 }
 
-bool PrefValueStore::PrefValueFromDefaultStore(const char* name) const {
+bool PrefValueStore::PrefValueFromDefaultStore(const std::string& name) const {
   return ControllingPrefStoreForPref(name) == DEFAULT_STORE;
 }
 
-bool PrefValueStore::PrefValueUserModifiable(const char* name) const {
+bool PrefValueStore::PrefValueUserModifiable(const std::string& name) const {
   PrefStoreType effective_store = ControllingPrefStoreForPref(name);
   return effective_store >= USER_STORE ||
          effective_store == INVALID_STORE;
 }
 
-bool PrefValueStore::PrefValueExtensionModifiable(const char* name) const {
+bool PrefValueStore::PrefValueExtensionModifiable(
+    const std::string& name) const {
   PrefStoreType effective_store = ControllingPrefStoreForPref(name);
   return effective_store >= EXTENSION_STORE ||
          effective_store == INVALID_STORE;
@@ -180,7 +182,7 @@ void PrefValueStore::UpdateCommandLinePrefStore(PrefStore* command_line_prefs) {
 }
 
 bool PrefValueStore::PrefValueInStore(
-    const char* name,
+    const std::string& name,
     PrefValueStore::PrefStoreType store) const {
   // Declare a temp Value* and call GetValueFromStore,
   // ignoring the output value.
@@ -189,7 +191,7 @@ bool PrefValueStore::PrefValueInStore(
 }
 
 bool PrefValueStore::PrefValueInStoreRange(
-    const char* name,
+    const std::string& name,
     PrefValueStore::PrefStoreType first_checked_store,
     PrefValueStore::PrefStoreType last_checked_store) const {
   if (first_checked_store > last_checked_store) {
@@ -206,7 +208,7 @@ bool PrefValueStore::PrefValueInStoreRange(
 }
 
 PrefValueStore::PrefStoreType PrefValueStore::ControllingPrefStoreForPref(
-    const char* name) const {
+    const std::string& name) const {
   for (size_t i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
     if (PrefValueInStore(name, static_cast<PrefStoreType>(i)))
       return static_cast<PrefStoreType>(i);
@@ -214,7 +216,7 @@ PrefValueStore::PrefStoreType PrefValueStore::ControllingPrefStoreForPref(
   return INVALID_STORE;
 }
 
-bool PrefValueStore::GetValueFromStore(const char* name,
+bool PrefValueStore::GetValueFromStore(const std::string& name,
                                        PrefValueStore::PrefStoreType store_type,
                                        const base::Value** out_value) const {
   // Only return true if we find a value and it is the correct type, so stale
@@ -230,7 +232,7 @@ bool PrefValueStore::GetValueFromStore(const char* name,
 }
 
 bool PrefValueStore::GetValueFromStoreWithType(
-    const char* name,
+    const std::string& name,
     base::Value::Type type,
     PrefStoreType store,
     const base::Value** out_value) const {
@@ -249,7 +251,7 @@ bool PrefValueStore::GetValueFromStoreWithType(
 
 void PrefValueStore::OnPrefValueChanged(PrefValueStore::PrefStoreType type,
                                         const std::string& key) {
-  NotifyPrefChanged(key.c_str(), type);
+  NotifyPrefChanged(key, type);
 }
 
 void PrefValueStore::OnInitializationCompleted(

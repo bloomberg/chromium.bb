@@ -25,23 +25,20 @@ PrefMemberBase::~PrefMemberBase() {
   Destroy();
 }
 
-void PrefMemberBase::Init(const char* pref_name,
+void PrefMemberBase::Init(const std::string& pref_name,
                           PrefService* prefs,
                           const NamedChangeCallback& observer) {
   observer_ = observer;
   Init(pref_name, prefs);
 }
 
-void PrefMemberBase::Init(const char* pref_name,
-                          PrefService* prefs) {
-  DCHECK(pref_name);
+void PrefMemberBase::Init(const std::string& pref_name, PrefService* prefs) {
   DCHECK(prefs);
   DCHECK(pref_name_.empty());  // Check that Init is only called once.
   prefs_ = prefs;
   pref_name_ = pref_name;
   // Check that the preference is registered.
-  DCHECK(prefs_->FindPreference(pref_name_.c_str()))
-      << pref_name << " not registered.";
+  DCHECK(prefs_->FindPreference(pref_name_)) << pref_name << " not registered.";
 
   // Add ourselves as a pref observer so we can keep our local value in sync.
   prefs_->AddPrefObserver(pref_name, this);
@@ -49,7 +46,7 @@ void PrefMemberBase::Init(const char* pref_name,
 
 void PrefMemberBase::Destroy() {
   if (prefs_ && !pref_name_.empty()) {
-    prefs_->RemovePrefObserver(pref_name_.c_str(), this);
+    prefs_->RemovePrefObserver(pref_name_, this);
     prefs_ = NULL;
   }
 }
@@ -72,8 +69,7 @@ void PrefMemberBase::OnPreferenceChanged(PrefService* service,
 
 void PrefMemberBase::UpdateValueFromPref(const base::Closure& callback) const {
   VerifyValuePrefName();
-  const PrefService::Preference* pref =
-      prefs_->FindPreference(pref_name_.c_str());
+  const PrefService::Preference* pref = prefs_->FindPreference(pref_name_);
   DCHECK(pref);
   if (!internal())
     CreateInternal();
@@ -158,7 +154,7 @@ bool PrefMemberVectorStringUpdate(const base::Value& value,
 
 template <>
 void PrefMember<bool>::UpdatePref(const bool& value) {
-  prefs()->SetBoolean(pref_name().c_str(), value);
+  prefs()->SetBoolean(pref_name(), value);
 }
 
 template <>
@@ -169,7 +165,7 @@ bool PrefMember<bool>::Internal::UpdateValueInternal(
 
 template <>
 void PrefMember<int>::UpdatePref(const int& value) {
-  prefs()->SetInteger(pref_name().c_str(), value);
+  prefs()->SetInteger(pref_name(), value);
 }
 
 template <>
@@ -180,7 +176,7 @@ bool PrefMember<int>::Internal::UpdateValueInternal(
 
 template <>
 void PrefMember<double>::UpdatePref(const double& value) {
-  prefs()->SetDouble(pref_name().c_str(), value);
+  prefs()->SetDouble(pref_name(), value);
 }
 
 template <>
@@ -191,7 +187,7 @@ bool PrefMember<double>::Internal::UpdateValueInternal(const base::Value& value)
 
 template <>
 void PrefMember<std::string>::UpdatePref(const std::string& value) {
-  prefs()->SetString(pref_name().c_str(), value);
+  prefs()->SetString(pref_name(), value);
 }
 
 template <>
@@ -203,7 +199,7 @@ bool PrefMember<std::string>::Internal::UpdateValueInternal(
 
 template <>
 void PrefMember<base::FilePath>::UpdatePref(const base::FilePath& value) {
-  prefs()->SetFilePath(pref_name().c_str(), value);
+  prefs()->SetFilePath(pref_name(), value);
 }
 
 template <>
@@ -218,7 +214,7 @@ void PrefMember<std::vector<std::string> >::UpdatePref(
     const std::vector<std::string>& value) {
   base::ListValue list_value;
   list_value.AppendStrings(value);
-  prefs()->Set(pref_name().c_str(), list_value);
+  prefs()->Set(pref_name(), list_value);
 }
 
 template <>

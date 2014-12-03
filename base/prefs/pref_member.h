@@ -103,9 +103,10 @@ class BASE_PREFS_EXPORT PrefMemberBase : public PrefObserver {
   virtual ~PrefMemberBase();
 
   // See PrefMember<> for description.
-  void Init(const char* pref_name, PrefService* prefs,
+  void Init(const std::string& pref_name,
+            PrefService* prefs,
             const NamedChangeCallback& observer);
-  void Init(const char* pref_name, PrefService* prefs);
+  void Init(const std::string& pref_name, PrefService* prefs);
 
   virtual void CreateInternal() const = 0;
 
@@ -169,17 +170,19 @@ class PrefMember : public subtle::PrefMemberBase {
   // Do the actual initialization of the class.  Use the two-parameter
   // version if you don't want any notifications of changes.  This
   // method should only be called on the UI thread.
-  void Init(const char* pref_name, PrefService* prefs,
+  void Init(const std::string& pref_name,
+            PrefService* prefs,
             const NamedChangeCallback& observer) {
     subtle::PrefMemberBase::Init(pref_name, prefs, observer);
   }
-  void Init(const char* pref_name, PrefService* prefs,
+  void Init(const std::string& pref_name,
+            PrefService* prefs,
             const base::Closure& observer) {
     subtle::PrefMemberBase::Init(
         pref_name, prefs,
         base::Bind(&PrefMemberBase::InvokeUnnamedCallback, observer));
   }
-  void Init(const char* pref_name, PrefService* prefs) {
+  void Init(const std::string& pref_name, PrefService* prefs) {
     subtle::PrefMemberBase::Init(pref_name, prefs);
   }
 

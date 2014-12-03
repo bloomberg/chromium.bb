@@ -21,19 +21,20 @@ class BASE_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
  public:
   PrefRegistrySimple();
 
-  void RegisterBooleanPref(const char* path, bool default_value);
-  void RegisterIntegerPref(const char* path, int default_value);
-  void RegisterDoublePref(const char* path, double default_value);
-  void RegisterStringPref(const char* path, const std::string& default_value);
-  void RegisterFilePathPref(const char* path,
+  void RegisterBooleanPref(const std::string& path, bool default_value);
+  void RegisterIntegerPref(const std::string& path, int default_value);
+  void RegisterDoublePref(const std::string& path, double default_value);
+  void RegisterStringPref(const std::string& path,
+                          const std::string& default_value);
+  void RegisterFilePathPref(const std::string& path,
                             const base::FilePath& default_value);
-  void RegisterListPref(const char* path);
-  void RegisterDictionaryPref(const char* path);
-  void RegisterListPref(const char* path, base::ListValue* default_value);
-  void RegisterDictionaryPref(const char* path,
+  void RegisterListPref(const std::string& path);
+  void RegisterDictionaryPref(const std::string& path);
+  void RegisterListPref(const std::string& path,
+                        base::ListValue* default_value);
+  void RegisterDictionaryPref(const std::string& path,
                               base::DictionaryValue* default_value);
-  void RegisterInt64Pref(const char* path,
-                         int64 default_value);
+  void RegisterInt64Pref(const std::string& path, int64 default_value);
 
  private:
   ~PrefRegistrySimple() override;

@@ -35,7 +35,7 @@ class GetPrefValueHelper
     pref_thread_.Start();
   }
 
-  void Init(const char* pref_name, PrefService* prefs) {
+  void Init(const std::string& pref_name, PrefService* prefs) {
     pref_.Init(pref_name, prefs);
     pref_.MoveToThread(pref_thread_.message_loop_proxy());
   }

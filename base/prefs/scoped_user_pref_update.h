@@ -33,7 +33,7 @@ namespace subtle {
 // PrefService::ReportUserPrefChanged.
 class BASE_PREFS_EXPORT ScopedUserPrefUpdateBase : public base::NonThreadSafe {
  protected:
-  ScopedUserPrefUpdateBase(PrefService* service, const char* path);
+  ScopedUserPrefUpdateBase(PrefService* service, const std::string& path);
 
   // Calls Notify().
   ~ScopedUserPrefUpdateBase();
@@ -66,7 +66,7 @@ class BASE_PREFS_EXPORT ScopedUserPrefUpdateBase : public base::NonThreadSafe {
 template <typename T, base::Value::Type type_enum_value>
 class ScopedUserPrefUpdate : public subtle::ScopedUserPrefUpdateBase {
  public:
-  ScopedUserPrefUpdate(PrefService* service, const char* path)
+  ScopedUserPrefUpdate(PrefService* service, const std::string& path)
       : ScopedUserPrefUpdateBase(service, path) {}
 
   // Triggers an update notification if Get() was called.

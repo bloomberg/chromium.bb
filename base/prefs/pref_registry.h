@@ -41,14 +41,14 @@ class BASE_PREFS_EXPORT PrefRegistry : public base::RefCounted<PrefRegistry> {
   // Changes the default value for a preference. Takes ownership of |value|.
   //
   // |pref_name| must be a previously registered preference.
-  void SetDefaultPrefValue(const char* pref_name, base::Value* value);
+  void SetDefaultPrefValue(const std::string& pref_name, base::Value* value);
 
  protected:
   friend class base::RefCounted<PrefRegistry>;
   virtual ~PrefRegistry();
 
   // Used by subclasses to register a default value for a preference.
-  void RegisterPreference(const char* path, base::Value* default_value);
+  void RegisterPreference(const std::string& path, base::Value* default_value);
 
   scoped_refptr<DefaultPrefStore> defaults_;
 

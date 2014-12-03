@@ -27,10 +27,8 @@ class MockPrefService : public TestingPrefServiceSimple {
   MockPrefService() {}
   virtual ~MockPrefService() {}
 
-  MOCK_METHOD2(AddPrefObserver,
-               void(const char*, PrefObserver*));
-  MOCK_METHOD2(RemovePrefObserver,
-               void(const char*, PrefObserver*));
+  MOCK_METHOD2(AddPrefObserver, void(const std::string&, PrefObserver*));
+  MOCK_METHOD2(RemovePrefObserver, void(const std::string&, PrefObserver*));
 };
 
 }  // namespace

@@ -94,25 +94,25 @@ class BASE_PREFS_EXPORT PrefValueStore {
   // These methods return true if a preference with the given name is in the
   // indicated pref store, even if that value is currently being overridden by
   // a higher-priority source.
-  bool PrefValueInManagedStore(const char* name) const;
-  bool PrefValueInExtensionStore(const char* name) const;
-  bool PrefValueInUserStore(const char* name) const;
+  bool PrefValueInManagedStore(const std::string& name) const;
+  bool PrefValueInExtensionStore(const std::string& name) const;
+  bool PrefValueInUserStore(const std::string& name) const;
 
   // These methods return true if a preference with the given name is actually
   // being controlled by the indicated pref store and not being overridden by
   // a higher-priority source.
-  bool PrefValueFromExtensionStore(const char* name) const;
-  bool PrefValueFromUserStore(const char* name) const;
-  bool PrefValueFromRecommendedStore(const char* name) const;
-  bool PrefValueFromDefaultStore(const char* name) const;
+  bool PrefValueFromExtensionStore(const std::string& name) const;
+  bool PrefValueFromUserStore(const std::string& name) const;
+  bool PrefValueFromRecommendedStore(const std::string& name) const;
+  bool PrefValueFromDefaultStore(const std::string& name) const;
 
   // Check whether a Preference value is modifiable by the user, i.e. whether
   // there is no higher-priority source controlling it.
-  bool PrefValueUserModifiable(const char* name) const;
+  bool PrefValueUserModifiable(const std::string& name) const;
 
   // Check whether a Preference value is modifiable by an extension, i.e.
   // whether there is no higher-priority source controlling it.
-  bool PrefValueExtensionModifiable(const char* name) const;
+  bool PrefValueExtensionModifiable(const std::string& name) const;
 
   // Update the command line PrefStore with |command_line_prefs|.
   void UpdateCommandLinePrefStore(PrefStore* command_line_prefs);
@@ -188,13 +188,13 @@ class BASE_PREFS_EXPORT PrefValueStore {
   // Returns true if the preference with the given name has a value in the
   // given PrefStoreType, of the same value type as the preference was
   // registered with.
-  bool PrefValueInStore(const char* name, PrefStoreType store) const;
+  bool PrefValueInStore(const std::string& name, PrefStoreType store) const;
 
   // Returns true if a preference has an explicit value in any of the
   // stores in the range specified by |first_checked_store| and
   // |last_checked_store|, even if that value is currently being
   // overridden by a higher-priority store.
-  bool PrefValueInStoreRange(const char* name,
+  bool PrefValueInStoreRange(const std::string& name,
                              PrefStoreType first_checked_store,
                              PrefStoreType last_checked_store) const;
 
@@ -203,15 +203,15 @@ class BASE_PREFS_EXPORT PrefValueStore {
   // INVALID_STORE is returned. In practice, the default PrefStore
   // should always have a value for any registered preferencem, so INVALID_STORE
   // indicates an error.
-  PrefStoreType ControllingPrefStoreForPref(const char* name) const;
+  PrefStoreType ControllingPrefStoreForPref(const std::string& name) const;
 
   // Get a value from the specified |store|.
-  bool GetValueFromStore(const char* name,
+  bool GetValueFromStore(const std::string& name,
                          PrefStoreType store,
                          const base::Value** out_value) const;
 
   // Get a value from the specified |store| if its |type| matches.
-  bool GetValueFromStoreWithType(const char* name,
+  bool GetValueFromStoreWithType(const std::string& name,
                                  base::Value::Type type,
                                  PrefStoreType store,
                                  const base::Value** out_value) const;
@@ -220,7 +220,7 @@ class BASE_PREFS_EXPORT PrefValueStore {
   // the user-visible pref value has changed. Triggers the change notification
   // if the effective value of the preference has changed, or if the store
   // controlling the pref has changed.
-  void NotifyPrefChanged(const char* path, PrefStoreType new_store);
+  void NotifyPrefChanged(const std::string& path, PrefStoreType new_store);
 
   // Called from the PrefStoreKeeper implementation when a pref value for |key|
   // changed in the pref store for |type|.

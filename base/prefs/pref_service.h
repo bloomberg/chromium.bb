@@ -65,7 +65,7 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
     // dictionary (a branch), or list.  You shouldn't need to construct this on
     // your own; use the PrefService::Register*Pref methods instead.
     Preference(const PrefService* service,
-               const char* name,
+               const std::string& name,
                base::Value::Type type);
     ~Preference() {}
 
@@ -156,76 +156,75 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
 
   // Returns true if the preference for the given preference name is available
   // and is managed.
-  bool IsManagedPreference(const char* pref_name) const;
+  bool IsManagedPreference(const std::string& pref_name) const;
 
   // Returns |true| if a preference with the given name is available and its
   // value can be changed by the user.
-  bool IsUserModifiablePreference(const char* pref_name) const;
+  bool IsUserModifiablePreference(const std::string& pref_name) const;
 
   // Look up a preference.  Returns NULL if the preference is not
   // registered.
-  const PrefService::Preference* FindPreference(const char* path) const;
+  const PrefService::Preference* FindPreference(const std::string& path) const;
 
   // If the path is valid and the value at the end of the path matches the type
   // specified, it will return the specified value.  Otherwise, the default
   // value (set when the pref was registered) will be returned.
-  bool GetBoolean(const char* path) const;
-  int GetInteger(const char* path) const;
-  double GetDouble(const char* path) const;
-  std::string GetString(const char* path) const;
-  base::FilePath GetFilePath(const char* path) const;
+  bool GetBoolean(const std::string& path) const;
+  int GetInteger(const std::string& path) const;
+  double GetDouble(const std::string& path) const;
+  std::string GetString(const std::string& path) const;
+  base::FilePath GetFilePath(const std::string& path) const;
 
   // Returns the branch if it exists, or the registered default value otherwise.
   // Note that |path| must point to a registered preference. In that case, these
   // functions will never return NULL.
-  const base::DictionaryValue* GetDictionary(
-      const char* path) const;
-  const base::ListValue* GetList(const char* path) const;
+  const base::DictionaryValue* GetDictionary(const std::string& path) const;
+  const base::ListValue* GetList(const std::string& path) const;
 
   // Removes a user pref and restores the pref to its default value.
-  void ClearPref(const char* path);
+  void ClearPref(const std::string& path);
 
   // If the path is valid (i.e., registered), update the pref value in the user
   // prefs.
   // To set the value of dictionary or list values in the pref tree use
   // Set(), but to modify the value of a dictionary or list use either
   // ListPrefUpdate or DictionaryPrefUpdate from scoped_user_pref_update.h.
-  void Set(const char* path, const base::Value& value);
-  void SetBoolean(const char* path, bool value);
-  void SetInteger(const char* path, int value);
-  void SetDouble(const char* path, double value);
-  void SetString(const char* path, const std::string& value);
-  void SetFilePath(const char* path, const base::FilePath& value);
+  void Set(const std::string& path, const base::Value& value);
+  void SetBoolean(const std::string& path, bool value);
+  void SetInteger(const std::string& path, int value);
+  void SetDouble(const std::string& path, double value);
+  void SetString(const std::string& path, const std::string& value);
+  void SetFilePath(const std::string& path, const base::FilePath& value);
 
   // Int64 helper methods that actually store the given value as a string.
   // Note that if obtaining the named value via GetDictionary or GetList, the
   // Value type will be TYPE_STRING.
-  void SetInt64(const char* path, int64 value);
-  int64 GetInt64(const char* path) const;
+  void SetInt64(const std::string& path, int64 value);
+  int64 GetInt64(const std::string& path) const;
 
   // As above, but for unsigned values.
-  void SetUint64(const char* path, uint64 value);
-  uint64 GetUint64(const char* path) const;
+  void SetUint64(const std::string& path, uint64 value);
+  uint64 GetUint64(const std::string& path) const;
 
   // Returns the value of the given preference, from the user pref store. If
   // the preference is not set in the user pref store, returns NULL.
-  const base::Value* GetUserPrefValue(const char* path) const;
+  const base::Value* GetUserPrefValue(const std::string& path) const;
 
   // Changes the default value for a preference. Takes ownership of |value|.
   //
   // Will cause a pref change notification to be fired if this causes
   // the effective value to change.
-  void SetDefaultPrefValue(const char* path, base::Value* value);
+  void SetDefaultPrefValue(const std::string& path, base::Value* value);
 
   // Returns the default value of the given preference. |path| must point to a
   // registered preference. In that case, will never return NULL.
-  const base::Value* GetDefaultPrefValue(const char* path) const;
+  const base::Value* GetDefaultPrefValue(const std::string& path) const;
 
   // Returns true if a value has been set for the specified path.
   // NOTE: this is NOT the same as FindPreference. In particular
   // FindPreference returns whether RegisterXXX has been invoked, where as
   // this checks if a value exists for the path.
-  bool HasPrefPath(const char* path) const;
+  bool HasPrefPath(const std::string& path) const;
 
   // Returns a dictionary with effective preference values.
   scoped_ptr<base::DictionaryValue> GetPreferenceValues() const;
@@ -318,8 +317,8 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   // make sure the observer gets cleaned up properly.
   //
   // Virtual for testing.
-  virtual void AddPrefObserver(const char* path, PrefObserver* obs);
-  virtual void RemovePrefObserver(const char* path, PrefObserver* obs);
+  virtual void AddPrefObserver(const std::string& path, PrefObserver* obs);
+  virtual void RemovePrefObserver(const std::string& path, PrefObserver* obs);
 
   // Sends notification of a changed preference. This needs to be called by
   // a ScopedUserPrefUpdate if a DictionaryValue or ListValue is changed.
@@ -327,7 +326,7 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
 
   // Sets the value for this pref path in the user pref store and informs the
   // PrefNotifier of the change.
-  void SetUserPrefValue(const char* path, base::Value* new_value);
+  void SetUserPrefValue(const std::string& path, base::Value* new_value);
 
   // Load preferences from storage, attempting to diagnose and handle errors.
   // This should only be called from the constructor.
@@ -340,7 +339,7 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   // |type| may only be Values::TYPE_DICTIONARY or Values::TYPE_LIST and
   // |path| must point to a registered preference of type |type|.
   // Ownership of the returned value remains at the user pref store.
-  base::Value* GetMutableUserPref(const char* path,
+  base::Value* GetMutableUserPref(const std::string& path,
                                   base::Value::Type type);
 
   // GetPreferenceValue is the equivalent of FindPreference(path)->GetValue(),

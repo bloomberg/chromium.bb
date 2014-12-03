@@ -14,52 +14,52 @@ PrefRegistrySimple::PrefRegistrySimple() {
 PrefRegistrySimple::~PrefRegistrySimple() {
 }
 
-void PrefRegistrySimple::RegisterBooleanPref(const char* path,
+void PrefRegistrySimple::RegisterBooleanPref(const std::string& path,
                                              bool default_value) {
   RegisterPreference(path, new base::FundamentalValue(default_value));
 }
 
-void PrefRegistrySimple::RegisterIntegerPref(const char* path,
+void PrefRegistrySimple::RegisterIntegerPref(const std::string& path,
                                              int default_value) {
   RegisterPreference(path, new base::FundamentalValue(default_value));
 }
 
-void PrefRegistrySimple::RegisterDoublePref(const char* path,
+void PrefRegistrySimple::RegisterDoublePref(const std::string& path,
                                             double default_value) {
   RegisterPreference(path, new base::FundamentalValue(default_value));
 }
 
-void PrefRegistrySimple::RegisterStringPref(const char* path,
+void PrefRegistrySimple::RegisterStringPref(const std::string& path,
                                             const std::string& default_value) {
   RegisterPreference(path, new base::StringValue(default_value));
 }
 
 void PrefRegistrySimple::RegisterFilePathPref(
-    const char* path,
+    const std::string& path,
     const base::FilePath& default_value) {
   RegisterPreference(path, new base::StringValue(default_value.value()));
 }
 
-void PrefRegistrySimple::RegisterListPref(const char* path) {
+void PrefRegistrySimple::RegisterListPref(const std::string& path) {
   RegisterPreference(path, new base::ListValue());
 }
 
-void PrefRegistrySimple::RegisterListPref(const char* path,
+void PrefRegistrySimple::RegisterListPref(const std::string& path,
                                           base::ListValue* default_value) {
   RegisterPreference(path, default_value);
 }
 
-void PrefRegistrySimple::RegisterDictionaryPref(const char* path) {
+void PrefRegistrySimple::RegisterDictionaryPref(const std::string& path) {
   RegisterPreference(path, new base::DictionaryValue());
 }
 
 void PrefRegistrySimple::RegisterDictionaryPref(
-    const char* path,
+    const std::string& path,
     base::DictionaryValue* default_value) {
   RegisterPreference(path, default_value);
 }
 
-void PrefRegistrySimple::RegisterInt64Pref(const char* path,
+void PrefRegistrySimple::RegisterInt64Pref(const std::string& path,
                                            int64 default_value) {
   RegisterPreference(
       path, new base::StringValue(base::Int64ToString(default_value)));

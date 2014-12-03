@@ -29,8 +29,8 @@ class BASE_PREFS_EXPORT PrefNotifierImpl
 
   // If the pref at the given path changes, we call the observer's
   // OnPreferenceChanged method.
-  void AddPrefObserver(const char* path, PrefObserver* observer);
-  void RemovePrefObserver(const char* path, PrefObserver* observer);
+  void AddPrefObserver(const std::string& path, PrefObserver* observer);
+  void RemovePrefObserver(const std::string& path, PrefObserver* observer);
 
   // We run the callback once, when initialization completes. The bool
   // parameter will be set to true for successful initialization,

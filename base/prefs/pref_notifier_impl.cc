@@ -38,7 +38,7 @@ PrefNotifierImpl::~PrefNotifierImpl() {
   init_observers_.clear();
 }
 
-void PrefNotifierImpl::AddPrefObserver(const char* path,
+void PrefNotifierImpl::AddPrefObserver(const std::string& path,
                                        PrefObserver* obs) {
   // Get the pref observer list associated with the path.
   PrefObserverList* observer_list = NULL;
@@ -56,7 +56,7 @@ void PrefNotifierImpl::AddPrefObserver(const char* path,
   observer_list->AddObserver(obs);
 }
 
-void PrefNotifierImpl::RemovePrefObserver(const char* path,
+void PrefNotifierImpl::RemovePrefObserver(const std::string& path,
                                           PrefObserver* obs) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -98,7 +98,7 @@ void PrefNotifierImpl::FireObservers(const std::string& path) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Only send notifications for registered preferences.
-  if (!pref_service_->FindPreference(path.c_str()))
+  if (!pref_service_->FindPreference(path))
     return;
 
   const PrefObserverMap::iterator observer_iterator =

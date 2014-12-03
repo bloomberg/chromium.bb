@@ -28,7 +28,7 @@ PrefRegistry::const_iterator PrefRegistry::end() const {
   return defaults_->end();
 }
 
-void PrefRegistry::SetDefaultPrefValue(const char* pref_name,
+void PrefRegistry::SetDefaultPrefValue(const std::string& pref_name,
                                        base::Value* value) {
   DCHECK(value);
   const base::Value* current_value = NULL;
@@ -40,7 +40,7 @@ void PrefRegistry::SetDefaultPrefValue(const char* pref_name,
   defaults_->ReplaceDefaultValue(pref_name, make_scoped_ptr(value));
 }
 
-void PrefRegistry::RegisterPreference(const char* path,
+void PrefRegistry::RegisterPreference(const std::string& path,
                                       base::Value* default_value) {
   base::Value::Type orig_type = default_value->GetType();
   DCHECK(orig_type != base::Value::TYPE_NULL &&

@@ -19,8 +19,7 @@ using testing::Truly;
 // |pref_name| in |prefs| matches |value|. If |value| is NULL, the matcher
 // checks that the value is not set.
 MATCHER_P3(PrefValueMatches, prefs, pref_name, value, "") {
-  const PrefService::Preference* pref =
-      prefs->FindPreference(pref_name.c_str());
+  const PrefService::Preference* pref = prefs->FindPreference(pref_name);
   if (!pref)
     return false;
 
