@@ -53,8 +53,6 @@ public:
     MOCK_METHOD2(close, void(int, const String&));
     MOCK_METHOD4(fail, void(const String&, MessageLevel, const String&, unsigned));
     MOCK_METHOD0(disconnect, void());
-    MOCK_METHOD0(suspend, void());
-    MOCK_METHOD0(resume, void());
 
     MockWebSocketChannel()
     {

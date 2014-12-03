@@ -268,16 +268,6 @@ void DocumentWebSocketChannel::disconnect()
     m_identifier = 0;
 }
 
-void DocumentWebSocketChannel::suspend()
-{
-    WTF_LOG(Network, "DocumentWebSocketChannel %p suspend()", this);
-}
-
-void DocumentWebSocketChannel::resume()
-{
-    WTF_LOG(Network, "DocumentWebSocketChannel %p resume()", this);
-}
-
 DocumentWebSocketChannel::Message::Message(const String& text)
     : type(MessageTypeText)
     , text(text.utf8(StrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD)) { }

@@ -83,9 +83,6 @@ public:
     virtual void fail(const String& reason, MessageLevel, const String&, unsigned lineNumber) override;
     virtual void disconnect() override;
 
-    virtual void suspend() override;
-    virtual void resume() override;
-
     virtual void trace(Visitor*) override;
 
 private:

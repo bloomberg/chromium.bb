@@ -99,9 +99,6 @@ public:
     // Do not call any methods after calling this method.
     virtual void disconnect() = 0; // Will suppress didClose().
 
-    virtual void suspend() = 0;
-    virtual void resume() = 0;
-
     virtual ~WebSocketChannel() { }
 
     virtual void trace(Visitor*) { }

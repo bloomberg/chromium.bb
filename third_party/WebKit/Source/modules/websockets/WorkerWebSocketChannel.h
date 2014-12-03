@@ -73,8 +73,6 @@ public:
     virtual void close(int code, const String& reason) override;
     virtual void fail(const String& reason, MessageLevel, const String&, unsigned) override;
     virtual void disconnect() override; // Will suppress didClose().
-    virtual void suspend() override { }
-    virtual void resume() override { }
 
     virtual void trace(Visitor*) override;
 

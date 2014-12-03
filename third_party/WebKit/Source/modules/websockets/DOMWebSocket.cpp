@@ -564,15 +564,11 @@ bool DOMWebSocket::hasPendingActivity() const
 
 void DOMWebSocket::suspend()
 {
-    if (m_channel)
-        m_channel->suspend();
     m_eventQueue->suspend();
 }
 
 void DOMWebSocket::resume()
 {
-    if (m_channel)
-        m_channel->resume();
     m_eventQueue->resume();
 }
 
