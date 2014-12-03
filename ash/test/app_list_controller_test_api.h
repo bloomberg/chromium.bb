@@ -10,6 +10,7 @@
 namespace app_list {
 class AppListView;
 class AppsGridView;
+class StartPageView;
 }
 
 namespace ash {
@@ -24,9 +25,15 @@ class AppListControllerTestApi {
   explicit AppListControllerTestApi(Shell* shell);
 
   // Gets the root level apps grid view.
-  app_list::AppsGridView* GetRootGridView();
+  app_list::AppsGridView* GetRootGridView() const;
 
-  app_list::AppListView* view();
+  // Gets the start page view.
+  app_list::StartPageView* GetStartPageView() const;
+
+  app_list::AppListView* view() const;
+
+  // Calls Layout() on the ContentsView.
+  void LayoutContentsView();
 
  private:
   AppListController* app_list_controller_;  // Not owned.

@@ -11,6 +11,7 @@
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_view.h"
+#include "ui/app_list/views/start_page_view.h"
 
 namespace ash {
 namespace test {
@@ -18,13 +19,21 @@ namespace test {
 AppListControllerTestApi::AppListControllerTestApi(Shell* shell)
     : app_list_controller_(ShellTestApi(shell).app_list_controller()) {}
 
-app_list::AppsGridView* AppListControllerTestApi::GetRootGridView() {
+app_list::AppsGridView* AppListControllerTestApi::GetRootGridView() const {
   return view()->app_list_main_view()->contents_view()->
       apps_container_view()->apps_grid_view();
 }
 
-app_list::AppListView* AppListControllerTestApi::view() {
+app_list::StartPageView* AppListControllerTestApi::GetStartPageView() const {
+  return view()->app_list_main_view()->contents_view()->start_page_view();
+}
+
+app_list::AppListView* AppListControllerTestApi::view() const {
   return app_list_controller_->view_;
+}
+
+void AppListControllerTestApi::LayoutContentsView() {
+  view()->app_list_main_view()->contents_view()->Layout();
 }
 
 }  // namespace test
