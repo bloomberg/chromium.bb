@@ -103,7 +103,6 @@ class ChromiumEnv : public leveldb::Env,
   typedef void(ScheduleFunc)(void*);
 
   static bool MakeBackup(const std::string& fname);
-  static const char* FileErrorString(::base::File::Error error);
   static bool HasTableExtension(const base::FilePath& path);
   virtual ~ChromiumEnv();
 
@@ -141,6 +140,8 @@ class ChromiumEnv : public leveldb::Env,
   bool make_backup_;
 
  private:
+  static const char* FileErrorString(::base::File::Error error);
+
   virtual void DidCreateNewFile(const std::string& fname);
   virtual bool DoesDirNeedSync(const std::string& fname);
   virtual void RecordErrorAt(MethodID method) const;
