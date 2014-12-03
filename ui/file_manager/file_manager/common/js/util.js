@@ -725,6 +725,29 @@ util.comparePath = function(entry1, entry2) {
 };
 
 /**
+ * Checks if {@code entry} is an immediate child of {@code directory}.
+ *
+ * @param {?DirectoryEntry} directory The presumptive parent.
+ * @param {?Entry} entry The presumptive child.
+ * @return {!Promise.<boolean>} Resolves with true if {@code directory} is
+ *     parent of {@code entry}.
+ */
+util.isChildEntry = function(entry, directory) {
+  return new Promise(
+      function(resolve, reject) {
+        if (!entry || !directory) {
+          resolve(false);
+        }
+
+        entry.getParent(
+            function(parent) {
+              resolve(util.isSameEntry(parent, directory));
+            },
+            reject);
+    });
+};
+
+/**
  * Checks if the child entry is a descendant of another entry. If the entries
  * point to the same file or directory, then returns false.
  *

@@ -38,3 +38,45 @@ function waitUntil(testFunction) {
     tryTestFunction();
   });
 }
+
+/**
+ * Returns a callable object that records calls and the arguments of the
+ * last call.
+ *
+ * @return {function()} A callable object (a function) with support methods
+ * {@code assertCallCount(number)} and
+ * {@code getLastArguments()} useful for making asserts and
+ * inspecting information about recorded calls.
+ */
+function createRecordingFunction() {
+
+  /** @type {!Array.<!Argument>} */
+  var calls = [];
+
+  function recorder() {
+    calls.push(arguments);
+  }
+
+  /**
+   * Asserts that the recorder was called {@code expected} times.
+   * @param {number} expected The expected number of calls.
+   */
+  recorder.assertCallCount = function(expected) {
+    var actual = calls.length;
+    assertEquals(
+        expected, actual,
+        'Expected ' + expected + ' call(s), but was ' + actual + '.');
+  };
+
+  /**
+   * @return {?Arguments} Returns the {@code Arguments} for the last call,
+   *    or null if the recorder hasn't been called.
+   */
+  recorder.getLastArguments = function() {
+    return (calls.length == 0) ?
+        null :
+        calls[calls.length - 1];
+  };
+
+  return recorder;
+}

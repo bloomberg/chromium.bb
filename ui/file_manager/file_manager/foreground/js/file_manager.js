@@ -59,6 +59,13 @@ function FileManager() {
   this.fileWatcher_ = null;
 
   /**
+   * ImportHistory.Observer subscription. Call to release.
+   * @type {function()}
+   * @private
+   */
+  this.unsubscribeImportHistory_ = function() {};
+
+  /**
    * Model of current directory.
    * @type {DirectoryModel}
    * @private
@@ -746,6 +753,8 @@ Object.freeze(DialogType);
         this.volumeManager_,
         this.historyLoader_);
 
+    this.initHistoryObserver_();
+
     this.ui_.initAdditionalUI(
         assertInstanceof(table, FileTable),
         assertInstanceof(grid, FileGrid),
@@ -778,6 +787,55 @@ Object.freeze(DialogType);
     this.ui_.listContainer.table.redraw();
 
     callback();
+  };
+
+  /**
+   * One-time initialization of import history observer. Provides
+   * the glue that updates the UI when history changes.
+   *
+   * @private
+   */
+  FileManager.prototype.initHistoryObserver_ = function() {
+    // Monitor changes to history so that when it changes we update
+    // metadata... which results in badges being updated.
+    this.historyLoader_.getHistory()
+        .then(
+            /**
+             * @param {!importer.ImportHistory} history
+             * @this {FileManager}
+             */
+            function(history) {
+              var onHistoryUpdated = this.onHistoryChanged_.bind(this);
+              history.addObserver(onHistoryUpdated);
+              this.unsubscribeImportHistory_ = function() {
+                history.removeObserver(onHistoryUpdated);
+              };
+            }.bind(this));
+  };
+
+  /**
+   * Handles events when import history changed.
+   *
+   * @param {!importer.ImportHistory.ChangedEvent} event
+   * @private
+   */
+  FileManager.prototype.onHistoryChanged_ = function(event) {
+    // Ignore any entry that isn't an immediate child of the
+    // current directory.
+    util.isChildEntry(event.entry, this.getCurrentDirectoryEntry())
+        .then(
+            /**
+             * @param {boolean} isChild
+             * @this {FileManager}
+             */
+            function(isChild) {
+              if (isChild) {
+                // TODO(smckay): Update listview when that view is visible.
+                this.ui_.listContainer.grid.updateListItemsMetadata(
+                    'import-history',
+                    [event.entry]);
+              }
+            }.bind(this));
   };
 
   /**

@@ -28,6 +28,36 @@ importer.ImportHistory.prototype.wasImported;
 importer.ImportHistory.prototype.markImported;
 
 /**
+ * Adds an observer, which will be notified when cloud import history changes.
+ *
+ * @param {!importer.ImportHistory.Observer} observer
+ */
+importer.ImportHistory.prototype.addObserver;
+
+/**
+ * Adds an observer, which will be notified when cloud import history changes.
+ *
+ * @param {!importer.ImportHistory.Observer} observer
+ */
+importer.ImportHistory.prototype.removeObserver;
+
+/** @enum {string} */
+importer.ImportHistory.State = {
+  'IMPORTED': 'imported'
+};
+
+/**
+ * @typedef {{
+ *   state: !importer.ImportHistory.State,
+ *   entry: !FileEntry
+ * }}
+ */
+importer.ImportHistory.ChangedEvent;
+
+/** @typedef {function(!importer.ImportHistory.ChangedEvent)} */
+importer.ImportHistory.Observer;
+
+/**
  * An dummy {@code ImportHistory} implementation. This class can conveniently
  * be used when cloud import is disabled.
  * @param {boolean} answer The value to answer all {@code wasImported}
@@ -59,6 +89,12 @@ importer.DummyImportHistory.prototype.markImported =
   return Promise.resolve();
 };
 
+/** @override */
+importer.DummyImportHistory.prototype.addObserver = function(observer) {};
+
+/** @override */
+importer.DummyImportHistory.prototype.removeObserver = function(observer) {};
+
 /**
  * An {@code ImportHistory} implementation that reads from and
  * writes to a storage object.
@@ -81,6 +117,9 @@ importer.PersistentImportHistory = function(storage) {
    * @private {!Object.<string, !Array.<importer.Destination>>}
    */
   this.entries_ = {};
+
+  /** @private {!Array.<!importer.ImportHistory.Observer>} */
+  this.observers_ = [];
 
   /** @private {!Promise.<!importer.PersistentImportHistory>} */
   this.whenReady_ = this.refresh_();
@@ -221,7 +260,38 @@ importer.PersistentImportHistory.prototype.markImported =
            */
           function(key) {
             return this.addDestination_(destination, key);
-          }.bind(this));
+          }.bind(this))
+      .then(this.notifyObservers_.bind(this, entry));
+};
+
+/** @override */
+importer.PersistentImportHistory.prototype.addObserver =
+    function(observer) {
+  this.observers_.push(observer);
+};
+
+/** @override */
+importer.PersistentImportHistory.prototype.removeObserver =
+    function(observer) {
+  var index = this.observers_.indexOf(observer);
+  if (index > -1) {
+    this.observers_.splice(index, 1);
+  }
+};
+
+/**
+ * @param {!FileEntry} subject
+ * @private
+ */
+importer.PersistentImportHistory.prototype.notifyObservers_ =
+    function(subject) {
+  this.observers_.forEach(
+      function(observer) {
+        observer({
+          state: importer.ImportHistory.State.IMPORTED,
+          entry: subject
+        });
+      }.bind(this));
 };
 
 /**

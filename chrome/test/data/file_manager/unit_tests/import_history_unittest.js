@@ -93,6 +93,52 @@ function testHistoryWasImportedTrueForKnownEntrySetAtRuntime(callback) {
   .catch(handleError.bind(null, callback));
 }
 
+function testHistoryChangeFiresChangedEvent(callback) {
+  historyProvider.then(
+      function(history) {
+        var recorder = createRecordingFunction();
+        history.addObserver(recorder);
+        history.markImported(testFileEntry, SPACE_CAMP).then(
+            function() {
+              Promise.resolve()
+                  .then(
+                      function() {
+                        recorder.assertCallCount(1);
+                        assertEquals(
+                            importer.ImportHistory.State.IMPORTED,
+                            recorder.getLastArguments()[0]['state']);
+                        callback(false);
+                      })
+                  .catch(handleError.bind(null, callback));
+            },
+            callback.bind(null, true));
+      },
+      callback.bind(null, true))
+  .catch(handleError.bind(null, callback));
+}
+
+function testHistoryObserverUnsubscribe(callback) {
+  historyProvider.then(
+      function(history) {
+        var recorder = createRecordingFunction();
+        history.addObserver(recorder);
+        history.removeObserver(recorder);
+        history.markImported(testFileEntry, SPACE_CAMP).then(
+            function() {
+              Promise.resolve()
+                  .then(
+                      function() {
+                        recorder.assertCallCount(0);
+                        callback(false);
+                      })
+                  .catch(handleError.bind(null, callback));
+            },
+            callback.bind(null, true));
+      },
+      callback.bind(null, true))
+  .catch(handleError.bind(null, callback));
+}
+
 function testRecordStorageRemembersPreviouslyWrittenRecords(callback) {
   createRealStorage('recordStorageTest.data')
       .then(
