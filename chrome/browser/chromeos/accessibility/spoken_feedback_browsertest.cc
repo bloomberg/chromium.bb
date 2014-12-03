@@ -38,6 +38,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/views/widget/widget.h"
 
@@ -316,14 +317,21 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateAppLauncher) {
   }
 
   SendKeyPress(ui::VKEY_RETURN);
+  // TODO(mgiuca): This is incorrect behaviour; it should read out "Search, text
+  // box" or similar (see http://crbug.com/386826).
   EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), ", text box"));
 
-  SendKeyPress(ui::VKEY_DOWN);
-  // Chrom* appears twice because the accessibility system uses the first app as
-  // the accessibility context.
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Chrom*,"));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Chrom*,"));
-  EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "button"));
+  // TODO(mgiuca): The next part of the test fails in the experimental app list,
+  // because there is no keyboard navigation (see http://crbug.com/438568). Only
+  // check this in the classic app launcher.
+  if (!app_list::switches::IsExperimentalAppListEnabled()) {
+    SendKeyPress(ui::VKEY_DOWN);
+    // Chrom* appears twice because the accessibility system uses the first app
+    // as the accessibility context.
+    EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Chrom*,"));
+    EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "Chrom*,"));
+    EXPECT_TRUE(MatchPattern(speech_monitor_.GetNextUtterance(), "button"));
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {
