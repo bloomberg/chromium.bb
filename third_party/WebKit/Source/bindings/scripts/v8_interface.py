@@ -369,7 +369,8 @@ def interface_context(interface):
             per_context_enabled_function = overloads['per_context_enabled_function_all']
             conditionally_exposed_function = overloads['exposed_test_all']
             runtime_enabled_function = overloads['runtime_enabled_function_all']
-            has_custom_registration = overloads['has_custom_registration_all']
+            has_custom_registration = (overloads['has_custom_registration_all'] or
+                                       overloads['runtime_determined_lengths'])
         else:
             if not method['visible']:
                 continue
@@ -502,17 +503,33 @@ def overloads_context(interface, overloads):
     lengths = [length for length, _ in effective_overloads_by_length]
     name = overloads[0].get('name', '<constructor>')
 
-    # Check and fail if all overloads with the shortest acceptable arguments
-    # list are runtime enabled, since we would otherwise set 'length' on the
-    # function object to an incorrect value when none of those overloads were
-    # actually enabled at runtime. The exception is if all overloads are
-    # controlled by the same runtime enabled feature, in which case there would
-    # be no function object at all if it is not enabled.
+    # Check if all overloads with the shortest acceptable arguments list are
+    # runtime enabled, in which case we need to have a runtime determined
+    # Function.length. The exception is if all overloads are controlled by the
+    # same runtime enabled feature, in which case there would be no function
+    # object at all if it is not enabled.
     shortest_overloads = effective_overloads_by_length[0][1]
     if (all(method.get('runtime_enabled_function')
             for method, _, _ in shortest_overloads) and
         not common_value(overloads, 'runtime_enabled_function')):
-        raise ValueError('Function.length of %s depends on runtime enabled features' % name)
+        # Generate a list of (length, runtime_enabled_functions) tuples.
+        runtime_determined_lengths = []
+        for length, effective_overloads in effective_overloads_by_length:
+            runtime_enabled_functions = set(
+                method['runtime_enabled_function']
+                for method, _, _ in effective_overloads
+                if method.get('runtime_enabled_function'))
+            if not runtime_enabled_functions:
+                # This "length" is unconditionally enabled, so stop here.
+                runtime_determined_lengths.append((length, [None]))
+                break
+            runtime_determined_lengths.append(
+                (length, sorted(runtime_enabled_functions)))
+        length = ('%sV8Internal::%sMethodLength()'
+                  % (cpp_name_or_partial(interface), name))
+    else:
+        runtime_determined_lengths = None
+        length = lengths[0]
 
     # Check and fail if overloads disagree on any of the extended attributes
     # that affect how the method should be registered.
@@ -552,6 +569,7 @@ def overloads_context(interface, overloads):
         'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]
         'exposed_test_all': common_value(overloads, 'exposed_test'),  # [Exposed]
         'has_custom_registration_all': common_value(overloads, 'has_custom_registration'),
+        'length': length,
         'length_tests_methods': length_tests_methods(effective_overloads_by_length),
         # 1. Let maxarg be the length of the longest type list of the
         # entries in S.
@@ -560,6 +578,7 @@ def overloads_context(interface, overloads):
         'minarg': lengths[0],
         'per_context_enabled_function_all': common_value(overloads, 'per_context_enabled_function'),  # [PerContextEnabled]
         'returns_promise_all': promise_overload_count > 0,
+        'runtime_determined_lengths': runtime_determined_lengths,
         'runtime_enabled_function_all': common_value(overloads, 'runtime_enabled_function'),  # [RuntimeEnabled]
         'valid_arities': lengths
             # Only need to report valid arities if there is a gap in the

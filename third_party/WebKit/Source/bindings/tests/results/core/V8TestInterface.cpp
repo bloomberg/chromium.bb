@@ -1187,6 +1187,9 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlagMethod(const v8::Funct
         }
         break;
     default:
+        break;
+    }
+    if (info.Length() < 1) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
         return;
@@ -1980,27 +1983,27 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemp
     static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterfaceImplementationV8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
     V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration, isolate);
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler(V8TestInterface::legacyCallCustom);
-    static const V8DOMConfiguration::MethodConfiguration alwaysExposedStaticMethodMethodConfiguration = {
+    const V8DOMConfiguration::MethodConfiguration alwaysExposedStaticMethodMethodConfiguration = {
         "alwaysExposedStaticMethod", TestInterfaceImplementationV8Internal::alwaysExposedStaticMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, alwaysExposedStaticMethodMethodConfiguration, isolate);
-    static const V8DOMConfiguration::MethodConfiguration implementsStaticVoidMethodMethodConfiguration = {
+    const V8DOMConfiguration::MethodConfiguration implementsStaticVoidMethodMethodConfiguration = {
         "implementsStaticVoidMethod", TestInterfaceImplementationV8Internal::implementsStaticVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, implementsStaticVoidMethodMethodConfiguration, isolate);
     if (RuntimeEnabledFeatures::implements2FeatureNameEnabled()) {
-        static const V8DOMConfiguration::MethodConfiguration implements2VoidMethodMethodConfiguration = {
+        const V8DOMConfiguration::MethodConfiguration implements2VoidMethodMethodConfiguration = {
             "implements2VoidMethod", TestInterfaceImplementationV8Internal::implements2VoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
         };
         V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, implements2VoidMethodMethodConfiguration, isolate);
     }
-    static const V8DOMConfiguration::MethodConfiguration implements3StaticVoidMethodMethodConfiguration = {
+    const V8DOMConfiguration::MethodConfiguration implements3StaticVoidMethodMethodConfiguration = {
         "implements3StaticVoidMethod", TestInterfaceImplementationV8Internal::implements3StaticVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, implements3StaticVoidMethodMethodConfiguration, isolate);
 #if ENABLE(PARTIAL_CONDITION)
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-        static const V8DOMConfiguration::MethodConfiguration partialVoidMethodMethodConfiguration = {
+        const V8DOMConfiguration::MethodConfiguration partialVoidMethodMethodConfiguration = {
             "partialVoidMethod", TestInterfaceImplementationV8Internal::partialVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
         };
         V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, partialVoidMethodMethodConfiguration, isolate);
@@ -2008,7 +2011,7 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemp
 #endif // ENABLE(PARTIAL_CONDITION)
 #if ENABLE(PARTIAL_CONDITION)
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-        static const V8DOMConfiguration::MethodConfiguration partialStaticVoidMethodMethodConfiguration = {
+        const V8DOMConfiguration::MethodConfiguration partialStaticVoidMethodMethodConfiguration = {
             "partialStaticVoidMethod", TestInterfaceImplementationV8Internal::partialStaticVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
         };
         V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, partialStaticVoidMethodMethodConfiguration, isolate);
@@ -2016,7 +2019,7 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemp
 #endif // ENABLE(PARTIAL_CONDITION)
 #if ENABLE(PARTIAL_CONDITION)
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-        static const V8DOMConfiguration::MethodConfiguration partialVoidMethodLongArgMethodConfiguration = {
+        const V8DOMConfiguration::MethodConfiguration partialVoidMethodLongArgMethodConfiguration = {
             "partialVoidMethodLongArg", TestInterfaceImplementationV8Internal::partialVoidMethodLongArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts,
         };
         V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, partialVoidMethodLongArgMethodConfiguration, isolate);
@@ -2024,7 +2027,7 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemp
 #endif // ENABLE(PARTIAL_CONDITION)
 #if ENABLE(PARTIAL_CONDITION)
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-        static const V8DOMConfiguration::MethodConfiguration partialCallWithExecutionContextRaisesExceptionVoidMethodMethodConfiguration = {
+        const V8DOMConfiguration::MethodConfiguration partialCallWithExecutionContextRaisesExceptionVoidMethodMethodConfiguration = {
             "partialCallWithExecutionContextRaisesExceptionVoidMethod", TestInterfaceImplementationV8Internal::partialCallWithExecutionContextRaisesExceptionVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
         };
         V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, partialCallWithExecutionContextRaisesExceptionVoidMethodMethodConfiguration, isolate);
@@ -2032,7 +2035,7 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemp
 #endif // ENABLE(PARTIAL_CONDITION)
 #if ENABLE(PARTIAL_CONDITION)
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-        static const V8DOMConfiguration::MethodConfiguration partialVoidMethodPartialCallbackTypeArgMethodConfiguration = {
+        const V8DOMConfiguration::MethodConfiguration partialVoidMethodPartialCallbackTypeArgMethodConfiguration = {
             "partialVoidMethodPartialCallbackTypeArg", TestInterfaceImplementationV8Internal::partialVoidMethodPartialCallbackTypeArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts,
         };
         V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, partialVoidMethodPartialCallbackTypeArgMethodConfiguration, isolate);
@@ -2040,25 +2043,25 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemp
 #endif // ENABLE(PARTIAL_CONDITION)
 #if ENABLE(PARTIAL_CONDITION)
     if (RuntimeEnabledFeatures::partialFeatureNameEnabled()) {
-        static const V8DOMConfiguration::MethodConfiguration shortMethodWithShortArgumentImplementedInPrivateScriptMethodConfiguration = {
+        const V8DOMConfiguration::MethodConfiguration shortMethodWithShortArgumentImplementedInPrivateScriptMethodConfiguration = {
             "shortMethodWithShortArgumentImplementedInPrivateScript", TestInterfaceImplementationV8Internal::shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts,
         };
         V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, shortMethodWithShortArgumentImplementedInPrivateScriptMethodConfiguration, isolate);
     }
 #endif // ENABLE(PARTIAL_CONDITION)
-    static const V8DOMConfiguration::MethodConfiguration staticVoidMethodPartialOverloadMethodConfiguration = {
+    const V8DOMConfiguration::MethodConfiguration staticVoidMethodPartialOverloadMethodConfiguration = {
         "staticVoidMethodPartialOverload", TestInterfaceImplementationV8Internal::staticVoidMethodPartialOverloadMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, staticVoidMethodPartialOverloadMethodConfiguration, isolate);
-    static const V8DOMConfiguration::MethodConfiguration staticPromiseMethodPartialOverloadMethodConfiguration = {
+    const V8DOMConfiguration::MethodConfiguration staticPromiseMethodPartialOverloadMethodConfiguration = {
         "staticPromiseMethodPartialOverload", TestInterfaceImplementationV8Internal::staticPromiseMethodPartialOverloadMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, staticPromiseMethodPartialOverloadMethodConfiguration, isolate);
-    static const V8DOMConfiguration::MethodConfiguration partial2StaticVoidMethodMethodConfiguration = {
+    const V8DOMConfiguration::MethodConfiguration partial2StaticVoidMethodMethodConfiguration = {
         "partial2StaticVoidMethod", TestInterfaceImplementationV8Internal::partial2StaticVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, partial2StaticVoidMethodMethodConfiguration, isolate);
-    static const V8DOMConfiguration::MethodConfiguration toStringMethodConfiguration = {
+    const V8DOMConfiguration::MethodConfiguration toStringMethodConfiguration = {
         "toString", TestInterfaceImplementationV8Internal::toStringMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum), toStringMethodConfiguration, isolate);

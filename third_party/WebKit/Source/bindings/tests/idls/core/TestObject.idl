@@ -531,7 +531,7 @@ interface TestObject {
     [RuntimeEnabled=FeatureName] void runtimeEnabledOverloadedVoidMethod(long longArg);
     [RuntimeEnabled=FeatureName1] void partiallyRuntimeEnabledOverloadedVoidMethod(DOMString stringArg);
     [RuntimeEnabled=FeatureName2] void partiallyRuntimeEnabledOverloadedVoidMethod(TestInterface testInterface);
-    void partiallyRuntimeEnabledOverloadedVoidMethod(long longArg);
+    void partiallyRuntimeEnabledOverloadedVoidMethod(long longArg, DOMString stringArg);
     [TreatReturnedNullStringAs=Null] DOMString treatReturnedNullStringAsNullStringMethod();
     [TreatReturnedNullStringAs=Undefined] DOMString treatReturnedNullStringAsUndefinedStringMethod();
     [TreatReturnedNullStringAs=Null] ByteString treatReturnedNullStringAsNullByteStringMethod();

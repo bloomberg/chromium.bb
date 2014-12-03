@@ -57,9 +57,7 @@ static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::V
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
@@ -87,9 +85,7 @@ static void staticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
@@ -122,9 +118,7 @@ static void promiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
@@ -153,9 +147,7 @@ static void staticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackI
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
@@ -202,9 +194,7 @@ static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
@@ -232,9 +222,7 @@ static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Va
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();

@@ -7742,6 +7742,9 @@ static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
+        break;
+    }
+    if (info.Length() < 1) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
         return;
@@ -7810,6 +7813,9 @@ static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
+        break;
+    }
+    if (info.Length() < 1) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
         return;
@@ -7861,6 +7867,9 @@ static void overloadedMethodCMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
+        break;
+    }
+    if (info.Length() < 1) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
         return;
@@ -7913,6 +7922,9 @@ static void overloadedMethodDMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
+        break;
+    }
+    if (info.Length() < 1) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
         return;
@@ -7968,6 +7980,9 @@ static void overloadedMethodEMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
+        break;
+    }
+    if (info.Length() < 1) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
         return;
@@ -8037,9 +8052,7 @@ static void overloadedMethodFMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
@@ -8106,9 +8119,7 @@ static void overloadedMethodGMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
@@ -8156,6 +8167,9 @@ static void overloadedMethodHMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
+        break;
+    }
+    if (info.Length() < 1) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
         return;
@@ -8211,6 +8225,9 @@ static void overloadedMethodIMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
+        break;
+    }
+    if (info.Length() < 1) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
         return;
@@ -8267,6 +8284,9 @@ static void overloadedMethodJMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
+        break;
+    }
+    if (info.Length() < 1) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
         return;
@@ -8317,6 +8337,9 @@ static void overloadedMethodKMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
+        break;
+    }
+    if (info.Length() < 1) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
         return;
@@ -8391,6 +8414,9 @@ static void overloadedMethodLMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     default:
+        break;
+    }
+    if (info.Length() < 1) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
         return;
@@ -8464,9 +8490,7 @@ static void promiseOverloadMethodMethod(const v8::FunctionCallbackInfo<v8::Value
             v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
             return;
         }
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     v8SetReturnValue(info, exceptionState.reject(ScriptState::current(info.GetIsolate())).v8Value());
@@ -8519,9 +8543,7 @@ static void overloadedPerWorldBindingsMethodMethod(const v8::FunctionCallbackInf
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
@@ -8562,9 +8584,7 @@ static void overloadedPerWorldBindingsMethodMethodForMainWorld(const v8::Functio
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
@@ -8616,6 +8636,9 @@ static void overloadedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::Valu
         }
         break;
     default:
+        break;
+    }
+    if (info.Length() < 1) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
         return;
@@ -9130,9 +9153,7 @@ static void DeprecateAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8:
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
@@ -9180,9 +9201,7 @@ static void DeprecateAsSameValueOverloadedMethodMethod(const v8::FunctionCallbac
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
@@ -9231,9 +9250,7 @@ static void measureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::V
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
@@ -9281,9 +9298,7 @@ static void measureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackI
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
@@ -9333,9 +9348,7 @@ static void deprecateAsMeasureAsSameValueOverloadedMethodMethod(const v8::Functi
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
@@ -9385,9 +9398,7 @@ static void deprecateAsSameValueMeasureAsOverloadedMethodMethod(const v8::Functi
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
@@ -9436,9 +9447,7 @@ static void deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethod(const v
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
@@ -9874,6 +9883,9 @@ static void runtimeEnabledOverloadedVoidMethodMethod(const v8::FunctionCallbackI
         }
         break;
     default:
+        break;
+    }
+    if (info.Length() < 1) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
         return;
@@ -9914,16 +9926,29 @@ static void partiallyRuntimeEnabledOverloadedVoidMethod3Method(const v8::Functio
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "partiallyRuntimeEnabledOverloadedVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     int longArg;
+    V8StringResource<> stringArg;
     {
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+        TOSTRING_VOID_INTERNAL(stringArg, info[1]);
     }
-    impl->partiallyRuntimeEnabledOverloadedVoidMethod(longArg);
+    impl->partiallyRuntimeEnabledOverloadedVoidMethod(longArg, stringArg);
+}
+
+static int partiallyRuntimeEnabledOverloadedVoidMethodMethodLength()
+{
+    if (RuntimeEnabledFeatures::featureName1Enabled()) {
+        return 1;
+    }
+    if (RuntimeEnabledFeatures::featureName2Enabled()) {
+        return 1;
+    }
+    return 2;
 }
 
 static void partiallyRuntimeEnabledOverloadedVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "partiallyRuntimeEnabledOverloadedVoidMethod", "TestObject", info.Holder(), info.GetIsolate());
-    switch (std::min(1, info.Length())) {
+    switch (std::min(2, info.Length())) {
     case 1:
         if (RuntimeEnabledFeatures::featureName2Enabled()) {
             if (V8TestInterface::hasInstance(info[0], info.GetIsolate())) {
@@ -9931,23 +9956,24 @@ static void partiallyRuntimeEnabledOverloadedVoidMethodMethod(const v8::Function
                 return;
             }
         }
-        if (info[0]->IsNumber()) {
-            partiallyRuntimeEnabledOverloadedVoidMethod3Method(info);
-            return;
-        }
         if (RuntimeEnabledFeatures::featureName1Enabled()) {
             if (true) {
                 partiallyRuntimeEnabledOverloadedVoidMethod1Method(info);
                 return;
             }
         }
+        break;
+    case 2:
         if (true) {
             partiallyRuntimeEnabledOverloadedVoidMethod3Method(info);
             return;
         }
         break;
     default:
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        break;
+    }
+    if (info.Length() < TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodLength()) {
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodLength(), info.Length()));
         exceptionState.throwIfNeeded();
         return;
     }
@@ -10866,7 +10892,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg", TestObjectV8Internal::raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"raisesExceptionTestInterfaceEmptyVoidMethod", TestObjectV8Internal::raisesExceptionTestInterfaceEmptyVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"callWithExecutionContextRaisesExceptionVoidMethodLongArg", TestObjectV8Internal::callWithExecutionContextRaisesExceptionVoidMethodLongArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
-    {"partiallyRuntimeEnabledOverloadedVoidMethod", TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"treatReturnedNullStringAsNullStringMethod", TestObjectV8Internal::treatReturnedNullStringAsNullStringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"treatReturnedNullStringAsUndefinedStringMethod", TestObjectV8Internal::treatReturnedNullStringAsUndefinedStringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"treatReturnedNullStringAsNullByteStringMethod", TestObjectV8Internal::treatReturnedNullStringAsNullByteStringMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
@@ -10970,47 +10995,51 @@ static void installV8TestObjectTemplate(v8::Handle<v8::FunctionTemplate> functio
     COMPILE_ASSERT(1 == TestObject::MEASURED_CONSTANT, TheValueOfTestObject_MEASURED_CONSTANTDoesntMatchWithImplementation);
     COMPILE_ASSERT(1 == TestObject::FEATURE_ENABLED_CONST, TheValueOfTestObject_FEATURE_ENABLED_CONSTDoesntMatchWithImplementation);
     COMPILE_ASSERT(1 == TestObject::CONST_IMPL, TheValueOfTestObject_CONST_IMPLDoesntMatchWithImplementation);
-    static const V8DOMConfiguration::MethodConfiguration staticVoidMethodMethodConfiguration = {
+    const V8DOMConfiguration::MethodConfiguration staticVoidMethodMethodConfiguration = {
         "staticVoidMethod", TestObjectV8Internal::staticVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, staticVoidMethodMethodConfiguration, isolate);
-    static const V8DOMConfiguration::MethodConfiguration overloadedStaticMethodMethodConfiguration = {
+    const V8DOMConfiguration::MethodConfiguration overloadedStaticMethodMethodConfiguration = {
         "overloadedStaticMethod", TestObjectV8Internal::overloadedStaticMethodMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, overloadedStaticMethodMethodConfiguration, isolate);
 #if ENABLE(CONDITION)
-    static const V8DOMConfiguration::MethodConfiguration conditionalConditionStaticVoidMethodMethodConfiguration = {
+    const V8DOMConfiguration::MethodConfiguration conditionalConditionStaticVoidMethodMethodConfiguration = {
         "conditionalConditionStaticVoidMethod", TestObjectV8Internal::conditionalConditionStaticVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, conditionalConditionStaticVoidMethodMethodConfiguration, isolate);
 #endif // ENABLE(CONDITION)
-    static const V8DOMConfiguration::MethodConfiguration doNotCheckSignatureVoidMethodMethodConfiguration = {
+    const V8DOMConfiguration::MethodConfiguration doNotCheckSignatureVoidMethodMethodConfiguration = {
         "doNotCheckSignatureVoidMethod", TestObjectV8Internal::doNotCheckSignatureVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(prototypeTemplate, v8::Local<v8::Signature>(), v8::None, doNotCheckSignatureVoidMethodMethodConfiguration, isolate);
-    static const V8DOMConfiguration::MethodConfiguration notEnumerableVoidMethodMethodConfiguration = {
+    const V8DOMConfiguration::MethodConfiguration notEnumerableVoidMethodMethodConfiguration = {
         "notEnumerableVoidMethod", TestObjectV8Internal::notEnumerableVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum), notEnumerableVoidMethodMethodConfiguration, isolate);
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
-        static const V8DOMConfiguration::MethodConfiguration runtimeEnabledVoidMethodMethodConfiguration = {
+        const V8DOMConfiguration::MethodConfiguration runtimeEnabledVoidMethodMethodConfiguration = {
             "runtimeEnabledVoidMethod", TestObjectV8Internal::runtimeEnabledVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
         };
         V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, runtimeEnabledVoidMethodMethodConfiguration, isolate);
     }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
-        static const V8DOMConfiguration::MethodConfiguration perWorldBindingsRuntimeEnabledVoidMethodMethodConfiguration = {
+        const V8DOMConfiguration::MethodConfiguration perWorldBindingsRuntimeEnabledVoidMethodMethodConfiguration = {
             "perWorldBindingsRuntimeEnabledVoidMethod", TestObjectV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallback, TestObjectV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallbackForMainWorld, 0, V8DOMConfiguration::ExposedToAllScripts,
         };
         V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, perWorldBindingsRuntimeEnabledVoidMethodMethodConfiguration, isolate);
     }
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
-        static const V8DOMConfiguration::MethodConfiguration runtimeEnabledOverloadedVoidMethodMethodConfiguration = {
+        const V8DOMConfiguration::MethodConfiguration runtimeEnabledOverloadedVoidMethodMethodConfiguration = {
             "runtimeEnabledOverloadedVoidMethod", TestObjectV8Internal::runtimeEnabledOverloadedVoidMethodMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts,
         };
         V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, runtimeEnabledOverloadedVoidMethodMethodConfiguration, isolate);
     }
-    static const V8DOMConfiguration::MethodConfiguration unforgeableVoidMethodMethodConfiguration = {
+    const V8DOMConfiguration::MethodConfiguration partiallyRuntimeEnabledOverloadedVoidMethodMethodConfiguration = {
+        "partiallyRuntimeEnabledOverloadedVoidMethod", TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodCallback, 0, TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodLength(), V8DOMConfiguration::ExposedToAllScripts,
+    };
+    V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::None, partiallyRuntimeEnabledOverloadedVoidMethodMethodConfiguration, isolate);
+    const V8DOMConfiguration::MethodConfiguration unforgeableVoidMethodMethodConfiguration = {
         "unforgeableVoidMethod", TestObjectV8Internal::unforgeableVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(instanceTemplate, defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly), unforgeableVoidMethodMethodConfiguration, isolate);

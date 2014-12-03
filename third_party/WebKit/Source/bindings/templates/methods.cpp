@@ -332,6 +332,21 @@ createMinimumArityTypeErrorForMethod(info.GetIsolate(), "{{method.name}}", "{{in
 
 
 {##############################################################################}
+{% macro runtime_determined_length_method(overloads) %}
+static int {{overloads.name}}MethodLength()
+{
+    {% for length, runtime_enabled_functions in overloads.runtime_determined_lengths %}
+    {% for runtime_enabled_function in runtime_enabled_functions %}
+    {% filter runtime_enabled(runtime_enabled_function) %}
+    return {{length}};
+    {% endfilter %}
+    {% endfor %}
+    {% endfor %}
+}
+{% endmacro %}
+
+
+{##############################################################################}
 {# FIXME: We should return a rejected Promise if an error occurs in this
 function when ALL methods in this overload return Promise. In order to do so,
 we must ensure either ALL or NO methods in this overload return Promise #}
@@ -387,16 +402,21 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
             return;
         }
         {% endif %}
-        {# Otherwise just report "not enough arguments" #}
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{overloads.minarg}}, info.Length()));
-        {{throw_from_exception_state(overloads)}};
-        return;
+        break;
     {% endif %}
     }
     {% if not is_partial and overloads.has_partial_overloads %}
     ASSERT({{overloads.name}}MethodForPartialInterface);
     ({{overloads.name}}MethodForPartialInterface)(info);
     {% else %}
+    {% if overloads.length != 0 %}
+    if (info.Length() < {{overloads.length}}) {
+        {# Otherwise just report "not enough arguments" #}
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{overloads.length}}, info.Length()));
+        {{throw_from_exception_state(overloads)}};
+        return;
+    }
+    {% endif %}
     {# No match, throw error #}
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     {{throw_from_exception_state(overloads)}};
@@ -595,12 +615,13 @@ v8SetReturnValue(info, wrapper);
 {% set method_callback = '%sV8Internal::%sMethodCallback' % (cpp_class_or_partial, method.name) %}
 {% set method_callback_for_main_world = '%sForMainWorld' % method_callback
   if method.is_per_world_bindings else '0' %}
+{% set method_length = method.overloads.length if method.overloads else method.length %}
 {% set property_attribute =
   'static_cast<v8::PropertyAttribute>(%s)' % ' | '.join(method.property_attributes)
   if method.property_attributes else 'v8::None' %}
 {% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if method.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
-static const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration = {
-    "{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}, {{only_exposed_to_private_script}},
+const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration = {
+    "{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method_length}}, {{only_exposed_to_private_script}},
 };
 V8DOMConfiguration::installMethod({{method.function_template}}, {{method.signature}}, {{property_attribute}}, {{method.name}}MethodConfiguration, isolate);
 {%- endmacro %}

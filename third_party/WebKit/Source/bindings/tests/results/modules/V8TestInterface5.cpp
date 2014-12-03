@@ -779,11 +779,11 @@ static void installV8TestInterface5Template(v8::Handle<v8::FunctionTemplate> fun
     static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface5ImplementationV8Internal::iteratorMethodCallback, 0, V8DOMConfiguration::ExposedToAllScripts };
     V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, v8::DontDelete, symbolKeyedIteratorConfiguration, isolate);
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler(V8TestInterface5::legacyCallCustom);
-    static const V8DOMConfiguration::MethodConfiguration alwaysExposedStaticMethodMethodConfiguration = {
+    const V8DOMConfiguration::MethodConfiguration alwaysExposedStaticMethodMethodConfiguration = {
         "alwaysExposedStaticMethod", TestInterface5ImplementationV8Internal::alwaysExposedStaticMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(functionTemplate, v8::Local<v8::Signature>(), v8::None, alwaysExposedStaticMethodMethodConfiguration, isolate);
-    static const V8DOMConfiguration::MethodConfiguration toStringMethodConfiguration = {
+    const V8DOMConfiguration::MethodConfiguration toStringMethodConfiguration = {
         "toString", TestInterface5ImplementationV8Internal::toStringMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum), toStringMethodConfiguration, isolate);

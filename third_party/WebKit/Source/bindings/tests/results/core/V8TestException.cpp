@@ -95,7 +95,7 @@ static void installV8TestExceptionTemplate(v8::Handle<v8::FunctionTemplate> func
         {"UNSIGNED_SHORT_CONSTANT", 1, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
     };
     V8DOMConfiguration::installConstants(isolate, functionTemplate, prototypeTemplate, V8TestExceptionConstants, WTF_ARRAY_LENGTH(V8TestExceptionConstants));
-    static const V8DOMConfiguration::MethodConfiguration toStringMethodConfiguration = {
+    const V8DOMConfiguration::MethodConfiguration toStringMethodConfiguration = {
         "toString", TestExceptionV8Internal::toStringMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts,
     };
     V8DOMConfiguration::installMethod(prototypeTemplate, defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum), toStringMethodConfiguration, isolate);
