@@ -21,6 +21,10 @@ WindowTreeHostOzone::~WindowTreeHostOzone() {
   DestroyDispatcher();
 }
 
+gfx::Rect WindowTreeHostOzone::GetBounds() const {
+  return platform_window_->GetBounds();
+}
+
 void WindowTreeHostOzone::OnBoundsChanged(const gfx::Rect& new_bounds) {
   // TOOD(spang): Should we determine which parts changed?
   OnHostResized(new_bounds.size());
@@ -71,10 +75,6 @@ void WindowTreeHostOzone::Show() {
 
 void WindowTreeHostOzone::Hide() {
   platform_window_->Hide();
-}
-
-gfx::Rect WindowTreeHostOzone::GetBounds() const {
-  return platform_window_->GetBounds();
 }
 
 void WindowTreeHostOzone::SetBounds(const gfx::Rect& bounds) {

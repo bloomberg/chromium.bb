@@ -24,6 +24,10 @@ class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
   explicit WindowTreeHostOzone(const gfx::Rect& bounds);
   virtual ~WindowTreeHostOzone();
 
+ protected:
+  // WindowTreeHost:
+  virtual gfx::Rect GetBounds() const override;
+
  private:
   // ui::PlatformWindowDelegate:
   virtual void OnBoundsChanged(const gfx::Rect&) override;
@@ -42,7 +46,6 @@ class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() override;
   virtual void Show() override;
   virtual void Hide() override;
-  virtual gfx::Rect GetBounds() const override;
   virtual void SetBounds(const gfx::Rect& bounds) override;
   virtual gfx::Point GetLocationOnNativeScreen() const override;
   virtual void SetCapture() override;

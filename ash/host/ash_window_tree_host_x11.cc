@@ -16,7 +16,6 @@
 #include "ash/host/root_window_transformer.h"
 #include "base/basictypes.h"
 #include "base/sys_info.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -226,27 +225,7 @@ bool AshWindowTreeHostX11::CanDispatchEvent(const ui::PlatformEvent& event) {
 }
 void AshWindowTreeHostX11::TranslateAndDispatchLocatedEvent(
     ui::LocatedEvent* event) {
-  if (!event->IsTouchEvent()) {
-    aura::Window* root_window = window();
-    aura::client::ScreenPositionClient* screen_position_client =
-        aura::client::GetScreenPositionClient(root_window);
-    gfx::Rect local(bounds().size());
-    local.Inset(transformer_helper_.GetHostInsets());
-
-    if (screen_position_client && !local.Contains(event->location())) {
-      gfx::Point location(event->location());
-      // In order to get the correct point in screen coordinates
-      // during passive grab, we first need to find on which host window
-      // the mouse is on, and find out the screen coordinates on that
-      // host window, then convert it back to this host window's coordinate.
-      screen_position_client->ConvertHostPointToScreen(root_window,
-                                                       &location);
-      screen_position_client->ConvertPointFromScreen(root_window, &location);
-      ConvertPointToHost(&location);
-      event->set_location(location);
-      event->set_root_location(location);
-    }
-  }
+  TranslateLocatedEvent(event);
   SendEventToProcessor(event);
 }
 

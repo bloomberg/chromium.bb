@@ -18,6 +18,10 @@ class Insets;
 class Rect;
 }
 
+namespace ui {
+class LocatedEvent;
+}
+
 namespace ash {
 struct AshWindowTreeHostInitParams;
 class RootWindowTransformer;
@@ -57,6 +61,10 @@ class ASH_EXPORT AshWindowTreeHost {
 
   // Stop listening for events in preparation for shutdown.
   virtual void PrepareForShutdown() {}
+
+ protected:
+  // Translates the native mouse location into screen coordinates.
+  void TranslateLocatedEvent(ui::LocatedEvent* event);
 };
 
 }  // namespace ash

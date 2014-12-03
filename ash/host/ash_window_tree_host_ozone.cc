@@ -34,6 +34,7 @@ class AshWindowTreeHostOzone : public AshWindowTreeHost,
   virtual gfx::Transform GetRootTransform() const override;
   virtual gfx::Transform GetInverseRootTransform() const override;
   virtual void UpdateRootWindowSize(const gfx::Size& host_size) override;
+  virtual void DispatchEvent(ui::Event* event) override;
 
   TransformerHelper transformer_helper_;
 
@@ -85,6 +86,12 @@ gfx::Transform AshWindowTreeHostOzone::GetInverseRootTransform() const {
 
 void AshWindowTreeHostOzone::UpdateRootWindowSize(const gfx::Size& host_size) {
   transformer_helper_.UpdateWindowSize(host_size);
+}
+
+void AshWindowTreeHostOzone::DispatchEvent(ui::Event* event) {
+  if (event->IsLocatedEvent())
+    TranslateLocatedEvent(static_cast<ui::LocatedEvent*>(event));
+  SendEventToProcessor(event);
 }
 
 }  // namespace
