@@ -38,25 +38,22 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
 
     childPaintInfo.applyTransform(m_renderSVGImage.localToParentTransform(), &stateSaver);
 
-    FloatRect boundingBox = m_renderSVGImage.objectBoundingBox();
-    if (!boundingBox.isEmpty()) {
-        // SVGRenderingContext may taint the state - make sure we're always saving.
-        stateSaver.saveIfNeeded();
+    // SVGRenderingContext may taint the state - make sure we're always saving.
+    stateSaver.saveIfNeeded();
 
-        SVGRenderingContext renderingContext(&m_renderSVGImage, childPaintInfo);
-        if (renderingContext.isRenderingPrepared()) {
-            if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC) {
+    SVGRenderingContext renderingContext(&m_renderSVGImage, childPaintInfo);
+    if (renderingContext.isRenderingPrepared()) {
+        if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC) {
+            paintForeground(childPaintInfo);
+        } else {
+            RefPtr<DisplayList>& bufferedForeground = m_renderSVGImage.bufferedForeground();
+            if (!bufferedForeground) {
+                childPaintInfo.context->beginRecording(m_renderSVGImage.objectBoundingBox());
                 paintForeground(childPaintInfo);
-            } else {
-                RefPtr<DisplayList>& bufferedForeground = m_renderSVGImage.bufferedForeground();
-                if (!bufferedForeground) {
-                    childPaintInfo.context->beginRecording(boundingBox);
-                    paintForeground(childPaintInfo);
-                    bufferedForeground = childPaintInfo.context->endRecording();
-                }
-
-                childPaintInfo.context->drawDisplayList(bufferedForeground.get());
+                bufferedForeground = childPaintInfo.context->endRecording();
             }
+
+            childPaintInfo.context->drawDisplayList(bufferedForeground.get());
         }
     }
 
