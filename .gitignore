@@ -52,3 +52,7 @@ docs/_build/
 
 # PyBuilder
 target/
+/video.mp4
+/timeline.json
+/ref
+/out
