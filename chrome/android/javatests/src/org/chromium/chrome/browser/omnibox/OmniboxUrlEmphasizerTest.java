@@ -1,0 +1,320 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.omnibox;
+
+import android.content.res.Resources;
+import android.test.UiThreadTest;
+import android.test.suitebuilder.annotation.MediumTest;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisColorSpan;
+import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisSpan;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
+import org.chromium.chrome.shell.ChromeShellActivity;
+import org.chromium.chrome.shell.ChromeShellTab;
+import org.chromium.chrome.shell.ChromeShellTestBase;
+
+/**
+ * Unit tests for OmniboxUrlEmphasizer that ensure various types of URLs are
+ * emphasized and colored correctly.
+ */
+public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
+    private ChromeShellActivity mActivity;
+    private Profile mProfile;
+    private Resources mResources;
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        mActivity = launchChromeShellWithBlankPage();
+        assertTrue(waitForActiveShellToBeDoneLoading());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ChromeShellTab tab = mActivity.getActiveTab();
+                mProfile = tab.getProfile();
+                mResources = mActivity.getResources();
+            }
+        });
+    }
+
+    /**
+     * Convenience class for testing a URL emphasized by
+     * OmniboxUrlEmphasizer.emphasizeUrl().
+     */
+    private static class EmphasizedUrlSpanHelper {
+        UrlEmphasisSpan mSpan;
+        Spannable mParent;
+
+        private EmphasizedUrlSpanHelper(UrlEmphasisSpan span, Spannable parent) {
+            mSpan = span;
+            mParent = parent;
+        }
+
+        private String getContents() {
+            return mParent.subSequence(getStartIndex(), getEndIndex()).toString();
+        }
+
+        private int getStartIndex() {
+            return mParent.getSpanStart(mSpan);
+        }
+
+        private int getEndIndex() {
+            return mParent.getSpanEnd(mSpan);
+        }
+
+        private String getClassName() {
+            return mSpan.getClass().getSimpleName();
+        }
+
+        private int getColorForColoredSpan() {
+            return ((UrlEmphasisColorSpan) mSpan).getForegroundColor();
+        }
+
+        public static EmphasizedUrlSpanHelper[] getSpansForEmphasizedUrl(Spannable emphasizedUrl) {
+            UrlEmphasisSpan[] existingSpans = OmniboxUrlEmphasizer.getEmphasisSpans(emphasizedUrl);
+            EmphasizedUrlSpanHelper[] helperSpans =
+                    new EmphasizedUrlSpanHelper[existingSpans.length];
+            for (int i = 0; i < existingSpans.length; i++) {
+                helperSpans[i] = new EmphasizedUrlSpanHelper(existingSpans[i], emphasizedUrl);
+            }
+            return helperSpans;
+        }
+
+        public void assertIsColoredSpan(String contents, int startIndex, int color) {
+            assertEquals("Unexpected span contents:", contents, getContents());
+            assertEquals("Unexpected starting index for '" + contents + "' span:", startIndex,
+                    getStartIndex());
+            assertEquals("Unexpected ending index for scheme span:", startIndex + contents.length(),
+                    getEndIndex());
+            assertEquals("Unexpected class for scheme span:", "UrlEmphasisColorSpan",
+                    getClassName());
+            assertEquals("Unexpected color for scheme span:", color, getColorForColoredSpan());
+        }
+
+        public void assertIsStrikethroughSpan(String contents, int startIndex) {
+            assertEquals("Unexpected span contents:", contents, getContents());
+            assertEquals("Unexpected starting index for '" + contents + "' span:", startIndex,
+                    getStartIndex());
+            assertEquals("Unexpected ending index for scheme span:", startIndex + contents.length(),
+                    getEndIndex());
+            assertEquals("Unexpected class for scheme span:", "UrlEmphasisSecurityErrorSpan",
+                    getClassName());
+        }
+    }
+
+    /**
+     * Verify that a short, secure HTTPS URL is colored correctly by
+     * OmniboxUrlEmphasizer.emphasizeUrl().
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testShortSecureHTTPSUrl() {
+        Spannable url = new SpannableStringBuilder("https://www.google.com/");
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources,
+                mProfile, ToolbarModelSecurityLevel.SECURE, false,
+                true);
+        EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
+
+        assertEquals("Unexpected number of spans:", 4, spans.length);
+        spans[0].assertIsColoredSpan("https", 0,
+                mResources.getColor(R.color.url_emphasis_start_scheme_secure));
+        spans[1].assertIsColoredSpan("://", 5,
+                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+        spans[2].assertIsColoredSpan("www.google.com", 8,
+                mResources.getColor(R.color.url_emphasis_domain_and_registry));
+        spans[3].assertIsColoredSpan("/", 22,
+                mResources.getColor(R.color.url_emphasis_trailing_url));
+    }
+
+    /**
+     * Verify that a short, secure HTTPS URL is colored correctly with light
+     * colors by OmniboxUrlEmphasizer.emphasizeUrl().
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testShortSecureHTTPSUrlWithLightColors() {
+        Spannable url = new SpannableStringBuilder("https://www.google.com/");
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources,
+                mProfile, ToolbarModelSecurityLevel.SECURE, false,
+                false);
+        EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
+
+        assertEquals("Unexpected number of spans:", 4, spans.length);
+        spans[0].assertIsColoredSpan("https", 0,
+                mResources.getColor(R.color.url_emphasis_start_scheme_secure));
+        spans[1].assertIsColoredSpan("://", 5,
+                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+        spans[2].assertIsColoredSpan("www.google.com", 8,
+                mResources.getColor(R.color.url_emphasis_light_domain_and_registry));
+        spans[3].assertIsColoredSpan("/", 22,
+                mResources.getColor(R.color.url_emphasis_trailing_url));
+    }
+
+    /**
+     * Verify that a long, insecure HTTPS URL is colored correctly by
+     * OmniboxUrlEmphasizer.emphasizeUrl().
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testLongInsecureHTTPSUrl() {
+        Spannable url = new SpannableStringBuilder(
+                "https://www.google.com/q?query=abc123&results=1");
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources,
+                mProfile, ToolbarModelSecurityLevel.SECURITY_ERROR, false,
+                true);
+        EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
+
+        assertEquals("Unexpected number of spans:", 5, spans.length);
+        spans[0].assertIsStrikethroughSpan("https", 0);
+        spans[1].assertIsColoredSpan("https", 0,
+                mResources.getColor(R.color.url_emphasis_start_scheme_security_error));
+        spans[2].assertIsColoredSpan("://", 5,
+                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+        spans[3].assertIsColoredSpan("www.google.com", 8,
+                mResources.getColor(R.color.url_emphasis_domain_and_registry));
+        spans[4].assertIsColoredSpan("/q?query=abc123&results=1", 22,
+                mResources.getColor(R.color.url_emphasis_trailing_url));
+    }
+
+    /**
+     * Verify that a very short, warning HTTPS URL is colored correctly by
+     * OmniboxUrlEmphasizer.emphasizeUrl().
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testVeryShortWarningHTTPSUrl() {
+        Spannable url = new SpannableStringBuilder("https://www.dodgysite.com");
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources,
+                mProfile, ToolbarModelSecurityLevel.SECURITY_WARNING, false,
+                true);
+        EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
+
+        assertEquals("Unexpected number of spans:", 3, spans.length);
+        spans[0].assertIsColoredSpan("https", 0,
+                mResources.getColor(R.color.url_emphasis_start_scheme_security_warning));
+        spans[1].assertIsColoredSpan("://", 5,
+                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+        spans[2].assertIsColoredSpan("www.dodgysite.com", 8,
+                mResources.getColor(R.color.url_emphasis_domain_and_registry));
+    }
+
+    /**
+     * Verify that an internal 'about:' page is colored correctly by
+     * OmniboxUrlEmphasizer.emphasizeUrl().
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testAboutPageUrl() {
+        Spannable url = new SpannableStringBuilder("about:blank");
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources,
+                mProfile, ToolbarModelSecurityLevel.NONE, true,
+                true);
+        EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
+
+        assertEquals("Unexpected number of spans:", 3, spans.length);
+        spans[0].assertIsColoredSpan("about", 0,
+                mResources.getColor(R.color.url_emphasis_trailing_url));
+        spans[1].assertIsColoredSpan(":", 5,
+                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+        spans[2].assertIsColoredSpan("blank", 6,
+                mResources.getColor(R.color.url_emphasis_domain_and_registry));
+    }
+
+    /**
+     * Verify that a 'data:' URL is colored correctly by
+     * OmniboxUrlEmphasizer.emphasizeUrl().
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testDataUrl() {
+        Spannable url = new SpannableStringBuilder(
+                "data:text/plain;charset=utf-8;base64,VGVzdCBVUkw=");
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources,
+                mProfile, ToolbarModelSecurityLevel.NONE, true,
+                true);
+        EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
+
+        assertEquals("Unexpected number of spans:", 1, spans.length);
+        spans[0].assertIsColoredSpan("data", 0,
+                mResources.getColor(R.color.url_emphasis_trailing_url));
+    }
+
+    /**
+     * Verify that an internal 'chrome://' page is colored correctly by
+     * OmniboxUrlEmphasizer.emphasizeUrl().
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testInternalChromePageUrl() {
+        Spannable url = new SpannableStringBuilder("chrome://bookmarks");
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources,
+                mProfile, ToolbarModelSecurityLevel.NONE, true,
+                true);
+        EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
+
+        assertEquals("Unexpected number of spans:", 3, spans.length);
+        spans[0].assertIsColoredSpan("chrome", 0,
+                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+        spans[1].assertIsColoredSpan("://", 6,
+                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+        spans[2].assertIsColoredSpan("bookmarks", 9,
+                mResources.getColor(R.color.url_emphasis_domain_and_registry));
+    }
+
+    /**
+     * Verify that an internal 'chrome-native://' page is colored correctly by
+     * OmniboxUrlEmphasizer.emphasizeUrl().
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testInternalChromeNativePageUrl() {
+        Spannable url = new SpannableStringBuilder("chrome-native://bookmarks");
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources,
+                mProfile, ToolbarModelSecurityLevel.NONE, true,
+                true);
+        EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
+
+        assertEquals("Unexpected number of spans:", 3, spans.length);
+        spans[0].assertIsColoredSpan("chrome-native", 0,
+                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+        spans[1].assertIsColoredSpan("://", 13,
+                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+        spans[2].assertIsColoredSpan("bookmarks", 16,
+                mResources.getColor(R.color.url_emphasis_domain_and_registry));
+    }
+
+    /**
+     * Verify that an invalid URL is colored correctly by
+     * OmniboxUrlEmphasizer.emphasizeUrl().
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testInvalidUrl() {
+        Spannable url = new SpannableStringBuilder("invalidurl");
+        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources,
+                mProfile, ToolbarModelSecurityLevel.NONE, true,
+                true);
+        EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
+
+        assertEquals("Unexpected number of spans:", 1, spans.length);
+        spans[0].assertIsColoredSpan("invalidurl", 0,
+                mResources.getColor(R.color.url_emphasis_domain_and_registry));
+    }
+}

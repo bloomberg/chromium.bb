@@ -9,6 +9,7 @@ import android.text.Spannable;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StrikethroughSpan;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.toolbar.ToolbarModelSecurityLevel;
@@ -75,14 +76,18 @@ public class OmniboxUrlEmphasizer {
                 emphasizeValues[0], emphasizeValues[1], emphasizeValues[2], emphasizeValues[3]);
     }
 
-    /** Denotes that a span is used for emphasizing the URL. */
-    private interface UrlEmphasisSpan {
+    /**
+     * Denotes that a span is used for emphasizing the URL.
+     */
+    @VisibleForTesting
+    interface UrlEmphasisSpan {
     }
 
     /**
      * Used for emphasizing the URL text by changing the text color.
      */
-    private static class UrlEmphasisColorSpan extends ForegroundColorSpan
+    @VisibleForTesting
+    static class UrlEmphasisColorSpan extends ForegroundColorSpan
             implements UrlEmphasisSpan {
 
         /**
@@ -96,7 +101,8 @@ public class OmniboxUrlEmphasizer {
     /**
      * Used for emphasizing the URL text by striking through the https text.
      */
-    private static class UrlEmphasisSecurityErrorSpan extends StrikethroughSpan
+    @VisibleForTesting
+    static class UrlEmphasisSecurityErrorSpan extends StrikethroughSpan
             implements UrlEmphasisSpan {
     }
 
@@ -232,7 +238,7 @@ public class OmniboxUrlEmphasizer {
      * @param url The URL spannable to get spans for.
      * @return The spans applied to the URL with emphasizeUrl().
      */
-    private static UrlEmphasisSpan[] getEmphasisSpans(Spannable url) {
+    public static UrlEmphasisSpan[] getEmphasisSpans(Spannable url) {
         return url.getSpans(0, url.length(), UrlEmphasisSpan.class);
     }
 
