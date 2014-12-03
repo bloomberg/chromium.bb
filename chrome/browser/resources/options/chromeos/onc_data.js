@@ -47,7 +47,7 @@ cr.define('cr.onc', function() {
      * Sets the value of a property. Currently only supports unmanaged
      * properties.
      * @param {string} key The property key.
-     * @param {Object} value The property value to set.
+     * @param {?} value The property value to set.
      */
     setProperty: function(key, value) {
       var data = this.data_;
