@@ -843,6 +843,7 @@
             '../chrome/chrome.gyp:chrome_shell_test_apk',
             '../chrome/chrome.gyp:chrome_sync_shell_test_apk',
             '../chrome/chrome.gyp:chrome_shell_uiautomator_tests',
+            '../chrome/chrome.gyp:chromedriver_webview_shell_apk',
             '../chrome/chrome.gyp:unit_tests_apk',
             '../components/components_tests.gyp:components_unittests_apk',
             '../content/content_shell_and_tests.gyp:content_browsertests_apk',
