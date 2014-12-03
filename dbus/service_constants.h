@@ -1773,7 +1773,6 @@ const char kPermissionBrokerServiceName[] = "org.chromium.PermissionBroker";
 
 // Methods
 const char kRequestPathAccess[] = "RequestPathAccess";
-const char kRequestUsbAccess[] = "RequestUsbAccess";
 }  // namespace permission_broker
 
 namespace system_clock {
