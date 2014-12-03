@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <windows.h>
+#include <malloc.h>
 #include <tchar.h>
 
 #include <string>
@@ -132,6 +133,17 @@ void EnableHighDPISupport() {
   }
 }
 
+void SwitchToLFHeap() {
+  // Only needed on XP but harmless on other Windows flavors.
+  auto crt_heap = _get_heap_handle();
+  ULONG enable_LFH = 2;
+  if (HeapSetInformation(reinterpret_cast<HANDLE>(crt_heap),
+                         HeapCompatibilityInformation,
+                         &enable_LFH, sizeof(enable_LFH))) {
+    VLOG(1) << "low fragmentation heap enabled";
+  }
+}
+
 }  // namespace
 
 #if !defined(ADDRESS_SANITIZER)
@@ -142,6 +154,8 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
 int main() {
   HINSTANCE instance = GetModuleHandle(NULL);
 #endif
+  SwitchToLFHeap();
+
   startup_metric_utils::RecordExeMainEntryTime();
 
   // Signal Chrome Elf that Chrome has begun to start.
