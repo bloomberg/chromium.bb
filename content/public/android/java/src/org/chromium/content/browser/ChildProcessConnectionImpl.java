@@ -22,6 +22,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.content.app.ChildProcessService;
 import org.chromium.content.app.ChromiumLinkerParams;
+import org.chromium.content.app.PrivilegedProcessService;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 
@@ -391,6 +392,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     @Override
     public void dropOomBindings() {
         synchronized (mLock) {
+            assert mServiceClass != PrivilegedProcessService.class;
             mInitialBinding.unbind();
 
             mStrongBindingCount = 0;

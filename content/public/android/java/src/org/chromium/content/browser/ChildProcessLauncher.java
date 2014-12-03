@@ -40,7 +40,6 @@ public class ChildProcessLauncher {
     static final int CALLBACK_FOR_RENDERER_PROCESS = 2;
 
     private static final String SWITCH_PROCESS_TYPE = "type";
-    private static final String SWITCH_PPAPI_BROKER_PROCESS = "ppapi-broker";
     private static final String SWITCH_RENDERER_PROCESS = "renderer";
     private static final String SWITCH_GPU_PROCESS = "gpu-process";
 
@@ -78,13 +77,9 @@ public class ChildProcessLauncher {
             for (int i = 0; i < numChildServices; i++) {
                 mFreeConnectionIndices.add(i);
             }
-            setServiceClass(inSandbox
-                    ? SandboxedProcessService.class : PrivilegedProcessService.class);
+            mChildClass =
+                inSandbox ? SandboxedProcessService.class : PrivilegedProcessService.class;
             mInSandbox = inSandbox;
-        }
-
-        public void setServiceClass(Class<? extends ChildProcessService> childClass) {
-            mChildClass = childClass;
         }
 
         public ChildProcessConnection allocate(
@@ -140,18 +135,6 @@ public class ChildProcessLauncher {
             new ChildConnectionAllocator(false);
 
     private static boolean sConnectionAllocated = false;
-
-    /**
-     * Sets service class for sandboxed service and privileged service.
-     */
-    public static void setChildProcessClass(
-            Class<? extends SandboxedProcessService> sandboxedServiceClass,
-            Class<? extends PrivilegedProcessService> privilegedServiceClass) {
-        // We should guarantee this is called before allocating connection.
-        assert !sConnectionAllocated;
-        sSandboxedChildConnectionAllocator.setServiceClass(sandboxedServiceClass);
-        sPrivilegedChildConnectionAllocator.setServiceClass(privilegedServiceClass);
-    }
 
     private static ChildConnectionAllocator getConnectionAllocator(boolean inSandbox) {
         return inSandbox
@@ -396,8 +379,9 @@ public class ChildProcessLauncher {
             callbackType = CALLBACK_FOR_RENDERER_PROCESS;
         } else if (SWITCH_GPU_PROCESS.equals(processType)) {
             callbackType = CALLBACK_FOR_GPU_PROCESS;
-        } else if (SWITCH_PPAPI_BROKER_PROCESS.equals(processType)) {
             inSandbox = false;
+        } else {
+            assert false;
         }
 
         ChildProcessConnection allocatedConnection = null;

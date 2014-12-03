@@ -10,8 +10,6 @@
     package="org.chromium.chrome.shell">
 
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="21" />
-    <permission android:name="org.chromium.chrome.shell.permission.SANDBOX"
-            android:protectionLevel="signature" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
@@ -66,8 +64,14 @@
         {% for i in range(20) %}
         <service android:name="org.chromium.content.app.SandboxedProcessService{{ i }}"
                  android:process=":sandboxed_process{{ i }}"
-                 android:permission="org.chromium.content_shell.permission.SANDBOX"
                  android:isolatedProcess="true"
+                 android:exported="false" />
+        {% endfor %}
+
+        {% for i in range(3) %}
+        <service android:name="org.chromium.content.app.PrivilegedProcessService{{ i }}"
+                 android:process=":privileged_process{{ i }}"
+                 android:isolatedProcess="false"
                  android:exported="false" />
         {% endfor %}
 

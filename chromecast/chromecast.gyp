@@ -328,6 +328,15 @@
           'includes': ['../build/java.gypi'],
         },  # end of target 'cast_shell_java'
         {
+          'target_name': 'cast_shell_manifest',
+          'type': 'none',
+          'variables': {
+            'jinja_inputs': ['browser/android/apk/AndroidManifest.xml'],
+            'jinja_output': '<(SHARED_INTERMEDIATE_DIR)/cast_shell_manifest/AndroidManifest.xml',
+          },
+          'includes': [ '../build/android/jinja_template.gypi' ],
+        },
+        {
           'target_name': 'cast_shell_apk',
           'type': 'none',
           'dependencies': [
@@ -344,7 +353,7 @@
             # if the actual Java path is used.
             # This will hopefully be removable after the great GN migration.
             'java_in_dir': 'android',
-            'android_manifest_path': 'browser/android/apk/AndroidManifest.xml',
+            'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/cast_shell_manifest/AndroidManifest.xml',
             'package_name': 'org.chromium.chromecast.shell',
             'native_lib_target': 'libcast_shell_android',
             'asset_location': '<(PRODUCT_DIR)/assets',

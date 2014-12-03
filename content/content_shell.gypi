@@ -1050,6 +1050,17 @@
           'includes': [ '../build/apk_fake_jar.gypi' ],
         },
         {
+          # GN version: //content/shell/android:content_shell_manifest
+          'target_name': 'content_shell_manifest',
+          'type': 'none',
+          'variables': {
+            'jinja_inputs': ['shell/android/shell_apk/AndroidManifest.xml'],
+            'jinja_output': '<(SHARED_INTERMEDIATE_DIR)/content_shell_manifest/AndroidManifest.xml',
+          },
+          'includes': [ '../build/android/jinja_template.gypi' ],
+        },
+        {
+          # GN version: //content/shell/android:content_shell_apk
           'target_name': 'content_shell_apk',
           'type': 'none',
           'dependencies': [
@@ -1069,6 +1080,7 @@
           'variables': {
             'apk_name': 'ContentShell',
             'manifest_package_name': 'org.chromium.content_shell_apk',
+            'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/content_shell_manifest/AndroidManifest.xml',
             'java_in_dir': 'shell/android/shell_apk',
             'resource_dir': 'shell/android/shell_apk/res',
             'native_lib_target': 'libcontent_shell_content_view',

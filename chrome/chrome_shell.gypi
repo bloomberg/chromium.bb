@@ -158,6 +158,16 @@
       ],
     },
     {
+      # GN: //chrome/android:chrome_sync_shell_manifest
+      'target_name': 'chrome_sync_shell_manifest',
+      'type': 'none',
+      'variables': {
+        'jinja_inputs': ['android/sync_shell/java/AndroidManifest.xml'],
+        'jinja_output': '<(SHARED_INTERMEDIATE_DIR)/chrome_sync_shell_manifest/AndroidManifest.xml',
+      },
+      'includes': [ '../build/android/jinja_template.gypi' ],
+    },
+    {
       # GN: //chrome/android:chrome_sync_shell_apk
       'target_name': 'chrome_sync_shell_apk',
       'type': 'none',
@@ -170,7 +180,7 @@
       ],
       'variables': {
         'apk_name': 'ChromeSyncShell',
-        'android_manifest_path': 'android/sync_shell/java/AndroidManifest.xml',
+        'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/chrome_sync_shell_manifest/AndroidManifest.xml',
         'R_package': 'org.chromium.chrome.shell',
         'native_lib_version_name': '<(version_full)',
         'java_in_dir': 'android/shell/java',

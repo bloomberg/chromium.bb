@@ -1708,6 +1708,16 @@
         },
         {
           # TODO(GN)
+          'target_name': 'content_browsertests_manifest',
+          'type': 'none',
+          'variables': {
+            'jinja_inputs': ['shell/android/browsertests_apk/AndroidManifest.xml'],
+            'jinja_output': '<(SHARED_INTERMEDIATE_DIR)/content_browsertests_manifest/AndroidManifest.xml',
+          },
+          'includes': [ '../build/android/jinja_template.gypi' ],
+        },
+        {
+          # TODO(GN)
           'target_name': 'content_browsertests_apk',
           'type': 'none',
           'dependencies': [
@@ -1721,6 +1731,7 @@
           'variables': {
             'apk_name': 'content_browsertests',
             'java_in_dir': 'shell/android/browsertests_apk',
+            'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/content_browsertests_manifest/AndroidManifest.xml',
             'resource_dir': 'shell/android/browsertests_apk/res',
             'native_lib_target': 'libcontent_browsertests',
             'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
@@ -1755,6 +1766,16 @@
           'includes': [ '../build/apk_test.gypi' ],
         },
         {
+          # GN: //content/shell/android:chromium_linker_test_manifest
+          'target_name': 'chromium_linker_test_manifest',
+          'type': 'none',
+          'variables': {
+            'jinja_inputs': ['shell/android/linker_test_apk/AndroidManifest.xml'],
+            'jinja_output': '<(SHARED_INTERMEDIATE_DIR)/chromium_linker_test_manifest/AndroidManifest.xml',
+          },
+          'includes': [ '../build/android/jinja_template.gypi' ],
+        },
+        {
           # GN: //content/shell/android:chromium_linker_test_apk
           'target_name': 'chromium_linker_test_apk',
           'type': 'none',
@@ -1769,6 +1790,7 @@
               ],
               'variables': {
                 'apk_name': 'ChromiumLinkerTest',
+                'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/chromium_linker_test_manifest/AndroidManifest.xml',
                 'java_in_dir': 'shell/android/linker_test_apk',
                 'resource_dir': 'shell/android/linker_test_apk/res',
                 'native_lib_target': 'libchromium_android_linker_test',

@@ -352,6 +352,15 @@ android_apk("chrome_shell_apk") {
   #},
 }
 
+chrome_sync_shell_manifest = "$target_gen_dir/chrome_sync_shell_manifest/AndroidManifest.xml"
+
+# GYP: //chrome/chrome_shell.gypi:chrome_sync_shell_manifest
+jinja_template("chrome_sync_shell_manifest") {
+  testonly = true
+  input = "sync_shell/java/AndroidManifest.xml"
+  output = chrome_sync_shell_manifest
+}
+
 # GYP: //chrome/chrome_shell.gypi:chrome_sync_shell_apk
 android_apk("chrome_sync_shell_apk") {
   testonly = true
@@ -362,7 +371,7 @@ android_apk("chrome_sync_shell_apk") {
     ":chrome_sync_shell",
   ]
   apk_name = "ChromeSyncShell"
-  android_manifest = "sync_shell/java/AndroidManifest.xml"
+  android_manifest = chrome_sync_shell_manifest
   native_libs = [ "libchrome_sync_shell.so" ]
   asset_location = chrome_shell_assets_dir
 }
