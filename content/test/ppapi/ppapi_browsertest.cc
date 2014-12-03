@@ -101,7 +101,13 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest,
   RunTestAndReload("Instance_RecursiveObjects");
 }
 
-TEST_PPAPI_OUT_OF_PROCESS(MediaStreamAudioTrack)
+#if defined(OS_WIN)
+// Flaky on Windows (crbug.com/438729)
+#define MAYBE_MediaStreamAudioTrack DISABLED_MediaStreamAudioTrack
+#else
+#define MAYBE_MediaStreamAudioTrack MediaStreamAudioTrack
+#endif
+TEST_PPAPI_OUT_OF_PROCESS(MAYBE_MediaStreamAudioTrack)
 
 TEST_PPAPI_OUT_OF_PROCESS(MediaStreamVideoTrack)
 
