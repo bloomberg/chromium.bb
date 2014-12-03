@@ -594,7 +594,6 @@
       'browser/predictors/resource_prefetch_predictor_unittest.cc',
       'browser/predictors/resource_prefetch_predictor_tables_unittest.cc',
       'browser/predictors/resource_prefetcher_unittest.cc',
-      'browser/prefs/browser_ui_prefs_migrator_unittest.cc',
       'browser/prefs/chrome_pref_service_unittest.cc',
       'browser/prefs/command_line_pref_store_unittest.cc',
       'browser/prefs/incognito_mode_prefs_unittest.cc',
@@ -2668,9 +2667,6 @@
             'browser/safe_browsing/download_feedback_service_unittest.cc',
             'browser/safe_browsing/download_protection_service_unittest.cc',
             'browser/safe_browsing/two_phase_uploader_unittest.cc',
-
-            # Android has no windows that have placement info.
-            'browser/prefs/browser_ui_prefs_migrator_unittest.cc',
 
             # Android does not use the Message Center notification system.
             'browser/notifications/message_center_notifications_unittest.cc',

@@ -1326,8 +1326,6 @@
     'chrome_browser_pref_sources': [
       'browser/prefs/browser_prefs.cc',
       'browser/prefs/browser_prefs.h',
-      'browser/prefs/browser_ui_prefs_migrator.cc',
-      'browser/prefs/browser_ui_prefs_migrator.h',
       'browser/prefs/chrome_pref_service_factory.cc',
       'browser/prefs/chrome_pref_service_factory.h',
       'browser/prefs/command_line_pref_store.cc',
