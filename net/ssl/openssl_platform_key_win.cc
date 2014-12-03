@@ -190,24 +190,19 @@ size_t RsaMethodSize(const RSA* rsa) {
   return (ex_data->key_length + 7) / 8;
 }
 
-// Signs |in| using |rsa| with PKCS #1 padding. If |hash_nid| is NID_md5_sha1,
-// |in| is a TLS MD5/SHA-1 concatenation and should be signed as-is. Otherwise
-// |in| is a standard hash function and should be prefixed with the
-// corresponding DigestInfo before signing. The signature is written to |out|
-// and its length written to |*out_len|. This function returns true on success
-// and false on failure.
-bool RsaSignPKCS1(const RSA* rsa,
-                  int hash_nid,
+int RsaMethodSign(int hash_nid,
                   const uint8_t* in,
-                  size_t in_len,
+                  unsigned in_len,
                   uint8_t* out,
-                  size_t max_out,
-                  size_t* out_len) {
+                  unsigned* out_len,
+                  const RSA* rsa) {
+  // TODO(davidben): Switch BoringSSL's sign hook to using size_t rather than
+  // unsigned.
   const KeyExData* ex_data = RsaGetExData(rsa);
   if (!ex_data) {
     NOTREACHED();
     OPENSSL_PUT_ERROR(RSA, RSA_sign, ERR_R_INTERNAL_ERROR);
-    return false;
+    return 0;
   }
 
   if (ex_data->key->dwKeySpec == CERT_NCRYPT_KEY_SPEC) {
@@ -230,19 +225,19 @@ bool RsaSignPKCS1(const RSA* rsa,
         break;
       default:
         OPENSSL_PUT_ERROR(RSA, RSA_sign, RSA_R_UNKNOWN_ALGORITHM_TYPE);
-        return false;
+        return 0;
     }
 
     DWORD signature_len;
     SECURITY_STATUS ncrypt_status = g_cng_functions.Get().ncrypt_sign_hash()(
         ex_data->key->hNCryptKey, &rsa_padding_info, const_cast<PBYTE>(in),
-        in_len, out, max_out, &signature_len, BCRYPT_PAD_PKCS1);
+        in_len, out, RSA_size(rsa), &signature_len, BCRYPT_PAD_PKCS1);
     if (FAILED(ncrypt_status) || signature_len == 0) {
       OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
-      return false;
+      return 0;
     }
     *out_len = signature_len;
-    return true;
+    return 1;
   }
 
   ALG_ID hash_alg;
@@ -264,14 +259,14 @@ bool RsaSignPKCS1(const RSA* rsa,
       break;
     default:
       OPENSSL_PUT_ERROR(RSA, RSA_sign, RSA_R_UNKNOWN_ALGORITHM_TYPE);
-      return false;
+      return 0;
   }
 
   HCRYPTHASH hash;
   if (!CryptCreateHash(ex_data->key->hCryptProv, hash_alg, 0, 0, &hash)) {
     PLOG(ERROR) << "CreateCreateHash failed";
     OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
-    return false;
+    return 0;
   }
   DWORD hash_len;
   DWORD arg_len = sizeof(hash_len);
@@ -279,43 +274,28 @@ bool RsaSignPKCS1(const RSA* rsa,
                          &arg_len, 0)) {
     PLOG(ERROR) << "CryptGetHashParam HP_HASHSIZE failed";
     OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
-    return false;
+    return 0;
   }
   if (hash_len != in_len) {
     OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
-    return false;
+    return 0;
   }
   if (!CryptSetHashParam(hash, HP_HASHVAL, const_cast<BYTE*>(in), 0)) {
     PLOG(ERROR) << "CryptSetHashParam HP_HASHVAL failed";
     OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
-    return false;
+    return 0;
   }
-  DWORD signature_len = max_out;
+  DWORD signature_len = RSA_size(rsa);
   if (!CryptSignHash(hash, ex_data->key->dwKeySpec, nullptr, 0, out,
                      &signature_len)) {
     PLOG(ERROR) << "CryptSignHash failed";
     OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
-    return false;
+    return 0;
   }
 
   /* CryptoAPI signs in little-endian, so reverse it. */
   std::reverse(out, out + signature_len);
   *out_len = signature_len;
-  return true;
-}
-
-int RsaMethodSign(int hash_nid,
-                  const uint8_t* in,
-                  unsigned in_len,
-                  uint8_t* out,
-                  unsigned* out_len,
-                  const RSA* rsa) {
-  // TOD(davidben): Switch BoringSSL's sign hook to using size_t rather than
-  // unsigned.
-  size_t len;
-  if (!RsaSignPKCS1(rsa, hash_nid, in, in_len, out, RSA_size(rsa), &len))
-    return 0;
-  *out_len = len;
   return 1;
 }
 
@@ -338,24 +318,9 @@ int RsaMethodSignRaw(RSA* rsa,
                      const uint8_t* in,
                      size_t in_len,
                      int padding) {
-  DCHECK_EQ(RSA_PKCS1_PADDING, padding);
-  if (padding != RSA_PKCS1_PADDING) {
-    OPENSSL_PUT_ERROR(RSA, sign_raw, RSA_R_UNKNOWN_PADDING_TYPE);
-    return 0;
-  }
-
-  // BoringSSL calls only sign_raw, not sign, in pre-TLS-1.2 MD5/SHA1
-  // signatures. This hook is implemented only for that case.
-  //
-  // TODO(davidben): Make client auth in BoringSSL call RSA_sign with
-  // NID_md5_sha1. https://crbug.com/437023
-  if (in_len != MD5_DIGEST_LENGTH + SHA_DIGEST_LENGTH) {
-    OPENSSL_PUT_ERROR(RSA, sign_raw, RSA_R_INVALID_MESSAGE_LENGTH);
-    return 0;
-  }
-  if (!RsaSignPKCS1(rsa, NID_md5_sha1, in, in_len, out, max_out, out_len))
-    return 0;
-  return 1;
+  NOTIMPLEMENTED();
+  OPENSSL_PUT_ERROR(RSA, encrypt, RSA_R_UNKNOWN_ALGORITHM_TYPE);
+  return 0;
 }
 
 int RsaMethodDecrypt(RSA* rsa,
