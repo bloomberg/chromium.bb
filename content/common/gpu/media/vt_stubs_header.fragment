@@ -66,6 +66,7 @@ enum {
 };
 typedef UInt32 VTDecodeInfoFlags;
 typedef struct OpaqueVTDecompressionSession* VTDecompressionSessionRef;
+typedef CFTypeRef VTSessionRef;
 
 typedef void (*VTDecompressionOutputCallback)(
     void *decompressionOutputRefCon,

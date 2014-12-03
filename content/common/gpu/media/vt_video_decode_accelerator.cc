@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sys_byteorder.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/common/gpu/media/vt_video_decode_accelerator.h"
@@ -332,6 +333,18 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
   if (status) {
     NOTIFY_STATUS("VTDecompressionSessionCreate()", status);
     return false;
+  }
+
+  // Report whether hardware decode is being used.
+  base::ScopedCFTypeRef<CFBooleanRef> using_hardware;
+  if (VTSessionCopyProperty(
+          session_,
+          // kVTDecompressionPropertyKey_UsingHardwareAcceleratedVideoDecoder
+          CFSTR("UsingHardwareAcceleratedVideoDecoder"),
+          kCFAllocatorDefault,
+          using_hardware.InitializeInto()) == 0) {
+    UMA_HISTOGRAM_BOOLEAN("Media.VTVDA.HardwareAccelerated",
+                          CFBooleanGetValue(using_hardware));
   }
 
   return true;

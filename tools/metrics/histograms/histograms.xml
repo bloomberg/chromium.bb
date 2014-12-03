@@ -12765,6 +12765,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Visible width of HTML5 video.</summary>
 </histogram>
 
+<histogram name="Media.VTVDA.HardwareAccelerated"
+    enum="BooleanHardwareAccelerated">
+  <owner>sandersd@chromium.org</owner>
+  <summary>
+    Whether a VTDecompressionSession is internally using hardware accelerated
+    decoding.
+  </summary>
+</histogram>
+
 <histogram name="Media.YouTube.DelayedAndDroppedFramesPer5Sec"
     units="frames/5s">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -41843,6 +41852,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanHandshakeConfirmed" type="int">
   <int value="0" label="Handshake not confirmed"/>
   <int value="1" label="Handshake confirmed"/>
+</enum>
+
+<enum name="BooleanHardwareAccelerated" type="int">
+  <int value="0" label="Not hardware accelerated"/>
+  <int value="1" label="Hardware accelerated"/>
 </enum>
 
 <enum name="BooleanHasCrc" type="int">
