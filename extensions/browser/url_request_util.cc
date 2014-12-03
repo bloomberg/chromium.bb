@@ -89,7 +89,7 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
   return false;
 }
 
-bool IsWebViewRequest(net::URLRequest* request) {
+bool IsWebViewRequest(const net::URLRequest* request) {
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
   // |info| can be NULL sometimes: http://crbug.com/370070.

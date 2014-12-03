@@ -28,7 +28,7 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
 
 // Returns true if |request| corresponds to a resource request from a
 // <webview>.
-bool IsWebViewRequest(net::URLRequest* request);
+bool IsWebViewRequest(const net::URLRequest* request);
 
 }  // namespace url_request_util
 }  // namespace extensions
