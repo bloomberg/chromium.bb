@@ -833,11 +833,11 @@ class DrMemory(BaseTool):
   def ToolCommand(self):
     """Get the tool command to run."""
     # WINHEAP is what Dr. Memory supports as there are issues w/ both
-    # jemalloc (http://code.google.com/p/drmemory/issues/detail?id=320) and
-    # tcmalloc (http://code.google.com/p/drmemory/issues/detail?id=314)
+    # jemalloc (https://github.com/DynamoRIO/drmemory/issues/320) and
+    # tcmalloc (https://github.com/DynamoRIO/drmemory/issues/314)
     add_env = {
       "CHROME_ALLOCATOR" : "WINHEAP",
-      "JSIMD_FORCEMMX"   : "1",  # http://code.google.com/p/drmemory/issues/detail?id=540
+      "JSIMD_FORCEMMX"   : "1",  # https://github.com/DynamoRIO/drmemory/issues/540
     }
     for k,v in add_env.iteritems():
       logging.info("export %s=%s", k, v)
@@ -855,7 +855,7 @@ class DrMemory(BaseTool):
     # With file-based config we must update the file every time, and
     # it will affect simultaneous drmem uses by this user.  While file-based
     # config has many advantages, here we may want this-instance-only
-    # (http://code.google.com/p/drmemory/issues/detail?id=334).
+    # (https://github.com/DynamoRIO/drmemory/issues/334).
     drconfig_cmd = [ proc[0].replace("drmemory.exe", "drconfig.exe") ]
     drconfig_cmd += ["-quiet"] # suppress errors about no 64-bit libs
     run_drconfig = True
@@ -990,7 +990,7 @@ class DrMemory(BaseTool):
     # Use one analyzer for all the log files to avoid printing duplicate reports
     #
     # TODO(timurrrr): unify this with Valgrind and other tools when we have
-    # http://code.google.com/p/drmemory/issues/detail?id=684
+    # https://github.com/DynamoRIO/drmemory/issues/684
     analyzer = drmemory_analyze.DrMemoryAnalyzer()
 
     ret = 0

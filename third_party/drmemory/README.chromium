@@ -1,6 +1,6 @@
 Name: Dr. Memory
 Short Name: drmemory
-URL: http://code.google.com/p/drmemory
+URL: http://drmemory.org
 Version: 1.8.2075
 License: LGPL 2.1
 License File: NOT_SHIPPED
@@ -40,5 +40,6 @@ To update the Dr. Memory distribution, please do the following steps:
    checked in, or whether the MFYI bot was red at the same revision.
 
 ===
-Dr. Memory is hosted at http://code.google.com/p/drmemory under LGPL
-http://code.google.com/p/drmemory/source/browse/trunk/license.txt
+Dr. Memory is hosted at http://drmemory.org and
+https://github.com/DynamoRIO/drmemory under LGPL
+https://github.com/DynamoRIO/drmemory/blob/master/license.txt

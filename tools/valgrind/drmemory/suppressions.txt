@@ -45,32 +45,32 @@ mstscax.dll!*
 # private symbols so may need to be updated when we switch to auto-loading PDBs
 
 UNADDRESSABLE ACCESS
-name=http://code.google.com/p/drmemory/issues/detail?id=12 UNADDR
+name=https://github.com/DynamoRIO/drmemory/issues/12 UNADDR
 ...
 SHELL32.dll!SHFileOperation*
 
 UNADDRESSABLE ACCESS
-name=http://code.google.com/p/drmemory/issues/detail?id=40 UNADDR
+name=https://github.com/DynamoRIO/drmemory/issues/40 UNADDR
 ...
 WINSPOOL.DRV!*
 
 INVALID HEAP ARGUMENT
-name=http://code.google.com/p/drmemory/issues/detail?id=40 INVALID HEAP
+name=https://github.com/DynamoRIO/drmemory/issues/40 INVALID HEAP
 ...
 WINSPOOL.DRV!*
 
 UNADDRESSABLE ACCESS
-name=http://code.google.com/p/drmemory/issues/detail?id=59
+name=https://github.com/DynamoRIO/drmemory/issues/59
 ...
 *!SetEnvironmentVariable*
 
 UNADDRESSABLE ACCESS
-name=http://code.google.com/p/drmemory/issues/detail?id=68 (UNADDR 1)
+name=https://github.com/DynamoRIO/drmemory/issues/68 (UNADDR 1)
 ...
 MSWSOCK.dll!WSPStartup
 
 UNADDRESSABLE ACCESS
-name=http://code.google.com/p/drmemory/issues/detail?id=68 (UNADDR 2)
+name=https://github.com/DynamoRIO/drmemory/issues/68 (UNADDR 2)
 ...
 ntdll.dll!RtlValidateUnicodeString
 
@@ -132,7 +132,7 @@ base_unittests.exe!operator new
 base_unittests.exe!operator new[]
 base_unittests.exe!base::ToolsSanityTest_MemoryLeak_Test::TestBody
 
-# "..." is needed due to http://code.google.com/p/drmemory/issues/detail?id=666
+# "..." is needed due to https://github.com/DynamoRIO/drmemory/issues/666
 UNADDRESSABLE ACCESS
 name=sanity test 02 (malloc/read left)
 base_unittests.exe!*ReadValueOutOfArrayBoundsLeft
@@ -157,7 +157,7 @@ base_unittests.exe!*WriteValueOutOfArrayBoundsRight
 base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!base::ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
-# "..." is needed due to http://code.google.com/p/drmemory/issues/detail?id=666
+# "..." is needed due to https://github.com/DynamoRIO/drmemory/issues/666
 UNADDRESSABLE ACCESS
 name=sanity test 06 (new/read left)
 base_unittests.exe!*ReadValueOutOfArrayBoundsLeft
@@ -252,7 +252,7 @@ instruction=prefetch*
 igdumd32.dll!*
 
 UNADDRESSABLE ACCESS
-name=http://code.google.com/p/drmemory/issues/detail?id=582 bizarre cl-generated read-beyond-TOS
+name=https://github.com/DynamoRIO/drmemory/issues/582 bizarre cl-generated read-beyond-TOS
 instruction=mov    0xfffffffc(%esp) -> %eax
 chrome.dll!blink::RenderStyle::resetBorder*
 
@@ -271,7 +271,7 @@ name=http://crbug.com/101717 (3)
 *!sandbox::GetPathFromHandle
 
 GDI USAGE ERROR
-name=http://code.google.com/p/drmemory/issues/detail?id=899 deleting bitmap which is probably safe
+name=https://github.com/DynamoRIO/drmemory/issues/899 deleting bitmap which is probably safe
 system call NtGdiDeleteObjectApp
 *!skia::`anonymous namespace'::Bitmap::~Bitmap
 *!skia::`anonymous namespace'::Bitmap::`scalar deleting destructor'
@@ -325,7 +325,7 @@ GDI USAGE ERROR
 name=http://crbug.com/119552 c
 # optional gdi32.dll frame followed by user32.dll
 # TODO(bruening): once have
-# http://code.google.com/p/drmemory/issues/detail?id=846
+# https://github.com/DynamoRIO/drmemory/issues/846
 # I would do "gdi32.dll!...\nuser32.dll!*"
 *32.dll!*
 ...
@@ -525,7 +525,7 @@ system call NtGdiCreateCompatibleDC
 *!blink::RenderBlock::layout
 
 HANDLE LEAK
-name=https://code.google.com/p/drmemory/issues/detail?id=1545
+name=https://github.com/DynamoRIO/drmemory/issues/1545
 system call NtGdiCreateCompatibleDC
 GDI32.dll!CreateCompatibleDC
 skia.dll!LogFontTypeface::onGetTableData
@@ -603,9 +603,9 @@ name=http://crbug.com/313788
 
 # This suppression is deliberately general, as bugs reported in
 # v8 generated code are difficult to track down. Xref Dr. Memory issue
-# https://code.google.com/p/drmemory/issues/detail?id=1582
+# https://github.com/DynamoRIO/drmemory/issues/1582
 UNADDRESSABLE ACCESS
-name=https://code.google.com/p/drmemory/issues/detail?id=1582
+name=https://github.com/DynamoRIO/drmemory/issues/1582
 ...
 *!v8::internal::Invoke
 *!v8::internal::Execution::Call
@@ -623,11 +623,11 @@ KERNEL32.dll!CreateWaitableTimerW
 *!content::RenderViewHostImpl::CreateRenderView
 
 UNADDRESSABLE ACCESS
-name=http://code.google.com/p/dynamorio/issues/detail?id=1443
+name=https://github.com/DynamoRIO/dynamorio/issues/1443
 dynamorio.dll!*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/dynamorio/issues/detail?id=1443 (another instance)
+name=https://github.com/DynamoRIO/dynamorio/issues/1443 (another instance)
 dynamorio.dll!*
 
 UNADDRESSABLE ACCESS

@@ -1,16 +1,16 @@
 ##################################################
 # known Dr. Memory bugs:
 
-# http://code.google.com/p/drmemory/issues/detail?id=318
+# https://github.com/DynamoRIO/drmemory/issues/318
 AudioRendererHostTest.*
 
 ##################################################
 # un-analyzed Dr. Memory bugs:
 
-# http://code.google.com/p/drmemory/issues/detail?id=979
+# https://github.com/DynamoRIO/drmemory/issues/979
 FirefoxProfileImporterTest.Firefox35Importer
 
-# http://code.google.com/p/drmemory/issues/detail?id=980
+# https://github.com/DynamoRIO/drmemory/issues/980
 MetricsLogManagerTest.*
 
 ##################################################
@@ -60,7 +60,7 @@ OneClickSigninBubbleViewTest.ShowBubble
 SyncBackendHostTest.DownloadControlTypes
 SyncBackendHostTest.SilentlyFailToDownloadControlTypes
 
-# DrM-i#1339: https://code.google.com/p/drmemory/issues/detail?id=1339
+# DrM-i#1339: https://github.com/DynamoRIO/drmemory/issues/1339
 ExtensionServiceTest.InstallTheme
 
 # http://crbug.com/302156

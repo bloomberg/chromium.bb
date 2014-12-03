@@ -26,7 +26,7 @@ cmd_to_run = sys.argv[1:]
 # Usually, we pass "-logdir" "foo\bar\spam path" args to Dr. Memory.
 # To group reports per UI test, we want to put the reports for each test into a
 # separate directory. This code can be simplified when we have
-# http://code.google.com/p/drmemory/issues/detail?id=684 fixed.
+# https://github.com/DynamoRIO/drmemory/issues/684 fixed.
 logdir_idx = cmd_to_run.index("-logdir")
 old_logdir = cmd_to_run[logdir_idx + 1]
 

@@ -16,7 +16,7 @@ name=http://crbug.com/116277
 
 # TODO(timurrrr): check if these frames change when NT_SYMBOLS are present.
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=406
+name=https://github.com/DynamoRIO/drmemory/issues/406
 ADVAPI32.dll!WmiOpenBlock
 ADVAPI32.dll!WmiOpenBlock
 
@@ -28,7 +28,7 @@ GoogleDesktopNetwork3.DLL!DllUnregisterServer
 
 # They deliberately use uninit local var in sqlite random generator.
 # Random bytes may mess up the call stack between randomByte and
-# sqlite3_* frames (http://code.google.com/p/drmemory/issues/detail?id=1514)
+# sqlite3_* frames (https://github.com/DynamoRIO/drmemory/issues/1514)
 # so we just look for randomByte.
 UNINITIALIZED READ
 name=sqlite3_randomness UNINIT
@@ -76,168 +76,168 @@ libpng.dll!wk_png_write_row
 # Please note: the following suppressions were written in the abscense of
 # private symbols so may need to be updated when we switch to auto-loading PDBs
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=12 (1)
+name=https://github.com/DynamoRIO/drmemory/issues/12 (1)
 ntdll.dll!Rtl*
 ntdll.dll!Rtl*
 ntdll.dll!RtlFindActivationContextSectionString
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=12 (2)
+name=https://github.com/DynamoRIO/drmemory/issues/12 (2)
 ...
 SHELL32.dll!SHFileOperation*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=12 (3)
+name=https://github.com/DynamoRIO/drmemory/issues/12 (3)
 ...
 SHELL32.dll!SHGetFolderPath*
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=12 (4)
+name=https://github.com/DynamoRIO/drmemory/issues/12 (4)
 ...
 SHELL32.dll!SHGetFolderPath*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=12 (5)
+name=https://github.com/DynamoRIO/drmemory/issues/12 (5)
 ...
 SHELL32.dll!SHCreateDirectory*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=12 (6)
+name=https://github.com/DynamoRIO/drmemory/issues/12 (6)
 ...
 SHELL32.dll!ILLoadFromStream*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=12 (7)
+name=https://github.com/DynamoRIO/drmemory/issues/12 (7)
 ...
 SHELL32.dll!ILSaveToStream*
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=12 (8)
+name=https://github.com/DynamoRIO/drmemory/issues/12 (8)
 ...
 SHELL32.dll!SHFileOperation*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=12 (9)
+name=https://github.com/DynamoRIO/drmemory/issues/12 (9)
 ...
 SHELL32.dll!SHGetItemFromDataObject
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=12 (10)
+name=https://github.com/DynamoRIO/drmemory/issues/12 (10)
 ...
 SHELL32.dll!SHGetItemFromDataObject
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=12 (11)
+name=https://github.com/DynamoRIO/drmemory/issues/12 (11)
 ...
 ole32.dll!*
 SHELL32.dll!SHChangeNotifySuspendResume
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=14 (1)
+name=https://github.com/DynamoRIO/drmemory/issues/14 (1)
 ...
 *!CreateProcess*
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=14 (2)
+name=https://github.com/DynamoRIO/drmemory/issues/14 (2)
 ...
 *!CreateProcess*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=14 (3)
+name=https://github.com/DynamoRIO/drmemory/issues/14 (3)
 ...
 *!base::LaunchApp*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=17 (1)
+name=https://github.com/DynamoRIO/drmemory/issues/17 (1)
 ...
 *!CreateWindow*
 
 POSSIBLE LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=17 (2)
+name=https://github.com/DynamoRIO/drmemory/issues/17 (2)
 GDI32.dll!*
 GDI32.dll!CreateFontIndirectExW
 GDI32.dll!CreateFontIndirectW
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=17 (3)
+name=https://github.com/DynamoRIO/drmemory/issues/17 (3)
 KERNELBASE.dll!LocalAlloc
 ...
 USER32.dll!CreateWindow*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=18 a
+name=https://github.com/DynamoRIO/drmemory/issues/18 a
 ...
 *!CoInitialize*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=18 b
+name=https://github.com/DynamoRIO/drmemory/issues/18 b
 ...
 *!CoCreateInstance*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=18 c
+name=https://github.com/DynamoRIO/drmemory/issues/18 c
 ...
 *!CoUninitialize*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=18 d
+name=https://github.com/DynamoRIO/drmemory/issues/18 d
 ...
 UxTheme.dll!*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=40 a
+name=https://github.com/DynamoRIO/drmemory/issues/40 a
 ...
 WINSPOOL.DRV!*
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=40 b
+name=https://github.com/DynamoRIO/drmemory/issues/40 b
 ...
 WINSPOOL.DRV!*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=48 a
+name=https://github.com/DynamoRIO/drmemory/issues/48 a
 system call NtContinue
 ...
 *!*SetThreadName
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=48 b
+name=https://github.com/DynamoRIO/drmemory/issues/48 b
 system call NtContinue
 *!WTF::initializeCurrentThreadInternal
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=52 a
+name=https://github.com/DynamoRIO/drmemory/issues/52 a
 ...
 DBGHELP.dll!SymInitialize
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=52 b
+name=https://github.com/DynamoRIO/drmemory/issues/52 b
 ...
 DBGHELP.dll!SymEnumSourceFiles
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=52 c
+name=https://github.com/DynamoRIO/drmemory/issues/52 c
 ...
 msvcrt.dll!_RTDynamicCast
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=52 bit-level fp in dbghelp
+name=https://github.com/DynamoRIO/drmemory/issues/52 bit-level fp in dbghelp
 instruction=test   0x*(%*) $0x??
 DBGHELP.dll!SymUnloadModule64
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=53
+name=https://github.com/DynamoRIO/drmemory/issues/53
 ADVAPI32.dll!WmiMofEnumerateResourcesA
 ADVAPI32.dll!WmiMofEnumerateResourcesA
 ADVAPI32.dll!Sta*TraceW
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=58
+name=https://github.com/DynamoRIO/drmemory/issues/58
 ...
 *!_cfltcvt_l
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=60
+name=https://github.com/DynamoRIO/drmemory/issues/60
 USP10.dll!*
 ...
 USP10.dll!ScriptStringAnalyse
@@ -250,65 +250,65 @@ IMM32.dll!ImmSetActiveContext
 USER32.dll!IMPSetIMEA
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=65 a
+name=https://github.com/DynamoRIO/drmemory/issues/65 a
 ...
 *!SystemFunction036
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=65 b
+name=https://github.com/DynamoRIO/drmemory/issues/65 b
 ...
 *!talk_base::CreateRandomString
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=68 a
+name=https://github.com/DynamoRIO/drmemory/issues/68 a
 ...
 WS2_32.dll!*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=68 b
+name=https://github.com/DynamoRIO/drmemory/issues/68 b
 ...
 ADVAPI32.dll!SetSecurityDescriptorDacl
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=68 c
+name=https://github.com/DynamoRIO/drmemory/issues/68 c
 ...
 MSWSOCK.dll!WSPStartup
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=68 d
+name=https://github.com/DynamoRIO/drmemory/issues/68 d
 ...
 ntdll.dll!RtlValidateUnicodeString
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=256
+name=https://github.com/DynamoRIO/drmemory/issues/256
 *!_mtinit
 *!__tmainCRTStartup
 *!mainCRTStartup
 
 POSSIBLE LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=274 a
+name=https://github.com/DynamoRIO/drmemory/issues/274 a
 ...
 GDI32.dll!CreateDCW
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=274 b
+name=https://github.com/DynamoRIO/drmemory/issues/274 b
 ...
 GDI32.dll!CreateDCW
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=275
+name=https://github.com/DynamoRIO/drmemory/issues/275
 ...
 *!_getptd*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=276
+name=https://github.com/DynamoRIO/drmemory/issues/276
 ...
 ntdll.dll!RtlConvertUlongToLargeInteger
 ntdll.dll!RtlConvertUlongToLargeInteger
 ntdll.dll!KiUserExceptionDispatcher
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=305
+name=https://github.com/DynamoRIO/drmemory/issues/305
 *!free
 *!free
 *!operator new
@@ -316,57 +316,57 @@ name=http://code.google.com/p/drmemory/issues/detail?id=305
 *!MiniDumpWriteDump
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=346 a
+name=https://github.com/DynamoRIO/drmemory/issues/346 a
 ...
 GDI32.dll!CloseEnhMetaFile
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=346 b
+name=https://github.com/DynamoRIO/drmemory/issues/346 b
 GDI32.dll!SetPolyFillMode
 GDI32.dll!CreateICW
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=362
+name=https://github.com/DynamoRIO/drmemory/issues/362
 USER32.dll!UnregisterClass*
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=382
+name=https://github.com/DynamoRIO/drmemory/issues/382
 ...
 ntdll.dll!CsrNewThread
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=397
+name=https://github.com/DynamoRIO/drmemory/issues/397
 system call NtDeviceIoControlFile InputBuffer
 ADVAPI32.dll!ImpersonateAnonymousToken
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=407 a
+name=https://github.com/DynamoRIO/drmemory/issues/407 a
 system call NtRequestWaitReplyPort
 RPCRT4.dll!I_RpcSendReceive
 RPCRT4.dll!NdrSendReceive
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=407 b
+name=https://github.com/DynamoRIO/drmemory/issues/407 b
 IMM32.dll!*
 ntdll.dll!LdrInitializeThunk
 ntdll.dll!LdrShutdownThread
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=412 a
+name=https://github.com/DynamoRIO/drmemory/issues/412 a
 ADVAPI32.dll!RegDeleteValue*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=412 b
+name=https://github.com/DynamoRIO/drmemory/issues/412 b
 ...
 ADVAPI32.dll!Crypt*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=412 c
+name=https://github.com/DynamoRIO/drmemory/issues/412 c
 ...
 RPCRT4.dll!NdrClientCall2
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=412 d
+name=https://github.com/DynamoRIO/drmemory/issues/412 d
 RSAENH.dll!DllUnregisterServer
 ...
 ADVAPI32.dll!CryptAcquireContextA
@@ -375,17 +375,17 @@ CRYPT32.dll!CryptEnumOIDFunction
 CRYPT32.dll!CertFindCertificateInStore
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=412 e
+name=https://github.com/DynamoRIO/drmemory/issues/412 e
 ...
 RSAENH.dll!CPGenRandom
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=412 f
+name=https://github.com/DynamoRIO/drmemory/issues/412 f
 ...
 CRYPT??.dll!Crypt*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=412 g
+name=https://github.com/DynamoRIO/drmemory/issues/412 g
 *!replace_memcmp
 ...
 *!testing::internal::CmpHelperEQ*
@@ -396,30 +396,30 @@ name=http://code.google.com/p/drmemory/issues/detail?id=412 g
 # have frame pointers, and we have trouble unwinding from it.  Therefore, we use
 # this broad suppression, effectively disabling uninit checks in rsaenh.dll.
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=412 h
+name=https://github.com/DynamoRIO/drmemory/issues/412 h
 RSAENH.dll!*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=425 a
+name=https://github.com/DynamoRIO/drmemory/issues/425 a
 CLBCatQ.DLL!DestroyStgDatabase
 CLBCatQ.DLL!PostError
 CLBCatQ.DLL!PostError
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=425 b
+name=https://github.com/DynamoRIO/drmemory/issues/425 b
 RPCRT4.dll!I_RpcBCacheFree
 RPCRT4.dll!I_RpcBCacheFree
 ...
 RPCRT4.dll!NdrClientCall2
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=425 c
+name=https://github.com/DynamoRIO/drmemory/issues/425 c
 msdmo.dll!*
 msdmo.dll!*
 DEVENUM.DLL!*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=435 a
+name=https://github.com/DynamoRIO/drmemory/issues/435 a
 ...
 ntdll.dll!RtlSetSecurityObject
 ntdll.dll!RtlNewSecurityObjectEx
@@ -427,7 +427,7 @@ ADVAPI32.dll!CreatePrivateObjectSecurityEx
 NTMARTA.dll!AccRewriteSetNamedRights
 
 POSSIBLE LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=435 b
+name=https://github.com/DynamoRIO/drmemory/issues/435 b
 WLDAP32.dll!Ordinal325
 ...
 WLDAP32.dll!Ordinal325
@@ -440,34 +440,34 @@ KERNEL32.dll!LoadLibraryExW
 # mod+offs suppression because the symbolic makes no sense and changes
 # completely in the presence of WS2_32.dll symbols.
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=438
+name=https://github.com/DynamoRIO/drmemory/issues/438
 <WS2_32.dll+0x260c>
 <WS2_32.dll+0x2b76>
 <WS2_32.dll+0x2c61>
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=454 a
+name=https://github.com/DynamoRIO/drmemory/issues/454 a
 ...
 WINMM.dll!wave*GetNumDevs
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=454 b
+name=https://github.com/DynamoRIO/drmemory/issues/454 b
 ...
 WINMM.dll!wave*GetNumDevs
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=466
+name=https://github.com/DynamoRIO/drmemory/issues/466
 ntdll.dll!RtlRunOnceBeginInitialize
 ntdll.dll!RtlInitializeCriticalSectionAndSpinCount
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=473 a
+name=https://github.com/DynamoRIO/drmemory/issues/473 a
 system call NtDeviceIoControlFile InputBuffer
 ...
 iphlpapi.dll!GetAdaptersAddresses
 
 POSSIBLE LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=473 b
+name=https://github.com/DynamoRIO/drmemory/issues/473 b
 ESENT.dll!*
 ESENT.dll!*
 ESENT.dll!*
@@ -481,14 +481,14 @@ iphlpapi.dll!GetPerAdapterInfo
 iphlpapi.dll!GetAdaptersAddresses
 
 POSSIBLE LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=473 c
+name=https://github.com/DynamoRIO/drmemory/issues/473 c
 RPCRT4.dll!*
 RPCRT4.dll!*
 ...
 IPHLPAPI.DLL!GetAdaptersAddresses
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=475
+name=https://github.com/DynamoRIO/drmemory/issues/475
 ...
 ADVAPI32.dll!CryptAcquireContextA
 ...
@@ -499,105 +499,105 @@ CRYPT32.dll!CryptQueryObject
 # Lots of leaks from our interactions with the system certificate store.  May be
 # worth reviewing our use of their API.
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=476 a
+name=https://github.com/DynamoRIO/drmemory/issues/476 a
 KERNEL*.dll!LocalAlloc
 ...
 CRYPT32.dll!CertGetCRLContextProperty
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=476 b
+name=https://github.com/DynamoRIO/drmemory/issues/476 b
 KERNEL*.dll!LocalAlloc
 ...
 CRYPT32.dll!CertAddCRLContextToStore
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=476 c
+name=https://github.com/DynamoRIO/drmemory/issues/476 c
 KERNEL*.dll!LocalAlloc
 ...
 CRYPT32.dll!CertOpenStore
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=476 d
+name=https://github.com/DynamoRIO/drmemory/issues/476 d
 ...
 CRYPT32.dll!CertOpenSystemStore?
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=476 e
+name=https://github.com/DynamoRIO/drmemory/issues/476 e
 ...
 CRYPT32.dll!CertGetCertificateChain
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=476 f
+name=https://github.com/DynamoRIO/drmemory/issues/476 f
 ...
 CRYPT32.dll!CertCompareIntegerBlob
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=476 g
+name=https://github.com/DynamoRIO/drmemory/issues/476 g
 ...
 CRYPT32.dll!CryptUnprotectData
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=476 h
+name=https://github.com/DynamoRIO/drmemory/issues/476 h
 KERNEL*.dll!LocalAlloc
 ...
 CRYPT32.dll!CertEnumCertificatesInStore
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=476 i
+name=https://github.com/DynamoRIO/drmemory/issues/476 i
 ...
 CRYPT32.dll!CryptProtectData
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=476 j
+name=https://github.com/DynamoRIO/drmemory/issues/476 j
 ...
 CRYPT32.dll!CryptExportPublicKeyInfoEx
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=502 a
+name=https://github.com/DynamoRIO/drmemory/issues/502 a
 system call NtSecureConnectPort parameter #3
 GDI32.dll!*
 GDI32.dll!*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=502 b
+name=https://github.com/DynamoRIO/drmemory/issues/502 b
 system call NtGdiEnumFonts parameter #6
 GDI32.dll!*
 GDI32.dll!*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=511 a
+name=https://github.com/DynamoRIO/drmemory/issues/511 a
 RPCRT4.dll!...
 ole32.dll!*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=511 b
+name=https://github.com/DynamoRIO/drmemory/issues/511 b
 ole32.dll!*
 ole32.dll!*
 ole32.dll!StringFromGUID2
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=512 a
+name=https://github.com/DynamoRIO/drmemory/issues/512 a
 ...
 *!browser_sync::Cryptographer::PackBootstrapToken
 *!browser_sync::Cryptographer::GetBootstrapToken
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=512 b
+name=https://github.com/DynamoRIO/drmemory/issues/512 b
 ...
 *!Encrypt*
 
 # TODO(bruening): remove these once we have v8 bitfields handled
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=513 a
+name=https://github.com/DynamoRIO/drmemory/issues/513 a
 *!v8*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=513 b
+name=https://github.com/DynamoRIO/drmemory/issues/513 b
 *!*
 *!v8*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=513 c
+name=https://github.com/DynamoRIO/drmemory/issues/513 c
 <not in a module>
 ...
 *!v8*
@@ -606,17 +606,17 @@ name=http://code.google.com/p/drmemory/issues/detail?id=513 c
 # has no symbols.  These are all on the bots using component build, so we use
 # v8.dll.  TODO(bruening): remove these once we've fixed the symbol issue.
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=513 d
+name=https://github.com/DynamoRIO/drmemory/issues/513 d
 v8.dll!*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=513 e
+name=https://github.com/DynamoRIO/drmemory/issues/513 e
 <not in a module>
 ...
 v8.dll!*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=546
+name=https://github.com/DynamoRIO/drmemory/issues/546
 ...
 mscms.dll!*
 ...
@@ -631,13 +631,13 @@ USER32.dll!CreateWindowExW
 *!views::TooltipManagerWin::TooltipManagerWin
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=567 a
+name=https://github.com/DynamoRIO/drmemory/issues/567 a
 dbghelp.dll!*
 ...
 dbghelp.dll!StackWalk64
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=567 b
+name=https://github.com/DynamoRIO/drmemory/issues/567 b
 *!*
 dbghelp.dll!*
 ...
@@ -647,7 +647,7 @@ dbghelp.dll!StackWalk64
 # TppWorkerThread w/ syms.  We used to use mod+offs here, but that was too
 # brittle, so we switched to RPCRT4.dll!*.
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=569
+name=https://github.com/DynamoRIO/drmemory/issues/569
 RPCRT4.dll!...
 ntdll.dll!*
 ntdll.dll!*
@@ -772,7 +772,7 @@ name=http://crbug.com/109278 audio device COM leaks
 
 # False pos uninit in shell32 when resolving links.
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=745
+name=https://github.com/DynamoRIO/drmemory/issues/745
 SHELL*.dll!*
 ...
 SHELL*.dll!*
@@ -781,31 +781,31 @@ SHELL*.dll!*
 # Probable false pos uninit in ffmpeg.  Probably due to running off the end of a
 # buffer with SSE/MMX instructions whose results are then masked out later.
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=747 a
+name=https://github.com/DynamoRIO/drmemory/issues/747 a
 *!ff_pred4x4_vertical_vp8_mmxext
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=747 b
+name=https://github.com/DynamoRIO/drmemory/issues/747 b
 *!ff_pred4x4_down_left_mmxext
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=747 c
+name=https://github.com/DynamoRIO/drmemory/issues/747 c
 *!ff_vorbis_floor1_render_list
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=747 d
+name=https://github.com/DynamoRIO/drmemory/issues/747 d
 *!ff_put_vp8_epel8_h6_ssse3
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=747 e
+name=https://github.com/DynamoRIO/drmemory/issues/747 e
 *!ff_put_vp8_epel8_h4_ssse3
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=747 f
+name=https://github.com/DynamoRIO/drmemory/issues/747 f
 *!ff_fft_permute_sse
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=747 g
+name=https://github.com/DynamoRIO/drmemory/issues/747 g
 *!ff_simple_idct_add_mmx
 
 # ffmpeg seems to leak a pthread condition variable.
@@ -820,7 +820,7 @@ name=http://crbug.com/110042
 
 # Improperly handled ioctl in bcrypt.
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=748
+name=https://github.com/DynamoRIO/drmemory/issues/748
 system call NtDeviceIoControlFile InputBuffer
 ...
 bcrypt.dll!BCryptUnregisterConfigChangeNotify
@@ -829,7 +829,7 @@ ntdll.dll!RtlQueryEnvironmentVariable
 
 # Not sure what this is.
 POSSIBLE LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=749
+name=https://github.com/DynamoRIO/drmemory/issues/749
 ...
 fwpuclnt.dll!*
 ...
@@ -849,37 +849,37 @@ WS2_32.dll!*
 
 # More uninit false pos in rpcrt4.dll not caught by default suppressions.
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=529
+name=https://github.com/DynamoRIO/drmemory/issues/529
 RPCRT4.dll!*
 ...
 *!base::LaunchProcess
 
 # System leak from CreateEnvironmentBlock.
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=757
+name=https://github.com/DynamoRIO/drmemory/issues/757
 ...
 USERENV.dll!CreateEnvironmentBlock
 
 # Looks like another instance of 753
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=753
+name=https://github.com/DynamoRIO/drmemory/issues/753
 ...
 ntdll.dll!RtlLoadString
 
 # More bit manip fps
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=493
+name=https://github.com/DynamoRIO/drmemory/issues/493
 USP10.dll!ScriptPositionSingleGlyph
 
 # Various TLS leaks that we don't understand yet.  We should be finding a root
 # for these.
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=778 a
+name=https://github.com/DynamoRIO/drmemory/issues/778 a
 KERNELBASE.dll!TlsSetValue
 
 # Originally filed as: http://crbug.com/109281
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=778 b
+name=https://github.com/DynamoRIO/drmemory/issues/778 b
 *!operator new
 *!operator new[]
 *!*::ConstructTlsVector
@@ -888,14 +888,14 @@ name=http://code.google.com/p/drmemory/issues/detail?id=778 b
 # This is an NSS PRThread object installed in TLS.  Why isn't this detected as a
 # root?  See also http://crbug.com/32624
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=778 c
+name=https://github.com/DynamoRIO/drmemory/issues/778 c
 *!PR_Calloc
 *!_PR_AttachThread
 *!_PRI_AttachThread
 
 # Bit-level fps in rich edit layer.
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=791
+name=https://github.com/DynamoRIO/drmemory/issues/791
 RICHED20.dll!*
 RICHED20.dll!*
 
@@ -910,13 +910,13 @@ SspiCli.dll!Cre*
 # Async NtReadFile false positives.  This was fixed in drmemory r772, remove
 # this supp when we pull that rev.
 UNADDRESSABLE ACCESS
-name=http://code.google.com/p/drmemory/issues/detail?id=798
+name=https://github.com/DynamoRIO/drmemory/issues/798
 system call NtReadFile parameter #5
 KERNEL32.dll!ReadFile
 
 # Probable syscall false positive.
 UNADDRESSABLE ACCESS
-name=http://code.google.com/p/drmemory/issues/detail?id=809
+name=https://github.com/DynamoRIO/drmemory/issues/809
 system call NtGdiPolyPolyDraw parameter #1
 *!gfx::Path::CreateNativeRegion
 
@@ -925,39 +925,39 @@ system call NtGdiPolyPolyDraw parameter #1
 # write precise suppressions.  Until we have bit-level tracking (DRMi#113) we
 # should keep this.
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=113 rpcrt4.dll wildcard
+name=https://github.com/DynamoRIO/drmemory/issues/113 rpcrt4.dll wildcard
 RPCRT4.dll!*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=841 a
+name=https://github.com/DynamoRIO/drmemory/issues/841 a
 ...
 CRYPTNET.dll!I_CryptNetGetConnectivity
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=841 b
+name=https://github.com/DynamoRIO/drmemory/issues/841 b
 ...
 webio.dll!*
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=841 c
+name=https://github.com/DynamoRIO/drmemory/issues/841 c
 ...
 winhttp.dll!*
 
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=841 d
+name=https://github.com/DynamoRIO/drmemory/issues/841 d
 ...
 CRYPTNET.dll!I_CryptNetGetConnectivity
 
 # Often missing a ntdll.dll!KiUserCallbackDispatcher frame.
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=810
+name=https://github.com/DynamoRIO/drmemory/issues/810
 instruction=test   %edx %edx
 USER32.dll!GetClassLongW
 ...
 *!ui::CenterAndSizeWindow
 
 UNINITIALIZED READ
-name=http://code.google.com/p/drmemory/issues/detail?id=815
+name=https://github.com/DynamoRIO/drmemory/issues/815
 KERNEL*.dll!...
 dxgi.dll!*
 USER32.dll!GetMonitorInfoA
@@ -974,7 +974,7 @@ cmd.exe!*
 
 # Possible true system use after free.
 UNADDRESSABLE ACCESS
-name=http://code.google.com/p/drmemory/issues/detail?id=623
+name=https://github.com/DynamoRIO/drmemory/issues/623
 KERNELBASE.dll!TlsGetValue
 OLEAUT32.dll!SysFreeString
 OLEAUT32.dll!SysAllocStringByteLen
@@ -985,7 +985,7 @@ OLEACC.dll!*
 
 # basic_streambuf seems to leak something in creating a std::_Mutex
 LEAK
-name=http://code.google.com/p/drmemory/issues/detail?id=857
+name=https://github.com/DynamoRIO/drmemory/issues/857
 ntdll.dll!...
 ntdll.dll!RtlInitializeCriticalSection
 *!_Mtxinit
@@ -1631,7 +1631,7 @@ content.dll!content::BrowserAccessibilityManagerWin::*
 # There are so many osmesa errors we have to suppress (mostly the unpack_RGB*
 # variety) that it's a performance hit.  We avoid that by requesting
 # whole-module suppression
-# (see https://code.google.com/p/drmemory/issues/detail?id=1529).
+# (see https://github.com/DynamoRIO/drmemory/issues/1529).
 UNINITIALIZED READ
 name=bug_347967_all_osmesa
 osmesa.dll!*

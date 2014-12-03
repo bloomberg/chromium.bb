@@ -2239,7 +2239,7 @@
         # Iterator debugging is slow.
         'win_debug_disable_iterator_debugging': '1',
         # Try to disable optimizations that mess up stacks in a release build.
-        # DrM-i#1054 (http://code.google.com/p/drmemory/issues/detail?id=1054)
+        # DrM-i#1054 (https://github.com/DynamoRIO/drmemory/issues/1054)
         # /O2 and /Ob0 (disable inline) cannot be used together because of a
         # compiler bug, so we use /Ob1 instead.
         'win_release_InlineFunctionExpansion': '1',

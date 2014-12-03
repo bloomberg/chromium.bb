@@ -5,7 +5,7 @@ URLRequestTestHTTP.HTTPSToHTTPRedirectNoRefererTest
 URLRequestTestHTTP.GetTest_ManyCookies
 
 # Dr. Memory hits an assertion:
-# http://code.google.com/p/drmemory/issues/detail?id=422
+# https://github.com/DynamoRIO/drmemory/issues/422
 HttpAuthTest.*
 HttpAuthHandlerFactoryTest.*
 X509CertificateTest.*
