@@ -24,7 +24,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/profile_identity_provider.h"
@@ -269,9 +268,55 @@ void SyncTest::AddTestSwitches(base::CommandLine* cl) {
 
 void SyncTest::AddOptionalTypesToCommandLine(base::CommandLine* cl) {}
 
+// Called when the ProfileManager has created a profile.
+// static
+void SyncTest::CreateProfileCallback(const base::Closure& quit_closure,
+                                     Profile* profile,
+                                     Profile::CreateStatus status) {
+  EXPECT_TRUE(profile);
+  EXPECT_NE(Profile::CREATE_STATUS_LOCAL_FAIL, status);
+  EXPECT_NE(Profile::CREATE_STATUS_REMOTE_FAIL, status);
+  // This will be called multiple times. Wait until the profile is initialized
+  // fully to quit the loop.
+  if (status == Profile::CREATE_STATUS_INITIALIZED)
+    quit_closure.Run();
+}
+
+// TODO(shadi): Ideally creating a new profile should not depend on signin
+// process. We should try to consolidate MakeProfileForUISignin() and
+// MakeProfile(). Major differences are profile paths and creation methods. For
+// UI signin we need profiles in unique user data dir's and we need to use
+// ProfileManager::CreateProfileAsync() for proper profile creation.
+// static
+Profile* SyncTest::MakeProfileForUISignin(
+    const base::FilePath::StringType name) {
+  // For multi profile UI signin, profile paths should be outside user data dir.
+  // Otherwise, we get an error that the profile has already signed in on this
+  // device.
+  // Note that prefix |name| is implemented only on Win. On other platforms the
+  // com.google.Chrome.XXXXXX prefix is used.
+  base::FilePath profile_path;
+  CHECK(base::CreateNewTempDirectory(name, &profile_path));
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  base::RunLoop run_loop;
+  ProfileManager::CreateCallback create_callback = base::Bind(
+      &CreateProfileCallback, run_loop.QuitClosure());
+  profile_manager->CreateProfileAsync(profile_path,
+                                      create_callback,
+                                      base::string16(),
+                                      base::string16(),
+                                      std::string());
+  run_loop.Run();
+  return profile_manager->GetProfileByPath(profile_path);
+}
+
 // static
 Profile* SyncTest::MakeProfile(const base::FilePath::StringType name) {
   base::FilePath path;
+  // Create new profiles in user data dir so that other profiles can know about
+  // it. This is needed in tests such as supervised user cases which assume
+  // browser->profile() as the custodian profile.
   PathService::Get(chrome::DIR_USER_DATA, &path);
   path = path.Append(name);
 
@@ -360,16 +405,26 @@ bool SyncTest::SetupClients() {
 }
 
 void SyncTest::InitializeInstance(int index) {
-  profiles_[index] = MakeProfile(
-      base::StringPrintf(FILE_PATH_LITERAL("Profile%d"), index));
+  base::FilePath::StringType profile_name =
+      base::StringPrintf(FILE_PATH_LITERAL("Profile%d"), index);
+  // If running against an EXTERNAL_LIVE_SERVER, we need to signin profiles
+  // using real GAIA server. This requires creating profiles with no test hooks.
+  if (server_type_ == EXTERNAL_LIVE_SERVER) {
+    profiles_[index] = MakeProfileForUISignin(profile_name);
+  } else {
+    // Without need of real GAIA authentication, we create new test profiles.
+    profiles_[index] = MakeProfile(profile_name);
+  }
+
   EXPECT_FALSE(GetProfile(index) == NULL) << "Could not create Profile "
                                           << index << ".";
 
+  // CheckInitialState() assumes that no windows are open at startup.
   browsers_[index] = new Browser(Browser::CreateParams(
       GetProfile(index), chrome::GetActiveDesktop()));
+
   EXPECT_FALSE(GetBrowser(index) == NULL) << "Could not create Browser "
                                           << index << ".";
-
 
   // Make sure the ProfileSyncService has been created before creating the
   // ProfileSyncServiceHarness - some tests expect the ProfileSyncService to
@@ -386,11 +441,16 @@ void SyncTest::InitializeInstance(int index) {
             new fake_server::FakeServerNetworkResources(fake_server_.get())));
   }
 
+  ProfileSyncServiceHarness::SigninType singin_type =
+      (server_type_ == EXTERNAL_LIVE_SERVER)
+          ? ProfileSyncServiceHarness::SigninType::UI_SIGNIN
+          : ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN;
+
   clients_[index] =
-      ProfileSyncServiceHarness::Create(
-          GetProfile(index),
-          username_,
-          password_);
+      ProfileSyncServiceHarness::Create(GetProfile(index),
+                                        username_,
+                                        password_,
+                                        singin_type);
   EXPECT_FALSE(GetClient(index) == NULL) << "Could not create Client "
                                          << index << ".";
   InitializeInvalidations(index);
@@ -421,6 +481,9 @@ void SyncTest::InitializeInvalidations(int index) {
       invalidation_service->DisableSelfNotifications();
     }
     fake_server_invalidation_services_[index] = invalidation_service;
+  } else if (server_type_ == EXTERNAL_LIVE_SERVER) {
+    // DO NOTHING. External live sync servers use GCM to notify profiles of any
+    // invalidations in sync'ed data.
   } else {
     invalidation::P2PInvalidationService* p2p_invalidation_service =
         static_cast<invalidation::P2PInvalidationService*>(

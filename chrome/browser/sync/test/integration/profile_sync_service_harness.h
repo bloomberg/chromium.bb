@@ -23,10 +23,19 @@ class ProfileSyncService;
 // several clients to get to the same state.
 class ProfileSyncServiceHarness {
  public:
+  // The type of profile signin method to authenticate a profile.
+  enum class SigninType {
+    // Fakes user signin process.
+    FAKE_SIGNIN,
+    // Uses UI signin flow and connects to GAIA servers for authentication.
+    UI_SIGNIN
+  };
+
   static ProfileSyncServiceHarness* Create(
       Profile* profile,
       const std::string& username,
-      const std::string& password);
+      const std::string& password,
+      SigninType signin_type);
   virtual ~ProfileSyncServiceHarness();
 
   // Sets the GAIA credentials with which to sign in to sync.
@@ -113,7 +122,8 @@ class ProfileSyncServiceHarness {
   ProfileSyncServiceHarness(
       Profile* profile,
       const std::string& username,
-      const std::string& password);
+      const std::string& password,
+      SigninType signin_type);
 
   // Signals that sync setup is complete, and that PSS may begin syncing.
   void FinishSyncSetup();
@@ -133,6 +143,9 @@ class ProfileSyncServiceHarness {
   // Credentials used for GAIA authentication.
   std::string username_;
   std::string password_;
+
+  // Used to decide what method of profile signin to use.
+  const SigninType signin_type_;
 
   // Number used by GenerateFakeOAuth2RefreshTokenString() to make sure that
   // all refresh tokens used in the tests are different.

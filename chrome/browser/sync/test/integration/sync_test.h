@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_status_code.h"
@@ -21,7 +22,6 @@
 #include "sync/test/fake_server/fake_server.h"
 #include "sync/test/local_sync_test_server.h"
 
-class Profile;
 class ProfileSyncService;
 class ProfileSyncServiceHarness;
 class P2PInvalidationForwarder;
@@ -259,8 +259,19 @@ class SyncTest : public InProcessBrowserTest {
   scoped_ptr<fake_server::FakeServer> fake_server_;
 
  private:
-  // Helper to ProfileManager::CreateProfile that handles path creation.
+  // Helper to Profile::CreateProfile that handles path creation. It creates
+  // a profile then registers it as a testing profile.
   static Profile* MakeProfile(const base::FilePath::StringType name);
+
+  // Helper to ProfileManager::CreateProfileAsync that creates a new profile
+  // used for UI Signin. Blocks until profile is created.
+  static Profile* MakeProfileForUISignin(const base::FilePath::StringType name);
+
+  // Callback for CreateNewProfile() method. It runs the quit_closure once
+  // profile is created successfully.
+  static void CreateProfileCallback(const base::Closure& quit_closure,
+                                    Profile* profile,
+                                    Profile::CreateStatus status);
 
   // Helper method used to read GAIA credentials from a local password file
   // specified via the "--password-file-for-test" command line switch.

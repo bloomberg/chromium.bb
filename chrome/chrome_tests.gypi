@@ -1239,6 +1239,7 @@
       'browser/sync/test/integration/single_client_bookmarks_sync_test.cc',
       'browser/sync/test/integration/single_client_dictionary_sync_test.cc',
       'browser/sync/test/integration/single_client_directory_sync_test.cc',
+      'browser/sync/test/integration/single_client_e2e_test.cc',
       'browser/sync/test/integration/single_client_extensions_sync_test.cc',
       'browser/sync/test/integration/single_client_passwords_sync_test.cc',
       'browser/sync/test/integration/single_client_preferences_sync_test.cc',

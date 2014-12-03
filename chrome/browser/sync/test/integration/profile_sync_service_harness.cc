@@ -21,6 +21,9 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/quiesce_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/invalidation/p2p_invalidation_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -95,18 +98,24 @@ class SyncSetupChecker : public SingleClientStatusChangeChecker {
 ProfileSyncServiceHarness* ProfileSyncServiceHarness::Create(
     Profile* profile,
     const std::string& username,
-    const std::string& password) {
-  return new ProfileSyncServiceHarness(profile, username, password);
+    const std::string& password,
+    SigninType signin_type) {
+  return new ProfileSyncServiceHarness(profile,
+                                       username,
+                                       password,
+                                       signin_type);
 }
 
 ProfileSyncServiceHarness::ProfileSyncServiceHarness(
     Profile* profile,
     const std::string& username,
-    const std::string& password)
+    const std::string& password,
+    SigninType signin_type)
     : profile_(profile),
       service_(ProfileSyncServiceFactory::GetForProfile(profile)),
       username_(username),
       password_(password),
+      signin_type_(signin_type),
       oauth2_refesh_token_number_(0),
       profile_debug_name_(profile->GetDebugName()) {
 }
@@ -146,13 +155,24 @@ bool ProfileSyncServiceHarness::SetupSync(
   // until we've finished configuration.
   service()->SetSetupInProgress(true);
 
-  // Authenticate sync client using GAIA credentials.
-  service()->signin()->SetAuthenticatedUsername(username_);
-  service()->GoogleSigninSucceeded(username_, username_, password_);
-
   DCHECK(!username_.empty());
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
+  if (signin_type_ == SigninType::UI_SIGNIN) {
+    Browser* browser =
+        FindBrowserWithProfile(profile_, chrome::GetActiveDesktop());
+    DCHECK(browser);
+    if (!login_ui_test_utils::SignInWithUI(browser, username_, password_)) {
+      LOG(ERROR) << "Could not sign in to GAIA servers.";
+      return false;
+    }
+  } else if (signin_type_ == SigninType::FAKE_SIGNIN) {
+    // Authenticate sync client using GAIA credentials.
+    service()->signin()->SetAuthenticatedUsername(username_);
+    service()->GoogleSigninSucceeded(username_, username_, password_);
+    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
       UpdateCredentials(username_, GenerateFakeOAuth2RefreshTokenString());
+  } else {
+    LOG(ERROR) << "Unsupported profile signin type.";
+  }
 
   if (!AwaitBackendInitialization()) {
     return false;
@@ -227,6 +247,7 @@ bool ProfileSyncServiceHarness::AwaitBackendInitialization() {
   }
 
   if (!service()->backend_initialized()) {
+    LOG(ERROR) << "Service backend not initialized.";
     return false;
   }
 

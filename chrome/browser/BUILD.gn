@@ -846,6 +846,8 @@ source_set("test_support") {
     "sync/profile_sync_components_factory_mock.h",
     "sync/profile_sync_service_mock.cc",
     "sync/profile_sync_service_mock.h",
+    "ui/webui/signin/login_ui_test_utils.cc",
+    "ui/webui/signin/login_ui_test_utils.h",
   ]
 
   public_deps = [
