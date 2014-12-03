@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// FIXME: The spec doesn't provide details about constructor, yet.
-// See also, https://github.com/WebAudio/web-midi-api/issues/1 .
+// http://webaudio.github.io/web-midi-api/#idl-def-MIDIMessageEvent
+
 [
-    EventConstructor,
+    Constructor(DOMString type, optional MIDIMessageEventInit eventInitDict),
     RuntimeEnabled=WebMIDI,
 ] interface MIDIMessageEvent : Event {
-    [InitializedByEventConstructor] readonly attribute double receivedTime;
-    [InitializedByEventConstructor] readonly attribute Uint8Array data;
+    readonly attribute double receivedTime;
+    readonly attribute Uint8Array data;
 };

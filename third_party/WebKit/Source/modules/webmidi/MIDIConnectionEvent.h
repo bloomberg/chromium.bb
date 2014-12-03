@@ -36,14 +36,7 @@
 
 namespace blink {
 
-struct MIDIConnectionEventInit : public EventInit {
-    MIDIConnectionEventInit()
-        : port(nullptr)
-    {
-    }
-
-    Member<MIDIPort> port;
-};
+class MIDIConnectionEventInit;
 
 class MIDIConnectionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();

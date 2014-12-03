@@ -33,16 +33,10 @@
 
 #include "core/dom/DOMTypedArray.h"
 #include "modules/EventModules.h"
+#include "modules/webmidi/MIDIMessageEventInit.h"
 
 namespace blink {
 
-struct MIDIMessageEventInit : public EventInit {
-    MIDIMessageEventInit()
-        : receivedTime(0.0) { }
-
-    double receivedTime;
-    RefPtr<DOMUint8Array> data;
-};
 
 class MIDIMessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
@@ -78,10 +72,7 @@ private:
         , m_receivedTime(receivedTime)
         , m_data(data) { }
 
-    MIDIMessageEvent(const AtomicString& type, const MIDIMessageEventInit& initializer)
-        : Event(type, initializer)
-        , m_receivedTime(initializer.receivedTime)
-        , m_data(initializer.data) { }
+    MIDIMessageEvent(const AtomicString& type, const MIDIMessageEventInit& initializer);
 
     double m_receivedTime;
     RefPtr<DOMUint8Array> m_data;

@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include "modules/webmidi/MIDIConnectionEvent.h"
+#include "modules/webmidi/MIDIConnectionEventInit.h"
 
 namespace blink {
 
@@ -45,8 +46,10 @@ MIDIConnectionEvent::MIDIConnectionEvent(const AtomicString& type, MIDIPort* por
 
 MIDIConnectionEvent::MIDIConnectionEvent(const AtomicString& type, const MIDIConnectionEventInit& initializer)
     : Event(type, initializer)
-    , m_port(initializer.port)
+    , m_port(nullptr)
 {
+    if (initializer.hasPort())
+        m_port = initializer.port();
 }
 
 PassRefPtrWillBeRawPtr<MIDIConnectionEvent> MIDIConnectionEvent::create()

@@ -28,9 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://webaudio.github.io/web-midi-api/#idl-def-MIDIConnectionEvent
+
 [
-    EventConstructor,
+    Constructor(DOMString type, optional MIDIConnectionEventInit eventInitDict),
     RuntimeEnabled=WebMIDI,
 ] interface MIDIConnectionEvent : Event {
-    [InitializedByEventConstructor] readonly attribute MIDIPort port;
+    readonly attribute MIDIPort port;
 };
