@@ -1222,6 +1222,17 @@ crbug.com/407915 virtual/implsidepainting/inspector/tracing/timeline-event-dispa
 
 crbug.com/407993 [ Win ] media/encrypted-media/prefixed/encrypted-media-events.html [ Crash Pass ]
 
+crbug.com/381919 compositing/geometry/layer-due-to-layer-children-deep.html [ NeedsRebaseline ]
+crbug.com/381919 compositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
+crbug.com/381919 compositing/3d-corners.html [ NeedsRebaseline ]
+crbug.com/381919 compositing/reflections/simple-composited-reflections.html [ NeedsRebaseline ]
+crbug.com/381919 compositing/perpendicular-layer-sorting.html [ NeedsRebaseline ]
+crbug.com/381919 compositing/direct-image-compositing.html [ NeedsRebaseline ]
+crbug.com/381919 compositing/sibling-positioning.html [ NeedsRebaseline ]
+crbug.com/381919 compositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ NeedsRebaseline ]
+crbug.com/381919 compositing/geometry/fixed-position-iframe-composited-page-scale.html [ NeedsRebaseline ]
+crbug.com/381919 compositing/geometry/fixed-position-transform-composited-page-scale.html [ NeedsRebaseline ]
+
 #crbug.com/409715 [ Win ] svg/W3C-SVG-1.1/text-intro-04-t.svg [ Crash Pass ]
 crbug.com/409712 http/tests/filesystem/workers/resolve-url.html [ Pass Timeout ]
 crbug.com/409767 crypto/worker-subtle-crypto-concurrent.html [ Crash Pass Timeout ]
