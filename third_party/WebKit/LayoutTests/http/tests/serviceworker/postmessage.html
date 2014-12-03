@@ -12,16 +12,14 @@ async_test(function(t) {
         t, 'resources/postmessage-worker.js', scope)
       .then(function(r) {
           registration = r;
-          return get_newest_worker(registration);
-        })
-      .then(function(sw) {
-          worker = sw;
+          worker = registration.installing;
           var messageChannel = new MessageChannel();
           messageChannel.port1.onmessage = t.step_func(onMessage);
-          sw.postMessage({port: messageChannel.port2}, [messageChannel.port2]);
-          sw.postMessage({value: 1});
-          sw.postMessage({value: 2});
-          sw.postMessage({done: true});
+          worker.postMessage({port: messageChannel.port2},
+                              [messageChannel.port2]);
+          worker.postMessage({value: 1});
+          worker.postMessage({value: 2});
+          worker.postMessage({done: true});
         })
       .catch(unreached_rejection(t));
 

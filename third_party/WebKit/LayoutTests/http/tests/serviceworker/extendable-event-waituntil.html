@@ -14,9 +14,8 @@ function runTest(test, scope, onRegister) {
   var script = 'resources/extendable-event-waituntil.js';
   service_worker_unregister_and_register(test, script, scope)
     .then(function(registration) {
-        return get_newest_worker(registration);
-      })
-    .then(test.step_func(onRegister));
+        onRegister(registration.installing);
+      });
 }
 
 function syncWorker(test, worker, obj) {
