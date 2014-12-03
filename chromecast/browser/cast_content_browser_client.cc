@@ -194,7 +194,9 @@ CastContentBrowserClient::SelectClientCertificateOnIOThread(
     return CastNetworkDelegate::DeviceCert();
   } else {
     LOG(ERROR) << "Invalid host for client certificate request: "
-               << requesting_url.host();
+               << requesting_url.host()
+               << " with render_process_id: "
+               << render_process_id;
     return NULL;
   }
 }

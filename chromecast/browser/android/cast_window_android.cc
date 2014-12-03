@@ -9,6 +9,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/renderer_preferences.h"
 #include "jni/CastWindowAndroid_jni.h"
@@ -68,7 +69,8 @@ CastWindowAndroid* CastWindowAndroid::CreateCastWindowAndroid(
   web_contents->SetDelegate(shell);
 
   Java_CastWindowAndroid_initFromNativeWebContents(
-      env, shell->java_object_.obj(), reinterpret_cast<jint>(web_contents));
+      env, shell->java_object_.obj(), reinterpret_cast<jint>(web_contents),
+      web_contents->GetRenderProcessHost()->GetID());
 
   // Enabling hole-punching also requires runtime renderer preference
   web_contents->GetMutableRendererPrefs()->

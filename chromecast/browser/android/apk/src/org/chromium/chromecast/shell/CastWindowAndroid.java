@@ -40,6 +40,7 @@ public class CastWindowAndroid extends LinearLayout {
     private ContentViewCore mContentViewCore;
     private ContentViewRenderView mContentViewRenderView;
     private NavigationController mNavigationController;
+    private int mRenderProcessId;
     private WebContents mWebContents;
     private WebContentsObserver mWebContentsObserver;
     private WindowAndroid mWindow;
@@ -97,6 +98,13 @@ public class CastWindowAndroid extends LinearLayout {
     }
 
     /**
+     * Returns the render_process_id for the associated web contents
+     */
+    public int getRenderProcessId() {
+        return mRenderProcessId;
+    }
+
+    /**
      * Given a URI String, performs minimal normalization to attempt to build a usable URL from it.
      * @param uriString The passed-in path to be normalized.
      * @return The normalized URL, as a string.
@@ -116,13 +124,14 @@ public class CastWindowAndroid extends LinearLayout {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void initFromNativeWebContents(long nativeWebContents) {
+    private void initFromNativeWebContents(long nativeWebContents, int renderProcessId) {
         Context context = getContext();
         mContentViewCore = new ContentViewCore(context);
         ContentView view = ContentView.newInstance(context, mContentViewCore);
         mContentViewCore.initialize(view, view, nativeWebContents, mWindow);
         mWebContents = mContentViewCore.getWebContents();
         mNavigationController = mWebContents.getNavigationController();
+        mRenderProcessId = renderProcessId;
 
         if (getParent() != null) mContentViewCore.onShow();
         ((FrameLayout) findViewById(R.id.contentview_holder)).addView(view,
