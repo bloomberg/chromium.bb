@@ -17,7 +17,6 @@
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/common/result_codes.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
-#include "content/shell/browser/shell_net_log.h"
 #include "extensions/browser/app_window/app_window_client.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #include "extensions/browser/extension_system.h"
@@ -131,7 +130,7 @@ int ShellBrowserMainParts::PreCreateThreads() {
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // Initialize our "profile" equivalent.
-  browser_context_.reset(new ShellBrowserContext(net_log_.get()));
+  browser_context_.reset(new ShellBrowserContext);
   pref_service_ = ShellPrefs::CreatePrefService(browser_context_.get());
 
 #if defined(USE_AURA)
@@ -142,9 +141,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   desktop_controller_.reset(browser_main_delegate_->CreateDesktopController());
 
-  // NOTE: Much of this is culled from chrome/test/base/chrome_test_suite.cc
   // TODO(jamescook): Initialize user_manager::UserManager.
-  net_log_.reset(new content::ShellNetLog("app_shell"));
 
   device_client_.reset(new ShellDeviceClient);
 

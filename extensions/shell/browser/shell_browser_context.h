@@ -5,14 +5,10 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_BROWSER_CONTEXT_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_BROWSER_CONTEXT_H_
 
-#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "storage/browser/quota/special_storage_policy.h"
-
-namespace net {
-class NetLog;
-}
 
 namespace extensions {
 
@@ -23,7 +19,7 @@ class ShellSpecialStoragePolicy;
 // app_shell.
 class ShellBrowserContext : public content::ShellBrowserContext {
  public:
-  explicit ShellBrowserContext(net::NetLog* net_log);
+  ShellBrowserContext();
   ~ShellBrowserContext() override;
 
   // content::BrowserContext implementation.
@@ -38,7 +34,6 @@ class ShellBrowserContext : public content::ShellBrowserContext {
  private:
   void InitURLRequestContextOnIOThread();
 
-  net::NetLog* net_log_;
   scoped_refptr<storage::SpecialStoragePolicy> storage_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserContext);

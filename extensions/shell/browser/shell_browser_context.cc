@@ -25,9 +25,9 @@ bool IgnoreCertificateErrors() {
 
 // Create a normal recording browser context. If we used an incognito context
 // then app_shell would also have to create a normal context and manage both.
-ShellBrowserContext::ShellBrowserContext(net::NetLog* net_log)
-    : content::ShellBrowserContext(false, NULL),
-      net_log_(net_log),
+ShellBrowserContext::ShellBrowserContext()
+    : content::ShellBrowserContext(false /* off_the_record */,
+                                   nullptr /* net_log */),
       storage_policy_(new ShellSpecialStoragePolicy) {
 }
 
@@ -58,7 +58,7 @@ net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
               content::BrowserThread::FILE),
           protocol_handlers,
           request_interceptors.Pass(),
-          net_log_,
+          nullptr /* net_log */,
           extension_info_map));
   resource_context_->set_url_request_context_getter(
       url_request_context_getter());
