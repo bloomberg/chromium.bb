@@ -836,8 +836,6 @@ bool parseAlgorithmDictionary(const String& algorithmName, const Dictionary& raw
 {
     WebCryptoAlgorithmId algorithmId;
     if (!lookupAlgorithmIdByName(algorithmName, algorithmId)) {
-        // FIXME: The spec says to return a SyntaxError if the input contains
-        //        any non-ASCII characters.
         setNotSupportedError(context.toString("Unrecognized name"), error);
         return false;
     }
