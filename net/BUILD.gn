@@ -500,6 +500,10 @@ component("net") {
     ]
   }
 
+  if (is_ios || is_mac) {
+    sources += gypi_values.net_base_mac_ios_sources
+  }
+
   if (is_android) {
     # Add some Linux sources that were excluded by the filter, but which
     # are needed.
@@ -1141,6 +1145,10 @@ test("net_unittests") {
       ":flip_in_mem_edsm_server_base",
       ":quic_base",
     ]
+  }
+
+  if (is_mac || is_ios) {
+    sources += gypi_values.net_base_test_mac_ios_sources
   }
 
   if (is_chromeos) {

@@ -442,6 +442,12 @@
             },
           },
         ],
+        [ 'OS == "ios" or OS == "mac"', {
+            'sources': [
+              '<@(net_base_mac_ios_sources)',
+            ],
+          },
+        ],
         ['OS=="android" and _toolset=="target" and android_webview_build == 0', {
           'dependencies': [
              'net_java',
@@ -548,6 +554,11 @@
           ],
           'sources': [
             '<@(net_linux_test_sources)',
+          ],
+        }],
+        ['OS == "mac" or OS == "ios"', {
+          'sources': [
+            '<@(net_base_test_mac_ios_sources)',
           ],
         }],
         ['chromeos==1', {

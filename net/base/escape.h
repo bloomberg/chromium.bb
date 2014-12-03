@@ -30,6 +30,12 @@ NET_EXPORT std::string EscapeQueryParamValue(const std::string& text,
 // encoding the string.  If this conversion fails, we return false.
 NET_EXPORT std::string EscapePath(const std::string& path);
 
+#if defined(OS_MACOSX)
+// Escapes characters as per expectations of NSURL. This includes:
+// non-printable, non-7bit, and (including space)  "#%<>[\]^`{|}
+NET_EXPORT std::string EscapeNSURLPrecursor(const std::string& precursor);
+#endif  // defined(OS_MACOSX)
+
 // Escapes application/x-www-form-urlencoded content.  This includes:
 // non-printable, non-7bit, and (including space)  ?>=<;+'&%$#"![\]^`{|}
 // Space is escaped as + (if use_plus is true) and other special characters

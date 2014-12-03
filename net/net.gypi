@@ -1757,5 +1757,12 @@
       'tools/quic/test_tools/simple_client.h',
       'tools/quic/test_tools/simple_client.cc',
     ],
+    'net_base_mac_ios_sources': [
+      'base/mac/url_conversions.h',
+      'base/mac/url_conversions.mm',
+    ],
+    'net_base_test_mac_ios_sources': [
+      'base/mac/url_conversions_unittest.mm',
+    ],
   }
 }
