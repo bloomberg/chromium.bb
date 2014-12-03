@@ -106,7 +106,6 @@ void WebLayerTreeViewImpl::WillCommit() {
 }
 
 void WebLayerTreeViewImpl::DidCommit() {
-  widget_->didCommitFrameToCompositor();
 }
 
 void WebLayerTreeViewImpl::DidCommitAndDrawFrame() {
