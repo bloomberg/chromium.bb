@@ -30,6 +30,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
@@ -2253,8 +2254,17 @@ void* TsyncApplyToTwoThreadsFunc(void* cond_ptr) {
 }
 
 SANDBOX_TEST(SandboxBPF, Tsync) {
-  if (!(SandboxBPF::SupportsSeccompSandbox(
-          SandboxBPF::SeccompLevel::MULTI_THREADED))) {
+  const bool supports_multi_threaded = SandboxBPF::SupportsSeccompSandbox(
+      SandboxBPF::SeccompLevel::MULTI_THREADED);
+// On Chrome OS tsync is mandatory.
+#if defined(OS_CHROMEOS)
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    BPF_ASSERT_EQ(true, supports_multi_threaded);
+  }
+// else a Chrome OS build not running on a Chrome OS device e.g. Chrome bots.
+// In this case fall through.
+#endif
+  if (!supports_multi_threaded) {
     return;
   }
 
