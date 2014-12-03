@@ -65,7 +65,7 @@ class ConfigClassTest(cros_test_lib.TestCase):
 
     self.assertRaises(AttributeError, getattr, cfg, 'foobar')
 
-  # pylint: disable-msg=W0212
+  # pylint: disable=protected-access
   def testDeleteKey(self):
     base_config = cbuildbot_config._config(foo='bar')
     inherited_config = base_config.derive(foo=cbuildbot_config.delete_key())
@@ -79,6 +79,7 @@ class ConfigClassTest(cros_test_lib.TestCase):
     inherited_config_2 = inherited_config_1.derive(
         cbuildbot_config.delete_keys(base_config))
     self.assertEqual(inherited_config_2, {'qzr': 'flp'})
+
 
 class CBuildBotTest(cros_test_lib.MoxTestCase):
   """General tests of cbuildbot_config with respect to cbuildbot."""
