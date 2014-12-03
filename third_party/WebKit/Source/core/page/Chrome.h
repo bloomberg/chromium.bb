@@ -68,6 +68,8 @@ public:
 
     virtual void scheduleAnimation() override;
 
+    void scheduleAnimationForFrame(LocalFrame* localRoot);
+
     void contentsSizeChanged(LocalFrame*, const IntSize&) const;
 
     void setCursor(const Cursor&);

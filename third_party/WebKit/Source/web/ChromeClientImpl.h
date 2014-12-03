@@ -112,6 +112,7 @@ public:
     virtual void invalidateContentsAndRootView(const IntRect&) override;
     virtual void invalidateContentsForSlowScroll(const IntRect&) override;
     virtual void scheduleAnimation() override;
+    virtual void scheduleAnimationForFrame(LocalFrame* localRoot) override;
     virtual IntRect rootViewToScreen(const IntRect&) const override;
     virtual WebScreenInfo screenInfo() const override;
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const override;
@@ -134,7 +135,7 @@ public:
     virtual GraphicsLayerFactory* graphicsLayerFactory() const override;
 
     // Pass 0 as the GraphicsLayer to detatch the root layer.
-    virtual void attachRootGraphicsLayer(GraphicsLayer*) override;
+    virtual void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override;
 
     virtual void enterFullScreenForElement(Element*) override;
     virtual void exitFullScreenForElement(Element*) override;

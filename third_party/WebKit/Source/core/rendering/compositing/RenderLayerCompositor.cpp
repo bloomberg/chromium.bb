@@ -35,6 +35,7 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorNodeIds.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -226,7 +227,7 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
 {
     ASSERT(updateType != CompositingUpdateNone);
     m_pendingUpdateType = std::max(m_pendingUpdateType, updateType);
-    page()->animator().scheduleVisualUpdate();
+    page()->animator().scheduleVisualUpdate(m_renderView.frame());
     lifecycle().ensureStateAtMost(DocumentLifecycle::LayoutClean);
 }
 
@@ -1079,25 +1080,25 @@ void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
         return;
 
     switch (attachment) {
-        case RootLayerUnattached:
-            ASSERT_NOT_REACHED();
-            break;
-        case RootLayerAttachedViaChromeClient: {
-            LocalFrame& frame = m_renderView.frameView()->frame();
-            Page* page = frame.page();
-            if (!page)
-                return;
-            page->chrome().client().attachRootGraphicsLayer(rootGraphicsLayer());
-            break;
-        }
-        case RootLayerAttachedViaEnclosingFrame: {
-            HTMLFrameOwnerElement* ownerElement = m_renderView.document().ownerElement();
-            ASSERT(ownerElement);
-            // The layer will get hooked up via CompositedLayerMapping::updateGraphicsLayerConfiguration()
-            // for the frame's renderer in the parent document.
-            ownerElement->setNeedsCompositingUpdate();
-            break;
-        }
+    case RootLayerUnattached:
+        ASSERT_NOT_REACHED();
+        break;
+    case RootLayerAttachedViaChromeClient: {
+        LocalFrame& frame = m_renderView.frameView()->frame();
+        Page* page = frame.page();
+        if (!page)
+            return;
+        page->chrome().client().attachRootGraphicsLayer(rootGraphicsLayer(), &frame);
+        break;
+    }
+    case RootLayerAttachedViaEnclosingFrame: {
+        HTMLFrameOwnerElement* ownerElement = m_renderView.document().ownerElement();
+        ASSERT(ownerElement);
+        // The layer will get hooked up via CompositedLayerMapping::updateGraphicsLayerConfiguration()
+        // for the frame's renderer in the parent document.
+        ownerElement->setNeedsCompositingUpdate();
+        break;
+    }
     }
 
     m_rootLayerAttachment = attachment;
@@ -1126,9 +1127,9 @@ void RenderLayerCompositor::detachRootLayer()
         Page* page = frame.page();
         if (!page)
             return;
-        page->chrome().client().attachRootGraphicsLayer(0);
+        page->chrome().client().attachRootGraphicsLayer(0, &frame);
+        break;
     }
-    break;
     case RootLayerUnattached:
         break;
     }

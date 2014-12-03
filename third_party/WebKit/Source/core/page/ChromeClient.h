@@ -141,6 +141,8 @@ public:
     virtual void scheduleAnimation() = 0;
     // End methods used by HostWindow.
 
+    virtual void scheduleAnimationForFrame(LocalFrame*) { }
+
     virtual void dispatchViewportPropertiesDidChange(const ViewportDescription&) const { }
 
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const = 0;
@@ -177,8 +179,10 @@ public:
     // Allows ports to customize the type of graphics layers created by this page.
     virtual GraphicsLayerFactory* graphicsLayerFactory() const { return nullptr; }
 
-    // Pass 0 as the GraphicsLayer to detatch the root layer.
-    virtual void attachRootGraphicsLayer(GraphicsLayer*) = 0;
+    // Pass 0 as the GraphicsLayer to detach the root layer.
+    // This sets the graphics layer for the LocalFrame's WebWidget, if it has one. Otherwise
+    // it sets it for the WebViewImpl.
+    virtual void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) = 0;
 
     virtual void enterFullScreenForElement(Element*) { }
     virtual void exitFullScreenForElement(Element*) { }

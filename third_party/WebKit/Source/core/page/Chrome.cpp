@@ -372,6 +372,12 @@ void Chrome::scheduleAnimation()
 
 // --------
 
+void Chrome::scheduleAnimationForFrame(LocalFrame* localRoot)
+{
+    m_page->animator().setAnimationFramePending();
+    m_client->scheduleAnimationForFrame(localRoot);
+}
+
 bool Chrome::hasOpenedPopup() const
 {
     return m_client->hasOpenedPopup();

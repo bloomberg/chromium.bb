@@ -66,12 +66,20 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
         documents[i]->serviceScriptedAnimations(monotonicAnimationStartTime);
 }
 
-void PageAnimator::scheduleVisualUpdate()
+void PageAnimator::scheduleVisualUpdate(LocalFrame* frame)
 {
     // FIXME: also include m_animationFramePending here. It is currently not there due to crbug.com/353756.
     if (m_servicingAnimations || m_updatingLayoutAndStyleForPainting)
         return;
-    m_page->chrome().scheduleAnimation();
+    // FIXME: The frame-specific version of scheduleAnimation() is for
+    // out-of-process iframes. Passing 0 or the top-level frame to this method
+    // causes scheduleAnimation() to be called for the page, which still uses
+    // a page-level WebWidget (the WebViewImpl).
+    if (frame && !frame->isMainFrame() && frame->isLocalRoot()) {
+        m_page->chrome().scheduleAnimationForFrame(frame);
+    } else {
+        m_page->chrome().scheduleAnimation();
+    }
 }
 
 void PageAnimator::updateLayoutAndStyleForPainting(LocalFrame* rootFrame)

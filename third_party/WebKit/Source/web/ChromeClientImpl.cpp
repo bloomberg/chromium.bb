@@ -490,6 +490,12 @@ void ChromeClientImpl::scheduleAnimation()
     m_webView->scheduleAnimation();
 }
 
+void ChromeClientImpl::scheduleAnimationForFrame(LocalFrame* localRoot)
+{
+    // FIXME: This will proxy to a WebWidget attached to the WebLocalFrameImpl.
+    scheduleAnimation();
+}
+
 IntRect ChromeClientImpl::rootViewToScreen(const IntRect& rect) const
 {
     IntRect screenRect(rect);
@@ -687,8 +693,9 @@ GraphicsLayerFactory* ChromeClientImpl::graphicsLayerFactory() const
     return m_webView->graphicsLayerFactory();
 }
 
-void ChromeClientImpl::attachRootGraphicsLayer(GraphicsLayer* rootLayer)
+void ChromeClientImpl::attachRootGraphicsLayer(GraphicsLayer* rootLayer, LocalFrame* localRoot)
 {
+    // FIXME: Add call to frame's widget for non-zero frames.
     m_webView->setRootGraphicsLayer(rootLayer);
 }
 

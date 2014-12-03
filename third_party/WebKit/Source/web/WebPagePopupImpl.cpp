@@ -162,7 +162,7 @@ private:
         return m_popup->m_webView->graphicsLayerFactory();
     }
 
-    virtual void attachRootGraphicsLayer(GraphicsLayer* graphicsLayer) override
+    virtual void attachRootGraphicsLayer(GraphicsLayer* graphicsLayer, LocalFrame* localRoot) override
     {
         m_popup->setRootGraphicsLayer(graphicsLayer);
     }
