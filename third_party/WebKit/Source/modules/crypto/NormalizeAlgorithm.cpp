@@ -449,6 +449,7 @@ bool parseAesCbcParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& 
         return false;
 
     DOMArrayPiece iv(ivBufferSource);
+    // FIXME: Layering -- should not enforce length of "iv" here.
     if (iv.byteLength() != 16) {
         setDataError(context.toString("iv", "Must be 16 bytes"), error);
         return false;
@@ -461,7 +462,7 @@ bool parseAesCbcParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& 
 // Defined by the WebCrypto spec as:
 //
 //    dictionary AesKeyGenParams : Algorithm {
-//      [EnforceRange] unsigned short length;
+//      [EnforceRange] required unsigned short length;
 //    };
 bool parseAesKeyGenParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
@@ -488,8 +489,14 @@ bool parseHash(const Dictionary& raw, WebCryptoAlgorithm& hash, ErrorContext con
 // Defined by the WebCrypto spec as:
 //
 //    dictionary HmacImportParams : Algorithm {
-//      AlgorithmIdentifier hash;
+//      HashAlgorithmIdentifier hash;
+//      [EnforceRange] unsigned long length;
 //    };
+//
+// FIXME: The current implementation differs from the spec in two ways:
+//   (1) The hash parameter is mandatory: https://www.w3.org/Bugs/Public/show_bug.cgi?id=27448
+//   (2) There is no optional length parameter: http://crbug.com/431085
+//
 bool parseHmacImportParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     WebCryptoAlgorithm hash;
@@ -503,11 +510,8 @@ bool parseHmacImportParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParam
 // Defined by the WebCrypto spec as:
 //
 //    dictionary HmacKeyGenParams : Algorithm {
-//      AlgorithmIdentifier hash;
-//      // The length (in bits) of the key to generate. If unspecified, the
-//      // recommended length will be used, which is the size of the associated hash function's block
-//      // size.
-//      unsigned long length;
+//      required HashAlgorithmIdentifier hash;
+//      [EnforceRange] unsigned long length;
 //    };
 bool parseHmacKeyGenParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
@@ -526,8 +530,8 @@ bool parseHmacKeyGenParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParam
 
 // Defined by the WebCrypto spec as:
 //
-//    dictionary RsaHashedImportParams {
-//      AlgorithmIdentifier hash;
+//    dictionary RsaHashedImportParams : Algorithm {
+//      required HashAlgorithmIdentifier hash;
 //    };
 bool parseRsaHashedImportParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
@@ -541,13 +545,13 @@ bool parseRsaHashedImportParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithm
 
 // Defined by the WebCrypto spec as:
 //
-//    dictionary RsaHashedKeyGenParams : RsaKeyGenParams {
-//      AlgorithmIdentifier hash;
+//    dictionary RsaKeyGenParams : Algorithm {
+//      [EnforceRange] required unsigned long modulusLength;
+//      required BigInteger publicExponent;
 //    };
 //
-//    dictionary RsaKeyGenParams : Algorithm {
-//      unsigned long modulusLength;
-//      BigInteger publicExponent;
+//    dictionary RsaHashedKeyGenParams : RsaKeyGenParams {
+//      required HashAlgorithmIdentifier hash;
 //    };
 bool parseRsaHashedKeyGenParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
@@ -571,7 +575,7 @@ bool parseRsaHashedKeyGenParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithm
 //
 //    dictionary AesCtrParams : Algorithm {
 //      required BufferSource counter;
-//      [EnforceRange] octet length;
+//      [EnforceRange] required octet length;
 //    };
 bool parseAesCtrParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
@@ -608,6 +612,7 @@ bool parseAesGcmParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& 
 
     double tagLength;
     bool hasTagLength;
+    // FIXME: Layering -- should only enforce the WebIDL's "octet" range here, not the AES-CTR tagLength.
     if (!getOptionalInteger(raw, "tagLength", hasTagLength, tagLength, 0, 128, context, error))
         return false;
 
