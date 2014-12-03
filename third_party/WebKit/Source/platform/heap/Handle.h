@@ -826,7 +826,6 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define PassOwnPtrWillBeRawPtr WTF::RawPtr
 #define WeakPtrWillBeMember blink::Member
 #define WeakPtrWillBeRawPtr WTF::RawPtr
-#define WeakPtrWillBeMember blink::Member
 #define WeakPtrWillBeWeakMember blink::WeakMember
 #define NoBaseWillBeGarbageCollected blink::GarbageCollected
 #define NoBaseWillBeGarbageCollectedFinalized blink::GarbageCollectedFinalized
@@ -910,7 +909,6 @@ public:
 #define PassOwnPtrWillBeRawPtr WTF::PassOwnPtr
 #define WeakPtrWillBeMember WTF::WeakPtr
 #define WeakPtrWillBeRawPtr WTF::WeakPtr
-#define WeakPtrWillBeMember WTF::WeakPtr
 #define WeakPtrWillBeWeakMember WTF::WeakPtr
 #define NoBaseWillBeGarbageCollected blink::DummyBase
 #define NoBaseWillBeGarbageCollectedFinalized blink::DummyBase
