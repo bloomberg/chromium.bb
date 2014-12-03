@@ -6,10 +6,12 @@
 
 #include <limits>
 #include <queue>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "content/public/browser/browser_thread.h"
@@ -168,9 +170,13 @@ class TestRequestInterceptor::Delegate : public net::URLRequestInterceptor {
       net::NetworkDelegate* network_delegate) const override;
 
   void GetPendingSize(size_t* pending_size) const;
+  void AddRequestServicedCallback(const base::Closure& callback);
   void PushJobCallback(const JobCallback& callback);
 
  private:
+  static void InvokeRequestServicedCallbacks(
+      scoped_ptr<std::vector<base::Closure>> callbacks);
+
   const std::string hostname_;
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
@@ -178,6 +184,10 @@ class TestRequestInterceptor::Delegate : public net::URLRequestInterceptor {
   // const method; it can't reenter though, because it runs exclusively on
   // the IO thread.
   mutable std::queue<JobCallback> pending_job_callbacks_;
+
+  // Queue of pending request serviced callbacks. Mutable for the same reason
+  // as |pending_job_callbacks_|.
+  mutable std::vector<base::Closure> request_serviced_callbacks_;
 };
 
 TestRequestInterceptor::Delegate::Delegate(
@@ -203,6 +213,17 @@ net::URLRequestJob* TestRequestInterceptor::Delegate::MaybeInterceptRequest(
     return BadRequestJobCallback(request, network_delegate);
   }
 
+  // Invoke any callbacks that are waiting for the next request to be serviced
+  // after this job is serviced.
+  if (!request_serviced_callbacks_.empty()) {
+    scoped_ptr<std::vector<base::Closure>> callbacks(
+        new std::vector<base::Closure>);
+    callbacks->swap(request_serviced_callbacks_);
+    io_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&Delegate::InvokeRequestServicedCallbacks,
+                              base::Passed(&callbacks)));
+  }
+
   JobCallback callback = pending_job_callbacks_.front();
   pending_job_callbacks_.pop();
   return callback.Run(request, network_delegate);
@@ -214,10 +235,23 @@ void TestRequestInterceptor::Delegate::GetPendingSize(
   *pending_size = pending_job_callbacks_.size();
 }
 
+void TestRequestInterceptor::Delegate::AddRequestServicedCallback(
+    const base::Closure& callback) {
+  CHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  request_serviced_callbacks_.push_back(callback);
+}
+
 void TestRequestInterceptor::Delegate::PushJobCallback(
     const JobCallback& callback) {
   CHECK(io_task_runner_->RunsTasksOnCurrentThread());
   pending_job_callbacks_.push(callback);
+}
+
+// static
+void TestRequestInterceptor::Delegate::InvokeRequestServicedCallbacks(
+    scoped_ptr<std::vector<base::Closure>> callbacks) {
+  for (const auto& p : *callbacks)
+    p.Run();
 }
 
 TestRequestInterceptor::TestRequestInterceptor(const std::string& hostname,
@@ -247,6 +281,18 @@ size_t TestRequestInterceptor::GetPendingSize() {
                              base::Unretained(delegate_),
                              &pending_size));
   return pending_size;
+}
+
+void TestRequestInterceptor::AddRequestServicedCallback(
+    const base::Closure& callback) {
+  base::Closure post_callback =
+      base::Bind(base::IgnoreResult(&base::MessageLoopProxy::PostTask),
+                 base::MessageLoopProxy::current(),
+                 FROM_HERE,
+                 callback);
+  PostToIOAndWait(base::Bind(&Delegate::AddRequestServicedCallback,
+                             base::Unretained(delegate_),
+                             post_callback));
 }
 
 void TestRequestInterceptor::PushJobCallback(const JobCallback& callback) {

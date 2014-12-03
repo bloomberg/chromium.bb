@@ -44,6 +44,10 @@ class TestRequestInterceptor {
   // Returns the number of pending callback jobs that haven't been used yet.
   size_t GetPendingSize();
 
+  // |callback| will be invoked on the current loop once the next request
+  // intercepted by this class has been dispatched.
+  void AddRequestServicedCallback(const base::Closure& callback);
+
   // Queues |callback| to handle a request to |hostname_|. Each callback is
   // used only once, and in the order that they're pushed.
   void PushJobCallback(const JobCallback& callback);
