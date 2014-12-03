@@ -1,0 +1,42 @@
+UNKNOWN_TYPE | typeOfAddress | Business address | H | typeOfAddress_1-default
+UNKNOWN_TYPE | personTitle | Title |  | typeOfAddress_1-default
+UNKNOWN_TYPE | recipientRelation | Relationship | 0 | typeOfAddress_1-default
+COMPANY_NAME |  | Company name* | Χ  | typeOfAddress_1-default
+UNKNOWN_TYPE | organizationName | Company name* |  | typeOfAddress_1-default
+UNKNOWN_TYPE |  | Attn. Line* | Χ  | typeOfAddress_1-default
+COMPANY_NAME | businessTitle | Attn. Line* |  | businessTitle_1-default
+UNKNOWN_TYPE |  | First Name* | Χ  | businessTitle_1-default
+NAME_FIRST | firstName | First Name* |  | businessTitle_1-default
+NAME_LAST |  | Last Name* | Χ  | businessTitle_1-default
+UNKNOWN_TYPE | lastName | Last Name* |  | businessTitle_1-default
+UNKNOWN_TYPE |  | Additional info | Χ  | businessTitle_1-default
+UNKNOWN_TYPE | middleName | Additional info |  | businessTitle_1-default
+ADDRESS_HOME_LINE1 |  | Street address* | Χ  | businessTitle_1-default
+ADDRESS_HOME_LINE2 | address1 | Street address* |  | businessTitle_1-default
+UNKNOWN_TYPE |  | Apt.,suite, bldg. | Χ  | businessTitle_1-default
+UNKNOWN_TYPE | address2 | Apt.,suite, bldg. |  | businessTitle_1-default
+ADDRESS_HOME_COUNTRY | country | Country* | US | businessTitle_1-default
+ADDRESS_HOME_CITY |  | City* | Χ  | businessTitle_1-default
+ADDRESS_HOME_CITY | city | City* |  | businessTitle_1-default
+ADDRESS_HOME_STATE | state | State* |  | businessTitle_1-default
+ADDRESS_HOME_ZIP |  | ZIP* | Χ  | businessTitle_1-default
+UNKNOWN_TYPE | zipCode | ZIP* |  | businessTitle_1-default
+PHONE_HOME_WHOLE_NUMBER |  | Phone number | Χ  | businessTitle_1-default
+PHONE_HOME_WHOLE_NUMBER | phone1 | Phone number |  | businessTitle_1-default
+UNKNOWN_TYPE |  | Ext | Χ  | businessTitle_1-default
+PHONE_HOME_WHOLE_NUMBER | phone2 | Ext |  | businessTitle_1-default
+UNKNOWN_TYPE | phone1Type | Cell phone | C | businessTitle_1-default
+EMAIL_ADDRESS |  | Email address* | Χ  | businessTitle_1-default
+EMAIL_ADDRESS | email1 | Email address* |  | businessTitle_1-default
+EMAIL_ADDRESS |  | Confirm email address* | Χ  | businessTitle_1-default
+EMAIL_ADDRESS | logonId | Confirm email address* |  | businessTitle_1-default
+UNKNOWN_TYPE |  | Gift Card Number | Χ  | _1-default
+UNKNOWN_TYPE | GiftCardNumber | Gift Card Number |  | _1-default
+UNKNOWN_TYPE |  | PIN* | Χ  | _1-default
+UNKNOWN_TYPE | GiftCardPin | PIN* |  | _1-default
+UNKNOWN_TYPE | paymentType | What is PayPal? | on | _1-default
+UNKNOWN_TYPE | paymentType | Card Number Expiration Date | on | _1-default
+CREDIT_CARD_NUMBER |  | Card Number | Χ  | _1-cc
+CREDIT_CARD_NUMBER | clearTextAccount | Card Number |  | _1-cc
+CREDIT_CARD_EXP_MONTH | expire_month | Expiration Date |  | _1-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | expire_year | Expiration Date |  | _1-cc
