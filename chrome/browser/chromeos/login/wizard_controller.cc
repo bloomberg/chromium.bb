@@ -25,7 +25,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/geolocation/simple_geolocation_provider.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_mode.h"

@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/eula_view.h"
 #include "chromeos/dbus/cryptohome_client.h"

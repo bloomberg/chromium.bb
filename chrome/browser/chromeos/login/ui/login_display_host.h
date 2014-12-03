@@ -11,7 +11,7 @@
 #include "base/callback_list.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "ui/gfx/native_widget_types.h"
 

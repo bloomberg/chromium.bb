@@ -76,7 +76,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #endif
 

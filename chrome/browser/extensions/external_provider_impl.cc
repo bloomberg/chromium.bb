@@ -35,7 +35,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"

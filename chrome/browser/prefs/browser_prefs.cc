@@ -156,7 +156,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
 #include "chrome/browser/chromeos/audio/audio_devices_pref_handler_impl.h"
-#include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
 #include "chrome/browser/chromeos/file_system_provider/registry.h"

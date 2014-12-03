@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/customization/customization_document.h"
 
 #include <algorithm>
 
@@ -23,7 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/customization_wallpaper_downloader.h"
+#include "chrome/browser/chromeos/customization/customization_wallpaper_downloader.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"

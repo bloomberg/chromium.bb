@@ -11,7 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util_test_util.h"
 #include "chromeos/system/statistics_provider.h"

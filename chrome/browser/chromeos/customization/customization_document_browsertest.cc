@@ -8,7 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
-#include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/system/fake_statistics_provider.h"
