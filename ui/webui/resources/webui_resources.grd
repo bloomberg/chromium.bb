@@ -378,6 +378,7 @@ without changes to the corresponding grd file. -->
                    file="js/chromeos/ui_account_tweaks.js"
                    type="chrome_html" />
       </if>
+      <part file="polymer_resources.grdp" />
     </structures>
   </release>
 </grit>

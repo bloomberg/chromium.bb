@@ -4,6 +4,7 @@
 
 #include "content/browser/webui/shared_resources_data_source.h"
 
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_piece.h"
@@ -21,43 +22,43 @@ namespace content {
 
 namespace {
 
-const char kAppImagesPath[] = "images/apps/";
-const char kAppImagesPath2x[] = "images/2x/apps/";
+using ResourcesMap = base::hash_map<std::string, int>;
 
-const char kReplacement[] = "../../resources/default_100_percent/common/";
-const char kReplacement2x[] = "../../resources/default_200_percent/common/";
+// TODO(rkc): Once we have a separate source for apps, remove '*/apps/' aliases.
+const char* kPathAliases[][2] = {
+  {"../../resources/default_100_percent/common/", "images/apps/"},
+  {"../../resources/default_200_percent/common/", "images/2x/apps/"},
+  {"../../../third_party/polymer/components-chromium/", "polymer/"}
+};
 
-// This entire method is a hack introduced to be able to handle apps images
-// that exist in the ui/resources directory. From JS/CSS, we still load the
-// image as if it were chrome://resources/images/apps/myappimage.png, if that
-// path doesn't exist, we check to see if it that image exists in the relative
-// path to ui/resources instead.
-// TODO(rkc): Once we have a separate source for apps, remove this code.
-bool AppsRelativePathMatch(const std::string& path,
-                           const std::string& compareto) {
-  if (StartsWithASCII(path, kAppImagesPath, false)) {
-    if (compareto ==
-        (kReplacement + path.substr(arraysize(kAppImagesPath) - 1)))
-      return true;
-  } else if (StartsWithASCII(path, kAppImagesPath2x, false)) {
-    if (compareto ==
-        (kReplacement2x + path.substr(arraysize(kAppImagesPath2x) - 1)))
-      return true;
-  }
-  return false;
+void AddResource(const std::string& path,
+                 int resource_id,
+                 ResourcesMap* resources_map) {
+  if (!resources_map->insert(std::make_pair(path, resource_id)).second)
+    NOTREACHED() << "Redefinition of '" << path << "'";
 }
 
-int PathToIDR(const std::string& path) {
-  int idr = -1;
+const ResourcesMap* CreateResourcesMap() {
+  ResourcesMap* result = new ResourcesMap();
   for (size_t i = 0; i < kWebuiResourcesSize; ++i) {
-    if ((path == kWebuiResources[i].name) ||
-        AppsRelativePathMatch(path, kWebuiResources[i].name)) {
-      idr = kWebuiResources[i].value;
-      break;
+    const std::string resource_name = kWebuiResources[i].name;
+    const int resource_id = kWebuiResources[i].value;
+    AddResource(resource_name, resource_id, result);
+    for (const char* (&alias)[2]: kPathAliases) {
+      if (StartsWithASCII(resource_name, alias[0], true)) {
+        AddResource(alias[1] + resource_name.substr(strlen(alias[0])),
+                    resource_id, result);
+      }
     }
   }
 
-  return idr;
+  return result;
+}
+
+const ResourcesMap& GetResourcesMap() {
+  // This pointer will be intentionally leaked on shutdown.
+  static const ResourcesMap* resources_map = CreateResourcesMap();
+  return *resources_map;
 }
 
 }  // namespace
@@ -77,7 +78,9 @@ void SharedResourcesDataSource::StartDataRequest(
     int render_process_id,
     int render_frame_id,
     const URLDataSource::GotDataCallback& callback) {
-  int idr = PathToIDR(path);
+  const ResourcesMap& resources_map = GetResourcesMap();
+  auto it = resources_map.find(path);
+  int idr = (it != resources_map.end()) ? it->second : -1;
   DCHECK_NE(-1, idr) << " path: " << path;
   scoped_refptr<base::RefCountedMemory> bytes;
 

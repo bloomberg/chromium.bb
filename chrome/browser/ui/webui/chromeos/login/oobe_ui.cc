@@ -40,7 +40,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
-#include "chrome/browser/ui/webui/chromeos/login/polymer_resources_map.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
@@ -85,11 +84,6 @@ const char kEnrollmentHTMLPath[] = "enrollment.html";
 const char kEnrollmentCSSPath[] = "enrollment.css";
 const char kEnrollmentJSPath[] = "enrollment.js";
 
-void AddPolymerResourcesPaths(content::WebUIDataSource* source) {
-  for (const auto& mapping: GetPolymerResourcesMap())
-    source->AddResourcePath(mapping.first, mapping.second);
-}
-
 // Creates a WebUIDataSource for chrome://oobe
 content::WebUIDataSource* CreateOobeUIDataSource(
     const base::DictionaryValue& localized_strings,
@@ -124,7 +118,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   source->AddResourcePath(kEnrollmentJSPath, IDR_OOBE_ENROLLMENT_JS);
 
   if (display_type == OobeUI::kOobeDisplay) {
-    AddPolymerResourcesPaths(source);
     source->AddResourcePath(kCustomElementsHTMLPath, IDR_CUSTOM_ELEMENTS_HTML);
     source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_JS);
 

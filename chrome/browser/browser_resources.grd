@@ -72,9 +72,6 @@
         <structure name="IDR_OOBE_ENROLLMENT_JS" file="resources\chromeos\login\oobe_screen_oauth_enrollment.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_KEYBOARD_UTILS_JS" file="resources\chromeos\keyboard\keyboard_utils.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_NETWORK_CONFIG_JS" file="resources\chromeos\network\network_config.js" flattenhtml="true" type="chrome_html" />
-        <!-- TODO(dzhioev): move polymer to chrome://resources when
-             http://crbug.com/418199 is fixed. -->
-        <part file="polymer_resources.grdp" />
         <structure name="IDR_CUSTOM_ELEMENTS_HTML" file="resources\chromeos\login\custom_elements.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CUSTOM_ELEMENTS_JS" file="resources\chromeos\login\custom_elements.js" flattenhtml="true" type="chrome_html" />
       </if>
