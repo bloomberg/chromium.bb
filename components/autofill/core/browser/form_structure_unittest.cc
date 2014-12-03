@@ -135,7 +135,7 @@ TEST(FormStructureTest, AutofillCount) {
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
   EXPECT_EQ(2U, form_structure->autofill_count());
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kRespectAutocompleteOffForAutofill);
 
   form_structure.reset(new FormStructure(form));

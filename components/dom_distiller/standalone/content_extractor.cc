@@ -225,7 +225,7 @@ class ContentExtractionRequest : public ViewRequestDelegate {
   }
 
   static ScopedVector<ContentExtractionRequest> CreateForCommandLine(
-      const CommandLine& command_line,
+      const base::CommandLine& command_line,
       UrlToDomainMap* url_to_domain_map) {
     ScopedVector<ContentExtractionRequest> requests;
     if (command_line.HasSwitch(kUrlSwitch)) {
@@ -304,7 +304,7 @@ class ContentExtractor : public ContentBrowserTest {
   // Change behavior of the default host resolver to avoid DNS lookup errors, so
   // we can make network calls.
   void SetUpOnMainThread() override {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(kDisableDnsSwitch)) {
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableDnsSwitch)) {
       EnableDNSLookupForThisTest();
     }
     CHECK(db_dir_.CreateUniqueTempDir());
@@ -317,7 +317,8 @@ class ContentExtractor : public ContentBrowserTest {
   // Creates the DomDistillerService and creates and starts the extraction
   // request.
   void Start() {
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
     UrlToDomainMap url_to_domain_map;
     requests_ = ContentExtractionRequest::CreateForCommandLine(
         command_line, &url_to_domain_map);
@@ -367,18 +368,19 @@ class ContentExtractor : public ContentBrowserTest {
   }
 
   void DoArticleOutput() {
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
     for (size_t i = 0; i < requests_.size(); ++i) {
       const DistilledArticleProto& article = requests_[i]->GetArticleCopy();
-      if (CommandLine::ForCurrentProcess()->HasSwitch(kShouldOutputBinary)) {
+      if (command_line.HasSwitch(kShouldOutputBinary)) {
         WriteProtobufWithSize(article, protobuf_output_stream_.get());
       } else {
         output_data_ += GetReadableArticleString(article) + "\n";
       }
     }
 
-    if (CommandLine::ForCurrentProcess()->HasSwitch(kOutputFile)) {
-      base::FilePath filename =
-          CommandLine::ForCurrentProcess()->GetSwitchValuePath(kOutputFile);
+    if (command_line.HasSwitch(kOutputFile)) {
+      base::FilePath filename = command_line.GetSwitchValuePath(kOutputFile);
       ASSERT_EQ(
           (int)output_data_.size(),
           base::WriteFile(filename, output_data_.c_str(), output_data_.size()));

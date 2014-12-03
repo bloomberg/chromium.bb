@@ -41,7 +41,7 @@ TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxyOrigin) {
 }
 
 TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxyDevOrigin) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyDev, expected_params_->DefaultDevOrigin());
   ResetSettings(true, true, false, true, false);
   std::string result =
@@ -76,12 +76,12 @@ TEST_F(DataReductionProxySettingsTest, TestSetProxyConfigs) {
       TestDataReductionProxyParams::HAS_EVERYTHING &
       ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
       ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN);
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyAlt, drp_params.DefaultAltOrigin());
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyAltFallback,
       drp_params.DefaultAltFallbackOrigin());
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionSSLProxy, drp_params.DefaultSSLOrigin());
   ResetSettings(true, true, true, true, false);
   TestDataReductionProxyConfig* config =
@@ -377,7 +377,7 @@ TEST_F(DataReductionProxySettingsTest, TestEnableProxyFromCommandLine) {
   MockSettings* settings = static_cast<MockSettings*>(settings_.get());
   EXPECT_CALL(*settings, RecordStartupState(PROXY_ENABLED));
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDataReductionProxy);
   CheckInitDataReductionProxy(true);
 }
@@ -401,7 +401,7 @@ TEST_F(DataReductionProxySettingsTest, CheckInitMetricsWhenNotAllowed) {
   // should be unavailable.
   base::MessageLoopForUI loop;
   // Clear the command line. Setting flags can force the proxy to be allowed.
-  CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
 
   ResetSettings(false, false, false, false, false);
   MockSettings* settings = static_cast<MockSettings*>(settings_.get());

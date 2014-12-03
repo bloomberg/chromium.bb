@@ -2465,7 +2465,7 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestionsWhenAutofillDisabled) {
 // Duplicate of the below test with the respect-autocomplete-off-autofill
 // switch.
 TEST_F(AutofillManagerTest, AutocompleteOffRespected) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kRespectAutocompleteOffForAutofill);
 
   TestAutofillClient client;

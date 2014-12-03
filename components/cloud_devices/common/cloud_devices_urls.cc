@@ -40,7 +40,8 @@ const char kCloudDevicesUrl[] = "https://www.googleapis.com/clouddevices/v1";
 // point at the Google Cloud Print service.  This can be overridden by the
 // command line or by the user preferences.
 GURL GetCloudPrintURL() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   GURL cloud_print_url(
       command_line->GetSwitchValueASCII(switches::kCloudPrintURL));
   if (cloud_print_url.is_empty())
@@ -102,7 +103,8 @@ GURL GetCloudPrintManageDeviceURL(const std::string& device_id) {
 }
 
 GURL GetCloudDevicesURL() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
   GURL cloud_print_url(
       command_line->GetSwitchValueASCII(switches::kCloudDevicesURL));
   if (cloud_print_url.is_empty())

@@ -279,7 +279,7 @@ void PasswordGenerationAgent::DetermineGenerationElement() {
     return;
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kLocalHeuristicsOnlyForPasswordGeneration)) {
     DVLOG(2) << "Bypassing additional checks.";
   } else if (not_blacklisted_password_form_origins_.empty() ||

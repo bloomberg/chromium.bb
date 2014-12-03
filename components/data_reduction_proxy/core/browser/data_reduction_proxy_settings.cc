@@ -79,7 +79,8 @@ int64 GetInt64PrefValue(const base::ListValue& list_value, size_t index) {
 }
 
 bool IsEnabledOnCommandLine() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   return command_line.HasSwitch(
       data_reduction_proxy::switches::kEnableDataReductionProxy);
 }

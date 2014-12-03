@@ -462,7 +462,7 @@ TEST_F(AutofillExternalDelegateUnitTest, FillCreditCardForm) {
 }
 
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateHideWarning) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kRespectAutocompleteOffForAutofill);
 
   // Set up a field that shouldn't get autocompleted or display warnings.

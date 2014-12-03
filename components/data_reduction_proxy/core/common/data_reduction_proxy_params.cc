@@ -49,7 +49,7 @@ namespace data_reduction_proxy {
 bool DataReductionProxyParams::IsIncludedInAlternativeFieldTrial() {
   const std::string group_name = base::FieldTrialList::FindFullName(
       "DataCompressionProxyAlternativeConfiguration");
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           data_reduction_proxy::switches::kEnableDataReductionProxyAlt)) {
     return true;
   }
@@ -241,7 +241,8 @@ bool DataReductionProxyParams::Init(bool allowed,
 }
 
 void DataReductionProxyParams::InitWithoutChecks() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   std::string origin;
   if (!command_line.HasSwitch(switches::kDisableDataReductionProxyDev)) {
       origin = command_line.GetSwitchValueASCII(
@@ -384,7 +385,8 @@ bool DataReductionProxyParams::IsBypassedByDataReductionProxyLocalRules(
 }
 
 std::string DataReductionProxyParams::GetDefaultDevOrigin() const {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDisableDataReductionProxyDev))
     return std::string();
   if (command_line.HasSwitch(switches::kEnableDataReductionProxyDev) ||
@@ -396,7 +398,8 @@ std::string DataReductionProxyParams::GetDefaultDevOrigin() const {
 }
 
 std::string DataReductionProxyParams::GetDefaultDevFallbackOrigin() const {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDisableDataReductionProxyDev))
     return std::string();
   if (command_line.HasSwitch(switches::kEnableDataReductionProxyDev) ||

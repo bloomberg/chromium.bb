@@ -246,7 +246,7 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   // content_switches.h isn't accessible from here, hence we have
   // to copy the string literal. This should be removed soon anyway.
   if (autocomplete_attribute_value == "address" &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           "enable-experimental-web-platform-features")) {
     return HTML_TYPE_FULL_ADDRESS;
   }

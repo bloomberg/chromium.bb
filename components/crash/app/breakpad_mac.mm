@@ -167,7 +167,7 @@ void InitCrashReporter(const std::string& process_type) {
   NSBundle* main_bundle = base::mac::FrameworkBundle();
   bool is_browser = !base::mac::IsBackgroundOnlyProcess();
   bool enable_breakpad = false;
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   if (is_browser) {
     // Since the configuration management infrastructure is possibly not

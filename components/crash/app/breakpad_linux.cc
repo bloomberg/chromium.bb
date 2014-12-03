@@ -205,7 +205,7 @@ size_t LengthWithoutTrailingSpaces(const char* str, size_t len) {
   return len;
 }
 
-void SetClientIdFromCommandLine(const CommandLine& command_line) {
+void SetClientIdFromCommandLine(const base::CommandLine& command_line) {
   // Get the guid from the command line switch.
   std::string switch_value =
       command_line.GetSwitchValueASCII(switches::kEnableCrashReporter);
@@ -769,7 +769,7 @@ void EnableNonBrowserCrashDumping(const std::string& process_type,
   // This will guarantee that the BuildInfo has been initialized and subsequent
   // calls will not require memory allocation.
   base::android::BuildInfo::GetInstance();
-  SetClientIdFromCommandLine(*CommandLine::ForCurrentProcess());
+  SetClientIdFromCommandLine(*base::CommandLine::ForCurrentProcess());
 
   // On Android, the current sandboxing uses process isolation, in which the
   // child process runs with a different UID. That breaks the normal crash
@@ -1635,7 +1635,8 @@ void InitCrashReporter(const std::string& process_type) {
   InitMicrodumpCrashHandlerIfNecessary(process_type);
 #endif
   // Determine the process type and take appropriate action.
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& parsed_command_line =
+      *base::CommandLine::ForCurrentProcess();
   if (parsed_command_line.HasSwitch(switches::kDisableBreakpad))
     return;
 
@@ -1680,7 +1681,8 @@ void InitCrashReporter(const std::string& process_type) {
 
 #if defined(OS_ANDROID)
 void InitNonBrowserCrashReporterForAndroid(const std::string& process_type) {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
 
   // Handler registration is LIFO. Install the microdump handler first, such
   // that if conventional minidump crash reporting is enabled below, it takes

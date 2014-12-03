@@ -81,22 +81,22 @@ TEST_F(DataReductionProxyParamsTest, NoDevOrigin) {
 }
 
 TEST_F(DataReductionProxyParamsTest, Flags) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxy,
       TestDataReductionProxyParams::FlagOrigin());
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyFallback,
       TestDataReductionProxyParams::FlagFallbackOrigin());
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionSSLProxy,
       TestDataReductionProxyParams::FlagSSLOrigin());
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyAlt,
       TestDataReductionProxyParams::FlagAltOrigin());
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyAltFallback,
       TestDataReductionProxyParams::FlagAltFallbackOrigin());
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyProbeURL,
       TestDataReductionProxyParams::FlagProbeURL());
   TestDataReductionProxyParams params(

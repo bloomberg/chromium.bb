@@ -48,7 +48,8 @@ const char* GetString(Client client) {
 
 // static
 bool DataReductionProxyAuthRequestHandler::IsKeySetOnCommandLine() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   return command_line.HasSwitch(
       data_reduction_proxy::switches::kDataReductionProxyKey);
 }
@@ -214,7 +215,8 @@ void DataReductionProxyAuthRequestHandler::InitAuthentication(
 }
 
 std::string DataReductionProxyAuthRequestHandler::GetDefaultKey() const {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   std::string key =
     command_line.GetSwitchValueASCII(switches::kDataReductionProxyKey);
 // Android and iOS get the default key from a preprocessor constant. All other

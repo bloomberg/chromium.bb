@@ -13,7 +13,7 @@ namespace autofill {
 namespace wallet {
 
 TEST(WalletServiceSandboxUrl, CheckSandboxUrls) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kWalletServiceUseSandbox, "1");
 
   EXPECT_EQ(
@@ -50,7 +50,7 @@ TEST(WalletServiceSandboxUrl, CheckSandboxUrls) {
 }
 
 TEST(WalletServiceSandboxUrl, CheckProdUrls) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kWalletServiceUseSandbox, "0");
 
   EXPECT_EQ("https://wallet.google.com/online/v2/u/1/wallet/"
@@ -91,7 +91,7 @@ TEST(WalletServiceUrl, DefaultsToProd) {
   EXPECT_FALSE(IsUsingProd());
 #endif
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(::switches::kReduceSecurityForTesting);
   EXPECT_FALSE(IsUsingProd());
 
@@ -100,7 +100,7 @@ TEST(WalletServiceUrl, DefaultsToProd) {
 }
 
 TEST(WalletServiceUrl, IsUsingProd) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(switches::kWalletServiceUseSandbox, "1");
   EXPECT_FALSE(IsUsingProd());
 
@@ -117,7 +117,7 @@ TEST(WalletServiceUrl, IsUsingProd) {
 TEST(WalletServiceUrl, IsSignInContinueUrl) {
   EXPECT_TRUE(GetSignInContinueUrl().SchemeIsSecure());
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(switches::kWalletServiceUseSandbox, "1");
 
   // authuser query param is respected.

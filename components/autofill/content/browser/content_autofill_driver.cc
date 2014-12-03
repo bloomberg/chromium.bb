@@ -94,7 +94,7 @@ void ContentAutofillDriver::DetectAccountCreationForms(
 
 void ContentAutofillDriver::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kShowAutofillTypePredictions))
     return;
 

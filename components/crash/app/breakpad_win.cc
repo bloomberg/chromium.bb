@@ -456,7 +456,7 @@ static void InitPipeNameEnvVar(bool is_per_user_install) {
       GetCrashReporterClient()->ReportingIsEnforcedByPolicy(
           &crash_reporting_enabled);
 
-  const CommandLine& command = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command = *base::CommandLine::ForCurrentProcess();
   bool use_crash_service = !controlled_by_policy &&
                            (command.HasSwitch(switches::kNoErrorDialogs) ||
                             GetCrashReporterClient()->IsRunningUnattended());
@@ -501,7 +501,7 @@ void InitDefaultCrashCallback(LPTOP_LEVEL_EXCEPTION_FILTER filter) {
 }
 
 void InitCrashReporter(const std::string& process_type_switch) {
-  const CommandLine& command = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command = *base::CommandLine::ForCurrentProcess();
   if (command.HasSwitch(switches::kDisableBreakpad))
     return;
 
@@ -523,8 +523,8 @@ void InitCrashReporter(const std::string& process_type_switch) {
   CrashKeysWin* keeper = new CrashKeysWin();
 
   google_breakpad::CustomClientInfo* custom_info =
-      keeper->GetCustomInfo(exe_path, process_type,
-                            GetProfileType(), CommandLine::ForCurrentProcess(),
+      keeper->GetCustomInfo(exe_path, process_type, GetProfileType(),
+                            base::CommandLine::ForCurrentProcess(),
                             GetCrashReporterClient());
 
   google_breakpad::ExceptionHandler::MinidumpCallback callback = NULL;
