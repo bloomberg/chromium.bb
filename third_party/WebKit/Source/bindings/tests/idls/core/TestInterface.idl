@@ -87,6 +87,11 @@
     [Exposed=Worker] attribute long workerExposedAttribute;
     [Exposed=Window] attribute long windowExposedAttribute;
 
+    [Exposed=Window, RuntimeEnabled=FeatureName] void methodWithExposedAndRuntimeEnabledFlag();
+    [Exposed=Window] void overloadMethodWithExposedAndRuntimeEnabledFlag(long longArg);
+    [Exposed=Window, RuntimeEnabled=FeatureName] void overloadMethodWithExposedAndRuntimeEnabledFlag(DOMString string);
+    [Exposed=Window, RuntimeEnabled=FeatureName2] void overloadMethodWithExposedAndRuntimeEnabledFlag(Window window);
+
     [Exposed=(Window,ServiceWorker)] void windowAndServiceWorkerExposedMethod();
 
     void voidMethodPartialOverload();

@@ -621,7 +621,9 @@ void {{v8_class_or_partial}}::installConditionallyEnabledMethods(v8::Handle<v8::
     {% for method in conditionally_enabled_methods %}
     {% filter per_context_enabled(method.per_context_enabled_function) %}
     {% filter exposed(method.exposed_test) %}
+    {% filter runtime_enabled(method.overloads.runtime_enabled_function_all if method.overloads else method.runtime_enabled_function) %}
     prototypeObject->Set(v8AtomicString(isolate, "{{method.name}}"), v8::FunctionTemplate::New(isolate, {{cpp_class_or_partial}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}})->GetFunction());
+    {% endfilter %}
     {% endfilter %}
     {% endfilter %}
     {% endfor %}

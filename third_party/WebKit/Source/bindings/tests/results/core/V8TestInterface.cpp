@@ -1112,6 +1112,96 @@ static void windowExposedStaticMethodMethodCallback(const v8::FunctionCallbackIn
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void methodWithExposedAndRuntimeEnabledFlagMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    impl->methodWithExposedAndRuntimeEnabledFlag();
+}
+
+static void methodWithExposedAndRuntimeEnabledFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestInterfaceImplementationV8Internal::methodWithExposedAndRuntimeEnabledFlagMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
+static void overloadMethodWithExposedAndRuntimeEnabledFlag1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadMethodWithExposedAndRuntimeEnabledFlag", "TestInterface", info.Holder(), info.GetIsolate());
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    int longArg;
+    {
+        TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(longArg, toInt32(info[0], exceptionState), exceptionState);
+    }
+    impl->overloadMethodWithExposedAndRuntimeEnabledFlag(longArg);
+}
+
+static void overloadMethodWithExposedAndRuntimeEnabledFlag2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    V8StringResource<> string;
+    {
+        TOSTRING_VOID_INTERNAL(string, info[0]);
+    }
+    impl->overloadMethodWithExposedAndRuntimeEnabledFlag(string);
+}
+
+static void overloadMethodWithExposedAndRuntimeEnabledFlag3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+    DOMWindow* window;
+    {
+        if (info.Length() > 0 && !V8Window::hasInstance(info[0], info.GetIsolate())) {
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("overloadMethodWithExposedAndRuntimeEnabledFlag", "TestInterface", "parameter 1 is not of type 'Window'."));
+            return;
+        }
+        window = toDOMWindow(info.GetIsolate(), info[0]);
+    }
+    impl->overloadMethodWithExposedAndRuntimeEnabledFlag(window);
+}
+
+static void overloadMethodWithExposedAndRuntimeEnabledFlagMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadMethodWithExposedAndRuntimeEnabledFlag", "TestInterface", info.Holder(), info.GetIsolate());
+    switch (std::min(1, info.Length())) {
+    case 1:
+        if (RuntimeEnabledFeatures::featureName2Enabled()) {
+            if (V8Window::hasInstance(info[0], info.GetIsolate())) {
+                overloadMethodWithExposedAndRuntimeEnabledFlag3Method(info);
+                return;
+            }
+        }
+        if (info[0]->IsNumber()) {
+            overloadMethodWithExposedAndRuntimeEnabledFlag1Method(info);
+            return;
+        }
+        if (RuntimeEnabledFeatures::featureNameEnabled()) {
+            if (true) {
+                overloadMethodWithExposedAndRuntimeEnabledFlag2Method(info);
+                return;
+            }
+        }
+        if (true) {
+            overloadMethodWithExposedAndRuntimeEnabledFlag1Method(info);
+            return;
+        }
+        break;
+    default:
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
+}
+
+static void overloadMethodWithExposedAndRuntimeEnabledFlagMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestInterfaceImplementationV8Internal::overloadMethodWithExposedAndRuntimeEnabledFlagMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void windowAndServiceWorkerExposedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
@@ -2056,6 +2146,14 @@ void V8TestInterface::installConditionallyEnabledMethods(v8::Handle<v8::Object> 
     }
     if (context && (context->isDocument())) {
         prototypeObject->Set(v8AtomicString(isolate, "windowExposedStaticMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::windowExposedStaticMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
+    }
+    if (context && (context->isDocument())) {
+        if (RuntimeEnabledFeatures::featureNameEnabled()) {
+            prototypeObject->Set(v8AtomicString(isolate, "methodWithExposedAndRuntimeEnabledFlag"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::methodWithExposedAndRuntimeEnabledFlagMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
+        }
+    }
+    if (context && (context->isDocument())) {
+        prototypeObject->Set(v8AtomicString(isolate, "overloadMethodWithExposedAndRuntimeEnabledFlag"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::overloadMethodWithExposedAndRuntimeEnabledFlagMethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction());
     }
     if (context && (context->isDocument() || context->isServiceWorkerGlobalScope())) {
         prototypeObject->Set(v8AtomicString(isolate, "windowAndServiceWorkerExposedMethod"), v8::FunctionTemplate::New(isolate, TestInterfaceImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
