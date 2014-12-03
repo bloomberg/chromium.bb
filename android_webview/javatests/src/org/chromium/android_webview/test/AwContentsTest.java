@@ -145,7 +145,7 @@ public class AwContentsTest extends AwTestBase {
         // so allow for 1 'leaked' instance.
         final int maxIdleInstances = 1;
 
-        System.gc();
+        Runtime.getRuntime().gc();
 
         pollOnUiThread(new Callable<Boolean>() {
             @Override
@@ -168,7 +168,7 @@ public class AwContentsTest extends AwTestBase {
             });
         }
 
-        System.gc();
+        Runtime.getRuntime().gc();
 
         pollOnUiThread(new Callable<Boolean>() {
             @Override
