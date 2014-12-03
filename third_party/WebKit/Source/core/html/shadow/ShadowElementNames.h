@@ -39,6 +39,7 @@ namespace ShadowElementNames {
 
 const AtomicString& detailsContent();
 const AtomicString& detailsSummary();
+const AtomicString& detailsMarker();
 const AtomicString& dateTimeEdit();
 const AtomicString& spinButton();
 const AtomicString& clearButton();

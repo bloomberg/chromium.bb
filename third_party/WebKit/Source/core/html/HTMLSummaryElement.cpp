@@ -29,6 +29,7 @@
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDetailsElement.h"
 #include "core/html/shadow/DetailsMarkerControl.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/rendering/RenderBlockFlow.h"
 
 namespace blink {
@@ -44,7 +45,6 @@ PassRefPtrWillBeRawPtr<HTMLSummaryElement> HTMLSummaryElement::create(Document& 
 
 HTMLSummaryElement::HTMLSummaryElement(Document& document)
     : HTMLElement(summaryTag, document)
-    , m_markerControl(nullptr)
 {
 }
 
@@ -55,8 +55,9 @@ RenderObject* HTMLSummaryElement::createRenderer(RenderStyle*)
 
 void HTMLSummaryElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
-    m_markerControl = DetailsMarkerControl::create(document());
-    root.appendChild(m_markerControl);
+    RefPtr<DetailsMarkerControl> markerControl = DetailsMarkerControl::create(document());
+    markerControl->setIdAttribute(ShadowElementNames::detailsMarker());
+    root.appendChild(markerControl);
     root.appendChild(HTMLContentElement::create(document()));
 }
 
@@ -66,6 +67,11 @@ HTMLDetailsElement* HTMLSummaryElement::detailsElement() const
     if (isHTMLDetailsElement(parent))
         return toHTMLDetailsElement(parent);
     return nullptr;
+}
+
+Element* HTMLSummaryElement::markerControl()
+{
+    return ensureUserAgentShadowRoot().getElementById(ShadowElementNames::detailsMarker());
 }
 
 bool HTMLSummaryElement::isMainSummary() const

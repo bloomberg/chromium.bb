@@ -134,7 +134,7 @@ void HTMLDetailsElement::parseAttribute(const QualifiedName& name, const AtomicS
         Element* summary = findMainSummary();
         ASSERT(summary);
 
-        DetailsMarkerControl* control = toHTMLSummaryElement(summary)->markerControl();
+        Element* control = toHTMLSummaryElement(summary)->markerControl();
         if (control && control->renderer())
             control->renderer()->setShouldDoFullPaintInvalidation();
 

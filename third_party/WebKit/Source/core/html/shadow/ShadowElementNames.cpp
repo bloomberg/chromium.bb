@@ -47,6 +47,12 @@ const AtomicString& detailsSummary()
     return name;
 }
 
+const AtomicString& detailsMarker()
+{
+    DEFINE_STATIC_LOCAL(AtomicString, name, ("details-marker", AtomicString::ConstructFromLiteral));
+    return name;
+}
+
 const AtomicString& dateTimeEdit()
 {
     DEFINE_STATIC_LOCAL(AtomicString, name, ("date-time-edit", AtomicString::ConstructFromLiteral));
