@@ -1202,13 +1202,7 @@ void FrameView::adjustMediaTypeForPrinting(bool printing)
 bool FrameView::contentsInCompositedLayer() const
 {
     RenderView* renderView = this->renderView();
-    if (renderView && renderView->compositingState() == PaintsIntoOwnBacking) {
-        GraphicsLayer* layer = renderView->layer()->compositedLayerMapping()->mainGraphicsLayer();
-        if (layer && layer->drawsContent())
-            return true;
-    }
-
-    return false;
+    return renderView && renderView->compositingState() == PaintsIntoOwnBacking;
 }
 
 void FrameView::addSlowRepaintObject()
