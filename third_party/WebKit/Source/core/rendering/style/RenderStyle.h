@@ -1453,7 +1453,7 @@ public:
     void setHasExplicitlyInheritedProperties() { noninherited_flags.explicitInheritance = true; }
     bool hasExplicitlyInheritedProperties() const { return noninherited_flags.explicitInheritance; }
 
-    bool hasBoxDecorations() const { return hasBorder() || hasBorderRadius() || hasOutline() || hasAppearance() || boxShadow() || hasFilter(); }
+    bool hasBoxDecorations() const { return hasBorder() || hasBorderRadius() || hasOutline() || hasAppearance() || boxShadow() || hasFilter() || resize() != RESIZE_NONE; }
 
     bool borderObscuresBackground() const;
     void getBorderEdgeInfo(BorderEdge edges[], bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true) const;

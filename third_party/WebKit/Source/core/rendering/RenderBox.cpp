@@ -3790,8 +3790,7 @@ PaintInvalidationReason RenderBox::paintInvalidationReason(const RenderLayerMode
     if (hasNonCompositedScrollbars())
         return PaintInvalidationBorderBoxChange;
 
-    // FIXME: Implement correct incremental invalidation for visual overflowing effects.
-    if (style()->hasVisualOverflowingEffect() || style()->hasAppearance() || style()->hasFilter())
+    if (style()->hasVisualOverflowingEffect() || style()->hasAppearance() || style()->hasFilter() || style()->resize() != RESIZE_NONE)
         return PaintInvalidationBorderBoxChange;
 
     if (style()->hasBorderRadius()) {

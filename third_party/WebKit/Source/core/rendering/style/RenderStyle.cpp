@@ -652,6 +652,9 @@ bool RenderStyle::diffNeedsPaintInvalidationObject(const RenderStyle& other) con
             return true;
     }
 
+    if (resize() != other.resize())
+        return true;
+
     return false;
 }
 
