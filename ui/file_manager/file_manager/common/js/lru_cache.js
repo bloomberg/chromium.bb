@@ -198,7 +198,7 @@ LRUCache.prototype.removeNode_ = function(node) {
   this.list_.remove(node);
   this.totalSize_ -= node.size;
   console.assert(this.totalSize_ >= 0);
-  console.assert(this.nodes_[node.key]);
+  console.assert(!!this.nodes_[node.key]);
   delete this.nodes_[node.key];
 };
 
