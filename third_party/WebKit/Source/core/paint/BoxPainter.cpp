@@ -529,6 +529,8 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
 
     bool allMaskImagesLoaded = true;
 
+    CompositeOperator previousCompositeOperator = paintInfo.context->compositeOperation();
+
     if (!compositedMask || flattenCompositingLayers) {
         pushTransparencyLayer = true;
         StyleImage* maskBoxImage = m_renderBox.style()->maskBoxImage().image();
@@ -549,8 +551,10 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
         paintNinePieceImage(m_renderBox, paintInfo.context, paintRect, m_renderBox.style(), m_renderBox.style()->maskBoxImage(), CompositeSourceOver);
     }
 
-    if (pushTransparencyLayer)
+    if (pushTransparencyLayer) {
         paintInfo.context->endLayer();
+        paintInfo.context->setCompositeOperation(previousCompositeOperator);
+    }
 }
 
 void BoxPainter::paintClippingMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

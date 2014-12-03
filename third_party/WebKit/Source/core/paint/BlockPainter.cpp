@@ -67,6 +67,8 @@ void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
 
     {
         BoxClipper boxClipper(m_renderBlock, localPaintInfo, adjustedPaintOffset, contentsClipBehavior);
+
+        // FIXME: does this work correctly with Slimming Paint?
         GraphicsContextCullSaver cullSaver(*localPaintInfo.context);
         // Cull if we have more than one child and we didn't already clip.
         bool shouldCull = m_renderBlock.document().settings()->containerCullingEnabled() && !boxClipper.pushedClip() && !m_renderBlock.isDocumentElement()
