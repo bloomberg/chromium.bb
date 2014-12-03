@@ -89,6 +89,31 @@ DebuggerScript.getFunctionScopes = function(fun)
     return result;
 }
 
+DebuggerScript.getGeneratorObjectDetails = function(object)
+{
+    var mirror = MakeMirror(object, true /* transient */);
+    if (!mirror.isGenerator())
+        return null;
+    var funcMirror = mirror.func();
+    if (!funcMirror.resolved())
+        return null;
+    var result = {
+        "function": funcMirror.value(),
+        "functionName": DebuggerScript._displayFunctionName(funcMirror) || "",
+        "status": mirror.status()
+    };
+    var script = funcMirror.script();
+    var location = mirror.sourceLocation() || funcMirror.sourceLocation();
+    if (script && location) {
+        result["location"] = {
+            "scriptId": String(script.id()),
+            "lineNumber": location.line,
+            "columnNumber": location.column
+        };
+    }
+    return result;
+}
+
 DebuggerScript.getCollectionEntries = function(object)
 {
     var mirror = MakeMirror(object, true /* transient */);
@@ -362,6 +387,17 @@ DebuggerScript.isEvalCompilation = function(eventData)
     return (script.compilationType() === Debug.ScriptCompilationType.Eval);
 }
 
+DebuggerScript._displayFunctionName = function(funcMirror)
+{
+    if (!funcMirror.resolved())
+        return undefined
+    var displayName;
+    var valueMirror = funcMirror.property("displayName").value();
+    if (valueMirror && valueMirror.isString())
+        displayName = valueMirror.value();
+    return displayName || funcMirror.name() || funcMirror.inferredName();
+}
+
 // NOTE: This function is performance critical, as it can be run on every
 // statement that generates an async event (like addEventListener) to support
 // asynchronous call stacks. Thus, when possible, initialize the data lazily.
@@ -463,14 +499,7 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, sc
 
     function functionName()
     {
-        var func = ensureFuncMirror();
-        if (!func.resolved())
-            return undefined;
-        var displayName;
-        var valueMirror = func.property("displayName").value();
-        if (valueMirror && valueMirror.isString())
-            displayName = valueMirror.value();
-        return displayName || func.name() || func.inferredName();
+        return DebuggerScript._displayFunctionName(ensureFuncMirror());
     }
 
     function evaluate(expression, scopeExtension)

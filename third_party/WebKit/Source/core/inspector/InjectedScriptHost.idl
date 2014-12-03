@@ -42,6 +42,7 @@
     [NotEnumerable, Unforgeable, Custom] boolean isHTMLAllCollection(any obj);
     [NotEnumerable, Unforgeable, Custom] DOMString subtype(any obj);
     [NotEnumerable, Unforgeable, Custom] any functionDetails(Function obj);
+    [NotEnumerable, Unforgeable, Custom] object? generatorObjectDetails(object obj);
     [NotEnumerable, Unforgeable, Custom] any[]? collectionEntries(object obj);
     [NotEnumerable, Unforgeable, Custom] any[] getInternalProperties(any obj);
     [NotEnumerable, Unforgeable, Custom] any[] getEventListeners(EventTarget target);

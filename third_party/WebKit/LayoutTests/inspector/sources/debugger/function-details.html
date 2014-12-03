@@ -52,6 +52,7 @@ function test()
         InspectorTest.addResult("columnNumber: " + details.location.columnNumber);
         InspectorTest.addResult("scriptId is valid: " + !!details.location.scriptId);
         InspectorTest.addResult("functionName: " + details.functionName);
+        InspectorTest.addResult("isGenerator: " + details.isGenerator);
     }
 
     function dumpFunctionNoScopes()
@@ -85,8 +86,10 @@ function test()
         InspectorTest.addResult("scopeChain #" + pos + ": " + type + "; " + variables);
     }
 
-    function loadAndDumpScopeObjects(scopeChain, end) {
-        function loadScopeObject(pos, next) {
+    function loadAndDumpScopeObjects(scopeChain, end)
+    {
+        function loadScopeObject(pos, next)
+        {
             if (pos >= scopeChain.length) {
                 next();
                 return;
@@ -94,7 +97,8 @@ function test()
             var scopeJson = scopeChain[pos];
             RuntimeAgent.getProperties(scopeJson.object.objectId, true, didGetProperties);
 
-            function didGetProperties(error, propertyDescriptors) {
+            function didGetProperties(error, propertyDescriptors)
+            {
                 dumpFunctionScope(pos, scopeJson.type, propertyDescriptors);
                 loadScopeObject(pos + 1, next);
             }
@@ -108,7 +112,8 @@ function test()
         }
     }
 
-    function performStandardTestCase(pageExpression, next) {
+    function performStandardTestCase(pageExpression, next)
+    {
         InspectorTest.evaluateInPage(pageExpression, didEvaluate);
 
         function didEvaluate(remote)
@@ -156,13 +161,11 @@ function test()
 };
 
 </script>
-
 </head>
 
 <body onload="runTest()">
 <p>Tests that Debugger.getFunctionDetails command returns correct location.
 <a href="https://bugs.webkit.org/show_bug.cgi?id=71808">Bug 71808</a>
 </p>
-
 </body>
 </html>

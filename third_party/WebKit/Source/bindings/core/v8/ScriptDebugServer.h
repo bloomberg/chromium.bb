@@ -93,6 +93,7 @@ public:
     bool isPaused();
 
     v8::Local<v8::Value> functionScopes(v8::Handle<v8::Function>);
+    v8::Local<v8::Value> generatorObjectDetails(v8::Handle<v8::Object>&);
     v8::Local<v8::Value> collectionEntries(v8::Handle<v8::Object>&);
     v8::Local<v8::Value> getInternalProperties(v8::Handle<v8::Object>&);
     v8::Handle<v8::Value> setFunctionVariableValue(v8::Handle<v8::Value> functionValue, int scopeNumber, const String& variableName, v8::Handle<v8::Value> newValue);

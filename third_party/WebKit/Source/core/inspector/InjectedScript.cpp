@@ -42,6 +42,7 @@ using blink::TypeBuilder::Array;
 using blink::TypeBuilder::Debugger::CallFrame;
 using blink::TypeBuilder::Debugger::CollectionEntry;
 using blink::TypeBuilder::Debugger::FunctionDetails;
+using blink::TypeBuilder::Debugger::GeneratorObjectDetails;
 using blink::TypeBuilder::Runtime::PropertyDescriptor;
 using blink::TypeBuilder::Runtime::InternalPropertyDescriptor;
 using blink::TypeBuilder::Runtime::RemoteObject;
@@ -176,6 +177,20 @@ void InjectedScript::getFunctionDetails(ErrorString* errorString, const String& 
         return;
     }
     *result = FunctionDetails::runtimeCast(resultValue);
+}
+
+void InjectedScript::getGeneratorObjectDetails(ErrorString* errorString, const String& objectId, RefPtr<GeneratorObjectDetails>* result)
+{
+    ScriptFunctionCall function(injectedScriptObject(), "getGeneratorObjectDetails");
+    function.appendArgument(objectId);
+    RefPtr<JSONValue> resultValue;
+    makeCall(function, &resultValue);
+    if (!resultValue || resultValue->type() != JSONValue::TypeObject) {
+        if (!resultValue->asString(errorString))
+            *errorString = "Internal error";
+        return;
+    }
+    *result = GeneratorObjectDetails::runtimeCast(resultValue);
 }
 
 void InjectedScript::getCollectionEntries(ErrorString* errorString, const String& objectId, RefPtr<Array<CollectionEntry> >* result)

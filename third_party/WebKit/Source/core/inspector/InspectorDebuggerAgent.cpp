@@ -57,6 +57,7 @@ using blink::TypeBuilder::Debugger::CallFrame;
 using blink::TypeBuilder::Debugger::CollectionEntry;
 using blink::TypeBuilder::Debugger::ExceptionDetails;
 using blink::TypeBuilder::Debugger::FunctionDetails;
+using blink::TypeBuilder::Debugger::GeneratorObjectDetails;
 using blink::TypeBuilder::Debugger::PromiseDetails;
 using blink::TypeBuilder::Debugger::ScriptId;
 using blink::TypeBuilder::Debugger::StackTrace;
@@ -714,6 +715,16 @@ void InspectorDebuggerAgent::getFunctionDetails(ErrorString* errorString, const 
         return;
     }
     injectedScript.getFunctionDetails(errorString, functionId, &details);
+}
+
+void InspectorDebuggerAgent::getGeneratorObjectDetails(ErrorString* errorString, const String& objectId, RefPtr<GeneratorObjectDetails>& details)
+{
+    InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);
+    if (injectedScript.isEmpty()) {
+        *errorString = "Inspected frame has gone";
+        return;
+    }
+    injectedScript.getGeneratorObjectDetails(errorString, objectId, &details);
 }
 
 void InspectorDebuggerAgent::getCollectionEntries(ErrorString* errorString, const String& objectId, RefPtr<TypeBuilder::Array<CollectionEntry> >& entries)

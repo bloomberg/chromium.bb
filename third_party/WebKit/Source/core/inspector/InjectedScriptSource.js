@@ -495,6 +495,24 @@ InjectedScript.prototype = {
 
     /**
      * @param {string} objectId
+     * @return {!DebuggerAgent.GeneratorObjectDetails|string}
+     */
+    getGeneratorObjectDetails: function(objectId)
+    {
+        var parsedObjectId = this._parseObjectId(objectId);
+        var object = this._objectForId(parsedObjectId);
+        if (!object || typeof object !== "object")
+            return "Could not find object with given id";
+        var details = nullifyObjectProto(/** @type {?DebuggerAgent.GeneratorObjectDetails} */ (InjectedScriptHost.generatorObjectDetails(object)));
+        if (!details)
+            return "Object is not a generator";
+        var objectGroupName = this._idToObjectGroupName[parsedObjectId.id];
+        details["function"] = this._wrapObject(details["function"], objectGroupName);
+        return details;
+    },
+
+    /**
+     * @param {string} objectId
      * @return {!Array.<!Object>|string}
      */
     getCollectionEntries: function(objectId)
@@ -934,16 +952,16 @@ InjectedScript.prototype = {
 
     /**
      * @param {!Object} objectId
-     * @return {!Object|symbol}
+     * @return {!Object|symbol|undefined}
      */
     _objectForId: function(objectId)
     {
-        return this._idToWrappedObject[objectId.id];
+        return objectId.injectedScriptId === injectedScriptId ? this._idToWrappedObject[objectId.id] : void 0;
     },
 
     /**
      * @param {string} objectId
-     * @return {!Object|symbol}
+     * @return {!Object|symbol|undefined}
      */
     findObjectById: function(objectId)
     {
