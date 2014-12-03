@@ -146,6 +146,7 @@ component("base") {
     "debug/dump_without_crashing.h",
     "debug/gdi_debug_util_win.cc",
     "debug/gdi_debug_util_win.h",
+
     # This file depends on files from the "allocator" target,
     # but this target does not depend on "allocator" (see
     # allocator.gyp for details).
@@ -760,9 +761,7 @@ component("base") {
     "sys_info_openbsd.cc",
   ]
 
-  defines = [
-    "BASE_IMPLEMENTATION",
-  ]
+  defines = [ "BASE_IMPLEMENTATION" ]
 
   deps = [
     ":base_static",
@@ -774,10 +773,10 @@ component("base") {
 
   if (is_android) {
     sources += [
-       "memory/discardable_memory_ashmem_allocator.cc",
-       "memory/discardable_memory_ashmem_allocator.h",
-       "memory/discardable_memory_ashmem.cc",
-       "memory/discardable_memory_ashmem.h",
+      "memory/discardable_memory_ashmem_allocator.cc",
+      "memory/discardable_memory_ashmem_allocator.h",
+      "memory/discardable_memory_ashmem.cc",
+      "memory/discardable_memory_ashmem.h",
     ]
     sources -= [
       "base_paths_posix.cc",
@@ -802,21 +801,17 @@ component("base") {
     deps += [
       ":base_jni_headers",
       "//third_party/ashmem",
-      "//third_party/android_tools:cpu_features"
+      "//third_party/android_tools:cpu_features",
     ]
 
     # logging.cc uses the Android logging library.
     libs = [ "log" ]
 
-    sources -= [
-      "debug/stack_trace_posix.cc",
-    ]
+    sources -= [ "debug/stack_trace_posix.cc" ]
   }
 
   if (is_chromeos) {
-    sources -= [
-      "power_monitor/power_monitor_device_source_posix.cc",
-    ]
+    sources -= [ "power_monitor/power_monitor_device_source_posix.cc" ]
   }
 
   if (is_nacl) {
@@ -853,6 +848,7 @@ component("base") {
       "event_recorder_stubs.cc",
       "message_loop/message_pump_libevent.cc",
       "strings/string16.cc",
+
       # Not using sha1_win.cc because it may have caused a
       # regression to page cycler moz.
       "sha1_win.cc",
@@ -880,8 +876,8 @@ component("base") {
   # Mac.
   if (is_mac) {
     sources += [
-       "memory/discardable_memory_mach.cc",
-       "memory/discardable_memory_mach.h",
+      "memory/discardable_memory_mach.cc",
+      "memory/discardable_memory_mach.h",
     ]
     sources -= [
       "base_paths_posix.cc",
@@ -902,9 +898,7 @@ component("base") {
   # Linux.
   if (is_linux) {
     # TODO(brettw) this will need to be parameterized at some point.
-    linux_configs = [
-      "//build/config/linux:glib",
-    ]
+    linux_configs = [ "//build/config/linux:glib" ]
 
     configs += linux_configs
     all_dependent_configs = linux_configs
@@ -1066,7 +1060,9 @@ source_set("prefs") {
 
   defines = [ "BASE_PREFS_IMPLEMENTATION" ]
 
-  deps = [ ":base" ]
+  deps = [
+    ":base",
+  ]
 
   if (is_android && !is_debug) {
     configs -= [ "//build/config/compiler:optimize" ]
@@ -1406,9 +1402,7 @@ test("base_unittests") {
   }
 
   if (is_android) {
-    deps += [
-      "//testing/android:native_test_native_code",
-    ]
+    deps += [ "//testing/android:native_test_native_code" ]
     set_sources_assignment_filter([])
     sources += [ "debug/proc_maps_linux_unittest.cc" ]
     set_sources_assignment_filter(sources_assignment_filter)
@@ -1456,7 +1450,7 @@ if (is_android) {
     ]
 
     deps = [
-      "//third_party/jsr-305:jsr_305_javalib"
+      "//third_party/jsr-305:jsr_305_javalib",
     ]
 
     DEPRECATED_java_in_dir = "android/java/src"
@@ -1512,10 +1506,11 @@ if (is_android) {
 
   # GYP: //base.gyp:base_java_unittest_support
   android_library("base_java_unittest_support") {
-    deps = [":base_java"]
-    java_files = [
-      "test/android/java/src/org/chromium/base/ContentUriTestUtils.java"
+    deps = [
+      ":base_java",
     ]
+    java_files =
+        [ "test/android/java/src/org/chromium/base/ContentUriTestUtils.java" ]
   }
 
   # GYP: //base.gyp:base_unittests_apk

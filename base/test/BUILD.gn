@@ -115,7 +115,7 @@ source_set("test_support") {
     "//base/third_party/dynamic_annotations",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/libxml"
+    "//third_party/libxml",
   ]
 
   if (!is_posix) {

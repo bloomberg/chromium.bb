@@ -10,7 +10,9 @@ import("//build/config/allocator.gni")
 # to the build settings.
 group("allocator") {
   if (use_allocator == "tcmalloc") {
-    deps = [ ":tcmalloc" ]
+    deps = [
+      ":tcmalloc",
+    ]
   }
 }
 
@@ -54,6 +56,7 @@ if (use_allocator == "tcmalloc") {
       "$tcmalloc_dir/src/base/abort.cc",
       "$tcmalloc_dir/src/base/abort.h",
       "$tcmalloc_dir/src/base/arm_instruction_set_select.h",
+
       # We don't list dynamic_annotations.c since its copy is already
       # present in the dynamic_annotations target.
       "$tcmalloc_dir/src/base/elf_mem_image.cc",
@@ -79,6 +82,7 @@ if (use_allocator == "tcmalloc") {
       "$tcmalloc_dir/src/central_freelist.h",
       "$tcmalloc_dir/src/common.cc",
       "$tcmalloc_dir/src/common.h",
+
       # #included by debugallocation_shim.cc
       #"$tcmalloc_dir/src/debugallocation.cc",
       "$tcmalloc_dir/src/deep-heap-profile.cc",
@@ -120,13 +124,13 @@ if (use_allocator == "tcmalloc") {
       "$tcmalloc_dir/src/symbolize.h",
       "$tcmalloc_dir/src/system-alloc.cc",
       "$tcmalloc_dir/src/system-alloc.h",
+
       # #included by debugallocation_shim.cc
       #"$tcmalloc_dir/src/tcmalloc.cc",
       "$tcmalloc_dir/src/thread_cache.cc",
       "$tcmalloc_dir/src/thread_cache.h",
       "$tcmalloc_dir/src/windows/port.cc",
       "$tcmalloc_dir/src/windows/port.h",
-
       "allocator_shim.cc",
       "allocator_shim.h",
       "debugallocation_shim.cc",
@@ -186,9 +190,7 @@ if (use_allocator == "tcmalloc") {
 
       public_configs = [ ":nocmt" ]
 
-      deps += [
-        ":prep_libc",
-      ]
+      deps += [ ":prep_libc" ]
     }
 
     if (is_linux || is_android) {
@@ -215,6 +217,7 @@ if (use_allocator == "tcmalloc") {
         # Don't let linker rip this symbol out, otherwise the heap&cpu
         # profilers will not initialize properly on startup.
         "-Wl,-uIsHeapProfilerRunning,-uProfilerStart",
+
         # Do the same for heap leak checker.
         "-Wl,-u_Z21InitialMallocHook_NewPKvj,-u_Z22InitialMallocHook_MMapPKvS0_jiiix,-u_Z22InitialMallocHook_SbrkPKvi",
         "-Wl,-u_Z21InitialMallocHook_NewPKvm,-u_Z22InitialMallocHook_MMapPKvS0_miiil,-u_Z22InitialMallocHook_SbrkPKvl",
@@ -229,9 +232,7 @@ if (use_allocator == "tcmalloc") {
       configs += [ "//build/config/compiler:optimize_max" ]
     }
 
-    deps += [
-      "//base/third_party/dynamic_annotations",
-    ]
+    deps += [ "//base/third_party/dynamic_annotations" ]
 
     if (is_win) {
       ldflags = [ "/ignore:4006:4221" ]
