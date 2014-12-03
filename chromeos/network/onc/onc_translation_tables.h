@@ -43,6 +43,10 @@ extern const FieldTranslationEntry kCellularDeviceTable[];
 const FieldTranslationEntry* GetFieldTranslationTable(
     const OncValueSignature& onc_signature);
 
+// Returns the path at which the translation of an ONC object will be stored in
+// a Shill dictionary if its signature is |onc_signature|.
+// The default is that values are stored directly in the top level of the Shill
+// dictionary.
 std::vector<std::string> GetPathToNestedShillDictionary(
     const OncValueSignature& onc_signature);
 

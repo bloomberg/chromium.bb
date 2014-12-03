@@ -28,17 +28,6 @@ namespace onc {
 
 namespace {
 
-bool ConvertListValueToStringVector(const base::ListValue& string_list,
-                                    std::vector<std::string>* result) {
-  for (size_t i = 0; i < string_list.GetSize(); ++i) {
-    std::string str;
-    if (!string_list.GetString(i, &str))
-      return false;
-    result->push_back(str);
-  }
-  return true;
-}
-
 scoped_ptr<base::StringValue> ConvertValueToString(const base::Value& value) {
   std::string str;
   if (!value.GetAsString(&str))
@@ -71,7 +60,6 @@ class LocalTranslator {
   void TranslateVPN();
   void TranslateWiFi();
   void TranslateEAP();
-  void TranslateStaticIPConfig();
   void TranslateNetworkConfiguration();
 
   // Copies all entries from |onc_object_| to |shill_dictionary_| for which a
@@ -108,8 +96,6 @@ class LocalTranslator {
 void LocalTranslator::TranslateFields() {
   if (onc_signature_ == &kNetworkConfigurationSignature)
     TranslateNetworkConfiguration();
-  else if (onc_signature_ == &kStaticIPConfigSignature)
-    TranslateStaticIPConfig();
   else if (onc_signature_ == &kEthernetSignature)
     TranslateEthernet();
   else if (onc_signature_ == &kVPNSignature)
@@ -140,20 +126,6 @@ void LocalTranslator::TranslateEthernet() {
   CopyFieldsAccordingToSignature();
 }
 
-
-void LocalTranslator::TranslateStaticIPConfig() {
-  const base::ListValue* onc_nameservers = NULL;
-  if (onc_object_->GetListWithoutPathExpansion(::onc::ipconfig::kNameServers,
-                                               &onc_nameservers)) {
-    std::vector<std::string> onc_nameservers_vector;
-    ConvertListValueToStringVector(*onc_nameservers, &onc_nameservers_vector);
-    std::string shill_nameservers = JoinString(onc_nameservers_vector, ',');
-    shill_dictionary_->SetStringWithoutPathExpansion(
-        shill::kStaticIPNameServersProperty, shill_nameservers);
-  }
-
-  CopyFieldsAccordingToSignature();
-}
 
 void LocalTranslator::TranslateOpenVPN() {
   // SaveCredentials needs special handling when translating from Shill -> ONC

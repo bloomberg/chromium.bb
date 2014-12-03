@@ -20,13 +20,17 @@
       "Prefixlen":12
     }
   ],
-  "SavedIP.Address":"124.124.124.124",
-  "SavedIP.Gateway":"1.1.1.4",
-  "SavedIP.NameServers":"1.1.1.5,1.1.1.6",
-  "SavedIP.Prefixlen":25,
-  "StaticIP.Address":"125.125.125.125",
-  "StaticIP.Gateway":"1.1.1.7",
-  "StaticIP.NameServers":"1.1.1.8",
-  "StaticIP.Prefixlen":26,
+  "SavedIPConfig": {
+    "Address":"124.124.124.124",
+    "Gateway":"1.1.1.4",
+    "NameServers":["1.1.1.5","1.1.1.6"],
+    "Prefixlen":25
+  },
+  "StaticIPConfig": {
+    "Address":"125.125.125.125",
+    "Gateway":"1.1.1.7",
+    "NameServers":["1.1.1.8"],
+    "Prefixlen":26
+  },
   "Type":"ethernet"
 }
