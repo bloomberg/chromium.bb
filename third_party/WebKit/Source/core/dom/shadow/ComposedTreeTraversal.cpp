@@ -148,7 +148,10 @@ inline ContainerNode* ComposedTreeTraversal::traverseParentOrHost(const Node& no
     ASSERT(!shadowRoot->shadowInsertionPointOfYoungerShadowRoot());
     if (!shadowRoot->isYoungest())
         return 0;
-    return shadowRoot->host();
+    Element* host = shadowRoot->host();
+    if (isActiveInsertionPoint(*host))
+        return 0;
+    return host;
 }
 
 } // namespace
