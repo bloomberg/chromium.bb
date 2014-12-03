@@ -883,8 +883,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 }
 
 // Test Scribe ID - 371957.
-// flaky on Windows: http://crbug.com/412169
-#if defined(OS_WIN)
+// flaky on Windows and Mac: http://crbug.com/412169
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_SC_MovingBMsFromBMFoldToBMBar DISABLED_SC_MovingBMsFromBMFoldToBMBar
 #else
 #define MAYBE_SC_MovingBMsFromBMFoldToBMBar SC_MovingBMsFromBMFoldToBMBar
