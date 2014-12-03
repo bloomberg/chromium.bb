@@ -89,7 +89,17 @@ const KURL& PrerenderHandle::url() const
 
 void PrerenderHandle::documentWasDetached()
 {
+#if ENABLE(OILPAN)
+    // In Oilpan, a PrerenderHandle is not removed from
+    // LifecycleNotifier::m_observers until a next GC is triggered.
+    // Thus documentWasDetached() can be called for a PrerenderHandle
+    // that is already canceled (and thus detached). In that case,
+    // we should not detach the PrerenderHandle again, so we need this check.
+    if (!m_prerender)
+        return;
+#else
     ASSERT(m_prerender);
+#endif
     m_prerender->abandon();
     detach();
 }
