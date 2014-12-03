@@ -93,20 +93,24 @@ public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
             assertEquals("Unexpected span contents:", contents, getContents());
             assertEquals("Unexpected starting index for '" + contents + "' span:", startIndex,
                     getStartIndex());
-            assertEquals("Unexpected ending index for scheme span:", startIndex + contents.length(),
+            assertEquals("Unexpected ending index for '" + contents + "' span:",
+                    startIndex + contents.length(),
                     getEndIndex());
-            assertEquals("Unexpected class for scheme span:", "UrlEmphasisColorSpan",
+            assertEquals("Unexpected class for '" + contents + "' span:", "UrlEmphasisColorSpan",
                     getClassName());
-            assertEquals("Unexpected color for scheme span:", color, getColorForColoredSpan());
+            assertEquals("Unexpected color for '" + contents + "' span:", color,
+                    getColorForColoredSpan());
         }
 
         public void assertIsStrikethroughSpan(String contents, int startIndex) {
             assertEquals("Unexpected span contents:", contents, getContents());
             assertEquals("Unexpected starting index for '" + contents + "' span:", startIndex,
                     getStartIndex());
-            assertEquals("Unexpected ending index for scheme span:", startIndex + contents.length(),
+            assertEquals("Unexpected ending index for '" + contents + "' span:",
+                    startIndex + contents.length(),
                     getEndIndex());
-            assertEquals("Unexpected class for scheme span:", "UrlEmphasisSecurityErrorSpan",
+            assertEquals("Unexpected class for '" + contents + "' span:",
+                    "UrlEmphasisSecurityErrorSpan",
                     getClassName());
         }
     }
@@ -129,11 +133,11 @@ public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
         spans[0].assertIsColoredSpan("https", 0,
                 mResources.getColor(R.color.url_emphasis_start_scheme_secure));
         spans[1].assertIsColoredSpan("://", 5,
-                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
         spans[2].assertIsColoredSpan("www.google.com", 8,
                 mResources.getColor(R.color.url_emphasis_domain_and_registry));
         spans[3].assertIsColoredSpan("/", 22,
-                mResources.getColor(R.color.url_emphasis_trailing_url));
+                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
     }
 
     /**
@@ -156,11 +160,11 @@ public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
         spans[0].assertIsColoredSpan("https", 0,
                 mResources.getColor(R.color.url_emphasis_start_scheme_secure));
         spans[1].assertIsColoredSpan("://", 5,
-                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+                mResources.getColor(R.color.url_emphasis_light_non_emphasized_text));
         spans[2].assertIsColoredSpan("www.google.com", 8,
                 mResources.getColor(R.color.url_emphasis_light_domain_and_registry));
         spans[3].assertIsColoredSpan("/", 22,
-                mResources.getColor(R.color.url_emphasis_trailing_url));
+                mResources.getColor(R.color.url_emphasis_light_non_emphasized_text));
     }
 
     /**
@@ -183,11 +187,11 @@ public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
         spans[1].assertIsColoredSpan("https", 0,
                 mResources.getColor(R.color.url_emphasis_start_scheme_security_error));
         spans[2].assertIsColoredSpan("://", 5,
-                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
         spans[3].assertIsColoredSpan("www.google.com", 8,
                 mResources.getColor(R.color.url_emphasis_domain_and_registry));
         spans[4].assertIsColoredSpan("/q?query=abc123&results=1", 22,
-                mResources.getColor(R.color.url_emphasis_trailing_url));
+                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
     }
 
     /**
@@ -208,7 +212,7 @@ public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
         spans[0].assertIsColoredSpan("https", 0,
                 mResources.getColor(R.color.url_emphasis_start_scheme_security_warning));
         spans[1].assertIsColoredSpan("://", 5,
-                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
         spans[2].assertIsColoredSpan("www.dodgysite.com", 8,
                 mResources.getColor(R.color.url_emphasis_domain_and_registry));
     }
@@ -229,9 +233,9 @@ public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
 
         assertEquals("Unexpected number of spans:", 3, spans.length);
         spans[0].assertIsColoredSpan("about", 0,
-                mResources.getColor(R.color.url_emphasis_trailing_url));
+                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
         spans[1].assertIsColoredSpan(":", 5,
-                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
         spans[2].assertIsColoredSpan("blank", 6,
                 mResources.getColor(R.color.url_emphasis_domain_and_registry));
     }
@@ -253,7 +257,7 @@ public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
 
         assertEquals("Unexpected number of spans:", 1, spans.length);
         spans[0].assertIsColoredSpan("data", 0,
-                mResources.getColor(R.color.url_emphasis_trailing_url));
+                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
     }
 
     /**
@@ -272,9 +276,9 @@ public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
 
         assertEquals("Unexpected number of spans:", 3, spans.length);
         spans[0].assertIsColoredSpan("chrome", 0,
-                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
         spans[1].assertIsColoredSpan("://", 6,
-                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
         spans[2].assertIsColoredSpan("bookmarks", 9,
                 mResources.getColor(R.color.url_emphasis_domain_and_registry));
     }
@@ -295,9 +299,9 @@ public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
 
         assertEquals("Unexpected number of spans:", 3, spans.length);
         spans[0].assertIsColoredSpan("chrome-native", 0,
-                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
         spans[1].assertIsColoredSpan("://", 13,
-                mResources.getColor(R.color.url_emphasis_scheme_to_domain));
+                mResources.getColor(R.color.url_emphasis_non_emphasized_text));
         spans[2].assertIsColoredSpan("bookmarks", 16,
                 mResources.getColor(R.color.url_emphasis_domain_and_registry));
     }
