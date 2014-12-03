@@ -799,6 +799,7 @@ int SystemTrayDelegateChromeOS::GetSystemTrayMenuWidth() {
 }
 
 void SystemTrayDelegateChromeOS::ActiveUserWasChanged() {
+  SetProfile(ProfileManager::GetActiveUserProfile());
   GetSystemTrayNotifier()->NotifyUserUpdate();
 }
 
