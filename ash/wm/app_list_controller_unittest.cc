@@ -47,6 +47,9 @@ void AppListControllerTest::SetUp() {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(app_list::switches::kEnableCenteredAppList);
   }
+
+  // Make the display big enough to hold the experimental app list.
+  UpdateDisplay("1024x768");
 }
 
 bool AppListControllerTest::IsCentered() const {
@@ -132,18 +135,19 @@ TEST_P(AppListControllerTest, NonPrimaryDisplay) {
     return;
 
   // Set up a screen with two displays (horizontally adjacent).
-  UpdateDisplay("800x600,800x600");
+  UpdateDisplay("1024x768,1024x768");
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2u, root_windows.size());
   aura::Window* secondary_window = root_windows[1];
-  EXPECT_EQ("800,0 800x600", secondary_window->GetBoundsInScreen().ToString());
+  EXPECT_EQ("1024,0 1024x768",
+            secondary_window->GetBoundsInScreen().ToString());
 
   Shell::GetInstance()->ShowAppList(secondary_window);
   EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
 
   // Remove the secondary display. Shouldn't crash (http://crbug.com/368990).
-  UpdateDisplay("800x600");
+  UpdateDisplay("1024x768");
 
   // Updating the displays should close the app list.
   EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
