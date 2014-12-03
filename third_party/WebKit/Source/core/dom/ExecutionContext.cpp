@@ -272,6 +272,7 @@ void ExecutionContext::trace(Visitor* visitor)
 #if ENABLE(OILPAN)
     visitor->trace(m_pendingExceptions);
     visitor->trace(m_publicURLManager);
+    visitor->trace(m_timeouts);
     HeapSupplementable<ExecutionContext>::trace(visitor);
 #endif
     LifecycleContext<ExecutionContext>::trace(visitor);

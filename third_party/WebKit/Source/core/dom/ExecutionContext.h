@@ -160,7 +160,7 @@ private:
     SandboxFlags m_sandboxFlags;
 
     int m_circularSequentialID;
-    typedef HashMap<int, OwnPtr<DOMTimer> > TimeoutMap;
+    typedef WillBeHeapHashMap<int, OwnPtrWillBeMember<DOMTimer> > TimeoutMap;
     TimeoutMap m_timeouts;
     int m_timerNestingLevel;
 
