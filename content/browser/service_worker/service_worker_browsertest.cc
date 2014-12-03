@@ -376,7 +376,7 @@ class EmbeddedWorkerBrowserTest : public ServiceWorkerBrowserTest,
     last_worker_status_ = worker_->status();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done_closure_);
   }
-  void OnStopped() override {
+  void OnStopped(EmbeddedWorkerInstance::Status old_status) override {
     ASSERT_TRUE(worker_ != NULL);
     ASSERT_FALSE(done_closure_.is_null());
     last_worker_status_ = worker_->status();

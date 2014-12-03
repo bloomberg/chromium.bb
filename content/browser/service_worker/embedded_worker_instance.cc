@@ -291,12 +291,13 @@ void EmbeddedWorkerInstance::OnStopped() {
     NotifyWorkerDestroyed(process_id_, worker_devtools_agent_route_id_);
   if (context_)
     context_->process_manager()->ReleaseWorkerProcess(embedded_worker_id_);
+  Status old_status = status_;
   status_ = STOPPED;
   process_id_ = -1;
   thread_id_ = -1;
   worker_devtools_agent_route_id_ = MSG_ROUTING_NONE;
   start_callback_.Reset();
-  FOR_EACH_OBSERVER(Listener, listener_list_, OnStopped());
+  FOR_EACH_OBSERVER(Listener, listener_list_, OnStopped(old_status));
 }
 
 void EmbeddedWorkerInstance::OnPausedAfterDownload() {

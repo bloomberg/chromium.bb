@@ -262,7 +262,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // EmbeddedWorkerInstance::Listener overrides:
   void OnStarted() override;
-  void OnStopped() override;
+  void OnStopped(EmbeddedWorkerInstance::Status old_status) override;
   void OnReportException(const base::string16& error_message,
                          int line_number,
                          int column_number,
