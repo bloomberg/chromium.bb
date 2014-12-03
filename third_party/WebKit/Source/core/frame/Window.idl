@@ -80,7 +80,7 @@
                  [Default=Undefined] optional boolean searchInFrames,
                  [Default=Undefined] optional boolean showDialog);
 
-    [Replaceable, MeasureAs=WindowOffscreenBuffering] readonly attribute boolean offscreenBuffering;
+    [Replaceable, MeasureAs=WindowOffscreenBuffering, NotEnumerable] readonly attribute boolean offscreenBuffering;
 
     [Replaceable] readonly attribute long outerHeight;
     [Replaceable] readonly attribute long outerWidth;
