@@ -38,13 +38,6 @@
 
 namespace blink {
 
-unsigned FontPlatformData::hash() const
-{
-    ASSERT(m_font || !m_cgFont);
-    uintptr_t hashCodes[2] = { (uintptr_t)m_font, static_cast<uintptr_t>(m_isHashTableDeletedValue << 3 | m_orientation << 2 | m_syntheticBold << 1 | m_syntheticItalic) };
-    return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
-}
-
 void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext*, const Font* font) const
 {
     bool shouldSmoothFonts = true;
