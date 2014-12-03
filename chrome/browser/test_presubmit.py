@@ -767,6 +767,14 @@ b:before,
   }
 }
 
+#logo {
+  background-image: url(images/google_logo.png@2x);
+}
+
+body.alternate-logo #logo {
+  -webkit-mask-image: url(images/google_logo.png@2x);
+}
+
 /* http://crbug.com/359682 */
 #spinner-container #spinner {
   -webkit-animation-duration: 1.0s;
