@@ -1132,6 +1132,7 @@
     'modules_testing_dependency_idl_files' : [
       'geolocation/testing/InternalsGeolocation.idl',
       'navigatorcontentutils/testing/InternalsNavigatorContentUtils.idl',
+      'serviceworkers/testing/InternalsServiceWorker.idl',
       'speech/testing/InternalsSpeechSynthesis.idl',
       'vibration/testing/InternalsVibration.idl',
     ],
@@ -1144,6 +1145,8 @@
       'navigatorcontentutils/testing/InternalsNavigatorContentUtils.h',
       'navigatorcontentutils/testing/NavigatorContentUtilsClientMock.cpp',
       'navigatorcontentutils/testing/NavigatorContentUtilsClientMock.h',
+      'serviceworkers/testing/InternalsServiceWorker.cpp',
+      'serviceworkers/testing/InternalsServiceWorker.h',
       'speech/testing/InternalsSpeechSynthesis.cpp',
       'speech/testing/InternalsSpeechSynthesis.h',
       'speech/testing/PlatformSpeechSynthesizerMock.cpp',

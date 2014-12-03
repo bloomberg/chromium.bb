@@ -69,6 +69,7 @@ public:
     // AbstractWorker overrides.
     virtual const AtomicString& interfaceName() const override;
 
+    void internalsTerminate();
 private:
     class ThenFunction;
 

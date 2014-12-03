@@ -65,6 +65,8 @@ public:
     // Callee receives ownership of the passed vector.
     // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
     virtual void postMessage(const WebString&, WebMessagePortChannelArray*) { BLINK_ASSERT_NOT_REACHED(); }
+
+    virtual void terminate() { }
 };
 
 }
