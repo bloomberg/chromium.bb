@@ -29,7 +29,7 @@
  *            total: number,
  *            url: string}}
  */
-var BackendDownloadObject;
+var DownloadItem;
 
 /**
  * Sets the display style of a node.
@@ -108,18 +108,20 @@ function Downloads() {
   this.progressForeground2_.src =
     'chrome://theme/IDR_DOWNLOAD_PROGRESS_FOREGROUND_32@2x';
 
-  window.addEventListener('keydown', this.onKeyDown_.bind(this));
+  cr.ui.decorate('command', cr.ui.Command);
+  document.addEventListener('canExecute', this.onCanExecute_.bind(this));
+  document.addEventListener('command', this.onCommand_.bind(this));
 
   this.updateResults();
 }
 
 /**
  * Called when a download has been updated or added.
- * @param {BackendDownloadObject} download A backend download object
+ * @param {DownloadItem} download Information about a download.
  */
 Downloads.prototype.updated = function(download) {
   var id = download.id;
-  if (!!this.downloads_[id]) {
+  if (this.downloads_[id]) {
     this.downloads_[id].update(download);
   } else {
     this.downloads_[id] = new Download(download);
@@ -194,7 +196,7 @@ Downloads.prototype.onDownloadListChanged_ = function() {
   var displayed = {};
   for (var i = 0, container; container = dateContainers[i]; i++) {
     var dateString = container.getElementsByClassName('date')[0].innerHTML;
-    if (!!displayed[dateString]) {
+    if (displayed[dateString]) {
       container.style.display = 'none';
     } else {
       displayed[dateString] = true;
@@ -281,23 +283,30 @@ Downloads.prototype.isUpdateNeeded = function(downloads) {
 };
 
 /**
- * Handles shortcut keys.
- * @param {Event} evt The keyboard event.
+ * @param {Event} e
  * @private
  */
-Downloads.prototype.onKeyDown_ = function(evt) {
-  var keyEvt = /** @type {KeyboardEvent} */(evt);
-  if (keyEvt.keyCode == 67 && keyEvt.altKey) {  // alt + c.
+Downloads.prototype.onCanExecute_ = function(e) {
+  e = /** @type {cr.ui.CanExecuteEvent} */(e);
+  e.canExecute = document.activeElement != $('term');
+};
+
+/**
+ * @param {Event} e
+ * @private
+ */
+Downloads.prototype.onCommand_ = function(e) {
+  if (e.command.id == 'undo-command')
+    chrome.send('undo');
+  else if (e.command.id == 'clear-all-command')
     clearAll();
-    keyEvt.preventDefault();
-  }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 // Download
 /**
  * A download and the DOM representation for that download.
- * @param {BackendDownloadObject} download A backend download object
+ * @param {DownloadItem} download Info about the download.
  * @constructor
  */
 function Download(download) {
@@ -523,7 +532,7 @@ computeDownloadProgress();
 
 /**
  * Updates the download to reflect new data.
- * @param {BackendDownloadObject} download A backend download object
+ * @param {DownloadItem} download Updated info about this download.
  */
 Download.prototype.update = function(download) {
   this.id_ = download.id;
@@ -783,7 +792,7 @@ Download.prototype.getStatusText_ = function() {
  * @private
  */
 Download.prototype.drag_ = function() {
-  chrome.send('drag', [this.id_.toString()]);
+  chrome.send('drag', [this.id_]);
   return false;
 };
 
@@ -793,7 +802,7 @@ Download.prototype.drag_ = function() {
  * @private
  */
 Download.prototype.openFile_ = function() {
-  chrome.send('openFile', [this.id_.toString()]);
+  chrome.send('openFile', [this.id_]);
   return false;
 };
 
@@ -803,7 +812,7 @@ Download.prototype.openFile_ = function() {
  * @private
  */
 Download.prototype.saveDangerous_ = function() {
-  chrome.send('saveDangerous', [this.id_.toString()]);
+  chrome.send('saveDangerous', [this.id_]);
   return false;
 };
 
@@ -813,7 +822,7 @@ Download.prototype.saveDangerous_ = function() {
  * @private
  */
 Download.prototype.discardDangerous_ = function() {
-  chrome.send('discardDangerous', [this.id_.toString()]);
+  chrome.send('discardDangerous', [this.id_]);
   downloads.remove(this.id_);
   return false;
 };
@@ -824,7 +833,7 @@ Download.prototype.discardDangerous_ = function() {
  * @private
  */
 Download.prototype.show_ = function() {
-  chrome.send('show', [this.id_.toString()]);
+  chrome.send('show', [this.id_]);
   return false;
 };
 
@@ -834,7 +843,7 @@ Download.prototype.show_ = function() {
  * @private
  */
 Download.prototype.pause_ = function() {
-  chrome.send('pause', [this.id_.toString()]);
+  chrome.send('pause', [this.id_]);
   return false;
 };
 
@@ -844,7 +853,7 @@ Download.prototype.pause_ = function() {
  * @private
  */
 Download.prototype.resume_ = function() {
-  chrome.send('resume', [this.id_.toString()]);
+  chrome.send('resume', [this.id_]);
   return false;
 };
 
@@ -853,10 +862,9 @@ Download.prototype.resume_ = function() {
  * @return {boolean} Returns false to prevent the default action.
  * @private
  */
- Download.prototype.remove_ = function() {
-   if (loadTimeData.getBoolean('allow_deleting_history')) {
-    chrome.send('remove', [this.id_.toString()]);
-  }
+Download.prototype.remove_ = function() {
+  if (loadTimeData.getBoolean('allow_deleting_history'))
+    chrome.send('remove', [this.id_]);
   return false;
 };
 
@@ -866,7 +874,7 @@ Download.prototype.resume_ = function() {
  * @private
  */
 Download.prototype.cancel_ = function() {
-  chrome.send('cancel', [this.id_.toString()]);
+  chrome.send('cancel', [this.id_]);
   return false;
 };
 

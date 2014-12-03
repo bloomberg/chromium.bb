@@ -78,6 +78,9 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // and list.
   void HandleRemove(const base::ListValue* args);
 
+  // Callback for the "undo" message. Currently only undoes removals.
+  void HandleUndo(const base::ListValue* args);
+
   // Callback for the "cancel" message - cancels the download.
   void HandleCancel(const base::ListValue* args);
 
@@ -127,6 +130,9 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // Returns the download that is referred to in a given value.
   content::DownloadItem* GetDownloadByValue(const base::ListValue* args);
 
+  // Returns the download with |id| or NULL if it doesn't exist.
+  content::DownloadItem* GetDownloadById(uint32 id);
+
   // Current search terms.
   scoped_ptr<base::ListValue> search_terms_;
 
@@ -136,6 +142,9 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // If |main_notifier_| observes an incognito profile, then this observes the
   // DownloadManager for the original profile; otherwise, this is NULL.
   scoped_ptr<AllDownloadItemNotifier> original_notifier_;
+
+  // IDs of downloads to remove when this handler gets deleted.
+  std::vector<uint32> removed_ids_;
 
   // Whether a call to SendCurrentDownloads() is currently scheduled.
   bool update_scheduled_;

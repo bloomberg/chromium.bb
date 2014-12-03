@@ -16,8 +16,10 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/supports_user_data.h"
 #include "base/threading/thread.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
@@ -73,6 +75,35 @@ enum DownloadsDOMEvent {
   DOWNLOADS_DOM_EVENT_OPEN_FOLDER = 10,
   DOWNLOADS_DOM_EVENT_RESUME = 11,
   DOWNLOADS_DOM_EVENT_MAX
+};
+
+static const char kKey[] = "DownloadsDOMHandlerData";
+
+class DownloadsDOMHandlerData : public base::SupportsUserData::Data {
+ public:
+  static DownloadsDOMHandlerData* Get(content::DownloadItem* item) {
+    return static_cast<DownloadsDOMHandlerData*>(item->GetUserData(kKey));
+  }
+
+  static const DownloadsDOMHandlerData* Get(const content::DownloadItem* item) {
+    return static_cast<DownloadsDOMHandlerData*>(item->GetUserData(kKey));
+  }
+
+  static void Set(content::DownloadItem* item, DownloadsDOMHandlerData* data) {
+    item->SetUserData(kKey, data);
+  }
+
+  static DownloadsDOMHandlerData* Create(content::DownloadItem* item) {
+    DownloadsDOMHandlerData* data = new DownloadsDOMHandlerData;
+    item->SetUserData(kKey, data);
+    return data;
+  }
+
+  void set_is_removed(bool is_removed) { is_removed_ = is_removed; }
+  bool is_removed() const { return is_removed_; }
+
+ private:
+  bool is_removed_;
 };
 
 void CountDownloadsDOMEvents(DownloadsDOMEvent event) {
@@ -131,7 +162,7 @@ base::DictionaryValue* CreateDownloadItemValue(
           download_item->GetStartTime(), NULL));
   file_value->SetString(
       "date_string", base::TimeFormatShortDate(download_item->GetStartTime()));
-  file_value->SetInteger("id", download_item->GetId());
+  file_value->SetString("id", base::Uint64ToString(download_item->GetId()));
 
   base::FilePath download_path(download_item->GetTargetFilePath());
   file_value->Set("file_path", base::CreateFilePathValue(download_path));
@@ -230,7 +261,7 @@ base::DictionaryValue* CreateDownloadItemValue(
       break;
 
     case content::DownloadItem::MAX_DOWNLOAD_STATE:
-      NOTREACHED() << "state undefined";
+      NOTREACHED();
   }
 
   return file_value;
@@ -238,10 +269,12 @@ base::DictionaryValue* CreateDownloadItemValue(
 
 // Filters out extension downloads and downloads that don't have a filename yet.
 bool IsDownloadDisplayable(const content::DownloadItem& item) {
-  return (!download_crx_util::IsExtensionDownload(item) &&
-          !item.IsTemporary() &&
-          !item.GetFileNameToReportUser().empty() &&
-          !item.GetTargetFilePath().empty());
+  const DownloadsDOMHandlerData* data = DownloadsDOMHandlerData::Get(&item);
+  return !download_crx_util::IsExtensionDownload(item) &&
+         !item.IsTemporary() &&
+         !item.GetFileNameToReportUser().empty() &&
+         !item.GetTargetFilePath().empty() &&
+         (!data || !data->is_removed());
 }
 
 }  // namespace
@@ -262,6 +295,12 @@ DownloadsDOMHandler::DownloadsDOMHandler(content::DownloadManager* dlm)
 }
 
 DownloadsDOMHandler::~DownloadsDOMHandler() {
+  while (!removed_ids_.empty()) {
+    content::DownloadItem* download = GetDownloadById(removed_ids_.back());
+    removed_ids_.pop_back();
+    if (download)
+      download->Remove();
+  }
 }
 
 // DownloadsDOMHandler, public: -----------------------------------------------
@@ -300,6 +339,9 @@ void DownloadsDOMHandler::RegisterMessages() {
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("remove",
       base::Bind(&DownloadsDOMHandler::HandleRemove,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback("undo",
+      base::Bind(&DownloadsDOMHandler::HandleUndo,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("cancel",
       base::Bind(&DownloadsDOMHandler::HandleCancel,
@@ -340,12 +382,18 @@ void DownloadsDOMHandler::OnDownloadUpdated(
         (original_notifier_.get() &&
           (manager == main_notifier_.GetManager()))));
     CallDownloadUpdated(results_value);
+  } else {
+    ScheduleSendCurrentDownloads();
   }
 }
 
 void DownloadsDOMHandler::OnDownloadRemoved(
     content::DownloadManager* manager,
     content::DownloadItem* download_item) {
+  DownloadsDOMHandlerData* data = DownloadsDOMHandlerData::Get(download_item);
+  if (data && data->is_removed())
+    return;
+
   // This relies on |download_item| being removed from DownloadManager in this
   // MessageLoop iteration. |download_item| may not have been removed from
   // DownloadManager when OnDownloadRemoved() is fired, so bounce off the
@@ -438,8 +486,28 @@ void DownloadsDOMHandler::HandleRemove(const base::ListValue* args) {
 
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_REMOVE);
   content::DownloadItem* file = GetDownloadByValue(args);
-  if (file)
-    file->Remove();
+  if (!file)
+    return;
+
+  removed_ids_.push_back(file->GetId());
+  DownloadsDOMHandlerData::Create(file)->set_is_removed(true);
+  file->UpdateObservers();
+}
+
+void DownloadsDOMHandler::HandleUndo(const base::ListValue* args) {
+  // TODO(dbeam): handle more than removed downloads someday?
+  if (removed_ids_.empty())
+    return;
+
+  uint32 last_removed_id = removed_ids_.back();
+  removed_ids_.pop_back();
+
+  content::DownloadItem* download = GetDownloadById(last_removed_id);
+  if (!download)
+    return;
+
+  DownloadsDOMHandlerData::Set(download, nullptr);
+  download->UpdateObservers();
 }
 
 void DownloadsDOMHandler::HandleCancel(const base::ListValue* args) {
@@ -515,7 +583,7 @@ void DownloadsDOMHandler::SendCurrentDownloads() {
   query.Limit(kMaxDownloads);
   query.Search(all_items.begin(), all_items.end(), &filtered_items);
   base::ListValue results_value;
-  for (content::DownloadManager::DownloadVector::const_iterator
+  for (content::DownloadManager::DownloadVector::iterator
        iter = filtered_items.begin(); iter != filtered_items.end(); ++iter) {
     results_value.Append(CreateDownloadItemValue(
         *iter,
@@ -563,14 +631,27 @@ bool DownloadsDOMHandler::IsDeletingHistoryAllowed() {
 
 content::DownloadItem* DownloadsDOMHandler::GetDownloadByValue(
     const base::ListValue* args) {
-  int download_id = -1;
-  if (!ExtractIntegerValue(args, &download_id))
-    return NULL;
+  std::string download_id;
+  if (!args->GetString(0, &download_id)) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  uint64 id;
+  if (!base::StringToUint64(download_id, &id)) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  return GetDownloadById(static_cast<uint32>(id));
+}
+
+content::DownloadItem* DownloadsDOMHandler::GetDownloadById(uint32 id) {
   content::DownloadItem* item = NULL;
   if (main_notifier_.GetManager())
-    item = main_notifier_.GetManager()->GetDownload(download_id);
+    item = main_notifier_.GetManager()->GetDownload(id);
   if (!item && original_notifier_.get() && original_notifier_->GetManager())
-    item = original_notifier_->GetManager()->GetDownload(download_id);
+    item = original_notifier_->GetManager()->GetDownload(id);
   return item;
 }
 

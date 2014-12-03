@@ -157,8 +157,8 @@ cr.define('cr.ui', function() {
 
       return this.keyboardShortcuts_.some(function(keyboardShortcut) {
         return keyboardShortcut.matchesEvent(e);
-        });
-      }
+      });
+    },
   };
 
   /**

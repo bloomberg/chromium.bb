@@ -37,7 +37,8 @@ bool ListMatches(base::ListValue* left_list, const std::string& right_json) {
       if (left_dict->HasKey(iter.key()) &&
           left_dict->Get(iter.key(), &left_value) &&
           !iter.value().Equals(left_value)) {
-        LOG(WARNING) << iter.key();
+        LOG(WARNING) << "key \"" << iter.key() << "\" doesn't match ("
+                     << iter.value() << " vs. " << *left_value << ")";
         return false;
       }
     }
@@ -161,7 +162,7 @@ class DownloadsDOMHandlerTest : public InProcessBrowserTest {
         mock_handler_->downloads_list(),
         "[{\"file_externally_removed\": false,"
         "  \"file_name\": \"file\","
-        "  \"id\": 1,"
+        "  \"id\": \"1\","
         "  \"otr\": false,"
         "  \"since_string\": \"Today\","
         "  \"state\": \"COMPLETE\","
@@ -200,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest, RemoveAll) {
 IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest, RemoveOneItem) {
   DownloadAnItem();
   base::ListValue item;
-  item.AppendInteger(1);
+  item.AppendString("1");
 
   mock_handler_->reset_downloads_list();
   browser()->profile()->GetPrefs()->SetBoolean(
@@ -231,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest, DownloadsRelayed) {
   EXPECT_TRUE(ListMatches(
       mock_handler_->download_updated(),
       "[{\"file_externally_removed\": true,"
-      "  \"id\": 1}]"));
+      "  \"id\": \"1\"}]"));
 
   mock_handler_->reset_downloads_list();
   browser()->profile()->GetPrefs()->SetBoolean(

@@ -7,6 +7,9 @@
   <!-- This has to come after chrome_shared.css -->
   <link rel="stylesheet" href="downloads.css">
   <script src="chrome://resources/js/action_link.js"></script>
+  <script src="chrome://resources/js/cr.js"></script>
+  <script src="chrome://resources/js/cr/ui.js"></script>
+  <script src="chrome://resources/js/cr/ui/command.js"></script>
   <script src="chrome://resources/js/load_time_data.js"></script>
   <script src="chrome://resources/js/util.js"></script>
   <script src="chrome://downloads/downloads.js"></script>
@@ -29,6 +32,13 @@
     <div id="downloads-display"></div>
     <div id="no-downloads-or-results"></div>
   </div>
+  <command id="clear-all-command" shortcut="Alt-U+0043"><!-- Alt+C -->
+<if expr="is_macosx">
+  <command id="undo-command" shortcut="Meta-U+005A"><!-- Command+Z -->
+</if>
+<if expr="not is_macosx">
+  <command id="undo-command" shortcut="Ctrl-U+005A"><!-- Ctrl+Z -->
+</if>
   <script src="chrome://downloads/strings.js"></script>
   <script src="chrome://resources/js/i18n_template2.js"></script>
 </body>
