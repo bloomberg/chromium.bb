@@ -6,6 +6,7 @@ package org.chromium.content.browser.test.util;
 
 import android.app.Instrumentation;
 import android.os.SystemClock;
+import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.View;
 
@@ -43,6 +44,21 @@ public class KeyUtils {
         final KeyEvent upEvent =
                 new KeyEvent(downTime, eventTime, KeyEvent.ACTION_UP, keyCode, 0);
         dispatchKeyEvent(i, v, upEvent);
+    }
+
+    /**
+     * Types the given text (on character at a time) into the specified view.
+     *
+     * @param i The application being instrumented.
+     * @param v The view to receive the text.
+     * @param text The text to be input.
+     */
+    public static void typeTextIntoView(Instrumentation i, View v, String text) {
+        KeyCharacterMap characterMap = KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD);
+        KeyEvent[] events = characterMap.getEvents(text.toCharArray());
+        for (KeyEvent event : events) {
+            dispatchKeyEvent(i, v, event);
+        }
     }
 
     private static void dispatchKeyEvent(final Instrumentation i, final View v,
