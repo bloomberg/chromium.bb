@@ -7,8 +7,7 @@ import("//build/config/features.gni")
 
 # GYP version: extensions/extensions.gyp:extensions_browser
 source_set("browser") {
-  sources = [
-  ]
+  sources = []
 
   deps = [
     "//components/copresence_sockets",
@@ -27,7 +26,7 @@ source_set("browser") {
     "//google_apis",
     "//skia",
     "//third_party/leveldatabase",
-    "//third_party/re2"
+    "//third_party/re2",
   ]
 
   if (enable_extensions) {
@@ -509,13 +508,9 @@ source_set("browser") {
     ]
 
     if (use_openssl) {
-      sources += [
-        "api/cast_channel/cast_auth_util_openssl.cc",
-      ]
+      sources += [ "api/cast_channel/cast_auth_util_openssl.cc" ]
     } else {
-      sources += [
-        "api/cast_channel/cast_auth_util_nss.cc",
-      ]
+      sources += [ "api/cast_channel/cast_auth_util_nss.cc" ]
     }
 
     if (is_chromeos) {
@@ -530,8 +525,6 @@ source_set("browser") {
   }
 
   if (is_win) {
-    cflags = [
-      "/wd4267", # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    ]
+    cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   }
 }

@@ -16,5 +16,7 @@ json_schema_api("api_registration") {
   impl_dir = "//extensions/shell/browser/api"
   bundle_registration = true
 
-  deps = [ ":api" ]
+  deps = [
+    ":api",
+  ]
 }

@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("schemas.gypi") ],
-    "scope",
-    [ "schemas.gypi" ])
+gypi_values = exec_script("//build/gypi_to_gn.py",
+                          [ rebase_path("schemas.gypi") ],
+                          "scope",
+                          [ "schemas.gypi" ])
 
 sources = gypi_values.schema_files
 if (is_chromeos) {

@@ -37,7 +37,10 @@ grit("extensions_browser_resources") {
     "extensions_browser_resources_100_percent.pak",
     "extensions_browser_resources_200_percent.pak",
   ]
-  grit_flags = [ "-E", "mojom_root=" + rebase_path(root_gen_dir) ]
+  grit_flags = [
+    "-E",
+    "mojom_root=" + rebase_path(root_gen_dir),
+  ]
 }
 
 # GYP version: extensions/extensions_resources.gyp:extensions_resources
@@ -48,7 +51,10 @@ grit("extensions_renderer_resources") {
     "grit/extensions_renderer_resources.h",
     "extensions_renderer_resources.pak",
   ]
-  grit_flags = [ "-E", "mojom_root=" + rebase_path(root_gen_dir) ]
+  grit_flags = [
+    "-E",
+    "mojom_root=" + rebase_path(root_gen_dir),
+  ]
 
   deps = [
     "//device/serial:serial_mojo",
@@ -94,7 +100,7 @@ source_set("test_support") {
     "test/test_permission_message_provider.h",
     "test/test_service_registration_manager.cc",
     "test/test_service_registration_manager.h",
-   ]
+  ]
 
   deps = [
     ":extensions_resources",
@@ -112,12 +118,9 @@ source_set("test_support") {
   ]
 
   if (is_win) {
-    cflags = [
-      "/wd4267", # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    ]
+    cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   }
 }
-
 
 # GYP version: //extensions/extensions.gyp:extensions_shell_and_test_pak
 repack("shell_and_test_pak") {
@@ -158,119 +161,117 @@ repack("shell_and_test_pak") {
 # does not have a reference to CreateNativeWebModalManager but it still links.
 # The GN build fails with this symbol being undefined.
 if (false) {
-test("extensions_unittests") {
-  sources = [
-    "browser/admin_policy_unittest.cc",
-    "browser/api/api_resource_manager_unittest.cc",
-    "browser/api/declarative/declarative_rule_unittest.cc",
-    "browser/api/declarative/deduping_factory_unittest.cc",
-    "browser/api/declarative_webrequest/webrequest_condition_attribute_unittest.cc",
-    "browser/api/declarative_webrequest/webrequest_condition_unittest.cc",
-    "browser/api/sockets_tcp/sockets_tcp_api_unittest.cc",
-    "browser/api/storage/settings_quota_unittest.cc",
-    "browser/api/storage/storage_api_unittest.cc",
-    "browser/api/storage/storage_frontend_unittest.cc",
-    "browser/api/web_request/form_data_parser_unittest.cc",
-    "browser/api/web_request/upload_data_presenter_unittest.cc",
-    "browser/api/web_request/web_request_time_tracker_unittest.cc",
-    "browser/api/cast_channel/cast_auth_ica_unittest.cc",
-    "browser/api/cast_channel/cast_auth_util_unittest.cc",
-    "browser/api/cast_channel/cast_channel_api_unittest.cc",
-    "browser/api/cast_channel/cast_framer_unittest.cc",
-    "browser/api/cast_channel/cast_socket_unittest.cc",
-    "browser/api/cast_channel/cast_transport_unittest.cc",
-    "browser/api/cast_channel/logger_unittest.cc",
-    "browser/computed_hashes_unittest.cc",
-    "browser/content_hash_tree_unittest.cc",
-    "browser/event_listener_map_unittest.cc",
-    "browser/event_router_unittest.cc",
-    "browser/extension_pref_value_map_unittest.cc",
-    "browser/extension_registry_unittest.cc",
-    "browser/file_highlighter_unittest.cc",
-    "browser/file_reader_unittest.cc",
-    "browser/guest_view/guest_view_manager_unittest.cc",
-    "browser/image_loader_unittest.cc",
-    "browser/image_util_unittest.cc",
-    "browser/info_map_unittest.cc",
-    "browser/lazy_background_task_queue_unittest.cc",
-    "browser/management_policy_unittest.cc",
-    "browser/mojo/keep_alive_impl_unittest.cc",
-    "browser/process_manager_unittest.cc",
-    "browser/process_map_unittest.cc",
-    "browser/quota_service_unittest.cc",
-    "browser/runtime_data_unittest.cc",
-    "browser/value_store/leveldb_value_store_unittest.cc",
-    "browser/value_store/testing_value_store_unittest.cc",
-    "browser/value_store/value_store_change_unittest.cc",
-    "browser/value_store/value_store_frontend_unittest.cc",
-    "browser/value_store/value_store_unittest.cc",
-    "browser/value_store/value_store_unittest.h",
-    "browser/verified_contents_unittest.cc",
-    "browser/warning_service_unittest.cc",
-    "common/api/sockets/sockets_manifest_permission_unittest.cc",
-    "common/csp_validator_unittest.cc",
-    "common/event_filter_unittest.cc",
-    "common/extension_l10n_util_unittest.cc",
-    "common/extension_resource_unittest.cc",
-    "common/extension_set_unittest.cc",
-    "common/file_util_unittest.cc",
-    "common/manifest_handler_unittest.cc",
-    "common/manifest_handlers/oauth2_manifest_unittest.cc",
-    "common/manifest_handlers/shared_module_manifest_unittest.cc",
-    "common/message_bundle_unittest.cc",
-    "common/one_shot_event_unittest.cc",
-    "common/permissions/manifest_permission_set_unittest.cc",
-    "common/stack_frame_unittest.cc",
-    "common/url_pattern_set_unittest.cc",
-    "common/url_pattern_unittest.cc",
-    "common/user_script_unittest.cc",
-    "renderer/activity_log_converter_strategy_unittest.cc",
-    "renderer/api/serial/data_receiver_unittest.cc",
-    "renderer/api/serial/data_sender_unittest.cc",
-    "renderer/api/serial/serial_api_unittest.cc",
-    "renderer/api_test_base.cc",
-    "renderer/api_test_base.h",
-    "renderer/api_test_base_unittest.cc",
-    "renderer/event_unittest.cc",
-    "renderer/json_schema_unittest.cc",
-    "renderer/messaging_utils_unittest.cc",
-    "renderer/module_system_test.cc",
-    "renderer/module_system_test.h",
-    "renderer/module_system_unittest.cc",
-    "renderer/mojo/keep_alive_client_unittest.cc",
-    "renderer/safe_builtins_unittest.cc",
-    "renderer/script_context_set_unittest.cc",
-    "renderer/utils_unittest.cc",
-    "test/extensions_unittests_main.cc",
-  ]
-
-  deps = [
-    ":extensions_resources",
-    ":shell_and_test_pak",
-    ":test_support",
-    "//base",
-    "//base:prefs_test_support",
-    "//base/test:test_support",
-    "//components/keyed_service/content",
-    "//content/test:test_support",
-    "//device/serial",
-    "//device/serial:test_util",
-    "//extensions/common",
-    "//extensions/renderer",
-    "//extensions/strings",
-    "//mojo/edk/js",
-    "//mojo/edk/system",
-    "//mojo/environment:chromium",
-    "//mojo/public/cpp/bindings",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/leveldatabase",
-  ]
-
-  if (is_win) {
-    deps += [
-      "//base/allocator",
+  test("extensions_unittests") {
+    sources = [
+      "browser/admin_policy_unittest.cc",
+      "browser/api/api_resource_manager_unittest.cc",
+      "browser/api/declarative/declarative_rule_unittest.cc",
+      "browser/api/declarative/deduping_factory_unittest.cc",
+      "browser/api/declarative_webrequest/webrequest_condition_attribute_unittest.cc",
+      "browser/api/declarative_webrequest/webrequest_condition_unittest.cc",
+      "browser/api/sockets_tcp/sockets_tcp_api_unittest.cc",
+      "browser/api/storage/settings_quota_unittest.cc",
+      "browser/api/storage/storage_api_unittest.cc",
+      "browser/api/storage/storage_frontend_unittest.cc",
+      "browser/api/web_request/form_data_parser_unittest.cc",
+      "browser/api/web_request/upload_data_presenter_unittest.cc",
+      "browser/api/web_request/web_request_time_tracker_unittest.cc",
+      "browser/api/cast_channel/cast_auth_ica_unittest.cc",
+      "browser/api/cast_channel/cast_auth_util_unittest.cc",
+      "browser/api/cast_channel/cast_channel_api_unittest.cc",
+      "browser/api/cast_channel/cast_framer_unittest.cc",
+      "browser/api/cast_channel/cast_socket_unittest.cc",
+      "browser/api/cast_channel/cast_transport_unittest.cc",
+      "browser/api/cast_channel/logger_unittest.cc",
+      "browser/computed_hashes_unittest.cc",
+      "browser/content_hash_tree_unittest.cc",
+      "browser/event_listener_map_unittest.cc",
+      "browser/event_router_unittest.cc",
+      "browser/extension_pref_value_map_unittest.cc",
+      "browser/extension_registry_unittest.cc",
+      "browser/file_highlighter_unittest.cc",
+      "browser/file_reader_unittest.cc",
+      "browser/guest_view/guest_view_manager_unittest.cc",
+      "browser/image_loader_unittest.cc",
+      "browser/image_util_unittest.cc",
+      "browser/info_map_unittest.cc",
+      "browser/lazy_background_task_queue_unittest.cc",
+      "browser/management_policy_unittest.cc",
+      "browser/mojo/keep_alive_impl_unittest.cc",
+      "browser/process_manager_unittest.cc",
+      "browser/process_map_unittest.cc",
+      "browser/quota_service_unittest.cc",
+      "browser/runtime_data_unittest.cc",
+      "browser/value_store/leveldb_value_store_unittest.cc",
+      "browser/value_store/testing_value_store_unittest.cc",
+      "browser/value_store/value_store_change_unittest.cc",
+      "browser/value_store/value_store_frontend_unittest.cc",
+      "browser/value_store/value_store_unittest.cc",
+      "browser/value_store/value_store_unittest.h",
+      "browser/verified_contents_unittest.cc",
+      "browser/warning_service_unittest.cc",
+      "common/api/sockets/sockets_manifest_permission_unittest.cc",
+      "common/csp_validator_unittest.cc",
+      "common/event_filter_unittest.cc",
+      "common/extension_l10n_util_unittest.cc",
+      "common/extension_resource_unittest.cc",
+      "common/extension_set_unittest.cc",
+      "common/file_util_unittest.cc",
+      "common/manifest_handler_unittest.cc",
+      "common/manifest_handlers/oauth2_manifest_unittest.cc",
+      "common/manifest_handlers/shared_module_manifest_unittest.cc",
+      "common/message_bundle_unittest.cc",
+      "common/one_shot_event_unittest.cc",
+      "common/permissions/manifest_permission_set_unittest.cc",
+      "common/stack_frame_unittest.cc",
+      "common/url_pattern_set_unittest.cc",
+      "common/url_pattern_unittest.cc",
+      "common/user_script_unittest.cc",
+      "renderer/activity_log_converter_strategy_unittest.cc",
+      "renderer/api/serial/data_receiver_unittest.cc",
+      "renderer/api/serial/data_sender_unittest.cc",
+      "renderer/api/serial/serial_api_unittest.cc",
+      "renderer/api_test_base.cc",
+      "renderer/api_test_base.h",
+      "renderer/api_test_base_unittest.cc",
+      "renderer/event_unittest.cc",
+      "renderer/json_schema_unittest.cc",
+      "renderer/messaging_utils_unittest.cc",
+      "renderer/module_system_test.cc",
+      "renderer/module_system_test.h",
+      "renderer/module_system_unittest.cc",
+      "renderer/mojo/keep_alive_client_unittest.cc",
+      "renderer/safe_builtins_unittest.cc",
+      "renderer/script_context_set_unittest.cc",
+      "renderer/utils_unittest.cc",
+      "test/extensions_unittests_main.cc",
     ]
+
+    deps = [
+      ":extensions_resources",
+      ":shell_and_test_pak",
+      ":test_support",
+      "//base",
+      "//base:prefs_test_support",
+      "//base/test:test_support",
+      "//components/keyed_service/content",
+      "//content/test:test_support",
+      "//device/serial",
+      "//device/serial:test_util",
+      "//extensions/common",
+      "//extensions/renderer",
+      "//extensions/strings",
+      "//mojo/edk/js",
+      "//mojo/edk/system",
+      "//mojo/environment:chromium",
+      "//mojo/public/cpp/bindings",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//third_party/leveldatabase",
+    ]
+
+    if (is_win) {
+      deps += [ "//base/allocator" ]
+    }
   }
-}
 }
