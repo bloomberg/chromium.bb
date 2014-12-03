@@ -35,6 +35,7 @@
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/page/PageLifecycleObserver.h"
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebURLLoaderClient.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
@@ -55,9 +56,9 @@ class ResourceRequest;
 // The ping loader is used by audit pings, beacon transmissions and image loads
 // during page unloading.
 //
-class PingLoader : public PageLifecycleObserver, private blink::WebURLLoaderClient {
+class PingLoader : public RefCountedWillBeRefCountedGarbageCollected<PingLoader>, public PageLifecycleObserver, private blink::WebURLLoaderClient {
     WTF_MAKE_NONCOPYABLE(PingLoader);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     virtual ~PingLoader();
 
@@ -69,6 +70,8 @@ public:
     static void loadImage(LocalFrame*, const KURL& url);
     static void sendLinkAuditPing(LocalFrame*, const KURL& pingURL, const KURL& destinationURL);
     static void sendViolationReport(LocalFrame*, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType);
+
+    void trace(Visitor*) { }
 
 protected:
     PingLoader(LocalFrame*, ResourceRequest&, const FetchInitiatorInfo&, StoredCredentials);

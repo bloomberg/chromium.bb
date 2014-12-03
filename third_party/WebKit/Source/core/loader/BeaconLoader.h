@@ -21,7 +21,7 @@ class LocalFrame;
 // staying alive. PingLoader providing the service.
 class BeaconLoader final : public PingLoader {
     WTF_MAKE_NONCOPYABLE(BeaconLoader);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     virtual ~BeaconLoader() { }
 
