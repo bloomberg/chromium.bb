@@ -37,10 +37,12 @@ struct WebExternalTextureMailbox {
     signed char name[64];
     unsigned syncPoint;
     bool allowOverlay;
+    bool nearestNeighbor;
 
     WebExternalTextureMailbox()
         : syncPoint(0)
         , allowOverlay(false)
+        , nearestNeighbor(false)
     {
         memset(name, 0, sizeof(name));
     }
