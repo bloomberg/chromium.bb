@@ -293,8 +293,8 @@ class AdbTargetsUIHandler
 
   DevToolsAndroidBridge* GetAndroidBridge();
 
-  Profile* profile_;
-  scoped_refptr<DevToolsAndroidBridge> android_bridge_;
+  Profile* const profile_;
+  DevToolsAndroidBridge* const android_bridge_;
 
   typedef std::map<std::string,
       scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> > RemoteBrowsers;
@@ -307,7 +307,7 @@ AdbTargetsUIHandler::AdbTargetsUIHandler(const Callback& callback,
       profile_(profile),
       android_bridge_(
           DevToolsAndroidBridge::Factory::GetForProfile(profile_)) {
-  DCHECK(android_bridge_.get());
+  DCHECK(android_bridge_);
   android_bridge_->AddDeviceListListener(this);
 }
 
@@ -317,7 +317,7 @@ AdbTargetsUIHandler::~AdbTargetsUIHandler() {
 
 static void CallOnTarget(
     const DevToolsTargetsUIHandler::TargetCallback& callback,
-    scoped_refptr<DevToolsAndroidBridge> bridge,
+    DevToolsAndroidBridge* bridge,
     scoped_refptr<DevToolsAndroidBridge::RemotePage> page) {
   callback.Run(page.get() ? bridge->CreatePageTarget(page) : nullptr);
 }

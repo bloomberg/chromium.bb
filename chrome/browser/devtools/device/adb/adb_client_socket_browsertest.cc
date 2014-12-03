@@ -126,7 +126,7 @@ class AdbClientSocketTest : public InProcessBrowserTest,
   }
 
  private:
-  scoped_refptr<DevToolsAndroidBridge> android_bridge_;
+  DevToolsAndroidBridge* android_bridge_;
   DevToolsAndroidBridge::RemoteDevices devices_;
 };
 

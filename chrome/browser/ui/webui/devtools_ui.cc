@@ -281,7 +281,7 @@ class OpenRemotePageRequest : public DevToolsAndroidBridge::DeviceListListener {
   std::string url_;
   DevToolsAndroidBridge::RemotePageCallback callback_;
   bool opening_;
-  scoped_refptr<DevToolsAndroidBridge> android_bridge_;
+  DevToolsAndroidBridge* android_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenRemotePageRequest);
 };

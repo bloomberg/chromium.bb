@@ -12,6 +12,7 @@
 #include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/devtools/device/android_device_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
@@ -36,21 +37,8 @@ class DevToolsTargetImpl;
 class PortForwardingController;
 class Profile;
 
-class DevToolsAndroidBridge
-    : public base::RefCountedThreadSafe<
-          DevToolsAndroidBridge,
-          content::BrowserThread::DeleteOnUIThread> {
+class DevToolsAndroidBridge : public KeyedService {
  public:
-  class Wrapper : public KeyedService {
-   public:
-    explicit Wrapper(content::BrowserContext* context);
-    ~Wrapper() override;
-
-    DevToolsAndroidBridge* Get();
-   private:
-    scoped_refptr<DevToolsAndroidBridge> bridge_;
-  };
-
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
     // Returns singleton instance of DevToolsAndroidBridge.
@@ -290,6 +278,10 @@ class DevToolsAndroidBridge
                                int result,
                                const std::string& response);
 
+  base::WeakPtr<DevToolsAndroidBridge> AsWeakPtr() {
+      return weak_factory_.GetWeakPtr();
+  }
+
   Profile* profile_;
   const scoped_ptr<AndroidDeviceManager> device_manager_;
 
@@ -314,6 +306,9 @@ class DevToolsAndroidBridge
   scoped_ptr<PortForwardingController> port_forwarding_controller_;
 
   PrefChangeRegistrar pref_change_registrar_;
+
+  base::WeakPtrFactory<DevToolsAndroidBridge> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(DevToolsAndroidBridge);
 };
 

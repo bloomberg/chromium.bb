@@ -472,7 +472,7 @@ class DevToolsAndroidBridgeWarmUp
     : public DevToolsAndroidBridge::DeviceCountListener {
  public:
   DevToolsAndroidBridgeWarmUp(base::Closure closure,
-                              scoped_refptr<DevToolsAndroidBridge> adb_bridge)
+                              DevToolsAndroidBridge* adb_bridge)
       : closure_(closure), adb_bridge_(adb_bridge) {}
 
   void DeviceCountChanged(int count) override {
@@ -481,7 +481,7 @@ class DevToolsAndroidBridgeWarmUp
   }
 
   base::Closure closure_;
-  scoped_refptr<DevToolsAndroidBridge> adb_bridge_;
+  DevToolsAndroidBridge* adb_bridge_;
 };
 
 class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
@@ -502,7 +502,7 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
 
     adb_bridge_ =
         DevToolsAndroidBridge::Factory::GetForProfile(browser()->profile());
-    DCHECK(adb_bridge_.get());
+    DCHECK(adb_bridge_);
     adb_bridge_->set_task_scheduler_for_test(base::Bind(
         &AndroidUsbDiscoveryTest::ScheduleDeviceCountRequest, this));
 
@@ -538,7 +538,7 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
   }
 
   scoped_refptr<content::MessageLoopRunner> runner_;
-  scoped_refptr<DevToolsAndroidBridge> adb_bridge_;
+  DevToolsAndroidBridge* adb_bridge_;
   int scheduler_invoked_;
 };
 
@@ -562,7 +562,7 @@ class AndroidUsbTraitsTest : public AndroidUsbDiscoveryTest {
 
 class MockListListener : public DevToolsAndroidBridge::DeviceListListener {
  public:
-  MockListListener(scoped_refptr<DevToolsAndroidBridge> adb_bridge,
+  MockListListener(DevToolsAndroidBridge* adb_bridge,
                    const base::Closure& callback)
       : adb_bridge_(adb_bridge),
         callback_(callback) {
@@ -580,13 +580,13 @@ class MockListListener : public DevToolsAndroidBridge::DeviceListListener {
     }
   }
 
-  scoped_refptr<DevToolsAndroidBridge> adb_bridge_;
+  DevToolsAndroidBridge* adb_bridge_;
   base::Closure callback_;
 };
 
 class MockCountListener : public DevToolsAndroidBridge::DeviceCountListener {
  public:
-  explicit MockCountListener(scoped_refptr<DevToolsAndroidBridge> adb_bridge)
+  explicit MockCountListener(DevToolsAndroidBridge* adb_bridge)
       : adb_bridge_(adb_bridge),
         reposts_left_(10),
         invoked_(0) {
@@ -623,7 +623,7 @@ class MockCountListener : public DevToolsAndroidBridge::DeviceCountListener {
                                        base::Unretained(this)));
   }
 
-  scoped_refptr<DevToolsAndroidBridge> adb_bridge_;
+  DevToolsAndroidBridge* adb_bridge_;
   int reposts_left_;
   int invoked_;
 };
@@ -631,7 +631,7 @@ class MockCountListener : public DevToolsAndroidBridge::DeviceCountListener {
 class MockCountListenerWithReAdd : public MockCountListener {
  public:
   explicit MockCountListenerWithReAdd(
-      scoped_refptr<DevToolsAndroidBridge> adb_bridge)
+      DevToolsAndroidBridge* adb_bridge)
       : MockCountListener(adb_bridge),
         readd_count_(2) {
   }
@@ -655,7 +655,7 @@ class MockCountListenerWithReAdd : public MockCountListener {
 class MockCountListenerWithReAddWhileQueued : public MockCountListener {
  public:
   MockCountListenerWithReAddWhileQueued(
-      scoped_refptr<DevToolsAndroidBridge> adb_bridge)
+      DevToolsAndroidBridge* adb_bridge)
       : MockCountListener(adb_bridge),
         readded_(false) {
   }
@@ -685,7 +685,7 @@ class MockCountListenerWithReAddWhileQueued : public MockCountListener {
 class MockCountListenerForCheckingTraits : public MockCountListener {
  public:
   MockCountListenerForCheckingTraits(
-      scoped_refptr<DevToolsAndroidBridge> adb_bridge)
+      DevToolsAndroidBridge* adb_bridge)
       : MockCountListener(adb_bridge),
         step_(0) {
   }

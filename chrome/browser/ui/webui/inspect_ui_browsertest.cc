@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(InspectUITest, SharedWorker) {
 }
 
 IN_PROC_BROWSER_TEST_F(InspectUITest, AndroidTargets) {
-  scoped_refptr<DevToolsAndroidBridge> android_bridge =
+  DevToolsAndroidBridge* android_bridge =
       DevToolsAndroidBridge::Factory::GetForProfile(browser()->profile());
   AndroidDeviceManager::DeviceProviders providers;
   providers.push_back(new AdbDeviceProvider());
