@@ -160,3 +160,28 @@ promise_test(function(t) {
         });
   }, 'CacheStorage.delete with nonexistent cache');
 
+promise_test(function(t) {
+    var bad_name = 'unpaired\uD800';
+    var converted_name = 'unpaired\uFFFD'; // Don't create cache with this name.
+    return self.caches.has(converted_name)
+      .then(function(cache_exists) {
+          assert_false(cache_exists,
+                       'Test setup failure: cache should not exist');
+      })
+      .then(function() { return self.caches.open(bad_name); })
+      .then(function() { return self.caches.keys(); })
+      .then(function(keys) {
+          assert_true(keys.indexOf(bad_name) !== -1,
+                      'keys should include cache with bad name');
+      })
+      .then(function() { return self.caches.has(bad_name); })
+      .then(function(cache_exists) {
+          assert_true(cache_exists,
+                      'CacheStorage names should be not be converted.');
+        })
+      .then(function() { return self.caches.has(converted_name); })
+      .then(function(cache_exists) {
+          assert_false(cache_exists,
+                       'CacheStorage names should be not be converted.');
+        });
+  }, 'CacheStorage names are DOMStrings not USVStrings');
