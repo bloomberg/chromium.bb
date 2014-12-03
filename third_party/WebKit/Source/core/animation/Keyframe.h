@@ -97,6 +97,9 @@ protected:
     RefPtr<TimingFunction> m_easing;
 };
 
-}
+WILL_BE_EAGERLY_TRACED(Keyframe);
+WILL_BE_EAGERLY_TRACED(Keyframe::PropertySpecificKeyframe);
 
-#endif
+} // namespace blink
+
+#endif // Keyframe_h

@@ -52,6 +52,8 @@ private:
     Animation::Priority m_priority;
 };
 
+WILL_BE_EAGERLY_TRACED(SampledEffect);
+
 } // namespace blink
 
-#endif
+#endif // SampledEffect_h

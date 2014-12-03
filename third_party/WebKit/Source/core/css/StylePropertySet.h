@@ -148,6 +148,8 @@ protected:
     friend class PropertySetCSSStyleDeclaration;
 };
 
+WILL_BE_EAGERLY_TRACED(StylePropertySet);
+
 class ImmutableStylePropertySet : public StylePropertySet {
 public:
     ~ImmutableStylePropertySet();

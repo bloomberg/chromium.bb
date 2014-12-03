@@ -6,6 +6,7 @@
 #define InterpolableValue_h
 
 #include "core/animation/animatable/AnimatableValue.h"
+#include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -37,7 +38,9 @@ private:
     friend class InterpolableList;
 };
 
-class InterpolableNumber : public InterpolableValue {
+WILL_BE_EAGERLY_TRACED(InterpolableValue);
+
+class InterpolableNumber final : public InterpolableValue {
 public:
     static PassOwnPtrWillBeRawPtr<InterpolableNumber> create(double value)
     {
@@ -47,8 +50,6 @@ public:
     virtual bool isNumber() const override final { return true; }
     double value() const { return m_value; }
     virtual PassOwnPtrWillBeRawPtr<InterpolableValue> clone() const override final { return create(m_value); }
-
-    virtual void trace(Visitor* visitor) override { InterpolableValue::trace(visitor); }
 
 private:
     virtual void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const override final;
@@ -61,7 +62,7 @@ private:
 
 };
 
-class InterpolableBool : public InterpolableValue {
+class InterpolableBool final : public InterpolableValue {
 public:
     static PassOwnPtrWillBeRawPtr<InterpolableBool> create(bool value)
     {
@@ -71,8 +72,6 @@ public:
     virtual bool isBool() const override final { return true; }
     bool value() const { return m_value; }
     virtual PassOwnPtrWillBeRawPtr<InterpolableValue> clone() const override final { return create(m_value); }
-
-    virtual void trace(Visitor* visitor) override { InterpolableValue::trace(visitor); }
 
 private:
     virtual void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const override final;

@@ -113,6 +113,8 @@ private:
     unsigned m_descendantSelectorIdentifierHashes[maximumIdentifierCount];
 };
 
+WILL_BE_EAGERLY_TRACED(RuleData);
+
 struct SameSizeAsRuleData {
     void* a;
     unsigned b;

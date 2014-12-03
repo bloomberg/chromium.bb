@@ -34,12 +34,16 @@
 #include "core/animation/AnimationNode.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
 class AnimationTimeline;
 class ExceptionState;
+
+class AnimationPlayer;
+WILL_BE_EAGERLY_TRACED(AnimationPlayer);
 
 class AnimationPlayer final : public RefCountedWillBeGarbageCollectedFinalized<AnimationPlayer>
     , public ActiveDOMObject
@@ -248,4 +252,4 @@ private:
 
 } // namespace blink
 
-#endif
+#endif // AnimationPlayer_h

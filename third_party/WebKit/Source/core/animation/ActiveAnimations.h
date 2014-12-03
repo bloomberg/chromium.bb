@@ -100,6 +100,8 @@ private:
     friend class CSSAnimations;
 };
 
+WILL_BE_EAGERLY_TRACED(ActiveAnimations);
+
 } // namespace blink
 
-#endif
+#endif // ActiveAnimations_h

@@ -172,6 +172,9 @@ protected:
     const CalculatedTiming& ensureCalculated() const;
 };
 
+WILL_BE_EAGERLY_TRACED(AnimationNode);
+WILL_BE_EAGERLY_TRACED(AnimationNode::EventDelegate);
+
 } // namespace blink
 
-#endif
+#endif // AnimationNode_h

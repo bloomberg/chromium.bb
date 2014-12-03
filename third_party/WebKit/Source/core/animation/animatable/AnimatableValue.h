@@ -134,6 +134,8 @@ private:
 #define DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(thisType, predicate) \
     DEFINE_TYPE_CASTS(thisType, AnimatableValue, value, value->predicate, value.predicate)
 
+WILL_BE_EAGERLY_TRACED(AnimatableValue);
+
 } // namespace blink
 
 #endif // AnimatableValue_h
