@@ -9,6 +9,7 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] Blob
 [Worker] Boolean
 [Worker] CircularGeofencingRegion
+[Worker] CloseEvent
 [Worker] DOMException
 [Worker] DataView
 [Worker] Date
