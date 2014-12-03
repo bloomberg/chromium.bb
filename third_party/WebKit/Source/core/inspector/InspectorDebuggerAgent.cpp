@@ -1494,7 +1494,8 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(ScriptSta
     if (result != ScriptDebugListener::NoSkip)
         return result;
 
-    ASSERT(scriptState && !m_pausedScriptState);
+    ASSERT(scriptState);
+    ASSERT(!m_pausedScriptState);
     m_pausedScriptState = scriptState;
     m_currentCallStack = callFrames;
 

@@ -5,5 +5,6 @@ Tests that pause on exception works for inline script URLs blocked by CSP.
 Script execution paused.
 Call stack:
     0) testAction (pause-on-blocked-script-url.js:6)
+Paused on a script blocked due to Content Security Policy directive: "script-src 'self'".
 Script execution resumed.
 

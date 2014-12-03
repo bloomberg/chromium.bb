@@ -6,5 +6,6 @@ Button
 Script execution paused.
 Call stack:
     0) testAction (pause-on-blocked-event-handler.js:4)
+Paused on a script blocked due to Content Security Policy directive: "script-src 'self'".
 Script execution resumed.
 
