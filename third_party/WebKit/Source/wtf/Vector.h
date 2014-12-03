@@ -1002,8 +1002,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         T* oldBuffer = begin();
         if (newCapacity > 0) {
-            size_t newSize = Base::allocationSize(newCapacity);
-            if (Allocator::vectorBackingShrink(oldBuffer, Base::allocationSize(capacity()), newSize))
+            // Optimization: if we're downsizing inside the same allocator bucket, we can exit with no additional work.
+            if (Base::allocationSize(capacity()) == Base::allocationSize(newCapacity))
                 return;
 
             T* oldEnd = end();
