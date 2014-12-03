@@ -40,6 +40,12 @@
       }, {
         'pkg-config': 'pkg-config'
       }],
+      # low memory buffer is used in non-Android based chromecast build due to hardware limitation.
+      ['chromecast==1 and OS!="android"', {
+        'use_low_memory_buffer%': 1,
+      }, {
+        'use_low_memory_buffer%': 0,
+      }],
     ],
   },
   'includes': [
@@ -448,8 +454,6 @@
         'filters/renderer_impl.h',
         'filters/skcanvas_video_renderer.cc',
         'filters/skcanvas_video_renderer.h',
-        'filters/source_buffer_platform.cc',
-        'filters/source_buffer_platform.h',
         'filters/source_buffer_range.cc',
         'filters/source_buffer_range.h',
         'filters/source_buffer_stream.cc',
@@ -1028,6 +1032,17 @@
             'base/keyboard_event_counter.cc',
             'base/keyboard_event_counter.h',
           ],
+        }],
+        ['use_low_memory_buffer==1', {
+          'sources': [
+            'filters/source_buffer_platform_lowmem.cc',
+            'filters/source_buffer_platform.h',
+          ]
+        }, {  # 'use_low_memory_buffer==0'
+          'sources': [
+            'filters/source_buffer_platform.cc',
+            'filters/source_buffer_platform.h',
+          ]
         }],
       ],  # conditions
       'target_conditions': [
