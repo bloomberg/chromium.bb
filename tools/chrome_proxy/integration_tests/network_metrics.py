@@ -12,7 +12,7 @@ import zlib
 from metrics import Metric
 from telemetry.page import page_test
 # All network metrics are Chrome only for now.
-from telemetry.core.backends.chrome import inspector_network
+from telemetry.core.backends.chrome_inspector import inspector_network
 from telemetry.timeline import recording_options
 from telemetry.value import scalar
 
