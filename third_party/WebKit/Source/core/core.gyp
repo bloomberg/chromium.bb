@@ -750,7 +750,6 @@
         'INSIDE_BLINK',
       ],
       'include_dirs': [
-        '<(bindings_core_v8_dir)',  # FIXME: Remove once http://crbug.com/236119 is fixed.
         'testing',
         'testing/v8',
       ],
