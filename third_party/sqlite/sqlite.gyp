@@ -137,7 +137,7 @@
                 'SQLITE_DEFAULT_AUTOVACUUM=1',
                 'SQLITE_TEMP_STORE=3',
                 'SQLITE_ENABLE_FTS3_BACKWARDS',
-                'DSQLITE_DEFAULT_FILE_FORMAT=4',
+                'SQLITE_DEFAULT_FILE_FORMAT=4',
               ],
             }],
             ['os_posix == 1 and OS != "mac" and OS != "android"', {
