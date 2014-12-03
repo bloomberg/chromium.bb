@@ -141,9 +141,11 @@ def AddGTestOptions(parser):
                       + gtest_config.EXPERIMENTAL_TEST_SUITES)
 
   group = parser.add_argument_group('GTest Options')
-  group.add_argument('-s', '--suite', dest='suite_name', choices=gtest_suites,
+  group.add_argument('-s', '--suite', dest='suite_name',
                      nargs='+', metavar='SUITE_NAME', required=True,
-                     help=('Executable name of the test suite to run.'))
+                     help=('Executable name of the test suite to run. '
+                           'Available suites include (but are not limited to): '
+                            '%s' % ', '.join('"%s"' % s for s in gtest_suites)))
   group.add_argument('-f', '--gtest_filter', '--gtest-filter',
                      dest='test_filter',
                      help='googletest-style filter string.')
@@ -922,9 +924,7 @@ def main():
     config.add_options_func(subparser)
 
   args = parser.parse_args()
-  RunTestsCommand(args, parser)
-
-  return 0
+  return RunTestsCommand(args, parser)
 
 
 if __name__ == '__main__':
