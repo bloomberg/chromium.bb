@@ -15,6 +15,7 @@
       ],
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../content/content.gyp:content_browser',
         '../../net/net.gyp:net',
         '../../ui/base/ui_base.gyp:ui_base',
         '../../ui/gfx/gfx.gyp:gfx',
@@ -33,6 +34,8 @@
         'public/ssl_status.h',
         'public/user_agent.h',
         'public/user_agent.mm',
+        'public/web_thread.h',
+        'web_thread.cc',
       ],
     },
     {

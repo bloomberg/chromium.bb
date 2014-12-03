@@ -2,3 +2,11 @@ include_rules = [
   "+net",
   "+ui",
 ]
+
+specific_include_rules = {
+  ".*\.cc$": [
+    # Allow browser_thread.h until a web/ replacement is built out. Note that
+    # headers in public/ are not subject to this exception.
+    "+content/public/browser/browser_thread.h",
+  ],
+}
