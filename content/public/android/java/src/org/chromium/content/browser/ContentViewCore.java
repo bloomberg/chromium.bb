@@ -513,6 +513,9 @@ public class ContentViewCore
     // A ViewAndroidDelegate that delegates to the current container view.
     private ContentViewAndroidDelegate mViewAndroidDelegate;
 
+    // A flag to determine if we enable hover feature or not.
+    private Boolean mEnableTouchHover;
+
     /**
      * Constructs a new ContentViewCore. Embedders must call initialize() after constructing
      * a ContentViewCore and before using it.
@@ -1608,6 +1611,15 @@ public class ContentViewCore
      */
     public boolean onHoverEvent(MotionEvent event) {
         TraceEvent.begin("onHoverEvent");
+        // TODO(lanwei): Remove this switch once experimentation is complete -
+        // crbug.com/418188
+        if (event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER) {
+            if (mEnableTouchHover == null) {
+                mEnableTouchHover =
+                        CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TOUCH_HOVER);
+            }
+            if (!mEnableTouchHover.booleanValue()) return false;
+        }
         MotionEvent offset = createOffsetMotionEvent(event);
         try {
             if (mBrowserAccessibilityManager != null) {

@@ -49102,6 +49102,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1966730288" label="disable-threaded-compositing"/>
   <int value="1969604362" label="enable-pinch-virtual-viewport"/>
   <int value="1980011075" label="debug-packed-apps"/>
+  <int value="2000091128" label="enable-touch-hover"/>
   <int value="2004829262" label="enable-webgl-draft-extensions"/>
   <int value="2037756154" label="enable-impl-side-painting"/>
   <int value="2059322877" label="new-avatar-menu"/>

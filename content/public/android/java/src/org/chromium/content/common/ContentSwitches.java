@@ -70,6 +70,9 @@ public abstract class ContentSwitches {
     public static final String FORCE_DEVICE_SCALE_FACTOR =
             "force-device-scale-factor";
 
+    // Enable mouse hover emulation by holding your finger just over the screen.
+    public static final String ENABLE_TOUCH_HOVER = "enable-touch-hover";
+
     // Prevent instantiation.
     private ContentSwitches() {}
 }

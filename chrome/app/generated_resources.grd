@@ -15286,6 +15286,13 @@ Do you accept?
       <message name="IDS_HOTWORD_NOTIFICATION_BUTTON" desc="The text displayed on the button of the hotword notification. ">
         Enable "Ok Google"
       </message>
+
+      <message name="IDS_FLAGS_ENABLE_TOUCH_HOVER_NAME" desc="Name of the 'Enable support for hover capable touchscreens' flag.">
+        Enable support for hover capable touchscreens.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_TOUCH_HOVER_DESCRIPTION" desc="Description of the 'Enable support for hover capable touchscreens' flag.">
+        Enables hover feature by holding your finger just over the screen to experience a mouseover event.
+      </message>
     </messages>
   </release>
 </grit>

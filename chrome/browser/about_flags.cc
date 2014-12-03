@@ -2050,6 +2050,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableSeccompFilterSandbox)
   },
 #endif
+  {
+    "enable-touch-hover",
+    IDS_FLAGS_ENABLE_TOUCH_HOVER_NAME,
+    IDS_FLAGS_ENABLE_TOUCH_HOVER_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE("enable-touch-hover")
+  },
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
