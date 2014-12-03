@@ -453,6 +453,7 @@ void HTMLLinkElement::trace(Visitor* visitor)
 {
     visitor->trace(m_link);
     visitor->trace(m_sizes);
+    visitor->trace(m_linkLoader);
     HTMLElement::trace(visitor);
 }
 

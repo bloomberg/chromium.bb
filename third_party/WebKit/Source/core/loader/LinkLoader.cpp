@@ -157,4 +157,9 @@ void LinkLoader::released()
     }
 }
 
+void LinkLoader::trace(Visitor* visitor)
+{
+    visitor->trace(m_prerender);
+}
+
 }

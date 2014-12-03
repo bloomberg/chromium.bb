@@ -32,6 +32,7 @@
 #define PrerenderHandle_h
 
 #include "core/dom/DocumentLifecycleObserver.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
@@ -43,10 +44,10 @@ class Document;
 class Prerender;
 class PrerenderClient;
 
-class PrerenderHandle final : public DocumentLifecycleObserver {
+class PrerenderHandle final : public NoBaseWillBeGarbageCollectedFinalized<PrerenderHandle>, public DocumentLifecycleObserver {
     WTF_MAKE_NONCOPYABLE(PrerenderHandle);
 public:
-    static PassOwnPtr<PrerenderHandle> create(Document&, PrerenderClient*, const KURL&, unsigned prerenderRelTypes);
+    static PassOwnPtrWillBeRawPtr<PrerenderHandle> create(Document&, PrerenderClient*, const KURL&, unsigned prerenderRelTypes);
 
     virtual ~PrerenderHandle();
 
@@ -55,6 +56,9 @@ public:
 
     // From DocumentLifecycleObserver:
     virtual void documentWasDetached() override;
+
+    void trace(Visitor*) { }
+
 private:
     PrerenderHandle(Document&, PassRefPtr<Prerender>);
 
