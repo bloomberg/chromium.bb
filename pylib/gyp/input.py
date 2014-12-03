@@ -48,6 +48,11 @@ base_path_sections = [
 ]
 path_sections = set()
 
+# These per-process dictionaries are used to cache build file data when loading
+# in parallel mode.
+per_process_data = {}
+per_process_aux_data = {}
+
 def IsPathSection(section):
   # If section ends in one of the '=+?!' characters, it's applied to a section
   # without the trailing characters.  '/' is notably absent from this list,
@@ -362,10 +367,17 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
     else:
       variables['DEPTH'] = d.replace('\\', '/')
 
-  if build_file_path in data['target_build_files']:
-    # Already loaded.
-    return False
-  data['target_build_files'].add(build_file_path)
+  # The 'target_build_files' key is only set when loading target build files in
+  # the non-parallel code path, where LoadTargetBuildFile is called
+  # recursively.  In the parallel code path, we don't need to check whether the
+  # |build_file_path| has already been loaded, because the 'scheduled' set in
+  # ParallelState guarantees that we never load the same |build_file_path|
+  # twice.
+  if 'target_build_files' in data:
+    if build_file_path in data['target_build_files']:
+      # Already loaded.
+      return False
+    data['target_build_files'].add(build_file_path)
 
   gyp.DebugOutput(gyp.DEBUG_INCLUDES,
                   "Loading Target Build File '%s'", build_file_path)
@@ -456,10 +468,8 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
   else:
     return (build_file_path, dependencies)
 
-
 def CallLoadTargetBuildFile(global_flags,
-                            build_file_path, data,
-                            aux_data, variables,
+                            build_file_path, variables,
                             includes, depth, check,
                             generator_input_info):
   """Wrapper around LoadTargetBuildFile for parallel processing.
@@ -475,35 +485,24 @@ def CallLoadTargetBuildFile(global_flags,
     for key, value in global_flags.iteritems():
       globals()[key] = value
 
-    # Save the keys so we can return data that changed.
-    data_keys = set(data)
-    aux_data_keys = set(aux_data)
-
     SetGeneratorGlobals(generator_input_info)
-    result = LoadTargetBuildFile(build_file_path, data,
-                                 aux_data, variables,
+    result = LoadTargetBuildFile(build_file_path, per_process_data,
+                                 per_process_aux_data, variables,
                                  includes, depth, check, False)
     if not result:
       return result
 
     (build_file_path, dependencies) = result
 
-    data_out = {}
-    for key in data:
-      if key == 'target_build_files':
-        continue
-      if key not in data_keys:
-        data_out[key] = data[key]
-    aux_data_out = {}
-    for key in aux_data:
-      if key not in aux_data_keys:
-        aux_data_out[key] = aux_data[key]
+    # We can safely pop the build_file_data from per_process_data because it
+    # will never be referenced by this process again, so we don't need to keep
+    # it in the cache.
+    build_file_data = per_process_data.pop(build_file_path)
 
     # This gets serialized and sent back to the main process via a pipe.
     # It's handled in LoadTargetBuildFileCallback.
     return (build_file_path,
-            data_out,
-            aux_data_out,
+            build_file_data,
             dependencies)
   except GypError, e:
     sys.stderr.write("gyp: %s\n" % e)
@@ -534,8 +533,6 @@ class ParallelState(object):
     self.condition = None
     # The "data" dict that was passed to LoadTargetBuildFileParallel
     self.data = None
-    # The "aux_data" dict that was passed to LoadTargetBuildFileParallel
-    self.aux_data = None
     # The number of parallel calls outstanding; decremented when a response
     # was received.
     self.pending = 0
@@ -556,12 +553,9 @@ class ParallelState(object):
       self.condition.notify()
       self.condition.release()
       return
-    (build_file_path0, data0, aux_data0, dependencies0) = result
+    (build_file_path0, build_file_data0, dependencies0) = result
+    self.data[build_file_path0] = build_file_data0
     self.data['target_build_files'].add(build_file_path0)
-    for key in data0:
-      self.data[key] = data0[key]
-    for key in aux_data0:
-      self.aux_data[key] = aux_data0[key]
     for new_dependency in dependencies0:
       if new_dependency not in self.scheduled:
         self.scheduled.add(new_dependency)
@@ -571,9 +565,8 @@ class ParallelState(object):
     self.condition.release()
 
 
-def LoadTargetBuildFilesParallel(build_files, data, aux_data,
-                                 variables, includes, depth, check,
-                                 generator_input_info):
+def LoadTargetBuildFilesParallel(build_files, data, variables, includes, depth,
+                                 check, generator_input_info):
   parallel_state = ParallelState()
   parallel_state.condition = threading.Condition()
   # Make copies of the build_files argument that we can modify while working.
@@ -581,7 +574,6 @@ def LoadTargetBuildFilesParallel(build_files, data, aux_data,
   parallel_state.scheduled = set(build_files)
   parallel_state.pending = 0
   parallel_state.data = data
-  parallel_state.aux_data = aux_data
 
   try:
     parallel_state.condition.acquire()
@@ -595,9 +587,6 @@ def LoadTargetBuildFilesParallel(build_files, data, aux_data,
       dependency = parallel_state.dependencies.pop()
 
       parallel_state.pending += 1
-      data_in = {}
-      data_in['target_build_files'] = data['target_build_files']
-      aux_data_in = {}
       global_flags = {
         'path_sections': globals()['path_sections'],
         'non_configuration_keys': globals()['non_configuration_keys'],
@@ -608,7 +597,6 @@ def LoadTargetBuildFilesParallel(build_files, data, aux_data,
       parallel_state.pool.apply_async(
           CallLoadTargetBuildFile,
           args = (global_flags, dependency,
-                  data_in, aux_data_in,
                   variables, includes, depth, check, generator_input_info),
           callback = parallel_state.LoadTargetBuildFileCallback)
   except KeyboardInterrupt, e:
@@ -2734,15 +2722,14 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
   # well as meta-data (e.g. 'included_files' key). 'target_build_files' keeps
   # track of the keys corresponding to "target" files.
   data = {'target_build_files': set()}
-  aux_data = {}
   # Normalize paths everywhere.  This is important because paths will be
   # used as keys to the data dict and for references between input files.
   build_files = set(map(os.path.normpath, build_files))
   if parallel:
-    LoadTargetBuildFilesParallel(build_files, data, aux_data,
-                                 variables, includes, depth, check,
-                                 generator_input_info)
+    LoadTargetBuildFilesParallel(build_files, data, variables, includes, depth,
+                                 check, generator_input_info)
   else:
+    aux_data = {}
     for build_file in build_files:
       try:
         LoadTargetBuildFile(build_file, data, aux_data,
