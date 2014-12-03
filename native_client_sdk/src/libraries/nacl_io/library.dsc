@@ -72,6 +72,7 @@
         "syscalls/fcntl.c",
         "syscalls/ftruncate.c",
         "syscalls/futimes.c",
+        "syscalls/getcwd.c",
         "syscalls/getwd.c",
         "syscalls/ioctl.c",
         "syscalls/isatty.c",
