@@ -5,9 +5,19 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_FREEZER_CGROUP_PROCESS_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_FREEZER_CGROUP_PROCESS_MANAGER_H_
 
+#include <string>
+
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/process/process_handle.h"
 #include "chrome/browser/chromeos/power/renderer_freezer.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace chromeos {
 
@@ -15,18 +25,20 @@ namespace chromeos {
 class FreezerCgroupProcessManager : public RendererFreezer::Delegate {
  public:
   FreezerCgroupProcessManager();
-  virtual ~FreezerCgroupProcessManager();
+  ~FreezerCgroupProcessManager() override;
 
   // RendererFreezer::Delegate overrides.
-  virtual bool FreezeRenderers() override;
-  virtual bool ThawRenderers() override;
-  virtual bool CanFreezeRenderers() override;
+  void SetShouldFreezeRenderer(base::ProcessHandle handle,
+                               bool frozen) override;
+  void FreezeRenderers() override;
+  void ThawRenderers(ResultCallback callback) override;
+  void CheckCanFreezeRenderers(ResultCallback callback) override;
 
  private:
-  bool WriteCommandToStateFile(const std::string& command);
+  scoped_refptr<base::SequencedTaskRunner> file_thread_;
 
-  base::FilePath state_path_;
-  bool enabled_;
+  class FileWorker;
+  scoped_ptr<FileWorker> file_worker_;
 
   DISALLOW_COPY_AND_ASSIGN(FreezerCgroupProcessManager);
 };
