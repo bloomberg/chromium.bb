@@ -55803,6 +55803,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="24"
       label="Detected captive portal on an overridable SSL error page
              (DEPRECATED_CAPTIVE_PORTAL_DETECTED_OVERRIDABLE)"/>
+  <int value="25"
+      label="Displayed clock interstitial. (DISPLAYED_CLOCK_INTERSTITIAL)"/>
 </enum>
 
 <enum name="StartupURLsMigration" type="int">
