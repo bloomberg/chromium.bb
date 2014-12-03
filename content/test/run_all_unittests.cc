@@ -11,12 +11,17 @@
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "base/test/test_file_util.h"
+#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #endif
 
 int main(int argc, char** argv) {
 #if defined(OS_ANDROID)
   // Register JNI bindings for android.
   base::RegisterContentUriTestUtils(base::android::AttachCurrentThread());
+
+  // Android wants to call GetChannelId() (even though GPU channels
+  // are not getting created in content_unittests).
+  content::BrowserGpuChannelHostFactory::Initialize(false);
 #endif
 #if !defined(OS_IOS)
   content::InitializeMojo();

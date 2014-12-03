@@ -388,7 +388,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Size to use if we have no backing ContentViewCore
   gfx::Size default_size_;
 
-  const bool using_synchronous_compositor_;
+  const bool using_browser_compositor_;
 
   scoped_ptr<DelegatedFrameEvictor> frame_evictor_;
 
