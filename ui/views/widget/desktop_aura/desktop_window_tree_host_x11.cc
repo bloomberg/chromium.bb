@@ -1225,8 +1225,9 @@ gfx::Size DesktopWindowTreeHostX11::AdjustSize(
 
 void DesktopWindowTreeHostX11::OnWMStateUpdated() {
   std::vector< ::Atom> atom_list;
-  if (!ui::GetAtomArrayProperty(xwindow_, "_NET_WM_STATE", &atom_list))
-    return;
+  // Ignore the return value of ui::GetAtomArrayProperty(). Fluxbox removes the
+  // _NET_WM_STATE property when no _NET_WM_STATE atoms are set.
+  ui::GetAtomArrayProperty(xwindow_, "_NET_WM_STATE", &atom_list);
 
   bool was_minimized = IsMinimized();
 
