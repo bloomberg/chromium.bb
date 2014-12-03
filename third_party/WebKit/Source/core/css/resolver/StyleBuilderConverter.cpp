@@ -73,7 +73,7 @@ PassRefPtr<StyleReflection> StyleBuilderConverter::convertBoxReflect(StyleResolv
         reflection->setOffset(reflectValue->offset()->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData()));
     NinePieceImage mask;
     mask.setMaskDefaults();
-    state.styleMap().mapNinePieceImage(state.style(), CSSPropertyWebkitBoxReflect, reflectValue->mask(), mask);
+    CSSToStyleMap::mapNinePieceImage(state, CSSPropertyWebkitBoxReflect, reflectValue->mask(), mask);
     reflection->setMask(mask);
 
     return reflection.release();

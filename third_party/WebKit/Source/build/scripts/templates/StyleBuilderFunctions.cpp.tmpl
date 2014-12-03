@@ -103,7 +103,7 @@ namespace blink {
     CSS{{animation}}Data& data = state.style()->access{{animation}}s();
     data.{{vector}}.clear();
     for (CSSValueListIterator i = value; i.hasMore(); i.advance())
-        data.{{vector}}.append(state.styleMap().mapAnimation{{attribute}}(i.value()));
+        data.{{vector}}.append(CSSToStyleMap::mapAnimation{{attribute}}(i.value()));
 }
 {% endmacro %}
 {{apply_animation('CSSPropertyWebkitAnimationDelay', 'Delay', 'Animation')}}
@@ -249,13 +249,13 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
 {
     NinePieceImage image(state.style()->{{getter}}());
     {% if modifier_type == 'Outset' %}
-    image.setOutset(state.styleMap().mapNinePieceImageQuad(value));
+    image.setOutset(CSSToStyleMap::mapNinePieceImageQuad(state, value));
     {% elif modifier_type == 'Repeat' %}
-    state.styleMap().mapNinePieceImageRepeat(value, image);
+    CSSToStyleMap::mapNinePieceImageRepeat(state, value, image);
     {% elif modifier_type == 'Slice' %}
-    state.styleMap().mapNinePieceImageSlice(value, image);
+    CSSToStyleMap::mapNinePieceImageSlice(state, value, image);
     {% elif modifier_type == 'Width' %}
-    image.setBorderSlices(state.styleMap().mapNinePieceImageQuad(value));
+    image.setBorderSlices(CSSToStyleMap::mapNinePieceImageQuad(state, value));
     {% endif %}
     state.style()->{{setter}}(image);
 }
@@ -423,12 +423,12 @@ static bool lengthTypeAndValueMatch(const BorderImageLengthBox& borderImageLengt
         for (unsigned int i = 0; i < valueList->length(); i++) {
             if (!currChild)
                 currChild = prevChild->ensureNext();
-            state.styleMap().{{map_fill}}(currChild, valueList->item(i));
+            CSSToStyleMap::{{map_fill}}(state, currChild, valueList->item(i));
             prevChild = currChild;
             currChild = currChild->next();
         }
     } else {
-        state.styleMap().{{map_fill}}(currChild, value);
+        CSSToStyleMap::{{map_fill}}(state, currChild, value);
         currChild = currChild->next();
     }
     while (currChild) {

@@ -37,7 +37,6 @@ StyleResolverState::StyleResolverState(Document& document, const ElementResolveC
     , m_applyPropertyToRegularStyle(true)
     , m_applyPropertyToVisitedLinkStyle(false)
     , m_fontBuilder(document)
-    , m_styleMap(*this, m_elementStyleResources)
 {
     if (!m_parentStyle)
         m_parentStyle = m_elementContext.parentStyle();

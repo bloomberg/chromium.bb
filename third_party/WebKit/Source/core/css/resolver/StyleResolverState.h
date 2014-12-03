@@ -114,8 +114,6 @@ public:
     }
 
     ElementStyleResources& elementStyleResources() { return m_elementStyleResources; }
-    const CSSToStyleMap& styleMap() const { return m_styleMap; }
-    CSSToStyleMap& styleMap() { return m_styleMap; }
 
     // FIXME: Once styleImage can be made to not take a StyleResolverState
     // this convenience function should be removed. As-is, without this, call
@@ -160,9 +158,6 @@ private:
     OwnPtr<CachedUAStyle> m_cachedUAStyle;
 
     ElementStyleResources m_elementStyleResources;
-    // CSSToStyleMap is a pure-logic class and only contains
-    // a back-pointer to this object.
-    CSSToStyleMap m_styleMap;
     Vector<AtomicString> m_contentAttrValues;
 };
 

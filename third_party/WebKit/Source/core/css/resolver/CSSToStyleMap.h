@@ -25,43 +25,31 @@
 #include "core/CSSPropertyNames.h"
 #include "core/animation/Timing.h"
 #include "core/animation/css/CSSTransitionData.h"
-#include "core/css/resolver/ElementStyleResources.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/animation/TimingFunction.h"
-#include "wtf/Noncopyable.h"
 
 namespace blink {
 
 class FillLayer;
-class CSSToLengthConversionData;
 class CSSValue;
-class RenderStyle;
-class StyleImage;
 class StyleResolverState;
 class NinePieceImage;
 class BorderImageLengthBox;
 
-// CSSToStyleMap is a short-lived helper object which
-// given the current StyleResolverState can map
-// CSSValue objects into their RenderStyle equivalents.
-
 class CSSToStyleMap {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(CSSToStyleMap);
 public:
-    CSSToStyleMap(const StyleResolverState& state, ElementStyleResources& elementStyleResources) : m_state(state), m_elementStyleResources(elementStyleResources) { }
-    void mapFillAttachment(FillLayer*, CSSValue*) const;
-    void mapFillClip(FillLayer*, CSSValue*) const;
-    void mapFillComposite(FillLayer*, CSSValue*) const;
-    void mapFillBlendMode(FillLayer*, CSSValue*) const;
-    void mapFillOrigin(FillLayer*, CSSValue*) const;
-    void mapFillImage(FillLayer*, CSSValue*);
-    void mapFillRepeatX(FillLayer*, CSSValue*) const;
-    void mapFillRepeatY(FillLayer*, CSSValue*) const;
-    void mapFillSize(FillLayer*, CSSValue*) const;
-    void mapFillXPosition(FillLayer*, CSSValue*) const;
-    void mapFillYPosition(FillLayer*, CSSValue*) const;
-    void mapFillMaskSourceType(FillLayer*, CSSValue*) const;
+    static void mapFillAttachment(StyleResolverState&, FillLayer*, CSSValue*);
+    static void mapFillClip(StyleResolverState&, FillLayer*, CSSValue*);
+    static void mapFillComposite(StyleResolverState&, FillLayer*, CSSValue*);
+    static void mapFillBlendMode(StyleResolverState&, FillLayer*, CSSValue*);
+    static void mapFillOrigin(StyleResolverState&, FillLayer*, CSSValue*);
+    static void mapFillImage(StyleResolverState&, FillLayer*, CSSValue*);
+    static void mapFillRepeatX(StyleResolverState&, FillLayer*, CSSValue*);
+    static void mapFillRepeatY(StyleResolverState&, FillLayer*, CSSValue*);
+    static void mapFillSize(StyleResolverState&, FillLayer*, CSSValue*);
+    static void mapFillXPosition(StyleResolverState&, FillLayer*, CSSValue*);
+    static void mapFillYPosition(StyleResolverState&, FillLayer*, CSSValue*);
+    static void mapFillMaskSourceType(StyleResolverState&, FillLayer*, CSSValue*);
 
     static double mapAnimationDelay(CSSValue*);
     static Timing::PlaybackDirection mapAnimationDirection(CSSValue*);
@@ -73,20 +61,10 @@ public:
     static CSSTransitionData::TransitionProperty mapAnimationProperty(CSSValue*);
     static PassRefPtr<TimingFunction> mapAnimationTimingFunction(CSSValue*, bool allowStepMiddle = false);
 
-    void mapNinePieceImage(RenderStyle* mutableStyle, CSSPropertyID, CSSValue*, NinePieceImage&);
-    void mapNinePieceImageSlice(CSSValue*, NinePieceImage&) const;
-    BorderImageLengthBox mapNinePieceImageQuad(CSSValue*) const;
-    void mapNinePieceImageRepeat(CSSValue*, NinePieceImage&) const;
-
-private:
-    const CSSToLengthConversionData& cssToLengthConversionData() const;
-
-    PassRefPtr<StyleImage> styleImage(CSSPropertyID, CSSValue*);
-
-    // FIXME: Consider passing a StyleResolverState (or ElementResolveState)
-    // as an argument instead of caching it on this object.
-    const StyleResolverState& m_state;
-    ElementStyleResources& m_elementStyleResources;
+    static void mapNinePieceImage(StyleResolverState&, CSSPropertyID, CSSValue*, NinePieceImage&);
+    static void mapNinePieceImageSlice(StyleResolverState&, CSSValue*, NinePieceImage&);
+    static BorderImageLengthBox mapNinePieceImageQuad(StyleResolverState&, CSSValue*);
+    static void mapNinePieceImageRepeat(StyleResolverState&, CSSValue*, NinePieceImage&);
 };
 
 }

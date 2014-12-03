@@ -42,17 +42,7 @@
 
 namespace blink {
 
-const CSSToLengthConversionData& CSSToStyleMap::cssToLengthConversionData() const
-{
-    return m_state.cssToLengthConversionData();
-}
-
-PassRefPtr<StyleImage> CSSToStyleMap::styleImage(CSSPropertyID propertyId, CSSValue* value)
-{
-    return m_elementStyleResources.styleImage(m_state.document(), m_state.document().textLinkColors(), m_state.style()->color(), propertyId, value);
-}
-
-void CSSToStyleMap::mapFillAttachment(FillLayer* layer, CSSValue* value) const
+void CSSToStyleMap::mapFillAttachment(StyleResolverState&, FillLayer* layer, CSSValue* value)
 {
     if (value->isInitialValue()) {
         layer->setAttachment(FillLayer::initialFillAttachment(layer->type()));
@@ -78,7 +68,7 @@ void CSSToStyleMap::mapFillAttachment(FillLayer* layer, CSSValue* value) const
     }
 }
 
-void CSSToStyleMap::mapFillClip(FillLayer* layer, CSSValue* value) const
+void CSSToStyleMap::mapFillClip(StyleResolverState&, FillLayer* layer, CSSValue* value)
 {
     if (value->isInitialValue()) {
         layer->setClip(FillLayer::initialFillClip(layer->type()));
@@ -92,7 +82,7 @@ void CSSToStyleMap::mapFillClip(FillLayer* layer, CSSValue* value) const
     layer->setClip(*primitiveValue);
 }
 
-void CSSToStyleMap::mapFillComposite(FillLayer* layer, CSSValue* value) const
+void CSSToStyleMap::mapFillComposite(StyleResolverState&, FillLayer* layer, CSSValue* value)
 {
     if (value->isInitialValue()) {
         layer->setComposite(FillLayer::initialFillComposite(layer->type()));
@@ -106,7 +96,7 @@ void CSSToStyleMap::mapFillComposite(FillLayer* layer, CSSValue* value) const
     layer->setComposite(*primitiveValue);
 }
 
-void CSSToStyleMap::mapFillBlendMode(FillLayer* layer, CSSValue* value) const
+void CSSToStyleMap::mapFillBlendMode(StyleResolverState&, FillLayer* layer, CSSValue* value)
 {
     if (value->isInitialValue()) {
         layer->setBlendMode(FillLayer::initialFillBlendMode(layer->type()));
@@ -120,7 +110,7 @@ void CSSToStyleMap::mapFillBlendMode(FillLayer* layer, CSSValue* value) const
     layer->setBlendMode(*primitiveValue);
 }
 
-void CSSToStyleMap::mapFillOrigin(FillLayer* layer, CSSValue* value) const
+void CSSToStyleMap::mapFillOrigin(StyleResolverState&, FillLayer* layer, CSSValue* value)
 {
     if (value->isInitialValue()) {
         layer->setOrigin(FillLayer::initialFillOrigin(layer->type()));
@@ -135,7 +125,7 @@ void CSSToStyleMap::mapFillOrigin(FillLayer* layer, CSSValue* value) const
 }
 
 
-void CSSToStyleMap::mapFillImage(FillLayer* layer, CSSValue* value)
+void CSSToStyleMap::mapFillImage(StyleResolverState& state, FillLayer* layer, CSSValue* value)
 {
     if (value->isInitialValue()) {
         layer->setImage(FillLayer::initialFillImage(layer->type()));
@@ -143,10 +133,10 @@ void CSSToStyleMap::mapFillImage(FillLayer* layer, CSSValue* value)
     }
 
     CSSPropertyID property = layer->type() == BackgroundFillLayer ? CSSPropertyBackgroundImage : CSSPropertyWebkitMaskImage;
-    layer->setImage(styleImage(property, value));
+    layer->setImage(state.styleImage(property, value));
 }
 
-void CSSToStyleMap::mapFillRepeatX(FillLayer* layer, CSSValue* value) const
+void CSSToStyleMap::mapFillRepeatX(StyleResolverState&, FillLayer* layer, CSSValue* value)
 {
     if (value->isInitialValue()) {
         layer->setRepeatX(FillLayer::initialFillRepeatX(layer->type()));
@@ -160,7 +150,7 @@ void CSSToStyleMap::mapFillRepeatX(FillLayer* layer, CSSValue* value) const
     layer->setRepeatX(*primitiveValue);
 }
 
-void CSSToStyleMap::mapFillRepeatY(FillLayer* layer, CSSValue* value) const
+void CSSToStyleMap::mapFillRepeatY(StyleResolverState&, FillLayer* layer, CSSValue* value)
 {
     if (value->isInitialValue()) {
         layer->setRepeatY(FillLayer::initialFillRepeatY(layer->type()));
@@ -174,7 +164,7 @@ void CSSToStyleMap::mapFillRepeatY(FillLayer* layer, CSSValue* value) const
     layer->setRepeatY(*primitiveValue);
 }
 
-void CSSToStyleMap::mapFillSize(FillLayer* layer, CSSValue* value) const
+void CSSToStyleMap::mapFillSize(StyleResolverState& state, FillLayer* layer, CSSValue* value)
 {
     if (value->isInitialValue()) {
         layer->setSizeType(FillLayer::initialFillSizeType(layer->type()));
@@ -204,10 +194,10 @@ void CSSToStyleMap::mapFillSize(FillLayer* layer, CSSValue* value) const
     Length secondLength;
 
     if (Pair* pair = primitiveValue->getPairValue()) {
-        firstLength = pair->first()->convertToLength<AnyConversion>(cssToLengthConversionData());
-        secondLength = pair->second()->convertToLength<AnyConversion>(cssToLengthConversionData());
+        firstLength = pair->first()->convertToLength<AnyConversion>(state.cssToLengthConversionData());
+        secondLength = pair->second()->convertToLength<AnyConversion>(state.cssToLengthConversionData());
     } else {
-        firstLength = primitiveValue->convertToLength<AnyConversion>(cssToLengthConversionData());
+        firstLength = primitiveValue->convertToLength<AnyConversion>(state.cssToLengthConversionData());
         secondLength = Length();
     }
 
@@ -216,7 +206,7 @@ void CSSToStyleMap::mapFillSize(FillLayer* layer, CSSValue* value) const
     layer->setSizeLength(b);
 }
 
-void CSSToStyleMap::mapFillXPosition(FillLayer* layer, CSSValue* value) const
+void CSSToStyleMap::mapFillXPosition(StyleResolverState& state, FillLayer* layer, CSSValue* value)
 {
     if (value->isInitialValue()) {
         layer->setXPosition(FillLayer::initialFillXPosition(layer->type()));
@@ -231,14 +221,14 @@ void CSSToStyleMap::mapFillXPosition(FillLayer* layer, CSSValue* value) const
     if (pair)
         primitiveValue = pair->second();
 
-    Length length = primitiveValue->convertToLength<FixedConversion | PercentConversion>(cssToLengthConversionData());
+    Length length = primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
 
     layer->setXPosition(length);
     if (pair)
         layer->setBackgroundXOrigin(*(pair->first()));
 }
 
-void CSSToStyleMap::mapFillYPosition(FillLayer* layer, CSSValue* value) const
+void CSSToStyleMap::mapFillYPosition(StyleResolverState& state, FillLayer* layer, CSSValue* value)
 {
     if (value->isInitialValue()) {
         layer->setYPosition(FillLayer::initialFillYPosition(layer->type()));
@@ -253,14 +243,14 @@ void CSSToStyleMap::mapFillYPosition(FillLayer* layer, CSSValue* value) const
     if (pair)
         primitiveValue = pair->second();
 
-    Length length = primitiveValue->convertToLength<FixedConversion | PercentConversion>(cssToLengthConversionData());
+    Length length = primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
 
     layer->setYPosition(length);
     if (pair)
         layer->setBackgroundYOrigin(*(pair->first()));
 }
 
-void CSSToStyleMap::mapFillMaskSourceType(FillLayer* layer, CSSValue* value) const
+void CSSToStyleMap::mapFillMaskSourceType(StyleResolverState&, FillLayer* layer, CSSValue* value)
 {
     EMaskSourceType type = FillLayer::initialFillMaskSourceType(layer->type());
     if (value->isInitialValue()) {
@@ -433,7 +423,7 @@ PassRefPtr<TimingFunction> CSSToStyleMap::mapAnimationTimingFunction(CSSValue* v
     return StepsTimingFunction::create(stepsTimingFunction->numberOfSteps(), stepsTimingFunction->stepAtPosition());
 }
 
-void CSSToStyleMap::mapNinePieceImage(RenderStyle* mutableStyle, CSSPropertyID property, CSSValue* value, NinePieceImage& image)
+void CSSToStyleMap::mapNinePieceImage(StyleResolverState& state, CSSPropertyID property, CSSValue* value, NinePieceImage& image)
 {
     // If we're not a value list, then we are "none" and don't need to alter the empty image at all.
     if (!value || !value->isValueList())
@@ -455,26 +445,26 @@ void CSSToStyleMap::mapNinePieceImage(RenderStyle* mutableStyle, CSSPropertyID p
         CSSValue* current = borderImage->item(i);
 
         if (current->isImageValue() || current->isImageGeneratorValue() || current->isImageSetValue())
-            image.setImage(styleImage(imageProperty, current));
+            image.setImage(state.styleImage(imageProperty, current));
         else if (current->isBorderImageSliceValue())
-            mapNinePieceImageSlice(current, image);
+            mapNinePieceImageSlice(state, current, image);
         else if (current->isValueList()) {
             CSSValueList* slashList = toCSSValueList(current);
             size_t length = slashList->length();
             // Map in the image slices.
             if (length && slashList->item(0)->isBorderImageSliceValue())
-                mapNinePieceImageSlice(slashList->item(0), image);
+                mapNinePieceImageSlice(state, slashList->item(0), image);
 
             // Map in the border slices.
             if (length > 1)
-                image.setBorderSlices(mapNinePieceImageQuad(slashList->item(1)));
+                image.setBorderSlices(mapNinePieceImageQuad(state, slashList->item(1)));
 
             // Map in the outset.
             if (length > 2)
-                image.setOutset(mapNinePieceImageQuad(slashList->item(2)));
+                image.setOutset(mapNinePieceImageQuad(state, slashList->item(2)));
         } else if (current->isPrimitiveValue()) {
             // Set the appropriate rules for stretch/round/repeat of the slices.
-            mapNinePieceImageRepeat(current, image);
+            mapNinePieceImageRepeat(state, current, image);
         }
     }
 
@@ -483,17 +473,17 @@ void CSSToStyleMap::mapNinePieceImage(RenderStyle* mutableStyle, CSSPropertyID p
         // also set the border widths. We don't need to worry about percentages, since we don't even support
         // those on real borders yet.
         if (image.borderSlices().top().isLength() && image.borderSlices().top().length().isFixed())
-            mutableStyle->setBorderTopWidth(image.borderSlices().top().length().value());
+            state.style()->setBorderTopWidth(image.borderSlices().top().length().value());
         if (image.borderSlices().right().isLength() && image.borderSlices().right().length().isFixed())
-            mutableStyle->setBorderRightWidth(image.borderSlices().right().length().value());
+            state.style()->setBorderRightWidth(image.borderSlices().right().length().value());
         if (image.borderSlices().bottom().isLength() && image.borderSlices().bottom().length().isFixed())
-            mutableStyle->setBorderBottomWidth(image.borderSlices().bottom().length().value());
+            state.style()->setBorderBottomWidth(image.borderSlices().bottom().length().value());
         if (image.borderSlices().left().isLength() && image.borderSlices().left().length().isFixed())
-            mutableStyle->setBorderLeftWidth(image.borderSlices().left().length().value());
+            state.style()->setBorderLeftWidth(image.borderSlices().left().length().value());
     }
 }
 
-void CSSToStyleMap::mapNinePieceImageSlice(CSSValue* value, NinePieceImage& image) const
+void CSSToStyleMap::mapNinePieceImageSlice(StyleResolverState&, CSSValue* value, NinePieceImage& image)
 {
     if (!value || !value->isBorderImageSliceValue())
         return;
@@ -537,7 +527,7 @@ static BorderImageLength toBorderImageLength(CSSPrimitiveValue& value, const CSS
     return Length(Auto);
 }
 
-BorderImageLengthBox CSSToStyleMap::mapNinePieceImageQuad(CSSValue* value) const
+BorderImageLengthBox CSSToStyleMap::mapNinePieceImageQuad(StyleResolverState& state, CSSValue* value)
 {
     if (!value || !value->isPrimitiveValue())
         return BorderImageLengthBox(Length(Auto));
@@ -546,13 +536,13 @@ BorderImageLengthBox CSSToStyleMap::mapNinePieceImageQuad(CSSValue* value) const
 
     // Set up a border image length box to represent our image slices.
     return BorderImageLengthBox(
-        toBorderImageLength(*slices->top(), cssToLengthConversionData()),
-        toBorderImageLength(*slices->right(), cssToLengthConversionData()),
-        toBorderImageLength(*slices->bottom(), cssToLengthConversionData()),
-        toBorderImageLength(*slices->left(), cssToLengthConversionData()));
+        toBorderImageLength(*slices->top(), state.cssToLengthConversionData()),
+        toBorderImageLength(*slices->right(), state.cssToLengthConversionData()),
+        toBorderImageLength(*slices->bottom(), state.cssToLengthConversionData()),
+        toBorderImageLength(*slices->left(), state.cssToLengthConversionData()));
 }
 
-void CSSToStyleMap::mapNinePieceImageRepeat(CSSValue* value, NinePieceImage& image) const
+void CSSToStyleMap::mapNinePieceImageRepeat(StyleResolverState&, CSSValue* value, NinePieceImage& image)
 {
     if (!value || !value->isPrimitiveValue())
         return;

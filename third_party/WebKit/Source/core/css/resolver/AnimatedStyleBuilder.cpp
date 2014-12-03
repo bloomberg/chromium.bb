@@ -136,12 +136,12 @@ LengthSize animatableValueToLengthSize(const AnimatableValue* value, const Style
         animatableValueToLength(animatableLengthSize->height(), state, range));
 }
 
-void setFillSize(FillLayer* fillLayer, const AnimatableValue* value, const StyleResolverState& state)
+void setFillSize(FillLayer* fillLayer, const AnimatableValue* value, StyleResolverState& state)
 {
     if (value->isLengthSize())
         fillLayer->setSize(FillSize(SizeLength, animatableValueToLengthSize(value, state, ValueRangeNonNegative)));
     else
-        state.styleMap().mapFillSize(fillLayer, toAnimatableUnknown(value)->toCSSValue().get());
+        CSSToStyleMap::mapFillSize(state, fillLayer, toAnimatableUnknown(value)->toCSSValue().get());
 }
 
 PassRefPtrWillBeRawPtr<SVGLength> animatableValueToNonNegativeSVGLength(const AnimatableValue* value)
