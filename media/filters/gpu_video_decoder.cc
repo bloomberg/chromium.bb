@@ -402,7 +402,7 @@ static void ReadPixelsSync(
     const SkBitmap& pixels) {
 #if defined(OS_MACOSX)
   // For Mac OS X, just return black. http://crbug.com/425708.
-  pixels.eraseARGB(255, 0, 255, 0);
+  pixels.eraseARGB(0, 0, 0, 0);
   return;
 #endif
 
