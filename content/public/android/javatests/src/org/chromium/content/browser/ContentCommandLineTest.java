@@ -4,19 +4,17 @@
 
 package org.chromium.content.browser;
 
-import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content_shell_apk.ContentShellApplication;
 
 /**
  * Test class for command lines.
  */
-public class ContentCommandLineTest extends InstrumentationTestCase {
+public class ContentCommandLineTest extends NativeLibraryTestBase {
     // A reference command line. Note that switch2 is [brea\d], switch3 is [and "butter"],
     // and switch4 is [a "quoted" 'food'!]
     static final String INIT_SWITCHES[] = { "init_command", "--SWITCH", "Arg",
@@ -41,17 +39,7 @@ public class ContentCommandLineTest extends InstrumentationTestCase {
 
     void loadJni() {
         assertFalse(CommandLine.getInstance().isNativeImplementation());
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                ContentShellApplication.initializeApplicationParameters();
-                try {
-                    LibraryLoader.ensureInitialized();
-                } catch (ProcessInitException e) {
-                    throw new Error(e);
-                }
-            }
-        });
+        loadNativeLibraryNoBrowserProcess();
         assertTrue(CommandLine.getInstance().isNativeImplementation());
     }
 

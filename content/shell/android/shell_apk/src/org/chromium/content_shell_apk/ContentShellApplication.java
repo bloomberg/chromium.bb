@@ -38,10 +38,10 @@ public class ContentShellApplication extends ContentApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        initializeApplicationParameters();
     }
 
-    public static void initializeApplicationParameters() {
+    @Override
+    protected void initializeLibraryDependencies() {
         ResourceExtractor.setMandatoryPaksToExtract(MANDATORY_PAK_FILES);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
     }

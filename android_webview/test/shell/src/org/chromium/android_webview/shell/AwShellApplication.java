@@ -39,14 +39,18 @@ public class AwShellApplication extends ContentApplication {
             Log.e(TAG, "Java debugger connected. Resuming execution.");
         }
 
-        ResourceExtractor.setMandatoryPaksToExtract(MANDATORY_PAKS);
-        ResourceExtractor.setExtractImplicitLocaleForTesting(false);
         AwBrowserProcess.loadLibrary();
 
         if (CommandLine.getInstance().hasSwitch(AwShellSwitches.ENABLE_ATRACE)) {
             Log.e(TAG, "Enabling Android trace.");
             TraceEvent.setATraceEnabled(true);
         }
+    }
+
+    @Override
+    protected void initializeLibraryDependencies() {
+        ResourceExtractor.setMandatoryPaksToExtract(MANDATORY_PAKS);
+        ResourceExtractor.setExtractImplicitLocaleForTesting(false);
     }
 
     @Override

@@ -4,14 +4,11 @@
 
 package org.chromium.content.browser;
 
-import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ImportantFileWriterAndroid;
-import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content_shell_apk.ContentShellApplication;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -26,21 +23,7 @@ import java.io.IOException;
  * work, so is not attempting to test that writes are atomic. Instead it is just
  * testing that the Java code is calling the native code correctly.
  */
-public class ImportantFileWriterAndroidTest extends InstrumentationTestCase {
-
-    void loadJni() {
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                ContentShellApplication.initializeApplicationParameters();
-                try {
-                    LibraryLoader.ensureInitialized();
-                } catch (ProcessInitException e) {
-                    throw new Error(e);
-                }
-            }
-        });
-    }
+public class ImportantFileWriterAndroidTest extends NativeLibraryTestBase {
 
     private void checkFile(File testFile, byte[] data) {
         assertTrue(testFile.exists());
@@ -95,6 +78,6 @@ public class ImportantFileWriterAndroidTest extends InstrumentationTestCase {
 
     @Override
     public void setUp() throws Exception {
-        loadJni();
+        loadNativeLibraryNoBrowserProcess();
     }
 }

@@ -18,6 +18,7 @@ import org.chromium.content.browser.TracingControllerAndroid;
  */
 public abstract class ContentApplication extends BaseChromiumApplication {
     private TracingControllerAndroid mTracingController;
+    private boolean mLibraryDependenciesInitialized;
 
     TracingControllerAndroid getTracingController() {
         if (mTracingController == null) {
@@ -46,6 +47,24 @@ public abstract class ContentApplication extends BaseChromiumApplication {
                 return false;
             }
         });
+
+        initializeLibraryDependencies();
+        mLibraryDependenciesInitialized = true;
+    }
+
+    /**
+     * Initialize all the dependencies that need to be setup before library loading can be
+     * kicked off.
+     */
+    protected void initializeLibraryDependencies() {
+    }
+
+    /**
+     * @return Whether the library dependencies have been initialized and it is safe to issue
+     *         requests to load the native library.
+     */
+    public boolean areLibraryDependenciesInitialized() {
+        return mLibraryDependenciesInitialized;
     }
 
     /**

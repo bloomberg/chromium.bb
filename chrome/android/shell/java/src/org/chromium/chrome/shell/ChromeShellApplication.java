@@ -51,13 +51,16 @@ public class ChromeShellApplication extends ChromiumApplication {
         UmaUtils.recordMainEntryPointTime();
         super.onCreate();
 
-        ResourceExtractor.setMandatoryPaksToExtract(CHROME_MANDATORY_PAKS);
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-
         mObservers = new ArrayList<ChromeShellApplicationObserver>();
 
         // Initialize the invalidations ID, just like we would in the downstream code.
         UniqueIdInvalidationClientNameGenerator.doInitializeAndInstallGenerator(this);
+    }
+
+    @Override
+    protected void initializeLibraryDependencies() {
+        ResourceExtractor.setMandatoryPaksToExtract(CHROME_MANDATORY_PAKS);
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
     }
 
     @Override

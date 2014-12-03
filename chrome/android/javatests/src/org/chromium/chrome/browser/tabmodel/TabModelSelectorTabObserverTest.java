@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.test.InstrumentationTestCase;
 import android.test.MoreAsserts;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -12,19 +11,18 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
-import org.chromium.content.browser.BrowserStartupController;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Tests for the TabModelSelectorTabObserver.
  */
-public class TabModelSelectorTabObserverTest extends InstrumentationTestCase {
+public class TabModelSelectorTabObserverTest extends NativeLibraryTestBase {
 
     private TabModelSelectorBase mSelector;
     private TabModel mNormalTabModel;
@@ -36,6 +34,9 @@ public class TabModelSelectorTabObserverTest extends InstrumentationTestCase {
     public void setUp() throws Exception {
         super.setUp();
 
+        CommandLine.init(null);
+        loadNativeLibraryAndInitBrowserProcess();
+
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -45,14 +46,6 @@ public class TabModelSelectorTabObserverTest extends InstrumentationTestCase {
     }
 
     private void initialize() {
-        CommandLine.init(null);
-        try {
-            BrowserStartupController.get(getInstrumentation().getTargetContext())
-                    .startBrowserProcessesSync(false);
-        } catch (ProcessInitException e) {
-            fail("Unable to load native library");
-        }
-
         mWindowAndroid = new WindowAndroid(
                 getInstrumentation().getTargetContext().getApplicationContext());
 
