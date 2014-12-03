@@ -187,6 +187,75 @@ public:
 
 template<typename T> class TraceTrait<const T> : public TraceTrait<T> { };
 
+// If ENABLE_EAGER_TRACING_BY_DEFAULT is set to 1, GCed objects will
+// be eagerly traced by default. A class type can opt out by declaring
+// a TraceEagerlyTrait<> specialization, mapping the value to 'false'
+// (see the WILL_NOT_BE_EAGERLY_TRACED() macro below.)
+#define ENABLE_EAGER_TRACING_BY_DEFAULT 0
+
+// DISABLE_ALL_EAGER_TRACING provides the "kill switch" for eager
+// tracing; setting it to 1 will disable the use of eager tracing
+// entirely. That is, eager tracing is disabled even if traits have
+// been declared.
+#define DISABLE_ALL_EAGER_TRACING 0
+
+// If TraceEagerlyTrait<T>::value is true, then the marker thread should
+// invoke trace() on not-yet-marked objects deriving from class T right
+// away, and not queue their trace callbacks on its marker stack.
+//
+// Specific template specializations of TraceEagerlyTrait<T> can be used
+// to declare that eager tracing should always be used when tracing over
+// GCed objects with class type T. If the trait's boolean 'value' is
+// mapped to 'true' that is; declare it as 'false' to disable eager tracing.
+//
+// The trait can be declared to enable/disable eager tracing for a class T
+// and any of its subclasses, or just to the class T (but none of its subclasses.)
+//
+template<typename T, typename Enabled = void>
+class TraceEagerlyTrait {
+public:
+    static const bool value = ENABLE_EAGER_TRACING_BY_DEFAULT;
+};
+
+#define WILL_BE_EAGERLY_TRACED(TYPE)                                                        \
+template<typename U>                                                                        \
+class TraceEagerlyTrait<U, typename WTF::EnableIf<WTF::IsSubclass<U, TYPE>::value>::Type> { \
+public:                                                                                     \
+    static const bool value = true;                                                         \
+}
+
+#define WILL_NOT_BE_EAGERLY_TRACED(TYPE)                                                    \
+template<typename U>                                                                        \
+class TraceEagerlyTrait<U, typename WTF::EnableIf<WTF::IsSubclass<U, TYPE>::value>::Type> { \
+public:                                                                                     \
+    static const bool value = false;                                                        \
+}
+
+// Limit eager tracing to only apply to TYPE (but not any of its subclasses.)
+#define WILL_BE_EAGERLY_TRACED_CLASS(TYPE)       \
+template<>                                       \
+class TraceEagerlyTrait<TYPE> {                  \
+public:                                          \
+    static const bool value = true;              \
+}
+
+#define WILL_NOT_BE_EAGERLY_TRACED_CLASS(TYPE)   \
+template<>                                       \
+class TraceEagerlyTrait<TYPE> {                  \
+public:                                          \
+    static const bool value = false;             \
+}
+
+// Set to 1 if you want collections to be eagerly traced regardless
+// of whether the elements are eagerly traceable or not.
+#define ENABLE_EAGER_HEAP_COLLECTION_TRACING ENABLE_EAGER_TRACING_BY_DEFAULT
+
+#if ENABLE_EAGER_HEAP_COLLECTION_TRACING
+#define IS_EAGERLY_TRACED_HEAP_COLLECTION(Type) true
+#else
+#define IS_EAGERLY_TRACED_HEAP_COLLECTION(Type) TraceEagerlyTrait<Type>::value
+#endif
+
 template<typename Collection>
 struct OffHeapCollectionTraceTrait;
 
@@ -329,6 +398,8 @@ public:
     // mark method above to automatically provide the callback
     // function.
     virtual void mark(const void*, TraceCallback) = 0;
+
+    template<typename T> void markNoTracing(const T* pointer) { mark(pointer, reinterpret_cast<TraceCallback>(0)); }
     void markNoTracing(const void* pointer) { mark(pointer, reinterpret_cast<TraceCallback>(0)); }
     void markNoTracing(HeapObjectHeader* header) { mark(header, reinterpret_cast<TraceCallback>(0)); }
     void markNoTracing(FinalizedHeapObjectHeader* header) { mark(header, reinterpret_cast<TraceCallback>(0)); }
@@ -394,6 +465,7 @@ public:
 #endif
 
     virtual bool isMarked(const void*) = 0;
+    virtual bool ensureMarked(const void*) = 0;
 
     template<typename T> inline bool isAlive(T* obj)
     {
@@ -422,10 +494,11 @@ public:
 #endif
 
     // Macro to declare methods needed for each typed heap.
-#define DECLARE_VISITOR_METHODS(Type)                                  \
-    DEBUG_ONLY(void checkGCInfo(const Type*, const GCInfo*);)          \
-    virtual void mark(const Type*, TraceCallback) = 0;                 \
-    virtual bool isMarked(const Type*) = 0;
+#define DECLARE_VISITOR_METHODS(Type)                            \
+    DEBUG_ONLY(void checkGCInfo(const Type*, const GCInfo*);)    \
+    virtual void mark(const Type*, TraceCallback) = 0;           \
+    virtual bool isMarked(const Type*) = 0;                      \
+    virtual bool ensureMarked(const Type*) = 0;
 
     FOR_EACH_TYPED_HEAP(DECLARE_VISITOR_METHODS)
 #undef DECLARE_VISITOR_METHODS
@@ -502,6 +575,14 @@ public:
         // method on the visitor. The second argument is the static trace method
         // of the trait, which by default calls the instance method
         // trace(Visitor*) on the object.
+        //
+        // If the trait allows it, invoke the trace callback right here on the
+        // not-yet-marked object.
+        if (!DISABLE_ALL_EAGER_TRACING && TraceEagerlyTrait<T>::value) {
+            if (visitor->ensureMarked(t))
+                TraceTrait<T>::trace(visitor, const_cast<T*>(t));
+            return;
+        }
         visitor->mark(const_cast<T*>(t), &TraceTrait<T>::trace);
     }
 
@@ -592,13 +673,18 @@ public:
 
 #define USING_GARBAGE_COLLECTED_MIXIN(TYPE) \
 public: \
-    virtual void adjustAndMark(blink::Visitor* visitor) const override    \
+    virtual void adjustAndMark(blink::Visitor* visitor) const override \
     { \
         typedef WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<TYPE>::Type, blink::GarbageCollected> IsSubclassOfGarbageCollected; \
-        COMPILE_ASSERT(IsSubclassOfGarbageCollected::value, OnlyGarbageCollectedObjectsCanHaveGarbageCollectedMixins); \
+        COMPILE_ASSERT(IsSubclassOfGarbageCollected::value, OnlyGarbageCollectedObjectsCanHaveGarbageCollectedMixins);                  \
+        if (!DISABLE_ALL_EAGER_TRACING && TraceEagerlyTrait<TYPE>::value) {             \
+            if (visitor->ensureMarked(static_cast<const TYPE*>(this)))                  \
+                TraceTrait<TYPE>::trace(visitor, const_cast<TYPE*>(this));              \
+            return;                                                                     \
+        }                                                                               \
         visitor->mark(static_cast<const TYPE*>(this), &blink::TraceTrait<TYPE>::trace); \
     } \
-    virtual bool isHeapObjectAlive(blink::Visitor* visitor) const override  \
+    virtual bool isHeapObjectAlive(blink::Visitor* visitor) const override              \
     { \
         return visitor->isAlive(this); \
     } \

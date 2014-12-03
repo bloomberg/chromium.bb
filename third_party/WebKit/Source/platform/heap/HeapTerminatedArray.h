@@ -49,6 +49,12 @@ private:
     template<typename U, template <typename> class> friend class WTF::TerminatedArrayBuilder;
 };
 
+template<typename T>
+class TraceEagerlyTrait<HeapTerminatedArray<T> > {
+public:
+    static const bool value = IS_EAGERLY_TRACED_HEAP_COLLECTION(T);
+};
+
 } // namespace blink
 
 #endif // HeapTerminatedArray_h

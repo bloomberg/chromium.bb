@@ -233,7 +233,11 @@ static size_t objectPayloadSize()
         if (object)                                                        \
             m_count++;                                                     \
     }                                                                      \
-    virtual bool isMarked(const Type*) override { return false; }
+    virtual bool isMarked(const Type*) override { return false; }          \
+    virtual bool ensureMarked(const Type* objectPointer) override          \
+    {                                                                      \
+        return ensureMarked(objectPointer);                                \
+    }
 
 class CountingVisitor : public Visitor {
 public:
@@ -268,6 +272,13 @@ public:
 #endif
     virtual void registerWeakCell(void**, WeakPointerCallback) override { }
     virtual bool isMarked(const void*) override { return false; }
+    virtual bool ensureMarked(const void* objectPointer) override
+    {
+        if (!objectPointer || isMarked(objectPointer))
+            return false;
+        markNoTracing(objectPointer);
+        return true;
+    }
 
     FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_METHODS)
 
@@ -277,6 +288,8 @@ public:
 private:
     size_t m_count;
 };
+
+#undef DEFINE_VISITOR_METHODS
 
 class SimpleObject : public GarbageCollected<SimpleObject> {
 public:
@@ -294,8 +307,6 @@ protected:
     SimpleObject() { }
     char payload[64];
 };
-
-#undef DEFINE_VISITOR_METHODS
 
 class HeapTestSuperClass : public GarbageCollectedFinalized<HeapTestSuperClass> {
 public:
@@ -5231,6 +5242,54 @@ TEST(HeapTest, NonNodeAllocatingNodeInDestructor)
     EXPECT_EQ(10, (*NonNodeAllocatingNodeInDestructor::s_node)->value());
     delete NonNodeAllocatingNodeInDestructor::s_node;
     NonNodeAllocatingNodeInDestructor::s_node = 0;
+}
+
+class TraceTypeEagerly1 : public GarbageCollected<TraceTypeEagerly1> { };
+WILL_BE_EAGERLY_TRACED(TraceTypeEagerly1);
+class TraceTypeEagerly2 : public TraceTypeEagerly1 { };
+
+class TraceTypeEagerly3 { };
+WILL_BE_EAGERLY_TRACED(TraceTypeEagerly3);
+
+class TraceTypeEagerly4 : public TraceTypeEagerly3 { };
+
+class TraceTypeEagerly5 { };
+WILL_BE_EAGERLY_TRACED_CLASS(TraceTypeEagerly5);
+
+class TraceTypeEagerly6 : public TraceTypeEagerly5 { };
+
+class TraceTypeEagerly7 { };
+
+class TraceTypeNonEagerly1 { };
+WILL_NOT_BE_EAGERLY_TRACED(TraceTypeNonEagerly1);
+
+TEST(HeapTest, TraceTypesEagerly)
+{
+    COMPILE_ASSERT(TraceEagerlyTrait<TraceTypeEagerly1>::value, ShouldBeTrue);
+    COMPILE_ASSERT(TraceEagerlyTrait<Member<TraceTypeEagerly1>>::value, ShouldBeTrue);
+    COMPILE_ASSERT(TraceEagerlyTrait<WeakMember<TraceTypeEagerly1>>::value, ShouldBeTrue);
+    COMPILE_ASSERT(!TraceEagerlyTrait<RawPtr<TraceTypeEagerly1>>::value, ShouldBeTrue);
+    COMPILE_ASSERT(TraceEagerlyTrait<HeapVector<Member<TraceTypeEagerly1>>>::value, ShouldBeTrue);
+    COMPILE_ASSERT(TraceEagerlyTrait<HeapVector<WeakMember<TraceTypeEagerly1>>>::value, ShouldBeTrue);
+    COMPILE_ASSERT(TraceEagerlyTrait<HeapHashSet<Member<TraceTypeEagerly1>>>::value, ShouldBeTrue);
+    COMPILE_ASSERT(TraceEagerlyTrait<HeapHashSet<Member<TraceTypeEagerly1>>>::value, ShouldBeTrue);
+    using HashMapIntToObj = HeapHashMap<int, Member<TraceTypeEagerly1>>;
+    COMPILE_ASSERT(TraceEagerlyTrait<HashMapIntToObj>::value, ShouldBeTrue);
+    using HashMapObjToInt = HeapHashMap<Member<TraceTypeEagerly1>, int>;
+    COMPILE_ASSERT(TraceEagerlyTrait<HashMapObjToInt>::value, ShouldBeTrue);
+
+    COMPILE_ASSERT(TraceEagerlyTrait<TraceTypeEagerly2>::value, ShouldBeTrue);
+    COMPILE_ASSERT(TraceEagerlyTrait<TraceTypeEagerly3>::value, ShouldBeTrue);
+
+    COMPILE_ASSERT(TraceEagerlyTrait<TraceTypeEagerly4>::value, ShouldBeTrue);
+
+    COMPILE_ASSERT(TraceEagerlyTrait<TraceTypeEagerly5>::value, ShouldBeTrue);
+    COMPILE_ASSERT(TraceEagerlyTrait<Member<TraceTypeEagerly5>>::value, ShouldBeTrue);
+
+    COMPILE_ASSERT(!TraceEagerlyTrait<TraceTypeEagerly6>::value, ShouldBeTrue);
+    COMPILE_ASSERT(!TraceEagerlyTrait<TraceTypeEagerly7>::value, ShouldBeTrue);
+
+    COMPILE_ASSERT(!TraceEagerlyTrait<TraceTypeNonEagerly1>::value, ShouldBeTrue);
 }
 
 } // namespace blink

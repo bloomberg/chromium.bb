@@ -582,12 +582,12 @@ static bool isUninitializedMemory(void* objectPointer, size_t objectSize)
 template<>
 void LargeObject<FinalizedHeapObjectHeader>::mark(Visitor* visitor)
 {
-    if (heapObjectHeader()->hasVTable() && !vTableInitialized(payload())) {
-        FinalizedHeapObjectHeader* header = heapObjectHeader();
+    FinalizedHeapObjectHeader* header = heapObjectHeader();
+    if (header->hasVTable() && !vTableInitialized(payload())) {
         visitor->markNoTracing(header);
         ASSERT(isUninitializedMemory(header->payload(), header->payloadSize()));
     } else {
-        visitor->mark(heapObjectHeader(), heapObjectHeader()->traceCallback());
+        visitor->mark(header, header->traceCallback());
     }
 }
 
@@ -1963,6 +1963,12 @@ static void markNoTracingCallback(Visitor* visitor, void* object)
     visitor->markNoTracing(object);
 }
 
+enum MarkingMode {
+    GlobalMarking,
+    ThreadLocalMarking,
+};
+
+template<MarkingMode Mode>
 class MarkingVisitor final : public Visitor {
 public:
 #if ENABLE(GC_PROFILE_MARKING)
@@ -1971,27 +1977,26 @@ public:
     typedef HashMap<uintptr_t, std::pair<uintptr_t, String> > ObjectGraph;
 #endif
 
-    MarkingVisitor(CallbackStack* markingStack) : m_markingStack(markingStack)
+    explicit MarkingVisitor(CallbackStack* markingStack)
+        : m_markingStack(markingStack)
     {
     }
 
     inline void visitHeader(HeapObjectHeader* header, const void* objectPointer, TraceCallback callback)
     {
         ASSERT(header);
-#if ENABLE(ASSERT)
-        {
-            // Check that we are not marking objects that are outside
-            // the heap by calling Heap::contains. However we cannot
-            // call Heap::contains when outside a GC and we call mark
-            // when doing weakness for ephemerons. Hence we only check
-            // when called within.
-            ASSERT(!Heap::isInGC() || Heap::containedInHeapOrOrphanedPage(header));
-        }
-#endif
         ASSERT(objectPointer);
+        // Check that we are not marking objects that are outside
+        // the heap by calling Heap::contains. However we cannot
+        // call Heap::contains when outside a GC and we call mark
+        // when doing weakness for ephemerons. Hence we only check
+        // when called within.
+        ASSERT(!Heap::isInGC() || Heap::containedInHeapOrOrphanedPage(header));
+
         if (header->isMarked())
             return;
         header->mark();
+
 #if ENABLE(GC_PROFILE_MARKING)
         MutexLocker locker(objectGraphMutex());
         String className(classOf(objectPointer));
@@ -2003,21 +2008,30 @@ public:
         ASSERT(result.isNewEntry);
         // fprintf(stderr, "%s[%p] -> %s[%p]\n", m_hostName.ascii().data(), m_hostObject, className.ascii().data(), objectPointer);
 #endif
+        // If you hit this ASSERT, it means that there is a dangling pointer
+        // from a live thread heap to a dead thread heap. We must eliminate
+        // the dangling pointer.
+        // Release builds don't have the ASSERT, but it is OK because
+        // release builds will crash upon invoking the trace callback
+        // as all the entries of the orphaned heaps are zeroed out
+        // (=> 'objectPointer' will not have a valid vtable.)
+        ASSERT(!pageFromObject(objectPointer)->orphaned());
+
+        if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))
+            return;
+
         if (callback)
             Heap::pushTraceCallback(m_markingStack, const_cast<void*>(objectPointer), callback);
     }
 
+    // We need both HeapObjectHeader and FinalizedHeapObjectHeader versions to correctly find the payload.
     virtual void mark(HeapObjectHeader* header, TraceCallback callback) override
     {
-        // We need both the HeapObjectHeader and FinalizedHeapObjectHeader
-        // version to correctly find the payload.
         visitHeader(header, header->payload(), callback);
     }
 
     virtual void mark(FinalizedHeapObjectHeader* header, TraceCallback callback) override
     {
-        // We need both the HeapObjectHeader and FinalizedHeapObjectHeader
-        // version to correctly find the payload.
         visitHeader(header, header->payload(), callback);
     }
 
@@ -2056,6 +2070,60 @@ public:
         return FinalizedHeapObjectHeader::fromPayload(objectPointer)->isMarked();
     }
 
+    virtual bool ensureMarked(const void* objectPointer) override
+    {
+        if (!objectPointer)
+            return false;
+#if ENABLE(ASSERT)
+        if (isMarked(objectPointer))
+            return false;
+
+        markNoTracing(objectPointer);
+#else
+        // Inline what the above markNoTracing() call expands to,
+        // so as to make sure that we do get all the benefits.
+        FinalizedHeapObjectHeader* header =
+            FinalizedHeapObjectHeader::fromPayload(objectPointer);
+        if (header->isMarked())
+            return false;
+        header->mark();
+#endif
+        if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))
+            return false;
+        return true;
+    }
+
+#if ENABLE(ASSERT)
+#define DEFINE_ENSURE_MARKED_METHOD(Type)                                                       \
+    virtual bool ensureMarked(const Type* objectPointer) override                               \
+    {                                                                                           \
+        if (!objectPointer)                                                                     \
+            return false;                                                                       \
+        COMPILE_ASSERT(!NeedsAdjustAndMark<Type>::value, CanOnlyUseIsMarkedOnNonAdjustedTypes); \
+        if (isMarked(objectPointer))                                                            \
+            return false;                                                                       \
+        markNoTracing(objectPointer);                                                           \
+        if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))        \
+            return false;                                                                       \
+        return true;                                                                            \
+    }
+#else
+#define DEFINE_ENSURE_MARKED_METHOD(Type)                                                       \
+    virtual bool ensureMarked(const Type* objectPointer) override                               \
+    {                                                                                           \
+        if (!objectPointer)                                                                     \
+            return false;                                                                       \
+        HeapObjectHeader* header =                                                              \
+            HeapObjectHeader::fromPayload(objectPointer);                                       \
+        if (header->isMarked())                                                                 \
+            return false;                                                                       \
+        header->mark();                                                                         \
+        if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))        \
+            return false;                                                                       \
+        return true;                                                                            \
+    }
+#endif
+
     // This macro defines the necessary visitor methods for typed heaps
 #define DEFINE_VISITOR_METHODS(Type)                                              \
     virtual void mark(const Type* objectPointer, TraceCallback callback) override \
@@ -2069,7 +2137,8 @@ public:
     virtual bool isMarked(const Type* objectPointer) override                     \
     {                                                                             \
         return HeapObjectHeader::fromPayload(objectPointer)->isMarked();          \
-    }
+    }                                                                             \
+    DEFINE_ENSURE_MARKED_METHOD(Type)
 
     FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_METHODS)
 #undef DEFINE_VISITOR_METHODS
@@ -2170,6 +2239,16 @@ public:
     }
 #endif
 
+    static inline bool objectInTerminatingThreadHeap(const void* objectPointer)
+    {
+        BaseHeapPage* page = pageFromObject(objectPointer);
+        ASSERT(!page->orphaned());
+        // When doing a thread local GC, the marker checks if
+        // the object resides in another thread's heap. The
+        // object should not be traced, if it does.
+        return page->terminating();
+    }
+
 protected:
     virtual void registerWeakCell(void** cell, WeakPointerCallback callback) override
     {
@@ -2188,7 +2267,7 @@ void Heap::init()
     s_weakCallbackStack = new CallbackStack();
     s_ephemeronStack = new CallbackStack();
     s_heapDoesNotContainCache = new HeapDoesNotContainCache();
-    s_markingVisitor = new MarkingVisitor(s_markingStack);
+    s_markingVisitor = new MarkingVisitor<GlobalMarking>(s_markingStack);
     s_freePagePool = new FreePagePool();
     s_orphanedPagePool = new OrphanedPagePool();
     s_allocatedObjectSize = 0;
@@ -2330,42 +2409,16 @@ String Heap::createBacktraceString()
 
 void Heap::pushTraceCallback(CallbackStack* stack, void* object, TraceCallback callback)
 {
-#if ENABLE(ASSERT)
-    {
-        ASSERT(Heap::containedInHeapOrOrphanedPage(object));
-    }
-#endif
+    ASSERT(Heap::containedInHeapOrOrphanedPage(object));
     CallbackStack::Item* slot = stack->allocateEntry();
     *slot = CallbackStack::Item(object, callback);
 }
 
-template<CallbackInvocationMode Mode>
 bool Heap::popAndInvokeTraceCallback(CallbackStack* stack, Visitor* visitor)
 {
     CallbackStack::Item* item = stack->pop();
     if (!item)
         return false;
-#if ENABLE(ASSERT)
-    if (Mode == GlobalMarking) {
-        BaseHeapPage* page = pageFromObject(item->object());
-        // If you hit this ASSERT, it means that there is a dangling pointer
-        // from a live thread heap to a dead thread heap. We must eliminate
-        // the dangling pointer.
-        // Release builds don't have the ASSERT, but it is OK because
-        // release builds will crash at the following item->call
-        // because all the entries of the orphaned heaps are zeroed out and
-        // thus the item does not have a valid vtable.
-        ASSERT(!page->orphaned());
-    }
-#endif
-    if (Mode == ThreadLocalMarking) {
-        BaseHeapPage* page = pageFromObject(item->object());
-        ASSERT(!page->orphaned());
-        // When doing a thread local GC, don't trace an object located in
-        // a heap of another thread.
-        if (!page->terminating())
-            return true;
-    }
 
 #if ENABLE(GC_PROFILE_MARKING)
     visitor->setHostInfo(item->object(), classOf(item->object()));
@@ -2501,7 +2554,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     ThreadState::visitPersistentRoots(s_markingVisitor);
 
     // 2. trace objects reachable from the persistent roots including ephemerons.
-    processMarkingStack<GlobalMarking>();
+    processMarkingStack(s_markingVisitor);
 
     // 3. trace objects reachable from the stack. We do this independent of the
     // given stackState since other threads might have a different stack state.
@@ -2510,12 +2563,11 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     // 4. trace objects reachable from the stack "roots" including ephemerons.
     // Only do the processing if we found a pointer to an object on one of the
     // thread stacks.
-    if (lastGCWasConservative()) {
-        processMarkingStack<GlobalMarking>();
-    }
+    if (lastGCWasConservative())
+        processMarkingStack(s_markingVisitor);
 
-    postMarkingProcessing();
-    globalWeakProcessing();
+    postMarkingProcessing(s_markingVisitor);
+    globalWeakProcessing(s_markingVisitor);
 
     // Now we can delete all orphaned pages because there are no dangling
     // pointers to the orphaned pages. (If we have such dangling pointers,
@@ -2546,6 +2598,7 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
     // same time as a thread local GC.
 
     {
+        MarkingVisitor<ThreadLocalMarking> markingVisitor(s_markingStack);
         ThreadState::NoAllocationScope noAllocationScope(state);
 
         enterGC();
@@ -2561,14 +2614,14 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         // global GC finds a "pointer" on the stack or due to a programming
         // error where an object has a dangling cross-thread pointer to an
         // object on this heap.
-        state->visitPersistents(s_markingVisitor);
+        state->visitPersistents(&markingVisitor);
 
         // 2. trace objects reachable from the thread's persistent roots
         // including ephemerons.
-        processMarkingStack<ThreadLocalMarking>();
+        processMarkingStack(&markingVisitor);
 
-        postMarkingProcessing();
-        globalWeakProcessing();
+        postMarkingProcessing(&markingVisitor);
+        globalWeakProcessing(&markingVisitor);
 
         state->postGC();
         leaveGC();
@@ -2576,32 +2629,29 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
     state->performPendingSweep();
 }
 
-template<CallbackInvocationMode Mode>
-void Heap::processMarkingStack()
+void Heap::processMarkingStack(Visitor* markingVisitor)
 {
     // Ephemeron fixed point loop.
     do {
         {
             // Iteratively mark all objects that are reachable from the objects
-            // currently pushed onto the marking stack. If Mode is ThreadLocalMarking
-            // don't continue tracing if the trace hits an object on another thread's
-            // heap.
+            // currently pushed onto the marking stack.
             TRACE_EVENT0("blink_gc", "Heap::processMarkingStackSingleThreaded");
-            while (popAndInvokeTraceCallback<Mode>(s_markingStack, s_markingVisitor)) { }
+            while (popAndInvokeTraceCallback(s_markingStack, markingVisitor)) { }
         }
 
         {
             // Mark any strong pointers that have now become reachable in ephemeron
             // maps.
             TRACE_EVENT0("blink_gc", "Heap::processEphemeronStack");
-            s_ephemeronStack->invokeEphemeronCallbacks(s_markingVisitor);
+            s_ephemeronStack->invokeEphemeronCallbacks(markingVisitor);
         }
 
         // Rerun loop if ephemeron processing queued more objects for tracing.
     } while (!s_markingStack->isEmpty());
 }
 
-void Heap::postMarkingProcessing()
+void Heap::postMarkingProcessing(Visitor* markingVisitor)
 {
     TRACE_EVENT0("blink_gc", "Heap::postMarkingProcessing");
     // Call post-marking callbacks including:
@@ -2609,7 +2659,7 @@ void Heap::postMarkingProcessing()
     //    (specifically to clear the queued bits for weak hash tables), and
     // 2. the markNoTracing callbacks on collection backings to mark them
     //    if they are only reachable from their front objects.
-    while (popAndInvokePostMarkingCallback(s_markingVisitor)) { }
+    while (popAndInvokePostMarkingCallback(markingVisitor)) { }
 
     s_ephemeronStack->clear();
 
@@ -2619,12 +2669,12 @@ void Heap::postMarkingProcessing()
     ASSERT(s_markingStack->isEmpty());
 }
 
-void Heap::globalWeakProcessing()
+void Heap::globalWeakProcessing(Visitor* markingVisitor)
 {
     TRACE_EVENT0("blink_gc", "Heap::globalWeakProcessing");
     // Call weak callbacks on objects that may now be pointing to dead
     // objects.
-    while (popAndInvokeWeakPointerCallback(s_markingVisitor)) { }
+    while (popAndInvokeWeakPointerCallback(markingVisitor)) { }
 
     // It is not permitted to trace pointers of live objects in the weak
     // callback phase, so the marking stack should still be empty here.

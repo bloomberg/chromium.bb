@@ -97,11 +97,6 @@ const uint8_t finalizedZapValue = 24;
 const uint8_t orphanedZapValue = 240;
 const int numberOfPagesToConsiderForCoalescing = 100;
 
-enum CallbackInvocationMode {
-    GlobalMarking,
-    ThreadLocalMarking,
-};
-
 class CallbackStack;
 class PageMemory;
 template<ThreadAffinity affinity> class ThreadLocalPersistents;
@@ -890,7 +885,7 @@ public:
 
     // Pop the top of a marking stack and call the callback with the visitor
     // and the object. Returns false when there is nothing more to do.
-    template<CallbackInvocationMode Mode> static bool popAndInvokeTraceCallback(CallbackStack*, Visitor*);
+    static bool popAndInvokeTraceCallback(CallbackStack*, Visitor*);
 
     // Remove an item from the post-marking callback stack and call
     // the callback with the visitor and the object pointer. Returns
@@ -917,9 +912,10 @@ public:
     static void collectGarbage(ThreadState::StackState, ThreadState::GCType = ThreadState::ForcedGC);
     static void collectGarbageForTerminatingThread(ThreadState*);
     static void collectAllGarbage();
-    template<CallbackInvocationMode Mode> static void processMarkingStack();
-    static void postMarkingProcessing();
-    static void globalWeakProcessing();
+
+    static void processMarkingStack(Visitor*);
+    static void postMarkingProcessing(Visitor*);
+    static void globalWeakProcessing(Visitor*);
     static void setForcePreciseGCForTesting();
 
     static void preGC();
