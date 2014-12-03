@@ -20,10 +20,7 @@ class FakePermissionBrokerClient : public PermissionBrokerClient {
   virtual void RequestPathAccess(const std::string& path,
                                  int interface_id,
                                  const ResultCallback& callback) override;
-  virtual void RequestUsbAccess(const uint16_t vendor_id,
-                                const uint16_t product_id,
-                                int interface_id,
-                                const ResultCallback& callback) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FakePermissionBrokerClient);
 };

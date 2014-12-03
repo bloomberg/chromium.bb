@@ -42,18 +42,6 @@ class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
                                  int interface_id,
                                  const ResultCallback& callback) = 0;
 
-  // RequestUsbAccess attempts to request access to _all_ USB devices attached
-  // to the system that match |vendor_id| and |product_id|. If |interface_id| is
-  // passed (not -1), the request will check if a specific interface is claimed
-  // while requesting access. This allows devices with multiple interfaces to be
-  // accessed even if some of them are already claimed by kernel.
-  // This call makes no attempt to guarantee atomicity, and partial failure is
-  // indistinguishable from complete failure.
-  virtual void RequestUsbAccess(uint16_t vendor_id,
-                                uint16_t product_id,
-                                int interface_id,
-                                const ResultCallback& callback) = 0;
-
  protected:
   PermissionBrokerClient();
 

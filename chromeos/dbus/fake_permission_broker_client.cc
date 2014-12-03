@@ -21,12 +21,4 @@ void FakePermissionBrokerClient::RequestPathAccess(
   callback.Run(false);
 }
 
-void FakePermissionBrokerClient::RequestUsbAccess(
-    const uint16_t vendor_id,
-    const uint16_t product_id,
-    int interface_id,
-    const ResultCallback& callback) {
-  callback.Run(false);
-}
-
 }  // namespace chromeos
