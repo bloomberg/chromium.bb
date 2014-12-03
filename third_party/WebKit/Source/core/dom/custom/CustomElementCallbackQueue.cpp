@@ -75,6 +75,7 @@ bool CustomElementCallbackQueue::processInElementQueue(ElementQueueId caller)
 void CustomElementCallbackQueue::trace(Visitor* visitor)
 {
     visitor->trace(m_element);
+    visitor->trace(m_queue);
 }
 
 } // namespace blink

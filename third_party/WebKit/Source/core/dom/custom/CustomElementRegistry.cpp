@@ -94,7 +94,7 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
 
     ASSERT(!observer.registrationContextWentAway());
 
-    RefPtr<CustomElementLifecycleCallbacks> lifecycleCallbacks = constructorBuilder->createCallbacks();
+    RefPtrWillBeRawPtr<CustomElementLifecycleCallbacks> lifecycleCallbacks = constructorBuilder->createCallbacks();
 
     // Consulting the constructor builder could execute script and
     // kill the document.
@@ -104,7 +104,7 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
     }
 
     const CustomElementDescriptor descriptor(type, tagName.namespaceURI(), tagName.localName());
-    RefPtr<CustomElementDefinition> definition = CustomElementDefinition::create(descriptor, lifecycleCallbacks);
+    RefPtrWillBeRawPtr<CustomElementDefinition> definition = CustomElementDefinition::create(descriptor, lifecycleCallbacks);
 
     if (!constructorBuilder->createConstructor(document, definition.get(), exceptionState))
         return 0;
@@ -123,6 +123,13 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
 CustomElementDefinition* CustomElementRegistry::find(const CustomElementDescriptor& descriptor) const
 {
     return m_definitions.get(descriptor);
+}
+
+void CustomElementRegistry::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_definitions);
+#endif
 }
 
 } // namespace blink

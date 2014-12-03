@@ -48,6 +48,10 @@ class ExceptionState;
 
 class CustomElementRegistry final {
     WTF_MAKE_NONCOPYABLE(CustomElementRegistry);
+    DISALLOW_ALLOCATION();
+public:
+    void trace(Visitor*);
+
 protected:
     friend class CustomElementRegistrationContext;
 
@@ -57,7 +61,7 @@ protected:
     CustomElementDefinition* find(const CustomElementDescriptor&) const;
 
 private:
-    typedef HashMap<CustomElementDescriptor, RefPtr<CustomElementDefinition> > DefinitionMap;
+    typedef WillBeHeapHashMap<CustomElementDescriptor, RefPtrWillBeMember<CustomElementDefinition> > DefinitionMap;
     DefinitionMap m_definitions;
     HashSet<AtomicString> m_registeredTypeNames;
 };

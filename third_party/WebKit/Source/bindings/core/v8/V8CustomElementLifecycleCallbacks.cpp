@@ -49,7 +49,7 @@ namespace blink {
     V(detached, DetachedCallback)           \
     V(attributeChanged, AttributeChangedCallback)
 
-PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptState* scriptState, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
+PassRefPtrWillBeRawPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks::create(ScriptState* scriptState, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
 {
     v8::Isolate* isolate = scriptState->isolate();
     // A given object can only be used as a Custom Element prototype
@@ -62,7 +62,7 @@ PassRefPtr<V8CustomElementLifecycleCallbacks> V8CustomElementLifecycleCallbacks:
     CALLBACK_LIST(SET_HIDDEN_VALUE)
 #undef SET_HIDDEN_VALUE
 
-    return adoptRef(new V8CustomElementLifecycleCallbacks(scriptState, prototype, created, attached, detached, attributeChanged));
+    return adoptRefWillBeNoop(new V8CustomElementLifecycleCallbacks(scriptState, prototype, created, attached, detached, attributeChanged));
 }
 
 static CustomElementLifecycleCallbacks::CallbackType flagSet(v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
@@ -91,7 +91,7 @@ static void weakCallback(const v8::WeakCallbackData<T, ScopedPersistent<T> >& da
 V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ScriptState* scriptState, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged)
     : CustomElementLifecycleCallbacks(flagSet(attached, detached, attributeChanged))
     , ContextLifecycleObserver(scriptState->executionContext())
-    , m_owner(0)
+    , m_owner(nullptr)
     , m_scriptState(scriptState)
     , m_prototype(scriptState->isolate(), prototype)
     , m_created(scriptState->isolate(), created)
@@ -123,12 +123,14 @@ V8PerContextData* V8CustomElementLifecycleCallbacks::creationContextData()
 
 V8CustomElementLifecycleCallbacks::~V8CustomElementLifecycleCallbacks()
 {
+#if !ENABLE(OILPAN)
     if (!m_owner)
         return;
 
     v8::HandleScope handleScope(m_scriptState->isolate());
     if (V8PerContextData* perContextData = creationContextData())
         perContextData->clearCustomElementBinding(m_owner);
+#endif
 }
 
 bool V8CustomElementLifecycleCallbacks::setBinding(CustomElementDefinition* owner, PassOwnPtr<CustomElementBinding> binding)
@@ -251,6 +253,12 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
     ScriptController::callFunction(executionContext(), callback, receiver, 0, 0, isolate);
+}
+
+void V8CustomElementLifecycleCallbacks::trace(Visitor* visitor)
+{
+    visitor->trace(m_owner);
+    CustomElementLifecycleCallbacks::trace(visitor);
 }
 
 } // namespace blink

@@ -119,7 +119,7 @@ public:
     bool hasPseudoElements() const;
     void clearPseudoElements();
 
-    void setCustomElementDefinition(PassRefPtr<CustomElementDefinition> definition) { m_customElementDefinition = definition; }
+    void setCustomElementDefinition(PassRefPtrWillBeRawPtr<CustomElementDefinition> definition) { m_customElementDefinition = definition; }
     CustomElementDefinition* customElementDefinition() const { return m_customElementDefinition.get(); }
 
     WillBeHeapVector<RefPtrWillBeMember<Attr> >& ensureAttrNodeList();
@@ -144,7 +144,7 @@ private:
     OwnPtrWillBeMember<InlineCSSStyleDeclaration> m_cssomWrapper;
 
     RefPtr<RenderStyle> m_computedStyle;
-    RefPtr<CustomElementDefinition> m_customElementDefinition;
+    RefPtrWillBeMember<CustomElementDefinition> m_customElementDefinition;
 
     RefPtrWillBeMember<PseudoElement> m_generatedBefore;
     RefPtrWillBeMember<PseudoElement> m_generatedAfter;

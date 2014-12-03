@@ -1646,7 +1646,7 @@ void Element::setNeedsCompositingUpdate()
     renderer->layer()->setNeedsCompositingInputsUpdate();
 }
 
-void Element::setCustomElementDefinition(PassRefPtr<CustomElementDefinition> definition)
+void Element::setCustomElementDefinition(PassRefPtrWillBeRawPtr<CustomElementDefinition> definition)
 {
     if (!hasRareData() && !definition)
         return;

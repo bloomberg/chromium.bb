@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/V8PersistentValueMap.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
+#include "core/dom/custom/CustomElementDefinition.h"
 #include "gin/public/context_holder.h"
 #include "gin/public/gin_embedders.h"
 #include "wtf/HashMap.h"
@@ -88,7 +89,9 @@ public:
     V8NPObjectMap* v8NPObjectMap() { return &m_v8NPObjectMap; }
 
     void addCustomElementBinding(CustomElementDefinition*, PassOwnPtr<CustomElementBinding>);
+#if !ENABLE(OILPAN)
     void clearCustomElementBinding(CustomElementDefinition*);
+#endif
     CustomElementBinding* customElementBinding(CustomElementDefinition*);
 
     V8DOMActivityLogger* activityLogger() const { return m_activityLogger; }
@@ -120,8 +123,8 @@ private:
     ScopedPersistent<v8::Context> m_context;
     ScopedPersistent<v8::Value> m_errorPrototype;
 
-    typedef WTF::HashMap<CustomElementDefinition*, OwnPtr<CustomElementBinding> > CustomElementBindingMap;
-    OwnPtr<CustomElementBindingMap> m_customElementBindings;
+    typedef WillBePersistentHeapHashMap<RawPtrWillBeWeakMember<CustomElementDefinition>, OwnPtr<CustomElementBinding> > CustomElementBindingMap;
+    CustomElementBindingMap m_customElementBindings;
 
     // This is owned by a static hash map in V8DOMActivityLogger.
     V8DOMActivityLogger* m_activityLogger;

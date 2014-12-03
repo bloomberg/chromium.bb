@@ -51,8 +51,8 @@ class CustomElementScheduler final : public NoBaseWillBeGarbageCollected<CustomE
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementScheduler);
 public:
 
-    static void scheduleCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtrWillBeRawPtr<Element>, CustomElementLifecycleCallbacks::CallbackType);
-    static void scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtrWillBeRawPtr<Element>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
+    static void scheduleCallback(PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks>, PassRefPtrWillBeRawPtr<Element>, CustomElementLifecycleCallbacks::CallbackType);
+    static void scheduleAttributeChangedCallback(PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks>, PassRefPtrWillBeRawPtr<Element>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
 
     static void resolveOrScheduleResolution(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext>, PassRefPtrWillBeRawPtr<Element>, const CustomElementDescriptor&);
     static CustomElementMicrotaskImportStep* scheduleImport(HTMLImportChild*);

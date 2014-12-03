@@ -31,11 +31,12 @@
 #ifndef CustomElementProcessingStep_h
 #define CustomElementProcessingStep_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class CustomElementProcessingStep {
+class CustomElementProcessingStep : public NoBaseWillBeGarbageCollectedFinalized<CustomElementProcessingStep> {
     WTF_MAKE_NONCOPYABLE(CustomElementProcessingStep);
 public:
     CustomElementProcessingStep() { }
@@ -43,6 +44,8 @@ public:
     virtual ~CustomElementProcessingStep() { }
     virtual void dispatch(Element*) = 0;
     virtual bool isCreatedCallback() const { return false; }
+
+    virtual void trace(Visitor*) { }
 };
 
 } // namespace blink

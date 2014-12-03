@@ -55,6 +55,7 @@ struct WrapperTypeInfo;
 // Document::registerElement.
 class CustomElementConstructorBuilder {
     WTF_MAKE_NONCOPYABLE(CustomElementConstructorBuilder);
+    STACK_ALLOCATED();
 public:
     CustomElementConstructorBuilder(ScriptState*, const ElementRegistrationOptions&);
 
@@ -64,7 +65,7 @@ public:
 
     bool isFeatureAllowed() const;
     bool validateOptions(const AtomicString& type, QualifiedName& tagName, ExceptionState&);
-    PassRefPtr<CustomElementLifecycleCallbacks> createCallbacks();
+    PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks> createCallbacks();
     bool createConstructor(Document*, CustomElementDefinition*, ExceptionState&);
     bool didRegisterDefinition(CustomElementDefinition*) const;
 
@@ -82,7 +83,7 @@ private:
     const ElementRegistrationOptions& m_options;
     v8::Handle<v8::Object> m_prototype;
     v8::Handle<v8::Function> m_constructor;
-    RefPtr<V8CustomElementLifecycleCallbacks> m_callbacks;
+    RefPtrWillBeMember<V8CustomElementLifecycleCallbacks> m_callbacks;
 };
 
 } // namespace blink

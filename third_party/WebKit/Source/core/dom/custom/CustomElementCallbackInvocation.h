@@ -43,19 +43,21 @@ namespace blink {
 class CustomElementCallbackInvocation : public CustomElementProcessingStep {
     WTF_MAKE_NONCOPYABLE(CustomElementCallbackInvocation);
 public:
-    static PassOwnPtr<CustomElementCallbackInvocation> createInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, CustomElementLifecycleCallbacks::CallbackType);
-    static PassOwnPtr<CustomElementCallbackInvocation> createAttributeChangedInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
+    static PassOwnPtrWillBeRawPtr<CustomElementCallbackInvocation> createInvocation(PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks>, CustomElementLifecycleCallbacks::CallbackType);
+    static PassOwnPtrWillBeRawPtr<CustomElementCallbackInvocation> createAttributeChangedInvocation(PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
 
 protected:
-    CustomElementCallbackInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks)
+    CustomElementCallbackInvocation(PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks> callbacks)
         : m_callbacks(callbacks)
     {
     }
 
     CustomElementLifecycleCallbacks* callbacks() { return m_callbacks.get(); }
 
+    virtual void trace(Visitor*) override;
+
 private:
-    RefPtr<CustomElementLifecycleCallbacks> m_callbacks;
+    RefPtrWillBeMember<CustomElementLifecycleCallbacks> m_callbacks;
 };
 
 } // namespace blink

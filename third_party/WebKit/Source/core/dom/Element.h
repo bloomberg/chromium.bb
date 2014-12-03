@@ -448,7 +448,7 @@ public:
     void clearHasPendingResources() { clearElementFlag(HasPendingResources); }
     virtual void buildPendingResource() { };
 
-    void setCustomElementDefinition(PassRefPtr<CustomElementDefinition>);
+    void setCustomElementDefinition(PassRefPtrWillBeRawPtr<CustomElementDefinition>);
     CustomElementDefinition* customElementDefinition() const;
 
     bool containsFullScreenElement() const { return hasElementFlag(ContainsFullScreenElement); }

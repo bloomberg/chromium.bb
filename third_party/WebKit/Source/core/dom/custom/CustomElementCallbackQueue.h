@@ -62,7 +62,7 @@ public:
 
     bool processInElementQueue(ElementQueueId);
 
-    void append(PassOwnPtr<CustomElementProcessingStep> invocation) { m_queue.append(invocation); }
+    void append(PassOwnPtrWillBeRawPtr<CustomElementProcessingStep> invocation) { m_queue.append(invocation); }
     bool inCreatedCallback() const { return m_inCreatedCallback; }
 
     void trace(Visitor*);
@@ -71,7 +71,7 @@ private:
     explicit CustomElementCallbackQueue(PassRefPtrWillBeRawPtr<Element>);
 
     RefPtrWillBeMember<Element> m_element;
-    Vector<OwnPtr<CustomElementProcessingStep> > m_queue;
+    WillBeHeapVector<OwnPtrWillBeMember<CustomElementProcessingStep> > m_queue;
     ElementQueueId m_owner;
     size_t m_index;
     bool m_inCreatedCallback;

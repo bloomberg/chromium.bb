@@ -90,7 +90,7 @@ static CustomElementCallbackQueue& scheduleCallbackQueue(PassRefPtrWillBeRawPtr<
     return callbackQueue;
 }
 
-void CustomElementScheduler::scheduleCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtrWillBeRawPtr<Element> element, CustomElementLifecycleCallbacks::CallbackType type)
+void CustomElementScheduler::scheduleCallback(PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtrWillBeRawPtr<Element> element, CustomElementLifecycleCallbacks::CallbackType type)
 {
     ASSERT(type != CustomElementLifecycleCallbacks::AttributeChangedCallback);
 
@@ -101,7 +101,7 @@ void CustomElementScheduler::scheduleCallback(PassRefPtr<CustomElementLifecycleC
     queue.append(CustomElementCallbackInvocation::createInvocation(callbacks, type));
 }
 
-void CustomElementScheduler::scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtrWillBeRawPtr<Element> element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
+void CustomElementScheduler::scheduleAttributeChangedCallback(PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtrWillBeRawPtr<Element> element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
     if (!callbacks->hasCallback(CustomElementLifecycleCallbacks::AttributeChangedCallback))
         return;

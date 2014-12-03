@@ -68,6 +68,7 @@ void ElementRareData::traceAfterDispatch(Visitor* visitor)
     visitor->trace(m_inputMethodContext);
     visitor->trace(m_activeAnimations);
     visitor->trace(m_cssomWrapper);
+    visitor->trace(m_customElementDefinition);
     visitor->trace(m_generatedBefore);
     visitor->trace(m_generatedAfter);
     visitor->trace(m_generatedFirstLetter);

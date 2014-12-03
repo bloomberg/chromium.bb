@@ -60,7 +60,7 @@ public:
     static void didFinishLoadingImport(Document& master);
 
     // API for registration contexts
-    static void define(Element*, PassRefPtr<CustomElementDefinition>);
+    static void define(Element*, PassRefPtrWillBeRawPtr<CustomElementDefinition>);
 
     // API for Element to kick off changes
 

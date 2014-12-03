@@ -124,7 +124,7 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
     return true;
 }
 
-PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::createCallbacks()
+PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::createCallbacks()
 {
     ASSERT(!m_prototype.IsEmpty());
 

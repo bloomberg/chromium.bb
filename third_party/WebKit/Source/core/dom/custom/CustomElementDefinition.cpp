@@ -33,15 +33,20 @@
 
 namespace blink {
 
-PassRefPtr<CustomElementDefinition> CustomElementDefinition::create(const CustomElementDescriptor& descriptor, PassRefPtr<CustomElementLifecycleCallbacks> callbacks)
+PassRefPtrWillBeRawPtr<CustomElementDefinition> CustomElementDefinition::create(const CustomElementDescriptor& descriptor, PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks> callbacks)
 {
-    return adoptRef(new CustomElementDefinition(descriptor, callbacks));
+    return adoptRefWillBeNoop(new CustomElementDefinition(descriptor, callbacks));
 }
 
-CustomElementDefinition::CustomElementDefinition(const CustomElementDescriptor& descriptor, PassRefPtr<CustomElementLifecycleCallbacks> callbacks)
+CustomElementDefinition::CustomElementDefinition(const CustomElementDescriptor& descriptor, PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks> callbacks)
     : m_descriptor(descriptor)
     , m_callbacks(callbacks)
 {
+}
+
+void CustomElementDefinition::trace(Visitor* visitor)
+{
+    visitor->trace(m_callbacks);
 }
 
 } // namespace blink

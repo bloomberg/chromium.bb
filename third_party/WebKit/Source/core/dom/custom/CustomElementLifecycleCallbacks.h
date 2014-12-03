@@ -31,6 +31,7 @@
 #ifndef CustomElementLifecycleCallbacks_h
 #define CustomElementLifecycleCallbacks_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/AtomicString.h"
 
@@ -38,7 +39,7 @@ namespace blink {
 
 class Element;
 
-class CustomElementLifecycleCallbacks : public RefCounted<CustomElementLifecycleCallbacks> {
+class CustomElementLifecycleCallbacks : public RefCountedWillBeGarbageCollectedFinalized<CustomElementLifecycleCallbacks> {
 public:
     virtual ~CustomElementLifecycleCallbacks() { }
 
@@ -57,8 +58,10 @@ public:
     virtual void detached(Element*) = 0;
     virtual void attributeChanged(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue) = 0;
 
+    virtual void trace(Visitor*) { }
+
 protected:
-    CustomElementLifecycleCallbacks(CallbackType type) : m_callbackType(type) { }
+    explicit CustomElementLifecycleCallbacks(CallbackType type) : m_callbackType(type) { }
 
 private:
     CallbackType m_callbackType;
