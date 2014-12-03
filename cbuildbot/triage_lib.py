@@ -390,9 +390,7 @@ class CalculateSuspects(object):
       A list of |changes| that were marked verified: -1 or
       code-review: -2.
     """
-    return [x for x in changes if
-            any(x.HasApproval(f, v) for f, v in
-                constants.DEFAULT_CQ_SHOULD_REJECT_FIELDS.iteritems())]
+    return [x for x in changes if x.WasVetoed()]
 
   @classmethod
   def _FindPackageBuildFailureSuspects(cls, changes, messages):

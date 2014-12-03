@@ -1109,18 +1109,15 @@ class PreCQLauncherStage(SyncStage):
         for config in pending_configs:
           yield (plan, config)
 
-  def _ProcessRequeuedAndSpeculative(self, change, action_history,
-                                     is_speculative):
+  def _ProcessRequeuedAndSpeculative(self, change, action_history):
     """Detect if |change| was requeued by developer, and mark in cidb.
 
     Args:
       change: GerritPatch instance to check.
       action_history: List of CLActions.
-      is_speculative: Boolean indicating if |change| is speculative, i.e. it
-                      does not have CQ approval.
     """
     action_string = clactions.GetRequeuedOrSpeculative(
-        change, action_history, is_speculative)
+        change, action_history, not change.IsMergeable())
     if action_string:
       build_id, db = self._run.GetCIDBHandle()
       action = clactions.CLAction.FromGerritPatchAndAction(
@@ -1155,7 +1152,7 @@ class PreCQLauncherStage(SyncStage):
 
       if self._HasTimedOut(timestamp, current_time, timeout):
         pool.SendNotification(change, '%(details)s', details=msg)
-        pool.RemoveCommitReady(change, reason=config)
+        pool.RemoveReady(change, reason=config)
         pool.UpdateCLPreCQStatus(change, self.STATUS_FAILED)
 
 
@@ -1216,15 +1213,10 @@ class PreCQLauncherStage(SyncStage):
                          if status_map[c] in passed_statuses)
     to_process = set(changes) - already_passed
 
-    # We don't know for sure they were initially part of a speculative PreCQ
-    # run. It might just be someone turned off the flag, mid-run.
-    speculative = set(c for c in changes if not c.IsCommitReady())
-
     # Changes that can be submitted, if their dependencies can be too. Only
     # include changes that have not already been marked as passed.
     can_submit = set(c for c in (verified.intersection(to_process)) if
-                     self.CanSubmitChangeInPreCQ(c))
-    can_submit.difference_update(speculative)
+                     c.IsMergeable() and self.CanSubmitChangeInPreCQ(c))
 
     # Changes that will be submitted.
     will_submit = set()
@@ -1232,14 +1224,13 @@ class PreCQLauncherStage(SyncStage):
     will_pass = set()
 
     for change in changes:
-      self._ProcessRequeuedAndSpeculative(change, action_history,
-                                          change in speculative)
+      self._ProcessRequeuedAndSpeculative(change, action_history)
 
     for change in to_process:
       status = status_map[change]
 
       # Detect if change is ready to be marked as passed, or ready to submit.
-      if change in verified and change not in speculative:
+      if change in verified and change.IsMergeable():
         to_submit, to_pass = self._ProcessVerified(change, can_submit,
                                                    will_submit)
         will_submit.update(to_submit)
@@ -1261,10 +1252,11 @@ class PreCQLauncherStage(SyncStage):
 
       self._ProcessTimeouts(change, progress_map, pool, current_db_time)
 
-    # Filter out speculative changes that have already failed before launching.
+    # Filter out changes that have already failed, and aren't marked trybot
+    # ready or commit ready, before launching.
     launchable_progress_map = {
         k: v for k, v in progress_map.iteritems()
-            if k not in speculative or status_map[k] != self.STATUS_FAILED}
+            if k.HasReadyFlag() or status_map[k] != self.STATUS_FAILED}
 
     for plan, config in self.GetDisjointTransactionsToTest(
         pool, launchable_progress_map):

@@ -667,7 +667,7 @@ class ValidationFailureOrTimeout(MoxBase):
         validation_pool.ValidationPool, '_CreateValidationFailureMessage',
         return_value=self._PATCH_MESSAGE)
     self.PatchObject(validation_pool.ValidationPool, 'SendNotification')
-    self.PatchObject(validation_pool.ValidationPool, 'RemoveCommitReady')
+    self.PatchObject(validation_pool.ValidationPool, 'RemoveReady')
     self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
                      return_value=self._patches)
     self.PatchObject(triage_lib.CalculateSuspects, 'OnlyLabFailures',
@@ -679,31 +679,29 @@ class ValidationFailureOrTimeout(MoxBase):
   def testPatchesWereRejectedByFailure(self):
     """Tests that all patches are rejected by failure."""
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
-    self.assertEqual(
-        len(self._patches), self._pool.RemoveCommitReady.call_count)
+    self.assertEqual(len(self._patches), self._pool.RemoveReady.call_count)
 
   def testPatchesWereRejectedByTimeout(self):
     self._pool.HandleValidationTimeout()
-    self.assertEqual(
-        len(self._patches), self._pool.RemoveCommitReady.call_count)
+    self.assertEqual(len(self._patches), self._pool.RemoveReady.call_count)
 
   def testNoSuspectsWithFailure(self):
     """Tests no change is blamed when there is no suspect."""
     self.PatchObject(triage_lib.CalculateSuspects, 'FindSuspects',
                      return_value=[])
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
-    self.assertEqual(0, self._pool.RemoveCommitReady.call_count)
+    self.assertEqual(0, self._pool.RemoveReady.call_count)
 
   def testPreCQ(self):
     for change in self._patches:
       self._pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_PASSED)
     self._pool.pre_cq = True
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
-    self.assertEqual(0, self._pool.RemoveCommitReady.call_count)
+    self.assertEqual(0, self._pool.RemoveReady.call_count)
 
   def testPatchesWereNotRejectedByInsaneFailure(self):
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE], sanity=False)
-    self.assertEqual(0, self._pool.RemoveCommitReady.call_count)
+    self.assertEqual(0, self._pool.RemoveReady.call_count)
 
 
 class TestCoreLogic(MoxBase):
@@ -827,7 +825,7 @@ class TestCoreLogic(MoxBase):
     master_pool = self.MakePool(dryrun=False)
     slave_pool = self.MakePool(is_master=False)
 
-    self.mox.StubOutWithMock(gerrit.GerritHelper, 'RemoveCommitReady')
+    self.mox.StubOutWithMock(gerrit.GerritHelper, 'RemoveReady')
 
     for failure in notified_patches:
       master_pool.SendNotification(
@@ -838,7 +836,7 @@ class TestCoreLogic(MoxBase):
       # thinking that the first arg isn't passed in; we suppress it to suppress
       # the pylnt bug.
       # pylint: disable=E1120
-      gerrit.GerritHelper.RemoveCommitReady(failure.patch, dryrun=False)
+      gerrit.GerritHelper.RemoveReady(failure.patch, dryrun=False)
 
     self.mox.ReplayAll()
     master_pool._HandleApplyFailure(notified_patches)
@@ -936,7 +934,7 @@ class TestCoreLogic(MoxBase):
     failures = [cros_patch.ApplyPatchException(x) for x in self.GetPatches(2)]
     failures += [cros_patch.DependencyError(x, y) for x, y in
                  zip(self.GetPatches(2), failures)]
-    self.PatchObject(failures[-1].patch, 'IsCommitReady', return_value=False)
+    self.PatchObject(failures[-1].patch, 'HasReadyFlag', return_value=False)
     self.mox.ReplayAll()
     result = validation_pool.ValidationPool._FilterDependencyErrors(failures)
     self.assertEquals(set(failures[:-1]), set(result))
@@ -979,7 +977,7 @@ class TestCoreLogic(MoxBase):
 
     # Mark the last two patches as not commit ready.
     for p in patches[-2:]:
-      p.IsCommitReady = lambda *_args, **_kwargs: False
+      p.IsMergeable = lambda *_args, **_kwargs: False
 
     # Non-manifest patches that aren't commit ready should be skipped.
     filtered_patches = filtered_patches[:-1]
@@ -1195,7 +1193,7 @@ class TestCreateDisjointTransactions(MoxBase):
         to the CreateDisjointTransactions function.
       circular: Whether the transactions contain circular dependencies.
     """
-    remove = self.PatchObject(gerrit.GerritHelper, 'RemoveCommitReady')
+    remove = self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
     patches = list(itertools.chain.from_iterable(txns))
     expected_plans = txns
     if max_txn_length is not None:
@@ -1227,7 +1225,7 @@ class TestCreateDisjointTransactions(MoxBase):
     """Helper for testing unresolved plans."""
     notify = self.PatchObject(validation_pool.ValidationPool,
                               'SendNotification')
-    remove = self.PatchObject(gerrit.GerritHelper, 'RemoveCommitReady')
+    remove = self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
     pool = MakePool(changes=changes)
     plans = pool.CreateDisjointTransactions(None, changes,
                                             max_txn_length=max_txn_length)
@@ -1276,8 +1274,7 @@ class MockValidationPool(partial_mock.PartialMock):
   """Mock out a ValidationPool instance."""
 
   TARGET = 'chromite.cbuildbot.validation_pool.ValidationPool'
-  ATTRS = ('ReloadChanges', 'RemoveCommitReady', '_SubmitChange',
-           'SendNotification')
+  ATTRS = ('ReloadChanges', 'RemoveReady', '_SubmitChange', 'SendNotification')
 
   def __init__(self, manager):
     partial_mock.PartialMock.__init__(self)
@@ -1307,7 +1304,7 @@ class MockValidationPool(partial_mock.PartialMock):
   def ReloadChanges(cls, changes):
     return changes
 
-  RemoveCommitReady = None
+  RemoveReady = None
 
 
 class BaseSubmitPoolTestCase(MoxBase):

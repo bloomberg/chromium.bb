@@ -140,10 +140,6 @@ class MockPatch(mock.MagicMock):
     else:
       return flag_value == allowed
 
-  def IsCommitReady(self):
-    """Check whether this patch is commit ready."""
-    return self.HasApproval('COMR', ('1', '2'))
-
 
 class BaseCQTestCase(generic_stages_unittest.StageTest):
   """Helper class for testing the CommitQueueSync stage"""
@@ -164,7 +160,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
     rc_mock.SetDefaultCmdResult()
 
     # Block the CQ from contacting GoB.
-    self.PatchObject(gerrit.GerritHelper, 'RemoveCommitReady')
+    self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
     self.PatchObject(gerrit.GerritHelper, 'SubmitChange')
     self.PatchObject(validation_pool.PaladinMessage, 'Send')
 
@@ -227,6 +223,9 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
     kwargs.setdefault('approval_timestamp',
         time.time() - sync_stages.PreCQLauncherStage.LAUNCH_DELAY * 60)
     changes = changes or [MockPatch(**kwargs)] * num_patches
+    if tree_throttled:
+      for change in changes:
+        change.flags['COMR'] = '2'
     if pre_cq_status is not None:
       new_build_id = self.fake_db.InsertBuild('Pre cq group',
                                               constants.WATERFALL_TRYBOT,
@@ -537,11 +536,18 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
   def testPreCQ(self):
     changes = self._PrepareChangesWithPendingVerifications(
-        [['banana'], ['orange', 'apple']])
+        [['orange', 'apple'], ['banana'], ['banana'], ['banana'], ['banana']])
     # After 2 runs, the changes should be screened but not
     # yet launched (due to pre-launch timeout).
     for c in changes:
       c.approval_timestamp = time.time()
+
+    # Mark a change as trybot ready, but not approved. It should also be tried
+    # by the pre-cq.
+    for change in changes[2:5]:
+      change.flags = {'TRY': '1'}
+      change.IsMergeable = lambda: False
+
     self.PerformSync(pre_cq_status=None, changes=changes, runs=2)
 
     def assertAllStatuses(progress_map, status):
@@ -553,8 +559,9 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     progress_map = clactions.GetPreCQProgressMap(changes, action_history)
     assertAllStatuses(progress_map, constants.CL_PRECQ_CONFIG_STATUS_PENDING)
 
-    self.assertEqual(1, len(progress_map[changes[0]]))
-    self.assertEqual(2, len(progress_map[changes[1]]))
+    self.assertEqual(2, len(progress_map[changes[0]]))
+    for change in changes[1:]:
+      self.assertEqual(1, len(progress_map[change]))
 
     # Fake that launch delay has expired by changing change approval times.
     for c in changes:
@@ -583,19 +590,46 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
         minutes=sync_stages.PreCQLauncherStage.INFLIGHT_TIMEOUT + 1)
     self.fake_db.SetTime(fake_time)
     self.fake_db.InsertCLActions(
-        build_ids['banana'],
-        [clactions.CLAction.FromGerritPatchAndAction(
-            changes[0], constants.CL_ACTION_VERIFIED)])
-    self.fake_db.InsertCLActions(
         build_ids['orange'],
         [clactions.CLAction.FromGerritPatchAndAction(
-        changes[1], constants.CL_ACTION_VERIFIED)])
+        changes[0], constants.CL_ACTION_VERIFIED)])
+    for change in changes[1:3]:
+      self.fake_db.InsertCLActions(
+          build_ids['banana'],
+          [clactions.CLAction.FromGerritPatchAndAction(
+              change, constants.CL_ACTION_VERIFIED)])
 
     self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
+
+    # We defer writing the pre-cq status of a change until it is ready for CQ.
     self.assertEqual(self._GetPreCQStatus(changes[0]),
-                     constants.CL_STATUS_PASSED)
-    self.assertEqual(self._GetPreCQStatus(changes[1]),
                      constants.CL_STATUS_FAILED)
+    self.assertEqual(self._GetPreCQStatus(changes[1]),
+                     constants.CL_STATUS_PASSED)
+    self.assertEqual(self._GetPreCQStatus(changes[2]),
+                     None)
+    for change in changes[3:5]:
+      self.assertEqual(self._GetPreCQStatus(change),
+                       constants.CL_STATUS_FAILED)
+
+    # Failed CLs that are marked ready should be tried again, and changes that
+    # aren't ready shouldn't be launched.
+    changes[4].flags = {'CRVW': '2'}
+    changes[4].HasReadyFlag = lambda: False
+    self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False,
+                     runs=3)
+    action_history = self.fake_db.GetActionsForChanges(changes)
+    progress_map = clactions.GetPreCQProgressMap(changes, action_history)
+    self.assertEqual(progress_map[changes[0]]['apple'][0],
+                     constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
+    self.assertEqual(progress_map[changes[1]]['banana'][0],
+                     constants.CL_PRECQ_CONFIG_STATUS_VERIFIED)
+    self.assertEqual(progress_map[changes[2]]['banana'][0],
+                     constants.CL_PRECQ_CONFIG_STATUS_VERIFIED)
+    self.assertEqual(progress_map[changes[3]]['banana'][0],
+                     constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
+    self.assertEqual(progress_map[changes[4]]['banana'][0],
+                     constants.CL_PRECQ_CONFIG_STATUS_FAILED)
 
   def testSpeculativePreCQ(self):
     changes = self._PrepareChangesWithPendingVerifications()
@@ -603,6 +637,8 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     # Turn our changes into speculatifve PreCQ candidates.
     for change in changes:
       change.flags.pop('COMR')
+      change.IsMergeable = lambda: False
+      change.HasReadyFlag = lambda: False
 
     def assertAllStatuses(progress_map, status):
       for change in changes:
@@ -655,6 +691,8 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     # Mark our changes as ready, and see if they are immediately passed.
     for change in changes:
       change.flags['COMR'] = '1'
+      change.IsMergeable = lambda: True
+      change.HasReadyFlag = lambda: True
 
     self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
 

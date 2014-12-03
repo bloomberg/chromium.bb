@@ -1497,8 +1497,8 @@ class GerritPatch(GerritFetchOnlyPatch):
       field: Which field to check.
         'VRIF': Whether patch was verified.
         'CRVW': Whether patch was approved.
-        'COMR': Whether patch was marked ready.
-        'TBVF': Whether patch was verified by trybot.
+        'COMR': Whether patch was marked commit ready.
+        'TRY':  Whether patch was marked ready for trybot.
       value: The expected value of the specified field (as string, or as list
              of accepted strings).
     """
@@ -1523,9 +1523,18 @@ class GerritPatch(GerritFetchOnlyPatch):
     return all(self.HasApproval(field, value)
                for field, value in flags.iteritems())
 
-  def IsCommitReady(self):
-    """Return whether this patch has been marked commit ready."""
-    return self.HasApproval('COMR', ('1', '2'))
+  def WasVetoed(self):
+    """Return whether this CL was vetoed with VRIF=-1 or CRVW=-2."""
+    return self.HasApproval('VRIF', '-1') or self.HasApproval('CRVW', '-2')
+
+  def IsMergeable(self):
+    """Return true if all Gerrit approvals required for submission are set."""
+    return (self.status == 'NEW' and not self.WasVetoed() and
+            self.HasApprovals({'CRVW': '2', 'VRIF': '1', 'COMR': ('1', '2')}))
+
+  def HasReadyFlag(self):
+    """Return true if the trybot-ready or commit-ready flag is set."""
+    return self.HasApproval('COMR', ('1', '2')) or self.HasApproval('TRY', '1')
 
   def GetLatestApproval(self, field):
     """Return most recent value of specific field on the current patchset.

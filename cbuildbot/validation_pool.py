@@ -1183,63 +1183,6 @@ class ValidationPool(object):
     return [x for x in changes if not x.patch_dict['currentPatchSet']['draft']]
 
   @classmethod
-  def GetShouldRejectChanges(cls, changes):
-    """Returns the changes that should be rejected.
-
-    Check whether the change should be rejected (e.g. verified: -1,
-    code-review: -2).
-
-    Args:
-      changes: List of changes.
-
-    Returns:
-      A list of changes that should be rejected.
-    """
-    return [x for x in changes if
-            any(x.HasApproval(f, v) for f, v in
-                constants.DEFAULT_CQ_SHOULD_REJECT_FIELDS.iteritems())]
-
-  @classmethod
-  def FilterNonMatchingChanges(cls, changes, flags):
-    """Filter out changes that don't actually match our query.
-
-    Generally, Gerrit should only return patches that match our
-    query. However, Gerrit keeps a query cache and the cached data may
-    be stale.
-
-    There are also race conditions (bugs in Gerrit) where the final
-    patch won't match our query. Here's an example problem that this
-    code fixes: If the Pre-CQ launcher picks up a CL while the CQ is
-    committing the CL, it may catch a race condition where a new
-    patchset has been created and committed by the CQ, but the CL is
-    still treated as if it matches the query (which it doesn't,
-    anymore).
-
-    Args:
-      changes: List of changes to filter.
-      flags: A dictionary of flag -> value mappings in
-        GerritPatch.HasApproval format.
-
-    Returns:
-      List of changes that match our query.
-    """
-    filtered_changes = []
-    should_reject_changes = cls.GetShouldRejectChanges(changes)
-    for change in changes:
-      if change in should_reject_changes:
-        continue
-      # Because the gerrit cache sometimes gets stale, double-check that the
-      # change hasn't already been merged.
-      if change.status != 'NEW':
-        continue
-      # Check that the user (or chrome-bot) uploaded a new change under our
-      # feet while Gerrit was in the middle of answering our query.
-      if change.HasApprovals(flags):
-        filtered_changes.append(change)
-
-    return filtered_changes
-
-  @classmethod
   @failures_lib.SetFailureType(failures_lib.BuilderFailure)
   def AcquirePreCQPool(cls, *args, **kwargs):
     """See ValidationPool.__init__ for arguments."""
@@ -1303,13 +1246,13 @@ class ValidationPool(object):
       else:
         status = constants.TREE_OPEN
 
-      gerrit_query, ready_flags = query
+      gerrit_query, ready_fn = query
       waiting_for = 'new CLs'
 
       # If we are using the CQ query, adjust for a throttled tree.
       if (query == constants.CQ_READY_QUERY and
           status == constants.TREE_THROTTLED):
-        gerrit_query, ready_flags = constants.THROTTLED_CQ_READY_QUERY
+        gerrit_query, ready_fn = constants.THROTTLED_CQ_READY_QUERY
         waiting_for = 'new CQ+2 CLs or the tree to open'
 
       # Sync so that we are up-to-date on what is committed.
@@ -1332,12 +1275,11 @@ class ValidationPool(object):
         published_changes = cls.FilterDraftChanges(raw_changes)
         draft_changes.extend(set(raw_changes) - set(published_changes))
 
-        if ready_flags:
+        if ready_fn:
           # The query passed in may include a dictionary of flags to use for
           # revalidating the query results. We need to do this because Gerrit
           # caches are sometimes stale and need sanity checking.
-          published_changes = cls.FilterNonMatchingChanges(
-              published_changes, ready_flags)
+          published_changes = [x for x in published_changes if ready_fn(x)]
 
         changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
             published_changes, git.ManifestCheckout.Cached(repo.directory))
@@ -1459,7 +1401,7 @@ class ValidationPool(object):
     for change in changes:
       if change.GetCheckout(manifest, strict=False):
         changes_in_manifest.append(change)
-      elif change.IsCommitReady():
+      elif change.IsMergeable():
         logging.info('Found non-manifest change %s', change)
         changes_not_in_manifest.append(change)
       else:
@@ -1496,16 +1438,16 @@ class ValidationPool(object):
     results = []
     for error in errors:
       results.append(error)
-      speculative = not error.patch.IsCommitReady()
-      if speculative or reject_timestamp < error.patch.approval_timestamp:
+      is_ready = error.patch.HasReadyFlag()
+      if not is_ready or reject_timestamp < error.patch.approval_timestamp:
         while error is not None:
           if isinstance(error, cros_patch.DependencyError):
-            if speculative:
-              logging.info('Ignoring dependency errors for %s until it is '
-                           'marked commit ready', error.patch)
-            else:
+            if is_ready:
               logging.info('Ignoring dependency errors for %s due to grace '
                            'period', error.patch)
+            else:
+              logging.info('Ignoring dependency errors for %s until it is '
+                           'marked trybot ready or commit ready', error.patch)
             results.pop()
             break
           error = getattr(error, 'error', None)
@@ -1783,8 +1725,7 @@ class ValidationPool(object):
 
     # Filter out changes that aren't marked as CR=+2, CQ=+1, V=+1 anymore, in
     # case the patch status changed during the CQ run.
-    filtered_changes = self.FilterNonMatchingChanges(
-        unmodified_changes, constants.DEFAULT_CQ_READY_FIELDS)
+    filtered_changes = [x for x in unmodified_changes if x.IsMergeable()]
     for change in set(unmodified_changes) - set(filtered_changes):
       errors[change] = PatchNotCommitReady(change)
 
@@ -1941,10 +1882,9 @@ class ValidationPool(object):
 
     return was_change_submitted
 
-  def RemoveCommitReady(self, change, reason=None):
-    """Remove the commit ready bit for the specified |change|."""
-    self._helper_pool.ForChange(change).RemoveCommitReady(change,
-        dryrun=self.dryrun)
+  def RemoveReady(self, change, reason=None):
+    """Remove the commit ready and trybot ready bits for |change|."""
+    self._helper_pool.ForChange(change).RemoveReady(change, dryrun=self.dryrun)
     if self._run:
       metadata = self._run.attrs.metadata
       _, db = self._run.GetCIDBHandle()
@@ -2140,14 +2080,14 @@ class ValidationPool(object):
     msg = ('%(queue)s failed to apply your change in %(build_log)s .'
            ' %(failure)s')
     self.SendNotification(failure.patch, msg, failure=failure)
-    self.RemoveCommitReady(failure.patch)
+    self.RemoveReady(failure.patch)
 
   def _HandleIncorrectSubmission(self, failure):
     """Handler for when Paladin incorrectly submits a change."""
     msg = ('%(queue)s incorrectly submitted your change in %(build_log)s .'
            '  %(failure)s')
     self.SendNotification(failure.patch, msg, failure=failure)
-    self.RemoveCommitReady(failure.patch)
+    self.RemoveReady(failure.patch)
 
   def HandleDraftChange(self, change):
     """Handler for when the latest patch set of |change| is not published.
@@ -2162,7 +2102,7 @@ class ValidationPool(object):
            'set is not published. Please publish your draft patch set before '
            'marking your commit as ready.')
     self.SendNotification(change, msg)
-    self.RemoveCommitReady(change)
+    self.RemoveReady(change)
 
   def _HandleFailedToApplyDueToInflightConflict(self, change):
     """Handler for when a patch conflicts with another patch in the CQ run.
@@ -2210,7 +2150,7 @@ class ValidationPool(object):
       logging.info('Validation timed out for change %s.', change)
       self.SendNotification(change, msg)
       if sanity:
-        self.RemoveCommitReady(change)
+        self.RemoveReady(change)
 
   def SendNotification(self, change, msg, **kwargs):
     d = dict(build_log=self.build_log, queue=self.queue, **kwargs)
@@ -2261,7 +2201,7 @@ class ValidationPool(object):
     self.SendNotification(change,
         '%(queue)s failed to submit your change in %(build_log)s . '
         '%(error)s', error=error)
-    self.RemoveCommitReady(change)
+    self.RemoveReady(change)
 
   @staticmethod
   def _CreateValidationFailureMessage(pre_cq, change, suspects, messages,
@@ -2371,7 +2311,7 @@ class ValidationPool(object):
     self.SendNotification(change, '%(details)s', details=msg)
     if sanity:
       if change in suspects:
-        self.RemoveCommitReady(change)
+        self.RemoveReady(change)
 
   def HandleValidationFailure(self, messages, changes=None, sanity=True,
                               no_stat=None):
@@ -2455,7 +2395,7 @@ class ValidationPool(object):
 
     msg += extra_msg
     self.SendNotification(change, msg)
-    self.RemoveCommitReady(change)
+    self.RemoveReady(change)
 
   def _HandleApplySuccess(self, change, action_history):
     """Handler for when Paladin successfully applies (picks up) a change.

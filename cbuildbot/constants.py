@@ -482,55 +482,52 @@ TREE_MAINTENANCE = 'maintenance'
 VALID_TREE_STATUSES = (TREE_OPEN, TREE_THROTTLED, TREE_CLOSED, TREE_MAINTENANCE)
 
 
-# Default filter rules for verifying that Gerrit returned results that matched
-# our query. This used for working around Gerrit bugs.
-DEFAULT_CQ_READY_FIELDS = {
-    'CRVW': '2',
-    'VRIF': '1',
-    'COMR': ('1', '2'),
-}
-
-DEFAULT_CQ_SHOULD_REJECT_FIELDS = {
-    'CRVW': '-2',
-    'VRIF': '-1',
-}
-
 # Common parts of query used for CQ, THROTTLED_CQ, and PRECQ.
 # "NOT is:draft" in this query doesn't work, it finds any non-draft revision.
 # We want to match drafts anyway, so we can comment on them.
-_BASIC_QUERY = ('status:open AND '
-                'label:Code-Review=+2 AND '
-                'label:Verified=+1 AND '
-                '( NOT ( label:CodeReview=-2 OR label:Verified=-1 ) )')
+_QUERIES = {
+    # CLs that are open and not vetoed.
+    'open': 'status:open AND -label:CodeReview=-2 AND -label:Verified=-1',
+
+    # CLs that are approved and verified.
+    'approved': 'label:Code-Review=+2 AND label:Verified=+1',
+}
 
 #
-# Please note that requiring the +2 code review for all CQ and PreCQ
-# runs is a security requirement. Otherwise arbitrary people can
+# Please note that requiring the +2 code review (or Trybot-Ready) for all CQ
+# and PreCQ runs is a security requirement. Otherwise arbitrary people can
 # run code on our servers.
 #
+# The Verified and Commit-Queue flags can be set by any registered user (you
+# don't need commit access to set them.)
+#
+
 
 # Default gerrit query used to find changes for CQ.
 # Permits CQ+1 or CQ+2 changes.
 CQ_READY_QUERY = (
-    _BASIC_QUERY + ' AND label:Commit-Queue>=1',
-    DEFAULT_CQ_READY_FIELDS)
+    '%(open)s AND %(approved)s AND label:Commit-Queue>=1' % _QUERIES,
+    lambda change: change.IsMergeable())
 
 # Gerrit query used to find changes for CQ when tree is throttled.
 # Permits only CQ+2 changes.
 THROTTLED_CQ_READY_QUERY = (
-    _BASIC_QUERY + ' AND label:Commit-Queue>=2',
-    { 'CRVW': '2', 'VRIF': '1', 'COMR': '2' })
+    '%(open)s AND %(approved)s AND label:Commit-Queue>=2' % _QUERIES,
+    lambda change: change.IsMergeable() and change.HasApproval('COMR', '2'))
 
-# The PreCQ does not require the CQ flag to be set if it's a recent CL.
+# The PreCQ does not require the CQ bit to be set if it's a recent CL, or if
+# the Trybot-Ready flag has been set.
 PRECQ_READY_QUERY = (
-    _BASIC_QUERY + ' AND (label:Commit-Queue>=1 OR NOT age:1day)',
-    { 'CRVW': '2', 'VRIF': '1' })
+    '%(open)s AND (%(approved)s AND label:Commit-Queue>=1 OR '
+    'label:Code-Review=+2 AND -age:1day OR label:Trybot-Ready=+1)' % _QUERIES,
+    lambda change: (change.HasApproval('CRVW', '2') or
+                    change.HasApproval('TRY', '1')))
 
 GERRIT_ON_BORG_LABELS = {
     'Code-Review': 'CRVW',
     'Commit-Queue': 'COMR',
     'Verified': 'VRIF',
-    'Trybot-Verified': 'TBVF',
+    'Trybot-Ready': 'TRY',
 }
 
 # Actions that a CQ run can take on a CL

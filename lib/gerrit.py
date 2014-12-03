@@ -335,13 +335,15 @@ class GerritHelper(object):
     gob_util.SetReview(self.host, self._to_changenum(change),
                        msg=msg, labels=labels, notify='ALL')
 
-  def RemoveCommitReady(self, change, dryrun=False):
-    """Set the 'Commit-Queue' label on a gerrit change to '0'."""
+  def RemoveReady(self, change, dryrun=False):
+    """Set the 'Commit-Queue' and 'Trybot-Ready' labels on a |change| to '0'."""
     if dryrun:
       cros_build_lib.Info('Would have reset Commit-Queue label for %s', change)
       return
     gob_util.ResetReviewLabels(self.host, self._to_changenum(change),
                                label='Commit-Queue', notify='OWNER')
+    gob_util.ResetReviewLabels(self.host, self._to_changenum(change),
+                               label='Trybot-Ready', notify='OWNER')
 
   def SubmitChange(self, change, dryrun=False):
     """Land (merge) a gerrit change using the JSON API."""
