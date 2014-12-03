@@ -8,7 +8,6 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
-#include "core/html/canvas/CanvasRenderingContext.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -80,13 +79,10 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect)
     , m_cropRect(cropRect)
     , m_bitmapOffset(IntPoint())
 {
-    CanvasRenderingContext* sourceContext = canvas->renderingContext();
-    if (sourceContext && sourceContext->is3d())
-        sourceContext->paintRenderingResultsToCanvas(BackBuffer);
-
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), canvas->size()));
     m_bitmapRect = IntRect(IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y())), srcRect.size());
-    m_bitmap = cropImage(canvas->buffer()->copyImage(CopyBackingStore).get(), cropRect);
+    ASSERT(canvas->isPaintable());
+    m_bitmap = cropImage(canvas->copiedImage(BackBuffer).get(), cropRect);
 }
 
 ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)

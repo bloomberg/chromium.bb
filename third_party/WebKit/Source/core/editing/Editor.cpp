@@ -421,7 +421,7 @@ void Editor::writeSelectionToPasteboard(Pasteboard* pasteboard, Range* selectedR
     pasteboard->writeHTML(html, url, plainText, canSmartCopyOrDelete());
 }
 
-static Image* imageFromNode(const Node& node)
+static PassRefPtr<Image> imageFromNode(const Node& node)
 {
     node.document().updateLayoutIgnorePendingStylesheets();
     RenderObject* renderer = node.renderer();

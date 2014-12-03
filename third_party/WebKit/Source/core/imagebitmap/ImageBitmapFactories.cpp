@@ -178,7 +178,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
     }
 
     // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
-    return fulfillImageBitmap(scriptState, canvas->buffer() ? ImageBitmap::create(canvas, IntRect(sx, sy, sw, sh)) : nullptr);
+    return fulfillImageBitmap(scriptState, canvas->isPaintable() ? ImageBitmap::create(canvas, IntRect(sx, sy, sw, sh)) : nullptr);
 }
 
 ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, Blob* blob, ExceptionState& exceptionState)

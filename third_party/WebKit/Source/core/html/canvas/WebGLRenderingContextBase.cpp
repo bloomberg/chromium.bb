@@ -3603,7 +3603,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
 
     // If possible, copy from the canvas element directly to the texture
     // via the GPU, without a read-back to system memory.
-    if (GL_TEXTURE_2D == target && texture) {
+    if (canvas->renderingContext() && GL_TEXTURE_2D == target && texture) {
         ScopedTexture2DRestorer restorer(this);
 
         if (!canvas->is3D()) {
@@ -3616,7 +3616,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
         } else {
             WebGLRenderingContextBase* gl = toWebGLRenderingContextBase(canvas->renderingContext());
             ScopedTexture2DRestorer restorer(gl);
-            if (gl && gl->drawingBuffer()->copyToPlatformTexture(webContext(), texture->object(), internalformat, type,
+            if (gl->drawingBuffer()->copyToPlatformTexture(webContext(), texture->object(), internalformat, type,
                 level, m_unpackPremultiplyAlpha, !m_unpackFlipY, BackBuffer)) {
                 texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), type);
                 return;
@@ -3624,7 +3624,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
         }
     }
 
-    texImage2DImpl(target, level, internalformat, format, type, canvas->copiedImage(BackBuffer), WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha, exceptionState);
+    texImage2DImpl(target, level, internalformat, format, type, canvas->copiedImage(BackBuffer).get(), WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha, exceptionState);
 }
 
 PassRefPtr<Image> WebGLRenderingContextBase::videoFrameToImage(HTMLVideoElement* video, BackingStoreCopy backingStoreCopy)
@@ -3858,7 +3858,7 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
         || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceHTMLCanvasElement, target, level, format, canvas->width(), canvas->height(), 0, format, type, xoffset, yoffset))
         return;
 
-    texSubImage2DImpl(target, level, xoffset, yoffset, format, type, canvas->copiedImage(BackBuffer), WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha, exceptionState);
+    texSubImage2DImpl(target, level, xoffset, yoffset, format, type, canvas->copiedImage(BackBuffer).get(), WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha, exceptionState);
 }
 
 void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
@@ -5366,7 +5366,7 @@ bool WebGLRenderingContextBase::validateHTMLImageElement(const char* functionNam
 
 bool WebGLRenderingContextBase::validateHTMLCanvasElement(const char* functionName, HTMLCanvasElement* canvas, ExceptionState& exceptionState)
 {
-    if (!canvas || !canvas->buffer()) {
+    if (!canvas || !canvas->isPaintable()) {
         synthesizeGLError(GL_INVALID_VALUE, functionName, "no canvas");
         return false;
     }

@@ -101,6 +101,7 @@ public:
     }
 
     CanvasRenderingContext* getContext(const String&, CanvasContextAttributes* attributes = 0);
+    bool isPaintable() const;
 
     static String toEncodingMimeType(const String& mimeType);
     String toDataURL(const String& mimeType, const double* quality, ExceptionState&) const;
@@ -119,7 +120,7 @@ public:
 
     void ensureUnacceleratedImageBuffer();
     ImageBuffer* buffer() const;
-    Image* copiedImage(SourceDrawingBuffer) const;
+    PassRefPtr<Image> copiedImage(SourceDrawingBuffer) const;
     void clearCopiedImage();
 
     SecurityOrigin* securityOrigin() const;
