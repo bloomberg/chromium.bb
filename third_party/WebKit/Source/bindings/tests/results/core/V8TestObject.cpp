@@ -10923,11 +10923,10 @@ static void installV8TestObjectTemplate(v8::Handle<v8::FunctionTemplate> functio
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestObject", v8::Local<v8::FunctionTemplate>(), V8TestObject::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestObject", v8::Local<v8::FunctionTemplate>(), V8TestObject::internalFieldCount,
         V8TestObjectAttributes, WTF_ARRAY_LENGTH(V8TestObjectAttributes),
         V8TestObjectAccessors, WTF_ARRAY_LENGTH(V8TestObjectAccessors),
-        V8TestObjectMethods, WTF_ARRAY_LENGTH(V8TestObjectMethods),
-        isolate);
+        V8TestObjectMethods, WTF_ARRAY_LENGTH(V8TestObjectMethods));
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();

@@ -72,7 +72,7 @@ public:
     v8::Handle<v8::Value> restart();
     ScriptValue setVariableValue(ScriptState*, int scopeNumber, const String& variableName, const ScriptValue& newValue);
 
-    static v8::Handle<v8::Object> createExceptionDetails(v8::Handle<v8::Message>, v8::Isolate*);
+    static v8::Handle<v8::Object> createExceptionDetails(v8::Isolate*, v8::Handle<v8::Message>);
 
 private:
     JavaScriptCallFrame(v8::Handle<v8::Context> debuggerContext, v8::Handle<v8::Object> callFrame);

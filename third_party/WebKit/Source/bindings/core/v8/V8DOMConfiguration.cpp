@@ -130,11 +130,10 @@ v8::Handle<v8::FunctionTemplate> V8DOMConfiguration::functionTemplateForCallback
     return functionTemplate;
 }
 
-v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Handle<v8::FunctionTemplate> functionDescriptor, const char* interfaceName, v8::Handle<v8::FunctionTemplate> parentClass, size_t fieldCount,
+v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Isolate* isolate, v8::Handle<v8::FunctionTemplate> functionDescriptor, const char* interfaceName, v8::Handle<v8::FunctionTemplate> parentClass, size_t fieldCount,
     const AttributeConfiguration* attributes, size_t attributeCount,
     const AccessorConfiguration* accessors, size_t accessorCount,
-    const MethodConfiguration* callbacks, size_t callbackCount,
-    v8::Isolate* isolate)
+    const MethodConfiguration* callbacks, size_t callbackCount)
 {
     functionDescriptor->SetClassName(v8AtomicString(isolate, interfaceName));
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionDescriptor->InstanceTemplate();

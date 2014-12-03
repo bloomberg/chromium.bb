@@ -168,7 +168,7 @@ ScriptValue JavaScriptCallFrame::evaluateWithExceptionDetails(ScriptState* scrip
     v8::Handle<v8::Object> wrappedResult = v8::Object::New(m_isolate);
     if (tryCatch.HasCaught()) {
         wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "result"), tryCatch.Exception());
-        wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "exceptionDetails"), createExceptionDetails(tryCatch.Message(), m_isolate));
+        wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "exceptionDetails"), createExceptionDetails(m_isolate, tryCatch.Message()));
     } else {
         wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "result"), result);
         wrappedResult->Set(v8::String::NewFromUtf8(m_isolate, "exceptionDetails"), v8::Undefined(m_isolate));
@@ -199,7 +199,7 @@ ScriptValue JavaScriptCallFrame::setVariableValue(ScriptState* scriptState, int 
     return ScriptValue(scriptState, setVariableValueFunction->Call(callFrame, WTF_ARRAY_LENGTH(argv), argv));
 }
 
-v8::Handle<v8::Object> JavaScriptCallFrame::createExceptionDetails(v8::Handle<v8::Message> message, v8::Isolate* isolate)
+v8::Handle<v8::Object> JavaScriptCallFrame::createExceptionDetails(v8::Isolate* isolate, v8::Handle<v8::Message> message)
 {
     v8::Handle<v8::Object> exceptionDetails = v8::Object::New(isolate);
     exceptionDetails->Set(v8::String::NewFromUtf8(isolate, "text"), message->Get());

@@ -53,11 +53,10 @@ static void installV8TestInterfaceCustomConstructorTemplate(v8::Handle<v8::Funct
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfaceCustomConstructor", v8::Local<v8::FunctionTemplate>(), V8TestInterfaceCustomConstructor::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterfaceCustomConstructor", v8::Local<v8::FunctionTemplate>(), V8TestInterfaceCustomConstructor::internalFieldCount,
         0, 0,
         0, 0,
-        0, 0,
-        isolate);
+        0, 0);
     functionTemplate->SetCallHandler(V8TestInterfaceCustomConstructor::constructorCallback);
     functionTemplate->SetLength(0);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();

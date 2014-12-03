@@ -386,7 +386,7 @@ void V8InjectedScriptHost::evaluateWithExceptionDetailsMethodCustom(const v8::Fu
     v8::Local<v8::Object> wrappedResult = v8::Object::New(isolate);
     if (tryCatch.HasCaught()) {
         wrappedResult->Set(v8::String::NewFromUtf8(isolate, "result"), tryCatch.Exception());
-        wrappedResult->Set(v8::String::NewFromUtf8(isolate, "exceptionDetails"), JavaScriptCallFrame::createExceptionDetails(tryCatch.Message(), isolate));
+        wrappedResult->Set(v8::String::NewFromUtf8(isolate, "exceptionDetails"), JavaScriptCallFrame::createExceptionDetails(isolate, tryCatch.Message()));
     } else {
         wrappedResult->Set(v8::String::NewFromUtf8(isolate, "result"), result);
         wrappedResult->Set(v8::String::NewFromUtf8(isolate, "exceptionDetails"), v8::Undefined(isolate));

@@ -311,11 +311,10 @@ static void installV8TestTypedefsTemplate(v8::Handle<v8::FunctionTemplate> funct
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestTypedefs", v8::Local<v8::FunctionTemplate>(), V8TestTypedefs::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestTypedefs", v8::Local<v8::FunctionTemplate>(), V8TestTypedefs::internalFieldCount,
         V8TestTypedefsAttributes, WTF_ARRAY_LENGTH(V8TestTypedefsAttributes),
         0, 0,
-        V8TestTypedefsMethods, WTF_ARRAY_LENGTH(V8TestTypedefsMethods),
-        isolate);
+        V8TestTypedefsMethods, WTF_ARRAY_LENGTH(V8TestTypedefsMethods));
     functionTemplate->SetCallHandler(V8TestTypedefs::constructorCallback);
     functionTemplate->SetLength(1);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();

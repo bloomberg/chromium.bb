@@ -338,11 +338,10 @@ static void installV8TestInterfaceEventConstructorTemplate(v8::Handle<v8::Functi
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfaceEventConstructor", V8Event::domTemplate(isolate), V8TestInterfaceEventConstructor::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterfaceEventConstructor", V8Event::domTemplate(isolate), V8TestInterfaceEventConstructor::internalFieldCount,
         V8TestInterfaceEventConstructorAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceEventConstructorAttributes),
         0, 0,
-        0, 0,
-        isolate);
+        0, 0);
     functionTemplate->SetCallHandler(V8TestInterfaceEventConstructor::constructorCallback);
     functionTemplate->SetLength(1);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();

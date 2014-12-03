@@ -758,13 +758,12 @@ static void installV8TestInterface5Template(v8::Handle<v8::FunctionTemplate> fun
 
     v8::Local<v8::Signature> defaultSignature;
     if (!RuntimeEnabledFeatures::featureNameEnabled())
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "", V8TestInterfaceEmpty::domTemplate(isolate), V8TestInterface5::internalFieldCount, 0, 0, 0, 0, 0, 0, isolate);
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "", V8TestInterfaceEmpty::domTemplate(isolate), V8TestInterface5::internalFieldCount, 0, 0, 0, 0, 0, 0);
     else
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterface5", V8TestInterfaceEmpty::domTemplate(isolate), V8TestInterface5::internalFieldCount,
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterface5", V8TestInterfaceEmpty::domTemplate(isolate), V8TestInterface5::internalFieldCount,
             V8TestInterface5Attributes, WTF_ARRAY_LENGTH(V8TestInterface5Attributes),
             0, 0,
-            V8TestInterface5Methods, WTF_ARRAY_LENGTH(V8TestInterface5Methods),
-            isolate);
+            V8TestInterface5Methods, WTF_ARRAY_LENGTH(V8TestInterface5Methods));
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
     ALLOW_UNUSED_LOCAL(instanceTemplate);
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();

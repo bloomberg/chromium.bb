@@ -280,12 +280,12 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
            if parent_interface else 'v8::Local<v8::FunctionTemplate>()' %}
     {% if runtime_enabled_function %}
     if (!{{runtime_enabled_function}}())
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "", {{parent_template}}, {{v8_class}}::internalFieldCount, 0, 0, 0, 0, 0, 0, isolate);
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "", {{parent_template}}, {{v8_class}}::internalFieldCount, 0, 0, 0, 0, 0, 0);
     else
     {% endif %}
     {% set runtime_enabled_indent = 4 if runtime_enabled_function else 0 %}
     {% filter indent(runtime_enabled_indent, true) %}
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "{{interface_name}}", {{parent_template}}, {{v8_class}}::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "{{interface_name}}", {{parent_template}}, {{v8_class}}::internalFieldCount,
         {# Test needed as size 0 arrays definitions are not allowed per standard
            (so objects have distinct addresses), which is enforced by MSVC.
            8.5.1 Aggregates [dcl.init.aggr]
@@ -306,8 +306,7 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
            if method_configuration_methods else (0, 0) %}
         {{attributes_name}}, {{attributes_length}},
         {{accessors_name}}, {{accessors_length}},
-        {{methods_name}}, {{methods_length}},
-        isolate);
+        {{methods_name}}, {{methods_length}});
     {% endfilter %}
 
     {% if constructors or has_custom_constructor or has_event_constructor %}

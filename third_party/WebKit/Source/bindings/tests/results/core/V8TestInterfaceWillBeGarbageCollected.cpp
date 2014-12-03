@@ -173,11 +173,10 @@ static void installV8TestInterfaceWillBeGarbageCollectedTemplate(v8::Handle<v8::
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfaceWillBeGarbageCollected", V8EventTarget::domTemplate(isolate), V8TestInterfaceWillBeGarbageCollected::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterfaceWillBeGarbageCollected", V8EventTarget::domTemplate(isolate), V8TestInterfaceWillBeGarbageCollected::internalFieldCount,
         V8TestInterfaceWillBeGarbageCollectedAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceWillBeGarbageCollectedAttributes),
         0, 0,
-        V8TestInterfaceWillBeGarbageCollectedMethods, WTF_ARRAY_LENGTH(V8TestInterfaceWillBeGarbageCollectedMethods),
-        isolate);
+        V8TestInterfaceWillBeGarbageCollectedMethods, WTF_ARRAY_LENGTH(V8TestInterfaceWillBeGarbageCollectedMethods));
     functionTemplate->SetCallHandler(V8TestInterfaceWillBeGarbageCollected::constructorCallback);
     functionTemplate->SetLength(1);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();

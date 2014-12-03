@@ -188,11 +188,10 @@ static void installV8TestNodeTemplate(v8::Handle<v8::FunctionTemplate> functionT
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestNode", V8Node::domTemplate(isolate), V8TestNode::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestNode", V8Node::domTemplate(isolate), V8TestNode::internalFieldCount,
         V8TestNodeAttributes, WTF_ARRAY_LENGTH(V8TestNodeAttributes),
         0, 0,
-        0, 0,
-        isolate);
+        0, 0);
     functionTemplate->SetCallHandler(V8TestNode::constructorCallback);
     functionTemplate->SetLength(0);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();

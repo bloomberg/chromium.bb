@@ -457,11 +457,10 @@ static void installV8TestInterface2Template(v8::Handle<v8::FunctionTemplate> fun
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterface2", v8::Local<v8::FunctionTemplate>(), V8TestInterface2::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(isolate, functionTemplate, "TestInterface2", v8::Local<v8::FunctionTemplate>(), V8TestInterface2::internalFieldCount,
         0, 0,
         0, 0,
-        V8TestInterface2Methods, WTF_ARRAY_LENGTH(V8TestInterface2Methods),
-        isolate);
+        V8TestInterface2Methods, WTF_ARRAY_LENGTH(V8TestInterface2Methods));
     functionTemplate->SetCallHandler(V8TestInterface2::constructorCallback);
     functionTemplate->SetLength(0);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();

@@ -3277,11 +3277,11 @@ void Element::trace(Visitor* visitor)
 v8::Handle<v8::Object> Element::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (isCustomElement())
-        return wrapCustomElement(creationContext, isolate);
+        return wrapCustomElement(isolate, creationContext);
     return ContainerNode::wrap(creationContext, isolate);
 }
 
-v8::Handle<v8::Object> Element::wrapCustomElement(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Object> Element::wrapCustomElement(v8::Isolate* isolate, v8::Handle<v8::Object> creationContext)
 {
     // It's possible that no one except for the new wrapper owns this object at
     // this moment, so we have to prevent GC to collect this object until the
