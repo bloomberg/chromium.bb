@@ -414,10 +414,6 @@ public class SigninManager {
         } else {
             onSignOutDone();
         }
-
-        for (SignInStateObserver observer : mSignInStateObservers) {
-            observer.onSignedOut();
-        }
     }
 
     /**
@@ -471,6 +467,10 @@ public class SigninManager {
         if (mSignOutCallback != null) {
             new Handler().post(mSignOutCallback);
             mSignOutCallback = null;
+        }
+
+        for (SignInStateObserver observer : mSignInStateObservers) {
+            observer.onSignedOut();
         }
     }
 
