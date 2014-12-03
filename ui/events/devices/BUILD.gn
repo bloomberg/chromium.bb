@@ -21,9 +21,7 @@ component("devices") {
     "touchscreen_device.h",
   ]
 
-  defines = [
-    "EVENTS_DEVICES_IMPLEMENTATION",
-  ]
+  defines = [ "EVENTS_DEVICES_IMPLEMENTATION" ]
 
   deps = [
     "//base",

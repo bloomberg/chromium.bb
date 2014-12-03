@@ -40,9 +40,7 @@ component("native_theme") {
     }
   }
 
-  defines = [
-    "NATIVE_THEME_IMPLEMENTATION",
-  ]
+  defines = [ "NATIVE_THEME_IMPLEMENTATION" ]
 
   deps = [
     "//base",

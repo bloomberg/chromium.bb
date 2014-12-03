@@ -14,7 +14,9 @@ static_library("dom4_keycode_converter") {
     "keycodes/dom4/keycode_converter_data.h",
   ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+  ]
 }
 
 component("events_base") {
@@ -138,9 +140,7 @@ component("events") {
   }
 
   if (use_ozone) {
-    sources += [
-      "ozone/events_ozone.cc",
-    ]
+    sources += [ "ozone/events_ozone.cc" ]
   }
 
   if (use_aura) {
@@ -311,9 +311,7 @@ test("events_unittests") {
     "//ui/gfx:test_support",
   ]
 
-  include_dirs = [
-    "//testing/gmock/include",
-  ]
+  include_dirs = [ "//testing/gmock/include" ]
 
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
@@ -340,8 +338,6 @@ test("events_unittests") {
   }
 
   if (use_aura) {
-    sources += [
-      "gestures/gesture_provider_aura_unittest.cc",
-    ]
+    sources += [ "gestures/gesture_provider_aura_unittest.cc" ]
   }
 }

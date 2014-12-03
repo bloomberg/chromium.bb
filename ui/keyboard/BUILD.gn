@@ -77,12 +77,13 @@ grit("resources_grit") {
   inputview_gen_js = "$root_gen_dir/ui/keyboard/resources/inputview.js"
   keyboard_mojom_gen_js = "$root_gen_dir/ui/keyboard/webui/keyboard.mojom.js"
   grit_flags = [
-    "-E", "inputview_dir=" +
-          rebase_path(inputview_dir, "."),
-    "-E", "inputview_gen_js=" +
-          rebase_path(inputview_gen_js, root_build_dir),
-    "-E", "keyboard_mojom_gen_js=" +
-          rebase_path(keyboard_mojom_gen_js, root_build_dir),
+    "-E",
+    "inputview_dir=" + rebase_path(inputview_dir, "."),
+    "-E",
+    "inputview_gen_js=" + rebase_path(inputview_gen_js, root_build_dir),
+    "-E",
+    "keyboard_mojom_gen_js=" +
+        rebase_path(keyboard_mojom_gen_js, root_build_dir),
   ]
 
   deps = [
@@ -92,9 +93,13 @@ grit("resources_grit") {
 }
 
 copy("resources") {
-  sources = [ "$target_gen_dir/keyboard_resources.pak" ]
+  sources = [
+    "$target_gen_dir/keyboard_resources.pak",
+  ]
   outputs = [ "$root_out_dir/keyboard_resources.pak" ]
-  public_deps = [ ":resources_grit" ]
+  public_deps = [
+    ":resources_grit",
+  ]
 }
 
 build_closure("inputview") {

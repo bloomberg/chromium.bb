@@ -5,11 +5,10 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("views.gyp") ],
-    "scope",
-    [ "views.gyp" ])
+gypi_values = exec_script("//build/gypi_to_gn.py",
+                          [ rebase_path("views.gyp") ],
+                          "scope",
+                          [ "views.gyp" ])
 
 component("views") {
   sources = gypi_values.views_sources
@@ -67,7 +66,10 @@ component("views") {
   if (is_win) {
     sources += gypi_values.views_win_sources
     cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    libs = [ "/imm32.lib", "oleacc.lib" ]
+    libs = [
+      "/imm32.lib",
+      "oleacc.lib",
+    ]
     ldflags = [ "/DELAYLOAD:user32.dll" ]
     deps += [
       "//third_party/iaccessible2",
@@ -144,9 +146,7 @@ static_library("test_support") {
     deps += [ "//ui/gfx/x" ]
   }
   if (use_ozone) {
-    sources -= [
-      "test/x11_property_change_waiter.cc",
-    ]
+    sources -= [ "test/x11_property_change_waiter.cc" ]
   }
 }
 
@@ -180,9 +180,7 @@ test("views_unittests") {
   ]
 
   if (is_chromeos) {
-    sources -= [
-      "ime/input_method_bridge_unittest.cc",
-    ]
+    sources -= [ "ime/input_method_bridge_unittest.cc" ]
   }
 
   if (is_win) {
@@ -195,6 +193,7 @@ test("views_unittests") {
       "oleacc.lib",
       "comctl32.lib",
     ]
+
     # TOOD(GYP)
     #'msvs_settings': {
     #  'VCManifestTool': {

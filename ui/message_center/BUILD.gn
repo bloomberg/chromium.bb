@@ -128,7 +128,6 @@ component("message_center") {
         "views/message_center_bubble.h",
       ]
     }
-
   } else {
     # Notification service disabled.
     sources = [
@@ -136,6 +135,7 @@ component("message_center") {
       "notification_delegate.cc",
       "notification_delegate.h",
     ]
+
     # Android implements its own notification UI manager instead of deferring to
     # the message center (when notifications are enabled). Include a minimal
     # set of files required for notifications on Android.

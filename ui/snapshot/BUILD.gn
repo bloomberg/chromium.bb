@@ -44,9 +44,7 @@ component("snapshot") {
       "//ui/compositor",
     ]
   } else {
-    sources -= [
-      "snapshot_aura.cc"
-    ]
+    sources -= [ "snapshot_aura.cc" ]
   }
 }
 

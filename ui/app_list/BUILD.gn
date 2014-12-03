@@ -193,9 +193,7 @@ component("app_list") {
       "cocoa/scroll_view_with_no_scrollbars.h",
       "cocoa/scroll_view_with_no_scrollbars.mm",
     ]
-    deps += [
-      "//third_party/google_toolbox_for_mac",
-    ]
+    deps += [ "//third_party/google_toolbox_for_mac" ]
     libs = [ "QuartzCore.framework" ]
   }
 }

@@ -45,11 +45,11 @@ component("accessibility") {
 source_set("test_support") {
   sources = [
     "tree_generator.cc",
-    "tree_generator.h"
+    "tree_generator.h",
   ]
 
   deps = [
-    ":accessibility"
+    ":accessibility",
   ]
 }
 
@@ -72,8 +72,12 @@ test("accessibility_unittests") {
 }
 
 json_schema_api("ax_gen") {
-  sources = [ "ax_enums.idl" ]
-  deps = [ "//base/third_party/dynamic_annotations" ]
+  sources = [
+    "ax_enums.idl",
+  ]
+  deps = [
+    "//base/third_party/dynamic_annotations",
+  ]
   root_namespace = "ui"
   schemas = true
 }

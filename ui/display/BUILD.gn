@@ -41,9 +41,7 @@ component("display") {
       "//build/config/linux:xi",
       "//build/config/linux:xrandr",
     ]
-    deps += [
-      "//ui/events/platform",
-    ]
+    deps += [ "//ui/events/platform" ]
     if (is_chromeos) {
       sources -= [ "chromeos/ozone/display_configurator_ozone.cc" ]
     }

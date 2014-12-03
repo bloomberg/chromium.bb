@@ -47,9 +47,13 @@ grit("webui_resources_grd") {
 
 if (!is_mac) {
   copy("copy_ui_resources_100_percent") {
-    sources = [ "$root_gen_dir/ui/resources/ui_resources_100_percent.pak" ]
+    sources = [
+      "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
+    ]
     outputs = [ "$root_out_dir/ui_resources_100_percent.pak" ]
-    deps = [ "//ui/resources" ]
+    deps = [
+      "//ui/resources",
+    ]
   }
 }
 
@@ -60,11 +64,16 @@ if (!is_mac) {
 #              (copy_ui_test_pak action)
 if (is_ios || is_mac) {
   group("ui_test_pak") {
-    deps = [ ":repack_ui_test_pak", ":repack_ui_test_mac_locale_pack" ]
+    deps = [
+      ":repack_ui_test_pak",
+      ":repack_ui_test_mac_locale_pack",
+    ]
   }
 } else {
   group("ui_test_pak") {
-    deps = [ ":repack_ui_test_pak" ]
+    deps = [
+      ":repack_ui_test_pak",
+    ]
   }
 }
 

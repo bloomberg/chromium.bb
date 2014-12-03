@@ -26,9 +26,7 @@ component("events_ozone") {
     "//base/third_party/dynamic_annotations",
   ]
 
-  defines = [
-    "EVENTS_OZONE_IMPLEMENTATION",
-  ]
+  defines = [ "EVENTS_OZONE_IMPLEMENTATION" ]
 
   if (!use_udev) {
     sources -= [
@@ -38,22 +36,16 @@ component("events_ozone") {
   }
 
   if (use_ozone_evdev && use_udev) {
-    deps += [
-      "//device/udev_linux",
-    ]
+    deps += [ "//device/udev_linux" ]
   }
 }
 
 config("evdev") {
-  defines = [
-    "USE_EVDEV"
-  ]
+  defines = [ "USE_EVDEV" ]
 }
 
 config("evdev_gestures") {
-  defines = [
-    "USE_EVDEV_GESTURES"
-  ]
+  defines = [ "USE_EVDEV_GESTURES" ]
 }
 
 component("events_ozone_evdev") {
@@ -83,9 +75,7 @@ component("events_ozone_evdev") {
     "evdev/touch_event_converter_evdev.h",
   ]
 
-  defines = [
-    "EVENTS_OZONE_EVDEV_IMPLEMENTATION",
-  ]
+  defines = [ "EVENTS_OZONE_EVDEV_IMPLEMENTATION" ]
 
   deps = [
     ":events_ozone",
@@ -95,9 +85,7 @@ component("events_ozone_evdev") {
     "//ui/gfx",
   ]
 
-  public_configs = [
-    ":evdev",
-  ]
+  public_configs = [ ":evdev" ]
 
   if (use_ozone_evdev && use_evdev_gestures) {
     sources += [
@@ -113,9 +101,7 @@ component("events_ozone_evdev") {
       "evdev/libgestures_glue/gesture_timer_provider.h",
     ]
 
-    public_configs += [
-      ":evdev_gestures",
-    ]
+    public_configs += [ ":evdev_gestures" ]
 
     configs += [
       "//build/config/linux:libevdev-cros",

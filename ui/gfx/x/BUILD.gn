@@ -20,13 +20,9 @@ component("x") {
     "x11_types.h",
   ]
 
-  defines = [
-    "GFX_IMPLEMENTATION",
-  ]
+  defines = [ "GFX_IMPLEMENTATION" ]
 
-  configs += [
-    "//build/config/linux:x11",
-  ]
+  configs += [ "//build/config/linux:x11" ]
 
   deps = [
     "//base",

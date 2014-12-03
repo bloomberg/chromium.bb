@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import ("//build/config/ui.gni")
+import("//build/config/ui.gni")
 
 component("aura") {
   sources = [
@@ -90,9 +90,7 @@ component("aura") {
     "../wm/public/window_types.h",
   ]
 
-  defines = [
-    "AURA_IMPLEMENTATION",
-  ]
+  defines = [ "AURA_IMPLEMENTATION" ]
 
   deps = [
     "//base",
@@ -112,9 +110,7 @@ component("aura") {
       "//build/config/linux:x11",
       "//build/config/linux:xrandr",
     ]
-    deps += [
-      "//ui/events/platform/x11",
-    ]
+    deps += [ "//ui/events/platform/x11" ]
   } else {
     sources -= [
       "window_tree_host_x11.cc",
@@ -123,9 +119,7 @@ component("aura") {
   }
 
   if (is_win) {
-    sources -= [
-      "input_state_lookup.cc",
-    ]
+    sources -= [ "input_state_lookup.cc" ]
 
     deps += [
       "//ui/metro_viewer",
@@ -139,9 +133,7 @@ component("aura") {
       "window_tree_host_ozone.h",
     ]
 
-    deps += [
-      "//ui/ozone",
-    ]
+    deps += [ "//ui/ozone" ]
   }
 }
 
@@ -193,16 +185,12 @@ source_set("test_support") {
   ]
 
   if (is_win) {
-    cflags = [
-      "/wd4267", # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    ]
+    cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   }
 
   if (use_aura) {
     if (is_win) {
-      sources += [
-        "test/ui_controls_factory_aurawin.cc",
-      ]
+      sources += [ "test/ui_controls_factory_aurawin.cc" ]
     }
 
     if (use_x11) {
@@ -240,9 +228,7 @@ executable("demo") {
   ]
 
   if (use_x11) {
-    deps += [
-      "//ui/gfx/x",
-    ]
+    deps += [ "//ui/gfx/x" ]
   }
 }
 
@@ -272,9 +258,7 @@ executable("bench") {
   ]
 
   if (use_x11) {
-    deps += [
-      "//ui/gfx/x",
-    ]
+    deps += [ "//ui/gfx/x" ]
   }
 }
 
@@ -303,8 +287,6 @@ test("aura_unittests") {
   ]
 
   if (is_linux) {
-    deps += [
-      "//third_party/mesa",
-    ]
+    deps += [ "//third_party/mesa" ]
   }
 }

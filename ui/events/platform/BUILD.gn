@@ -19,17 +19,13 @@ component("platform") {
     "scoped_event_dispatcher.h",
   ]
 
-  defines = [
-    "EVENTS_IMPLEMENTATION",
-  ]
+  defines = [ "EVENTS_IMPLEMENTATION" ]
 
   deps = [
     "//base",
   ]
 
   if (use_x11) {
-    sources -= [
-      "platform_event_source_stub.cc",
-    ]
+    sources -= [ "platform_event_source_stub.cc" ]
   }
 }

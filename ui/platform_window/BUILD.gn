@@ -9,7 +9,7 @@ component("platform_window") {
     "platform_window.h",
     "platform_window_delegate.h",
     "platform_window_export.h",
-  ] 
+  ]
 
   deps = [
     "//base",

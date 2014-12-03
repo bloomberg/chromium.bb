@@ -36,5 +36,4 @@ generate_library_loader("eglplatform_shim") {
     "ShimReleaseNativeWindow",
   ]
 }
-
 # TODO(spang): eglplatform_shim_x11 once support lands: http://crbug.com/380327

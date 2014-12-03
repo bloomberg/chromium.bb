@@ -31,7 +31,5 @@ component("accelerated_widget_mac") {
     "//ui/gl",
   ]
 
-  libs = [
-    "QuartzCore.framework",
-  ]
+  libs = [ "QuartzCore.framework" ]
 }

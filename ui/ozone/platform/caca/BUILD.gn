@@ -24,9 +24,7 @@ source_set("caca") {
     "//ui/gfx/geometry",
   ]
 
-  configs += [
-    ":libcaca",
-  ]
+  configs += [ ":libcaca" ]
 }
 
 pkg_config("libcaca") {
