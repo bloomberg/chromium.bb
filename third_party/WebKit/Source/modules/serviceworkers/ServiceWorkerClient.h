@@ -5,12 +5,16 @@
 #ifndef ServiceWorkerClient_h
 #define ServiceWorkerClient_h
 
+#include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
 namespace blink {
+
+class ExecutionContext;
+class ScriptState;
 
 class ServiceWorkerClient final : public GarbageCollected<ServiceWorkerClient>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -19,6 +23,7 @@ public:
 
     // ServiceWorkerClient.idl
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
+    ScriptPromise focus(ScriptState*);
 
     void trace(Visitor*) { }
 

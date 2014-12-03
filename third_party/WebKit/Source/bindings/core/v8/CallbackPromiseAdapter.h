@@ -120,10 +120,40 @@ public:
 
     virtual void onSuccess() override
     {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_resolver->resolve(V8UndefinedType());
+    }
+
+    virtual void onError(typename T::WebType* error) override
+    {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+            T::dispose(error);
             return;
         }
-        m_resolver->resolve(V8UndefinedType());
+        m_resolver->reject(T::take(m_resolver.get(), error));
+    }
+
+private:
+    RefPtr<ScriptPromiseResolver> m_resolver;
+    WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
+};
+
+template<typename T>
+class CallbackPromiseAdapter<bool, T> final : public blink::WebCallbacks<bool, typename T::WebType> {
+public:
+    explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver)
+    {
+        ASSERT(m_resolver);
+    }
+    virtual ~CallbackPromiseAdapter() { }
+
+    virtual void onSuccess(bool* result) override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_resolver->resolve(*result);
     }
 
     virtual void onError(typename T::WebType* error) override

@@ -61,6 +61,7 @@ public:
     virtual void didHandleSyncEvent(int syncEventID) override;
     virtual void postMessageToClient(int clientID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) override;
     virtual void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) override;
+    virtual void focus(int clientID, WebServiceWorkerClientFocusCallback*) override;
 
     virtual void trace(Visitor* visitor) override { ServiceWorkerGlobalScopeClient::trace(visitor); }
 

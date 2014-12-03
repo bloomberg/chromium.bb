@@ -108,6 +108,11 @@ void ServiceWorkerGlobalScopeClientImpl::skipWaiting(WebServiceWorkerSkipWaiting
     m_client.skipWaiting(callbacks);
 }
 
+void ServiceWorkerGlobalScopeClientImpl::focus(int clientID, WebServiceWorkerClientFocusCallback* callback)
+{
+    m_client.focus(clientID, callback);
+}
+
 ServiceWorkerGlobalScopeClientImpl::ServiceWorkerGlobalScopeClientImpl(WebServiceWorkerContextClient& client)
     : m_client(client)
 {
