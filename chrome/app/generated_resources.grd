@@ -6879,9 +6879,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_HOTWORD_SEARCH_PREF_CHKBOX" desc="A checkbox on the Settings page to allow audio capture devices to initiate searches.">
         Enable "Ok Google" to start a voice search
       </message>
-      <message name="IDS_HOTWORD_SEARCH_NO_DSP_DESCRIPTION" desc="Description of the hotword search preference for devices with no DSP.">
-        Say "Ok Google" in a new tab, google.com, and the App Launcher
-      </message>
+      <if expr="chromeos">
+        <message name="IDS_HOTWORD_SEARCH_NO_DSP_DESCRIPTION" desc="Description of the hotword search preference for devices with no DSP.">
+          Say "Ok Google" in a new tab, google.com, and the App Launcher
+        </message>
+      </if>
+      <if expr="not chromeos">
+        <message name="IDS_HOTWORD_SEARCH_NO_DSP_DESCRIPTION" desc="Description of the hotword search preference for devices with no DSP.">
+          Say "Ok Google" in a new tab and google.com
+        </message>
+      </if>
       <message name="IDS_HOTWORD_SEARCH_ALWAYS_ON_DESCRIPTION" desc="Description of the hotword-always-on search preference.">
         Say "Ok Google" when the screen is on and unlocked.
       </message>
