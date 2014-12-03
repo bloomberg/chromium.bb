@@ -556,8 +556,16 @@ void PicturePile::CreatePictures(ContentLayerClient* painter,
       // even if that content is replaced by gpu-friendly content.
       // This is an optimization to avoid iterating though all pictures in
       // the pile after each invalidation.
-      is_suitable_for_gpu_rasterization_ &=
-          picture->IsSuitableForGpuRasterization();
+      if (is_suitable_for_gpu_rasterization_) {
+        const char* reason = nullptr;
+        is_suitable_for_gpu_rasterization_ &=
+            picture->IsSuitableForGpuRasterization(&reason);
+
+        if (!is_suitable_for_gpu_rasterization_) {
+          TRACE_EVENT_INSTANT1("cc", "GPU Rasterization Veto",
+                               TRACE_EVENT_SCOPE_THREAD, "reason", reason);
+        }
+      }
     }
 
     bool found_tile_for_recorded_picture = false;
