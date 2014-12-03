@@ -18,7 +18,6 @@ class MessageLoopForUI;
 
 namespace ui {
 class ScopedAnimationDurationScaleMode;
-class UiThreadGpu;
 }  // namespace ui
 
 namespace views {
@@ -82,11 +81,6 @@ class AshTestHelper {
 
   // Check if DBus Thread Manager was initialized here.
   bool dbus_thread_manager_initialized_;
-
-#if defined(USE_OZONE)
-  // Forwards ozone related messages to in process gpu-process.
-  scoped_ptr<ui::UiThreadGpu> ui_thread_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };
