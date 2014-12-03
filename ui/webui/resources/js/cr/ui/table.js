@@ -312,7 +312,7 @@ cr.define('cr.ui', function() {
           // Force styles based on hasElementFocus to take effect.
           list.redraw();
         }
-      });
+      }, 0);
     },
 
     /**
