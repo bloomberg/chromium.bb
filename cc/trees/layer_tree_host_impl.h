@@ -62,6 +62,14 @@ class UIResourceBitmap;
 class UIResourceRequest;
 struct RendererCapabilitiesImpl;
 
+enum class GpuRasterizationStatus {
+  ON,
+  ON_FORCED,
+  OFF_DEVICE,
+  OFF_VIEWPORT,
+  OFF_CONTENT
+};
+
 // LayerTreeHost->Proxy callback interface.
 class LayerTreeHostImplClient {
  public:
@@ -279,6 +287,15 @@ class CC_EXPORT LayerTreeHostImpl
   TileManager* tile_manager() { return tile_manager_.get(); }
   void SetUseGpuRasterization(bool use_gpu);
   bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
+
+  GpuRasterizationStatus gpu_rasterization_status() const {
+    return gpu_rasterization_status_;
+  }
+  void set_gpu_rasterization_status(
+      GpuRasterizationStatus gpu_rasterization_status) {
+    gpu_rasterization_status_ = gpu_rasterization_status;
+  }
+
   bool create_low_res_tiling() const {
     return settings_.create_low_res_tiling && !use_gpu_rasterization_;
   }
@@ -591,6 +608,7 @@ class CC_EXPORT LayerTreeHostImpl
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<TileManager> tile_manager_;
   bool use_gpu_rasterization_;
+  GpuRasterizationStatus gpu_rasterization_status_;
   scoped_ptr<RasterWorkerPool> raster_worker_pool_;
   scoped_ptr<ResourcePool> resource_pool_;
   scoped_ptr<ResourcePool> staging_resource_pool_;

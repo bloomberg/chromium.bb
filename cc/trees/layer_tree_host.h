@@ -66,6 +66,7 @@ class UIResourceRequest;
 struct PendingPageScaleAnimation;
 struct RenderingStats;
 struct ScrollAndScaleSet;
+enum class GpuRasterizationStatus;
 
 // Provides information on an Impl's rendering capabilities back to the
 // LayerTreeHost.
@@ -208,6 +209,7 @@ class CC_EXPORT LayerTreeHost {
   }
   void SetHasGpuRasterizationTrigger(bool has_trigger);
   bool UseGpuRasterization() const;
+  GpuRasterizationStatus GetGpuRasterizationStatus() const;
 
   void SetViewportSize(const gfx::Size& device_viewport_size);
   void SetTopControlsLayoutHeight(float height);

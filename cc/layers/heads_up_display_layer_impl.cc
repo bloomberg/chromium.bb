@@ -17,6 +17,7 @@
 #include "cc/output/renderer.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/memory_history.h"
+#include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -276,6 +277,9 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(SkCanvas* canvas) {
         DrawFPSDisplay(canvas, layer_tree_impl()->frame_rate_counter(), 0, 0);
   }
 
+  area = DrawGpuRasterizationStatus(canvas, 0, area.bottom(),
+                                    SkMaxScalar(area.width(), 150));
+
   if (debug_state.ShowMemoryStats())
     DrawMemoryDisplay(canvas, 0, area.bottom(), SkMaxScalar(area.width(), 150));
 }
@@ -525,6 +529,57 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(SkCanvas* canvas,
   text = base::StringPrintf("%6.1f MB max ",
                             memory_entry_.total_budget_in_bytes / kMegabyte);
   DrawText(canvas, &paint, text, SkPaint::kRight_Align, kFontHeight, stat2_pos);
+
+  return area;
+}
+
+SkRect HeadsUpDisplayLayerImpl::DrawGpuRasterizationStatus(SkCanvas* canvas,
+                                                           int right,
+                                                           int top,
+                                                           int width) const {
+  std::string status;
+  SkColor color = SK_ColorRED;
+  switch (layer_tree_impl()->GetGpuRasterizationStatus()) {
+    case GpuRasterizationStatus::ON:
+      status = "GPU raster: on";
+      color = SK_ColorGREEN;
+      break;
+    case GpuRasterizationStatus::ON_FORCED:
+      status = "GPU raster: on (forced)";
+      color = SK_ColorGREEN;
+      break;
+    case GpuRasterizationStatus::OFF_DEVICE:
+      status = "GPU raster: off (device)";
+      color = SK_ColorRED;
+      break;
+    case GpuRasterizationStatus::OFF_VIEWPORT:
+      status = "GPU raster: off (viewport)";
+      color = SK_ColorYELLOW;
+      break;
+    case GpuRasterizationStatus::OFF_CONTENT:
+      status = "GPU raster: off (content)";
+      color = SK_ColorYELLOW;
+      break;
+  }
+
+  if (status.empty())
+    return SkRect::MakeEmpty();
+
+  const int kPadding = 4;
+  const int kFontHeight = 13;
+
+  const int height = kFontHeight + 2 * kPadding;
+  const int left = bounds().width() - width - right;
+  const SkRect area = SkRect::MakeXYWH(left, top, width, height);
+
+  SkPaint paint = CreatePaint();
+  DrawGraphBackground(canvas, &paint, area);
+
+  SkPoint gpu_status_pos = SkPoint::Make(left + kPadding, top + kFontHeight);
+
+  paint.setColor(color);
+  DrawText(canvas, &paint, status, SkPaint::kLeft_Align, kFontHeight,
+           gpu_status_pos);
 
   return area;
 }

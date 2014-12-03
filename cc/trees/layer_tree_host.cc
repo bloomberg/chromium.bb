@@ -377,6 +377,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   sync_tree->set_sent_top_controls_delta(0.f);
 
   host_impl->SetUseGpuRasterization(UseGpuRasterization());
+  host_impl->set_gpu_rasterization_status(GetGpuRasterizationStatus());
   RecordGpuRasterizationHistogram();
 
   host_impl->SetViewportSize(device_viewport_size_);
@@ -634,6 +635,21 @@ bool LayerTreeHost::UseGpuRasterization() const {
   } else {
     return false;
   }
+}
+
+GpuRasterizationStatus LayerTreeHost::GetGpuRasterizationStatus() const {
+  if (settings_.gpu_rasterization_forced) {
+    return GpuRasterizationStatus::ON_FORCED;
+  } else if (settings_.gpu_rasterization_enabled) {
+    if (!has_gpu_rasterization_trigger_) {
+      return GpuRasterizationStatus::OFF_VIEWPORT;
+    } else if (!content_is_suitable_for_gpu_rasterization_) {
+      return GpuRasterizationStatus::OFF_CONTENT;
+    } else {
+      return GpuRasterizationStatus::ON;
+    }
+  }
+  return GpuRasterizationStatus::OFF_DEVICE;
 }
 
 void LayerTreeHost::SetHasGpuRasterizationTrigger(bool has_trigger) {

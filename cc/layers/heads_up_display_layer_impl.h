@@ -105,6 +105,10 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
                            int top,
                            int right,
                            int width) const;
+  SkRect DrawGpuRasterizationStatus(SkCanvas* canvas,
+                                    int right,
+                                    int top,
+                                    int width) const;
   SkRect DrawPaintTimeDisplay(SkCanvas* canvas,
                               const PaintTimeCounter* paint_time_counter,
                               int top,

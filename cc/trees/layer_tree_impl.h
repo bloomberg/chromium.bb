@@ -90,6 +90,7 @@ class CC_EXPORT LayerTreeImpl {
   void DidAnimateScrollOffset();
   void InputScrollAnimationFinished();
   bool use_gpu_rasterization() const;
+  GpuRasterizationStatus GetGpuRasterizationStatus() const;
   bool create_low_res_tiling() const;
   BlockingTaskRunner* BlockingMainThreadTaskRunner() const;
   bool RequiresHighResToDraw() const;

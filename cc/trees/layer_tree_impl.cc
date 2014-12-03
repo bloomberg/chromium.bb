@@ -823,6 +823,10 @@ bool LayerTreeImpl::use_gpu_rasterization() const {
   return layer_tree_host_impl_->use_gpu_rasterization();
 }
 
+GpuRasterizationStatus LayerTreeImpl::GetGpuRasterizationStatus() const {
+  return layer_tree_host_impl_->gpu_rasterization_status();
+}
+
 bool LayerTreeImpl::create_low_res_tiling() const {
   return layer_tree_host_impl_->create_low_res_tiling();
 }
