@@ -46,6 +46,7 @@
           '../../common/js/volume_manager_common.js',
           '../../common/js/util.js',
           '../../common/js/progress_center_common.js',
+          '../../common/js/lru_cache.js',
           '../../background/js/file_operation_manager.js',
           '../../background/js/file_operation_util.js',
           '../../background/js/file_operation_handler.js',

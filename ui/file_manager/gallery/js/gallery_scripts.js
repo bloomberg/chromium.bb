@@ -11,6 +11,7 @@
 //<include src="../../file_manager/foreground/js/metrics_base.js">
 //<include src="../../file_manager/foreground/js/metrics.js">
 
+//<include src="../../file_manager/common/js/lru_cache.js">
 //<include src="../../image_loader/image_loader_client.js">
 
 //<include src="../../../webui/resources/js/cr.js">

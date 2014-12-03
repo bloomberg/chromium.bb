@@ -28,10 +28,10 @@ function ImageLoaderClient() {
 
   /**
    * LRU cache for images.
-   * @type {ImageLoaderClient.Cache}
+   * @type {!LRUCache.<{data: string, timestamp: ?number}>}
    * @private
    */
-  this.cache_ = new ImageLoaderClient.Cache();
+  this.cache_ = new LRUCache(ImageLoaderClient.CACHE_MEMORY_LIMIT);
 }
 
 /**
@@ -130,7 +130,8 @@ ImageLoaderClient.prototype.load = function(
   opt_isValid = opt_isValid || function() { return true; };
 
   // Record cache usage.
-  ImageLoaderClient.recordPercentage('Cache.Usage', this.cache_.getUsage());
+  ImageLoaderClient.recordPercentage('Cache.Usage',
+      this.cache_.size() / ImageLoaderClient.CACHE_MEMORY_LIMIT * 100.0);
 
   // Cancel old, invalid tasks.
   var taskKeys = Object.keys(this.tasks_);
@@ -152,14 +153,19 @@ ImageLoaderClient.prototype.load = function(
                     'filesystem:chrome-extension://' + targetId);
 
   // Try to load from cache, if available.
-  var cacheKey = ImageLoaderClient.Cache.createKey(url, opt_options);
+  var cacheKey = ImageLoaderClient.createKey(url, opt_options);
   if (opt_options.cache) {
     // Load from cache.
     ImageLoaderClient.recordBinary('Cached', true);
-    var cachedData = this.cache_.loadImage(cacheKey, opt_options.timestamp);
-    if (cachedData) {
+    var cachedValue = this.cache_.get(cacheKey);
+    // Check if the image in cache is up to date. If not, then remove it.
+    if (cachedValue && cachedValue.timestamp != opt_options.timestamp) {
+      this.cache_.remove(cacheKey);
+      cachedValue = null;
+    }
+    if (cachedValue && cachedValue.data) {
       ImageLoaderClient.recordBinary('Cache.HitMiss', true);
-      callback({status: 'success', data: cachedData});
+      callback({status: 'success', data: cachedValue.data});
       return null;
     } else {
       ImageLoaderClient.recordBinary('Cache.HitMiss', false);
@@ -167,7 +173,7 @@ ImageLoaderClient.prototype.load = function(
   } else {
     // Remove from cache.
     ImageLoaderClient.recordBinary('Cached', false);
-    this.cache_.removeImage(cacheKey);
+    this.cache_.remove(cacheKey);
   }
 
   // Not available in cache, performing a request to a remote extension.
@@ -184,8 +190,13 @@ ImageLoaderClient.prototype.load = function(
       request,
       function(result) {
         // Save to cache.
-        if (result.status == 'success' && opt_options.cache)
-          this.cache_.saveImage(cacheKey, result.data, opt_options.timestamp);
+        if (result.status == 'success' && opt_options.cache) {
+          var value = {
+            timestamp: opt_options.timestamp ? opt_options.timestamp : null,
+            data: result.data
+          }
+          this.cache_.put(cacheKey, value, result.data.length);
+        }
         callback(result);
       }.bind(this));
   return request.taskId;
@@ -200,24 +211,12 @@ ImageLoaderClient.prototype.cancel = function(taskId) {
 };
 
 /**
- * Least Recently Used (LRU) cache implementation to be used by
- * Client class. It has memory constraints, so it will never
- * exceed specified memory limit defined in MEMORY_LIMIT.
- *
- * @constructor
- */
-ImageLoaderClient.Cache = function() {
-  this.images_ = [];
-  this.size_ = 0;
-};
-
-/**
  * Memory limit for images data in bytes.
  *
  * @const
  * @type {number}
  */
-ImageLoaderClient.Cache.MEMORY_LIMIT = 20 * 1024 * 1024;  // 20 MB.
+ImageLoaderClient.CACHE_MEMORY_LIMIT = 20 * 1024 * 1024;  // 20 MB.
 
 /**
  * Creates a cache key.
@@ -226,7 +225,7 @@ ImageLoaderClient.Cache.MEMORY_LIMIT = 20 * 1024 * 1024;  // 20 MB.
  * @param {Object=} opt_options Loader options as a hash array.
  * @return {string} Cache key.
  */
-ImageLoaderClient.Cache.createKey = function(url, opt_options) {
+ImageLoaderClient.createKey = function(url, opt_options) {
   opt_options = opt_options || {};
   return JSON.stringify({
     url: url,
@@ -236,102 +235,6 @@ ImageLoaderClient.Cache.createKey = function(url, opt_options) {
     height: opt_options.height,
     maxWidth: opt_options.maxWidth,
     maxHeight: opt_options.maxHeight});
-};
-
-/**
- * Evicts the least used elements in cache to make space for a new image.
- *
- * @param {number} size Requested size.
- * @private
- */
-ImageLoaderClient.Cache.prototype.evictCache_ = function(size) {
-  // Sort from the most recent to the oldest.
-  this.images_.sort(function(a, b) {
-    return b.lastLoadTimestamp - a.lastLoadTimestamp;
-  });
-
-  while (this.images_.length > 0 &&
-         (ImageLoaderClient.Cache.MEMORY_LIMIT - this.size_ < size)) {
-    var entry = this.images_.pop();
-    this.size_ -= entry.data.length;
-  }
-};
-
-/**
- * Saves an image in the cache.
- *
- * @param {string} key Cache key.
- * @param {string} data Image data.
- * @param {number=} opt_timestamp Last modification timestamp. Used to detect
- *     if the cache entry becomes out of date.
- */
-ImageLoaderClient.Cache.prototype.saveImage = function(
-    key, data, opt_timestamp) {
-  // If the image is currently in cache, then remove it.
-  if (this.images_[key])
-    this.removeImage(key);
-
-  if (ImageLoaderClient.Cache.MEMORY_LIMIT - this.size_ < data.length) {
-    ImageLoaderClient.recordBinary('Evicted', true);
-    this.evictCache_(data.length);
-  } else {
-    ImageLoaderClient.recordBinary('Evicted', false);
-  }
-
-  if (ImageLoaderClient.Cache.MEMORY_LIMIT - this.size_ >= data.length) {
-    this.images_[key] = {
-      lastLoadTimestamp: Date.now(),
-      timestamp: opt_timestamp ? opt_timestamp : null,
-      data: data
-    };
-    this.size_ += data.length;
-  }
-};
-
-/**
- * Loads an image from the cache (if available) or returns null.
- *
- * @param {string} key Cache key.
- * @param {number=} opt_timestamp Last modification timestamp. If different
- *     that the one in cache, then the entry will be invalidated.
- * @return {?string} Data of the loaded image or null.
- */
-ImageLoaderClient.Cache.prototype.loadImage = function(key, opt_timestamp) {
-  if (!(key in this.images_))
-    return null;
-
-  var entry = this.images_[key];
-  entry.lastLoadTimestamp = Date.now();
-
-  // Check if the image in cache is up to date. If not, then remove it and
-  // return null.
-  if (entry.timestamp != opt_timestamp) {
-    this.removeImage(key);
-    return null;
-  }
-
-  return entry.data;
-};
-
-/**
- * Returns cache usage.
- * @return {number} Value in percent points (0..100).
- */
-ImageLoaderClient.Cache.prototype.getUsage = function() {
-  return this.size_ / ImageLoaderClient.Cache.MEMORY_LIMIT * 100.0;
-};
-
-/**
- * Removes the image from the cache.
- * @param {string} key Cache key.
- */
-ImageLoaderClient.Cache.prototype.removeImage = function(key) {
-  if (!(key in this.images_))
-    return;
-
-  var entry = this.images_[key];
-  this.size_ -= entry.data.length;
-  delete this.images_[key];
 };
 
 // Helper functions.
