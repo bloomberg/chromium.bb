@@ -141,7 +141,10 @@ class CSSChecker(object):
       return ' (replace with %dms)' % ms
 
     def no_data_uris_in_source_files(line):
-      return re.search(r'\(\s*\'?\s*data:', line)
+      return re.search(r'\(\s*\s*data:', line)
+
+    def no_quotes_in_url(line):
+      return re.search('url\s*\(\s*["\']', line, re.IGNORECASE)
 
     def one_rule_per_line(line):
       one_rule_reg = re.compile(r"""
@@ -310,6 +313,9 @@ class CSSChecker(object):
         },
         { 'desc': "Don't use data URIs in source files. Use grit instead.",
           'test': no_data_uris_in_source_files,
+        },
+        { 'desc': "Don't use quotes in url().",
+          'test': no_quotes_in_url,
         },
         { 'desc': 'One rule per line (what not to do: color: red; margin: 0;).',
           'test': one_rule_per_line,

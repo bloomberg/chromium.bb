@@ -150,8 +150,8 @@ html[dir=rtl] #slide-guests .arrow-down {
 
 #slide-your-chrome .slide-image {
   background-color: rgb(241, 202, 58);
-  background-image: url(
-      'chrome://theme/IDR_ICON_USER_MANAGER_TUTORIAL_YOUR_CHROME');
+  background-image:
+      url(chrome://theme/IDR_ICON_USER_MANAGER_TUTORIAL_YOUR_CHROME);
 }
 
 #slide-guests .slide-image {
@@ -161,14 +161,14 @@ html[dir=rtl] #slide-guests .arrow-down {
 
 #slide-friends .slide-image {
   background-color: rgb(179, 229, 252);
-  background-image: url(
-      'chrome://theme/IDR_ICON_USER_MANAGER_TUTORIAL_FRIENDS');
+  background-image:
+      url(chrome://theme/IDR_ICON_USER_MANAGER_TUTORIAL_FRIENDS);
 }
 
 #slide-complete .slide-image {
   background-color: white;
-  background-image: url(
-      'chrome://theme/IDR_ICON_USER_MANAGER_TUTORIAL_COMPLETE');
+  background-image:
+      url(chrome://theme/IDR_ICON_USER_MANAGER_TUTORIAL_COMPLETE);
 }
 
 #slide-not-you #dismiss-bubble-button {

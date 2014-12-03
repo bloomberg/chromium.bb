@@ -519,11 +519,11 @@ class CssStyleGuideTest(SuperMoxTestBase):
   def testCssStringWithAt(self):
     self.VerifyContentsIsValid("""
 #logo {
-  background-image: url('images/google_logo.png@2x');
+  background-image: url(images/google_logo.png@2x);
 }
 
 body.alternate-logo #logo {
-  -webkit-mask-image: url('images/google_logo.png@2x');
+  -webkit-mask-image: url(images/google_logo.png@2x);
   background: none;
 }
 
@@ -623,7 +623,6 @@ div:not(.class):not([attr]) /* Nor this. */ {
     self.VerifyContentsProducesOutput("""
 html[dir="rtl"] body,
 html[dir=ltr] body /* TODO(dbeam): Require '' around rtl in future? */ {
-  background: url("chrome://resources/BLAH");
   font-family: "Open Sans";
 <if expr="is_macosx">
   blah: blee;
@@ -631,7 +630,6 @@ html[dir=ltr] body /* TODO(dbeam): Require '' around rtl in future? */ {
 }""", """
 - Use single quotes (') instead of double quotes (") in strings.
     html[dir="rtl"] body,
-    background: url("chrome://resources/BLAH");
     font-family: "Open Sans";""")
 
   def testCssHexCouldBeShorter(self):
@@ -669,11 +667,22 @@ html[dir=ltr] body /* TODO(dbeam): Require '' around rtl in future? */ {
     self.VerifyContentsProducesOutput("""
 img {
   background: url( data:image/jpeg,4\/\/350|\/|3|2 );
-  background: url('data:image/jpeg,4\/\/350|\/|3|2');
 }""", """
 - Don't use data URIs in source files. Use grit instead.
-    background: url( data:image/jpeg,4\/\/350|\/|3|2 );
-    background: url('data:image/jpeg,4\/\/350|\/|3|2');""")
+    background: url( data:image/jpeg,4\/\/350|\/|3|2 );""")
+
+  def testCssNoQuotesInUrl(self):
+    self.VerifyContentsProducesOutput("""
+img {
+  background: url('chrome://resources/images/blah.jpg');
+  background: url("../../folder/hello.png");
+}""", """
+- Use single quotes (') instead of double quotes (") in strings.
+    background: url("../../folder/hello.png");
+
+- Don't use quotes in url().
+    background: url('chrome://resources/images/blah.jpg');
+    background: url("../../folder/hello.png");""")
 
   def testCssOneRulePerLine(self):
     self.VerifyContentsProducesOutput("""
