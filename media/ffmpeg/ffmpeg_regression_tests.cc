@@ -175,6 +175,7 @@ FFMPEG_TEST_CASE(MP4_16,
                  "security/looping2.mov",
                  DEMUXER_ERROR_COULD_NOT_OPEN,
                  DEMUXER_ERROR_COULD_NOT_OPEN);
+FFMPEG_TEST_CASE(MP4_17, "security/assert2.mov", PIPELINE_OK, PIPELINE_OK);
 
 // General OGV test cases.
 FFMPEG_TEST_CASE(OGV_1,
@@ -249,8 +250,13 @@ FFMPEG_TEST_CASE(OGV_22,
                  "security/assert2.ogv",
                  DECODER_ERROR_NOT_SUPPORTED,
                  DECODER_ERROR_NOT_SUPPORTED);
+FFMPEG_TEST_CASE(OGV_23,
+                 "security/assert2.ogv",
+                 DECODER_ERROR_NOT_SUPPORTED,
+                 DECODER_ERROR_NOT_SUPPORTED);
 
 // General WebM test cases.
+FFMPEG_TEST_CASE(WEBM_0, "security/memcpy.webm", PIPELINE_OK, PIPELINE_OK);
 FFMPEG_TEST_CASE(WEBM_1, "security/no-bug.webm", PIPELINE_OK, PIPELINE_OK);
 FFMPEG_TEST_CASE(WEBM_2,
                  "security/uninitialize.webm",
@@ -309,15 +315,9 @@ FLAKY_FFMPEG_TEST_CASE(WEBM_3, "security/out.webm.139771.2965");
 FLAKY_FFMPEG_TEST_CASE(MP4_10, "security/null1.m4a");
 FLAKY_FFMPEG_TEST_CASE(Cr112670, "security/112670.mp4");
 
-// Videos with massive gaps between frame timestamps that result in long hangs
-// with our pipeline.  Should be uncommented when we support clockless playback.
-// FFMPEG_TEST_CASE(WEBM_0, "security/memcpy.webm", PIPELINE_OK, PIPELINE_OK);
-// FFMPEG_TEST_CASE(MP4_17, "security/assert2.mov", PIPELINE_OK, PIPELINE_OK);
-// FFMPEG_TEST_CASE(OGV_23, "security/assert2.ogv", PIPELINE_OK, PIPELINE_OK);
-
 TEST_P(FFmpegRegressionTest, BasicPlayback) {
   if (GetParam().init_status == PIPELINE_OK) {
-    ASSERT_EQ(PIPELINE_OK, Start(GetParam().filename));
+    ASSERT_EQ(PIPELINE_OK, Start(GetParam().filename, kClockless));
     Play();
     ASSERT_EQ(WaitUntilEndedOrError(), GetParam().end_status);
 
@@ -336,7 +336,7 @@ TEST_P(FFmpegRegressionTest, BasicPlayback) {
 }
 
 TEST_P(FlakyFFmpegRegressionTest, BasicPlayback) {
-  if (Start(GetParam().filename) == PIPELINE_OK) {
+  if (Start(GetParam().filename, kClockless) == PIPELINE_OK) {
     Play();
     WaitUntilEndedOrError();
   }
