@@ -19,10 +19,10 @@ using content::BrowserThread;
 typedef std::pair<net::SSLCertRequestInfo*, net::X509Certificate*> CertDetails;
 
 SSLClientAuthObserver::SSLClientAuthObserver(
-    const content::BrowserContext* browser_context,
+    const net::HttpNetworkSession* network_session,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback)
-    : browser_context_(browser_context),
+    : network_session_(network_session),
       cert_request_info_(cert_request_info),
       callback_(callback) {
 }
@@ -44,7 +44,7 @@ void SSLClientAuthObserver::CertificateSelected(
   content::NotificationService* service =
       content::NotificationService::current();
   service->Notify(chrome::NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED,
-                  content::Source<content::BrowserContext>(browser_context_),
+                  content::Source<net::HttpNetworkSession>(network_session_),
                   content::Details<CertDetails>(&details));
 
   callback_.Run(certificate);
@@ -76,7 +76,7 @@ void SSLClientAuthObserver::StartObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED,
-      content::Source<content::BrowserContext>(browser_context_));
+      content::Source<net::HttpNetworkSession>(network_session_));
 }
 
 void SSLClientAuthObserver::StopObserving() {

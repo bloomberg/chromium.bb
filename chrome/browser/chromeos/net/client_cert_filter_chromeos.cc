@@ -26,7 +26,6 @@ bool ClientCertFilterChromeOS::Init(const base::Closure& callback) {
   DCHECK(!init_called_);
   init_called_ = true;
 
-  init_callback_ = callback;
   if (use_system_slot_) {
     system_slot_ = crypto::GetSystemNSSKeySlot(
                        base::Bind(&ClientCertFilterChromeOS::GotSystemSlot,
@@ -38,7 +37,11 @@ bool ClientCertFilterChromeOS::Init(const base::Closure& callback) {
                                      weak_ptr_factory_.GetWeakPtr())).Pass();
 
   // Do not call back if we initialized synchronously.
-  return InitIfSlotsAvailable();
+  if (InitIfSlotsAvailable())
+    return true;
+
+  init_callback_ = callback;
+  return false;
 }
 
 bool ClientCertFilterChromeOS::IsCertAllowed(

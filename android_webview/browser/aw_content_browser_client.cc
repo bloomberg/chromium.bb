@@ -364,6 +364,7 @@ void AwContentBrowserClient::AllowCertificateError(
 void AwContentBrowserClient::SelectClientCertificate(
       int render_process_id,
       int render_frame_id,
+      const net::HttpNetworkSession* network_session,
       net::SSLCertRequestInfo* cert_request_info,
       const base::Callback<void(net::X509Certificate*)>& callback) {
   AwContentsClientBridgeBase* client =

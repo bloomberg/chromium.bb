@@ -11,18 +11,15 @@
 #include "content/public/browser/notification_registrar.h"
 
 namespace net {
+class HttpNetworkSession;
 class SSLCertRequestInfo;
 class X509Certificate;
-}
-
-namespace content {
-class BrowserContext;
 }
 
 class SSLClientAuthObserver : public content::NotificationObserver {
  public:
   SSLClientAuthObserver(
-      const content::BrowserContext* browser_context,
+      const net::HttpNetworkSession* network_session,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info,
       const base::Callback<void(net::X509Certificate*)>& callback);
   ~SSLClientAuthObserver() override;
@@ -55,7 +52,7 @@ class SSLClientAuthObserver : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  const content::BrowserContext* browser_context_;
+  const net::HttpNetworkSession* network_session_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
   base::Callback<void(net::X509Certificate*)> callback_;
   content::NotificationRegistrar notification_registrar_;
