@@ -1056,6 +1056,14 @@ CommandHandler.COMMANDS_['cloud-import'] = /** @type {Command} */ ({
         return false;
       }
 
+      // If there is no Google Drive mount, Drive may be disabled
+      // or the machine may be running in guest mode.
+      var drive = fileManager.volumeManager.getCurrentProfileVolumeInfo(
+          VolumeManagerCommon.VolumeType.DRIVE);
+      if (!drive) {
+        return false;
+      }
+
       var entries = fileManager.getSelection().entries;
 
       // Enabled if user has a selection and it consists entirely of files
