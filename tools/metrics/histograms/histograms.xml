@@ -9138,6 +9138,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="FileBrowser.HardUnpluggedAroundSuspend.TimeSinceResume"
+    units="milliseconds">
+  <owner>hirono@chromium.org</owner>
+  <summary>
+    Chrome OS File Browser: time from the SuspendDone event to the DiskRemoved
+    event. The UMA is added temporarily for crbug.com/433734.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.HardUnpluggedAroundSuspend.TimeUntilSuspend"
+    units="milliseconds">
+  <owner>hirono@chromium.org</owner>
+  <summary>
+    Chrome OS File Browser: time from the DiskRemoved event to the Suspend
+    event. The UMA is added temporarily for crbug.com/433734.
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.Load" units="milliseconds">
   <owner>joshwoodward@google.com</owner>
   <summary>

@@ -98,6 +98,11 @@ class DeviceEventRouter : public VolumeManagerObserver,
   // Thread checker.
   base::ThreadChecker thread_checker_;
 
+  // Last event time for UMA.
+  // TODO(hirono): Remove the temporarily UMA.  crbug.com/433734
+  base::Time last_hard_unplugged_;
+  base::Time last_suspend_done_;
+
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<DeviceEventRouter> weak_factory_;
