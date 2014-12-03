@@ -25,11 +25,6 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
   // The bitmap is not initialized.
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque);
 
-  // Construct a BitmapPlatformDevice, as above.
-  // If |is_opaque| is false, the bitmap is initialized to 0.
-  static BitmapPlatformDevice* CreateAndClear(int width, int height,
-                                              bool is_opaque);
-
   // This doesn't take ownership of |data|. If |data| is null, the bitmap
   // is not initialized to 0.
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,

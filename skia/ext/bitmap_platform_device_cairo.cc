@@ -127,8 +127,8 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
   BitmapPlatformDevice* device = Create(width, height, is_opaque, surface);
 
 #ifndef NDEBUG
-  if (device && is_opaque)  // Fill with bright bluish green
-    device->eraseColor(SkColorSetARGB(255, 0, 255, 128));
+    if (device && is_opaque)  // Fill with bright bluish green
+        SkCanvas(device).drawColor(0xFF00FF80);
 #endif
 
   return device;

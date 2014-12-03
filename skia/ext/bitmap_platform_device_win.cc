@@ -120,7 +120,8 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(
     int width,
     int height,
     bool is_opaque,
-    HANDLE shared_section) {
+    HANDLE shared_section,
+    bool do_clear) {
 
   void* data;
   HBITMAP hbitmap = CreateHBitmap(width, height, is_opaque, shared_section,
@@ -131,6 +132,9 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(
   SkBitmap bitmap;
   if (!InstallHBitmapPixels(&bitmap, width, height, is_opaque, data, hbitmap))
     return NULL;
+
+  if (do_clear)
+    bitmap.eraseColor(0);
 
 #ifndef NDEBUG
   // If we were given data, then don't clobber it!
@@ -148,18 +152,9 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(
 // static
 BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
                                                    bool is_opaque) {
-  return Create(width, height, is_opaque, NULL);
-}
-
-// static
-BitmapPlatformDevice* BitmapPlatformDevice::CreateAndClear(int width,
-                                                           int height,
-                                                           bool is_opaque) {
-  BitmapPlatformDevice* device = BitmapPlatformDevice::Create(width, height,
-                                                              is_opaque);
-  if (device && !is_opaque)
-    device->clear(0);
-  return device;
+  const HANDLE shared_section = NULL;
+  const bool do_clear = false;
+  return Create(width, height, is_opaque, shared_section, do_clear);
 }
 
 // The device will own the HBITMAP, which corresponds to also owning the pixel
@@ -271,11 +266,11 @@ const SkBitmap& BitmapPlatformDevice::onAccessBitmap() {
 }
 
 SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
-                                                    const CreateInfo& info) {
-  SkASSERT(info.fInfo.colorType() == kN32_SkColorType);
-  return BitmapPlatformDevice::CreateAndClear(info.fInfo.width(),
-                                              info.fInfo.height(),
-                                              info.fInfo.isOpaque());
+                                                    const CreateInfo& cinfo) {
+  const SkImageInfo& info = cinfo.fInfo;
+  const bool do_clear = !info.isOpaque();
+  SkASSERT(info.colorType() == kN32_SkColorType);
+  return Create(info.width(), info.height(), info.isOpaque(), NULL, do_clear);
 }
 
 // PlatformCanvas impl

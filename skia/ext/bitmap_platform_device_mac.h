@@ -35,12 +35,7 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
   // is not initialized.
   static BitmapPlatformDevice* Create(CGContextRef context,
                                       int width, int height,
-                                      bool is_opaque);
-
-  // Creates a BitmapPlatformDevice instance.  If |is_opaque| is false,
-  // then the bitmap is initialzed to 0.
-  static BitmapPlatformDevice* CreateAndClear(int width, int height,
-                                              bool is_opaque);
+                                      bool is_opaque, bool do_clear = false);
 
   // Creates a context for |data| and calls Create.
   // If |data| is NULL, then the bitmap backing store is not initialized.

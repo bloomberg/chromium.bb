@@ -35,16 +35,12 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
   // for details. If |shared_section| is null, the bitmap backing store is not
   // initialized.
   static BitmapPlatformDevice* Create(int width, int height,
-                                      bool is_opaque, HANDLE shared_section);
+                                      bool is_opaque, HANDLE shared_section,
+                                      bool do_clear = false);
 
   // Create a BitmapPlatformDevice with no shared section. The bitmap is not
   // initialized to 0.
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque);
-
-  // Creates a BitmapPlatformDevice instance respecting the parameters as above.
-  // If |is_opaque| is false, then the bitmap is initialzed to 0.
-  static BitmapPlatformDevice* CreateAndClear(int width, int height,
-                                              bool is_opaque);
 
   virtual ~BitmapPlatformDevice();
 

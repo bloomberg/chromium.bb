@@ -20,15 +20,6 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
   return NULL;
 }
 
-BitmapPlatformDevice* BitmapPlatformDevice::CreateAndClear(int width,
-                                                           int height,
-                                                           bool is_opaque) {
-  BitmapPlatformDevice* device = Create(width, height, is_opaque);
-  if (!is_opaque)
-    device->clear(0);
-  return device;
-}
-
 BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
                                                    bool is_opaque,
                                                    uint8_t* data) {

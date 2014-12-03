@@ -96,7 +96,8 @@ void BitmapPlatformDevice::LoadConfig() {
 BitmapPlatformDevice* BitmapPlatformDevice::Create(CGContextRef context,
                                                    int width,
                                                    int height,
-                                                   bool is_opaque) {
+                                                   bool is_opaque,
+                                                   bool do_clear) {
   if (RasterDeviceTooBigToAllocate(width, height))
     return NULL;
 
@@ -114,6 +115,8 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(CGContextRef context,
       return NULL;
     data = bitmap.getPixels();
   }
+  if (do_clear)
+    memset(data, 0, bitmap.getSafeSize());
 
   // If we were given data, then don't clobber it!
 #ifndef NDEBUG
@@ -140,15 +143,6 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(CGContextRef context,
   return rv;
 }
 
-BitmapPlatformDevice* BitmapPlatformDevice::CreateAndClear(int width,
-                                                           int height,
-                                                           bool is_opaque) {
-  BitmapPlatformDevice* device = Create(NULL, width, height, is_opaque);
-  if (!is_opaque)
-    device->clear(0);
-  return device;
-}
-
 BitmapPlatformDevice* BitmapPlatformDevice::CreateWithData(uint8_t* data,
                                                            int width,
                                                            int height,
@@ -157,7 +151,7 @@ BitmapPlatformDevice* BitmapPlatformDevice::CreateWithData(uint8_t* data,
   if (data)
     context = CGContextForData(data, width, height);
 
-  BitmapPlatformDevice* rv = Create(context, width, height, is_opaque);
+  BitmapPlatformDevice* rv = Create(context, width, height, is_opaque, false);
 
   // The device object took ownership of the graphics context with its own
   // CGContextRetain call.
@@ -238,19 +232,20 @@ void BitmapPlatformDevice::DrawToNativeContext(CGContextRef context, int x,
 }
 
 SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
-                                                     const CreateInfo& info) {
-  SkASSERT(info.fInfo.colorType() == kN32_SkColorType);
-  return BitmapPlatformDevice::CreateAndClear(info.fInfo.width(),
-                                              info.fInfo.height(),
-                                              info.fInfo.isOpaque());
+                                                     const CreateInfo& cinfo) {
+  const SkImageInfo& info = cinfo.fInfo;
+  const bool do_clear = !info.isOpaque();
+  SkASSERT(info.colorType() == kN32_SkColorType);
+  return Create(NULL, info.width(), info.height(), info.isOpaque(), do_clear);
 }
 
 // PlatformCanvas impl
 
 SkCanvas* CreatePlatformCanvas(CGContextRef ctx, int width, int height,
                                bool is_opaque, OnFailureType failureType) {
+  const bool do_clear = false;
   skia::RefPtr<SkBaseDevice> dev = skia::AdoptRef(
-      BitmapPlatformDevice::Create(ctx, width, height, is_opaque));
+      BitmapPlatformDevice::Create(ctx, width, height, is_opaque, do_clear));
   return CreateCanvas(dev, failureType);
 }
 
