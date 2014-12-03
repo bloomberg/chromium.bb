@@ -136,7 +136,6 @@
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_webplugin_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
-#include "content/renderer/pepper/plugin_power_saver_helper.h"
 #endif
 
 #if defined(ENABLE_WEBRTC)
@@ -604,7 +603,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
 #endif
 
 #if defined(ENABLE_PLUGINS)
-  plugin_power_saver_helper_ = new PluginPowerSaverHelper(this);
+  plugin_power_saver_helper_ = new PluginPowerSaverHelperImpl(this);
 #endif
 
   manifest_manager_ = new ManifestManager(this);
@@ -834,11 +833,6 @@ void RenderFrameImpl::OnImeConfirmComposition(
     render_view_->focused_pepper_plugin()->HandleTextInput(last_text);
   }
   pepper_composition_text_.clear();
-}
-
-PluginPowerSaverHelper* RenderFrameImpl::plugin_power_saver_helper() {
-  DCHECK(plugin_power_saver_helper_);
-  return plugin_power_saver_helper_;
 }
 #endif  // defined(ENABLE_PLUGINS)
 
@@ -1631,6 +1625,13 @@ void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
 ServiceRegistry* RenderFrameImpl::GetServiceRegistry() {
   return &service_registry_;
 }
+
+#if defined(ENABLE_PLUGINS)
+PluginPowerSaverHelperImpl* RenderFrameImpl::GetPluginPowerSaverHelper() {
+  DCHECK(plugin_power_saver_helper_);
+  return plugin_power_saver_helper_;
+}
+#endif
 
 bool RenderFrameImpl::IsFTPDirectoryListing() {
   WebURLResponseExtraDataImpl* extra_data =

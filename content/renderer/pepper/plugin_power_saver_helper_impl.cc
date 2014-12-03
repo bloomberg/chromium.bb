@@ -2,20 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/callback.h"
+#include "content/renderer/pepper/plugin_power_saver_helper_impl.h"
+
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/common/frame_messages.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/renderer/pepper/plugin_power_saver_helper.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 namespace content {
 
 namespace {
+
+const char kPosterParamName[] = "poster";
 
 // Initial decision of the peripheral content decision.
 // These numeric values are used in UMA logs; do not change them.
@@ -40,25 +44,52 @@ void RecordDecisionMetric(PeripheralHeuristicDecision decision) {
                             HEURISTIC_DECISION_NUM_ITEMS);
 }
 
+const char kWebPluginParamHeight[] = "height";
+const char kWebPluginParamWidth[] = "width";
+
+// Returns true if valid non-negative height and width extracted.
+// When this returns false, |width| and |height| are set to undefined values.
+bool ExtractDimensions(const blink::WebPluginParams& params,
+                       int* width,
+                       int* height) {
+  DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
+  DCHECK(width);
+  DCHECK(height);
+  bool width_extracted = false;
+  bool height_extracted = false;
+  for (size_t i = 0; i < params.attributeNames.size(); ++i) {
+    if (params.attributeNames[i].utf8() == kWebPluginParamWidth) {
+      width_extracted =
+          base::StringToInt(params.attributeValues[i].utf8(), width);
+    } else if (params.attributeNames[i].utf8() == kWebPluginParamHeight) {
+      height_extracted =
+          base::StringToInt(params.attributeValues[i].utf8(), height);
+    }
+  }
+  return width_extracted && height_extracted && *width >= 0 && *height >= 0;
+}
+
 }  // namespace
 
-PluginPowerSaverHelper::PeripheralPlugin::PeripheralPlugin(
+PluginPowerSaverHelperImpl::PeripheralPlugin::PeripheralPlugin(
     const GURL& content_origin,
     const base::Closure& unthrottle_callback)
     : content_origin(content_origin), unthrottle_callback(unthrottle_callback) {
 }
 
-PluginPowerSaverHelper::PeripheralPlugin::~PeripheralPlugin() {
+PluginPowerSaverHelperImpl::PeripheralPlugin::~PeripheralPlugin() {
 }
 
-PluginPowerSaverHelper::PluginPowerSaverHelper(RenderFrame* render_frame)
+PluginPowerSaverHelperImpl::PluginPowerSaverHelperImpl(
+    RenderFrame* render_frame)
     : RenderFrameObserver(render_frame) {
 }
 
-PluginPowerSaverHelper::~PluginPowerSaverHelper() {
+PluginPowerSaverHelperImpl::~PluginPowerSaverHelperImpl() {
 }
 
-void PluginPowerSaverHelper::DidCommitProvisionalLoad(bool is_new_navigation) {
+void PluginPowerSaverHelperImpl::DidCommitProvisionalLoad(
+    bool is_new_navigation) {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   if (frame->parent())
     return;  // Not a top-level navigation.
@@ -70,17 +101,18 @@ void PluginPowerSaverHelper::DidCommitProvisionalLoad(bool is_new_navigation) {
     origin_whitelist_.clear();
 }
 
-bool PluginPowerSaverHelper::OnMessageReceived(const IPC::Message& message) {
+bool PluginPowerSaverHelperImpl::OnMessageReceived(
+    const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PluginPowerSaverHelper, message)
-    IPC_MESSAGE_HANDLER(FrameMsg_UpdatePluginContentOriginWhitelist,
-                        OnUpdatePluginContentOriginWhitelist)
-    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_BEGIN_MESSAGE_MAP(PluginPowerSaverHelperImpl, message)
+  IPC_MESSAGE_HANDLER(FrameMsg_UpdatePluginContentOriginWhitelist,
+                      OnUpdatePluginContentOriginWhitelist)
+  IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void PluginPowerSaverHelper::OnUpdatePluginContentOriginWhitelist(
+void PluginPowerSaverHelperImpl::OnUpdatePluginContentOriginWhitelist(
     const std::set<GURL>& origin_whitelist) {
   origin_whitelist_ = origin_whitelist;
 
@@ -96,10 +128,44 @@ void PluginPowerSaverHelper::OnUpdatePluginContentOriginWhitelist(
   }
 }
 
-bool PluginPowerSaverHelper::ShouldThrottleContent(const GURL& content_origin,
-                                                   int width,
-                                                   int height,
-                                                   bool* cross_origin) const {
+GURL PluginPowerSaverHelperImpl::GetPluginInstancePosterImage(
+    const blink::WebPluginParams& params,
+    const GURL& base_url) const {
+  DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
+
+  GURL content_origin = GURL(params.url).GetOrigin();
+  int width = 0;
+  int height = 0;
+
+  bool cross_origin = false;
+  if (!ExtractDimensions(params, &width, &height))
+    return GURL();
+
+  if (!ShouldThrottleContent(content_origin, width, height, &cross_origin))
+    return GURL();
+
+  for (size_t i = 0; i < params.attributeNames.size(); ++i) {
+    if (params.attributeNames[i] == kPosterParamName) {
+      std::string poster_value(params.attributeValues[i].utf8());
+      if (!poster_value.empty())
+        return base_url.Resolve(poster_value);
+    }
+  }
+  return GURL();
+}
+
+void PluginPowerSaverHelperImpl::RegisterPeripheralPlugin(
+    const GURL& content_origin,
+    const base::Closure& unthrottle_callback) {
+  peripheral_plugins_.push_back(
+      PeripheralPlugin(content_origin, unthrottle_callback));
+}
+
+bool PluginPowerSaverHelperImpl::ShouldThrottleContent(
+    const GURL& content_origin,
+    int width,
+    int height,
+    bool* cross_origin) const {
   DCHECK(cross_origin);
   *cross_origin = true;
 
@@ -139,14 +205,7 @@ bool PluginPowerSaverHelper::ShouldThrottleContent(const GURL& content_origin,
   return content_is_small;
 }
 
-void PluginPowerSaverHelper::RegisterPeripheralPlugin(
-    const GURL& content_origin,
-    const base::Closure& unthrottle_callback) {
-  peripheral_plugins_.push_back(
-      PeripheralPlugin(content_origin, unthrottle_callback));
-}
-
-void PluginPowerSaverHelper::WhitelistContentOrigin(
+void PluginPowerSaverHelperImpl::WhitelistContentOrigin(
     const GURL& content_origin) {
   DCHECK_EQ(content_origin.GetOrigin(), content_origin);
   if (origin_whitelist_.insert(content_origin).second) {

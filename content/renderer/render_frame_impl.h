@@ -31,6 +31,10 @@
 #include "third_party/WebKit/public/web/WebTransitionElementData.h"
 #include "ui/gfx/range/range.h"
 
+#if defined(ENABLE_PLUGINS)
+#include "content/renderer/pepper/plugin_power_saver_helper_impl.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #endif
@@ -72,7 +76,6 @@ class MidiDispatcher;
 class NotificationPermissionDispatcher;
 class PageState;
 class PepperPluginInstanceImpl;
-class PluginPowerSaverHelper;
 class PushMessagingDispatcher;
 class RendererAccessibility;
 class RendererCdmManager;
@@ -243,8 +246,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnImeConfirmComposition(const base::string16& text,
                                const gfx::Range& replacement_range,
                                bool keep_selection);
-
-  PluginPowerSaverHelper* plugin_power_saver_helper();
 #endif  // defined(ENABLE_PLUGINS)
 
   // May return NULL in some cases, especially if userMediaClient() returns
@@ -280,6 +281,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void ExecuteJavaScript(const base::string16& javascript) override;
   bool IsHidden() override;
   ServiceRegistry* GetServiceRegistry() override;
+#if defined(ENABLE_PLUGINS)
+  PluginPowerSaverHelperImpl* GetPluginPowerSaverHelper() override;
+#endif
   bool IsFTPDirectoryListing() override;
   void AttachGuest(int element_instance_id) override;
   void SetSelectedText(const base::string16& selection_text,
@@ -704,7 +708,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // progress.
   base::string16 pepper_composition_text_;
 
-  PluginPowerSaverHelper* plugin_power_saver_helper_;
+  PluginPowerSaverHelperImpl* plugin_power_saver_helper_;
 #endif
 
   RendererWebCookieJarImpl cookie_jar_;

@@ -15,11 +15,6 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
  public:
   static const char kPluginPlaceholderDataURL[];
 
-  // Returns the absolute (resolved) URL of the poster image.
-  // Returns an empty GURL if there is no poster image parameter.
-  static GURL GetPluginInstancePosterImage(const blink::WebPluginParams& params,
-                                           const GURL& base_url);
-
   static ChromePluginPlaceholder* CreateBlockedPlugin(
       content::RenderFrame* render_frame,
       blink::WebLocalFrame* frame,
@@ -28,7 +23,8 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
       const std::string& identifier,
       const base::string16& name,
       int resource_id,
-      const base::string16& message);
+      const base::string16& message,
+      const GURL& poster_url);
 
   // Creates a new WebViewPlugin with a MissingPlugin as a delegate.
   static ChromePluginPlaceholder* CreateMissingPlugin(

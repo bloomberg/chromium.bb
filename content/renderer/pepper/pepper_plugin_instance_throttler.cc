@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
-#include "content/renderer/pepper/plugin_power_saver_helper.h"
+#include "content/renderer/pepper/plugin_power_saver_helper_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/color_utils.h"
@@ -107,7 +107,7 @@ const int kMinimumConsecutiveInterestingFrames = 4;
 }  // namespace
 
 PepperPluginInstanceThrottler::PepperPluginInstanceThrottler(
-    PluginPowerSaverHelper* power_saver_helper,
+    PluginPowerSaverHelperImpl* power_saver_helper,
     const blink::WebRect& bounds,
     const std::string& module_name,
     const GURL& plugin_url,

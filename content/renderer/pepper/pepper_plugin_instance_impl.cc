@@ -44,6 +44,7 @@
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/plugin_object.h"
+#include "content/renderer/pepper/plugin_power_saver_helper_impl.h"
 #include "content/renderer/pepper/ppapi_preferences_builder.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
@@ -837,7 +838,7 @@ bool PepperPluginInstanceImpl::Initialize(
     return false;
 
   throttler_.reset(new PepperPluginInstanceThrottler(
-      render_frame()->plugin_power_saver_helper(),
+      render_frame()->GetPluginPowerSaverHelper(),
       container()->element().boundsInViewportSpace(), module()->name(),
       plugin_url_, base::Bind(&PepperPluginInstanceImpl::SendDidChangeView,
                               weak_factory_.GetWeakPtr())));

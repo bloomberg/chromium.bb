@@ -10,25 +10,31 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/pepper/pepper_plugin_instance_throttler.h"
-#include "content/renderer/pepper/plugin_power_saver_helper.h"
+#include "content/renderer/pepper/plugin_power_saver_helper_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "ui/gfx/canvas.h"
 
 using testing::_;
 using testing::Return;
 
+class GURL;
+
 namespace content {
 
 namespace {
 
-class MockPluginPowerSaverHelper : public PluginPowerSaverHelper {
+class MockPluginPowerSaverHelper : public PluginPowerSaverHelperImpl {
  public:
-  MockPluginPowerSaverHelper() : PluginPowerSaverHelper(NULL) {
+  MockPluginPowerSaverHelper() : PluginPowerSaverHelperImpl(nullptr) {
     EXPECT_CALL(*this, ShouldThrottleContent(_, _, _, _))
         .WillRepeatedly(Return(true));
   }
+
+  MOCK_CONST_METHOD2(GetPluginInstancePosterImage,
+                     GURL(const blink::WebPluginParams&, const GURL& base_url));
 
   MOCK_CONST_METHOD4(ShouldThrottleContent, bool(const GURL&, int, int, bool*));
 

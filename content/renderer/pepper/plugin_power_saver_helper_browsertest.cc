@@ -6,12 +6,13 @@
 #include "content/common/frame_messages.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/test/render_view_test.h"
-#include "content/renderer/pepper/plugin_power_saver_helper.h"
+#include "content/renderer/pepper/plugin_power_saver_helper_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -24,8 +25,8 @@ class PluginPowerSaverHelperTest : public RenderViewTest {
     return static_cast<RenderFrameImpl*>(view_->GetMainRenderFrame());
   }
 
-  PluginPowerSaverHelper* power_saver_helper() {
-    return frame()->plugin_power_saver_helper();
+  PluginPowerSaverHelperImpl* power_saver_helper() {
+    return frame()->GetPluginPowerSaverHelper();
   }
 
   void SetUp() override {
@@ -38,6 +39,41 @@ class PluginPowerSaverHelperTest : public RenderViewTest {
 
   DISALLOW_COPY_AND_ASSIGN(PluginPowerSaverHelperTest);
 };
+
+TEST_F(PluginPowerSaverHelperTest, PosterImage) {
+  size_t size = 3;
+  blink::WebVector<blink::WebString> names(size);
+  blink::WebVector<blink::WebString> values(size);
+
+  blink::WebPluginParams params;
+  params.url = GURL("http://b.com/foo.swf");
+
+  params.attributeNames.swap(names);
+  params.attributeValues.swap(values);
+
+  params.attributeNames[0] = "poster";
+  params.attributeNames[1] = "height";
+  params.attributeNames[2] = "width";
+  params.attributeValues[0] = "poster.jpg";
+  params.attributeValues[1] = "100";
+  params.attributeValues[2] = "100";
+
+  EXPECT_EQ(GURL("http://a.com/poster.jpg"),
+            power_saver_helper()->GetPluginInstancePosterImage(
+                params, GURL("http://a.com/page.html")));
+
+  // Ignore empty poster paramaters.
+  params.attributeValues[0] = "";
+  EXPECT_EQ(GURL(), power_saver_helper()->GetPluginInstancePosterImage(
+                        params, GURL("http://a.com/page.html")));
+
+  // Ignore poster parameter when plugin is big (shouldn't be throttled).
+  params.attributeValues[0] = "poster.jpg";
+  params.attributeValues[1] = "500";
+  params.attributeValues[2] = "500";
+  EXPECT_EQ(GURL(), power_saver_helper()->GetPluginInstancePosterImage(
+                        params, GURL("http://a.com/page.html")));
+}
 
 TEST_F(PluginPowerSaverHelperTest, AllowSameOrigin) {
   bool cross_origin = false;

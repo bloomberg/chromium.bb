@@ -5,9 +5,11 @@
 #ifndef COMPONENTS_PLUGINS_RENDERER_PLUGIN_PLACEHOLDER_H_
 #define COMPONENTS_PLUGINS_RENDERER_PLUGIN_PLACEHOLDER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "components/plugins/renderer/webview_plugin.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/context_menu_client.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "gin/wrappable.h"
@@ -32,6 +34,10 @@ class PluginPlaceholder : public content::RenderFrameObserver,
     is_blocked_for_prerendering_ = blocked_for_prerendering;
   }
 
+#if defined(ENABLE_PLUGINS)
+  void BlockForPowerSaver();
+#endif
+
   void set_allow_loading(bool allow_loading) { allow_loading_ = allow_loading; }
 
  protected:
@@ -44,6 +50,10 @@ class PluginPlaceholder : public content::RenderFrameObserver,
                     GURL placeholderDataUrl);
 
   ~PluginPlaceholder() override;
+
+#if defined(ENABLE_PLUGINS)
+  void UnblockForPowerSaver();
+#endif
 
   void OnLoadBlockedPlugins(const std::string& identifier);
   void OnSetIsPrerendering(bool is_prerendering);
@@ -64,7 +74,7 @@ class PluginPlaceholder : public content::RenderFrameObserver,
   void HidePlugin();
 
   // Load the blocked plugin.
-  void LoadPlugin();
+  void LoadPlugin(content::RenderFrame::CreatePluginGesture gesture);
 
   // gin::Wrappable method:
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
@@ -98,14 +108,20 @@ class PluginPlaceholder : public content::RenderFrameObserver,
 
   base::string16 message_;
 
-  // True iff the plugin was blocked because the page was being prerendered.
-  // Plugin will automatically be loaded when the page is displayed.
+  // True if the plugin was blocked because the page was being prerendered.
+  // Plugin may be automatically be loaded when the page is displayed.
   bool is_blocked_for_prerendering_;
+
+  // True if the plugin load is deferred due to a Power Saver poster.
+  bool is_blocked_for_power_saver_;
+
   bool allow_loading_;
 
   bool hidden_;
   bool finished_loading_;
   std::string identifier_;
+
+  base::WeakPtrFactory<PluginPlaceholder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginPlaceholder);
 };

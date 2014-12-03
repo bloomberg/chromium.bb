@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/renderer/plugin_power_saver_helper.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "gin/object_template_builder.h"
@@ -41,6 +42,18 @@ namespace plugins {
 
 gin::WrapperInfo PluginPlaceholder::kWrapperInfo = {gin::kEmbedderNativeGin};
 
+#if defined(ENABLE_PLUGINS)
+void PluginPlaceholder::BlockForPowerSaver() {
+  DCHECK(!is_blocked_for_power_saver_);
+  is_blocked_for_power_saver_ = true;
+
+  render_frame()->GetPluginPowerSaverHelper()->RegisterPeripheralPlugin(
+      GURL(plugin_params_.url).GetOrigin(),
+      base::Bind(&PluginPlaceholder::UnblockForPowerSaver,
+                 weak_factory_.GetWeakPtr()));
+}
+#endif
+
 PluginPlaceholder::PluginPlaceholder(content::RenderFrame* render_frame,
                                      WebLocalFrame* frame,
                                      const WebPluginParams& params,
@@ -54,11 +67,22 @@ PluginPlaceholder::PluginPlaceholder(content::RenderFrame* render_frame,
                                     html_data,
                                     placeholderDataUrl)),
       is_blocked_for_prerendering_(false),
+      is_blocked_for_power_saver_(false),
       allow_loading_(false),
       hidden_(false),
-      finished_loading_(false) {}
+      finished_loading_(false),
+      weak_factory_(this) {
+}
 
 PluginPlaceholder::~PluginPlaceholder() {}
+
+#if defined(ENABLE_PLUGINS)
+void PluginPlaceholder::UnblockForPowerSaver() {
+  is_blocked_for_power_saver_ = false;
+  if (!is_blocked_for_prerendering_)
+    LoadPlugin(content::RenderFrame::CREATE_PLUGIN_GESTURE_NO_USER_GESTURE);
+}
+#endif
 
 gin::ObjectTemplateBuilder PluginPlaceholder::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
@@ -185,18 +209,21 @@ void PluginPlaceholder::OnLoadBlockedPlugins(const std::string& identifier) {
     return;
 
   RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Load_UI"));
-  LoadPlugin();
+  LoadPlugin(content::RenderFrame::CREATE_PLUGIN_GESTURE_NO_USER_GESTURE);
 }
 
 void PluginPlaceholder::OnSetIsPrerendering(bool is_prerendering) {
   // Prerendering can only be enabled prior to a RenderView's first navigation,
   // so no BlockedPlugin should see the notification that enables prerendering.
   DCHECK(!is_prerendering);
-  if (is_blocked_for_prerendering_ && !is_prerendering)
-    LoadPlugin();
+  if (is_blocked_for_prerendering_ && !is_prerendering &&
+      !is_blocked_for_power_saver_) {
+    LoadPlugin(content::RenderFrame::CREATE_PLUGIN_GESTURE_NO_USER_GESTURE);
+  }
 }
 
-void PluginPlaceholder::LoadPlugin() {
+void PluginPlaceholder::LoadPlugin(
+    content::RenderFrame::CreatePluginGesture gesture) {
   // This is not strictly necessary but is an important defense in case the
   // event propagation changes between "close" vs. "click-to-play".
   if (hidden_)
@@ -211,15 +238,14 @@ void PluginPlaceholder::LoadPlugin() {
   // TODO(mmenke):  In the case of prerendering, feed into
   //                ChromeContentRendererClient::CreatePlugin instead, to
   //                reduce the chance of future regressions.
-  WebPlugin* plugin = render_frame()->CreatePlugin(
-      frame_, plugin_info_, plugin_params_,
-      content::RenderFrame::CREATE_PLUGIN_GESTURE_HAS_USER_GESTURE);
+  WebPlugin* plugin = render_frame()->CreatePlugin(frame_, plugin_info_,
+                                                   plugin_params_, gesture);
   ReplacePlugin(plugin);
 }
 
 void PluginPlaceholder::LoadCallback() {
   RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Load_Click"));
-  LoadPlugin();
+  LoadPlugin(content::RenderFrame::CREATE_PLUGIN_GESTURE_HAS_USER_GESTURE);
 }
 
 void PluginPlaceholder::HideCallback() {

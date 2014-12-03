@@ -21,7 +21,7 @@ class SkBitmap;
 
 namespace content {
 
-class PluginPowerSaverHelper;
+class PluginPowerSaverHelperImpl;
 
 // Manages the Plugin Power Saver feature for a single Pepper plugin instance.
 //
@@ -44,7 +44,7 @@ class PluginPowerSaverHelper;
 // representative keyframe.
 class CONTENT_EXPORT PepperPluginInstanceThrottler {
  public:
-  PepperPluginInstanceThrottler(PluginPowerSaverHelper* power_saver_helper,
+  PepperPluginInstanceThrottler(PluginPowerSaverHelperImpl* power_saver_helper,
                                 const blink::WebRect& bounds,
                                 const std::string& module_name,
                                 const GURL& plugin_url,

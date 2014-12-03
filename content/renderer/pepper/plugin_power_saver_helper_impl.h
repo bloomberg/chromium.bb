@@ -2,24 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_PEPPER_PLUGIN_POWER_SAVER_HELPER_H_
-#define CONTENT_RENDERER_PEPPER_PLUGIN_POWER_SAVER_HELPER_H_
+#ifndef CONTENT_RENDERER_PEPPER_PLUGIN_POWER_SAVER_HELPER_IMPL_H_
+#define CONTENT_RENDERER_PEPPER_PLUGIN_POWER_SAVER_HELPER_IMPL_H_
 
 #include <set>
 #include <vector>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
+#include "content/common/content_export.h"
+#include "content/public/renderer/plugin_power_saver_helper.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "url/gurl.h"
 
 namespace content {
 
-// PluginPowerSaverWhitelist manages the plugin content origin whitelist for
-// a single render frame.
-class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
+class CONTENT_EXPORT PluginPowerSaverHelperImpl : public PluginPowerSaverHelper,
+                                                  public RenderFrameObserver {
  public:
-  explicit PluginPowerSaverHelper(RenderFrame* render_frame);
-  virtual ~PluginPowerSaverHelper();
+  explicit PluginPowerSaverHelperImpl(RenderFrame* render_frame);
+  ~PluginPowerSaverHelperImpl() override;
+
+  // PluginPluginPowerSaverHelper implementation.
+  GURL GetPluginInstancePosterImage(const blink::WebPluginParams& params,
+                                    const GURL& base_url) const override;
+  void RegisterPeripheralPlugin(
+      const GURL& content_origin,
+      const base::Closure& unthrottle_callback) override;
 
   // Returns true if this plugin should have power saver enabled.
   //
@@ -33,18 +41,14 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
   //  - Same-origin:   a.com -> b.com/iframe-to-a.html -> a.com/plugin.swf
   //
   // |cross_origin| may not be NULL.
+  //
+  // Virtual to allow overriding in tests.
   virtual bool ShouldThrottleContent(const GURL& content_origin,
                                      int width,
                                      int height,
                                      bool* cross_origin) const;
 
-  // Registers a plugin that has been marked peripheral. If the origin
-  // whitelist is later updated and includes |content_origin|, then
-  // |unthrottle_callback| will be called.
-  virtual void RegisterPeripheralPlugin(
-      const GURL& content_origin,
-      const base::Closure& unthrottle_callback);
-
+  // Virtual to allow overriding in tests.
   virtual void WhitelistContentOrigin(const GURL& content_origin);
 
  private:
@@ -70,9 +74,9 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
   // Set of peripheral plugins eligible to be unthrottled ex post facto.
   std::vector<PeripheralPlugin> peripheral_plugins_;
 
-  DISALLOW_COPY_AND_ASSIGN(PluginPowerSaverHelper);
+  DISALLOW_COPY_AND_ASSIGN(PluginPowerSaverHelperImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_PEPPER_PLUGIN_POWER_SAVER_HELPER_H_
+#endif  // CONTENT_RENDERER_PEPPER_PLUGIN_POWER_SAVER_HELPER_IMPL_H_

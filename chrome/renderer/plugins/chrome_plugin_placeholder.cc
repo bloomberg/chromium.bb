@@ -44,8 +44,6 @@ using content::RenderView;
 
 namespace {
 const plugins::PluginPlaceholder* g_last_active_menu = NULL;
-
-const char kPosterParamName[] = "poster";
 }  // namespace
 
 // The placeholder is loaded in normal web renderer processes, so it should not
@@ -88,19 +86,6 @@ ChromePluginPlaceholder::~ChromePluginPlaceholder() {
         routing_id(), placeholder_routing_id_));
   }
 #endif
-}
-
-// static
-GURL ChromePluginPlaceholder::GetPluginInstancePosterImage(
-    const blink::WebPluginParams& params,
-    const GURL& base_url) {
-  DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
-  for (size_t i = 0; i < params.attributeNames.size(); ++i) {
-    if (params.attributeNames[i] == kPosterParamName) {
-      return base_url.Resolve(params.attributeValues[i].utf8());
-    }
-  }
-  return GURL();
 }
 
 // static
@@ -167,14 +152,13 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
     const std::string& identifier,
     const base::string16& name,
     int template_id,
-    const base::string16& message) {
+    const base::string16& message,
+    const GURL& poster_url) {
   base::DictionaryValue values;
   values.SetString("message", message);
   values.SetString("name", name);
   values.SetString("hide", l10n_util::GetStringUTF8(IDS_PLUGIN_HIDE));
 
-  GURL poster_url =
-      GetPluginInstancePosterImage(params, frame->document().url());
   if (poster_url.is_valid())
     values.SetString("background", "url('" + poster_url.spec() + "')");
 
@@ -188,6 +172,11 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
   // |blocked_plugin| will destroy itself when its WebViewPlugin is going away.
   ChromePluginPlaceholder* blocked_plugin = new ChromePluginPlaceholder(
       render_frame, frame, params, html_data, name);
+
+#if defined(ENABLE_PLUGINS)
+  if (poster_url.is_valid())
+    blocked_plugin->BlockForPowerSaver();
+#endif
   blocked_plugin->SetPluginInfo(plugin);
   blocked_plugin->SetIdentifier(identifier);
   return blocked_plugin;
@@ -322,7 +311,7 @@ void ChromePluginPlaceholder::OnMenuAction(int request_id, unsigned action) {
   switch (action) {
     case chrome::MENU_COMMAND_PLUGIN_RUN: {
       RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Load_Menu"));
-      LoadPlugin();
+      LoadPlugin(content::RenderFrame::CREATE_PLUGIN_GESTURE_HAS_USER_GESTURE);
       break;
     }
     case chrome::MENU_COMMAND_PLUGIN_HIDE: {

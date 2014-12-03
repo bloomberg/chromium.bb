@@ -33,6 +33,7 @@ class Isolate;
 
 namespace content {
 class ContextMenuClient;
+class PluginPowerSaverHelper;
 class RenderView;
 class ServiceRegistry;
 struct ContextMenuParams;
@@ -107,6 +108,11 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
 
   // Returns the ServiceRegistry for this frame.
   virtual ServiceRegistry* GetServiceRegistry() = 0;
+
+#if defined(ENABLE_PLUGINS)
+  // Returns the PluginPowerSaverHelper for this frame.
+  virtual PluginPowerSaverHelper* GetPluginPowerSaverHelper() = 0;
+#endif
 
   // Returns true if this frame is a FTP directory listing.
   virtual bool IsFTPDirectoryListing() = 0;
