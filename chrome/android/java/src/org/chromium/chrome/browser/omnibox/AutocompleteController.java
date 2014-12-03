@@ -69,13 +69,28 @@ public class AutocompleteController {
      * @param text The text to query autocomplete suggestions for.
      * @param preventInlineAutocomplete Whether autocomplete suggestions should be prevented.
      */
-    public void start(Profile profile, String url, String text, boolean preventInlineAutocomplete) {
+    public void start(Profile profile, String url, String text,
+            boolean preventInlineAutocomplete) {
+        start(profile, url, text, -1, preventInlineAutocomplete);
+    }
+
+    /**
+     * Starts querying for omnibox suggestions for a given text.
+     *
+     * @param profile The profile to use for starting the AutocompleteController
+     * @param url The URL of the current tab, used to suggest query refinements.
+     * @param text The text to query autocomplete suggestions for.
+     * @param cursorPosition The position of the cursor within the text.
+     * @param preventInlineAutocomplete Whether autocomplete suggestions should be prevented.
+     */
+    public void start(Profile profile, String url, String text, int cursorPosition,
+            boolean preventInlineAutocomplete) {
         if (profile == null || TextUtils.isEmpty(url)) return;
 
         mNativeAutocompleteControllerAndroid = nativeInit(profile);
         // Initializing the native counterpart might still fail.
         if (mNativeAutocompleteControllerAndroid != 0) {
-            nativeStart(mNativeAutocompleteControllerAndroid, text, null, url,
+            nativeStart(mNativeAutocompleteControllerAndroid, text, cursorPosition, null, url,
                     preventInlineAutocomplete, false, false, true);
         }
     }
@@ -251,8 +266,9 @@ public class AutocompleteController {
     @VisibleForTesting
     protected native long nativeInit(Profile profile);
     private native void nativeStart(long nativeAutocompleteControllerAndroid, String text,
-            String desiredTld, String currentUrl, boolean preventInlineAutocomplete,
-            boolean preferKeyword, boolean allowExactKeywordMatch, boolean wantAsynchronousMatches);
+            int cursorPosition, String desiredTld, String currentUrl,
+            boolean preventInlineAutocomplete, boolean preferKeyword,
+            boolean allowExactKeywordMatch, boolean wantAsynchronousMatches);
     private native OmniboxSuggestion nativeClassify(long nativeAutocompleteControllerAndroid,
             String text);
     private native void nativeStop(long nativeAutocompleteControllerAndroid, boolean clearResults);
