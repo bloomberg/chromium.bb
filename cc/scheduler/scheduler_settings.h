@@ -35,6 +35,12 @@ class CC_EXPORT SchedulerSettings {
   bool throttle_frame_production;
   bool disable_hi_res_timer_tasks_on_battery;
 
+  // In main thread low latency mode the entire
+  // BeginMainFrame->Commit->Activation->Draw cycle should complete before
+  // starting the next cycle.  Additionally, BeginMainFrame and Commit are
+  // completed atomically with no other tasks or actions occuring between them.
+  bool main_thread_should_always_be_low_latency;
+
   base::TimeDelta background_frame_interval;
 
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;

@@ -19,6 +19,7 @@ SchedulerSettings::SchedulerSettings()
       using_synchronous_renderer_compositor(false),
       throttle_frame_production(true),
       disable_hi_res_timer_tasks_on_battery(false),
+      main_thread_should_always_be_low_latency(false),
       background_frame_interval(base::TimeDelta::FromSeconds(1)) {
 }
 
@@ -38,6 +39,8 @@ SchedulerSettings::SchedulerSettings(const LayerTreeSettings& settings)
       throttle_frame_production(settings.throttle_frame_production),
       disable_hi_res_timer_tasks_on_battery(
           settings.disable_hi_res_timer_tasks_on_battery),
+      main_thread_should_always_be_low_latency(
+          settings.main_thread_should_always_be_low_latency),
       background_frame_interval(base::TimeDelta::FromSecondsD(
           1.0 / settings.background_animation_rate)) {
 }
@@ -64,6 +67,8 @@ SchedulerSettings::AsValue() const {
   state->SetBoolean("throttle_frame_production", throttle_frame_production);
   state->SetBoolean("disable_hi_res_timer_tasks_on_battery",
                     disable_hi_res_timer_tasks_on_battery);
+  state->SetBoolean("main_thread_should_always_be_low_latency",
+                    main_thread_should_always_be_low_latency);
   state->SetInteger("background_frame_interval",
                     background_frame_interval.InMicroseconds());
   return state;

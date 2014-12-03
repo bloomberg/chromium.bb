@@ -579,10 +579,19 @@ base::TimeTicks Scheduler::AdjustedBeginImplFrameDeadline(
     base::TimeDelta draw_duration_estimate) const {
   // The synchronous compositor does not post a deadline task.
   DCHECK(!settings_.using_synchronous_renderer_compositor);
-  if (state_machine_.ShouldTriggerBeginImplFrameDeadlineEarly()) {
+  if (settings_.main_thread_should_always_be_low_latency) {
+    // In main thread low latency mode, always start deadline early.
+    return base::TimeTicks();
+  } else if (state_machine_.ShouldTriggerBeginImplFrameDeadlineEarly()) {
     // We are ready to draw a new active tree immediately.
     // We don't use Now() here because it's somewhat expensive to call.
     return base::TimeTicks();
+  } else if (settings_.main_thread_should_always_be_low_latency) {
+    // Post long deadline to keep advancing during idle period. After activation
+    // we will be able to trigger deadline early.
+    // TODO(weiliangc): Don't post deadline once input is deferred with
+    // BeginRetroFrames.
+    return args.frame_time + args.interval;
   } else if (state_machine_.needs_redraw()) {
     // We have an animation or fast input path on the impl thread that wants
     // to draw, so don't wait too long for a new active tree.
@@ -602,7 +611,6 @@ base::TimeTicks Scheduler::AdjustedBeginImplFrameDeadline(
 void Scheduler::ScheduleBeginImplFrameDeadline(base::TimeTicks deadline) {
   TRACE_EVENT1(
       "cc", "Scheduler::ScheduleBeginImplFrameDeadline", "deadline", deadline);
-
   begin_impl_frame_deadline_task_.Cancel();
   begin_impl_frame_deadline_task_.Reset(begin_impl_frame_deadline_closure_);
 
@@ -616,7 +624,6 @@ void Scheduler::ScheduleBeginImplFrameDeadline(base::TimeTicks deadline) {
 void Scheduler::OnBeginImplFrameDeadline() {
   TRACE_EVENT0("cc", "Scheduler::OnBeginImplFrameDeadline");
   begin_impl_frame_deadline_task_.Cancel();
-
   // We split the deadline actions up into two phases so the state machine
   // has a chance to trigger actions that should occur durring and after
   // the deadline separately. For example:

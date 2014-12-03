@@ -430,9 +430,8 @@ void SingleThreadProxy::DidActivateSyncTree() {
     // equivalent of blocking commit until activation and also running
     // all tasks posted during commit/activation before CommitComplete.
     MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&SingleThreadProxy::CommitComplete,
-                   weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::Bind(&SingleThreadProxy::CommitComplete,
+                              weak_factory_.GetWeakPtr()));
   }
 
   timing_history_.DidActivateSyncTree();

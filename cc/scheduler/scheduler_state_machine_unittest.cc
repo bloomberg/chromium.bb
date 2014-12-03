@@ -44,7 +44,8 @@ const SchedulerStateMachine::CommitState all_commit_states[] = {
     SchedulerStateMachine::COMMIT_STATE_BEGIN_MAIN_FRAME_SENT,
     SchedulerStateMachine::COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED,
     SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT,
-    SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_ACTIVATION};
+    SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_ACTIVATION,
+    SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_DRAW};
 
 // Exposes the protected state fields of the SchedulerStateMachine for testing
 class StateMachine : public SchedulerStateMachine {
@@ -842,6 +843,160 @@ TEST(SchedulerStateMachineTest, TestFullCycle) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.CommitState());
   EXPECT_FALSE(state.needs_redraw());
+}
+
+TEST(SchedulerStateMachineTest, TestFullCycleWithMainThreadLowLatencyMode) {
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.main_thread_should_always_be_low_latency = true;
+  StateMachine state(scheduler_settings);
+  state.SetCanStart();
+  state.UpdateState(state.NextAction());
+  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.SetVisible(true);
+  state.SetCanDraw(true);
+
+  // Start clean and set commit.
+  state.SetNeedsCommit();
+
+  // Begin the frame.
+  state.OnBeginImplFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_BEGIN_MAIN_FRAME_SENT,
+            state.CommitState());
+  EXPECT_FALSE(state.NeedsCommit());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Tell the scheduler the frame finished.
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT,
+            state.CommitState());
+
+  // Commit.
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  EXPECT_TRUE(state.active_tree_needs_first_draw());
+  EXPECT_TRUE(state.needs_redraw());
+
+  // Now commit should wait for draw.
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_DRAW,
+            state.CommitState());
+
+  // Swap throttled. Do not draw.
+  state.DidSwapBuffers();
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.DidSwapBuffersComplete();
+
+  // Haven't draw since last commit, do not begin new main frame.
+  state.SetNeedsCommit();
+  state.OnBeginImplFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // At BeginImplFrame deadline, draw.
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+  state.DidSwapBuffers();
+  state.DidDrawIfPossibleCompleted(DRAW_SUCCESS);
+  state.DidSwapBuffersComplete();
+
+  // Now will be able to start main frame.
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.CommitState());
+  EXPECT_FALSE(state.needs_redraw());
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+}
+
+TEST(SchedulerStateMachineTest,
+     TestFullCycleWithMainThreadLowLatencyMode_ImplSidePaint) {
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.main_thread_should_always_be_low_latency = true;
+  scheduler_settings.impl_side_painting = true;
+  StateMachine state(scheduler_settings);
+  state.SetCanStart();
+  state.UpdateState(state.NextAction());
+  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.SetVisible(true);
+  state.SetCanDraw(true);
+
+  // Start clean and set commit.
+  state.SetNeedsCommit();
+
+  // Begin the frame.
+  state.OnBeginImplFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_BEGIN_MAIN_FRAME_SENT,
+            state.CommitState());
+  EXPECT_FALSE(state.NeedsCommit());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Tell the scheduler the frame finished.
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT,
+            state.CommitState());
+
+  // Commit.
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+
+  // Now commit should wait for activation.
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_ACTIVATION,
+            state.CommitState());
+
+  // No activation yet, so this commit is not drawn yet. Force to draw this
+  // frame, and still block BeginMainFrame.
+  state.SetNeedsRedraw(true);
+  state.SetNeedsCommit();
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Cannot BeginMainFrame yet since last commit is not yet activated and drawn.
+  state.OnBeginImplFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_ACTIVATION,
+            state.CommitState());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Now activate sync tree.
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_TRUE(state.active_tree_needs_first_draw());
+  EXPECT_TRUE(state.needs_redraw());
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_DRAW,
+            state.CommitState());
+
+  // Swap throttled. Do not draw.
+  state.DidSwapBuffers();
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.DidSwapBuffersComplete();
+
+  // Haven't draw since last commit, do not begin new main frame.
+  state.OnBeginImplFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // At BeginImplFrame deadline, draw. This draws unblocks BeginMainFrame.
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+  state.DidSwapBuffers();
+  state.DidDrawIfPossibleCompleted(DRAW_SUCCESS);
+  state.DidSwapBuffersComplete();
+
+  // Now will be able to start main frame.
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.CommitState());
+  EXPECT_FALSE(state.needs_redraw());
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
 }
 
 TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween) {

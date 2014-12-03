@@ -97,6 +97,8 @@ const char* SchedulerStateMachine::CommitStateToString(CommitState state) {
       return "COMMIT_STATE_READY_TO_COMMIT";
     case COMMIT_STATE_WAITING_FOR_ACTIVATION:
       return "COMMIT_STATE_WAITING_FOR_ACTIVATION";
+    case COMMIT_STATE_WAITING_FOR_DRAW:
+      return "COMMIT_STATE_WAITING_FOR_DRAW";
   }
   NOTREACHED();
   return "???";
@@ -592,9 +594,11 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_was_aborted) {
 
   if (commit_was_aborted || settings_.main_frame_before_activation_enabled) {
     commit_state_ = COMMIT_STATE_IDLE;
+  } else if (settings_.impl_side_painting) {
+    commit_state_ = COMMIT_STATE_WAITING_FOR_ACTIVATION;
   } else {
-    commit_state_ = settings_.impl_side_painting
-                        ? COMMIT_STATE_WAITING_FOR_ACTIVATION
+    commit_state_ = settings_.main_thread_should_always_be_low_latency
+                        ? COMMIT_STATE_WAITING_FOR_DRAW
                         : COMMIT_STATE_IDLE;
   }
 
@@ -637,8 +641,11 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_was_aborted) {
 }
 
 void SchedulerStateMachine::UpdateStateOnActivation() {
-  if (commit_state_ == COMMIT_STATE_WAITING_FOR_ACTIVATION)
-    commit_state_ = COMMIT_STATE_IDLE;
+  if (commit_state_ == COMMIT_STATE_WAITING_FOR_ACTIVATION) {
+    commit_state_ = settings_.main_thread_should_always_be_low_latency
+                        ? COMMIT_STATE_WAITING_FOR_DRAW
+                        : COMMIT_STATE_IDLE;
+  }
 
   if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION)
     output_surface_state_ = OUTPUT_SURFACE_ACTIVE;
@@ -655,6 +662,9 @@ void SchedulerStateMachine::UpdateStateOnActivation() {
 void SchedulerStateMachine::UpdateStateOnDraw(bool did_request_swap) {
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
+
+  if (commit_state_ == COMMIT_STATE_WAITING_FOR_DRAW)
+    commit_state_ = COMMIT_STATE_IDLE;
 
   needs_redraw_ = false;
   active_tree_needs_first_draw_ = false;
@@ -991,6 +1001,11 @@ void SchedulerStateMachine::NotifyReadyToCommit() {
   DCHECK(commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED)
       << AsValue()->ToString();
   commit_state_ = COMMIT_STATE_READY_TO_COMMIT;
+  // In main thread low latency mode, commit should happen right after
+  // BeginFrame, meaning when this function is called, next action should be
+  // commit.
+  if (settings_.main_thread_should_always_be_low_latency)
+    DCHECK(ShouldCommit());
 }
 
 void SchedulerStateMachine::BeginMainFrameAborted(bool did_handle) {

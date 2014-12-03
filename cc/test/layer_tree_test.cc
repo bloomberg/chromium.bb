@@ -785,6 +785,11 @@ void LayerTreeTest::RunTestWithImplSidePainting() {
   RunTest(true, false, true);
 }
 
+void LayerTreeTest::RunTestWithMainThreadLowLatency() {
+  settings_.main_thread_should_always_be_low_latency = true;
+  RunTest(false, false, false);
+}
+
 void LayerTreeTest::RequestNewOutputSurface(bool fallback) {
   layer_tree_host_->SetOutputSurface(CreateOutputSurface(fallback));
 }
