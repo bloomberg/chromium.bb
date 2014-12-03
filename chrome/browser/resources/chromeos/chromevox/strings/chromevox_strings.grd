@@ -602,7 +602,7 @@
       <message desc="Describes a HTML listbox named 'name'." name="IDS_CHROMEVOX_DESCRIBE_LISTBOX">
         <ph name="value">$1</ph>, <ph name="name">$2</ph>, list box
       </message>
-      <message desc="Describes an unnamed HTML combo box." name="IDS_CHROMEVOX_DESCRIBE_UNNAMED_LISTBOX">
+      <message desc="Describes an unnamed HTML list box." name="IDS_CHROMEVOX_DESCRIBE_UNNAMED_LISTBOX">
         <ph name="value">$1</ph>, list box
       </message>
       <message desc="Describes a HTML link named 'name'." name="IDS_CHROMEVOX_DESCRIBE_LINK">
@@ -939,7 +939,7 @@
         has submenu
       </message>
       <message desc="Brailled after a menu if the menu has a submenu." name="IDS_CHROMEVOX_ARIA_HAS_SUBMENU_BRL">
-        +submnu
+        ->
       </message>
       <message desc='Spoken after an element is spoken if the element has a pop up. For example "Button Add friends has pop up"' name="IDS_CHROMEVOX_ARIA_HAS_POPUP">
         has pop up
@@ -993,13 +993,13 @@
         Check box
       </message>
       <message desc="Braille of element with the ARIA role checkbox." name="IDS_CHROMEVOX_ARIA_ROLE_CHECKBOX_BRL">
-        chx
+        chk
       </message>
       <message desc="Describes an element with the ARIA role combobox." name="IDS_CHROMEVOX_ARIA_ROLE_COMBOBOX">
         Combo box
       </message>
       <message desc="Braille of element with the ARIA role combobox." name="IDS_CHROMEVOX_ARIA_ROLE_COMBOBOX_BRL">
-        cbx
+        cbo
       </message>
       <message desc="Describes an element with the ARIA role dialog." name="IDS_CHROMEVOX_ARIA_ROLE_DIALOG">
         Dialog
@@ -1017,7 +1017,7 @@
         Cell
       </message>
       <message desc="Braille of element with the ARIA role gridcell." name="IDS_CHROMEVOX_ARIA_ROLE_GRIDCELL_BRL">
-        cl
+        cll
       </message>
       <message desc="Describes the position of an element with the ARIA role gridcell." name="IDS_CHROMEVOX_ARIA_ROLE_GRIDCELL_POS">
         row <ph name="row">$1</ph> column <ph name="col">$2</ph>
@@ -1050,7 +1050,7 @@
         Marquee
       </message>
       <message desc="Braille of element with the ARIA role marquee." name="IDS_CHROMEVOX_ARIA_ROLE_MARQUEE_BRL">
-        maqe
+        marquee
       </message>
       <message desc="Describes an element with the ARIA role menu." name="IDS_CHROMEVOX_ARIA_ROLE_MENU">
         Menu
@@ -1062,25 +1062,25 @@
         Menu bar
       </message>
       <message desc="Braille of element with the ARIA role menubar." name="IDS_CHROMEVOX_ARIA_ROLE_MENUBAR_BRL">
-        mnu br
+        mnubr
       </message>
       <message desc="Describes an element with the ARIA role menuitem." name="IDS_CHROMEVOX_ARIA_ROLE_MENUITEM">
         Menu item
       </message>
       <message desc="Braille of element with the ARIA role menuitem." name="IDS_CHROMEVOX_ARIA_ROLE_MENUITEM_BRL">
-        mnu itm
+        mnuitm
       </message>
       <message desc="Describes an element with the ARIA role menuitemcheckbox." name="IDS_CHROMEVOX_ARIA_ROLE_MENUITEMCHECKBOX">
         Menu item check box
       </message>
       <message desc="Braille of element with the ARIA role menuitemcheckbox." name="IDS_CHROMEVOX_ARIA_ROLE_MENUITEMCHECKBOX_BRL">
-        mnu itm chx
+        chkmnuitm
       </message>
       <message desc="Describes an element with the ARIA role menuitemradio." name="IDS_CHROMEVOX_ARIA_ROLE_MENUITEMRADIO">
         Menu item radio button
       </message>
       <message desc="Braille of element with the ARIA role menuitemradio." name="IDS_CHROMEVOX_ARIA_ROLE_MENUITEMRADIO_BRL">
-        mnu itm rd
+        rdmnuitm
       </message>
       <message desc="Describes an element with the ARIA role option." name="IDS_CHROMEVOX_ARIA_ROLE_OPTION">
         ''' '''
@@ -1092,31 +1092,31 @@
         Pop-up button
       </message>
       <message desc="Braille of element with the ARIA role button, with a pop-up." name="IDS_CHROMEVOX_ARIA_ROLE_POPUP_BUTTON_BRL">
-        pup btn
+        popbtn
       </message>
       <message desc="Describes an element with the ARIA role progressbar." name="IDS_CHROMEVOX_ARIA_ROLE_PROGRESSBAR">
         Progress bar
       </message>
       <message desc="Braille of element with the ARIA role progressbar." name="IDS_CHROMEVOX_ARIA_ROLE_PROGRESSBAR_BRL">
-        prog br
+        pgbar
       </message>
       <message desc="Describes an element with the ARIA role radio." name="IDS_CHROMEVOX_ARIA_ROLE_RADIO">
         Radio button
       </message>
       <message desc="Braille of element with the ARIA role radio." name="IDS_CHROMEVOX_ARIA_ROLE_RADIO_BRL">
-        rd
+        rbtn
       </message>
       <message desc="Describes an element with the ARIA role radiogroup." name="IDS_CHROMEVOX_ARIA_ROLE_RADIOGROUP">
         Radio button group
       </message>
       <message desc="Braille of element with the ARIA role radiogroup." name="IDS_CHROMEVOX_ARIA_ROLE_RADIOGROUP_BRL">
-        rd grp
+        rdgrp
       </message>
       <message desc="Describes an element with the ARIA role scrollbar." name="IDS_CHROMEVOX_ARIA_ROLE_SCROLLBAR">
         Scroll bar
       </message>
       <message desc="Braille of element with the ARIA role scrollbar." name="IDS_CHROMEVOX_ARIA_ROLE_SCROLLBAR_BRL">
-        scr br
+        scbr
       </message>
       <message desc="Describes an element with the ARIA role slider." name="IDS_CHROMEVOX_ARIA_ROLE_SLIDER">
         Slider
@@ -1128,7 +1128,7 @@
         Spin button
       </message>
       <message desc="Braille of element with the ARIA role spinbutton." name="IDS_CHROMEVOX_ARIA_ROLE_SPINBUTTON_BRL">
-        spn btn
+        spnbtn
       </message>
       <message desc="Describes an element with the ARIA role status." name="IDS_CHROMEVOX_ARIA_ROLE_STATUS">
         Status
@@ -1146,19 +1146,19 @@
         Tab list
       </message>
       <message desc="Brailles an element with the ARIA role tablist." name="IDS_CHROMEVOX_ARIA_ROLE_TABLIST_BRL">
-        tab lst
+        tablst
       </message>
       <message desc="Describes an element with the ARIA role tabpanel." name="IDS_CHROMEVOX_ARIA_ROLE_TABPANEL">
         Tab panel
       </message>
       <message desc="Braille of element with the ARIA role tabpanel." name="IDS_CHROMEVOX_ARIA_ROLE_TABPANEL_BRL">
-        tab pnl
+        tabpnl
       </message>
       <message desc="Describes an element with the ARIA role textbox." name="IDS_CHROMEVOX_ARIA_ROLE_TEXTBOX">
         Text box
       </message>
       <message desc="Braille of element with the ARIA role textbox." name="IDS_CHROMEVOX_ARIA_ROLE_TEXTBOX_BRL">
-        txtbx
+        ed
       </message>
       <message desc="Describes an element with the ARIA role timer." name="IDS_CHROMEVOX_ARIA_ROLE_TIMER">
         Timer
@@ -1170,25 +1170,25 @@
         Tool bar
       </message>
       <message desc="Braille of element with the ARIA role toolbar." name="IDS_CHROMEVOX_ARIA_ROLE_TOOLBAR_BRL">
-        tl br
+        tlbar
       </message>
       <message desc="Describes an element with the ARIA role tooltip." name="IDS_CHROMEVOX_ARIA_ROLE_TOOLTIP">
         Tool tip
       </message>
       <message desc="Braille of element with the ARIA role tooltip." name="IDS_CHROMEVOX_ARIA_ROLE_TOOLTIP_BRL">
-        tl tp
+        tltip
       </message>
       <message desc="Describes an element with the ARIA role treeitem." name="IDS_CHROMEVOX_ARIA_ROLE_TREEITEM">
         Tree item
       </message>
       <message desc="Braille of element with the ARIA role treeitem." name="IDS_CHROMEVOX_ARIA_ROLE_TREEITEM_BRL">
-        tr itm
+        tritm
       </message>
       <message desc="Describes an element with the ARIA role article." name="IDS_CHROMEVOX_ARIA_ROLE_ARTICLE">
         Article
       </message>
       <message desc="Braille of element with the ARIA role article." name="IDS_CHROMEVOX_ARIA_ROLE_ARTICLE_BRL">
-        acl
+        article
       </message>
       <message desc="Describes an element with the ARIA role application." name="IDS_CHROMEVOX_ARIA_ROLE_APPLICATION">
         Application
@@ -1206,19 +1206,19 @@
         Column header
       </message>
       <message desc="Braille of element with the ARIA role columnheader." name="IDS_CHROMEVOX_ARIA_ROLE_COLUMNHEADER_BRL">
-        clm hd
+        colhdr
       </message>
       <message desc="Describes an element with the ARIA role complementary." name="IDS_CHROMEVOX_ARIA_ROLE_COMPLEMENTARY">
         Complementary
       </message>
       <message desc="Braille of element with the ARIA role complementary." name="IDS_CHROMEVOX_ARIA_ROLE_COMPLEMENTARY_BRL">
-        cmpy
+        complementary
       </message>
       <message desc="Describes an element with the ARIA role contentinfo." name="IDS_CHROMEVOX_ARIA_ROLE_CONTENTINFO">
         Content info
       </message>
       <message desc="Braille of element with the ARIA role contentinfo." name="IDS_CHROMEVOX_ARIA_ROLE_CONTENTINFO_BRL">
-        cnt in
+        cntntinfo
       </message>
       <message desc="Describes an element with the ARIA role definition." name="IDS_CHROMEVOX_ARIA_ROLE_DEFINITION">
         Definition
@@ -1242,7 +1242,7 @@
         Form
       </message>
       <message desc="Braille of element with the ARIA role form." name="IDS_CHROMEVOX_ARIA_ROLE_FORM_BRL">
-        frm
+        form
       </message>
       <message desc="Describes a single element with the ARIA role form with count." name="IDS_CHROMEVOX_ARIA_ROLE_FORM_SINGULAR">
         1 form
@@ -1260,7 +1260,7 @@
         Heading
       </message>
       <message desc="Braille of element with the ARIA role heading." name="IDS_CHROMEVOX_ARIA_ROLE_HEADING_BRL">
-        hd
+        hdng
       </message>
       <message desc="Describes an element with the ARIA role img." name="IDS_CHROMEVOX_ARIA_ROLE_IMG">
         Image
@@ -1314,37 +1314,37 @@
         Row header
       </message>
       <message desc="Braille of element with the ARIA role rowheader." name="IDS_CHROMEVOX_ARIA_ROLE_ROWHEADER_BRL">
-        rw hd
+        rwhdr
       </message>
       <message desc="Describes an element with the ARIA role search." name="IDS_CHROMEVOX_ARIA_ROLE_SEARCH">
         Search
       </message>
       <message desc="Braille of element with the ARIA role search." name="IDS_CHROMEVOX_ARIA_ROLE_SEARCH_BRL">
-        srch
+        srched
       </message>
       <message desc="Describes an element with the ARIA role separator." name="IDS_CHROMEVOX_ARIA_ROLE_SEPARATOR">
         Separator
       </message>
       <message desc="Braille of element with the ARIA role separator." name="IDS_CHROMEVOX_ARIA_ROLE_SEPARATOR_BRL">
-        sprtr
+        seprtr
       </message>
       <message desc="Describes an element with the ARIA attribute aria-autocomplete=inline." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_INLINE">
         Autocompletion inline
       </message>
       <message desc="Braille of element with the ARIA attribute aria-autocomplete=inline." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_INLINE_BRL">
-        autocomplete
+        autoinl
       </message>
       <message desc="Describes an element with the ARIA attribute aria-autocomplete=list." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_LIST">
         Autocompletion list
       </message>
       <message desc="Braille of element with the ARIA attribute aria-autocomplete=list." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_LIST_BRL">
-        autocomplete lst
+        autolst
       </message>
       <message desc="Describes an element with the ARIA attribute aria-autocomplete=both." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_BOTH">
         Autocompletion inline and list
       </message>
       <message desc="Brailles an element with the ARIA attribute aria-autocomplete=both." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_BOTH_BRL">
-        autocomplete lst
+        autoinl+lst
       </message>
       <message desc="Describes an element with the ARIA attribute aria-checked=true." name="IDS_CHROMEVOX_ARIA_CHECKED_TRUE">
         Checked
@@ -1362,25 +1362,25 @@
         Partially checked
       </message>
       <message desc="Braille of element with the ARIA attribute aria-checked=mixed." name="IDS_CHROMEVOX_ARIA_CHECKED_MIXED_BRL">
-        /x
+        -
       </message>
       <message desc="Describes an element with the ARIA attribute aria-disabled=true." name="IDS_CHROMEVOX_ARIA_DISABLED_TRUE">
         Disabled
       </message>
       <message desc="Braille of element with the ARIA attribute aria-disabled=true." name="IDS_CHROMEVOX_ARIA_DISABLED_TRUE_BRL">
-        =
+        xx
       </message>
       <message desc="Describes an element with the ARIA attribute aria-expanded=true." name="IDS_CHROMEVOX_ARIA_EXPANDED_TRUE">
         Expanded
       </message>
       <message desc="Braille of element with the ARIA attribute aria-expanded=true." name="IDS_CHROMEVOX_ARIA_EXPANDED_TRUE_BRL">
-        &gt;
+        -
       </message>
       <message desc="Describes an element with the ARIA attribute aria-expanded=false." name="IDS_CHROMEVOX_ARIA_EXPANDED_FALSE">
         Collapsed
       </message>
       <message desc="Braille of element with the ARIA attribute aria-expanded=false." name="IDS_CHROMEVOX_ARIA_EXPANDED_FALSE_BRL">
-        &lt;
+        +
       </message>
       <message desc="Describes an element with the ARIA attribute aria-invalid=true." name="IDS_CHROMEVOX_ARIA_INVALID_TRUE">
         Invalid input
@@ -1392,7 +1392,7 @@
         Grammatical mistake detected
       </message>
       <message desc="Braille of element with the ARIA attribute aria-invalid=grammar." name="IDS_CHROMEVOX_ARIA_INVALID_GRAMMAR_BRL">
-        Grammatical mistake detected
+        grammatical mistake
       </message>
       <message desc="Describes an element with the ARIA attribute aria-invalid=spelling." name="IDS_CHROMEVOX_ARIA_INVALID_SPELLING">
         Spelling mistake detected
@@ -1404,19 +1404,19 @@
         Multi line
       </message>
       <message desc="Braille of element with the ARIA attribute aria-multiline=true." name="IDS_CHROMEVOX_ARIA_MULTILINE_TRUE_BRL">
-        mult ln
+        multln
       </message>
       <message desc="Describes an element with the ARIA attribute aria-multiselectable=true." name="IDS_CHROMEVOX_ARIA_MULTISELECTABLE_TRUE">
         Multi select
       </message>
       <message desc="Braille of element with the ARIA attribute aria-multiselectable=true." name="IDS_CHROMEVOX_ARIA_MULTISELECTABLE_TRUE_BRL">
-        mult sel
+        multsel
       </message>
       <message desc="Describes an element with the ARIA attribute aria-pressed=true." name="IDS_CHROMEVOX_ARIA_PRESSED_TRUE">
         Pressed
       </message>
       <message desc="Braille of element with the ARIA attribute aria-pressed=true." name="IDS_CHROMEVOX_ARIA_PRESSED_TRUE_BRL">
-        x
+        =
       </message>
       <message desc="Describes an element with the ARIA attribute aria-pressed=false." name="IDS_CHROMEVOX_ARIA_PRESSED_FALSE">
         Not pressed
@@ -1428,7 +1428,7 @@
         Partially pressed
       </message>
       <message desc="Braille of element with the ARIA attribute aria-pressed=mixed." name="IDS_CHROMEVOX_ARIA_PRESSED_MIXED_BRL">
-        /x
+        -
       </message>
       <message desc="Describes an element with the ARIA attribute aria-readonly=true." name="IDS_CHROMEVOX_ARIA_READONLY_TRUE">
         Read only
@@ -1440,7 +1440,7 @@
         Required
       </message>
       <message desc="Braille of element with the ARIA attribute aria-required=true." name="IDS_CHROMEVOX_ARIA_REQUIRED_TRUE_BRL">
-        req
+        rq
       </message>
       <message desc="Describes an element with the ARIA attribute aria-selected=true." name="IDS_CHROMEVOX_ARIA_SELECTED_TRUE">
         Selected
@@ -1457,8 +1457,14 @@
       <message desc="Spoken to describe an &lt;a&gt; tag." name="IDS_CHROMEVOX_TAG_LINK">
         Link
       </message>
+      <message desc="Spoken to describe a visited link." name="IDS_CHROMEVOX_VISITED_LINK">
+        Visited link
+      </message>
       <message desc="Brailled to describe an &lt;a&gt; tag." name="IDS_CHROMEVOX_TAG_LINK_BRL">
         lnk
+      </message>
+      <message desc="Brailled to describe a visited link." name="IDS_CHROMEVOX_VISITED_LINK_BRL">
+        vlnk
       </message>
       <message desc="Spoken to describe a &lt;button&gt; tag." name="IDS_CHROMEVOX_TAG_BUTTON">
         Button
@@ -1518,13 +1524,13 @@
         Combo box
       </message>
       <message desc="Brailled to describe a &lt;select&gt; tag." name="IDS_CHROMEVOX_TAG_SELECT_BRL">
-        cbx
+        cbo
       </message>
       <message desc="Spoken to describe a &lt;textarea&gt; tag." name="IDS_CHROMEVOX_TAG_TEXTAREA">
         Text area
       </message>
       <message desc="Brailled to describe a &lt;textarea&gt; tag." name="IDS_CHROMEVOX_TAG_TEXTAREA_BRL">
-        txta
+        mled
       </message>
       <message desc="Spoken to describe a &lt;table&gt; tag." name="IDS_CHROMEVOX_TAG_TABLE">
         table
@@ -1542,7 +1548,7 @@
         Section
       </message>
       <message desc="Brailled to describe a &lt;section&gt; tag." name="IDS_CHROMEVOX_TAG_SECTION_BRL">
-        stn
+        sctn
       </message>
       <message desc="Spoken to describe a &lt;nav&gt; tag." name="IDS_CHROMEVOX_TAG_NAV">
         Navigation
@@ -1566,7 +1572,7 @@
         Heading group
       </message>
       <message desc="Brailled to describe a &lt;hgroup&gt; tag." name="IDS_CHROMEVOX_TAG_HGROUP_BRL">
-        hgrp
+        hdnggrp
       </message>
       <message desc="Spoken to describe a &lt;header&gt; tag." name="IDS_CHROMEVOX_TAG_HEADER">
         Header
@@ -1614,7 +1620,7 @@
         Check box
       </message>
       <message desc="Brailles an &lt;input&gt; element with type=checkbox." name="IDS_CHROMEVOX_INPUT_TYPE_CHECKBOX_BRL">
-        chx
+        chk
       </message>
       <message desc="Describes an &lt;input&gt; element with type=color." name="IDS_CHROMEVOX_INPUT_TYPE_COLOR">
         Color picker
@@ -1644,7 +1650,7 @@
         Edit text, email entry
       </message>
       <message desc="Brailles an &lt;input&gt; element with type=email." name="IDS_CHROMEVOX_INPUT_TYPE_EMAIL_BRL">
-        edtxt email
+        @ed
       </message>
       <message desc="Describes an &lt;input&gt; element with type=file." name="IDS_CHROMEVOX_INPUT_TYPE_FILE">
         File selection
@@ -1668,25 +1674,25 @@
         Edit text numeric only
       </message>
       <message desc="Brailles an &lt;input&gt; element with type=number." name="IDS_CHROMEVOX_INPUT_TYPE_NUMBER_BRL">
-        edtxt#
+        #ed
       </message>
       <message desc="Describes an &lt;input&gt; element with type=password." name="IDS_CHROMEVOX_INPUT_TYPE_PASSWORD">
         Password edit text
       </message>
       <message desc="Brailles an &lt;input&gt; element with type=password." name="IDS_CHROMEVOX_INPUT_TYPE_PASSWORD_BRL">
-        pwd edtxt
+        pwded
       </message>
       <message desc="Describes an &lt;input&gt; element with type=radio." name="IDS_CHROMEVOX_INPUT_TYPE_RADIO">
         Radio button
       </message>
       <message desc="Brailles an &lt;input&gt; element with type=radio." name="IDS_CHROMEVOX_INPUT_TYPE_RADIO_BRL">
-        rd btn
+        rbtn
       </message>
       <message desc="Describes an &lt;input&gt; element with type=range." name="IDS_CHROMEVOX_INPUT_TYPE_RANGE">
         Slider
       </message>
       <message desc="Brailles an &lt;input&gt; element with type=range." name="IDS_CHROMEVOX_INPUT_TYPE_RANGE_BRL">
-        slr
+        sldr
       </message>
       <message desc="Describes an &lt;input&gt; element with type=reset." name="IDS_CHROMEVOX_INPUT_TYPE_RESET">
         Reset
@@ -1698,7 +1704,7 @@
         Edit text, search entry
       </message>
       <message desc="Brailles an &lt;input&gt; element with type=search." name="IDS_CHROMEVOX_INPUT_TYPE_SEARCH_BRL">
-        search edtxt
+        srched
       </message>
       <message desc="Describes an &lt;input&gt; element with type=submit." name="IDS_CHROMEVOX_INPUT_TYPE_SUBMIT">
         Button
@@ -1710,19 +1716,19 @@
         Edit text, number entry
       </message>
       <message desc="Brailles an &lt;input&gt; element with type=tel." name="IDS_CHROMEVOX_INPUT_TYPE_TEL_BRL">
-        tele# edtxt
+        #ed
       </message>
       <message desc="Describes an &lt;input&gt; element with type=text." name="IDS_CHROMEVOX_INPUT_TYPE_TEXT">
         Edit text
       </message>
       <message desc="Brailles an &lt;input&gt; element with type=text." name="IDS_CHROMEVOX_INPUT_TYPE_TEXT_BRL">
-        edtxt
+        ed
       </message>
       <message desc="Describes an &lt;input&gt; element with type=url." name="IDS_CHROMEVOX_INPUT_TYPE_URL">
         Edit text, URL entry
       </message>
       <message desc="Brailles an &lt;input&gt; element with type=url." name="IDS_CHROMEVOX_INPUT_TYPE_URL_BRL">
-        url edtxt
+        urled
       </message>
       <message desc="Describes an &lt;input&gt; element with type=week." name="IDS_CHROMEVOX_INPUT_TYPE_WEEK">
         Week of the year control
@@ -1734,7 +1740,7 @@
         Internal link
       </message>
       <message desc="Brailles to describe a &lt;a&gt; tag with a link to an internal anchor." name="IDS_CHROMEVOX_INTERNAL_LINK_BRL">
-        int lnk
+        intlnk
       </message>
       <message desc="In an editable text box, describes a blank line." name="IDS_CHROMEVOX_TEXT_BOX_BLANK">
         Blank
@@ -1758,7 +1764,7 @@
         with submenu
       </message>
       <message desc="Brailled after an menu is spoken if the menu has a submenu." name="IDS_CHROMEVOX_HAS_SUBMENU_BRL">
-        +submnu
+        ->
       </message>
       <message desc="Phrase indicating a control has a pop-up component to it." name="IDS_CHROMEVOX_HAS_POPUP">
         has popup
@@ -1989,7 +1995,7 @@
         Math
       </message>
       <message desc="Brailled phrase indicating the current selection is a Math object." name="IDS_CHROMEVOX_MATH_EXPR_BRL">
-        Math
+        math
       </message>
       <message desc="Describes an element with the ARIA role math." name="IDS_CHROMEVOX_NOT_INSIDE_MATH">
         Not inside math
@@ -2070,7 +2076,7 @@
         clickable
       </message>
       <message desc="Brailled to describe a clickable element." name="IDS_CHROMEVOX_CLICKABLE_BRL">
-        clickable
+        clk
       </message>
       <message desc="The description of the previous character command.  Displayed in the Options page." name="IDS_CHROMEVOX_PREVIOUS_CHARACTER">
         Previous Character
@@ -2260,12 +2266,6 @@
       </message>
       <message desc="Describes the perform default action command. This is usually triggered by hitting the enter key over a control. Shown in options page." name="IDS_CHROMEVOX_PERFORM_DEFAULT_ACTION">
         Perform default action
-      </message>
-      <message desc="Spoken to describe a link (url) that has been previously visited." name="IDS_CHROMEVOX_VISITED_URL">
-        visited
-      </message>
-      <message desc="Brailled to describe a link (url) that has been previously visited." name="IDS_CHROMEVOX_VISITED_URL_BRL">
-        visited
       </message>
       <message desc="Exclamation (!) character description." name="IDS_CHROMEVOX_EXCLAMATION">
         {COUNT, plural, =1 {exclamation point}other {# exclamation points}}

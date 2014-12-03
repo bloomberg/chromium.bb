@@ -1262,6 +1262,10 @@ cvox.DomUtil.getRoleMsg = function(targetNode, verbosity) {
         cvox.DomUtil.isInternalLink(targetNode)) {
       info = 'internal_link';
     } else if (targetNode.tagName == 'A' &&
+        targetNode.getAttribute('href') &&
+        cvox.ChromeVox.visitedUrls[targetNode.href]) {
+      info = 'visited_link';
+    } else if (targetNode.tagName == 'A' &&
         targetNode.getAttribute('name')) {
       info = ''; // Don't want to add any role to anchors.
     } else if (targetNode.isContentEditable) {
@@ -1391,11 +1395,6 @@ cvox.DomUtil.getStateMsgs = function(targetNode, primary) {
 
   if (cvox.DomUtil.isDisabled(targetNode)) {
     info.push(['aria_disabled_true']);
-  }
-
-  if (cvox.DomPredicates.linkPredicate([targetNode]) &&
-      cvox.ChromeVox.visitedUrls[targetNode.href]) {
-    info.push(['visited_url']);
   }
 
   if (targetNode.accessKey) {
