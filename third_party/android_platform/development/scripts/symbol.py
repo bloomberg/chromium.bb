@@ -64,7 +64,7 @@ def ToolPath(tool, toolchain_info=None):
     toolchain_source = "x86-4.9"
     toolchain_prefix = "i686-linux-android"
     ndk = "ndk"
-  elif ARCH == "x86_64":
+  elif ARCH == "x86_64" or ARCH == "x64":
     toolchain_source = "x86_64-4.9"
     toolchain_prefix = "x86_64-linux-android"
     ndk = "ndk"
@@ -110,7 +110,7 @@ def FindToolchain():
     known_toolchains = [
       ("x86-" + gcc_version, "x86", "i686-linux-android")
     ]
-  elif ARCH =="x86_64":
+  elif ARCH =="x86_64" or ARCH =="x64":
     known_toolchains = [
       ("x86_64-" + gcc_version, "x86_64", "x86_64-linux-android")
     ]

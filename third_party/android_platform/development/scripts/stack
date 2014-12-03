@@ -54,7 +54,7 @@ def PrintUsage():
   print "       argument information. Also, the 'stack data' section will be"
   print "       printed."
   print
-  print "  --arch=arm|arm64|x86_64|x86|mips"
+  print "  --arch=arm|arm64|x64|x86|mips"
   print "       the target architecture"
   print
   print "  FILE should contain a stack trace in it somewhere"

@@ -74,7 +74,7 @@ def ConvertTrace(lines, more_info):
   dalvik_native_thread_line = re.compile("(\".*\" sysTid=[0-9]+ nice=[0-9]+.*)")
 
   width = "{8}"
-  if symbol.ARCH == "arm64" or symbol.ARCH == "x86_64":
+  if symbol.ARCH == "arm64" or symbol.ARCH == "x86_64" or symbol.ARCH == "x64":
     width = "{16}"
 
   # Matches LOG(FATAL) lines, like the following example:
