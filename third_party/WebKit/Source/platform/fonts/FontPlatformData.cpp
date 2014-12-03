@@ -266,10 +266,17 @@ bool FontPlatformData::operator==(const FontPlatformData& a) const
     // If either of the typeface pointers are null then we test for pointer
     // equality. Otherwise, we call SkTypeface::Equal on the valid pointers.
     bool typefacesEqual = false;
-    if (!typeface() || !a.typeface())
-        typefacesEqual = typeface() == a.typeface();
+#if !OS(MACOSX)
+    if (!m_typeface || !a.m_typeface)
+        typefacesEqual = m_typeface == a.m_typeface;
     else
-        typefacesEqual = SkTypeface::Equal(typeface(), a.typeface());
+        typefacesEqual = SkTypeface::Equal(m_typeface.get(), a.m_typeface.get());
+#else
+    if (m_font || a.m_font)
+        typefacesEqual = m_font == a.m_font;
+    else
+        typefacesEqual = m_cgFont == a.m_cgFont;
+#endif
 
     return typefacesEqual
         && m_textSize == a.m_textSize
@@ -322,9 +329,10 @@ HarfBuzzFace* FontPlatformData::harfBuzzFace() const
     return m_harfBuzzFace.get();
 }
 
+#if !OS(MACOSX)
 unsigned FontPlatformData::hash() const
 {
-    unsigned h = SkTypeface::UniqueID(typeface());
+    unsigned h = SkTypeface::UniqueID(m_typeface.get());
     h ^= 0x01010101 * ((static_cast<int>(m_isHashTableDeletedValue) << 3) | (static_cast<int>(m_orientation) << 2) | (static_cast<int>(m_syntheticBold) << 1) | static_cast<int>(m_syntheticItalic));
 
     // This memcpy is to avoid a reinterpret_cast that breaks strict-aliasing
@@ -337,7 +345,6 @@ unsigned FontPlatformData::hash() const
     return h;
 }
 
-#if !OS(MACOSX)
 bool FontPlatformData::fontContainsCharacter(UChar32 character)
 {
     SkPaint paint;
