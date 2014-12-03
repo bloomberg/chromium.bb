@@ -25,6 +25,8 @@ class CryptohomeClient;
 namespace chromeos {
 
 // Information retrieved from cryptohome by TPMTokenInfoGetter.
+// For invalid token |token_name| and |user_pin| will be empty, while
+// |token_slot_id| will be set to -1.
 struct TPMTokenInfo {
   // Default constructor creates token info for disabled TPM.
   TPMTokenInfo();
