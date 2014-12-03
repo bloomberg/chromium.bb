@@ -660,12 +660,12 @@ cr.define('options', function() {
     onSetDataModelComplete: function() {
       DeletableItemList.prototype.onSetDataModelComplete.call(this);
 
-      var firstItem = this.getListItemByIndex(0);
-      if (firstItem) {
-        firstItem.setStaticValuesFocusable(true);
-        firstItem.setCloseButtonFocusable(true);
-        if (firstItem.isPlaceholder)
-          firstItem.setEditableValuesFocusable(true);
+      var item = this.getInitialFocusableItem();
+      if (item) {
+        item.setStaticValuesFocusable(true);
+        item.setCloseButtonFocusable(true);
+        if (item.isPlaceholder)
+          item.setEditableValuesFocusable(true);
       }
     },
 
@@ -676,6 +676,15 @@ cr.define('options', function() {
      */
     shouldFocusPlaceholder: function() {
       return true;
+    },
+
+    /**
+    * Override to change which item is initially focusable.
+    * @return {options.InlineEditableItem} Initially focusable item or null.
+    * @protected
+    */
+    getInitialFocusableItem: function() {
+      return this.getListItemByIndex(0);
     },
   };
 
