@@ -33,9 +33,6 @@ namespace content {
 #if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
-#elif defined(OS_ANDROID) && defined(__aarch64__)
-// Failures on ARM64 Android: http://crbug.com/408179.
-#define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
 #else
 #define MAYBE_WebRtcBrowserTest WebRtcBrowserTest
 #endif
@@ -113,12 +110,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
   MakeTypicalPeerConnectionCall(javascript);
 }
 
-#if defined(OS_ANDROID) && defined(ARCH_CPU_ARM64)
-// Failing on ARM64 Android bot: http://crbug.com/408179
-#define MAYBE_CanSetupVideoCallWith16To9AspectRatio \
-  DISABLED_CanSetupVideoCallWith16To9AspectRatio
 // Flaky on TSAN v2. http://crbug.com/408006
-#elif defined(THREAD_SANITIZER)
+#if defined(THREAD_SANITIZER)
 #define MAYBE_CanSetupVideoCallWith16To9AspectRatio \
   DISABLED_CanSetupVideoCallWith16To9AspectRatio
 #else
