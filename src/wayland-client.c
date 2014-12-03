@@ -1333,17 +1333,18 @@ wl_display_prepare_read_queue(struct wl_display *display,
  * wl_display_dispatch(display);
  * \endcode
  *
- * There are two races here: first, before blocking in poll(), the fd
- * could become readable and another thread reads the events.  Some of
- * these events may be for the main queue and the other thread will
- * queue them there and then the main thread will go to sleep in
- * poll().  This will stall the application, which could be waiting
- * for a event to kick of the next animation frame, for example.
- *
- * The other race is immediately after poll(), where another thread
- * could preempt and read events before the main thread calls
- * wl_display_dispatch().  This call now blocks and starves the other
+ * The race is immediately after poll(), where one thread
+ * could preempt and read events before the other thread calls
+ * wl_display_dispatch(). This call now blocks and starves the other
  * fds in the event loop.
+ *
+ * Another race would be when using more event queues.
+ * When one thread calls wl_display_dispatch(_queue)(), then it
+ * reads all events from display's fd and queues them in appropriate
+ * queues. Then it dispatches only its own queue and the other events
+ * are sitting in their queues, waiting for dispatching. If that happens
+ * before the other thread managed to call poll(), it will
+ * block with events queued.
  *
  * A correct sequence would be:
  * \code
@@ -1358,9 +1359,12 @@ wl_display_prepare_read_queue(struct wl_display *display,
  * Here we call wl_display_prepare_read(), which ensures that between
  * returning from that call and eventually calling
  * wl_display_read_events(), no other thread will read from the fd and
- * queue events in our queue.  If the call to
- * wl_display_prepare_read() fails, we dispatch the pending events and
- * try again until we're successful.
+ * queue events in our queue. If the call to wl_display_prepare_read() fails,
+ * we dispatch the pending events and try again until we're successful.
+ *
+ * If the relevant queue is not the default queue, then
+ * wl_display_prepare_read_queue() and wl_display_dispatch_queue_pending()
+ * need to be used instead.
  *
  * \memberof wl_display
  */
@@ -1399,10 +1403,25 @@ wl_display_cancel_read(struct wl_display *display)
  * Dispatch all incoming events for objects assigned to the given
  * event queue. On failure -1 is returned and errno set appropriately.
  *
- * This function blocks if there are no events to dispatch. If calling from
- * the main thread, it will block reading data from the display fd. For other
- * threads this will block until the main thread queues events on the queue
- * passed as argument.
+ * The behaviour of this function is exactly the same as the behaviour of
+ * wl_display_dispatch(), but it dispatches events on given queue,
+ * not on the default queue.
+ *
+ * This function blocks if there are no events to dispatch (if there are,
+ * it only dispatches these events and returns immediately).
+ * When this function returns after blocking, it means that it read events
+ * from display's fd and queued them to appropriate queues.
+ * If among the incoming events were some events assigned to the given queue,
+ * they are dispatched by this moment.
+ *
+ * \note Since Wayland 1.5 the display has an extra queue
+ * for its own events (i. e. delete_id). This queue is dispatched always,
+ * no matter what queue we passed as an argument to this function.
+ * That means that this function can return non-0 value even when it
+ * haven't dispatched any event for the given queue.
+ *
+ * \sa wl_display_dispatch(), wl_display_dispatch_pending(),
+ * wl_display_dispatch_queue_pending()
  *
  * \memberof wl_display
  */
@@ -1499,15 +1518,15 @@ wl_display_dispatch_queue_pending(struct wl_display *display,
  * \param display The display context object
  * \return The number of dispatched events on success or -1 on failure
  *
- * Dispatch the display's main event queue.
+ * Dispatch the display's default event queue.
  *
- * If the main event queue is empty, this function blocks until there are
+ * If the default event queue is empty, this function blocks until there are
  * events to be read from the display fd. Events are read and queued on
- * the appropriate event queues. Finally, events on the main event queue
+ * the appropriate event queues. Finally, events on the default event queue
  * are dispatched.
  *
- * \note It is not possible to check if there are events on the main queue
- * or not. For dispatching main queue events without blocking, see \ref
+ * \note It is not possible to check if there are events on the queue
+ * or not. For dispatching default queue events without blocking, see \ref
  * wl_display_dispatch_pending().
  *
  * \sa wl_display_dispatch_pending(), wl_display_dispatch_queue()
@@ -1520,7 +1539,7 @@ wl_display_dispatch(struct wl_display *display)
 	return wl_display_dispatch_queue(display, &display->default_queue);
 }
 
-/** Dispatch main queue events without reading from the display fd
+/** Dispatch default queue events without reading from the display fd
  *
  * \param display The display context object
  * \return The number of dispatched events or -1 on failure
@@ -1532,8 +1551,8 @@ wl_display_dispatch(struct wl_display *display)
  * This is necessary when a client's main loop wakes up on some fd other
  * than the display fd (network socket, timer fd, etc) and calls \ref
  * wl_display_dispatch_queue() from that callback. This may queue up
- * events in the main queue while reading all data from the display fd.
- * When the main thread returns to the main loop to block, the display fd
+ * events in other queues while reading all data from the display fd.
+ * When the main loop returns from the handler, the display fd
  * no longer has data, causing a call to \em poll(2) (or similar
  * functions) to block indefinitely, even though there are events ready
  * to dispatch.
@@ -1542,16 +1561,14 @@ wl_display_dispatch(struct wl_display *display)
  * client should always call wl_display_dispatch_pending() and then
  * \ref wl_display_flush() prior to going back to sleep. At that point,
  * the fd typically doesn't have data so attempting I/O could block, but
- * events queued up on the main queue should be dispatched.
+ * events queued up on the default queue should be dispatched.
  *
  * A real-world example is a main loop that wakes up on a timerfd (or a
  * sound card fd becoming writable, for example in a video player), which
  * then triggers GL rendering and eventually eglSwapBuffers().
  * eglSwapBuffers() may call wl_display_dispatch_queue() if it didn't
  * receive the frame event for the previous frame, and as such queue
- * events in the main queue.
- *
- * \note Calling this makes the current thread the main one.
+ * events in the default queue.
  *
  * \sa wl_display_dispatch(), wl_display_dispatch_queue(),
  * wl_display_flush()
@@ -1732,10 +1749,13 @@ wl_proxy_get_class(struct wl_proxy *proxy)
 /** Assign a proxy to an event queue
  *
  * \param proxy The proxy object
- * \param queue The event queue that will handle this proxy
+ * \param queue The event queue that will handle this proxy or NULL
  *
  * Assign proxy to event queue. Events coming from \c proxy will be
- * queued in \c queue instead of the display's main queue.
+ * queued in \c queue from now. If queue is NULL, then the display's
+ * default queue is set to the proxy.
+ *
+ * \note By default, the queue set in proxy is the one inherited from parent.
  *
  * \sa wl_display_dispatch_queue()
  *

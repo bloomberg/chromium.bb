@@ -71,7 +71,7 @@ struct wl_proxy;
  * added to a queue. On the dispatch step, the handler for the incoming
  * event set by the client on the corresponding \ref wl_proxy is called.
  *
- * A wl_display has at least one event queue, called the <em>main
+ * A wl_display has at least one event queue, called the <em>default
  * queue</em>. Clients can create additional event queues with \ref
  * wl_display_create_queue() and assign \ref wl_proxy's to it. Events
  * occurring in a particular proxy are always queued in its assigned queue.
@@ -80,31 +80,27 @@ struct wl_proxy;
  * called by assigning that proxy to an event queue and making sure that
  * this queue is only dispatched when the assumption holds.
  *
- * The main queue is dispatched by calling \ref wl_display_dispatch().
- * This will dispatch any events queued on the main queue and attempt
- * to read from the display fd if its empty. Events read are then queued
- * on the appropriate queues according to the proxy assignment. Calling
- * that function makes the calling thread the <em>main thread</em>.
+ * The default queue is dispatched by calling \ref wl_display_dispatch().
+ * This will dispatch any events queued on the default queue and attempt
+ * to read from the display fd if it's empty. Events read are then queued
+ * on the appropriate queues according to the proxy assignment.
  *
  * A user created queue is dispatched with \ref wl_display_dispatch_queue().
- * If there are no events to dispatch this function will block. If this
- * is called by the main thread, this will attempt to read data from the
- * display fd and queue any events on the appropriate queues. If calling
- * from any other thread, the function will block until the main thread
- * queues an event on the queue being dispatched.
+ * This function behaves exactly the same as wl_display_dispatch()
+ * but it dispatches given queue instead of the default queue.
  *
  * A real world example of event queue usage is Mesa's implementation of
  * eglSwapBuffers() for the Wayland platform. This function might need
- * to block until a frame callback is received, but dispatching the main
+ * to block until a frame callback is received, but dispatching the default
  * queue could cause an event handler on the client to start drawing
  * again. This problem is solved using another event queue, so that only
  * the events handled by the EGL code are dispatched during the block.
  *
- * This creates a problem where the main thread dispatches a non-main
+ * This creates a problem where a thread dispatches a non-default
  * queue, reading all the data from the display fd. If the application
  * would call \em poll(2) after that it would block, even though there
- * might be events queued on the main queue. Those events should be
- * dispatched with \ref wl_display_dispatch_pending() before
+ * might be events queued on the default queue. Those events should be
+ * dispatched with \ref wl_display_dispatch_(queue_)pending() before
  * flushing and blocking.
  */
 struct wl_display;
