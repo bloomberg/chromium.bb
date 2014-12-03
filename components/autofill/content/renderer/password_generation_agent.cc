@@ -43,10 +43,7 @@ bool GetAccountCreationPasswordFields(
   for (size_t i = 0; i < control_elements.size(); i++) {
     blink::WebInputElement* input_element =
         toWebInputElement(&control_elements[i]);
-    // Only pay attention to visible password fields.
-    if (input_element &&
-        input_element->isTextField() &&
-        input_element->hasNonEmptyBoundingBox()) {
+    if (input_element && input_element->isTextField()) {
       num_input_elements++;
       if (input_element->isPasswordField())
         passwords->push_back(*input_element);

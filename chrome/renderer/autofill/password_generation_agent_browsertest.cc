@@ -139,12 +139,12 @@ TEST_F(PasswordGenerationAgentTest, DetectionTest) {
   SetAccountCreationFormsDetectedMessage(kAccountCreationFormHTML);
   ExpectPasswordGenerationAvailable("first_password", true);
 
-  // This doesn't trigger because hidden password fields are ignored.
+  // Hidden fields are not treated differently.
   LoadHTML(kHiddenPasswordAccountCreationFormHTML);
   SetNotBlacklistedMessage(kHiddenPasswordAccountCreationFormHTML);
   SetAccountCreationFormsDetectedMessage(
       kHiddenPasswordAccountCreationFormHTML);
-  ExpectPasswordGenerationAvailable("first_password", false);
+  ExpectPasswordGenerationAvailable("first_password", true);
 
   // This doesn't trigger because the form action is invalid.
   LoadHTML(kInvalidActionAccountCreationFormHTML);
