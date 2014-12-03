@@ -10,6 +10,7 @@ if (true) {
   include_dirs = []
   inputs = []
   ldflags = []
+  outputs = []
   public_deps = []
   sources = []
 } else if (true) {
@@ -31,6 +32,9 @@ if (true) {
     "x",
   ]
   ldflags = [ "x" ]
+  outputs = [
+    "x",
+  ]
   public_deps = [
     "x",
   ]
@@ -84,6 +88,11 @@ if (true) {
     "z",
   ]
   ldflags = [
+    "x",
+    "y",
+    "z",
+  ]
+  outputs = [
     "x",
     "y",
     "z",

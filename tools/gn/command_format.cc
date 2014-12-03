@@ -290,6 +290,7 @@ void Printer::AnnotatePreferedMultilineAssignment(const BinaryOpNode* binop) {
       (ident->value().value() == "data" ||
        ident->value().value() == "datadeps" ||
        ident->value().value() == "deps" || ident->value().value() == "inputs" ||
+       ident->value().value() == "outputs" ||
        ident->value().value() == "public" ||
        ident->value().value() == "public_deps" ||
        ident->value().value() == "sources")) {
