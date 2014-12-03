@@ -134,13 +134,18 @@ class GpuBrokerProcessPolicy : public GpuProcessPolicy {
 };
 
 // x86_64/i386 or desktop ARM.
-// A GPU broker policy is the same as a GPU policy with open and
-// openat allowed.
+// A GPU broker policy is the same as a GPU policy with access, open,
+// openat and in the non-Chrome OS case unlink allowed.
 ResultExpr GpuBrokerProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
     case __NR_access:
     case __NR_open:
     case __NR_openat:
+#if !defined(OS_CHROMEOS)
+    // The broker process needs to able to unlink the temporary
+    // files that it may create. This is used by DRI3.
+    case __NR_unlink:
+#endif
       return Allow();
     default:
       return GpuProcessPolicy::EvaluateSyscall(sysno);
@@ -184,6 +189,9 @@ GpuProcessPolicy::~GpuProcessPolicy() {}
 // Main policy for x86_64/i386. Extended by CrosArmGpuProcessPolicy.
 ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
+#if !defined(OS_CHROMEOS)
+    case __NR_ftruncate:
+#endif
     case __NR_ioctl:
       return Allow();
     case __NR_mincore:
@@ -261,6 +269,7 @@ void GpuProcessPolicy::InitGpuBrokerProcess(
     const std::vector<BrokerFilePermission>& permissions_extra) {
   static const char kDriRcPath[] = "/etc/drirc";
   static const char kDriCard0Path[] = "/dev/dri/card0";
+  static const char kDevShm[] = "/dev/shm/";
 
   CHECK(broker_process_ == NULL);
 
@@ -268,6 +277,10 @@ void GpuProcessPolicy::InitGpuBrokerProcess(
   std::vector<BrokerFilePermission> permissions;
   permissions.push_back(BrokerFilePermission::ReadWrite(kDriCard0Path));
   permissions.push_back(BrokerFilePermission::ReadOnly(kDriRcPath));
+  if (!IsChromeOS()) {
+    permissions.push_back(
+        BrokerFilePermission::ReadWriteCreateUnlinkRecursive(kDevShm));
+  }
 
   // Add eventual extra files from permissions_extra.
   for (const auto& perm : permissions_extra) {

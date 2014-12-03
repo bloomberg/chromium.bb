@@ -10,7 +10,6 @@
 #endif
 
 #include "base/debug/trace_event.h"
-#include "base/environment.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -212,16 +211,6 @@ int GpuMain(const MainFunctionParams& parameters) {
     options.timer_slack = base::TIMER_SLACK_MAXIMUM;
     watchdog_thread->StartWithOptions(options);
   }
-
-  // Temporarily disable DRI3 on desktop Linux.
-  // The GPU process is crashing on DRI3-enabled desktop Linux systems.
-  // TODO(jorgelo): remove this when crbug.com/415681 is fixed.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  {
-    scoped_ptr<base::Environment> env(base::Environment::Create());
-    env->SetVar("LIBGL_DRI3_DISABLE", "1");
-  }
-#endif
 
   gpu::GPUInfo gpu_info;
   // Get vendor_id, device_id, driver_version from browser process through
