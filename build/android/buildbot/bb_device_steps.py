@@ -78,6 +78,11 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
       'org.chromium.chrome.browser.sync',
       'ChromeSyncShellTest',
       None),
+    I('ChromeDriverWebViewShell',
+      'ChromeDriverWebViewShell.apk',
+      'org.chromium.chromedriver_webview_shell',
+      None,
+      None),
     ])
 
 VALID_TESTS = set(['chromedriver', 'chrome_proxy', 'gpu',
