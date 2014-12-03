@@ -41,11 +41,24 @@ static void dumpV8Message(v8::Handle<v8::Message> message)
     fprintf(stderr, "%s (line %d): %s\n", fileName.utf8().data(), lineNumber, toCoreString(errorMessage).utf8().data());
 }
 
+static void importFunction(const v8::FunctionCallbackInfo<v8::Value>& args);
+
 static v8::Handle<v8::Value> compileAndRunPrivateScript(v8::Isolate* isolate, String scriptClassName, const char* source, size_t size)
 {
     v8::TryCatch block;
     String sourceString(source, size);
     String fileName = scriptClassName + ".js";
+
+    v8::Handle<v8::Object> global = isolate->GetCurrentContext()->Global();
+    v8::Handle<v8::Value> privateScriptController = global->Get(v8String(isolate, "privateScriptController"));
+    RELEASE_ASSERT(privateScriptController->IsUndefined() || privateScriptController->IsObject());
+    if (privateScriptController->IsObject()) {
+        v8::Handle<v8::Object> privateScriptControllerObject = privateScriptController->ToObject(isolate);
+        v8::Handle<v8::Value> importFunctionValue = privateScriptControllerObject->Get(v8String(isolate, "import"));
+        if (importFunctionValue->IsUndefined())
+            privateScriptControllerObject->Set(v8String(isolate, "import"), v8::FunctionTemplate::New(isolate, importFunction)->GetFunction());
+    }
+
     v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(v8String(isolate, sourceString), fileName, TextPosition::minimumPosition(), 0, 0, isolate, NotSharableCrossOrigin);
     if (block.HasCaught()) {
         fprintf(stderr, "Private script error: Compile failed. (Class name = %s)\n", scriptClassName.utf8().data());
@@ -60,6 +73,19 @@ static v8::Handle<v8::Value> compileAndRunPrivateScript(v8::Isolate* isolate, St
         RELEASE_ASSERT_NOT_REACHED();
     }
     return result;
+}
+
+void importFunction(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    v8::Isolate* isolate = args.GetIsolate();
+    RELEASE_ASSERT(isolate && (args.Length() == 1));
+    String resourceFileName = toCoreString(args[0]->ToString());
+    String resourceData = loadResourceAsASCIIString(resourceFileName.utf8().data());
+    RELEASE_ASSERT(resourceData.length());
+    if (resourceFileName.endsWith(".js"))
+        compileAndRunPrivateScript(isolate, resourceFileName.replace(".js", ""), resourceData.utf8().data(), resourceData.length());
+    else if (resourceFileName.endsWith(".css"))
+        args.GetReturnValue().Set(v8String(isolate, resourceData));
 }
 
 // FIXME: If we have X.js, XPartial-1.js and XPartial-2.js, currently all of the JS files

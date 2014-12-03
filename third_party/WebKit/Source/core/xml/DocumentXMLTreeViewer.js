@@ -4,57 +4,9 @@
 
 "use strict";
 
+var xmlTreeViewerCSS = privateScriptController.import("DocumentXMLTreeViewer.css");
+
 privateScriptController.installClass("Document", function(DocumentPrototype) {
-    // FIXME: The stylesheet should be defined in a separate css file
-    var styleSheet = [
-        "div.header {",
-        "    border-bottom: 2px solid black;",
-        "    padding-bottom: 5px;",
-        "    margin: 10px;",
-        "}",
-        "",
-        "div.collapsible > div.hidden {",
-        "    display:none;",
-        "}",
-        "",
-        ".pretty-print {",
-        "    margin-top: 1em;",
-        "    margin-left: 20px;",
-        "    font-family: monospace;",
-        "    font-size: 13px;",
-        "}",
-        "",
-        "#webkit-xml-viewer-source-xml {",
-        "    display: none;",
-        "}",
-        "",
-        ".collapsible-content {",
-        "    margin-left: 1em;",
-        "}",
-        ".comment {",
-        "    white-space: pre;",
-        "}",
-        "",
-        ".button {",
-        "    -webkit-user-select: none;",
-        "    cursor: pointer;",
-        "    display: inline-block;",
-        "    margin-left: -10px;",
-        "    width: 10px;",
-        "    background-repeat: no-repeat;",
-        "    background-position: left top;",
-        "    vertical-align: bottom;",
-        "}",
-        "",
-        ".collapse-button {",
-        "    background-image: -webkit-canvas(arrowDown);",
-        "    height: 10px;",
-        "}",
-        "",
-        ".expand-button {",
-        "    background-image: -webkit-canvas(arrowRight);",
-        "    height: 11px;",
-        "}"].join('');
     var nodeParentPairs = [];
     var tree;
 
@@ -65,7 +17,7 @@ privateScriptController.installClass("Document", function(DocumentPrototype) {
         html.appendChild(head);
         var style = createHTMLElement('style');
         style.id = 'xml-viewer-style';
-        style.appendChild(document.createTextNode(styleSheet));
+        style.appendChild(document.createTextNode(xmlTreeViewerCSS));
         head.appendChild(style);
         var body = createHTMLElement('body');
         html.appendChild(body);
