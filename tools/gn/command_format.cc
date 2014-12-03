@@ -118,7 +118,7 @@ class Printer {
   bool HaveBlankLine();
 
   // Flag assignments to sources, deps, etc. to make their RHSs multiline.
-  void AnnotatePreferedMultilineAssignment(const BinaryOpNode* binop);
+  void AnnotatePreferredMultilineAssignment(const BinaryOpNode* binop);
 
   // Heuristics to decide if there should be a blank line added between two
   // items. For various "small" items, it doesn't look nice if there's too much
@@ -281,20 +281,18 @@ bool Printer::HaveBlankLine() {
   return n > 2 && output_[n - 1] == '\n' && output_[n - 2] == '\n';
 }
 
-void Printer::AnnotatePreferedMultilineAssignment(const BinaryOpNode* binop) {
+void Printer::AnnotatePreferredMultilineAssignment(const BinaryOpNode* binop) {
   const IdentifierNode* ident = binop->left()->AsIdentifier();
   const ListNode* list = binop->right()->AsList();
   // This is somewhat arbitrary, but we include the 'deps'- and 'sources'-like
   // things, but not flags things.
-  if (binop->op().value() == "=" && ident && list &&
-      (ident->value().value() == "data" ||
-       ident->value().value() == "datadeps" ||
-       ident->value().value() == "deps" || ident->value().value() == "inputs" ||
-       ident->value().value() == "outputs" ||
-       ident->value().value() == "public" ||
-       ident->value().value() == "public_deps" ||
-       ident->value().value() == "sources")) {
-    const_cast<ListNode*>(list)->set_prefer_multiline(true);
+  if (binop->op().value() == "=" && ident && list) {
+    const base::StringPiece lhs = ident->value().value();
+    if (lhs == "data" || lhs == "datadeps" || lhs == "deps" ||
+        lhs == "inputs" || lhs == "outputs" || lhs == "public" ||
+        lhs == "public_deps" || lhs == "sources") {
+      const_cast<ListNode*>(list)->set_prefer_multiline(true);
+    }
   }
 }
 
@@ -432,7 +430,7 @@ int Printer::Expr(const ParseNode* root,
     }
   } else if (const BinaryOpNode* binop = root->AsBinaryOp()) {
     CHECK(precedence_.find(binop->op().value()) != precedence_.end());
-    AnnotatePreferedMultilineAssignment(binop);
+    AnnotatePreferredMultilineAssignment(binop);
 
     Precedence prec = precedence_[binop->op().value()];
 
