@@ -495,14 +495,15 @@ def _CheckRegressionConfidenceError(
   """
   error = False
   # Adding good and bad values to a parameter list.
-  confidenceParams = []
+  confidence_params = []
   for l in [known_bad_value['values'], known_good_value['values']]:
-    # Flatten if needed
+    # Flatten if needed, by averaging the values in each nested list
     if isinstance(l, list) and all([isinstance(x, list) for x in l]):
-      confidenceParams.append(sum(l, []))
+      averages = map(math_utils.Mean, l)
+      confidence_params.append(averages)
     else:
-      confidenceParams.append(l)
-  regression_confidence = BisectResults.ConfidenceScore(*confidenceParams)
+      confidence_params.append(l)
+  regression_confidence = BisectResults.ConfidenceScore(*confidence_params)
   if regression_confidence < REGRESSION_CONFIDENCE:
     error = REGRESSION_CONFIDENCE_ERROR_TEMPLATE.format(
         good_rev=good_revision,
