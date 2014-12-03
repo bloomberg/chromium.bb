@@ -18,17 +18,26 @@ ShellApiTest::ShellApiTest() {
 ShellApiTest::~ShellApiTest() {
 }
 
-bool ShellApiTest::RunAppTest(const std::string& app_dir) {
+const Extension* ShellApiTest::LoadApp(const std::string& app_dir) {
   base::FilePath test_data_dir;
   PathService::Get(extensions::DIR_TEST_DATA, &test_data_dir);
   test_data_dir = test_data_dir.AppendASCII(app_dir);
-  ResultCatcher catcher;
 
   const Extension* extension = extension_system_->LoadApp(test_data_dir);
   if (!extension)
-    return false;
+    return NULL;
 
   extension_system_->LaunchApp(extension->id());
+
+  return extension;
+}
+
+bool ShellApiTest::RunAppTest(const std::string& app_dir) {
+  ResultCatcher catcher;
+
+  const Extension* extension = LoadApp(app_dir);
+  if (!extension)
+    return false;
 
   if (!catcher.GetNextResult()) {
     message_ = catcher.message();

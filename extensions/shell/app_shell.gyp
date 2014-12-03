@@ -202,6 +202,7 @@
         'app_shell_lib',
         # TODO(yoz): find the right deps
         '<(DEPTH)/base/base.gyp:test_support_base',
+        '<(DEPTH)/components/components.gyp:storage_monitor_test_support',
         '<(DEPTH)/content/content.gyp:content_app_both',
         '<(DEPTH)/content/content_shell_and_tests.gyp:content_browser_test_support',
         '<(DEPTH)/content/content_shell_and_tests.gyp:test_support_content',
@@ -224,6 +225,10 @@
         '../browser/api/system_cpu/system_cpu_apitest.cc',
         '../browser/api/system_memory/system_memory_apitest.cc',
         '../browser/api/system_network/system_network_apitest.cc',
+        '../browser/api/system_storage/storage_api_test_util.cc',
+        '../browser/api/system_storage/storage_api_test_util.h',
+        '../browser/api/system_storage/system_storage_apitest.cc',
+        '../browser/api/system_storage/system_storage_eject_apitest.cc',
         '../browser/api/usb/usb_apitest.cc',
         '../browser/guest_view/app_view/app_view_apitest.cc',
         '../browser/guest_view/web_view/web_view_apitest.h',

@@ -38,3 +38,5 @@ function removeAttachListener() {
 function ejectFailTest() {
   chrome.system.storage.ejectDevice('-1', ejectCallback);
 };
+
+chrome.test.sendMessage('loaded');

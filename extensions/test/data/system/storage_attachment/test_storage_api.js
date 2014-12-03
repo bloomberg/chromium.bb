@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // system.storage api test
-// browser_tests --gtest_filter=SystemStorageApiTest.Storage
+// app_shell_browsertests --gtest_filter=SystemStorageApiTest.Storage
 
 // Testing data should be the same as |kRemovableStorageData| in
 // test_storage_info_provider.cc.

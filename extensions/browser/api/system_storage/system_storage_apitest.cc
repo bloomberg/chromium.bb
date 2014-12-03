@@ -6,11 +6,11 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/api/system_storage/storage_api_test_util.h"
-#include "chrome/browser/extensions/extension_apitest.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "components/storage_monitor/test_storage_monitor.h"
+#include "extensions/browser/api/system_storage/storage_api_test_util.h"
 #include "extensions/browser/api/system_storage/storage_info_provider.h"
+#include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 
@@ -23,10 +23,9 @@ using storage_monitor::StorageMonitor;
 using storage_monitor::TestStorageMonitor;
 
 const struct TestStorageUnitInfo kTestingData[] = {
-  {"dcim:device:001", "0xbeaf", 4098, 1},
-  {"path:device:002", "/home", 4098, 2},
-  {"path:device:003", "/data", 10000, 3}
-};
+    {"dcim:device:001", "0xbeaf", 4098, 1},
+    {"path:device:002", "/home", 4098, 2},
+    {"path:device:003", "/data", 10000, 3}};
 
 }  // namespace
 
@@ -46,8 +45,9 @@ class TestStorageInfoProvider : public extensions::StorageInfoProvider {
 };
 
 TestStorageInfoProvider::TestStorageInfoProvider(
-    const struct TestStorageUnitInfo* testing_data, size_t n)
-        : testing_data_(testing_data, testing_data + n) {
+    const struct TestStorageUnitInfo* testing_data,
+    size_t n)
+    : testing_data_(testing_data, testing_data + n) {
 }
 
 TestStorageInfoProvider::~TestStorageInfoProvider() {
@@ -56,8 +56,7 @@ TestStorageInfoProvider::~TestStorageInfoProvider() {
 double TestStorageInfoProvider::GetStorageFreeSpaceFromTransientIdOnFileThread(
     const std::string& transient_id) {
   std::string device_id =
-      StorageMonitor::GetInstance()->GetDeviceIdForTransientId(
-          transient_id);
+      StorageMonitor::GetInstance()->GetDeviceIdForTransientId(transient_id);
   for (size_t i = 0; i < testing_data_.size(); ++i) {
     if (testing_data_[i].device_id == device_id) {
       return static_cast<double>(testing_data_[i].available_capacity);
@@ -66,17 +65,18 @@ double TestStorageInfoProvider::GetStorageFreeSpaceFromTransientIdOnFileThread(
   return -1;
 }
 
-class SystemStorageApiTest : public ExtensionApiTest {
+class SystemStorageApiTest : public extensions::ShellApiTest {
  public:
   SystemStorageApiTest() {}
   ~SystemStorageApiTest() override {}
 
   void SetUpOnMainThread() override {
+    ShellApiTest::SetUpOnMainThread();
     TestStorageMonitor::CreateForBrowserTests();
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+    ShellApiTest::SetUpInProcessBrowserTestFixture();
     message_loop_.reset(new base::MessageLoopForUI);
   }
 
@@ -104,10 +104,9 @@ class SystemStorageApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(SystemStorageApiTest, Storage) {
   SetUpAllMockStorageDevices();
   TestStorageInfoProvider* provider =
-      new TestStorageInfoProvider(kTestingData,
-                                  arraysize(kTestingData));
+      new TestStorageInfoProvider(kTestingData, arraysize(kTestingData));
   extensions::StorageInfoProvider::InitializeForTesting(provider);
-  std::vector<linked_ptr<ExtensionTestMessageListener> > device_ids_listeners;
+  std::vector<linked_ptr<ExtensionTestMessageListener>> device_ids_listeners;
   for (size_t i = 0; i < arraysize(kTestingData); ++i) {
     linked_ptr<ExtensionTestMessageListener> listener(
         new ExtensionTestMessageListener(
@@ -116,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(SystemStorageApiTest, Storage) {
             false));
     device_ids_listeners.push_back(listener);
   }
-  ASSERT_TRUE(RunPlatformAppTest("system/storage")) << message_;
+  ASSERT_TRUE(RunAppTest("system/storage")) << message_;
   for (size_t i = 0; i < device_ids_listeners.size(); ++i)
     EXPECT_TRUE(device_ids_listeners[i]->WaitUntilSatisfied());
 }
@@ -126,8 +125,7 @@ IN_PROC_BROWSER_TEST_F(SystemStorageApiTest, StorageAttachment) {
   ExtensionTestMessageListener attach_listener("attach", false);
   ExtensionTestMessageListener detach_listener("detach", false);
 
-  EXPECT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("system/storage_attachment")));
+  EXPECT_TRUE(LoadApp("system/storage_attachment"));
   // Simulate triggering onAttached event.
   ASSERT_TRUE(attach_listener.WaitUntilSatisfied());
 

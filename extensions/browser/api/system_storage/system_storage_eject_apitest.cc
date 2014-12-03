@@ -7,17 +7,18 @@
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/api/system_storage/storage_api_test_util.h"
-#include "chrome/browser/extensions/extension_apitest.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "components/storage_monitor/test_storage_monitor.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/api/system_storage/storage_api_test_util.h"
 #include "extensions/browser/api/system_storage/storage_info_provider.h"
+#include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
+#include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
 
 namespace {
@@ -29,7 +30,7 @@ using storage_monitor::TestStorageMonitor;
 
 }  // namespace
 
-class SystemStorageEjectApiTest : public ExtensionApiTest {
+class SystemStorageEjectApiTest : public extensions::ShellApiTest {
  public:
   SystemStorageEjectApiTest() : monitor_(NULL) {}
   ~SystemStorageEjectApiTest() override {}
@@ -37,13 +38,18 @@ class SystemStorageEjectApiTest : public ExtensionApiTest {
  protected:
   void SetUpOnMainThread() override {
     monitor_ = TestStorageMonitor::CreateForBrowserTests();
-    ExtensionApiTest::SetUpOnMainThread();
+    ShellApiTest::SetUpOnMainThread();
   }
 
   content::RenderViewHost* GetHost() {
-    const extensions::Extension* extension =
-        LoadExtension(test_data_dir_.AppendASCII("system/storage_eject"));
-    return extensions::ProcessManager::Get(browser()->profile())
+    ExtensionTestMessageListener listener("loaded", false);
+    const extensions::Extension* extension = LoadApp("system/storage_eject");
+
+    // Wait for the extension to load completely so we can execute
+    // the JavaScript function from test case.
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+    return extensions::ProcessManager::Get(browser_context())
         ->GetBackgroundHostForExtension(extension->id())
         ->render_view_host();
   }
@@ -78,17 +84,15 @@ class SystemStorageEjectApiTest : public ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(SystemStorageEjectApiTest);
 };
 
-
 IN_PROC_BROWSER_TEST_F(SystemStorageEjectApiTest, EjectTest) {
   content::RenderViewHost* host = GetHost();
   ExecuteCmdAndCheckReply(host, "addAttachListener()", "add_attach_ok");
 
   // Attach / detach
   const std::string expect_attach_msg =
-      base::StringPrintf("%s,%s", "attach_test_ok",
-                         kRemovableStorageData.name);
+      base::StringPrintf("%s,%s", "attach_test_ok", kRemovableStorageData.name);
   ExtensionTestMessageListener attach_finished_listener(expect_attach_msg,
-                                                        false  /* no reply */);
+                                                        false /* no reply */);
   Attach();
   EXPECT_TRUE(attach_finished_listener.WaitUntilSatisfied());
 
