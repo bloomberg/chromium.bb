@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "device/usb/usb_device_handle.h"
 
@@ -27,7 +28,7 @@ class StreamSocket;
 
 class AndroidUsbSocket;
 
-class AdbMessage : public base::RefCounted<AdbMessage> {
+class AdbMessage {
  public:
   enum Command {
     kCommandSYNC = 0x434e5953,
@@ -49,15 +50,14 @@ class AdbMessage : public base::RefCounted<AdbMessage> {
              uint32 arg0,
              uint32 arg1,
              const std::string& body);
+  ~AdbMessage();
 
   uint32 command;
   uint32 arg0;
   uint32 arg1;
   std::string body;
- private:
-  friend class base::RefCounted<AdbMessage>;
-  ~AdbMessage();
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(AdbMessage);
 };
 
@@ -100,7 +100,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   friend class base::RefCountedThreadSafe<AndroidUsbDevice>;
   virtual ~AndroidUsbDevice();
 
-  void Queue(scoped_refptr<AdbMessage> message);
+  void Queue(scoped_ptr<AdbMessage> message);
   void ProcessOutgoing();
   void OutgoingMessageSent(device::UsbTransferStatus status,
                            scoped_refptr<net::IOBuffer> buffer,
@@ -111,17 +111,17 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
                    scoped_refptr<net::IOBuffer> buffer,
                    size_t result);
 
-  void ReadBody(scoped_refptr<AdbMessage> message,
+  void ReadBody(scoped_ptr<AdbMessage> message,
                 uint32 data_length,
                 uint32 data_check);
-  void ParseBody(scoped_refptr<AdbMessage> message,
+  void ParseBody(scoped_ptr<AdbMessage> message,
                  uint32 data_length,
                  uint32 data_check,
                  device::UsbTransferStatus status,
                  scoped_refptr<net::IOBuffer> buffer,
                  size_t result);
 
-  void HandleIncoming(scoped_refptr<AdbMessage> message);
+  void HandleIncoming(scoped_ptr<AdbMessage> message);
 
   void TransferError(device::UsbTransferStatus status);
 
@@ -155,7 +155,7 @@ class AndroidUsbDevice : public base::RefCountedThreadSafe<AndroidUsbDevice> {
   std::queue<BulkMessage> outgoing_queue_;
 
   // Outgoing messages pending connect
-  typedef std::vector<scoped_refptr<AdbMessage> > PendingMessages;
+  typedef ScopedVector<AdbMessage> PendingMessages;
   PendingMessages pending_messages_;
 
   base::WeakPtrFactory<AndroidUsbDevice> weak_factory_;

@@ -170,7 +170,8 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
       if (remaining_body_length_ == 0) {
         std::vector<uint32> header(6);
         memcpy(&header[0], buffer->data(), length);
-        current_message_ = new AdbMessage(header[0], header[1], header[2], "");
+        current_message_.reset(
+            new AdbMessage(header[0], header[1], header[2], ""));
         remaining_body_length_ = header[3];
         uint32 magic = header[5];
         if ((current_message_->command ^ 0xffffffff) != magic) {
@@ -221,29 +222,30 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
     DCHECK(current_message_.get());
     switch (current_message_->command) {
       case AdbMessage::kCommandCNXN:
-        WriteResponse(new AdbMessage(AdbMessage::kCommandCNXN,
-                                     kVersion,
-                                     kMaxPayload,
-                                     "device::ro.product.name=SampleProduct;ro."
-                                     "product.model=SampleModel;ro.product."
-                                     "device=SampleDevice;"));
+        WriteResponse(make_scoped_ptr(
+            new AdbMessage(AdbMessage::kCommandCNXN,
+                           kVersion,
+                           kMaxPayload,
+                           "device::ro.product.name=SampleProduct;ro."
+                           "product.model=SampleModel;ro.product."
+                           "device=SampleDevice;")));
         break;
       case AdbMessage::kCommandOPEN:
         DCHECK(current_message_->arg1 == 0);
         DCHECK(current_message_->arg0 != 0);
         if (current_message_->body.find("shell:") != std::string::npos) {
-          WriteResponse(new AdbMessage(AdbMessage::kCommandOKAY,
-                                       ++next_local_socket_,
-                                       current_message_->arg0,
-                                       ""));
-          WriteResponse(
+          WriteResponse(make_scoped_ptr(new AdbMessage(AdbMessage::kCommandOKAY,
+                                                       ++next_local_socket_,
+                                                       current_message_->arg0,
+                                                       "")));
+          WriteResponse(make_scoped_ptr(
               new AdbMessage(AdbMessage::kCommandWRTE,
                              next_local_socket_,
                              current_message_->arg0,
                              GetMockShellResponse(current_message_->body.substr(
-                                 0, current_message_->body.size() - 1))));
-          WriteResponse(new AdbMessage(
-              AdbMessage::kCommandCLSE, 0, current_message_->arg0, ""));
+                                 0, current_message_->body.size() - 1)))));
+          WriteResponse(make_scoped_ptr(new AdbMessage(
+              AdbMessage::kCommandCLSE, 0, current_message_->arg0, "")));
         }
       default:
         return;
@@ -251,7 +253,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
     ProcessQueries();
   }
 
-  void WriteResponse(scoped_refptr<AdbMessage> response) {
+  void WriteResponse(scoped_ptr<AdbMessage> response) {
     append(response->command);
     append(response->arg0);
     append(response->arg1);
@@ -325,7 +327,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
 
   scoped_refptr<MockUsbDevice<T> > device_;
   uint32 remaining_body_length_;
-  scoped_refptr<AdbMessage> current_message_;
+  scoped_ptr<AdbMessage> current_message_;
   std::vector<char> output_buffer_;
   std::queue<Query> queries_;
   int next_local_socket_;

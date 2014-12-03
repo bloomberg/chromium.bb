@@ -29,7 +29,7 @@ class AndroidUsbSocket : public net::StreamSocket,
                    base::Callback<void(uint32)> delete_callback);
   ~AndroidUsbSocket() override;
 
-  void HandleIncoming(scoped_refptr<AdbMessage> message);
+  void HandleIncoming(scoped_ptr<AdbMessage> message);
 
   void Terminated(bool closed_by_device);
 

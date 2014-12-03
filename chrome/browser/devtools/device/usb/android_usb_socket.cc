@@ -44,7 +44,7 @@ AndroidUsbSocket::~AndroidUsbSocket() {
     delete_callback_.Run(local_id_);
 }
 
-void AndroidUsbSocket::HandleIncoming(scoped_refptr<AdbMessage> message) {
+void AndroidUsbSocket::HandleIncoming(scoped_ptr<AdbMessage> message) {
   if (!device_.get())
     return;
 
