@@ -841,7 +841,7 @@ session_notify(struct wl_listener *listener, void *data)
 				 &compositor->base.output_list, link) {
 			output->repaint_needed = 0;
 		}
-	};
+	}
 }
 
 static void
