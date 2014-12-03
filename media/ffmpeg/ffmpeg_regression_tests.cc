@@ -92,6 +92,11 @@ FFMPEG_TEST_CASE(Cr112384,
                  "security/112384.webm",
                  DEMUXER_ERROR_COULD_NOT_PARSE,
                  DEMUXER_ERROR_COULD_NOT_PARSE);
+FFMPEG_TEST_CASE(Cr112976, "security/112976.ogg", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(Cr116927,
+                 "security/116927.ogv",
+                 DEMUXER_ERROR_NO_SUPPORTED_STREAMS,
+                 DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
 FFMPEG_TEST_CASE(Cr117912,
                  "security/117912.webm",
                  DEMUXER_ERROR_COULD_NOT_OPEN,
@@ -165,6 +170,7 @@ FFMPEG_TEST_CASE(MP4_9,
                  "security/smclockmp4aac_1_0.mp4",
                  DEMUXER_ERROR_COULD_NOT_OPEN,
                  DEMUXER_ERROR_COULD_NOT_OPEN);
+FFMPEG_TEST_CASE(MP4_11, "security/null1.mp4", PIPELINE_OK, PIPELINE_OK);
 FFMPEG_TEST_CASE(MP4_16,
                  "security/looping2.mov",
                  DEMUXER_ERROR_COULD_NOT_OPEN,
@@ -219,6 +225,10 @@ FFMPEG_TEST_CASE(OGV_16,
                  "security/smclocktheora_2_1075.ogv",
                  DECODER_ERROR_NOT_SUPPORTED,
                  DECODER_ERROR_NOT_SUPPORTED);
+FFMPEG_TEST_CASE(OGV_17,
+                 "security/vorbis.482086.ogv",
+                 PIPELINE_OK,
+                 PIPELINE_OK);
 FFMPEG_TEST_CASE(OGV_18,
                  "security/wav.711.ogv",
                  DECODER_ERROR_NOT_SUPPORTED,
@@ -242,11 +252,25 @@ FFMPEG_TEST_CASE(OGV_22,
 
 // General WebM test cases.
 FFMPEG_TEST_CASE(WEBM_1, "security/no-bug.webm", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(WEBM_2,
+                 "security/uninitialize.webm",
+                 DEMUXER_ERROR_NO_SUPPORTED_STREAMS,
+                 DEMUXER_ERROR_NO_SUPPORTED_STREAMS);
 FFMPEG_TEST_CASE(WEBM_4,
                  "security/out.webm.68798.1929",
                  DECODER_ERROR_NOT_SUPPORTED,
                  DECODER_ERROR_NOT_SUPPORTED);
 FFMPEG_TEST_CASE(WEBM_5, "frame_size_change.webm", PIPELINE_OK, PIPELINE_OK);
+
+// General MKV test cases.
+FFMPEG_TEST_CASE(MKV_0,
+                 "security/nested_tags_lang.mka.627.628",
+                 PIPELINE_OK,
+                 PIPELINE_ERROR_DECODE);
+FFMPEG_TEST_CASE(MKV_1,
+                 "security/nested_tags_lang.mka.667.628",
+                 PIPELINE_OK,
+                 PIPELINE_ERROR_DECODE);
 
 // Allocate gigabytes of memory, likely can't be run on 32bit machines.
 FFMPEG_TEST_CASE(BIG_MEM_1,
@@ -280,26 +304,10 @@ FLAKY_FFMPEG_TEST_CASE(MP4_3, "security/clockh264aac_300413969.mp4");
 FLAKY_FFMPEG_TEST_CASE(MP4_4, "security/clockh264aac_301350139.mp4");
 FLAKY_FFMPEG_TEST_CASE(MP4_12, "security/assert1.mov");
 FLAKY_FFMPEG_TEST_CASE(WEBM_3, "security/out.webm.139771.2965");
+
 // Not really flaky, but can't pass the seek test.
 FLAKY_FFMPEG_TEST_CASE(MP4_10, "security/null1.m4a");
-
-// TODO(wolenetz/dalecurtis): The following have flaky audio hash result.
-// See http://crbug.com/237371
-FLAKY_FFMPEG_TEST_CASE(Cr112976, "security/112976.ogg");
-FLAKY_FFMPEG_TEST_CASE(MKV_0, "security/nested_tags_lang.mka.627.628");
-FLAKY_FFMPEG_TEST_CASE(MKV_1, "security/nested_tags_lang.mka.667.628");
-FLAKY_FFMPEG_TEST_CASE(MP4_11, "security/null1.mp4");
-
-// TODO(wolenetz/dalecurtis): The following have flaky init status: on mac
-// ia32 Chrome, observed PIPELINE_OK instead of DECODER_ERROR_NOT_SUPPORTED.
 FLAKY_FFMPEG_TEST_CASE(Cr112670, "security/112670.mp4");
-FLAKY_FFMPEG_TEST_CASE(OGV_17, "security/vorbis.482086.ogv");
-
-// TODO(wolenetz/dalecurtis): The following have flaky init status: on mac
-// ia32 Chrome, observed DUMUXER_ERROR_NO_SUPPORTED_STREAMS instead of
-// DECODER_ERROR_NOT_SUPPORTED.
-FLAKY_FFMPEG_TEST_CASE(Cr116927, "security/116927.ogv");
-FLAKY_FFMPEG_TEST_CASE(WEBM_2, "security/uninitialize.webm");
 
 // Videos with massive gaps between frame timestamps that result in long hangs
 // with our pipeline.  Should be uncommented when we support clockless playback.
