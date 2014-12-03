@@ -90,7 +90,7 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTest):
   def _RunFull(self, dir_exists=False):
     """Helper for testing a full builder."""
     self._Run(dir_exists)
-    self.assertCommandContains(['./update_chroot', '--nousepkg'])
+    self.assertCommandContains(['./update_chroot'])
     cmd = ['./setup_board', '--board=%s' % self._current_board, '--nousepkg']
     self.assertCommandContains(cmd, expected=not dir_exists)
     cmd = ['./setup_board', '--skip_chroot_upgrade']
@@ -107,11 +107,6 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTest):
     self._PrepareFull(extra_cmd_args=['--profile', 'smock'])
     self._RunFull(dir_exists=False)
     self.assertCommandContains(['./setup_board', '--profile=smock'])
-
-  def testFullBuildWithLatestToolchain(self):
-    """Tests whether we use --nousepkg for creating the board"""
-    self._PrepareFull()
-    self._RunFull(dir_exists=False)
 
   def _RunBin(self, dir_exists):
     """Helper for testing a binary builder."""

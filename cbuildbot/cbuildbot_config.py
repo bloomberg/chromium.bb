@@ -996,7 +996,6 @@ full = _config(
   # Full builds are test builds to show that we can build from scratch,
   # so use settings to build from scratch, and archive the results.
 
-  usepkg_toolchain=False,
   usepkg_build_packages=False,
   chrome_sdk=True,
   chroot_replace=True,
@@ -1417,6 +1416,15 @@ _minimal_profile_boards = frozenset([
   'bobcat',
 ])
 
+_toolchains_from_source = frozenset([
+  'mipseb-n32-generic',
+  'mipseb-n64-generic',
+  'mipseb-o32-generic',
+  'mipsel-n32-generic',
+  'mipsel-n64-generic',
+  'x32-generic',
+])
+
 # A base config for each board.
 _base_configs = dict()
 
@@ -1435,6 +1443,8 @@ def _CreateBaseConfigs():
       base.update(profile='minimal')
     if board in _freon_boards:
       base.update(vm_tests=[])
+    if board in _toolchains_from_source:
+      base.update(usepkg_toolchain=False)
 
     # TODO(akeshet) Eliminate or clean up this special case.
     # kayle board has a lot of kayle-specific config changes.
@@ -2758,7 +2768,6 @@ _firmware = _config(
   images=[],
   factory_toolkit=False,
   packages=('virtual/chromeos-firmware',),
-  usepkg_toolchain=True,
   usepkg_build_packages=True,
   sync_chrome=False,
   build_tests=False,

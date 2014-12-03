@@ -232,8 +232,7 @@
         "name": "amd64-generic-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "amd64-generic-incremental": {
         "boards": [
@@ -428,8 +427,7 @@
         "name": "amd64-generic_freon-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "amd64-generic_freon-paladin": {
         "boards": [
@@ -549,7 +547,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "arm-generic-paladin": {
@@ -669,7 +666,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "arm-generic_freon-paladin": {
@@ -776,7 +772,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "arm64-generic-paladin": {
@@ -994,8 +989,7 @@
         "name": "auron-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "auron-full-group": {
         "archive_build_debug": true,
@@ -1024,8 +1018,7 @@
                 "name": "auron-full",
                 "prebuilts": "public",
                 "trybot_list": true,
-                "usepkg_build_packages": false,
-                "usepkg_toolchain": false
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -1051,7 +1044,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -1078,7 +1070,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -1095,8 +1086,7 @@
         "name": "auron-full-group",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "auron-paladin": {
         "boards": [
@@ -1209,7 +1199,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "auron-release-afdo": {
@@ -1268,7 +1257,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -1318,7 +1306,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -1358,7 +1345,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -1408,7 +1394,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -1457,7 +1442,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -1521,7 +1505,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -1573,7 +1556,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -1625,7 +1607,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -1665,7 +1646,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "auron-tot-chrome-pfq-informational": {
@@ -1761,8 +1741,7 @@
         "name": "auron_paine-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "auron_paine-paladin": {
         "boards": [
@@ -1874,7 +1853,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "auron_paine-release-afdo": {
@@ -1933,7 +1911,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -1983,7 +1960,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -2023,7 +1999,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -2073,7 +2048,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -2122,7 +2096,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -2222,8 +2195,7 @@
         "name": "auron_yuna-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "auron_yuna-paladin": {
         "boards": [
@@ -2335,7 +2307,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "auron_yuna-release-afdo": {
@@ -2394,7 +2365,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -2444,7 +2414,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -2484,7 +2453,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -2534,7 +2502,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -2583,7 +2550,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -2777,8 +2743,7 @@
         "name": "bayleybay-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "bayleybay-paladin": {
         "boards": [
@@ -2887,7 +2852,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "bayleybay-release-afdo": {
@@ -2946,7 +2910,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -2996,7 +2959,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -3036,7 +2998,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -3086,7 +3047,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -3135,7 +3095,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -3258,7 +3217,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "beaglebone-release-group": {
@@ -3309,7 +3267,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -3352,7 +3309,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -3385,7 +3341,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "beaglebone_servo-paladin": {
@@ -3451,7 +3406,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "beltino-a-full-group": {
@@ -3481,8 +3435,7 @@
                 "name": "panther-full",
                 "prebuilts": "public",
                 "trybot_list": true,
-                "usepkg_build_packages": false,
-                "usepkg_toolchain": false
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -3508,7 +3461,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -3525,8 +3477,7 @@
         "name": "beltino-a-full-group",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "beltino-a-release-group": {
         "afdo_use": true,
@@ -3585,7 +3536,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -3641,7 +3591,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -3681,7 +3630,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -3715,8 +3663,7 @@
                 "name": "monroe-full",
                 "prebuilts": "public",
                 "trybot_list": true,
-                "usepkg_build_packages": false,
-                "usepkg_toolchain": false
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -3742,7 +3689,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -3769,7 +3715,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -3786,8 +3731,7 @@
         "name": "beltino-b-full-group",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "beltino-b-release-group": {
         "afdo_use": true,
@@ -3846,7 +3790,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -3902,7 +3845,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -3954,7 +3896,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -3994,7 +3935,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -4093,8 +4033,7 @@
         "name": "beltino-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "beltino-paladin": {
         "boards": [
@@ -4202,7 +4141,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "beltino-release-afdo": {
@@ -4261,7 +4199,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -4311,7 +4248,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -4351,7 +4287,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -4401,7 +4336,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -4450,7 +4384,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -4552,8 +4485,7 @@
         "name": "bobcat-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "bobcat-paladin": {
         "boards": [
@@ -4647,7 +4579,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -4710,7 +4641,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -4760,7 +4690,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -4800,7 +4729,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -4850,7 +4778,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -4899,7 +4826,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -5059,8 +4985,7 @@
         "name": "butterfly-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "butterfly-paladin": {
         "boards": [
@@ -5176,7 +5101,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -5239,7 +5163,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -5289,7 +5212,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -5329,7 +5251,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -5379,7 +5300,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -5428,7 +5348,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -5624,8 +5543,7 @@
         "name": "candy-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "candy-paladin": {
         "boards": [
@@ -5739,7 +5657,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -5802,7 +5719,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -5852,7 +5768,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -5892,7 +5807,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -5942,7 +5856,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -5991,7 +5904,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -6057,8 +5969,7 @@
         "prebuilts": "public",
         "trybot_list": true,
         "use_sdk": false,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "clapper-chrome-pfq": {
         "boards": [
@@ -6212,8 +6123,7 @@
         "name": "clapper-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "clapper-paladin": {
         "boards": [
@@ -6327,7 +6237,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -6390,7 +6299,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -6440,7 +6348,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -6480,7 +6387,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -6530,7 +6436,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -6579,7 +6484,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -6677,7 +6581,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "cranky-chrome-pfq": {
@@ -6737,8 +6640,7 @@
         "name": "cranky-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "cranky-paladin": {
         "boards": [
@@ -6852,7 +6754,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -6915,7 +6816,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -6965,7 +6865,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -7005,7 +6904,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -7055,7 +6953,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -7104,7 +7001,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -7258,7 +7154,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy-firmware": {
@@ -7319,7 +7214,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy-full-group": {
@@ -7352,7 +7246,6 @@
                 "trybot_list": true,
                 "unittests": false,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -7380,7 +7273,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -7408,7 +7300,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -7428,7 +7319,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy-incremental": {
@@ -7564,7 +7454,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy-release-afdo": {
@@ -7625,7 +7514,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -7673,7 +7561,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -7711,7 +7598,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy-release-afdo-generate": {
@@ -7759,7 +7645,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy-release-afdo-use": {
@@ -7806,7 +7691,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy-release-group": {
@@ -7869,7 +7753,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -7922,7 +7805,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -7975,7 +7857,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -8018,7 +7899,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy-tot-chrome-pfq-informational": {
@@ -8155,7 +8035,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy_freon-paladin": {
@@ -8274,7 +8153,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy_freon-release-afdo": {
@@ -8335,7 +8213,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -8383,7 +8260,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -8421,7 +8297,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy_freon-release-afdo-generate": {
@@ -8469,7 +8344,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy_freon-release-afdo-use": {
@@ -8516,7 +8390,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy_freon-tot-chrome-pfq-informational": {
@@ -8663,7 +8536,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy_skate-paladin": {
@@ -8782,7 +8654,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy_skate-release-afdo": {
@@ -8843,7 +8714,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -8891,7 +8761,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -8929,7 +8798,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy_skate-release-afdo-generate": {
@@ -8977,7 +8845,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy_skate-release-afdo-use": {
@@ -9024,7 +8891,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy_skate-tot-chrome-pfq-informational": {
@@ -9166,7 +9032,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy_spring-grouped-pre-cq": {
@@ -9317,7 +9182,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy_spring-release-afdo": {
@@ -9378,7 +9242,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -9426,7 +9289,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -9464,7 +9326,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy_spring-release-afdo-generate": {
@@ -9512,7 +9373,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy_spring-release-afdo-use": {
@@ -9559,7 +9419,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "daisy_spring-tot-chrome-pfq-informational": {
@@ -9732,7 +9591,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "enguarde-chrome-pfq": {
@@ -9887,8 +9745,7 @@
         "name": "enguarde-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "enguarde-paladin": {
         "boards": [
@@ -10002,7 +9859,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -10065,7 +9921,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -10115,7 +9970,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -10155,7 +10009,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -10205,7 +10058,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -10254,7 +10106,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -10450,8 +10301,7 @@
         "name": "expresso-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "expresso-paladin": {
         "boards": [
@@ -10565,7 +10415,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -10628,7 +10477,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -10678,7 +10526,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -10718,7 +10565,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -10768,7 +10614,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -10817,7 +10662,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -10958,8 +10802,7 @@
         "name": "falco-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "falco-paladin": {
         "board_replace": true,
@@ -11076,7 +10919,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -11139,7 +10981,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -11189,7 +11030,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -11229,7 +11069,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -11279,7 +11118,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -11328,7 +11166,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -11429,8 +11266,7 @@
         "name": "falco_li-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "falco_li-paladin": {
         "boards": [
@@ -11544,7 +11380,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -11607,7 +11442,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -11657,7 +11491,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -11697,7 +11530,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -11747,7 +11579,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -11796,7 +11627,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -11945,7 +11775,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "gizmo-chromium-pfq": {
@@ -11984,8 +11813,7 @@
         "name": "gizmo-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "gizmo-paladin": {
         "boards": [
@@ -12067,7 +11895,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "gizmo-tot-chromium-pfq-informational": {
@@ -12237,8 +12064,7 @@
         "name": "glimmer-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "glimmer-paladin": {
         "boards": [
@@ -12352,7 +12178,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -12415,7 +12240,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -12465,7 +12289,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -12505,7 +12328,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -12555,7 +12377,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -12604,7 +12425,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -12800,8 +12620,7 @@
         "name": "gnawty-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "gnawty-paladin": {
         "boards": [
@@ -12915,7 +12734,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -12978,7 +12796,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -13028,7 +12845,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -13068,7 +12884,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -13118,7 +12933,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -13167,7 +12981,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -13240,8 +13053,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "internal-toolchain-minor": {
         "archive_build_debug": true,
@@ -13272,8 +13084,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "ivybridge-full-group": {
         "archive_build_debug": true,
@@ -13302,8 +13113,7 @@
                 "name": "stout-full",
                 "prebuilts": "public",
                 "trybot_list": true,
-                "usepkg_build_packages": false,
-                "usepkg_toolchain": false
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -13328,7 +13138,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -13345,8 +13154,7 @@
         "name": "ivybridge-full-group",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "ivybridge-release-group": {
         "afdo_use": true,
@@ -13405,7 +13213,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -13460,7 +13267,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -13500,7 +13306,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -13580,7 +13385,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "kayle-paladin": {
@@ -13689,7 +13493,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "kayle-release-afdo": {
@@ -13750,7 +13553,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -13798,7 +13600,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -13836,7 +13637,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "kayle-release-afdo-generate": {
@@ -13884,7 +13684,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "kayle-release-afdo-use": {
@@ -13931,7 +13730,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "kayle-tot-chrome-pfq-informational": {
@@ -14131,8 +13929,7 @@
         "name": "kip-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "kip-paladin": {
         "boards": [
@@ -14246,7 +14043,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -14309,7 +14105,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -14359,7 +14154,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -14399,7 +14193,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -14449,7 +14242,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -14498,7 +14290,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -14600,8 +14391,7 @@
         "name": "lemmings-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "lemmings-paladin": {
         "boards": [
@@ -14690,7 +14480,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "lemmings-release-afdo": {
@@ -14749,7 +14538,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -14799,7 +14587,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -14839,7 +14626,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -14889,7 +14675,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -14938,7 +14723,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -15133,8 +14917,7 @@
         "name": "leon-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "leon-paladin": {
         "boards": [
@@ -15249,7 +15032,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -15312,7 +15094,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -15362,7 +15143,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -15402,7 +15182,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -15452,7 +15231,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -15501,7 +15279,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -15697,8 +15474,7 @@
         "name": "link-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "link-paladin": {
         "boards": [
@@ -15819,7 +15595,6 @@
             "highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -15882,7 +15657,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -15932,7 +15706,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -15972,7 +15745,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -16022,7 +15794,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -16071,7 +15842,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -16197,8 +15967,7 @@
         "name": "link_freon-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "link_freon-paladin": {
         "boards": [
@@ -16313,7 +16082,6 @@
             "highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "link_freon-release-afdo": {
@@ -16372,7 +16140,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -16422,7 +16189,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -16462,7 +16228,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -16512,7 +16277,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -16561,7 +16325,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -16728,8 +16491,7 @@
         "name": "lumpy-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "lumpy-grouped-pre-cq": {
         "archive": false,
@@ -16930,7 +16692,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -16993,7 +16754,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -17043,7 +16803,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -17083,7 +16842,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -17133,7 +16891,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -17182,7 +16939,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -17360,7 +17116,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -17424,8 +17179,7 @@
         "name": "mccloud-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "mccloud-paladin": {
         "boards": [
@@ -17539,7 +17293,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -17602,7 +17355,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -17652,7 +17404,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -17692,7 +17443,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -17742,7 +17492,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -17791,7 +17540,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -17877,7 +17625,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-n32-generic-paladin": {
@@ -17896,6 +17643,7 @@
         "trybot_list": true,
         "unittests": false,
         "upload_standalone_images": false,
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-n32-generic-pre-cq": {
@@ -17925,6 +17673,7 @@
         "useflags": [
             "chrome_internal"
         ],
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-n32-generic-tot-chromium-pfq-informational": {
@@ -17984,7 +17733,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-n64-generic-paladin": {
@@ -18003,6 +17751,7 @@
         "trybot_list": true,
         "unittests": false,
         "upload_standalone_images": false,
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-n64-generic-pre-cq": {
@@ -18032,6 +17781,7 @@
         "useflags": [
             "chrome_internal"
         ],
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-n64-generic-tot-chromium-pfq-informational": {
@@ -18091,7 +17841,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-o32-generic-paladin": {
@@ -18110,6 +17859,7 @@
         "trybot_list": true,
         "unittests": false,
         "upload_standalone_images": false,
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-o32-generic-pre-cq": {
@@ -18139,6 +17889,7 @@
         "useflags": [
             "chrome_internal"
         ],
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipseb-o32-generic-tot-chromium-pfq-informational": {
@@ -18198,7 +17949,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipsel-n32-generic-paladin": {
@@ -18217,6 +17967,7 @@
         "trybot_list": true,
         "unittests": false,
         "upload_standalone_images": false,
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipsel-n32-generic-pre-cq": {
@@ -18246,6 +17997,7 @@
         "useflags": [
             "chrome_internal"
         ],
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipsel-n32-generic-tot-chromium-pfq-informational": {
@@ -18305,7 +18057,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipsel-n64-generic-paladin": {
@@ -18324,6 +18075,7 @@
         "trybot_list": true,
         "unittests": false,
         "upload_standalone_images": false,
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipsel-n64-generic-pre-cq": {
@@ -18353,6 +18105,7 @@
         "useflags": [
             "chrome_internal"
         ],
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipsel-n64-generic-tot-chromium-pfq-informational": {
@@ -18411,7 +18164,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipsel-o32-generic-paladin": {
@@ -18518,7 +18270,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipsel-o32-generic-tot-chromium-pfq-informational": {
@@ -18628,8 +18379,7 @@
         "name": "monroe-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "monroe-paladin": {
         "boards": [
@@ -18744,7 +18494,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -18807,7 +18556,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -18857,7 +18605,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -18897,7 +18644,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -18947,7 +18693,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -18996,7 +18741,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -19106,7 +18850,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan-full-group": {
@@ -19139,7 +18882,6 @@
                 "trybot_list": true,
                 "unittests": false,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -19167,7 +18909,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -19195,7 +18936,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -19223,7 +18963,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -19243,7 +18982,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan-paladin": {
@@ -19366,7 +19104,6 @@
             "highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan-release-afdo": {
@@ -19427,7 +19164,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -19475,7 +19211,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -19513,7 +19248,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan-release-afdo-generate": {
@@ -19561,7 +19295,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan-release-afdo-use": {
@@ -19608,7 +19341,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan-release-group": {
@@ -19671,7 +19403,6 @@
                     "highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -19725,7 +19456,6 @@
                     "highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -19779,7 +19509,6 @@
                     "highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -19832,7 +19561,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -19875,7 +19603,6 @@
             "highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan-tot-chrome-pfq-informational": {
@@ -19981,7 +19708,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_big-paladin": {
@@ -20101,7 +19827,6 @@
             "highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_big-release-afdo": {
@@ -20162,7 +19887,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -20210,7 +19934,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -20248,7 +19971,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_big-release-afdo-generate": {
@@ -20296,7 +20018,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_big-release-afdo-use": {
@@ -20343,7 +20064,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_big-tot-chrome-pfq-informational": {
@@ -20449,7 +20169,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_blaze-paladin": {
@@ -20569,7 +20288,6 @@
             "highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_blaze-release-afdo": {
@@ -20630,7 +20348,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -20678,7 +20395,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -20716,7 +20432,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_blaze-release-afdo-generate": {
@@ -20764,7 +20479,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_blaze-release-afdo-use": {
@@ -20811,7 +20525,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_blaze-tot-chrome-pfq-informational": {
@@ -20917,7 +20630,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_freon-paladin": {
@@ -21036,7 +20748,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_freon-release-afdo": {
@@ -21097,7 +20808,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -21145,7 +20855,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -21183,7 +20892,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_freon-release-afdo-generate": {
@@ -21231,7 +20939,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_freon-release-afdo-use": {
@@ -21278,7 +20985,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_freon-tot-chrome-pfq-informational": {
@@ -21384,7 +21090,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_kitty-paladin": {
@@ -21503,7 +21208,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_kitty-release-afdo": {
@@ -21564,7 +21268,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -21612,7 +21315,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -21650,7 +21352,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_kitty-release-afdo-generate": {
@@ -21698,7 +21399,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_kitty-release-afdo-use": {
@@ -21745,7 +21445,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "nyan_kitty-tot-chrome-pfq-informational": {
@@ -21877,8 +21576,7 @@
         "name": "panther-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "panther-paladin": {
         "boards": [
@@ -21993,7 +21691,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -22056,7 +21753,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -22106,7 +21802,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -22146,7 +21841,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -22196,7 +21890,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -22245,7 +21938,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -22354,7 +22046,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "panther_freon-chrome-pfq": {
@@ -22414,8 +22105,7 @@
         "name": "panther_freon-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "panther_freon-paladin": {
         "boards": [
@@ -22529,7 +22219,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -22592,7 +22281,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -22642,7 +22330,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -22682,7 +22369,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -22732,7 +22418,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -22781,7 +22466,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -22883,8 +22567,7 @@
         "name": "panther_moblab-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "panther_moblab-paladin": {
         "boards": [
@@ -22994,7 +22677,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "panther_moblab-release-afdo": {
@@ -23053,7 +22735,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -23103,7 +22784,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -23143,7 +22823,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -23193,7 +22872,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -23242,7 +22920,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -23402,8 +23079,7 @@
         "name": "parrot-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "parrot-grouped-pre-cq": {
         "archive": false,
@@ -23552,7 +23228,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -23615,7 +23290,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -23665,7 +23339,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -23705,7 +23378,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -23755,7 +23427,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -23804,7 +23475,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -23869,7 +23539,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -23924,7 +23593,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -23964,7 +23632,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -24065,8 +23732,7 @@
         "name": "parrot_ivb-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "parrot_ivb-paladin": {
         "boards": [
@@ -24182,7 +23848,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "parrot_ivb-release-afdo": {
@@ -24241,7 +23906,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -24291,7 +23955,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -24331,7 +23994,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -24381,7 +24043,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -24430,7 +24091,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -24626,8 +24286,7 @@
         "name": "parry-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "parry-paladin": {
         "boards": [
@@ -24741,7 +24400,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -24804,7 +24462,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -24854,7 +24511,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -24894,7 +24550,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -24944,7 +24599,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -24993,7 +24647,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -25067,7 +24720,6 @@
                 "trybot_list": true,
                 "unittests": false,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -25095,7 +24747,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -25115,7 +24766,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "peach-release-group": {
@@ -25177,7 +24827,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -25231,7 +24880,6 @@
                     "highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -25273,7 +24921,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "peach_pi-chrome-pfq": {
@@ -25378,7 +25025,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "peach_pi-paladin": {
@@ -25498,7 +25144,6 @@
             "highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "peach_pi-release-afdo": {
@@ -25559,7 +25204,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -25607,7 +25251,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -25645,7 +25288,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "peach_pi-release-afdo-generate": {
@@ -25693,7 +25335,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "peach_pi-release-afdo-use": {
@@ -25740,7 +25381,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "peach_pi-tot-chrome-pfq-informational": {
@@ -25882,7 +25522,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "peach_pit-paladin": {
@@ -26005,7 +25644,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "peach_pit-release-afdo": {
@@ -26066,7 +25704,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -26114,7 +25751,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -26152,7 +25788,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "peach_pit-release-afdo-generate": {
@@ -26200,7 +25835,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "peach_pit-release-afdo-use": {
@@ -26247,7 +25881,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "peach_pit-tot-chrome-pfq-informational": {
@@ -26379,8 +26012,7 @@
         "name": "peppy-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "peppy-paladin": {
         "boards": [
@@ -26498,7 +26130,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -26561,7 +26192,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -26611,7 +26241,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -26651,7 +26280,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -26701,7 +26329,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -26750,7 +26377,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -26852,8 +26478,7 @@
         "name": "peppy_freon-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "peppy_freon-paladin": {
         "boards": [
@@ -26965,7 +26590,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "peppy_freon-release-afdo": {
@@ -27024,7 +26648,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -27074,7 +26697,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -27114,7 +26736,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -27164,7 +26785,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -27213,7 +26833,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -27282,8 +26901,7 @@
                 "name": "x86-mario-full",
                 "prebuilts": "public",
                 "trybot_list": true,
-                "usepkg_build_packages": false,
-                "usepkg_toolchain": false
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -27309,7 +26927,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -27336,7 +26953,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -27362,7 +26978,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -27388,7 +27003,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -27405,8 +27019,7 @@
         "name": "pineview-full-group",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "pineview-release-group": {
         "afdo_use": true,
@@ -27465,7 +27078,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -27521,7 +27133,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -27573,7 +27184,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -27620,7 +27230,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -27667,7 +27276,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -27707,7 +27315,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -28106,8 +27713,7 @@
         "name": "quawks-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "quawks-paladin": {
         "boards": [
@@ -28222,7 +27828,6 @@
             "highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -28285,7 +27890,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -28335,7 +27939,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -28375,7 +27978,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -28425,7 +28027,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -28474,7 +28075,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -28545,8 +28145,7 @@
                 "name": "rambi-full",
                 "prebuilts": "public",
                 "trybot_list": true,
-                "usepkg_build_packages": false,
-                "usepkg_toolchain": false
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -28572,7 +28171,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -28599,7 +28197,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -28626,7 +28223,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -28643,8 +28239,7 @@
         "name": "rambi-a-full-group",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "rambi-a-release-group": {
         "afdo_use": true,
@@ -28703,7 +28298,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -28759,7 +28353,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -28811,7 +28404,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -28863,7 +28455,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -28903,7 +28494,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -28937,8 +28527,7 @@
                 "name": "glimmer-full",
                 "prebuilts": "public",
                 "trybot_list": true,
-                "usepkg_build_packages": false,
-                "usepkg_toolchain": false
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -28964,7 +28553,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -28991,7 +28579,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -29018,7 +28605,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -29035,8 +28621,7 @@
         "name": "rambi-b-full-group",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "rambi-b-release-group": {
         "afdo_use": true,
@@ -29095,7 +28680,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -29151,7 +28735,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -29203,7 +28786,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -29256,7 +28838,6 @@
                     "highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -29296,7 +28877,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -29330,8 +28910,7 @@
                 "name": "squawks-full",
                 "prebuilts": "public",
                 "trybot_list": true,
-                "usepkg_build_packages": false,
-                "usepkg_toolchain": false
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -29357,7 +28936,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -29384,7 +28962,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -29411,7 +28988,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -29428,8 +29004,7 @@
         "name": "rambi-c-full-group",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "rambi-c-release-group": {
         "afdo_use": true,
@@ -29488,7 +29063,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -29545,7 +29119,6 @@
                     "highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -29597,7 +29170,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -29649,7 +29221,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -29689,7 +29260,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -29761,8 +29331,7 @@
                 "name": "cranky-full",
                 "prebuilts": "public",
                 "trybot_list": true,
-                "usepkg_build_packages": false,
-                "usepkg_toolchain": false
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -29788,7 +29357,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -29805,8 +29373,7 @@
         "name": "rambi-d-full-group",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "rambi-d-release-group": {
         "afdo_use": true,
@@ -29865,7 +29432,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -29921,7 +29487,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -29960,7 +29525,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -30081,8 +29645,7 @@
         "name": "rambi-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "rambi-grouped-pre-cq": {
         "archive": false,
@@ -30228,7 +29791,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -30291,7 +29853,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -30341,7 +29902,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -30381,7 +29941,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -30431,7 +29990,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -30480,7 +30038,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -30599,7 +30156,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "rush-paladin": {
@@ -30695,7 +30251,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "rush-release-afdo": {
@@ -30756,7 +30311,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -30804,7 +30358,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -30842,7 +30395,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "rush-release-afdo-generate": {
@@ -30890,7 +30442,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "rush-release-afdo-use": {
@@ -30937,7 +30488,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "rush-tot-chrome-pfq-informational": {
@@ -31044,7 +30594,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "rush_ryu-paladin": {
@@ -31159,7 +30708,6 @@
             "highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "rush_ryu-release-afdo": {
@@ -31220,7 +30768,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -31268,7 +30815,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -31306,7 +30852,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "rush_ryu-release-afdo-generate": {
@@ -31354,7 +30899,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "rush_ryu-release-afdo-use": {
@@ -31401,7 +30945,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "rush_ryu-tot-chrome-pfq-informational": {
@@ -31594,8 +31137,7 @@
         "name": "samus-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "samus-grouped-pre-cq": {
         "archive": false,
@@ -31739,7 +31281,6 @@
             "highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "samus-release-afdo": {
@@ -31798,7 +31339,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -31848,7 +31388,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -31888,7 +31427,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -31938,7 +31476,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -31987,7 +31524,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -32056,8 +31592,7 @@
                 "name": "parrot-full",
                 "prebuilts": "public",
                 "trybot_list": true,
-                "usepkg_build_packages": false,
-                "usepkg_toolchain": false
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -32083,7 +31618,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -32110,7 +31644,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -32137,7 +31670,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -32154,8 +31686,7 @@
         "name": "sandybridge-full-group",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "sandybridge-release-group": {
         "afdo_use": true,
@@ -32215,7 +31746,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -32272,7 +31802,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -32324,7 +31853,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -32376,7 +31904,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -32417,7 +31944,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -32516,8 +32042,7 @@
         "name": "slippy-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "slippy-full-group": {
         "archive_build_debug": true,
@@ -32546,8 +32071,7 @@
                 "name": "peppy-full",
                 "prebuilts": "public",
                 "trybot_list": true,
-                "usepkg_build_packages": false,
-                "usepkg_toolchain": false
+                "usepkg_build_packages": false
             },
             {
                 "archive_build_debug": true,
@@ -32573,7 +32097,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -32600,7 +32123,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -32627,7 +32149,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -32653,7 +32174,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -32670,8 +32190,7 @@
         "name": "slippy-full-group",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "slippy-paladin": {
         "boards": [
@@ -32785,7 +32304,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -32848,7 +32366,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -32898,7 +32415,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -32938,7 +32454,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -32988,7 +32503,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -33037,7 +32551,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -33101,7 +32614,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -33157,7 +32669,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -33209,7 +32720,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -33261,7 +32771,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -33312,7 +32821,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -33352,7 +32860,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -33548,8 +33055,7 @@
         "name": "squawks-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "squawks-paladin": {
         "boards": [
@@ -33663,7 +33169,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -33726,7 +33231,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -33776,7 +33280,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -33816,7 +33319,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -33866,7 +33368,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -33915,7 +33416,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -34106,7 +33606,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "stout-chrome-pfq": {
@@ -34201,8 +33700,7 @@
         "name": "stout-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "stout-paladin": {
         "boards": [
@@ -34319,7 +33817,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -34382,7 +33879,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -34432,7 +33928,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -34472,7 +33967,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -34522,7 +34016,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -34571,7 +34064,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -34707,8 +34199,7 @@
         "name": "stumpy-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "stumpy-paladin": {
         "boards": [
@@ -34826,7 +34317,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -34889,7 +34379,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -34939,7 +34428,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -34979,7 +34467,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -35029,7 +34516,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -35078,7 +34564,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -35244,7 +34729,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "swanky-chrome-pfq": {
@@ -35399,8 +34883,7 @@
         "name": "swanky-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "swanky-paladin": {
         "boards": [
@@ -35515,7 +34998,6 @@
             "highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -35578,7 +35060,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -35628,7 +35109,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -35668,7 +35148,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -35718,7 +35197,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -35767,7 +35245,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -35873,8 +35350,7 @@
         "latest_toolchain": true,
         "name": "toolchain-major",
         "use_sdk": false,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "toolchain-minor": {
         "archive_build_debug": true,
@@ -35898,8 +35374,7 @@
         "latest_toolchain": true,
         "name": "toolchain-minor",
         "use_sdk": false,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "tricky-chrome-pfq": {
         "boards": [
@@ -35958,8 +35433,7 @@
         "name": "tricky-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "tricky-paladin": {
         "boards": [
@@ -36073,7 +35547,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -36136,7 +35609,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -36186,7 +35658,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -36226,7 +35697,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -36276,7 +35746,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -36325,7 +35794,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -36461,7 +35929,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron-full-group": {
@@ -36494,7 +35961,6 @@
                 "trybot_list": true,
                 "unittests": false,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -36522,7 +35988,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -36550,7 +36015,6 @@
                 "trybot_list": true,
                 "unittests": null,
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -36570,7 +36034,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron-release-group": {
@@ -36632,7 +36095,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -36685,7 +36147,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -36738,7 +36199,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -36779,7 +36239,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron_jerry-chrome-pfq": {
@@ -36848,7 +36307,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron_jerry-paladin": {
@@ -36967,7 +36425,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron_jerry-release-afdo": {
@@ -37028,7 +36485,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -37076,7 +36532,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -37114,7 +36569,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron_jerry-release-afdo-generate": {
@@ -37162,7 +36616,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron_jerry-release-afdo-use": {
@@ -37209,7 +36662,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron_jerry-tot-chrome-pfq-informational": {
@@ -37315,7 +36767,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron_mighty-paladin": {
@@ -37434,7 +36885,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron_mighty-release-afdo": {
@@ -37495,7 +36945,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -37543,7 +36992,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -37581,7 +37029,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron_mighty-release-afdo-generate": {
@@ -37629,7 +37076,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron_mighty-release-afdo-use": {
@@ -37676,7 +37122,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron_mighty-tot-chrome-pfq-informational": {
@@ -37782,7 +37227,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron_pinky-paladin": {
@@ -37901,7 +37345,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron_pinky-release-afdo": {
@@ -37962,7 +37405,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -38010,7 +37452,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -38048,7 +37489,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron_pinky-release-afdo-generate": {
@@ -38096,7 +37536,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron_pinky-release-afdo-use": {
@@ -38143,7 +37582,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "veyron_pinky-tot-chrome-pfq-informational": {
@@ -38249,7 +37687,6 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "whirlwind-paladin": {
@@ -38363,7 +37800,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "whirlwind-release-afdo": {
@@ -38424,7 +37860,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             },
             {
@@ -38472,7 +37907,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -38510,7 +37944,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "whirlwind-release-afdo-generate": {
@@ -38558,7 +37991,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "whirlwind-release-afdo-use": {
@@ -38605,7 +38037,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "whirlwind-tot-chrome-pfq-informational": {
@@ -38798,8 +38229,7 @@
         "name": "winky-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "winky-paladin": {
         "boards": [
@@ -38913,7 +38343,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -38976,7 +38405,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -39026,7 +38454,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -39066,7 +38493,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -39116,7 +38542,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -39165,7 +38590,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -39301,8 +38725,7 @@
         "name": "wolf-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "wolf-paladin": {
         "boards": [
@@ -39420,7 +38843,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -39483,7 +38905,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -39533,7 +38954,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -39573,7 +38993,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -39623,7 +39042,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -39672,7 +39090,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -39780,8 +39197,7 @@
         "name": "x32-generic-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "x32-generic-incremental": {
         "boards": [
@@ -39791,6 +39207,7 @@
         "description": "Incremental Builds",
         "name": "x32-generic-incremental",
         "uprev": false,
+        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "x32-generic-paladin": {
@@ -39806,7 +39223,8 @@
         "paladin_builder_name": "x32-generic paladin",
         "prebuilts": "public",
         "trybot_list": true,
-        "upload_standalone_images": false
+        "upload_standalone_images": false,
+        "usepkg_toolchain": false
     },
     "x32-generic-pre-cq": {
         "archive": false,
@@ -39833,6 +39251,7 @@
         "useflags": [
             "chrome_internal"
         ],
+        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -39924,8 +39343,7 @@
         "name": "x86-alex-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "x86-alex-paladin": {
         "boards": [
@@ -40043,7 +39461,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -40106,7 +39523,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -40156,7 +39572,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -40196,7 +39611,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -40246,7 +39660,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -40295,7 +39708,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -40359,7 +39771,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -40410,7 +39821,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -40449,7 +39859,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -40550,8 +39959,7 @@
         "name": "x86-alex_he-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "x86-alex_he-paladin": {
         "boards": [
@@ -40663,7 +40071,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "x86-alex_he-release-afdo": {
@@ -40722,7 +40129,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -40772,7 +40178,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -40812,7 +40217,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -40862,7 +40266,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -40911,7 +40314,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -41029,8 +40431,7 @@
         "name": "x86-generic-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "x86-generic-incremental": {
         "boards": [
@@ -41259,7 +40660,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -41320,8 +40720,7 @@
         "name": "x86-mario-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "x86-mario-nowithdebug-paladin": {
         "boards": [
@@ -41462,7 +40861,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -41525,7 +40923,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -41575,7 +40972,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -41615,7 +41011,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -41665,7 +41060,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -41714,7 +41108,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -41794,8 +41187,7 @@
         "name": "x86-pineview-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "x86-pineview-paladin": {
         "boards": [
@@ -41930,8 +41322,7 @@
         "name": "x86-zgb-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "x86-zgb-paladin": {
         "boards": [
@@ -42049,7 +41440,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -42112,7 +41502,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -42162,7 +41551,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -42202,7 +41590,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -42252,7 +41639,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -42301,7 +41687,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -42365,7 +41750,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -42416,7 +41800,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": []
             }
         ],
@@ -42455,7 +41838,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -42556,8 +41938,7 @@
         "name": "x86-zgb_he-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "x86-zgb_he-paladin": {
         "boards": [
@@ -42669,7 +42050,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "x86-zgb_he-release-afdo": {
@@ -42728,7 +42108,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -42778,7 +42157,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -42818,7 +42196,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -42868,7 +42245,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -42917,7 +42293,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -43113,8 +42488,7 @@
         "name": "zako-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "zako-paladin": {
         "boards": [
@@ -43228,7 +42602,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -43291,7 +42664,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -43341,7 +42713,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -43381,7 +42752,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -43431,7 +42801,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -43480,7 +42849,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -43582,8 +42950,7 @@
         "name": "zako_freon-full",
         "prebuilts": "public",
         "trybot_list": true,
-        "usepkg_build_packages": false,
-        "usepkg_toolchain": false
+        "usepkg_build_packages": false
     },
     "zako_freon-paladin": {
         "boards": [
@@ -43695,7 +43062,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "zako_freon-release-afdo": {
@@ -43754,7 +43120,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -43804,7 +43169,6 @@
                     "-highdpi"
                 ],
                 "usepkg_build_packages": false,
-                "usepkg_toolchain": false,
                 "vm_tests": [
                     "smoke_suite",
                     "dev_mode_test",
@@ -43844,7 +43208,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -43894,7 +43257,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
@@ -43943,7 +43305,6 @@
             "-highdpi"
         ],
         "usepkg_build_packages": false,
-        "usepkg_toolchain": false,
         "vm_tests": [
             "smoke_suite",
             "dev_mode_test",
