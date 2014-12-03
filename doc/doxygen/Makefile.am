@@ -28,14 +28,14 @@ xml/client/index.xml: $(scanned_src_files_client) wayland.doxygen
           echo "GENERATE_XML=YES"; \
           echo "XML_OUTPUT=xml/client"; \
           echo "INPUT= $(scanned_src_files_client)"; \
-          ) | doxygen -
+          ) | $(DOXYGEN) -
 xml/server/index.xml: $(scanned_src_files_server) wayland.doxygen
 	$(AM_V_GEN)$(MKDIR_P) xml/server && \
 	(cat wayland.doxygen; \
           echo "GENERATE_XML=YES"; \
           echo "XML_OUTPUT=xml/server"; \
           echo "INPUT= $(scanned_src_files_server)"; \
-          ) | doxygen -
+          ) | $(DOXYGEN) -
 
 man/man3/wl_display.3: $(scanned_src_files_client) $(scanned_src_files_server)
 	$(AM_V_GEN)(cat wayland.doxygen; \
@@ -43,7 +43,7 @@ man/man3/wl_display.3: $(scanned_src_files_client) $(scanned_src_files_server)
           echo "MAN_OUTPUT=man"; \
           echo "JAVADOC_AUTOBRIEF=NO"; \
           echo "INPUT= $^"; \
-          ) | doxygen -
+          ) | $(DOXYGEN) -
 
 # there is no man-local
 all-local: man/man3/wl_display.3
