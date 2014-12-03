@@ -26,12 +26,11 @@
 #ifndef WebGLRenderingContext_h
 #define WebGLRenderingContext_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 
 namespace blink {
 
-class WebGLRenderingContext final : public WebGLRenderingContextBase, public ScriptWrappable {
+class WebGLRenderingContext final : public WebGLRenderingContextBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassOwnPtrWillBeRawPtr<WebGLRenderingContext> create(HTMLCanvasElement*, WebGLContextAttributes*);

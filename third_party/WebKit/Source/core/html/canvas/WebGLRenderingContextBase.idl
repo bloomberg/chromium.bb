@@ -550,7 +550,7 @@ typedef unrestricted float GLclampf;
 
     GLint getAttribLocation(WebGLProgram? program, DOMString name);
 
-    [Custom] any getBufferParameter(GLenum target, GLenum pname);
+    [CallWith=ScriptState] any getBufferParameter(GLenum target, GLenum pname);
 
     WebGLContextAttributes getContextAttributes();
 
@@ -558,12 +558,12 @@ typedef unrestricted float GLclampf;
 
     [Custom] object? getExtension(DOMString name);
 
-    [Custom] any getFramebufferAttachmentParameter(GLenum target, GLenum attachment, GLenum pname);
-    [Custom] any getParameter(GLenum pname);
-    [Custom] any getProgramParameter(WebGLProgram? program, GLenum pname);
+    [CallWith=ScriptState] any getFramebufferAttachmentParameter(GLenum target, GLenum attachment, GLenum pname);
+    [CallWith=ScriptState] any getParameter(GLenum pname);
+    [CallWith=ScriptState] any getProgramParameter(WebGLProgram? program, GLenum pname);
     DOMString? getProgramInfoLog(WebGLProgram? program);
-    [Custom] any getRenderbufferParameter(GLenum target, GLenum pname);
-    [Custom] any getShaderParameter(WebGLShader? shader, GLenum pname);
+    [CallWith=ScriptState] any getRenderbufferParameter(GLenum target, GLenum pname);
+    [CallWith=ScriptState] any getShaderParameter(WebGLShader? shader, GLenum pname);
 
     DOMString?   getShaderInfoLog(WebGLShader? shader);
 
@@ -573,13 +573,13 @@ typedef unrestricted float GLclampf;
 
     sequence<DOMString>? getSupportedExtensions();
 
-    [Custom] any getTexParameter(GLenum target, GLenum pname);
+    [CallWith=ScriptState] any getTexParameter(GLenum target, GLenum pname);
 
-    [Custom] any getUniform(WebGLProgram? program, WebGLUniformLocation? location);
+    [CallWith=ScriptState] any getUniform(WebGLProgram? program, WebGLUniformLocation? location);
 
     WebGLUniformLocation getUniformLocation(WebGLProgram? program, DOMString name);
 
-    [Custom] any getVertexAttrib(GLuint index, GLenum pname);
+    [CallWith=ScriptState] any getVertexAttrib(GLuint index, GLenum pname);
 
     GLsizeiptr getVertexAttribOffset(GLuint index, GLenum pname);
 

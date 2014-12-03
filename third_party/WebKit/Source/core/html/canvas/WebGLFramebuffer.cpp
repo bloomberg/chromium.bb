@@ -27,7 +27,9 @@
 
 #include "core/html/canvas/WebGLFramebuffer.h"
 
+#include "core/html/canvas/WebGLRenderbuffer.h"
 #include "core/html/canvas/WebGLRenderingContextBase.h"
+#include "core/html/canvas/WebGLTexture.h"
 #include "platform/NotImplemented.h"
 
 namespace blink {

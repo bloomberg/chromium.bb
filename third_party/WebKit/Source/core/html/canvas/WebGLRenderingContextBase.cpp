@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/WebGLAny.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/ExceptionCode.h"
@@ -2091,25 +2092,25 @@ GLint WebGLRenderingContextBase::getAttribLocation(WebGLProgram* program, const 
     return webContext()->getAttribLocation(objectOrZero(program), name.utf8().data());
 }
 
-WebGLGetInfo WebGLRenderingContextBase::getBufferParameter(GLenum target, GLenum pname)
+ScriptValue WebGLRenderingContextBase::getBufferParameter(ScriptState* scriptState, GLenum target, GLenum pname)
 {
     if (isContextLost())
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     if (target != GL_ARRAY_BUFFER && target != GL_ELEMENT_ARRAY_BUFFER) {
         synthesizeGLError(GL_INVALID_ENUM, "getBufferParameter", "invalid target");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     }
 
     if (pname != GL_BUFFER_SIZE && pname != GL_BUFFER_USAGE) {
         synthesizeGLError(GL_INVALID_ENUM, "getBufferParameter", "invalid parameter name");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     }
 
     GLint value = 0;
     webContext()->getBufferParameteriv(target, pname, &value);
     if (pname == GL_BUFFER_SIZE)
-        return WebGLGetInfo(value);
-    return WebGLGetInfo(static_cast<unsigned>(value));
+        return WebGLAny(scriptState, value);
+    return WebGLAny(scriptState, static_cast<unsigned>(value));
 }
 
 PassRefPtrWillBeRawPtr<WebGLContextAttributes> WebGLRenderingContextBase::getContextAttributes()
@@ -2193,298 +2194,298 @@ PassRefPtrWillBeRawPtr<WebGLExtension> WebGLRenderingContextBase::getExtension(c
     return nullptr;
 }
 
-WebGLGetInfo WebGLRenderingContextBase::getFramebufferAttachmentParameter(GLenum target, GLenum attachment, GLenum pname)
+ScriptValue WebGLRenderingContextBase::getFramebufferAttachmentParameter(ScriptState* scriptState, GLenum target, GLenum attachment, GLenum pname)
 {
     if (isContextLost() || !validateFramebufferFuncParameters("getFramebufferAttachmentParameter", target, attachment))
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
 
     if (!m_framebufferBinding || !m_framebufferBinding->object()) {
         synthesizeGLError(GL_INVALID_OPERATION, "getFramebufferAttachmentParameter", "no framebuffer bound");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     }
 
     WebGLSharedObject* object = m_framebufferBinding->getAttachmentObject(attachment);
     if (!object) {
         if (pname == GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE)
-            return WebGLGetInfo(GL_NONE);
+            return WebGLAny(scriptState, GL_NONE);
         // OpenGL ES 2.0 specifies INVALID_ENUM in this case, while desktop GL
         // specifies INVALID_OPERATION.
         synthesizeGLError(GL_INVALID_ENUM, "getFramebufferAttachmentParameter", "invalid parameter name");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     }
 
     ASSERT(object->isTexture() || object->isRenderbuffer());
     if (object->isTexture()) {
         switch (pname) {
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
-            return WebGLGetInfo(GL_TEXTURE);
+            return WebGLAny(scriptState, GL_TEXTURE);
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME:
-            return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(object));
+            return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(object));
         case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL:
         case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE:
             {
                 GLint value = 0;
                 webContext()->getFramebufferAttachmentParameteriv(target, attachment, pname, &value);
-                return WebGLGetInfo(value);
+                return WebGLAny(scriptState, value);
             }
         case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT:
             if (extensionEnabled(EXTsRGBName)) {
                 GLint value = 0;
                 webContext()->getFramebufferAttachmentParameteriv(target, attachment, pname, &value);
-                return WebGLGetInfo(value);
+                return WebGLAny(scriptState, value);
             }
             synthesizeGLError(GL_INVALID_ENUM, "getFramebufferAttachmentParameter", "invalid parameter name for renderbuffer attachment");
-            return WebGLGetInfo();
+            return WebGLAny(scriptState);
         default:
             synthesizeGLError(GL_INVALID_ENUM, "getFramebufferAttachmentParameter", "invalid parameter name for texture attachment");
-            return WebGLGetInfo();
+            return WebGLAny(scriptState);
         }
     } else {
         switch (pname) {
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
-            return WebGLGetInfo(GL_RENDERBUFFER);
+            return WebGLAny(scriptState, GL_RENDERBUFFER);
         case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME:
-            return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(object));
+            return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(object));
         case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT:
             if (extensionEnabled(EXTsRGBName)) {
                 GLint value = 0;
                 webContext()->getFramebufferAttachmentParameteriv(target, attachment, pname, &value);
-                return WebGLGetInfo(value);
+                return WebGLAny(scriptState, value);
             }
             synthesizeGLError(GL_INVALID_ENUM, "getFramebufferAttachmentParameter", "invalid parameter name for renderbuffer attachment");
-            return WebGLGetInfo();
+            return WebGLAny(scriptState);
         default:
             synthesizeGLError(GL_INVALID_ENUM, "getFramebufferAttachmentParameter", "invalid parameter name for renderbuffer attachment");
-            return WebGLGetInfo();
+            return WebGLAny(scriptState);
         }
     }
 }
 
-WebGLGetInfo WebGLRenderingContextBase::getParameter(GLenum pname)
+ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GLenum pname)
 {
     if (isContextLost())
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     const int intZero = 0;
     switch (pname) {
     case GL_ACTIVE_TEXTURE:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_ALIASED_LINE_WIDTH_RANGE:
-        return getWebGLFloatArrayParameter(pname);
+        return getWebGLFloatArrayParameter(scriptState, pname);
     case GL_ALIASED_POINT_SIZE_RANGE:
-        return getWebGLFloatArrayParameter(pname);
+        return getWebGLFloatArrayParameter(scriptState, pname);
     case GL_ALPHA_BITS:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_ARRAY_BUFFER_BINDING:
-        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(m_boundArrayBuffer.get()));
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_boundArrayBuffer.get()));
     case GL_BLEND:
-        return getBooleanParameter(pname);
+        return getBooleanParameter(scriptState, pname);
     case GL_BLEND_COLOR:
-        return getWebGLFloatArrayParameter(pname);
+        return getWebGLFloatArrayParameter(scriptState, pname);
     case GL_BLEND_DST_ALPHA:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_BLEND_DST_RGB:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_BLEND_EQUATION_ALPHA:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_BLEND_EQUATION_RGB:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_BLEND_SRC_ALPHA:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_BLEND_SRC_RGB:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_BLUE_BITS:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_COLOR_CLEAR_VALUE:
-        return getWebGLFloatArrayParameter(pname);
+        return getWebGLFloatArrayParameter(scriptState, pname);
     case GL_COLOR_WRITEMASK:
-        return getBooleanArrayParameter(pname);
+        return getBooleanArrayParameter(scriptState, pname);
     case GL_COMPRESSED_TEXTURE_FORMATS:
-        return WebGLGetInfo(DOMUint32Array::create(m_compressedTextureFormats.data(), m_compressedTextureFormats.size()));
+        return WebGLAny(scriptState, DOMUint32Array::create(m_compressedTextureFormats.data(), m_compressedTextureFormats.size()));
     case GL_CULL_FACE:
-        return getBooleanParameter(pname);
+        return getBooleanParameter(scriptState, pname);
     case GL_CULL_FACE_MODE:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_CURRENT_PROGRAM:
-        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(m_currentProgram.get()));
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_currentProgram.get()));
     case GL_DEPTH_BITS:
         if (!m_framebufferBinding && !m_requestedAttributes->depth())
-            return WebGLGetInfo(intZero);
-        return getIntParameter(pname);
+            return WebGLAny(scriptState, intZero);
+        return getIntParameter(scriptState, pname);
     case GL_DEPTH_CLEAR_VALUE:
-        return getFloatParameter(pname);
+        return getFloatParameter(scriptState, pname);
     case GL_DEPTH_FUNC:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_DEPTH_RANGE:
-        return getWebGLFloatArrayParameter(pname);
+        return getWebGLFloatArrayParameter(scriptState, pname);
     case GL_DEPTH_TEST:
-        return getBooleanParameter(pname);
+        return getBooleanParameter(scriptState, pname);
     case GL_DEPTH_WRITEMASK:
-        return getBooleanParameter(pname);
+        return getBooleanParameter(scriptState, pname);
     case GL_DITHER:
-        return getBooleanParameter(pname);
+        return getBooleanParameter(scriptState, pname);
     case GL_ELEMENT_ARRAY_BUFFER_BINDING:
-        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(m_boundVertexArrayObject->boundElementArrayBuffer()));
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_boundVertexArrayObject->boundElementArrayBuffer()));
     case GL_FRAMEBUFFER_BINDING:
-        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(m_framebufferBinding.get()));
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_framebufferBinding.get()));
     case GL_FRONT_FACE:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_GENERATE_MIPMAP_HINT:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_GREEN_BITS:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_IMPLEMENTATION_COLOR_READ_FORMAT:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_IMPLEMENTATION_COLOR_READ_TYPE:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_LINE_WIDTH:
-        return getFloatParameter(pname);
+        return getFloatParameter(scriptState, pname);
     case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_MAX_CUBE_MAP_TEXTURE_SIZE:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_MAX_RENDERBUFFER_SIZE:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_MAX_TEXTURE_IMAGE_UNITS:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_MAX_TEXTURE_SIZE:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_MAX_VARYING_VECTORS:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_MAX_VERTEX_ATTRIBS:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_MAX_VERTEX_UNIFORM_VECTORS:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_MAX_VIEWPORT_DIMS:
-        return getWebGLIntArrayParameter(pname);
+        return getWebGLIntArrayParameter(scriptState, pname);
     case GL_NUM_SHADER_BINARY_FORMATS:
         // FIXME: should we always return 0 for this?
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_PACK_ALIGNMENT:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_POLYGON_OFFSET_FACTOR:
-        return getFloatParameter(pname);
+        return getFloatParameter(scriptState, pname);
     case GL_POLYGON_OFFSET_FILL:
-        return getBooleanParameter(pname);
+        return getBooleanParameter(scriptState, pname);
     case GL_POLYGON_OFFSET_UNITS:
-        return getFloatParameter(pname);
+        return getFloatParameter(scriptState, pname);
     case GL_RED_BITS:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_RENDERBUFFER_BINDING:
-        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(m_renderbufferBinding.get()));
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_renderbufferBinding.get()));
     case GL_RENDERER:
-        return WebGLGetInfo(String("WebKit WebGL"));
+        return WebGLAny(scriptState, String("WebKit WebGL"));
     case GL_SAMPLE_BUFFERS:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_SAMPLE_COVERAGE_INVERT:
-        return getBooleanParameter(pname);
+        return getBooleanParameter(scriptState, pname);
     case GL_SAMPLE_COVERAGE_VALUE:
-        return getFloatParameter(pname);
+        return getFloatParameter(scriptState, pname);
     case GL_SAMPLES:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_SCISSOR_BOX:
-        return getWebGLIntArrayParameter(pname);
+        return getWebGLIntArrayParameter(scriptState, pname);
     case GL_SCISSOR_TEST:
-        return getBooleanParameter(pname);
+        return getBooleanParameter(scriptState, pname);
     case GL_SHADING_LANGUAGE_VERSION:
-        return WebGLGetInfo("WebGL GLSL ES 1.0 (" + String(webContext()->getString(GL_SHADING_LANGUAGE_VERSION)) + ")");
+        return WebGLAny(scriptState, "WebGL GLSL ES 1.0 (" + String(webContext()->getString(GL_SHADING_LANGUAGE_VERSION)) + ")");
     case GL_STENCIL_BACK_FAIL:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_STENCIL_BACK_FUNC:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_STENCIL_BACK_PASS_DEPTH_FAIL:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_STENCIL_BACK_PASS_DEPTH_PASS:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_STENCIL_BACK_REF:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_STENCIL_BACK_VALUE_MASK:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_STENCIL_BACK_WRITEMASK:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_STENCIL_BITS:
         if (!m_framebufferBinding && !m_requestedAttributes->stencil())
-            return WebGLGetInfo(intZero);
-        return getIntParameter(pname);
+            return WebGLAny(scriptState, intZero);
+        return getIntParameter(scriptState, pname);
     case GL_STENCIL_CLEAR_VALUE:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_STENCIL_FAIL:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_STENCIL_FUNC:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_STENCIL_PASS_DEPTH_FAIL:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_STENCIL_PASS_DEPTH_PASS:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_STENCIL_REF:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_STENCIL_TEST:
-        return getBooleanParameter(pname);
+        return getBooleanParameter(scriptState, pname);
     case GL_STENCIL_VALUE_MASK:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_STENCIL_WRITEMASK:
-        return getUnsignedIntParameter(pname);
+        return getUnsignedIntParameter(scriptState, pname);
     case GL_SUBPIXEL_BITS:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GL_TEXTURE_BINDING_2D:
-        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get()));
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get()));
     case GL_TEXTURE_BINDING_CUBE_MAP:
-        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(m_textureUnits[m_activeTextureUnit].m_textureCubeMapBinding.get()));
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_textureUnits[m_activeTextureUnit].m_textureCubeMapBinding.get()));
     case GL_UNPACK_ALIGNMENT:
-        return getIntParameter(pname);
+        return getIntParameter(scriptState, pname);
     case GC3D_UNPACK_FLIP_Y_WEBGL:
-        return WebGLGetInfo(m_unpackFlipY);
+        return WebGLAny(scriptState, m_unpackFlipY);
     case GC3D_UNPACK_PREMULTIPLY_ALPHA_WEBGL:
-        return WebGLGetInfo(m_unpackPremultiplyAlpha);
+        return WebGLAny(scriptState, m_unpackPremultiplyAlpha);
     case GC3D_UNPACK_COLORSPACE_CONVERSION_WEBGL:
-        return WebGLGetInfo(m_unpackColorspaceConversion);
+        return WebGLAny(scriptState, m_unpackColorspaceConversion);
     case GL_VENDOR:
-        return WebGLGetInfo(String("WebKit"));
+        return WebGLAny(scriptState, String("WebKit"));
     case GL_VERSION:
-        return WebGLGetInfo("WebGL 1.0 (" + String(webContext()->getString(GL_VERSION)) + ")");
+        return WebGLAny(scriptState, "WebGL 1.0 (" + String(webContext()->getString(GL_VERSION)) + ")");
     case GL_VIEWPORT:
-        return getWebGLIntArrayParameter(pname);
+        return getWebGLIntArrayParameter(scriptState, pname);
     case GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES: // OES_standard_derivatives
         if (extensionEnabled(OESStandardDerivativesName))
-            return getUnsignedIntParameter(GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES);
+            return getUnsignedIntParameter(scriptState, GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES);
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, OES_standard_derivatives not enabled");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     case WebGLDebugRendererInfo::UNMASKED_RENDERER_WEBGL:
         if (extensionEnabled(WebGLDebugRendererInfoName))
-            return WebGLGetInfo(webContext()->getString(GL_RENDERER));
+            return WebGLAny(scriptState, webContext()->getString(GL_RENDERER));
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_debug_renderer_info not enabled");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     case WebGLDebugRendererInfo::UNMASKED_VENDOR_WEBGL:
         if (extensionEnabled(WebGLDebugRendererInfoName))
-            return WebGLGetInfo(webContext()->getString(GL_VENDOR));
+            return WebGLAny(scriptState, webContext()->getString(GL_VENDOR));
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_debug_renderer_info not enabled");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     case GL_VERTEX_ARRAY_BINDING_OES: // OES_vertex_array_object
         if (extensionEnabled(OESVertexArrayObjectName)) {
             if (!m_boundVertexArrayObject->isDefaultObject())
-                return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(m_boundVertexArrayObject.get()));
-            return WebGLGetInfo();
+                return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(m_boundVertexArrayObject.get()));
+            return WebGLAny(scriptState);
         }
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, OES_vertex_array_object not enabled");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     case GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: // EXT_texture_filter_anisotropic
         if (extensionEnabled(EXTTextureFilterAnisotropicName))
-            return getUnsignedIntParameter(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+            return getUnsignedIntParameter(scriptState, GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, EXT_texture_filter_anisotropic not enabled");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     case GL_MAX_COLOR_ATTACHMENTS_EXT: // EXT_draw_buffers BEGIN
         if (extensionEnabled(WebGLDrawBuffersName))
-            return WebGLGetInfo(maxColorAttachments());
+            return WebGLAny(scriptState, maxColorAttachments());
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_draw_buffers not enabled");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     case GL_MAX_DRAW_BUFFERS_EXT:
         if (extensionEnabled(WebGLDrawBuffersName))
-            return WebGLGetInfo(maxDrawBuffers());
+            return WebGLAny(scriptState, maxDrawBuffers());
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_draw_buffers not enabled");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     default:
         if (extensionEnabled(WebGLDrawBuffersName)
             && pname >= GL_DRAW_BUFFER0_EXT
@@ -2494,35 +2495,35 @@ WebGLGetInfo WebGLRenderingContextBase::getParameter(GLenum pname)
                 value = m_framebufferBinding->getDrawBuffer(pname);
             else // emulated backbuffer
                 value = m_backDrawBuffer;
-            return WebGLGetInfo(value);
+            return WebGLAny(scriptState, value);
         }
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     }
 }
 
-WebGLGetInfo WebGLRenderingContextBase::getProgramParameter(WebGLProgram* program, GLenum pname)
+ScriptValue WebGLRenderingContextBase::getProgramParameter(ScriptState* scriptState, WebGLProgram* program, GLenum pname)
 {
     if (isContextLost() || !validateWebGLObject("getProgramParameter", program))
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
 
     GLint value = 0;
     switch (pname) {
     case GL_DELETE_STATUS:
-        return WebGLGetInfo(program->isDeleted());
+        return WebGLAny(scriptState, program->isDeleted());
     case GL_VALIDATE_STATUS:
         webContext()->getProgramiv(objectOrZero(program), pname, &value);
-        return WebGLGetInfo(static_cast<bool>(value));
+        return WebGLAny(scriptState, static_cast<bool>(value));
     case GL_LINK_STATUS:
-        return WebGLGetInfo(program->linkStatus());
+        return WebGLAny(scriptState, program->linkStatus());
     case GL_ATTACHED_SHADERS:
     case GL_ACTIVE_ATTRIBUTES:
     case GL_ACTIVE_UNIFORMS:
         webContext()->getProgramiv(objectOrZero(program), pname, &value);
-        return WebGLGetInfo(value);
+        return WebGLAny(scriptState, value);
     default:
         synthesizeGLError(GL_INVALID_ENUM, "getProgramParameter", "invalid parameter name");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     }
 }
 
@@ -2535,17 +2536,17 @@ String WebGLRenderingContextBase::getProgramInfoLog(WebGLProgram* program)
     return ensureNotNull(webContext()->getProgramInfoLog(objectOrZero(program)));
 }
 
-WebGLGetInfo WebGLRenderingContextBase::getRenderbufferParameter(GLenum target, GLenum pname)
+ScriptValue WebGLRenderingContextBase::getRenderbufferParameter(ScriptState* scriptState, GLenum target, GLenum pname)
 {
     if (isContextLost())
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     if (target != GL_RENDERBUFFER) {
         synthesizeGLError(GL_INVALID_ENUM, "getRenderbufferParameter", "invalid target");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     }
     if (!m_renderbufferBinding || !m_renderbufferBinding->object()) {
         synthesizeGLError(GL_INVALID_OPERATION, "getRenderbufferParameter", "no renderbuffer bound");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     }
 
     GLint value = 0;
@@ -2558,7 +2559,7 @@ WebGLGetInfo WebGLRenderingContextBase::getRenderbufferParameter(GLenum target, 
     case GL_RENDERBUFFER_ALPHA_SIZE:
     case GL_RENDERBUFFER_DEPTH_SIZE:
         webContext()->getRenderbufferParameteriv(target, pname, &value);
-        return WebGLGetInfo(value);
+        return WebGLAny(scriptState, value);
     case GL_RENDERBUFFER_STENCIL_SIZE:
         if (m_renderbufferBinding->emulatedStencilBuffer()) {
             webContext()->bindRenderbuffer(target, objectOrZero(m_renderbufferBinding->emulatedStencilBuffer()));
@@ -2567,32 +2568,32 @@ WebGLGetInfo WebGLRenderingContextBase::getRenderbufferParameter(GLenum target, 
         } else {
             webContext()->getRenderbufferParameteriv(target, pname, &value);
         }
-        return WebGLGetInfo(value);
+        return WebGLAny(scriptState, value);
     case GL_RENDERBUFFER_INTERNAL_FORMAT:
-        return WebGLGetInfo(m_renderbufferBinding->internalFormat());
+        return WebGLAny(scriptState, m_renderbufferBinding->internalFormat());
     default:
         synthesizeGLError(GL_INVALID_ENUM, "getRenderbufferParameter", "invalid parameter name");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     }
 }
 
-WebGLGetInfo WebGLRenderingContextBase::getShaderParameter(WebGLShader* shader, GLenum pname)
+ScriptValue WebGLRenderingContextBase::getShaderParameter(ScriptState* scriptState, WebGLShader* shader, GLenum pname)
 {
     if (isContextLost() || !validateWebGLObject("getShaderParameter", shader))
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     GLint value = 0;
     switch (pname) {
     case GL_DELETE_STATUS:
-        return WebGLGetInfo(shader->isDeleted());
+        return WebGLAny(scriptState, shader->isDeleted());
     case GL_COMPILE_STATUS:
         webContext()->getShaderiv(objectOrZero(shader), pname, &value);
-        return WebGLGetInfo(static_cast<bool>(value));
+        return WebGLAny(scriptState, static_cast<bool>(value));
     case GL_SHADER_TYPE:
         webContext()->getShaderiv(objectOrZero(shader), pname, &value);
-        return WebGLGetInfo(static_cast<unsigned>(value));
+        return WebGLAny(scriptState, static_cast<unsigned>(value));
     default:
         synthesizeGLError(GL_INVALID_ENUM, "getShaderParameter", "invalid parameter name");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     }
 }
 
@@ -2666,13 +2667,13 @@ Nullable<Vector<String>> WebGLRenderingContextBase::getSupportedExtensions()
     return result;
 }
 
-WebGLGetInfo WebGLRenderingContextBase::getTexParameter(GLenum target, GLenum pname)
+ScriptValue WebGLRenderingContextBase::getTexParameter(ScriptState* scriptState, GLenum target, GLenum pname)
 {
     if (isContextLost())
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     WebGLTexture* tex = validateTextureBinding("getTexParameter", target, false);
     if (!tex)
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     switch (pname) {
     case GL_TEXTURE_MAG_FILTER:
     case GL_TEXTURE_MIN_FILTER:
@@ -2681,29 +2682,29 @@ WebGLGetInfo WebGLRenderingContextBase::getTexParameter(GLenum target, GLenum pn
         {
             GLint value = 0;
             webContext()->getTexParameteriv(target, pname, &value);
-            return WebGLGetInfo(static_cast<unsigned>(value));
+            return WebGLAny(scriptState, static_cast<unsigned>(value));
         }
     case GL_TEXTURE_MAX_ANISOTROPY_EXT: // EXT_texture_filter_anisotropic
         if (extensionEnabled(EXTTextureFilterAnisotropicName)) {
             GLfloat value = 0.f;
             webContext()->getTexParameterfv(target, pname, &value);
-            return WebGLGetInfo(value);
+            return WebGLAny(scriptState, value);
         }
         synthesizeGLError(GL_INVALID_ENUM, "getTexParameter", "invalid parameter name, EXT_texture_filter_anisotropic not enabled");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     default:
         synthesizeGLError(GL_INVALID_ENUM, "getTexParameter", "invalid parameter name");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     }
 }
 
-WebGLGetInfo WebGLRenderingContextBase::getUniform(WebGLProgram* program, const WebGLUniformLocation* uniformLocation)
+ScriptValue WebGLRenderingContextBase::getUniform(ScriptState* scriptState, WebGLProgram* program, const WebGLUniformLocation* uniformLocation)
 {
     if (isContextLost() || !validateWebGLObject("getUniform", program))
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     if (!uniformLocation || uniformLocation->program() != program) {
         synthesizeGLError(GL_INVALID_OPERATION, "getUniform", "no uniformlocation or not valid for this program");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     }
     GLint location = uniformLocation->location();
 
@@ -2713,7 +2714,7 @@ WebGLGetInfo WebGLRenderingContextBase::getUniform(WebGLProgram* program, const 
     for (GLint i = 0; i < activeUniforms; i++) {
         blink::WebGraphicsContext3D::ActiveInfo info;
         if (!webContext()->getActiveUniform(objectOrZero(program), i, info))
-            return WebGLGetInfo();
+            return WebGLAny(scriptState);
         String name = info.name;
         StringBuilder nameBuilder;
         // Strip "[0]" from the name if it's an array.
@@ -2803,22 +2804,22 @@ WebGLGetInfo WebGLRenderingContextBase::getUniform(WebGLProgram* program, const 
                 default:
                     // Can't handle this type
                     synthesizeGLError(GL_INVALID_VALUE, "getUniform", "unhandled type");
-                    return WebGLGetInfo();
+                    return WebGLAny(scriptState);
                 }
                 switch (baseType) {
                 case GL_FLOAT: {
                     GLfloat value[16] = {0};
                     webContext()->getUniformfv(objectOrZero(program), location, value);
                     if (length == 1)
-                        return WebGLGetInfo(value[0]);
-                    return WebGLGetInfo(DOMFloat32Array::create(value, length));
+                        return WebGLAny(scriptState, value[0]);
+                    return WebGLAny(scriptState, DOMFloat32Array::create(value, length));
                 }
                 case GL_INT: {
                     GLint value[4] = {0};
                     webContext()->getUniformiv(objectOrZero(program), location, value);
                     if (length == 1)
-                        return WebGLGetInfo(value[0]);
-                    return WebGLGetInfo(DOMInt32Array::create(value, length));
+                        return WebGLAny(scriptState, value[0]);
+                    return WebGLAny(scriptState, DOMInt32Array::create(value, length));
                 }
                 case GL_BOOL: {
                     GLint value[4] = {0};
@@ -2827,9 +2828,9 @@ WebGLGetInfo WebGLRenderingContextBase::getUniform(WebGLProgram* program, const 
                         bool boolValue[16] = {0};
                         for (unsigned j = 0; j < length; j++)
                             boolValue[j] = static_cast<bool>(value[j]);
-                        return WebGLGetInfo(boolValue, length);
+                        return WebGLAny(scriptState, boolValue, length);
                     }
-                    return WebGLGetInfo(static_cast<bool>(value[0]));
+                    return WebGLAny(scriptState, static_cast<bool>(value[0]));
                 }
                 default:
                     notImplemented();
@@ -2839,7 +2840,7 @@ WebGLGetInfo WebGLRenderingContextBase::getUniform(WebGLProgram* program, const 
     }
     // If we get here, something went wrong in our unfortunately complex logic above
     synthesizeGLError(GL_INVALID_VALUE, "getUniform", "unknown error");
-    return WebGLGetInfo();
+    return WebGLAny(scriptState);
 }
 
 PassRefPtrWillBeRawPtr<WebGLUniformLocation> WebGLRenderingContextBase::getUniformLocation(WebGLProgram* program, const String& name)
@@ -2862,39 +2863,39 @@ PassRefPtrWillBeRawPtr<WebGLUniformLocation> WebGLRenderingContextBase::getUnifo
     return WebGLUniformLocation::create(program, uniformLocation);
 }
 
-WebGLGetInfo WebGLRenderingContextBase::getVertexAttrib(GLuint index, GLenum pname)
+ScriptValue WebGLRenderingContextBase::getVertexAttrib(ScriptState* scriptState, GLuint index, GLenum pname)
 {
     if (isContextLost())
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     if (index >= m_maxVertexAttribs) {
         synthesizeGLError(GL_INVALID_VALUE, "getVertexAttrib", "index out of range");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     }
     const WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(index);
 
     if (extensionEnabled(ANGLEInstancedArraysName) && pname == GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE)
-        return WebGLGetInfo(state.divisor);
+        return WebGLAny(scriptState, state.divisor);
 
     switch (pname) {
     case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
         if (!state.bufferBinding || !state.bufferBinding->object())
-            return WebGLGetInfo();
-        return WebGLGetInfo(PassRefPtrWillBeRawPtr<WebGLObject>(state.bufferBinding.get()));
+            return WebGLAny(scriptState);
+        return WebGLAny(scriptState, PassRefPtrWillBeRawPtr<WebGLObject>(state.bufferBinding.get()));
     case GL_VERTEX_ATTRIB_ARRAY_ENABLED:
-        return WebGLGetInfo(state.enabled);
+        return WebGLAny(scriptState, state.enabled);
     case GL_VERTEX_ATTRIB_ARRAY_NORMALIZED:
-        return WebGLGetInfo(state.normalized);
+        return WebGLAny(scriptState, state.normalized);
     case GL_VERTEX_ATTRIB_ARRAY_SIZE:
-        return WebGLGetInfo(state.size);
+        return WebGLAny(scriptState, state.size);
     case GL_VERTEX_ATTRIB_ARRAY_STRIDE:
-        return WebGLGetInfo(state.originalStride);
+        return WebGLAny(scriptState, state.originalStride);
     case GL_VERTEX_ATTRIB_ARRAY_TYPE:
-        return WebGLGetInfo(state.type);
+        return WebGLAny(scriptState, state.type);
     case GL_CURRENT_VERTEX_ATTRIB:
-        return WebGLGetInfo(DOMFloat32Array::create(m_vertexAttribValue[index].value, 4));
+        return WebGLAny(scriptState, DOMFloat32Array::create(m_vertexAttribValue[index].value, 4));
     default:
         synthesizeGLError(GL_INVALID_ENUM, "getVertexAttrib", "invalid parameter name");
-        return WebGLGetInfo();
+        return WebGLAny(scriptState);
     }
 }
 
@@ -4434,19 +4435,19 @@ void WebGLRenderingContextBase::stop()
     }
 }
 
-WebGLGetInfo WebGLRenderingContextBase::getBooleanParameter(GLenum pname)
+ScriptValue WebGLRenderingContextBase::getBooleanParameter(ScriptState* scriptState, GLenum pname)
 {
     GLboolean value = 0;
     if (!isContextLost())
         webContext()->getBooleanv(pname, &value);
-    return WebGLGetInfo(static_cast<bool>(value));
+    return WebGLAny(scriptState, static_cast<bool>(value));
 }
 
-WebGLGetInfo WebGLRenderingContextBase::getBooleanArrayParameter(GLenum pname)
+ScriptValue WebGLRenderingContextBase::getBooleanArrayParameter(ScriptState* scriptState, GLenum pname)
 {
     if (pname != GL_COLOR_WRITEMASK) {
         notImplemented();
-        return WebGLGetInfo(0, 0);
+        return WebGLAny(scriptState, 0, 0);
     }
     GLboolean value[4] = {0};
     if (!isContextLost())
@@ -4454,34 +4455,34 @@ WebGLGetInfo WebGLRenderingContextBase::getBooleanArrayParameter(GLenum pname)
     bool boolValue[4];
     for (int ii = 0; ii < 4; ++ii)
         boolValue[ii] = static_cast<bool>(value[ii]);
-    return WebGLGetInfo(boolValue, 4);
+    return WebGLAny(scriptState, boolValue, 4);
 }
 
-WebGLGetInfo WebGLRenderingContextBase::getFloatParameter(GLenum pname)
+ScriptValue WebGLRenderingContextBase::getFloatParameter(ScriptState* scriptState, GLenum pname)
 {
     GLfloat value = 0;
     if (!isContextLost())
         webContext()->getFloatv(pname, &value);
-    return WebGLGetInfo(value);
+    return WebGLAny(scriptState, value);
 }
 
-WebGLGetInfo WebGLRenderingContextBase::getIntParameter(GLenum pname)
+ScriptValue WebGLRenderingContextBase::getIntParameter(ScriptState* scriptState, GLenum pname)
 {
     GLint value = 0;
     if (!isContextLost())
         webContext()->getIntegerv(pname, &value);
-    return WebGLGetInfo(value);
+    return WebGLAny(scriptState, value);
 }
 
-WebGLGetInfo WebGLRenderingContextBase::getUnsignedIntParameter(GLenum pname)
+ScriptValue WebGLRenderingContextBase::getUnsignedIntParameter(ScriptState* scriptState, GLenum pname)
 {
     GLint value = 0;
     if (!isContextLost())
         webContext()->getIntegerv(pname, &value);
-    return WebGLGetInfo(static_cast<unsigned>(value));
+    return WebGLAny(scriptState, static_cast<unsigned>(value));
 }
 
-WebGLGetInfo WebGLRenderingContextBase::getWebGLFloatArrayParameter(GLenum pname)
+ScriptValue WebGLRenderingContextBase::getWebGLFloatArrayParameter(ScriptState* scriptState, GLenum pname)
 {
     GLfloat value[4] = {0};
     if (!isContextLost())
@@ -4500,10 +4501,10 @@ WebGLGetInfo WebGLRenderingContextBase::getWebGLFloatArrayParameter(GLenum pname
     default:
         notImplemented();
     }
-    return WebGLGetInfo(DOMFloat32Array::create(value, length));
+    return WebGLAny(scriptState, DOMFloat32Array::create(value, length));
 }
 
-WebGLGetInfo WebGLRenderingContextBase::getWebGLIntArrayParameter(GLenum pname)
+ScriptValue WebGLRenderingContextBase::getWebGLIntArrayParameter(ScriptState* scriptState, GLenum pname)
 {
     GLint value[4] = {0};
     if (!isContextLost())
@@ -4520,7 +4521,7 @@ WebGLGetInfo WebGLRenderingContextBase::getWebGLIntArrayParameter(GLenum pname)
     default:
         notImplemented();
     }
-    return WebGLGetInfo(DOMInt32Array::create(value, length));
+    return WebGLAny(scriptState, DOMInt32Array::create(value, length));
 }
 
 void WebGLRenderingContextBase::handleTextureCompleteness(const char* functionName, bool prepareToDraw)

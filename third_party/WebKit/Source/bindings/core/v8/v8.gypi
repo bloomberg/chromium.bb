@@ -166,6 +166,8 @@
             'V8ValueCache.h',
             'V8WorkerGlobalScopeEventListener.cpp',
             'V8WorkerGlobalScopeEventListener.h',
+            'WebGLAny.cpp',
+            'WebGLAny.h',
             'WindowProxy.cpp',
             'WindowProxy.h',
             'WorkerScriptController.cpp',

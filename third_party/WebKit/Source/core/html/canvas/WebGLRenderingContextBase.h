@@ -27,11 +27,14 @@
 #define WebGLRenderingContextBase_h
 
 #include "bindings/core/v8/Nullable.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/WebGLExtensionName.h"
-#include "core/html/canvas/WebGLGetInfo.h"
+#include "core/html/canvas/WebGLVertexArrayObjectOES.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "platform/Timer.h"
@@ -101,7 +104,7 @@ class WebGLVertexArrayObjectOES;
 class WebGLRenderingContextLostCallback;
 class WebGLRenderingContextErrorMessageCallback;
 
-class WebGLRenderingContextBase: public CanvasRenderingContext, public ActiveDOMObject, public Page::MultisamplingChangedObserver {
+class WebGLRenderingContextBase: public CanvasRenderingContext, public ActiveDOMObject, public Page::MultisamplingChangedObserver, public ScriptWrappable {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebGLRenderingContextBase);
 public:
     virtual ~WebGLRenderingContextBase();
@@ -190,24 +193,24 @@ public:
     bool getAttachedShaders(WebGLProgram*, WillBeHeapVector<RefPtrWillBeMember<WebGLShader>>&);
     Nullable<WillBeHeapVector<RefPtrWillBeMember<WebGLShader>>> getAttachedShaders(WebGLProgram*);
     GLint getAttribLocation(WebGLProgram*, const String& name);
-    WebGLGetInfo getBufferParameter(GLenum target, GLenum pname);
+    ScriptValue getBufferParameter(ScriptState*, GLenum target, GLenum pname);
     PassRefPtrWillBeRawPtr<WebGLContextAttributes> getContextAttributes();
     GLenum getError();
     PassRefPtrWillBeRawPtr<WebGLExtension> getExtension(const String& name);
-    WebGLGetInfo getFramebufferAttachmentParameter(GLenum target, GLenum attachment, GLenum pname);
-    WebGLGetInfo getParameter(GLenum pname);
-    WebGLGetInfo getProgramParameter(WebGLProgram*, GLenum pname);
+    ScriptValue getFramebufferAttachmentParameter(ScriptState*, GLenum target, GLenum attachment, GLenum pname);
+    ScriptValue getParameter(ScriptState*, GLenum pname);
+    ScriptValue getProgramParameter(ScriptState*, WebGLProgram*, GLenum pname);
     String getProgramInfoLog(WebGLProgram*);
-    WebGLGetInfo getRenderbufferParameter(GLenum target, GLenum pname);
-    WebGLGetInfo getShaderParameter(WebGLShader*, GLenum pname);
+    ScriptValue getRenderbufferParameter(ScriptState*, GLenum target, GLenum pname);
+    ScriptValue getShaderParameter(ScriptState*, WebGLShader*, GLenum pname);
     String getShaderInfoLog(WebGLShader*);
     PassRefPtrWillBeRawPtr<WebGLShaderPrecisionFormat> getShaderPrecisionFormat(GLenum shaderType, GLenum precisionType);
     String getShaderSource(WebGLShader*);
     Nullable<Vector<String>> getSupportedExtensions();
-    WebGLGetInfo getTexParameter(GLenum target, GLenum pname);
-    WebGLGetInfo getUniform(WebGLProgram*, const WebGLUniformLocation*);
+    ScriptValue getTexParameter(ScriptState*, GLenum target, GLenum pname);
+    ScriptValue getUniform(ScriptState*, WebGLProgram*, const WebGLUniformLocation*);
     PassRefPtrWillBeRawPtr<WebGLUniformLocation> getUniformLocation(WebGLProgram*, const String&);
-    WebGLGetInfo getVertexAttrib(GLuint index, GLenum pname);
+    ScriptValue getVertexAttrib(ScriptState*, GLuint index, GLenum pname);
     long long getVertexAttribOffset(GLuint index, GLenum pname);
 
     void hint(GLenum target, GLenum mode);
@@ -707,13 +710,13 @@ protected:
     Vector<GLenum> m_lostContextErrors;
 
     // Helpers for getParameter and others
-    WebGLGetInfo getBooleanParameter(GLenum);
-    WebGLGetInfo getBooleanArrayParameter(GLenum);
-    WebGLGetInfo getFloatParameter(GLenum);
-    WebGLGetInfo getIntParameter(GLenum);
-    WebGLGetInfo getUnsignedIntParameter(GLenum);
-    WebGLGetInfo getWebGLFloatArrayParameter(GLenum);
-    WebGLGetInfo getWebGLIntArrayParameter(GLenum);
+    ScriptValue getBooleanParameter(ScriptState*, GLenum);
+    ScriptValue getBooleanArrayParameter(ScriptState*, GLenum);
+    ScriptValue getFloatParameter(ScriptState*, GLenum);
+    ScriptValue getIntParameter(ScriptState*, GLenum);
+    ScriptValue getUnsignedIntParameter(ScriptState*, GLenum);
+    ScriptValue getWebGLFloatArrayParameter(ScriptState*, GLenum);
+    ScriptValue getWebGLIntArrayParameter(ScriptState*, GLenum);
 
     // Clear the backbuffer if it was composited since the last operation.
     // clearMask is set to the bitfield of any clear that would happen anyway at this time

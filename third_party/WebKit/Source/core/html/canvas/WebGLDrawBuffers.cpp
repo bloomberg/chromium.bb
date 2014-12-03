@@ -26,6 +26,7 @@
 #include "config.h"
 
 #include "core/html/canvas/WebGLDrawBuffers.h"
+#include "core/html/canvas/WebGLFramebuffer.h"
 
 namespace blink {
 

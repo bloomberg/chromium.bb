@@ -2692,8 +2692,6 @@
             'html/canvas/WebGLExtensionName.h',
             'html/canvas/WebGLFramebuffer.cpp',
             'html/canvas/WebGLFramebuffer.h',
-            'html/canvas/WebGLGetInfo.cpp',
-            'html/canvas/WebGLGetInfo.h',
             'html/canvas/WebGLLoseContext.cpp',
             'html/canvas/WebGLLoseContext.h',
             'html/canvas/WebGLObject.cpp',
