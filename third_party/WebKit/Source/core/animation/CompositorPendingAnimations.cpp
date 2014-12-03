@@ -57,7 +57,7 @@ void CompositorPendingAnimations::add(AnimationPlayer* player)
 
 bool CompositorPendingAnimations::update(bool startOnCompositor)
 {
-    Vector<AnimationPlayer*> waitingForStartTime;
+    WillBeHeapVector<RawPtrWillBeMember<AnimationPlayer>> waitingForStartTime;
     bool startedSynchronizedOnCompositor = false;
 
     WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > players;
