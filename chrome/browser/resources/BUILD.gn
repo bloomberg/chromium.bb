@@ -69,8 +69,12 @@ grit("translate_internals_resources") {
 
 # GYP version: copy command of chrome_extra_resources
 copy("extension_resource_demo") {
-  sources = [ "extension_resource/demo/library.js" ]
-  outputs = [ "$root_out_dir/resources/extension/demo/library.js" ]
+  sources = [
+    "extension_resource/demo/library.js",
+  ]
+  outputs = [
+    "$root_out_dir/resources/extension/demo/library.js",
+  ]
 }
 
 if (!is_ios) {

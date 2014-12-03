@@ -37,12 +37,8 @@ template("_repack_one_locale") {
     ]
 
     if (use_ash) {
-      sources += [
-        "${root_gen_dir}/ash/strings/ash_strings_${locale}.pak",
-      ]
-      deps += [
-        "//ash/strings",
-      ]
+      sources += [ "${root_gen_dir}/ash/strings/ash_strings_${locale}.pak" ]
+      deps += [ "//ash/strings" ]
     }
     if (is_chromeos) {
       sources += [
@@ -67,16 +63,13 @@ template("_repack_one_locale") {
       ]
     }
     if (enable_autofill_dialog && !is_ios && !is_android) {
-      sources += [
-        "${root_gen_dir}/third_party/libaddressinput/address_input_strings_${locale}.pak",
-      ]
-      deps += [
-        "//third_party/libaddressinput:strings",
-      ]
+      sources += [ "${root_gen_dir}/third_party/libaddressinput/address_input_strings_${locale}.pak" ]
+      deps += [ "//third_party/libaddressinput:strings" ]
     }
     if (enable_extensions) {
       sources += [
         "${root_gen_dir}/device/bluetooth/device_bluetooth_strings_${locale}.pak",
+
         # TODO(jamescook): When Android stops building extensions code move
         # this to the OS != 'ios' and OS != 'android' section.
         "${root_gen_dir}/extensions/strings/extensions_strings_${locale}.pak",
@@ -88,19 +81,12 @@ template("_repack_one_locale") {
     }
 
     if (is_chrome_branded) {
-      sources += [
-        "${root_gen_dir}/chrome/google_chrome_strings_${locale}.pak",
-      ]
-      deps += [
-        "//chrome/app:google_chrome_strings",
-      ]
+      sources +=
+          [ "${root_gen_dir}/chrome/google_chrome_strings_${locale}.pak" ]
+      deps += [ "//chrome/app:google_chrome_strings" ]
     } else {
-      sources += [
-        "${root_gen_dir}/chrome/chromium_strings_${locale}.pak",
-      ]
-      deps += [
-        "//chrome/app:chromium_strings",
-      ]
+      sources += [ "${root_gen_dir}/chrome/chromium_strings_${locale}.pak" ]
+      deps += [ "//chrome/app:chromium_strings" ]
     }
 
     output = invoker.output

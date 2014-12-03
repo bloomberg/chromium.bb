@@ -7,7 +7,10 @@ action("devtools_protocol_constants") {
 
   blink_protocol = "//third_party/WebKit/Source/devtools/protocol.json"
   browser_protocol = "//content/browser/devtools/browser_protocol.json"
-  inputs = [ blink_protocol, browser_protocol ]
+  inputs = [
+    blink_protocol,
+    browser_protocol,
+  ]
   outputs = [
     "$target_gen_dir/devtools_protocol_constants.cc",
     "$target_gen_dir/devtools_protocol_constants.h",
@@ -36,7 +39,7 @@ static_library("devtools") {
     "devtools_network_transaction_factory.cc",
     "devtools_network_transaction_factory.h",
     "devtools_protocol.cc",
-    "devtools_protocol.h"
+    "devtools_protocol.h",
   ]
   sources += get_target_outputs(":devtools_protocol_constants")
 
@@ -68,7 +71,7 @@ static_library("devtools") {
       "//skia",
       "//third_party/icu",
       "//third_party/leveldatabase",
-      "//third_party/libusb"
+      "//third_party/libusb",
     ]
     sources += [
       "device/adb/adb_client_socket.cc",
@@ -117,7 +120,7 @@ static_library("devtools") {
       "devtools_window.cc",
       "devtools_window.h",
       "remote_debugging_server.cc",
-      "remote_debugging_server.h"
+      "remote_debugging_server.h",
     ]
   }
 }

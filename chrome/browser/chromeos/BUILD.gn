@@ -8,11 +8,10 @@ import("//components/nacl/nacl_defines.gni")
 import("//media/media_options.gni")
 import("//third_party/protobuf/proto_library.gni")
 
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("../../chrome_browser_chromeos.gypi") ],
-    "scope",
-    [ "chrome_browser_chromeos.gypi" ])
+gypi_values = exec_script("//build/gypi_to_gn.py",
+                          [ rebase_path("../../chrome_browser_chromeos.gypi") ],
+                          "scope",
+                          [ "chrome_browser_chromeos.gypi" ])
 
 source_set("chromeos") {
   assert(enable_extensions, "ChromeOS Chrome has to be built with extensions")
@@ -66,6 +65,7 @@ source_set("chromeos") {
     "//components/ownership",
     "//components/pairing",
     "//components/policy",
+
     # This depends directly on the variations target, rather than just
     # transitively via the common target because the proto sources need to
     # be generated before code in this target can start building.
@@ -80,6 +80,7 @@ source_set("chromeos") {
     "//media",
     "//net",
     "//ppapi:ppapi_ipc",  # For PpapiMsg_LoadPlugin
+
     # TODO: care about enable_basic_printing and enable_print_preview.
     "//printing",
     "//skia",
@@ -124,26 +125,26 @@ source_set("chromeos") {
 
   defines = nacl_defines
 
-  sources = rebase_path(gypi_values.browser_chromeos_sources,
-                        ".", "//chrome") +
+  sources = rebase_path(gypi_values.browser_chromeos_sources, ".", "//chrome") +
             rebase_path(gypi_values.browser_chromeos_extension_sources,
-                        ".", "//chrome")
+                        ".",
+                        "//chrome")
   if (use_athena) {
-    defines += ["USE_ATHENA=1"]
+    defines += [ "USE_ATHENA=1" ]
   } else {
-    sources += rebase_path(
-        gypi_values.browser_chromeos_non_athena_sources,
-        ".", "//chrome") +
+    sources +=
+        rebase_path(gypi_values.browser_chromeos_non_athena_sources,
+                    ".",
+                    "//chrome") +
         rebase_path(gypi_values.browser_chromeos_extension_non_athena_sources,
-                    ".", "//chrome")
+                    ".",
+                    "//chrome")
   }
 
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
     deps += [ "//ui/events/devices" ]
-    sources -= [
-      "system/input_device_settings_impl_ozone.cc",
-    ]
+    sources -= [ "system/input_device_settings_impl_ozone.cc" ]
   } else {
     assert(use_ozone, "Either use_x11 or use_ozone has to be specified.")
     deps += [ "//ui/ozone" ]
@@ -168,7 +169,9 @@ source_set("chromeos") {
 }
 
 proto_library("drive_proto") {
-  sources = [ "drive/drive.proto" ]
+  sources = [
+    "drive/drive.proto",
+  ]
 }
 
 proto_library("device_policy_proto") {

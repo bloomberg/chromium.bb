@@ -6,5 +6,7 @@ import("//third_party/protobuf/proto_library.gni")
 
 # GYP version: chrome/chrome_browser.gypi:in_memory_url_index_cache_proto
 proto_library("in_memory_url_index_cache_proto") {
-  sources = [ "in_memory_url_index_cache.proto" ]
+  sources = [
+    "in_memory_url_index_cache.proto",
+  ]
 }

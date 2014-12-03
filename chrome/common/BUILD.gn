@@ -4,11 +4,10 @@
 
 import("//tools/grit/grit_rule.gni")
 
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("../chrome_common.gypi") ],
-    "scope",
-    [ "../chrome_common.gypi" ])
+gypi_values = exec_script("//build/gypi_to_gn.py",
+                          [ rebase_path("../chrome_common.gypi") ],
+                          "scope",
+                          [ "../chrome_common.gypi" ])
 
 # GYP version: chrome/chrome_resources.gyp:chrome_resources
 #              (generate_common_resources action)
@@ -25,16 +24,14 @@ grit("resources") {
 # GYP version: chrome/chrome_resources.gyp:chrome_resources
 #              (generate_extensions_api_resources action)
 if (enable_extensions) {
-
-grit("extensions_api_resources") {
-  source = "extensions_api_resources.grd"
-  output_dir = "$root_gen_dir/chrome"
-  outputs = [
-    "grit/extensions_api_resources.h",
-    "extensions_api_resources.pak",
-  ]
-}
-
+  grit("extensions_api_resources") {
+    source = "extensions_api_resources.grd"
+    output_dir = "$root_gen_dir/chrome"
+    outputs = [
+      "grit/extensions_api_resources.h",
+      "extensions_api_resources.pak",
+    ]
+  }
 }
 
 # GYP version: chrome/chrome_common.gyp:common
@@ -100,9 +97,9 @@ static_library("common") {
   }
 
   if (enable_extensions) {
-    sources += rebase_path(
-        gypi_values.chrome_common_extensions_sources,
-        ".", "//chrome")
+    sources += rebase_path(gypi_values.chrome_common_extensions_sources,
+                           ".",
+                           "//chrome")
     deps += [
       "//device/usb",
       "//chrome/common/extensions/api",
@@ -114,28 +111,21 @@ static_library("common") {
   }
 
   if (is_win || is_mac) {
-    sources += rebase_path(
-        gypi_values.chrome_common_win_mac_sources,
-        ".", "//chrome")
+    sources +=
+        rebase_path(gypi_values.chrome_common_win_mac_sources, ".", "//chrome")
     if (use_openssl) {
-      sources -= [
-        "extensions/api/networking_private/networking_private_crypto_nss.cc",
-      ]
+      sources -= [ "extensions/api/networking_private/networking_private_crypto_nss.cc" ]
+
       # networking_private_crypto_openssl.cc depends on boringssl.
-      deps += [
-        "//third_party/boringssl",
-      ]
+      deps += [ "//third_party/boringssl" ]
     } else {
-      sources -= [
-        "extensions/api/networking_private/networking_private_crypto_openssl.cc",
-      ]
+      sources -= [ "extensions/api/networking_private/networking_private_crypto_openssl.cc" ]
     }
     deps += [ "//breakpad:client" ]
   }
   if (is_mac) {
-    sources += rebase_path(
-        gypi_values.chrome_common_mac_sources,
-        ".", "//chrome")
+    sources +=
+        rebase_path(gypi_values.chrome_common_mac_sources, ".", "//chrome")
   }
 
   if (enable_nacl) {
@@ -154,9 +144,9 @@ static_library("common") {
     deps += [ "//printing" ]
     if (enable_print_preview) {
       # Full printing support.
-      sources += rebase_path(
-          gypi_values.chrome_common_service_process_sources,
-          ".", "//chrome")
+      sources += rebase_path(gypi_values.chrome_common_service_process_sources,
+                             ".",
+                             "//chrome")
     }
   }
 
@@ -183,9 +173,8 @@ static_library("common") {
     ]
   } else {
     # Non-Android.
-    sources += rebase_path(
-        gypi_values.chrome_common_importer_sources,
-        ".", "//chrome")
+    sources +=
+        rebase_path(gypi_values.chrome_common_importer_sources, ".", "//chrome")
   }
 
   if (is_chromeos) {
@@ -201,9 +190,7 @@ static_library("common") {
   }
 
   if (is_mac) {
-    sources -= [
-      "chrome_version_info_posix.cc",
-    ]
+    sources -= [ "chrome_version_info_posix.cc" ]
     deps += [
       "//third_party/mach_override",
       "//third_party/google_toolbox_for_mac",
@@ -220,9 +207,7 @@ static_library("common") {
       "pepper_permission_util.cc",
       "pepper_permission_util.h",
     ]
-    deps += [
-      "//third_party/adobe/flash:flapper_version_h",
-    ]
+    deps += [ "//third_party/adobe/flash:flapper_version_h" ]
   }
   if (!enable_webrtc) {
     sources -= [ "media/webrtc_logging_messages.h" ]
@@ -233,9 +218,9 @@ static_library("common") {
 
   if (safe_browsing_mode == 1) {
     defines += [ "FULL_SAFE_BROWSING" ]
-    sources += rebase_path(
-        gypi_values.chrome_common_full_safe_browsing_sources,
-        ".", "//chrome")
+    sources += rebase_path(gypi_values.chrome_common_full_safe_browsing_sources,
+                           ".",
+                           "//chrome")
   }
   if (safe_browsing_mode == 2) {
     defines += [ "MOBILE_SAFE_BROWSING" ]
@@ -295,8 +280,7 @@ source_set("test_support") {
   testonly = true
   visibility = [ "//chrome/test:test_support" ]
 
-  sources = [
-  ]
+  sources = []
 
   deps = [
     ":common",
@@ -319,5 +303,4 @@ source_set("test_support") {
       "extensions/extension_test_util.h",
     ]
   }
-
 }

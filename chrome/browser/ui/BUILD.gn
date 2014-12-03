@@ -6,11 +6,10 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("../../chrome_browser_ui.gypi") ],
-    "scope",
-    [ "../../chrome_browser_ui.gypi" ])
+gypi_values = exec_script("//build/gypi_to_gn.py",
+                          [ rebase_path("../../chrome_browser_ui.gypi") ],
+                          "scope",
+                          [ "../../chrome_browser_ui.gypi" ])
 
 static_library("ui") {
   output_name = "browser_ui"
@@ -81,7 +80,8 @@ static_library("ui") {
 
   if (!is_ios) {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_ios_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
     deps += [
       "//chrome/browser/devtools",
       "//chrome/browser/ui/views",
@@ -108,6 +108,7 @@ static_library("ui") {
       "//ui/web_dialogs",
       "//v8",
     ]
+
     # TODO(GYP)
     #'defines': [
     #  '<@(nacl_defines)',
@@ -119,14 +120,15 @@ static_library("ui") {
     #  },
   } else {
     # iOS.
-    sources += rebase_path(gypi_values.chrome_browser_ui_ios_sources,
-                           ".", "//chrome")
+    sources +=
+        rebase_path(gypi_values.chrome_browser_ui_ios_sources, ".", "//chrome")
     deps += [ "//net" ]
   }
 
   if (!is_android && !is_ios) {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_mobile_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
     deps += [ "//device/bluetooth" ]
   }
 
@@ -135,32 +137,36 @@ static_library("ui") {
   }
 
   if (enable_one_click_signin) {
-    sources += rebase_path(
-        gypi_values.chrome_browser_ui_one_click_signin_sources,
-        ".", "//chrome")
+    sources +=
+        rebase_path(gypi_values.chrome_browser_ui_one_click_signin_sources,
+                    ".",
+                    "//chrome")
   }
   if (enable_task_manager) {
     sources += rebase_path(gypi_values.chrome_browser_ui_task_manager_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
     if (!toolkit_views || is_mac) {
       sources -= [ "views/task_manager_view.cc" ]
     }
   }
   if (!enable_nacl) {
-    sources += rebase_path(gypi_values.chrome_browser_ui_nacl_sources,
-                           ".", "//chrome")
+    sources +=
+        rebase_path(gypi_values.chrome_browser_ui_nacl_sources, ".", "//chrome")
     deps += [
       #"//native_client/src/trusted/service_runtime/service_runtime.gyp:sel",  TODO(GYP)
     ]
   }
   if (enable_configuration_policy) {
     sources += rebase_path(gypi_values.chrome_browser_ui_policy_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
     deps += [ "//components/policy" ]
   }
   if (enable_plugins) {
     sources += rebase_path(gypi_values.chrome_browser_ui_plugin_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
     deps += [ "//ppapi:ppapi_ipc" ]
   }
   if (safe_browsing_mode == 1) {
@@ -173,20 +179,20 @@ static_library("ui") {
   }
   if (is_chromeos) {
     sources += rebase_path(gypi_values.chrome_browser_ui_chromeos_sources,
-                           ".", "//chrome")
-    deps += [
-      "//chrome/browser/chromeos",
-    ]
+                           ".",
+                           "//chrome")
+    deps += [ "//chrome/browser/chromeos" ]
   } else {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_chromeos_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
   }
   if (use_cups) {
     configs += [ "//printing:cups" ]
   }
   if (use_ash) {
-    sources += rebase_path(gypi_values.chrome_browser_ui_ash_sources,
-                           ".", "//chrome")
+    sources +=
+        rebase_path(gypi_values.chrome_browser_ui_ash_sources, ".", "//chrome")
     deps += [
       "//ash",
       "//ash:ash_with_content",
@@ -195,35 +201,42 @@ static_library("ui") {
     ]
     if (!is_chromeos) {
       sources += rebase_path(gypi_values.chrome_browser_ui_ash_non_chromeos,
-                             ".", "//chrome")
+                             ".",
+                             "//chrome")
     }
   } else {  # Not ash.
     sources += rebase_path(gypi_values.chrome_browser_ui_non_ash_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
   }
   if (use_athena) {
     sources += rebase_path(gypi_values.chrome_browser_ui_athena_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
   } else {  # Not athena.
     if (!is_android) {
       sources += rebase_path(
-          gypi_values.chrome_browser_ui_non_athena_non_android_sources,
-          ".", "//chrome")
+              gypi_values.chrome_browser_ui_non_athena_non_android_sources,
+              ".",
+              "//chrome")
     }
     if (use_ash) {
-      sources += rebase_path(
-          gypi_values.chrome_browser_ui_ash_non_athena_sources,
-          ".", "//chrome")
+      sources +=
+          rebase_path(gypi_values.chrome_browser_ui_ash_non_athena_sources,
+                      ".",
+                      "//chrome")
     }
   }
   if (toolkit_views) {
     sources += rebase_path(gypi_values.chrome_browser_ui_views_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
     deps += [ "//components/constrained_window" ]
     if (!is_chromeos) {
-      sources += rebase_path(
-          gypi_values.chrome_browser_ui_views_non_chromeos_sources,
-          ".", "//chrome")
+      sources +=
+          rebase_path(gypi_values.chrome_browser_ui_views_non_chromeos_sources,
+                      ".",
+                      "//chrome")
     }
     if (is_mac) {
       if (mac_views_browser) {
@@ -232,21 +245,22 @@ static_library("ui") {
         sources -= [ "views/frame/browser_window_factory.cc" ]
       }
     } else {
-      sources += rebase_path(
-          gypi_values.chrome_browser_ui_views_non_mac_sources,
-          ".", "//chrome")
-      deps += [
-        "//extensions/components/native_app_window",
-      ]
+      sources +=
+          rebase_path(gypi_values.chrome_browser_ui_views_non_mac_sources,
+                      ".",
+                      "//chrome")
+      deps += [ "//extensions/components/native_app_window" ]
     }
     if (use_ash) {
       sources += rebase_path(gypi_values.chrome_browser_ui_ash_views_sources,
-                             ".", "//chrome")
+                             ".",
+                             "//chrome")
     }
   }
   if (use_aura && !use_ozone && is_desktop_linux) {
     deps += [
       "//build/config/linux:gio",
+
       # gtk2 is the only component that can interact with gtk2 in our new
       # world.
       "//chrome/browser/ui/libgtk2ui",
@@ -254,11 +268,12 @@ static_library("ui") {
   }
   if (is_win || is_mac || is_desktop_linux) {
     sources += rebase_path(gypi_values.chrome_browser_ui_desktop_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
   }
   if (use_aura) {
-    sources += rebase_path(gypi_values.chrome_browser_ui_aura_sources,
-                           ".", "//chrome")
+    sources +=
+        rebase_path(gypi_values.chrome_browser_ui_aura_sources, ".", "//chrome")
     deps += [
       # aura uses some of ash resources.
       "//ash/resources",
@@ -269,32 +284,36 @@ static_library("ui") {
     ]
     if (!is_chromeos) {
       sources += rebase_path(gypi_values.chrome_browser_ui_aura_non_chromeos,
-                             ".", "//chrome")
+                             ".",
+                             "//chrome")
     }
   }
   if (ui_compositor_image_transport) {
     deps += [ "//ui/gl" ]
   }
   if (use_nss_certs) {
-    sources += rebase_path(gypi_values.chrome_browser_ui_nss_sources,
-                           ".", "//chrome")
+    sources +=
+        rebase_path(gypi_values.chrome_browser_ui_nss_sources, ".", "//chrome")
   }
   if (!enable_themes) {
     sources -= [ "webui/theme_source.cc" ]
   }
   if (enable_print_preview) {
     sources += rebase_path(gypi_values.chrome_browser_ui_print_preview_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
   }
   if (is_linux || is_android) {
     sources += rebase_path(gypi_values.chrome_browser_ui_android_linux_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
   }
 
   if (is_android) {
     deps += [
       "//chrome/browser:jni_headers",
       "//crypto:platform",
+
       #'../components/components.gyp:web_contents_delegate_android',  TODO(GYP)
     ]
     deps -= [
@@ -304,17 +323,19 @@ static_library("ui") {
       "//ui/events",
     ]
     sources += rebase_path(gypi_values.chrome_browser_ui_android_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
 
     defines += [ "CHROME_BUILD_ID=" + android_chrome_build_id ]
   } else {  # Non-Android.
     sources += rebase_path(gypi_values.chrome_browser_ui_non_android_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
   }
 
   if (is_mac) {
-    sources += rebase_path(gypi_values.chrome_browser_ui_mac_sources,
-                           ".", "//chrome")
+    sources +=
+        rebase_path(gypi_values.chrome_browser_ui_mac_sources, ".", "//chrome")
     sources -= [
       # Mac has its own way of drawing tabs.
       "tabs/tab_resources.cc",
@@ -323,23 +344,24 @@ static_library("ui") {
     deps += [
       "//third_party/google_toolbox_for_mac",
       ":generate_localizer",
+
       #'../third_party/apple_sample_code/apple_sample_code.gyp:apple_sample_code',  TODO(GYP)
       #'../third_party/molokocacao/molokocacao.gyp:molokocacao',  TODO(GYP)
       #'../third_party/mozilla/mozilla.gyp:mozilla',  TODO(GYP)
     ]
     include_dirs = [ "$target_gen_dir" ]
     libs += [ "Quartz.framework" ]
-    configs += [
-      "//third_party/google_toolbox_for_mac:google_toolbox_for_mac_config",
-    ]
+    configs +=
+        [ "//third_party/google_toolbox_for_mac:google_toolbox_for_mac_config" ]
   } else {  # non-Mac.
     sources += rebase_path(gypi_values.chrome_browser_ui_non_mac_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
   }
 
   if (is_win) {
-    sources += rebase_path(gypi_values.chrome_browser_ui_win_sources,
-                           ".", "//chrome")
+    sources +=
+        rebase_path(gypi_values.chrome_browser_ui_win_sources, ".", "//chrome")
     public_deps += [
       "//ui/views",
       "//ui/views/controls/webview",
@@ -350,6 +372,7 @@ static_library("ui") {
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
       "//ui/app_list",
+
       #'metro_utils',  TODO(GYP)
       #'../google_update/google_update.gyp:google_update',  TODO(GYP)
     ]
@@ -363,11 +386,13 @@ static_library("ui") {
   }
   if (is_desktop_linux) {
     sources += rebase_path(gypi_values.chrome_browser_ui_desktop_linux_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
   }
   if (is_linux) {  # Both desktop Linux and ChromeOS.
     sources += rebase_path(gypi_values.chrome_browser_ui_linux_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
     deps += [ "//device/udev_linux" ]
     if (use_aura) {
       configs += [ "//build/config/linux:fontconfig" ]
@@ -375,7 +400,8 @@ static_library("ui") {
     }
     if (use_x11) {
       sources += rebase_path(gypi_values.chrome_browser_ui_x11_sources,
-                             ".", "//chrome")
+                             ".",
+                             "//chrome")
       configs += [ "//build/config/linux:x11" ]
       deps += [ "//ui/events/devices" ]
       if (is_chromeos) {
@@ -386,20 +412,24 @@ static_library("ui") {
 
   if (enable_app_list) {
     sources += rebase_path(gypi_values.chrome_browser_ui_app_list_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
     deps += [ "//ui/app_list" ]
   } else {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_app_list_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
   }
   if (enable_autofill_dialog) {
-    sources += rebase_path(
-        gypi_values.chrome_browser_ui_autofill_dialog_sources,
-        ".", "//chrome")
+    sources +=
+        rebase_path(gypi_values.chrome_browser_ui_autofill_dialog_sources,
+                    ".",
+                    "//chrome")
     if (!is_android && !is_ios) {
       sources += rebase_path(
-          gypi_values.chrome_browser_ui_autofill_dialog_non_mobile_sources,
-          ".", "//chrome")
+              gypi_values.chrome_browser_ui_autofill_dialog_non_mobile_sources,
+              ".",
+              "//chrome")
       deps += [
         "//third_party/libaddressinput",
         "//third_party/libaddressinput:strings",
@@ -413,21 +443,25 @@ static_library("ui") {
       "//chrome/common/extensions/api:api_registration",
     ]
     sources += rebase_path(gypi_values.chrome_browser_ui_extensions_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
   }
   if (enable_google_now && !is_android) {
     sources += rebase_path(
-        gypi_values.chrome_browser_ui_google_now_non_android_sources,
-        ".", "//chrome")
+            gypi_values.chrome_browser_ui_google_now_non_android_sources,
+            ".",
+            "//chrome")
   }
   if (enable_webrtc) {
     sources += rebase_path(gypi_values.chrome_browser_ui_webrtc_sources,
-                           ".", "//chrome")
+                           ".",
+                           "//chrome")
   }
   if (enable_service_discovery) {
-    sources += rebase_path(
-        gypi_values.chrome_browser_ui_service_discovery_sources,
-        ".", "//chrome")
+    sources +=
+        rebase_path(gypi_values.chrome_browser_ui_service_discovery_sources,
+                    ".",
+                    "//chrome")
   }
   if (enable_spellcheck) {
     deps += [ "//third_party/hunspell" ]
@@ -435,21 +469,22 @@ static_library("ui") {
 }
 
 if (is_mac) {
-  nib_gypi_values = exec_script(
-      "//build/gypi_to_gn.py",
-      [ rebase_path("../../chrome_nibs.gypi") ],
-      "scope",
-      [ "../../chrome_nibs.gypi" ])
+  nib_gypi_values = exec_script("//build/gypi_to_gn.py",
+                                [ rebase_path("../../chrome_nibs.gypi") ],
+                                "scope",
+                                [ "../../chrome_nibs.gypi" ])
 
   action("generate_localizer") {
     script = "//chrome/tools/build/mac/generate_localizer"
-    sources = [ ]
+    sources = []
     table_path = "$target_gen_dir/ui_localizer_table.h"
-    outputs = [ table_path ]
+    outputs = [
+      table_path,
+    ]
     args = [ rebase_path(table_path, root_build_dir) ] +
-             rebase_path(nib_gypi_values.mac_translated_xibs,
-                         root_build_dir,
-                         "//chrome")
+           rebase_path(nib_gypi_values.mac_translated_xibs,
+                       root_build_dir,
+                       "//chrome")
   }
 }
 
@@ -481,9 +516,7 @@ source_set("test_support") {
   ]
 
   if (toolkit_views) {
-    sources += [
-      "views/find_bar_host_unittest_util_views.cc",
-    ]
+    sources += [ "views/find_bar_host_unittest_util_views.cc" ]
   }
 
   public_deps = [

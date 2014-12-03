@@ -51,14 +51,21 @@ template("process_version") {
       branding_path,
     ]
 
-    outputs = [ invoker.output ]
+    outputs = [
+      invoker.output,
+    ]
 
     args = [
-      "-f", rebase_path(version_path, root_build_dir),
-      "-f", rebase_path(branding_path, root_build_dir),
-      "-f", rebase_path(lastchange_path, root_build_dir),
-      "-i", rebase_path(invoker.source, root_build_dir),
-      "-o", rebase_path(invoker.output, root_build_dir),
+      "-f",
+      rebase_path(version_path, root_build_dir),
+      "-f",
+      rebase_path(branding_path, root_build_dir),
+      "-f",
+      rebase_path(lastchange_path, root_build_dir),
+      "-i",
+      rebase_path(invoker.source, root_build_dir),
+      "-o",
+      rebase_path(invoker.output, root_build_dir),
     ]
 
     if (defined(invoker.extra_args)) {

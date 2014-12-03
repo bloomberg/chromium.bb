@@ -6,11 +6,14 @@ import("//third_party/protobuf/proto_library.gni")
 
 # GYP version: chrome/chrome_browser.gypi:probe_message_proto
 proto_library("probe_message_proto") {
-  sources = [ "probe_message.proto" ]
+  sources = [
+    "probe_message.proto",
+  ]
 }
 
 # GYP version: chrome/chrome_browser.gypi:cert_logger_proto
 proto_library("cert_logger_proto") {
-  sources = [ "cert_logger.proto" ]
+  sources = [
+    "cert_logger.proto",
+  ]
 }
-

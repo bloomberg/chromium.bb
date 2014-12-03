@@ -5,11 +5,10 @@
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("../chrome_utility.gypi") ],
-    "scope",
-    [ "../chrome_utility.gypi" ])
+gypi_values = exec_script("//build/gypi_to_gn.py",
+                          [ rebase_path("../chrome_utility.gypi") ],
+                          "scope",
+                          [ "../chrome_utility.gypi" ])
 
 static_library("utility") {
   sources = rebase_path(gypi_values.chrome_utility_sources, ".", "..")
@@ -31,37 +30,40 @@ static_library("utility") {
   ]
 
   if (!is_android) {
-    sources += rebase_path(gypi_values.chrome_utility_importer_sources,
-                           ".", "..")
+    sources +=
+        rebase_path(gypi_values.chrome_utility_importer_sources, ".", "..")
   }
 
   if (enable_extensions) {
     deps += [
       "//chrome/common/extensions/api",
       "//extensions/utility",
+
       #"//third_party/libexif",  TODO(GYP)
     ]
 
-    public_deps += [
-      "//chrome/common/extensions/api",
-    ]
+    public_deps += [ "//chrome/common/extensions/api" ]
 
-    sources += rebase_path(gypi_values.chrome_utility_extensions_sources,
-                           ".", "..")
-    sources += rebase_path(gypi_values.chrome_utility_shared_media_sources,
-                           ".", "..")
+    sources +=
+        rebase_path(gypi_values.chrome_utility_extensions_sources, ".", "..")
+    sources +=
+        rebase_path(gypi_values.chrome_utility_shared_media_sources, ".", "..")
 
     if (is_win || is_mac) {
-      sources += rebase_path(
-          gypi_values.chrome_utility_win_mac_media_gallery_sources, ".", "..")
+      sources +=
+          rebase_path(gypi_values.chrome_utility_win_mac_media_gallery_sources,
+                      ".",
+                      "..")
       deps += [ "//components/wifi" ]
     } else {
       sources += [ "image_writer/image_writer_stub.cc" ]
     }
 
     if (is_mac) {
-      sources += rebase_path(gypi_values.chrome_utility_mac_media_gallery_sources,
-                             ".", "..")
+      sources +=
+          rebase_path(gypi_values.chrome_utility_mac_media_gallery_sources,
+                      ".",
+                      "..")
     }
   }
 

@@ -7,11 +7,10 @@ import("//build/config/ui.gni")
 
 assert(enable_extensions)
 
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("schemas.gypi") ],
-    "scope",
-    [ "schemas.gypi" ])
+gypi_values = exec_script("//build/gypi_to_gn.py",
+                          [ rebase_path("schemas.gypi") ],
+                          "scope",
+                          [ "schemas.gypi" ])
 
 # Common sources that are both bundled and compiled.
 sources = gypi_values.main_schema_files
@@ -24,7 +23,6 @@ if (is_chromeos) {
 if (enable_webrtc) {
   sources += gypi_values.webrtc_schema_files
 }
-
 
 uncompiled_sources = gypi_values.main_non_compiled_schema_files
 

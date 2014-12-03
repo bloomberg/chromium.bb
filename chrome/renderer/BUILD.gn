@@ -5,11 +5,10 @@
 import("//build/config/features.gni")
 import("//tools/grit/grit_rule.gni")
 
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("../chrome_renderer.gypi") ],
-    "scope",
-    [ "../chrome_renderer.gypi" ])
+gypi_values = exec_script("//build/gypi_to_gn.py",
+                          [ rebase_path("../chrome_renderer.gypi") ],
+                          "scope",
+                          [ "../chrome_renderer.gypi" ])
 
 # GYP version: chrome/chrome_resources.gyp:chrome_resources
 # (generate_renderer_resources action)
@@ -76,8 +75,8 @@ static_library("renderer") {
   }
 
   if (enable_plugins) {
-    sources += rebase_path(gypi_values.chrome_renderer_plugin_sources,
-                           ".", "..")
+    sources +=
+        rebase_path(gypi_values.chrome_renderer_plugin_sources, ".", "..")
     deps += [
       "//components/pdf/renderer",
       "//ppapi:ppapi_host",
@@ -89,10 +88,12 @@ static_library("renderer") {
 
   if (safe_browsing_mode == 1) {
     sources += rebase_path(gypi_values.chrome_renderer_safe_browsing_sources,
-                           ".", "..")
-    sources += rebase_path(
-        gypi_values.chrome_renderer_basic_safe_browsing_sources,
-        ".", "..")
+                           ".",
+                           "..")
+    sources +=
+        rebase_path(gypi_values.chrome_renderer_basic_safe_browsing_sources,
+                    ".",
+                    "..")
     defines += [ "FULL_SAFE_BROWSING" ]
     deps += [
       "//chrome/common/safe_browsing:proto",
@@ -100,15 +101,16 @@ static_library("renderer") {
     ]
   }
   if (safe_browsing_mode == 2) {
-    sources += rebase_path(
-        gypi_values.chrome_renderer_basic_safe_browsing_sources,
-        ".", "..")
+    sources +=
+        rebase_path(gypi_values.chrome_renderer_basic_safe_browsing_sources,
+                    ".",
+                    "..")
     defines += [ "MOBILE_SAFE_BROWSING" ]
   }
 
   if (enable_extensions) {
-    sources += rebase_path(gypi_values.chrome_renderer_extensions_sources,
-                           ".", "..")
+    sources +=
+        rebase_path(gypi_values.chrome_renderer_extensions_sources, ".", "..")
     deps += [
       # TODO(hclam): See crbug.com/298380 for details.
       # We should isolate the APIs needed by the renderer.
@@ -118,26 +120,29 @@ static_library("renderer") {
     ]
   }
   if (enable_webrtc) {
-    sources += rebase_path(gypi_values.chrome_renderer_webrtc_sources,
-                           ".", "..")
+    sources +=
+        rebase_path(gypi_values.chrome_renderer_webrtc_sources, ".", "..")
   }
   if (enable_extensions && enable_webrtc) {
-    sources += rebase_path(
-        gypi_values.chrome_renderer_webrtc_extensions_sources, ".", "..")
+    sources +=
+        rebase_path(gypi_values.chrome_renderer_webrtc_extensions_sources,
+                    ".",
+                    "..")
   }
   if (enable_spellcheck) {
-    sources += rebase_path(gypi_values.chrome_renderer_spellchecker_sources,
-                           ".", "..")
+    sources +=
+        rebase_path(gypi_values.chrome_renderer_spellchecker_sources, ".", "..")
     deps += [ "//third_party/hunspell" ]
   }
 
   if (enable_basic_printing || enable_print_preview) {
     deps += [ "//printing" ]
-    sources += rebase_path(gypi_values.chrome_renderer_printing_sources,
-                           ".", "..")
+    sources +=
+        rebase_path(gypi_values.chrome_renderer_printing_sources, ".", "..")
     if (enable_print_preview) {
       sources += rebase_path(gypi_values.chrome_renderer_full_printing_sources,
-                             ".", "..")
+                             ".",
+                             "..")
     }
   }
 
@@ -151,8 +156,8 @@ static_library("renderer") {
     ]
   }
   if (!is_android) {
-    sources += rebase_path(gypi_values.chrome_renderer_non_android_sources,
-                           ".", "..")
+    sources +=
+        rebase_path(gypi_values.chrome_renderer_non_android_sources, ".", "..")
   }
 
   # TODO(GYP)

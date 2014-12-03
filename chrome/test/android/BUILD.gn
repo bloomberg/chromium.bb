@@ -4,7 +4,6 @@
 
 import("//build/config/android/rules.gni")
 
-
 # GYP: //chrome/chrome_tests.gypi:chrome_java_test_support
 android_library("chrome_java_test_support") {
   testonly = true

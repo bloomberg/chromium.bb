@@ -5,11 +5,10 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("../chrome_tests.gypi") ],
-    "scope",
-    [ "../chrome_tests.gypi" ])
+gypi_values = exec_script("//build/gypi_to_gn.py",
+                          [ rebase_path("../chrome_tests.gypi") ],
+                          "scope",
+                          [ "../chrome_tests.gypi" ])
 
 # This target exists to reference other test executables to bring these files
 # into the build.
@@ -93,6 +92,7 @@ source_set("test_support") {
     "//chrome:resources",
     "//chrome:strings",
     "//chrome/app:test_support",
+
     #"//chrome/app/theme:theme_resources",
     "//chrome/browser:test_support",
     "//chrome/common:test_support",
@@ -222,7 +222,8 @@ source_set("sync_integration_test_support") {
   testonly = true
 
   sources = rebase_path(gypi_values.test_support_sync_integration_sources,
-                        ".", "//chrome")
+                        ".",
+                        "//chrome")
   deps = [
     ":test_support",
     "//base",
@@ -255,8 +256,8 @@ source_set("sync_integration_test_support") {
 }
 
 test("sync_integration_tests") {
-  sources = rebase_path(gypi_values.sync_integration_tests_sources,
-                        ".", "//chrome")
+  sources =
+      rebase_path(gypi_values.sync_integration_tests_sources, ".", "//chrome")
 
   # TODO(phajdan.jr): Only temporary, to make transition easier.
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -293,7 +294,7 @@ test("sync_integration_tests") {
       "../browser/sync/test/integration/single_client_dictionary_sync_test.cc",
       "../browser/sync/test/integration/two_client_dictionary_sync_test.cc",
     ]
- 
+
     # The sync_integration_tests do not run on mac without this flag.
     # Search for comments about "xcode_settings" elsewhere in this file.
     ldflags = [ "-Wl,-ObjC" ]
@@ -309,9 +310,7 @@ test("sync_integration_tests") {
       #'chrome_version_resources',  TODO(GYP)
     ]
   } else {
-    sources -= [
-      "../app/chrome_version.rc.version",
-    ]
+    sources -= [ "../app/chrome_version.rc.version" ]
   }
 
   if (toolkit_views) {
@@ -327,15 +326,13 @@ test("sync_integration_tests") {
     ]
   }
   if (!enable_supervised_users) {
-    sources -= [
-      "../browser/sync/test/integration/single_client_supervised_user_settings_sync_test.cc",
-    ]
+    sources -= [ "../browser/sync/test/integration/single_client_supervised_user_settings_sync_test.cc" ]
   }
 }
 
 test("sync_performance_tests") {
-  sources = rebase_path(gypi_values.sync_performance_tests_sources,
-                        ".", "//chrome")
+  sources =
+      rebase_path(gypi_values.sync_performance_tests_sources, ".", "//chrome")
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
@@ -356,9 +353,7 @@ test("sync_performance_tests") {
 
   if (is_mac) {
     # Dictionary sync is disabled on Mac.
-    sources -= [
-      "../browser/sync/test/integration/performance/dictionary_sync_perf_test.cc",
-    ]
+    sources -= [ "../browser/sync/test/integration/performance/dictionary_sync_perf_test.cc" ]
 
     # The sync_performance_tests do not run on mac without this flag.
     # Search for comments about "xcode_settings" elsewhere in this file.
@@ -375,16 +370,13 @@ test("sync_performance_tests") {
       #'chrome_version_resources',  TODO(GYP)
     ]
   } else {
-    sources -= [
-      "../app/chrome_version.rc.version",
-    ]
+    sources -= [ "../app/chrome_version.rc.version" ]
   }
 
   if (toolkit_views) {
     deps += [ "//ui/views" ]
   }
 }
-
 
 # Executable to measure time to load libraries.
 test("load_library_perf_tests") {

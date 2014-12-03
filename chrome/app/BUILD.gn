@@ -4,7 +4,6 @@
 
 import("//tools/grit/grit_rule.gni")
 
-
 if (is_android) {
   import("//build/config/android/rules.gni")
   android_generated_java_resources = [
@@ -127,11 +126,8 @@ grit("generated_resources") {
 if (is_android) {
   java_strings_grd_prebuilt("java_strings_grd") {
     grit_output_dir = "$root_gen_dir/chrome/java/res"
-    generated_files = rebase_path(
-        android_generated_java_resources,
-        "java/res",
-        "."
-    )
+    generated_files =
+        rebase_path(android_generated_java_resources, "java/res", ".")
   }
 }
 
@@ -142,13 +138,19 @@ action("make_generated_resources_map") {
 
   script = "//chrome/browser/metrics/variations/generate_resources_map.py"
 
-  inputs = [ "$root_gen_dir/chrome/grit/generated_resources.h" ]
-  outputs = [ "$root_gen_dir/chrome/generated_resources_map.cc" ]
+  inputs = [
+    "$root_gen_dir/chrome/grit/generated_resources.h",
+  ]
+  outputs = [
+    "$root_gen_dir/chrome/generated_resources_map.cc",
+  ]
 
-  args = rebase_path(inputs, root_build_dir) +
-      rebase_path(outputs, root_build_dir)
+  args =
+      rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)
 
-  deps = [ ":generated_resources" ]
+  deps = [
+    ":generated_resources",
+  ]
 }
 
 # Collect the generated .cc file from make_generated_resources_map and put it

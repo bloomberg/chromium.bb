@@ -13,111 +13,103 @@ if (is_android) {
 }
 
 if (!is_android) {
-
-# TODO(GYP) for Windows need to the the reorder-imports step which probably
-# means adding another target and renaming this to chrome_initial like in GYP.
-executable("chrome") {
-  # Because the sources list varies so significantly per-platform, generally
-  # each platform lists its own files rather than relying on filtering or
-  # removing unused files.
-  sources = [
-    "app/chrome_exe_resource.h",
-  ]
-  deps = []
-  datadeps = []
-
-  # TODO(GYP) mac_bundle_resources, xcode_settings
-
-  # TODO(GYP) order_profiling, order_text_section
-
-  if (is_win) {
-    sources += [
-      "app/chrome_exe_main_win.cc",
-      "app/client_util.cc",
-      "app/client_util.h",
-      "app/signature_validator_win.cc",
-      "app/signature_validator_win.h",
-      "//content/app/startup_helper_win.cc",
+  # TODO(GYP) for Windows need to the the reorder-imports step which probably
+  # means adding another target and renaming this to chrome_initial like in GYP.
+  executable("chrome") {
+    # Because the sources list varies so significantly per-platform, generally
+    # each platform lists its own files rather than relying on filtering or
+    # removing unused files.
+    sources = [
+      "app/chrome_exe_resource.h",
     ]
-    deps += [ "//ui/gfx" ]
-  } else if (use_aura) {
-    # Non-Windows aura entrypoint.
-    sources += [ "app/chrome_exe_main_aura.cc" ]
-  }
+    deps = []
+    datadeps = []
 
-  if (is_linux) {
-    # TODO(GYP) manpage action
+    # TODO(GYP) mac_bundle_resources, xcode_settings
 
-    sources += [
-      "app/chrome_dll_resource.h",
-      "app/chrome_main.cc",
-      "app/chrome_main_delegate.cc",
-      "app/chrome_main_delegate.h",
-    ]
+    # TODO(GYP) order_profiling, order_text_section
 
-    deps += [
-      # On Linux, link the dependencies (libraries) that make up actual
-      # Chromium functionality directly into the executable.
-      ":browser_dependencies",
-      ":child_dependencies",
-
-      "//base/allocator",
-      # Needed to use the master_preferences functions
-      "//chrome/installer/util",
-      "//content/public/app:both",
-    ]
-
-    # Needed for chrome_main.cc initialization of libraries.
-    configs += [ "//build/config/linux:pangocairo" ]
-
-    # TODO(GYP) ['profiling==0 and linux_disable_pie==0', {
-    #   'ldflags': [
-    #      '-pie',
-    #   ],
-    #}],
-
-    if (use_x11) {
-      configs += [
-        "//build/config/linux:x11",
-        "//build/config/linux:xext",
+    if (is_win) {
+      sources += [
+        "app/chrome_exe_main_win.cc",
+        "app/client_util.cc",
+        "app/client_util.h",
+        "app/signature_validator_win.cc",
+        "app/signature_validator_win.h",
+        "//content/app/startup_helper_win.cc",
       ]
+      deps += [ "//ui/gfx" ]
+    } else if (use_aura) {
+      # Non-Windows aura entrypoint.
+      sources += [ "app/chrome_exe_main_aura.cc" ]
+    }
+
+    if (is_linux) {
+      # TODO(GYP) manpage action
+
+      sources += [
+        "app/chrome_dll_resource.h",
+        "app/chrome_main.cc",
+        "app/chrome_main_delegate.cc",
+        "app/chrome_main_delegate.h",
+      ]
+
+      deps += [
+        # On Linux, link the dependencies (libraries) that make up actual
+        # Chromium functionality directly into the executable.
+        ":browser_dependencies",
+        ":child_dependencies",
+        "//base/allocator",
+
+        # Needed to use the master_preferences functions
+        "//chrome/installer/util",
+        "//content/public/app:both",
+      ]
+
+      # Needed for chrome_main.cc initialization of libraries.
+      configs += [ "//build/config/linux:pangocairo" ]
+
+      # TODO(GYP) ['profiling==0 and linux_disable_pie==0', {
+      #   'ldflags': [
+      #      '-pie',
+      #   ],
+      #}],
+
+      if (use_x11) {
+        configs += [
+          "//build/config/linux:x11",
+          "//build/config/linux:xext",
+        ]
+      }
+    }
+
+    if (is_mac) {
+      sources += [ "app/chrome_exe_main_mac.cc" ]
+      # TODO(GYP) lots more stuff in the is_mac block.
+    } else {  # Non-Mac.
+      deps += [
+        ":packed_extra_resources",
+        ":packed_resources",
+
+        # Copy Flash Player files to PRODUCT_DIR if applicable. Let the .gyp
+        # file decide what to do on a per-OS basis; on Mac, internal plugins
+        # go inside the framework, so this dependency is in chrome_dll.gypi.
+        #'../third_party/adobe/flash/flash_player.gyp:flapper_binaries',  TODO(GYP)
+
+        # Copy CDM files to PRODUCT_DIR if applicable. Let the .gyp
+        # file decide what to do on a per-OS basis; on Mac, internal plugins
+        # go inside the framework, so this dependency is in chrome_dll.gypi.
+        #'../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',  TODO(GYP)
+      ]
+      # TODO(GYP) some stuff from GYP including chrome_multiple_dll.
+    }
+
+    if (!is_mac) {
+      # On Mac this is done in chrome_dll.gypi.
+      datadeps += [ "//pdf" ]
+      # TODO(GYP) pdf linux symbols
     }
   }
-
-  if (is_mac) {
-    sources += [
-      "app/chrome_exe_main_mac.cc",
-    ]
-    # TODO(GYP) lots more stuff in the is_mac block.
-  } else {  # Non-Mac.
-    deps += [
-      ":packed_extra_resources",
-      ":packed_resources",
-
-      # Copy Flash Player files to PRODUCT_DIR if applicable. Let the .gyp
-      # file decide what to do on a per-OS basis; on Mac, internal plugins
-      # go inside the framework, so this dependency is in chrome_dll.gypi.
-      #'../third_party/adobe/flash/flash_player.gyp:flapper_binaries',  TODO(GYP)
-
-      # Copy CDM files to PRODUCT_DIR if applicable. Let the .gyp
-      # file decide what to do on a per-OS basis; on Mac, internal plugins
-      # go inside the framework, so this dependency is in chrome_dll.gypi.
-      #'../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',  TODO(GYP)
-    ]
-
-    # TODO(GYP) some stuff from GYP including chrome_multiple_dll.
-
-  }
-
-
-  if (!is_mac) {
-    # On Mac this is done in chrome_dll.gypi.
-    datadeps += [ "//pdf" ]
-
-    # TODO(GYP) pdf linux symbols
-  }
-}
-
 }  # !is_android
 
 shared_library("main_dll") {
@@ -154,6 +146,7 @@ shared_library("main_dll") {
       "//net:net_resources",
       "//third_party/wtl",
       "//ui/views",
+
       #'<(DEPTH)/chrome_elf/chrome_elf.gyp:chrome_elf' ]  TODO(GYP)
     ]
     if (enable_configuration_policy) {
@@ -180,9 +173,7 @@ shared_library("main_dll") {
   #TODO(GYP) add chrome_multiple_dll support
   if (false) {  #chrome_multiple_dll) {
     defines = [ "CHROME_MULTIPLE_DLL_BROWSER" ]
-    deps += [
-      "//content/public/app:browser",
-    ]
+    deps += [ "//content/public/app:browser" ]
   } else {
     deps += [
       ":child_dependencies",
@@ -191,16 +182,13 @@ shared_library("main_dll") {
   }
 
   if (cld_version == 0 || cld_version == 2) {
-    deps += [
-      "//third_party/cld_2",
-    ]
+    deps += [ "//third_party/cld_2" ]
   }
 
   if (is_mac) {
     #['OS=="mac" and component!="shared_library"', {  TODO(GYP)
     #  'includes': [ 'chrome_dll_bundle.gypi' ],
     #}],
-
     # TODO(GYP) Lots of other stuff in the OS=="mac" block.
   }
 }
@@ -213,9 +201,7 @@ group("browser_dependencies") {
     "//sync",
   ]
   if (!is_ios) {
-    deps += [
-      "//ppapi:ppapi_host",
-    ]
+    deps += [ "//ppapi:ppapi_host" ]
   }
 
   if (enable_basic_printing || enable_print_preview) {
@@ -243,9 +229,7 @@ group("child_dependencies") {
     ]
   }
   if (cld_version == 0 || cld_version == 2) {
-    deps += [
-      "//third_party/cld_2:cld2_platform_impl",
-    ]
+    deps += [ "//third_party/cld_2:cld2_platform_impl" ]
   }
 }
 
@@ -257,6 +241,7 @@ if (is_win) {
     # currently depends on this.
     #visibility = [ ":*" ]
     source = "version.h.in"
+
     # TODO(brettw) this should move to $target_gen_dir/version.h and
     # source files including it should reference it via "chrome/version.h"
     output = "$root_gen_dir/version.h"
@@ -466,6 +451,7 @@ template("chrome_repack_percent") {
 
   repack(repack_name) {
     visibility = [ ":$copy_name" ]
+
     # All sources should also have deps for completeness.
     sources = [
       "$root_gen_dir/components/components_resources_${percent}_percent.pak",
@@ -482,31 +468,24 @@ template("chrome_repack_percent") {
     ]
 
     if (!is_ios) {
-      sources += [
-        "$root_gen_dir/content/app/resources/content_resources_${percent}_percent.pak",
-      ]
+      sources += [ "$root_gen_dir/content/app/resources/content_resources_${percent}_percent.pak" ]
       deps += [ "//content:resources" ]
     }
     if (use_ash) {
-      sources += [ "$root_gen_dir/ash/resources/ash_resources_${percent}_percent.pak" ]
+      sources +=
+          [ "$root_gen_dir/ash/resources/ash_resources_${percent}_percent.pak" ]
       deps += [ "//ash/resources" ]
     }
     if (use_athena) {
-      sources += [
-        "$root_gen_dir/athena/resources/athena_resources_${percent}_percent.pak",
-      ]
+      sources += [ "$root_gen_dir/athena/resources/athena_resources_${percent}_percent.pak" ]
       deps += [ "//athena/resources" ]
     }
     if (is_chromeos) {
-      sources += [
-        "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_${percent}_percent.pak",
-      ]
+      sources += [ "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_${percent}_percent.pak" ]
       deps += [ "//ui/chromeos/resources" ]
     }
     if (enable_extensions) {
-      sources += [
-        "$root_gen_dir/extensions/extensions_browser_resources_${percent}_percent.pak",
-      ]
+      sources += [ "$root_gen_dir/extensions/extensions_browser_resources_${percent}_percent.pak" ]
     }
 
     output = repack_output_file
@@ -514,9 +493,15 @@ template("chrome_repack_percent") {
 
   copy(copy_name) {
     visibility = [ ":*" ]
-    deps = [ ":$repack_name" ]
-    sources = [ repack_output_file ]
-    outputs = [ "$root_build_dir/chrome_${percent}_percent.pak" ]
+    deps = [
+      ":$repack_name",
+    ]
+    sources = [
+      repack_output_file,
+    ]
+    outputs = [
+      "$root_build_dir/chrome_${percent}_percent.pak",
+    ]
   }
 }
 
@@ -541,66 +526,62 @@ group("strings") {
 }
 
 if (is_android) {
+  # GYP: //chrome/chrome.gyp:content_setting_java
+  java_cpp_enum("content_setting_javagen") {
+    sources = [
+      "../components/content_settings/core/common/content_settings.h",
+    ]
+    outputs = [
+      "org/chromium/chrome/browser/ContentSetting.java",
+    ]
+  }
 
-# GYP: //chrome/chrome.gyp:content_setting_java
-java_cpp_enum("content_setting_javagen") {
-  sources = [
-    "../components/content_settings/core/common/content_settings.h"
-  ]
-  outputs = [
-    "org/chromium/chrome/browser/ContentSetting.java",
-  ]
-}
+  # GYP: //chrome/chrome.gyp:content_settings_type_java
+  java_cpp_enum("content_settings_type_javagen") {
+    sources = [
+      "../components/content_settings/core/common/content_settings_types.h",
+    ]
+    outputs = [
+      "org/chromium/chrome/browser/ContentSettingsType.java",
+    ]
+  }
 
-# GYP: //chrome/chrome.gyp:content_settings_type_java
-java_cpp_enum("content_settings_type_javagen") {
-  sources = [
-    "../components/content_settings/core/common/content_settings_types.h"
-  ]
-  outputs = [
-    "org/chromium/chrome/browser/ContentSettingsType.java",
-  ]
-}
+  # GYP: //chrome/chrome.gyp:page_info_connection_type_java
+  java_cpp_enum("page_info_connection_type_javagen") {
+    sources = [
+      "browser/ui/android/website_settings_popup_android.h",
+    ]
+    outputs = [
+      "org/chromium/chrome/browser/PageInfoConnectionType.java",
+    ]
+  }
 
-# GYP: //chrome/chrome.gyp:page_info_connection_type_java
-java_cpp_enum("page_info_connection_type_javagen") {
-  sources = [
-    "browser/ui/android/website_settings_popup_android.h"
-  ]
-  outputs = [
-    "org/chromium/chrome/browser/PageInfoConnectionType.java",
-  ]
-}
+  # GYP: //chrome/chrome_android.gypi:chrome_android_core
+  static_library("chrome_android_core") {
+    sources = [
+      "app/android/chrome_android_initializer.cc",
+      "app/android/chrome_android_initializer.h",
+      "app/android/chrome_main_delegate_android.cc",
+      "app/android/chrome_main_delegate_android.h",
+      "app/chrome_main_delegate.cc",
+      "app/chrome_main_delegate.h",
+    ]
 
-# GYP: //chrome/chrome_android.gypi:chrome_android_core
-static_library("chrome_android_core") {
-  sources = [
-    "app/android/chrome_android_initializer.cc",
-    "app/android/chrome_android_initializer.h",
-    "app/android/chrome_main_delegate_android.cc",
-    "app/android/chrome_main_delegate_android.h",
-    "app/chrome_main_delegate.cc",
-    "app/chrome_main_delegate.h",
-  ]
+    include_dirs = [ android_ndk_include_dir ]
 
-  include_dirs = [
-    android_ndk_include_dir,
-  ]
+    libs = [
+      "android",
+      "jnigraphics",
+    ]
 
-  libs = [
-    "android",
-    "jnigraphics",
-  ]
-
-  deps = [
-    "//chrome/browser",
-    "//chrome/browser/ui",
-    "//chrome/plugin",
-    "//chrome/renderer",
-    "//chrome/utility",
-    "//components/enhanced_bookmarks",
-    "//content/public/app:browser",
-  ]
-}
-
+    deps = [
+      "//chrome/browser",
+      "//chrome/browser/ui",
+      "//chrome/plugin",
+      "//chrome/renderer",
+      "//chrome/utility",
+      "//components/enhanced_bookmarks",
+      "//content/public/app:browser",
+    ]
+  }
 }

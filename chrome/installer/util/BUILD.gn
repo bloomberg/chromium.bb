@@ -36,7 +36,9 @@ action("strings") {
     grdfile = "//chrome/app/chromium_strings.grd"
   }
 
-  inputs = [ grdfile ]
+  inputs = [
+    grdfile,
+  ]
 
   # TODO(brettw) move to target_gen_dir
   outdir = "$root_gen_dir/installer_util_strings"
@@ -46,8 +48,11 @@ action("strings") {
   ]
 
   args = [
-    "-i", rebase_path(grdfile, root_build_dir) + ":resources",
-    "-n", "installer_util_strings",
-    "-o", rebase_path(outdir, root_build_dir),
+    "-i",
+    rebase_path(grdfile, root_build_dir) + ":resources",
+    "-n",
+    "installer_util_strings",
+    "-o",
+    rebase_path(outdir, root_build_dir),
   ]
 }
