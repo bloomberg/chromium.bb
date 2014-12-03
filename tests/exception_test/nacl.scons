@@ -5,9 +5,7 @@
 
 Import('env')
 
-if not env.AllowInlineAssembly() or env.Bit('nacl_clang'):
-  # This file has asm that nacl_clang doesn't support properly. See
-  # https://code.google.com/p/nativeclient/issues/detail?id=3969
+if not env.AllowInlineAssembly():
   Return()
 
 test_args = {'sel_ldr_flags': ['-e', '-E', 'OUTSIDE_BROWSER=1'],
