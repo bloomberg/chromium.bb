@@ -6,6 +6,7 @@
 #define SuspendableScriptExecutor_h
 
 #include "core/dom/ActiveDOMObject.h"
+#include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
@@ -15,21 +16,23 @@ class LocalFrame;
 class ScriptSourceCode;
 class WebScriptExecutionCallback;
 
-class SuspendableScriptExecutor final : public ActiveDOMObject {
+class SuspendableScriptExecutor final : public RefCountedWillBeRefCountedGarbageCollected<SuspendableScriptExecutor>, public ActiveDOMObject {
 public:
     static void createAndRun(LocalFrame*, int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
+    virtual ~SuspendableScriptExecutor();
 
     virtual void resume() override;
     virtual void contextDestroyed() override;
 
+    void trace(Visitor*);
+
 private:
     SuspendableScriptExecutor(LocalFrame*, int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
-    virtual ~SuspendableScriptExecutor();
 
     void run();
     void executeAndDestroySelf();
 
-    LocalFrame* m_frame;
+    RawPtrWillBeMember<LocalFrame> m_frame;
     int m_worldID;
     Vector<ScriptSourceCode> m_sources;
     int m_extensionGroup;
