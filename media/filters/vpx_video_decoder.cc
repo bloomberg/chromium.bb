@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -367,14 +368,18 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
   // Pass |buffer| to libvpx.
   int64 timestamp = buffer->timestamp().InMicroseconds();
   void* user_priv = reinterpret_cast<void*>(&timestamp);
-  vpx_codec_err_t status = vpx_codec_decode(vpx_codec_,
-                                            buffer->data(),
-                                            buffer->data_size(),
-                                            user_priv,
-                                            0);
-  if (status != VPX_CODEC_OK) {
-    LOG(ERROR) << "vpx_codec_decode() failed, status=" << status;
-    return false;
+
+  {
+    TRACE_EVENT1("video", "vpx_codec_decode", "timestamp", timestamp);
+    vpx_codec_err_t status = vpx_codec_decode(vpx_codec_,
+                                              buffer->data(),
+                                              buffer->data_size(),
+                                              user_priv,
+                                              0);
+    if (status != VPX_CODEC_OK) {
+      LOG(ERROR) << "vpx_codec_decode() failed, status=" << status;
+      return false;
+    }
   }
 
   // Gets pointer to decoded data.
@@ -400,15 +405,18 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
     const uint64 side_data_id = base::NetToHost64(
         *(reinterpret_cast<const uint64*>(buffer->side_data())));
     if (side_data_id == 1) {
-      status = vpx_codec_decode(vpx_codec_alpha_,
-                                buffer->side_data() + 8,
-                                buffer->side_data_size() - 8,
-                                user_priv_alpha,
-                                0);
-
-      if (status != VPX_CODEC_OK) {
-        LOG(ERROR) << "vpx_codec_decode() failed on alpha, status=" << status;
-        return false;
+      {
+        TRACE_EVENT1("video", "vpx_codec_decode_alpha",
+                     "timestamp_alpha", timestamp_alpha);
+        vpx_codec_err_t status = vpx_codec_decode(vpx_codec_alpha_,
+                                                  buffer->side_data() + 8,
+                                                  buffer->side_data_size() - 8,
+                                                  user_priv_alpha,
+                                                  0);
+        if (status != VPX_CODEC_OK) {
+          LOG(ERROR) << "vpx_codec_decode() failed on alpha, status=" << status;
+          return false;
+        }
       }
 
       // Gets pointer to decoded data.
