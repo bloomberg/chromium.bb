@@ -1446,6 +1446,9 @@ crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/softHyphen.html [ Pass 
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/024.html [ Pass ImageOnlyFailure ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/whitespace/pre-wrap-spaces-after-newline.html [ Pass ImageOnlyFailure ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/word-break.html [ Pass ImageOnlyFailure ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/atsui-bidi-control.html [ Crash ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/international/bidi-neutral-run.html [ Crash ]
+crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/aat-morx.html [ Failure ]
 
 crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 
