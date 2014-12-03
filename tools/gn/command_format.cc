@@ -471,8 +471,9 @@ int Printer::Expr(const ParseNode* root,
     if (stack_.back().continuation_requires_indent)
       indent_column += kIndentSize * 2;
 
-    stack_.push_back(
-        IndentState(indent_column, false, binop->op().value() == "||"));
+    stack_.push_back(IndentState(indent_column,
+                                 stack_.back().continuation_requires_indent,
+                                 binop->op().value() == "||"));
     Printer sub_left;
     InitializeSub(&sub_left);
     sub_left.Expr(binop->left(),
@@ -709,9 +710,7 @@ int Printer::FunctionCall(const FunctionCallNode* func_call,
   // Special case to make function calls of one arg taking a long list of
   // boolean operators not indent.
   bool continuation_requires_indent =
-      list.size() != 1 || !list[0]->AsBinaryOp() ||
-      (list[0]->AsBinaryOp()->op().value() != "||" &&
-       list[0]->AsBinaryOp()->op().value() != "&&");
+      list.size() != 1 || !list[0]->AsBinaryOp();
 
   // 1: Same line.
   Printer sub1;
