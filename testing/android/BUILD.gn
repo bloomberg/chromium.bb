@@ -8,7 +8,7 @@ import("//build/config/android/rules.gni")
 source_set("native_test_native_code") {
   testonly = true
   sources = [
-    "native_test_launcher.cc"
+    "native_test_launcher.cc",
   ]
   libs = [ "log" ]
   deps = [
@@ -36,6 +36,6 @@ source_set("native_test_util") {
     "native_test_util.h",
   ]
   deps = [
-    "//base"
+    "//base",
   ]
 }

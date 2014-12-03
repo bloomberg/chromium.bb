@@ -96,7 +96,9 @@ copy("resources") {
   sources = [
     "$target_gen_dir/keyboard_resources.pak",
   ]
-  outputs = [ "$root_out_dir/keyboard_resources.pak" ]
+  outputs = [
+    "$root_out_dir/keyboard_resources.pak",
+  ]
   public_deps = [
     ":resources_grit",
   ]

@@ -40,6 +40,7 @@ component("crypto") {
     "hmac_openssl.cc",
     "mac_security_services_lock.cc",
     "mac_security_services_lock.h",
+
     # TODO(brettw) these mocks should be moved to a test_support_crypto target
     # if possible.
     "mock_apple_keychain.cc",
@@ -232,9 +233,7 @@ if (!is_win) {
     ]
 
     if (use_openssl || !is_linux) {
-      sources -= [
-        "rsa_private_key_nss_unittest.cc",
-      ]
+      sources -= [ "rsa_private_key_nss_unittest.cc" ]
     }
 
     if (use_openssl) {
@@ -293,9 +292,13 @@ source_set("test_support") {
 # on the current SSL library should just depend on this.
 group("platform") {
   if (use_openssl) {
-    deps = [ "//third_party/boringssl" ]
+    deps = [
+      "//third_party/boringssl",
+    ]
   } else {
-    deps = [ "//net/third_party/nss/ssl:libssl" ]
+    deps = [
+      "//net/third_party/nss/ssl:libssl",
+    ]
     if (is_linux) {
       # On Linux, we use the system NSS (excepting SSL where we always use our
       # own).

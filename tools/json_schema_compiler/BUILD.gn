@@ -6,8 +6,9 @@
 source_set("generated_api_util") {
   sources = [
     "util.cc",
-    "util.h"
+    "util.h",
   ]
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+  ]
 }
-

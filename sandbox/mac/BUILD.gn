@@ -50,20 +50,32 @@ generate_stubs_output_stem = "xpc_stubs"
 
 action("generate_stubs") {
   script = generate_stubs_script
-  sources = [ generate_stubs_sig_public, generate_stubs_sig_private ]
-  inputs = [ generate_stubs_header ]
+  sources = [
+    generate_stubs_sig_public,
+    generate_stubs_sig_private,
+  ]
+  inputs = [
+    generate_stubs_header,
+  ]
   outputs = [
     "$target_gen_dir/$generate_stubs_output_stem.cc",
     "$target_gen_dir/$generate_stubs_output_stem.h",
   ]
   args = [
-    "-i", rebase_path(target_gen_dir, root_build_dir),
-    "-o", rebase_path(target_gen_dir, root_build_dir),
-    "-t", "posix_stubs",
-    "-e", rebase_path(generate_stubs_header, root_build_dir),
-    "-s", generate_stubs_output_stem,
-    "-p", generate_stubs_project,
-    "-x", "SANDBOX_EXPORT",
+    "-i",
+    rebase_path(target_gen_dir, root_build_dir),
+    "-o",
+    rebase_path(target_gen_dir, root_build_dir),
+    "-t",
+    "posix_stubs",
+    "-e",
+    rebase_path(generate_stubs_header, root_build_dir),
+    "-s",
+    generate_stubs_output_stem,
+    "-p",
+    generate_stubs_project,
+    "-x",
+    "SANDBOX_EXPORT",
   ]
   args += rebase_path(sources, root_build_dir)
 }

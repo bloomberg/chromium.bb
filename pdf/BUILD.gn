@@ -95,5 +95,4 @@ shared_library("pdf") {
     "//third_party/pdfium",
   ]
 }
-
 # TODO(GYP) pdf_linux_symbols target.

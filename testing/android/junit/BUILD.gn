@@ -10,7 +10,7 @@ import("//build/config/android/rules.gni")
 java_library("junit_test_support") {
   DEPRECATED_java_in_dir = "java/src"
   deps = [
-    "//third_party/junit"
+    "//third_party/junit",
   ]
 }
 

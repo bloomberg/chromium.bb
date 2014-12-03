@@ -3,14 +3,13 @@
 # found in the LICENSE file.
 
 static_library("protocol") {
-  gypi_values = exec_script(
-      "//build/gypi_to_gn.py",
-      [ rebase_path("../remoting_srcs.gypi")],
-      "scope",
-      [ "../remoting_srcs.gypi" ])
+  gypi_values = exec_script("//build/gypi_to_gn.py",
+                            [ rebase_path("../remoting_srcs.gypi") ],
+                            "scope",
+                            [ "../remoting_srcs.gypi" ])
 
-  sources = rebase_path(
-      gypi_values.remoting_protocol_sources, ".", "//remoting")
+  sources =
+      rebase_path(gypi_values.remoting_protocol_sources, ".", "//remoting")
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 

@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 config("tools_config") {
-  include_dirs = [ "src", "src/third_party" ]
+  include_dirs = [
+    "src",
+    "src/third_party",
+  ]
   if (is_android) {
     defines = [ "__ANDROID__" ]
   }
@@ -32,9 +35,7 @@ config("client_config") {
 }
 
 config("handler_config") {
-  include_dirs = [
-    "src",
-  ]
+  include_dirs = [ "src" ]
 }
 
 # {micro,mini}dump_stackwalk and minidump_dump are tool-type executables that do
@@ -86,6 +87,7 @@ if (current_toolchain == host_toolchain && !is_win) {
       "src/processor/stackwalker_x86.h",
       "src/processor/tokenize.cc",
       "src/processor/tokenize.h",
+
       # libdisasm
       "src/third_party/libdisasm/ia32_implicit.c",
       "src/third_party/libdisasm/ia32_implicit.h",
@@ -129,7 +131,9 @@ if (current_toolchain == host_toolchain && !is_win) {
       "src/processor/microdump_stackwalk.cc",
     ]
 
-    deps = [ ":stackwalk_common" ]
+    deps = [
+      ":stackwalk_common",
+    ]
 
     defines = [ "BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR" ]
 
@@ -146,7 +150,9 @@ if (current_toolchain == host_toolchain && !is_win) {
       "src/processor/minidump_stackwalk.cc",
     ]
 
-    deps = [ ":stackwalk_common" ]
+    deps = [
+      ":stackwalk_common",
+    ]
 
     defines = [ "BPLOG_MINIMUM_SEVERITY=SEVERITY_ERROR" ]
 
@@ -253,9 +259,7 @@ if (current_toolchain == host_toolchain && is_mac) {
       "src/tools/mac/symupload/symupload.m",
     ]
 
-    include_dirs = [
-      "src/common/mac"
-    ]
+    include_dirs = [ "src/common/mac" ]
 
     libs = [ "Foundation.framework" ]
 
@@ -313,7 +317,7 @@ if (is_mac) {
     ]
 
     deps = [
-      ":utilities"
+      ":utilities",
     ]
   }
 
@@ -341,9 +345,7 @@ if (is_mac) {
     public_configs = [ ":breakpad_config" ]
 
     defines = [ "USE_PROTECTED_ALLOCATIONS=1" ]
-    include_dirs = [
-      "src/client/apple/Framework",
-    ]
+    include_dirs = [ "src/client/apple/Framework" ]
 
     deps = [
       ":utilities",
@@ -604,7 +606,6 @@ if (is_linux) {
       cflags = [ "-Wno-unused-value" ]
     }
 
-
     if (is_android) {
       sources += [ "src/common/android/breakpad_getcontext_unittest.cc" ]
       libs = [ "log" ]
@@ -621,15 +622,12 @@ if (is_linux) {
       ":processor_support",
     ]
 
-    include_dirs = [
-      "src",
-    ]
+    include_dirs = [ "src" ]
 
     if (cpu_arch == "mipsel" && is_android) {
       include_dirs += [ "src/common/android/include" ]
     }
   }
-
 
   executable("generate_test_dump") {
     testonly = true
@@ -641,7 +639,9 @@ if (is_linux) {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
-    deps = [ ":client" ]
+    deps = [
+      ":client",
+    ]
 
     include_dirs = [ "src" ]
 
@@ -652,11 +652,15 @@ if (is_linux) {
   }
 
   executable("minidump-2-core") {
-    sources = [ "src/tools/linux/md2core/minidump-2-core.cc" ]
+    sources = [
+      "src/tools/linux/md2core/minidump-2-core.cc",
+    ]
 
     include_dirs = [ "src" ]
 
-    deps = [ ":client" ]
+    deps = [
+      ":client",
+    ]
   }
 
   executable("core-2-minidump") {
@@ -726,7 +730,6 @@ if (is_ios) {
       "src/common/mac",
     ]
   }
-
   # TODO(GYP) There is some XCode-only targets like ninja-breakpad.
 }
 

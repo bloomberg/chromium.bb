@@ -65,8 +65,7 @@ template("android_gcc_toolchain") {
     mkdir_command = "mkdir -p lib.stripped"
     strip_command =
         "$android_strip --strip-unneeded -o $temp_stripped_soname $soname"
-    replace_command =
-        "if ! cmp -s $temp_stripped_soname $stripped_soname; then mv $temp_stripped_soname $stripped_soname; fi"
+    replace_command = "if ! cmp -s $temp_stripped_soname $stripped_soname; then mv $temp_stripped_soname $stripped_soname; fi"
     postsolink = "$mkdir_command && $strip_command && $replace_command"
     solink_outputs = [ stripped_soname ]
 

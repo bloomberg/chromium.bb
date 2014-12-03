@@ -5,11 +5,10 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("ash.gyp") ],
-    "scope",
-    [ "ash.gyp" ])
+gypi_values = exec_script("//build/gypi_to_gn.py",
+                          [ rebase_path("ash.gyp") ],
+                          "scope",
+                          [ "ash.gyp" ])
 
 component("ash") {
   sources = gypi_values.ash_sources
@@ -58,14 +57,13 @@ component("ash") {
       "sticky_keys/sticky_keys_controller.cc",
       "sticky_keys/sticky_keys_controller.h",
     ]
+
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     cflags = [ "/wd4267" ]
   }
 
   if (use_x11) {
-    configs += [
-      "//build/config/linux:xfixes",
-    ]
+    configs += [ "//build/config/linux:xfixes" ]
   } else {
     sources -= [
       "accelerators/key_hold_detector.cc",
@@ -111,9 +109,7 @@ component("ash") {
   }
 
   if (!use_ozone) {
-    sources -= [
-      "host/ash_window_tree_host_ozone.cc",
-    ]
+    sources -= [ "host/ash_window_tree_host_ozone.cc" ]
   }
 }
 
@@ -205,6 +201,7 @@ static_library("ash_shell_lib") {
     "//ash/strings",
     "//base",
     "//base:i18n",
+
     #"//chrome:packed_resources",  TODO(GYP)
     "//content",
     "//content/shell:content_shell_lib",
@@ -277,8 +274,10 @@ test("ash_unittests") {
     sources -= [
       # TODO(zork): fix this test to build on Windows. See: crosbug.com/26906
       "focus_cycler_unittest.cc",
+
       # All tests for multiple displays: not supported on Windows Ash.
       "wm/drag_window_resizer_unittest.cc",
+
       # Can't resize on Windows Ash. http://crbug.com/165962
       "magnifier/magnification_controller_unittest.cc",
       "wm/workspace/workspace_window_resizer_unittest.cc",
@@ -321,7 +320,7 @@ test("ash_unittests") {
   }
 
   if (!use_x11 || !is_chromeos) {
-    sources -= [ "touch/touch_transformer_controller_unittest.cc", ]
+    sources -= [ "touch/touch_transformer_controller_unittest.cc" ]
   }
 
   # TODO(GYP) is this necessary?
@@ -329,9 +328,7 @@ test("ash_unittests") {
   # ldflags = "-rdynamic"
 
   if (!is_chromeos || use_ozone) {
-    sources -= [
-      "sticky_keys/sticky_keys_unittest.cc",  # crbug.com/354035
-    ]
+    sources -= [ "sticky_keys/sticky_keys_unittest.cc" ]  # crbug.com/354035
   }
 }
 
@@ -349,15 +346,11 @@ executable("ash_shell") {
   if (is_win) {
     configs -= [ "//build/config/win:console" ]
     configs += [ "//build/config/win:windowed" ]
-    deps += [
-      "//sandbox",
-    ]
+    deps += [ "//sandbox" ]
   }
 
   if (is_chromeos) {
-    deps += [
-      "//device/bluetooth",
-    ]
+    deps += [ "//device/bluetooth" ]
   }
 }
 

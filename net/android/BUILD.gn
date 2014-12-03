@@ -19,7 +19,8 @@ android_library("net_java") {
 }
 
 android_aidl("remote_android_keystore_aidl") {
-  interface_file = "java/src/org/chromium/net/IRemoteAndroidKeyStoreInterface.aidl"
+  interface_file =
+      "java/src/org/chromium/net/IRemoteAndroidKeyStoreInterface.aidl"
   sources = [
     "java/src/org/chromium/net/IRemoteAndroidKeyStore.aidl",
     "java/src/org/chromium/net/IRemoteAndroidKeyStoreCallbacks.aidl",
@@ -45,7 +46,7 @@ java_cpp_template("net_errors_java") {
     "java/NetError.template",
   ]
   inputs = [
-    "../base/net_error_list.h"
+    "../base/net_error_list.h",
   ]
 }
 
@@ -54,7 +55,7 @@ java_cpp_enum("net_android_java_enums_srcjar") {
     "../base/mime_util.h",
     "../base/network_change_notifier.h",
     "cert_verify_result_android.h",
-    "keystore.h"
+    "keystore.h",
   ]
   outputs = [
     "org/chromium/net/CertificateMimeType.java",

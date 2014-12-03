@@ -22,7 +22,9 @@ action("bake_in_configs") {
   script = "bake_in_configs.py"
 
   inputs = baked_in_configs
-  outputs = [ "$target_gen_dir/baked_in_configs.cc" ]
+  outputs = [
+    "$target_gen_dir/baked_in_configs.cc",
+  ]
 
   # The actual list of JSON files will overflow the command line length limit
   # on Windows, so pass the name of the .gypi file and bake_in_configs.py will

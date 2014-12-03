@@ -10,7 +10,7 @@ declare_args() {
   compile_credentials = is_linux
 
   compile_seccomp_bpf_demo =
-    (is_linux && (cpu_arch == "x86" || cpu_arch == "x64"))
+      is_linux && (cpu_arch == "x86" || cpu_arch == "x64")
 }
 
 # We have two principal targets: sandbox and sandbox_linux_unittests
@@ -58,9 +58,7 @@ source_set("sandbox_linux_test_utils") {
       "seccomp-bpf/sandbox_bpf_test_runner.cc",
       "seccomp-bpf/sandbox_bpf_test_runner.h",
     ]
-    deps += [
-      ":seccomp_bpf",
-    ]
+    deps += [ ":seccomp_bpf" ]
   }
 }
 
@@ -95,9 +93,7 @@ test("sandbox_linux_unittests") {
   }
 
   if (compile_suid_client) {
-    sources += [
-      "suid/client/setuid_sandbox_client_unittest.cc",
-    ]
+    sources += [ "suid/client/setuid_sandbox_client_unittest.cc" ]
   }
   if (use_seccomp_bpf) {
     sources += [
@@ -202,7 +198,7 @@ component("seccomp_bpf_helpers") {
 }
 
 if (is_linux) {
-# The setuid sandbox for Linux.
+  # The setuid sandbox for Linux.
   executable("chrome_sandbox") {
     sources = [
       "suid/common/sandbox.h",
@@ -215,6 +211,7 @@ if (is_linux) {
     cflags = [
       # For ULLONG_MAX
       "-std=gnu99",
+
       # These files have a suspicious comparison.
       # TODO fix this and re-enable this warning.
       "-Wno-sign-compare",
@@ -258,6 +255,7 @@ component("sandbox_services") {
       "services/proc_util.cc",
       "services/proc_util.h",
     ]
+
     # For capabilities.cc.
     configs += [ "//build/config/linux:libcap" ]
   }
@@ -329,7 +327,6 @@ if (is_android) {
   #    ":sandbox_linux_unittests",
   #  ]
   #}
-
   # TODO(GYP) convert this.
   #      {
   #      'target_name': 'sandbox_linux_jni_unittests_apk',

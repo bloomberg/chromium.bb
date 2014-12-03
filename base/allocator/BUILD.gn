@@ -30,7 +30,9 @@ if (is_win) {
 
   action("prep_libc") {
     script = "prep_libc.py"
-    outputs = [ "$target_gen_dir/allocator/libcmt.lib" ]
+    outputs = [
+      "$target_gen_dir/allocator/libcmt.lib",
+    ]
     args = [
       visual_studio_path + "/vc/lib",
       rebase_path("$target_gen_dir/allocator"),

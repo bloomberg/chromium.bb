@@ -29,7 +29,7 @@ toolchain("gcc") {
     description = "AR {{target_output_name}}{{output_extension}}"
     rspfile_content = "{{inputs}}"
     outputs = [
-      "{{target_out_dir}}/{{target_output_name}}{{output_extension}}"
+      "{{target_out_dir}}/{{target_output_name}}{{output_extension}}",
     ]
     default_output_extension = ".a"
     output_prefix = "lib"
@@ -63,7 +63,9 @@ toolchain("gcc") {
     command = "g++ {{ldflags}} -o $outfile -Wl,--start-group @$rspfile {{solibs}} -Wl,--end-group {{libs}}"
     description = "LINK $outfile"
     rspfile_content = "{{inputs}}"
-    outputs = [ outfile ]
+    outputs = [
+      outfile,
+    ]
   }
 
   tool("stamp") {

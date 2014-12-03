@@ -54,6 +54,7 @@ group("clearkeycdmadapter") {
   deps = [
     #":cdmadapter",  TODO(GYP)
     ":clearkeycdm",
+
     #":clearkeycdmadapter_resources",  TODO(GYP)
     "//ppapi:ppapi_cpp",
   ]

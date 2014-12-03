@@ -52,11 +52,12 @@ declare_args() {
 
 if (use_official_google_api_keys == "") {
   # Default behavior, check if the key file exists.
-  check_internal_result = exec_script(
-    "build/check_internal.py",
-    [ rebase_path("internal/google_chrome_api_keys.h", root_build_dir) ],
-    "value")
-  use_official_google_api_keys = (check_internal_result == 1)
+  check_internal_result =
+      exec_script("build/check_internal.py",
+                  [ rebase_path("internal/google_chrome_api_keys.h",
+                                root_build_dir) ],
+                  "value")
+  use_official_google_api_keys = check_internal_result == 1
 }
 
 config("key_defines") {

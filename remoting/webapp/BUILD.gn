@@ -37,6 +37,7 @@ action("html") {
     "error.js",
     "event_handlers.js",
     "plugin_settings.js",
+
     # TODO(garykac) Split out UI client stuff from remoting.js.
     "remoting.js",
     "typecheck.js",
@@ -59,6 +60,7 @@ action("html") {
   # Client JavaScript files.
   remoting_webapp_js_client_files = [
     "client_plugin.js",
+
     # TODO(garykac) For client_screen:
     # * Split out pin/access code stuff into separate file.
     # * Move client logic into session_connector
@@ -73,13 +75,10 @@ action("html") {
   ]
 
   # gnubby authentication JavaScript files.
-  remoting_webapp_js_gnubby_auth_files = [
-    "gnubby_auth_handler.js",
-  ]
+  remoting_webapp_js_gnubby_auth_files = [ "gnubby_auth_handler.js" ]
+
   # cast extension handler JavaScript files.
-  remoting_webapp_js_cast_extension_files = [
-    "cast_extension_handler.js",
-  ]
+  remoting_webapp_js_cast_extension_files = [ "cast_extension_handler.js" ]
 
   # Host JavaScript files.
   # Includes both it2me and me2me files.
@@ -132,9 +131,7 @@ action("html") {
   ]
 
   # Remoting WCS container JavaScript files.
-  remoting_webapp_js_wcs_container_files = [
-    "wcs_sandbox_container.js",
-  ]
+  remoting_webapp_js_wcs_container_files = [ "wcs_sandbox_container.js" ]
 
   # Browser test JavaScript files (uncomment if used below).
   #remoting_webapp_js_browser_test_files = [
@@ -151,23 +148,20 @@ action("html") {
       # Otherwise, Jscompile will complain.
       remoting_webapp_js_core_files +
       remoting_webapp_js_auth_client2host_files +
-      remoting_webapp_js_auth_google_files +
-      remoting_webapp_js_client_files +
+      remoting_webapp_js_auth_google_files + remoting_webapp_js_client_files +
       remoting_webapp_js_gnubby_auth_files +
-      remoting_webapp_js_cast_extension_files +
-      remoting_webapp_js_host_files +
-      remoting_webapp_js_logging_files +
-      remoting_webapp_js_ui_files +
+      remoting_webapp_js_cast_extension_files + remoting_webapp_js_host_files +
+      remoting_webapp_js_logging_files + remoting_webapp_js_ui_files +
       remoting_webapp_js_ui_host_control_files +
       remoting_webapp_js_ui_host_display_files +
       remoting_webapp_js_wcs_container_files
-      # Uncomment this line to include browser test files in the web app
-      # to expedite debugging or local development.
-      #+ remoting_webapp_js_browser_test_files
 
-  inputs = [ remoting_webapp_template_main ] +
-      remoting_webapp_template_files +
-      remoting_webapp_main_html_js_files
+  # Uncomment this line to include browser test files in the web app
+  # to expedite debugging or local development.
+  #+ remoting_webapp_js_browser_test_files
+
+  inputs = [ remoting_webapp_template_main ] + remoting_webapp_template_files +
+           remoting_webapp_main_html_js_files
 
   outputs = [
     "$root_gen_dir/main.html",
@@ -186,11 +180,12 @@ action("html") {
     rebase_path(remoting_webapp_template_main, template_rel_dir),
   ]
   args += [ "--template" ] +
-      rebase_path(remoting_webapp_template_files, template_rel_dir)
+          rebase_path(remoting_webapp_template_files, template_rel_dir)
   args += [ "--js" ] +
-      rebase_path(remoting_webapp_main_html_js_files, template_rel_dir)
-  args += [ "--dir-for-templates",
-            rebase_path(template_rel_dir, root_build_dir) ]
+          rebase_path(remoting_webapp_main_html_js_files, template_rel_dir)
+  args += [
+    "--dir-for-templates",
+    rebase_path(template_rel_dir, root_build_dir),
+  ]
 }
-
 # TODO(GYP) wcs_sandbox.html

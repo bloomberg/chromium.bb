@@ -90,7 +90,7 @@ test("mojo_media_lib_unittests") {
     "//mojo/edk/test:run_all_unittests",
     "//mojo/environment:chromium",
     "//testing/gtest",
-    ":lib"
+    ":lib",
   ]
 }
 

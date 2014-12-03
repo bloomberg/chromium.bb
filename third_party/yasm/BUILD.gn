@@ -285,7 +285,9 @@ if (current_toolchain == host_toolchain) {
       "source/patched-yasm/modules/arch/x86/x86regtmod.gperf",
     ]
 
-    outputs = [ "$target_gen_dir/{{source_name_part}}.c" ]
+    outputs = [
+      "$target_gen_dir/{{source_name_part}}.c",
+    ]
     args = [
       "{{source}}",
       rebase_path(target_gen_dir, root_build_dir) + "/{{source_name_part}}.c",
@@ -309,7 +311,9 @@ if (current_toolchain == host_toolchain) {
       "$yasm_gen_include_dir/x86insn_nasm.gperf",
     ]
 
-    outputs = [ "$yasm_gen_include_dir/{{source_name_part}}.c" ]
+    outputs = [
+      "$yasm_gen_include_dir/{{source_name_part}}.c",
+    ]
     args = [
       "{{source}}",
       rebase_path(yasm_gen_include_dir, root_build_dir) +
@@ -344,7 +348,9 @@ if (current_toolchain == host_toolchain) {
     sources = [
       "source/patched-yasm/modules/parsers/nasm/nasm-std.mac",
     ]
-    outputs = [ "$yasm_gen_include_dir/nasm-macros.c" ]
+    outputs = [
+      "$yasm_gen_include_dir/nasm-macros.c",
+    ]
     macro_varname = "nasm_standard_mac"
   }
 
@@ -354,7 +360,9 @@ if (current_toolchain == host_toolchain) {
     sources = [
       "$target_gen_dir/$version_file",
     ]
-    outputs = [ "$yasm_gen_include_dir/nasm-version.c" ]
+    outputs = [
+      "$yasm_gen_include_dir/nasm-version.c",
+    ]
     macro_varname = "nasm_version_mac"
     deps = [
       ":generate_version",
@@ -366,7 +374,9 @@ if (current_toolchain == host_toolchain) {
     sources = [
       "source/patched-yasm/modules/objfmts/coff/win64-gas.mac",
     ]
-    outputs = [ "$yasm_gen_include_dir/win64-gas.c" ]
+    outputs = [
+      "$yasm_gen_include_dir/win64-gas.c",
+    ]
     macro_varname = "win64_gas_stdmac"
   }
 
@@ -375,7 +385,9 @@ if (current_toolchain == host_toolchain) {
     sources = [
       "source/patched-yasm/modules/objfmts/coff/win64-nasm.mac",
     ]
-    outputs = [ "$yasm_gen_include_dir/win64-nasm.c" ]
+    outputs = [
+      "$yasm_gen_include_dir/win64-nasm.c",
+    ]
     macro_varname = "win64_nasm_stdmac"
   }
 
@@ -385,7 +397,9 @@ if (current_toolchain == host_toolchain) {
       "source/patched-yasm/modules/parsers/gas/gas-token.re",
       "source/patched-yasm/modules/parsers/nasm/nasm-token.re",
     ]
-    outputs = [ "$target_gen_dir/{{source_name_part}}.c" ]
+    outputs = [
+      "$target_gen_dir/{{source_name_part}}.c",
+    ]
     args = [
       "-b",
       "-o",
@@ -400,7 +414,9 @@ if (current_toolchain == host_toolchain) {
     inputs = [
       "source/patched-yasm/modules/arch/lc3b/lc3bid.re",
     ]
-    outputs = [ "$target_gen_dir/lc3bid.c" ]
+    outputs = [
+      "$target_gen_dir/lc3bid.c",
+    ]
     args = [
       "-s",
       "-o",
@@ -416,7 +432,9 @@ if (current_toolchain == host_toolchain) {
     inputs = [
       "source/patched-yasm/COPYING",
     ]
-    outputs = [ "$yasm_gen_include_dir/license.c" ]
+    outputs = [
+      "$yasm_gen_include_dir/license.c",
+    ]
     args = [
       "license_msg",
       rebase_path(outputs[0], root_build_dir),
@@ -430,7 +448,9 @@ if (current_toolchain == host_toolchain) {
       "source/patched-yasm/libyasm/module.in",
       config_makefile,
     ]
-    outputs = [ "$target_gen_dir/module.c" ]
+    outputs = [
+      "$target_gen_dir/module.c",
+    ]
     args = [
       rebase_path(inputs[0], root_build_dir),
       rebase_path(config_makefile, root_build_dir),
@@ -440,7 +460,9 @@ if (current_toolchain == host_toolchain) {
 
   compiled_action("generate_version") {
     tool = ":genversion"
-    outputs = [ "$target_gen_dir/$version_file" ]
+    outputs = [
+      "$target_gen_dir/$version_file",
+    ]
     args = [ rebase_path(outputs[0], root_build_dir) ]
   }
 

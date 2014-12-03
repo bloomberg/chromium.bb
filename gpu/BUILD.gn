@@ -94,9 +94,7 @@ test("gl_tests") {
     "command_buffer/tests/occlusion_query_unittest.cc",
   ]
 
-  defines = [
-    "GL_GLEXT_PROTOTYPES",
-  ]
+  defines = [ "GL_GLEXT_PROTOTYPES" ]
 
   deps = [
     ":gpu",
@@ -119,11 +117,10 @@ test("gl_tests") {
   libs = []
 
   if (is_android) {
-    deps += [
-      "//testing/android:native_test_native_code",
-    ]
+    deps += [ "//testing/android:native_test_native_code" ]
     libs += [ "android" ]
   }
+
   # TODO(GYP)
   #     ['OS == "win"', {
   #       'dependencies': [

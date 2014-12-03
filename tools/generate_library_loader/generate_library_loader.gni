@@ -24,13 +24,21 @@ template("generate_library_loader") {
       visibility = invoker.visibility
     }
 
-    outputs = [ output_h, output_cc ]
+    outputs = [
+      output_h,
+      output_cc,
+    ]
 
     args = [
-      "--name", invoker.name,
-      "--output-h", rebase_path(output_h),
-      "--output-cc", rebase_path(output_cc),
-      "--header", invoker.header,
+      "--name",
+      invoker.name,
+      "--output-h",
+      rebase_path(output_h),
+      "--output-cc",
+      rebase_path(output_cc),
+      "--header",
+      invoker.header,
+
       # Note GYP build exposes a per-target variable to control this, which, if
       # manually set to true, will disable dlopen(). Its not clear this is
       # needed, so here we just leave off. If this can be done globally, we can
@@ -39,7 +47,10 @@ template("generate_library_loader") {
       "--link-directly=0",
     ]
     if (defined(invoker.bundled_header)) {
-      args += [ "--bundled-header", invoker.bundled_header ]
+      args += [
+        "--bundled-header",
+        invoker.bundled_header,
+      ]
     }
     args += invoker.functions
   }
@@ -48,7 +59,12 @@ template("generate_library_loader") {
     if (defined(invoker.config)) {
       public_configs = [ invoker.config ]
     }
-    sources = [ output_h, output_cc ]
-    deps = [ ":${target_name}_loader" ]
+    sources = [
+      output_h,
+      output_cc,
+    ]
+    deps = [
+      ":${target_name}_loader",
+    ]
   }
 }

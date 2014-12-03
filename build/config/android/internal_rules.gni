@@ -333,7 +333,9 @@ template("process_java_prebuilt") {
       sources = [
         _input_jar_path,
       ]
-      outputs = [ _output_jar_path ]
+      outputs = [
+        _output_jar_path,
+      ]
     }
   }
 
@@ -901,8 +903,12 @@ template("java_library_impl") {
       _final_deps += [ ":${_template_name}__standalone_dex" ]
       _rebased_build_config = rebase_path(_build_config, root_build_dir)
       dex("${_template_name}__standalone_dex") {
-        sources = [_jar_path]
-        inputs = [_build_config]
+        sources = [
+          _jar_path,
+        ]
+        inputs = [
+          _build_config,
+        ]
         output = invoker.standalone_dex_path
         dex_arg_key = "${_rebased_build_config}:final_dex:dependency_dex_files"
         args = [ "--inputs=@FileArg($dex_arg_key)" ]
@@ -1033,7 +1039,9 @@ template("copy_ex") {
     }
 
     depfile = "$target_gen_dir/$target_name.d"
-    outputs = [ depfile ]
+    outputs = [
+      depfile,
+    ]
 
     args = [
       "--depfile",

@@ -121,9 +121,7 @@ source_set("service") {
 
   defines = [ "GPU_IMPLEMENTATION" ]
 
-  configs += [
-    "//third_party/khronos:khronos_headers",
-  ]
+  configs += [ "//third_party/khronos:khronos_headers" ]
 
   # Prefer mesa GL headers to system headers, which cause problems on Win.
   include_dirs = [ "//third_party/mesa/src/include" ]
@@ -164,5 +162,7 @@ source_set("service") {
 }
 
 proto_library("disk_cache_proto") {
-  sources = [ "disk_cache_proto.proto" ]
+  sources = [
+    "disk_cache_proto.proto",
+  ]
 }

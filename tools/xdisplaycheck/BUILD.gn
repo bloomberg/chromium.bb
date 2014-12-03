@@ -7,9 +7,9 @@ executable("xdisplaycheck") {
     "xdisplaycheck.cc",
   ]
 
-  configs += [
-    "//build/config/linux:x11"
-  ]
+  configs += [ "//build/config/linux:x11" ]
 
-  deps = [ "//build/config/sanitizers:deps" ]
+  deps = [
+    "//build/config/sanitizers:deps",
+  ]
 }

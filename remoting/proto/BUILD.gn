@@ -11,6 +11,6 @@ proto_library("proto") {
     "event.proto",
     "internal.proto",
     "mux.proto",
-    "video.proto"
+    "video.proto",
   ]
 }

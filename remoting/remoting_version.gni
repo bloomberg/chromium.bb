@@ -21,50 +21,66 @@ _script_deps = [
 
 _chrome_version_path = rebase_path(_chrome_version_abspath, root_build_dir)
 _remoting_version_path = rebase_path(_remoting_version_abspath, root_build_dir)
-_remoting_branding_path = rebase_path(_remoting_branding_abspath,
-                                      root_build_dir)
+_remoting_branding_path =
+    rebase_path(_remoting_branding_abspath, root_build_dir)
 
-version_major = exec_script(
-    _version_py_abspath,
-    [ "-f", _chrome_version_path,
-      "-f", _remoting_version_path,
-      "-t \"@MAJOR@\"" ],
-    "value",
-    _script_deps)
+version_major = exec_script(_version_py_abspath,
+                            [
+                              "-f",
+                              _chrome_version_path,
+                              "-f",
+                              _remoting_version_path,
+                              "-t \"@MAJOR@\"",
+                            ],
+                            "value",
+                            _script_deps)
 
-version_minor = exec_script(
-    _version_py_abspath,
-    [ "-f", _remoting_version_path,
-      "-t \"@REMOTING_PATCH@\"" ],
-    "value",
-    _script_deps)
+version_minor = exec_script(_version_py_abspath,
+                            [
+                              "-f",
+                              _remoting_version_path,
+                              "-t \"@REMOTING_PATCH@\"",
+                            ],
+                            "value",
+                            _script_deps)
 
-version_short = "${version_major}.${version_minor}." + exec_script(
-    _version_py_abspath,
-    [ "-f", _chrome_version_path,
-      "-f", _remoting_version_path,
-      "-t \"@BUILD@\"" ],
-    "value",
-    _script_deps)
+version_short =
+    "${version_major}.${version_minor}." + exec_script(_version_py_abspath,
+                                                       [
+                                                         "-f",
+                                                         _chrome_version_path,
+                                                         "-f",
+                                                         _remoting_version_path,
+                                                         "-t \"@BUILD@\"",
+                                                       ],
+                                                       "value",
+                                                       _script_deps)
 
-version_full = "${version_short}." + exec_script(
-    _version_py_abspath,
-    [ "-f", _chrome_version_path,
-      "-f", _remoting_version_path,
-      "-t \"@PATCH@\"" ],
-    "value",
-    _script_deps)
+version_full = "${version_short}." + exec_script(_version_py_abspath,
+                                                 [
+                                                   "-f",
+                                                   _chrome_version_path,
+                                                   "-f",
+                                                   _remoting_version_path,
+                                                   "-t \"@PATCH@\"",
+                                                 ],
+                                                 "value",
+                                                 _script_deps)
 
-prefpane_bundle_name = exec_script(
-    _version_py_abspath,
-    [ "-f", _remoting_branding_path,
-      "-t \"@MAC_PREFPANE_BUNDLE_NAME@\"" ],
-    "value",
-    _script_deps)
+prefpane_bundle_name = exec_script(_version_py_abspath,
+                                   [
+                                     "-f",
+                                     _remoting_branding_path,
+                                     "-t \"@MAC_PREFPANE_BUNDLE_NAME@\"",
+                                   ],
+                                   "value",
+                                   _script_deps)
 
-host_bundle_name = exec_script(
-    _version_py_abspath,
-    [ "-f", _remoting_branding_path,
-      "-t \"@MAC_HOST_BUNDLE_NAME@\"" ],
-    "value",
-    _script_deps)
+host_bundle_name = exec_script(_version_py_abspath,
+                               [
+                                 "-f",
+                                 _remoting_branding_path,
+                                 "-t \"@MAC_HOST_BUNDLE_NAME@\"",
+                               ],
+                               "value",
+                               _script_deps)

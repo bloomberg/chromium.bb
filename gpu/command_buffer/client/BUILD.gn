@@ -33,14 +33,21 @@ source_set("client") {
 
 group("gles2_cmd_helper") {
   if (is_component_build) {
-    deps = [ "//gpu" ]
+    deps = [
+      "//gpu",
+    ]
   } else {
-    deps = [ ":gles2_cmd_helper_sources" ]
+    deps = [
+      ":gles2_cmd_helper_sources",
+    ]
   }
 }
 
 source_set("gles2_cmd_helper_sources") {
-  visibility = [ ":gles2_cmd_helper", "//gpu" ]
+  visibility = [
+    ":gles2_cmd_helper",
+    "//gpu",
+  ]
   sources = [
     "gles2_cmd_helper.cc",
     "gles2_cmd_helper.h",
@@ -54,7 +61,9 @@ source_set("gles2_cmd_helper_sources") {
     cflags = [ "/wd4267" ]  # size_t to int truncation.
   }
 
-  deps = [ ":client" ]
+  deps = [
+    ":client",
+  ]
 }
 
 gles2_c_lib_source_files = [
@@ -97,7 +106,9 @@ gles2_implementation_source_files = [
 # in. Useful when a target uses the interface, but permits its users to choose
 # an implementation.
 source_set("gles2_interface") {
-  sources = [ "gles2_interface.h" ]
+  sources = [
+    "gles2_interface.h",
+  ]
   public_configs = [ "//third_party/khronos:khronos_headers" ]
   deps = [
     "//base",
@@ -173,4 +184,3 @@ component("gles2_c_lib") {
     "//gpu/command_buffer/common",
   ]
 }
-

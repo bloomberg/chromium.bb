@@ -50,7 +50,9 @@ if (!is_mac) {
     sources = [
       "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     ]
-    outputs = [ "$root_out_dir/ui_resources_100_percent.pak" ]
+    outputs = [
+      "$root_out_dir/ui_resources_100_percent.pak",
+    ]
     deps = [
       "//ui/resources",
     ]

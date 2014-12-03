@@ -95,12 +95,9 @@ if (is_android) {
   # Toolchain root directory for each build. The actual binaries are inside
   # a "bin" directory inside of these.
   _android_toolchain_version = "4.9"
-  x86_android_toolchain_root =
-      "$android_ndk_root/toolchains/x86-${_android_toolchain_version}/prebuilt/${android_host_os}-${android_host_arch}"
-  arm_android_toolchain_root =
-      "$android_ndk_root/toolchains/arm-linux-androideabi-${_android_toolchain_version}/prebuilt/${android_host_os}-${android_host_arch}"
-  mips_android_toolchain_root =
-      "$android_ndk_root/toolchains/mipsel-linux-android-${_android_toolchain_version}/prebuilt/${android_host_os}-${android_host_arch}"
+  x86_android_toolchain_root = "$android_ndk_root/toolchains/x86-${_android_toolchain_version}/prebuilt/${android_host_os}-${android_host_arch}"
+  arm_android_toolchain_root = "$android_ndk_root/toolchains/arm-linux-androideabi-${_android_toolchain_version}/prebuilt/${android_host_os}-${android_host_arch}"
+  mips_android_toolchain_root = "$android_ndk_root/toolchains/mipsel-linux-android-${_android_toolchain_version}/prebuilt/${android_host_os}-${android_host_arch}"
 
   # Location of libgcc. This is only needed for the current GN toolchain, so we
   # only need to define the current one, rather than one for every platform
@@ -109,20 +106,17 @@ if (is_android) {
     android_prebuilt_arch = "android-x86"
     _binary_prefix = "i686-linux-android"
     android_toolchain_root = "$x86_android_toolchain_root"
-    android_libgcc_file =
-        "$android_toolchain_root/lib/gcc/i686-linux-android/${_android_toolchain_version}/libgcc.a"
+    android_libgcc_file = "$android_toolchain_root/lib/gcc/i686-linux-android/${_android_toolchain_version}/libgcc.a"
   } else if (cpu_arch == "arm") {
     android_prebuilt_arch = "android-arm"
     _binary_prefix = "arm-linux-androideabi"
     android_toolchain_root = "$arm_android_toolchain_root"
-    android_libgcc_file =
-        "$android_toolchain_root/lib/gcc/arm-linux-androideabi/${_android_toolchain_version}/libgcc.a"
+    android_libgcc_file = "$android_toolchain_root/lib/gcc/arm-linux-androideabi/${_android_toolchain_version}/libgcc.a"
   } else if (cpu_arch == "mipsel") {
     android_prebuilt_arch = "android-mips"
     _binary_prefix = "mipsel-linux-android"
     android_toolchain_root = "$mips_android_toolchain_root"
-    android_libgcc_file =
-        "$android_toolchain_root/lib/gcc/mipsel-linux-android/${_android_toolchain_version}/libgcc.a"
+    android_libgcc_file = "$android_toolchain_root/lib/gcc/mipsel-linux-android/${_android_toolchain_version}/libgcc.a"
   } else {
     assert(false, "Need android libgcc support for your target arch.")
   }

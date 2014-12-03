@@ -75,9 +75,7 @@ if (enable_webrtc || !is_android) {
       "notifier/listener/xmpp_push_client.cc",
       "notifier/listener/xmpp_push_client.h",
     ]
-    defines = [
-     "_CRT_SECURE_NO_WARNINGS",
-    ]
+    defines = [ "_CRT_SECURE_NO_WARNINGS" ]
 
     public_deps = [
       "//third_party/libjingle",
@@ -170,9 +168,11 @@ if (enable_webrtc || !is_android) {
 } else {
   # !enable_webrtc and is_android
   # Stub targets as Android doesn't use libjingle when webrtc is disabled.
-  source_set("jingle_glue") { }
+  source_set("jingle_glue") {
+  }
 
-  source_set("jingle_glue_test_util") { }
+  source_set("jingle_glue_test_util") {
+  }
 
   # GYP version: jingle/jingle.gyp:notifier
   static_library("notifier") {
@@ -186,9 +186,10 @@ if (enable_webrtc || !is_android) {
     ]
     deps = [
       "//base",
-      "//net"
+      "//net",
     ]
   }
 
-  source_set("notifier_test_util") { }
+  source_set("notifier_test_util") {
+  }
 }

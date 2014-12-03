@@ -174,7 +174,9 @@ source_set("base") {
     "yuv_convert.h",
   ]
   defines = []
-  deps = [ "//skia" ]
+  deps = [
+    "//skia",
+  ]
   libs = []
   configs += [ "//media:media_config" ]
 
@@ -210,10 +212,11 @@ source_set("base") {
     configs += [
       "//build/config/linux:x11",
       "//build/config/linux:xext",
-  # TODO(ajwong): Why does xent get a separate thing in //build/config/linux:BUILD.gn
-  #         "//build/config/linux:xdamage",
-  #         "//build/config/linux:xfixes",
-  #         "//build/config/linux:xtst",
+
+      # TODO(ajwong): Why does xent get a separate thing in //build/config/linux:BUILD.gn
+      #         "//build/config/linux:xdamage",
+      #         "//build/config/linux:xfixes",
+      #         "//build/config/linux:xtst",
     ]
     sources += [ "user_input_monitor_linux.cc" ]
     deps += [
@@ -280,7 +283,9 @@ source_set("test_support") {
     "test_helpers.h",
   ]
   configs += [ "//media:media_config" ]
-  deps = [ "//testing/gmock" ]
+  deps = [
+    "//testing/gmock",
+  ]
 }
 
 source_set("unittests") {
@@ -350,9 +355,7 @@ source_set("unittests") {
   }
 
   if (!is_android) {
-    sources += [
-      "container_names_unittest.cc",
-    ]
+    sources += [ "container_names_unittest.cc" ]
   } else {
     deps += [ "//ui/gl" ]
   }
@@ -381,13 +384,11 @@ source_set("perftests") {
   ]
 
   if (media_use_ffmpeg) {
-    sources += [
-      "demuxer_perftest.cc",
-    ]
+    sources += [ "demuxer_perftest.cc" ]
   }
 
   if (is_android) {
-    deps += [ "//ui/gl"]
+    deps += [ "//ui/gl" ]
   }
 }
 
@@ -421,9 +422,11 @@ if (cpu_arch == "x86" || cpu_arch == "x64") {
     yasm_flags = [
       "-DCHROMIUM",
       "-DEXPORT_SYMBOLS",
+
       # In addition to the same path as source asm, let yasm %include
       # search path be relative to src/ per Chromium policy.
-      "-I", rebase_path("..", root_build_dir),
+      "-I",
+      rebase_path("..", root_build_dir),
     ]
 
     inputs = [
@@ -455,7 +458,7 @@ if (cpu_arch == "x86" || cpu_arch == "x64") {
       if (is_posix) {
         yasm_flags += [ "-DELF" ]
         if (cpu_arch == "x64") {
-        # TODO(ajwong): Why isn't this true in mac?
+          # TODO(ajwong): Why isn't this true in mac?
           yasm_flags += [ "-DPIC" ]
         }
       }

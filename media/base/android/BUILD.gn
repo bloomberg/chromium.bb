@@ -109,9 +109,7 @@ android_library("media_java") {
     "//base:base_java",
   ]
 
-  srcjar_deps = [
-    ":media_java_enums_srcjar",
-  ]
+  srcjar_deps = [ ":media_java_enums_srcjar" ]
 
   DEPRECATED_java_in_dir = "java/src"
 }

@@ -12,6 +12,6 @@ group("mojo") {
 group("tests") {
   testonly = true
   deps = [
-    "//media/mojo/services:tests"
-  ]  
+    "//media/mojo/services:tests",
+  ]
 }

@@ -7,7 +7,9 @@ source_set("surface_id") {
     "surface_id.h",
   ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+  ]
 }
 
 component("surfaces") {
@@ -50,4 +52,3 @@ component("surfaces") {
     configs += [ "//build/config/compiler:optimize_max" ]
   }
 }
-

@@ -23,7 +23,9 @@ action("regexes") {
   inputs = [
     "autofill_regex_constants.cc.utf8",
   ]
-  outputs = [ "$target_gen_dir/autofill_regex_constants.cc" ]
+  outputs = [
+    "$target_gen_dir/autofill_regex_constants.cc",
+  ]
 
   args = [
     "-o",

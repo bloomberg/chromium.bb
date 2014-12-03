@@ -3,13 +3,12 @@
 # found in the LICENSE file.
 
 # All binary targets will get this list of configs by default.
-_shared_binary_target_configs = [
-  "//build:compiler_defaults",
-]
+_shared_binary_target_configs = [ "//build:compiler_defaults" ]
 
 # Apply that default list to the binary target types.
 set_defaults("executable") {
   configs = _shared_binary_target_configs
+
   # Executables get this additional configuration.
   configs += [ "//build:executable_ldconfig" ]
 }

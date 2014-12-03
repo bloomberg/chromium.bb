@@ -3,14 +3,13 @@
 # found in the LICENSE file.
 
 static_library("plugin") {
-  gypi_values = exec_script(
-      "//build/gypi_to_gn.py",
-      [ rebase_path("../../remoting_srcs.gypi")],
-      "scope",
-      [ "../../remoting_srcs.gypi" ])
+  gypi_values = exec_script("//build/gypi_to_gn.py",
+                            [ rebase_path("../../remoting_srcs.gypi") ],
+                            "scope",
+                            [ "../../remoting_srcs.gypi" ])
 
-  sources = rebase_path(
-      gypi_values.remoting_client_plugin_sources, ".", "//remoting")
+  sources =
+      rebase_path(gypi_values.remoting_client_plugin_sources, ".", "//remoting")
 
   # TODO(brettw) when a nacl version of this target is made, these files
   # won't be part of it.

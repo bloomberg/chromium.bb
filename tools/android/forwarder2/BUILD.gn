@@ -88,7 +88,11 @@ if (current_toolchain != default_toolchain) {
 
   # GYP: //tools/android/forwarder2/forwarder.gyp:forwarder2
   copy("host_forwarder_copy") {
-    sources = ["$root_out_dir/host_forwarder"]
-    outputs = ["$root_build_dir/host_forwarder"]
+    sources = [
+      "$root_out_dir/host_forwarder",
+    ]
+    outputs = [
+      "$root_build_dir/host_forwarder",
+    ]
   }
 }

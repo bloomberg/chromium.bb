@@ -185,5 +185,4 @@ if (!is_ios) {
     }
   }
 }  # !is_ios
-
 # TODO(GYP): Unit test targets

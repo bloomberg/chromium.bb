@@ -127,7 +127,7 @@ source_set("sandbox") {
     "src/window.h",
   ]
 
-  if (cpu_arch == "x64" ){
+  if (cpu_arch == "x64") {
     sources += [
       "src/interceptors_64.cc",
       "src/interceptors_64.h",
@@ -169,7 +169,9 @@ if (cpu_arch == "x86") {
       "wow_helper/wow_helper.exe",
       "wow_helper/wow_helper.pdb",
     ]
-    outputs = [ "$root_out_dir/{{source_file_part}}" ]
+    outputs = [
+      "$root_out_dir/{{source_file_part}}",
+    ]
   }
 }
 

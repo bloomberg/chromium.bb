@@ -12,5 +12,4 @@ proto_library("proto") {
   cc_include = "sync/base/sync_export.h"
 
   defines = [ "SYNC_IMPLEMENTATION" ]
-
 }

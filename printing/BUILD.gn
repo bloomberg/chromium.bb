@@ -91,9 +91,7 @@ component("printing") {
   if (is_mac) {
     # Mac-Aura does not support printing.
     if (use_aura) {
-      sources -= [
-        "printed_document_mac.cc",
-      ]
+      sources -= [ "printed_document_mac.cc" ]
     } else {
       sources += [
         "printing_context_mac.mm",
@@ -126,7 +124,8 @@ component("printing") {
     configs += [ ":cups" ]
 
     if (is_linux) {
-      cups_version = exec_script("cups_config_helper.py", [ "--api-version" ],
+      cups_version = exec_script("cups_config_helper.py",
+                                 [ "--api-version" ],
                                  "trim string")
 
       if (cups_version == "1.6" || cups_version == "1.7") {
@@ -167,9 +166,7 @@ component("printing") {
     # of the print backend and enables a custom implementation instead.
     defines += [ "PRINT_BACKEND_AVAILABLE" ]
 
-    sources += [
-      "backend/print_backend_chromeos.cc",
-    ]
+    sources += [ "backend/print_backend_chromeos.cc" ]
   } else if (is_linux) {  # Non-ChromeOS Linux.
     sources += [
       "printing_context_linux.cc",
@@ -243,7 +240,7 @@ if (is_android) {
   # GYP: //printing/printing.gyp:printing_java
   android_library("printing_java") {
     deps = [
-      "//base:base_java"
+      "//base:base_java",
     ]
     DEPRECATED_java_in_dir = "android/java/src"
   }

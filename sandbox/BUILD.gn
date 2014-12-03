@@ -5,13 +5,19 @@
 # Meta-target that forwards to the proper platform one.
 group("sandbox") {
   if (is_win) {
-    deps = [ "//sandbox/win:sandbox" ]
+    deps = [
+      "//sandbox/win:sandbox",
+    ]
   } else if (is_mac) {
     # TODO(GYP): Make sandbox compile w/ 10.6 SDK.
     if (false) {
-      deps = [ "//sandbox/mac:sandbox" ]
+      deps = [
+        "//sandbox/mac:sandbox",
+      ]
     }
   } else if (is_linux || is_android) {
-    deps = [ "//sandbox/linux:sandbox" ]
+    deps = [
+      "//sandbox/linux:sandbox",
+    ]
   }
 }

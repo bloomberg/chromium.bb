@@ -90,9 +90,7 @@ component("libssl") {
 
     # Must be after ssl_config since we want our SSL headers to take
     # precedence.
-    public_configs += [
-      "//third_party/nss:system_nss_no_ssl_config"
-    ]
+    public_configs += [ "//third_party/nss:system_nss_no_ssl_config" ]
   } else if (is_mac) {
     libs = [ "Security.framework" ]
   }
@@ -118,9 +116,7 @@ component("libssl") {
   }
 
   if (is_mac || is_ios || is_win) {
-    sources -= [
-      "bodge/secitem_array.c",
-    ]
+    sources -= [ "bodge/secitem_array.c" ]
     public_deps = [
       "//third_party/nss:nspr",
       "//third_party/nss:nss",

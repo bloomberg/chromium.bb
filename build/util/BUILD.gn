@@ -15,7 +15,9 @@ action("webkit_version") {
   ]
 
   output_file = "$root_gen_dir/webkit_version.h"
-  outputs = [ output_file ]
+  outputs = [
+    output_file,
+  ]
 
   args = [
     "-f",

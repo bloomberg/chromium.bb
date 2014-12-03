@@ -22,7 +22,9 @@ config("opus_config") {
 if (use_opus_rtcd) {
   action("convert_rtcd_assembler") {
     script = "convert_rtcd_assembler.py"
-    outputs = [ "$target_gen_dir/celt_pitch_xcorr_arm_gnu.S" ]
+    outputs = [
+      "$target_gen_dir/celt_pitch_xcorr_arm_gnu.S",
+    ]
     args = [
       rebase_path("//third_party/opus/src/celt/arm/arm2gnu.pl", root_build_dir),
       rebase_path("//third_party/opus/src/celt/arm/celt_pitch_xcorr_arm.s",

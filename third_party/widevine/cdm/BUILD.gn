@@ -48,7 +48,9 @@ copy("version_h") {
   # TODO(brettw) this should go into target_out_dir and callers should include
   # it from there. This requires, however, renaming the default
   # widevine_cdm_version.h in this directory to avoid conflicts.
-  outputs = [ "$root_gen_dir/widevine_cdm_version.h" ]
+  outputs = [
+    "$root_gen_dir/widevine_cdm_version.h",
+  ]
 }
 
 # GYP version: third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_binaries
@@ -59,7 +61,9 @@ if (widevine_cdm_binary_files == []) {
 } else {
   copy("binaries") {
     sources = widevine_cdm_binary_files
-    outputs = [ "$root_out_dir/{{source_file_part}}" ]
+    outputs = [
+      "$root_out_dir/{{source_file_part}}",
+    ]
 
     # TODO(GYP)
     # 'COPY_PHASE_STRIP': 'NO',

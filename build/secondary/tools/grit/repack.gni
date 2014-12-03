@@ -29,7 +29,9 @@ template("repack") {
     script = "//tools/grit/grit/format/repack.py"
 
     inputs = invoker.sources
-    outputs = [ invoker.output ]
+    outputs = [
+      invoker.output,
+    ]
 
     args = []
     if (defined(invoker.repack_options)) {

@@ -44,8 +44,6 @@ source_set("hid") {
   ]
 
   if (is_linux) {
-    deps += [
-      "//device/udev_linux",
-    ]
+    deps += [ "//device/udev_linux" ]
   }
 }

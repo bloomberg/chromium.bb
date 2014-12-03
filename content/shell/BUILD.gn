@@ -368,7 +368,9 @@ copy("copy_shell_resources") {
   sources = [
     "$target_gen_dir/shell_resources.pak",
   ]
-  outputs = [ "$root_out_dir/shell_resources.pak" ]
+  outputs = [
+    "$root_out_dir/shell_resources.pak",
+  ]
 
   public_deps = [
     ":content_shell_resources_grit",
@@ -382,7 +384,9 @@ if (!is_mac) {
     sources = [
       "renderer/test_runner/resources/fonts/AHEM____.TTF",
     ]
-    outputs = [ "$root_out_dir/AHEM____.TTF" ]
+    outputs = [
+      "$root_out_dir/AHEM____.TTF",
+    ]
   }
 }
 if (use_x11) {
@@ -393,7 +397,9 @@ if (use_x11) {
       "//third_party/gardiner_mod/GardinerModBug.ttf",
       "//third_party/gardiner_mod/GardinerModCat.ttf",
     ]
-    outputs = [ "$root_out_dir/{{source_file_part}}" ]
+    outputs = [
+      "$root_out_dir/{{source_file_part}}",
+    ]
   }
 }
 if (is_android) {
@@ -403,7 +409,9 @@ if (is_android) {
       "renderer/test_runner/resources/fonts/android_main_fonts.xml",
       "renderer/test_runner/resources/fonts/android_fallback_fonts.xml",
     ]
-    outputs = [ "$root_out_dir/{{source_file_part}}" ]
+    outputs = [
+      "$root_out_dir/{{source_file_part}}",
+    ]
   }
 }
 

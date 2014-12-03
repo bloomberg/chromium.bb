@@ -7,14 +7,14 @@ import("//build/config/ui.gni")
 import("//remoting/remoting_version.gni")
 
 static_library("common") {
-  gypi_values = exec_script(
-      "//build/gypi_to_gn.py",
-      [ rebase_path("../../remoting_host_srcs.gypi")],
-      "scope",
-      [ "../../remoting_host_srcs.gypi" ])
+  gypi_values = exec_script("//build/gypi_to_gn.py",
+                            [ rebase_path("../../remoting_host_srcs.gypi") ],
+                            "scope",
+                            [ "../../remoting_host_srcs.gypi" ])
 
-  sources = rebase_path(
-      gypi_values.remoting_it2me_host_static_sources, ".", "//remoting")
+  sources = rebase_path(gypi_values.remoting_it2me_host_static_sources,
+                        ".",
+                        "//remoting")
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
@@ -27,7 +27,5 @@ static_library("common") {
     "//remoting/resources",
   ]
 
-  defines = [
-    "VERSION=$version_full"
-  ]
+  defines = [ "VERSION=$version_full" ]
 }

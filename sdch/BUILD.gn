@@ -82,10 +82,14 @@ static_library("sdch") {
   # logging.h from being used).
   if (is_win) {
     cflags = [
-      "/FI", "sdch/logging_forward.h",
+      "/FI",
+      "sdch/logging_forward.h",
     ]
   } else {
     logging_file = rebase_path("logging_forward.h", root_build_dir)
-    cflags = [ "-include", logging_file ]
+    cflags = [
+      "-include",
+      logging_file,
+    ]
   }
 }

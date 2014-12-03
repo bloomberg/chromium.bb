@@ -58,7 +58,10 @@ source_set("config") {
 
   if (is_win) {
     deps += [ "//third_party/libxml" ]
-    libs = [ "dxguid.lib", "setupapi.lib" ]
+    libs = [
+      "dxguid.lib",
+      "setupapi.lib",
+    ]
 
     if (is_chrome_branded && is_official_build) {
       sources += [
@@ -74,18 +77,14 @@ source_set("config") {
     defines += [ "USE_LIBPCI=1" ]
   }
   if (is_linux && use_libpci && (use_x11 || use_ozone)) {
-    deps += [
-      "//build/config/linux:libpci",
-    ]
+    deps += [ "//build/config/linux:libpci" ]
   }
   if (is_linux && use_x11) {
     configs += [
       "//build/config/linux:x11",
       "//build/config/linux:xext",
     ]
-    deps += [
-      "//third_party/libXNVCtrl",
-    ]
+    deps += [ "//third_party/libXNVCtrl" ]
   } else {
     sources -= [ "gpu_info_collector_x11.cc" ]
   }
@@ -93,4 +92,3 @@ source_set("config") {
     sources -= [ "gpu_info_collector_ozone.cc" ]
   }
 }
-

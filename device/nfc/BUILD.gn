@@ -25,7 +25,7 @@ static_library("nfc") {
     "nfc_tag_technology.cc",
     "nfc_tag_technology.h",
     "nfc_tag_technology_chromeos.cc",
-    "nfc_tag_technology_chromeos.h"
+    "nfc_tag_technology_chromeos.h",
   ]
 
   deps = [

@@ -150,7 +150,9 @@ action("generate_constructor_list") {
   inputs = [
     platform_list_txt_file,
   ]
-  outputs = [ constructor_list_cc_file ]
+  outputs = [
+    constructor_list_cc_file,
+  ]
 
   args = [
     "--platform_list=" + rebase_path(platform_list_txt_file, root_build_dir),

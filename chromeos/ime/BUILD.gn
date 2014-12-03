@@ -4,9 +4,11 @@
 
 action("gencode") {
   script = "gen_input_methods.py"
-  sources = [ "//chromeos/ime/input_methods.txt" ]
+  sources = [
+    "//chromeos/ime/input_methods.txt",
+  ]
   outputs = [
-    "$target_gen_dir/input_methods.h"
+    "$target_gen_dir/input_methods.h",
   ]
   args = [
     rebase_path("//chromeos/ime/input_methods.txt"),

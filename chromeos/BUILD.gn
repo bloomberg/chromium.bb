@@ -8,17 +8,16 @@ import("//third_party/protobuf/proto_library.gni")
 
 assert(is_chromeos, "Non-ChromeOS builds must not depend on //chromeos")
 
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("chromeos.gyp") ],
-    "scope",
-    [ "chromeos.gyp" ])
+gypi_values = exec_script("//build/gypi_to_gn.py",
+                          [ rebase_path("chromeos.gyp") ],
+                          "scope",
+                          [ "chromeos.gyp" ])
 
 component("chromeos") {
-  configs += [
-    "//net/third_party/nss/ssl:ssl_config",
+  configs += [ "//net/third_party/nss/ssl:ssl_config" ]
+  public_deps = [
+    "//dbus",
   ]
-  public_deps = [ "//dbus" ]
   deps = [
     "//base",
     "//base:prefs",
@@ -35,7 +34,7 @@ component("chromeos") {
     "//ui/accelerometer",
     "//url",
     ":cryptohome_proto",
-    ":power_manager_proto"
+    ":power_manager_proto",
   ]
   sources = gypi_values.chromeos_sources
   defines = [ "CHROMEOS_IMPLEMENTATION" ]
@@ -43,9 +42,7 @@ component("chromeos") {
 
 static_library("test_support") {
   testonly = true
-  configs += [
-    "//build/config/linux:dbus",
-  ]
+  configs += [ "//build/config/linux:dbus" ]
   deps = [
     "//testing/gmock",
     ":chromeos",
@@ -99,9 +96,7 @@ static_library("test_support") {
 
 static_library("test_support_without_gmock") {
   testonly = true
-  configs += [
-    "//build/config/linux:dbus",
-  ]
+  configs += [ "//build/config/linux:dbus" ]
   deps = [
     "//crypto",
     ":chromeos",

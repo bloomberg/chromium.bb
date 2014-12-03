@@ -25,9 +25,7 @@ component("battery") {
     "battery_status_service.h",
   ]
 
-  defines = [
-    "DEVICE_BATTERY_IMPLEMENTATION",
-  ]
+  defines = [ "DEVICE_BATTERY_IMPLEMENTATION" ]
 
   deps = [
     ":mojo_bindings",
@@ -39,25 +37,17 @@ component("battery") {
   ]
 
   if (is_android) {
-    deps += [
-      "//device/battery/android:battery_jni_headers",
-    ]
+    deps += [ "//device/battery/android:battery_jni_headers" ]
     sources += [
       "android/battery_jni_registrar.h",
       "android/battery_jni_registrar.cc",
     ]
-    sources -= [
-      "battery_status_manager_default.cc",
-    ]
+    sources -= [ "battery_status_manager_default.cc" ]
   }
 
   if (is_chromeos) {
-    configs += [
-      "//build/config/linux:dbus",
-    ]
-    deps += [
-      "//chromeos:power_manager_proto",
-    ]
+    configs += [ "//build/config/linux:dbus" ]
+    deps += [ "//chromeos:power_manager_proto" ]
     sources -= [
       "battery_status_manager_default.cc",
       "battery_status_manager_linux.cc",
@@ -66,32 +56,20 @@ component("battery") {
 
   if (is_desktop_linux) {
     if (use_dbus) {
-      configs += [
-        "//build/config/linux:dbus",
-      ]
-      deps += [
-        "//dbus"
-      ]
-      sources -= [
-        "battery_status_manager_default.cc",
-      ]
+      configs += [ "//build/config/linux:dbus" ]
+      deps += [ "//dbus" ]
+      sources -= [ "battery_status_manager_default.cc" ]
     } else {
-      sources -= [
-        "battery_status_manager_linux.cc",
-      ]
+      sources -= [ "battery_status_manager_linux.cc" ]
     }
   }
 
   if (is_mac) {
-    sources -= [
-      "battery_status_manager_default.cc",
-    ]
+    sources -= [ "battery_status_manager_default.cc" ]
   }
 
   if (is_win) {
-    sources -= [
-      "battery_status_manager_default.cc",
-    ]
+    sources -= [ "battery_status_manager_default.cc" ]
   }
 }
 

@@ -3,7 +3,9 @@
 # found in the LICENSE file.
 
 executable("hello") {
-  sources = [ "hello.cc" ]
+  sources = [
+    "hello.cc",
+  ]
 
   deps = [
     ":hello_static",
@@ -14,7 +16,7 @@ executable("hello") {
 shared_library("hello_shared") {
   sources = [
     "hello_shared.cc",
-    "hello_shared.h"
+    "hello_shared.h",
   ]
 
   defines = [ "HELLO_SHARED_IMPLEMENTATION" ]

@@ -203,9 +203,9 @@ source_set("receiver") {
 source_set("test_support") {
   testonly = true
   sources = [
-# TODO(hclam): FFmpeg.
-#    "test/fake_media_source.cc",
-#    "test/fake_media_source.h",
+    # TODO(hclam): FFmpeg.
+    #    "test/fake_media_source.cc",
+    #    "test/fake_media_source.h",
     "test/fake_single_thread_task_runner.cc",
     "test/fake_single_thread_task_runner.h",
     "test/skewed_single_thread_task_runner.cc",
@@ -239,8 +239,9 @@ source_set("test_support") {
     ":receiver",
     "//base/test:test_support",
     "//testing/gtest",
-# TODO(hclam): Does not build on ARM yet.
-#    "//third_party/ffmpeg",
+
+    # TODO(hclam): Does not build on ARM yet.
+    #    "//third_party/ffmpeg",
     "//third_party/libyuv",
     "//third_party/mt19937ar",
     "//ui/gfx",
@@ -265,7 +266,8 @@ test("cast_unittests") {
     "net/rtcp/rtcp_unittest.cc",
     "net/rtcp/rtcp_utility_unittest.cc",
     "net/rtcp/receiver_rtcp_event_subscriber_unittest.cc",
-# TODO(miu): The following two are test utility modules.  Rename/move the files.
+
+    # TODO(miu): The following two are test utility modules.  Rename/move the files.
     "net/rtcp/test_rtcp_packet_builder.cc",
     "net/rtcp/test_rtcp_packet_builder.h",
     "net/rtp/cast_message_builder_unittest.cc",

@@ -16,7 +16,9 @@ if (current_toolchain == host_toolchain) {
   # GYP: //tools/relocation_packer/relocation_packer.gyp:lib_relocation_packer
   source_set("lib_relocation_packer") {
     defines = [ target_define ]
-    deps = [ "//third_party/elfutils:libelf" ]
+    deps = [
+      "//third_party/elfutils:libelf",
+    ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
     sources = [
@@ -37,7 +39,9 @@ if (current_toolchain == host_toolchain) {
       ":lib_relocation_packer",
       "//third_party/elfutils:libelf",
     ]
-    sources = [ "src/main.cc" ]
+    sources = [
+      "src/main.cc",
+    ]
   }
 
   # GYP: //tools/relocation_packer/relocation_packer.gyp:relocation_packer_unittests
@@ -61,7 +65,7 @@ if (current_toolchain == host_toolchain) {
     ]
     defines = [
       target_define,
-      "INTERMEDIATE_DIR=\"$rebased_test_data\""
+      "INTERMEDIATE_DIR=\"$rebased_test_data\"",
     ]
     include_dirs = [ "//" ]
     deps = [
@@ -84,9 +88,12 @@ if (current_toolchain == default_toolchain &&
 
   # GYP: //tools/relocation_packer/relocation_packer.gyp:relocation_packer_test_data
   shared_library("relocation_packer_test_data") {
-    cflags = [ "-O0", "-g0" ]
+    cflags = [
+      "-O0",
+      "-g0",
+    ]
     sources = [
-      "test_data/elf_file_unittest_relocs.cc"
+      "test_data/elf_file_unittest_relocs.cc",
     ]
   }
 
@@ -124,12 +131,17 @@ if (current_toolchain == default_toolchain &&
     ]
 
     args = [
-      "--android-pack-relocations", rebase_path(relocation_packer_exe, root_build_dir),
-      "--android-objcopy", rebase_path(android_objcopy, root_build_dir),
+      "--android-pack-relocations",
+      rebase_path(relocation_packer_exe, root_build_dir),
+      "--android-objcopy",
+      rebase_path(android_objcopy, root_build_dir),
       "--added-section=$added_section",
-      "--test-file", rebase_path(test_file, root_build_dir),
-      "--packed-output", rebase_path(packed_output, root_build_dir),
-      "--unpacked-output", rebase_path(unpacked_output, root_build_dir),
+      "--test-file",
+      rebase_path(test_file, root_build_dir),
+      "--packed-output",
+      rebase_path(packed_output, root_build_dir),
+      "--unpacked-output",
+      rebase_path(unpacked_output, root_build_dir),
     ]
   }
 }

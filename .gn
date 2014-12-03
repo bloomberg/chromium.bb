@@ -14,6 +14,4 @@ secondary_source = "//build/secondary/"
 # matching these patterns (see "gn help label_pattern" for format) will have
 # their includes checked for proper dependencies when you run either
 # "gn check" or "gn gen --check".
-check_targets = [
-  "//base"
-]
+check_targets = [ "//base" ]

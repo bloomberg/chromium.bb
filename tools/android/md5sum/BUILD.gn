@@ -10,6 +10,7 @@ group("md5sum") {
     ":md5sum_prepare_dist($default_toolchain)",
     ":md5sum_copy_host($host_toolchain)",
   ]
+
   # TODO(cjhopman): Remove once group datadeps are fixed.
   deps = datadeps
 }
@@ -17,10 +18,10 @@ group("md5sum") {
 # GYP: //tools/android/md5sum/md5sum.gyp:md5sum_bin_device (and md5sum_bin_host)
 executable("md5sum_bin") {
   sources = [
-    "md5sum.cc"
+    "md5sum.cc",
   ]
   deps = [
-    "//base"
+    "//base",
   ]
 
   # TODO(GYP)
@@ -43,11 +44,10 @@ if (current_toolchain == default_toolchain) {
   # GYP: //tools/android/md5sum/md5sum.gyp:md5sum_bin_host
   copy("md5sum_copy_host") {
     sources = [
-      "$root_out_dir/md5sum_bin"
+      "$root_out_dir/md5sum_bin",
     ]
     outputs = [
-      "$root_build_dir/md5sum_bin_host"
+      "$root_build_dir/md5sum_bin_host",
     ]
   }
 }
-

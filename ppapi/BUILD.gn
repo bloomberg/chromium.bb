@@ -2,17 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("ppapi_sources.gypi") ],
-    "scope",
-    [ "ppapi_sources.gypi" ])
+gypi_values = exec_script("//build/gypi_to_gn.py",
+                          [ rebase_path("ppapi_sources.gypi") ],
+                          "scope",
+                          [ "ppapi_sources.gypi" ])
 
 # TODO(GYP) support chrome_multiple_dll
 #if (chrome_multiple_dll) {
 #  blink_target = "//third_party/WebKit/public:blink_minimal"
 #} else {
-  blink_target = "//third_party/WebKit/public:blink"
+blink_target = "//third_party/WebKit/public:blink"
 #}
 
 # These are just headers.
@@ -23,16 +22,16 @@ source_set("ppapi_c") {
 # Some targets need to depend on the PPAPI version only. This target exists so
 # they can include this header without header check warnings.
 source_set("ppapi_macros") {
-  sources = [ "c/pp_macros.h" ]
+  sources = [
+    "c/pp_macros.h",
+  ]
 }
 
 source_set("ppapi_cpp_objects") {
   sources = gypi_values.cpp_source_files
 
   if (is_win) {
-    cflags = [
-      "/we4244",  # Implicit conversion, possible loss of data.
-    ]
+    cflags = [ "/we4244" ]  # Implicit conversion, possible loss of data.
   } else {
     cflags = [
       "-Wextra",
@@ -208,14 +207,13 @@ component("ppapi_shared") {
     "shared_impl/var.h",
     "shared_impl/var_tracker.cc",
     "shared_impl/var_tracker.h",
+
     # TODO(viettrungluu): Split these out; it won"t be used in NaCl.
     "shared_impl/private/net_address_private_impl.cc",
     "shared_impl/private/net_address_private_impl_constants.cc",
     "shared_impl/private/net_address_private_impl.h",
-
     "shared_impl/private/ppb_x509_certificate_private_shared.cc",
     "shared_impl/private/ppb_x509_certificate_private_shared.h",
-
     "thunk/enter.cc",
     "thunk/enter.h",
     "thunk/ppb_audio_api.h",
@@ -487,7 +485,6 @@ component("ppapi_proxy") {
     # These callback files are standalone.
     "cpp/completion_callback.h",
     "utility/completion_callback_factory.h",
-
     "proxy/audio_buffer_resource.cc",
     "proxy/audio_buffer_resource.h",
     "proxy/broker_resource.cc",
@@ -817,5 +814,4 @@ static_library("ppapi_unittest_shared") {
     "//testing/gtest",
   ]
 }
-
 # TODO(GYP) other targets from ppapi_tests.gyp

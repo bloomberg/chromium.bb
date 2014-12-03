@@ -35,22 +35,20 @@ component("dbus") {
     "util.h",
   ]
 
-  defines = [
-    "DBUS_IMPLEMENTATION",
-  ]
+  defines = [ "DBUS_IMPLEMENTATION" ]
 
   deps = [
     "//base",
     "//third_party/protobuf:protobuf_lite",
   ]
 
-  public_configs = [
-    "//build/config/linux:dbus",
-  ]
+  public_configs = [ "//build/config/linux:dbus" ]
 }
 
 proto_library("test_proto") {
-  sources = [ "test_proto.proto" ]
+  sources = [
+    "test_proto.proto",
+  ]
 }
 
 # This target contains mocks that can be used to write unit tests without
@@ -73,9 +71,7 @@ source_set("test_support") {
     "//testing/gmock",
   ]
 
-  configs += [
-    "//build/config/linux:dbus",
-  ]
+  configs += [ "//build/config/linux:dbus" ]
 }
 
 test("dbus_unittests") {
@@ -108,9 +104,7 @@ test("dbus_unittests") {
     "//third_party/protobuf:protobuf_lite",
   ]
 
-  configs += [
-    "//build/config/linux:dbus",
-  ]
+  configs += [ "//build/config/linux:dbus" ]
 }
 
 executable("dbus_test_server") {
@@ -127,7 +121,5 @@ executable("dbus_test_server") {
     "//base/test:test_support",
   ]
 
-  configs += [
-    "//build/config/linux:dbus",
-  ]
+  configs += [ "//build/config/linux:dbus" ]
 }

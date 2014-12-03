@@ -102,7 +102,7 @@ test("courgette_unittests") {
     "streams_unittest.cc",
     "typedrva_unittest.cc",
     "versioning_unittest.cc",
-    "third_party/paged_array_unittest.cc"
+    "third_party/paged_array_unittest.cc",
   ]
 
   if (is_win) {

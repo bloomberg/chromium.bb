@@ -39,7 +39,9 @@ template("process_version") {
       invoker.source,
     ]
 
-    outputs = [ invoker.output ]
+    outputs = [
+      invoker.output,
+    ]
 
     args = [
       "-f",

@@ -12,8 +12,12 @@ if (!link_pulseaudio) {
     extra_header = "pulse/pulse_stub_header.fragment"
 
     script = "../../tools/generate_stubs/generate_stubs.py"
-    sources = [ "pulse/pulse.sigs" ]
-    inputs = [ extra_header ]
+    sources = [
+      "pulse/pulse.sigs",
+    ]
+    inputs = [
+      extra_header,
+    ]
     stubs_filename_root = "pulse_stubs"
 
     # TODO(ajwong): these need to be included in the pulse build.
@@ -22,12 +26,18 @@ if (!link_pulseaudio) {
       "$target_gen_dir/pulse/$stubs_filename_root.h",
     ]
     args = [
-      "-i", rebase_path("$target_gen_dir/pulse", root_build_dir),
-      "-o", rebase_path("$target_gen_dir/pulse", root_build_dir),
-      "-t", "posix_stubs",
-      "-e", rebase_path(extra_header, root_build_dir),
-      "-s", stubs_filename_root,
-      "-p", "media/audio/pulse",
+      "-i",
+      rebase_path("$target_gen_dir/pulse", root_build_dir),
+      "-o",
+      rebase_path("$target_gen_dir/pulse", root_build_dir),
+      "-t",
+      "posix_stubs",
+      "-e",
+      rebase_path(extra_header, root_build_dir),
+      "-s",
+      stubs_filename_root,
+      "-p",
+      "media/audio/pulse",
     ]
 
     args += rebase_path(sources, root_build_dir)
@@ -160,9 +170,7 @@ source_set("audio") {
       "android/opensles_output.h",
       "android/opensles_wrapper.cc",
     ]
-    deps += [
-      "//media/base/android:media_jni_headers",
-    ]
+    deps += [ "//media/base/android:media_jni_headers" ]
   }
 
   if (is_openbsd) {
@@ -173,9 +181,7 @@ source_set("audio") {
   }
 
   if (is_linux) {
-    sources += [
-      "linux/audio_manager_linux.cc",
-    ]
+    sources += [ "linux/audio_manager_linux.cc" ]
   }
 
   if (use_alsa) {
@@ -249,7 +255,9 @@ source_set("test_support") {
     "test_audio_input_controller_factory.cc",
     "test_audio_input_controller_factory.h",
   ]
-  deps = [ "//testing/gmock" ]
+  deps = [
+    "//testing/gmock",
+  ]
   configs += [ "//media:media_config" ]
 }
 
@@ -278,13 +286,9 @@ source_set("unittests") {
   configs += [ "//media:media_config" ]
 
   if (is_android) {
-    sources += [
-      "android/audio_android_unittest.cc",
-    ]
+    sources += [ "android/audio_android_unittest.cc" ]
   } else {
-    sources += [
-      "audio_input_volume_unittest.cc",
-    ]
+    sources += [ "audio_input_volume_unittest.cc" ]
   }
 
   if (is_mac) {
@@ -323,8 +327,6 @@ source_set("unittests") {
   }
 
   if (use_alsa) {
-    sources += [
-      "alsa/alsa_output_unittest.cc",
-    ]
+    sources += [ "alsa/alsa_output_unittest.cc" ]
   }
 }

@@ -20,7 +20,9 @@ action("generate_tracing_grd") {
     "$tracing_gen_dir/about_tracing.js",
   ]
   inputs = input_pages
-  outputs = [ tracing_grd ]
+  outputs = [
+    tracing_grd,
+  ]
 
   args = rebase_path(input_pages, target_gen_dir) + [
            "--output",

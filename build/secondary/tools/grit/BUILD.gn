@@ -15,7 +15,9 @@ action("grit_sources") {
 
   # Note that we can't call this "grit_sources.stamp" because that file is
   # implicitly created by GN for script actions.
-  outputs = [ "$target_out_dir/grit_sources.script.stamp" ]
+  outputs = [
+    "$target_out_dir/grit_sources.script.stamp",
+  ]
 
   args = [
     rebase_path("//tools/grit", root_build_dir),

@@ -481,7 +481,9 @@ if (icu_use_data_file) {
         ]
       }
 
-      outputs = [ "$root_out_dir/icudtl.dat" ]
+      outputs = [
+        "$root_out_dir/icudtl.dat",
+      ]
     }
   }
 } else {
@@ -491,7 +493,9 @@ if (icu_use_data_file) {
       sources = [
         "windows/icudt.dll",
       ]
-      outputs = [ "$root_out_dir/icudt.dll" ]
+      outputs = [
+        "$root_out_dir/icudt.dll",
+      ]
     }
   } else {
     source_set("icudata") {
