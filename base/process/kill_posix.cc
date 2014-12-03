@@ -463,13 +463,13 @@ class BackgroundReaper : public PlatformThread::Delegate {
 
 }  // namespace
 
-void EnsureProcessTerminated(Process process) {
+void EnsureProcessTerminated(ProcessHandle process) {
   // If the child is already dead, then there's nothing to do.
-  if (IsChildDead(process.pid()))
+  if (IsChildDead(process))
     return;
 
   const unsigned timeout = 2;  // seconds
-  BackgroundReaper* reaper = new BackgroundReaper(process.pid(), timeout);
+  BackgroundReaper* reaper = new BackgroundReaper(process, timeout);
   PlatformThread::CreateNonJoinable(0, reaper);
 }
 

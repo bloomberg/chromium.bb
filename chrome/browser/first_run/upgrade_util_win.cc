@@ -258,13 +258,13 @@ bool SwapNewChromeExeIfPresent() {
     std::wstring rename_cmd;
     if (key.ReadValue(google_update::kRegRenameCmdField,
                       &rename_cmd) == ERROR_SUCCESS) {
+      base::win::ScopedHandle handle;
       base::LaunchOptions options;
       options.wait = true;
       options.start_hidden = true;
-      base::Process process = base::LaunchProcess(rename_cmd, options);
-      if (process.IsValid()) {
+      if (base::LaunchProcess(rename_cmd, options, &handle)) {
         DWORD exit_code;
-        ::GetExitCodeProcess(process.Handle(), &exit_code);
+        ::GetExitCodeProcess(handle.Get(), &exit_code);
         if (exit_code == installer::RENAME_SUCCESSFUL)
           return true;
       }

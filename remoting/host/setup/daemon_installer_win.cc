@@ -102,7 +102,7 @@ class DaemonCommandLineInstallerWin
 
  private:
   // Handle of the launched process.
-  base::Process process_;
+  base::win::ScopedHandle process_;
 
   // Used to determine when the launched process terminates.
   base::win::ObjectWatcher process_watcher_;
@@ -300,14 +300,13 @@ void DaemonCommandLineInstallerWin::Install() {
                          kOmahaLanguage));
 
   base::LaunchOptions options;
-  process_ = base::LaunchProcess(command_line, options);
-  if (!process_.IsValid()) {
+  if (!base::LaunchProcess(command_line, options, &process_)) {
     result = GetLastError();
     Done(HRESULT_FROM_WIN32(result));
     return;
   }
 
-  if (!process_watcher_.StartWatching(process_.Handle(), this)) {
+  if (!process_watcher_.StartWatching(process_.Get(), this)) {
     result = GetLastError();
     Done(HRESULT_FROM_WIN32(result));
     return;
@@ -317,7 +316,7 @@ void DaemonCommandLineInstallerWin::Install() {
 void DaemonCommandLineInstallerWin::OnObjectSignaled(HANDLE object) {
   // Check if the updater process returned success.
   DWORD exit_code;
-  if (GetExitCodeProcess(process_.Handle(), &exit_code) && exit_code == 0) {
+  if (GetExitCodeProcess(process_.Get(), &exit_code) && exit_code == 0) {
     Done(S_OK);
   } else {
     Done(E_FAIL);

@@ -38,7 +38,7 @@ static const int kWaitInterval = 2000;
 
 class TimerExpiredTask : public win::ObjectWatcher::Delegate {
  public:
-  explicit TimerExpiredTask(Process process);
+  explicit TimerExpiredTask(ProcessHandle process);
   ~TimerExpiredTask();
 
   void TimedOut();
@@ -50,23 +50,24 @@ class TimerExpiredTask : public win::ObjectWatcher::Delegate {
   void KillProcess();
 
   // The process that we are watching.
-  Process process_;
+  ProcessHandle process_;
 
   win::ObjectWatcher watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(TimerExpiredTask);
 };
 
-TimerExpiredTask::TimerExpiredTask(Process process) : process_(process.Pass()) {
-  watcher_.StartWatching(process_.Handle(), this);
+TimerExpiredTask::TimerExpiredTask(ProcessHandle process) : process_(process) {
+  watcher_.StartWatching(process_, this);
 }
 
 TimerExpiredTask::~TimerExpiredTask() {
   TimedOut();
+  DCHECK(!process_) << "Make sure to close the handle.";
 }
 
 void TimerExpiredTask::TimedOut() {
-  if (process_.IsValid())
+  if (process_)
     KillProcess();
 }
 
@@ -75,7 +76,8 @@ void TimerExpiredTask::OnObjectSignaled(HANDLE object) {
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION("TimerExpiredTask_OnObjectSignaled"));
 
-  process_.Close();
+  CloseHandle(process_);
+  process_ = NULL;
 }
 
 void TimerExpiredTask::KillProcess() {
@@ -86,10 +88,10 @@ void TimerExpiredTask::KillProcess() {
   // terminates.  We just care that it eventually terminates, and that's what
   // TerminateProcess should do for us. Don't check for the result code since
   // it fails quite often. This should be investigated eventually.
-  base::KillProcess(process_.Handle(), kProcessKilledExitCode, false);
+  base::KillProcess(process_, kProcessKilledExitCode, false);
 
   // Now, just cleanup as if the process exited normally.
-  OnObjectSignaled(process_.Handle());
+  OnObjectSignaled(process_);
 }
 
 }  // namespace
@@ -239,18 +241,19 @@ bool CleanupProcesses(const FilePath::StringType& executable_name,
   return false;
 }
 
-void EnsureProcessTerminated(Process process) {
-  DCHECK(!process.is_current());
+void EnsureProcessTerminated(ProcessHandle process) {
+  DCHECK(process != GetCurrentProcess());
 
   // If already signaled, then we are done!
-  if (WaitForSingleObject(process.Handle(), 0) == WAIT_OBJECT_0) {
+  if (WaitForSingleObject(process, 0) == WAIT_OBJECT_0) {
+    CloseHandle(process);
     return;
   }
 
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&TimerExpiredTask::TimedOut,
-                 base::Owned(new TimerExpiredTask(process.Pass()))),
+                 base::Owned(new TimerExpiredTask(process))),
       base::TimeDelta::FromMilliseconds(kWaitInterval));
 }
 

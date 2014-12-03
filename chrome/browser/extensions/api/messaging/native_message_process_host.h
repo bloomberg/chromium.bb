@@ -72,7 +72,7 @@ class NativeMessageProcessHost :
 
   // Callback for NativeProcessLauncher::Launch().
   void OnHostProcessLaunched(NativeProcessLauncher::LaunchResult result,
-                             base::Process process,
+                             base::ProcessHandle process_handle,
                              base::File read_file,
                              base::File write_file);
 
@@ -108,7 +108,7 @@ class NativeMessageProcessHost :
   // due to an error.
   bool closed_;
 
-  base::Process process_;
+  base::ProcessHandle process_handle_;
 
   // Input stream reader.
   scoped_ptr<net::FileStream> read_stream_;

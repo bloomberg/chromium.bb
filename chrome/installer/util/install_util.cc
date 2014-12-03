@@ -156,9 +156,7 @@ void InstallUtil::TriggerActiveSetupCommand() {
   base::LaunchOptions launch_options;
   if (base::win::IsMetroProcess())
     launch_options.force_breakaway_from_job_ = true;
-  base::Process process =
-      base::LaunchProcess(cmd.GetCommandLineString(), launch_options);
-  if (!process.IsValid())
+  if (!base::LaunchProcess(cmd.GetCommandLineString(), launch_options, NULL))
     PLOG(ERROR) << cmd.GetCommandLineString();
 }
 

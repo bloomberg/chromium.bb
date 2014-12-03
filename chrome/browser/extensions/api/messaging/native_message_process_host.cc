@@ -47,6 +47,7 @@ NativeMessageProcessHost::NativeMessageProcessHost(
       native_host_name_(native_host_name),
       launcher_(launcher.Pass()),
       closed_(false),
+      process_handle_(base::kNullProcessHandle),
 #if defined(OS_POSIX)
       read_file_(-1),
 #endif
@@ -102,7 +103,7 @@ void NativeMessageProcessHost::LaunchHostProcess() {
 
 void NativeMessageProcessHost::OnHostProcessLaunched(
     NativeProcessLauncher::LaunchResult result,
-    base::Process process,
+    base::ProcessHandle process_handle,
     base::File read_file,
     base::File write_file) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -124,7 +125,7 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
       break;
   }
 
-  process_ = process.Pass();
+  process_handle_ = process_handle;
 #if defined(OS_POSIX)
   // This object is not the owner of the file so it should not keep an fd.
   read_file_ = read_file.GetPlatformFile();
@@ -348,17 +349,17 @@ void NativeMessageProcessHost::Close(const std::string& error_message) {
     client_->CloseChannel(error_message);
   }
 
-  if (process_.IsValid()) {
+  if (process_handle_ != base::kNullProcessHandle) {
     // Kill the host process if necessary to make sure we don't leave zombies.
     // On OSX base::EnsureProcessTerminated() may block, so we have to post a
     // task on the blocking pool.
 #if defined(OS_MACOSX)
     content::BrowserThread::PostBlockingPoolTask(
-        FROM_HERE,
-        base::Bind(&base::EnsureProcessTerminated, Passed(&process_)));
+        FROM_HERE, base::Bind(&base::EnsureProcessTerminated, process_handle_));
 #else
-    base::EnsureProcessTerminated(process_.Pass());
+    base::EnsureProcessTerminated(process_handle_);
 #endif
+    process_handle_ = base::kNullProcessHandle;
   }
 }
 

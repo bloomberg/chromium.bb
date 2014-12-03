@@ -232,17 +232,6 @@ bool LaunchProcess(const string16& cmdline,
   return true;
 }
 
-// TODO(rvargas) crbug.com/416721: Remove this stub after LaunchProcess is
-// fully migrated to use Process.
-Process LaunchProcess(const string16& cmdline,
-                      const LaunchOptions& options) {
-  win::ScopedHandle process_handle;
-  if (LaunchProcess(cmdline, options, &process_handle))
-    return Process(process_handle.Take());
-
-  return Process();
-}
-
 bool LaunchProcess(const CommandLine& cmdline,
                    const LaunchOptions& options,
                    ProcessHandle* process_handle) {

@@ -22,6 +22,7 @@
 #include "base/posix/file_descriptor_shuffle.h"
 #elif defined(OS_WIN)
 #include <windows.h>
+#include "base/win/scoped_handle.h"
 #endif
 
 namespace base {
@@ -173,8 +174,9 @@ BASE_EXPORT bool LaunchProcess(const CommandLine& cmdline,
 //
 // Example (including literal quotes)
 //  cmdline = "c:\windows\explorer.exe" -foo "c:\bar\"
-BASE_EXPORT Process LaunchProcess(const string16& cmdline,
-                                  const LaunchOptions& options);
+BASE_EXPORT bool LaunchProcess(const string16& cmdline,
+                               const LaunchOptions& options,
+                               win::ScopedHandle* process_handle);
 
 // Launches a process with elevated privileges.  This does not behave exactly
 // like LaunchProcess as it uses ShellExecuteEx instead of CreateProcess to

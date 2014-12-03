@@ -214,13 +214,13 @@ bool MappedFile::Initialize(base::File file) {
 bool RunProcessAndWait(const wchar_t* exe_path, const std::wstring& cmdline,
                        int* exit_code) {
   bool result = true;
+  base::win::ScopedHandle process;
   base::LaunchOptions options;
   options.wait = true;
   options.start_hidden = true;
-  base::Process process = base::LaunchProcess(cmdline, options);
-  if (process.IsValid()) {
+  if (base::LaunchProcess(cmdline, options, &process)) {
     if (exit_code) {
-      if (!GetExitCodeProcess(process.Handle(),
+      if (!GetExitCodeProcess(process.Get(),
                               reinterpret_cast<DWORD*>(exit_code))) {
         PLOG(DFATAL) << "Failed getting the exit code for \""
                      << cmdline << "\".";
