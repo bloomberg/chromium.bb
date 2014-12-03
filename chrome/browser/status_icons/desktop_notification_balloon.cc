@@ -79,13 +79,14 @@ void DesktopNotificationBalloon::DisplayBalloon(
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     profile = ProfileManager::GetLastUsedProfile();
   }
-  notification_id_ = DesktopNotificationService::AddIconNotification(
-      GURL(),
-      title,
-      contents,
-      gfx::Image(icon),
-      base::string16(),
-      new DummyNotificationDelegate(base::IntToString(id_count_++), profile_),
-      profile);
+
+  NotificationDelegate* delegate =
+      new DummyNotificationDelegate(base::IntToString(id_count_++), profile_);
+  Notification notification(GURL(), title, contents, gfx::Image(icon),
+      base::string16(), base::string16(), delegate);
+
+  g_browser_process->notification_ui_manager()->Add(notification, profile);
+
+  notification_id_ = notification.delegate_id();
   profile_ = profile;
 }

@@ -65,15 +65,6 @@ class DesktopNotificationService : public PermissionContextBase
   // Register profile-specific prefs of notifications.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* prefs);
 
-    // Add a desktop notification.
-  static std::string AddIconNotification(const GURL& origin_url,
-                                         const base::string16& title,
-                                         const base::string16& message,
-                                         const gfx::Image& icon,
-                                         const base::string16& replace_id,
-                                         NotificationDelegate* delegate,
-                                         Profile* profile);
-
   explicit DesktopNotificationService(Profile* profile);
   ~DesktopNotificationService() override;
 

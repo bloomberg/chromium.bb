@@ -62,30 +62,6 @@ void DesktopNotificationService::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-// static
-std::string DesktopNotificationService::AddIconNotification(
-    const GURL& origin_url,
-    const base::string16& title,
-    const base::string16& message,
-    const gfx::Image& icon,
-    const base::string16& replace_id,
-    NotificationDelegate* delegate,
-    Profile* profile) {
-  Notification notification(message_center::NOTIFICATION_TYPE_SIMPLE,
-                            origin_url,
-                            title,
-                            message,
-                            icon,
-                            blink::WebTextDirectionDefault,
-                            NotifierId(origin_url),
-                            base::string16(),
-                            replace_id,
-                            message_center::RichNotificationData(),
-                            delegate);
-  g_browser_process->notification_ui_manager()->Add(notification, profile);
-  return notification.delegate_id();
-}
-
 DesktopNotificationService::DesktopNotificationService(Profile* profile)
     : PermissionContextBase(profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS),
       profile_(profile)

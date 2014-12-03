@@ -168,16 +168,15 @@ void NotificationImageReady(
   // Origin URL must be different from the crashed extension to avoid the
   // conflict. NotificationSystemObserver will cancel all notifications from
   // the same origin when NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED.
-  // TODO(mukai, dewittj): remove this and switch to message center
-  // notifications.
-  DesktopNotificationService::AddIconNotification(
-      GURL("chrome://extension-crash"),  // Origin URL.
-      base::string16(),                  // Title of notification.
-      message,
-      notification_icon,
-      base::UTF8ToUTF16(delegate->id()),  // Replace ID.
-      delegate.get(),
-      profile);
+  Notification notification(GURL("chrome://extension-crash"),
+                            base::string16(),
+                            message,
+                            notification_icon,
+                            base::string16(),
+                            base::UTF8ToUTF16(delegate->id()),
+                            delegate.get());
+
+  g_browser_process->notification_ui_manager()->Add(notification, profile);
 }
 #endif
 
