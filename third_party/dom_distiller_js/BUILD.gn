@@ -9,12 +9,16 @@ config("dependent_config") {
 }
 
 source_set("proto") {
-  public_deps = [ ":dom_distiller_proto" ]
+  public_deps = [
+    ":dom_distiller_proto",
+  ]
   public_configs = [ ":dependent_config" ]
 }
 
 proto_library("dom_distiller_proto") {
   visibility = [ ":*" ]
-  sources = [ "package/proto/dom_distiller.proto" ]
+  sources = [
+    "package/proto/dom_distiller.proto",
+  ]
   proto_out_dir = "third_party/dom_distiller_js"
 }

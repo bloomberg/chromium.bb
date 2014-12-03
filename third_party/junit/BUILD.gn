@@ -12,7 +12,7 @@ java_prebuilt("hamcrest") {
 # GYP: //third_party/junit.gyp:junit_jar
 java_library("junit") {
   deps = [
-    ":hamcrest"
+    ":hamcrest",
   ]
   DEPRECATED_java_in_dir = "src/src/main/java"
 }

@@ -9,9 +9,11 @@ config("iccjpeg_config") {
 source_set("iccjpeg") {
   sources = [
     "iccjpeg.c",
-    "iccjpeg.h"
+    "iccjpeg.h",
   ]
 
   public_configs = [ ":iccjpeg_config" ]
-  deps = [ "//third_party:jpeg" ]
+  deps = [
+    "//third_party:jpeg",
+  ]
 }

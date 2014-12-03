@@ -19,9 +19,7 @@ component("mozilla") {
     "NSWorkspace+Utils.m",
   ]
 
-  defines = [
-    "MOZILLA_IMPLEMENTATION",
-  ]
+  defines = [ "MOZILLA_IMPLEMENTATION" ]
 
   deps = [
     "//url",

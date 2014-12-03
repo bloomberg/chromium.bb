@@ -30,15 +30,11 @@ config("stp_config") {
     "-Wno-unused-function",
     "-Wno-unused-private-field",
   ]
-  cflags_cc = [
-    "-fexceptions",
-  ]
+  cflags_cc = [ "-fexceptions" ]
 }
 
 config("stp_public_config") {
-  include_dirs = [
-    "src/include",
-  ]
+  include_dirs = [ "src/include" ]
 }
 
 component("stp") {
@@ -372,9 +368,7 @@ action_foreach("generate_lexer") {
     "src/lib/Parser/smt.lex",
     "src/lib/Parser/smt2.lex",
   ]
-  outputs = [
-    "{{source_gen_dir}}/lex{{source_name_part}}.cpp",
-  ]
+  outputs = [ "{{source_gen_dir}}/lex{{source_name_part}}.cpp" ]
   args = [
     "{{source}}",
     "{{source_name_part}}",

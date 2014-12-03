@@ -29,11 +29,7 @@ source_set("jsoncpp") {
 
   public_configs = [ ":jsoncpp_config" ]
 
-  defines = [
-    "JSON_USE_EXCEPTION=0",
-  ]
+  defines = [ "JSON_USE_EXCEPTION=0" ]
 
-  include_dirs = [
-    "source/src/lib_json",
-  ]
+  include_dirs = [ "source/src/lib_json" ]
 }

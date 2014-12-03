@@ -10,6 +10,7 @@ source_set("sqlite") {
   sources = [
     "amalgamation/sqlite3.h",
     "amalgamation/sqlite3.c",
+
     # fts2.c currently has a lot of conflicts when added to
     # the amalgamation.  It is probably not worth fixing that.
     "src/ext/fts2/fts2.c",
@@ -81,8 +82,10 @@ source_set("sqlite") {
     cflags += [
       # sqlite does `if (*a++ && *b++);` in a non-buggy way.
       "-Wno-empty-body",
+
       # sqlite has some `unsigned < 0` checks.
       "-Wno-tautological-compare",
+
       # Needed because we don't have this commit yet:
       # https://github.com/mackyle/sqlite/commit/25df0fa050dcc9be7fb937b8e25be24049b3fef0
       "-Wno-pointer-bool-conversion",
@@ -101,6 +104,7 @@ if (is_linux) {
     sources = [
       "src/src/shell.c",
       "src/src/shell_icu_linux.c",
+
       # Include a dummy c++ file to force linking of libstdc++.
       "build_as_cpp.cc",
     ]
@@ -114,7 +118,11 @@ if (is_linux) {
 
 if (is_ios) {
   source_set("sqlite_regexp") {
-    sources = [ "src/ext/icu/icu.c" ]
-    deps = [ "//third_party/icu" ]
+    sources = [
+      "src/ext/icu/icu.c",
+    ]
+    deps = [
+      "//third_party/icu",
+    ]
   }
 }

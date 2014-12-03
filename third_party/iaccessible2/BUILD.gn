@@ -24,5 +24,7 @@ shared_library("IAccessible2Proxy") {
 
   libs = [ "rpcrt4.lib" ]
 
-  deps = [ ":iaccessible2" ]
+  deps = [
+    ":iaccessible2",
+  ]
 }

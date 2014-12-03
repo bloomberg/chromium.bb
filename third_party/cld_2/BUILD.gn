@@ -4,11 +4,10 @@
 
 import("//build/config/features.gni")
 
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("cld_2.gyp") ],
-    "scope",
-    [ "cld_2.gyp" ])
+gypi_values = exec_script("//build/gypi_to_gn.py",
+                          [ rebase_path("cld_2.gyp") ],
+                          "scope",
+                          [ "cld_2.gyp" ])
 
 # This variable controls which dependency is resolved by the pass-through
 # target 'cld2_platform_impl', and allows the embedder to choose which
@@ -31,7 +30,6 @@ gypi_values = exec_script(
 #   components/translate/content/browser/browser_cld_utils.cc
 #   components/translate/content/renderer/renderer_cld_utils.cc
 cld2_platform_support = "static"
-
 
 cld2_table_size = 2
 
@@ -58,7 +56,7 @@ source_set("cld2_data") {
 
 # As in the corresponding gyp file, this just builds the core interfaces for
 # CLD2. You must still declare a dependency on a specific data set, either
-# cld2_dynamic or cld2_static. 
+# cld2_dynamic or cld2_static.
 source_set("cld_2") {
   sources = gypi_values.cld2_core_sources
   include_dirs = [
@@ -73,7 +71,6 @@ source_set("cld_2") {
     cflags = [ "/wd4267" ]  # size_t -> int conversion.
   }
 }
-
 
 source_set("cld2_platform_impl") {
   deps = []
@@ -91,7 +88,10 @@ static_library("cld2_static") {
     "src/public",
   ]
 
-  deps = [ ":cld_2", ":cld2_data" ]
+  deps = [
+    ":cld_2",
+    ":cld2_data",
+  ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
@@ -105,14 +105,18 @@ config("cld2_dynamic_mode_config") {
 }
 
 static_library("cld2_dynamic") {
-  sources = gypi_values.cld2_core_sources + gypi_values.cld2_core_impl_sources + gypi_values.cld2_dynamic_data_loader_sources
+  sources = gypi_values.cld2_core_sources + gypi_values.cld2_core_impl_sources +
+            gypi_values.cld2_dynamic_data_loader_sources
   include_dirs = [
     "src/internal",
     "src/public",
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code", ":cld2_dynamic_mode_config" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    ":cld2_dynamic_mode_config",
+  ]
 
   if (is_win) {
     cflags = [ "/wd4267" ]  # size_t -> int conversion.
@@ -133,10 +137,16 @@ if (!is_win) {
       "src/public",
     ]
 
-    deps = [ ":cld2_data", ":cld2_dynamic" ]
+    deps = [
+      ":cld2_data",
+      ":cld2_dynamic",
+    ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code", ":cld2_dynamic_mode_config" ]
+    configs += [
+      "//build/config/compiler:no_chromium_code",
+      ":cld2_dynamic_mode_config",
+    ]
 
     if (is_win) {
       cflags = [ "/wd4267" ]  # size_t -> int conversion.

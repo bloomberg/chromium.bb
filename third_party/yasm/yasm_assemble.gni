@@ -45,25 +45,29 @@ if (is_mac || is_ios) {
   if (cpu_arch == "x86") {
     _yasm_flags = [
       "-fmacho32",
-      "-m", "x86",
+      "-m",
+      "x86",
     ]
   } else if (cpu_arch == "x64") {
     _yasm_flags = [
       "-fmacho64",
-      "-m", "amd64",
+      "-m",
+      "amd64",
     ]
   }
 } else if (is_posix) {
   if (cpu_arch == "x86") {
     _yasm_flags = [
       "-felf32",
-      "-m", "x86",
+      "-m",
+      "x86",
     ]
   } else if (cpu_arch == "x64") {
     _yasm_flags = [
       "-DPIC",
       "-felf64",
-      "-m", "amd64",
+      "-m",
+      "amd64",
     ]
   }
 } else if (is_win) {
@@ -71,12 +75,14 @@ if (is_mac || is_ios) {
     _yasm_flags = [
       "-DPREFIX",
       "-fwin32",
-      "-m", "x86",
+      "-m",
+      "x86",
     ]
   } else if (cpu_arch == "x64") {
     _yasm_flags = [
       "-fwin64",
-      "-m", "amd64",
+      "-m",
+      "amd64",
     ]
   }
 }
@@ -114,12 +120,13 @@ template("yasm_assemble") {
     # (when cross-compiling).
     yasm_label = "//third_party/yasm($host_toolchain)"
     args = [ "./" +  # Force current dir.
-      rebase_path(get_label_info(yasm_label, "root_out_dir") + "/yasm",
-                  root_build_dir)
-    ]
+             rebase_path(get_label_info(yasm_label, "root_out_dir") + "/yasm",
+                         root_build_dir) ]
 
     # Deps.
-    deps = [ yasm_label ]
+    deps = [
+      yasm_label,
+    ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
@@ -142,6 +149,7 @@ template("yasm_assemble") {
     # This goes to the end of include list.
     args += [
       "-I.",
+
       # Using "//." will produce a relative path "../.." which looks better than
       # "../../" which will result from using "//" as the base (although both
       # work). This is because rebase_path will terminate the result in a
@@ -149,7 +157,6 @@ template("yasm_assemble") {
       "-I" + rebase_path("//.", root_build_dir),
       "-I" + rebase_path(root_gen_dir, root_build_dir),
     ]
-
 
     # Extra defines.
     if (defined(invoker.defines)) {
@@ -167,8 +174,9 @@ template("yasm_assemble") {
     # "$root_out_dir/${target_name}.{{source_dir_part}}.$asm_obj_extension"
     outputs = [ "$target_out_dir/{{source_name_part}}.o" ]
     args += [
-      "-o", rebase_path(outputs[0], root_build_dir),
-      "{{source}}"
+      "-o",
+      rebase_path(outputs[0], root_build_dir),
+      "{{source}}",
     ]
 
     # The wrapper script run_yasm will write the depfile to the same name as
@@ -186,6 +194,8 @@ template("yasm_assemble") {
 
     sources = get_target_outputs(":$action_name")
 
-    deps = [ ":$action_name" ]
+    deps = [
+      ":$action_name",
+    ]
   }
 }

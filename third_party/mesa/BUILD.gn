@@ -49,6 +49,7 @@ config("mesa_internal_config") {
     "HAVE_LIBXCB_DRI2=1",
     "FEATURE_GL=1",
     "MAPI_MODE_GLAPI",
+
     #"USE_X86_64_ASM",
     "IN_DRI_DRIVER",
     "USE_XCB",
@@ -89,9 +90,7 @@ config("mesa_internal_config") {
   }
 
   if (is_linux) {
-    defines += [
-      "_GNU_SOURCE",
-    ]
+    defines += [ "_GNU_SOURCE" ]
   }
 
   if (is_posix) {
@@ -223,6 +222,7 @@ static_library("mesa_libglslcommon") {
     "src/src/glsl/ralloc.h",
     "src/src/glsl/s_expression.cpp",
     "src/src/glsl/s_expression.h",
+
     # Skipped in the GN build. This file duplicates symbols from errors.c and
     # happens to link in GYP due to static library link ordering.
     #"src/src/glsl/standalone_scaffolding.cpp",
@@ -231,12 +231,8 @@ static_library("mesa_libglslcommon") {
     "src/src/glsl/strtod.h",
   ]
 
-  configs -= [
-    "//build/config/compiler:chromium_code",
-  ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-  ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
   previous_configs = configs
   configs = []
   configs = [ ":mesa_internal_config" ] + previous_configs
@@ -617,12 +613,8 @@ static_library("mesa") {
     "src/src/mesa/x86-64/x86-64.h",
   ]
 
-  configs -= [
-    "//build/config/compiler:chromium_code",
-  ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-  ]
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
   previous_configs = configs
   configs = []
   configs = [ ":mesa_internal_config" ] + previous_configs
@@ -651,54 +643,49 @@ static_library("mesa") {
 }
 
 if (!is_android) {  # TODO(GYP) enable for Android.
-
-# Building this target will hide the native OpenGL shared library and
-# replace it with a slow software renderer.
-# TODO(GYP) http://crbug.com/380327 need support for loadable_module.
-#loadable_module("osmesa") {
-shared_library("osmesa") {
-  sources = [
-    "src/src/mesa/drivers/common/driverfuncs.c",
-    "src/src/mesa/drivers/common/driverfuncs.h",
-    "src/src/mesa/drivers/common/meta.c",
-    "src/src/mesa/drivers/common/meta.h",
-    "src/src/mesa/drivers/osmesa/osmesa.c",
-    "src/src/mesa/drivers/osmesa/osmesa.def",
-  ]
-
-  configs -= [
-    "//build/config/compiler:chromium_code",
-  ]
-  configs += [
-    ":mesa_headers_config",
-    "//build/config/compiler:no_chromium_code",
-  ]
-  previous_configs = configs
-  configs = []
-  configs = [ ":mesa_internal_config" ] + previous_configs
-
-  include_dirs = [ "src/src/mesa/drivers" ]
-
-  if (is_clang) {
-    # Mesa triggers some of these Clang warnings.
-    configs -= [ "//build/config/clang:extra_warnings" ]
-  }
-
-  deps = [
-    ":mesa_headers",
-    ":mesa",
-    ":mesa_libglslcommon",
-  ]
-
-  if (is_win) {
-    defines = [
-      "BUILD_GL32",
-      "KEYWORD1=GLAPI",
-      "KEYWORD2=GLAPIENTRY",
+  # Building this target will hide the native OpenGL shared library and
+  # replace it with a slow software renderer.
+  # TODO(GYP) http://crbug.com/380327 need support for loadable_module.
+  #loadable_module("osmesa") {
+  shared_library("osmesa") {
+    sources = [
+      "src/src/mesa/drivers/common/driverfuncs.c",
+      "src/src/mesa/drivers/common/driverfuncs.h",
+      "src/src/mesa/drivers/common/meta.c",
+      "src/src/mesa/drivers/common/meta.h",
+      "src/src/mesa/drivers/osmesa/osmesa.c",
+      "src/src/mesa/drivers/osmesa/osmesa.def",
     ]
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      ":mesa_headers_config",
+      "//build/config/compiler:no_chromium_code",
+    ]
+    previous_configs = configs
+    configs = []
+    configs = [ ":mesa_internal_config" ] + previous_configs
+
+    include_dirs = [ "src/src/mesa/drivers" ]
+
+    if (is_clang) {
+      # Mesa triggers some of these Clang warnings.
+      configs -= [ "//build/config/clang:extra_warnings" ]
+    }
+
+    deps = [
+      ":mesa_headers",
+      ":mesa",
+      ":mesa_libglslcommon",
+    ]
+
+    if (is_win) {
+      defines = [
+        "BUILD_GL32",
+        "KEYWORD1=GLAPI",
+        "KEYWORD2=GLAPIENTRY",
+      ]
+    }
   }
-}
-
 }  # !is_android
-
 # TODO(GYP) Android osmesa_in_lib_dir target.

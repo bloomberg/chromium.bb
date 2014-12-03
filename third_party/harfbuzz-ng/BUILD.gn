@@ -28,10 +28,12 @@ declare_args() {
     # Use the system harfbuzz for newer versions of pangoft, and not for older
     # ones. pangoft links to the system harfbuzz starting with 1.31.0, which
     # causes duplicate symbols when we link our own version.
-    use_system_harfbuzz = exec_script(
-        pkg_config_script,
-        pkg_config_args + [ "--atleast-version=1.31.0", "pangoft2" ],
-        "value")
+    use_system_harfbuzz = exec_script(pkg_config_script,
+                                      pkg_config_args + [
+                                            "--atleast-version=1.31.0",
+                                            "pangoft2",
+                                          ],
+                                      "value")
   } else {
     use_system_harfbuzz = false
   }
@@ -45,7 +47,6 @@ if (use_system_harfbuzz) {
   group("harfbuzz-ng") {
     public_configs = [ ":harfbuzz_pkgconfig" ]
   }
-
 } else {
   config("harfbuzz-ng_config") {
     include_dirs = [ "src" ]

@@ -52,7 +52,6 @@ config("jingle_unexported_configs") {
       "SSL_USE_NSS_RNG",
     ]
   }
-
 }
 
 # From third_party/libjingle/libjingle.gyp's target_defaults.
@@ -72,15 +71,26 @@ config("jingle_direct_dependent_configs") {
     "NO_MAIN_THREAD_WRAPPING",
     "NO_SOUND_SYSTEM",
   ]
+
   # TODO(GYP): Port is_win blocks.
   if (is_linux) {
-    defines += [ "LINUX", "WEBRTC_LINUX" ]
+    defines += [
+      "LINUX",
+      "WEBRTC_LINUX",
+    ]
   }
   if (is_mac) {
-    defines += [ "OSX", "WEBRTC_MAC" ]
+    defines += [
+      "OSX",
+      "WEBRTC_MAC",
+    ]
   }
   if (is_ios) {
-    defines += [ "IOS", "WEBRTC_MAC", "WEBRTC_IOS" ]
+    defines += [
+      "IOS",
+      "WEBRTC_MAC",
+      "WEBRTC_IOS",
+    ]
   }
   if (is_win) {
     defines += [ "WEBRTC_WIN" ]
@@ -89,8 +99,12 @@ config("jingle_direct_dependent_configs") {
     defines += [ "ANDROID" ]
   }
   if (is_posix) {
-    defines += [ "POSIX", "WEBRTC_POSIX" ]
+    defines += [
+      "POSIX",
+      "WEBRTC_POSIX",
+    ]
   }
+
   # TODO(GYP): Support these in GN.
   # if (is_bsd) {
   #   defines += [ "BSD" ]
@@ -252,7 +266,7 @@ static_library("libjingle") {
     "$p2p_dir/base/constants.h",
   ]
   public_deps = [
-    ":jingle_deps"
+    ":jingle_deps",
   ]
   deps = [
     "//third_party/webrtc/base:webrtc_base",
@@ -261,18 +275,15 @@ static_library("libjingle") {
 
   # From libjingle_common.gypi's conditions list.
   if (is_win) {
-    cflags = [ "/wd4005", "/wd4267" ]
+    cflags = [
+      "/wd4005",
+      "/wd4267",
+    ]
   }
 
-  configs += [
-    ":jingle_unexported_configs"
-  ]
-  public_configs = [
-    ":jingle_direct_dependent_configs",
-  ]
-  all_dependent_configs = [
-    ":jingle_all_dependent_configs",
-  ]
+  configs += [ ":jingle_unexported_configs" ]
+  public_configs = [ ":jingle_direct_dependent_configs" ]
+  all_dependent_configs = [ ":jingle_all_dependent_configs" ]
 }
 
 # This has to be is a separate project due to a bug in MSVS 2008 and the
@@ -293,15 +304,9 @@ static_library("libjingle_p2p_constants") {
   public_deps = [
     ":jingle_deps",
   ]
-  configs += [
-    ":jingle_unexported_configs"
-  ]
-  public_configs = [
-    ":jingle_direct_dependent_configs",
-  ]
-  all_dependent_configs = [
-    ":jingle_all_dependent_configs",
-  ]
+  configs += [ ":jingle_unexported_configs" ]
+  public_configs = [ ":jingle_direct_dependent_configs" ]
+  all_dependent_configs = [ ":jingle_all_dependent_configs" ]
 }
 
 # GYP version: third_party/libjingle.gyp:peerconnnection_server
@@ -316,9 +321,7 @@ source_set("peerconnnection_server") {
     "source/talk/examples/peerconnection/server/utils.cc",
     "source/talk/examples/peerconnection/server/utils.h",
   ]
-  include_dirs = [
-    "source",
-  ]
+  include_dirs = [ "source" ]
   public_deps = [
     ":jingle_deps",
   ]
@@ -326,15 +329,9 @@ source_set("peerconnnection_server") {
     ":libjingle",
     ":jingle_deps",
   ]
-  configs += [
-    ":jingle_unexported_configs"
-  ]
-  public_configs = [
-    ":jingle_direct_dependent_configs",
-  ]
-  all_dependent_configs = [
-    ":jingle_all_dependent_configs",
-  ]
+  configs += [ ":jingle_unexported_configs" ]
+  public_configs = [ ":jingle_direct_dependent_configs" ]
+  all_dependent_configs = [ ":jingle_all_dependent_configs" ]
   if (is_win) {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     cflags = [ "/wd4309" ]
@@ -342,7 +339,6 @@ source_set("peerconnnection_server") {
 }
 
 if (enable_webrtc) {
-
   source_set("libjingle_webrtc") {
     sources = [
       "overrides/init_webrtc.cc",
@@ -350,7 +346,9 @@ if (enable_webrtc) {
     ]
     configs += [ ":jingle_unexported_configs" ]
     public_configs = [ ":jingle_direct_dependent_configs" ]
-    deps = [ ":libjingle_webrtc_common" ]
+    deps = [
+      ":libjingle_webrtc_common",
+    ]
   }
 
   # Note: this does not support the shared library build of libpeerconnection
@@ -358,7 +356,6 @@ if (enable_webrtc) {
   source_set("libjingle_webrtc_common") {
     sources = [
       "overrides/talk/media/webrtc/webrtcexport.h",
-
       "source/talk/app/webrtc/audiotrack.cc",
       "source/talk/app/webrtc/audiotrack.h",
       "source/talk/app/webrtc/audiotrackrenderer.cc",
@@ -592,7 +589,5 @@ if (enable_webrtc) {
       "source/talk/app/webrtc/java/src/org/webrtc/VideoTrack.java",
     ]
   }
-
 }  # enable_webrtc
-
 # TODO(GYP): Port libjingle.gyp's enable_webrtc condition block.

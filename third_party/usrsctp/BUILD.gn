@@ -73,13 +73,14 @@ static_library("usrsctp") {
     "usrsctplib/user_socket.c",
     "usrsctplib/user_socketvar.h",
     "usrsctplib/user_uma.h",
-    "usrsctplib/usrsctp.h"
+    "usrsctplib/usrsctp.h",
   ]
 
   defines = [
     "SCTP_PROCESS_LEVEL_LOCKS",
     "SCTP_SIMPLE_ALLOCATOR",
     "__Userspace__",
+
     # "SCTP_DEBUG", # Uncomment for SCTP debugging.
   ]
 
@@ -108,6 +109,7 @@ static_library("usrsctp") {
   if (is_win) {
     defines += [
       "__Userspace_os_Windows",
+
       # Manually setting WINVER and _WIN32_WINNT is needed because Chrome
       # sets WINVER to a newer version of  windows. But compiling usrsctp
       # this way would is incompatible  with windows XP.

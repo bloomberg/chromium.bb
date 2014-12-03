@@ -5,9 +5,7 @@
 assert(!is_android && !is_ios)
 
 config("libusb_config") {
-  include_dirs = [
-    "src/libusb",
-  ]
+  include_dirs = [ "src/libusb" ]
 }
 
 static_library("libusb") {
@@ -47,9 +45,7 @@ static_library("libusb") {
     "src/msvc/stdint.h",
   ]
   deps = []
-  include_dirs = [
-    "src/libusb/os",
-  ]
+  include_dirs = [ "src/libusb/os" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]

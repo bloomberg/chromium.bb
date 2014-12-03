@@ -9,7 +9,6 @@ config("libelf_config") {
 source_set("libelf") {
   sources = [
     "config.h",
-
     "src/libelf/abstract.h",
     "src/libelf/common.h",
     "src/libelf/dl-hash.h",
@@ -24,7 +23,6 @@ source_set("libelf") {
     "src/libelf/nlist.h",
     "src/libelf/note_xlate.h",
     "src/libelf/version_xlate.h",
-
     "src/libelf/elf32_checksum.c",
     "src/libelf/elf32_fsize.c",
     "src/libelf/elf32_getehdr.c",

@@ -3,9 +3,7 @@
 # found in the LICENSE file.
 
 config("snappy_config") {
-  include_dirs = [
-    "src",
-  ]
+  include_dirs = [ "src" ]
 
   # These OS-specific generated headers were made by running the configure
   # script offline.

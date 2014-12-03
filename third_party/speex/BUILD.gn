@@ -3,9 +3,7 @@
 # found in the LICENSE file.
 
 config("speex_config") {
-  include_dirs = [
-    "include",  # Clients expect <speex/speex.h> to be a system header.
-  ]
+  include_dirs = [ "include" ]  # Clients expect <speex/speex.h> to be a system header.
 }
 
 source_set("speex") {
@@ -74,9 +72,7 @@ source_set("speex") {
 
   public_configs = [ ":speex_config" ]
 
-  include_dirs = [
-    "libspeex",
-  ]
+  include_dirs = [ "libspeex" ]
 
   defines = [
     "FLOATING_POINT",

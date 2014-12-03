@@ -31,9 +31,13 @@ group("jpeg") {
     libs = [ "jpeg" ]
     public_configs = [ ":system_libjpeg_config" ]
   } else if (use_libjpeg_turbo) {
-    deps = [ "//third_party/libjpeg_turbo:libjpeg" ]
+    deps = [
+      "//third_party/libjpeg_turbo:libjpeg",
+    ]
     public_configs = [ ":libjpeg_turbo_config" ]
   } else {
-    deps = [ "//third_party/libjpeg:libjpeg" ]
+    deps = [
+      "//third_party/libjpeg:libjpeg",
+    ]
   }
 }

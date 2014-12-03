@@ -8,9 +8,9 @@ config("libwebp_config") {
   include_dirs = [ "." ]
 }
 
-use_dsp_neon = (cpu_arch == "arm64" ||
-            (cpu_arch == "arm" && arm_version >= 7 &&
-                (arm_use_neon || arm_optionally_use_neon)))
+use_dsp_neon =
+    cpu_arch == "arm64" || (cpu_arch == "arm" && arm_version >= 7 &&
+                            (arm_use_neon || arm_optionally_use_neon))
 
 source_set("libwebp_dec") {
   sources = [
@@ -33,11 +33,9 @@ source_set("libwebp_dec") {
     ":libwebp_dsp",
     ":libwebp_utils",
   ]
-  all_dependent_configs = [
-    ":libwebp_config"
-  ]
+  all_dependent_configs = [ ":libwebp_config" ]
   if (use_dsp_neon) {
-    deps += [ ":libwebp_dsp_neon"]
+    deps += [ ":libwebp_dsp_neon" ]
   }
 }
 
@@ -45,13 +43,10 @@ source_set("libwebp_demux") {
   sources = [
     "demux/demux.c",
   ]
-  all_dependent_configs = [
-    ":libwebp_config"
-  ]
+  all_dependent_configs = [ ":libwebp_config" ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 }
-
 
 source_set("libwebp_dsp") {
   sources = [
@@ -78,58 +73,55 @@ source_set("libwebp_dsp") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  all_dependent_configs = [
-    ":libwebp_config"
-  ]
+  all_dependent_configs = [ ":libwebp_config" ]
   deps = []
   if (is_android) {
     deps += [ "//third_party/android_tools:cpu_features" ]
   }
-# TODO(GYP):
-#      'conditions': [
-#        ['order_profiling != 0', {
-#          'target_conditions' : [
-#            ['_toolset=="target"', {
-#              'cflags!': [ '-finstrument-functions' ],
-#            }],
-#          ],
-#        }],
-#      ],
+
+  # TODO(GYP):
+  #      'conditions': [
+  #        ['order_profiling != 0', {
+  #          'target_conditions' : [
+  #            ['_toolset=="target"', {
+  #              'cflags!': [ '-finstrument-functions' ],
+  #            }],
+  #          ],
+  #        }],
+  #      ],
 }
 
 if (use_dsp_neon) {
+  source_set("libwebp_dsp_neon") {
+    sources = [
+      "dsp/dec_neon.c",
+      "dsp/enc_neon.c",
+      "dsp/lossless_neon.c",
+      "dsp/upsampling_neon.c",
+    ]
 
-source_set("libwebp_dsp_neon") {
-  sources = [
-    "dsp/dec_neon.c",
-    "dsp/enc_neon.c",
-    "dsp/lossless_neon.c",
-    "dsp/upsampling_neon.c",
-  ]
+    include_dirs = [ "." ]
 
-  include_dirs = [ "." ]
+    if (cpu_arch == "arm") {
+      # behavior similar to *.c.neon in an Android.mk
+      configs -= [ "//build/config/compiler:compiler_arm_fpu" ]
+      cflags = [ "-mfpu=neon" ]
+    } else if (cpu_arch == "arm64") {
+      # avoid an ICE with gcc-4.9: b/15574841
+      cflags = [ "-frename-registers" ]
+    }
 
-  if (cpu_arch == "arm") {
-    # behavior similar to *.c.neon in an Android.mk
-    configs -= [ "//build/config/compiler:compiler_arm_fpu" ]
-    cflags = [ "-mfpu=neon" ]
-  } else if (cpu_arch == "arm64") {
-    # avoid an ICE with gcc-4.9: b/15574841
-    cflags = [ "-frename-registers" ]
+    # TODO(GYP):
+    #        ['order_profiling != 0', {
+    #          'target_conditions' : [
+    #            ['_toolset=="target"', {
+    #              'cflags!': [ '-finstrument-functions' ],
+    #            }],
+    #          ],
+    #        }],
+    #      ],
+    #    }
   }
-
-# TODO(GYP):
-#        ['order_profiling != 0', {
-#          'target_conditions' : [
-#            ['_toolset=="target"', {
-#              'cflags!': [ '-finstrument-functions' ],
-#            }],
-#          ],
-#        }],
-#      ],
-#    }
-}
-
 }  # use_dsp_neon
 
 source_set("libwebp_enc") {
@@ -158,9 +150,7 @@ source_set("libwebp_enc") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  all_dependent_configs = [
-    ":libwebp_config"
-  ]
+  all_dependent_configs = [ ":libwebp_config" ]
 }
 
 source_set("libwebp_utils") {
@@ -181,9 +171,7 @@ source_set("libwebp_utils") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  all_dependent_configs = [
-    ":libwebp_config"
-  ]
+  all_dependent_configs = [ ":libwebp_config" ]
 }
 
 group("libwebp") {
@@ -194,9 +182,7 @@ group("libwebp") {
     ":libwebp_enc",
     ":libwebp_utils",
   ]
-  public_configs = [
-    ":libwebp_config"
-  ]
+  public_configs = [ ":libwebp_config" ]
   if (use_dsp_neon) {
     deps += [ ":libwebp_dsp_neon" ]
   }

@@ -105,9 +105,7 @@ static_library("util") {
     "chromium/addressinput_util.cc",
     "chromium/json.cc",
   ]
-  sources -= [
-    "src/cpp/src/util/json.cc",
-  ]
+  sources -= [ "src/cpp/src/util/json.cc" ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -197,12 +195,10 @@ if (is_android) {
   }
 } else {
   # The list of files in libaddressinput.gypi.
-  gypi_values = exec_script(
-      "//build/gypi_to_gn.py",
-      [ rebase_path("src/cpp/libaddressinput.gypi") ],
-      "scope",
-      [ "src/cpp/libaddressinput.gypi" ])
-
+  gypi_values = exec_script("//build/gypi_to_gn.py",
+                            [ rebase_path("src/cpp/libaddressinput.gypi") ],
+                            "scope",
+                            [ "src/cpp/libaddressinput.gypi" ])
 
   # This target provides more complicated functionality like pinging servers
   # for validation rules.
@@ -219,9 +215,7 @@ if (is_android) {
       "chromium/trie.cc",
     ]
     sources -= libaddressinput_util_files
-    sources -= [
-      "src/cpp/src/util/string_compare.cc",
-    ]
+    sources -= [ "src/cpp/src/util/string_compare.cc" ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
@@ -239,8 +233,8 @@ if (is_android) {
   }
 
   test("libaddressinput_unittests") {
-    sources = rebase_path(
-        gypi_values.libaddressinput_test_files, ".", "src/cpp")
+    sources =
+        rebase_path(gypi_values.libaddressinput_test_files, ".", "src/cpp")
     sources += [
       "chromium/addressinput_util_unittest.cc",
       "chromium/chrome_address_validator_unittest.cc",
@@ -255,13 +249,9 @@ if (is_android) {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
-    defines = [
-      "TEST_DATA_DIR=\"third_party/libaddressinput/src/testdata\"",
-    ]
+    defines = [ "TEST_DATA_DIR=\"third_party/libaddressinput/src/testdata\"" ]
 
-    include_dirs = [
-      "src/cpp/src",
-    ]
+    include_dirs = [ "src/cpp/src" ]
 
     deps = [
       ":libaddressinput",

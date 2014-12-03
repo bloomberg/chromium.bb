@@ -7,9 +7,7 @@ config("openssl_config") {
   include_dirs = []
   include_dirs += [ "src/include" ]
   if (is_component_build) {
-    defines = [
-      "BORINGSSL_SHARED_LIBRARY",
-    ]
+    defines = [ "BORINGSSL_SHARED_LIBRARY" ]
   }
 }
 
@@ -19,11 +17,11 @@ config("openssl_internal_config") {
 }
 
 # The list of BoringSSL files is kept in boringssl.gypi.
-gypi_values = exec_script(
-    "//build/gypi_to_gn.py",
-    [ rebase_path("//third_party/boringssl/boringssl.gypi") ],
-    "scope",
-    [ "//third_party/boringssl/boringssl.gypi" ])
+gypi_values =
+    exec_script("//build/gypi_to_gn.py",
+                [ rebase_path("//third_party/boringssl/boringssl.gypi") ],
+                "scope",
+                [ "//third_party/boringssl/boringssl.gypi" ])
 
 # Windows' assembly is built with Yasm. The other platforms use the platform
 # assembler.
@@ -49,9 +47,7 @@ component("boringssl") {
     "BORINGSSL_NO_STATIC_INITIALIZER",
   ]
   if (is_component_build) {
-    defines += [
-      "BORINGSSL_SHARED_LIBRARY",
-    ]
+    defines += [ "BORINGSSL_SHARED_LIBRARY" ]
   }
 
   configs -= [ "//build/config/compiler:chromium_code" ]
@@ -60,6 +56,7 @@ component("boringssl") {
   # Also gets the include dirs from :openssl_config
   include_dirs = [
     "src/include",
+
     # This is for arm_arch.h, which is needed by some asm files. Since the
     # asm files are generated and kept in a different directory, they
     # cannot use relative paths to find this file.
@@ -69,7 +66,7 @@ component("boringssl") {
   if (is_win) {
     # TODO(davidben): Fix size_t truncations in BoringSSL.
     # https://crbug.com/429039
-    cflags += [ "/wd4267"]
+    cflags += [ "/wd4267" ]
   }
 
   if (cpu_arch == "x64") {

@@ -110,6 +110,7 @@ static_library("libxml") {
     "src/schematron.c",
     "src/threads.c",
     "src/tree.c",
+
     #"src/trio.c",
     #"src/trio.h",
     #"src/triodef.h",
@@ -151,9 +152,7 @@ static_library("libxml") {
   ]
 
   if (is_win) {
-    cflags_c = [
-      "/wd4101",  # Unreferenced local variable.
-    ]
+    cflags_c = [ "/wd4101" ]  # Unreferenced local variable.
   } else if (is_mac || is_android) {
     # http://www.xmlsoft.org/threads.html says that this is required when using
     # libxml from several threads, which can possibly happen in chrome. On
@@ -181,7 +180,5 @@ static_library("libxml") {
     ]
   }
 
-  include_dirs = [
-    "$os_include",
-  ]
+  include_dirs = [ "$os_include" ]
 }

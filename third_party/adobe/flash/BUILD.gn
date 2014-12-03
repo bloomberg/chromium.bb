@@ -49,7 +49,9 @@ if (is_chrome_branded) {
 }
 
 copy("flapper_version_h") {
-  sources = [ flapper_version_h_file ]
+  sources = [
+    flapper_version_h_file,
+  ]
   outputs = [ "$root_gen_dir/{{source_file_part}}" ]
 }
 

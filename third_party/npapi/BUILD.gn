@@ -5,7 +5,10 @@
 config("npapi_config") {
   # Some things #include "bindings/npapi.h" and others just #include
   # "npapi.h". Account for both flavors.
-  include_dirs = [ ".", "bindings" ]
+  include_dirs = [
+    ".",
+    "bindings",
+  ]
 }
 
 source_set("npapi") {

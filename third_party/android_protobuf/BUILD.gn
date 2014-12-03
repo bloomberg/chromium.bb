@@ -9,7 +9,7 @@ if (current_toolchain == host_toolchain) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
     deps = [
-      "//third_party/zlib"
+      "//third_party/zlib",
     ]
 
     sources = [
