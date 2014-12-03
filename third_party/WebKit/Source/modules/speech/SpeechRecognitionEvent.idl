@@ -24,11 +24,11 @@
  */
 
 [
-    EventConstructor,
     NoInterfaceObject,
+    Constructor(DOMString type, optional SpeechRecognitionEventInit initDict),
 ] interface SpeechRecognitionEvent : Event {
-    [InitializedByEventConstructor] readonly attribute unsigned long resultIndex;
-    [InitializedByEventConstructor] readonly attribute SpeechRecognitionResultList results;
+    readonly attribute unsigned long resultIndex;
+    readonly attribute SpeechRecognitionResultList results;
 
     readonly attribute Document interpretation;
     readonly attribute Document emma;

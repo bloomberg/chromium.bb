@@ -80,18 +80,16 @@ SpeechRecognitionError::SpeechRecognitionError(const String& error, const String
 
 SpeechRecognitionError::SpeechRecognitionError(const AtomicString& eventName, const SpeechRecognitionErrorInit& initializer)
     : Event(eventName, initializer)
-    , m_error(initializer.error)
-    , m_message(initializer.message)
 {
+    if (initializer.hasError())
+        m_error = initializer.error();
+    if (initializer.hasMessage())
+        m_message = initializer.message();
 }
 
 const AtomicString& SpeechRecognitionError::interfaceName() const
 {
     return EventNames::SpeechRecognitionError;
-}
-
-SpeechRecognitionErrorInit::SpeechRecognitionErrorInit()
-{
 }
 
 } // namespace blink

@@ -27,16 +27,10 @@
 #define SpeechRecognitionError_h
 
 #include "modules/EventModules.h"
+#include "modules/speech/SpeechRecognitionErrorInit.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-
-struct SpeechRecognitionErrorInit : public EventInit {
-    SpeechRecognitionErrorInit();
-
-    String error;
-    String message;
-};
 
 class SpeechRecognitionError final : public Event {
     DEFINE_WRAPPERTYPEINFO();

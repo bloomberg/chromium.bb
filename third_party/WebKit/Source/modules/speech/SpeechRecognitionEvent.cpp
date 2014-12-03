@@ -29,11 +29,6 @@
 
 namespace blink {
 
-SpeechRecognitionEventInit::SpeechRecognitionEventInit()
-    : resultIndex(0)
-{
-}
-
 PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create()
 {
     return adoptRefWillBeNoop(new SpeechRecognitionEvent);
@@ -72,9 +67,12 @@ SpeechRecognitionEvent::SpeechRecognitionEvent()
 
 SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, const SpeechRecognitionEventInit& initializer)
     : Event(eventName, initializer)
-    , m_resultIndex(initializer.resultIndex)
-    , m_results(initializer.results)
+    , m_resultIndex(0)
 {
+    if (initializer.hasResultIndex())
+        m_resultIndex = initializer.resultIndex();
+    if (initializer.hasResults())
+        m_results = initializer.results();
 }
 
 SpeechRecognitionEvent::SpeechRecognitionEvent(const AtomicString& eventName, unsigned long resultIndex, SpeechRecognitionResultList* results)

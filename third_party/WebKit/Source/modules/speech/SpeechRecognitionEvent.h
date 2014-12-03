@@ -27,6 +27,7 @@
 #define SpeechRecognitionEvent_h
 
 #include "modules/EventModules.h"
+#include "modules/speech/SpeechRecognitionEventInit.h"
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "modules/speech/SpeechRecognitionResultList.h"
 #include "platform/heap/Handle.h"
@@ -34,14 +35,6 @@
 namespace blink {
 
 class Document;
-
-class SpeechRecognitionEventInit : public EventInit {
-public:
-    SpeechRecognitionEventInit();
-
-    unsigned long resultIndex;
-    Member<SpeechRecognitionResultList> results;
-};
 
 class SpeechRecognitionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
