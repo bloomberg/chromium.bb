@@ -202,6 +202,8 @@ PYTHON_UNIT_TEST_SUITES = {
 
 LOCAL_MACHINE_TESTS = ['junit', 'python']
 VALID_ENVIRONMENTS = ['local']
+VALID_TEST_TYPES = ['gtest', 'instrumentation', 'junit', 'linker', 'monkey',
+                    'perf', 'python', 'uiautomator']
 
 
 def GetBuildType():

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 
-def CreateTestInstance(_command, _options, error_func):
+def CreateTestInstance(_args, error_func):
 
   # TODO(jbudorick) Add gtest test instance.
   # TODO(jbudorick) Add instrumentation test instance.

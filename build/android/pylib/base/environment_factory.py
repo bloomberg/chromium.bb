@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 
-def CreateEnvironment(_command, _options, error_func):
+def CreateEnvironment(_args, error_func):
 
   # TODO(jbudorick) Add local device environment.
   # TODO(jbudorick) Add local machine environment.

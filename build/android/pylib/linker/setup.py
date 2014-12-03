@@ -16,9 +16,11 @@ sys.path.insert(0,
                              'common'))
 import unittest_util # pylint: disable=F0401
 
-def Setup(options, _devices):
+def Setup(args, _devices):
   """Creates a list of test cases and a runner factory.
 
+  Args:
+    args: an argparse.Namespace object.
   Returns:
     A tuple of (TestRunnerFactory, tests).
   """
@@ -30,15 +32,15 @@ def Setup(options, _devices):
   low_memory_modes = [False, True]
   all_tests = [t(is_low_memory=m) for t in test_cases for m in low_memory_modes]
 
-  if options.test_filter:
+  if args.test_filter:
     all_test_names = [test.qualified_name for test in all_tests]
     filtered_test_names = unittest_util.FilterTestNames(all_test_names,
-                                                        options.test_filter)
+                                                        args.test_filter)
     all_tests = [t for t in all_tests \
                  if t.qualified_name in filtered_test_names]
 
   def TestRunnerFactory(device, _shard_index):
     return test_runner.LinkerTestRunner(
-        device, options.tool, options.cleanup_test_files)
+        device, args.tool, args.cleanup_test_files)
 
   return (TestRunnerFactory, all_tests)
