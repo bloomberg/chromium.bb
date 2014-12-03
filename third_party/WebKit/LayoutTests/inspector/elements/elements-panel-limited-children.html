@@ -42,7 +42,7 @@ function test()
     {
         results.push("=========== Modified children ===========");
         dumpElementsTree();
-        dataTreeElement.handleLoadAllChildren();
+        dataTreeElement.expandAllButtonElement.button.click();
         InspectorTest.runAfterPendingDispatches(step4);
     }
 
