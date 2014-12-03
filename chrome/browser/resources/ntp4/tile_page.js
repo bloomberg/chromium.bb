@@ -1132,7 +1132,9 @@ cr.define('ntp', function() {
      * @param {Event} e The mousewheel event.
      */
     handleMouseWheel: function(e) {
-      if (e.wheelDeltaY == 0)
+      // The ctrl-wheel should triggle the zoom in/out actions in Chromium for
+      // all pages.
+      if (e.wheelDeltaY == 0 || e.ctrlKey)
         return false;
 
       this.content_.scrollTop -= e.wheelDeltaY / 3;
