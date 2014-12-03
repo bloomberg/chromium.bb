@@ -63,6 +63,8 @@ bool DriGpuPlatformSupport::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_TakeDisplayControl, OnTakeDisplayControl)
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_RelinquishDisplayControl,
                       OnRelinquishDisplayControl)
+  IPC_MESSAGE_HANDLER(OzoneGpuMsg_AddGraphicsDevice, OnAddGraphicsDevice)
+  IPC_MESSAGE_HANDLER(OzoneGpuMsg_RemoveGraphicsDevice, OnRemoveGraphicsDevice)
   IPC_MESSAGE_UNHANDLED(handled = false);
   IPC_END_MESSAGE_MAP()
 
@@ -196,6 +198,14 @@ void DriGpuPlatformSupport::OnTakeDisplayControl() {
 
 void DriGpuPlatformSupport::OnRelinquishDisplayControl() {
   ndd_->RelinquishDisplayControl();
+}
+
+void DriGpuPlatformSupport::OnAddGraphicsDevice(const base::FilePath& path) {
+  NOTIMPLEMENTED();
+}
+
+void DriGpuPlatformSupport::OnRemoveGraphicsDevice(const base::FilePath& path) {
+  NOTIMPLEMENTED();
 }
 
 void DriGpuPlatformSupport::RelinquishGpuResources(

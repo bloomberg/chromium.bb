@@ -9,7 +9,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "ui/display/types/native_display_delegate.h"
-#include "ui/events/ozone/device/device_event_observer.h"
 
 namespace ui {
 
@@ -19,12 +18,9 @@ class DriConsoleBuffer;
 class DriWrapper;
 class ScreenManager;
 
-class NativeDisplayDelegateDri : public NativeDisplayDelegate,
-                                 DeviceEventObserver {
+class NativeDisplayDelegateDri : public NativeDisplayDelegate {
  public:
-  NativeDisplayDelegateDri(DriWrapper* dri,
-                           ScreenManager* screen_manager,
-                           DeviceManager* device_manager);
+  NativeDisplayDelegateDri(DriWrapper* dri, ScreenManager* screen_manager);
   ~NativeDisplayDelegateDri() override;
 
   DisplaySnapshot* FindDisplaySnapshot(int64_t id);
@@ -57,9 +53,6 @@ class NativeDisplayDelegateDri : public NativeDisplayDelegate,
   void AddObserver(NativeDisplayObserver* observer) override;
   void RemoveObserver(NativeDisplayObserver* observer) override;
 
-  // DeviceEventObserver overrides:
-  void OnDeviceEvent(const DeviceEvent& event) override;
-
  private:
   // Notify ScreenManager of all the displays that were present before the
   // update but are gone after the update.
@@ -69,7 +62,6 @@ class NativeDisplayDelegateDri : public NativeDisplayDelegate,
 
   DriWrapper* dri_;                // Not owned.
   ScreenManager* screen_manager_;  // Not owned.
-  DeviceManager* device_manager_;  // Not owned.
   scoped_ptr<DriConsoleBuffer> console_buffer_;
   // Modes can be shared between different displays, so we need to keep track
   // of them independently for cleanup.

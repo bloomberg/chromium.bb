@@ -93,6 +93,12 @@ IPC_MESSAGE_CONTROL3(OzoneGpuMsg_ConfigureNativeDisplay,
 IPC_MESSAGE_CONTROL1(OzoneGpuMsg_DisableNativeDisplay,
                      int64_t)  // display ID
 
+IPC_MESSAGE_CONTROL1(OzoneGpuMsg_AddGraphicsDevice,
+                     base::FilePath /* device_path */)
+
+IPC_MESSAGE_CONTROL1(OzoneGpuMsg_RemoveGraphicsDevice,
+                     base::FilePath /* device_path */)
+
 // Take control of the display
 IPC_MESSAGE_CONTROL0(OzoneGpuMsg_TakeDisplayControl)
 

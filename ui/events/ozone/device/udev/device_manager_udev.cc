@@ -154,8 +154,6 @@ void DeviceManagerUdev::OnFileCanWriteWithoutBlocking(int fd) {
 scoped_ptr<DeviceEvent> DeviceManagerUdev::ProcessMessage(udev_device* device) {
   const char* path = device::udev_device_get_devnode(device);
   const char* action = device::udev_device_get_action(device);
-  const char* hotplug =
-      device::udev_device_get_property_value(device, "HOTPLUG");
   const char* subsystem =
       device::udev_device_get_property_value(device, "SUBSYSTEM");
 
@@ -166,7 +164,8 @@ scoped_ptr<DeviceEvent> DeviceManagerUdev::ProcessMessage(udev_device* device) {
   if (!strcmp(subsystem, "input") &&
       StartsWithASCII(path, "/dev/input/event", true))
     device_type = DeviceEvent::INPUT;
-  else if (!strcmp(subsystem, "drm") && hotplug && !strcmp(hotplug, "1"))
+  else if (!strcmp(subsystem, "drm") &&
+           StartsWithASCII(path, "/dev/dri/card", true))
     device_type = DeviceEvent::DISPLAY;
   else
     return scoped_ptr<DeviceEvent>();

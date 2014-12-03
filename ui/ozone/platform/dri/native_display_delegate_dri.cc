@@ -8,7 +8,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/display/types/native_display_observer.h"
 #include "ui/events/ozone/device/device_event.h"
-#include "ui/events/ozone/device/device_manager.h"
 #include "ui/ozone/platform/dri/display_mode_dri.h"
 #include "ui/ozone/platform/dri/display_snapshot_dri.h"
 #include "ui/ozone/platform/dri/dri_console_buffer.h"
@@ -73,18 +72,13 @@ class DisplaySnapshotComparator {
 
 NativeDisplayDelegateDri::NativeDisplayDelegateDri(
     DriWrapper* dri,
-    ScreenManager* screen_manager,
-    DeviceManager* device_manager)
-    : dri_(dri),
-      screen_manager_(screen_manager),
-      device_manager_(device_manager) {
+    ScreenManager* screen_manager)
+    : dri_(dri), screen_manager_(screen_manager) {
   // TODO(dnicoara): Remove when async display configuration is supported.
   screen_manager_->ForceInitializationOfPrimaryDisplay();
 }
 
 NativeDisplayDelegateDri::~NativeDisplayDelegateDri() {
-  if (device_manager_)
-    device_manager_->RemoveObserver(this);
 }
 
 DisplaySnapshot* NativeDisplayDelegateDri::FindDisplaySnapshot(int64_t id) {
@@ -109,9 +103,6 @@ const DisplayMode* NativeDisplayDelegateDri::FindDisplayMode(
 }
 
 void NativeDisplayDelegateDri::Initialize() {
-  if (device_manager_)
-    device_manager_->AddObserver(this);
-
   ScopedVector<HardwareDisplayControllerInfo> displays =
       GetAvailableDisplayControllerInfos(dri_->get_fd());
 
@@ -306,17 +297,6 @@ void NativeDisplayDelegateDri::AddObserver(NativeDisplayObserver* observer) {
 
 void NativeDisplayDelegateDri::RemoveObserver(NativeDisplayObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void NativeDisplayDelegateDri::OnDeviceEvent(const DeviceEvent& event) {
-  if (event.device_type() != DeviceEvent::DISPLAY)
-    return;
-
-  if (event.action_type() == DeviceEvent::CHANGE) {
-    VLOG(1) << "Got display changed event";
-    FOR_EACH_OBSERVER(NativeDisplayObserver, observers_,
-                      OnConfigurationChanged());
-  }
 }
 
 void NativeDisplayDelegateDri::NotifyScreenManager(

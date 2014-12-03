@@ -52,15 +52,13 @@ NativeDisplayDelegateProxy::NativeDisplayDelegateProxy(
 }
 
 NativeDisplayDelegateProxy::~NativeDisplayDelegateProxy() {
-  if (device_manager_)
-    device_manager_->RemoveObserver(this);
-
+  device_manager_->RemoveObserver(this);
   proxy_->UnregisterHandler(this);
 }
 
 void NativeDisplayDelegateProxy::Initialize() {
-  if (device_manager_)
-    device_manager_->AddObserver(this);
+  device_manager_->AddObserver(this);
+  device_manager_->ScanDevices(this);
 
   if (!displays_.empty())
     return;
@@ -163,10 +161,20 @@ void NativeDisplayDelegateProxy::OnDeviceEvent(const DeviceEvent& event) {
   if (event.device_type() != DeviceEvent::DISPLAY)
     return;
 
-  if (event.action_type() == DeviceEvent::CHANGE) {
-    VLOG(1) << "Got display changed event";
-    proxy_->Send(new OzoneGpuMsg_RefreshNativeDisplays(
-        std::vector<DisplaySnapshot_Params>()));
+  switch (event.action_type()) {
+    case DeviceEvent::ADD:
+      VLOG(1) << "Got display added event for " << event.path().value();
+      proxy_->Send(new OzoneGpuMsg_AddGraphicsDevice(event.path()));
+      break;
+    case DeviceEvent::CHANGE:
+      VLOG(1) << "Got display changed event for " << event.path().value();
+      proxy_->Send(new OzoneGpuMsg_RefreshNativeDisplays(
+          std::vector<DisplaySnapshot_Params>()));
+      break;
+    case DeviceEvent::REMOVE:
+      VLOG(1) << "Got display removed event for " << event.path().value();
+      proxy_->Send(new OzoneGpuMsg_RemoveGraphicsDevice(event.path()));
+      break;
   }
 }
 

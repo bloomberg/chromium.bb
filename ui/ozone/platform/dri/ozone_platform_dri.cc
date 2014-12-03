@@ -87,10 +87,12 @@ class OzonePlatformDri : public OzonePlatform {
     display_manager_.reset(new DisplayManager());
     surface_factory_ozone_.reset(
         new DriSurfaceFactory(dri_.get(), &window_delegate_manager_));
-    gpu_platform_support_.reset(new DriGpuPlatformSupport(
-        dri_.get(), &window_delegate_manager_, screen_manager_.get(),
-        scoped_ptr<NativeDisplayDelegateDri>(new NativeDisplayDelegateDri(
-            dri_.get(), screen_manager_.get(), NULL))));
+    scoped_ptr<NativeDisplayDelegateDri> ndd(
+        new NativeDisplayDelegateDri(dri_.get(), screen_manager_.get()));
+    ndd->Initialize();
+    gpu_platform_support_.reset(
+        new DriGpuPlatformSupport(dri_.get(), &window_delegate_manager_,
+                                  screen_manager_.get(), ndd.Pass()));
     gpu_platform_support_host_.reset(new DriGpuPlatformSupportHost());
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
     window_manager_.reset(
