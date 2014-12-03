@@ -4,9 +4,9 @@
 
 if (is_win) {
   directxsdk_exists =
-    (exec_script("//build/dir_exists.py",
-                 [ rebase_path("//third_party/directxsdk", root_build_dir) ],
-                 "trim string") == "True")
+      exec_script("//build/dir_exists.py",
+                  [ rebase_path("//third_party/directxsdk", root_build_dir) ],
+                  "trim string") == "True"
 } else {
   directxsdk_exists = false
 }

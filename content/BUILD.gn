@@ -53,9 +53,8 @@ if (enable_plugins) {
 
 if (is_component_build) {
   shared_library("content") {
-    public_deps = content_shared_components + [
-      "//content/public/app:both_sources",
-    ]
+    public_deps =
+        content_shared_components + [ "//content/public/app:both_sources" ]
   }
 } else {
   group("content") {
@@ -78,6 +77,6 @@ grit("resources") {
 source_set("export") {
   visibility = [ "//content/*" ]
   sources = [
-    "content/common/content_export.h"
+    "content/common/content_export.h",
   ]
 }

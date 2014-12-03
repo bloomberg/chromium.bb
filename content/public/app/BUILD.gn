@@ -37,7 +37,6 @@ public_app_shared_deps = [
 ]
 
 if (is_component_build) {
-
   source_set("both_sources") {
     # Only the main content shared library can pull this in.
     visibility = [ "//content:content" ]
@@ -47,24 +46,28 @@ if (is_component_build) {
     configs += [ "//content:content_implementation" ]
 
     deps = public_app_shared_deps + [
-      "//content/app:both",
-      "//content/public/browser:browser_sources",
-    ]
+             "//content/app:both",
+             "//content/public/browser:browser_sources",
+           ]
   }
 
   # These all just forward to content, which in turn depends on "both_sources".
   group("browser") {
-    deps = [ "//content" ]
+    deps = [
+      "//content",
+    ]
   }
   group("child") {
-    deps = [ "//content" ]
+    deps = [
+      "//content",
+    ]
   }
   group("both") {
-    deps = [ "//content" ]
+    deps = [
+      "//content",
+    ]
   }
-
 } else {
-
   # content_main_delegate.cc conditionally includes content_browser_client.h
   # from //content/public/browser when it's not the child build. However,
   # the header checker doesn't know this doesn't apply and throws an error.
@@ -82,10 +85,10 @@ if (is_component_build) {
     sources = public_app_shared_sources
     configs += [ "//content:content_implementation" ]
     deps = public_app_shared_deps + [
-      "//content/app:both",
-      "//content/public/browser",
-      "//content/public/common",
-    ]
+             "//content/app:both",
+             "//content/public/browser",
+             "//content/public/common",
+           ]
   }
 
   # TODO(GYP) enable chrome_multiple_dll support
@@ -101,10 +104,10 @@ if (is_component_build) {
       configs += [ "//content:content_implementation" ]
 
       deps = public_app_shared_deps + [
-        "//content/app:browser",
-        "//content/public/browser",
-        "//content/public/common",
-      ]
+               "//content/app:browser",
+               "//content/public/browser",
+               "//content/public/common",
+             ]
     }
 
     source_set("child") {
@@ -116,19 +119,22 @@ if (is_component_build) {
       configs += [ "//content:content_implementation" ]
 
       deps = public_app_shared_deps + [
-        "//content/app:child",
-        "//content/public/common",
-      ]
+               "//content/app:child",
+               "//content/public/common",
+             ]
     }
   } else {
     # When the multi-DLL build is disabled, there is only one type of the
     # "app" target, and "browser" and "child" are the same as "both".
     group("browser") {
-      deps = [ ":both" ]
+      deps = [
+        ":both",
+      ]
     }
     group("child") {
-      deps = [ ":both" ]
+      deps = [
+        ":both",
+      ]
     }
   }
-
 }

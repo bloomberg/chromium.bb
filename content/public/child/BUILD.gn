@@ -7,9 +7,13 @@ import("//content/child/child.gni")
 # See //content/BUILD.gn for how this works.
 group("child") {
   if (is_component_build) {
-    public_deps = [ "//content" ]
+    public_deps = [
+      "//content",
+    ]
   } else {
-    public_deps = [ ":child_sources" ]
+    public_deps = [
+      ":child_sources",
+    ]
   }
 }
 
@@ -17,11 +21,10 @@ source_set("child_sources") {
   visibility = [ "//content/*" ]
 
   sources = rebase_path(content_child_gypi_values.public_child_sources,
-                        ".", "//content")
+                        ".",
+                        "//content")
 
-  configs += [
-    "//content:content_implementation",
-  ]
+  configs += [ "//content:content_implementation" ]
 
   public_deps = [
     "//content/child",

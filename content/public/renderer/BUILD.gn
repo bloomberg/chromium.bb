@@ -8,9 +8,13 @@ import("//content/renderer/renderer.gni")
 # See //content/BUILD.gn for how this works.
 group("renderer") {
   if (is_component_build) {
-    public_deps = [ "//content" ]
+    public_deps = [
+      "//content",
+    ]
   } else {
-    public_deps = [ ":renderer_sources" ]
+    public_deps = [
+      ":renderer_sources",
+    ]
   }
 }
 
@@ -18,11 +22,10 @@ source_set("renderer_sources") {
   visibility = [ "//content/*" ]
 
   sources = rebase_path(content_renderer_gypi_values.public_renderer_sources,
-                        ".", "//content")
+                        ".",
+                        "//content")
 
-  configs += [
-    "//content:content_implementation",
-  ]
+  configs += [ "//content:content_implementation" ]
 
   deps = [
     "//content/public/common:common_sources",
@@ -42,8 +45,9 @@ source_set("renderer_sources") {
   ]
 
   if (enable_webrtc) {
-    sources += rebase_path(
-        content_renderer_gypi_values.public_renderer_webrtc_sources,
-        ".", "//content")
+    sources +=
+        rebase_path(content_renderer_gypi_values.public_renderer_webrtc_sources,
+                    ".",
+                    "//content")
   }
 }

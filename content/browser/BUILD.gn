@@ -68,7 +68,8 @@ source_set("browser") {
   } else {
     # Normal non-iOS sources get everything.
     sources = rebase_path(content_browser_gypi_values.private_browser_sources,
-                          ".", "//content")
+                          ".",
+                          "//content")
 
     # TODO(GYP) these generated files are listed as sources in content_browser.
     # This is a bit suspicious. The GN grit template will make a source set
@@ -77,15 +78,17 @@ source_set("browser") {
     #
     # Need this annoying rebase_path call to match what happened with the
     # sources.
-    sources -= rebase_path([
-      "$root_gen_dir/webkit/grit/devtools_resources.h",
-      "$root_gen_dir/webkit/grit/devtools_resources_map.cc",
-      "$root_gen_dir/webkit/grit/devtools_resources_map.h",
-      "$root_gen_dir/content/browser/tracing/grit/tracing_resources.h",
-      "$root_gen_dir/ui/resources/grit/webui_resources_map.cc",
-      "$root_gen_dir/content/browser/devtools/protocol/devtools_protocol_handler_impl.cc",
-      "$root_gen_dir/content/browser/devtools/protocol/devtools_protocol_handler_impl.h",
-    ], ".")
+    sources -= rebase_path(
+            [
+              "$root_gen_dir/webkit/grit/devtools_resources.h",
+              "$root_gen_dir/webkit/grit/devtools_resources_map.cc",
+              "$root_gen_dir/webkit/grit/devtools_resources_map.h",
+              "$root_gen_dir/content/browser/tracing/grit/tracing_resources.h",
+              "$root_gen_dir/ui/resources/grit/webui_resources_map.cc",
+              "$root_gen_dir/content/browser/devtools/protocol/devtools_protocol_handler_impl.cc",
+              "$root_gen_dir/content/browser/devtools/protocol/devtools_protocol_handler_impl.h",
+            ],
+            ".")
 
     # Non-iOS deps.
     deps += [
@@ -112,9 +115,7 @@ source_set("browser") {
     ]
   }
 
-  configs += [
-    "//content:content_implementation",
-  ]
+  configs += [ "//content:content_implementation" ]
 
   if (toolkit_views) {
     deps += [ "//ui/events" ]
@@ -143,12 +144,12 @@ source_set("browser") {
     deps += [ "//printing" ]
   }
 
-# TODO(GYP)
-#   ['OS!="ios" and chrome_multiple_dll!=1', {
-#     'dependencies': [
-#       '../third_party/WebKit/public/blink.gyp:blink',
-#     ],
-#   }],
+  # TODO(GYP)
+  #   ['OS!="ios" and chrome_multiple_dll!=1', {
+  #     'dependencies': [
+  #       '../third_party/WebKit/public/blink.gyp:blink',
+  #     ],
+  #   }],
   if (!is_mac && !is_ios) {
     deps += [ "//sandbox" ]
   }
@@ -158,7 +159,8 @@ source_set("browser") {
 
   if (enable_webrtc) {
     sources += rebase_path(content_browser_gypi_values.webrtc_browser_sources,
-                           ".", "//content")
+                           ".",
+                           "//content")
     deps += [ "//jingle:jingle_glue" ]
     if (is_linux) {
       deps += [ "//third_party/libjingle:libjingle_webrtc" ]
@@ -203,14 +205,15 @@ source_set("browser") {
       "sensorsapi.lib",
       "portabledeviceguids.lib",
     ]
+
     # TODI(GYP)
-#       'msvs_settings': {
-#         'VCLinkerTool': {
-#           'DelayLoadDLLs': [
-#             'dinput8.dll',
-#             'user32.dll',
-#             'dwmapi.dll',
-#           ],
+    #       'msvs_settings': {
+    #         'VCLinkerTool': {
+    #           'DelayLoadDLLs': [
+    #             'dinput8.dll',
+    #             'user32.dll',
+    #             'dwmapi.dll',
+    #           ],
   }
 
   if (is_linux) {
@@ -237,7 +240,8 @@ source_set("browser") {
 
   if (enable_plugins) {
     sources += rebase_path(content_browser_gypi_values.plugin_browser_sources,
-                           ".", "//content")
+                           ".",
+                           "//content")
     deps += [
       "//ppapi:ppapi_ipc",
       "//ppapi:ppapi_shared",
@@ -262,10 +266,10 @@ source_set("browser") {
   # given the interaction between os_chromeos and the feature flags for X11 and
   # ozone, so do it all in one spot.
   if (is_chromeos || !use_ozone) {
-    sources -= [ "power_save_blocker_ozone.cc", ]
+    sources -= [ "power_save_blocker_ozone.cc" ]
   }
   if (is_chromeos || !use_x11) {
-    sources -= [ "power_save_blocker_x11.cc", ]
+    sources -= [ "power_save_blocker_x11.cc" ]
   }
 
   # Dealing with *wifi_data_provider_*.cc is also a bit complicated given
@@ -286,7 +290,8 @@ source_set("browser") {
 
   if (is_android) {
     sources += rebase_path(content_browser_gypi_values.android_browser_sources,
-                           ".", "//content")
+                           ".",
+                           "//content")
     sources -= [
       "browser_ipc_logging.cc",
       "device_sensors/data_fetcher_shared_memory_default.cc",
@@ -381,13 +386,15 @@ source_set("browser") {
 
   if (use_aura || is_mac || is_android) {
     sources += rebase_path(
-      content_browser_gypi_values.compositor_browser_surface_sources,
-      ".", "//content")
+            content_browser_gypi_values.compositor_browser_surface_sources,
+            ".",
+            "//content")
   }
   if (use_aura || is_mac) {
-    sources += rebase_path(
-      content_browser_gypi_values.compositor_browser_sources,
-      ".", "//content")
+    sources +=
+        rebase_path(content_browser_gypi_values.compositor_browser_sources,
+                    ".",
+                    "//content")
     if (!use_x11) {
       sources -= [
         "compositor/software_output_device_x11.cc",

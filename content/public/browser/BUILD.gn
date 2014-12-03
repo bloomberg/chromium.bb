@@ -8,9 +8,13 @@ import("//build/config/ui.gni")
 # See //content/BUILD.gn for how this works.
 group("browser") {
   if (is_component_build) {
-    public_deps = [ "//content" ]
+    public_deps = [
+      "//content",
+    ]
   } else {
-    public_deps = [ ":browser_sources" ]
+    public_deps = [
+      ":browser_sources",
+    ]
   }
 }
 
@@ -31,7 +35,8 @@ source_set("browser_sources") {
     ]
   } else {
     sources = rebase_path(content_browser_gypi_values.public_browser_sources,
-                          ".", "//content")
+                          ".",
+                          "//content")
   }
 
   if (use_aura) {

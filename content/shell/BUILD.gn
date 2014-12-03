@@ -266,6 +266,7 @@ static_library("content_shell_lib") {
     "//ui/gl",
     "//url",
     "//v8",
+
     #'copy_test_netscape_plugin',  TODO(GYP)
   ]
   if (enable_plugins) {
@@ -286,7 +287,9 @@ static_library("content_shell_lib") {
   if (use_x11) {
     # Some tests rely on this tool at runtime. Note: it might be better if
     # the tests that needed it had this as a dep instead of adding it here.
-    datadeps = [ "//tools/xdisplaycheck" ]
+    datadeps = [
+      "//tools/xdisplaycheck",
+    ]
 
     deps += [ "//ui/events/devices" ]
   }
@@ -362,17 +365,23 @@ grit("content_shell_resources_grit") {
 }
 
 copy("copy_shell_resources") {
-  sources = [ "$target_gen_dir/shell_resources.pak" ]
+  sources = [
+    "$target_gen_dir/shell_resources.pak",
+  ]
   outputs = [ "$root_out_dir/shell_resources.pak" ]
 
-  public_deps = [ ":content_shell_resources_grit" ]
+  public_deps = [
+    ":content_shell_resources_grit",
+  ]
 }
 
 # Font copies.
 if (!is_mac) {
   copy("copy_ahem") {
     visibility = [ ":*" ]
-    sources = [ "renderer/test_runner/resources/fonts/AHEM____.TTF" ]
+    sources = [
+      "renderer/test_runner/resources/fonts/AHEM____.TTF",
+    ]
     outputs = [ "$root_out_dir/AHEM____.TTF" ]
   }
 }
@@ -461,44 +470,43 @@ repack("pak") {
 # TODO(GYP): Figure out what this should be on android
 # and make linking this work on the Mac.
 if (!is_android && !is_mac) {
+  executable("content_shell") {
+    testonly = true
 
-executable("content_shell") {
-  testonly = true
-  # TODO(GYP) mac resource bundle stuff for this target.
-  # TODO(GYP) Windows content shell settings:
-  #  - Manifest.
-  #  - RC file.
-  #  - 'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-  sources = [
-    "../app/startup_helper_win.cc",
-    "app/shell_main.cc",
-  ]
+    # TODO(GYP) mac resource bundle stuff for this target.
+    # TODO(GYP) Windows content shell settings:
+    #  - Manifest.
+    #  - RC file.
+    #  - 'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+    sources = [
+      "../app/startup_helper_win.cc",
+      "app/shell_main.cc",
+    ]
 
-  deps = [
-    ":content_shell_lib",
-    ":pak",
-    "//base/allocator",
-  ]
+    deps = [
+      ":content_shell_lib",
+      ":pak",
+      "//base/allocator",
+    ]
 
-  if (is_win) {
-    deps += [ "//sandbox" ]
-    if (!is_asan) {
-      configs -= [ "//build/config/win:console" ]
-      configs += [ "//build/config/win:windowed" ]
+    if (is_win) {
+      deps += [ "//sandbox" ]
+      if (!is_asan) {
+        configs -= [ "//build/config/win:console" ]
+        configs += [ "//build/config/win:windowed" ]
+      }
+    }
+
+    if (is_mac) {
+      # TODO(GYP) lots of stuff from GYP file here.
+    }
+
+    if (is_android && !is_android_webview_build) {
+      # Some tests rely on this tool. It might be nicer if these tests relied on
+      # image diff rather than having content shell depend on it.
+      datadeps = [
+        "//tools/imagediff($host_toolchain)",
+      ]
     }
   }
-
-  if (is_mac) {
-    # TODO(GYP) lots of stuff from GYP file here.
-  }
-
-  if (is_android && !is_android_webview_build) {
-    # Some tests rely on this tool. It might be nicer if these tests relied on
-    # image diff rather than having content shell depend on it.
-    datadeps = [
-      "//tools/imagediff($host_toolchain)",
-    ]
-  }
-}
-
 }

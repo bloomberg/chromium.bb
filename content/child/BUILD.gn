@@ -13,7 +13,8 @@ source_set("child") {
   visibility = [ "//content/public/child:child_sources" ]
 
   sources = rebase_path(content_child_gypi_values.private_child_sources,
-                        ".", "//content")
+                        ".",
+                        "//content")
 
   public_deps = [
     "//mojo/edk/system",
@@ -42,9 +43,7 @@ source_set("child") {
   }
 
   if (is_android) {
-    deps += [
-      "//third_party/android_tools:cpu_features",
-    ]
+    deps += [ "//third_party/android_tools:cpu_features" ]
   }
 
   if (enable_plugins) {
@@ -90,20 +89,14 @@ source_set("child") {
         "npapi/webplugin_ime_win.h",
       ]
     } else if (is_android) {
-      sources -= [
-        "npapi/webplugin_delegate_impl_android.cc",
-      ]
+      sources -= [ "npapi/webplugin_delegate_impl_android.cc" ]
     }
     if (use_aura) {
-      sources -= [
-        "npapi/webplugin_delegate_impl_aura.cc",
-      ]
+      sources -= [ "npapi/webplugin_delegate_impl_aura.cc" ]
     }
   }
 
-  configs += [
-    "//content:content_implementation",
-  ]
+  configs += [ "//content:content_implementation" ]
 
   if (is_ios) {
     # iOS only needs a small portion of content; exclude all the
@@ -132,9 +125,11 @@ source_set("child") {
 
   if (!use_openssl) {
     sources += rebase_path(content_child_gypi_values.webcrypto_nss_sources,
-                           ".", "//content")
+                           ".",
+                           "//content")
   } else {
     sources += rebase_path(content_child_gypi_values.webcrypto_openssl_sources,
-                           ".", "//content")
+                           ".",
+                           "//content")
   }
 }

@@ -9,9 +9,13 @@ import("//mojo/public/tools/bindings/mojom.gni")
 # See //content/BUILD.gn for how this works.
 group("common") {
   if (is_component_build) {
-    public_deps = [ "//content" ]
+    public_deps = [
+      "//content",
+    ]
   } else {
-    public_deps = [ ":common_sources" ]
+    public_deps = [
+      ":common_sources",
+    ]
   }
 }
 
@@ -19,11 +23,10 @@ source_set("common_sources") {
   visibility = [ "//content/*" ]
 
   sources = rebase_path(content_common_gypi_values.public_common_sources,
-                        ".", "//content")
+                        ".",
+                        "//content")
 
-  configs += [
-    "//content:content_implementation",
-  ]
+  configs += [ "//content:content_implementation" ]
 
   public_deps = [
     "//content/common",

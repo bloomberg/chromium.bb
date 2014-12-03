@@ -10,4 +10,3 @@ proto_library("proto") {
     "service_worker_database.proto",
   ]
 }
-

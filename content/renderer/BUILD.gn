@@ -13,17 +13,15 @@ source_set("renderer") {
   visibility = [ "//content/public/renderer:renderer_sources" ]
 
   sources = rebase_path(content_renderer_gypi_values.private_renderer_sources,
-                        ".", "//content")
+                        ".",
+                        "//content")
 
-  configs += [
-    "//content:content_implementation",
-  ]
+  configs += [ "//content:content_implementation" ]
 
   deps = [
     # TODO(GYP) bug 376846 remove this. This should be inherited from //net but
     # those don't cross component boundaries.
     "//crypto:platform",
-
     "//base/allocator",
     "//cc",
     "//cc/blink",
@@ -74,9 +72,7 @@ source_set("renderer") {
   }
 
   if (is_android) {
-    sources -= [
-      "media/audio_decoder.cc",
-    ]
+    sources -= [ "media/audio_decoder.cc" ]
     sources += [
       "external_popup_menu.cc",
       "external_popup_menu.h",
@@ -84,9 +80,7 @@ source_set("renderer") {
 
     # Add back the Linux file which Android shares.
     set_sources_assignment_filter([])
-    sources += [
-      "render_view_linux.cc",
-    ]
+    sources += [ "render_view_linux.cc" ]
 
     deps += [
       "//third_party/android_tools:cpu_features",
@@ -124,8 +118,9 @@ source_set("renderer") {
 
   if (enable_webrtc) {
     sources += rebase_path(
-        content_renderer_gypi_values.private_renderer_webrtc_sources,
-        ".", "//content")
+            content_renderer_gypi_values.private_renderer_webrtc_sources,
+            ".",
+            "//content")
     deps += [
       "//crypto",
       "//third_party/libyuv",
@@ -143,8 +138,9 @@ source_set("renderer") {
 
   if (enable_plugins) {
     sources += rebase_path(
-        content_renderer_gypi_values.private_renderer_plugin_sources,
-        ".", "//content")
+            content_renderer_gypi_values.private_renderer_plugin_sources,
+            ".",
+            "//content")
     deps += [
       "//ppapi:ppapi_host",
       "//ppapi:ppapi_proxy",
@@ -163,8 +159,9 @@ source_set("renderer") {
 
   if (enable_plugins && enable_webrtc) {
     sources += rebase_path(
-        content_renderer_gypi_values.private_renderer_plugin_webrtc_sources,
-        ".", "//content")
+            content_renderer_gypi_values.private_renderer_plugin_webrtc_sources,
+            ".",
+            "//content")
   }
 
   if (!enable_pepper_cdms) {

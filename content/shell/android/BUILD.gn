@@ -32,9 +32,7 @@ shared_library("libcontent_shell_content_view") {
     "shell_library_loader.h",
   ]
   if (is_android_webview_build) {
-    ldflags = [
-      "-lgabi++",
-    ]
+    ldflags = [ "-lgabi++" ]
   }
 }
 
@@ -62,7 +60,7 @@ android_resources("content_shell_apk_resources") {
   testonly = true
   resource_dirs = [ "shell_apk/res" ]
   deps = [
-    ":content_shell_java_resources"
+    ":content_shell_java_resources",
   ]
   android_manifest = "shell_apk/AndroidManifest.xml"
 }
@@ -86,13 +84,11 @@ copy_ex("copy_content_shell_assets") {
   clear_dir = true
   dest = content_shell_assets_dir
   sources = [
-    "$root_out_dir/content_shell.pak"
+    "$root_out_dir/content_shell.pak",
   ]
 
   if (icu_use_data_file) {
-    sources += [
-      "$root_build_dir/icudtl.dat"
-    ]
+    sources += [ "$root_build_dir/icudtl.dat" ]
   }
 }
 
@@ -112,14 +108,13 @@ android_apk("content_shell_apk") {
     "//content/public/android:content_java",
     "//media/base/android:media_java",
     "//net/android:net_java",
+
     #"//third_party/mesa:osmesa_in_lib_dir",
     "//ui/android:ui_java",
   ]
   apk_name = "ContentShell"
   android_manifest = "shell_apk/AndroidManifest.xml"
-  native_libs = [
-    "libcontent_shell_content_view.so"
-  ]
+  native_libs = [ "libcontent_shell_content_view.so" ]
   asset_location = content_shell_assets_dir
 
   # TODO(GYP)
@@ -159,7 +154,6 @@ android_apk("content_shell_test_apk") {
 }
 
 if (cpu_arch != "x64" && cpu_arch != "arm64") {
-
   android_resources("linker_resources") {
     resource_dirs = [ "linker_test_apk/res" ]
     android_manifest = "linker_test_apk/AndroidManifest.xml"
@@ -181,13 +175,10 @@ if (cpu_arch != "x64" && cpu_arch != "arm64") {
     asset_location = content_shell_assets_dir
     apk_name = "ChromiumLinkerTest"
     DEPRECATED_java_in_dir = "linker_test_apk/src"
-    native_libs = [
-      "liblinker_test.so"
-    ]
+    native_libs = [ "liblinker_test.so" ]
     use_chromium_linker = true
     enable_chromium_linker_tests = true
   }
-
 
   # GYP: //content/content_tests.gypi:chromium_android_linker_test
   shared_library("linker_test") {
@@ -200,6 +191,7 @@ if (cpu_arch != "x64" && cpu_arch != "arm64") {
     deps = [
       ":linker_test_jni_headers",
       "//content/shell:content_shell_lib",
+
       # Required to include "content/public/browser/android/compositor.h"
       # in chromium_linker_test_android.cc :-(
       "//skia",
