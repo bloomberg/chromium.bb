@@ -2163,6 +2163,56 @@ TEST(HeapTest, HeapVectorWithInlineCapacity)
     }
 }
 
+TEST(HeapTest, HeapVectorShrinkCapacity)
+{
+    clearOutOldGarbage();
+    HeapVector<Member<IntWrapper>> vector1;
+    HeapVector<Member<IntWrapper>> vector2;
+    vector1.reserveCapacity(96);
+    EXPECT_LE(96u, vector1.capacity());
+    vector1.grow(vector1.capacity());
+
+    // Assumes none was allocated just after a vector backing of vector1.
+    vector1.shrink(56);
+    vector1.shrinkToFit();
+    EXPECT_GT(96u, vector1.capacity());
+
+    vector2.reserveCapacity(20);
+    // Assumes another vector backing was allocated just after the vector
+    // backing of vector1.
+    vector1.shrink(10);
+    vector1.shrinkToFit();
+    EXPECT_GT(56u, vector1.capacity());
+
+    vector1.grow(192);
+    EXPECT_LE(192u, vector1.capacity());
+}
+
+TEST(HeapTest, HeapVectorShrinkInlineCapacity)
+{
+    clearOutOldGarbage();
+    const size_t inlineCapacity = 64;
+    HeapVector<Member<IntWrapper>, inlineCapacity> vector1;
+    vector1.reserveCapacity(128);
+    EXPECT_LE(128u, vector1.capacity());
+    vector1.grow(vector1.capacity());
+
+    // Shrink the external buffer.
+    vector1.shrink(90);
+    vector1.shrinkToFit();
+    EXPECT_GT(128u, vector1.capacity());
+
+    // Shrinking switches the buffer from the external one to the inline one.
+    vector1.shrink(inlineCapacity - 1);
+    vector1.shrinkToFit();
+    EXPECT_EQ(inlineCapacity, vector1.capacity());
+
+    // Try to shrink the inline buffer.
+    vector1.shrink(1);
+    vector1.shrinkToFit();
+    EXPECT_EQ(inlineCapacity, vector1.capacity());
+}
+
 template<typename T, size_t inlineCapacity, typename U>
 bool dequeContains(HeapDeque<T, inlineCapacity>& deque, U u)
 {

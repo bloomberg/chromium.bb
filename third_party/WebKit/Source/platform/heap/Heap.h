@@ -787,6 +787,7 @@ public:
 
     PLATFORM_EXPORT void promptlyFreeObject(Header*);
     PLATFORM_EXPORT bool expandObject(Header*, size_t);
+    void shrinkObject(Header*, size_t);
 
 private:
     void addPageToHeap(const GCInfo*);
@@ -1399,6 +1400,11 @@ public:
     PLATFORM_EXPORT static void vectorBackingFree(void* address);
     PLATFORM_EXPORT static void hashTableBackingFree(void* address);
     PLATFORM_EXPORT static bool vectorBackingExpand(void*, size_t);
+    static inline bool vectorBackingShrink(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
+    {
+        vectorBackingShrinkInternal(address, quantizedCurrentSize, quantizedShrunkSize);
+        return true;
+    }
 
     static void free(void* address) { }
     template<typename T>
@@ -1488,6 +1494,7 @@ private:
     static void backingFree(void*);
     template<typename HeapTraits, typename HeapType, typename HeaderType>
     static bool backingExpand(void*, size_t);
+    PLATFORM_EXPORT static void vectorBackingShrinkInternal(void*, size_t quantizedCurrentSize, size_t quantizedShrunkSize);
 
     template<typename T, size_t u, typename V> friend class WTF::Vector;
     template<typename T, typename U, typename V, typename W> friend class WTF::HashSet;

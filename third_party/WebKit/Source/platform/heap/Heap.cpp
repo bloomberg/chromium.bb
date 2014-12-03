@@ -860,7 +860,11 @@ void FreeList<Header>::addToFreeList(Address address, size_t size)
 template<typename Header>
 bool ThreadHeap<Header>::expandObject(Header* header, size_t newSize)
 {
-    ASSERT(header->payloadSize() < newSize);
+    // It's possible that Vector requests a smaller expanded size because
+    // Vector::shrinkCapacity can set a capacity smaller than the actual payload
+    // size.
+    if (header->payloadSize() >= newSize)
+        return true;
     size_t allocationSize = allocationSizeFromSize(newSize);
     ASSERT(allocationSize > header->size());
     size_t expandSize = allocationSize - header->size();
@@ -878,6 +882,31 @@ bool ThreadHeap<Header>::expandObject(Header* header, size_t newSize)
         return true;
     }
     return false;
+}
+
+template<typename Header>
+void ThreadHeap<Header>::shrinkObject(Header* header, size_t newSize)
+{
+    ASSERT(header->payloadSize() > newSize);
+    size_t allocationSize = allocationSizeFromSize(newSize);
+    ASSERT(header->size() > allocationSize);
+    size_t shrinkSize = header->size() - allocationSize;
+    if (header->payloadEnd() == m_currentAllocationPoint) {
+        m_currentAllocationPoint -= shrinkSize;
+        m_remainingAllocationSize += shrinkSize;
+#if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+        memset(m_currentAllocationPoint, 0, shrinkSize);
+#endif
+        ASAN_POISON_MEMORY_REGION(m_currentAllocationPoint, shrinkSize);
+        header->setSize(allocationSize);
+    } else {
+        ASSERT(shrinkSize >= sizeof(BasicObjectHeader));
+        BasicObjectHeader* freedHeader = new (NotNull, header->payloadEnd() - shrinkSize) BasicObjectHeader(shrinkSize);
+        freedHeader->markPromptlyFreed();
+        pageFromAddress(reinterpret_cast<Address>(header))->addToPromptlyFreedSize(shrinkSize);
+        m_promptlyFreedCount++;
+        header->setSize(allocationSize);
+    }
 }
 
 template<typename Header>
@@ -2771,6 +2800,44 @@ bool HeapAllocator::vectorBackingExpand(void* address, size_t newSize)
     typedef HeapTraits::HeapType HeapType;
     typedef HeapTraits::HeaderType HeaderType;
     return backingExpand<HeapTraits, HeapType, HeaderType>(address, newSize);
+}
+
+void HeapAllocator::vectorBackingShrinkInternal(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
+{
+    // We shrink the object only if the shrinking will make a non-small
+    // prompt-free block.
+    // FIXME: Optimize the threshold size.
+    if (quantizedCurrentSize <= quantizedShrunkSize + sizeof(BasicObjectHeader) + sizeof(void*) * 32)
+        return;
+
+    if (!address || Heap::isInGC())
+        return;
+    ThreadState* state = ThreadState::current();
+    if (state->sweepForbidden())
+        return;
+    ASSERT(state->isAllocationAllowed());
+
+    BaseHeapPage* page = pageFromObject(address);
+    if (page->isLargeObject()) {
+        // We do nothing for large objects.
+        // FIXME: This wastes unused memory.  If this increases memory
+        // consumption, we should reallocate a new large object and shrink the
+        // memory usage.
+        return;
+    }
+    if (page->threadState() != state)
+        return;
+
+    using HeapTraits = HeapIndexTrait<VectorBackingHeap>;
+    using HeapType = HeapTraits::HeapType;
+    using HeaderType = HeapTraits::HeaderType;
+
+    HeaderType* header = HeaderType::fromPayload(address);
+    header->checkHeader();
+
+    int heapIndex = HeapTraits::index(header->gcInfo()->hasFinalizer(), header->payloadSize());
+    static_cast<HeapType*>(state->heap(heapIndex))->shrinkObject(header, quantizedShrunkSize);
+    return;
 }
 
 BaseHeapPage* Heap::lookup(Address address)

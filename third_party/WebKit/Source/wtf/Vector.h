@@ -368,6 +368,16 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             return false;
         }
 
+        inline bool shrinkBuffer(size_t newCapacity)
+        {
+            ASSERT(newCapacity < capacity());
+            size_t newSize = allocationSize(newCapacity);
+            if (!Allocator::vectorBackingShrink(m_buffer, allocationSize(capacity()), newSize))
+                return false;
+            m_capacity = newSize / sizeof(T);
+            return true;
+        }
+
         void resetBufferPointer()
         {
             m_buffer = 0;
@@ -449,6 +459,22 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
                 return true;
             }
             return false;
+        }
+
+        inline bool shrinkBuffer(size_t newCapacity)
+        {
+            ASSERT(newCapacity < capacity());
+            if (newCapacity <= inlineCapacity) {
+                // We need to switch to inlineBuffer.  Vector::shrinkCapacity
+                // will handle it.
+                return false;
+            }
+            ASSERT(m_buffer != inlineBuffer());
+            size_t newSize = allocationSize(newCapacity);
+            if (!Allocator::vectorBackingShrink(m_buffer, allocationSize(capacity()), newSize))
+                return false;
+            m_capacity = newSize / sizeof(T);
+            return true;
         }
 
         void resetBufferPointer()
@@ -1002,8 +1028,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         T* oldBuffer = begin();
         if (newCapacity > 0) {
-            // Optimization: if we're downsizing inside the same allocator bucket, we can exit with no additional work.
-            if (Base::allocationSize(capacity()) == Base::allocationSize(newCapacity))
+            if (Base::shrinkBuffer(newCapacity))
                 return;
 
             T* oldEnd = end();

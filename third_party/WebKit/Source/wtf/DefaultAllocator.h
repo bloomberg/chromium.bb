@@ -90,6 +90,14 @@ public:
     {
         return false;
     }
+
+    static inline bool vectorBackingShrink(void* address, size_t quantizedCurrentSize, size_t quantizedShrunkSize)
+    {
+        // Optimization: if we're downsizing inside the same allocator bucket,
+        // we can skip reallocation.
+        return quantizedCurrentSize == quantizedShrunkSize;
+    }
+
     static void free(void* address)
     {
         fastFree(address);
