@@ -148,6 +148,8 @@ void RenderLayerCompositor::updateAcceleratedCompositingSettings()
     m_compositingReasonFinder.updateTriggers();
     m_hasAcceleratedCompositing = m_renderView.document().settings()->acceleratedCompositingEnabled();
     m_rootShouldAlwaysCompositeDirty = true;
+    if (m_rootLayerAttachment != RootLayerUnattached)
+        rootRenderLayer()->setNeedsCompositingInputsUpdate();
 }
 
 bool RenderLayerCompositor::layerSquashingEnabled() const
