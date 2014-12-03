@@ -151,7 +151,7 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
        ++names_iterator) {
     video_capture_device_factory_->GetDeviceSupportedFormats(
         *names_iterator, &supported_formats);
-    EXPECT_EQ(supported_formats.size(), 3u);
+    EXPECT_EQ(supported_formats.size(), 4u);
     EXPECT_EQ(supported_formats[0].frame_size.width(), 320);
     EXPECT_EQ(supported_formats[0].frame_size.height(), 240);
     EXPECT_EQ(supported_formats[0].pixel_format, media::PIXEL_FORMAT_I420);
@@ -164,6 +164,10 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
     EXPECT_EQ(supported_formats[2].frame_size.height(), 720);
     EXPECT_EQ(supported_formats[2].pixel_format, media::PIXEL_FORMAT_I420);
     EXPECT_GE(supported_formats[2].frame_rate, 20);
+    EXPECT_EQ(supported_formats[3].frame_size.width(), 1920);
+    EXPECT_EQ(supported_formats[3].frame_size.height(), 1080);
+    EXPECT_EQ(supported_formats[3].pixel_format, media::PIXEL_FORMAT_I420);
+    EXPECT_GE(supported_formats[3].frame_rate, 20);
   }
 }
 

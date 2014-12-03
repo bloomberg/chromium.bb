@@ -81,7 +81,9 @@ void FakeVideoCaptureDevice::OnAllocateAndStart(
   DCHECK_EQ(params.requested_format.pixel_format, PIXEL_FORMAT_I420);
   capture_format_.pixel_format = params.requested_format.pixel_format;
   capture_format_.frame_rate = 30;
-  if (params.requested_format.frame_size.width() > 640)
+  if (params.requested_format.frame_size.width() > 720)
+      capture_format_.frame_size.SetSize(1920, 1080);
+  else if (params.requested_format.frame_size.width() > 640)
       capture_format_.frame_size.SetSize(1280, 720);
   else if (params.requested_format.frame_size.width() > 320)
     capture_format_.frame_size.SetSize(640, 480);

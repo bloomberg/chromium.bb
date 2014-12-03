@@ -454,10 +454,23 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                        TwoGetUserMediaWithFirstHdSecondVga) {
   std::string constraints1 =
-      "{video: {mandatory: {minWidth:1280 , minHeight: 720}}}";
+      "{video: {mandatory: {maxWidth:1280 , minWidth:1280 , maxHeight: 720,\
+      minHeight: 720}}}";
   std::string constraints2 =
       "{video: {mandatory: {maxWidth:640 , maxHeight: 480}}}";
   std::string expected_result = "w=1280:h=720-w=640:h=480";
+  RunTwoGetTwoGetUserMediaWithDifferentContraints(constraints1, constraints2,
+                                                  expected_result);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
+                       TwoGetUserMediaWithFirst1080pSecondVga) {
+  std::string constraints1 =
+      "{video: {mandatory: {maxWidth:1920 , minWidth:1920 , maxHeight: 1080,\
+      minHeight: 1080}}}";
+  std::string constraints2 =
+      "{video: {mandatory: {maxWidth:640 , maxHeight: 480}}}";
+  std::string expected_result = "w=1920:h=1080-w=640:h=480";
   RunTwoGetTwoGetUserMediaWithDifferentContraints(constraints1, constraints2,
                                                   expected_result);
 }

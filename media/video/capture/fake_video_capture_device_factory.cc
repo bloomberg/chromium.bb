@@ -48,7 +48,8 @@ void FakeVideoCaptureDeviceFactory::GetDeviceSupportedFormats(
   const int frame_rate = 1000 / FakeVideoCaptureDevice::kFakeCaptureTimeoutMs;
   const gfx::Size supported_sizes[] = {gfx::Size(320, 240),
                                        gfx::Size(640, 480),
-                                       gfx::Size(1280, 720)};
+                                       gfx::Size(1280, 720),
+                                       gfx::Size(1920, 1080)};
   supported_formats->clear();
   for (size_t i = 0; i < arraysize(supported_sizes); ++i) {
     supported_formats->push_back(VideoCaptureFormat(supported_sizes[i],
