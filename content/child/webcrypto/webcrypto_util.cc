@@ -204,7 +204,7 @@ Status GetHmacKeyGenLengthInBits(const blink::WebCryptoHmacKeyGenParams* params,
   }
 
   // TODO(eroman): Non multiple of 8 bit keylengths should be allowed:
-  // http://crbug.com/431085.
+  // http://crbug.com/438469
   if (params->optionalLengthBits() % 8)
     return Status::ErrorGenerateHmacKeyLengthPartialByte();
 

@@ -252,7 +252,7 @@ Status Status::ErrorGenerateHmacKeyLengthPartialByte() {
   //   * The error type is no longer spec compliant
   //   * The message text is poor
   //   * In fact the spec no longer requires key lengths to be multiples of 8
-  //     bits so this message is bogus (http://crbug.com/431085)
+  //     bits so this message is bogus (http://crbug.com/438469)
   return Status(blink::WebCryptoErrorTypeData,
                 "Invalid key length: it is either zero or not a multiple of 8 "
                 "bits");
