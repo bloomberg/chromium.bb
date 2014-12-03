@@ -22,6 +22,7 @@ class FakeCIDBConnection(object):
   def __init__(self):
     self.buildTable = []
     self.clActionTable = []
+    self.buildStageTable = {}
     self.fake_time = None
 
   def SetTime(self, fake_time):
@@ -74,6 +75,29 @@ class FakeCIDBConnection(object):
 
     self.clActionTable.extend(rows)
     return len(rows)
+
+  def InsertBuildStage(self, build_id, name, board=None,
+                       status=constants.BUILDER_STATUS_PLANNED):
+    build_stage_id = len(self.buildStageTable)
+    row = {'build_id': build_id,
+           'name': name,
+           'board': board,
+           'status': status}
+    self.buildStageTable[build_stage_id] = row
+    return build_stage_id
+
+  def StartBuildStage(self, build_stage_id):
+    if build_stage_id > len(self.buildStageTable):
+      return
+
+    self.buildStageTable[build_stage_id]['status'] = (
+        constants.BUILDER_STATUS_INFLIGHT)
+
+  def FinishBuildStage(self, build_stage_id, status):
+    if build_stage_id > len(self.buildStageTable):
+      return
+
+    self.buildStageTable[build_stage_id]['status'] = status
 
   def GetActionsForChanges(self, changes):
     """Gets all the actions for the given changes."""

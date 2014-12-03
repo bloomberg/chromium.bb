@@ -15,12 +15,13 @@ import unittest
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import commands
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import cbuildbot_config as config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import cbuildbot_run
-from chromite.cbuildbot import constants
 from chromite.cbuildbot.stages import generic_stages
+from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
@@ -37,6 +38,7 @@ import mock
 
 DEFAULT_BUILD_NUMBER = 1234321
 DEFAULT_BUILD_ID = 31337
+DEFAULT_BUILD_STAGE_ID = 313377
 
 
 # pylint: disable=protected-access
@@ -264,9 +266,34 @@ class BuilderStageTest(AbstractStageTest):
 
   def setUp(self):
     self._Prepare(waterfall=constants.WATERFALL_EXTERNAL)
+    self.mock_cidb = mock.MagicMock()
+    cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
+
+  def tearDown(self):
+    cidb.CIDBConnectionFactory.ClearMock()
+
+  def _ConstructStageWithExpectations(self, stage_class):
+    """Construct an instance of the stage, verifying expectations from init.
+
+    Args:
+      stage_class: The class to instantitate.
+
+    Returns:
+      The instantiated class instance.
+    """
+    if stage_class is None:
+      stage_class = generic_stages.BuilderStage
+
+    self.PatchObject(self.mock_cidb, 'InsertBuildStage',
+                     return_value=DEFAULT_BUILD_STAGE_ID)
+    stage = stage_class(self._run)
+    self.mock_cidb.InsertBuildStage.assert_called_once_with(
+        build_id=DEFAULT_BUILD_ID,
+        name=mock.ANY)
+    return stage
 
   def ConstructStage(self):
-    return generic_stages.BuilderStage(self._run)
+    return self._ConstructStageWithExpectations(generic_stages.BuilderStage)
 
   def testGetPortageEnvVar(self):
     """Basic test case for _GetPortageEnvVar function."""
@@ -353,6 +380,11 @@ class BuilderStageTest(AbstractStageTest):
     results = results_lib.Results.Get()[0]
     self.assertTrue(isinstance(results.result, TestError))
     self.assertEqual(str(results.result), 'fail!')
+    self.mock_cidb.StartBuildStage.assert_called_once_with(
+        DEFAULT_BUILD_STAGE_ID)
+    self.mock_cidb.FinishBuildStage.assert_called_once_with(
+        DEFAULT_BUILD_STAGE_ID,
+        constants.BUILDER_STATUS_FAILED)
 
   def testHandleExceptionException(self):
     """Verify exceptions in HandleException handlers are themselves handled."""
@@ -371,7 +403,7 @@ class BuilderStageTest(AbstractStageTest):
         self.handled_exceptions.append(str(exc_info[1]))
         raise TestError('nested')
 
-    stage = BadStage(self._run)
+    stage = self._ConstructStageWithExpectations(BadStage)
     results_lib.Results.Clear()
     self.assertRaises(failures_lib.StepFailure, self._RunCapture, stage)
 
@@ -382,9 +414,30 @@ class BuilderStageTest(AbstractStageTest):
 
     self.assertEqual(stage.handled_exceptions, ['first fail'])
 
+    # Verify the stage is still marked as failed in cidb.
+    self.mock_cidb.StartBuildStage.assert_called_once_with(
+        DEFAULT_BUILD_STAGE_ID)
+    self.mock_cidb.FinishBuildStage.assert_called_once_with(
+        DEFAULT_BUILD_STAGE_ID,
+        constants.BUILDER_STATUS_FAILED)
 
-class BoardSpecificBuilderStageTest(cros_test_lib.TestCase):
+
+class BoardSpecificBuilderStageTest(AbstractStageTest):
   """Tests option/config settings on board-specific stages."""
+
+  DEFAULT_BOARD_NAME = 'my_shiny_test_board'
+
+  def setUp(self):
+    self._Prepare()
+
+  def ConstructStage(self):
+    return generic_stages.BoardSpecificBuilderStage(self._run,
+                                                    self.DEFAULT_BOARD_NAME)
+
+  def testBuilderNameContainsBoardName(self):
+    self._run.config.grouped = True
+    stage = self.ConstructStage()
+    self.assertTrue(self.DEFAULT_BOARD_NAME in stage.name)
 
   # TODO (yjhong): Fix this test.
   # def testCheckOptions(self):

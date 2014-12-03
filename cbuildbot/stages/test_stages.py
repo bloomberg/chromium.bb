@@ -205,9 +205,10 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
   PERF_RESULTS_EXTENSION = 'results'
 
-  def __init__(self, builder_run, board, suite_config, **kwargs):
+  def __init__(self, builder_run, board, suite_config, suffix=None, **kwargs):
+    suffix = self.UpdateSuffix(suite_config.suite, suffix)
     super(HWTestStage, self).__init__(builder_run, board,
-                                      suffix=' [%s]' % suite_config.suite,
+                                      suffix=suffix,
                                       **kwargs)
     if not self._run.IsToTBuild():
       suite_config.SetBranchedValues()

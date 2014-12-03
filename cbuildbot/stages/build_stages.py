@@ -244,16 +244,18 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
   """Build Chromium OS packages."""
 
   option_name = 'build'
-  def __init__(self, builder_run, board, afdo_generate_min=False,
+  def __init__(self, builder_run, board, suffix=None, afdo_generate_min=False,
                afdo_use=False, update_metadata=False, **kwargs):
-    super(BuildPackagesStage, self).__init__(builder_run, board, **kwargs)
+    if afdo_use:
+      suffix = self.UpdateSuffix(constants.USE_AFDO_USE, suffix)
+    super(BuildPackagesStage, self).__init__(builder_run, board, suffix=suffix,
+                                             **kwargs)
     self._afdo_generate_min = afdo_generate_min
     self._update_metadata = update_metadata
     assert not afdo_generate_min or not afdo_use
 
     useflags = self._portage_extra_env.get('USE', '').split()
     if afdo_use:
-      self.name += ' [%s]' % constants.USE_AFDO_USE
       useflags.append(constants.USE_AFDO_USE)
 
     if useflags:
