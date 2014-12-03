@@ -5,13 +5,16 @@
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
 
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "base/i18n/rtl.h"
 #include "chromecast/browser/metrics/cast_stability_metrics_provider.h"
 #include "chromecast/browser/metrics/platform_metrics_providers.h"
 #include "chromecast/common/chromecast_config.h"
 #include "chromecast/common/chromecast_switches.h"
+#include "chromecast/common/pref_names.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -26,17 +29,6 @@
 
 namespace chromecast {
 namespace metrics {
-
-namespace {
-
-void StoreClientInfo(const ::metrics::ClientInfo& client_info) {
-}
-
-scoped_ptr<::metrics::ClientInfo> LoadClientInfo() {
-  return scoped_ptr<::metrics::ClientInfo>();
-}
-
-}  // namespace
 
 // static
 CastMetricsServiceClient* CastMetricsServiceClient::Create(
@@ -53,6 +45,49 @@ void CastMetricsServiceClient::SetMetricsClientId(
   LOG(INFO) << "Metrics client ID set: " << client_id;
   PlatformSetClientID(client_id);
 }
+
+void CastMetricsServiceClient::StoreClientInfo(
+    const ::metrics::ClientInfo& client_info) {
+  const std::string& client_id = client_info.client_id;
+  DCHECK(client_id.empty() || base::IsValidGUID(client_id));
+  // backup client_id or reset to empty.
+  SetMetricsClientId(client_id);
+}
+
+scoped_ptr< ::metrics::ClientInfo> CastMetricsServiceClient::LoadClientInfo() {
+  scoped_ptr< ::metrics::ClientInfo> client_info(new ::metrics::ClientInfo);
+
+  // kMetricsIsNewClientID would be missing if either the device was just
+  // FDR'ed, or it is on pre-v1.2 build.
+  if (!pref_service_->GetBoolean(prefs::kMetricsIsNewClientID)) {
+    // If the old client id exists, the device must be on pre-v1.2 build,
+    // instead of just being FDR'ed.
+    if (!pref_service_->GetString(::metrics::prefs::kMetricsOldClientID)
+        .empty()) {
+      // Force old client id to be regenerated. See b/9487011.
+      client_info->client_id = base::GenerateGUID();
+      pref_service_->SetBoolean(prefs::kMetricsIsNewClientID, true);
+      return client_info.Pass();
+    }
+    // else the device was just FDR'ed, pass through.
+  }
+
+  const std::string client_id(GetPlatformClientID());
+  if (!client_id.empty() && base::IsValidGUID(client_id)) {
+    client_info->client_id = client_id;
+    return client_info.Pass();
+  } else {
+    if (client_id.empty()) {
+      LOG(WARNING) << "Empty client id from platform,"
+                   << " assuming this is the first boot up of a new device.";
+    } else {
+      LOG(ERROR) << "Invalid client id " << client_id << " from platform.";
+    }
+    return scoped_ptr< ::metrics::ClientInfo>();
+  }
+}
+
+
 
 bool CastMetricsServiceClient::IsOffTheRecordSessionActive() {
   // Chromecast behaves as "off the record" w/r/t recording browsing state,
@@ -136,12 +171,15 @@ CastMetricsServiceClient::CastMetricsServiceClient(
     base::TaskRunner* io_task_runner,
     PrefService* pref_service,
     net::URLRequestContextGetter* request_context)
-    : metrics_state_manager_(::metrics::MetricsStateManager::Create(
+    : pref_service_(pref_service),
+      metrics_state_manager_(::metrics::MetricsStateManager::Create(
           pref_service,
           base::Bind(&CastMetricsServiceClient::IsReportingEnabled,
                      base::Unretained(this)),
-                     base::Bind(&StoreClientInfo),
-                     base::Bind(&LoadClientInfo))),
+          base::Bind(&CastMetricsServiceClient::StoreClientInfo,
+                     base::Unretained(this)),
+          base::Bind(&CastMetricsServiceClient::LoadClientInfo,
+                     base::Unretained(this)))),
       metrics_service_(new ::metrics::MetricsService(
           metrics_state_manager_.get(),
           this,

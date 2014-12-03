@@ -20,6 +20,7 @@ class TaskRunner;
 }
 
 namespace metrics {
+struct ClientInfo;
 class MetricsService;
 class MetricsStateManager;
 }  // namespace metrics
@@ -69,6 +70,11 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
 
   // Returns whether or not metrics reporting is enabled.
   bool IsReportingEnabled();
+
+  scoped_ptr< ::metrics::ClientInfo> LoadClientInfo();
+  void StoreClientInfo(const ::metrics::ClientInfo& client_info);
+
+  PrefService* pref_service_;
 
 #if defined(OS_LINUX)
   scoped_ptr<ExternalMetrics> external_metrics_;

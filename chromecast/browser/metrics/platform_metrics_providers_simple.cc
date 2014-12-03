@@ -11,6 +11,10 @@ void RegisterPlatformMetricsProviders(
     ::metrics::MetricsService* metrics_service) {
 }
 
+const std::string GetPlatformClientID() {
+  return "";
+}
+
 ::metrics::SystemProfileProto::Channel GetPlatformReleaseChannel() {
   return ::metrics::SystemProfileProto::CHANNEL_STABLE;
 }

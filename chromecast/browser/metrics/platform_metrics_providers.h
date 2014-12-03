@@ -18,6 +18,9 @@ namespace metrics {
 void RegisterPlatformMetricsProviders(
     ::metrics::MetricsService* metrics_service);
 
+// Returns UMA client ID persisted in the platform.
+const std::string GetPlatformClientID();
+
 // Returns the current release channel.
 ::metrics::SystemProfileProto::Channel GetPlatformReleaseChannel();
 
