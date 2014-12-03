@@ -161,19 +161,19 @@ def find_viewport(directory):
                     else:
                         break
 
-            #re-number the video frames
-            offset = None
-            frames = sorted(glob.glob(os.path.join(directory, 'video-*.png')))
-            match = re.compile('video-(?P<ms>[0-9]+)\.png')
-            for frame in frames:
-                m = re.search(match, frame)
-                if m is not None:
-                    frame_time = int(m.groupdict().get('ms'))
-                    if offset is None:
-                        offset = frame_time
-                    new_time = frame_time - offset
-                    dest = os.path.join(directory, 'video-{0:06d}.png'.format(new_time))
-                    os.rename(frame, dest)
+        #re-number the video frames
+        offset = None
+        frames = sorted(glob.glob(os.path.join(directory, 'video-*.png')))
+        match = re.compile('video-(?P<ms>[0-9]+)\.png')
+        for frame in frames:
+            m = re.search(match, frame)
+            if m is not None:
+                frame_time = int(m.groupdict().get('ms'))
+                if offset is None:
+                    offset = frame_time
+                new_time = frame_time - offset
+                dest = os.path.join(directory, 'image-{0:06d}.png'.format(new_time))
+                os.rename(frame, dest)
     except:
         viewport = None
 
@@ -181,6 +181,67 @@ def find_viewport(directory):
 
 
 def eliminate_duplicate_frames(directory, viewport):
+    try:
+        crop = '+0+55'
+        if viewport is not None:
+            # Ignore a 4-pixel header on the actual viewport to allow for the progress bar and
+            # a 6 pixel right margin to allow for the scroll bar that fades in and out.
+            top_margin = 4
+            right_margin = 6
+            top = viewport.get('y') + top_margin
+            height = max(viewport.get('height') - top_margin, 1)
+            left = viewport.get('x')
+            width = max(viewport.get('width') - right_margin, 1)
+            crop = '{0:d}x{1:d}+{2:d}+{3:d}'.format(width, height, left, top)
+        logging.debug('Viewport cropping set to ' + crop)
+
+        # Do a first pass looking for the first non-blank frame with an allowance
+        # for up to a 2% per-pixel difference for noise in the white field.
+        files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
+        blank = files[0]
+        count = len(files)
+        for i in range (1, count):
+            if frames_match(blank, files[i], 2, crop):
+                logging.debug('Removing duplicate frame {0} from the beginning'.format(files[i]))
+                os.remove(files[i])
+            else:
+                break
+
+        # Do a second pass looking for the last frame but with an allowance for up
+        # to a 10% difference in individual pixels to deal with noise around text.
+        files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
+        count = len(files)
+        duplicates = []
+        if count > 2:
+            files.reverse()
+            baseline = files[0]
+            previous_frame = baseline
+            for i in range (1, count):
+                if frames_match(baseline, files[i], 10, crop):
+                    duplicates.append(previous_frame)
+                    previous_frame = files[i]
+                else:
+                    break
+        for duplicate in duplicates:
+            logging.debug('Removing duplicate frame {0} from the end'.format(duplicate))
+            os.remove(duplicate)
+
+        # Do a third pass that eliminates frames with duplicate content.
+        previous_file = None
+        files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
+        for file in files:
+            duplicate = False
+            if previous_file is not None:
+                duplicate = frames_match(previous_file, file, 0, crop)
+            if duplicate:
+                logging.debug('Removing duplicate frame {0}'.format(duplicate))
+                os.remove(file)
+            else:
+                previous_file = file
+
+    except:
+        logging.critical('Error processing frames for duplicates')
+
     return
 
 
@@ -241,3 +302,21 @@ def colors_are_similar(a, b):
             similar = False
 
     return similar
+
+def frames_match(image1, image2, fuzz_percent, crop_region):
+    match = False
+    fuzz = ''
+    if fuzz_percent > 0:
+        fuzz = '-fuzz {0:d}% '.format(fuzz_percent)
+    crop = ''
+    if crop_region is not None:
+        crop = '-crop {0} '.format(crop_region)
+    command = 'convert "{0}" "{1}" {2}miff:- | compare -metric AE - {3}null:'.format(image1, image2, crop, fuzz)
+    compare = subprocess.Popen(command, stderr=subprocess.PIPE, shell=True)
+    out, err = compare.communicate()
+    if re.match('^[0-9]+$', err):
+        different_pixels = int(err)
+        if different_pixels == 0:
+            match = True
+
+    return match
