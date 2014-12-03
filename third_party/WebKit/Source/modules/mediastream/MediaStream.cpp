@@ -260,9 +260,9 @@ void MediaStream::stop()
     if (ended())
         return;
 
-    MediaStreamCenter::instance().didStopLocalMediaStream(descriptor());
-
     streamEnded();
+
+    MediaStreamCenter::instance().didStopLocalMediaStream(descriptor());
 }
 
 void MediaStream::trackEnded()
