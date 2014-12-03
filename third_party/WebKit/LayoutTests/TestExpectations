@@ -1470,3 +1470,4 @@ crbug.com/381919 virtual/textblob/fast/text/international/rtl-white-space-pre-wr
 crbug.com/381919 virtual/textblob/fast/text/international/unicode-bidi-plaintext-in-textarea.html [ ImageOnlyFailure ]
 crbug.com/381919 fast/invalid/014.html [ ImageOnlyFailure ]
 crbug.com/381919 fast/text/textIteratorNilRenderer.html [ ImageOnlyFailure ]
+crbug.com/381919 virtual/slimmingpaint/fast/table/multiple-captions-display.xhtml [ ImageOnlyFailure ]
