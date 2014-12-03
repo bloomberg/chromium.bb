@@ -157,6 +157,7 @@ class DownloadProtectionService {
     REASON_ARCHIVE_WITHOUT_BINARIES,
     REASON_DOWNLOAD_DANGEROUS_HOST,
     REASON_DOWNLOAD_POTENTIALLY_UNWANTED,
+    REASON_UNSUPPORTED_URL_SCHEME,
     REASON_MAX  // Always add new values before this one.
   };
 
@@ -171,6 +172,8 @@ class DownloadProtectionService {
                            CheckClientDownloadSuccess);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            CheckClientDownloadHTTPS);
+  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
+                           CheckClientDownloadBlob);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            CheckClientDownloadZip);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,

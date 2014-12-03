@@ -312,6 +312,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
       switch (reason) {
         case REASON_EMPTY_URL_CHAIN:
         case REASON_INVALID_URL:
+        case REASON_UNSUPPORTED_URL_SCHEME:
           PostFinishTask(UNKNOWN, reason);
           return;
 
@@ -462,9 +463,13 @@ class DownloadProtectionService::CheckClientDownloadRequest
       return false;
     }
     const GURL& final_url = item.GetUrlChain().back();
-    if (!final_url.is_valid() || final_url.is_empty() ||
-        !final_url.IsStandard() || final_url.SchemeIsFile()) {
+    if (!final_url.is_valid() || final_url.is_empty()) {
       *reason = REASON_INVALID_URL;
+      return false;
+    }
+    if ((!final_url.IsStandard() && !final_url.SchemeIsBlob()) ||
+        final_url.SchemeIsFile()) {
+      *reason = REASON_UNSUPPORTED_URL_SCHEME;
       return false;
     }
     if (!download_protection_util::IsBinaryFile(target_path)) {

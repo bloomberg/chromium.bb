@@ -872,6 +872,62 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
 #endif
 }
 
+TEST_F(DownloadProtectionServiceTest, CheckClientDownloadBlob) {
+  ClientDownloadResponse response;
+  response.set_verdict(ClientDownloadResponse::DANGEROUS);
+  net::FakeURLFetcherFactory factory(NULL);
+  factory.SetFakeResponse(DownloadProtectionService::GetDownloadRequestUrl(),
+                          response.SerializeAsString(), net::HTTP_OK,
+                          net::URLRequestStatus::SUCCESS);
+
+  base::FilePath a_tmp(FILE_PATH_LITERAL("a.tmp"));
+  base::FilePath a_exe(FILE_PATH_LITERAL("a.exe"));
+  std::vector<GURL> url_chain;
+  url_chain.push_back(
+      GURL("blob:http://www.evil.com/50b85f60-71e4-11e4-82f8-0800200c9a66"));
+  GURL referrer("http://www.google.com/");
+  std::string hash = "hash";
+
+  content::MockDownloadItem item;
+  EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
+  EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
+  EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
+  EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetTabReferrerUrl())
+      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+  EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
+  EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
+  EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
+  EXPECT_CALL(item, GetRemoteAddress()).WillRepeatedly(Return(""));
+
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_)).WillRepeatedly(Return(false));
+  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(a_tmp, _))
+      .Times(1);
+  EXPECT_CALL(*binary_feature_extractor_.get(), ExtractImageHeaders(a_tmp, _))
+      .Times(1);
+
+  download_service_->CheckClientDownload(
+      &item,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+#if defined(OS_WIN)
+  EXPECT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
+#else
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+#endif
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  // OSX sends pings for evaluation purposes.
+  EXPECT_TRUE(HasClientDownloadRequest());
+  ClearClientDownloadRequest();
+#else
+  EXPECT_FALSE(HasClientDownloadRequest());
+#endif
+}
+
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   ClientDownloadResponse response;
   response.set_verdict(ClientDownloadResponse::SAFE);
