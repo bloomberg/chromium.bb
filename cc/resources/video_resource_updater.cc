@@ -20,7 +20,6 @@ namespace cc {
 
 namespace {
 
-const ResourceFormat kYUVResourceFormat = LUMINANCE_8;
 const ResourceFormat kRGBResourceFormat = RGBA_8888;
 
 class SyncPointClientImpl : public media::VideoFrame::SyncPointClient {
@@ -135,14 +134,12 @@ bool VideoResourceUpdater::VerifyFrame(
 // each plane in the frame.
 static gfx::Size SoftwarePlaneDimension(
     const scoped_refptr<media::VideoFrame>& input_frame,
-    ResourceFormat output_resource_format,
+    bool software_compositor,
     size_t plane_index) {
-  if (output_resource_format == kYUVResourceFormat) {
+  if (!software_compositor) {
     return media::VideoFrame::PlaneSize(
         input_frame->format(), plane_index, input_frame->coded_size());
   }
-
-  DCHECK_EQ(output_resource_format, kRGBResourceFormat);
   return input_frame->coded_size();
 }
 
@@ -176,7 +173,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
   bool software_compositor = context_provider_ == NULL;
 
-  ResourceFormat output_resource_format = kYUVResourceFormat;
+  ResourceFormat output_resource_format =
+      resource_provider_->yuv_resource_format();
   size_t output_plane_count = media::VideoFrame::NumPlanes(input_frame_format);
 
   // TODO(skaslev): If we're in software compositing mode, we do the YUV -> RGB
@@ -194,7 +192,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
   for (size_t i = 0; i < output_plane_count; ++i) {
     gfx::Size output_plane_resource_size =
-        SoftwarePlaneDimension(video_frame, output_resource_format, i);
+        SoftwarePlaneDimension(video_frame, software_compositor, i);
     if (output_plane_resource_size.IsEmpty() ||
         output_plane_resource_size.width() > max_resource_size ||
         output_plane_resource_size.height() > max_resource_size) {
@@ -297,7 +295,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
   for (size_t i = 0; i < plane_resources.size(); ++i) {
     // Update each plane's resource id with its content.
-    DCHECK_EQ(plane_resources[i].resource_format, kYUVResourceFormat);
+    DCHECK_EQ(plane_resources[i].resource_format,
+              resource_provider_->yuv_resource_format());
 
     if (!PlaneResourceMatchesUniqueID(plane_resources[i], video_frame.get(),
                                       i)) {
