@@ -311,9 +311,6 @@ const char kEnableDistanceFieldText[]       = "enable-distance-field-text";
 const char kEnableLayerSquashing[] =
     "enable-layer-squashing";
 
-// Enable experimental container node culling.
-const char kEnableContainerCulling[]        = "enable-container-culling";
-
 // Enable the experimental Credential Manager JavaScript API.
 const char kEnableCredentialManagerAPI[]    = "enable-credential-manager-api";
 

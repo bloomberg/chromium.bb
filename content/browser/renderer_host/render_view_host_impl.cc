@@ -391,8 +391,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
   prefs.accelerated_2d_canvas_msaa_sample_count =
       atoi(command_line.GetSwitchValueASCII(
       switches::kAcceleratedCanvas2dMSAASampleCount).c_str());
-  prefs.container_culling_enabled =
-      command_line.HasSwitch(switches::kEnableContainerCulling);
   // Text blobs rely on impl-side painting for proper LCD handling.
   prefs.text_blobs_enabled = command_line.HasSwitch(switches::kForceTextBlobs)
       || (content::IsImplSidePaintingEnabled() &&

@@ -1019,9 +1019,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setAccelerated2dCanvasMSAASampleCount(
       prefs.accelerated_2d_canvas_msaa_sample_count);
 
-  // Enable container culling if requested on the command line.
-  settings->setContainerCullingEnabled(prefs.container_culling_enabled);
-
   WebRuntimeFeatures::enableTextBlobs(prefs.text_blobs_enabled);
 
   settings->setAsynchronousSpellCheckingEnabled(
