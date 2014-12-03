@@ -31,12 +31,11 @@ var test = function()
 
         function testSourceMapping(next)
         {
-            var formatter = new WebInspector.ScriptFormatter();
-
             InspectorTest.showScriptSource("style-formatter-obfuscated.css", didShowScriptSource);
+
             function didShowScriptSource(sourceFrame)
             {
-                formatter.formatContent("text/css", sourceFrame._textEditor.text(), didFormatContent);
+                new WebInspector.ScriptFormatter("text/css", sourceFrame._textEditor.text(), didFormatContent);
             }
 
             function didFormatContent(content, mapping)
