@@ -15,8 +15,8 @@
 #include "base/command_line.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
-#include "chrome/browser/ui/ash/screenshot_taker.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_factory.h"
@@ -62,7 +62,7 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
 
   ash::Shell* shell = ash::Shell::CreateInstance(shell_init_params);
   shell->accelerator_controller()->SetScreenshotDelegate(
-      scoped_ptr<ash::ScreenshotDelegate>(new ScreenshotTaker).Pass());
+      scoped_ptr<ash::ScreenshotDelegate>(new ChromeScreenshotGrabber).Pass());
   // TODO(flackr): Investigate exposing a blocking pool task runner to chromeos.
   shell->accelerometer_controller()->Initialize(
       content::BrowserThread::GetBlockingPool()->

@@ -21,6 +21,9 @@
         'SNAPSHOT_IMPLEMENTATION',
       ],
       'sources': [
+        'screenshot_grabber.cc',
+        'screenshot_grabber.h',
+        'screenshot_grabber_observer.h',
         'snapshot.h',
         'snapshot_android.cc',
         'snapshot_async.cc',

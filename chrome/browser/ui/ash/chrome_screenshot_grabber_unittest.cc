@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/screenshot_taker.h"
+#include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
@@ -13,12 +14,14 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/snapshot/screenshot_grabber.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/login/login_state.h"
@@ -27,25 +30,38 @@
 namespace ash {
 namespace test {
 
-class ScreenshotTakerTest : public AshTestBase,
-                            public ScreenshotTakerObserver {
+class ChromeScreenshotGrabberTest : public AshTestBase,
+                                    public ui::ScreenshotGrabberObserver {
  public:
-  ScreenshotTakerTest()
-      : running_(false),
+  ChromeScreenshotGrabberTest()
+      : profile_(NULL),
+        running_(false),
         screenshot_complete_(false),
-        screenshot_result_(ScreenshotTakerObserver::SCREENSHOT_SUCCESS) {
-  }
+        screenshot_result_(ScreenshotGrabberObserver::SCREENSHOT_SUCCESS) {}
 
-  void SetUp() override { AshTestBase::SetUp(); }
+  void SetUp() override {
+    AshTestBase::SetUp();
+    chrome_screenshot_grabber_.reset(new ChromeScreenshotGrabber);
+    profile_manager_.reset(
+        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    CHECK(profile_manager_->SetUp());
+    profile_ = profile_manager_->CreateTestingProfile("test_profile");
+    chrome_screenshot_grabber_->SetProfileForTest(profile_);
+    screenshot_grabber()->AddObserver(this);
+  }
 
   void TearDown() override {
     RunAllPendingInMessageLoop();
+    screenshot_grabber()->RemoveObserver(this);
+    chrome_screenshot_grabber_.reset();
+    profile_manager_.reset();
     AshTestBase::TearDown();
   }
 
-  // Overridden from ScreenshotTakerObserver
-  void OnScreenshotCompleted(ScreenshotTakerObserver::Result screenshot_result,
-                             const base::FilePath& screenshot_path) override {
+  // Overridden from ui::ScreenshotGrabberObserver
+  void OnScreenshotCompleted(
+      ScreenshotGrabberObserver::Result screenshot_result,
+      const base::FilePath& screenshot_path) override {
     screenshot_complete_ = true;
     screenshot_result_ = screenshot_result;
     screenshot_path_ = screenshot_path;
@@ -56,24 +72,6 @@ class ScreenshotTakerTest : public AshTestBase,
   }
 
  protected:
-  // ScreenshotTakerTest is a friend of ScreenshotTaker and therefore
-  // allowed to set the directory, basename and profile.
-  void SetScreenshotDirectoryForTest(
-      ScreenshotTaker* screenshot_taker,
-      const base::FilePath& screenshot_directory) {
-    screenshot_taker->SetScreenshotDirectoryForTest(screenshot_directory);
-  }
-  void SetScreenshotBasenameForTest(
-      ScreenshotTaker* screenshot_taker,
-      const std::string& screenshot_basename) {
-    screenshot_taker->SetScreenshotBasenameForTest(screenshot_basename);
-  }
-  void SetScreenshotProfileForTest(
-      ScreenshotTaker* screenshot_taker,
-      Profile* profile) {
-    screenshot_taker->SetScreenshotProfileForTest(profile);
-  }
-
   void Wait() {
     if (screenshot_complete_)
       return;
@@ -83,42 +81,43 @@ class ScreenshotTakerTest : public AshTestBase,
     EXPECT_TRUE(screenshot_complete_);
   }
 
+  ChromeScreenshotGrabber* chrome_screenshot_grabber() {
+    return chrome_screenshot_grabber_.get();
+  }
+
+  ui::ScreenshotGrabber* screenshot_grabber() {
+    return chrome_screenshot_grabber_->screenshot_grabber_.get();
+  }
+
+  scoped_ptr<TestingProfileManager> profile_manager_;
+  TestingProfile* profile_;
   bool running_;
   bool screenshot_complete_;
-  ScreenshotTakerObserver::Result screenshot_result_;
+  ScreenshotGrabberObserver::Result screenshot_result_;
+  scoped_ptr<ChromeScreenshotGrabber> chrome_screenshot_grabber_;
   base::FilePath screenshot_path_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ScreenshotTakerTest);
+  DISALLOW_COPY_AND_ASSIGN(ChromeScreenshotGrabberTest);
 };
 
-TEST_F(ScreenshotTakerTest, TakeScreenshot) {
+TEST_F(ChromeScreenshotGrabberTest, TakeScreenshot) {
 #if defined(OS_CHROMEOS)
   // Note that within the test framework the LoginState object will always
   // claim that the user did log in.
   ASSERT_FALSE(chromeos::LoginState::IsInitialized());
   chromeos::LoginState::Initialize();
 #endif
-  scoped_ptr<TestingProfileManager> profile_manager(
-      new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
-  ASSERT_TRUE(profile_manager->SetUp());
-  TestingProfile* profile =
-      profile_manager->CreateTestingProfile("test_profile");
-  ScreenshotTaker screenshot_taker;
-  screenshot_taker.AddObserver(this);
   base::ScopedTempDir directory;
   ASSERT_TRUE(directory.CreateUniqueTempDir());
-  SetScreenshotDirectoryForTest(&screenshot_taker, directory.path());
-  SetScreenshotBasenameForTest(&screenshot_taker, "Screenshot");
-  SetScreenshotProfileForTest(&screenshot_taker, profile);
+  EXPECT_TRUE(chrome_screenshot_grabber()->CanTakeScreenshot());
 
-  EXPECT_TRUE(screenshot_taker.CanTakeScreenshot());
+  screenshot_grabber()->TakeScreenshot(
+      Shell::GetPrimaryRootWindow(), gfx::Rect(0, 0, 100, 100),
+      directory.path().AppendASCII("Screenshot.png"));
 
-  screenshot_taker.HandleTakePartialScreenshot(
-      Shell::GetPrimaryRootWindow(), gfx::Rect(0, 0, 100, 100));
-
-  EXPECT_FALSE(screenshot_taker.CanTakeScreenshot());
+  EXPECT_FALSE(screenshot_grabber()->CanTakeScreenshot());
 
   Wait();
 
@@ -126,13 +125,13 @@ TEST_F(ScreenshotTakerTest, TakeScreenshot) {
   // Screenshot notifications on Windows not yet turned on.
   EXPECT_TRUE(g_browser_process->notification_ui_manager()->FindById(
                   std::string("screenshot"),
-                  NotificationUIManager::GetProfileID(profile)) != NULL);
+                  NotificationUIManager::GetProfileID(profile_)) != NULL);
   g_browser_process->notification_ui_manager()->CancelAll();
 #endif
 
-  EXPECT_EQ(ScreenshotTakerObserver::SCREENSHOT_SUCCESS, screenshot_result_);
+  EXPECT_EQ(ScreenshotGrabberObserver::SCREENSHOT_SUCCESS, screenshot_result_);
 
-  if (ScreenshotTakerObserver::SCREENSHOT_SUCCESS == screenshot_result_)
+  if (ScreenshotGrabberObserver::SCREENSHOT_SUCCESS == screenshot_result_)
     EXPECT_TRUE(base::PathExists(screenshot_path_));
 
 #if defined(OS_CHROMEOS)

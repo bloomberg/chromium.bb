@@ -164,10 +164,11 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/screenshot_taker.h"
+#include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "ui/chromeos/accessibility_types.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/snapshot/screenshot_grabber.h"
 #endif
 
 #if !defined(OS_MACOSX)
@@ -654,10 +655,10 @@ class PolicyTest : public InProcessBrowserTest {
   }
 
 #if defined(OS_CHROMEOS)
-  class QuitMessageLoopAfterScreenshot : public ScreenshotTakerObserver {
+  class QuitMessageLoopAfterScreenshot : public ui::ScreenshotGrabberObserver {
    public:
     virtual void OnScreenshotCompleted(
-        ScreenshotTakerObserver::Result screenshot_result,
+        ScreenshotGrabberObserver::Result screenshot_result,
         const base::FilePath& screenshot_path) override {
       BrowserThread::PostTaskAndReply(BrowserThread::IO,
                                       FROM_HERE,
@@ -670,19 +671,25 @@ class PolicyTest : public InProcessBrowserTest {
 
   void TestScreenshotFile(bool enabled) {
     // AddObserver is an ash-specific method, so just replace the screenshot
-    // taker with one we've created here.
-    scoped_ptr<ScreenshotTaker> screenshot_taker(new ScreenshotTaker);
-    // ScreenshotTaker doesn't own this observer, so the observer's lifetime
+    // grabber with one we've created here.
+    scoped_ptr<ChromeScreenshotGrabber> chrome_screenshot_grabber(
+        new ChromeScreenshotGrabber);
+    // ScreenshotGrabber doesn't own this observer, so the observer's lifetime
     // is tied to the test instead.
-    screenshot_taker->AddObserver(&observer_);
+    chrome_screenshot_grabber->screenshot_grabber()->AddObserver(&observer_);
     ash::Shell::GetInstance()->accelerator_controller()->SetScreenshotDelegate(
-        screenshot_taker.Pass());
+        chrome_screenshot_grabber.Pass());
 
     SetScreenshotPolicy(enabled);
     ash::Shell::GetInstance()->accelerator_controller()->PerformActionIfEnabled(
         ash::TAKE_SCREENSHOT);
 
     content::RunMessageLoop();
+    static_cast<ChromeScreenshotGrabber*>(ash::Shell::GetInstance()
+                                              ->accelerator_controller()
+                                              ->screenshot_delegate())
+        ->screenshot_grabber()
+        ->RemoveObserver(&observer_);
   }
 #endif
 
