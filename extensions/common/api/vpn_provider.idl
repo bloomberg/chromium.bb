@@ -10,26 +10,23 @@ namespace vpnProvider {
     // IP address for the VPN interface in CIDR notation.
     // IPv4 is currently the only supported mode.
     DOMString address;
-    // Optional broadcast address for the VPN interface. (default: Deduced
+    // Broadcast address for the VPN interface. (default: deduced
     // from IP address and mask)
     DOMString? broadcastAddress;
-    // Optional MTU setting for the VPN interface. (default: 1500)
+    // MTU setting for the VPN interface. (default: 1500 bytes)
     DOMString? mtu;
-    // Bypass network traffic to the below IPs (in CIDR notation)
-    // from the tunnel. Typically used to bypass traffic to/from
-    // VPN server.
+    // Bypass network traffic to the below IPs from the tunnel. Typically used
+    // to bypass traffic to and from the VPN server. Currently only one IP is
+    // supported.
     DOMString[] bypassTunnelForIp;
-    // An optional list of search domains. (default: no search domain)
+    // A list of search domains. (default: no search domain)
     DOMString[]? domainSearch;
-    // A list of DNS servers in CIDR notation.
+    // A list of IPs for the DNS servers.
     DOMString[] dnsServers;
   };
 
-  // The enum is used by the platform to notify the client of
-  // connection and network related status.
-  // |connected| : Connected to the VPN configuration.
-  // |disconnected| : Disconnected from the VPN configuration.
-  // |error| : Used to indicate error in the VPN configuration.
+  // The enum is used by the platform to notify the client of the VPN session
+  // status.
   enum PlatformMessage {
     connected,
     disconnected,
@@ -38,10 +35,7 @@ namespace vpnProvider {
 
   // The enum is used by the VPN client to inform the platform
   // of its current state. This helps provide meaningful messages
-  // to the user. The states listed below are currently known to
-  // the platform (Shill daemon).
-  // |connected| : The VPN client is successfully connected.
-  // |failure| : The VPN client could not make the connection.
+  // to the user.
   enum VpnConnectionState {
     connected,
     failure
@@ -54,59 +48,64 @@ namespace vpnProvider {
   [inline_doc] callback CallCompleteCallback = void ();
 
   interface Functions {
-    // Creates a new VPN configuration.
-    // |name| : The name of the VPN configuration.
-    // |callback| : Called when the configuration is created.
+    // Creates a new VPN configuration that persists across multiple login
+    // sessions of the user.
+    // |name|: The name of the VPN configuration.
+    // |callback|: Called when the configuration is created or if there is an
+    // error.
     static void createConfig(DOMString name,
                              CallCompleteCallback callback);
 
     // Destroys a VPN configuration created by the extension.
-    // |name| : The name of the VPN configuration to destroy.
-    // |callback| : Called when the configuration is destroyed.
+    // |name|: The name of the VPN configuration to destroy.
+    // |callback|: Called when the configuration is destroyed or if there is an
+    // error.
     static void destroyConfig(DOMString name,
                               optional CallCompleteCallback callback);
 
-    // Sets the parameters for a VPN configuration. This should be
-    // called after connected is received from the platform.
-    // |parameters| : The parameters for the VPN connection.
-    // |callback| : Called when the parameter setting is complete.
+    // Sets the parameters for the VPN session. This should be called
+    // immediately after <code>"connected"</code> is received from the platform.
+    // This will succeed only when the VPN session is owned by the extension.
+    // |parameters|: The parameters for the VPN session.
+    // |callback|: Called when the parameters are set or if there is an error.
     static void setParameters(Parameters parameters,
                               CallCompleteCallback callback);
 
-    // Injects an IP packet into the network stack of Chrome OS.
-    // |data| : The IP packet to be sent to the platform.
-    // |callback| : Called when the parameter setting is complete.
+    // Sends an IP packet through the tunnel created for the VPN session.
+    // This will succeed only when the VPN session is owned by the extension.
+    // |data|: The IP packet to be sent to the platform.
+    // |callback|: Called when the packet is sent or if there is an error.
     static void sendPacket(ArrayBuffer data,
                            optional CallCompleteCallback callback);
 
-    // Notifies the VPN connection state to Chrome OS.
-    // |state| : The connection state of the VPN client.
-    // |callback| : Called when the parameter setting is complete.
+    // Notifies the VPN session state to the platform.
+    // This will succeed only when the VPN session is owned by the extension.
+    // |state|: The VPN session state of the VPN client.
+    // |callback|: Called when the notification is complete or if there is an
+    // error.
     static void notifyConnectionStateChanged(
         VpnConnectionState state,
         optional CallCompleteCallback callback);
   };
 
   interface Events {
-    // Called when a message is received from the platform for a
+    // Triggered when a message is received from the platform for a
     // VPN configuration owned by the extension.
-    // |name| : Name of the configuration the message refers to.
-    // |message| : The message received from the platform.
-    // |error| : Error message when there is an error.
+    // |name|: Name of the configuration the message is intended for.
+    // |message|: The message received from the platform.
+    // |error|: Error message when there is an error.
     static void onPlatformMessage(DOMString name,
                                   PlatformMessage message,
                                   DOMString error);
 
-    // Called when an IP packet is received from the platform for a
-    // connected VPN configuration owned by the extension. This would never be
-    // called when no configuration is owned by the extension or the ones owned
-    // are not connected.
-    // |data| : The IP packet received from the platform.
+    // Triggered when an IP packet is received via the tunnel for the VPN
+    // session owned by the extension.
+    // |data|: The IP packet received from the platform.
     static void onPacketReceived(ArrayBuffer data);
 
-    // Called when a configuration installed by the extension is removed by the
+    // Triggered when a configuration created by the extension is removed by the
     // platform.
-    // |name| : Name of the configuration removed.
+    // |name|: Name of the configuration removed.
     static void onConfigRemoved(DOMString name);
   };
 };
