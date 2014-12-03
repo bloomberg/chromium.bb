@@ -110,7 +110,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyVerticalAlign:
     case CSSPropertyWordSpacing:
         if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue) && LengthStyleInterpolation::canCreateFrom(*toCSSValue))
-            return LengthStyleInterpolation::create(fromCSSValue, toCSSValue, property, range);
+            return LengthStyleInterpolation::create(*fromCSSValue, *toCSSValue, property, range);
         break;
     default:
         break;

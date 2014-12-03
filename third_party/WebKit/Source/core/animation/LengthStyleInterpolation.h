@@ -12,7 +12,7 @@ namespace blink {
 
 class LengthStyleInterpolation : public StyleInterpolation {
 public:
-    static PassRefPtrWillBeRawPtr<LengthStyleInterpolation> create(CSSValue* start, CSSValue* end, CSSPropertyID id,  ValueRange range)
+    static PassRefPtrWillBeRawPtr<LengthStyleInterpolation> create(const CSSValue& start, const CSSValue& end, CSSPropertyID id,  ValueRange range)
     {
         return adoptRefWillBeNoop(new LengthStyleInterpolation(lengthToInterpolableValue(start), lengthToInterpolableValue(end), id, range));
     }
@@ -29,7 +29,7 @@ private:
         , m_range(range)
     { }
 
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthToInterpolableValue(CSSValue*);
+    static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthToInterpolableValue(const CSSValue&);
     static PassRefPtrWillBeRawPtr<CSSValue> interpolableValueToLength(InterpolableValue*, ValueRange);
 
     ValueRange m_range;

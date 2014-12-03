@@ -14,7 +14,7 @@ namespace blink {
 
 class AnimationLengthStyleInterpolationTest : public ::testing::Test {
 protected:
-    static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthToInterpolableValue(CSSValue* value)
+    static PassOwnPtrWillBeRawPtr<InterpolableValue> lengthToInterpolableValue(const CSSValue& value)
     {
         return LengthStyleInterpolation::lengthToInterpolableValue(value);
     }
@@ -26,7 +26,7 @@ protected:
 
     static PassRefPtrWillBeRawPtr<CSSValue> roundTrip(PassRefPtrWillBeRawPtr<CSSValue> value)
     {
-        return interpolableValueToLength(lengthToInterpolableValue(value.get()).get(), ValueRangeAll);
+        return interpolableValueToLength(lengthToInterpolableValue(*value).get(), ValueRangeAll);
     }
 
     static void testPrimitiveValue(RefPtrWillBeRawPtr<CSSValue> value, double doubleValue, CSSPrimitiveValue::UnitType unitType)
@@ -103,7 +103,7 @@ TEST_F(AnimationLengthStyleInterpolationTest, SingleUnit)
 TEST_F(AnimationLengthStyleInterpolationTest, SingleClampedUnit)
 {
     RefPtrWillBeRawPtr<CSSValue> value = CSSPrimitiveValue::create(-10, CSSPrimitiveValue::CSS_EMS);
-    value = interpolableValueToLength(lengthToInterpolableValue(value.get()).get(), ValueRangeNonNegative);
+    value = interpolableValueToLength(lengthToInterpolableValue(*value).get(), ValueRangeNonNegative);
     testPrimitiveValue(value, 0, CSSPrimitiveValue::CSS_EMS);
 }
 

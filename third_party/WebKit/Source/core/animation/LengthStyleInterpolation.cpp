@@ -24,15 +24,15 @@ bool LengthStyleInterpolation::canCreateFrom(const CSSValue& value)
     return value.isCalcValue();
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> LengthStyleInterpolation::lengthToInterpolableValue(CSSValue* value)
+PassOwnPtrWillBeRawPtr<InterpolableValue> LengthStyleInterpolation::lengthToInterpolableValue(const CSSValue& value)
 {
     OwnPtrWillBeRawPtr<InterpolableList> result = InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);
-    CSSPrimitiveValue* primitive = toCSSPrimitiveValue(value);
+    const CSSPrimitiveValue& primitive = toCSSPrimitiveValue(value);
 
     CSSLengthArray array;
     for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++)
         array.append(0);
-    primitive->accumulateLengthArray(array);
+    primitive.accumulateLengthArray(array);
 
     for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++)
         result->set(i, InterpolableNumber::create(array.at(i)));
