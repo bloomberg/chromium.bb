@@ -5887,4 +5887,59 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles);
 
+class LayerTreeHostTestOneActivatePerManageTiles : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestOneActivatePerManageTiles()
+      : notify_ready_to_activate_count_(0u), scheduled_manage_tiles_count_(0) {}
+
+  void SetupTree() override {
+    client_.set_fill_with_nonsolid_color(true);
+    scoped_refptr<FakePictureLayer> root_layer =
+        FakePictureLayer::Create(&client_);
+    root_layer->SetBounds(gfx::Size(1500, 1500));
+    root_layer->SetIsDrawable(true);
+
+    layer_tree_host()->SetRootLayer(root_layer);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void BeginTest() override {
+    layer_tree_host()->SetViewportSize(gfx::Size(16, 16));
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void InitializedRendererOnThread(LayerTreeHostImpl* host_impl,
+                                   bool success) override {
+    ASSERT_TRUE(success);
+    host_impl->tile_manager()->SetScheduledRasterTaskLimitForTesting(1);
+  }
+
+  void NotifyReadyToActivateOnThread(LayerTreeHostImpl* impl) override {
+    ++notify_ready_to_activate_count_;
+    EndTestAfterDelayMs(100);
+  }
+
+  void ScheduledActionManageTiles() override {
+    ++scheduled_manage_tiles_count_;
+  }
+
+  void AfterTest() override {
+    // Expect at most a notification for each scheduled manage tiles, plus one
+    // for the initial commit (which doesn't go through scheduled actions).
+    // The reason this is not an equality is because depending on timing, we
+    // might get a manage tiles but not yet get a notification that we're
+    // ready to activate. The intent of a test is to ensure that we don't
+    // get more than one notification per manage tiles, so this is OK.
+    EXPECT_LE(notify_ready_to_activate_count_,
+              1u + scheduled_manage_tiles_count_);
+  }
+
+ protected:
+  FakeContentLayerClient client_;
+  size_t notify_ready_to_activate_count_;
+  size_t scheduled_manage_tiles_count_;
+};
+
+MULTI_THREAD_IMPL_TEST_F(LayerTreeHostTestOneActivatePerManageTiles);
+
 }  // namespace cc

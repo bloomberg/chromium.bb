@@ -162,6 +162,10 @@ class CC_EXPORT TileManager : public RasterizerClient,
     return tiles;
   }
 
+  void SetScheduledRasterTaskLimitForTesting(size_t limit) {
+    scheduled_raster_task_limit_ = limit;
+  }
+
  protected:
   TileManager(TileManagerClient* client,
               const scoped_refptr<base::SequencedTaskRunner>& task_runner,
@@ -243,7 +247,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
   ResourcePool* resource_pool_;
   Rasterizer* rasterizer_;
   GlobalStateThatImpactsTilePriority global_state_;
-  const size_t scheduled_raster_task_limit_;
+  size_t scheduled_raster_task_limit_;
 
   typedef base::hash_map<Tile::Id, Tile*> TileMap;
   TileMap tiles_;
@@ -281,6 +285,9 @@ class CC_EXPORT TileManager : public RasterizerClient,
   RasterTilePriorityQueue raster_priority_queue_;
   EvictionTilePriorityQueue eviction_priority_queue_;
   bool eviction_priority_queue_is_up_to_date_;
+
+  bool did_notify_ready_to_activate_;
+  bool did_notify_ready_to_draw_;
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };

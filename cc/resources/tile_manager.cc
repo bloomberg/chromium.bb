@@ -239,9 +239,11 @@ TileManager::TileManager(
           task_runner_.get(),
           base::Bind(&TileManager::CheckIfReadyToActivate,
                      base::Unretained(this))),
-      ready_to_draw_check_notifier_(task_runner_.get(),
-                                    base::Bind(&TileManager::CheckIfReadyToDraw,
-                                               base::Unretained(this))) {
+      ready_to_draw_check_notifier_(
+          task_runner_.get(),
+          base::Bind(&TileManager::CheckIfReadyToDraw, base::Unretained(this))),
+      did_notify_ready_to_activate_(false),
+      did_notify_ready_to_draw_(false) {
   rasterizer_->SetClient(this);
 }
 
@@ -416,8 +418,11 @@ void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
   TileVector tiles_that_need_to_be_rasterized;
   AssignGpuMemoryToTiles(&tiles_that_need_to_be_rasterized);
 
-  // Finally, schedule rasterizer tasks.
+  // Schedule rasterizer tasks.
   ScheduleTasks(tiles_that_need_to_be_rasterized);
+
+  did_notify_ready_to_activate_ = false;
+  did_notify_ready_to_draw_ = false;
 
   TRACE_EVENT_INSTANT1("cc",
                        "DidManage",
@@ -882,8 +887,13 @@ void TileManager::CheckIfReadyToActivate() {
   rasterizer_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
-  if (IsReadyToActivate())
-    client_->NotifyReadyToActivate();
+  if (did_notify_ready_to_activate_)
+    return;
+  if (!IsReadyToActivate())
+    return;
+
+  client_->NotifyReadyToActivate();
+  did_notify_ready_to_activate_ = true;
 }
 
 void TileManager::CheckIfReadyToDraw() {
@@ -892,8 +902,13 @@ void TileManager::CheckIfReadyToDraw() {
   rasterizer_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
-  if (IsReadyToDraw())
-    client_->NotifyReadyToDraw();
+  if (did_notify_ready_to_draw_)
+    return;
+  if (!IsReadyToDraw())
+    return;
+
+  client_->NotifyReadyToDraw();
+  did_notify_ready_to_draw_ = true;
 }
 
 TileManager::MemoryUsage::MemoryUsage() : memory_bytes_(0), resource_count_(0) {
