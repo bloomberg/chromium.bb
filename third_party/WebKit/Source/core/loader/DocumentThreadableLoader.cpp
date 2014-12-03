@@ -246,6 +246,12 @@ void DocumentThreadableLoader::setDefersLoading(bool value)
         resource()->setDefersLoading(value);
 }
 
+// In this method, we can clear |request| to tell content::WebURLLoaderImpl of
+// Chromium not to follow the redirect. This works only when this method is
+// called by RawResource::willSendRequest(). If called by
+// RawResource::didAddClient(), clearing |request| won't be propagated
+// to content::WebURLLoaderImpl. So, this loader must also get detached from
+// the resource by calling clearResource().
 void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
     ASSERT(m_client);
@@ -257,13 +263,19 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
     // FIXME: Support redirect in Fetch API.
     if (resource->resourceRequest().requestContext() == blink::WebURLRequest::RequestContextFetch) {
         m_client->didFailRedirectCheck();
+
+        clearResource();
         request = ResourceRequest();
+
         return;
     }
 
     if (!isAllowedByContentSecurityPolicy(request.url())) {
         m_client->didFailRedirectCheck();
+
+        clearResource();
         request = ResourceRequest();
+
         m_requestStartedSeconds = 0.0;
         return;
     }
@@ -330,7 +342,10 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
     } else {
         m_client->didFailRedirectCheck();
     }
+
+    clearResource();
     request = ResourceRequest();
+
     m_requestStartedSeconds = 0.0;
 }
 

@@ -512,9 +512,9 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginFailure)
 
     serveRequests();
     EXPECT_FALSE(m_willSendRequest);
-    EXPECT_TRUE(m_didReceiveResponse);
-    EXPECT_TRUE(m_didReceiveData);
-    EXPECT_TRUE(m_didFinishLoading);
+    EXPECT_FALSE(m_didReceiveResponse);
+    EXPECT_FALSE(m_didReceiveData);
+    EXPECT_FALSE(m_didFinishLoading);
 }
 
 // Test that a cross origin redirect response without CORS headers fails.
