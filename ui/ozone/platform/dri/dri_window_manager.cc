@@ -12,9 +12,9 @@ namespace ui {
 
 namespace {
 
-gfx::PointF GetDefaultCursorLocation(DriWindow* window) {
-  return gfx::PointF(window->GetBounds().width() / 2,
-                     window->GetBounds().height() / 2);
+gfx::Point GetDefaultCursorLocation(DriWindow* window) {
+  return gfx::Point(window->GetBounds().width() / 2,
+                    window->GetBounds().height() / 2);
 }
 
 }  // namespace
@@ -83,9 +83,9 @@ void DriWindowManager::ResetCursorLocation() {
   }
 
   WidgetToWindowMap::iterator it = window_map_.begin();
-  gfx::AcceleratedWidget cursor_widget = it->first;
-  gfx::PointF location = GetDefaultCursorLocation(it->second);
-  cursor_->MoveCursorTo(cursor_widget, location);
+  DriWindow* cursor_window = it->second;
+  gfx::Point location = GetDefaultCursorLocation(cursor_window);
+  cursor_window->MoveCursorTo(location);
 }
 
 void DriWindowManager::GrabEvents(gfx::AcceleratedWidget widget) {
