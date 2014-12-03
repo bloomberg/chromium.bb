@@ -27,6 +27,7 @@
 #define PublicURLManager_h
 
 #include "core/dom/ActiveDOMObject.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
@@ -40,10 +41,10 @@ class SecurityOrigin;
 class URLRegistry;
 class URLRegistrable;
 
-class PublicURLManager final : public ActiveDOMObject {
-    WTF_MAKE_FAST_ALLOCATED;
+class PublicURLManager final : public NoBaseWillBeGarbageCollectedFinalized<PublicURLManager>, public ActiveDOMObject {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<PublicURLManager> create(ExecutionContext*);
+    static PassOwnPtrWillBeRawPtr<PublicURLManager> create(ExecutionContext*);
 
     void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*, const String& uuid = String());
     void revoke(const KURL&);
@@ -52,8 +53,10 @@ public:
     // ActiveDOMObject interface.
     virtual void stop() override;
 
+    void trace(Visitor*) { }
+
 private:
-    PublicURLManager(ExecutionContext*);
+    explicit PublicURLManager(ExecutionContext*);
 
     // One or more URLs can be associated with the same unique ID.
     // Objects need be revoked by unique ID in some cases.

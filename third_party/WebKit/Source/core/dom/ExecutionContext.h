@@ -171,7 +171,7 @@ private:
     bool m_activeDOMObjectsAreSuspended;
     bool m_activeDOMObjectsAreStopped;
 
-    OwnPtr<PublicURLManager> m_publicURLManager;
+    OwnPtrWillBeMember<PublicURLManager> m_publicURLManager;
 
     // The location of this member is important; to make sure contextDestroyed() notification on
     // ExecutionContext's members (notably m_timeouts) is called before they are destructed,

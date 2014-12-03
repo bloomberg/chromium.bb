@@ -35,9 +35,9 @@
 
 namespace blink {
 
-PassOwnPtr<PublicURLManager> PublicURLManager::create(ExecutionContext* context)
+PassOwnPtrWillBeRawPtr<PublicURLManager> PublicURLManager::create(ExecutionContext* context)
 {
-    OwnPtr<PublicURLManager> publicURLManager(adoptPtr(new PublicURLManager(context)));
+    OwnPtrWillBeRawPtr<PublicURLManager> publicURLManager = adoptPtrWillBeNoop(new PublicURLManager(context));
     publicURLManager->suspendIfNeeded();
     return publicURLManager.release();
 }
