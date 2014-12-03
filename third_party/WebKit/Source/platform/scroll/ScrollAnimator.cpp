@@ -31,6 +31,7 @@
 #include "config.h"
 #include "platform/scroll/ScrollAnimator.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "wtf/PassOwnPtr.h"
@@ -133,7 +134,10 @@ FloatPoint ScrollAnimator::currentPosition() const
 
 void ScrollAnimator::notifyPositionChanged()
 {
-    m_scrollableArea->setScrollOffsetFromAnimation(IntPoint(m_currentPosX, m_currentPosY));
+    if (RuntimeEnabledFeatures::fractionalScrollOffsetsEnabled())
+        m_scrollableArea->setScrollOffsetFromAnimation(DoublePoint(m_currentPosX, m_currentPosY));
+    else
+        m_scrollableArea->setScrollOffsetFromAnimation(IntPoint(m_currentPosX, m_currentPosY));
 }
 
 float ScrollAnimator::clampScrollPosition(ScrollbarOrientation orientation, float pos)

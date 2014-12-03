@@ -73,6 +73,7 @@ LangAttributeAwareFormControlUI
 LaxMixedContentChecking status=deprecated
 LayerSquashing status=stable
 LocalStorage status=stable
+FractionalScrollOffsets status=experimental
 Media status=stable
 MediaCapture
 MediaController depends_on=Media, status=experimental

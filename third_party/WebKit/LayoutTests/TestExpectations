@@ -1168,6 +1168,8 @@ crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-ste
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-with-async-callstack.html [ Crash ]
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/async-callstack-get-as-string.html [ Crash ]
 
+crbug.com/414283 [ Mac ] fast/overflow/scrollRevealButton.html [ NeedsRebaseline ]
+
 # Ahem font is sometimes not loaded on Windows.
 crbug.com/392046 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/002.html [ Pass Failure ]
@@ -1290,16 +1292,6 @@ crbug.com/421298 http/tests/security/subresourceIntegrity/subresource-integrity-
 # fast/text/international/bidi-neutral-run.html is missing here, since it has a NeedsManualRebaseline expectation up above.
 crbug.com/421854 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/sub-pixel/text-scaling-rtl.html [ Pass Crash ]
 crbug.com/421854 [ SnowLeopard Debug ] virtual/textblob/fast/text/sub-pixel/text-scaling-rtl.html [ Pass Crash ]
-
-# Re-enable these tests once M40 braches.
-crbug.com/414283 fast/dynamic/anchor-lock.html [ Pass ImageOnlyFailure ]
-crbug.com/414283 fast/events/scale-and-scroll-div.html [ Pass Failure ]
-crbug.com/414283 fast/events/touch/gesture/touch-gesture-scroll-div-scaled.html [ Pass Failure ]
-crbug.com/414283 fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure ]
-crbug.com/414283 fast/overflow/scrollRevealButton.html [ Pass Failure ]
-crbug.com/414283 fast/scrolling/fractional-scroll-offset-document.html [ Pass Failure ]
-crbug.com/414283 fast/scrolling/scrolling-apis-subpixel.html [ Pass Failure ]
-crbug.com/414283 fast/transforms/selection-bounds-in-transformed-view.html [ Pass Failure ]
 
 crbug.com/435865 fast/events/message-port-start-and-close-different-microtask.html [ Pass Failure ]
 
