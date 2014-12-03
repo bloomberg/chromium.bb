@@ -11,6 +11,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisColorSpan;
@@ -138,10 +139,12 @@ public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
     /**
      * Verify that a short, secure HTTPS URL is colored correctly with light
      * colors by OmniboxUrlEmphasizer.emphasizeUrl().
+     * @UiThreadTest
+     * @MediumTest
+     * @Feature({"Browser", "Main"})
+     * BUG 438689
      */
-    @UiThreadTest
-    @MediumTest
-    @Feature({"Browser", "Main"})
+    @DisabledTest
     public void testShortSecureHTTPSUrlWithLightColors() {
         Spannable url = new SpannableStringBuilder("https://www.google.com/");
         OmniboxUrlEmphasizer.emphasizeUrl(url, mResources,
