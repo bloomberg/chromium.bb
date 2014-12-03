@@ -29,6 +29,7 @@
 #include "platform/LifecycleContext.h"
 
 #include "platform/LifecycleNotifier.h"
+#include "platform/heap/Handle.h"
 #include <gtest/gtest.h>
 
 using namespace blink;
@@ -54,10 +55,9 @@ template<> void unobserverContext(DummyContext* context, LifecycleObserver<Dummy
 
 namespace {
 
-
-class TestingObserver : public LifecycleObserver<DummyContext> {
+class TestingObserver final : public GarbageCollectedFinalized<TestingObserver>, public LifecycleObserver<DummyContext> {
 public:
-    TestingObserver(DummyContext* context)
+    explicit TestingObserver(DummyContext* context)
         : LifecycleObserver<DummyContext>(context)
         , m_contextDestroyedCalled(false)
     { }
@@ -68,6 +68,8 @@ public:
         m_contextDestroyedCalled = true;
     }
 
+    void trace(Visitor*) { }
+
     bool m_contextDestroyedCalled;
 
     void unobserve() { observeContext(0); }
@@ -76,7 +78,7 @@ public:
 TEST(LifecycleContextTest, shouldObserveContextDestroyed)
 {
     OwnPtr<DummyContext> context = adoptPtr(new DummyContext());
-    OwnPtr<TestingObserver> observer = adoptPtr(new TestingObserver(context.get()));
+    TestingObserver* observer = new TestingObserver(context.get());
 
     EXPECT_EQ(observer->lifecycleContext(), context.get());
     EXPECT_FALSE(observer->m_contextDestroyedCalled);
@@ -89,7 +91,7 @@ TEST(LifecycleContextTest, shouldObserveContextDestroyed)
 TEST(LifecycleContextTest, shouldNotObserveContextDestroyedIfUnobserve)
 {
     OwnPtr<DummyContext> context = adoptPtr(new DummyContext());
-    OwnPtr<TestingObserver> observer = adoptPtr(new TestingObserver(context.get()));
+    TestingObserver* observer = new TestingObserver(context.get());
 
     observer->unobserve();
     context.clear();
