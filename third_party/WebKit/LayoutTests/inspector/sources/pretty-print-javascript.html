@@ -1,0 +1,128 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../http/tests/inspector/sources-test.js"></script>
+<script src="debugger/resources/obfuscated.js"></script>
+
+<script>
+
+function test()
+{
+    var testJSFormatter = InspectorTest.testPrettyPrint.bind(InspectorTest, "text/javascript");
+
+    InspectorTest.runTestSuite([
+        function blockFormatting(next)
+        {
+            var mappingQueries = ["(1)", "(2)"];
+            testJSFormatter("{ print(1); print(2); }", mappingQueries, next);
+        },
+
+        function assignmentFormatting(next)
+        {
+            var mappingQueries = ["string"];
+            testJSFormatter("var exp='a string';", mappingQueries, next);
+        },
+
+        function objectLiteralFormatting(next)
+        {
+            var mappingQueries = [
+                "dog",
+                "1989",
+                "foo"
+            ];
+            testJSFormatter("var obj={'foo':1,bar:\"2\",cat:{dog:'1989'}}", mappingQueries, next);
+        },
+
+        function arrayLiteralFormatting(next)
+        {
+            var mappingQueries = ["3", "2", "1", "0"];
+            testJSFormatter("var arr=[3,2,1,0]", mappingQueries, next);
+        },
+
+        function ifFormatting(next)
+        {
+            var mappingQueries = ["&&", "print(a)"];
+            testJSFormatter("if(a>b&&b>c){print(a);print(b);}", mappingQueries, next);
+        },
+
+        function ternarOperatorFormatting(next)
+        {
+            var mappingQueries = ["?", ":"];
+            testJSFormatter("a>b?a:b", mappingQueries, next);
+        },
+
+        function whileFormatting(next)
+        {
+            var mappingQueries = ["while", "infinity", ");"];
+            testJSFormatter("while(true){print('infinity');}", mappingQueries, next);
+        },
+
+        function doWhileFormatting(next)
+        {
+            var mappingQueries = ["while", "infinity"];
+            testJSFormatter("do{print('infinity');}while(true);", mappingQueries, next);
+        },
+
+        function functionFormatting(next)
+        {
+            var mappingQueries = ["return", "*="];
+            testJSFormatter("function test(a,b,c){a*=b;return c+a;}", mappingQueries, next);
+        },
+
+        function forInFormatting(next)
+        {
+            var mappingQueries = ["myMap", "print"];
+            testJSFormatter("for(var key in myMap)print(key);", mappingQueries, next);
+        },
+
+        function forOfFormatting(next)
+        {
+            var mappingQueries = ["myMap", "print"];
+            testJSFormatter("for(var value of myMap)print(value);", mappingQueries, next);
+        },
+
+        function commaBetweenStatementsFormatting(next)
+        {
+            var mappingQueries = ["noop", "hasNew"];
+            testJSFormatter("rebuild(),show(),hasNew?refresh():noop();", mappingQueries, next);
+        },
+
+        function complexScriptFormatting(next)
+        {
+            InspectorTest.showScriptSource("obfuscated.js", didShowScriptSource);
+
+            function didShowScriptSource(sourceFrame)
+            {
+                var mappingQueries = [
+                    "function",
+                    "formatted1",
+                    "variable1",
+                    "    return \"functionWithComments\"",
+                    "onmessage",
+                    "indent_start",
+                    "function require",
+                    "var regexp",
+                    "importScripts",
+                    "formatted2"
+                ];
+                testJSFormatter(sourceFrame._textEditor.text(), mappingQueries, next);
+            }
+        },
+
+        function inlinedScriptFormatting(next)
+        {
+            var content = "<html><body><script>function f(){}<" + "/script><script>function g(){var a;window.return = 10;if (a) return;}<" + "/script></body></html>";
+            InspectorTest.testPrettyPrint("text/html", content, [], next);
+        }
+    ]);
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verifies JavaScript pretty-printing functionality.</p>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../http/tests/inspector/sources-test.js"></script>
+<link rel="stylesheet" href="resources/style-formatter-obfuscated.css">
+
+<script>
+
+function test()
+{
+    var testCSSFormatter = InspectorTest.testPrettyPrint.bind(InspectorTest, "text/css");
+
+    InspectorTest.runTestSuite([
+        function testSimpleCSS(next)
+        {
+            var content = "a { /* pre-comment */ color /* after name */ : /* before value */ red /* post-comment */ }";
+            testCSSFormatter(content, [], next);
+        },
+
+        function testComplexCSS(next)
+        {
+            InspectorTest.showScriptSource("style-formatter-obfuscated.css", didShowScriptSource);
+
+            function didShowScriptSource(sourceFrame)
+            {
+                var mappingQueries = [
+                    "@media",
+                    "screen",
+                    "html",
+                    "color",
+                    "green",
+                    "foo-property",
+                    "bar-value",
+                    "body",
+                    "background",
+                    "black",
+                ];
+                testCSSFormatter(sourceFrame._textEditor.text(), mappingQueries, next);
+            }
+        },
+
+        function testFormatInlinedStyles(next)
+        {
+            var content = "<html><body><style>@-webkit-keyframes{from{left: 0} to{left:100px;}}</style><style>badbraces { }} @media screen{a{color:red;text-decoration: none}}</style></body></html>";
+            InspectorTest.testPrettyPrint("text/html", content, [], next);
+        }
+    ]);
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verifies CSS pretty-printing functionality.</p>
+</body>
+</html>

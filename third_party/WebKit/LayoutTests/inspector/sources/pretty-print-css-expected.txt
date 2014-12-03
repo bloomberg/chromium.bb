@@ -1,0 +1,64 @@
+Verifies CSS pretty-printing functionality.
+
+
+Running: testSimpleCSS
+====== 8< ------
+a {
+    /* pre-comment */
+    color /* after name */ : /* before value */ red /* post-comment */
+}
+
+------ >8 ======
+
+Running: testComplexCSS
+====== 8< ------
+@media screen {
+    html {
+        color: green;
+        foo-property: bar-value
+    }
+}
+}
+
+body {
+    background-color: black;
+}
+
+------ >8 ======
+Correct mapping for <@media>
+Correct mapping for <screen>
+Correct mapping for <html>
+Correct mapping for <color>
+Correct mapping for <green>
+Correct mapping for <foo-property>
+Correct mapping for <bar-value>
+Correct mapping for <body>
+Correct mapping for <background>
+Correct mapping for <black>
+
+Running: testFormatInlinedStyles
+====== 8< ------
+<html><body><style>
+@-webkit-keyframes {
+    from {
+        left: 0
+    }
+
+    to {
+        left: 100px;
+    }
+}
+</style><style>
+badbraces {
+}
+}
+
+@media screen {
+    a {
+        color: red;
+        text-decoration: none
+    }
+}
+</style></body></html>
+------ >8 ======
+
