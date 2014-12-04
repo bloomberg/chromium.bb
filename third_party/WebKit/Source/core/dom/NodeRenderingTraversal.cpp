@@ -55,9 +55,10 @@ void ParentDetails::didTraverseInsertionPoint(const InsertionPoint* insertionPoi
 ContainerNode* parent(const Node& node, ParentDetails* details)
 {
     ASSERT(!node.document().childNeedsDistributionRecalc());
+    ASSERT(!node.isShadowRoot());
     if (isActiveInsertionPoint(node))
         return 0;
-    return ComposedTreeTraversal::traverseParent(node, details);
+    return ComposedTreeTraversal::parent(node, details);
 }
 
 bool contains(const ContainerNode& container, const Node& node)
@@ -81,7 +82,7 @@ Node* nextSibling(const Node& node)
             return 0;
     }
 
-    Node* parent = ComposedTreeTraversal::traverseParent(node);
+    Node* parent = ComposedTreeTraversal::parent(node);
     if (parent && parent->isElementNode())
         return toElement(parent)->pseudoElement(AFTER);
 
@@ -100,7 +101,7 @@ Node* previousSibling(const Node& node)
             return 0;
     }
 
-    Node* parent = ComposedTreeTraversal::traverseParent(node);
+    Node* parent = ComposedTreeTraversal::parent(node);
     if (parent && parent->isElementNode())
         return toElement(parent)->pseudoElement(BEFORE);
 

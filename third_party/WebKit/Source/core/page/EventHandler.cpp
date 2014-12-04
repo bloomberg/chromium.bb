@@ -321,6 +321,7 @@ void EventHandler::nodeWillBeRemoved(Node& nodeToBeRemoved)
     if (!nodeToBeRemoved.containsIncludingShadowDOM(m_clickNode.get()))
         return;
     if (nodeToBeRemoved.isInShadowTree()) {
+        // FIXME: m_clickNode shouldn't be a ShadowRoot nor an active insertion point.
         m_clickNode = nodeToBeRemoved.parentOrShadowHostNode();
     } else {
         // We don't dispatch click events if the mousedown node is removed
@@ -1505,6 +1506,7 @@ static Node* parentForClickEvent(const Node& node)
     // controls.
     if (node.isHTMLElement() && toHTMLElement(node).isInteractiveContent())
         return nullptr;
+
     return NodeRenderingTraversal::parent(node);
 }
 
@@ -1569,7 +1571,7 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
 #endif
 
     bool swallowClickEvent = false;
-    if (m_clickCount > 0 && !contextMenuEvent && mev.innerNode() && m_clickNode) {
+    if (m_clickCount > 0 && !contextMenuEvent && mev.innerNode() && m_clickNode && mev.innerNode()->canParticipateInComposedTree() && m_clickNode->canParticipateInComposedTree()) {
         // Updates distribution because a 'mouseup' event listener can make the
         // tree dirty at dispatchMouseEvent() invocation above.
         // Unless distribution is updated, commonAncestor would hit ASSERT.

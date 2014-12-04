@@ -48,9 +48,7 @@ public:
     static Node* firstChild(const Node&);
     static Node* lastChild(const Node&);
 
-    static ContainerNode* parent(const Node&);
-    // FIXME: Make this private
-    static ContainerNode* traverseParent(const Node&, ParentTraversalDetails* = 0);
+    static ContainerNode* parent(const Node&,  ParentTraversalDetails* = 0);
 
     static Node* nextSibling(const Node&);
     static Node* previousSibling(const Node&);
@@ -64,8 +62,7 @@ private:
     static void assertPrecondition(const Node& node)
     {
 #if ENABLE(ASSERT)
-        ASSERT(!node.isShadowRoot());
-        ASSERT(!isActiveInsertionPoint(node));
+        ASSERT(node.canParticipateInComposedTree());
 #endif
     }
 
@@ -87,6 +84,8 @@ private:
     static Node* traverseLastChild(const Node&);
     static Node* traverseChild(const Node&, TraversalDirection);
 
+    static ContainerNode* traverseParent(const Node&, ParentTraversalDetails* = 0);
+
     static Node* traverseNextSibling(const Node&);
     static Node* traversePreviousSibling(const Node&);
 
@@ -101,10 +100,10 @@ private:
     static ContainerNode* traverseParentOrHost(const Node&);
 };
 
-inline ContainerNode* ComposedTreeTraversal::parent(const Node& node)
+inline ContainerNode* ComposedTreeTraversal::parent(const Node& node, ParentTraversalDetails* details)
 {
     assertPrecondition(node);
-    ContainerNode* result = traverseParent(node);
+    ContainerNode* result = traverseParent(node, details);
     assertPostcondition(result);
     return result;
 }

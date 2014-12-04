@@ -274,6 +274,8 @@ public:
     bool isShadowRoot() const { return isDocumentFragment() && isTreeScope(); }
     bool isInsertionPoint() const { return getFlag(IsInsertionPointFlag); }
 
+    bool canParticipateInComposedTree() const;
+
     bool hasCustomStyleCallbacks() const { return getFlag(HasCustomStyleCallbacksFlag); }
 
     bool hasSyntheticAttrChildNodes() const { return getFlag(HasSyntheticAttrChildNodesFlag); }

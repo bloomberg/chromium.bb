@@ -1045,6 +1045,11 @@ bool Node::canStartSelection() const
     return parentOrShadowHostNode() ? parentOrShadowHostNode()->canStartSelection() : true;
 }
 
+bool Node::canParticipateInComposedTree() const
+{
+    return !isShadowRoot() && !isActiveInsertionPoint(*this);
+}
+
 Element* Node::shadowHost() const
 {
     if (ShadowRoot* root = containingShadowRoot())

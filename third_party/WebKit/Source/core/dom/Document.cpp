@@ -1895,6 +1895,8 @@ void Document::updateStyle(StyleRecalcChange change)
 
 void Document::updateRenderTreeForNodeIfNeeded(Node* node)
 {
+    if (!node->canParticipateInComposedTree())
+        return;
     bool needsRecalc = needsFullRenderTreeUpdate();
 
     for (const Node* ancestor = node; ancestor && !needsRecalc; ancestor = NodeRenderingTraversal::parent(*ancestor))
