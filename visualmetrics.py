@@ -26,9 +26,508 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-import sys
+import glob
+import gzip
+import json
 import logging
-from lib import *
+import math
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+
+
+########################################################################################################################
+#   Frame Extraction and de-duplication
+########################################################################################################################
+
+
+def video_to_frames(video, directory, force):
+    viewport = None
+    first_frame = os.path.join(directory, 'image-000000')
+    if (not os.path.isfile(first_frame + '.png') and not os.path.isfile(first_frame + '.jpg')) or force:
+        if os.path.isfile(video):
+            video = os.path.realpath(video)
+            logging.info("Processing frames from video " + video + " to " + directory)
+            if not os.path.isdir(directory):
+                os.mkdir(directory, 0644)
+            if os.path.isdir(directory):
+                directory = os.path.realpath(directory)
+                clean_directory(directory)
+                if extract_frames(video, directory):
+                    viewport = find_viewport(directory)
+                    eliminate_duplicate_frames(directory, viewport)
+                else:
+                    logging.critical("Error extracting the video frames from " + video)
+            else:
+                logging.critical("Error creating output directory: " + directory)
+        else:
+            logging.critical("Input video file " + video + " does not exist")
+    else:
+        logging.info("Extracted video already exists in " + directory)
+    return viewport
+
+
+def extract_frames(video, directory):
+    ok = False
+    logging.info("Extracting frames from " + video + " to " + directory)
+    command = [get_exe('ffmpeg', 'ffmpeg'), '-v', 'debug', '-i', video, '-vsync',  '0',
+               '-vf', 'mpdecimate=hi=0:lo=0:frac=0,scale=iw*min(400/iw\,400/ih):ih*min(400/iw\,400/ih)',
+               os.path.join(directory, 'img-%d.png')]
+    logging.debug(' '.join(command))
+    lines = []
+    p = subprocess.Popen(command, stderr=subprocess.PIPE)
+    while p.poll() is None:
+        lines.extend(iter(p.stderr.readline, ""))
+
+    match = re.compile('keep pts:[0-9]+ pts_time:(?P<timecode>[0-9\.]+)')
+    frame_count = 0
+    for line in lines:
+        m = re.search(match, line)
+        if m:
+            frame_count += 1
+            frame_time = int(math.ceil(float(m.groupdict().get('timecode')) * 1000))
+            src = os.path.join(directory, 'img-{0:d}.png'.format(frame_count))
+            dest = os.path.join(directory, 'video-{0:06d}.png'.format(frame_time))
+            logging.debug('Renaming ' + src + ' to ' + dest)
+            os.rename(src, dest)
+            ok = True
+
+    return ok
+
+
+def find_viewport(directory):
+    viewport = None
+    try:
+        from PIL import Image
+        frames = sorted(glob.glob(os.path.join(directory, 'video-*.png')))
+        frame = frames[0]
+        if is_orange_frame(frame):
+            # Figure out the viewport
+            im = Image.open(frame)
+            width, height = im.size
+            logging.debug('{0} is {1:d}x{2:d}'.format(frame, width, height))
+            x = int(math.floor(width / 2))
+            y = int(math.floor(height / 2))
+            pixels = im.load()
+            orange = pixels[x, y]
+
+            # Find the left edge
+            left = None
+            while left is None and x >= 0:
+                if not colors_are_similar(orange, pixels[x, y]):
+                    left = x + 1
+                else:
+                    x -= 1
+            if left is None:
+                left = 0
+            logging.debug('Viewport left edge is {0:d}'.format(left))
+
+            # Find the right edge
+            x = int(math.floor(width / 2))
+            right = None
+            while right is None and x < width:
+                if not colors_are_similar(orange, pixels[x, y]):
+                    right = x - 1
+                else:
+                    x += 1
+            if right is None:
+                right = width
+            logging.debug('Viewport right edge is {0:d}'.format(right))
+
+            # Find the top edge
+            x = int(math.floor(width / 2))
+            top = None
+            while top is None and y >= 0:
+                if not colors_are_similar(orange, pixels[x, y]):
+                    top = y + 1
+                else:
+                    y -= 1
+            if top is None:
+                top = 0
+            logging.debug('Viewport top edge is {0:d}'.format(top))
+
+            # Find the bottom edge
+            y = int(math.floor(height / 2))
+            bottom = None
+            while bottom is None and y < height:
+                if not colors_are_similar(orange, pixels[x, y]):
+                    bottom = y - 1
+                else:
+                    y +=1
+            if bottom is None:
+                bottom = height
+            logging.debug('Viewport bottom edge is {0:d}'.format(bottom))
+
+            viewport = {'x': left, 'y': top, 'width': (right - left), 'height': (bottom - top)}
+
+            # remove all of the orange frames if there are more than one
+            os.remove(frame)
+            for frame in frames:
+                if os.path.isfile(frame):
+                    if is_orange_frame(frame):
+                        os.remove(frame)
+                    else:
+                        break
+
+        #re-number the video frames
+        offset = None
+        frames = sorted(glob.glob(os.path.join(directory, 'video-*.png')))
+        match = re.compile('video-(?P<ms>[0-9]+)\.png')
+        for frame in frames:
+            m = re.search(match, frame)
+            if m is not None:
+                frame_time = int(m.groupdict().get('ms'))
+                if offset is None:
+                    offset = frame_time
+                new_time = frame_time - offset
+                dest = os.path.join(directory, 'image-{0:06d}.png'.format(new_time))
+                os.rename(frame, dest)
+    except:
+        viewport = None
+
+    return viewport
+
+
+def eliminate_duplicate_frames(directory, viewport):
+    try:
+        crop = '+0+55'
+        if viewport is not None:
+            # Ignore a 4-pixel header on the actual viewport to allow for the progress bar and
+            # a 6 pixel right margin to allow for the scroll bar that fades in and out.
+            top_margin = 4
+            right_margin = 6
+            top = viewport['y'] + top_margin
+            height = max(viewport['height'] - top_margin, 1)
+            left = viewport['x']
+            width = max(viewport['width'] - right_margin, 1)
+            crop = '{0:d}x{1:d}+{2:d}+{3:d}'.format(width, height, left, top)
+        logging.debug('Viewport cropping set to ' + crop)
+
+        # Do a first pass looking for the first non-blank frame with an allowance
+        # for up to a 2% per-pixel difference for noise in the white field.
+        files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
+        blank = files[0]
+        count = len(files)
+        for i in range (1, count):
+            if frames_match(blank, files[i], 2, crop):
+                logging.debug('Removing duplicate frame {0} from the beginning'.format(files[i]))
+                os.remove(files[i])
+            else:
+                break
+
+        # Do a second pass looking for the last frame but with an allowance for up
+        # to a 10% difference in individual pixels to deal with noise around text.
+        files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
+        count = len(files)
+        duplicates = []
+        if count > 2:
+            files.reverse()
+            baseline = files[0]
+            previous_frame = baseline
+            for i in range (1, count):
+                if frames_match(baseline, files[i], 10, crop):
+                    duplicates.append(previous_frame)
+                    previous_frame = files[i]
+                else:
+                    break
+        for duplicate in duplicates:
+            logging.debug('Removing duplicate frame {0} from the end'.format(duplicate))
+            os.remove(duplicate)
+
+        # Do a third pass that eliminates frames with duplicate content.
+        previous_file = None
+        files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
+        for file in files:
+            duplicate = False
+            if previous_file is not None:
+                duplicate = frames_match(previous_file, file, 0, crop)
+            if duplicate:
+                logging.debug('Removing duplicate frame {0}'.format(duplicate))
+                os.remove(file)
+            else:
+                previous_file = file
+
+    except:
+        logging.critical('Error processing frames for duplicates')
+
+
+def get_exe(package, app):
+    bits = 'x86'
+    extension = ''
+    if sys.maxsize > 2**32:
+        bits = 'x64'
+    os_name = 'linux'
+    if sys.platform.startswith('win'):
+        os_name = 'win'
+        extension = '.exe'
+    if sys.platform.startswith('darwin'):
+        os_name = 'osx'
+        bits = 'x64'
+    exe = package + '/' + os_name + '-' + bits + '/' + app + extension
+
+    return os.path.realpath(exe)
+
+
+def clean_directory(directory):
+    files = glob.glob(os.path.join(directory, '*.png'))
+    for file in files:
+        os.remove(file)
+    files = glob.glob(os.path.join(directory, '*.jpg'))
+    for file in files:
+        os.remove(file)
+    files = glob.glob(os.path.join(directory, '*.json'))
+    for file in files:
+        os.remove(file)
+
+
+def is_orange_frame(file):
+    orange = False
+    command = 'convert  "' + os.path.realpath('images/orange.png') + '" ( "' + file + '"' +\
+              ' -gravity Center -crop 80x50%+0+0 -resize 200x200! ) miff:- | compare -metric AE - -fuzz 10% null:'
+    compare = subprocess.Popen(command, stderr=subprocess.PIPE, shell=True)
+    out, err = compare.communicate()
+    if re.match('^[0-9]+$', err):
+        different_pixels = int(err)
+        if different_pixels < 100:
+            orange = True
+
+    return orange
+
+
+def colors_are_similar(a, b):
+    similar = True
+    for x in range (0, 3):
+        if abs(a[x] - b[x]) > 25:
+            similar = False
+
+    return similar
+
+def frames_match(image1, image2, fuzz_percent, crop_region):
+    match = False
+    fuzz = ''
+    if fuzz_percent > 0:
+        fuzz = '-fuzz {0:d}% '.format(fuzz_percent)
+    crop = ''
+    if crop_region is not None:
+        crop = '-crop {0} '.format(crop_region)
+    command = 'convert "{0}" "{1}" {2}miff:- | compare -metric AE - {3}null:'.format(image1, image2, crop, fuzz)
+    compare = subprocess.Popen(command, stderr=subprocess.PIPE, shell=True)
+    out, err = compare.communicate()
+    if re.match('^[0-9]+$', err):
+        different_pixels = int(err)
+        if different_pixels == 0:
+            match = True
+
+    return match
+
+
+########################################################################################################################
+#   Histogram calculations
+########################################################################################################################
+
+
+def calculate_histograms(directory, histograms_file, force, viewport):
+    if not os.path.isfile(histograms_file) or force:
+        try:
+            extension = None
+            directory = os.path.realpath(directory)
+            first_frame = os.path.join(directory, 'image-000000')
+            if os.path.isfile(first_frame + '.png'):
+                extension = '.png'
+            elif os.path.isfile(first_frame + '.jpg'):
+                extension = '.jpg'
+            if extension is not None:
+                histograms = []
+                frames = sorted(glob.glob(os.path.join(directory, 'image-*' + extension)))
+                match = re.compile('image-(?P<ms>[0-9]+)\.')
+                for frame in frames:
+                    m = re.search(match, frame)
+                    if m is not None:
+                        frame_time = int(m.groupdict().get('ms'))
+                        histogram = calculate_image_histogram(frame, viewport)
+                        if histogram is not None:
+                            histograms.append({'time': frame_time, 'histogram': histogram})
+                if os.path.isfile(histograms_file):
+                    os.remove(histograms_file)
+                f = gzip.open(histograms_file, 'wb')
+                json.dump(histograms, f)
+                f.close()
+            else:
+                logging.critical('No video frames found in ' + directory)
+        except:
+            logging.critical('Error calculating histograms')
+    else:
+        logging.debug('Histograms file {0} already exists'.format(histograms_file))
+
+
+def calculate_image_histogram(file, viewport):
+    histogram = None
+    logging.debug('Calculating histogram for ' + file)
+    try:
+        from PIL import Image
+        im = Image.open(file)
+        width, height = im.size
+        if viewport is None:
+            viewport = {'x': 0, 'y': 0, 'width': width, 'height': height}
+        pixels = im.load()
+        histogram = {'r': [0 for i in range(256)],
+                     'g': [0 for i in range(256)],
+                     'b': [0 for i in range(256)]}
+        for y in range (viewport['y'], viewport['height']):
+            for x in range (viewport['x'], viewport['width']):
+                pixel = pixels[x,y]
+                # Don't include White pixels (with a tiny bit of slop for compression artifacts)
+                if pixel[0] < 250 or pixel[1] < 250 or pixel[2] < 250:
+                    histogram['r'][pixel[0]] += 1
+                    histogram['g'][pixel[1]] += 1
+                    histogram['b'][pixel[2]] += 1
+    except:
+        histogram = None
+        logging.error('Error calculating histogram for ' + file)
+    return histogram
+
+
+########################################################################################################################
+#   JPEG conversion
+########################################################################################################################
+
+
+def convert_to_jpeg(directory, quality):
+    directory = os.path.realpath(directory)
+    files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
+    match = re.compile('(?P<base>image-[0-9]+\.)')
+    for file in files:
+        m = re.search(match, file)
+        if m is not None:
+            dest = os.path.join(directory, m.groupdict().get('base') + 'jpg')
+            if os.path.isfile(dest):
+                os.remove(dest)
+            command = 'convert "{0}" -quality {1:d} "{2}"'.format(file, quality, dest)
+            subprocess.call(command, shell=True)
+            if os.path.isfile(dest):
+                os.remove(file)
+
+
+########################################################################################################################
+#   Visual Metrics
+########################################################################################################################
+
+
+def calculate_visual_metrics(histograms_file, start, end):
+    metrics = None
+    histograms = load_histograms(histograms_file, start, end)
+    if histograms is not None and len(histograms) > 0:
+        progress = calculate_visual_progress(histograms)
+        if len(histograms) > 1:
+            metrics = [
+                {'name': 'First Visual Change', 'value': histograms[1]['time']},
+                {'name': 'Last Visual Change', 'value': histograms[-1]['time']},
+                {'name': 'Visually Complete', 'value': find_visually_complete(progress)},
+                {'name': 'Speed Index', 'value': calculate_speed_index(progress)}
+            ]
+        else:
+            metrics = [
+                {'name': 'First Visual Change', 'value': histograms[0]['time']},
+                {'name': 'Last Visual Change', 'value': histograms[0]['time']},
+                {'name': 'Visually Complete', 'value': histograms[0]['time']},
+                {'name': 'Speed Index', 'value': 0}
+            ]
+
+    return metrics
+
+
+def load_histograms(histograms_file, start, end):
+    histograms = None
+    if os.path.isfile(histograms_file):
+        f = gzip.open(histograms_file)
+        original = json.load(f)
+        f.close()
+        if start != 0 or end != 0:
+            histograms = []
+            for histogram in original:
+                if histogram['time'] <= start:
+                    histogram['time'] = start
+                    histograms = [histogram]
+                elif histogram['time'] <= end:
+                    histograms.append(histogram)
+                else:
+                    break
+        else:
+            histograms = original
+    return histograms
+
+
+def calculate_visual_progress(histograms):
+    progress = []
+    first = histograms[0]['histogram']
+    last = histograms[-1]['histogram']
+    for index, histogram in enumerate(histograms):
+        p = calculate_frame_progress(histogram['histogram'], first, last)
+        progress.append({'time': histogram['time'],
+                         'progress': p})
+        logging.debug('{0:d}ms - {1:d}% Complete'.format(histogram['time'], int(p)))
+    return progress
+
+
+def calculate_frame_progress(histogram, start, final):
+    total = 0;
+    matched = 0;
+    slop = 5    # allow for matching slight color variations
+    channels = ['r', 'g', 'b']
+    for channel in channels:
+        channel_total = 0
+        channel_matched = 0
+        buckets = 256
+        available = [0 for i in range(buckets)]
+        for i in range (buckets):
+            available[i] = abs(histogram[channel][i] - start[channel][i])
+        for i in range (buckets):
+            target = abs(final[channel][i] - start[channel][i])
+            if (target):
+                channel_total += target
+                low = max(0, i - slop)
+                high = min(buckets, i + slop)
+                for j in range(low, high):
+                    this_match = min(target, available[j])
+                    available[j] -= this_match
+                    channel_matched += this_match
+                    target -= this_match
+        total += channel_total
+        matched += channel_matched
+    progress = (float(matched) / float(total))
+    return math.floor(progress * 100)
+
+
+def find_visually_complete(progress):
+    time = 0
+    for p in progress:
+        if int(p['progress']) == 100:
+            time = p['time']
+            break
+        elif time == 0:
+            time = p['time']
+    return time
+
+
+def calculate_speed_index(progress):
+    si = 0
+    last_ms = progress[0]['time']
+    last_progress = progress[0]['progress']
+    for p in progress:
+        elapsed = p['time'] - last_ms
+        si += elapsed * (1.0 - last_progress)
+        last_ms = p['time']
+        last_progress = p['progress'] / 100.0
+    return int(si)
+
+
+########################################################################################################################
+#   Main Entry Point
+########################################################################################################################
+
 
 if '__main__' == __name__:
     import argparse
@@ -39,17 +538,32 @@ if '__main__' == __name__:
     parser.add_argument('-v', '--verbose', action='count',
                         help="Increase verbosity (specify multiple times for more).")
     parser.add_argument('-i', '--video', help="Input video file.")
-    parser.add_argument('-d', '--dir', required=True, help="Directory of video frames "
-                        "(as input if exists or as output if a video file is specified) - REQUIRED.")
+    parser.add_argument('-d', '--dir', help="Directory of video frames "
+                        "(as input if exists or as output if a video file is specified).")
+    parser.add_argument('-q', '--quality', type=int, help="JPEG Quality "
+                        "(if specified, frames will be converted to JPEG).")
+    parser.add_argument('-g', '--histogram', help="Histogram file "
+                        "(as input if exists or as output if histograms need to be calculated).")
     parser.add_argument('-f', '--force', action='store_true',
                         help="Force processing of a video file (overwrite existing directory).")
-    parser.add_argument('-s', '--start', type=int,
+    parser.add_argument('-s', '--start', type=int, default=0,
                         help="Start time (in milliseconds) for calculating visual metrics.")
-    parser.add_argument('-e', '--end', type=int,
+    parser.add_argument('-e', '--end', type=int, default=0,
                         help="End time (in milliseconds) for calculating visual metrics.")
     options = parser.parse_args()
-    if not options.dir:
-        parser.error('Missing video frames directory')
+
+    if not options.dir and not options.video and not options.histogram:
+        parser.error("A video, Directory of images or histograms file needs to be provided.\n\n"
+                     "Use -h to see available options")
+
+    temp_dir = tempfile.mkdtemp(prefix='vis-')
+    directory = temp_dir
+    if options.dir is not None:
+        directory = options.dir
+    if options.histogram is not None:
+        histogram_file = options.histogram
+    else:
+        histogram_file = os.path.join(temp_dir, 'histograms.json.gz')
 
     # Set up logging
     log_level = logging.CRITICAL
@@ -64,9 +578,25 @@ if '__main__' == __name__:
     logging.basicConfig(level=log_level)
 
     ok = False
-    if options.video:
-        video2frames.process(options.video, options.dir, options.force)
+    try:
+        viewport = None
+        if options.video:
+            viewport = video_to_frames(options.video, directory, options.force)
+        calculate_histograms(directory, histogram_file, options.force, viewport)
+#        if options.dir is not None and options.quality is not None:
+#            convert_to_jpeg(directory, options.quality)
+        metrics = calculate_visual_metrics(histogram_file, options.start, options.end)
+        if metrics is not None:
+            ok = True
+            for metric in metrics:
+                print "{0}: {1}".format(metric['name'], metric['value'])
+    except:
+        ok = False
 
+    convert_to_jpeg(directory, options.quality)
+
+    # Clean up
+    shutil.rmtree(temp_dir)
     if ok:
         exit(0)
     else:
