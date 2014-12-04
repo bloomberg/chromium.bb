@@ -14,6 +14,7 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "dbus/object_path.h"
+#include "dbus/property.h"
 
 namespace chromeos {
 
@@ -40,6 +41,19 @@ class CHROMEOS_EXPORT BluetoothMediaClient : public DBusClient {
     std::vector<uint8_t> capabilities;
   };
 
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Called when the Media object with object path |object_path| is added to
+    // the system.
+    virtual void MediaAdded(const dbus::ObjectPath& object_path) {}
+
+    // Called when the Media object with object path |object_path| is removed
+    // from the system.
+    virtual void MediaRemoved(const dbus::ObjectPath& object_path) {}
+  };
+
   ~BluetoothMediaClient() override;
 
   // The ErrorCallback is used by media API methods to indicate failure.
@@ -47,6 +61,12 @@ class CHROMEOS_EXPORT BluetoothMediaClient : public DBusClient {
   // an optional message in |error_message|.
   typedef base::Callback<void(const std::string& error_name,
                               const std::string& error_message)> ErrorCallback;
+
+  // Adds and removes observers for events on all Media objects. Check the
+  // |object_path| parameter of observer methods to determine which Media object
+  // is issuing the event.
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Registers a media endpoint to sender at the D-Bus object path
   // |endpoint_path|. |properties| specifies profile UUID which the endpoint is

@@ -15,6 +15,18 @@ FakeBluetoothMediaClient::~FakeBluetoothMediaClient() {
 void FakeBluetoothMediaClient::Init(dbus::Bus* bus) {
 }
 
+void FakeBluetoothMediaClient::AddObserver(
+    BluetoothMediaClient::Observer* observer) {
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void FakeBluetoothMediaClient::RemoveObserver(
+    BluetoothMediaClient::Observer* observer) {
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
+}
+
 // TODO(mcchou): Add method definition for |RegisterEndpoint|,
 // |UnregisterEndpoint|, |RegisterPlayer| and |UnregisterPlayer|.
 void FakeBluetoothMediaClient::RegisterEndpoint(

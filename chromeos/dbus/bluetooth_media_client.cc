@@ -7,15 +7,22 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
+#include "dbus/object_manager.h"
 #include "dbus/object_proxy.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace {
 
+// Since there is no property associated with Media objects, an empty callback
+// is used.
+void DoNothing(const std::string& property_name) {
+}
+
 // TODO(mcchou): Add these service constants into dbus/service_constants.h
 // later.
-const char kBluetoothMediaServiceName[] = "org.bluez";
 const char kBluetoothMediaInterface[] = "org.bluez.Media1";
 
 // Method names supported by Media Interface.
@@ -40,11 +47,51 @@ BluetoothMediaClient::EndpointProperties::EndpointProperties() : codec(0x00) {
 BluetoothMediaClient::EndpointProperties::~EndpointProperties() {
 }
 
-class BluetoothMediaClientImpl : public BluetoothMediaClient {
+class BluetoothMediaClientImpl
+    : public BluetoothMediaClient, dbus::ObjectManager::Interface {
  public:
-  BluetoothMediaClientImpl() : bus_(nullptr), weak_ptr_factory_(this) {}
+  BluetoothMediaClientImpl()
+      : object_manager_(nullptr), weak_ptr_factory_(this) {}
 
-  ~BluetoothMediaClientImpl() override {}
+  ~BluetoothMediaClientImpl() override {
+    object_manager_->UnregisterInterface(kBluetoothMediaInterface);
+  }
+
+  // dbus::ObjectManager::Interface overrides.
+
+  dbus::PropertySet* CreateProperties(
+      dbus::ObjectProxy* object_proxy,
+      const dbus::ObjectPath& object_path,
+      const std::string& interface_name) override {
+    return new dbus::PropertySet(object_proxy, interface_name,
+                                 base::Bind(&DoNothing));
+  }
+
+  void ObjectAdded(const dbus::ObjectPath& object_path,
+                   const std::string& interface_name) override {
+    VLOG(1) << "Remote Media added: " << object_path.value();
+    FOR_EACH_OBSERVER(BluetoothMediaClient::Observer, observers_,
+                      MediaAdded(object_path));
+  }
+
+  void ObjectRemoved(const dbus::ObjectPath& object_path,
+                     const std::string& interface_name) override {
+    VLOG(1) << "Remote Media removed: " << object_path.value();
+    FOR_EACH_OBSERVER(BluetoothMediaClient::Observer, observers_,
+                      MediaRemoved(object_path));
+  }
+
+  // BluetoothMediaClient overrides.
+
+  void AddObserver(BluetoothMediaClient::Observer* observer) override {
+    DCHECK(observer);
+    observers_.AddObserver(observer);
+  }
+
+  void RemoveObserver(BluetoothMediaClient::Observer* observer) override {
+    DCHECK(observer);
+    observers_.RemoveObserver(observer);
+  }
 
   void RegisterEndpoint(const dbus::ObjectPath& object_path,
                         const dbus::ObjectPath& endpoint_path,
@@ -88,9 +135,9 @@ class BluetoothMediaClientImpl : public BluetoothMediaClient {
 
     // Get Object Proxy based on the service name and the service path and call
     // RegisterEndpoint medthod.
-    scoped_refptr<dbus::ObjectProxy> proxy(
-        bus_->GetObjectProxy(kBluetoothMediaServiceName, object_path));
-    proxy->CallMethodWithErrorCallback(
+    scoped_refptr<dbus::ObjectProxy> object_proxy(
+        object_manager_->GetObjectProxy(object_path));
+    object_proxy->CallMethodWithErrorCallback(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&BluetoothMediaClientImpl::OnSuccess,
@@ -112,7 +159,7 @@ class BluetoothMediaClientImpl : public BluetoothMediaClient {
     // Get Object Proxy based on the service name and the service path and call
     // RegisterEndpoint medthod.
     scoped_refptr<dbus::ObjectProxy> object_proxy(
-        bus_->GetObjectProxy(kBluetoothMediaServiceName, object_path));
+        object_manager_->GetObjectProxy(object_path));
     object_proxy->CallMethodWithErrorCallback(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
@@ -125,7 +172,11 @@ class BluetoothMediaClientImpl : public BluetoothMediaClient {
  protected:
   void Init(dbus::Bus* bus) override {
     DCHECK(bus);
-    bus_ = bus;
+    object_manager_ = bus->GetObjectManager(
+        bluetooth_object_manager::kBluetoothObjectManagerServiceName,
+        dbus::ObjectPath(
+            bluetooth_object_manager::kBluetoothObjectManagerServicePath));
+    object_manager_->RegisterInterface(kBluetoothMediaInterface, this);
   }
 
  private:
@@ -152,7 +203,10 @@ class BluetoothMediaClientImpl : public BluetoothMediaClient {
     error_callback.Run(error_name, error_message);
   }
 
-  dbus::Bus* bus_;
+  dbus::ObjectManager* object_manager_;
+
+  // List of observers interested in event notifications from us.
+  ObserverList<BluetoothMediaClient::Observer> observers_;
 
   base::WeakPtrFactory<BluetoothMediaClientImpl> weak_ptr_factory_;
 

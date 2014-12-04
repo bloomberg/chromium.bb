@@ -6,6 +6,7 @@
 #define CHROMEOS_DBUS_FAKE_BLUETOOTH_MEDIA_CLIENT_H_
 
 #include "base/callback.h"
+#include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/bluetooth_media_client.h"
 #include "dbus/object_path.h"
@@ -17,7 +18,12 @@ class CHROMEOS_EXPORT FakeBluetoothMediaClient : public BluetoothMediaClient {
   FakeBluetoothMediaClient();
   ~FakeBluetoothMediaClient() override;
 
+  // DBusClient override.
   void Init(dbus::Bus* bus) override;
+
+  // BluetoothMediaClient overrides.
+  void AddObserver(BluetoothMediaClient::Observer* observer) override;
+  void RemoveObserver(BluetoothMediaClient::Observer* observer) override;
   void RegisterEndpoint(const dbus::ObjectPath& object_path,
                         const dbus::ObjectPath& endpoint_path,
                         const EndpointProperties& properties,
@@ -29,6 +35,9 @@ class CHROMEOS_EXPORT FakeBluetoothMediaClient : public BluetoothMediaClient {
                           const ErrorCallback& error_callback) override;
 
  private:
+  // List of observers interested in event notifications from us.
+  ObserverList<BluetoothMediaClient::Observer> observers_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothMediaClient);
 };
 
