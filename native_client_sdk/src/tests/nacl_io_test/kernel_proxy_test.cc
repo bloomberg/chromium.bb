@@ -614,10 +614,15 @@ TEST_F(KernelProxyTest, Utimes) {
   struct stat buf;
   EXPECT_EQ(0, ki_stat("/dummy", &buf));
 
-  EXPECT_GE(buf.st_atime, tm.tv_sec);
-  EXPECT_GE(buf.st_atimensec, tm.tv_usec * 1000);
-  EXPECT_GE(buf.st_mtime, tm.tv_sec);
-  EXPECT_GE(buf.st_mtimensec, tm.tv_usec * 1000);
+  // We just want to check if st_atime >= tm. This is true if atime seconds > tm
+  // seconds (in which case the nanoseconds are irrelevant), or if the seconds
+  // are equal, then this is true if atime nanoseconds >= tm microseconds.
+  EXPECT_TRUE(
+      buf.st_atime > tm.tv_sec ||
+      (buf.st_atime == tm.tv_sec && buf.st_atimensec >= tm.tv_usec * 1000));
+  EXPECT_TRUE(
+      buf.st_mtime > tm.tv_sec ||
+      (buf.st_mtime == tm.tv_sec && buf.st_mtimensec >= tm.tv_usec * 1000));
 }
 
 TEST_F(KernelProxyTest, Utime) {
@@ -645,10 +650,15 @@ TEST_F(KernelProxyTest, Utime) {
   struct stat buf;
   EXPECT_EQ(0, ki_stat("/dummy", &buf));
 
-  EXPECT_GE(buf.st_atime, tm.tv_sec);
-  EXPECT_GE(buf.st_atimensec, tm.tv_usec * 1000);
-  EXPECT_GE(buf.st_mtime, tm.tv_sec);
-  EXPECT_GE(buf.st_mtimensec, tm.tv_usec * 1000);
+  // We just want to check if st_atime >= tm. This is true if atime seconds > tm
+  // seconds (in which case the nanoseconds are irrelevant), or if the seconds
+  // are equal, then this is true if atime nanoseconds >= tm microseconds.
+  EXPECT_TRUE(
+      buf.st_atime > tm.tv_sec ||
+      (buf.st_atime == tm.tv_sec && buf.st_atimensec >= tm.tv_usec * 1000));
+  EXPECT_TRUE(
+      buf.st_mtime > tm.tv_sec ||
+      (buf.st_mtime == tm.tv_sec && buf.st_mtimensec >= tm.tv_usec * 1000));
 }
 
 TEST_F(KernelProxyTest, Umask) {
