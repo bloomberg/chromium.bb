@@ -111,8 +111,6 @@ function Downloads() {
   cr.ui.decorate('command', cr.ui.Command);
   document.addEventListener('canExecute', this.onCanExecute_.bind(this));
   document.addEventListener('command', this.onCommand_.bind(this));
-
-  this.updateResults();
 }
 
 /**
