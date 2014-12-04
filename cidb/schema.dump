@@ -57,7 +57,7 @@ CREATE TABLE `buildStageTable` (
   `build_id` int(11) NOT NULL,
   `name` varchar(80) NOT NULL,
   `board` varchar(80) DEFAULT NULL,
-  `status` enum('fail','pass','inflight','missing','aborted','planned','skipped') DEFAULT NULL,
+  `status` enum('fail','pass','inflight','missing','aborted','planned','skipped','forgiven') DEFAULT NULL,
   `last_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `start_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `finish_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -66,7 +66,7 @@ CREATE TABLE `buildStageTable` (
   KEY `build_id` (`build_id`),
   KEY `last_updated` (`last_updated`),
   CONSTRAINT `buildStageTable_ibfk_1` FOREIGN KEY (`build_id`) REFERENCES `buildTable` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
@@ -103,7 +103,7 @@ CREATE TABLE `buildTable` (
   KEY `build_config_index` (`build_config`),
   KEY `last_updated_index` (`last_updated`),
   CONSTRAINT `buildTable_ibfk_1` FOREIGN KEY (`master_build_id`) REFERENCES `buildTable` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
@@ -163,7 +163,7 @@ CREATE TABLE `failureTable` (
   KEY `outer_failure_id` (`outer_failure_id`),
   CONSTRAINT `failureTable_ibfk_1` FOREIGN KEY (`build_stage_id`) REFERENCES `buildStageTable` (`id`),
   CONSTRAINT `failureTable_ibfk_2` FOREIGN KEY (`outer_failure_id`) REFERENCES `failureTable` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
