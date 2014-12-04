@@ -85,7 +85,7 @@ TEST(GlyphPageTreeNode, level2)
         RefPtr<TestSimpleFontData> dataAtoC = TestSimpleFontData::create('A', 'C');
         RefPtr<TestSimpleFontData> dataCtoE = TestSimpleFontData::create('C', 'E');
         GlyphPageTreeNode* node1 = GlyphPageTreeNode::getRootChild(dataAtoC.get(), kPageNumber);
-        GlyphPageTreeNode* node2 = node1->getChild(dataCtoE.get(), kPageNumber);
+        GlyphPageTreeNode* node2 = node1->getNormalChild(dataCtoE.get(), kPageNumber);
         EXPECT_EQ(pageCountBeforeTest + 3, GlyphPageTreeNode::treeGlyphPageCount());
 
         EXPECT_EQ(2u, node2->level());
@@ -177,8 +177,8 @@ TEST(GlyphPageTreeNode, customDataWithMultiplePages)
         segmentedData2->appendRange(FontDataRange('B', 'D', dataBtoD));
         segmentedData3->appendRange(FontDataRange('C', 'E', dataCtoE));
         GlyphPageTreeNode* node1 = GlyphPageTreeNode::getRootChild(segmentedData1.get(), kPageNumber);
-        GlyphPageTreeNode* node2 = node1->getChild(segmentedData2.get(), kPageNumber);
-        GlyphPageTreeNode* node3 = node2->getChild(segmentedData3.get(), kPageNumber);
+        GlyphPageTreeNode* node2 = node1->getNormalChild(segmentedData2.get(), kPageNumber);
+        GlyphPageTreeNode* node3 = node2->getNormalChild(segmentedData3.get(), kPageNumber);
 
         EXPECT_EQ(0, node3->page()->glyphDataForCharacter('A').fontData);
         EXPECT_EQ(dataBtoD, node3->page()->glyphDataForCharacter('B').fontData);
@@ -205,8 +205,8 @@ TEST(GlyphPageTreeNode, systemFallback)
         RefPtr<SegmentedFontData> segmentedData = SegmentedFontData::create();
         segmentedData->appendRange(FontDataRange('A', 'C', dataAtoC));
         GlyphPageTreeNode* node1 = GlyphPageTreeNode::getRootChild(segmentedData.get(), kPageNumber);
-        GlyphPageTreeNode* node2 = node1->getChild(dataBtoD.get(), kPageNumber);
-        GlyphPageTreeNode* node3 = node2->getChild(0, kPageNumber);
+        GlyphPageTreeNode* node2 = node1->getNormalChild(dataBtoD.get(), kPageNumber);
+        SystemFallbackGlyphPageTreeNode* node3 = node2->getSystemFallbackChild(kPageNumber);
 
         EXPECT_TRUE(node3->isSystemFallback());
 

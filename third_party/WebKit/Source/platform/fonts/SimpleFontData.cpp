@@ -293,7 +293,7 @@ const SimpleFontData* SimpleFontData::fontDataForCharacter(UChar32) const
 Glyph SimpleFontData::glyphForCharacter(UChar32 character) const
 {
     // As GlyphPage::size is power of 2 so shifting is valid
-    GlyphPageTreeNode* node = GlyphPageTreeNode::getRootChild(this, character >> GlyphPage::sizeBits);
+    GlyphPageTreeNodeBase* node = GlyphPageTreeNode::getRootChild(this, character >> GlyphPage::sizeBits);
     return node->page() ? node->page()->glyphAt(character & 0xFF) : 0;
 }
 

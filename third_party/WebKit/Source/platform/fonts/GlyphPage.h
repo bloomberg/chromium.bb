@@ -42,7 +42,7 @@
 namespace blink {
 
 class SimpleFontData;
-class GlyphPageTreeNode;
+class GlyphPageTreeNodeBase;
 
 // Holds the glyph index and the corresponding SimpleFontData information for a given
 // character.
@@ -71,19 +71,19 @@ struct GlyphData {
 // to be overriding the parent's node, but provide no additional information.
 class PLATFORM_EXPORT GlyphPage : public RefCounted<GlyphPage> {
 public:
-    static PassRefPtr<GlyphPage> createForMixedFontData(GlyphPageTreeNode* owner)
+    static PassRefPtr<GlyphPage> createForMixedFontData(GlyphPageTreeNodeBase* owner)
     {
         void* slot = fastMalloc(sizeof(GlyphPage) + sizeof(SimpleFontData*) * GlyphPage::size);
         return adoptRef(new (slot) GlyphPage(owner));
     }
 
-    static PassRefPtr<GlyphPage> createForSingleFontData(GlyphPageTreeNode* owner, const SimpleFontData* fontData)
+    static PassRefPtr<GlyphPage> createForSingleFontData(GlyphPageTreeNodeBase* owner, const SimpleFontData* fontData)
     {
         ASSERT(fontData);
         return adoptRef(new GlyphPage(owner, fontData));
     }
 
-    PassRefPtr<GlyphPage> createCopiedSystemFallbackPage(GlyphPageTreeNode* owner) const
+    PassRefPtr<GlyphPage> createCopiedSystemFallbackPage(GlyphPageTreeNodeBase* owner) const
     {
         RefPtr<GlyphPage> page = GlyphPage::createForMixedFontData(owner);
         memcpy(page->m_glyphs, m_glyphs, sizeof(m_glyphs));
@@ -173,9 +173,9 @@ public:
         m_customFontToLoad->set(index, customFontToLoad);
     }
 
-    void removeFontDataFromSystemFallbackPage(const SimpleFontData* fontData)
+    void removePerGlyphFontData(const SimpleFontData* fontData)
     {
-        // This method should only be called on the system fallback page, which is never single-font.
+        // This method should only be called on the mixed page, which is never single-font.
         ASSERT(hasPerGlyphFontData());
         for (size_t i = 0; i < size; ++i) {
             if (m_perGlyphFontData[i] == fontData) {
@@ -185,10 +185,12 @@ public:
         }
     }
 
-    GlyphPageTreeNode* owner() const { return m_owner; }
+    GlyphPageTreeNodeBase* owner() const { return m_owner; }
+
+    bool hasPerGlyphFontData() const { return !m_fontDataForAllGlyphs; }
 
 private:
-    explicit GlyphPage(GlyphPageTreeNode* owner, const SimpleFontData* fontDataForAllGlyphs = 0)
+    explicit GlyphPage(GlyphPageTreeNodeBase* owner, const SimpleFontData* fontDataForAllGlyphs = 0)
         : m_fontDataForAllGlyphs(fontDataForAllGlyphs)
         , m_owner(owner)
     {
@@ -196,8 +198,6 @@ private:
         if (hasPerGlyphFontData())
             memset(m_perGlyphFontData, 0, sizeof(SimpleFontData*) * GlyphPage::size);
     }
-
-    bool hasPerGlyphFontData() const { return !m_fontDataForAllGlyphs; }
 
     class CustomDataPage : public RefCounted<CustomDataPage> {
     public:
@@ -210,7 +210,7 @@ private:
     };
 
     const SimpleFontData* m_fontDataForAllGlyphs;
-    GlyphPageTreeNode* m_owner;
+    GlyphPageTreeNodeBase* m_owner;
     RefPtr<CustomDataPage> m_customFontToLoad;
     Glyph m_glyphs[size];
 

@@ -435,7 +435,7 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32& c, 
 
     unsigned pageNumber = (c / GlyphPage::size);
 
-    GlyphPageTreeNode* node = m_fontFallbackList->getPageNode(pageNumber);
+    GlyphPageTreeNodeBase* node = m_fontFallbackList->getPageNode(pageNumber);
     if (!node) {
         node = GlyphPageTreeNode::getRootChild(fontDataAt(0), pageNumber);
         m_fontFallbackList->setPageNode(pageNumber, node);
@@ -471,7 +471,7 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32& c, 
             }
 
             // Proceed with the fallback list.
-            node = node->getChild(fontDataAt(node->level()), pageNumber);
+            node = toGlyphPageTreeNode(node)->getChild(fontDataAt(node->level()), pageNumber);
             m_fontFallbackList->setPageNode(pageNumber, node);
         }
     }
@@ -505,7 +505,7 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32& c, 
             }
 
             // Proceed with the fallback list.
-            node = node->getChild(fontDataAt(node->level()), pageNumber);
+            node = toGlyphPageTreeNode(node)->getChild(fontDataAt(node->level()), pageNumber);
             m_fontFallbackList->setPageNode(pageNumber, node);
         }
     }
@@ -558,7 +558,7 @@ bool Font::primaryFontHasGlyphForCharacter(UChar32 character) const
 {
     unsigned pageNumber = (character / GlyphPage::size);
 
-    GlyphPageTreeNode* node = GlyphPageTreeNode::getRootChild(primaryFont(), pageNumber);
+    GlyphPageTreeNodeBase* node = GlyphPageTreeNode::getRootChild(primaryFont(), pageNumber);
     GlyphPage* page = node->page();
 
     return page && page->glyphForCharacter(character);
