@@ -7738,13 +7738,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.BackgroundPageLoadTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>The time for an extension's background page to load.</summary>
 </histogram>
 
 <histogram name="Extensions.BackgroundPageType"
     units="ExtensionBackgroundPageType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The type (if any) of background page the extension has. Recorded for
     installed extensions on startup.
@@ -7786,12 +7786,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.CrxFetchError" enum="NetErrorCodes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>Net error results from URLFetcher.</summary>
 </histogram>
 
 <histogram name="Extensions.CrxFetchFailureRetryCountGoogleUrl">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Number of times chrome retried to download an extension with a url on a
     google.com domain, before eventually giving up.
@@ -7799,7 +7799,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.CrxFetchFailureRetryCountOtherUrl">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Number of times chrome retried to download an extension with a url on a non
     google.com domain, before eventually giving up.
@@ -7807,7 +7807,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.CrxFetchSuccessRetryCountGoogleUrl">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Number of times chrome retried to download an extension with a url on a
     google.com domain, before eventually succeeding.
@@ -7815,7 +7815,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.CrxFetchSuccessRetryCountOtherUrl">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Number of times chrome retried to download an extension with a url on a non
     google.com domain, before eventually succeeding.
@@ -7823,7 +7823,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.CrxInstallDirPathLength">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Length of the path to the directory under which an extension is installed.
     This directory is in the user's profile.
@@ -7850,14 +7850,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.Disabled">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The number of extensions that are disabled at browser startup.
   </summary>
 </histogram>
 
 <histogram name="Extensions.DisabledForPermissions">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The number of extensions that are disabled at browser startup due to
     permissions increases.
@@ -7866,7 +7866,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.DisabledUIUserResponse"
     enum="ExtensionDisabledUIUserResponse">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     User response to the dialog shown when an extension is disabled due to an
     update requiring more permissions.
@@ -7894,7 +7894,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.ErrorCodeFromCrxOpen">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     If opening the CRX file for unpacking fails, this integer is the error code
     given by the OS.
@@ -7902,17 +7902,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.EventPageActiveTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>The time an extension's event page has spent loaded.</summary>
 </histogram>
 
 <histogram name="Extensions.EventPageIdleTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>The time an extension's event page has spent unloaded.</summary>
 </histogram>
 
 <histogram name="Extensions.EventPageLoadTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>The time for an extension's event page to load.</summary>
 </histogram>
 
@@ -7933,12 +7933,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.ExtensionInstalled">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>An extension has been installed.</summary>
 </histogram>
 
 <histogram name="Extensions.ExtensionLocation" enum="ExtensionLocation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The number of extensions loaded at startup time grouped by
     Extension::Location.
@@ -7953,7 +7953,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.ExtensionServiceInitTime">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>yoz@chromium.org</owner>
   <summary>
     Time taken for the ExtensionService to initialize, including the time it
     takes to load the extensions for the service's profile and parse their
@@ -7963,7 +7963,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.ExtensionUninstalled">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>An extension has been uninstalled.</summary>
 </histogram>
 
@@ -8026,7 +8026,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.FunctionCalls" enum="ExtensionFunctions">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>Number of calls to extension functions.</summary>
 </histogram>
 
@@ -8098,60 +8098,69 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.InjectCssTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The amount of time for a CSS file to be injected into a page.
   </summary>
 </histogram>
 
 <histogram name="Extensions.InjectEnd_ScriptCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>Number of scripts injected at document end by extensions.</summary>
 </histogram>
 
 <histogram name="Extensions.InjectEnd_Time" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Time taken to inject all scripts at document end by extensions.
   </summary>
 </histogram>
 
 <histogram name="Extensions.InjectIdle_ScriptCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>Number of scripts injected at document idle by extensions.</summary>
 </histogram>
 
 <histogram name="Extensions.InjectIdle_Time" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Time taken to inject all scripts at document idle by extensions.
   </summary>
 </histogram>
 
 <histogram name="Extensions.InjectScriptTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>Time taken to inject all scripts by extensions.</summary>
 </histogram>
 
 <histogram name="Extensions.InjectStart_CssCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>Number of css files injected by extensions.</summary>
 </histogram>
 
 <histogram name="Extensions.InjectStart_ScriptCount">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>Number of scripts injected at document start by extensions.</summary>
 </histogram>
 
 <histogram name="Extensions.InjectStart_Time" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Time taken to inject css/scripts at document start by extensions.
   </summary>
 </histogram>
 
 <histogram name="Extensions.InstallPrompt.Accepted" enum="BooleanAccepted">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>meacer@chromium.org</owner>
   <summary>
     Whether the user accepted or aborted an extension installation.
   </summary>
@@ -8159,7 +8168,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.InstallPrompt.Type"
     enum="ExtensionInstallPromptType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>meacer@chromium.org</owner>
   <summary>
     Type of the extension install prompt displayed when an extension
     installation is triggered.
@@ -8185,55 +8194,55 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.InstallSource" enum="ExtensionLocation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>Installs grouped by the location property in prefs.</summary>
 </histogram>
 
 <histogram name="Extensions.InstallType" enum="ExtensionType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>Installs grouped by Extension::HistogramType.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadAll">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The number of extensions and themes loaded at browser startup.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadAllTime" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>Time taken to load all extensions at browser startup.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadApp">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>The number of apps loaded by each user at startup time.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadAppExternal">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The number of externally managed apps loaded by each user at startup time.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadAppUser">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The number of user-installed apps loaded by each user at startup time.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadBrowserAction">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The number of browser action extensions loaded at browser startup.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadContentPack">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     The number of content-pack extensions loaded at browser startup.
   </summary>
@@ -8248,26 +8257,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.LoadExtension">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>The number of extensions loaded at browser startup.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadExtensionExternal">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The number of externally managed extensions loaded at browser startup.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadExtensionUser">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The number of user-installed extensions loaded at browser startup.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadExternal">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The number of externally managed extensions and apps loaded at browser
     startup.
@@ -8275,31 +8284,31 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.LoadHostedApp">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The number of hosted apps loaded by each user at startup time.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadPackagedApp">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The number of legacy packaged apps loaded by each user at startup time.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadPlatformApp">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>The number of platform apps loaded at browser startup.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadTheme">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>The number of themes loaded at browser startup.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadType" enum="ExtensionType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The number of extensions loaded at startup time grouped by
     Extension::HistogramType.
@@ -8307,7 +8316,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.LoadUserScript">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The number of converted user scripts loaded at browser startup.
   </summary>
@@ -8396,7 +8405,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.NonWebstoreLocation" enum="ExtensionLocation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The number of apps/extensions with a non-webstore update_url loaded at
     startup time grouped by Extension::Location.
@@ -8670,7 +8679,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.ResourceDirectoryTimestampQueryLatency"
     units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     The initialization latency (in milliseconds) introduced to each extension
     resource request by querying the directory timestamp.
@@ -8678,7 +8687,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.ResourceLastModifiedDelta" units="seconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     The difference in seconds between an extension resource's last modification
     time and its extension base directory's creation time. Recorded on each
@@ -8690,7 +8699,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.ResourceLastModifiedNegativeDelta" units="seconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     The absolute difference in seconds between an extension resource's last
     modification time and extension base directory's creation time. Recorded on
@@ -8702,7 +8711,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackFailure">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Count the number of times a sandboxed extension unpack fails.
   </summary>
@@ -8710,22 +8719,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.SandboxUnpackFailureReason"
     enum="ExtensionUnpackFailureReason">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>What caused a sandboxed extension unpack to fail?</summary>
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackFailureTime">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>Time taken to unpack an extension, when the unpack fails.</summary>
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackInitialCrxPathLength">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>Length of the initial path to the CRX to be unpacked.</summary>
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackLinkFreeCrxPathLength">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Length of the normalized (link/junction free) path to the temporary copy of
     a CRX made during unpacking.
@@ -8733,42 +8742,42 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackRate">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Rate at which a CRX file is unpacked in Kilobytes per second.
   </summary>
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackRate1To2mB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Rate at which CRX files 1MB to 2MB are unpacked in Kilobytes per second.
   </summary>
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackRate2To5mB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Rate at which CRX files 2MB to 5MB are unpacked in Kilobytes per second.
   </summary>
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackRate50kBTo1mB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Rate at which CRX files 50kB to 1MB are unpacked in Kilobytes per second.
   </summary>
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackRate5To10mB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Rate at which CRX files 5MB to 10 MB are unpacked in Kilobytes per second.
   </summary>
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackRateOver10mB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Rate at which CRX files larger than 10MB are unpacked in Kilobytes per
     second.
@@ -8776,19 +8785,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackRateUnder50kB">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Rate at which CRX files under 50 KB are unpacked in Kilobytes per second.
   </summary>
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackSuccess">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>Count the number of times a sandboxed CRX unpack succeeds.</summary>
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackSuccessCantGetCrxSize">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Count the number of times a sandboxed CRX unpack succeeds, but we can't get
     the file size.
@@ -8796,31 +8805,31 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackSuccessTime">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Time taken to unpack an extension, when the unpack succeeds.
   </summary>
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackTempCrxPathLength">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Length of the path of the temporary copy of a CRX made during unpacking.
   </summary>
 </histogram>
 
 <histogram name="Extensions.SandboxUnpackUnpackedCrxPathLength">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>Length of the path under which a CRX is unpacked.</summary>
 </histogram>
 
 <histogram name="Extensions.StartupDelay" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>The time one extension delays network requests at startup.</summary>
 </histogram>
 
 <histogram name="Extensions.StartupDelay_Total" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>
     The total time extensions delay network requests at startup.
   </summary>
@@ -8832,13 +8841,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Extensions.UninstallType" enum="ExtensionType">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>kalman@chromium.org</owner>
   <summary>Uninstalls grouped by Extension::HistogramType.</summary>
 </histogram>
 
 <histogram name="Extensions.UnpackFailureInstallCause"
     enum="ExtensionInstallCause">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Count failing CRX installs, grouped by the way an extension can be
     installed.
@@ -8847,7 +8856,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.UnpackFailureInstallSource"
     enum="ExtensionLocation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Count successful CRX installs, grouped by the location property in prefs.
     installed.
@@ -8856,7 +8865,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.UnpackSuccessInstallCause"
     enum="ExtensionInstallCause">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Count successful CRX installs, grouped by the cause of the install.
   </summary>
@@ -8864,7 +8873,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Extensions.UnpackSuccessInstallSource"
     enum="ExtensionLocation">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>asargent@chromium.org</owner>
   <summary>
     Count successful CRX installs, grouped by the location property in prefs.
   </summary>
