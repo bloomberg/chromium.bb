@@ -13,7 +13,8 @@
 
 namespace chromeos {
 
-ScreenshotTestingMixin::ScreenshotTestingMixin() {
+ScreenshotTestingMixin::ScreenshotTestingMixin()
+    : enable_test_screenshots_(false) {
 }
 
 ScreenshotTestingMixin::~ScreenshotTestingMixin() {

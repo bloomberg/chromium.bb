@@ -31,7 +31,6 @@ const char kTestUser2[] = "test-user2@gmail.com";
 
 class LoginUITest : public chromeos::LoginManagerTest {
  public:
-  bool enable_test_screenshots_;
   LoginUITest() : LoginManagerTest(false) {
     screenshot_testing_ = new ScreenshotTestingMixin;
     screenshot_testing_->IgnoreArea(areas::kClockArea);
