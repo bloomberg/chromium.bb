@@ -368,6 +368,12 @@ void EmbeddedWorkerContextClient::postMessageToClient(
                                          make_scoped_ptr(channels));
 }
 
+void EmbeddedWorkerContextClient::focus(
+    int client_id, blink::WebServiceWorkerClientFocusCallback* callback) {
+  DCHECK(script_context_);
+  script_context_->FocusClient(client_id, callback);
+}
+
 void EmbeddedWorkerContextClient::OnMessageToWorker(
     int thread_id,
     int embedded_worker_id,

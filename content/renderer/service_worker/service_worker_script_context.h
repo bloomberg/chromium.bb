@@ -19,6 +19,7 @@
 #include "content/renderer/service_worker/service_worker_cache_storage_dispatcher.h"
 #include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerClientFocusCallback.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerClientsInfo.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
 
@@ -67,6 +68,8 @@ class ServiceWorkerScriptContext {
       int client_id,
       const base::string16& message,
       scoped_ptr<blink::WebMessagePortChannelArray> channels);
+  void FocusClient(int client_id,
+                   blink::WebServiceWorkerClientFocusCallback* callback);
 
   // Send a message to the browser. Takes ownership of |message|.
   void Send(IPC::Message* message);
@@ -82,7 +85,8 @@ class ServiceWorkerScriptContext {
  private:
   typedef IDMap<blink::WebServiceWorkerClientsCallbacks, IDMapOwnPointer>
       ClientsCallbacksMap;
-
+  typedef IDMap<blink::WebServiceWorkerClientFocusCallback, IDMapOwnPointer>
+      FocusClientCallbacksMap;
 
   void OnActivateEvent(int request_id);
   void OnInstallEvent(int request_id, int active_version_id);
@@ -100,6 +104,7 @@ class ServiceWorkerScriptContext {
                      const std::vector<int>& new_routing_ids);
   void OnDidGetClientDocuments(
       int request_id, const std::vector<int>& client_ids);
+  void OnFocusClientResponse(int request_id, bool result);
 
   scoped_ptr<ServiceWorkerCacheStorageDispatcher> cache_storage_dispatcher_;
 
@@ -116,6 +121,9 @@ class ServiceWorkerScriptContext {
 
   // Pending callbacks for GetClientDocuments().
   ClientsCallbacksMap pending_clients_callbacks_;
+
+  // Pending callbacks for FocusClient().
+  FocusClientCallbacksMap pending_focus_client_callbacks_;
 
   // Capture timestamps for UMA
   std::map<int, base::TimeTicks> activate_start_timings_;

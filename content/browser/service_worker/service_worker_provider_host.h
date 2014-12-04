@@ -45,6 +45,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     : public NON_EXPORTED_BASE(ServiceWorkerRegistration::Listener),
       public base::SupportsWeakPtr<ServiceWorkerProviderHost> {
  public:
+  typedef base::Callback<void(bool)> FocusCallback;
+
   ServiceWorkerProviderHost(int render_process_id,
                             int render_frame_id,
                             int provider_id,
@@ -127,6 +129,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Dispatches message event to the document.
   void PostMessage(const base::string16& message,
                    const std::vector<int>& sent_message_port_ids);
+
+  // Activates the WebContents associated with
+  // { render_process_id_, render_frame_id_ }.
+  // Runs the |callback| with the result in parameter describing whether the
+  // focusing action was successful.
+  void Focus(const FocusCallback& callback);
 
   // Adds reference of this host's process to the |pattern|, the reference will
   // be removed in destructor.

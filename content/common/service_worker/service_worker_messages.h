@@ -209,6 +209,11 @@ IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_PostMessageToDocument,
                     base::string16 /* message */,
                     std::vector<int> /* sent_message_port_ids */)
 
+// Ask the browser to focus a client (renderer->browser).
+IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_FocusClient,
+                    int /* request_id */,
+                    int /* client_id */)
+
 // CacheStorage operations in the browser.
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CacheStorageHas,
                     int /* request_id */,
@@ -384,6 +389,11 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_MessageToWorker,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClientDocuments,
                      int /* request_id */,
                      std::vector<int> /* client_ids */)
+
+// Sent via EmbeddedWorker as a response of FocusClient.
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_FocusClientResponse,
+                     int /* request_id */,
+                     bool /* result */)
 
 // Sent via EmbeddedWorker at successful completion of CacheStorage operations.
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_CacheStorageHasSuccess,

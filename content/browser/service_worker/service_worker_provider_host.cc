@@ -17,10 +17,34 @@
 #include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 namespace content {
 
 static const int kDocumentMainThreadId = 0;
+
+namespace {
+
+void FocusOnUIThread(int render_process_id,
+                     int render_frame_id,
+                     const ServiceWorkerProviderHost::FocusCallback& callback) {
+  WebContents* web_contents = WebContents::FromRenderFrameHost(
+      RenderFrameHost::FromID(render_process_id, render_frame_id));
+
+  bool result = false;
+
+  if (web_contents && web_contents->GetDelegate()) {
+    result = true;
+    web_contents->GetDelegate()->ActivateContents(web_contents);
+  }
+
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(callback, result));
+}
+
+}  // anonymous namespace
 
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     int render_process_id, int render_frame_id, int provider_id,
@@ -207,6 +231,15 @@ void ServiceWorkerProviderHost::PostMessage(
           message,
           sent_message_port_ids,
           new_routing_ids));
+}
+
+void ServiceWorkerProviderHost::Focus(const FocusCallback& callback) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&FocusOnUIThread,
+                 render_process_id_,
+                 render_frame_id_,
+                 callback));
 }
 
 void ServiceWorkerProviderHost::AddScopedProcessReferenceToPattern(

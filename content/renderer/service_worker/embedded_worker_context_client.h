@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_listener.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerClientFocusCallback.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerClientsInfo.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -103,6 +104,8 @@ class EmbeddedWorkerContextClient
       int client_id,
       const blink::WebString& message,
       blink::WebMessagePortChannelArray* channels);
+  virtual void focus(int client_id,
+                     blink::WebServiceWorkerClientFocusCallback*);
 
   // TODO: Implement DevTools related method overrides.
 

@@ -302,7 +302,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnPostMessageToDocument(int client_id,
                                const base::string16& message,
                                const std::vector<int>& sent_message_port_ids);
+  void OnFocusClient(int request_id, int client_id);
 
+  void OnFocusClientFinished(int request_id, bool result);
   void ScheduleStopWorker();
   void DoomInternal();
 

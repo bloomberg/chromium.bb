@@ -642,6 +642,8 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnGeofencingEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToDocument,
                         OnPostMessageToDocument)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_FocusClient,
+                        OnFocusClient)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -843,6 +845,34 @@ void ServiceWorkerVersion::OnPostMessageToDocument(
     return;
   }
   provider_host->PostMessage(message, sent_message_port_ids);
+}
+
+void ServiceWorkerVersion::OnFocusClient(int request_id, int client_id) {
+  TRACE_EVENT2("ServiceWorker",
+               "ServiceWorkerVersion::OnFocusDocument",
+               "Request id", request_id,
+               "Client id", client_id);
+  ServiceWorkerProviderHost* provider_host =
+      controllee_by_id_.Lookup(client_id);
+  if (!provider_host) {
+    // The client may already have been closed, just ignore.
+    return;
+  }
+
+  provider_host->Focus(
+      base::Bind(&ServiceWorkerVersion::OnFocusClientFinished,
+                 weak_factory_.GetWeakPtr(),
+                 request_id));
+}
+
+void ServiceWorkerVersion::OnFocusClientFinished(int request_id, bool result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (running_status() != RUNNING)
+    return;
+
+  embedded_worker_->SendMessage(ServiceWorkerMsg_FocusClientResponse(
+      request_id, result));
 }
 
 void ServiceWorkerVersion::ScheduleStopWorker() {
