@@ -83,8 +83,7 @@ source_set("lib") {
   ]
 }
 
-# GYP version: mojo/mojo_services.gypi:html_viewer
-shared_library("html_viewer") {
+mojo_native_application("html_viewer") {
   sources = [
     "html_viewer.cc",
   ]
