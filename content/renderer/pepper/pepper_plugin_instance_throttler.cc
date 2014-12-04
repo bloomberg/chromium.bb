@@ -130,11 +130,11 @@ PepperPluginInstanceThrottler::PepperPluginInstanceThrottler(
     RecordFlashSizeMetric(bounds.width, bounds.height);
   }
 
-  bool cross_origin = false;
+  bool is_main_attraction = false;
   is_peripheral_content_ =
       is_flash_plugin_ &&
-      power_saver_helper->ShouldThrottleContent(content_origin, bounds.width,
-                                                bounds.height, &cross_origin);
+      power_saver_helper->ShouldThrottleContent(
+          content_origin, bounds.width, bounds.height, &is_main_attraction);
 
   power_saver_enabled_ = is_peripheral_content_ &&
                          base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -155,7 +155,7 @@ PepperPluginInstanceThrottler::PepperPluginInstanceThrottler(
                      weak_factory_.GetWeakPtr(), true /* throttled */),
           base::TimeDelta::FromMilliseconds(kThrottleTimeout));
     }
-  } else if (cross_origin) {
+  } else if (is_main_attraction) {
     power_saver_helper->WhitelistContentOrigin(content_origin);
   }
 }

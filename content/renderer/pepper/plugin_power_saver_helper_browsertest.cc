@@ -76,40 +76,56 @@ TEST_F(PluginPowerSaverHelperTest, PosterImage) {
 }
 
 TEST_F(PluginPowerSaverHelperTest, AllowSameOrigin) {
-  bool cross_origin = false;
-  EXPECT_FALSE(power_saver_helper()->ShouldThrottleContent(
-      GURL(), 100, 100, &cross_origin));
-  EXPECT_FALSE(cross_origin);
+  EXPECT_FALSE(
+      power_saver_helper()->ShouldThrottleContent(GURL(), 100, 100, nullptr));
 
-  EXPECT_FALSE(power_saver_helper()->ShouldThrottleContent(
-      GURL(), 1000, 1000, &cross_origin));
-  EXPECT_FALSE(cross_origin);
+  EXPECT_FALSE(
+      power_saver_helper()->ShouldThrottleContent(GURL(), 1000, 1000, nullptr));
 }
 
 TEST_F(PluginPowerSaverHelperTest, DisallowCrossOriginUnlessLarge) {
-  bool cross_origin = false;
+  bool is_main_attraction = false;
   EXPECT_TRUE(power_saver_helper()->ShouldThrottleContent(
-      GURL("http://other.com"), 100, 100, &cross_origin));
-  EXPECT_TRUE(cross_origin);
+      GURL("http://other.com"), 100, 100, &is_main_attraction));
+  EXPECT_FALSE(is_main_attraction);
 
   EXPECT_FALSE(power_saver_helper()->ShouldThrottleContent(
-      GURL("http://other.com"), 1000, 1000, &cross_origin));
-  EXPECT_TRUE(cross_origin);
+      GURL("http://other.com"), 1000, 1000, &is_main_attraction));
+  EXPECT_TRUE(is_main_attraction);
+}
+
+TEST_F(PluginPowerSaverHelperTest, AlwaysAllowTinyContent) {
+  bool is_main_attraction = false;
+  EXPECT_FALSE(power_saver_helper()->ShouldThrottleContent(
+      GURL(), 1, 1, &is_main_attraction));
+  EXPECT_FALSE(is_main_attraction);
+
+  EXPECT_FALSE(power_saver_helper()->ShouldThrottleContent(
+      GURL("http://other.com"), 1, 1, &is_main_attraction));
+  EXPECT_FALSE(is_main_attraction);
+
+  EXPECT_FALSE(power_saver_helper()->ShouldThrottleContent(
+      GURL("http://other.com"), 5, 5, &is_main_attraction));
+  EXPECT_FALSE(is_main_attraction);
+
+  EXPECT_TRUE(power_saver_helper()->ShouldThrottleContent(
+      GURL("http://other.com"), 10, 10, &is_main_attraction));
+  EXPECT_FALSE(is_main_attraction);
 }
 
 TEST_F(PluginPowerSaverHelperTest, TemporaryOriginWhitelist) {
-  bool cross_origin = false;
+  bool is_main_attraction = false;
   EXPECT_TRUE(power_saver_helper()->ShouldThrottleContent(
-      GURL("http://other.com"), 100, 100, &cross_origin));
-  EXPECT_TRUE(cross_origin);
+      GURL("http://other.com"), 100, 100, &is_main_attraction));
+  EXPECT_FALSE(is_main_attraction);
 
   // Clear out other messages so we find just the plugin power saver IPCs.
   sink_->ClearMessages();
 
   power_saver_helper()->WhitelistContentOrigin(GURL("http://other.com"));
   EXPECT_FALSE(power_saver_helper()->ShouldThrottleContent(
-      GURL("http://other.com"), 100, 100, &cross_origin));
-  EXPECT_TRUE(cross_origin);
+      GURL("http://other.com"), 100, 100, &is_main_attraction));
+  EXPECT_FALSE(is_main_attraction);
 
   // Test that we've sent an IPC to the browser.
   ASSERT_EQ(1u, sink_->message_count());
@@ -137,16 +153,13 @@ TEST_F(PluginPowerSaverHelperTest, UnthrottleOnExPostFactoWhitelist) {
 TEST_F(PluginPowerSaverHelperTest, ClearWhitelistOnNavigate) {
   power_saver_helper()->WhitelistContentOrigin(GURL("http://other.com"));
 
-  bool cross_origin = false;
   EXPECT_FALSE(power_saver_helper()->ShouldThrottleContent(
-      GURL("http://other.com"), 100, 100, &cross_origin));
-  EXPECT_TRUE(cross_origin);
+      GURL("http://other.com"), 100, 100, nullptr));
 
   LoadHTML("<html></html>");
 
   EXPECT_TRUE(power_saver_helper()->ShouldThrottleContent(
-      GURL("http://other.com"), 100, 100, &cross_origin));
-  EXPECT_TRUE(cross_origin);
+      GURL("http://other.com"), 100, 100, nullptr));
 }
 
 }  // namespace content

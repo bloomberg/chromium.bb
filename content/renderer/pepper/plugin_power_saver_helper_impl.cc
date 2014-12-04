@@ -28,6 +28,7 @@ enum PeripheralHeuristicDecision {
   HEURISTIC_DECISION_ESSENTIAL_SAME_ORIGIN = 1,
   HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_BIG = 2,
   HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_WHITELISTED = 3,
+  HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_TINY = 4,
   HEURISTIC_DECISION_NUM_ITEMS
 };
 
@@ -38,6 +39,11 @@ const char kPeripheralHeuristicHistogram[] =
 // peripheral content. These match the sizes used by Safari.
 const int kPeripheralContentMaxWidth = 400;
 const int kPeripheralContentMaxHeight = 300;
+
+// Plug-in content below this size in height and width is considered "tiny".
+// Tiny content is never peripheral, as tiny plug-ins often serve a critical
+// purpose, and the user often cannot find and click to unthrottle it.
+const int kPeripheralContentTinySize = 5;
 
 void RecordDecisionMetric(PeripheralHeuristicDecision decision) {
   UMA_HISTOGRAM_ENUMERATION(kPeripheralHeuristicHistogram, decision,
@@ -137,11 +143,10 @@ GURL PluginPowerSaverHelperImpl::GetPluginInstancePosterImage(
   int width = 0;
   int height = 0;
 
-  bool cross_origin = false;
   if (!ExtractDimensions(params, &width, &height))
     return GURL();
 
-  if (!ShouldThrottleContent(content_origin, width, height, &cross_origin))
+  if (!ShouldThrottleContent(content_origin, width, height, nullptr))
     return GURL();
 
   for (size_t i = 0; i < params.attributeNames.size(); ++i) {
@@ -165,9 +170,10 @@ bool PluginPowerSaverHelperImpl::ShouldThrottleContent(
     const GURL& content_origin,
     int width,
     int height,
-    bool* cross_origin) const {
-  DCHECK(cross_origin);
-  *cross_origin = true;
+    bool* is_main_attraction) const {
+  DCHECK_EQ(content_origin.GetOrigin(), content_origin);
+  if (is_main_attraction)
+    *is_main_attraction = false;
 
   // TODO(alexmos): Update this to use the origin of the RemoteFrame when 426512
   // is fixed. For now, case 3 in the class level comment doesn't work in
@@ -183,7 +189,6 @@ bool PluginPowerSaverHelperImpl::ShouldThrottleContent(
   GURL main_frame_origin = GURL(main_frame->document().url()).GetOrigin();
   if (content_origin == main_frame_origin) {
     RecordDecisionMetric(HEURISTIC_DECISION_ESSENTIAL_SAME_ORIGIN);
-    *cross_origin = false;
     return false;
   }
 
@@ -193,16 +198,24 @@ bool PluginPowerSaverHelperImpl::ShouldThrottleContent(
     return false;
   }
 
-  // Cross-origin plugin content is peripheral if smaller than a maximum size.
-  bool content_is_small = width < kPeripheralContentMaxWidth ||
-                          height < kPeripheralContentMaxHeight;
+  // Never mark tiny content as peripheral.
+  if (width <= kPeripheralContentTinySize &&
+      height <= kPeripheralContentTinySize) {
+    RecordDecisionMetric(HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_TINY);
+    return false;
+  }
 
-  if (content_is_small)
-    RecordDecisionMetric(HEURISTIC_DECISION_PERIPHERAL);
-  else
+  // Plugin content large in both dimensions are the "main attraction".
+  if (width >= kPeripheralContentMaxWidth &&
+      height >= kPeripheralContentMaxHeight) {
     RecordDecisionMetric(HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_BIG);
+    if (is_main_attraction)
+      *is_main_attraction = true;
+    return false;
+  }
 
-  return content_is_small;
+  RecordDecisionMetric(HEURISTIC_DECISION_PERIPHERAL);
+  return true;
 }
 
 void PluginPowerSaverHelperImpl::WhitelistContentOrigin(

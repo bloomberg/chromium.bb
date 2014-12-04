@@ -32,7 +32,7 @@ class CONTENT_EXPORT PluginPowerSaverHelperImpl : public PluginPowerSaverHelper,
   // Returns true if this plugin should have power saver enabled.
   //
   // Power Saver is enabled for plugin content that are cross-origin and
-  // heuristically determined to be not the "main attraction" of the webpage.
+  // heuristically determined to be not essential to the web page content.
   //
   // Plugin content is defined to be cross-origin when the plugin source's
   // origin differs from the top level frame's origin. For example:
@@ -40,13 +40,14 @@ class CONTENT_EXPORT PluginPowerSaverHelperImpl : public PluginPowerSaverHelper,
   //  - Cross-origin:  a.com -> b.com/iframe.html -> b.com/plugin.swf
   //  - Same-origin:   a.com -> b.com/iframe-to-a.html -> a.com/plugin.swf
   //
-  // |cross_origin| may not be NULL.
+  // |is_main_attraction| may be NULL. It is set to true if the plugin content
+  // is cross-origin and determined to be the "main attraction" of the page.
   //
   // Virtual to allow overriding in tests.
   virtual bool ShouldThrottleContent(const GURL& content_origin,
                                      int width,
                                      int height,
-                                     bool* cross_origin) const;
+                                     bool* is_main_attraction) const;
 
   // Virtual to allow overriding in tests.
   virtual void WhitelistContentOrigin(const GURL& content_origin);

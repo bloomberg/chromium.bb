@@ -52399,6 +52399,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Essential Same-Origin"/>
   <int value="2" label="Essential Cross-Origin Big"/>
   <int value="3" label="Essential Cross-Origin Whitelisted"/>
+  <int value="4" label="Essential Cross-Origin Tiny"/>
 </enum>
 
 <enum name="PluginPowerSaverUnthrottleMethod" type="int">
