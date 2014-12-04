@@ -614,9 +614,8 @@ void AppListViewTestContext::RunSearchResultsTest() {
     view_->Layout();
     EXPECT_EQ(default_contents_bounds,
               contents_view->start_page_view()->bounds());
-    // TODO(mgiuca): The search box should be small and centered.
-    EXPECT_TRUE(
-        CheckSearchBoxWidget(contents_view->GetDefaultSearchBoxBounds()));
+    EXPECT_TRUE(CheckSearchBoxWidget(
+        contents_view->GetSearchBoxBoundsForState(AppListModel::STATE_START)));
 
     base::string16 search_text = base::UTF8ToUTF16("test");
     main_view->search_box_view()->search_box()->SetText(base::string16());

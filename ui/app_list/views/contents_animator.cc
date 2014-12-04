@@ -5,10 +5,15 @@
 #include "ui/app_list/views/contents_animator.h"
 
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_switches.h"
+#include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/contents_view.h"
+#include "ui/app_list/views/search_box_view.h"
+#include "ui/app_list/views/start_page_view.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace app_list {
 
@@ -75,6 +80,26 @@ void ContentsAnimator::UpdateCustomPageForDefaultAnimation(double progress,
   custom_page->SetBoundsRect(custom_page_rect);
 }
 
+void ContentsAnimator::UpdateSearchBoxForDefaultAnimation(double progress,
+                                                          int from_page,
+                                                          int to_page) const {
+  if (!switches::IsExperimentalAppListEnabled())
+    return;
+
+  // These are in ContentsView coordinates.
+  gfx::Rect search_box_from(
+      contents_view()->GetSearchBoxBoundsForPageIndex(from_page));
+  gfx::Rect search_box_to(
+      contents_view()->GetSearchBoxBoundsForPageIndex(to_page));
+
+  gfx::Rect search_box_rect =
+      gfx::Tween::RectValueBetween(progress, search_box_from, search_box_to);
+
+  views::View* search_box = contents_view()->GetSearchBoxView();
+  search_box->GetWidget()->SetBounds(
+      contents_view()->ConvertRectToWidget(search_box_rect));
+}
+
 // DefaultAnimator
 
 DefaultAnimator::DefaultAnimator(ContentsView* contents_view)
@@ -101,6 +126,7 @@ void DefaultAnimator::Update(double progress, int from_page, int to_page) {
   contents_view()->GetPageView(to_page)->SetBoundsRect(to_page_rect);
 
   UpdateCustomPageForDefaultAnimation(progress, from_page, to_page);
+  UpdateSearchBoxForDefaultAnimation(progress, from_page, to_page);
 }
 
 // StartToAppsAnimator
@@ -130,6 +156,7 @@ void StartToAppsAnimator::Update(double progress,
   contents_view()->GetPageView(apps_page)->SetBoundsRect(to_page_rect);
 
   UpdateCustomPageForDefaultAnimation(progress, start_page, apps_page);
+  UpdateSearchBoxForDefaultAnimation(progress, start_page, apps_page);
 }
 
 // StartToCustomAnimator
@@ -156,6 +183,8 @@ void StartToCustomAnimator::Update(double progress,
 
   contents_view()->GetPageView(start_page)->SetBoundsRect(start_page_rect);
   contents_view()->GetPageView(custom_page)->SetBoundsRect(custom_page_rect);
+
+  UpdateSearchBoxForDefaultAnimation(progress, start_page, custom_page);
 }
 
 }  // namespace app_list
