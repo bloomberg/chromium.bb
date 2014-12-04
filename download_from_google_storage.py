@@ -119,7 +119,7 @@ def check_bucket_permissions(base_url, gsutil):
     print >> sys.stderr, 'Try running "download_from_google_storage --config".'
   elif code == 404:
     print >> sys.stderr, '%s not found.' % base_url
-  return (base_url, code)
+  return code
 
 
 def check_platform(target):
