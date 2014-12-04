@@ -1621,7 +1621,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   UMA_HISTOGRAM_ENUMERATION(
       "OSX.Handoff.Origin", origin, handoff::ORIGIN_COUNT);
 
-  NSURL* url = userActivity.webPageURL;
+  NSURL* url = userActivity.webpageURL;
   if (!url)
     return NO;
 

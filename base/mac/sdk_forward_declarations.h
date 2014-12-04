@@ -332,7 +332,7 @@ BASE_EXPORT extern "C" NSString* const kCWSSIDDidChangeNotification;
 
 @property (readonly, copy) NSString* activityType;
 @property (copy) NSDictionary* userInfo;
-@property (copy) NSURL* webPageURL;
+@property (copy) NSURL* webpageURL;
 
 @end
 
