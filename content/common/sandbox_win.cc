@@ -57,12 +57,15 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"cooliris.dll",                // CoolIris.
   L"dockshellhook.dll",           // Stardock Objectdock.
   L"easyhook32.dll",              // GDIPP and others.
+  L"esspd.dll",                   // Samsung Smart Security ESCORT.
   L"googledesktopnetwork3.dll",   // Google Desktop Search v5.
   L"fwhook.dll",                  // PC Tools Firewall Plus.
   L"hookprocesscreation.dll",     // Blumentals Program protector.
   L"hookterminateapis.dll",       // Blumentals and Cyberprinter.
   L"hookprintapis.dll",           // Cyberprinter.
   L"imon.dll",                    // NOD32 Antivirus.
+  L"icatcdll.dll",                // Samsung Smart Security ESCORT.
+  L"icdcnl.dll",                  // Samsung Smart Security ESCORT.
   L"ioloHL.dll",                  // Iolo (System Mechanic).
   L"kloehk.dll",                  // Kaspersky Internet Security.
   L"lawenforcer.dll",             // Spyware-Browser AntiSpyware (Spybro).
