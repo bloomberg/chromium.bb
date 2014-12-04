@@ -90,6 +90,7 @@ enum AccessibilityRole {
     GridRole,
     GroupRole,
     HeadingRole,
+    IframePresentationalRole,
     IframeRole,
     IgnoredRole,
     ImageMapLinkRole,

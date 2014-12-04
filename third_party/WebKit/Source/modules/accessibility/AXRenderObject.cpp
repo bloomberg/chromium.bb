@@ -427,8 +427,12 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (isHTMLHtmlElement(node))
         return IgnoredRole;
 
-    if (node && node->hasTagName(iframeTag))
+    if (node && node->hasTagName(iframeTag)) {
+        const AtomicString& ariaRole = getAttribute(roleAttr);
+        if (ariaRole == "none" || ariaRole == "presentation")
+            return IframePresentationalRole;
         return IframeRole;
+    }
 
     if (isEmbeddedObject())
         return EmbeddedObjectRole;

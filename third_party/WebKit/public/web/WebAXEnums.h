@@ -109,6 +109,7 @@ enum WebAXRole {
     WebAXRoleGrid,
     WebAXRoleGroup,
     WebAXRoleHeading,
+    WebAXRoleIframePresentational,
     WebAXRoleIframe,
     WebAXRoleIgnored,
     WebAXRoleImageMapLink,
