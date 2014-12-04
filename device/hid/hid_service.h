@@ -24,8 +24,7 @@ class HidService {
       ConnectCallback;
 
   static HidService* GetInstance(
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
 
   static void SetInstanceForTest(HidService* instance);
 

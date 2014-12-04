@@ -169,12 +169,16 @@ class HidApiTest : public ShellApiTest {
  public:
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
+#if defined(OS_WIN)
+    // TODO(reillyg): Migrate Windows backend from FILE thread to UI thread.
     base::RunLoop run_loop;
-    BrowserThread::PostTaskAndReply(BrowserThread::FILE,
-                                    FROM_HERE,
+    BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
                                     base::Bind(&HidApiTest::SetUpService, this),
                                     run_loop.QuitClosure());
     run_loop.Run();
+#else
+    SetUpService();
+#endif
   }
 
   void SetUpService() { HidService::SetInstanceForTest(new MockHidService()); }

@@ -21,14 +21,13 @@ namespace extensions {
 
 class HidConnectionResource : public ApiResource {
  public:
-#if defined(OS_MACOSX)
-  // Migration from FILE thread to UI thread. OS X gets it first.
-  static const content::BrowserThread::ID kThreadId =
-      content::BrowserThread::UI;
-#else
-  // TODO(reillyg): Migrate Linux/CrOS and Windows as well.
+#if defined(OS_WIN)
+  // TODO(reillyg): Migrate Windows backend from FILE thread to UI thread.
   static const content::BrowserThread::ID kThreadId =
       content::BrowserThread::FILE;
+#else
+  static const content::BrowserThread::ID kThreadId =
+      content::BrowserThread::UI;
 #endif
 
   HidConnectionResource(const std::string& owner_extension_id,

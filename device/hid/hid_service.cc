@@ -4,9 +4,7 @@
 
 #include "device/hid/hid_service.h"
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 
@@ -45,11 +43,10 @@ class HidService::Destroyer : public base::MessageLoop::DestructionObserver {
 };
 
 HidService* HidService::GetInstance(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
   if (g_service == NULL) {
 #if defined(OS_LINUX) && defined(USE_UDEV)
-    g_service = new HidServiceLinux(ui_task_runner);
+    g_service = new HidServiceLinux(file_task_runner);
 #elif defined(OS_MACOSX)
     g_service = new HidServiceMac(file_task_runner);
 #elif defined(OS_WIN)
@@ -87,6 +84,7 @@ void HidService::GetDevices(std::vector<HidDeviceInfo>* devices) {
 // Fills in the device info struct of the given device_id.
 bool HidService::GetDeviceInfo(const HidDeviceId& device_id,
                                HidDeviceInfo* info) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DeviceMap::const_iterator it = devices_.find(device_id);
   if (it == devices_.end())
     return false;
@@ -95,7 +93,6 @@ bool HidService::GetDeviceInfo(const HidDeviceId& device_id,
 }
 
 HidService::HidService() {
-  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void HidService::AddDevice(const HidDeviceInfo& info) {

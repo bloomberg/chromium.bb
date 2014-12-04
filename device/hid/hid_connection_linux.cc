@@ -5,15 +5,17 @@
 #include "device/hid/hid_connection_linux.h"
 
 #include <errno.h>
-#include <fcntl.h>
 #include <linux/hidraw.h>
 #include <sys/ioctl.h>
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_libevent.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/tuple.h"
 #include "device/hid/hid_service.h"
@@ -28,54 +30,110 @@
 
 namespace device {
 
-HidConnectionLinux::HidConnectionLinux(HidDeviceInfo device_info,
-                                       std::string dev_node)
-    : HidConnection(device_info) {
-  int flags = base::File::FLAG_OPEN |
-              base::File::FLAG_READ |
-              base::File::FLAG_WRITE;
-
-  base::File device_file(base::FilePath(dev_node), flags);
-  if (!device_file.IsValid()) {
-    base::File::Error file_error = device_file.error_details();
-
-    if (file_error == base::File::FILE_ERROR_ACCESS_DENIED) {
-      VLOG(1) << "Access denied opening device read-write, trying read-only.";
-
-      flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-
-      device_file = base::File(base::FilePath(dev_node), flags);
+class HidConnectionLinux::Helper : public base::MessagePumpLibevent::Watcher {
+ public:
+  Helper(base::PlatformFile platform_file,
+         const HidDeviceInfo& device_info,
+         base::WeakPtr<HidConnectionLinux> connection,
+         scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : platform_file_(platform_file),
+        connection_(connection),
+        task_runner_(task_runner) {
+    if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
+            platform_file_, true, base::MessageLoopForIO::WATCH_READ,
+            &file_watcher_, this)) {
+      LOG(ERROR) << "Failed to start watching device file.";
     }
-  }
-  if (!device_file.IsValid()) {
-    LOG(ERROR) << "Failed to open '" << dev_node << "': "
-        << base::File::ErrorToString(device_file.error_details());
-    return;
+
+    // Report buffers must always have room for the report ID.
+    report_buffer_size_ = device_info.max_input_report_size + 1;
+    has_report_id_ = device_info.has_report_id;
   }
 
-  if (fcntl(device_file.GetPlatformFile(), F_SETFL,
-            fcntl(device_file.GetPlatformFile(), F_GETFL) | O_NONBLOCK)) {
-    PLOG(ERROR) << "Failed to set non-blocking flag to device file";
-    return;
+  virtual ~Helper() { DCHECK(thread_checker_.CalledOnValidThread()); }
+
+ private:
+  // base::MessagePumpLibevent::Watcher implementation.
+  void OnFileCanReadWithoutBlocking(int fd) override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_EQ(fd, platform_file_);
+
+    scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(report_buffer_size_));
+    char* data = buffer->data();
+    size_t length = report_buffer_size_;
+    if (!has_report_id_) {
+      // Linux will not prefix the buffer with a report ID if report IDs are not
+      // used by the device. Prefix the buffer with 0.
+      *data++ = 0;
+      length--;
+    }
+
+    ssize_t bytes_read = HANDLE_EINTR(read(platform_file_, data, length));
+    if (bytes_read < 0) {
+      if (errno == EAGAIN) {
+        return;
+      }
+      VPLOG(1) << "Read failed";
+      return;
+    }
+    if (!has_report_id_) {
+      // Behave as if the byte prefixed above as the the report ID was read.
+      bytes_read++;
+    }
+
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&HidConnectionLinux::ProcessInputReport,
+                                      connection_, buffer, bytes_read));
   }
+
+  void OnFileCanWriteWithoutBlocking(int fd) override {
+    NOTREACHED();  // Only listening for reads.
+  }
+
+  base::ThreadChecker thread_checker_;
+  base::PlatformFile platform_file_;
+  size_t report_buffer_size_;
+  bool has_report_id_;
+  base::WeakPtr<HidConnectionLinux> connection_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::MessagePumpLibevent::FileDescriptorWatcher file_watcher_;
+};
+
+HidConnectionLinux::HidConnectionLinux(
+    HidDeviceInfo device_info,
+    base::File device_file,
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
+    : HidConnection(device_info),
+      file_task_runner_(file_task_runner),
+      weak_factory_(this) {
+  task_runner_ = base::ThreadTaskRunnerHandle::Get();
   device_file_ = device_file.Pass();
 
-  if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
-      device_file_.GetPlatformFile(),
-      true,
-      base::MessageLoopForIO::WATCH_READ_WRITE,
-      &device_file_watcher_,
-      this)) {
-    LOG(ERROR) << "Failed to start watching device file.";
-  }
+  // The helper is passed a weak pointer to this connection so that it can be
+  // cleaned up after the connection is closed. The weak pointer must be
+  // constructed on this thread.
+  file_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&HidConnectionLinux::StartHelper, this,
+                                         weak_factory_.GetWeakPtr()));
 }
 
 HidConnectionLinux::~HidConnectionLinux() {
 }
 
 void HidConnectionLinux::PlatformClose() {
-  Disconnect();
-  Flush();
+  // By closing the device file on the FILE thread (1) the requirement that
+  // base::File::Close is called on a thread where I/O is allowed is satisfied
+  // and (2) any tasks posted to this task runner that refer to this file will
+  // complete before it is closed.
+  file_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
+  file_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&HidConnectionLinux::CloseDevice,
+                                         base::Passed(&device_file_)));
+
+  while (!pending_reads_.empty()) {
+    pending_reads_.front().callback.Run(false, NULL, 0);
+    pending_reads_.pop();
+  }
 }
 
 void HidConnectionLinux::PlatformRead(const ReadCallback& callback) {
@@ -90,19 +148,13 @@ void HidConnectionLinux::PlatformWrite(scoped_refptr<net::IOBuffer> buffer,
                                        const WriteCallback& callback) {
   // Linux expects the first byte of the buffer to always be a report ID so the
   // buffer can be used directly.
-  const ssize_t bytes_written =
-      HANDLE_EINTR(write(device_file_.GetPlatformFile(), buffer->data(), size));
-  if (bytes_written < 0) {
-    VPLOG(1) << "Write failed";
-    Disconnect();
-    callback.Run(false);
-  } else {
-    if (static_cast<size_t>(bytes_written) != size) {
-      LOG(WARNING) << "Incomplete HID write: " << bytes_written
-                   << " != " << size;
-    }
-    callback.Run(true);
-  }
+  file_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&HidConnectionLinux::BlockingWrite,
+                 device_file_.GetPlatformFile(), buffer, size,
+                 base::Bind(&HidConnectionLinux::FinishWrite,
+                            weak_factory_.GetWeakPtr(), size, callback),
+                 task_runner_));
 }
 
 void HidConnectionLinux::PlatformGetFeatureReport(
@@ -115,9 +167,51 @@ void HidConnectionLinux::PlatformGetFeatureReport(
       new net::IOBufferWithSize(device_info().max_feature_report_size + 1));
   buffer->data()[0] = report_id;
 
-  int result = ioctl(device_file_.GetPlatformFile(),
-                     HIDIOCGFEATURE(buffer->size()),
-                     buffer->data());
+  file_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &HidConnectionLinux::BlockingIoctl, device_file_.GetPlatformFile(),
+          HIDIOCGFEATURE(buffer->size()), buffer,
+          base::Bind(&HidConnectionLinux::FinishGetFeatureReport,
+                     weak_factory_.GetWeakPtr(), report_id, buffer, callback),
+          task_runner_));
+}
+
+void HidConnectionLinux::PlatformSendFeatureReport(
+    scoped_refptr<net::IOBuffer> buffer,
+    size_t size,
+    const WriteCallback& callback) {
+  // Linux expects the first byte of the buffer to always be a report ID so the
+  // buffer can be used directly.
+  file_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&HidConnectionLinux::BlockingIoctl,
+                 device_file_.GetPlatformFile(), HIDIOCSFEATURE(size), buffer,
+                 base::Bind(&HidConnectionLinux::FinishSendFeatureReport,
+                            weak_factory_.GetWeakPtr(), callback),
+                 task_runner_));
+}
+
+void HidConnectionLinux::FinishWrite(size_t expected_size,
+                                     const WriteCallback& callback,
+                                     ssize_t result) {
+  if (result < 0) {
+    VPLOG(1) << "Write failed";
+    callback.Run(false);
+  } else {
+    if (static_cast<size_t>(result) != expected_size) {
+      LOG(WARNING) << "Incomplete HID write: " << result
+                   << " != " << expected_size;
+    }
+    callback.Run(true);
+  }
+}
+
+void HidConnectionLinux::FinishGetFeatureReport(
+    uint8_t report_id,
+    scoped_refptr<net::IOBuffer> buffer,
+    const ReadCallback& callback,
+    int result) {
   if (result < 0) {
     VPLOG(1) << "Failed to get feature report";
     callback.Run(false, NULL, 0);
@@ -134,14 +228,8 @@ void HidConnectionLinux::PlatformGetFeatureReport(
   }
 }
 
-void HidConnectionLinux::PlatformSendFeatureReport(
-    scoped_refptr<net::IOBuffer> buffer,
-    size_t size,
-    const WriteCallback& callback) {
-  // Linux expects the first byte of the buffer to always be a report ID so the
-  // buffer can be used directly.
-  int result = ioctl(
-      device_file_.GetPlatformFile(), HIDIOCSFEATURE(size), buffer->data());
+void HidConnectionLinux::FinishSendFeatureReport(const WriteCallback& callback,
+                                                 int result) {
   if (result < 0) {
     VPLOG(1) << "Failed to send feature report";
     callback.Run(false);
@@ -150,55 +238,41 @@ void HidConnectionLinux::PlatformSendFeatureReport(
   }
 }
 
-void HidConnectionLinux::OnFileCanReadWithoutBlocking(int fd) {
-  DCHECK(thread_checker().CalledOnValidThread());
-  DCHECK_EQ(fd, device_file_.GetPlatformFile());
+void HidConnectionLinux::StartHelper(
+    base::WeakPtr<HidConnectionLinux> weak_ptr) {
+  base::ThreadRestrictions::AssertIOAllowed();
 
-  size_t expected_report_size = device_info().max_input_report_size + 1;
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(expected_report_size));
-  char* data = buffer->data();
-  if (!device_info().has_report_id) {
-    // Linux will not prefix the buffer with a report ID if they are not used
-    // by the device.
-    data[0] = 0;
-    data++;
-    expected_report_size--;
-  }
-
-  ssize_t bytes_read = HANDLE_EINTR(
-      read(device_file_.GetPlatformFile(), data, expected_report_size));
-  if (bytes_read < 0) {
-    if (errno == EAGAIN) {
-      return;
-    }
-    VPLOG(1) << "Read failed";
-    Disconnect();
-    return;
-  }
-  if (!device_info().has_report_id) {
-    // Include the byte prepended earlier.
-    bytes_read++;
-  }
-
-  ProcessInputReport(buffer, bytes_read);
+  helper_.reset(new Helper(device_file_.GetPlatformFile(), device_info(),
+                           weak_ptr, task_runner_));
 }
 
-void HidConnectionLinux::OnFileCanWriteWithoutBlocking(int fd) {
+// static
+void HidConnectionLinux::BlockingWrite(
+    base::PlatformFile platform_file,
+    scoped_refptr<net::IOBuffer> buffer,
+    size_t size,
+    const InternalWriteCallback& callback,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  ssize_t result = HANDLE_EINTR(write(platform_file, buffer->data(), size));
+  task_runner->PostTask(FROM_HERE, base::Bind(callback, result));
 }
 
-void HidConnectionLinux::Disconnect() {
-  DCHECK(thread_checker().CalledOnValidThread());
-  device_file_watcher_.StopWatchingFileDescriptor();
-  device_file_.Close();
-
-  Flush();
+// static
+void HidConnectionLinux::BlockingIoctl(
+    base::PlatformFile platform_file,
+    int request,
+    scoped_refptr<net::IOBuffer> buffer,
+    const IoctlCallback& callback,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  base::ThreadRestrictions::AssertIOAllowed();
+  int result = ioctl(platform_file, request, buffer->data());
+  task_runner->PostTask(FROM_HERE, base::Bind(callback, result));
 }
 
-void HidConnectionLinux::Flush() {
-  while (!pending_reads_.empty()) {
-    pending_reads_.front().callback.Run(false, NULL, 0);
-    pending_reads_.pop();
-  }
+// static
+void HidConnectionLinux::CloseDevice(base::File device_file) {
+  device_file.Close();
 }
 
 void HidConnectionLinux::ProcessInputReport(scoped_refptr<net::IOBuffer> buffer,

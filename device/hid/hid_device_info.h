@@ -39,6 +39,10 @@ struct HidDeviceInfo {
   size_t max_input_report_size;
   size_t max_output_report_size;
   size_t max_feature_report_size;
+
+#if defined(OS_LINUX)
+  std::string device_node;
+#endif
 };
 
 }  // namespace device
