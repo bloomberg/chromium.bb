@@ -40,43 +40,57 @@ function waitUntil(testFunction) {
 }
 
 /**
- * Returns a callable object that records calls and the arguments of the
- * last call.
+ * A class that captures calls to a funtion so that values can be validated.
+ * For use in tests only.
  *
- * @return {function()} A callable object (a function) with support methods
- * {@code assertCallCount(number)} and
- * {@code getLastArguments()} useful for making asserts and
- * inspecting information about recorded calls.
+ * <p>Example:
+ * <pre>
+ *   var recorder = new TestCallRecorder();
+ *   someClass.addListener(recorder.callable);
+ *   // do stuff ...
+ *   recorder.assertCallCount(1);
+ *   assertEquals(recorder.getListCall()[0], 'hammy');
+ * </pre>
  */
-function createRecordingFunction() {
-
-  /** @type {!Array.<!Argument>} */
-  var calls = [];
-
-  function recorder() {
-    calls.push(arguments);
-  }
+TestCallRecorder = function() {
+  /** @private {!Array.<!Argument>} */
+  this.calls_ = [];
 
   /**
-   * Asserts that the recorder was called {@code expected} times.
-   * @param {number} expected The expected number of calls.
+   * The recording funciton. Bound in our constructor to ensure we always
+   * return the same object. This is necessary as some clients may make use
+   * of object equality.
+   *
+   * @type {function()}
    */
-  recorder.assertCallCount = function(expected) {
-    var actual = calls.length;
-    assertEquals(
-        expected, actual,
-        'Expected ' + expected + ' call(s), but was ' + actual + '.');
-  };
+  this.callback = this.recordArguments_.bind(this);
+};
 
-  /**
-   * @return {?Arguments} Returns the {@code Arguments} for the last call,
-   *    or null if the recorder hasn't been called.
-   */
-  recorder.getLastArguments = function() {
-    return (calls.length == 0) ?
-        null :
-        calls[calls.length - 1];
-  };
+/**
+ * Records the magic {@code arguments} value for later inspection.
+ * @private
+ */
+TestCallRecorder.prototype.recordArguments_ = function() {
+  this.calls_.push(arguments);
+};
 
-  return recorder;
-}
+/**
+ * Asserts that the recorder was called {@code expected} times.
+ * @param {number} expected The expected number of calls.
+ */
+TestCallRecorder.prototype.assertCallCount = function(expected) {
+  var actual = this.calls_.length;
+  assertEquals(
+      expected, actual,
+      'Expected ' + expected + ' call(s), but was ' + actual + '.');
+};
+
+/**
+ * @return {?Arguments} Returns the {@code Arguments} for the last call,
+ *    or null if the recorder hasn't been called.
+ */
+TestCallRecorder.prototype.getLastArguments = function() {
+  return (this.calls_.length === 0) ?
+      null :
+      this.calls_[this.calls_.length - 1];
+};

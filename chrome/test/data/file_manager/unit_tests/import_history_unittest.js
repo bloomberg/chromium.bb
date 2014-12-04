@@ -96,8 +96,8 @@ function testHistoryWasImportedTrueForKnownEntrySetAtRuntime(callback) {
 function testHistoryChangeFiresChangedEvent(callback) {
   historyProvider.then(
       function(history) {
-        var recorder = createRecordingFunction();
-        history.addObserver(recorder);
+        var recorder = new TestCallRecorder();
+        history.addObserver(recorder.callback);
         history.markImported(testFileEntry, SPACE_CAMP).then(
             function() {
               Promise.resolve()
@@ -120,9 +120,9 @@ function testHistoryChangeFiresChangedEvent(callback) {
 function testHistoryObserverUnsubscribe(callback) {
   historyProvider.then(
       function(history) {
-        var recorder = createRecordingFunction();
-        history.addObserver(recorder);
-        history.removeObserver(recorder);
+        var recorder = new TestCallRecorder();
+        history.addObserver(recorder.callback);
+        history.removeObserver(recorder.callback);
         history.markImported(testFileEntry, SPACE_CAMP).then(
             function() {
               Promise.resolve()
