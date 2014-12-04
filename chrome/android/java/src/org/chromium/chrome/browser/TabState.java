@@ -81,6 +81,14 @@ public class TabState {
         public long restoreContentsFromByteBuffer(boolean isHidden) {
             return nativeRestoreContentsFromByteBuffer(mBuffer, mVersion, isHidden);
         }
+
+        /**
+         * Creates a WebContents for the ContentsState and adds it as an historical tab, then
+         * deletes the WebContents.
+         */
+        public void createHistoricalTab() {
+            nativeCreateHistoricalTab(mBuffer, mVersion);
+        }
     }
 
     /** Deletes the native-side portion of the buffer. */
@@ -342,4 +350,6 @@ public class TabState {
             ByteBuffer state, int savedStateVersion);
 
     private static native void nativeFreeWebContentsStateBuffer(ByteBuffer buffer);
+
+    private static native void nativeCreateHistoricalTab(ByteBuffer state, int savedStateVersion);
 }

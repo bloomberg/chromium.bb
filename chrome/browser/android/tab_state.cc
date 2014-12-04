@@ -551,6 +551,22 @@ static jstring GetVirtualUrlFromByteBuffer(JNIEnv* env,
   return result.Release();
 }
 
+// Creates a historical tab entry from the serialized tab contents contained
+// within |state|.
+static void CreateHistoricalTab(JNIEnv* env,
+                                jclass clazz,
+                                jobject state,
+                                jint saved_state_version) {
+  scoped_ptr<WebContents> web_contents(
+      WebContentsState::RestoreContentsFromByteBuffer(env,
+                                                      clazz,
+                                                      state,
+                                                      saved_state_version,
+                                                      true));
+  if (web_contents.get())
+    TabAndroid::CreateHistoricalTabFromContents(web_contents.get());
+}
+
 bool RegisterTabState(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

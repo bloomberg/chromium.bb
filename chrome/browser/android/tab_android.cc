@@ -25,6 +25,8 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/android/content_settings/popup_blocked_infobar_delegate.h"
@@ -679,12 +681,39 @@ prerender::PrerenderManager* TabAndroid::GetPrerenderManager() const {
   return prerender::PrerenderManagerFactory::GetForProfile(profile);
 }
 
+// static
+void TabAndroid::CreateHistoricalTabFromContents(WebContents* web_contents) {
+  DCHECK(web_contents);
+
+  TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  if (!service)
+    return;
+
+  // Exclude internal pages from being marked as recent when they are closed.
+  const GURL& tab_url = web_contents->GetURL();
+  if (tab_url.SchemeIs(content::kChromeUIScheme) ||
+      tab_url.SchemeIs(chrome::kChromeNativeScheme) ||
+      tab_url.SchemeIs(url::kAboutScheme)) {
+    return;
+  }
+
+  // TODO(jcivelli): is the index important?
+  service->CreateHistoricalTab(web_contents, -1);
+}
+
+void TabAndroid::CreateHistoricalTab(JNIEnv* env, jobject obj) {
+  TabAndroid::CreateHistoricalTabFromContents(web_contents());
+}
+
 static void Init(JNIEnv* env, jobject obj) {
   TRACE_EVENT0("native", "TabAndroid::Init");
   // This will automatically bind to the Java object and pass ownership there.
   new TabAndroid(env, obj);
 }
 
+// static
 bool TabAndroid::RegisterTabAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

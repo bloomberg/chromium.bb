@@ -1200,6 +1200,14 @@ public class Tab {
     }
 
     /**
+     * Restores a tab either frozen or from state.
+     * TODO(aurimas): investigate reducing the visibility of this method after TabModel refactoring.
+     */
+    public void createHistoricalTab() {
+        nativeCreateHistoricalTab(mNativeTabAndroid);
+    }
+
+    /**
      * @return An unused id.
      */
     private static int generateNextId() {
@@ -1242,4 +1250,5 @@ public class Tab {
             String title);
     private native boolean nativePrint(long nativeTabAndroid);
     private native Bitmap nativeGetDefaultFavicon(long nativeTabAndroid);
+    private native void nativeCreateHistoricalTab(long nativeTabAndroid);
 }
