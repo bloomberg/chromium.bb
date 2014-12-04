@@ -375,7 +375,7 @@ bool FillUserNameAndPassword(
 // |suggestedValue| set, and |suggestedValue| will be registered for copying to
 // the real value through |registration_callback|. Returns true when the
 // username gets selected from |other_possible_usernames|, else returns false.
-bool FillFormOnPasswordRecieved(
+bool FillFormOnPasswordReceived(
     const PasswordFormFillData& fill_data,
     blink::WebInputElement username_element,
     blink::WebInputElement password_element,
@@ -1003,7 +1003,7 @@ void PasswordAutofillAgent::OnFillPasswordForm(
     // If wait_for_username is true, we don't want to initially fill the form
     // until the user types in a valid username.
     if (!form_data.wait_for_username &&
-        FillFormOnPasswordRecieved(
+        FillFormOnPasswordReceived(
             form_data,
             username_element,
             password_element,
