@@ -276,6 +276,10 @@ bool OffTheRecordProfileImpl::IsSupervised() {
   return GetOriginalProfile()->IsSupervised();
 }
 
+bool OffTheRecordProfileImpl::IsRegularSupervised() {
+  return GetOriginalProfile()->IsRegularSupervised();
+}
+
 PrefService* OffTheRecordProfileImpl::GetPrefs() {
   return prefs_;
 }

@@ -695,6 +695,11 @@ bool TestingProfile::IsSupervised() {
   return !supervised_user_id_.empty();
 }
 
+bool TestingProfile::IsRegularSupervised() {
+  // TODO(merkulova): add regular supervised check support. crbug.com/425067.
+  return false;
+}
+
 #if defined(ENABLE_EXTENSIONS)
 void TestingProfile::SetExtensionSpecialStoragePolicy(
     ExtensionSpecialStoragePolicy* extension_special_storage_policy) {

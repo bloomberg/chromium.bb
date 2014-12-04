@@ -631,6 +631,9 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetBoolean("profileIsSupervised",
                      Profile::FromWebUI(web_ui())->IsSupervised());
 
+  values->SetBoolean("profileIsRegularSupervised",
+                     Profile::FromWebUI(web_ui())->IsRegularSupervised());
+
 #if !defined(OS_CHROMEOS)
   values->SetBoolean(
       "gpuEnabledAtStart",
@@ -1434,6 +1437,8 @@ BrowserOptionsHandler::GetSyncStateDictionary() {
   }
 
   sync_status->SetBoolean("supervisedUser", profile->IsSupervised());
+  sync_status->SetBoolean("regularSupervisedUser",
+                          profile->IsRegularSupervised());
 
   bool signout_prohibited = false;
 #if !defined(OS_CHROMEOS)

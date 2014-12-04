@@ -209,6 +209,9 @@ class Profile : public content::BrowserContext {
   // Returns whether the profile is supervised (see SupervisedUserService).
   virtual bool IsSupervised() = 0;
 
+  // Returns whether the profile has is a regular supervised one.
+  virtual bool IsRegularSupervised() = 0;
+
   // Returns a pointer to the TopSites (thumbnail manager) instance
   // for this profile.
   virtual history::TopSites* GetTopSites() = 0;

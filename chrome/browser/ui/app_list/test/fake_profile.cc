@@ -104,6 +104,10 @@ bool FakeProfile::IsSupervised() {
   return false;
 }
 
+bool FakeProfile::IsRegularSupervised() {
+  return false;
+}
+
 history::TopSites* FakeProfile::GetTopSites() {
   return NULL;
 }

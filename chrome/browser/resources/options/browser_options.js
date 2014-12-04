@@ -984,7 +984,9 @@ cr.define('options', function() {
       $('sync-section').hidden = false;
       this.maybeShowUserSection_();
 
-      if (cr.isChromeOS && syncData.supervisedUser) {
+      if (cr.isChromeOS &&
+          syncData.supervisedUser &&
+          !syncData.regularSupervisedUser) {
         var subSection = $('sync-section').firstChild;
         while (subSection) {
           if (subSection.nodeType == Node.ELEMENT_NODE)

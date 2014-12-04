@@ -901,6 +901,15 @@ bool ProfileImpl::IsSupervised() {
   return !GetPrefs()->GetString(prefs::kSupervisedUserId).empty();
 }
 
+bool ProfileImpl::IsRegularSupervised() {
+#if defined(ENABLE_MANAGED_USERS)
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(this);
+  return user->HasGaiaAccount() && user->IsSupervised();
+#else
+  return false;
+#endif
+}
+
 ExtensionSpecialStoragePolicy*
     ProfileImpl::GetExtensionSpecialStoragePolicy() {
 #if defined(ENABLE_EXTENSIONS)
