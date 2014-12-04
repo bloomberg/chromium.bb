@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN_INCLUDE(['options_browsertest_base.js']);
+
 /**
  * Returns the HTML element for the |field|.
  * @param {string} field The field name for the element.
@@ -30,10 +32,11 @@ function getListSize(list) {
 function AutofillOptionsWebUITest() {}
 
 AutofillOptionsWebUITest.prototype = {
-  __proto__: testing.Test.prototype,
+  __proto__: OptionsBrowsertestBase.prototype,
 
   /**
    * Browse to autofill options.
+   * @override
    */
   browsePreload: 'chrome://settings-frame/autofill',
 };
@@ -51,7 +54,7 @@ TEST_F('AutofillOptionsWebUITest', 'testOpenAutofillOptions', function() {
 function AutofillEditAddressWebUITest() {}
 
 AutofillEditAddressWebUITest.prototype = {
-  __proto__: testing.Test.prototype,
+  __proto__: OptionsBrowsertestBase.prototype,
 
   /** @override  */
   browsePreload: 'chrome://settings-frame/autofillEditAddress',
@@ -70,6 +73,12 @@ TEST_F('AutofillEditAddressWebUITest', 'testInitialFormLayout', function() {
 });
 
 TEST_F('AutofillEditAddressWebUITest', 'testLoadAddress', function() {
+  // http://crbug.com/434502
+  // Accessibility failure was originally (and consistently) seen on Mac OS and
+  // Chromium OS. Disabling for all OSs because of a flake in Windows. There is
+  // a possibility for flake in linux too.
+  this.disableAccessibilityChecks();
+
   assertEquals(this.browsePreload, document.location.href);
 
   var testAddress = {

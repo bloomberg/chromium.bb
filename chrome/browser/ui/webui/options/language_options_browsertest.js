@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN_INCLUDE(['options_browsertest_base.js']);
+
 /**
  * TestFixture for language options WebUI testing.
  * @extends {testing.Test}
@@ -10,7 +12,7 @@
 function LanguageOptionsWebUITest() {}
 
 LanguageOptionsWebUITest.prototype = {
-  __proto__: testing.Test.prototype,
+  __proto__: OptionsBrowsertestBase.prototype,
 
   /** @override */
   browsePreload: 'chrome://settings-frame/languages',
