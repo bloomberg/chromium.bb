@@ -860,7 +860,8 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "auron-chromium-pfq": {
         "boards": [
@@ -1161,9 +1162,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "auron-release": {
         "afdo_use": true,
@@ -1211,11 +1210,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_toolchain": false,
-        "vm_tests": [
-            "smoke_suite",
-            "dev_mode_test",
-            "cros_vm_test"
-        ]
+        "vm_tests": []
     },
     "auron-release-afdo": {
         "afdo_generate_min": true,
@@ -1527,11 +1522,7 @@
                 ],
                 "usepkg_build_packages": false,
                 "usepkg_toolchain": false,
-                "vm_tests": [
-                    "smoke_suite",
-                    "dev_mode_test",
-                    "cros_vm_test"
-                ]
+                "vm_tests": []
             },
             {
                 "afdo_use": true,
@@ -1675,11 +1666,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_toolchain": false,
-        "vm_tests": [
-            "smoke_suite",
-            "dev_mode_test",
-            "cros_vm_test"
-        ]
+        "vm_tests": []
     },
     "auron-tot-chrome-pfq-informational": {
         "boards": [
@@ -1699,9 +1686,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "auron-tot-chromium-pfq-informational": {
         "boards": [
@@ -1737,7 +1722,8 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "auron_paine-chromium-pfq": {
         "boards": [
@@ -1841,9 +1827,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "auron_paine-release": {
         "afdo_use": true,
@@ -1891,11 +1875,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_toolchain": false,
-        "vm_tests": [
-            "smoke_suite",
-            "dev_mode_test",
-            "cros_vm_test"
-        ]
+        "vm_tests": []
     },
     "auron_paine-release-afdo": {
         "afdo_generate_min": true,
@@ -2167,9 +2147,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "auron_paine-tot-chromium-pfq-informational": {
         "boards": [
@@ -2205,7 +2183,8 @@
         "uprev": false,
         "useflags": [
             "chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "auron_yuna-chromium-pfq": {
         "boards": [
@@ -2309,9 +2288,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "auron_yuna-release": {
         "afdo_use": true,
@@ -2359,11 +2336,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_toolchain": false,
-        "vm_tests": [
-            "smoke_suite",
-            "dev_mode_test",
-            "cros_vm_test"
-        ]
+        "vm_tests": []
     },
     "auron_yuna-release-afdo": {
         "afdo_generate_min": true,
@@ -2635,9 +2608,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "vm_tests": []
     },
     "auron_yuna-tot-chromium-pfq-informational": {
         "boards": [

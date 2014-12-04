@@ -1404,6 +1404,9 @@ _moblab_boards = frozenset([
 ])
 
 _freon_boards = frozenset([
+  'auron',
+  'auron_paine',
+  'auron_yuna',
   'link_freon',
   'peppy_freon',
   'zako_freon',
