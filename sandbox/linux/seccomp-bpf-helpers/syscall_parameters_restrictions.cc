@@ -40,6 +40,16 @@
 #define F_DUPFD_CLOEXEC (F_LINUX_SPECIFIC_BASE + 6)
 #endif
 
+// https://android.googlesource.com/platform/bionic/+/lollipop-release/libc/private/bionic_prctl.h
+#if !defined(PR_SET_VMA)
+#define PR_SET_VMA 0x53564d41
+#endif
+
+// https://android.googlesource.com/platform/system/core/+/lollipop-release/libcutils/sched_policy.c
+#if !defined(PR_SET_TIMERSLACK_PID)
+#define PR_SET_TIMERSLACK_PID 41
+#endif
+
 #endif  // defined(OS_ANDROID)
 
 #if defined(__arm__) && !defined(MAP_STACK)
@@ -129,6 +139,9 @@ ResultExpr RestrictPrctl() {
   return Switch(option)
       .CASES((PR_GET_NAME, PR_SET_NAME, PR_GET_DUMPABLE, PR_SET_DUMPABLE),
              Allow())
+#if defined(OS_ANDROID)
+      .CASES((PR_SET_VMA, PR_SET_TIMERSLACK_PID), Allow())
+#endif
       .Default(CrashSIGSYSPrctl());
 }
 
