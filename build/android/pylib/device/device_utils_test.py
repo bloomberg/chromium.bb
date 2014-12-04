@@ -1012,12 +1012,10 @@ class DeviceUtilsClearApplicationStateTest(DeviceUtilsNewImplTest):
       self.device.ClearApplicationState('this.package.exists')
 
 
-class DeviceUtilsSendKeyEventTest(DeviceUtilsOldImplTest):
+class DeviceUtilsSendKeyEventTest(DeviceUtilsNewImplTest):
 
   def testSendKeyEvent(self):
-    with self.assertCalls(
-        "adb -s 0123456789abcdef shell 'input keyevent 66'",
-        ''):
+    with self.assertCall(self.call.adb.Shell('input keyevent 66'), ''):
       self.device.SendKeyEvent(66)
 
 

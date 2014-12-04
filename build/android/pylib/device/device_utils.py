@@ -627,7 +627,8 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    self.old_interface.SendKeyEvent(keycode)
+    self.RunShellCommand(['input', 'keyevent', format(keycode, 'd')],
+                         check_return=True)
 
   PUSH_CHANGED_FILES_DEFAULT_TIMEOUT = 10 * _DEFAULT_TIMEOUT
   PUSH_CHANGED_FILES_DEFAULT_RETRIES = _DEFAULT_RETRIES
