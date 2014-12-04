@@ -116,7 +116,7 @@ bool HTMLContentElement::validateSelect() const
 static inline bool checkOneSelector(const CSSSelector& selector, const WillBeHeapVector<RawPtrWillBeMember<Node>, 32>& siblings, int nth)
 {
     Element* element = toElement(siblings[nth]);
-    SelectorChecker selectorChecker(element->document(), SelectorChecker::CollectingCSSRules);
+    SelectorChecker selectorChecker(element->document(), SelectorChecker::QueryingRules);
     SelectorChecker::SelectorCheckingContext context(selector, element, SelectorChecker::VisitedMatchEnabled);
     ShadowDOMSiblingTraversalStrategy strategy(siblings, nth);
     return selectorChecker.match(context, strategy) == SelectorChecker::SelectorMatches;
