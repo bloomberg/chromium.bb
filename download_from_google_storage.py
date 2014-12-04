@@ -158,8 +158,7 @@ def enumerate_work_queue(input_filename, work_queue, directory,
     with open(input_filename, 'rb') as f:
       sha1_match = re.match('^([A-Za-z0-9]{40})$', f.read(1024).rstrip())
       if sha1_match:
-        work_queue.put(
-            (sha1_match.groups(1)[0], input_filename.replace('.sha1', '')))
+        work_queue.put((sha1_match.groups(1)[0], output))
         return 1
     if not ignore_errors:
       raise InvalidFileError('No sha1 sum found in %s.' % input_filename)
