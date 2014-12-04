@@ -45505,10 +45505,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="898" label="HOTWORDPRIVATE_SETHOTWORDALWAYSONSEARCHENABLED"/>
   <int value="899" label="WEBVIEWINTERNAL_LOADDATAWITHBASEURL"/>
   <int value="900" label="GUESTVIEWINTERNAL_DESTROYGUEST"/>
-  <int value="901" label="COPRESENCESOCKET_CREATEPEER"/>
-  <int value="902" label="COPRESENCESOCKET_DESTROYPEER"/>
-  <int value="903" label="COPRESENCESOCKET_SEND"/>
-  <int value="904" label="COPRESENCESOCKET_DISCONNECT"/>
+  <int value="901" label="DELETED_COPRESENCESOCKET_CREATEPEER"/>
+  <int value="902" label="DELETED_COPRESENCESOCKET_DESTROYPEER"/>
+  <int value="903" label="DELETED_COPRESENCESOCKET_SEND"/>
+  <int value="904" label="DELETED_COPRESENCESOCKET_DISCONNECT"/>
   <int value="905" label="BOOKMARKMANAGERPRIVATE_SETVERSION"/>
   <int value="906" label="FILESYSTEMPROVIDER_NOTIFY"/>
   <int value="907" label="USB_GETUSERSELECTEDDEVICES"/>
@@ -45541,6 +45541,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="934" label="AUTOTESTPRIVATE_SETNATURALSCROLL"/>
   <int value="935" label="AUTOTESTPRIVATE_SETMOUSESENSITIVITY"/>
   <int value="936" label="AUTOTESTPRIVATE_SETPRIMARYBUTTONRIGHT"/>
+  <int value="937" label="COPRESENCEENDPOINTS_CREATELOCALENDPOINT"/>
+  <int value="938" label="COPRESENCEENDPOINTS_DESTROYLOCALENDPOINT"/>
+  <int value="939" label="COPRESENCEENDPOINTS_SEND"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_SOCKETS_COPRESENCE_SOCKET_H_
-#define COMPONENTS_COPRESENCE_SOCKETS_COPRESENCE_SOCKET_H_
+#ifndef COMPONENTS_COPRESENCE_ENDPOINTS_COPRESENCE_SOCKET_H_
+#define COMPONENTS_COPRESENCE_ENDPOINTS_COPRESENCE_SOCKET_H_
 
 #include <string>
 
@@ -13,7 +13,7 @@ namespace net {
 class IOBuffer;
 }
 
-namespace copresence_sockets {
+namespace copresence_endpoints {
 
 // A CopresenceSocket is an object that is used to send receive data to and
 // from CopresencePeers.
@@ -39,6 +39,6 @@ class CopresenceSocket {
   DISALLOW_COPY_AND_ASSIGN(CopresenceSocket);
 };
 
-}  // namespace copresence_sockets
+}  // namespace copresence_endpoints
 
-#endif  // COMPONENTS_COPRESENCE_SOCKETS_COPRESENCE_SOCKET_H_
+#endif  // COMPONENTS_COPRESENCE_ENDPOINTS_COPRESENCE_SOCKET_H_

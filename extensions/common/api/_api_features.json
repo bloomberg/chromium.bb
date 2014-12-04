@@ -105,8 +105,8 @@
     "dependencies": ["permission:declarativeWebRequest"],
     "contexts": ["blessed_extension"]
   },
-  "copresenceSocket": {
-    "channel" : "dev",
+  "copresenceEndpoints": {
+    "channel" : "canary",
     "dependencies": ["permission:copresence"],
     "contexts": ["blessed_extension"]
   },

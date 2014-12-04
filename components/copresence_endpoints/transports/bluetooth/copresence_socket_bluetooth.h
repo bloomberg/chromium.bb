@@ -10,14 +10,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/copresence_sockets/public/copresence_socket.h"
+#include "components/copresence_endpoints/copresence_socket.h"
 #include "device/bluetooth/bluetooth_socket.h"
 
 namespace net {
 class IOBuffer;
 }
 
-namespace copresence_sockets {
+namespace copresence_endpoints {
 
 // A CopresenceSocketBluetooth is the Bluetooth implementation of a
 // CopresenceSocket. This is currently a thin wrapper around BluetoothSocket.
@@ -50,6 +50,6 @@ class CopresenceSocketBluetooth : public CopresenceSocket {
   DISALLOW_COPY_AND_ASSIGN(CopresenceSocketBluetooth);
 };
 
-}  // namespace copresence_sockets
+}  // namespace copresence_endpoints
 
 #endif  // COMPONENTS_COPRESENCE_SOCKETS_TRANSPORTS_COPRESENCE_SOCKET_BLUETOOTH_H_

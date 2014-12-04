@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      'target_name': 'copresence_sockets',
+      'target_name': 'copresence_endpoints',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
@@ -16,12 +16,12 @@
         '..',
       ],
       'sources': [
-        # GN version: //components/copresence_sockets
-        'copresence_sockets/copresence_peer.cc',
-        'copresence_sockets/transports/bluetooth/copresence_socket_bluetooth.cc',
-        'copresence_sockets/transports/bluetooth/copresence_socket_bluetooth.h',
-        'copresence_sockets/public/copresence_peer.h',
-        'copresence_sockets/public/copresence_socket.h',
+        # GN version: //components/copresence_endpoints
+        'copresence_endpoints/copresence_endpoint.cc',
+        'copresence_endpoints/copresence_socket.h',
+        'copresence_endpoints/public/copresence_endpoint.h',
+        'copresence_endpoints/transports/bluetooth/copresence_socket_bluetooth.cc',
+        'copresence_endpoints/transports/bluetooth/copresence_socket_bluetooth.h',
       ],
     },
   ],

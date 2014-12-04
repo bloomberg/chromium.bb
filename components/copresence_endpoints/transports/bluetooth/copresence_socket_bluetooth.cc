@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/copresence_sockets/transports/bluetooth/copresence_socket_bluetooth.h"
+#include "components/copresence_endpoints/transports/bluetooth/copresence_socket_bluetooth.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -17,7 +17,7 @@ const int kMaxReceiveBytes = 4096;
 
 }  // namespace
 
-namespace copresence_sockets {
+namespace copresence_endpoints {
 
 CopresenceSocketBluetooth::CopresenceSocketBluetooth(
     const scoped_refptr<device::BluetoothSocket>& socket)
@@ -31,8 +31,7 @@ CopresenceSocketBluetooth::~CopresenceSocketBluetooth() {
 bool CopresenceSocketBluetooth::Send(const scoped_refptr<net::IOBuffer>& buffer,
                                      int buffer_size) {
   VLOG(3) << "Starting sending of data with size = " << buffer_size;
-  socket_->Send(buffer,
-                buffer_size,
+  socket_->Send(buffer, buffer_size,
                 base::Bind(&CopresenceSocketBluetooth::OnSendComplete,
                            weak_ptr_factory_.GetWeakPtr()),
                 base::Bind(&CopresenceSocketBluetooth::OnSendError,
@@ -75,9 +74,7 @@ void CopresenceSocketBluetooth::OnReceive(
   // calling Receive again at this point would error with ERR_IO_PENDING.
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&device::BluetoothSocket::Receive,
-                 socket_,
-                 kMaxReceiveBytes,
+      base::Bind(&device::BluetoothSocket::Receive, socket_, kMaxReceiveBytes,
                  base::Bind(&CopresenceSocketBluetooth::OnReceive,
                             weak_ptr_factory_.GetWeakPtr()),
                  base::Bind(&CopresenceSocketBluetooth::OnReceiveError,
@@ -94,4 +91,4 @@ void CopresenceSocketBluetooth::OnReceiveError(
   receiving_ = false;
 }
 
-}  // namespace copresence_sockets
+}  // namespace copresence_endpoints

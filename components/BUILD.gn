@@ -27,7 +27,7 @@ group("all_components") {
     "//components/component_updater",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
-    "//components/copresence_sockets",
+    "//components/copresence_endpoints",
     "//components/crash/app",
     "//components/crash/browser",
     "//components/crx_file",
@@ -119,7 +119,7 @@ group("all_components") {
   if (is_ios) {
     deps -= [
       "//components/keyed_service/content",
-      "//components/copresence_sockets",
+      "//components/copresence_endpoints",
     ]
   }
 
