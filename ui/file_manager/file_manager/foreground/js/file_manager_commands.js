@@ -1040,6 +1040,7 @@ CommandHandler.COMMANDS_['cloud-import'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     // TODO(smckay): Initiate import.
+    metrics.recordEnum('CloudImport.UserAction', 'IMPORT_INITIATED');
   },
   /**
    * @param {!Event} event Command event.

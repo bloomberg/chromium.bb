@@ -9091,6 +9091,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="FileBrowser.CloudImport.UserAction"
+    enum="CloudImportUserAction">
+  <owner>smckay@google.com</owner>
+  <summary>
+    Chrome OS File Browser - Specific actions taken by user such initiating
+    cloud import, canceling import, selecting a directory, or opting-in to
+    Drive&gt;Photos sync.
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.Create" enum="FileDialogType">
   <owner>joshwoodward@google.com</owner>
   <summary>Chrome OS File Browser opening mode.</summary>
@@ -42308,6 +42318,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Write from non-Incognito"/>
   <int value="1" label="Write from Incognito"/>
   <int value="2" label="Read Text"/>
+</enum>
+
+<enum name="CloudImportUserAction" type="int">
+  <int value="0" label="IMPORT_INITIATED"/>
 </enum>
 
 <enum name="CloudPrintAuthEventType" type="int">

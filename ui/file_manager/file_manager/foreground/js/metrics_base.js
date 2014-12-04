@@ -16,6 +16,19 @@ var metricsBase = {};
 metricsBase.intervals = {};
 
 /**
+ * A mapping of enum names to valid values. This object is consulted
+ * any time an enum value is being reported un-accompanied by a list
+ * of valid values.
+ *
+ * <p>Values mut be provided by base classes. Values should correspond exactly
+ * with values from histograms.xml.
+ *
+ * @private {!Object.<string, !Array.<*>|number>}
+ */
+metricsBase.validEnumValues_ = {};
+
+
+/**
  * Start the named time interval.
  * Should be followed by a call to recordInterval with the same name.
  *
@@ -33,7 +46,7 @@ metricsBase.startInterval = function(name) {
  * @private
  */
 metricsBase.convertName_ = function(name) {
-  throw new Error('metricsBase.comvertName_() must be overrideen by subclass.');
+  throw new Error('metricsBase.convertName_() must be overrideen by subclass.');
 };
 
 /**
@@ -107,12 +120,20 @@ metricsBase.recordInterval = function(name) {
  *
  * @param {string} name Metric name.
  * @param {*} value Enum value.
- * @param {Array.<*>|number} validValues Array of valid values
+ * @param {Array.<*>|number=} opt_validValues Array of valid values
  *                                            or a boundary number value.
  */
-metricsBase.recordEnum = function(name, value, validValues) {
+metricsBase.recordEnum = function(name, value, opt_validValues) {
   var boundaryValue;
   var index;
+
+  var validValues = opt_validValues;
+  if (metrics.validEnumValues_ && name in metrics.validEnumValues_) {
+    console.assert(validValues === undefined);
+    validValues = metrics.validEnumValues_[name]
+  }
+  console.assert(validValues !== undefined);
+
   if (validValues.constructor.name == 'Array') {
     index = validValues.indexOf(value);
     boundaryValue = validValues.length;
