@@ -248,7 +248,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 59;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 60;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -2773,5 +2773,40 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion58ToCurrent) {
       ++count;
     }
     EXPECT_EQ(1, count);
+  }
+}
+
+// Tests creation of the server_credit_cards table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion59ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_59.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 59, 59));
+
+    ASSERT_FALSE(connection.DoesTableExist("masked_credit_cards"));
+    ASSERT_FALSE(connection.DoesTableExist("unmasked_credit_cards"));
+    ASSERT_FALSE(connection.DoesTableExist("server_addresses"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    ASSERT_TRUE(connection.DoesTableExist("masked_credit_cards"));
+    ASSERT_TRUE(connection.DoesTableExist("unmasked_credit_cards"));
+    ASSERT_TRUE(connection.DoesTableExist("server_addresses"));
   }
 }

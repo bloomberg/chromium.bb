@@ -125,6 +125,61 @@ struct FormFieldData;
 //   origin             The domain of origin for this profile.
 //                      Added in version 50.
 //
+// masked_credit_cards
+//                      This table contains "masked" credit card information
+//                      about credit cards stored on the server. It consists
+//                      of a short description and an ID, but not full payment
+//                      information. Writing to this table is only done by sync.
+//                      When a server card is unmasked, it will stay here and
+//                      will additionally be added in unmasked_credit_cards.
+//
+//   id                 String assigned by the server to identify this card.
+//                      This is opaque to the client.
+//   status             Server's status of this card.
+//                      TODO(brettw) define constants for this.
+//   name_on_card
+//   type               Type of the credit card.
+//                      TODO(brettw) define constants for this.
+//   last_four          Last four digits of the card number. For de-duping
+//                      with locally stored cards and generating descriptions.
+//   exp_month          Expiration month: 1-12
+//   exp_year           Four-digit year: 2017
+//
+// unmasked_credit_cards
+//                      When a masked credit credit card is unmasked and the
+//                      full number is downloaded, it will be stored here.
+//
+//   id                 Server ID. This can be joined with the id in the
+//                      masked_credit_cards table to get the rest of the data.
+//   card_number_encrypted
+//                      Full card number, encrypted.
+//
+// server_addresses     This table contains Autofill address data synced from
+//                      the wallet server. It's basically the same as the
+//                      autofill_profiles table but locally immutable.
+//
+//   id                 String assigned by the server to identify this address.
+//                      This is opaque to the client.
+//   company_name
+//   street_address     The combined lines of the street address.
+//   address_1          Also known as "administrative area". This is normally
+//                      the state or province in most countries.
+//   address_2          Also known as "locality". In the US this is the city.
+//   address_3          A sub-classification beneath the city, e.g. an
+//                      inner-city district or suburb. Also known as
+//                      "dependent_locality".
+//   address_4          Used in certain countries. Also known as
+//                      "sub_dependent_locality".
+//   postal_code
+//   sorting_code       Similar to the zipcode column, but used for businesses
+//                      or organizations that might not be geographically
+//                      contiguous. The canonical example is CEDEX in France.
+//   country_code
+//   language_code      The BCP 47 language code used to format the address for
+//                      display. For example, a JP address with "ja" language
+//                      code starts with the postal code, but a JP address with
+//                      "ja-latn" language code starts with the recipient name.
+//
 class AutofillTable : public WebDatabaseTable {
  public:
   explicit AutofillTable(const std::string& app_locale);
@@ -285,6 +340,7 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion55MergeAutofillDatesTable();
   bool MigrateToVersion56AddProfileLanguageCodeForFormatting();
   bool MigrateToVersion57AddFullNameField();
+  bool MigrateToVersion60AddServerCards();
 
   // Max data length saved in the table;
   static const size_t kMaxDataLength;
@@ -352,6 +408,9 @@ class AutofillTable : public WebDatabaseTable {
   bool InitProfileEmailsTable();
   bool InitProfilePhonesTable();
   bool InitProfileTrashTable();
+  bool InitMaskedCreditCardsTable();
+  bool InitUnmaskedCreditCardsTable();
+  bool InitServerAddressesTable();
 
   // The application locale.  The locale is needed for the migration to version
   // 35. Since it must be read on the UI thread, it is set when the table is

@@ -32,3 +32,21 @@ component("common") {
     "//sql",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "web_database_migration_unittest.cc",
+  ]
+
+  deps = [
+    ":common",
+    "//base",
+    "//components/autofill/core/browser",
+    "//components/password_manager/core/browser",
+    "//components/search_engines",
+    "//components/signin/core/browser",
+    "//sql",
+    "//testing/gtest",
+  ]
+}

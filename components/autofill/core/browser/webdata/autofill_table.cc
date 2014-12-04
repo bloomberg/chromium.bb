@@ -455,7 +455,9 @@ WebDatabaseTable::TypeKey AutofillTable::GetTypeKey() const {
 bool AutofillTable::CreateTablesIfNecessary() {
   return (InitMainTable() && InitCreditCardsTable() && InitProfilesTable() &&
           InitProfileNamesTable() && InitProfileEmailsTable() &&
-          InitProfilePhonesTable() && InitProfileTrashTable());
+          InitProfilePhonesTable() && InitProfileTrashTable() &&
+          InitMaskedCreditCardsTable() && InitUnmaskedCreditCardsTable() &&
+          InitServerAddressesTable());
 }
 
 bool AutofillTable::IsSyncable() {
@@ -520,6 +522,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 57:
       *update_compatible_version = true;
       return MigrateToVersion57AddFullNameField();
+    case 60:
+      *update_compatible_version = false;
+      return MigrateToVersion60AddServerCards();
   }
   return true;
 }
@@ -1404,6 +1409,56 @@ bool AutofillTable::InitProfileTrashTable() {
   if (!db_->DoesTableExist("autofill_profiles_trash")) {
     if (!db_->Execute("CREATE TABLE autofill_profiles_trash ( "
                       "guid VARCHAR)")) {
+      NOTREACHED();
+      return false;
+    }
+  }
+  return true;
+}
+
+bool AutofillTable::InitMaskedCreditCardsTable() {
+  if (!db_->DoesTableExist("masked_credit_cards")) {
+    if (!db_->Execute("CREATE TABLE masked_credit_cards ("
+                      "id VARCHAR,"
+                      "status VARCHAR,"
+                      "name_on_card VARCHAR,"
+                      "type VARCHAR,"
+                      "last_four VARCHAR,"
+                      "exp_month INTEGER DEFAULT 0,"
+                      "exp_year INTEGER DEFAULT 0)")) {
+      NOTREACHED();
+      return false;
+    }
+  }
+  return true;
+}
+
+bool AutofillTable::InitUnmaskedCreditCardsTable() {
+  if (!db_->DoesTableExist("unmasked_credit_cards")) {
+    if (!db_->Execute("CREATE TABLE unmasked_credit_cards ("
+                      "id VARCHAR,"
+                      "card_number_encrypted VARCHAR)")) {
+      NOTREACHED();
+      return false;
+    }
+  }
+  return true;
+}
+
+bool AutofillTable::InitServerAddressesTable() {
+  if (!db_->DoesTableExist("server_addresses")) {
+    if (!db_->Execute("CREATE TABLE server_addresses ("
+                      "id VARCHAR,"
+                      "company_name VARCHAR,"
+                      "street_address VARCHAR,"
+                      "address_1 VARCHAR,"
+                      "address_2 VARCHAR,"
+                      "address_3 VARCHAR,"
+                      "address_4 VARCHAR,"
+                      "postal_code VARCHAR,"
+                      "sorting_code VARCHAR,"
+                      "country_code VARCHAR,"
+                      "language_code VARCHAR)")) {
       NOTREACHED();
       return false;
     }
@@ -2357,6 +2412,12 @@ bool AutofillTable::MigrateToVersion56AddProfileLanguageCodeForFormatting() {
 bool AutofillTable::MigrateToVersion57AddFullNameField() {
   return db_->Execute("ALTER TABLE autofill_profile_names "
                       "ADD COLUMN full_name VARCHAR");
+}
+
+bool AutofillTable::MigrateToVersion60AddServerCards() {
+  return InitMaskedCreditCardsTable() &&
+         InitUnmaskedCreditCardsTable() &&
+         InitServerAddressesTable();
 }
 
 }  // namespace autofill
