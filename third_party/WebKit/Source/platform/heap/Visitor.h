@@ -511,7 +511,16 @@ public:
     }
 #endif
 
+    inline bool canTraceEagerly() const { return m_traceDepth < kMaxEagerTraceDepth; }
+    inline void incrementTraceDepth() { m_traceDepth++; }
+    inline void decrementTraceDepth() { ASSERT(m_traceDepth > 0); m_traceDepth--; }
+
 protected:
+    Visitor()
+        : m_traceDepth(0)
+    {
+    }
+
     virtual void registerWeakCell(void**, WeakPointerCallback) = 0;
 #if ENABLE(GC_PROFILE_MARKING)
     void* m_hostObject;
@@ -526,6 +535,12 @@ private:
         if (*cell && !self->isAlive(*cell))
             *cell = 0;
     }
+
+    // The maximum depth of eager, unrolled trace() calls that is
+    // considered safe and allowed.
+    const int kMaxEagerTraceDepth = 100;
+
+    int m_traceDepth;
 };
 
 // We trace vectors by using the trace trait on each element, which means you
@@ -579,9 +594,21 @@ public:
         // If the trait allows it, invoke the trace callback right here on the
         // not-yet-marked object.
         if (!DISABLE_ALL_EAGER_TRACING && TraceEagerlyTrait<T>::value) {
-            if (visitor->ensureMarked(t))
-                TraceTrait<T>::trace(visitor, const_cast<T*>(t));
-            return;
+            // Protect against too deep trace call chains, and the
+            // unbounded system stack usage they can bring about.
+            //
+            // Assert against deep stacks so as to flush them out,
+            // but test and appropriately handle them should they occur
+            // in release builds.
+            ASSERT(visitor->canTraceEagerly());
+            if (LIKELY(visitor->canTraceEagerly())) {
+                if (visitor->ensureMarked(t)) {
+                    visitor->incrementTraceDepth();
+                    TraceTrait<T>::trace(visitor, const_cast<T*>(t));
+                    visitor->decrementTraceDepth();
+                }
+                return;
+            }
         }
         visitor->mark(const_cast<T*>(t), &TraceTrait<T>::trace);
     }

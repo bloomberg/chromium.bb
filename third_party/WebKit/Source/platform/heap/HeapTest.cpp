@@ -5307,7 +5307,7 @@ TEST(HeapTest, TraceTypesEagerly)
     COMPILE_ASSERT(TraceEagerlyTrait<TraceTypeEagerly1>::value, ShouldBeTrue);
     COMPILE_ASSERT(TraceEagerlyTrait<Member<TraceTypeEagerly1>>::value, ShouldBeTrue);
     COMPILE_ASSERT(TraceEagerlyTrait<WeakMember<TraceTypeEagerly1>>::value, ShouldBeTrue);
-    COMPILE_ASSERT(!TraceEagerlyTrait<RawPtr<TraceTypeEagerly1>>::value, ShouldBeTrue);
+    COMPILE_ASSERT(ENABLE_EAGER_TRACING_BY_DEFAULT || !TraceEagerlyTrait<RawPtr<TraceTypeEagerly1>>::value, ShouldBeTrue);
     COMPILE_ASSERT(TraceEagerlyTrait<HeapVector<Member<TraceTypeEagerly1>>>::value, ShouldBeTrue);
     COMPILE_ASSERT(TraceEagerlyTrait<HeapVector<WeakMember<TraceTypeEagerly1>>>::value, ShouldBeTrue);
     COMPILE_ASSERT(TraceEagerlyTrait<HeapHashSet<Member<TraceTypeEagerly1>>>::value, ShouldBeTrue);
@@ -5325,8 +5325,8 @@ TEST(HeapTest, TraceTypesEagerly)
     COMPILE_ASSERT(TraceEagerlyTrait<TraceTypeEagerly5>::value, ShouldBeTrue);
     COMPILE_ASSERT(TraceEagerlyTrait<Member<TraceTypeEagerly5>>::value, ShouldBeTrue);
 
-    COMPILE_ASSERT(!TraceEagerlyTrait<TraceTypeEagerly6>::value, ShouldBeTrue);
-    COMPILE_ASSERT(!TraceEagerlyTrait<TraceTypeEagerly7>::value, ShouldBeTrue);
+    COMPILE_ASSERT(ENABLE_EAGER_TRACING_BY_DEFAULT || !TraceEagerlyTrait<TraceTypeEagerly6>::value, ShouldBeTrue);
+    COMPILE_ASSERT(ENABLE_EAGER_TRACING_BY_DEFAULT || !TraceEagerlyTrait<TraceTypeEagerly7>::value, ShouldBeTrue);
 
     COMPILE_ASSERT(!TraceEagerlyTrait<TraceTypeNonEagerly1>::value, ShouldBeTrue);
 }
