@@ -280,6 +280,7 @@ private:
     InspectorFrontend::Debugger::Reason::Enum m_breakReason;
     RefPtr<JSONObject> m_breakAuxData;
     DebuggerStep m_scheduledDebuggerStep;
+    bool m_skipNextDebuggerStepOut;
     bool m_javaScriptPauseScheduled;
     bool m_steppingFromFramework;
     bool m_pausingOnNativeEvent;

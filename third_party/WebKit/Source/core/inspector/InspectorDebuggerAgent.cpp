@@ -123,6 +123,7 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_pausedScriptState(nullptr)
     , m_breakReason(InspectorFrontend::Debugger::Reason::Other)
     , m_scheduledDebuggerStep(NoStep)
+    , m_skipNextDebuggerStepOut(false)
     , m_javaScriptPauseScheduled(false)
     , m_steppingFromFramework(false)
     , m_pausingOnNativeEvent(false)
@@ -586,6 +587,12 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipStepPaus
     if (!m_skipContentScripts && !m_cachedSkipStackRegExp)
         return ScriptDebugListener::NoSkip;
 
+    if (m_skipNextDebuggerStepOut) {
+        m_skipNextDebuggerStepOut = false;
+        if (m_scheduledDebuggerStep == StepOut)
+            return ScriptDebugListener::StepOut;
+    }
+
     String scriptUrl;
     bool isBlackboxed = false;
     RefPtrWillBeRawPtr<JavaScriptCallFrame> topFrame = topCallFrameSkipUnknownSources(&scriptUrl, &isBlackboxed);
@@ -744,6 +751,7 @@ void InspectorDebuggerAgent::schedulePauseOnNextStatement(InspectorFrontend::Deb
     m_breakReason = breakReason;
     m_breakAuxData = data;
     m_pausingOnNativeEvent = true;
+    m_skipNextDebuggerStepOut = false;
     scriptDebugServer().setPauseOnNextStatement(true);
 }
 
@@ -1030,6 +1038,7 @@ void InspectorDebuggerAgent::stepOut(ErrorString* errorString)
     if (!assertPaused(errorString))
         return;
     m_scheduledDebuggerStep = StepOut;
+    m_skipNextDebuggerStepOut = false;
     m_recursionLevelForStepOut = 1;
     m_steppingFromFramework = isTopCallFrameInFramework();
     m_injectedScriptManager->releaseObjectGroup(InspectorDebuggerAgent::backtraceObjectGroup);
@@ -1315,17 +1324,23 @@ void InspectorDebuggerAgent::changeJavaScriptRecursionLevel(int step)
             // When StepOut crosses a task boundary (i.e. js -> blink_c++) from where it was requested,
             // switch stepping to step into a next JS task, as if we exited to a blackboxed framework.
             m_scheduledDebuggerStep = StepInto;
+            m_skipNextDebuggerStepOut = false;
         }
     }
     if (m_recursionLevelForStepFrame) {
         m_recursionLevelForStepFrame += step;
         if (!m_recursionLevelForStepFrame) {
-            // We have walked through the blackboxed framework and got back to where we started.
+            // We have walked through a blackboxed framework and got back to where we started.
             // If there was no stepping scheduled, we should cancel the stepping explicitly,
             // since there may be a scheduled StepFrame left.
+            // Otherwise, if we were stepping in/over, the StepFrame will stop at the right location,
+            // whereas if we were stepping out, we should continue doing so after debugger pauses
+            // from the old StepFrame.
             m_skippedStepFrameCount = 0;
             if (m_scheduledDebuggerStep == NoStep)
                 scriptDebugServer().clearStepping();
+            else if (m_scheduledDebuggerStep == StepOut)
+                m_skipNextDebuggerStepOut = true;
         }
     }
 }
@@ -1496,6 +1511,7 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(ScriptSta
     else
         result = ScriptDebugListener::NoSkip;
 
+    m_skipNextDebuggerStepOut = false;
     if (result != ScriptDebugListener::NoSkip)
         return result;
 
@@ -1578,6 +1594,7 @@ void InspectorDebuggerAgent::clear()
     m_continueToLocationBreakpointId = String();
     clearBreakDetails();
     m_scheduledDebuggerStep = NoStep;
+    m_skipNextDebuggerStepOut = false;
     m_javaScriptPauseScheduled = false;
     m_steppingFromFramework = false;
     m_pausingOnNativeEvent = false;

@@ -45,6 +45,32 @@ function addListenerAndClick(stop)
     remover2();
 }
 
+function addFewBlackboxedListenersAndClick(addNonBlackboxedListener)
+{
+    function testElementClicked()
+    {
+        return 0;
+    }
+    function inner()
+    {
+        var button = document.getElementById("test");
+        var remover1 = Framework.addEventListener(button, "click", Framework.empty, true);
+        var remover2 = Framework.addEventListener(button, "click", Framework.bind(Framework.throwFrameworkException, null, "EXPECTED"), true);
+        var remover3 = Framework.addEventListener(button, "click", Framework.bind(Framework.safeRun, null, Framework.empty, Framework.empty, Framework.empty), true);
+        var remover4 = function() {};
+        if (addNonBlackboxedListener)
+            remover4 = Framework.addEventListener(button, "click", Framework.bind(Framework.safeRun, null, Framework.empty, testElementClicked, Framework.empty), true);
+        debugger;
+        button.click();
+        remover1();
+        remover2();
+        remover3();
+        remover4();
+    }
+    var result = inner();
+    return result;
+}
+
 function test()
 {
     var frameworkRegexString = "/framework\\.js$";
@@ -96,6 +122,43 @@ function test()
                 "StepOver", "StepOver", "StepOver", "Print", // enter testElementClicked()
                 "StepOut", "StepOver", "StepOver", "StepOver", "StepOver", "Print", // enter testElementClicked()
                 "StepOver", "StepOver", "Print",
+                "Resume",
+            ], next);
+        },
+
+        function testSteppingOutOnEventListenerBreakpoint(next)
+        {
+            var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+            pane._setBreakpoint("listener:click");
+            InspectorTest.evaluateInPageWithTimeout("addListenerAndClick(true)");
+            InspectorTest.waitUntilPausedAndPerformSteppingActions([
+                "StepOut", "Print", // should be in testElementClicked()
+                "StepOut", "StepOut", "Print", // again in testElementClicked()
+                "StepOut", "Print",
+                "Resume",
+            ], next);
+        },
+
+        function testSteppingOutOnEventListenerBreakpointAllBlackboxed(next)
+        {
+            var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+            pane._setBreakpoint("listener:click");
+            InspectorTest.evaluateInPageWithTimeout("addFewBlackboxedListenersAndClick(false)");
+            InspectorTest.waitUntilPausedAndPerformSteppingActions([
+                "StepOut", "Print",
+                "Resume",
+            ], next);
+        },
+
+        function testSteppingOutOnEventListenerBreakpointAllBlackboxedButOne(next)
+        {
+            var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+            pane._setBreakpoint("listener:click");
+            InspectorTest.evaluateInPageWithTimeout("addFewBlackboxedListenersAndClick(true)");
+            InspectorTest.waitUntilPausedAndPerformSteppingActions([
+                "StepOut", "Print",
+                "StepOut", "Print",
+                "StepOut", "Print",
                 "Resume",
             ], next);
         },
