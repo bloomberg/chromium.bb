@@ -2,11 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -14,6 +11,11 @@
 #include "content/shell/browser/shell.h"
 #include "device/battery/battery_status_manager.h"
 #include "device/battery/battery_status_service.h"
+
+// These tests run against the default implementation of the BatteryMonitor
+// service, with a dummy BatteryManager set as a source of the battery
+// information. They can be run only on platforms that use the default service
+// implementation, ie. on the platforms where BatteryStatusService is used.
 
 namespace content {
 
@@ -39,8 +41,7 @@ class FakeBatteryManager : public device::BatteryStatusManager {
   void InvokeUpdateCallback() {
     // Invoke asynchronously to mimic the OS-specific battery managers.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback_, status_));
+        FROM_HERE, base::Bind(callback_, status_));
   }
 
   void set_battery_status(const device::BatteryStatus& status) {
@@ -51,9 +52,7 @@ class FakeBatteryManager : public device::BatteryStatusManager {
     battery_status_available_ = value;
   }
 
-  bool started() {
-    return started_;
-  }
+  bool started() { return started_; }
 
  private:
   device::BatteryStatusService::BatteryUpdateCallback callback_;
@@ -64,17 +63,9 @@ class FakeBatteryManager : public device::BatteryStatusManager {
   DISALLOW_COPY_AND_ASSIGN(FakeBatteryManager);
 };
 
-class BatteryStatusBrowserTest : public ContentBrowserTest  {
+class BatteryMonitorImplTest : public ContentBrowserTest {
  public:
-    BatteryStatusBrowserTest()
-      : battery_manager_(NULL),
-        battery_service_(NULL) {
-  }
-
-    void SetUpCommandLine(CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
-  }
+  BatteryMonitorImplTest() : battery_manager_(NULL), battery_service_(NULL) {}
 
   void SetUpOnMainThread() override {
     battery_service_ = device::BatteryStatusService::GetInstance();
@@ -85,8 +76,7 @@ class BatteryStatusBrowserTest : public ContentBrowserTest  {
         battery_service_->GetUpdateCallbackForTesting()));
     battery_manager_ = battery_manager.get();
 
-    battery_service_->SetBatteryManagerForTesting(
-        battery_manager.Pass());
+    battery_service_->SetBatteryManagerForTesting(battery_manager.Pass());
   }
 
   void TearDown() override {
@@ -95,30 +85,28 @@ class BatteryStatusBrowserTest : public ContentBrowserTest  {
     battery_manager_ = NULL;
   }
 
-  FakeBatteryManager* battery_manager() {
-    return battery_manager_;
-  }
+  FakeBatteryManager* battery_manager() { return battery_manager_; }
 
  private:
   FakeBatteryManager* battery_manager_;
   device::BatteryStatusService* battery_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(BatteryStatusBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(BatteryMonitorImplTest);
 };
 
-IN_PROC_BROWSER_TEST_F(BatteryStatusBrowserTest, BatteryManagerDefaultValues) {
+IN_PROC_BROWSER_TEST_F(BatteryMonitorImplTest, BatteryManagerDefaultValues) {
   // Set the fake battery manager to return false on start. From JavaScript
   // request a promise for the battery status information and once it resolves
   // check the default values and navigate to #pass.
   battery_manager()->set_battery_status_available(false);
-  GURL test_url = GetTestUrl(
-      "battery_status", "battery_status_default_test.html");
+  GURL test_url =
+      GetTestUrl("battery_status", "battery_status_default_test.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
   EXPECT_TRUE(battery_manager()->started());
 }
 
-IN_PROC_BROWSER_TEST_F(BatteryStatusBrowserTest, BatteryManagerResolvePromise) {
+IN_PROC_BROWSER_TEST_F(BatteryMonitorImplTest, BatteryManagerResolvePromise) {
   // Set the fake battery manager to return predefined battery status values.
   // From JavaScript request a promise for the battery status information and
   // once it resolves check the values and navigate to #pass.
@@ -129,15 +117,15 @@ IN_PROC_BROWSER_TEST_F(BatteryStatusBrowserTest, BatteryManagerResolvePromise) {
   status.level = 0.5;
   battery_manager()->set_battery_status(status);
 
-  GURL test_url = GetTestUrl(
-      "battery_status", "battery_status_promise_resolution_test.html");
+  GURL test_url = GetTestUrl("battery_status",
+                             "battery_status_promise_resolution_test.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
   EXPECT_TRUE(battery_manager()->started());
 }
 
-IN_PROC_BROWSER_TEST_F(BatteryStatusBrowserTest,
-    BatteryManagerWithEventListener) {
+IN_PROC_BROWSER_TEST_F(BatteryMonitorImplTest,
+                       BatteryManagerWithEventListener) {
   // Set the fake battery manager to return default battery status values.
   // From JavaScript request a promise for the battery status information.
   // Once it resolves add an event listener for battery level change. Set
@@ -147,8 +135,8 @@ IN_PROC_BROWSER_TEST_F(BatteryStatusBrowserTest,
   battery_manager()->set_battery_status(status);
 
   TestNavigationObserver same_tab_observer(shell()->web_contents(), 2);
-  GURL test_url = GetTestUrl(
-      "battery_status", "battery_status_event_listener_test.html");
+  GURL test_url =
+      GetTestUrl("battery_status", "battery_status_event_listener_test.html");
   shell()->LoadURL(test_url);
   same_tab_observer.Wait();
   EXPECT_EQ("resolved", shell()->web_contents()->GetLastCommittedURL().ref());
