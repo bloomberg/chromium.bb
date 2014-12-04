@@ -174,6 +174,10 @@ void FormAssociatedElement::willChangeForm()
 
 void FormAssociatedElement::didChangeForm()
 {
+    if (!m_formWasSetByParser && m_form && m_form->inDocument()) {
+        HTMLElement* element = toHTMLElement(this);
+        element->document().didAssociateFormControl(element);
+    }
 }
 
 void FormAssociatedElement::resetFormOwner()
@@ -189,12 +193,7 @@ void FormAssociatedElement::resetFormOwner()
     if (m_form && formId.isNull() && m_form.get() == nearestForm)
         return;
 
-    HTMLFormElement* originalForm = m_form.get();
     setForm(findAssociatedForm(element));
-    // FIXME: Move didAssociateFormControl call to didChangeForm or
-    // HTMLFormElement::associate.
-    if (m_form && m_form.get() != originalForm && m_form->inDocument())
-        element->document().didAssociateFormControl(element);
 }
 
 void FormAssociatedElement::formAttributeChanged()
