@@ -40,6 +40,10 @@ public final class UploadTestServer {
         return nativeGetRedirectToEchoBody();
     }
 
+    public static String getFileURL(String filePath) {
+        return nativeGetFileURL(filePath);
+    }
+
     private static native boolean nativeStartUploadTestServer();
     private static native void nativeShutdownUploadTestServer();
     private static native String nativeGetEchoBodyURL();
@@ -47,4 +51,5 @@ public final class UploadTestServer {
     private static native String nativeGetEchoAllHeadersURL();
     private static native String nativeGetEchoMethodURL();
     private static native String nativeGetRedirectToEchoBody();
+    private static native String nativeGetFileURL(String filePath);
 }

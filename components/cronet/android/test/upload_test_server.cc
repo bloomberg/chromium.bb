@@ -7,7 +7,9 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "jni/UploadTestServer_jni.h"
 #include "net/http/http_status_code.h"
@@ -84,6 +86,11 @@ jboolean StartUploadTestServer(JNIEnv* env, jclass jcaller) {
   g_test_server = new net::test_server::EmbeddedTestServer();
   g_test_server->RegisterRequestHandler(
       base::Bind(&UploadServerRequestHandler));
+  // Add a second handler for paths that UploadServerRequestHandler does not
+  // handle.
+  base::FilePath test_files_root;
+  PathService::Get(base::DIR_ANDROID_APP_DATA, &test_files_root);
+  g_test_server->ServeFilesFromDirectory(test_files_root);
   return g_test_server->InitializeAndWaitUntilReady();
 }
 
@@ -125,6 +132,13 @@ jstring GetEchoMethodURL(JNIEnv* env, jclass jcaller) {
 jstring GetRedirectToEchoBody(JNIEnv* env, jclass jcaller) {
   DCHECK(g_test_server);
   GURL url = g_test_server->GetURL(redirect_to_echo_body_path);
+  return base::android::ConvertUTF8ToJavaString(env, url.spec()).Release();
+}
+
+jstring GetFileURL(JNIEnv* env, jclass jcaller, jstring jfile_path) {
+  DCHECK(g_test_server);
+  std::string file = base::android::ConvertJavaStringToUTF8(env, jfile_path);
+  GURL url = g_test_server->GetURL(file);
   return base::android::ConvertUTF8ToJavaString(env, url.spec()).Release();
 }
 

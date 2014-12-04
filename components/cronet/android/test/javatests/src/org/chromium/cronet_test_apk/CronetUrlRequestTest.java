@@ -99,6 +99,22 @@ public class CronetUrlRequestTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    public void testNotFound() throws Exception {
+        String url = UploadTestServer.getFileURL("/notfound.html");
+        TestUrlRequestListener listener = startAndWaitForComplete(url);
+        checkResponseInfo(listener.mResponseInfo, url, 404, "Not Found");
+        checkResponseInfo(listener.mExtendedResponseInfo.getResponseInfo(),
+                url, 404, "Not Found");
+        assertEquals(
+                "<!DOCTYPE html>\n<html>\n<head>\n<title>Not found</title>\n"
+                + "<p>Test page loaded.</p>\n</head>\n</html>\n",
+                listener.mResponseAsString);
+        assertFalse(listener.mOnRedirectCalled);
+        assertEquals(listener.mResponseStep, ResponseStep.ON_SUCCEEDED);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
     public void testSetHttpMethod() throws Exception {
         TestUrlRequestListener listener = new TestUrlRequestListener();
         String methodName = "HEAD";
