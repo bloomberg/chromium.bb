@@ -114,6 +114,9 @@ protected:
     RenderObject* m_renderer;
 };
 
+class Node;
+WILL_NOT_BE_EAGERLY_TRACED_CLASS(Node);
+
 #if ENABLE(OILPAN)
 #define NODE_BASE_CLASSES public GarbageCollectedFinalized<Node>, public EventTarget
 #else

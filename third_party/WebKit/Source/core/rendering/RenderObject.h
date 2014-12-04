@@ -1405,6 +1405,8 @@ private:
     static unsigned s_instanceCount;
 };
 
+WILL_NOT_BE_EAGERLY_TRACED_CLASS(RenderObject);
+
 // FIXME: remove this once the render object lifecycle ASSERTS are no longer hit.
 class DeprecatedDisableModifyRenderTreeStructureAsserts {
     WTF_MAKE_NONCOPYABLE(DeprecatedDisableModifyRenderTreeStructureAsserts);
