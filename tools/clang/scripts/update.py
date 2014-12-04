@@ -216,11 +216,6 @@ def UpdateClang():
               '-DLLVM_ENABLE_ASSERTIONS=ON', LLVM_DIR])
   RunCommand(GetVSVersion().SetupScript('x86') + ['&&', 'ninja', 'compiler-rt'])
 
-  asan_rt_bin_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'bin')
-  asan_rt_bin_dst_dir = os.path.join(LLVM_BUILD_DIR, 'bin')
-  CopyDirectoryContents(asan_rt_bin_src_dir, asan_rt_bin_dst_dir,
-                        r'^.*-i386\.dll$')
-
   # TODO(hans): Make this (and the .gypi file) version number independent.
   asan_rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', 'clang',
                                      '3.6.0', 'lib', 'windows')
@@ -228,6 +223,15 @@ def UpdateClang():
                                      '3.6.0', 'lib', 'windows')
   CopyDirectoryContents(asan_rt_lib_src_dir, asan_rt_lib_dst_dir,
                         r'^.*-i386\.lib$')
+
+  # TODO(hans): Remove when LLVM_WIN_REVISION is updated.
+  # Old versions of compiler-rt will leave the asan dll in bin/
+  asan_rt_bin_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'bin')
+  CopyDirectoryContents(asan_rt_bin_src_dir, asan_rt_lib_dst_dir,
+                        r'^.*-i386\.dll$')
+
+  CopyDirectoryContents(asan_rt_lib_src_dir, asan_rt_lib_dst_dir,
+                        r'^.*-i386\.dll$')
 
   CopyFile(os.path.join(asan_rt_lib_src_dir, '..', '..', 'asan_blacklist.txt'),
            os.path.join(asan_rt_lib_dst_dir, '..', '..'))

@@ -19,7 +19,7 @@
                'destination': '<(PRODUCT_DIR)',
                'files': [
                  # Path is relative to this GYP file.
-                 '<(DEPTH)/<(make_clang_dir)/bin/clang_rt.asan_dynamic-i386.dll',
+                 '<(DEPTH)/<(make_clang_dir)/lib/clang/3.6.0/lib/windows/clang_rt.asan_dynamic-i386.dll',
                ],
              },
            ],
