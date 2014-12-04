@@ -27,10 +27,9 @@ bool LayerTreesMatch(LayerImpl* const layer_impl,
 
   RETURN_IF_EXPECTATION_FAILS(EXPECT_EQ(layer_impl->children().size(),
                                         layer->children().size()));
-  RETURN_IF_EXPECTATION_FAILS(EXPECT_SIZE_EQ(layer_impl->bounds(),
-                                             layer->bounds()));
-  RETURN_IF_EXPECTATION_FAILS(EXPECT_POINT_EQ(layer_impl->position(),
-                                              layer->position()));
+  RETURN_IF_EXPECTATION_FAILS(EXPECT_EQ(layer_impl->bounds(), layer->bounds()));
+  RETURN_IF_EXPECTATION_FAILS(
+      EXPECT_EQ(layer_impl->position(), layer->position()));
   RETURN_IF_EXPECTATION_FAILS(
       EXPECT_TRANSFORMATION_MATRIX_EQ(layer_impl->draw_transform(),
                                       layer->draw_transform()));

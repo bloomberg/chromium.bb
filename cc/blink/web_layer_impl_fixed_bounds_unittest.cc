@@ -53,9 +53,8 @@ void CheckBoundsScaleSimple(WebLayerImplFixedBounds* layer,
       original_point.y() * bounds.height / fixed_bounds.height(),
       original_point.z());
   // Test if the bounds scale is correctly applied in transform.
-  EXPECT_POINT3F_EQ(
-      scaled_point,
-      TransformPoint(layer->layer()->transform(), original_point));
+  EXPECT_EQ(scaled_point,
+            TransformPoint(layer->layer()->transform(), original_point));
 }
 
 TEST(WebLayerImplFixedBoundsTest, BoundsScaleSimple) {

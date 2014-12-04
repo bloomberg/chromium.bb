@@ -41,10 +41,10 @@ static void CompareRenderPassLists(const RenderPassList& expected_list,
     RenderPass* actual = actual_list[i];
 
     EXPECT_EQ(expected->id, actual->id);
-    EXPECT_RECT_EQ(expected->output_rect, actual->output_rect);
+    EXPECT_EQ(expected->output_rect, actual->output_rect);
     EXPECT_EQ(expected->transform_to_root_target,
               actual->transform_to_root_target);
-    EXPECT_RECT_EQ(expected->damage_rect, actual->damage_rect);
+    EXPECT_EQ(expected->damage_rect, actual->damage_rect);
     EXPECT_EQ(expected->has_transparent_background,
               actual->has_transparent_background);
 
@@ -99,9 +99,9 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
 
   scoped_ptr<RenderPass> copy = pass->Copy(new_id);
   EXPECT_EQ(new_id, copy->id);
-  EXPECT_RECT_EQ(pass->output_rect, copy->output_rect);
+  EXPECT_EQ(pass->output_rect, copy->output_rect);
   EXPECT_EQ(pass->transform_to_root_target, copy->transform_to_root_target);
-  EXPECT_RECT_EQ(pass->damage_rect, copy->damage_rect);
+  EXPECT_EQ(pass->damage_rect, copy->damage_rect);
   EXPECT_EQ(pass->has_transparent_background, copy->has_transparent_background);
   EXPECT_EQ(0u, copy->quad_list.size());
 

@@ -205,10 +205,10 @@ static void CompareRenderPassLists(const RenderPassList& expected_list,
     RenderPass* actual = actual_list[i];
 
     EXPECT_EQ(expected->id, actual->id);
-    EXPECT_RECT_EQ(expected->output_rect, actual->output_rect);
+    EXPECT_EQ(expected->output_rect, actual->output_rect);
     EXPECT_EQ(expected->transform_to_root_target,
               actual->transform_to_root_target);
-    EXPECT_RECT_EQ(expected->damage_rect, actual->damage_rect);
+    EXPECT_EQ(expected->damage_rect, actual->damage_rect);
     EXPECT_EQ(expected->has_transparent_background,
               actual->has_transparent_background);
 

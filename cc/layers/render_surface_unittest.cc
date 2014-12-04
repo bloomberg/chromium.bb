@@ -131,8 +131,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   EXPECT_EQ(
       40.0,
       shared_quad_state->content_to_target_transform.matrix().getDouble(1, 3));
-  EXPECT_RECT_EQ(content_rect,
-                 gfx::Rect(shared_quad_state->visible_content_rect));
+  EXPECT_EQ(content_rect, gfx::Rect(shared_quad_state->visible_content_rect));
   EXPECT_EQ(1.f, shared_quad_state->opacity);
   EXPECT_EQ(blend_mode, shared_quad_state->blend_mode);
 }
@@ -182,7 +181,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
   RenderPass* pass = pass_sink.RenderPasses()[0];
 
   EXPECT_EQ(RenderPassId(2, 0), pass->id);
-  EXPECT_RECT_EQ(content_rect, pass->output_rect);
+  EXPECT_EQ(content_rect, pass->output_rect);
   EXPECT_EQ(origin, pass->transform_to_root_target);
 }
 

@@ -29,33 +29,6 @@ do { \
   EXPECT_NEAR((expected).height(), (actual).height(), (abs_error)); \
 } while (false)
 
-#define EXPECT_RECT_EQ(expected, actual) \
-do { \
-  EXPECT_EQ((expected).x(), (actual).x()); \
-  EXPECT_EQ((expected).y(), (actual).y()); \
-  EXPECT_EQ((expected).width(), (actual).width()); \
-  EXPECT_EQ((expected).height(), (actual).height()); \
-} while (false)
-
-#define EXPECT_SIZE_EQ(expected, actual) \
-do { \
-  EXPECT_EQ((expected).width(), (actual).width()); \
-  EXPECT_EQ((expected).height(), (actual).height()); \
-} while (false)
-
-#define EXPECT_POINT_EQ(expected, actual) \
-do { \
-  EXPECT_EQ((expected).x(), (actual).x()); \
-  EXPECT_EQ((expected).y(), (actual).y()); \
-} while (false)
-
-#define EXPECT_POINT3F_EQ(expected, actual) \
-do { \
-  EXPECT_FLOAT_EQ((expected).x(), (actual).x()); \
-  EXPECT_FLOAT_EQ((expected).y(), (actual).y()); \
-  EXPECT_FLOAT_EQ((expected).z(), (actual).z()); \
-} while (false)
-
 #define EXPECT_VECTOR_EQ(expected, actual) \
 do { \
   EXPECT_EQ((expected).x(), (actual).x()); \

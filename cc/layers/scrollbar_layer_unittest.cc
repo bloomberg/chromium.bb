@@ -352,7 +352,7 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
     EXPECT_EQ(DrawQuad::SOLID_COLOR, quads.front()->material);
-    EXPECT_RECT_EQ(gfx::Rect(6, 0, 39, 3), quads.front()->rect);
+    EXPECT_EQ(gfx::Rect(6, 0, 39, 3), quads.front()->rect);
   }
 
   // Contents scale should scale the draw quad.
@@ -366,7 +366,7 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
     EXPECT_EQ(DrawQuad::SOLID_COLOR, quads.front()->material);
-    EXPECT_RECT_EQ(gfx::Rect(12, 0, 78, 6), quads.front()->rect);
+    EXPECT_EQ(gfx::Rect(12, 0, 78, 6), quads.front()->rect);
   }
   scrollbar_layer_impl->draw_properties().contents_scale_x = 1.f;
   scrollbar_layer_impl->draw_properties().contents_scale_y = 1.f;
@@ -382,7 +382,7 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
     EXPECT_EQ(DrawQuad::SOLID_COLOR, quads.front()->material);
-    EXPECT_RECT_EQ(gfx::Rect(8, 0, 19, 3), quads.front()->rect);
+    EXPECT_EQ(gfx::Rect(8, 0, 19, 3), quads.front()->rect);
   }
 
   // We shouldn't attempt div-by-zero when the maximum is zero.
@@ -396,7 +396,7 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
     EXPECT_EQ(DrawQuad::SOLID_COLOR, quads.front()->material);
-    EXPECT_RECT_EQ(gfx::Rect(1, 0, 19, 3), quads.front()->rect);
+    EXPECT_EQ(gfx::Rect(1, 0, 19, 3), quads.front()->rect);
   }
 }
 
@@ -455,7 +455,7 @@ TEST(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
     const QuadList& quads = render_pass->quad_list;
     ASSERT_EQ(1u, quads.size());
     EXPECT_EQ(DrawQuad::SOLID_COLOR, quads.front()->material);
-    EXPECT_RECT_EQ(gfx::Rect(3, 0, 3, 3), quads.front()->rect);
+    EXPECT_EQ(gfx::Rect(3, 0, 3, 3), quads.front()->rect);
   }
 }
 
@@ -544,10 +544,10 @@ TEST_F(ScrollbarLayerSolidColorThumbTest, SolidColorThumbVerticalAdjust) {
   layers[0]->SetBounds(gfx::Size(100, 3));
   layers[1]->SetBounds(gfx::Size(3, 100));
 
-  EXPECT_RECT_EQ(gfx::RectF(20.f, 0.f, 20.f, 3.f),
-                 horizontal_scrollbar_layer_->ComputeThumbQuadRect());
-  EXPECT_RECT_EQ(gfx::RectF(0.f, 20.f, 3.f, 20.f),
-                 vertical_scrollbar_layer_->ComputeThumbQuadRect());
+  EXPECT_EQ(gfx::RectF(20.f, 0.f, 20.f, 3.f),
+            horizontal_scrollbar_layer_->ComputeThumbQuadRect());
+  EXPECT_EQ(gfx::RectF(0.f, 20.f, 3.f, 20.f),
+            vertical_scrollbar_layer_->ComputeThumbQuadRect());
 
   horizontal_scrollbar_layer_->SetVerticalAdjust(10.f);
   vertical_scrollbar_layer_->SetVerticalAdjust(10.f);
@@ -556,10 +556,10 @@ TEST_F(ScrollbarLayerSolidColorThumbTest, SolidColorThumbVerticalAdjust) {
   // 1.) Moves the horizontal scrollbar down
   // 2.) Increases the vertical scrollbar's effective track length which both
   // increases the thumb's length and its position within the track.
-  EXPECT_RECT_EQ(gfx::Rect(20.f, 10.f, 20.f, 3.f),
-                 horizontal_scrollbar_layer_->ComputeThumbQuadRect());
-  EXPECT_RECT_EQ(gfx::Rect(0.f, 22, 3.f, 22.f),
-                 vertical_scrollbar_layer_->ComputeThumbQuadRect());
+  EXPECT_EQ(gfx::Rect(20.f, 10.f, 20.f, 3.f),
+            horizontal_scrollbar_layer_->ComputeThumbQuadRect());
+  EXPECT_EQ(gfx::Rect(0.f, 22, 3.f, 22.f),
+            vertical_scrollbar_layer_->ComputeThumbQuadRect());
 }
 
 class ScrollbarLayerTestMaxTextureSize : public LayerTreeTest {

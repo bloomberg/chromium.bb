@@ -80,7 +80,7 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   // Check if the left-over quad is the same size as the mapped aperture quad in
   // layer space.
   if (!fill_center) {
-    EXPECT_RECT_EQ(expected_remaining, gfx::ToEnclosedRect(remaining.bounds()));
+    EXPECT_EQ(expected_remaining, gfx::ToEnclosedRect(remaining.bounds()));
   } else {
     EXPECT_TRUE(remaining.bounds().IsEmpty());
   }
@@ -97,7 +97,7 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   }
 
   if (!fill_center) {
-    EXPECT_RECT_EQ(aperture_rect, tex_remaining.bounds());
+    EXPECT_EQ(aperture_rect, tex_remaining.bounds());
     Region aperture_region(aperture_rect);
     EXPECT_EQ(aperture_region, tex_remaining);
   } else {

@@ -5390,7 +5390,7 @@ class LayerTreeHostImplTestWithDelegatingRenderer
 
       // Verify the damage rect for the root render pass.
       const RenderPass* root_render_pass = frame.render_passes.back();
-      EXPECT_RECT_EQ(expected_damage, root_render_pass->damage_rect);
+      EXPECT_EQ(expected_damage, root_render_pass->damage_rect);
 
       // Verify the root and child layers' quads are generated and not being
       // culled.
@@ -5398,13 +5398,13 @@ class LayerTreeHostImplTestWithDelegatingRenderer
 
       LayerImpl* child = host_impl_->active_tree()->root_layer()->children()[0];
       gfx::RectF expected_child_visible_rect(child->content_bounds());
-      EXPECT_RECT_EQ(expected_child_visible_rect,
-                     root_render_pass->quad_list.front()->visible_rect);
+      EXPECT_EQ(expected_child_visible_rect,
+                root_render_pass->quad_list.front()->visible_rect);
 
       LayerImpl* root = host_impl_->active_tree()->root_layer();
       gfx::RectF expected_root_visible_rect(root->content_bounds());
-      EXPECT_RECT_EQ(expected_root_visible_rect,
-                     root_render_pass->quad_list.ElementAt(1)->visible_rect);
+      EXPECT_EQ(expected_root_visible_rect,
+                root_render_pass->quad_list.ElementAt(1)->visible_rect);
     }
 
     host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());

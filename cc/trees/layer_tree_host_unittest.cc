@@ -444,7 +444,7 @@ class LayerTreeHostTestSetNeedsRedrawRect : public LayerTreeHostTest {
 
     if (!num_draws_) {
       // If this is the first frame, expect full frame damage.
-      EXPECT_RECT_EQ(root_damage_rect, gfx::Rect(bounds_));
+      EXPECT_EQ(root_damage_rect, gfx::Rect(bounds_));
     } else {
       // Check that invalid_rect_ is indeed repainted.
       EXPECT_TRUE(root_damage_rect.Contains(invalid_rect_));
@@ -626,17 +626,17 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
 
     switch (num_draws_) {
       case 0:
-        EXPECT_RECT_EQ(gfx::Rect(bounds_), root_damage_rect);
+        EXPECT_EQ(gfx::Rect(bounds_), root_damage_rect);
         break;
       case 1:
       case 2:
-        EXPECT_RECT_EQ(gfx::Rect(0, 0, 0, 0), root_damage_rect);
+        EXPECT_EQ(gfx::Rect(0, 0, 0, 0), root_damage_rect);
         break;
       case 3:
-        EXPECT_RECT_EQ(invalid_rect_, root_damage_rect);
+        EXPECT_EQ(invalid_rect_, root_damage_rect);
         break;
       case 4:
-        EXPECT_RECT_EQ(gfx::Rect(bounds_), root_damage_rect);
+        EXPECT_EQ(gfx::Rect(bounds_), root_damage_rect);
         break;
       default:
         NOTREACHED();
@@ -738,12 +738,12 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
     // box.
     switch (host_impl->active_tree()->source_frame_number()) {
       case 0:
-        EXPECT_RECT_EQ(gfx::Rect(root_layer_->bounds()), root_damage_rect);
+        EXPECT_EQ(gfx::Rect(root_layer_->bounds()), root_damage_rect);
         break;
       case 1:
       case 2:
       case 3:
-        EXPECT_RECT_EQ(gfx::Rect(child_layer_->bounds()), root_damage_rect);
+        EXPECT_EQ(gfx::Rect(child_layer_->bounds()), root_damage_rect);
         break;
       default:
         NOTREACHED();
@@ -1271,8 +1271,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     ASSERT_EQ(2u, root->render_surface()->layer_list().size());
 
     // The root render surface is the size of the viewport.
-    EXPECT_RECT_EQ(gfx::Rect(0, 0, 60, 60),
-                   root->render_surface()->content_rect());
+    EXPECT_EQ(gfx::Rect(0, 0, 60, 60), root->render_surface()->content_rect());
 
     // The max tiling scale of the child should be scaled.
     EXPECT_FLOAT_EQ(1.5f, child->MaximumTilingContentsScale());
@@ -2645,10 +2644,10 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
     num_commits_++;
     if (num_commits_ == 1) {
       LayerImpl* root_layer = host_impl->active_tree()->root_layer();
-      EXPECT_SIZE_EQ(gfx::Size(1, 1), root_layer->bounds());
+      EXPECT_EQ(gfx::Size(1, 1), root_layer->bounds());
     } else {
       LayerImpl* root_layer = host_impl->active_tree()->root_layer();
-      EXPECT_SIZE_EQ(gfx::Size(2, 2), root_layer->bounds());
+      EXPECT_EQ(gfx::Size(2, 2), root_layer->bounds());
       EndTest();
     }
   }
@@ -2771,7 +2770,7 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
     CHECK_EQ(DrawQuad::IO_SURFACE_CONTENT, quad->material);
     const IOSurfaceDrawQuad* io_surface_draw_quad =
         IOSurfaceDrawQuad::MaterialCast(quad);
-    EXPECT_SIZE_EQ(io_surface_size_, io_surface_draw_quad->io_surface_size);
+    EXPECT_EQ(io_surface_size_, io_surface_draw_quad->io_surface_size);
     EXPECT_NE(0u, io_surface_draw_quad->io_surface_resource_id);
     EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_RECTANGLE_ARB),
               resource_provider->TargetForTesting(

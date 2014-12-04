@@ -85,13 +85,13 @@ TEST_F(ScrollbarAnimationControllerThinningTest, Idle) {
 TEST_F(ScrollbarAnimationControllerThinningTest, HideOnResize) {
   LayerImpl* scroll_layer = host_impl_.active_tree()->LayerById(1);
   ASSERT_TRUE(scroll_layer);
-  EXPECT_SIZE_EQ(gfx::Size(200, 200), scroll_layer->bounds());
+  EXPECT_EQ(gfx::Size(200, 200), scroll_layer->bounds());
 
   EXPECT_EQ(HORIZONTAL, scrollbar_layer_->orientation());
 
   // Shrink along X axis, horizontal scrollbar should appear.
   clip_layer_->SetBounds(gfx::Size(100, 200));
-  EXPECT_SIZE_EQ(gfx::Size(100, 200), clip_layer_->bounds());
+  EXPECT_EQ(gfx::Size(100, 200), clip_layer_->bounds());
 
   scrollbar_controller_->DidScrollBegin();
 
@@ -103,7 +103,7 @@ TEST_F(ScrollbarAnimationControllerThinningTest, HideOnResize) {
   // Shrink along Y axis and expand along X, horizontal scrollbar
   // should disappear.
   clip_layer_->SetBounds(gfx::Size(200, 100));
-  EXPECT_SIZE_EQ(gfx::Size(200, 100), clip_layer_->bounds());
+  EXPECT_EQ(gfx::Size(200, 100), clip_layer_->bounds());
 
   scrollbar_controller_->DidScrollBegin();
 
