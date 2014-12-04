@@ -81,7 +81,8 @@ void DisplayItemList::updatePaintList()
     PaintList::iterator paintListEnd = m_paintList.end();
 
     for (OwnPtr<DisplayItem>& newDisplayItem : m_newPaints) {
-        if (!wasInvalidated(*newDisplayItem)) {
+        // FIXME: Should check isCached only and ASSERT(!wasInvalidated) when painters emit CachedDisplayItem.
+        if (newDisplayItem->isCached() || !wasInvalidated(*newDisplayItem)) {
             PaintList::iterator repaintIt = findDisplayItem(paintListIt, *newDisplayItem);
             if (repaintIt != paintListEnd) {
                 // Copy all of the existing items over until we hit the repaint.

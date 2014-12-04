@@ -86,6 +86,8 @@ public:
     virtual WTF::String asDebugString() const;
 #endif
 
+    virtual bool isCached() const { return false; }
+
 protected:
     DisplayItem(DisplayItemClient client, Type type)
         : m_id(client, type)

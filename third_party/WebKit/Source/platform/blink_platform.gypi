@@ -631,6 +631,7 @@
       'graphics/gpu/WebGLImageConversion.h',
       'graphics/media/MediaPlayer.cpp',
       'graphics/media/MediaPlayer.h',
+      'graphics/paint/CachedDisplayItem.h',
       'graphics/paint/ClipDisplayItem.cpp',
       'graphics/paint/ClipDisplayItem.h',
       'graphics/paint/DisplayItem.cpp',
