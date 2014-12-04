@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_SERVICE_H_
 
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -24,7 +23,6 @@
 #include "chrome/browser/sync/sync_type_preference_provider.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/web_contents.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry_observer.h"
@@ -44,6 +42,10 @@ class SupervisedUserURLFilter;
 
 namespace base {
 class FilePath;
+}
+
+namespace content {
+class WebContents;
 }
 
 namespace extensions {
