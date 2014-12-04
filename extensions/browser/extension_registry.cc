@@ -49,6 +49,7 @@ void ExtensionRegistry::RemoveObserver(ExtensionRegistryObserver* observer) {
 }
 
 void ExtensionRegistry::TriggerOnLoaded(const Extension* extension) {
+  CHECK(extension);
   DCHECK(enabled_extensions_.Contains(extension->id()));
   FOR_EACH_OBSERVER(ExtensionRegistryObserver,
                     observers_,
@@ -58,6 +59,7 @@ void ExtensionRegistry::TriggerOnLoaded(const Extension* extension) {
 void ExtensionRegistry::TriggerOnUnloaded(
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
+  CHECK(extension);
   DCHECK(!enabled_extensions_.Contains(extension->id()));
   FOR_EACH_OBSERVER(ExtensionRegistryObserver,
                     observers_,
@@ -68,9 +70,10 @@ void ExtensionRegistry::TriggerOnWillBeInstalled(const Extension* extension,
                                                  bool is_update,
                                                  bool from_ephemeral,
                                                  const std::string& old_name) {
-  DCHECK(is_update ==
-         GenerateInstalledExtensionsSet()->Contains(extension->id()));
-  DCHECK(is_update == !old_name.empty());
+  CHECK(extension);
+  DCHECK_EQ(is_update,
+            GenerateInstalledExtensionsSet()->Contains(extension->id()));
+  DCHECK_EQ(is_update, !old_name.empty());
   FOR_EACH_OBSERVER(
       ExtensionRegistryObserver,
       observers_,
@@ -80,6 +83,7 @@ void ExtensionRegistry::TriggerOnWillBeInstalled(const Extension* extension,
 
 void ExtensionRegistry::TriggerOnInstalled(const Extension* extension,
                                            bool is_update) {
+  CHECK(extension);
   DCHECK(GenerateInstalledExtensionsSet()->Contains(extension->id()));
   FOR_EACH_OBSERVER(ExtensionRegistryObserver,
                     observers_,
@@ -89,6 +93,7 @@ void ExtensionRegistry::TriggerOnInstalled(const Extension* extension,
 
 void ExtensionRegistry::TriggerOnUninstalled(const Extension* extension,
                                              UninstallReason reason) {
+  CHECK(extension);
   DCHECK(!GenerateInstalledExtensionsSet()->Contains(extension->id()));
   FOR_EACH_OBSERVER(
       ExtensionRegistryObserver,
