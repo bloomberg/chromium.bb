@@ -177,18 +177,12 @@ bool AXNodeObject::computeAccessibilityIsIgnored() const
     return m_role == UnknownRole;
 }
 
-AccessibilityRole AXNodeObject::determineAccessibilityRole()
+AccessibilityRole AXNodeObject::determineAccessibilityRoleUtil()
 {
     if (!node())
         return UnknownRole;
-
-    if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
-        return m_ariaRole;
-
     if (node()->isLink())
         return LinkRole;
-    if (node()->isTextNode())
-        return StaticTextRole;
     if (isHTMLButtonElement(*node()))
         return buttonRoleType();
     if (isHTMLDetailsElement(*node()))
@@ -202,6 +196,8 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
     if (isHTMLInputElement(*node())) {
         HTMLInputElement& input = toHTMLInputElement(*node());
         const AtomicString& type = input.type();
+        if (input.dataList())
+            return ComboBoxRole;
         if (type == InputTypeNames::button) {
             if ((node()->parentNode() && isHTMLMenuElement(node()->parentNode())) || (parentObject() && parentObject()->roleValue() == MenuRole))
                 return MenuItemRole;
@@ -219,6 +215,8 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
             || type == InputTypeNames::month
             || type == InputTypeNames::week)
             return DateTimeRole;
+        if (type == InputTypeNames::file)
+            return ButtonRole;
         if (type == InputTypeNames::radio) {
             if ((node()->parentNode() && isHTMLMenuElement(node()->parentNode())) || (parentObject() && parentObject()->roleValue() == MenuRole))
                 return MenuItemRadioRole;
@@ -264,15 +262,30 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
         return FigcaptionRole;
     if (node()->isElementNode() && node()->hasTagName(figureTag))
         return FigureRole;
-    if (node()->isElementNode() && toElement(node())->isFocusable())
-        return GroupRole;
     if (isHTMLAnchorElement(*node()) && isClickable())
         return LinkRole;
     if (isHTMLIFrameElement(*node()))
         return IframeRole;
     if (isEmbeddedObject())
         return EmbeddedObjectRole;
+    return UnknownRole;
+}
 
+AccessibilityRole AXNodeObject::determineAccessibilityRole()
+{
+    if (!node())
+        return UnknownRole;
+
+    if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
+        return m_ariaRole;
+    if (node()->isTextNode())
+        return StaticTextRole;
+
+    AccessibilityRole role = determineAccessibilityRoleUtil();
+    if (role != UnknownRole)
+        return role;
+    if (node()->isElementNode() && toElement(node())->isFocusable())
+        return GroupRole;
     return UnknownRole;
 }
 

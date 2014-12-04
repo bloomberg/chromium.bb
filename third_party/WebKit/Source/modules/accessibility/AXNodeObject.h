@@ -57,7 +57,7 @@ protected:
 
     virtual bool computeAccessibilityIsIgnored() const override;
     virtual AccessibilityRole determineAccessibilityRole();
-
+    AccessibilityRole determineAccessibilityRoleUtil();
     String accessibilityDescriptionForElements(WillBeHeapVector<RawPtrWillBeMember<Element> > &elements) const;
     void alterSliderValue(bool increase);
     String ariaAccessibilityDescription() const;
