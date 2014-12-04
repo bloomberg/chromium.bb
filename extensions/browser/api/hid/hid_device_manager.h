@@ -51,12 +51,12 @@ class HidDeviceManager : public BrowserContextKeyedAPI {
   friend class BrowserContextKeyedAPIFactory<HidDeviceManager>;
 
   static const char* service_name() { return "HidDeviceManager"; }
-  static bool IsCalledOnValidThread();
 
   void UpdateDevices();
 
   static const bool kServiceHasOwnInstanceInIncognito = true;
 
+  base::ThreadChecker thread_checker_;
   int next_resource_id_;
 
   typedef std::map<int, device::HidDeviceId> ResourceIdToDeviceIdMap;

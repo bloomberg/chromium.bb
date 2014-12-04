@@ -25,6 +25,7 @@ using device::HidService;
 
 namespace {
 
+const char kErrorServiceUnavailable[] = "HID services are unavailable.";
 const char kErrorPermissionDenied[] = "Permission to access device was denied.";
 const char kErrorInvalidDeviceId[] = "Invalid HID device ID.";
 const char kErrorFailedToOpenDevice[] = "Failed to open HID device.";
@@ -58,241 +59,218 @@ void ConvertHidDeviceFilter(linked_ptr<hid::DeviceFilter> input,
 
 namespace extensions {
 
-HidAsyncApiFunction::HidAsyncApiFunction()
-    : device_manager_(NULL), connection_manager_(NULL) {}
-
-HidAsyncApiFunction::~HidAsyncApiFunction() {}
-
-bool HidAsyncApiFunction::PrePrepare() {
-#if defined(OS_WIN)
-  // TODO(reillyg): Migrate Windows backend from FILE thread to UI thread.
-  set_work_thread_id(content::BrowserThread::FILE);
-#else
-  set_work_thread_id(content::BrowserThread::UI);
-#endif
-  device_manager_ = HidDeviceManager::Get(browser_context());
-  if (!device_manager_) {
-    return false;
-  }
-  connection_manager_ =
-      ApiResourceManager<HidConnectionResource>::Get(browser_context());
-  if (!connection_manager_) {
-    return false;
-  }
-  return true;
-}
-
-bool HidAsyncApiFunction::Respond() { return error_.empty(); }
-
-HidConnectionResource* HidAsyncApiFunction::GetHidConnectionResource(
-    int api_resource_id) {
-  return connection_manager_->Get(extension_->id(), api_resource_id);
-}
-
-void HidAsyncApiFunction::RemoveHidConnectionResource(int api_resource_id) {
-  connection_manager_->Remove(extension_->id(), api_resource_id);
-}
-
-void HidAsyncApiFunction::CompleteWithError(const std::string& error) {
-  SetError(error);
-  AsyncWorkCompleted();
-}
-
 HidGetDevicesFunction::HidGetDevicesFunction() {}
 
 HidGetDevicesFunction::~HidGetDevicesFunction() {}
 
-bool HidGetDevicesFunction::Prepare() {
-  parameters_ = hid::GetDevices::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters_.get());
-  return true;
-}
+ExtensionFunction::ResponseAction HidGetDevicesFunction::Run() {
+  scoped_ptr<core_api::hid::GetDevices::Params> parameters =
+      hid::GetDevices::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
-void HidGetDevicesFunction::AsyncWorkStart() {
+  HidDeviceManager* device_manager = HidDeviceManager::Get(browser_context());
+  if (!device_manager) {
+    return RespondNow(Error(kErrorServiceUnavailable));
+  }
+
   std::vector<HidDeviceFilter> filters;
-  if (parameters_->options.filters) {
-    filters.resize(parameters_->options.filters->size());
-    for (size_t i = 0; i < parameters_->options.filters->size(); ++i) {
-      ConvertHidDeviceFilter(parameters_->options.filters->at(i), &filters[i]);
+  if (parameters->options.filters) {
+    filters.resize(parameters->options.filters->size());
+    for (size_t i = 0; i < parameters->options.filters->size(); ++i) {
+      ConvertHidDeviceFilter(parameters->options.filters->at(i), &filters[i]);
     }
   }
-  if (parameters_->options.vendor_id) {
+  if (parameters->options.vendor_id) {
     HidDeviceFilter legacy_filter;
-    legacy_filter.SetVendorId(*parameters_->options.vendor_id);
-    if (parameters_->options.product_id) {
-      legacy_filter.SetProductId(*parameters_->options.product_id);
+    legacy_filter.SetVendorId(*parameters->options.vendor_id);
+    if (parameters->options.product_id) {
+      legacy_filter.SetProductId(*parameters->options.product_id);
     }
     filters.push_back(legacy_filter);
   }
 
-  SetResult(device_manager_->GetApiDevices(extension(), filters).release());
-  AsyncWorkCompleted();
+  return RespondNow(OneArgument(
+      device_manager->GetApiDevices(extension(), filters).release()));
 }
 
-HidConnectFunction::HidConnectFunction() {}
+HidConnectFunction::HidConnectFunction() : connection_manager_(nullptr) {
+}
 
 HidConnectFunction::~HidConnectFunction() {}
 
-bool HidConnectFunction::Prepare() {
-  parameters_ = hid::Connect::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters_.get());
-  return true;
-}
+ExtensionFunction::ResponseAction HidConnectFunction::Run() {
+  scoped_ptr<core_api::hid::Connect::Params> parameters =
+      hid::Connect::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
-void HidConnectFunction::AsyncWorkStart() {
-  HidDeviceInfo device_info;
-  if (!device_manager_->GetDeviceInfo(parameters_->device_id, &device_info)) {
-    CompleteWithError(kErrorInvalidDeviceId);
-    return;
+  HidDeviceManager* device_manager = HidDeviceManager::Get(browser_context());
+  if (!device_manager) {
+    return RespondNow(Error(kErrorServiceUnavailable));
   }
 
-  if (!device_manager_->HasPermission(extension(), device_info)) {
-    LOG(WARNING) << "Insufficient permissions to access device.";
-    CompleteWithError(kErrorPermissionDenied);
-    return;
+  connection_manager_ =
+      ApiResourceManager<HidConnectionResource>::Get(browser_context());
+  if (!connection_manager_) {
+    return RespondNow(Error(kErrorServiceUnavailable));
+  }
+
+  HidDeviceInfo device_info;
+  if (!device_manager->GetDeviceInfo(parameters->device_id, &device_info)) {
+    return RespondNow(Error(kErrorInvalidDeviceId));
+  }
+
+  if (!device_manager->HasPermission(extension(), device_info)) {
+    return RespondNow(Error(kErrorPermissionDenied));
   }
 
   HidService* hid_service = device::DeviceClient::Get()->GetHidService();
-  DCHECK(hid_service);
+  if (!hid_service) {
+    return RespondNow(Error(kErrorServiceUnavailable));
+  }
 
   hid_service->Connect(
       device_info.device_id,
       base::Bind(&HidConnectFunction::OnConnectComplete, this));
+  return RespondLater();
 }
 
 void HidConnectFunction::OnConnectComplete(
     scoped_refptr<HidConnection> connection) {
   if (!connection.get()) {
-    CompleteWithError(kErrorFailedToOpenDevice);
+    Respond(Error(kErrorFailedToOpenDevice));
     return;
   }
 
+  DCHECK(connection_manager_);
   int connection_id = connection_manager_->Add(
-      new HidConnectionResource(extension_->id(), connection));
-  SetResult(PopulateHidConnection(connection_id, connection));
-  AsyncWorkCompleted();
+      new HidConnectionResource(extension_id(), connection));
+  Respond(OneArgument(PopulateHidConnection(connection_id, connection)));
 }
 
 HidDisconnectFunction::HidDisconnectFunction() {}
 
 HidDisconnectFunction::~HidDisconnectFunction() {}
 
-bool HidDisconnectFunction::Prepare() {
-  parameters_ = hid::Disconnect::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters_.get());
-  return true;
+ExtensionFunction::ResponseAction HidDisconnectFunction::Run() {
+  scoped_ptr<core_api::hid::Disconnect::Params> parameters =
+      hid::Disconnect::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+
+  ApiResourceManager<HidConnectionResource>* connection_manager =
+      ApiResourceManager<HidConnectionResource>::Get(browser_context());
+  if (!connection_manager) {
+    return RespondNow(Error(kErrorServiceUnavailable));
+  }
+
+  int connection_id = parameters->connection_id;
+  HidConnectionResource* resource =
+      connection_manager->Get(extension_id(), connection_id);
+  if (!resource) {
+    return RespondNow(Error(kErrorConnectionNotFound));
+  }
+
+  connection_manager->Remove(extension_id(), connection_id);
+  return RespondNow(NoArguments());
 }
 
-void HidDisconnectFunction::AsyncWorkStart() {
-  int connection_id = parameters_->connection_id;
-  HidConnectionResource* resource =
-      connection_manager_->Get(extension_->id(), connection_id);
-  if (!resource) {
-    CompleteWithError(kErrorConnectionNotFound);
-    return;
+HidConnectionIoFunction::HidConnectionIoFunction() {
+}
+
+HidConnectionIoFunction::~HidConnectionIoFunction() {
+}
+
+ExtensionFunction::ResponseAction HidConnectionIoFunction::Run() {
+  if (!ValidateParameters()) {
+    return RespondNow(Error(error_));
   }
-  connection_manager_->Remove(extension_->id(), connection_id);
-  AsyncWorkCompleted();
+
+  ApiResourceManager<HidConnectionResource>* connection_manager =
+      ApiResourceManager<HidConnectionResource>::Get(browser_context());
+  if (!connection_manager) {
+    return RespondNow(Error(kErrorServiceUnavailable));
+  }
+
+  HidConnectionResource* resource =
+      connection_manager->Get(extension_id(), connection_id_);
+  if (!resource) {
+    return RespondNow(Error(kErrorConnectionNotFound));
+  }
+
+  StartWork(resource->connection().get());
+  return RespondLater();
 }
 
 HidReceiveFunction::HidReceiveFunction() {}
 
 HidReceiveFunction::~HidReceiveFunction() {}
 
-bool HidReceiveFunction::Prepare() {
+bool HidReceiveFunction::ValidateParameters() {
   parameters_ = hid::Receive::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters_.get());
+  set_connection_id(parameters_->connection_id);
   return true;
 }
 
-void HidReceiveFunction::AsyncWorkStart() {
-  int connection_id = parameters_->connection_id;
-  HidConnectionResource* resource =
-      connection_manager_->Get(extension_->id(), connection_id);
-  if (!resource) {
-    CompleteWithError(kErrorConnectionNotFound);
-    return;
-  }
-
-  scoped_refptr<device::HidConnection> connection = resource->connection();
+void HidReceiveFunction::StartWork(HidConnection* connection) {
   connection->Read(base::Bind(&HidReceiveFunction::OnFinished, this));
 }
 
 void HidReceiveFunction::OnFinished(bool success,
                                     scoped_refptr<net::IOBuffer> buffer,
                                     size_t size) {
-  if (!success) {
-    CompleteWithError(kErrorTransfer);
-    return;
+  if (success) {
+    DCHECK_GE(size, 1u);
+    int report_id = reinterpret_cast<uint8_t*>(buffer->data())[0];
+
+    Respond(TwoArguments(new base::FundamentalValue(report_id),
+                         base::BinaryValue::CreateWithCopiedBuffer(
+                             buffer->data() + 1, size - 1)));
+  } else {
+    Respond(Error(kErrorTransfer));
   }
-
-  DCHECK_GE(size, 1u);
-  int report_id = reinterpret_cast<uint8_t*>(buffer->data())[0];
-
-  scoped_ptr<base::ListValue> result(new base::ListValue());
-  result->Append(new base::FundamentalValue(report_id));
-  result->Append(
-      base::BinaryValue::CreateWithCopiedBuffer(buffer->data() + 1, size - 1));
-  SetResultList(result.Pass());
-  AsyncWorkCompleted();
 }
 
 HidSendFunction::HidSendFunction() {}
 
 HidSendFunction::~HidSendFunction() {}
 
-bool HidSendFunction::Prepare() {
+bool HidSendFunction::ValidateParameters() {
   parameters_ = hid::Send::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters_.get());
+  set_connection_id(parameters_->connection_id);
   return true;
 }
 
-void HidSendFunction::AsyncWorkStart() {
-  int connection_id = parameters_->connection_id;
-  HidConnectionResource* resource =
-      connection_manager_->Get(extension_->id(), connection_id);
-  if (!resource) {
-    CompleteWithError(kErrorConnectionNotFound);
-    return;
-  }
-
+void HidSendFunction::StartWork(HidConnection* connection) {
   scoped_refptr<net::IOBufferWithSize> buffer(
       new net::IOBufferWithSize(parameters_->data.size() + 1));
   buffer->data()[0] = static_cast<uint8_t>(parameters_->report_id);
   memcpy(
       buffer->data() + 1, parameters_->data.c_str(), parameters_->data.size());
-  resource->connection()->Write(
-      buffer, buffer->size(), base::Bind(&HidSendFunction::OnFinished, this));
+  connection->Write(buffer, buffer->size(),
+                    base::Bind(&HidSendFunction::OnFinished, this));
 }
 
 void HidSendFunction::OnFinished(bool success) {
-  if (!success) {
-    CompleteWithError(kErrorTransfer);
-    return;
+  if (success) {
+    Respond(NoArguments());
+  } else {
+    Respond(Error(kErrorTransfer));
   }
-  AsyncWorkCompleted();
 }
 
 HidReceiveFeatureReportFunction::HidReceiveFeatureReportFunction() {}
 
 HidReceiveFeatureReportFunction::~HidReceiveFeatureReportFunction() {}
 
-bool HidReceiveFeatureReportFunction::Prepare() {
+bool HidReceiveFeatureReportFunction::ValidateParameters() {
   parameters_ = hid::ReceiveFeatureReport::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters_.get());
+  set_connection_id(parameters_->connection_id);
   return true;
 }
 
-void HidReceiveFeatureReportFunction::AsyncWorkStart() {
-  int connection_id = parameters_->connection_id;
-  HidConnectionResource* resource =
-      connection_manager_->Get(extension_->id(), connection_id);
-  if (!resource) {
-    CompleteWithError(kErrorConnectionNotFound);
-    return;
-  }
-
-  scoped_refptr<device::HidConnection> connection = resource->connection();
+void HidReceiveFeatureReportFunction::StartWork(HidConnection* connection) {
   connection->GetFeatureReport(
       static_cast<uint8_t>(parameters_->report_id),
       base::Bind(&HidReceiveFeatureReportFunction::OnFinished, this));
@@ -302,51 +280,42 @@ void HidReceiveFeatureReportFunction::OnFinished(
     bool success,
     scoped_refptr<net::IOBuffer> buffer,
     size_t size) {
-  if (!success) {
-    CompleteWithError(kErrorTransfer);
-    return;
+  if (success) {
+    Respond(OneArgument(
+        base::BinaryValue::CreateWithCopiedBuffer(buffer->data(), size)));
+  } else {
+    Respond(Error(kErrorTransfer));
   }
-
-  SetResult(base::BinaryValue::CreateWithCopiedBuffer(buffer->data(), size));
-  AsyncWorkCompleted();
 }
 
 HidSendFeatureReportFunction::HidSendFeatureReportFunction() {}
 
 HidSendFeatureReportFunction::~HidSendFeatureReportFunction() {}
 
-bool HidSendFeatureReportFunction::Prepare() {
+bool HidSendFeatureReportFunction::ValidateParameters() {
   parameters_ = hid::SendFeatureReport::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters_.get());
+  set_connection_id(parameters_->connection_id);
   return true;
 }
 
-void HidSendFeatureReportFunction::AsyncWorkStart() {
-  int connection_id = parameters_->connection_id;
-  HidConnectionResource* resource =
-      connection_manager_->Get(extension_->id(), connection_id);
-  if (!resource) {
-    CompleteWithError(kErrorConnectionNotFound);
-    return;
-  }
-
+void HidSendFeatureReportFunction::StartWork(HidConnection* connection) {
   scoped_refptr<net::IOBufferWithSize> buffer(
       new net::IOBufferWithSize(parameters_->data.size() + 1));
   buffer->data()[0] = static_cast<uint8_t>(parameters_->report_id);
   memcpy(
       buffer->data() + 1, parameters_->data.c_str(), parameters_->data.size());
-  resource->connection()->SendFeatureReport(
-      buffer,
-      buffer->size(),
+  connection->SendFeatureReport(
+      buffer, buffer->size(),
       base::Bind(&HidSendFeatureReportFunction::OnFinished, this));
 }
 
 void HidSendFeatureReportFunction::OnFinished(bool success) {
-  if (!success) {
-    CompleteWithError(kErrorTransfer);
-    return;
+  if (success) {
+    Respond(NoArguments());
+  } else {
+    Respond(Error(kErrorTransfer));
   }
-  AsyncWorkCompleted();
 }
 
 }  // namespace extensions

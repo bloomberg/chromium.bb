@@ -8,17 +8,14 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "content/public/browser/browser_thread.h"
 #include "device/core/device_client.h"
 #include "device/hid/hid_device_filter.h"
 #include "device/hid/hid_service.h"
-#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
 
 using device::HidDeviceFilter;
 using device::HidService;
-using device::HidUsageAndPage;
 
 namespace extensions {
 
@@ -26,7 +23,9 @@ HidDeviceManager::HidDeviceManager(content::BrowserContext* context)
     : next_resource_id_(0) {
 }
 
-HidDeviceManager::~HidDeviceManager() {}
+HidDeviceManager::~HidDeviceManager() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 // static
 BrowserContextKeyedAPIFactory<HidDeviceManager>*
@@ -39,7 +38,7 @@ HidDeviceManager::GetFactoryInstance() {
 scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevices(
     const Extension* extension,
     const std::vector<HidDeviceFilter>& filters) {
-  DCHECK(IsCalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   UpdateDevices();
 
   HidService* hid_service = device::DeviceClient::Get()->GetHidService();
@@ -109,7 +108,7 @@ scoped_ptr<base::ListValue> HidDeviceManager::GetApiDevices(
 
 bool HidDeviceManager::GetDeviceInfo(int resource_id,
                                      device::HidDeviceInfo* device_info) {
-  DCHECK(IsCalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   UpdateDevices();
   HidService* hid_service = device::DeviceClient::Get()->GetHidService();
   DCHECK(hid_service);
@@ -124,7 +123,7 @@ bool HidDeviceManager::GetDeviceInfo(int resource_id,
 
 bool HidDeviceManager::HasPermission(const Extension* extension,
                                      const device::HidDeviceInfo& device_info) {
-  DCHECK(IsCalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   UsbDevicePermission::CheckParam usbParam(
       device_info.vendor_id,
       device_info.product_id,
@@ -146,18 +145,8 @@ bool HidDeviceManager::HasPermission(const Extension* extension,
   return false;
 }
 
-// static
-bool HidDeviceManager::IsCalledOnValidThread() {
-#if defined(OS_WIN)
-  // TODO(reillyg): Migrate Windows backend from FILE thread to UI thread.
-  return content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE);
-#else
-  return content::BrowserThread::CurrentlyOn(content::BrowserThread::UI);
-#endif
-}
-
 void HidDeviceManager::UpdateDevices() {
-  DCHECK(IsCalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   HidService* hid_service = device::DeviceClient::Get()->GetHidService();
   DCHECK(hid_service);
 

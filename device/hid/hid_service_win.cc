@@ -40,7 +40,6 @@ const char kHIDClass[] = "HIDClass";
 }  // namespace
 
 HidServiceWin::HidServiceWin() {
-  base::ThreadRestrictions::AssertIOAllowed();
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
   DCHECK(task_runner_.get());
   Enumerate();

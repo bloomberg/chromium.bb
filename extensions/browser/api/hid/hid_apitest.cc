@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/public/browser/browser_thread.h"
 #include "device/hid/hid_collection_info.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_device_info.h"
@@ -18,7 +18,6 @@ namespace extensions {
 namespace {
 
 using base::ThreadTaskRunnerHandle;
-using content::BrowserThread;
 using device::HidCollectionInfo;
 using device::HidConnection;
 using device::HidDeviceId;
@@ -169,19 +168,8 @@ class HidApiTest : public ShellApiTest {
  public:
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
-#if defined(OS_WIN)
-    // TODO(reillyg): Migrate Windows backend from FILE thread to UI thread.
-    base::RunLoop run_loop;
-    BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
-                                    base::Bind(&HidApiTest::SetUpService, this),
-                                    run_loop.QuitClosure());
-    run_loop.Run();
-#else
-    SetUpService();
-#endif
+    HidService::SetInstanceForTest(new MockHidService());
   }
-
-  void SetUpService() { HidService::SetInstanceForTest(new MockHidService()); }
 };
 
 IN_PROC_BROWSER_TEST_F(HidApiTest, HidApp) {

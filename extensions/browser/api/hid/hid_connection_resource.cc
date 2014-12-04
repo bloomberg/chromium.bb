@@ -6,11 +6,10 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "device/hid/hid_connection.h"
+#include "extensions/browser/api/api_resource_manager.h"
 
 namespace extensions {
 

@@ -10,12 +10,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "extensions/browser/api/api_resource_manager.h"
-#include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/api/hid/hid_connection_resource.h"
 #include "extensions/browser/api/hid/hid_device_manager.h"
+#include "extensions/browser/extension_function.h"
 #include "extensions/common/api/hid.h"
 
 namespace device {
+class HidConnection;
 class HidService;
 }  // namespace device
 
@@ -25,96 +26,88 @@ class IOBuffer;
 
 namespace extensions {
 
-class HidAsyncApiFunction : public AsyncApiFunction {
- public:
-  HidAsyncApiFunction();
-
-  bool PrePrepare() override;
-  bool Respond() override;
-
- protected:
-  ~HidAsyncApiFunction() override;
-
-  HidConnectionResource* GetHidConnectionResource(int api_resource_id);
-  void RemoveHidConnectionResource(int api_resource_id);
-
-  void CompleteWithError(const std::string& error);
-
-  HidDeviceManager* device_manager_;
-  ApiResourceManager<HidConnectionResource>* connection_manager_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HidAsyncApiFunction);
-};
-
-class HidGetDevicesFunction : public HidAsyncApiFunction {
+class HidGetDevicesFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hid.getDevices", HID_GETDEVICES);
 
   HidGetDevicesFunction();
 
- protected:
-  bool Prepare() override;
-  void AsyncWorkStart() override;
-
+ private:
   ~HidGetDevicesFunction() override;
 
-  scoped_ptr<core_api::hid::GetDevices::Params> parameters_;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(HidGetDevicesFunction);
 };
 
-class HidConnectFunction : public HidAsyncApiFunction {
+class HidConnectFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hid.connect", HID_CONNECT);
 
   HidConnectFunction();
 
- protected:
-  bool Prepare() override;
-  void AsyncWorkStart() override;
-
  private:
   ~HidConnectFunction() override;
 
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
   void OnConnectComplete(scoped_refptr<device::HidConnection> connection);
 
-  scoped_ptr<core_api::hid::Connect::Params> parameters_;
+  ApiResourceManager<HidConnectionResource>* connection_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(HidConnectFunction);
 };
 
-class HidDisconnectFunction : public HidAsyncApiFunction {
+class HidDisconnectFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hid.disconnect", HID_DISCONNECT);
 
   HidDisconnectFunction();
 
- protected:
-  bool Prepare() override;
-  void AsyncWorkStart() override;
-
  private:
   ~HidDisconnectFunction() override;
 
-  scoped_ptr<core_api::hid::Disconnect::Params> parameters_;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(HidDisconnectFunction);
 };
 
-class HidReceiveFunction : public HidAsyncApiFunction {
+// Base class for extension functions that start some asynchronous work after
+// looking up a HidConnection.
+class HidConnectionIoFunction : public UIThreadExtensionFunction {
+ public:
+  HidConnectionIoFunction();
+
+ protected:
+  ~HidConnectionIoFunction() override;
+
+  virtual bool ValidateParameters() = 0;
+  virtual void StartWork(device::HidConnection* connection) = 0;
+
+  void set_connection_id(int connection_id) { connection_id_ = connection_id; }
+
+ private:
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+  int connection_id_;
+};
+
+class HidReceiveFunction : public HidConnectionIoFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hid.receive", HID_RECEIVE);
 
   HidReceiveFunction();
 
- protected:
-  bool Prepare() override;
-  void AsyncWorkStart() override;
-
  private:
   ~HidReceiveFunction() override;
+
+  // HidConnectionIoFunction:
+  bool ValidateParameters() override;
+  void StartWork(device::HidConnection* connection) override;
 
   void OnFinished(bool success,
                   scoped_refptr<net::IOBuffer> buffer,
@@ -125,18 +118,18 @@ class HidReceiveFunction : public HidAsyncApiFunction {
   DISALLOW_COPY_AND_ASSIGN(HidReceiveFunction);
 };
 
-class HidSendFunction : public HidAsyncApiFunction {
+class HidSendFunction : public HidConnectionIoFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hid.send", HID_SEND);
 
   HidSendFunction();
 
- protected:
-  bool Prepare() override;
-  void AsyncWorkStart() override;
-
  private:
   ~HidSendFunction() override;
+
+  // HidConnectionIoFunction:
+  bool ValidateParameters() override;
+  void StartWork(device::HidConnection* connection) override;
 
   void OnFinished(bool success);
 
@@ -145,19 +138,19 @@ class HidSendFunction : public HidAsyncApiFunction {
   DISALLOW_COPY_AND_ASSIGN(HidSendFunction);
 };
 
-class HidReceiveFeatureReportFunction : public HidAsyncApiFunction {
+class HidReceiveFeatureReportFunction : public HidConnectionIoFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hid.receiveFeatureReport",
                              HID_RECEIVEFEATUREREPORT);
 
   HidReceiveFeatureReportFunction();
 
- protected:
-  bool Prepare() override;
-  void AsyncWorkStart() override;
-
  private:
   ~HidReceiveFeatureReportFunction() override;
+
+  // HidConnectionIoFunction:
+  bool ValidateParameters() override;
+  void StartWork(device::HidConnection* connection) override;
 
   void OnFinished(bool success,
                   scoped_refptr<net::IOBuffer> buffer,
@@ -168,18 +161,18 @@ class HidReceiveFeatureReportFunction : public HidAsyncApiFunction {
   DISALLOW_COPY_AND_ASSIGN(HidReceiveFeatureReportFunction);
 };
 
-class HidSendFeatureReportFunction : public HidAsyncApiFunction {
+class HidSendFeatureReportFunction : public HidConnectionIoFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("hid.sendFeatureReport", HID_SENDFEATUREREPORT);
 
   HidSendFeatureReportFunction();
 
- protected:
-  bool Prepare() override;
-  void AsyncWorkStart() override;
-
  private:
   ~HidSendFeatureReportFunction() override;
+
+  // HidConnectionIoFunction:
+  bool ValidateParameters() override;
+  void StartWork(device::HidConnection* connection) override;
 
   void OnFinished(bool success);
 
