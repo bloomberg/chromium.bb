@@ -507,7 +507,7 @@ int UrandomFD(void) {
 }
 
 PP_Bool Are3DInterfacesDisabled() {
-  return PP_FromBool(CommandLine::ForCurrentProcess()->HasSwitch(
+  return PP_FromBool(base::CommandLine::ForCurrentProcess()->HasSwitch(
                          switches::kDisable3DAPIs));
 }
 
@@ -766,7 +766,8 @@ void InstanceDestroyed(PP_Instance instance) {
 }
 
 PP_Bool NaClDebugEnabledForURL(const char* alleged_nmf_url) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaClDebug))
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNaClDebug))
     return PP_FALSE;
   IPC::Sender* sender = content::RenderThread::Get();
   DCHECK(sender);

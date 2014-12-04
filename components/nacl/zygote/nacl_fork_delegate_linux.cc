@@ -199,9 +199,9 @@ void NaClForkDelegate::Init(const int sandboxdesc,
   } else if (RunningOnValgrind()) {
     status_ = kNaClHelperValgrind;
   } else {
-    CommandLine::StringVector argv_to_launch;
+    base::CommandLine::StringVector argv_to_launch;
     {
-      CommandLine cmd_line(CommandLine::NO_PROGRAM);
+      base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
       if (use_nacl_bootstrap)
         cmd_line.SetProgram(helper_bootstrap_exe);
       else
@@ -214,7 +214,8 @@ void NaClForkDelegate::Init(const int sandboxdesc,
         switches::kNaClDangerousNoSandboxNonSfi,
         switches::kNoSandbox,
       };
-      const CommandLine& current_cmd_line = *CommandLine::ForCurrentProcess();
+      const base::CommandLine& current_cmd_line =
+          *base::CommandLine::ForCurrentProcess();
       cmd_line.CopySwitchesFrom(current_cmd_line, kForwardSwitches,
                                 arraysize(kForwardSwitches));
 
@@ -226,7 +227,7 @@ void NaClForkDelegate::Init(const int sandboxdesc,
     if (use_nacl_bootstrap) {
       // Arguments to the bootstrap helper which need to be at the start
       // of the command line, right after the helper's path.
-      CommandLine::StringVector bootstrap_prepend;
+      base::CommandLine::StringVector bootstrap_prepend;
       bootstrap_prepend.push_back(helper_exe.value());
       bootstrap_prepend.push_back(kNaClHelperReservedAtZero);
       bootstrap_prepend.push_back(kNaClHelperRDebug);

@@ -33,9 +33,10 @@ FeedbackUploaderChrome::FeedbackUploaderChrome(
                        BrowserThread::GetBlockingPool()),
       context_(context) {
   CHECK(context_);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kFeedbackServer))
-    url_ = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kFeedbackServer);
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kFeedbackServer))
+    url_ = command_line.GetSwitchValueASCII(switches::kFeedbackServer);
 }
 
 void FeedbackUploaderChrome::DispatchReport(const std::string& data) {

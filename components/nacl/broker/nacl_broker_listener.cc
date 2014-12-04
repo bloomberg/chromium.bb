@@ -40,7 +40,7 @@ NaClBrokerListener::~NaClBrokerListener() {
 
 void NaClBrokerListener::Listen() {
   std::string channel_name =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID);
   channel_ = IPC::Channel::CreateClient(channel_name, this);
   CHECK(channel_->Connect());
@@ -94,7 +94,7 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
   base::FilePath exe_path;
   PathService::Get(base::FILE_EXE, &exe_path);
   if (!exe_path.empty()) {
-    CommandLine* cmd_line = new CommandLine(exe_path);
+    base::CommandLine* cmd_line = new base::CommandLine(exe_path);
     nacl::CopyNaClCommandLineArguments(cmd_line);
 
     cmd_line->AppendSwitchASCII(switches::kProcessType,

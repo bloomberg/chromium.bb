@@ -233,7 +233,8 @@ void GoogleURLTracker::StartFetchIfDesirable() {
   // specified a Google base URL manually, we shouldn't bother to look up any
   // alternatives or offer to switch to them.
   if (!client_->IsBackgroundNetworkingEnabled() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kGoogleBaseURL))
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kGoogleBaseURL))
     return;
 
   already_fetched_ = true;

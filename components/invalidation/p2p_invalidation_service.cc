@@ -24,7 +24,7 @@ P2PInvalidationService::P2PInvalidationService(
     syncer::P2PNotificationTarget notification_target)
     : identity_provider_(identity_provider.Pass()) {
   notifier::NotifierOptions notifier_options =
-      ParseNotifierOptions(*CommandLine::ForCurrentProcess());
+      ParseNotifierOptions(*base::CommandLine::ForCurrentProcess());
   notifier_options.request_context_getter = request_context;
   invalidator_id_ = GenerateInvalidatorClientId();
   invalidator_.reset(new syncer::P2PInvalidator(

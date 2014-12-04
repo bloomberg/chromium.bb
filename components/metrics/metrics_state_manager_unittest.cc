@@ -173,7 +173,7 @@ TEST_F(MetricsStateManagerTest,
 
   // Verify that the cache does get reset if --reset-variations-state is passed.
   {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kResetVariationState);
 
     scoped_ptr<MetricsStateManager> state_manager(CreateStateManager());

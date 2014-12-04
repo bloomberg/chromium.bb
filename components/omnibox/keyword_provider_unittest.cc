@@ -354,7 +354,7 @@ TEST_F(KeywordProviderTest, GetSubstitutingTemplateURLForInput) {
 // If extra query params are specified on the command line, they should be
 // reflected (only) in the default search provider's destination URL.
 TEST_F(KeywordProviderTest, ExtraQueryParams) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kExtraSearchQueryParams, "a=b");
 
   TestData<GURL> url_cases[] = {

@@ -308,7 +308,7 @@ bool OmniboxFieldTrial::DisableInlining() {
 }
 
 bool OmniboxFieldTrial::EnableAnswersInSuggest() {
-  const CommandLine* cl = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kDisableAnswersInSuggest))
     return false;
   if (cl->HasSwitch(switches::kEnableAnswersInSuggest))

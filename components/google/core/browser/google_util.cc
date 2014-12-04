@@ -147,7 +147,7 @@ GURL CommandLineGoogleBaseURL() {
   CR_DEFINE_STATIC_LOCAL(std::string, switch_value, ());
   CR_DEFINE_STATIC_LOCAL(GURL, base_url, ());
   std::string current_switch_value(
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kGoogleBaseURL));
   if (current_switch_value != switch_value) {
     switch_value = current_switch_value;

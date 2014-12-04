@@ -16,7 +16,7 @@
 
 // main() routine for the NaCl loader process.
 int NaClMain(const content::MainFunctionParams& parameters) {
-  const CommandLine& parsed_command_line = parameters.command_line;
+  const base::CommandLine& parsed_command_line = parameters.command_line;
 
   // The main thread of the plugin services IO.
   base::MessageLoopForIO main_message_loop;

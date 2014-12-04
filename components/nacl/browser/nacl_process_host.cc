@@ -273,7 +273,7 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
   // for this use case.
   process_->SetName(net::FormatUrl(manifest_url_, std::string()));
 
-  enable_debug_stub_ = CommandLine::ForCurrentProcess()->HasSwitch(
+  enable_debug_stub_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableNaClDebug);
   DCHECK(process_type_ != kUnknownNaClProcessType);
   enable_crash_throttling_ = process_type_ != kNativeNaClProcessType;
@@ -310,7 +310,7 @@ NaClProcessHost::~NaClProcessHost() {
 
 void NaClProcessHost::OnProcessCrashed(int exit_status) {
   if (enable_crash_throttling_ &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePnaclCrashThrottling)) {
     NaClBrowser::GetInstance()->OnProcessCrashed();
   }
@@ -326,7 +326,7 @@ void NaClProcessHost::EarlyStartup() {
   // under us by autoupdate.
   NaClBrowser::GetInstance()->EnsureIrtAvailable();
 #endif
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   UMA_HISTOGRAM_BOOLEAN(
       "NaCl.nacl-gdb",
       !cmd->GetSwitchValuePath(switches::kNaClGdb).empty());
@@ -364,7 +364,7 @@ void NaClProcessHost::Launch(
   // Do not launch the requested NaCl module if NaCl is marked "unstable" due
   // to too many crashes within a given time period.
   if (enable_crash_throttling_ &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePnaclCrashThrottling) &&
       NaClBrowser::GetInstance()->IsThrottled()) {
     SendErrorToRenderer("Process creation was throttled due to excessive"
@@ -373,7 +373,7 @@ void NaClProcessHost::Launch(
     return;
   }
 
-  const CommandLine* cmd = CommandLine::ForCurrentProcess();
+  const base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
 #if defined(OS_WIN)
   if (cmd->HasSwitch(switches::kEnableNaClDebug) &&
       !cmd->HasSwitch(switches::kNoSandbox)) {
@@ -455,7 +455,7 @@ void NaClProcessHost::Launch(
 }
 
 void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
-  if (!CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+  if (!base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kNaClGdb).empty()) {
     LaunchNaClGdb();
   }
@@ -483,18 +483,20 @@ bool NaClProcessHost::Send(IPC::Message* msg) {
 }
 
 bool NaClProcessHost::LaunchNaClGdb() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
 #if defined(OS_WIN)
   base::FilePath nacl_gdb =
-      CommandLine::ForCurrentProcess()->GetSwitchValuePath(switches::kNaClGdb);
-  CommandLine cmd_line(nacl_gdb);
+      command_line.GetSwitchValuePath(switches::kNaClGdb);
+  base::CommandLine cmd_line(nacl_gdb);
 #else
-  CommandLine::StringType nacl_gdb =
-      CommandLine::ForCurrentProcess()->GetSwitchValueNative(
-          switches::kNaClGdb);
-  CommandLine::StringVector argv;
+  base::CommandLine::StringType nacl_gdb =
+      command_line.GetSwitchValueNative(switches::kNaClGdb);
+  base::CommandLine::StringVector argv;
   // We don't support spaces inside arguments in --nacl-gdb switch.
-  base::SplitString(nacl_gdb, static_cast<CommandLine::CharType>(' '), &argv);
-  CommandLine cmd_line(argv);
+  base::SplitString(nacl_gdb, static_cast<base::CommandLine::CharType>(' '),
+                    &argv);
+  base::CommandLine cmd_line(argv);
 #endif
   cmd_line.AppendArg("--eval-command");
   base::FilePath::StringType irt_path(
@@ -514,8 +516,8 @@ bool NaClProcessHost::LaunchNaClGdb() {
   }
   cmd_line.AppendArg("--eval-command");
   cmd_line.AppendArg("target remote :4014");
-  base::FilePath script = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-      switches::kNaClGdbScript);
+  base::FilePath script =
+      command_line.GetSwitchValuePath(switches::kNaClGdbScript);
   if (!script.empty()) {
     cmd_line.AppendArg("--command");
     cmd_line.AppendArgNative(script.value());
@@ -587,7 +589,7 @@ bool NaClProcessHost::LaunchSelLdr() {
   }
 #endif
 
-  scoped_ptr<CommandLine> cmd_line(new CommandLine(exe_path));
+  scoped_ptr<base::CommandLine> cmd_line(new base::CommandLine(exe_path));
   CopyNaClCommandLineArguments(cmd_line.get());
 
   cmd_line->AppendSwitchASCII(switches::kProcessType,
@@ -967,7 +969,7 @@ void NaClProcessHost::OnPpapiChannelsCreated(
     args.permissions = permissions_;
     args.keepalive_throttle_interval_milliseconds =
         keepalive_throttle_interval_milliseconds_;
-    CommandLine* cmdline = CommandLine::ForCurrentProcess();
+    base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
     DCHECK(cmdline);
     std::string flag_whitelist[] = {
       switches::kV,

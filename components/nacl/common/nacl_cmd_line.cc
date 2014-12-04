@@ -10,8 +10,9 @@
 
 namespace nacl {
 
-void CopyNaClCommandLineArguments(CommandLine* cmd_line) {
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+void CopyNaClCommandLineArguments(base::CommandLine* cmd_line) {
+  const base::CommandLine& browser_command_line =
+      *base::CommandLine::ForCurrentProcess();
 
   // Propagate the following switches to the NaCl loader command line (along
   // with any associated values) if present in the browser command line.

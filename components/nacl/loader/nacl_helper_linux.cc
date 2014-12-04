@@ -158,7 +158,7 @@ void ChildNaClLoaderInit(ScopedVector<base::ScopedFD> child_fds,
   CHECK(content::SendZygoteChildPing(
       child_fds[content::ZygoteForkDelegate::kPIDOracleFDIndex]->get()));
 
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kProcessChannelID, channel_id);
 
   // Save the browser socket and close the rest.
@@ -362,7 +362,8 @@ static const char kNaClHelperRDebug[] = "r_debug";
 // process the --r_debug option.
 static void CheckRDebug(char* argv0) {
   std::string r_debug_switch_value =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kNaClHelperRDebug);
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kNaClHelperRDebug);
   if (!r_debug_switch_value.empty()) {
     char* endp;
     uintptr_t r_debug_addr = strtoul(r_debug_switch_value.c_str(), &endp, 0);
@@ -394,7 +395,7 @@ static void CheckRDebug(char* argv0) {
 static size_t CheckReservedAtZero() {
   size_t prereserved_sandbox_size = 0;
   std::string reserved_at_zero_switch_value =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           kNaClHelperReservedAtZero);
   if (!reserved_at_zero_switch_value.empty()) {
     char* endp;
@@ -430,7 +431,7 @@ const char* __asan_default_options() {
 #endif
 
 int main(int argc, char* argv[]) {
-  CommandLine::Init(argc, argv);
+  base::CommandLine::Init(argc, argv);
   base::AtExitManager exit_manager;
   base::RandUint64();  // acquire /dev/urandom fd before sandbox is raised
 

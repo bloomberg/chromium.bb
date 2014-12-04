@@ -148,7 +148,7 @@ void NaClSandbox::CheckSandboxingStateWithPolicy() {
       " this is not allowed in this configuration.";
 
   const bool no_sandbox_for_nonsfi_ok =
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNaClDangerousNoSandboxNonSfi);
   const bool can_be_no_sandbox =
       !layer_two_is_nonsfi_ || no_sandbox_for_nonsfi_ok;

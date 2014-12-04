@@ -52,7 +52,7 @@ crypto::SymmetricKey* GetEncryptionKey() {
     return cached_encryption_key;
 
   static bool mock_keychain_command_line_flag =
-      CommandLine::ForCurrentProcess()->HasSwitch(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
           os_crypt::switches::kUseMockKeychain);
 
   std::string password;

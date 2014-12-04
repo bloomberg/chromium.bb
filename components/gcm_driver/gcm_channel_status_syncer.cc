@@ -108,9 +108,10 @@ GCMChannelStatusSyncer::GCMChannelStatusSyncer(
     poll_interval_seconds_ =
         GCMChannelStatusRequest::min_poll_interval_seconds();
   }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kCustomPollIntervalMinutes)) {
-    std::string value(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kCustomPollIntervalMinutes)) {
+    std::string value(command_line.GetSwitchValueASCII(
         switches::kCustomPollIntervalMinutes));
     int minutes = 0;
     if (base::StringToInt(value, &minutes)) {

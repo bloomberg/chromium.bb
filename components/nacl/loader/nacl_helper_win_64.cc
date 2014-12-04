@@ -49,7 +49,8 @@ int NaClWin64Main() {
   sandbox::SandboxInterfaceInfo sandbox_info = {0};
   content::InitializeSandboxInfo(&sandbox_info);
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 

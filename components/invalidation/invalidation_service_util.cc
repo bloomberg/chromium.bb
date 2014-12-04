@@ -13,7 +13,7 @@
 namespace invalidation {
 
 notifier::NotifierOptions ParseNotifierOptions(
-    const CommandLine& command_line) {
+    const base::CommandLine& command_line) {
   notifier::NotifierOptions notifier_options;
 
   if (command_line.HasSwitch(switches::kSyncNotificationHostPort)) {

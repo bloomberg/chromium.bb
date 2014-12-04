@@ -83,7 +83,7 @@ void BrowserContextDependencyManager::DumpContextDependencies(
     const base::SupportsUserData* context) const {
   // Whenever we try to build a destruction ordering, we should also dump a
   // dependency graph to "/path/to/context/context-dependencies.dot".
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           kDumpBrowserContextDependencyGraphFlag)) {
     base::FilePath dot_file =
         static_cast<const content::BrowserContext*>(context)

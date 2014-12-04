@@ -310,8 +310,8 @@ TEST(GoogleUtilTest, GoogleBaseURLNotSpecified) {
   EXPECT_FALSE(IsSearch("http://www.foo.com/search?q=a"));
 
   // Override the Google base URL on the command line.
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kGoogleBaseURL,
-                                                      "http://www.foo.com/");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kGoogleBaseURL, "http://www.foo.com/");
 
   // Only URLs which start with exactly the string on the command line should
   // cause StartsWithCommandLineGoogleBaseURL() to return true.
@@ -336,20 +336,20 @@ TEST(GoogleUtilTest, GoogleBaseURLNotSpecified) {
 }
 
 TEST(GoogleUtilTest, GoogleBaseURLDisallowQuery) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kGoogleBaseURL,
-                                                      "http://www.foo.com/?q=");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kGoogleBaseURL, "http://www.foo.com/?q=");
   EXPECT_FALSE(google_util::CommandLineGoogleBaseURL().is_valid());
 }
 
 TEST(GoogleUtilTest, GoogleBaseURLDisallowRef) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kGoogleBaseURL,
-                                                      "http://www.foo.com/#q=");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kGoogleBaseURL, "http://www.foo.com/#q=");
   EXPECT_FALSE(google_util::CommandLineGoogleBaseURL().is_valid());
 }
 
 TEST(GoogleUtilTest, GoogleBaseURLFixup) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kGoogleBaseURL,
-                                                      "www.foo.com");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kGoogleBaseURL, "www.foo.com");
   ASSERT_TRUE(google_util::CommandLineGoogleBaseURL().is_valid());
   EXPECT_EQ("http://www.foo.com/",
             google_util::CommandLineGoogleBaseURL().spec());

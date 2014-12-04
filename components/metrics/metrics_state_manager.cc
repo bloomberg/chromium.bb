@@ -270,7 +270,7 @@ int MetricsStateManager::GetLowEntropySource() {
   if (low_entropy_source_ != kLowEntropySourceNotSet)
     return low_entropy_source_;
 
-  const CommandLine* command_line(CommandLine::ForCurrentProcess());
+  const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
   // Only try to load the value from prefs if the user did not request a
   // reset.
   // Otherwise, skip to generating a new value.

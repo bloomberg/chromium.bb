@@ -57,7 +57,7 @@ bool NaClBrokerHost::Init() {
   if (!NaClBrowser::GetInstance()->GetNaCl64ExePath(&nacl_path))
     return false;
 
-  CommandLine* cmd_line = new CommandLine(nacl_path);
+  base::CommandLine* cmd_line = new base::CommandLine(nacl_path);
   CopyNaClCommandLineArguments(cmd_line);
 
   cmd_line->AppendSwitchASCII(switches::kProcessType,

@@ -44,7 +44,7 @@ NonSfiListener::~NonSfiListener() {
 
 void NonSfiListener::Listen() {
   channel_ = IPC::SyncChannel::Create(
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID),
       IPC::Channel::MODE_CLIENT,
       this,  // As a Listener.
