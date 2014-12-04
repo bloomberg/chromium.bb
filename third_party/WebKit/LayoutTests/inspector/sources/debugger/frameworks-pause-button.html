@@ -1,0 +1,51 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="resources/framework.js"></script>
+<script>
+
+var func = Framework.willSchedule(Framework.bind(callback, null));
+func = Framework.willSchedule(Framework.bind(Framework.safeRun, null, func));
+func = Framework.willSchedule(func, 0);
+
+function callback()
+{
+    return 0; // Should pause here.
+}
+
+function test()
+{
+    var frameworkRegexString = "/framework\\.js$";
+    WebInspector.settings.skipStackFramesPattern.set(frameworkRegexString);
+
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function step1()
+    {
+        InspectorTest.evaluateInPage("setTimeout(func, 200)", step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.assertTrue(!WebInspector.panels.sources.paused());
+        WebInspector.panels.sources.togglePause();
+        InspectorTest.waitUntilPaused(step3);
+    }
+
+    function step3(callFrames)
+    {
+        InspectorTest.captureStackTrace(callFrames);
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that hitting on pause button will not stop inside blackboxed framework.
+</p>
+</body>
+</html>
