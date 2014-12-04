@@ -34,10 +34,14 @@
     "channel": "stable",
     "extension_types": "all"
   },
-  "automation": {
+  "automation": [{
     "channel": "dev",
     "extension_types": ["extension", "legacy_packaged_app"]
-  },
+  }, {
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app"],
+    "whitelist": [ "2FCBCE08B34CCA1728A85F1EFBD9A34DD2558B2E" ]
+  }],
   "browser_action": {
     "channel": "stable",
     "extension_types": ["extension"]

@@ -9,6 +9,7 @@
 #include "chrome/browser/accessibility/accessibility_events.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/accessibility/automation_manager_ash.h"
 
 namespace chromeos {
 namespace input_method {
@@ -40,6 +41,9 @@ void Accessibility::InputMethodChanged(InputMethodManager* imm,
                                medium_name);
   SendControlAccessibilityNotification(
       ui::AX_EVENT_ALERT, &event);
+
+  AutomationManagerAsh::GetInstance()->HandleAlert(
+      ProfileManager::GetActiveUserProfile(), medium_name);
 }
 
 }  // namespace input_method

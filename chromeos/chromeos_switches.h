@@ -43,7 +43,6 @@ CHROMEOS_EXPORT extern const char kDisableOfficeEditingComponentApp[];
 CHROMEOS_EXPORT extern const char kDisableRollbackOption[];
 CHROMEOS_EXPORT extern const char kDisableVolumeAdjustSound[];
 CHROMEOS_EXPORT extern const char kEnableCarrierSwitching[];
-CHROMEOS_EXPORT extern const char kEnableChromeVoxNext[];
 CHROMEOS_EXPORT extern const char kEnableCloudBackup[];
 CHROMEOS_EXPORT extern const char kEnableConsumerManagement[];
 CHROMEOS_EXPORT extern const char kEnableEmbeddedSignin[];

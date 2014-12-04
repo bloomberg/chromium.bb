@@ -24,10 +24,8 @@
           'type': 'none',
           'dependencies': [
             'chromevox_resources',
-            'chromevox1_manifest',
-            'chromevox1_guest_manifest',
-            'chromevox2_manifest',
-            'chromevox2_guest_manifest',
+            'chromevox_manifest',
+            'chromevox_guest_manifest',
           ],
         },
         {
@@ -156,8 +154,9 @@
           ],
           'includes': ['generate_deps.gypi'],
         },
+        # Used for webstore releases.
         {
-          'target_name': 'chromevox1_manifest',
+          'target_name': 'chromevox_webstore_manifest',
           'type': 'none',
           'variables': {
             'output_manifest_path': '<(chromevox_dest_dir)/manifest.json',
@@ -165,30 +164,23 @@
           'includes': [ 'generate_manifest.gypi', ],
         },
         {
-          'target_name': 'chromevox1_guest_manifest',
+          'target_name': 'chromevox_manifest',
+          'type': 'none',
+          'variables': {
+            'output_manifest_path': '<(chromevox_dest_dir)/manifest.json',
+            # TODO(dtseng): Flip this to 1 once ChromeVox Next is ready.
+            'is_chromevox_next': 0,
+          },
+          'includes': [ 'generate_manifest.gypi', ],
+        },
+        {
+          'target_name': 'chromevox_guest_manifest',
           'type': 'none',
           'variables': {
             'output_manifest_path': '<(chromevox_dest_dir)/manifest_guest.json',
             'is_guest_manifest': 1,
-          },
-          'includes': [ 'generate_manifest.gypi', ],
-        },
-        {
-          'target_name': 'chromevox2_manifest',
-          'type': 'none',
-          'variables': {
-            'output_manifest_path': '<(chromevox_dest_dir)/manifest_next.json',
-            'is_chromevox_next': 1,
-          },
-          'includes': [ 'generate_manifest.gypi', ],
-        },
-        {
-          'target_name': 'chromevox2_guest_manifest',
-          'type': 'none',
-          'variables': {
-            'output_manifest_path': '<(chromevox_dest_dir)/manifest_next_guest.json',
-            'is_guest_manifest': 1,
-            'is_chromevox_next': 1,
+            # TODO(dtseng): Flip this to 1 once ChromeVox Next is ready.
+            'is_chromevox_next': 0,
           },
           'includes': [ 'generate_manifest.gypi', ],
         },

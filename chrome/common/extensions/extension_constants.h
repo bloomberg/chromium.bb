@@ -206,10 +206,6 @@ extern const char kChromeVoxExtensionPath[];
 extern const char kChromeVoxManifestFilename[];
 // Name of ChromeVox guest manifest file.
 extern const char kChromeVoxGuestManifestFilename[];
-// Name of ChromeVox next manifest file.
-extern const char kChromeVoxNextManifestFilename[];
-// Name of ChromeVox next guest manifest file.
-extern const char kChromeVoxNextGuestManifestFilename[];
 // Extension id, path (relative to |chrome::DIR_RESOURCES|) and IME engine
 // id for the builtin-in Braille IME extension.
 extern const char kBrailleImeExtensionId[];

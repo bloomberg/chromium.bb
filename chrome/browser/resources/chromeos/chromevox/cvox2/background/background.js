@@ -86,10 +86,13 @@ Background = function() {
   this.listeners_ = {
     alert: this.onEventDefault,
     focus: this.onEventDefault,
+    hover: this.onEventDefault,
     menuStart: this.onEventDefault,
     menuEnd: this.onEventDefault,
     loadComplete: this.onLoadComplete,
-    textSelectionChanged: this.onTextSelectionChanged
+    textChanged: this.onTextOrTextSelectionChanged,
+    textSelectionChanged: this.onTextOrTextSelectionChanged,
+    valueChanged: this.onEventDefault
   };
 
   // Register listeners for ...
@@ -98,9 +101,6 @@ Background = function() {
 
   // Tabs.
   chrome.tabs.onUpdated.addListener(this.onTabUpdated);
-
-  // Commands.
-  chrome.commands.onCommand.addListener(this.onGotCommand);
 };
 
 Background.prototype = {
@@ -117,6 +117,11 @@ Background.prototype = {
         return;
 
       var next = this.isWhitelisted_(tab.url);
+
+      // Only care about Next for now.
+      if (!next)
+        return;
+
       this.toggleChromeVoxVersion({next: next, classic: !next});
     }.bind(this));
   },
@@ -239,11 +244,17 @@ Background.prototype = {
    */
   onEventDefault: function(evt) {
     var node = evt.target;
+
     if (!node)
       return;
 
     var prevRange = this.currentRange_;
     this.currentRange_ = cursors.Range.fromNode(node);
+
+    // Don't process nodes inside of web content if ChromeVox Next is inactive.
+    if (node.root.role != chrome.automation.RoleType.desktop && !this.active_)
+      return;
+
     new Output(this.currentRange_, prevRange, evt.type);
   },
 
@@ -266,9 +277,14 @@ Background.prototype = {
    * Provides all feedback once a text selection change event fires.
    * @param {Object} evt
    */
-  onTextSelectionChanged: function(evt) {
-    if (!this.currentRange_)
+  onTextOrTextSelectionChanged: function(evt) {
+    if (!this.currentRange_) {
+      if (!evt.target.state.focused)
+        return;
+
+      this.onEventDefault(evt);
       this.currentRange_ = cursors.Range.fromNode(evt.target);
+    }
 
     var textChangeEvent = new cvox.TextChangeEvent(
         evt.target.attributes.value,
@@ -287,6 +303,7 @@ Background.prototype = {
     }
 
     this.editableTextHandler.changed(textChangeEvent);
+    new Output(this.currentRange_, null, evt.type, {braille: true});
   },
 
   /**
@@ -323,9 +340,16 @@ Background.prototype = {
     }
 
     if (opt_options.next) {
-      chrome.automation.getTree(this.onGotTree);
+      if (!chrome.commands.onCommand.hasListener(this.onGotCommand))
+        chrome.commands.onCommand.addListener(this.onGotCommand);
+
+      if (!this.active_)
+        chrome.automation.getTree(this.onGotTree);
       this.active_ = true;
     } else {
+      if (chrome.commands.onCommand.hasListener(this.onGotCommand))
+        chrome.commands.onCommand.removeListener(this.onGotCommand);
+
       if (this.active_) {
         for (var eventType in this.listeners_) {
           this.currentRange_.getStart().getNode().root.removeEventListener(

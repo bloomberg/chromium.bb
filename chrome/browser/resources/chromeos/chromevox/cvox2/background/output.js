@@ -41,9 +41,12 @@ var Dir = AutomationUtil.Dir;
  * @param {!cursors.Range} range
  * @param {cursors.Range} prevRange
  * @param {chrome.automation.EventType|Output.EventType} type
+ * @param {{braille: (boolean|undefined), speech: (boolean|undefined)}=}
+ *     opt_options
  * @constructor
  */
-Output = function(range, prevRange, type) {
+Output = function(range, prevRange, type, opt_options) {
+  opt_options = opt_options || {braille: true, speech: true};
   // TODO(dtseng): Include braille specific rules.
   /** @type {!cvox.Spannable} */
   this.buffer_ = new cvox.Spannable();
@@ -59,8 +62,10 @@ Output = function(range, prevRange, type) {
   this.formatOptions_ = {speech: true, braille: false, location: true};
 
   this.render_(range, prevRange, type);
-  this.handleSpeech();
-  this.handleBraille();
+  if (opt_options.speech)
+    this.handleSpeech();
+  if (opt_options.braille)
+    this.handleBraille();
   this.handleDisplay();
 };
 
@@ -92,6 +97,9 @@ Output.RULES = {
           '$or($checked, ' +
               '$earcon(CHECK_ON, @input_type_checkbox), ' +
               '$earcon(CHECK_OFF, @input_type_checkbox))'
+    },
+    dialog: {
+      enter: '$name $role'
     },
     heading: {
       enter: '@aria_role_heading',
@@ -147,7 +155,11 @@ Output.RULES = {
     textField: {
       speak: '$name $value $earcon(EDITABLE_TEXT, @input_type_text)'
     },
+    toolbar: {
+      enter: '$name $role'
+    },
     window: {
+      enter: '$name',
       speak: '@describe_window($name) $earcon(OBJECT_OPEN)'
     }
   },
@@ -392,7 +404,7 @@ Output.prototype = {
    */
   range_: function(range, prevRange, type, rangeBuff) {
     if (!prevRange)
-      prevRange = range;
+      prevRange = cursors.Range.fromNode(range.getStart().getNode().root);
 
     var cursor = range.getStart();
     var prevNode = prevRange.getStart().getNode();
