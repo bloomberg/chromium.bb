@@ -561,7 +561,7 @@ bool EventHandler::handleMousePressEventSingleClick(const MouseEventWithHitTestR
             granularity = m_frame->selection().granularity();
             newSelection.expandUsingGranularity(m_frame->selection().granularity());
         }
-    } else {
+    } else if (m_selectionInitiationState != ExtendedSelection) {
         newSelection = expandSelectionToRespectUserSelectAll(innerNode, VisibleSelection(visiblePos));
     }
 
@@ -2990,7 +2990,8 @@ void EventHandler::notifyElementActivated()
 
 void EventHandler::notifySelectionChanged()
 {
-    m_selectionInitiationState = ExtendedSelection;
+    if (m_frame->selection().isRange())
+        m_selectionInitiationState = ExtendedSelection;
 }
 
 bool EventHandler::handleAccessKey(const PlatformKeyboardEvent& evt)
