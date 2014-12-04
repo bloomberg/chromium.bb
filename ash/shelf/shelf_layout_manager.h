@@ -243,7 +243,8 @@ class ASH_EXPORT ShelfLayoutManager
     State() : visibility_state(SHELF_VISIBLE),
               auto_hide_state(SHELF_AUTO_HIDE_HIDDEN),
               window_state(WORKSPACE_WINDOW_STATE_DEFAULT),
-              is_screen_locked(false) {}
+              is_screen_locked(false),
+              is_adding_user_screen(false) {}
 
     // Returns true if the two states are considered equal. As
     // |auto_hide_state| only matters if |visibility_state| is
@@ -254,13 +255,15 @@ class ASH_EXPORT ShelfLayoutManager
           (visibility_state != SHELF_AUTO_HIDE ||
            other.auto_hide_state == auto_hide_state) &&
           other.window_state == window_state &&
-          other.is_screen_locked == is_screen_locked;
+          other.is_screen_locked == is_screen_locked &&
+          other.is_adding_user_screen == is_adding_user_screen;
     }
 
     ShelfVisibilityState visibility_state;
     ShelfAutoHideState auto_hide_state;
     WorkspaceWindowState window_state;
     bool is_screen_locked;
+    bool is_adding_user_screen;
   };
 
   // Sets the visibility of the shelf to |state|.
@@ -326,6 +329,9 @@ class ASH_EXPORT ShelfLayoutManager
   void OnDockBoundsChanging(
       const gfx::Rect& dock_bounds,
       DockedWindowLayoutManagerObserver::Reason reason) override;
+
+  // Called when the LoginUI changes from visible to invisible.
+  void UpdateShelfVisibilityAfterLoginUIChange();
 
   // The RootWindow is cached so that we don't invoke Shell::GetInstance() from
   // our destructor. We avoid that as at the time we're deleted Shell is being

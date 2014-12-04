@@ -769,14 +769,17 @@ TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
       ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
       window_bounds.ToString());
 
+  // The window size should not get touched while we are in lock screen.
   Shell::GetInstance()->session_state_delegate()->LockScreen();
   shelf->UpdateVisibilityState();
-  EXPECT_NE(
-      ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
-      window_bounds.ToString());
+  EXPECT_EQ(window_bounds.ToString(), window->bounds().ToString());
 
+  // Coming out of the lock screen the window size should still remain.
   Shell::GetInstance()->session_state_delegate()->UnlockScreen();
   shelf->UpdateVisibilityState();
+  EXPECT_EQ(
+      ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()).ToString(),
+      window_bounds.ToString());
   EXPECT_EQ(window_bounds.ToString(), window->bounds().ToString());
 }
 

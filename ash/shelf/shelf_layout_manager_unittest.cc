@@ -371,6 +371,28 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
 
   void RunGestureDragTests(gfx::Vector2d);
 
+  // Turn on the lock screen.
+  void LockScreen() {
+    Shell::GetInstance()->session_state_delegate()->LockScreen();
+    // The test session state delegate does not fire the lock state change.
+    Shell::GetInstance()->OnLockStateChanged(true);
+  }
+
+  // Turn off the lock screen.
+  void UnlockScreen() {
+    Shell::GetInstance()->session_state_delegate()->UnlockScreen();
+    // The test session state delegate does not fire the lock state change.
+    Shell::GetInstance()->OnLockStateChanged(false);
+  }
+
+  // Open the add user screen if |show| is true, otherwise end it.
+  void ShowAddUserScreen(bool show) {
+    ShelfLayoutManager* manager = GetShelfWidget()->shelf_layout_manager();
+    manager->SessionStateChanged(
+        show ? SessionStateDelegate::SESSION_STATE_LOGIN_SECONDARY :
+               SessionStateDelegate::SESSION_STATE_ACTIVE);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManagerTest);
 };
@@ -747,9 +769,20 @@ TEST_F(ShelfLayoutManagerTest, SideAlignmentInteractionWithLockScreen) {
   ShelfLayoutManager* manager = GetShelfWidget()->shelf_layout_manager();
   manager->SetAlignment(SHELF_ALIGNMENT_LEFT);
   EXPECT_EQ(SHELF_ALIGNMENT_LEFT, manager->GetAlignment());
-  Shell::GetInstance()->session_state_delegate()->LockScreen();
+  LockScreen();
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, manager->GetAlignment());
-  Shell::GetInstance()->session_state_delegate()->UnlockScreen();
+  UnlockScreen();
+  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, manager->GetAlignment());
+}
+
+// Makes sure shelf alignment is correct for add user screen.
+TEST_F(ShelfLayoutManagerTest, SideAlignmentInteractionWithAddUserScreen) {
+  ShelfLayoutManager* manager = GetShelfWidget()->shelf_layout_manager();
+  manager->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  EXPECT_EQ(SHELF_ALIGNMENT_LEFT, manager->GetAlignment());
+  ShowAddUserScreen(true);
+  EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, manager->GetAlignment());
+  ShowAddUserScreen(false);
   EXPECT_EQ(SHELF_ALIGNMENT_LEFT, manager->GetAlignment());
 }
 
@@ -1024,13 +1057,11 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   lock_widget->Show();
 
   // Lock the screen.
-  Shell::GetInstance()->session_state_delegate()->LockScreen();
-  shelf->UpdateVisibilityState();
+  LockScreen();
   // Showing a widget in the lock screen should force the shelf to be visibile.
   EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
-  Shell::GetInstance()->session_state_delegate()->UnlockScreen();
-  shelf->UpdateVisibilityState();
+  UnlockScreen();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
 }
 

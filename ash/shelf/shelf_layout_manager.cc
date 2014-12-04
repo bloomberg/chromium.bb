@@ -252,9 +252,9 @@ bool ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
     return false;
 
   alignment_ = alignment;
-  if (Shell::GetInstance()->session_state_delegate()->IsScreenLocked()) {
+  if (state_.is_screen_locked || state_.is_adding_user_screen) {
     // The shelf will itself move to the bottom while locked. If a request is
-    // sent to move while being locked, we postpone the move untill the lock
+    // sent to move while being locked, we postpone the move until the lock
     // screen goes away.
     return false;
   }
@@ -266,8 +266,11 @@ bool ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
 }
 
 ShelfAlignment ShelfLayoutManager::GetAlignment() const {
-  // When the screen is locked, the shelf is forced into bottom alignment.
-  if (Shell::GetInstance()->session_state_delegate()->IsScreenLocked())
+  // When the screen is locked or a user gets added, the shelf is forced into
+  // bottom alignment. Note: We cannot use state_.is_screen_locked here since
+  // that flag gets set later than the SessionStateDelegate reports a locked
+  // screen which leads in
+  if (state_.is_screen_locked || state_.is_adding_user_screen)
     return SHELF_ALIGNMENT_BOTTOM;
   return alignment_;
 }
@@ -319,7 +322,7 @@ void ShelfLayoutManager::UpdateVisibilityState() {
   if (!workspace_controller_)
     return;
 
-  if (Shell::GetInstance()->session_state_delegate()->IsScreenLocked()) {
+  if (state_.is_screen_locked || state_.is_adding_user_screen) {
     SetState(SHELF_VISIBLE);
   } else {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device
@@ -538,9 +541,7 @@ void ShelfLayoutManager::OnLockStateChanged(bool locked) {
   // Force the shelf to layout for alignment (bottom if locked, restore
   // the previous alignment otherwise).
   state_.is_screen_locked = locked;
-  shelf_->SetAlignment(locked ? SHELF_ALIGNMENT_BOTTOM : alignment_);
-  UpdateVisibilityState();
-  LayoutShelf();
+  UpdateShelfVisibilityAfterLoginUIChange();
 }
 
 void ShelfLayoutManager::OnWindowActivated(aura::Window* gained_active,
@@ -574,6 +575,9 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   state.auto_hide_state = CalculateAutoHideState(visibility_state);
   state.window_state = workspace_controller_ ?
       workspace_controller_->GetWindowState() : WORKSPACE_WINDOW_STATE_DEFAULT;
+  // Preserve the log in screen states.
+  state.is_adding_user_screen = state_.is_adding_user_screen;
+  state.is_screen_locked = state_.is_screen_locked;
 
   // Force an update because gesture drags affect the shelf bounds and we
   // should animate back to the normal bounds at the end of a gesture.
@@ -710,15 +714,12 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
         ScreenUtil::ConvertRectToScreen(
             shelf_->status_area_widget()->GetNativeView()->parent(),
             status_bounds));
-    SessionStateDelegate* session_state_delegate =
-        Shell::GetInstance()->session_state_delegate();
     if (!state_.is_screen_locked) {
       gfx::Insets insets;
       // If user session is blocked (login to new user session or add user to
       // the existing session - multi-profile) then give 100% of work area only
       // if keyboard is not shown.
-      if (!session_state_delegate->IsUserSessionBlocked() ||
-          !keyboard_bounds_.IsEmpty()) {
+      if (!state_.is_adding_user_screen || !keyboard_bounds_.IsEmpty()) {
         insets = target_bounds.work_area_insets;
       }
       Shell::GetInstance()->SetDisplayWorkAreaInsets(root_window_, insets);
@@ -956,7 +957,8 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   }
 
   if (gesture_drag_status_ == GESTURE_DRAG_IN_PROGRESS ||
-      (!state_.is_screen_locked && window_overlaps_shelf_) ||
+      (!state_.is_screen_locked && !state_.is_adding_user_screen &&
+       window_overlaps_shelf_) ||
       (state_.visibility_state == SHELF_AUTO_HIDE)) {
     return SHELF_BACKGROUND_OVERLAP;
   }
@@ -1154,17 +1156,34 @@ void ShelfLayoutManager::OnDockBoundsChanging(
 
 void ShelfLayoutManager::OnLockStateEvent(LockStateObserver::EventType event) {
   if (event == EVENT_LOCK_ANIMATION_STARTED) {
-    // Enter the screen locked state.
+    // Enter the screen locked state and update the visibility to avoid an odd
+    // animation when transitioning the orientation from L/R to bottom.
     state_.is_screen_locked = true;
+    UpdateShelfVisibilityAfterLoginUIChange();
   }
 }
 
 void ShelfLayoutManager::SessionStateChanged(
     SessionStateDelegate::SessionState state) {
+  // Check transition changes to/from the add user to session and change the
+  // shelf alignment accordingly
+  bool add_user = state == SessionStateDelegate::SESSION_STATE_LOGIN_SECONDARY;
+  if (add_user != state_.is_adding_user_screen) {
+    state_.is_adding_user_screen = add_user;
+    UpdateShelfVisibilityAfterLoginUIChange();
+    return;
+  }
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
   UpdateBoundsAndOpacity(target_bounds, true, NULL);
   UpdateVisibilityState();
+}
+
+void ShelfLayoutManager::UpdateShelfVisibilityAfterLoginUIChange() {
+  shelf_->SetAlignment(state_.is_adding_user_screen || state_.is_screen_locked ?
+                           SHELF_ALIGNMENT_BOTTOM : alignment_);
+  UpdateVisibilityState();
+  LayoutShelf();
 }
 
 }  // namespace ash

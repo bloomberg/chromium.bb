@@ -317,6 +317,7 @@ void AshTestBase::BlockUserSession(UserSessionBlockReason block_reason) {
       SetSessionStarted(true);
       SetUserAddingScreenRunning(false);
       Shell::GetInstance()->session_state_delegate()->LockScreen();
+      Shell::GetInstance()->OnLockStateChanged(true);
       break;
     case BLOCKED_BY_LOGIN_SCREEN:
       SetUserAddingScreenRunning(false);
