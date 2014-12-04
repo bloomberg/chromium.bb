@@ -2375,7 +2375,7 @@ const GCInfo* Heap::findGCInfo(Address address)
 #if ENABLE(GC_PROFILE_MARKING)
 void Heap::dumpPathToObjectOnNextGC(void* p)
 {
-    static_cast<MarkingVisitor*>(s_markingVisitor)->dumpPathToObjectOnNextGC(p);
+    static_cast<MarkingVisitor<GlobalMarking>*>(s_markingVisitor)->dumpPathToObjectOnNextGC(p);
 }
 
 String Heap::createBacktraceString()
@@ -2543,7 +2543,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink_gc", "BlinkGC");
     double timeStamp = WTF::currentTimeMS();
 #if ENABLE(GC_PROFILE_MARKING)
-    static_cast<MarkingVisitor*>(s_markingVisitor)->objectGraph().clear();
+    static_cast<MarkingVisitor<GlobalMarking>*>(s_markingVisitor)->objectGraph().clear();
 #endif
 
     // Disallow allocation during garbage collection (but not
@@ -2583,7 +2583,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     postGC();
 
 #if ENABLE(GC_PROFILE_MARKING)
-    static_cast<MarkingVisitor*>(s_markingVisitor)->reportStats();
+    static_cast<MarkingVisitor<GlobalMarking>*>(s_markingVisitor)->reportStats();
 #endif
 
     if (Platform::current()) {
