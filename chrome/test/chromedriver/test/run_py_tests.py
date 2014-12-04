@@ -50,8 +50,6 @@ _NEGATIVE_FILTER = [
     # This test is flaky since it uses setTimeout.
     # Re-enable once crbug.com/177511 is fixed and we can remove setTimeout.
     'ChromeDriverTest.testAlert',
-    # https://code.google.com/p/chromedriver/issues/detail?id=980
-    'ChromeDriverTest.testGoBackAndGoForward',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
@@ -538,6 +536,13 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.GoBack()
     self._driver.GoForward()
+
+  def testDontGoBackOrGoForward(self):
+    self.assertEquals('data:,', self._driver.GetCurrentUrl())
+    self._driver.GoBack()
+    self.assertEquals('data:,', self._driver.GetCurrentUrl())
+    self._driver.GoForward()
+    self.assertEquals('data:,', self._driver.GetCurrentUrl())
 
   def testRefresh(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))

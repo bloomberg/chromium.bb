@@ -435,8 +435,7 @@ Status ExecuteGoBack(
     WebView* web_view,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  return web_view->EvaluateScript(
-      std::string(), "window.history.back();", value);
+  return web_view->TraverseHistory(-1);
 }
 
 Status ExecuteGoForward(
@@ -444,8 +443,7 @@ Status ExecuteGoForward(
     WebView* web_view,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  return web_view->EvaluateScript(
-      std::string(), "window.history.forward();", value);
+  return web_view->TraverseHistory(1);
 }
 
 Status ExecuteRefresh(

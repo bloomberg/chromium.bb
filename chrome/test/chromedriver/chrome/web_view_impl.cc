@@ -167,6 +167,38 @@ Status WebViewImpl::Reload() {
   return client_->SendCommand("Page.reload", params);
 }
 
+Status WebViewImpl::TraverseHistory(int delta) {
+  base::DictionaryValue params;
+  scoped_ptr<base::DictionaryValue> result;
+  Status status = client_->SendCommandAndGetResult(
+      "Page.getNavigationHistory", params, &result);
+  if (status.IsError())
+    return status;
+
+  int current_index;
+  if (!result->GetInteger("currentIndex", &current_index))
+    return Status(kUnknownError, "DevTools didn't return currentIndex");
+
+  base::ListValue* entries;
+  if (!result->GetList("entries", &entries))
+    return Status(kUnknownError, "DevTools didn't return entries");
+
+  base::DictionaryValue* entry;
+  if (!entries->GetDictionary(current_index + delta, &entry)) {
+    // The WebDriver spec says that if there are no pages left in the browser's
+    // history (i.e. |current_index + delta| is out of range), then we must not
+    // navigate anywhere.
+    return Status(kOk);
+  }
+
+  int entry_id;
+  if (!entry->GetInteger("id", &entry_id))
+    return Status(kUnknownError, "history entry does not have an id");
+  params.SetInteger("entryId", entry_id);
+
+  return client_->SendCommand("Page.navigateToHistoryEntry", params);
+}
+
 Status WebViewImpl::EvaluateScript(const std::string& frame,
                                    const std::string& expression,
                                    scoped_ptr<base::Value>* result) {

@@ -36,6 +36,10 @@ Status StubWebView::Reload() {
   return Status(kOk);
 }
 
+Status StubWebView::TraverseHistory(int delta) {
+  return Status(kOk);
+}
+
 Status StubWebView::EvaluateScript(const std::string& frame,
                                    const std::string& function,
                                    scoped_ptr<base::Value>* result) {

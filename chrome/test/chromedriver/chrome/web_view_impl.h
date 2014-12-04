@@ -51,6 +51,7 @@ class WebViewImpl : public WebView {
   Status HandleReceivedEvents() override;
   Status Load(const std::string& url) override;
   Status Reload() override;
+  Status TraverseHistory(int delta) override;
   Status EvaluateScript(const std::string& frame,
                         const std::string& expression,
                         scoped_ptr<base::Value>* result) override;
