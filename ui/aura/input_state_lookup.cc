@@ -4,13 +4,11 @@
 
 #include "ui/aura/input_state_lookup.h"
 
-#include "base/logging.h"
-
 namespace aura {
 
 // static
 scoped_ptr<InputStateLookup> InputStateLookup::Create() {
-  return scoped_ptr<InputStateLookup>();
+  return nullptr;
 }
 
 }  // namespace aura

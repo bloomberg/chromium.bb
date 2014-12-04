@@ -11,7 +11,7 @@ namespace aura {
 
 // static
 scoped_ptr<InputStateLookup> InputStateLookup::Create() {
-  return scoped_ptr<InputStateLookup>(new InputStateLookupWin);
+  return make_scoped_ptr(new InputStateLookupWin);
 }
 
 InputStateLookupWin::InputStateLookupWin() {
