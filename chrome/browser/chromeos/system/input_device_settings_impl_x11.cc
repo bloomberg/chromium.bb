@@ -48,7 +48,8 @@ void ExecuteScriptOnFileThread(const std::vector<std::string>& argv) {
   DCHECK(!argv.empty());
   const std::string& script(argv[0]);
 
-  // Script must exist on device.
+  // Script must exist on device and is of correct format.
+  DCHECK(script.compare(kInputControl) == 0);
   DCHECK(!base::SysInfo::IsRunningOnChromeOS() || ScriptExists(script));
 
   if (!ScriptExists(script))
@@ -261,6 +262,7 @@ void InputDeviceSettingsImplX11::ReapplyMouseSettings() {
 
 void InputDeviceSettingsImplX11::GenerateTouchpadArguments(
     std::vector<std::string>* argv) {
+  argv->push_back(kInputControl);
   if (current_touchpad_settings_.IsSensitivitySet()) {
     AddSensitivityArguments(kDeviceTypeTouchpad,
                             current_touchpad_settings_.GetSensitivity(), argv);
@@ -286,6 +288,7 @@ void InputDeviceSettingsImplX11::GenerateTouchpadArguments(
 
 void InputDeviceSettingsImplX11::GenerateMouseArguments(
     std::vector<std::string>* argv) {
+  argv->push_back(kInputControl);
   if (current_mouse_settings_.IsSensitivitySet()) {
     AddSensitivityArguments(kDeviceTypeMouse,
                             current_mouse_settings_.GetSensitivity(), argv);
