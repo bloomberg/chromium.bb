@@ -1,6 +1,5 @@
 # Micro benchmarks not worth running at the moment.
 DOM/TraverseChildNodes.html
-Interactive/SelectAll.html
 
 # Not enabled by default on some ports
 Mutation
@@ -49,9 +48,6 @@ Bindings/event-target-wrapper.html
 Parser/query-selector-deep.html
 Parser/query-selector-id-deep.html
 
-# Does not run on Android
-Interactive/window-resize.html
-
 # Times out on Android, crbug.com/358168
 Canvas/draw-video-to-hw-accelerated-canvas-2d.html
 Canvas/upload-video-to-sub-texture.html
@@ -62,9 +58,6 @@ Bindings/gc-forest.html
 Bindings/gc-mini-tree.html
 Bindings/gc-tree.html
 Bindings/named-property-enumerator.html
-
-# Times out on the bots
-Interactive/spellcheck-paste-huge-text.html
 
 # Times out on Android. crbug.com/384857
 Animation/overlay-background-color-transitions.html
