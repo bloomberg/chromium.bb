@@ -62,7 +62,6 @@ PumpSession::~PumpSession()
 SpeculationsPumpSession::SpeculationsPumpSession(unsigned& nestingLevel, Document* document)
     : ActiveParserSession(nestingLevel, document)
     , m_startTime(currentTime())
-    , m_processedElementTokens(0)
 {
 }
 
@@ -73,11 +72,6 @@ SpeculationsPumpSession::~SpeculationsPumpSession()
 inline double SpeculationsPumpSession::elapsedTime() const
 {
     return currentTime() - m_startTime;
-}
-
-void SpeculationsPumpSession::addedElementTokens(size_t count)
-{
-    m_processedElementTokens += count;
 }
 
 HTMLParserScheduler::HTMLParserScheduler(HTMLDocumentParser* parser)
@@ -122,7 +116,7 @@ void HTMLParserScheduler::resume()
     m_continueNextChunkTimer.startOneShot(0, FROM_HERE);
 }
 
-inline bool HTMLParserScheduler::shouldYield(const SpeculationsPumpSession& session, bool startingScript) const
+inline bool HTMLParserScheduler::shouldYield(const SpeculationsPumpSession& session) const
 {
     if (Scheduler::shared()->shouldYieldForHighPriorityWork())
         return true;
@@ -131,24 +125,12 @@ inline bool HTMLParserScheduler::shouldYield(const SpeculationsPumpSession& sess
     if (session.elapsedTime() > parserTimeLimit)
         return true;
 
-    // Yield if a lot of DOM work has been done in this session and a script tag is
-    // about to be parsed. This significantly improves render performance for documents
-    // that place their scripts at the bottom of the page. Yielding too often
-    // significantly slows down the parsing so a balance needs to be struck to
-    // only yield when enough changes have happened to make it worthwhile.
-    // Emperical testing shows that anything > ~40 and < ~200 gives all of the benefit
-    // without impacting parser performance, only adding a few yields per page but at
-    // just the right times.
-    const size_t sufficientWork = 50;
-    if (startingScript && session.processedElementTokens() > sufficientWork)
-        return true;
-
     return false;
 }
 
-bool HTMLParserScheduler::yieldIfNeeded(const SpeculationsPumpSession& session, bool startingScript)
+bool HTMLParserScheduler::yieldIfNeeded(const SpeculationsPumpSession& session)
 {
-    if (shouldYield(session, startingScript)) {
+    if (shouldYield(session)) {
         scheduleForResume();
         return true;
     }

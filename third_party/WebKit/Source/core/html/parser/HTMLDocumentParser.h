@@ -146,7 +146,7 @@ private:
     void stopBackgroundParser();
     void validateSpeculations(PassOwnPtr<ParsedChunk> lastChunk);
     void discardSpeculationsAndResumeFrom(PassOwnPtr<ParsedChunk> lastChunk, PassOwnPtr<HTMLToken>, PassOwnPtr<HTMLTokenizer>);
-    size_t processParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk>);
+    void processParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk>);
     void pumpPendingSpeculations();
 
     Document* contextForParsingSession();
