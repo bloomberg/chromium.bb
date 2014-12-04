@@ -7,7 +7,7 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-remoting.initEventHandlers = function() {
+remoting.initElementEventHandlers = function() {
   var goHome = function() {
     remoting.setMode(remoting.AppMode.HOME);
   };
@@ -115,7 +115,9 @@ remoting.initEventHandlers = function() {
   registerEventListeners(me2me_actions);
   registerEventListeners(host_actions);
   registerEventListeners(auth_actions);
+}
 
+remoting.initGlobalEventHandlers = function() {
   window.addEventListener('resize', remoting.onResize, false);
   // When a window goes full-screen, a resize event is triggered, but the
   // Fullscreen.isActive call is not guaranteed to return true until the

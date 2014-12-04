@@ -15,7 +15,8 @@ remoting.initChromoting = function() {
   remoting.initIdentity();
   remoting.initIdentityEmail(remoting.onEmailAvailable);
 
-  remoting.initEventHandlers();
+  remoting.initElementEventHandlers();
+  remoting.initGlobalEventHandlers();
 
   if (base.isAppsV2()) {
     remoting.fullscreen = new remoting.FullscreenAppsV2();
