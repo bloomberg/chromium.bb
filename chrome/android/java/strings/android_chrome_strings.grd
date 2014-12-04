@@ -93,6 +93,64 @@
   </translations>
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
+      <message name="IDS_APP_NAME" desc="The application name" translateable="false">
+        Chromium
+      </message>
+
+      <!-- Main Preferences -->
+      <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
+        Settings
+      </message>
+
+      <!-- About Chrome preferences -->
+      <message name="IDS_PREFS_ABOUT_CHROME" desc="Title for the About Chrome page. [CHAR-LIMIT=32]">
+        About Chrome
+      </message>
+      <message name="IDS_LEGAL_INFORMATION_SUMMARY" desc="Summary for legal information">
+        Copyright <ph name="year">%1$d<ex>2014</ex></ph> Google Inc. All rights reserved.
+      </message>
+      <message name="IDS_APPLICATION_VERSION_TITLE" desc="Title for application version">
+        Application version
+      </message>
+      <message name="IDS_OS_VERSION_TITLE" desc="Title for operating system version">
+        Operating system
+      </message>
+      <message name="IDS_BLINK_VERSION_TITLE" desc="Title for the version of the Blink rendering engine">
+        Blink version
+      </message>
+      <message name="IDS_JAVASCRIPT_VERSION_TITLE" desc="Title for JavaScript version">
+        JavaScript version
+      </message>
+      <message name="IDS_EXECUTABLE_PATH_TITLE" desc="Title for the path to the Chrome executable">
+        Executable path
+      </message>
+      <message name="IDS_PROFILE_PATH_TITLE" desc="Title for the path where Chrome stores profile data">
+        Profile path
+      </message>
+
+      <!-- Legal information preferences -->
+      <message name="IDS_LEGAL_INFORMATION_TITLE" desc="Title for legal information [CHAR-LIMIT=32]">
+        Legal information
+      </message>
+      <message name="IDS_OPEN_SOURCE_LICENSE_TITLE" desc="Title for open source license">
+        Open source licenses
+      </message>
+      <message name="IDS_OPEN_SOURCE_LICENSE_URL" desc="URL for open source license" translateable="false">
+        chrome://credits
+      </message>
+      <message name="IDS_TERMS_OF_SERVICE_TITLE" desc="Title for terms of service">
+        Chrome Terms of Service
+      </message>
+      <message name="IDS_PRIVACY_NOTICE_TITLE" desc="Title for the Chrome privacy notice">
+        Chrome Privacy Notice
+      </message>
+      <message name="IDS_CHROME_PRIVACY_NOTICE_URL" desc="URL for the Chrome privacy notice" translateable="false">
+        https://www.google.com/intl/[GRITLANGCODE]/chrome/browser/privacy/
+      </message>
+      <message name="IDS_CHROME_TERMS_OF_SERVICE_URL" desc="URL for Google Chrome Terms of Service" translateable="false">
+        https://www.google.com/intl/[GRITLANGCODE]/chrome/browser/privacy/eula_text.html
+      </message>
+
       <message desc="Popup button for user to confirm a beforeunload dialog box triggered by a page navigation, i.e. they want to leave the current page [CHAR-LIMIT=20]" name="IDS_LEAVE_THIS_PAGE">
         Leave this Page
       </message>
@@ -120,6 +178,7 @@
       <message desc="Dialog box title for viewing security certificates. [CHAR-LIMIT=32]" name="IDS_CERTTITLE">
         Certificate Viewer
       </message>
+
       <!-- Sync error strings -->
       <message desc="Sync error string for generic error. [CHAR-LIMIT=80]" name="IDS_SYNC_ERROR_GENERIC">
         Sync error
@@ -156,6 +215,7 @@ You are signing in with a managed account and giving its administrator control o
       <message desc="Message for the progress dialog shown while profile data is being wiped after signing out of an enterprise account" name="IDS_WIPING_PROFILE_DATA_MESSAGE">
         Please wait...
       </message>
+
       <!-- Tab switcher -->
       <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_STANDARD_STACK" desc="Content description for the standard stack selection 'button'.">
         Standard tabs
@@ -179,10 +239,12 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_TAB_LOADING_DEFAULT_TITLE" desc="The title of a tab when we are still waiting for either the URL or the real title. This generally shows when the page is first loading.">
         Loading…
       </message>
+
       <!-- InfoBar -->
       <message desc="Accessibility label for the dismiss infobar Button" name="IDS_INFOBAR_CLOSE">
         Close
       </message>
+
       <!-- TranslateInfoBar -->
       <message name="IDS_TRANSLATE_INFOBAR_TEXT" desc="Text to display on the translate infobar to offer a translate. [CHAR-LIMIT=64]">
         This page is in <ph name="SOURCE_LANGUAGE">^1<ex>English</ex></ph>. Translate it to <ph name="TARGET_LANGUAGE">^2<ex>FRENCH</ex></ph>?
@@ -265,6 +327,7 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_ACCESSIBILITY_CONTENT_VIEW" desc="Content description for the content view that holds the web contents [CHAR-LIMIT=30]">
         Web View
       </message>
+
       <!-- ContextMenu -->
       <message name="IDS_CONTEXTMENU_OPEN_IN_NEW_TAB" desc="Context sensitive menu item to open the selected link in a new tab. [CHAR-LIMIT=30]">
         Open in new tab

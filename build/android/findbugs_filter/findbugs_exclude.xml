@@ -80,6 +80,11 @@ In particular, ~ at the start of a string means it's a regex.
     <Bug code="Dm" />
   </Match>
   <Match>
+    <Class name="org.chromium.chrome.browser.preferences.Preferences" />
+    <Method name="onCreate" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
     <Class name="~org\.chromium\.content\..*\.ChildProcessService.*" />
     <Method name="run" />
     <Bug code="Dm" />

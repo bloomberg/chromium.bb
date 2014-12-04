@@ -56,6 +56,13 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity android:theme="@style/PreferencesTheme"
+                android:name="org.chromium.chrome.browser.preferences.Preferences"
+                android:configChanges="orientation|keyboardHidden|keyboard|screenSize"
+                android:label="@string/preferences"
+                android:exported="false">
+        </activity>
+
         <!-- The following service entries exist in order to allow us to
              start more than one sandboxed process. -->
 

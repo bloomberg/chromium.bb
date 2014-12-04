@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<resources>
+    <!-- Preferences -->
+    <style name="PreferencesTheme" parent="ThemeWithActionBar">
+        <item name="android:textColorLink">@color/pref_accent_color</item>
+        <item name="android:buttonStyle">@style/PreferenceButtonStyle</item>
+        <item name="android:alertDialogTheme">@style/PreferencesDialogTheme</item>
+        <item name="android:colorButtonNormal">@color/btn_default_preferences</item>
+    </style>
+    <style name="PreferencesDialogTheme" parent="@android:style/Theme.Material.Light.Dialog.Alert">
+        <item name="android:colorAccent">@color/pref_accent_color</item>
+    </style>
+    <style name="PreferenceButtonStyle" parent="@android:style/Widget.Material.Light.Button">
+        <item name="android:textColor">#fff</item>
+    </style>
+    <style name="PreferenceTitle">
+        <item name="android:ellipsize">end</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceListItem</item>
+    </style>
+    <style name="PreferenceSummary">
+        <item name="android:textAppearance">?android:attr/textAppearanceListItemSecondary</item>
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
+    </style>
+    <style name="PreferenceLayoutBase">
+        <item name="android:background">?android:attr/activatedBackgroundIndicator</item>
+        <item name="android:minHeight">?android:attr/listPreferredItemHeightSmall</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:paddingBottom">16dp</item>
+        <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
+        <item name="android:paddingEnd">?android:attr/listPreferredItemPaddingEnd</item>
+    </style>
+    <style name="PreferenceLayout" parent="PreferenceLayoutBase" />
+
+</resources>

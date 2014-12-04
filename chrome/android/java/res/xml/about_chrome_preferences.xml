@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <Preference
+        android:key="application_version"
+        android:title="@string/application_version_title" />
+    <Preference
+        android:key="os_version"
+        android:title="@string/os_version_title" />
+    <Preference
+        android:key="webkit_version"
+        android:title="@string/blink_version_title" />
+    <Preference
+        android:key="javascript_version"
+        android:title="@string/javascript_version_title" />
+    <Preference
+        android:key="executable_path"
+        android:title="@string/executable_path_title" />
+    <Preference
+        android:key="profile_path"
+        android:title="@string/profile_path_title" />
+    <Preference
+        android:fragment="org.chromium.chrome.browser.preferences.LegalInformationPreferences"
+        android:key="legal_information"
+        android:title="@string/legal_information_title" />
+</PreferenceScreen>

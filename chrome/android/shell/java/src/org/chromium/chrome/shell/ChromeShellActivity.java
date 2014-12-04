@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.nfc.BeamProvider;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.PrintingControllerFactory;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -360,6 +361,9 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         } else if (id == R.id.share_menu_id || id == R.id.direct_share_menu_id) {
             ShareHelper.share(item.getItemId() == R.id.direct_share_menu_id, this,
                     activeTab.getTitle(), activeTab.getUrl(), null);
+            return true;
+        } else if (id == R.id.about_chrome) {
+            PreferencesLauncher.launchSettingsPage(this, null);
             return true;
         } else {
             return super.onOptionsItemSelected(item);

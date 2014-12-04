@@ -7,4 +7,9 @@
     <declare-styleable name="TintedImage">
         <attr name="tint" format="reference|color" />
     </declare-styleable>
+
+    <declare-styleable name="HyperlinkPreference">
+        <!-- The URL to load when the preference is clicked -->
+        <attr name="url" format="string" />
+    </declare-styleable>
 </resources>

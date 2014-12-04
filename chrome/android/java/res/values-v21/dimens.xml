@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<resources>
+    <!--  Preferences button dimensions -->
+    <!-- TODO(twellington): Remove this dimen after we switch the PreferencesTheme parent to
+                            AppCompat and change the value of pref_button_margin_start in
+                            values/dimens.xml -->
+    <dimen name="pref_button_margin_start">-4dp</dimen>
+</resources>

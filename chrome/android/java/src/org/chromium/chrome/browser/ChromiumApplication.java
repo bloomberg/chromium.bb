@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.content.app.ContentApplication;
 
 /**
@@ -12,6 +13,14 @@ import org.chromium.content.app.ContentApplication;
  * chrome layer.
  */
 public abstract class ChromiumApplication extends ContentApplication {
+
+    /**
+     * Returns the class name of the Settings activity.
+     */
+    public String getSettingsActivityName() {
+        return Preferences.class.getName();
+    }
+
     /**
      * Opens a protected content settings page, if available.
      */

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<!-- TODO(twellington): Remove this file once AppCompat provides Material-esque buttons -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="@dimen/pref_button_corner_radius" />
+    <solid android:color="@color/pref_accent_color" />
+    <padding android:top="@dimen/pref_button_vertical_padding"
+             android:bottom="@dimen/pref_button_vertical_padding" />
+</shape>
