@@ -264,12 +264,13 @@ deps = {
   'src/third_party/libaddressinput/src':
     Var('chromium_git') + '/external/libaddressinput.git' + '@' + '678a7f55a2ae7ccf417b4809e602b808b56a8ddb',
 
+  # These are all at libphonenumber r728.
   'src/third_party/libphonenumber/src/phonenumbers':
-    Var('chromium_git') + '/external/libphonenumber/cpp/src/phonenumbers.git' + '@' + '8d8b5b3b2035197795d27573d4cf566b5d9ad689',
+    Var('chromium_git') + '/external/libphonenumber/cpp/src/phonenumbers.git' + '@' + '0d6e3e50e17c94262ad1ca3b7d52b11223084bca',
   'src/third_party/libphonenumber/src/test':
-    Var('chromium_git') + '/external/libphonenumber/cpp/test.git' + '@' + '883b7b86541d64b2691f7c0e65facb0b08db73e8',
+    Var('chromium_git') + '/external/libphonenumber/cpp/test.git' + '@' + 'f351a7e007f9c9995494499120bbc361ca808a16',
   'src/third_party/libphonenumber/src/resources':
-    Var('chromium_git') + '/external/libphonenumber/resources.git' + '@' + 'de095548d2ae828a414e01f3951bfefba902b4e4',
+    Var('chromium_git') + '/external/libphonenumber/resources.git' + '@' + 'b6dfdc7952571ff7ee72643cd88c988cbe966396',
 
   'src/tools/deps2git':
    Var('chromium_git') + '/chromium/tools/deps2git.git' + '@' + 'f04828eb0b5acd3e7ad983c024870f17f17b06d9',

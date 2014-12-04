@@ -134,8 +134,6 @@
       '../../testing/gtest.gyp:gtest',
       'libphonenumber_without_metadata',
     ],
-    # TODO: https://code.google.com/p/libphonenumber/issues/detail?id=553
-    'variables': { 'clang_warning_flags': [ '-Wno-unused-local-typedef' ] },
     'conditions': [
       ['OS=="win"', {
         'action': [
