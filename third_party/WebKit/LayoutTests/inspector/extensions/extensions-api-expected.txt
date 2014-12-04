@@ -6,12 +6,6 @@ RUNNING TEST: extension_testAPI
 {
     audits : {
     }
-    console : {
-        onMessageAdded : {
-            addListener : <function>
-            removeListener : <function>
-        }
-    }
     inspectedWindow : {
         onResourceAdded : {
             addListener : <function>
