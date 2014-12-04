@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "third_party/WebKit/public/platform/WebArrayBuffer.h"
+#include "third_party/WebKit/public/web/WebArrayBuffer.h"
 #include "third_party/WebKit/public/web/WebArrayBufferConverter.h"
 #include "third_party/WebKit/public/web/WebArrayBufferView.h"
 #include "v8/include/v8.h"

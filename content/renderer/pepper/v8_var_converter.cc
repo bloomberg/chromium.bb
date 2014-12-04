@@ -22,7 +22,7 @@
 #include "ppapi/shared_impl/dictionary_var.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
-#include "third_party/WebKit/public/platform/WebArrayBuffer.h"
+#include "third_party/WebKit/public/web/WebArrayBuffer.h"
 #include "third_party/WebKit/public/web/WebArrayBufferConverter.h"
 
 using ppapi::ArrayBufferVar;

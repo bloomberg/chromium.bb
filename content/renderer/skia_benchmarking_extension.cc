@@ -16,7 +16,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "skia/ext/benchmarking_canvas.h"
-#include "third_party/WebKit/public/platform/WebArrayBuffer.h"
+#include "third_party/WebKit/public/web/WebArrayBuffer.h"
 #include "third_party/WebKit/public/web/WebArrayBufferConverter.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -29,7 +29,6 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #include "v8/include/v8.h"
-
 
 namespace content {
 
