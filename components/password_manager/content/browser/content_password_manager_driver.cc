@@ -41,9 +41,10 @@ ContentPasswordManagerDriver::~ContentPasswordManagerDriver() {}
 ContentPasswordManagerDriver*
 ContentPasswordManagerDriver::GetForRenderFrameHost(
     content::RenderFrameHost* render_frame_host) {
-  return ContentPasswordManagerDriverFactory::FromWebContents(
-             content::WebContents::FromRenderFrameHost(render_frame_host))
-      ->GetDriverForFrame(render_frame_host);
+  ContentPasswordManagerDriverFactory* factory =
+      ContentPasswordManagerDriverFactory::FromWebContents(
+             content::WebContents::FromRenderFrameHost(render_frame_host));
+  return factory ? factory->GetDriverForFrame(render_frame_host) : nullptr;
 }
 
 void ContentPasswordManagerDriver::FillPasswordForm(

@@ -208,9 +208,11 @@ void ChromeAutofillClient::OnZoomChanged(
 void ChromeAutofillClient::DetectAccountCreationForms(
     content::RenderFrameHost* rfh,
     const std::vector<autofill::FormStructure*>& forms) {
-  password_manager::ContentPasswordManagerDriver::GetForRenderFrameHost(rfh)
-      ->GetPasswordGenerationManager()
-      ->DetectAccountCreationForms(forms);
+  password_manager::ContentPasswordManagerDriver* driver =
+      password_manager::ContentPasswordManagerDriver::GetForRenderFrameHost(
+          rfh);
+  if (driver)
+    driver->GetPasswordGenerationManager()->DetectAccountCreationForms(forms);
 }
 
 void ChromeAutofillClient::DidFillOrPreviewField(
