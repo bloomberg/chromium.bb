@@ -165,15 +165,6 @@ class BlinkPerfEvents(benchmark.Benchmark):
     return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
-class BlinkPerfInteractive(benchmark.Benchmark):
-  tag = 'interactive'
-  test = _BlinkPerfMeasurement
-
-  def CreatePageSet(self, options):
-    path = os.path.join(BLINK_PERF_BASE_DIR, 'Interactive')
-    return CreatePageSetFromPath(path, SKIPPED_FILE)
-
-
 class BlinkPerfLayout(benchmark.Benchmark):
   tag = 'layout'
   test = _BlinkPerfMeasurement
