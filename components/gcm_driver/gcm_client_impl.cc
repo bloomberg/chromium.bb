@@ -603,18 +603,19 @@ void GCMClientImpl::IgnoreWriteResultCallback(bool success) {
 }
 
 void GCMClientImpl::Stop() {
+  // TODO(fgorski): Perhaps we should make a distinction between a Stop and a
+  // Shutdown.
   DVLOG(1) << "Stopping the GCM Client";
   weak_ptr_factory_.InvalidateWeakPtrs();
+  periodic_checkin_ptr_factory_.InvalidateWeakPtrs();
   device_checkin_info_.Reset();
   connection_factory_.reset();
   delegate_->OnDisconnected();
   mcs_client_.reset();
   checkin_request_.reset();
-  // Delete all of the pending registration requests, whithout telling the
-  // consumers.
-  // TODO(fgorski): Perhaps we should make a distinction between a Stop and a
-  // Shutdown.
+  // Delete all of the pending registration and unregistration requests.
   STLDeleteValues(&pending_registration_requests_);
+  STLDeleteValues(&pending_unregistration_requests_);
   state_ = INITIALIZED;
   gcm_store_->Close();
 }
