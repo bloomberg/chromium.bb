@@ -110,12 +110,7 @@ class Gsutil(object):
     return (code, out, err)
 
 
-def check_bucket_permissions(bucket, gsutil):
-  if not bucket:
-    print >> sys.stderr, 'Missing bucket %s.'
-    return (None, 1)
-  base_url = 'gs://%s' % bucket
-
+def check_bucket_permissions(base_url, gsutil):
   code, _, ls_err = gsutil.check_call('ls', base_url)
   if code != 0:
     print >> sys.stderr, ls_err
@@ -457,10 +452,13 @@ def main(args):
       parser.error('Output file %s exists and --no_resume is specified.'
                    % options.output)
 
+  base_url = 'gs://%s' % options.bucket
+
   # Check we have a valid bucket with valid permissions.
-  base_url, code = check_bucket_permissions(options.bucket, gsutil)
-  if code:
-    return code
+  if not options.no_auth:
+    code = check_bucket_permissions(base_url, gsutil, options.no_auth)
+    if code:
+      return code
 
   return download_from_google_storage(
       input_filename, base_url, gsutil, options.num_threads, options.directory,
