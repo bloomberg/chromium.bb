@@ -221,9 +221,9 @@ void AccountReconcilor::PerformLogoutAllAccountsAction() {
 
 void AccountReconcilor::StartReconcile() {
   if (!IsProfileConnected() || is_reconcile_started_ ||
-      get_gaia_accounts_callbacks_.size() > 0 ||
-      merge_session_helper_.is_running())
+      get_gaia_accounts_callbacks_.size() > 0) {
     return;
+  }
 
   is_reconcile_started_ = true;
   m_reconcile_start_time_ = base::Time::Now();
@@ -476,6 +476,7 @@ void AccountReconcilor::MergeSessionCompleted(
     const GoogleServiceAuthError& error) {
   VLOG(1) << "AccountReconcilor::MergeSessionCompleted: account_id="
           << account_id << " error=" << error.ToString();
+  DCHECK(is_reconcile_started_);
 
   if (MarkAccountAsAddedToCookie(account_id)) {
     CalculateIfReconcileIsDone();
