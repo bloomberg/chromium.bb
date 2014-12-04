@@ -36,7 +36,7 @@ def _AddTracingResults(events, results):
   mark_time = 0
   sweep_time = 0
   for event in events:
-    duration = event.thread_duration or 0.0
+    duration = event.thread_duration or event.duration
     if event.name == 'ThreadHeap::coalesce':
       values['oilpan_coalesce'].append(duration)
       continue
