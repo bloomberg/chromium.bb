@@ -55,7 +55,6 @@ ObjectProxy::ObjectProxy(Bus* bus,
     : bus_(bus),
       service_name_(service_name),
       object_path_(object_path),
-      filter_added_(false),
       ignore_service_unknown_errors_(
           options & IGNORE_SERVICE_UNKNOWN_ERRORS) {
 }
@@ -202,11 +201,8 @@ void ObjectProxy::WaitForServiceToBeAvailable(
 void ObjectProxy::Detach() {
   bus_->AssertOnDBusThread();
 
-  if (filter_added_) {
-    if (!bus_->RemoveFilterFunction(&ObjectProxy::HandleMessageThunk, this)) {
-      LOG(ERROR) << "Failed to remove filter function";
-    }
-  }
+  if (bus_->is_connected())
+    bus_->RemoveFilterFunction(&ObjectProxy::HandleMessageThunk, this);
 
   for (std::set<std::string>::iterator iter = match_rules_.begin();
        iter != match_rules_.end(); ++iter) {
@@ -377,15 +373,8 @@ bool ObjectProxy::ConnectToNameOwnerChangedSignal() {
   if (!bus_->Connect() || !bus_->SetUpAsyncOperations())
     return false;
 
-  // We should add the filter only once. Otherwise, HandleMessage() will
-  // be called more than once.
-  if (!filter_added_) {
-    if (bus_->AddFilterFunction(&ObjectProxy::HandleMessageThunk, this)) {
-      filter_added_ = true;
-    } else {
-      LOG(ERROR) << "Failed to add filter function";
-    }
-  }
+  bus_->AddFilterFunction(&ObjectProxy::HandleMessageThunk, this);
+
   // Add a match_rule listening NameOwnerChanged for the well-known name
   // |service_name_|.
   const std::string name_owner_changed_match_rule =

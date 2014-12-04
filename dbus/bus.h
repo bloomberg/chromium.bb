@@ -471,24 +471,23 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   virtual void Send(DBusMessage* request, uint32* serial);
 
   // Adds the message filter function. |filter_function| will be called
-  // when incoming messages are received. Returns true on success.
+  // when incoming messages are received.
   //
   // When a new incoming message arrives, filter functions are called in
   // the order that they were added until the the incoming message is
   // handled by a filter function.
   //
   // The same filter function associated with the same user data cannot be
-  // added more than once. Returns false for this case.
+  // added more than once.
   //
   // BLOCKING CALL.
-  virtual bool AddFilterFunction(DBusHandleMessageFunction filter_function,
+  virtual void AddFilterFunction(DBusHandleMessageFunction filter_function,
                                  void* user_data);
 
   // Removes the message filter previously added by AddFilterFunction().
-  // Returns true on success.
   //
   // BLOCKING CALL.
-  virtual bool RemoveFilterFunction(DBusHandleMessageFunction filter_function,
+  virtual void RemoveFilterFunction(DBusHandleMessageFunction filter_function,
                                     void* user_data);
 
   // Adds the match rule. Messages that match the rule will be processed

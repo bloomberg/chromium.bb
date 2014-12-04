@@ -690,7 +690,7 @@ void Bus::Send(DBusMessage* request, uint32* serial) {
   CHECK(success) << "Unable to allocate memory";
 }
 
-bool Bus::AddFilterFunction(DBusHandleMessageFunction filter_function,
+void Bus::AddFilterFunction(DBusHandleMessageFunction filter_function,
                             void* user_data) {
   DCHECK(connection_);
   AssertOnDBusThread();
@@ -701,17 +701,16 @@ bool Bus::AddFilterFunction(DBusHandleMessageFunction filter_function,
       filter_functions_added_.end()) {
     VLOG(1) << "Filter function already exists: " << filter_function
             << " with associated data: " << user_data;
-    return false;
+    return;
   }
 
   const bool success = dbus_connection_add_filter(
       connection_, filter_function, user_data, NULL);
   CHECK(success) << "Unable to allocate memory";
   filter_functions_added_.insert(filter_data_pair);
-  return true;
 }
 
-bool Bus::RemoveFilterFunction(DBusHandleMessageFunction filter_function,
+void Bus::RemoveFilterFunction(DBusHandleMessageFunction filter_function,
                                void* user_data) {
   DCHECK(connection_);
   AssertOnDBusThread();
@@ -723,12 +722,11 @@ bool Bus::RemoveFilterFunction(DBusHandleMessageFunction filter_function,
     VLOG(1) << "Requested to remove an unknown filter function: "
             << filter_function
             << " with associated data: " << user_data;
-    return false;
+    return;
   }
 
   dbus_connection_remove_filter(connection_, filter_function, user_data);
   filter_functions_added_.erase(filter_data_pair);
-  return true;
 }
 
 void Bus::AddMatch(const std::string& match_rule, DBusError* error) {
@@ -948,11 +946,8 @@ void Bus::ListenForServiceOwnerChangeInternal(
   if (!Connect() || !SetUpAsyncOperations())
     return;
 
-  if (service_owner_changed_listener_map_.empty()) {
-    bool filter_added =
-        AddFilterFunction(Bus::OnServiceOwnerChangedFilter, this);
-    DCHECK(filter_added);
-  }
+  if (service_owner_changed_listener_map_.empty())
+    AddFilterFunction(Bus::OnServiceOwnerChangedFilter, this);
 
   ServiceOwnerChangedListenerMap::iterator it =
       service_owner_changed_listener_map_.find(service_name);
@@ -1026,11 +1021,8 @@ void Bus::UnlistenForServiceOwnerChangeInternal(
   // And remove |service_owner_changed_listener_map_| entry.
   service_owner_changed_listener_map_.erase(it);
 
-  if (service_owner_changed_listener_map_.empty()) {
-    bool filter_removed =
-        RemoveFilterFunction(Bus::OnServiceOwnerChangedFilter, this);
-    DCHECK(filter_removed);
-  }
+  if (service_owner_changed_listener_map_.empty())
+    RemoveFilterFunction(Bus::OnServiceOwnerChangedFilter, this);
 }
 
 dbus_bool_t Bus::OnAddWatch(DBusWatch* raw_watch) {

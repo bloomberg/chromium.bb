@@ -155,8 +155,7 @@ void ObjectManager::CleanUp() {
   if (!setup_success_)
     return;
 
-  if (!bus_->RemoveFilterFunction(&ObjectManager::HandleMessageThunk, this))
-    LOG(ERROR) << "Failed to remove filter function";
+  bus_->RemoveFilterFunction(&ObjectManager::HandleMessageThunk, this);
 
   ScopedDBusError error;
   bus_->RemoveMatch(match_rule_, error.get());
@@ -216,10 +215,7 @@ bool ObjectManager::SetupMatchRuleAndFilter() {
           kPropertiesInterface,
           kPropertiesChanged);
 
-  if (!bus_->AddFilterFunction(&ObjectManager::HandleMessageThunk, this)) {
-    LOG(ERROR) << "ObjectManager failed to add filter function";
-    return false;
-  }
+  bus_->AddFilterFunction(&ObjectManager::HandleMessageThunk, this);
 
   ScopedDBusError error;
   bus_->AddMatch(match_rule, error.get());
