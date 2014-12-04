@@ -74,6 +74,7 @@ void av_register_all(void)
     REGISTER_DEMUXER (ANM,              anm);
     REGISTER_DEMUXER (APC,              apc);
     REGISTER_DEMUXER (APE,              ape);
+    REGISTER_DEMUXER (APNG,             apng);
     REGISTER_DEMUXER (AQTITLE,          aqtitle);
     REGISTER_MUXDEMUX(ASF,              asf);
     REGISTER_MUXDEMUX(ASS,              ass);
@@ -101,6 +102,7 @@ void av_register_all(void)
     REGISTER_DEMUXER (CINE,             cine);
     REGISTER_DEMUXER (CONCAT,           concat);
     REGISTER_MUXER   (CRC,              crc);
+    REGISTER_MUXER   (DASH,             dash);
     REGISTER_MUXDEMUX(DATA,             data);
     REGISTER_MUXDEMUX(DAUD,             daud);
     REGISTER_DEMUXER (DFA,              dfa);
@@ -310,6 +312,7 @@ void av_register_all(void)
     REGISTER_DEMUXER (WC3,              wc3);
     REGISTER_MUXER   (WEBM,             webm);
     REGISTER_MUXDEMUX(WEBM_DASH_MANIFEST, webm_dash_manifest);
+    REGISTER_MUXER   (WEBP,             webp);
     REGISTER_MUXDEMUX(WEBVTT,           webvtt);
     REGISTER_DEMUXER (WSAUD,            wsaud);
     REGISTER_DEMUXER (WSVQA,            wsvqa);
@@ -370,6 +373,7 @@ void av_register_all(void)
     REGISTER_PROTOCOL(TCP,              tcp);
     REGISTER_PROTOCOL(TLS,              tls);
     REGISTER_PROTOCOL(UDP,              udp);
+    REGISTER_PROTOCOL(UDPLITE,          udplite);
     REGISTER_PROTOCOL(UNIX,             unix);
 
     /* external libraries */

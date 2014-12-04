@@ -286,13 +286,10 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
     if (src->slice_count && src->slice_offset) {
         if (dst->slice_count < src->slice_count) {
-            int *tmp = av_realloc(dst->slice_offset, src->slice_count *
-                                  sizeof(*dst->slice_offset));
-            if (!tmp) {
-                av_free(dst->slice_offset);
-                return AVERROR(ENOMEM);
-            }
-            dst->slice_offset = tmp;
+            int err = av_reallocp_array(&dst->slice_offset, src->slice_count,
+                                        sizeof(*dst->slice_offset));
+            if (err < 0)
+                return err;
         }
         memcpy(dst->slice_offset, src->slice_offset,
                src->slice_count * sizeof(*dst->slice_offset));
@@ -654,8 +651,8 @@ int ff_frame_thread_init(AVCodecContext *avctx)
 
         p->frame = av_frame_alloc();
         if (!p->frame) {
-            err = AVERROR(ENOMEM);
             av_freep(&copy);
+            err = AVERROR(ENOMEM);
             goto error;
         }
 

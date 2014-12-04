@@ -704,7 +704,7 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
             MATCH_PER_STREAM_OPT(fix_sub_duration, i, ist->fix_sub_duration, ic, st);
             MATCH_PER_STREAM_OPT(canvas_sizes, str, canvas_size, ic, st);
             if (canvas_size &&
-                av_parse_video_size(&dec->width, &dec->height, canvas_size) < 0) {
+                av_parse_video_size(&ist->dec_ctx->width, &ist->dec_ctx->height, canvas_size) < 0) {
                 av_log(NULL, AV_LOG_FATAL, "Invalid canvas size: %s.\n", canvas_size);
                 exit_program(1);
             }
@@ -794,6 +794,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
     char *   video_codec_name = NULL;
     char *   audio_codec_name = NULL;
     char *subtitle_codec_name = NULL;
+    int scan_all_pmts_set = 0;
 
     if (o->format) {
         if (!(file_iformat = av_find_input_format(o->format))) {
@@ -864,12 +865,18 @@ static int open_input_file(OptionsContext *o, const char *filename)
     ic->flags |= AVFMT_FLAG_NONBLOCK;
     ic->interrupt_callback = int_cb;
 
+    if (!av_dict_get(o->g->format_opts, "scan_all_pmts", NULL, AV_DICT_MATCH_CASE)) {
+        av_dict_set(&o->g->format_opts, "scan_all_pmts", "1", AV_DICT_DONT_OVERWRITE);
+        scan_all_pmts_set = 1;
+    }
     /* open the input file with generic avformat function */
     err = avformat_open_input(&ic, filename, file_iformat, &o->g->format_opts);
     if (err < 0) {
         print_error(filename, err);
         exit_program(1);
     }
+    if (scan_all_pmts_set)
+        av_dict_set(&o->g->format_opts, "scan_all_pmts", NULL, AV_DICT_MATCH_CASE);
     remove_avoptions(&o->g->format_opts, o->g->codec_opts);
     assert_avoptions(o->g->format_opts);
 
@@ -1131,8 +1138,11 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
 
     MATCH_PER_STREAM_OPT(bitstream_filters, str, bsf, oc, st);
     while (bsf) {
+        char *arg = NULL;
         if (next = strchr(bsf, ','))
             *next++ = 0;
+        if (arg = strchr(bsf, '='))
+            *arg++ = 0;
         if (!(bsfc = av_bitstream_filter_init(bsf))) {
             av_log(NULL, AV_LOG_FATAL, "Unknown bitstream filter %s\n", bsf);
             exit_program(1);
@@ -1141,6 +1151,7 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
             bsfc_prev->next = bsfc;
         else
             ost->bitstream_filters = bsfc;
+        av_dict_set(&ost->bsf_args, bsfc->filter->name, arg, 0);
 
         bsfc_prev = bsfc;
         bsf       = next;
@@ -1624,31 +1635,36 @@ static int read_ffserver_streams(OptionsContext *o, AVFormatContext *s, const ch
         AVStream *st;
         OutputStream *ost;
         AVCodec *codec;
-        AVCodecContext *avctx;
+        const char *enc_config;
 
         codec = avcodec_find_encoder(ic->streams[i]->codec->codec_id);
         if (!codec) {
             av_log(s, AV_LOG_ERROR, "no encoder found for codec id %i\n", ic->streams[i]->codec->codec_id);
             return AVERROR(EINVAL);
         }
+        if (codec->type == AVMEDIA_TYPE_AUDIO)
+            opt_audio_codec(o, "c:a", codec->name);
+        else if (codec->type == AVMEDIA_TYPE_VIDEO)
+            opt_video_codec(o, "c:v", codec->name);
         ost   = new_output_stream(o, s, codec->type, -1);
         st    = ost->st;
-        avctx = st->codec;
-        ost->enc = codec;
 
-        // FIXME: a more elegant solution is needed
-        memcpy(st, ic->streams[i], sizeof(AVStream));
-        st->cur_dts = 0;
-        st->info = av_malloc(sizeof(*st->info));
-        memcpy(st->info, ic->streams[i]->info, sizeof(*st->info));
-        st->codec= avctx;
-        avcodec_copy_context(st->codec, ic->streams[i]->codec);
+        avcodec_get_context_defaults3(st->codec, codec);
+        enc_config = av_stream_get_recommended_encoder_configuration(ic->streams[i]);
+        if (enc_config) {
+            AVDictionary *opts = NULL;
+            av_dict_parse_string(&opts, enc_config, "=", ",", 0);
+            av_opt_set_dict2(st->codec, &opts, AV_OPT_SEARCH_CHILDREN);
+            av_dict_free(&opts);
+        }
 
         if (st->codec->codec_type == AVMEDIA_TYPE_AUDIO && !ost->stream_copy)
             choose_sample_fmt(st, codec);
         else if (st->codec->codec_type == AVMEDIA_TYPE_VIDEO && !ost->stream_copy)
             choose_pixel_fmt(st, st->codec, codec, st->codec->pix_fmt);
         avcodec_copy_context(ost->enc_ctx, st->codec);
+        if (enc_config)
+            av_dict_parse_string(&ost->encoder_opts, enc_config, "=", ",", 0);
     }
 
     avformat_close_input(&ic);
@@ -2815,7 +2831,7 @@ const OptionDef options[] = {
         "add metadata", "string=string" },
     { "dframes",        HAS_ARG | OPT_PERFILE | OPT_EXPERT |
                         OPT_OUTPUT,                                  { .func_arg = opt_data_frames },
-        "set the number of data frames to record", "number" },
+        "set the number of data frames to output", "number" },
     { "benchmark",      OPT_BOOL | OPT_EXPERT,                       { &do_benchmark },
         "add timings for benchmarking" },
     { "benchmark_all",  OPT_BOOL | OPT_EXPERT,                       { &do_benchmark_all },
@@ -2866,7 +2882,7 @@ const OptionDef options[] = {
     { "copypriorss",    OPT_INT | HAS_ARG | OPT_EXPERT | OPT_SPEC | OPT_OUTPUT,   { .off = OFFSET(copy_prior_start) },
         "copy or discard frames before start time" },
     { "frames",         OPT_INT64 | HAS_ARG | OPT_SPEC | OPT_OUTPUT, { .off = OFFSET(max_frames) },
-        "set the number of frames to record", "number" },
+        "set the number of frames to output", "number" },
     { "tag",            OPT_STRING | HAS_ARG | OPT_SPEC |
                         OPT_EXPERT | OPT_OUTPUT | OPT_INPUT,         { .off = OFFSET(codec_tags) },
         "force codec tag/fourcc", "fourcc/tag" },
@@ -2908,7 +2924,7 @@ const OptionDef options[] = {
 
     /* video options */
     { "vframes",      OPT_VIDEO | HAS_ARG  | OPT_PERFILE | OPT_OUTPUT,           { .func_arg = opt_video_frames },
-        "set the number of video frames to record", "number" },
+        "set the number of video frames to output", "number" },
     { "r",            OPT_VIDEO | HAS_ARG  | OPT_STRING | OPT_SPEC |
                       OPT_INPUT | OPT_OUTPUT,                                    { .off = OFFSET(frame_rates) },
         "set frame rate (Hz value, fraction or abbreviation)", "rate" },
@@ -2996,7 +3012,7 @@ const OptionDef options[] = {
 
     /* audio options */
     { "aframes",        OPT_AUDIO | HAS_ARG  | OPT_PERFILE | OPT_OUTPUT,           { .func_arg = opt_audio_frames },
-        "set the number of audio frames to record", "number" },
+        "set the number of audio frames to output", "number" },
     { "aq",             OPT_AUDIO | HAS_ARG  | OPT_PERFILE | OPT_OUTPUT,           { .func_arg = opt_audio_qscale },
         "set audio quality (codec-specific)", "quality", },
     { "ar",             OPT_AUDIO | HAS_ARG  | OPT_INT | OPT_SPEC |

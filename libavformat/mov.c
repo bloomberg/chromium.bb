@@ -691,16 +691,16 @@ static int mov_read_chan(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 static int mov_read_wfex(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 {
     AVStream *st;
+    int ret;
 
     if (c->fc->nb_streams < 1)
         return 0;
     st = c->fc->streams[c->fc->nb_streams-1];
 
-    if (ff_get_wav_header(pb, st->codec, atom.size) < 0) {
+    if ((ret = ff_get_wav_header(pb, st->codec, atom.size)) < 0)
         av_log(c->fc, AV_LOG_WARNING, "get_wav_header failed\n");
-    }
 
-    return 0;
+    return ret;
 }
 
 static int mov_read_pasp(MOVContext *c, AVIOContext *pb, MOVAtom atom)
@@ -1272,10 +1272,12 @@ static int mov_read_stco(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
     if (!entries)
         return 0;
-    if (entries >= UINT_MAX/sizeof(int64_t))
-        return AVERROR_INVALIDDATA;
 
-    sc->chunk_offsets = av_malloc(entries * sizeof(int64_t));
+    if (sc->chunk_offsets)
+        av_log(c->fc, AV_LOG_WARNING, "Duplicated STCO atom\n");
+    av_free(sc->chunk_offsets);
+    sc->chunk_count = 0;
+    sc->chunk_offsets = av_malloc_array(entries, sizeof(*sc->chunk_offsets));
     if (!sc->chunk_offsets)
         return AVERROR(ENOMEM);
     sc->chunk_count = entries;
@@ -1869,9 +1871,11 @@ static int mov_read_stsc(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
     if (!entries)
         return 0;
-    if (entries >= UINT_MAX / sizeof(*sc->stsc_data))
-        return AVERROR_INVALIDDATA;
-    sc->stsc_data = av_malloc(entries * sizeof(*sc->stsc_data));
+    if (sc->stsc_data)
+        av_log(c->fc, AV_LOG_WARNING, "Duplicated STSC atom\n");
+    av_free(sc->stsc_data);
+    sc->stsc_count = 0;
+    sc->stsc_data = av_malloc_array(entries, sizeof(*sc->stsc_data));
     if (!sc->stsc_data)
         return AVERROR(ENOMEM);
 
@@ -1903,9 +1907,11 @@ static int mov_read_stps(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     avio_rb32(pb); // version + flags
 
     entries = avio_rb32(pb);
-    if (entries >= UINT_MAX / sizeof(*sc->stps_data))
-        return AVERROR_INVALIDDATA;
-    sc->stps_data = av_malloc(entries * sizeof(*sc->stps_data));
+    if (sc->stps_data)
+        av_log(c->fc, AV_LOG_WARNING, "Duplicated STPS atom\n");
+    av_free(sc->stps_data);
+    sc->stps_count = 0;
+    sc->stps_data = av_malloc_array(entries, sizeof(*sc->stps_data));
     if (!sc->stps_data)
         return AVERROR(ENOMEM);
 
@@ -1947,9 +1953,11 @@ static int mov_read_stss(MOVContext *c, AVIOContext *pb, MOVAtom atom)
             st->need_parsing = AVSTREAM_PARSE_HEADERS;
         return 0;
     }
-    if (entries >= UINT_MAX / sizeof(int))
-        return AVERROR_INVALIDDATA;
-    sc->keyframes = av_malloc(entries * sizeof(int));
+    if (sc->keyframes)
+        av_log(c->fc, AV_LOG_WARNING, "Duplicated STSS atom\n");
+    av_free(sc->keyframes);
+    sc->keyframe_count = 0;
+    sc->keyframes = av_malloc_array(entries, sizeof(*sc->keyframes));
     if (!sc->keyframes)
         return AVERROR(ENOMEM);
 
@@ -2008,9 +2016,13 @@ static int mov_read_stsz(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
     if (!entries)
         return 0;
-    if (entries >= UINT_MAX / sizeof(int) || entries >= (UINT_MAX - 4) / field_size)
+    if (entries >= (UINT_MAX - 4) / field_size)
         return AVERROR_INVALIDDATA;
-    sc->sample_sizes = av_malloc(entries * sizeof(int));
+    if (sc->sample_sizes)
+        av_log(c->fc, AV_LOG_WARNING, "Duplicated STSZ atom\n");
+    av_free(sc->sample_sizes);
+    sc->sample_count = 0;
+    sc->sample_sizes = av_malloc_array(entries, sizeof(*sc->sample_sizes));
     if (!sc->sample_sizes)
         return AVERROR(ENOMEM);
 
@@ -2064,11 +2076,11 @@ static int mov_read_stts(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     av_dlog(c->fc, "track[%i].stts.entries = %i\n",
             c->fc->nb_streams-1, entries);
 
-    if (entries >= UINT_MAX / sizeof(*sc->stts_data))
-        return -1;
-
+    if (sc->stts_data)
+        av_log(c->fc, AV_LOG_WARNING, "Duplicated STTS atom\n");
     av_free(sc->stts_data);
-    sc->stts_data = av_malloc(entries * sizeof(*sc->stts_data));
+    sc->stts_count = 0;
+    sc->stts_data = av_malloc_array(entries, sizeof(*sc->stts_data));
     if (!sc->stts_data)
         return AVERROR(ENOMEM);
 
@@ -2207,9 +2219,11 @@ static int mov_read_sbgp(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     entries = avio_rb32(pb);
     if (!entries)
         return 0;
-    if (entries >= UINT_MAX / sizeof(*sc->rap_group))
-        return AVERROR_INVALIDDATA;
-    sc->rap_group = av_malloc(entries * sizeof(*sc->rap_group));
+    if (sc->rap_group)
+        av_log(c->fc, AV_LOG_WARNING, "Duplicated SBGP atom\n");
+    av_free(sc->rap_group);
+    sc->rap_group_count = 0;
+    sc->rap_group = av_malloc_array(entries, sizeof(*sc->rap_group));
     if (!sc->rap_group)
         return AVERROR(ENOMEM);
 
@@ -3819,36 +3833,42 @@ static int mov_read_mfra(MOVContext *c, AVIOContext *f)
 {
     int64_t stream_size = avio_size(f);
     int64_t original_pos = avio_tell(f);
+    int64_t seek_ret;
     int32_t mfra_size;
     int ret = -1;
-    if ((ret = avio_seek(f, stream_size - 4, SEEK_SET)) < 0) goto fail;
+    if ((seek_ret = avio_seek(f, stream_size - 4, SEEK_SET)) < 0) {
+        ret = seek_ret;
+        goto fail;
+    }
     mfra_size = avio_rb32(f);
     if (mfra_size < 0 || mfra_size > stream_size) {
         av_log(c->fc, AV_LOG_DEBUG, "doesn't look like mfra (unreasonable size)\n");
-        ret = -1;
         goto fail;
     }
-    if ((ret = avio_seek(f, -mfra_size, SEEK_CUR)) < 0) goto fail;
+    if ((seek_ret = avio_seek(f, -mfra_size, SEEK_CUR)) < 0) {
+        ret = seek_ret;
+        goto fail;
+    }
     if (avio_rb32(f) != mfra_size) {
         av_log(c->fc, AV_LOG_DEBUG, "doesn't look like mfra (size mismatch)\n");
-        ret = -1;
         goto fail;
     }
     if (avio_rb32(f) != MKBETAG('m', 'f', 'r', 'a')) {
         av_log(c->fc, AV_LOG_DEBUG, "doesn't look like mfra (tag mismatch)\n");
         goto fail;
     }
+    ret = 0;
     av_log(c->fc, AV_LOG_VERBOSE, "stream has mfra\n");
     while (!read_tfra(c, f)) {
         /* Empty */
     }
 fail:
-    ret = avio_seek(f, original_pos, SEEK_SET);
-    if (ret < 0)
+    seek_ret = avio_seek(f, original_pos, SEEK_SET);
+    if (seek_ret < 0) {
         av_log(c->fc, AV_LOG_ERROR,
                "failed to seek back after looking for mfra\n");
-    else
-        ret = 0;
+        ret = seek_ret;
+    }
     return ret;
 }
 

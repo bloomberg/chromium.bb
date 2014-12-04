@@ -215,7 +215,9 @@
       }],  # (target_arch == "ia32" or target_arch == "x64") and (ffmpeg_branding == "Chrome" or ffmpeg_branding == "ChromeOS") and (1)
       ['(1) and (ffmpeg_branding == "ChromiumOS" or ffmpeg_branding == "ChromeOS") and (1)', {
         'c_sources': [
+          'libavcodec/flac.c',
           'libavcodec/flac_parser.c',
+          'libavcodec/flacdata.c',
           'libavcodec/flacdec.c',
           'libavcodec/flacdsp.c',
           'libavformat/flacdec.c',
@@ -358,8 +360,6 @@
           'libavcodec/fft_fixed_32.c',
           'libavcodec/fft_float.c',
           'libavcodec/fft_init_table.c',
-          'libavcodec/flac.c',
-          'libavcodec/flacdata.c',
           'libavcodec/fmtconvert.c',
           'libavcodec/golomb.c',
           'libavcodec/h264pred.c',

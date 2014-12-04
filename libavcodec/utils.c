@@ -735,44 +735,34 @@ FF_ENABLE_DEPRECATION_WARNINGS
 int ff_init_buffer_info(AVCodecContext *avctx, AVFrame *frame)
 {
     AVPacket *pkt = avctx->internal->pkt;
+    int i;
+    static const struct {
+        enum AVPacketSideDataType packet;
+        enum AVFrameSideDataType frame;
+    } sd[] = {
+        { AV_PKT_DATA_REPLAYGAIN ,   AV_FRAME_DATA_REPLAYGAIN },
+        { AV_PKT_DATA_DISPLAYMATRIX, AV_FRAME_DATA_DISPLAYMATRIX },
+        { AV_PKT_DATA_STEREO3D,      AV_FRAME_DATA_STEREO3D },
+    };
 
     if (pkt) {
-        uint8_t *packet_sd;
-        AVFrameSideData *frame_sd;
-        int size;
         frame->pkt_pts = pkt->pts;
         av_frame_set_pkt_pos     (frame, pkt->pos);
         av_frame_set_pkt_duration(frame, pkt->duration);
         av_frame_set_pkt_size    (frame, pkt->size);
 
-        /* copy the replaygain data to the output frame */
-        packet_sd = av_packet_get_side_data(pkt, AV_PKT_DATA_REPLAYGAIN, &size);
-        if (packet_sd) {
-            frame_sd = av_frame_new_side_data(frame, AV_FRAME_DATA_REPLAYGAIN, size);
-            if (!frame_sd)
-                return AVERROR(ENOMEM);
+        for (i = 0; i < FF_ARRAY_ELEMS(sd); i++) {
+            int size;
+            uint8_t *packet_sd = av_packet_get_side_data(pkt, sd[i].packet, &size);
+            if (packet_sd) {
+                AVFrameSideData *frame_sd = av_frame_new_side_data(frame,
+                                                                   sd[i].frame,
+                                                                   size);
+                if (!frame_sd)
+                    return AVERROR(ENOMEM);
 
-            memcpy(frame_sd->data, packet_sd, size);
-        }
-
-        /* copy the displaymatrix to the output frame */
-        packet_sd = av_packet_get_side_data(pkt, AV_PKT_DATA_DISPLAYMATRIX, &size);
-        if (packet_sd) {
-            frame_sd = av_frame_new_side_data(frame, AV_FRAME_DATA_DISPLAYMATRIX, size);
-            if (!frame_sd)
-                return AVERROR(ENOMEM);
-
-            memcpy(frame_sd->data, packet_sd, size);
-        }
-
-        /* copy the stereo3d format to the output frame */
-        packet_sd = av_packet_get_side_data(pkt, AV_PKT_DATA_STEREO3D, &size);
-        if (packet_sd) {
-            frame_sd = av_frame_new_side_data(frame, AV_FRAME_DATA_STEREO3D, size);
-            if (!frame_sd)
-                return AVERROR(ENOMEM);
-
-            memcpy(frame_sd->data, packet_sd, size);
+                memcpy(frame_sd->data, packet_sd, size);
+            }
         }
     } else {
         frame->pkt_pts = AV_NOPTS_VALUE;
@@ -1210,6 +1200,11 @@ int ff_get_format(AVCodecContext *avctx, const enum AVPixelFormat *fmt)
     memcpy(choices, fmt, (n + 1) * sizeof(*choices));
 
     for (;;) {
+        if (avctx->hwaccel && avctx->hwaccel->uninit)
+            avctx->hwaccel->uninit(avctx);
+        av_freep(&avctx->internal->hwaccel_priv_data);
+        avctx->hwaccel = NULL;
+
         ret = avctx->get_format(avctx, choices);
 
         desc = av_pix_fmt_desc_get(ret);
@@ -1217,11 +1212,6 @@ int ff_get_format(AVCodecContext *avctx, const enum AVPixelFormat *fmt)
             ret = AV_PIX_FMT_NONE;
             break;
         }
-
-        if (avctx->hwaccel && avctx->hwaccel->uninit)
-            avctx->hwaccel->uninit(avctx);
-        av_freep(&avctx->internal->hwaccel_priv_data);
-        avctx->hwaccel = NULL;
 
         if (!(desc->flags & AV_PIX_FMT_FLAG_HWACCEL))
             break;
@@ -1700,6 +1690,8 @@ end:
     return ret;
 free_and_end:
     av_dict_free(&tmp);
+    if (codec->priv_class && codec->priv_data_size)
+        av_opt_free(avctx->priv_data);
     av_freep(&avctx->priv_data);
     if (avctx->internal) {
         av_frame_free(&avctx->internal->to_free);
@@ -3033,8 +3025,8 @@ void avcodec_string(char *buf, int buf_size, AVCodecContext *enc, int encode)
             if (enc->colorspace != AVCOL_SPC_UNSPECIFIED ||
                 enc->color_primaries != AVCOL_PRI_UNSPECIFIED ||
                 enc->color_trc != AVCOL_TRC_UNSPECIFIED) {
-                if (enc->colorspace != (enum AVColorSpace)enc->color_primaries ||
-                    enc->colorspace != (enum AVColorSpace)enc->color_trc) {
+                if (enc->colorspace != (int)enc->color_primaries ||
+                    enc->colorspace != (int)enc->color_trc) {
                     new_line = 1;
                     av_strlcatf(detail, sizeof(detail), "%s/%s/%s, ",
                                 av_color_space_name(enc->colorspace),
@@ -3322,6 +3314,7 @@ int av_get_audio_frame_duration(AVCodecContext *avctx, int frame_bytes)
     case AV_CODEC_ID_MP1:          return  384;
     case AV_CODEC_ID_ATRAC1:       return  512;
     case AV_CODEC_ID_ATRAC3:       return 1024;
+    case AV_CODEC_ID_ATRAC3P:      return 2048;
     case AV_CODEC_ID_MP2:
     case AV_CODEC_ID_MUSEPACK7:    return 1152;
     case AV_CODEC_ID_AC3:          return 1536;
@@ -3740,6 +3733,11 @@ int avpriv_bprint_to_extradata(AVCodecContext *avctx, struct AVBPrint *buf)
     ret = av_bprint_finalize(buf, &str);
     if (ret < 0)
         return ret;
+    if (!av_bprint_is_complete(buf)) {
+        av_free(str);
+        return AVERROR(ENOMEM);
+    }
+
     avctx->extradata = str;
     /* Note: the string is NUL terminated (so extradata can be read as a
      * string), but the ending character is not accounted in the size (in

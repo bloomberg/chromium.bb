@@ -1710,11 +1710,11 @@ The default is 0.707q and gives a Butterworth response.
 Mix channels with specific gain levels. The filter accepts the output
 channel layout followed by a set of channels definitions.
 
-This filter is also designed to remap efficiently the channels of an audio
+This filter is also designed to efficiently remap the channels of an audio
 stream.
 
 The filter accepts parameters of the form:
-"@var{l}:@var{outdef}:@var{outdef}:..."
+"@var{l}|@var{outdef}|@var{outdef}|..."
 
 @table @option
 @item l
@@ -1745,13 +1745,13 @@ avoiding clipping noise.
 For example, if you want to down-mix from stereo to mono, but with a bigger
 factor for the left channel:
 @example
-pan=1:c0=0.9*c0+0.1*c1
+pan=1c|c0=0.9*c0+0.1*c1
 @end example
 
 A customized down-mix to stereo that works automatically for 3-, 4-, 5- and
 7-channels surround:
 @example
-pan=stereo: FL < FL + 0.5*FC + 0.6*BL + 0.6*SL : FR < FR + 0.5*FC + 0.6*BR + 0.6*SR
+pan=stereo| FL < FL + 0.5*FC + 0.6*BL + 0.6*SL | FR < FR + 0.5*FC + 0.6*BR + 0.6*SR
 @end example
 
 Note that @command{ffmpeg} integrates a default down-mix (and up-mix) system
@@ -1774,25 +1774,25 @@ remapping.
 For example, if you have a 5.1 source and want a stereo audio stream by
 dropping the extra channels:
 @example
-pan="stereo: c0=FL : c1=FR"
+pan="stereo| c0=FL | c1=FR"
 @end example
 
 Given the same source, you can also switch front left and front right channels
 and keep the input channel layout:
 @example
-pan="5.1: c0=c1 : c1=c0 : c2=c2 : c3=c3 : c4=c4 : c5=c5"
+pan="5.1| c0=c1 | c1=c0 | c2=c2 | c3=c3 | c4=c4 | c5=c5"
 @end example
 
 If the input is a stereo audio stream, you can mute the front left channel (and
 still keep the stereo channel layout) with:
 @example
-pan="stereo:c1=c1"
+pan="stereo|c1=c1"
 @end example
 
 Still with a stereo audio stream input, you can copy the right channel in both
 front left and right:
 @example
-pan="stereo: c0=FR : c1=FR"
+pan="stereo| c0=FR | c1=FR"
 @end example
 
 @section replaygain
@@ -5574,12 +5574,21 @@ value.
 
 Detect video interlacing type.
 
-This filter tries to detect if the input is interlaced or progressive,
-top or bottom field first.
+This filter tries to detect if the input frames as interlaced, progressive,
+top or bottom field first. It will also try and detect fields that are
+repeated between adjacent frames (a sign of telecine).
+
+Single frame detection considers only immediately adjacent frames when classifying each frame.
+Multiple frame detection incorporates the classification history of previous frames.
 
 The filter will log these metadata values:
 
 @table @option
+@item single.current_frame
+Detected type of current frame using single-frame detection. One of:
+``tff'' (top field first), ``bff'' (bottom field first),
+``progressive'', or ``undetermined''
+
 @item single.tff
 Cumulative number of frames detected as top field first using single-frame detection.
 
@@ -5588,6 +5597,11 @@ Cumulative number of frames detected as top field first using multiple-frame det
 
 @item single.bff
 Cumulative number of frames detected as bottom field first using single-frame detection.
+
+@item multiple.current_frame
+Detected type of current frame using multiple-frame detection. One of:
+``tff'' (top field first), ``bff'' (bottom field first),
+``progressive'', or ``undetermined''
 
 @item multiple.bff
 Cumulative number of frames detected as bottom field first using multiple-frame detection.
@@ -5603,6 +5617,18 @@ Cumulative number of frames that could not be classified using single-frame dete
 
 @item multiple.undetermined
 Cumulative number of frames that could not be classified using multiple-frame detection.
+
+@item repeated.current_frame
+Which field in the current frame is repeated from the last. One of ``neither'', ``top'', or ``bottom''.
+
+@item repeated.neither
+Cumulative number of frames with no repeated field.
+
+@item repeated.top
+Cumulative number of frames with the top field repeated from the previous frame's top field.
+
+@item repeated.bottom
+Cumulative number of frames with the bottom field repeated from the previous frame's bottom field.
 @end table
 
 The filter accepts the following options:
@@ -5612,6 +5638,13 @@ The filter accepts the following options:
 Set interlacing threshold.
 @item prog_thres
 Set progressive threshold.
+@item repeat_thres
+Threshold for repeated field detection.
+@item half_life
+Number of frames after which a given frame's contribution to the
+statistics is halved (i.e., it contributes only 0.5 to it's
+classification). The default of 0 means that all frames seen are given
+full weight of 1.0 forever.
 @end table
 
 @section il
@@ -9161,6 +9194,20 @@ Only deinterlace frames marked as interlaced.
 @end table
 
 Default value is @samp{all}.
+@end table
+
+@section xbr
+Apply the xBR high-quality magnification filter which is designed for pixel
+art. It follows a set of edge-detection rules, see
+@url{http://www.libretro.com/forums/viewtopic.php?f=6&t=134}.
+
+It accepts the following option:
+
+@table @option
+@item n
+Set the scaling dimension: @code{2} for @code{2xBR}, @code{3} for
+@code{3xBR} and @code{4} for @code{4xBR}.
+Default is @code{3}.
 @end table
 
 @anchor{yadif}

@@ -39,6 +39,7 @@
 #include "libavutil/parseutils.h"
 #include "libavutil/mathematics.h"
 #include "libavutil/time.h"
+#include "libavutil/time_internal.h"
 #include "libavutil/timestamp.h"
 
 typedef struct SegmentListEntry {
@@ -569,6 +570,7 @@ static int seg_write_header(AVFormatContext *s)
     AVFormatContext *oc = NULL;
     AVDictionary *options = NULL;
     int ret;
+    int i;
 
     seg->segment_count = 0;
     if (!seg->write_header_trailer)
@@ -674,6 +676,13 @@ static int seg_write_header(AVFormatContext *s)
     }
     seg->segment_frame_count = 0;
 
+    av_assert0(s->nb_streams == oc->nb_streams);
+    for (i = 0; i < s->nb_streams; i++) {
+        AVStream *inner_st  = oc->streams[i];
+        AVStream *outer_st = s->streams[i];
+        avpriv_set_pts_info(outer_st, inner_st->pts_wrap_bits, inner_st->time_base.num, inner_st->time_base.den);
+    }
+
     if (oc->avoid_negative_ts > 0 && s->avoid_negative_ts < 0)
         s->avoid_negative_ts = 1;
 
@@ -716,11 +725,7 @@ static int seg_write_packet(AVFormatContext *s, AVPacket *pkt)
         if (seg->use_clocktime) {
             int64_t avgt = av_gettime();
             time_t sec = avgt / 1000000;
-#if HAVE_LOCALTIME_R
             localtime_r(&sec, &ti);
-#else
-            ti = *localtime(&sec);
-#endif
             usecs = (int64_t)(ti.tm_hour*3600 + ti.tm_min*60 + ti.tm_sec) * 1000000 + (avgt % 1000000);
             wrapped_val = usecs % seg->time;
             if (seg->last_cut != usecs && wrapped_val < seg->last_val) {

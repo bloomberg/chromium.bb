@@ -136,6 +136,14 @@ typedef struct {
 typedef struct {
     UID uid;
     enum MXFMetadataSetType type;
+    UID *structural_components_refs;
+    int structural_components_count;
+    int64_t duration;
+} MXFEssenceGroup;
+
+typedef struct {
+    UID uid;
+    enum MXFMetadataSetType type;
     MXFSequence *sequence; /* mandatory, and only one */
     UID sequence_ref;
     int track_id;
@@ -161,6 +169,7 @@ typedef struct {
     int field_dominance;
     int channels;
     int bits_per_sample;
+    int64_t duration; /* ContainerDuration optional property */
     unsigned int component_depth;
     unsigned int horiz_subsampling;
     unsigned int vert_subsampling;
@@ -668,22 +677,6 @@ static int mxf_read_source_clip(void *arg, AVIOContext *pb, int tag, int size, U
     return 0;
 }
 
-static int mxf_read_material_package(void *arg, AVIOContext *pb, int tag, int size, UID uid, int64_t klv_offset)
-{
-    MXFPackage *package = arg;
-    switch(tag) {
-    case 0x4403:
-        package->tracks_count = avio_rb32(pb);
-        package->tracks_refs = av_calloc(package->tracks_count, sizeof(UID));
-        if (!package->tracks_refs)
-            return AVERROR(ENOMEM);
-        avio_skip(pb, 4); /* useless size of objects, always 16 according to specs */
-        avio_read(pb, (uint8_t *)package->tracks_refs, package->tracks_count * sizeof(UID));
-        break;
-    }
-    return 0;
-}
-
 static int mxf_read_timecode_component(void *arg, AVIOContext *pb, int tag, int size, UID uid, int64_t klv_offset)
 {
     MXFTimecodeComponent *mxf_timecode = arg;
@@ -749,10 +742,33 @@ static int mxf_read_sequence(void *arg, AVIOContext *pb, int tag, int size, UID 
     case 0x1001:
         sequence->structural_components_count = avio_rb32(pb);
         sequence->structural_components_refs = av_calloc(sequence->structural_components_count, sizeof(UID));
-        if (!sequence->structural_components_refs)
+        if (!sequence->structural_components_refs) {
+            sequence->structural_components_count = 0;
             return AVERROR(ENOMEM);
+        }
         avio_skip(pb, 4); /* useless size of objects, always 16 according to specs */
         avio_read(pb, (uint8_t *)sequence->structural_components_refs, sequence->structural_components_count * sizeof(UID));
+        break;
+    }
+    return 0;
+}
+
+static int mxf_read_essence_group(void *arg, AVIOContext *pb, int tag, int size, UID uid, int64_t klv_offset)
+{
+    MXFEssenceGroup *essence_group = arg;
+    switch (tag) {
+    case 0x0202:
+        essence_group->duration = avio_rb64(pb);
+        break;
+    case 0x0501:
+        essence_group->structural_components_count = avio_rb32(pb);
+        essence_group->structural_components_refs = av_calloc(essence_group->structural_components_count, sizeof(UID));
+        if (!essence_group->structural_components_refs) {
+            essence_group->structural_components_count = 0;
+            return AVERROR(ENOMEM);
+        }
+        avio_skip(pb, 4); /* useless size of objects, always 16 according to specs */
+        avio_read(pb, (uint8_t *)essence_group->structural_components_refs, essence_group->structural_components_count * sizeof(UID));
         break;
     }
     return 0;
@@ -779,7 +795,7 @@ static int mxf_read_utf16_string(AVIOContext *pb, int size, char** str)
     return ret;
 }
 
-static int mxf_read_source_package(void *arg, AVIOContext *pb, int tag, int size, UID uid, int64_t klv_offset)
+static int mxf_read_package(void *arg, AVIOContext *pb, int tag, int size, UID uid, int64_t klv_offset)
 {
     MXFPackage *package = arg;
     switch(tag) {
@@ -888,7 +904,6 @@ static void mxf_read_pixel_layout(AVIOContext *pb, MXFDescriptor *descriptor)
 static int mxf_read_generic_descriptor(void *arg, AVIOContext *pb, int tag, int size, UID uid, int64_t klv_offset)
 {
     MXFDescriptor *descriptor = arg;
-    descriptor->pix_fmt = AV_PIX_FMT_NONE;
     switch(tag) {
     case 0x3F01:
         descriptor->sub_descriptors_count = avio_rb32(pb);
@@ -897,6 +912,9 @@ static int mxf_read_generic_descriptor(void *arg, AVIOContext *pb, int tag, int 
             return AVERROR(ENOMEM);
         avio_skip(pb, 4); /* useless size of objects, always 16 according to specs */
         avio_read(pb, (uint8_t *)descriptor->sub_descriptors_refs, descriptor->sub_descriptors_count * sizeof(UID));
+        break;
+    case 0x3002: /* ContainerDuration */
+        descriptor->duration = avio_rb64(pb);
         break;
     case 0x3004:
         avio_read(pb, descriptor->essence_container_ul, 16);
@@ -1010,6 +1028,7 @@ static const MXFCodecUL mxf_picture_essence_container_uls[] = {
     { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x02,0x0d,0x01,0x03,0x01,0x02,0x04,0x60,0x01 }, 14, AV_CODEC_ID_MPEG2VIDEO }, /* MPEG-ES Frame wrapped */
     { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x01,0x0d,0x01,0x03,0x01,0x02,0x02,0x41,0x01 }, 14,    AV_CODEC_ID_DVVIDEO }, /* DV 625 25mbps */
     { { 0x06,0x0e,0x2b,0x34,0x04,0x01,0x01,0x01,0x0d,0x01,0x03,0x01,0x02,0x05,0x00,0x00 }, 14,   AV_CODEC_ID_RAWVIDEO }, /* Uncompressed Picture */
+    { { 0x06,0x0e,0x2b,0x34,0x01,0x01,0x01,0xff,0x4b,0x46,0x41,0x41,0x00,0x0d,0x4d,0x4f }, 14,   AV_CODEC_ID_RAWVIDEO }, /* Legacy ?? Uncompressed Picture */
     { { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 },  0,      AV_CODEC_ID_NONE },
 };
 
@@ -1416,6 +1435,34 @@ static int mxf_is_intra_only(MXFDescriptor *descriptor)
                             &descriptor->essence_codec_ul)->id     != AV_CODEC_ID_NONE;
 }
 
+static int mxf_uid_to_str(UID uid, char **str)
+{
+    int i;
+    char *p;
+    p = *str = av_mallocz(sizeof(UID) * 2 + 4 + 1);
+    if (!p)
+        return AVERROR(ENOMEM);
+    for (i = 0; i < sizeof(UID); i++) {
+        snprintf(p, 2 + 1, "%.2x", uid[i]);
+        p += 2;
+        if (i == 3 || i == 5 || i == 7 || i == 9) {
+            snprintf(p, 1 + 1, "-");
+            p++;
+        }
+    }
+    return 0;
+}
+
+static int mxf_add_uid_metadata(AVDictionary **pm, const char *key, UID uid)
+{
+    char *str;
+    int ret;
+    if ((ret = mxf_uid_to_str(uid, &str)) < 0)
+        return ret;
+    av_dict_set(pm, key, str, AV_DICT_DONT_STRDUP_VAL);
+    return 0;
+}
+
 static int mxf_add_timecode_metadata(AVDictionary **pm, const char *key, AVTimecode *tc)
 {
     char buf[AV_TIMECODE_STR_SIZE];
@@ -1424,37 +1471,112 @@ static int mxf_add_timecode_metadata(AVDictionary **pm, const char *key, AVTimec
     return 0;
 }
 
+static MXFTimecodeComponent* mxf_resolve_timecode_component(MXFContext *mxf, UID *strong_ref)
+{
+    MXFStructuralComponent *component = NULL;
+    MXFPulldownComponent *pulldown = NULL;
+
+    component = mxf_resolve_strong_ref(mxf, strong_ref, AnyType);
+    if (!component)
+        return NULL;
+
+    switch (component->type) {
+    case TimecodeComponent:
+        return (MXFTimecodeComponent*)component;
+    case PulldownComponent: /* timcode component may be located on a pulldown component */
+        pulldown = (MXFPulldownComponent*)component;
+        return mxf_resolve_strong_ref(mxf, &pulldown->input_segment_ref, TimecodeComponent);
+    default:
+        break;
+    }
+    return NULL;
+}
+
+static MXFPackage* mxf_resolve_source_package(MXFContext *mxf, UID package_uid)
+{
+    MXFPackage *package = NULL;
+    int i;
+
+    for (i = 0; i < mxf->packages_count; i++) {
+        package = mxf_resolve_strong_ref(mxf, &mxf->packages_refs[i], SourcePackage);
+        if (!package)
+            continue;
+
+        if (!memcmp(package->package_uid, package_uid, 16))
+            return package;
+    }
+    return NULL;
+}
+
+static MXFStructuralComponent* mxf_resolve_essence_group_choice(MXFContext *mxf, MXFEssenceGroup *essence_group)
+{
+    MXFStructuralComponent *component = NULL;
+    MXFPackage *package = NULL;
+    MXFDescriptor *descriptor = NULL;
+    int i;
+
+    if (!essence_group || !essence_group->structural_components_count)
+        return NULL;
+
+    /* essence groups contains multiple representations of the same media,
+       this return the first components with a valid Descriptor typically index 0 */
+    for (i =0; i < essence_group->structural_components_count; i++){
+        component = mxf_resolve_strong_ref(mxf, &essence_group->structural_components_refs[i], SourceClip);
+        if (!component)
+            continue;
+
+        if (!(package = mxf_resolve_source_package(mxf, component->source_package_uid)))
+            continue;
+
+        descriptor = mxf_resolve_strong_ref(mxf, &package->descriptor_ref, Descriptor);
+        if (descriptor){
+            /* HACK: force the duration of the component to match the duration of the descriptor */
+            if (descriptor->duration != AV_NOPTS_VALUE)
+                component->duration = descriptor->duration;
+            return component;
+        }
+    }
+    return NULL;
+}
+
+static MXFStructuralComponent* mxf_resolve_sourceclip(MXFContext *mxf, UID *strong_ref)
+{
+    MXFStructuralComponent *component = NULL;
+
+    component = mxf_resolve_strong_ref(mxf, strong_ref, AnyType);
+    if (!component)
+        return NULL;
+    switch (component->type) {
+        case SourceClip:
+            return component;
+        case EssenceGroup:
+            return mxf_resolve_essence_group_choice(mxf, (MXFEssenceGroup*) component);
+        default:
+            break;
+    }
+    return NULL;
+}
+
 static int mxf_parse_physical_source_package(MXFContext *mxf, MXFTrack *source_track, AVStream *st)
 {
-    MXFPackage *temp_package = NULL;
     MXFPackage *physical_package = NULL;
     MXFTrack *physical_track = NULL;
-    MXFStructuralComponent *component = NULL;
     MXFStructuralComponent *sourceclip = NULL;
     MXFTimecodeComponent *mxf_tc = NULL;
-    MXFPulldownComponent *mxf_pulldown = NULL;
     int i, j, k;
     AVTimecode tc;
     int flags;
     int64_t start_position;
 
     for (i = 0; i < source_track->sequence->structural_components_count; i++) {
-        component = mxf_resolve_strong_ref(mxf, &source_track->sequence->structural_components_refs[i], SourceClip);
-        if (!component)
+        sourceclip = mxf_resolve_strong_ref(mxf, &source_track->sequence->structural_components_refs[i], SourceClip);
+        if (!sourceclip)
             continue;
 
-        for (j = 0; j < mxf->packages_count; j++) {
-            temp_package = mxf_resolve_strong_ref(mxf, &mxf->packages_refs[j], SourcePackage);
-            if (!temp_package)
-                continue;
-            if (!memcmp(temp_package->package_uid, component->source_package_uid, 16)){
-                physical_package = temp_package;
-                sourceclip = component;
-                break;
-            }
-        }
-        if (!physical_package)
+        if (!(physical_package = mxf_resolve_source_package(mxf, sourceclip->source_package_uid)))
             break;
+
+        mxf_add_uid_metadata(&st->metadata, "reel_uid", physical_package->package_uid);
 
         /* the name of physical source package is name of the reel or tape */
         if (physical_package->name && physical_package->name[0])
@@ -1475,19 +1597,9 @@ static int mxf_parse_physical_source_package(MXFContext *mxf, MXFTrack *source_t
             }
 
             for (k = 0; k < physical_track->sequence->structural_components_count; k++) {
-                component = mxf_resolve_strong_ref(mxf, &physical_track->sequence->structural_components_refs[k], TimecodeComponent);
-                if (!component){
-                    /* timcode component may be located on a pulldown component */
-                    component = mxf_resolve_strong_ref(mxf, &physical_track->sequence->structural_components_refs[k], PulldownComponent);
-                    if (!component)
-                        continue;
-                    mxf_pulldown = (MXFPulldownComponent*)component;
-                    component = mxf_resolve_strong_ref(mxf, &mxf_pulldown->input_segment_ref, TimecodeComponent);
-                    if (!component)
-                        continue;
-                }
+                if (!(mxf_tc = mxf_resolve_timecode_component(mxf, &physical_track->sequence->structural_components_refs[k])))
+                    continue;
 
-                mxf_tc = (MXFTimecodeComponent*)component;
                 flags = mxf_tc->drop_frame == 1 ? AV_TIMECODE_FLAG_DROPFRAME : 0;
                 /* scale sourceclip start_position to match physical track edit rate */
                 start_position = av_rescale_q(sourceclip->start_position,
@@ -1508,7 +1620,6 @@ static int mxf_parse_physical_source_package(MXFContext *mxf, MXFTrack *source_t
 static int mxf_parse_structural_metadata(MXFContext *mxf)
 {
     MXFPackage *material_package = NULL;
-    MXFPackage *temp_package = NULL;
     int i, j, k, ret;
 
     av_dlog(mxf->fc, "metadata sets count %d\n", mxf->metadata_sets_count);
@@ -1521,6 +1632,10 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
         av_log(mxf->fc, AV_LOG_ERROR, "no material package found\n");
         return AVERROR_INVALIDDATA;
     }
+
+    mxf_add_uid_metadata(&mxf->fc->metadata, "material_package_uid", material_package->package_uid);
+    if (material_package->name && material_package->name[0])
+        av_dict_set(&mxf->fc->metadata, "material_package_name", material_package->name, 0);
 
     for (i = 0; i < material_package->tracks_count; i++) {
         MXFPackage *source_package = NULL;
@@ -1571,19 +1686,11 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
 
         /* TODO: handle multiple source clips */
         for (j = 0; j < material_track->sequence->structural_components_count; j++) {
-            component = mxf_resolve_strong_ref(mxf, &material_track->sequence->structural_components_refs[j], SourceClip);
+            component = mxf_resolve_sourceclip(mxf, &material_track->sequence->structural_components_refs[j]);
             if (!component)
                 continue;
 
-            for (k = 0; k < mxf->packages_count; k++) {
-                temp_package = mxf_resolve_strong_ref(mxf, &mxf->packages_refs[k], SourcePackage);
-                if (!temp_package)
-                    continue;
-                if (!memcmp(temp_package->package_uid, component->source_package_uid, 16)) {
-                    source_package = temp_package;
-                    break;
-                }
-            }
+            source_package = mxf_resolve_source_package(mxf, component->source_package_uid);
             if (!source_package) {
                 av_dlog(mxf->fc, "material track %d: no corresponding source package found\n", material_track->track_id);
                 break;
@@ -1702,6 +1809,10 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
         }
         av_log(mxf->fc, AV_LOG_VERBOSE, "\n");
 
+        mxf_add_uid_metadata(&st->metadata, "file_package_uid", source_package->package_uid);
+        if (source_package->name && source_package->name[0])
+            av_dict_set(&st->metadata, "file_package_name", source_package->name, 0);
+
         mxf_parse_physical_source_package(mxf, source_track, st);
 
         if (st->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
@@ -1739,6 +1850,7 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
                         avpriv_request_sample(mxf->fc,
                                               "Field dominance %d support",
                                               descriptor->field_dominance);
+                    case 0: // we already have many samples with field_dominance == unknown
                         break;
                     }
                     /* Turn field height into frame height. */
@@ -1771,6 +1883,8 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
             if (source_track->sequence->origin) {
                 av_dict_set_int(&st->metadata, "source_track_origin", source_track->sequence->origin, 0);
             }
+            if (descriptor->aspect_ratio.num && descriptor->aspect_ratio.den)
+                st->display_aspect_ratio = descriptor->aspect_ratio;
         } else if (st->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
             container_ul = mxf_get_codec_ul(mxf_sound_essence_container_uls, essence_container_ul);
             /* Only overwrite existing codec ID if it is unset or A-law, which is the default according to SMPTE RP 224. */
@@ -1837,24 +1951,6 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
     ret = 0;
 fail_and_free:
     return ret;
-}
-
-static int mxf_uid_to_str(UID uid, char **str)
-{
-    int i;
-    char *p;
-    p = *str = av_mallocz(sizeof(UID) * 2 + 4 + 1);
-    if (!p)
-        return AVERROR(ENOMEM);
-    for (i = 0; i < sizeof(UID); i++) {
-        snprintf(p, 2 + 1, "%.2x", uid[i]);
-        p += 2;
-        if (i == 3 || i == 5 || i == 7 || i == 9) {
-            snprintf(p, 1 + 1, "-");
-            p++;
-        }
-    }
-    return 0;
 }
 
 static int mxf_timestamp_to_str(uint64_t timestamp, char **str)
@@ -1956,9 +2052,10 @@ static const MXFMetadataReadTableEntry mxf_metadata_read_table[] = {
     { { 0x06,0x0e,0x2b,0x34,0x02,0x05,0x01,0x01,0x0d,0x01,0x02,0x01,0x01,0x04,0x04,0x00 }, mxf_read_partition_pack },
     { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x30,0x00 }, mxf_read_identification_metadata },
     { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x18,0x00 }, mxf_read_content_storage, 0, AnyType },
-    { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x37,0x00 }, mxf_read_source_package, sizeof(MXFPackage), SourcePackage },
-    { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x36,0x00 }, mxf_read_material_package, sizeof(MXFPackage), MaterialPackage },
+    { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x37,0x00 }, mxf_read_package, sizeof(MXFPackage), SourcePackage },
+    { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x36,0x00 }, mxf_read_package, sizeof(MXFPackage), MaterialPackage },
     { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x0f,0x00 }, mxf_read_sequence, sizeof(MXFSequence), Sequence },
+    { { 0x06,0x0E,0x2B,0x34,0x02,0x53,0x01,0x01,0x0D,0x01,0x01,0x01,0x01,0x01,0x05,0x00 }, mxf_read_essence_group, sizeof(MXFEssenceGroup), EssenceGroup},
     { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x11,0x00 }, mxf_read_source_clip, sizeof(MXFStructuralComponent), SourceClip },
     { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x44,0x00 }, mxf_read_generic_descriptor, sizeof(MXFDescriptor), MultipleDescriptor },
     { { 0x06,0x0e,0x2b,0x34,0x02,0x53,0x01,0x01,0x0d,0x01,0x01,0x01,0x01,0x01,0x42,0x00 }, mxf_read_generic_descriptor, sizeof(MXFDescriptor), Descriptor }, /* Generic Sound */
@@ -1979,6 +2076,20 @@ static const MXFMetadataReadTableEntry mxf_metadata_read_table[] = {
     { { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 }, NULL, 0, AnyType },
 };
 
+static int mxf_metadataset_init(MXFMetadataSet *ctx, enum MXFMetadataSetType type)
+{
+    switch (type){
+    case MultipleDescriptor:
+    case Descriptor:
+        ((MXFDescriptor*)ctx)->pix_fmt = AV_PIX_FMT_NONE;
+        ((MXFDescriptor*)ctx)->duration = AV_NOPTS_VALUE;
+        break;
+    default:
+        break;
+    }
+    return 0;
+}
+
 static int mxf_read_local_tags(MXFContext *mxf, KLVPacket *klv, MXFMetadataReadFunc *read_child, int ctx_size, enum MXFMetadataSetType type)
 {
     AVIOContext *pb = mxf->fc->pb;
@@ -1987,6 +2098,7 @@ static int mxf_read_local_tags(MXFContext *mxf, KLVPacket *klv, MXFMetadataReadF
 
     if (!ctx)
         return AVERROR(ENOMEM);
+    mxf_metadataset_init(ctx, type);
     while (avio_tell(pb) + 4 < klv_end && !avio_feof(pb)) {
         int ret;
         int tag = avio_rb16(pb);
@@ -2609,7 +2721,7 @@ static int mxf_read_packet_old(AVFormatContext *s, AVPacket *pkt)
             pkt->stream_index = index;
             pkt->pos = klv.offset;
 
-            codec = s->streams[index]->codec;
+            codec = st->codec;
 
             if (codec->codec_type == AVMEDIA_TYPE_VIDEO && next_ofs >= 0) {
                 /* mxf->current_edit_unit good - see if we have an
@@ -2723,6 +2835,9 @@ static int mxf_read_close(AVFormatContext *s)
             break;
         case Sequence:
             av_freep(&((MXFSequence *)mxf->metadata_sets[i])->structural_components_refs);
+            break;
+        case EssenceGroup:
+            av_freep(&((MXFEssenceGroup *)mxf->metadata_sets[i])->structural_components_refs);
             break;
         case SourcePackage:
         case MaterialPackage:
