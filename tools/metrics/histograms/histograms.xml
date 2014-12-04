@@ -35497,6 +35497,52 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram
+    name="Startup.Experimental.FirstWebContents.MainFrameLoad.ManyBuckets"
+    units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    An experimental metric only collected on the dev and canary channels.
+    Measure the elapsed time from process launch to the first main frame load of
+    the first web contents. Uses significantly more buckets, with reduced
+    ranges.
+  </summary>
+</histogram>
+
+<histogram
+    name="Startup.Experimental.FirstWebContents.MainFrameLoad.StandardBuckets"
+    units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    An experimental metric only collected on the dev and canary channels.
+    Measure the elapsed time from process launch to the first main frame load of
+    the first web contents. Uses standard bucket ranges.
+  </summary>
+</histogram>
+
+<histogram
+    name="Startup.Experimental.FirstWebContents.NonEmptyPaint.ManyBuckets"
+    units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    An experimental metric only collected on the dev and canary channels.
+    Measure the elapsed time from process launch to the first non-empty paint of
+    the first web contents. Uses significantly more buckets, with reduced
+    ranges.
+  </summary>
+</histogram>
+
+<histogram
+    name="Startup.Experimental.FirstWebContents.NonEmptyPaint.StandardBuckets"
+    units="milliseconds">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    An experimental metric only collected on the dev and canary channels.
+    Measure the elapsed time from process launch to the first non-empty paint of
+    the first web contents. Uses standard bucket ranges.
+  </summary>
+</histogram>
+
 <histogram name="Startup.Fling.TimeToDisplayVideo" units="milliseconds">
   <owner>jeremy@chromium.org</owner>
   <summary>

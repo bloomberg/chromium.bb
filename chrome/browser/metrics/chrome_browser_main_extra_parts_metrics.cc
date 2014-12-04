@@ -264,6 +264,14 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   UMA_HISTOGRAM_COUNTS_100("Hardware.Display.Count.OnStartup", display_count_);
   gfx::Screen::GetNativeScreen()->AddObserver(this);
   is_screen_observer_ = true;
+
+#if !defined(OS_ANDROID)
+  if (FirstWebContentsProfiler::ShouldCollectMetrics()) {
+    first_web_contents_profiler_ =
+        FirstWebContentsProfiler::CreateProfilerForFirstWebContents(this)
+            .Pass();
+  }
+#endif  // !defined(OS_ANDROID)
 }
 
 void ChromeBrowserMainExtraPartsMetrics::OnDisplayAdded(
@@ -279,6 +287,10 @@ void ChromeBrowserMainExtraPartsMetrics::OnDisplayRemoved(
 void ChromeBrowserMainExtraPartsMetrics::OnDisplayMetricsChanged(
     const gfx::Display& display,
     uint32_t changed_metrics) {
+}
+
+void ChromeBrowserMainExtraPartsMetrics::ProfilerFinishedCollectingMetrics() {
+  first_web_contents_profiler_.reset();
 }
 
 void ChromeBrowserMainExtraPartsMetrics::EmitDisplaysChangedMetric() {

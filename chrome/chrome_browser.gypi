@@ -1146,6 +1146,8 @@
       'browser/metrics/chrome_stability_metrics_provider.h',
       'browser/metrics/field_trial_synchronizer.cc',
       'browser/metrics/field_trial_synchronizer.h',
+      'browser/metrics/first_web_contents_profiler.cc',
+      'browser/metrics/first_web_contents_profiler.h',
       'browser/metrics/google_update_metrics_provider_win.cc',
       'browser/metrics/google_update_metrics_provider_win.h',
       'browser/metrics/jumplist_metrics_win.cc',

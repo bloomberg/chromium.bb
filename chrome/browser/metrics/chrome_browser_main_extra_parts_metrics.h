@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "chrome/browser/metrics/first_web_contents_profiler.h"
 #include "ui/gfx/display_observer.h"
 
 class ChromeBrowserMainParts;
@@ -17,8 +18,10 @@ namespace chrome {
 void AddMetricsExtraParts(ChromeBrowserMainParts* main_parts);
 }
 
-class ChromeBrowserMainExtraPartsMetrics : public ChromeBrowserMainExtraParts,
-                                           public gfx::DisplayObserver {
+class ChromeBrowserMainExtraPartsMetrics
+    : public ChromeBrowserMainExtraParts,
+      public gfx::DisplayObserver,
+      public FirstWebContentsProfiler::Delegate {
  public:
   ChromeBrowserMainExtraPartsMetrics();
   ~ChromeBrowserMainExtraPartsMetrics() override;
@@ -40,6 +43,9 @@ class ChromeBrowserMainExtraPartsMetrics : public ChromeBrowserMainExtraParts,
   virtual void OnDisplayMetricsChanged(const gfx::Display& display,
                                        uint32_t changed_metrics) override;
 
+  // FirstWebContentsProfilerDelegate overrides.
+  void ProfilerFinishedCollectingMetrics() override;
+
   // If the number of displays has changed, emit a UMA metric.
   void EmitDisplaysChangedMetric();
 
@@ -49,6 +55,9 @@ class ChromeBrowserMainExtraPartsMetrics : public ChromeBrowserMainExtraParts,
   // True iff |this| instance is registered as an observer of the native
   // screen.
   bool is_screen_observer_;
+
+  // Measures start up performance of the first active web contents.
+  scoped_ptr<FirstWebContentsProfiler> first_web_contents_profiler_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsMetrics);
 };
