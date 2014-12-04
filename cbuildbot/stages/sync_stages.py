@@ -1227,21 +1227,12 @@ class PreCQLauncherStage(SyncStage):
       self._ProcessRequeuedAndSpeculative(change, action_history)
 
     for change in to_process:
-      status = status_map[change]
-
       # Detect if change is ready to be marked as passed, or ready to submit.
       if change in verified and change.IsMergeable():
         to_submit, to_pass = self._ProcessVerified(change, can_submit,
                                                    will_submit)
         will_submit.update(to_submit)
         will_pass.update(to_pass)
-        continue
-
-      # TODO(akeshet): Eliminate this block after this CL has landed and all
-      # previously inflight or launching CLs have made it through the pre-CQ.
-      legacy_statuses = (constants.CL_STATUS_LAUNCHING,
-                         constants.CL_STATUS_INFLIGHT)
-      if status in legacy_statuses:
         continue
 
       # Screen unscreened changes to determine which trybots to test them with.
