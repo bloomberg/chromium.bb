@@ -20,7 +20,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/threading/thread.h"
 #include "base/win/scoped_comptr.h"
 #include "content/common/content_export.h"
 #include "media/video/video_decode_accelerator.h"
@@ -35,8 +37,7 @@ namespace content {
 // This class lives on a single thread and DCHECKs that it is never accessed
 // from any other.
 class CONTENT_EXPORT DXVAVideoDecodeAccelerator
-    : public media::VideoDecodeAccelerator,
-      NON_EXPORTED_BASE(public base::NonThreadSafe) {
+    : public media::VideoDecodeAccelerator {
  public:
   enum State {
     kUninitialized,               // un-initialized.
@@ -68,6 +69,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
  private:
   typedef void* EGLConfig;
   typedef void* EGLSurface;
+
   // Creates and initializes an instance of the D3D device and the
   // corresponding device manager. The device manager instance is eventually
   // passed to the IMFTransform interface implemented by the decoder.
@@ -158,6 +160,26 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // Called after the client indicates we can recycle a stale picture buffer.
   void DeferredDismissStaleBuffer(int32 picture_buffer_id);
 
+  // Sets the state of the decoder. Called from the main thread and the decoder
+  // thread. The state is changed on the main thread.
+  void SetState(State state);
+
+  // Gets the state of the decoder. Can be called from the main thread and
+  // the decoder thread. Thread safe.
+  State GetState() const;
+
+  // Worker function for the Decoder Reset functionality. Executes on the
+  // decoder thread and queues tasks on the main thread as needed.
+  void ResetHelper();
+
+  // Starts the thread used for decoding.
+  void StartDecoderThread();
+
+  // Returns if we have output samples waiting to be processed. We only
+  // allow one output sample to be present in the output queue at any given
+  // time.
+  bool OutputSamplesPresent();
+
   // To expose client callbacks from VideoDecodeAccelerator.
   media::VideoDecodeAccelerator::Client* client_;
 
@@ -221,11 +243,32 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // Callback to set the correct gl context.
   base::Callback<bool(void)> make_context_current_;
 
+  // Which codec we are decoding with hardware acceleration.
+  media::VideoCodec codec_;
+  // Thread on which the decoder operations like passing input frames,
+  // getting output frames are performed. One instance of this thread
+  // is created per decoder instance.
+  base::Thread decoder_thread_;
+
+  // Task runner to be used for posting tasks to the decoder thread.
+  scoped_refptr<base::SingleThreadTaskRunner> decoder_thread_task_runner_;
+
+  // Task runner to be used for posting tasks to the main thread.
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
+  // Used to synchronize access between the decoder thread and the main thread.
+  // Currently only used to synchronize access to the pending output samples
+  // queue.
+  base::Lock decoder_lock_;
+
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<DXVAVideoDecodeAccelerator> weak_this_factory_;
 
-  // Which codec we are decoding with hardware acceleration.
-  media::VideoCodec codec_;
+  // Disallow rebinding WeakReference ownership to a different thread by
+  // keeping a persistent reference. This avoids problems with the
+  // thread safety of reaching into this class from multiple threads to
+  // attain a WeakPtr.
+  const base::WeakPtr<DXVAVideoDecodeAccelerator> weak_ptr_;
 };
 
 }  // namespace content

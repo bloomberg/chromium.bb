@@ -487,8 +487,10 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       pictures_requested_(false),
       inputs_before_decode_(0),
       make_context_current_(make_context_current),
+      codec_(media::kUnknownVideoCodec),
+      decoder_thread_("DXVAVideoDecoderThread"),
       weak_this_factory_(this),
-      codec_(media::kUnknownVideoCodec) {
+      weak_ptr_(weak_this_factory_.GetWeakPtr()) {
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
   memset(&output_stream_info_, 0, sizeof(output_stream_info_));
 }
@@ -498,10 +500,10 @@ DXVAVideoDecodeAccelerator::~DXVAVideoDecodeAccelerator() {
 }
 
 bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
-                                            Client* client) {
-  DCHECK(CalledOnValidThread());
-
+                                           Client* client) {
   client_ = client;
+
+  main_thread_task_runner_ = base::MessageLoop::current()->task_runner();
 
   // Not all versions of Windows 7 and later include Media Foundation DLLs.
   // Instead of crashing while delay loading the DLL when calling MFStartup()
@@ -528,8 +530,9 @@ bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
       PLATFORM_FAILURE,
       false);
 
-  RETURN_AND_NOTIFY_ON_FAILURE((state_ == kUninitialized),
-      "Initialize: invalid state: " << state_, ILLEGAL_STATE, false);
+  State state = GetState();
+  RETURN_AND_NOTIFY_ON_FAILURE((state == kUninitialized),
+      "Initialize: invalid state: " << state, ILLEGAL_STATE, false);
 
   HRESULT hr = MFStartup(MF_VERSION, MFSTARTUP_FULL);
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "MFStartup failed.", PLATFORM_FAILURE,
@@ -556,17 +559,20 @@ bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
       "Send MFT_MESSAGE_NOTIFY_START_OF_STREAM notification failed",
       PLATFORM_FAILURE, false);
 
-  state_ = kNormal;
+  SetState(kNormal);
+
+  StartDecoderThread();
   return true;
 }
 
 void DXVAVideoDecodeAccelerator::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
-  RETURN_AND_NOTIFY_ON_FAILURE((state_ == kNormal || state_ == kStopped ||
-                                state_ == kFlushing),
-           "Invalid state: " << state_, ILLEGAL_STATE,);
+  State state = GetState();
+  RETURN_AND_NOTIFY_ON_FAILURE((state == kNormal || state == kStopped ||
+                                state == kFlushing),
+           "Invalid state: " << state, ILLEGAL_STATE,);
 
   base::win::ScopedComPtr<IMFSample> sample;
   sample.Attach(CreateSampleFromInputBuffer(bitstream_buffer,
@@ -578,15 +584,19 @@ void DXVAVideoDecodeAccelerator::Decode(
   RETURN_AND_NOTIFY_ON_HR_FAILURE(sample->SetSampleTime(bitstream_buffer.id()),
       "Failed to associate input buffer id with sample", PLATFORM_FAILURE,);
 
-  DecodeInternal(sample);
+  decoder_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DXVAVideoDecodeAccelerator::DecodeInternal,
+                 base::Unretained(this), sample));
 }
 
 void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
     const std::vector<media::PictureBuffer>& buffers) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
-  RETURN_AND_NOTIFY_ON_FAILURE((state_ != kUninitialized),
-      "Invalid state: " << state_, ILLEGAL_STATE,);
+  State state = GetState();
+  RETURN_AND_NOTIFY_ON_FAILURE((state != kUninitialized),
+      "Invalid state: " << state, ILLEGAL_STATE,);
   RETURN_AND_NOTIFY_ON_FAILURE((kNumPictureBuffers == buffers.size()),
       "Failed to provide requested picture buffers. (Got " << buffers.size() <<
       ", requested " << kNumPictureBuffers << ")", INVALID_ARGUMENT,);
@@ -605,16 +615,22 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
     DCHECK(inserted);
   }
   ProcessPendingSamples();
-  if (state_ == kFlushing && pending_output_samples_.empty())
-    FlushInternal();
+
+  if (state == kFlushing) {
+    decoder_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
+                   base::Unretained(this)));
+  }
 }
 
 void DXVAVideoDecodeAccelerator::ReusePictureBuffer(
     int32 picture_buffer_id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
-  RETURN_AND_NOTIFY_ON_FAILURE((state_ != kUninitialized),
-      "Invalid state: " << state_, ILLEGAL_STATE,);
+  State state = GetState();
+  RETURN_AND_NOTIFY_ON_FAILURE((state != kUninitialized),
+      "Invalid state: " << state, ILLEGAL_STATE,);
 
   if (output_picture_buffers_.empty() && stale_output_picture_buffers_.empty())
     return;
@@ -630,47 +646,56 @@ void DXVAVideoDecodeAccelerator::ReusePictureBuffer(
     it = stale_output_picture_buffers_.find(picture_buffer_id);
     RETURN_AND_NOTIFY_ON_FAILURE(it != stale_output_picture_buffers_.end(),
         "Invalid picture id: " << picture_buffer_id, INVALID_ARGUMENT,);
-    base::MessageLoop::current()->PostTask(FROM_HERE,
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
         base::Bind(&DXVAVideoDecodeAccelerator::DeferredDismissStaleBuffer,
-            weak_this_factory_.GetWeakPtr(), picture_buffer_id));
+                   weak_this_factory_.GetWeakPtr(), picture_buffer_id));
     return;
   }
 
   it->second->ReusePictureBuffer();
   ProcessPendingSamples();
 
-  if (state_ == kFlushing && pending_output_samples_.empty())
-    FlushInternal();
+  if (state == kFlushing) {
+    decoder_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
+                   base::Unretained(this)));
+  }
 }
 
 void DXVAVideoDecodeAccelerator::Flush() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   DVLOG(1) << "DXVAVideoDecodeAccelerator::Flush";
 
-  RETURN_AND_NOTIFY_ON_FAILURE((state_ == kNormal || state_ == kStopped),
-      "Unexpected decoder state: " << state_, ILLEGAL_STATE,);
+  State state = GetState();
+  RETURN_AND_NOTIFY_ON_FAILURE((state == kNormal || state == kStopped),
+      "Unexpected decoder state: " << state, ILLEGAL_STATE,);
 
-  state_ = kFlushing;
+  SetState(kFlushing);
 
   RETURN_AND_NOTIFY_ON_FAILURE(SendMFTMessage(MFT_MESSAGE_COMMAND_DRAIN, 0),
       "Failed to send drain message", PLATFORM_FAILURE,);
 
-  if (!pending_output_samples_.empty())
-    return;
-
-  FlushInternal();
+  decoder_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
+                  base::Unretained(this)));
 }
 
 void DXVAVideoDecodeAccelerator::Reset() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   DVLOG(1) << "DXVAVideoDecodeAccelerator::Reset";
 
-  RETURN_AND_NOTIFY_ON_FAILURE((state_ == kNormal || state_ == kStopped),
-      "Reset: invalid state: " << state_, ILLEGAL_STATE,);
+  State state = GetState();
+  RETURN_AND_NOTIFY_ON_FAILURE((state == kNormal || state == kStopped),
+      "Reset: invalid state: " << state, ILLEGAL_STATE,);
 
-  state_ = kResetting;
+  decoder_thread_.Stop();
+
+  SetState(kResetting);
 
   pending_output_samples_.clear();
 
@@ -679,16 +704,17 @@ void DXVAVideoDecodeAccelerator::Reset() {
   RETURN_AND_NOTIFY_ON_FAILURE(SendMFTMessage(MFT_MESSAGE_COMMAND_FLUSH, 0),
       "Reset: Failed to send message.", PLATFORM_FAILURE,);
 
-  base::MessageLoop::current()->PostTask(
+  main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DXVAVideoDecodeAccelerator::NotifyResetDone,
                  weak_this_factory_.GetWeakPtr()));
 
-  state_ = DXVAVideoDecodeAccelerator::kNormal;
+  StartDecoderThread();
+  SetState(kNormal);
 }
 
 void DXVAVideoDecodeAccelerator::Destroy() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   Invalidate();
   delete this;
 }
@@ -929,11 +955,13 @@ bool DXVAVideoDecodeAccelerator::GetStreamsInfoAndBufferReqs() {
 }
 
 void DXVAVideoDecodeAccelerator::DoDecode() {
+  DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   // This function is also called from FlushInternal in a loop which could
   // result in the state transitioning to kStopped due to no decoded output.
+  State state = GetState();
   RETURN_AND_NOTIFY_ON_FAILURE(
-      (state_ == kNormal || state_ == kFlushing ||
-       state_ == kStopped || state_ == kFlushingPendingInputBuffers),
+      (state == kNormal || state == kFlushing ||
+       state == kStopped || state == kFlushingPendingInputBuffers),
           "DoDecode: not in normal/flushing/stopped state", ILLEGAL_STATE,);
 
   MFT_OUTPUT_DATA_BUFFER output_data_buffer = {0};
@@ -956,7 +984,7 @@ void DXVAVideoDecodeAccelerator::DoDecode() {
         // Decoder didn't let us set NV12 output format. Not sure as to why
         // this can happen. Give up in disgust.
         NOTREACHED() << "Failed to set decoder output media type to NV12";
-        state_ = kStopped;
+        SetState(kStopped);
       } else {
         DVLOG(1) << "Received output format change from the decoder."
                     " Recursively invoking DoDecode";
@@ -965,8 +993,10 @@ void DXVAVideoDecodeAccelerator::DoDecode() {
       return;
     } else if (hr == MF_E_TRANSFORM_NEED_MORE_INPUT) {
       // No more output from the decoder. Stop playback.
-      if (state_ != kFlushingPendingInputBuffers)
-        state_ = kStopped;
+      if (state != kFlushingPendingInputBuffers ||
+          pending_input_buffers_.empty()) {
+        SetState(kStopped);
+      }
       return;
     } else {
       NOTREACHED() << "Unhandled error in DoDecode()";
@@ -1002,17 +1032,18 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(IMFSample* sample) {
                        "Failed to get input buffer id associated with sample",
                        false);
 
-  pending_output_samples_.push_back(
-      PendingSampleInfo(input_buffer_id, sample));
-
-  // If we have available picture buffers to copy the output data then use the
-  // first one and then flag it as not being available for use.
-  if (output_picture_buffers_.size()) {
-    ProcessPendingSamples();
-    return true;
+  {
+    base::AutoLock lock(decoder_lock_);
+    pending_output_samples_.push_back(
+        PendingSampleInfo(input_buffer_id, sample));
   }
+
   if (pictures_requested_) {
     DVLOG(1) << "Waiting for picture slots from the client.";
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::ProcessPendingSamples,
+                   weak_this_factory_.GetWeakPtr()));
     return true;
   }
 
@@ -1024,7 +1055,7 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(IMFSample* sample) {
   RETURN_ON_HR_FAILURE(hr, "Failed to get surface description", false);
 
   // Go ahead and request picture buffers.
-  base::MessageLoop::current()->PostTask(
+  main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DXVAVideoDecodeAccelerator::RequestPictureBuffers,
                  weak_this_factory_.GetWeakPtr(),
@@ -1036,6 +1067,11 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(IMFSample* sample) {
 }
 
 void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
+  if (!output_picture_buffers_.size())
+    return;
+
   RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_.Run(),
       "Failed to make context current", PLATFORM_FAILURE,);
 
@@ -1043,7 +1079,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
 
   for (index = output_picture_buffers_.begin();
        index != output_picture_buffers_.end() &&
-       !pending_output_samples_.empty();
+       OutputSamplesPresent();
        ++index) {
     if (index->second->available()) {
       PendingSampleInfo sample_info = pending_output_samples_.front();
@@ -1082,41 +1118,57 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
       media::Picture output_picture(index->second->id(),
                                     sample_info.input_buffer_id,
                                     gfx::Rect(index->second->size()));
-      base::MessageLoop::current()->PostTask(
+      main_thread_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&DXVAVideoDecodeAccelerator::NotifyPictureReady,
                      weak_this_factory_.GetWeakPtr(),
                      output_picture));
 
       index->second->set_available(false);
-      pending_output_samples_.pop_front();
+      {
+        base::AutoLock lock(decoder_lock_);
+        pending_output_samples_.pop_front();
+      }
     }
   }
 
-  if (!pending_input_buffers_.empty() && pending_output_samples_.empty()) {
-    base::MessageLoop::current()->PostTask(
+  State state = GetState();
+  if (state == kFlushing) {
+    decoder_thread_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
-                   weak_this_factory_.GetWeakPtr()));
+        base::Bind(&DXVAVideoDecodeAccelerator::FlushInternal,
+                   base::Unretained(this)));
   }
+  decoder_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
+                 base::Unretained(this)));
 }
 
 void DXVAVideoDecodeAccelerator::StopOnError(
   media::VideoDecodeAccelerator::Error error) {
-  DCHECK(CalledOnValidThread());
+  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::StopOnError,
+                   weak_this_factory_.GetWeakPtr(),
+                   error));
+    return;
+  }
 
   if (client_)
     client_->NotifyError(error);
   client_ = NULL;
 
-  if (state_ != kUninitialized) {
+  if (GetState() != kUninitialized) {
     Invalidate();
   }
 }
 
 void DXVAVideoDecodeAccelerator::Invalidate() {
-  if (state_ == kUninitialized)
+  if (GetState() == kUninitialized)
     return;
+  decoder_thread_.Stop();
   weak_this_factory_.InvalidateWeakPtrs();
   output_picture_buffers_.clear();
   stale_output_picture_buffers_.clear();
@@ -1124,27 +1176,31 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
   pending_input_buffers_.clear();
   decoder_.Release();
   MFShutdown();
-  state_ = kUninitialized;
+  SetState(kUninitialized);
 }
 
 void DXVAVideoDecodeAccelerator::NotifyInputBufferRead(int input_buffer_id) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   if (client_)
     client_->NotifyEndOfBitstreamBuffer(input_buffer_id);
 }
 
 void DXVAVideoDecodeAccelerator::NotifyFlushDone() {
-  if (client_)
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+  if (client_ && GetState() == kStopped)
     client_->NotifyFlushDone();
 }
 
 void DXVAVideoDecodeAccelerator::NotifyResetDone() {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   if (client_)
     client_->NotifyResetDone();
 }
 
 void DXVAVideoDecodeAccelerator::RequestPictureBuffers(int width, int height) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   // This task could execute after the decoder has been torn down.
-  if (state_ != kUninitialized && client_) {
+  if (GetState() != kUninitialized && client_) {
     client_->ProvidePictureBuffers(
         kNumPictureBuffers,
         gfx::Size(width, height),
@@ -1154,13 +1210,15 @@ void DXVAVideoDecodeAccelerator::RequestPictureBuffers(int width, int height) {
 
 void DXVAVideoDecodeAccelerator::NotifyPictureReady(
     const media::Picture& picture) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   // This task could execute after the decoder has been torn down.
-  if (state_ != kUninitialized && client_)
+  if (GetState() != kUninitialized && client_)
     client_->PictureReady(picture);
 }
 
 void DXVAVideoDecodeAccelerator::NotifyInputBuffersDropped() {
-  if (!client_ || !pending_output_samples_.empty())
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+  if (!client_)
     return;
 
   for (PendingInputs::iterator it = pending_input_buffers_.begin();
@@ -1174,10 +1232,12 @@ void DXVAVideoDecodeAccelerator::NotifyInputBuffersDropped() {
 }
 
 void DXVAVideoDecodeAccelerator::DecodePendingInputBuffers() {
-  RETURN_AND_NOTIFY_ON_FAILURE((state_ != kUninitialized),
-      "Invalid state: " << state_, ILLEGAL_STATE,);
+  DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+  State state = GetState();
+  RETURN_AND_NOTIFY_ON_FAILURE((state != kUninitialized),
+      "Invalid state: " << state, ILLEGAL_STATE,);
 
-  if (pending_input_buffers_.empty() || !pending_output_samples_.empty())
+  if (pending_input_buffers_.empty() || OutputSamplesPresent())
     return;
 
   PendingInputs pending_input_buffers_copy;
@@ -1187,66 +1247,56 @@ void DXVAVideoDecodeAccelerator::DecodePendingInputBuffers() {
        it != pending_input_buffers_copy.end(); ++it) {
     DecodeInternal(*it);
   }
-
-  if (state_ != kFlushingPendingInputBuffers)
-    return;
-
-  // If we are scheduled during a flush operation then mark the flush as
-  // complete if we have no pending input and pending output frames.
-  // If we don't have available output slots then this function will be
-  // scheduled again by the ProcessPendingSamples function once slots become
-  // available.
-  if (pending_input_buffers_.empty() && pending_output_samples_.empty()) {
-    state_ = kNormal;
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&DXVAVideoDecodeAccelerator::NotifyFlushDone,
-                    weak_this_factory_.GetWeakPtr()));
-  }
 }
 
 void DXVAVideoDecodeAccelerator::FlushInternal() {
+  DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+
+  // We allow only one output frame to be present at any given time. If we have
+  // an output frame, then we cannot complete the flush at this time.
+  if (OutputSamplesPresent())
+    return;
+
   // The DoDecode function sets the state to kStopped when the decoder returns
   // MF_E_TRANSFORM_NEED_MORE_INPUT.
   // The MFT decoder can buffer upto 30 frames worth of input before returning
   // an output frame. This loop here attempts to retrieve as many output frames
   // as possible from the buffered set.
-  while (state_ != kStopped) {
+  while (GetState() != kStopped) {
     DoDecode();
-    if (!pending_output_samples_.empty())
+    if (OutputSamplesPresent())
       return;
   }
-
   // TODO(ananta)
   // Look into whether we can simplify this function by combining the while
   // above and the code below into a single block which achieves both. The Flush
   // transitions in the decoder are a touch intertwined with other portions of
   // the code like AssignPictureBuffers, ReusePictureBuffers etc.
   if (!pending_input_buffers_.empty()) {
-    state_ = kFlushingPendingInputBuffers;
-    base::MessageLoop::current()->PostTask(
+    SetState(kFlushingPendingInputBuffers);
+    decoder_thread_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
-                    weak_this_factory_.GetWeakPtr()));
+                   base::Unretained(this)));
     return;
   }
 
-  base::MessageLoop::current()->PostTask(
+  main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DXVAVideoDecodeAccelerator::NotifyFlushDone,
                  weak_this_factory_.GetWeakPtr()));
 
-  state_ = kNormal;
+  SetState(kNormal);
 }
 
 void DXVAVideoDecodeAccelerator::DecodeInternal(
     const base::win::ScopedComPtr<IMFSample>& sample) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
-  if (state_ == kUninitialized)
+  if (GetState() == kUninitialized)
     return;
 
-  if (!pending_output_samples_.empty() || !pending_input_buffers_.empty()) {
+  if (OutputSamplesPresent() || !pending_input_buffers_.empty()) {
     pending_input_buffers_.push_back(sample);
     return;
   }
@@ -1268,8 +1318,10 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   // decoder failure.
   if (hr == MF_E_NOTACCEPTING) {
     DoDecode();
-    RETURN_AND_NOTIFY_ON_FAILURE((state_ == kStopped || state_ == kNormal),
-        "Failed to process output. Unexpected decoder state: " << state_,
+    State state = GetState();
+    RETURN_AND_NOTIFY_ON_FAILURE((state == kStopped || state == kNormal ||
+                                  state == kFlushing),
+        "Failed to process output. Unexpected decoder state: " << state,
         PLATFORM_FAILURE,);
     hr = decoder_->ProcessInput(0, sample.get(), 0);
     // If we continue to get the MF_E_NOTACCEPTING error we do the following:-
@@ -1283,12 +1335,10 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
     // decoder where it recycles the output Decoder surfaces.
     if (hr == MF_E_NOTACCEPTING) {
       pending_input_buffers_.push_back(sample);
-      if (pending_output_samples_.empty()) {
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
-                       weak_this_factory_.GetWeakPtr()));
-      }
+      decoder_thread_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
+                      base::Unretained(this)));
       return;
     }
   }
@@ -1297,9 +1347,11 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
 
   DoDecode();
 
-  RETURN_AND_NOTIFY_ON_FAILURE((state_ == kStopped || state_ == kNormal ||
-                                state_ == kFlushingPendingInputBuffers),
-      "Failed to process output. Unexpected decoder state: " << state_,
+  State state = GetState();
+  RETURN_AND_NOTIFY_ON_FAILURE((state == kStopped || state == kNormal ||
+                                state == kFlushingPendingInputBuffers ||
+                                state == kFlushing),
+      "Failed to process output. Unexpected decoder state: " << state,
       ILLEGAL_STATE,);
 
   LONGLONG input_buffer_id = 0;
@@ -1315,7 +1367,7 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   // decoder to emit an output packet for every input packet.
   // http://code.google.com/p/chromium/issues/detail?id=108121
   // http://code.google.com/p/chromium/issues/detail?id=150925
-  base::MessageLoop::current()->PostTask(
+  main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DXVAVideoDecodeAccelerator::NotifyInputBufferRead,
                  weak_this_factory_.GetWeakPtr(),
@@ -1324,12 +1376,12 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
 
 void DXVAVideoDecodeAccelerator::HandleResolutionChanged(int width,
                                                          int height) {
-  base::MessageLoop::current()->PostTask(
+  main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DXVAVideoDecodeAccelerator::DismissStaleBuffers,
                  weak_this_factory_.GetWeakPtr()));
 
-  base::MessageLoop::current()->PostTask(
+  main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DXVAVideoDecodeAccelerator::RequestPictureBuffers,
                  weak_this_factory_.GetWeakPtr(),
@@ -1364,6 +1416,40 @@ void DXVAVideoDecodeAccelerator::DeferredDismissStaleBuffer(
   DVLOG(1) << "Dismissing picture id: " << it->second->id();
   client_->DismissPictureBuffer(it->second->id());
   stale_output_picture_buffers_.erase(it);
+}
+
+DXVAVideoDecodeAccelerator::State
+DXVAVideoDecodeAccelerator::GetState() const {
+  State state = kUninitialized;
+  ::InterlockedExchange(reinterpret_cast<long*>(&state),
+                        state_);
+  return state;
+}
+
+void DXVAVideoDecodeAccelerator::SetState(State new_state) {
+  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::SetState,
+                   weak_this_factory_.GetWeakPtr(),
+                   new_state));
+    return;
+  }
+  ::InterlockedCompareExchange(reinterpret_cast<long*>(&state_),
+                               new_state,
+                               state_);
+  DCHECK_EQ(state_, new_state);
+}
+
+void DXVAVideoDecodeAccelerator::StartDecoderThread() {
+  decoder_thread_.init_com_with_mta(false);
+  decoder_thread_.Start();
+  decoder_thread_task_runner_ = decoder_thread_.task_runner();
+}
+
+bool DXVAVideoDecodeAccelerator::OutputSamplesPresent() {
+  base::AutoLock lock(decoder_lock_);
+  return !pending_output_samples_.empty();
 }
 
 }  // namespace content
