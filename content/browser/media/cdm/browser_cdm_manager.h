@@ -114,6 +114,14 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
   // Removes the CDM with the specified id.
   void RemoveCdm(uint64 id);
 
+  // Requests permission for the given protected-media session (infobar).
+  void RequestSessionPermission(int render_frame_id,
+                                const GURL& security_origin,
+                                int cdm_id,
+                                uint32 session_id,
+                                const std::string& content_type,
+                                const std::vector<uint8>& init_data);
+
   // If |permitted| is false, it does nothing but send
   // |CdmMsg_SessionError| IPC message.
   // The primary use case is infobar permission callback, i.e., when infobar
