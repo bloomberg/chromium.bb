@@ -14,7 +14,7 @@ class AndroidAcceptancePage(page_module.Page):
     self.user_agent_type = 'desktop'
     self.archive_data_file = 'data/android_acceptance.json'
 
-  def RunPowerPageInteractions(self, action_runner):
+  def RunPageInteractions(self, action_runner):
     action_runner.Wait(40)
 
 
