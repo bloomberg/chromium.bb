@@ -433,34 +433,6 @@ cr.define('options.autofillOptions', function() {
     },
 
     /**
-     * Called when the list hierarchy as a whole loses or gains focus.
-     * If the list was focused in response to a mouse click, call into the
-     * superclass's implementation.  If the list was focused in response to a
-     * keyboard navigation, focus the first item.
-     * If the list loses focus, unselect all the elements.
-     * @param {Event} e The change event.
-     * @private
-     */
-    handleListFocusChange_: function(e) {
-      // We check to see whether there is a selected item as a proxy for
-      // distinguishing between mouse- and keyboard-originated focus events.
-      var selectedItem = this.selectedItem;
-      if (selectedItem)
-        InlineEditableItemList.prototype.handleListFocusChange_.call(this, e);
-
-      if (!e.newValue) {
-        // When the list loses focus, unselect all the elements.
-        this.selectionModel.unselectAll();
-      } else {
-        // When the list gains focus, select the first item if nothing else is
-        // selected.
-        var firstItem = this.getListItemByIndex(0);
-        if (!selectedItem && firstItem && e.newValue)
-          firstItem.handleFocus();
-      }
-    },
-
-    /**
      * Called when a new list item should be validated; subclasses are
      * responsible for implementing if validation is required.
      * @param {number} index The index of the item that was inserted or changed.
@@ -539,6 +511,9 @@ cr.define('options.autofillOptions', function() {
         while (this.validationPromiseResolvers_.length) {
           this.validationPromiseResolvers_.pop()();
         }
+        // List has been repopulated. Focus the placeholder.
+        this.getInitialFocusableItem().setStaticValuesFocusable(false);
+        this.selectionModel.selectedIndex = this.dataModel.length - 1;
       }
     },
 
