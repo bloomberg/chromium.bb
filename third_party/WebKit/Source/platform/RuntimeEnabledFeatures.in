@@ -124,7 +124,6 @@ SessionStorage status=stable
 SharedWorker status=stable
 SlimmingPaint
 Stream status=experimental
-SubpixelFontScaling status=stable
 SubresourceIntegrity status=experimental
 TextBlob
 ThreadedParserDataReceiver status=experimental

@@ -29,7 +29,6 @@
 #import <wtf/text/WTFString.h>
 
 #include "platform/LayoutTestSupport.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Font.h"
 #import "platform/fonts/shaping/HarfBuzzFace.h"
 #include "third_party/skia/include/ports/SkTypeface_mac.h"
@@ -72,8 +71,6 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext*, const Font* 
         shouldAntialias = shouldAntialias && LayoutTestSupport::isFontAntialiasingEnabledForTest();
     }
 
-    bool useSubpixelText = RuntimeEnabledFeatures::subpixelFontScalingEnabled();
-
     paint->setAntiAlias(shouldAntialias);
     paint->setEmbeddedBitmapText(false);
     const float ts = m_textSize >= 0 ? m_textSize : 12;
@@ -82,7 +79,7 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext*, const Font* 
     paint->setFakeBoldText(m_syntheticBold);
     paint->setTextSkewX(m_syntheticItalic ? -SK_Scalar1 / 4 : 0);
     paint->setLCDRenderText(shouldSmoothFonts);
-    paint->setSubpixelText(useSubpixelText);
+    paint->setSubpixelText(true);
 
     // When rendering using CoreGraphics, disable hinting when webkit-font-smoothing:antialiased or
     // text-rendering:geometricPrecision is used.

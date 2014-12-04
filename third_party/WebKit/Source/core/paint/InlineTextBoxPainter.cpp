@@ -56,13 +56,8 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     LayoutUnit paintEnd = m_inlineTextBox.isHorizontal() ? paintInfo.rect.maxX() : paintInfo.rect.maxY();
     LayoutUnit paintStart = m_inlineTextBox.isHorizontal() ? paintInfo.rect.x() : paintInfo.rect.y();
 
-    // When subpixel font scaling is enabled text runs are positioned at
-    // subpixel boundaries on the x-axis and thus there is no reason to
-    // snap the x value. We still round the y-axis to ensure consistent
-    // line heights.
-    LayoutPoint adjustedPaintOffset = RuntimeEnabledFeatures::subpixelFontScalingEnabled()
-        ? LayoutPoint(paintOffset.x(), paintOffset.y().round())
-        : roundedIntPoint(paintOffset);
+    // We round the y-axis to ensure consistent line heights.
+    LayoutPoint adjustedPaintOffset = LayoutPoint(paintOffset.x(), paintOffset.y().round());
 
     if (logicalStart >= paintEnd || logicalStart + logicalExtent <= paintStart)
         return;

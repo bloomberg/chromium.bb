@@ -143,13 +143,9 @@ void FontDescription::setVariantLigatures(const VariantLigatures& ligatures)
 
 float FontDescription::effectiveFontSize() const
 {
-    float size = (RuntimeEnabledFeatures::subpixelFontScalingEnabled())
-        ? computedSize()
-        : computedPixelSize();
-
     // Ensure that the effective precision matches the font-cache precision.
     // This guarantees that the same precision is used regardless of cache status.
-    return floorf(size * FontCacheKey::precisionMultiplier()) / FontCacheKey::precisionMultiplier();
+    return floorf(computedSize() * FontCacheKey::precisionMultiplier()) / FontCacheKey::precisionMultiplier();
 }
 
 FontCacheKey FontDescription::cacheKey(const FontFaceCreationParams& creationParams, FontTraits desiredTraits) const

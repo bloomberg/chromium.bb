@@ -45,7 +45,6 @@ void WebRuntimeFeatures::enableBleedingEdgeFastPaths(bool enable)
 {
     ASSERT(enable);
     RuntimeEnabledFeatures::setBleedingEdgeFastPathsEnabled(enable);
-    RuntimeEnabledFeatures::setSubpixelFontScalingEnabled(enable || RuntimeEnabledFeatures::subpixelFontScalingEnabled());
     RuntimeEnabledFeatures::setWebAnimationsAPIEnabled(enable);
 }
 
@@ -142,11 +141,6 @@ void WebRuntimeFeatures::enableLocalStorage(bool enable)
 void WebRuntimeFeatures::enableMediaPlayer(bool enable)
 {
     RuntimeEnabledFeatures::setMediaEnabled(enable);
-}
-
-void WebRuntimeFeatures::enableSubpixelFontScaling(bool enable)
-{
-    RuntimeEnabledFeatures::setSubpixelFontScalingEnabled(enable);
 }
 
 void WebRuntimeFeatures::enableMediaCapture(bool enable)
