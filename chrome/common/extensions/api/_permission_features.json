@@ -903,6 +903,17 @@
       "BCC85C0D7F85897F2699974421EA402144C35C0C"  // API Test
     ]
   },
+  "inlineInstallPrivate":
+  {
+    "channel": "dev",
+    "extension_types": ["platform_app"],
+    "whitelist": [
+      "8076E9E4DA0DF53B33BFAF0454D3C3B898F93273", // Test Extension
+      "3A78E13285C1949EF84AA85E3BF65D1E83A3D9AB", // Test Extension
+      "4477F0B4FE934D0A8C88922C0986DA7B25D881E1"  // API Test
+
+    ]
+  },
   "readingListPrivate": {
     "channel": "stable",
     "extension_types": ["extension"],

@@ -118,6 +118,7 @@ class APIPermission {
     kIdle,
     kImeWindowEnabled,
     kInfobars,
+    kInlineInstallPrivate,
     kInput,
     kInputMethodPrivate,
     kInterceptAllKeys,

@@ -461,6 +461,10 @@
     "dependencies": ["permission:infobars"],
     "contexts": ["blessed_extension"]
   },
+  "inlineInstallPrivate": {
+    "dependencies": ["permission:inlineInstallPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "input.ime": {
     "dependencies": ["permission:input"],
     "contexts": ["blessed_extension"]
