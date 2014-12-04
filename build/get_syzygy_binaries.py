@@ -24,8 +24,8 @@ import zipfile
 _LOGGER = logging.getLogger(os.path.basename(__file__))
 
 # The URL where official builds are archived.
-_SYZYGY_ARCHIVE_URL = ('http://syzygy-archive.commondatastorage.googleapis.com/'
-    'builds/official/%(revision)s')
+_SYZYGY_ARCHIVE_URL = ('https://syzygy-archive.commondatastorage.googleapis.com'
+    '/builds/official/%(revision)s')
 
 # A JSON file containing the state of the download directory. If this file and
 # directory state do not agree, then the binaries will be downloaded and
