@@ -619,13 +619,19 @@ class BuildData(object):
 
   @property
   def failure_message(self):
+    message_list = []
+    # First collect failures in the master stages.
+    failed_stages = [s for s in self.stages if s['status'] == 'failed']
+    for stage in failed_stages:
+      if stage['summary']:
+        message_list.append('master: %s' % stage['summary'])
+
     mapping = {}
     # Dedup the messages from the slaves.
     for slave in self.GetFailedSlaves():
       message = self.slaves[slave]['reason']
       mapping[message] = mapping.get(message, []) + [slave]
 
-    message_list = []
     for message, slaves in mapping.iteritems():
       if len(slaves) >= 6:
         # Do not print all the names when there are more than 6 (an
