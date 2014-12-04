@@ -17,7 +17,6 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/test.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -125,8 +124,6 @@ class ExtensionWebUITest : public ExtensionApiTest {
         base::Bind(&FindFrame, frame_url, &frame_host));
     return frame_host;
   }
-
-  scoped_ptr<FeatureSwitch::ScopedOverride> enable_options_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebUITest, SanityCheckAvailableAPIsInFrame) {
