@@ -564,9 +564,9 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
 
   void UploadDeviceLocalAccountPolicy() {
     BuildDeviceLocalAccountPolicy();
-    test_server_.UpdatePolicy(
+    ASSERT_TRUE(test_server_.UpdatePolicy(
         dm_protocol::kChromePublicAccountPolicyType, kAccountId1,
-        device_local_account_policy_.payload().SerializeAsString());
+        device_local_account_policy_.payload().SerializeAsString()));
   }
 
   void UploadAndInstallDeviceLocalAccountPolicy() {
@@ -596,8 +596,9 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     account->set_type(
         em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
     RefreshDevicePolicy();
-    test_server_.UpdatePolicy(dm_protocol::kChromeDevicePolicyType,
-                              std::string(), proto.SerializeAsString());
+    ASSERT_TRUE(test_server_.UpdatePolicy(dm_protocol::kChromeDevicePolicyType,
+                                          std::string(),
+                                          proto.SerializeAsString()));
   }
 
   void EnableAutoLogin() {
@@ -607,8 +608,9 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     device_local_accounts->set_auto_login_id(kAccountId1);
     device_local_accounts->set_auto_login_delay(0);
     RefreshDevicePolicy();
-    test_server_.UpdatePolicy(dm_protocol::kChromeDevicePolicyType,
-                              std::string(), proto.SerializeAsString());
+    ASSERT_TRUE(test_server_.UpdatePolicy(dm_protocol::kChromeDevicePolicyType,
+                                          std::string(),
+                                          proto.SerializeAsString()));
   }
 
   void CheckPublicSessionPresent(const std::string& id) {
@@ -1972,8 +1974,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
                 .id());
 }
 
-// Test is disabled because it is flaky. crbug.com/438239
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_PolicyForExtensions) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
   // Set up a test update server for the Show Managed Storage app.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   TestingUpdateManifestProvider testing_update_manifest_provider(
@@ -1996,18 +1997,23 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_PolicyForExtensions) {
       kShowManagedStorageID,
       embedded_test_server()->GetURL(kRelativeUpdateURL).spec().c_str()));
 
+  // Set a policy for the app at the policy testserver.
+  // Note that the policy for the device-local account will be fetched before
+  // the session is started, so the policy for the app must be installed before
+  // the first device policy fetch.
+  ASSERT_TRUE(test_server_.UpdatePolicyData(
+      dm_protocol::kChromeExtensionPolicyType, kShowManagedStorageID,
+      "{"
+      "  \"string\": {"
+      "    \"Value\": \"policy test value one\""
+      "  }"
+      "}"));
+
+  // Install and refresh the device policy now. This will also fetch the initial
+  // user policy for the device-local account now.
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
   WaitForPolicy();
-
-  // Set a policy for the app at the policy testserver.
-  test_server_.UpdatePolicyData(dm_protocol::kChromeExtensionPolicyType,
-                                kShowManagedStorageID,
-                                "{"
-                                "  \"string\": {"
-                                "    \"Value\": \"policy test value one\""
-                                "  }"
-                                "}");
 
   // Observe the app installation after login.
   content::WindowedNotificationObserver extension_observer(
@@ -2046,13 +2052,13 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_PolicyForExtensions) {
       policy_service->GetPolicies(ns).GetValue("string")));
 
   // Now update the policy at the server.
-  test_server_.UpdatePolicyData(dm_protocol::kChromeExtensionPolicyType,
-                                kShowManagedStorageID,
-                                "{"
-                                "  \"string\": {"
-                                "    \"Value\": \"policy test value two\""
-                                "  }"
-                                "}");
+  ASSERT_TRUE(test_server_.UpdatePolicyData(
+      dm_protocol::kChromeExtensionPolicyType, kShowManagedStorageID,
+      "{"
+      "  \"string\": {"
+      "    \"Value\": \"policy test value two\""
+      "  }"
+      "}"));
 
   // And issue a policy refresh.
   {
