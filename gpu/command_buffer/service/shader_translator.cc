@@ -9,10 +9,12 @@
 #include <algorithm>
 
 #include "base/at_exit.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "ui/gl/gl_switches.h"
 
 namespace gpu {
 namespace gles2 {
@@ -132,6 +134,10 @@ int ShaderTranslator::GetCompileOptions() const {
       SH_OBJECT_CODE | SH_VARIABLES | SH_ENFORCE_PACKING_RESTRICTIONS |
       SH_LIMIT_EXPRESSION_COMPLEXITY | SH_LIMIT_CALL_STACK_DEPTH |
       SH_CLAMP_INDIRECT_ARRAY_BOUNDS;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kGLShaderIntermOutput))
+    compile_options |= SH_INTERMEDIATE_TREE;
 
   compile_options |= driver_bug_workarounds_;
 

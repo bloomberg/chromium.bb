@@ -37,6 +37,8 @@ GL_EXPORT extern const char kTestGLLib[];
 GL_EXPORT extern const char kUseGpuInTests[];
 GL_EXPORT extern const char kUseWarp[];
 
+GL_EXPORT extern const char kGLShaderIntermOutput[];
+
 // These flags are used by the test harness code, not passed in by users.
 GL_EXPORT extern const char kDisableGLDrawingForTests[];
 GL_EXPORT extern const char kOverrideUseGLWithOSMesaForTests[];

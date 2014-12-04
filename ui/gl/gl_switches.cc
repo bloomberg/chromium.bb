@@ -58,6 +58,10 @@ const char kUseGpuInTests[] = "use-gpu-in-tests";
 // On Windows only: use the WARP software rasterizer in the GPU process.
 const char kUseWarp[] = "use-warp";
 
+// Include ANGLE's intermediate representation (AST) output in shader
+// compilation info logs.
+const char kGLShaderIntermOutput[] = "gl-shader-interm-output";
+
 // Disables GL drawing operations which produce pixel output. With this
 // the GL output will not be correct but tests will run faster.
 const char kDisableGLDrawingForTests[] = "disable-gl-drawing-for-tests";
@@ -77,7 +81,8 @@ const char* kGLSwitchesCopiedFromGpuProcessHost[] = {
   kGpuNoContextLost,
   kDisableGLDrawingForTests,
   kOverrideUseGLWithOSMesaForTests,
-  kUseWarp
+  kUseWarp,
+  kGLShaderIntermOutput
 };
 const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches =
     arraysize(kGLSwitchesCopiedFromGpuProcessHost);
