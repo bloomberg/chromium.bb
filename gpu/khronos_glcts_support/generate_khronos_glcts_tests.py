@@ -20,6 +20,18 @@ RUN_FILE_SUITE_PREFIX = {
   "mustpass_es20.run" : "ES2-CTS.gtf",
 }
 
+BUILT_IN_TESTS = {
+  "mustpass_es20.run" : [
+    "CTS-Configs.es2",
+    "ES2-CTS.info.vendor",
+    "ES2-CTS.info.renderer",
+    "ES2-CTS.info.version",
+    "ES2-CTS.info.shading_language_version",
+    "ES2-CTS.info.extensions",
+    "ES2-CTS.info.render_target",
+  ],
+}
+
 def ReadFileAsLines(filename):
   """
     Reads a file, yielding each non-blank line
@@ -64,6 +76,13 @@ def GenerateTests(run_files, output):
     run_file_dir = os.path.dirname(run_file)
     suite_prefix = RUN_FILE_SUITE_PREFIX[run_file_name]
     output.write("// " + run_file_name + "\n")
+    builtin_tests = BUILT_IN_TESTS[run_file_name]
+    for test in builtin_tests:
+      output.write(TEST_DEF_TEMPLATE
+        % {
+          "gname": re.sub(r'[^A-Za-z0-9]', '_', test),
+          "cname": test,
+        })
     for test in ReadRunFile(run_file):
       rel_path = os.path.relpath(test, run_file_dir)
       root, ext = os.path.splitext(rel_path)
