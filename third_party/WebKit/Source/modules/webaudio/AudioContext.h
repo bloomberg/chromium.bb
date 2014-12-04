@@ -106,7 +106,12 @@ public:
     virtual bool hasPendingActivity() const override;
 
     AudioDestinationNode* destination() { return m_destinationNode.get(); }
+    // currentSampleFrame() returns the current sample frame. It should only be called from the
+    // audio thread.
     size_t currentSampleFrame() const { return m_destinationNode->currentSampleFrame(); }
+    // cachedSampleFrame() is like currentSampleFrame() but must be called from the main thread to
+    // get the sample frame. It might be slightly behind curentSampleFrame() due to locking.
+    size_t cachedSampleFrame() const;
     double currentTime() const { return m_destinationNode->currentTime(); }
     float sampleRate() const { return m_destinationNode->sampleRate(); }
     String state() const;
@@ -396,6 +401,9 @@ private:
     // to change in the pre- or post-rendering phase so as not to disturb the running audio thread.
     GC_PLUGIN_IGNORE("http://crbug.com/404527")
     HashSet<AudioNode*> m_deferredCountModeChange;
+
+    // Follows the destination's currentSampleFrame, but might be slightly behind due to locking.
+    size_t m_cachedSampleFrame;
 
     // This is considering 32 is large enough for multiple channels audio.
     // It is somewhat arbitrary and could be increased if necessary.

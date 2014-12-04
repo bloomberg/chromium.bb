@@ -110,6 +110,7 @@ AudioContext::AudioContext(Document* document)
     , m_audioThread(0)
     , m_isOfflineContext(false)
     , m_contextState(Suspended)
+    , m_cachedSampleFrame(0)
 {
     m_didInitializeContextGraphMutex = true;
     m_destinationNode = DefaultAudioDestinationNode::create(this);
@@ -134,6 +135,7 @@ AudioContext::AudioContext(Document* document, unsigned numberOfChannels, size_t
     , m_audioThread(0)
     , m_isOfflineContext(true)
     , m_contextState(Suspended)
+    , m_cachedSampleFrame(0)
 {
     m_didInitializeContextGraphMutex = true;
     // Create a new destination for offline rendering.
@@ -556,6 +558,13 @@ PeriodicWave* AudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32
     return PeriodicWave::create(sampleRate(), real, imag);
 }
 
+size_t AudioContext::cachedSampleFrame() const
+{
+    ASSERT(isMainThread());
+
+    return m_cachedSampleFrame;
+}
+
 String AudioContext::state() const
 {
     // These strings had better match the strings for AudioContextState in AudioContext.idl.
@@ -767,6 +776,9 @@ void AudioContext::handlePreRenderTasks()
 
         updateAutomaticPullNodes();
         resolvePromisesForResume();
+
+        // Update the cached sample frame value.
+        m_cachedSampleFrame = currentSampleFrame();
 
         unlock();
     }

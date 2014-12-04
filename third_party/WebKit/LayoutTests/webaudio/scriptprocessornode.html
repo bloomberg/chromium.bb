@@ -47,8 +47,17 @@ function processAudioData(event) {
 
     // There may be a little time gap which is from different thread operation
     // between currentTime when main thread fires onaudioprocess() and currenTime when read in JS
-    // since currentTime is continuously increasing on audio thread.
-    shouldBeCloseTo("playbackTime", expectedTime, allowedTimeGap, true);
+    // since currentTime is continuously increasing on audio thread.  And caching of the currentTime
+    // can cause playbackTime to be one block behind. So allow for that.
+
+    var closeEnough = Math.abs(playbackTime - expectedTime) <= allowedTimeGap;
+    closeEnough = closeEnough || (Math.abs(playbackTime - (expectedTime - 128 / context.sampleRate)) <= allowedTimeGap);
+
+    if (!closeEnough) {
+        testFailed("playbackTime should be within " + allowedTimeGap + " of either "
+                   + expectedTime + " or " + (expectedTime - 128 / context.sampleRate)
+                   + ". Was " + playbackTime);
+    }
 
     buffer = event.outputBuffer;
     if (buffer.numberOfChannels != outputChannels)
