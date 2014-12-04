@@ -75,5 +75,33 @@
 
     // Simulates a memory access bug for asan testing.
     static void simulateAsanMemoryBug();
+
+    // Set the touchpad pointer sensitivity setting.
+    // |value|: the pointer sensitivity setting index.
+    static void setTouchpadSensitivity(long value);
+
+    // Turn on/off tap-to-click for the touchpad.
+    // |enabled|: if set, enable tap-to-click.
+    static void setTapToClick(boolean enabled);
+
+    // Turn on/off three finger click for the touchpad.
+    // |enabled|: if set, enable three finger click.
+    static void setThreeFingerClick(boolean enabled);
+
+    // Turn on/off tap dragging for the touchpad.
+    // |enabled|: if set, enable tap dragging.
+    static void setTapDragging(boolean enabled);
+
+    // Turn on/off Australian scrolling for devices other than wheel mouse.
+    // |enabled|: if set, enable Australian scrolling.
+    static void setNaturalScroll(boolean enabled);
+
+    // Set the mouse pointer sensitivity setting.
+    // |value|: the pointer sensitivity setting index.
+    static void setMouseSensitivity(long value);
+
+    // Swap the primary mouse button for left click.
+    // |right|: if set, swap the primary mouse button.
+    static void setPrimaryButtonRight(boolean right);
   };
 };

@@ -23,6 +23,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/user_manager/user.h"
@@ -221,6 +222,102 @@ bool AutotestPrivateSimulateAsanMemoryBugFunction::RunSync() {
     volatile int index = 5;
     AccessArray(testarray, &index);
   }
+  return true;
+}
+
+bool AutotestPrivateSetTouchpadSensitivityFunction::RunSync() {
+  scoped_ptr<api::autotest_private::SetTouchpadSensitivity::Params> params(
+      api::autotest_private::SetTouchpadSensitivity::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  DVLOG(1) << "AutotestPrivateSetTouchpadSensitivityFunction " << params->value;
+
+#if defined(OS_CHROMEOS)
+  chromeos::system::InputDeviceSettings::Get()->SetTouchpadSensitivity(
+      params->value);
+#endif
+  return true;
+}
+
+bool AutotestPrivateSetTapToClickFunction::RunSync() {
+  scoped_ptr<api::autotest_private::SetTapToClick::Params> params(
+      api::autotest_private::SetTapToClick::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  DVLOG(1) << "AutotestPrivateSetTapToClickFunction " << params->enabled;
+
+#if defined(OS_CHROMEOS)
+  chromeos::system::InputDeviceSettings::Get()->SetTapToClick(params->enabled);
+#endif
+  return true;
+}
+
+bool AutotestPrivateSetThreeFingerClickFunction::RunSync() {
+  scoped_ptr<api::autotest_private::SetThreeFingerClick::Params> params(
+      api::autotest_private::SetThreeFingerClick::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  DVLOG(1) << "AutotestPrivateSetThreeFingerClickFunction " << params->enabled;
+
+#if defined(OS_CHROMEOS)
+  chromeos::system::InputDeviceSettings::Get()->SetThreeFingerClick(
+      params->enabled);
+#endif
+  return true;
+}
+
+bool AutotestPrivateSetTapDraggingFunction::RunSync() {
+  scoped_ptr<api::autotest_private::SetTapDragging::Params> params(
+      api::autotest_private::SetTapDragging::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  DVLOG(1) << "AutotestPrivateSetTapDraggingFunction " << params->enabled;
+
+#if defined(OS_CHROMEOS)
+  chromeos::system::InputDeviceSettings::Get()->SetTapDragging(params->enabled);
+#endif
+  return true;
+}
+
+bool AutotestPrivateSetNaturalScrollFunction::RunSync() {
+  scoped_ptr<api::autotest_private::SetNaturalScroll::Params> params(
+      api::autotest_private::SetNaturalScroll::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  DVLOG(1) << "AutotestPrivateSetNaturalScrollFunction " << params->enabled;
+
+#if defined(OS_CHROMEOS)
+  chromeos::system::InputDeviceSettings::Get()->SetNaturalScroll(
+      params->enabled);
+#endif
+  return true;
+}
+
+bool AutotestPrivateSetMouseSensitivityFunction::RunSync() {
+  scoped_ptr<api::autotest_private::SetMouseSensitivity::Params> params(
+      api::autotest_private::SetMouseSensitivity::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  DVLOG(1) << "AutotestPrivateSetMouseSensitivityFunction " << params->value;
+
+#if defined(OS_CHROMEOS)
+  chromeos::system::InputDeviceSettings::Get()->SetMouseSensitivity(
+      params->value);
+#endif
+  return true;
+}
+
+bool AutotestPrivateSetPrimaryButtonRightFunction::RunSync() {
+  scoped_ptr<api::autotest_private::SetPrimaryButtonRight::Params> params(
+      api::autotest_private::SetPrimaryButtonRight::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  DVLOG(1) << "AutotestPrivateSetPrimaryButtonRightFunction " << params->right;
+
+#if defined(OS_CHROMEOS)
+  chromeos::system::InputDeviceSettings::Get()->SetPrimaryButtonRight(
+      params->right);
+#endif
   return true;
 }
 

@@ -76,5 +76,33 @@ chrome.test.runTests([
             chrome.test.assertTrue(extension.hasOwnProperty('hasPageAction'));
           }
         }));
+  },
+  function setTouchpadSensitivity() {
+    chrome.autotestPrivate.setTouchpadSensitivity(3);
+    chrome.test.succeed();
+  },
+  function setTapToClick() {
+    chrome.autotestPrivate.setTapToClick(true);
+    chrome.test.succeed();
+  },
+  function setThreeFingerClick() {
+    chrome.autotestPrivate.setThreeFingerClick(true);
+    chrome.test.succeed();
+  },
+  function setTapDragging() {
+    chrome.autotestPrivate.setTapDragging(false);
+    chrome.test.succeed();
+  },
+  function setNaturalScroll() {
+    chrome.autotestPrivate.setNaturalScroll(true);
+    chrome.test.succeed();
+  },
+  function setMouseSensitivity() {
+    chrome.autotestPrivate.setMouseSensitivity(3);
+    chrome.test.succeed();
+  },
+  function setPrimaryButtonRight() {
+    chrome.autotestPrivate.setPrimaryButtonRight(false);
+    chrome.test.succeed();
   }
 ]);

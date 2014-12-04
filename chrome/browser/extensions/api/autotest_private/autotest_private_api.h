@@ -83,6 +83,83 @@ class AutotestPrivateSimulateAsanMemoryBugFunction
   bool RunSync() override;
 };
 
+class AutotestPrivateSetTouchpadSensitivityFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setTouchpadSensitivity",
+                             AUTOTESTPRIVATE_SETTOUCHPADSENSITIVITY)
+
+ private:
+  ~AutotestPrivateSetTouchpadSensitivityFunction() override {}
+  bool RunSync() override;
+};
+
+class AutotestPrivateSetTapToClickFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setTapToClick",
+                             AUTOTESTPRIVATE_SETTAPTOCLICK)
+
+ private:
+  ~AutotestPrivateSetTapToClickFunction() override {}
+  bool RunSync() override;
+};
+
+class AutotestPrivateSetThreeFingerClickFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setThreeFingerClick",
+                             AUTOTESTPRIVATE_SETTHREEFINGERCLICK)
+
+ private:
+  ~AutotestPrivateSetThreeFingerClickFunction() override {}
+  bool RunSync() override;
+};
+
+class AutotestPrivateSetTapDraggingFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setTapDragging",
+                             AUTOTESTPRIVATE_SETTAPDRAGGING)
+
+ private:
+  ~AutotestPrivateSetTapDraggingFunction() override {}
+  bool RunSync() override;
+};
+
+class AutotestPrivateSetNaturalScrollFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setNaturalScroll",
+                             AUTOTESTPRIVATE_SETNATURALSCROLL)
+
+ private:
+  ~AutotestPrivateSetNaturalScrollFunction() override {}
+  bool RunSync() override;
+};
+
+class AutotestPrivateSetMouseSensitivityFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setMouseSensitivity",
+                             AUTOTESTPRIVATE_SETMOUSESENSITIVITY)
+
+ private:
+  ~AutotestPrivateSetMouseSensitivityFunction() override {}
+  bool RunSync() override;
+};
+
+class AutotestPrivateSetPrimaryButtonRightFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setPrimaryButtonRight",
+                             AUTOTESTPRIVATE_SETPRIMARYBUTTONRIGHT)
+
+ private:
+  ~AutotestPrivateSetPrimaryButtonRightFunction() override {}
+  bool RunSync() override;
+};
+
 // Don't kill the browser when we're in a browser test.
 void SetAutotestPrivateTest();
 
