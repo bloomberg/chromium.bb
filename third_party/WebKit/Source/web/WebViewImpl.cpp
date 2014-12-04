@@ -1872,11 +1872,6 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
     }
 }
 
-void WebViewImpl::didCommitFrameToCompositor()
-{
-    // TODO: Remove this function.
-}
-
 void WebViewImpl::layout()
 {
     TRACE_EVENT0("blink", "WebViewImpl::layout");
