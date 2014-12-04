@@ -162,8 +162,8 @@ class HidServiceLinux::Helper : public DeviceMonitorLinux::Observer,
     const char* device_path = udev_device_get_syspath(device);
     if (device_path) {
       task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&HidServiceLinux::RemoveDevice, service_, device_path));
+          FROM_HERE, base::Bind(&HidServiceLinux::RemoveDevice, service_,
+                                std::string(device_path)));
     }
   }
 
