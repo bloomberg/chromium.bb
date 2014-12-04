@@ -455,7 +455,7 @@ def main(args):
 
   # Check we have a valid bucket with valid permissions.
   if not options.no_auth:
-    code = check_bucket_permissions(base_url, gsutil, options.no_auth)
+    code = check_bucket_permissions(base_url, gsutil)
     if code:
       return code
 
