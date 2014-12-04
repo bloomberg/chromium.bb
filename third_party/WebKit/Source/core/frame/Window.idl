@@ -136,7 +136,7 @@
     readonly attribute StyleMedia styleMedia;
 
     // DOM Level 2 Style Interface
-    [TypeChecking=Interface] CSSStyleDeclaration getComputedStyle(Element element, optional DOMString pseudoElt);
+    [TypeChecking=Interface] CSSStyleDeclaration getComputedStyle(Element element, optional DOMString? pseudoElt = null);
 
     // WebKit extensions
     [DeprecateAs=GetMatchedCSSRules] CSSRuleList getMatchedCSSRules([Default=Undefined] optional Element element,
