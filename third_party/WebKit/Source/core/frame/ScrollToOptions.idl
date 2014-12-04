@@ -4,8 +4,7 @@
 
 // Spec: http://http://dev.w3.org/csswg/cssom-view#extensions-to-the-window-interface
 
-enum ScrollBehavior { "auto", "instant", "smooth" };
-
-dictionary ScrollOptions {
-    ScrollBehavior behavior = "auto";
+dictionary ScrollToOptions : ScrollOptions {
+    double left;
+    double top;
 };

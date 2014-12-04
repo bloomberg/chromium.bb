@@ -95,14 +95,12 @@
     readonly attribute double pageXOffset;
     readonly attribute double pageYOffset;
 
-    // Overloading can be replaced by optional if RuntimeEnabled is removed, by
-    // changing the third argument to *optional* Dictionary scrollOptions
     void scrollBy(double x, double y);
-    [RuntimeEnabled=CSSOMSmoothScroll, RaisesException] void scrollBy(double x, double y, ScrollOptions scrollOptions);
+    [RuntimeEnabled=CSSOMSmoothScroll] void scrollBy([Default=Undefined] optional ScrollToOptions scrollToOptions);
     void scrollTo(double x, double y);
-    [RuntimeEnabled=CSSOMSmoothScroll, RaisesException] void scrollTo(double x, double y, ScrollOptions scrollOptions);
+    [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo([Default=Undefined] optional ScrollToOptions scrollToOptions);
     void scroll(double x, double y);
-    [RuntimeEnabled=CSSOMSmoothScroll, RaisesException] void scroll(double x, double y, ScrollOptions scrollOptions);
+    [RuntimeEnabled=CSSOMSmoothScroll] void scroll([Default=Undefined] optional ScrollToOptions scrollOptions);
     void moveBy([Default=Undefined] optional float x, [Default=Undefined] optional float y); // FIXME: this should take longs not floats.
     void moveTo([Default=Undefined] optional float x, [Default=Undefined] optional float y); // FIXME: this should take longs not floats.
     void resizeBy([Default=Undefined] optional float x, [Default=Undefined] optional float y); // FIXME: this should take longs not floats.

@@ -141,9 +141,9 @@ public:
     // FIXME: ScrollBehaviorSmooth is currently unsupported in PinchViewport.
     // crbug.com/434497
     void scrollBy(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const override;
-    void scrollBy(double x, double y, const ScrollOptions&, ExceptionState&) const override;
-    void scrollTo(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const override;
-    void scrollTo(double x, double y, const ScrollOptions&, ExceptionState&) const override;
+    void scrollBy(const ScrollToOptions&) const override;
+    void scrollTo(double x, double y) const override;
+    void scrollTo(const ScrollToOptions&) const override;
 
     void moveBy(float x, float y) const override;
     void moveTo(float x, float y) const override;

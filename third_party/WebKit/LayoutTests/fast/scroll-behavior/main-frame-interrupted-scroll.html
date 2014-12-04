@@ -13,8 +13,7 @@
   <script src="resources/scroll-interruption-test.js"></script>
   <script type="text/javascript">
     function jsScroll(y) {
-      var currentX = document.documentElement.scrollTop;
-      window.scrollTo(currentX, y, {behavior: 'smooth'});
+      window.scrollTo({top: y, behavior: 'smooth'});
     }
 
     function doTest() {

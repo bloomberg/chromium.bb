@@ -13,8 +13,7 @@
   <script type="text/javascript">
     function jsScroll(y) {
       var subframe = document.getElementById('subframe');
-      var currentX = subframe.contentDocument.documentElement.scrollTop;
-      subframe.contentWindow.scrollTo(currentX, y, {behavior: 'smooth'});
+      subframe.contentWindow.scrollTo({top: y, behavior: 'smooth'});
     }
 
     function doTest()

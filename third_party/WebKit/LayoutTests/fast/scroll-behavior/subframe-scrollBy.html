@@ -13,15 +13,27 @@
   <script type="text/javascript">
     function getEndPosition(testCase, startPosition) {
       var endPosition = {};
-      endPosition.x = startPosition.x + testCase.x;
-      endPosition.y = startPosition.y + testCase.y;
+      if (testCase.x)
+        endPosition.x = startPosition.x + testCase.x;
+      else
+        endPosition.x = startPosition.x;
+
+      if (testCase.y)
+        endPosition.y = startPosition.y + testCase.y;
+      else
+        endPosition.y = startPosition.y;
       return endPosition;
     }
 
     function jsScroll(testCase) {
       var subframe = document.getElementById("subframe");
       if (testCase.js) {
-        subframe.contentWindow.scrollBy(testCase.x, testCase.y, {behavior: testCase.js});
+        var scrollToOptions = {behavior: testCase.js};
+        if (testCase.x)
+          scrollToOptions.left = testCase.x;
+        if (testCase.y)
+          scrollToOptions.top = testCase.y
+        subframe.contentWindow.scrollBy({left: testCase.x, top: testCase.y, behavior: testCase.js});
       } else {
         subframe.contentWindow.scrollBy(testCase.x, testCase.y);
       }
@@ -32,10 +44,15 @@
       {js: "instant", css: "smooth", x: 2, y: 3},
       {js: "auto", css: "auto", x: 3, y: 4},
       {js: "", css: "auto", x: 4, y: 5},
+      {js: "auto", css: "auto", x: 3},
+      {js: "auto", css: "auto", y: 4},
+      {js: "auto", css: "auto"},
       {js: "smooth", css: "auto", waitForEnd: true, x: 10, y: 15},
       {js: "smooth", css: "smooth", waitForEnd: true, x: 20, y: 25},
       {js: "auto", css: "smooth", waitForEnd: true, x: 30, y: 35},
       {js: "", css: "smooth", waitForEnd: true, x: 40, y: 45},
+      {js: "auto", css: "smooth", waitForEnd: true, x: -30},
+      {js: "auto", css: "smooth", waitForEnd: true, y: -35},
       {js: "smooth", css: "auto", waitForEnd: false, x: 4000, y: 4100},
       {js: "smooth", css: "smooth", waitForEnd: false, x: -3900, y: -3850},
       {js: "auto", css: "smooth", waitForEnd: false, x: 4050, y: 4000},

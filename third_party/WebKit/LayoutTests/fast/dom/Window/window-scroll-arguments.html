@@ -25,8 +25,8 @@
     reset();
 
     description("This test makes sure that calling the window scrolling\
-    methods with less than 2 arguments or with an invalid third argument\
-    throws an exception.");
+    methods with a single non-dictionary argument or with a dictionary \
+    whose 'behavior' field is invalid throws an exception.");
 
     // scrollTo /////////////////////////
     debug('');
@@ -34,23 +34,29 @@
     debug('');
 
     debug("Testing - scrollTo with 0 arguments");
-    shouldThrow('window.scrollTo()');
+    shouldNotThrow('window.scrollTo()');
     reset();
 
-    debug("Testing - scrollTo with 1 argument");
+    debug("Testing - scrollTo with 1 non-dictionary argument");
     shouldThrow('window.scrollTo(x)');;
     reset();
 
-    debug("Testing - scrollTo with a valid ScrollOptions argument");
-    shouldNotThrow('window.scrollTo(x, y, { })');
-    shouldNotThrow('window.scrollTo(x, y, { behavior: "auto" })');
-    shouldNotThrow('window.scrollTo(x, y, { behavior: "instant" })');
-    shouldNotThrow('window.scrollTo(x, y, { behavior: "smooth" })');
+    debug("Testing - scrollTo with a valid ScrollToOptions argument");
+    shouldNotThrow('window.scrollTo({ })');
+    shouldNotThrow('window.scrollTo({ left: x })');
+    shouldNotThrow('window.scrollTo({ top: y })');
+    shouldNotThrow('window.scrollTo({ behavior: "auto" })');
+    shouldNotThrow('window.scrollTo({ behavior: "instant" })');
+    shouldNotThrow('window.scrollTo({ behavior: "smooth" })');
+    shouldNotThrow('window.scrollTo({ left: x, top: y })');
+    shouldNotThrow('window.scrollTo({ left: x, top: y, behavior: "auto" })');
+    shouldNotThrow('window.scrollTo({ left: x, top: y, behavior: "instant" })');
+    shouldNotThrow('window.scrollTo({ left: x, top: y, behavior: "smooth" })');
 
-    debug("Testing - scrollTo with an invalid ScrollOptions argument");
-    shouldThrow('window.scrollTo(x, y, { behavior: "" })');
-    shouldThrow('window.scrollTo(x, y, { behavior: "abcd" })');
-    shouldThrow('window.scrollTo(x, y, 200, "text")');
+    debug("Testing - scrollTo with an invalid ScrollToOptions argument");
+    shouldThrow('window.scrollTo({ behavior: "" })');
+    shouldThrow('window.scrollTo({ left: x, top: y, behavior: "abcd" })');
+    shouldThrow('window.scrollTo({ left: x, top: y, behavior: 200 })');
 
     // scroll /////////////////////////
     debug('');
@@ -58,23 +64,29 @@
     debug('');
 
     debug("Testing - scroll with 0 arguments");
-    shouldThrow('window.scroll()');;
+    shouldNotThrow('window.scroll()');;
     reset();
 
     debug("Testing - scroll with 1 argument");
     shouldThrow('window.scroll(x)');
     reset();
 
-    debug("Testing - scroll with a valid ScrollOptions argument");
-    shouldNotThrow('window.scroll(x, y, { })');
-    shouldNotThrow('window.scroll(x, y, { behavior: "auto" })');
-    shouldNotThrow('window.scroll(x, y, { behavior: "instant" })');
-    shouldNotThrow('window.scroll(x, y, { behavior: "smooth" })');
+    debug("Testing - scroll with a valid ScrollToOptions argument");
+    shouldNotThrow('window.scroll({ })');
+    shouldNotThrow('window.scroll({ left: x })');
+    shouldNotThrow('window.scroll({ top: y })');
+    shouldNotThrow('window.scroll({ behavior: "auto" })');
+    shouldNotThrow('window.scroll({ behavior: "instant" })');
+    shouldNotThrow('window.scroll({ behavior: "smooth" })');
+    shouldNotThrow('window.scroll({ left: x, top: y })');
+    shouldNotThrow('window.scroll({ left: x, top: y, behavior: "auto" })');
+    shouldNotThrow('window.scroll({ left: x, top: y, behavior: "instant" })');
+    shouldNotThrow('window.scroll({ left: x, top: y, behavior: "smooth" })');
 
-    debug("Testing - scroll with an invalid ScrollOptions argument");
-    shouldThrow('window.scroll(x, y, { behavior: "" })');
-    shouldThrow('window.scroll(x, y, { behavior: "abcd" })');
-    shouldThrow('window.scroll(x, y, 200, "text")');
+    debug("Testing - scroll with an invalid ScrollToOptions argument");
+    shouldThrow('window.scroll({ behavior: "" })');
+    shouldThrow('window.scroll({ left: x, top: y, behavior: "abcd" })');
+    shouldThrow('window.scroll({ left: x, top: y, behavior: 200 })');
 
     // scrollBy /////////////////////////
     debug('');
@@ -82,7 +94,7 @@
     debug('');
 
     debug("Testing - scrollBy with 0 arguments");
-    shouldThrow('window.scrollBy()');;
+    shouldNotThrow('window.scrollBy()');;
     reset();
 
     debug("Testing - scrollBy with 1 argument");
@@ -90,15 +102,21 @@
     reset();
 
     debug("Testing - scrollBy with a valid ScrollOptions argument");
-    shouldNotThrow('window.scrollBy(x, y, { })');
-    shouldNotThrow('window.scrollBy(x, y, { behavior: "auto" })');
-    shouldNotThrow('window.scrollBy(x, y, { behavior: "instant" })');
-    shouldNotThrow('window.scrollBy(x, y, { behavior: "smooth" })');
+    shouldNotThrow('window.scrollBy({ })');
+    shouldNotThrow('window.scrollBy({ left: x })');
+    shouldNotThrow('window.scrollBy({ top: y })');
+    shouldNotThrow('window.scrollBy({ behavior: "auto" })');
+    shouldNotThrow('window.scrollBy({ behavior: "instant" })');
+    shouldNotThrow('window.scrollBy({ behavior: "smooth" })');
+    shouldNotThrow('window.scrollBy({ left: x, top: y })');
+    shouldNotThrow('window.scrollBy({ left: x, top: y, behavior: "auto" })');
+    shouldNotThrow('window.scrollBy({ left: x, top: y, behavior: "instant" })');
+    shouldNotThrow('window.scrollBy({ left: x, top: y, behavior: "smooth" })');
 
     debug("Testing - scrollBy with an invalid ScrollOptions argument");
-    shouldThrow('window.scrollBy(x, y, { behavior: "" })');
-    shouldThrow('window.scrollBy(x, y, { behavior: "abcd" })');
-    shouldThrow('window.scrollBy(x, y, 200, "text")');
+    shouldThrow('window.scrollBy({ behavior: "" })');
+    shouldThrow('window.scrollBy({ left: x, top: y, behavior: "abcd" })');
+    shouldThrow('window.scrollBy({ left: x, top: y, behavior: 200 })');
 </script>
 </body>
 </html>

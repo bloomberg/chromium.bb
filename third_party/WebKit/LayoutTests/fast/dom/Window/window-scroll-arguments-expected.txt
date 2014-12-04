@@ -1,4 +1,4 @@
-This test makes sure that calling the window scrolling methods with less than 2 arguments or with an invalid third argument throws an exception.
+This test makes sure that calling the window scrolling methods with a single non-dictionary argument or with a dictionary whose 'behavior' field is invalid throws an exception.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -7,50 +7,68 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 window.scrollTo Tests
 
 Testing - scrollTo with 0 arguments
-PASS window.scrollTo() threw exception TypeError: Failed to execute 'scrollTo' on 'Window': 2 arguments required, but only 0 present..
-Testing - scrollTo with 1 argument
-PASS window.scrollTo(x) threw exception TypeError: Failed to execute 'scrollTo' on 'Window': 2 arguments required, but only 1 present..
-Testing - scrollTo with a valid ScrollOptions argument
-PASS window.scrollTo(x, y, { }) did not throw exception.
-PASS window.scrollTo(x, y, { behavior: "auto" }) did not throw exception.
-PASS window.scrollTo(x, y, { behavior: "instant" }) did not throw exception.
-PASS window.scrollTo(x, y, { behavior: "smooth" }) did not throw exception.
-Testing - scrollTo with an invalid ScrollOptions argument
-PASS window.scrollTo(x, y, { behavior: "" }) threw exception TypeError: Failed to execute 'scrollTo' on 'Window': The ScrollBehavior provided is invalid..
-PASS window.scrollTo(x, y, { behavior: "abcd" }) threw exception TypeError: Failed to execute 'scrollTo' on 'Window': The ScrollBehavior provided is invalid..
-PASS window.scrollTo(x, y, 200, "text") threw exception TypeError: Failed to execute 'scrollTo' on 'Window': parameter 3 ('scrollOptions') is not an object..
+PASS window.scrollTo() did not throw exception.
+Testing - scrollTo with 1 non-dictionary argument
+PASS window.scrollTo(x) threw exception TypeError: Failed to execute 'scrollTo' on 'Window': parameter 1 ('scrollToOptions') is not an object..
+Testing - scrollTo with a valid ScrollToOptions argument
+PASS window.scrollTo({ }) did not throw exception.
+PASS window.scrollTo({ left: x }) did not throw exception.
+PASS window.scrollTo({ top: y }) did not throw exception.
+PASS window.scrollTo({ behavior: "auto" }) did not throw exception.
+PASS window.scrollTo({ behavior: "instant" }) did not throw exception.
+PASS window.scrollTo({ behavior: "smooth" }) did not throw exception.
+PASS window.scrollTo({ left: x, top: y }) did not throw exception.
+PASS window.scrollTo({ left: x, top: y, behavior: "auto" }) did not throw exception.
+PASS window.scrollTo({ left: x, top: y, behavior: "instant" }) did not throw exception.
+PASS window.scrollTo({ left: x, top: y, behavior: "smooth" }) did not throw exception.
+Testing - scrollTo with an invalid ScrollToOptions argument
+PASS window.scrollTo({ behavior: "" }) threw exception TypeError: Failed to execute 'scrollTo' on 'Window': member behavior ('') is not a valid enum value..
+PASS window.scrollTo({ left: x, top: y, behavior: "abcd" }) threw exception TypeError: Failed to execute 'scrollTo' on 'Window': member behavior ('abcd') is not a valid enum value..
+PASS window.scrollTo({ left: x, top: y, behavior: 200 }) threw exception TypeError: Failed to execute 'scrollTo' on 'Window': member behavior ('200') is not a valid enum value..
 
 window.scroll Tests
 
 Testing - scroll with 0 arguments
-PASS window.scroll() threw exception TypeError: Failed to execute 'scroll' on 'Window': 2 arguments required, but only 0 present..
+PASS window.scroll() did not throw exception.
 Testing - scroll with 1 argument
-PASS window.scroll(x) threw exception TypeError: Failed to execute 'scroll' on 'Window': 2 arguments required, but only 1 present..
-Testing - scroll with a valid ScrollOptions argument
-PASS window.scroll(x, y, { }) did not throw exception.
-PASS window.scroll(x, y, { behavior: "auto" }) did not throw exception.
-PASS window.scroll(x, y, { behavior: "instant" }) did not throw exception.
-PASS window.scroll(x, y, { behavior: "smooth" }) did not throw exception.
-Testing - scroll with an invalid ScrollOptions argument
-PASS window.scroll(x, y, { behavior: "" }) threw exception TypeError: Failed to execute 'scroll' on 'Window': The ScrollBehavior provided is invalid..
-PASS window.scroll(x, y, { behavior: "abcd" }) threw exception TypeError: Failed to execute 'scroll' on 'Window': The ScrollBehavior provided is invalid..
-PASS window.scroll(x, y, 200, "text") threw exception TypeError: Failed to execute 'scroll' on 'Window': parameter 3 ('scrollOptions') is not an object..
+PASS window.scroll(x) threw exception TypeError: Failed to execute 'scroll' on 'Window': parameter 1 ('scrollOptions') is not an object..
+Testing - scroll with a valid ScrollToOptions argument
+PASS window.scroll({ }) did not throw exception.
+PASS window.scroll({ left: x }) did not throw exception.
+PASS window.scroll({ top: y }) did not throw exception.
+PASS window.scroll({ behavior: "auto" }) did not throw exception.
+PASS window.scroll({ behavior: "instant" }) did not throw exception.
+PASS window.scroll({ behavior: "smooth" }) did not throw exception.
+PASS window.scroll({ left: x, top: y }) did not throw exception.
+PASS window.scroll({ left: x, top: y, behavior: "auto" }) did not throw exception.
+PASS window.scroll({ left: x, top: y, behavior: "instant" }) did not throw exception.
+PASS window.scroll({ left: x, top: y, behavior: "smooth" }) did not throw exception.
+Testing - scroll with an invalid ScrollToOptions argument
+PASS window.scroll({ behavior: "" }) threw exception TypeError: Failed to execute 'scroll' on 'Window': member behavior ('') is not a valid enum value..
+PASS window.scroll({ left: x, top: y, behavior: "abcd" }) threw exception TypeError: Failed to execute 'scroll' on 'Window': member behavior ('abcd') is not a valid enum value..
+PASS window.scroll({ left: x, top: y, behavior: 200 }) threw exception TypeError: Failed to execute 'scroll' on 'Window': member behavior ('200') is not a valid enum value..
 
 window.scrollBy Tests
 
 Testing - scrollBy with 0 arguments
-PASS window.scrollBy() threw exception TypeError: Failed to execute 'scrollBy' on 'Window': 2 arguments required, but only 0 present..
+PASS window.scrollBy() did not throw exception.
 Testing - scrollBy with 1 argument
-PASS window.scrollBy(x) threw exception TypeError: Failed to execute 'scrollBy' on 'Window': 2 arguments required, but only 1 present..
+PASS window.scrollBy(x) threw exception TypeError: Failed to execute 'scrollBy' on 'Window': parameter 1 ('scrollToOptions') is not an object..
 Testing - scrollBy with a valid ScrollOptions argument
-PASS window.scrollBy(x, y, { }) did not throw exception.
-PASS window.scrollBy(x, y, { behavior: "auto" }) did not throw exception.
-PASS window.scrollBy(x, y, { behavior: "instant" }) did not throw exception.
-PASS window.scrollBy(x, y, { behavior: "smooth" }) did not throw exception.
+PASS window.scrollBy({ }) did not throw exception.
+PASS window.scrollBy({ left: x }) did not throw exception.
+PASS window.scrollBy({ top: y }) did not throw exception.
+PASS window.scrollBy({ behavior: "auto" }) did not throw exception.
+PASS window.scrollBy({ behavior: "instant" }) did not throw exception.
+PASS window.scrollBy({ behavior: "smooth" }) did not throw exception.
+PASS window.scrollBy({ left: x, top: y }) did not throw exception.
+PASS window.scrollBy({ left: x, top: y, behavior: "auto" }) did not throw exception.
+PASS window.scrollBy({ left: x, top: y, behavior: "instant" }) did not throw exception.
+PASS window.scrollBy({ left: x, top: y, behavior: "smooth" }) did not throw exception.
 Testing - scrollBy with an invalid ScrollOptions argument
-PASS window.scrollBy(x, y, { behavior: "" }) threw exception TypeError: Failed to execute 'scrollBy' on 'Window': The ScrollBehavior provided is invalid..
-PASS window.scrollBy(x, y, { behavior: "abcd" }) threw exception TypeError: Failed to execute 'scrollBy' on 'Window': The ScrollBehavior provided is invalid..
-PASS window.scrollBy(x, y, 200, "text") threw exception TypeError: Failed to execute 'scrollBy' on 'Window': parameter 3 ('scrollOptions') is not an object..
+PASS window.scrollBy({ behavior: "" }) threw exception TypeError: Failed to execute 'scrollBy' on 'Window': member behavior ('') is not a valid enum value..
+PASS window.scrollBy({ left: x, top: y, behavior: "abcd" }) threw exception TypeError: Failed to execute 'scrollBy' on 'Window': member behavior ('abcd') is not a valid enum value..
+PASS window.scrollBy({ left: x, top: y, behavior: 200 }) threw exception TypeError: Failed to execute 'scrollBy' on 'Window': member behavior ('200') is not a valid enum value..
 PASS successfullyParsed is true
 
 TEST COMPLETE

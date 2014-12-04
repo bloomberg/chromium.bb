@@ -32,7 +32,7 @@ class Navigator;
 class Performance;
 class RequestAnimationFrameCallback;
 class Screen;
-class ScrollOptions;
+class ScrollToOptions;
 class SerializedScriptValue;
 class Storage;
 class StyleMedia;
@@ -143,11 +143,11 @@ public:
     virtual bool find(const String&, bool caseSensitive, bool backwards, bool wrap, bool wholeWord, bool searchInFrames, bool showDialog) const = 0;
 
     virtual void scrollBy(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const = 0;
-    virtual void scrollBy(double x, double y, const ScrollOptions&, ExceptionState&) const = 0;
-    virtual void scrollTo(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const = 0;
-    virtual void scrollTo(double x, double y, const ScrollOptions&, ExceptionState&) const = 0;
+    virtual void scrollBy(const ScrollToOptions&) const = 0;
+    virtual void scrollTo(double x, double y) const = 0;
+    virtual void scrollTo(const ScrollToOptions&) const = 0;
     void scroll(double x, double y) const { scrollTo(x, y); }
-    void scroll(double x, double y, const ScrollOptions& scrollOptions, ExceptionState& exceptionState) const { scrollTo(x, y, scrollOptions, exceptionState); }
+    void scroll(const ScrollToOptions& scrollToOptions) const { scrollTo(scrollToOptions); }
     virtual void moveBy(float x, float y) const = 0;
     virtual void moveTo(float x, float y) const = 0;
 

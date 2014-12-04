@@ -68,7 +68,7 @@
 #include "core/frame/Location.h"
 #include "core/frame/Navigator.h"
 #include "core/frame/Screen.h"
-#include "core/frame/ScrollOptions.h"
+#include "core/frame/ScrollToOptions.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -1422,20 +1422,6 @@ double LocalDOMWindow::devicePixelRatio() const
     return frame()->devicePixelRatio();
 }
 
-static bool scrollBehaviorFromScrollOptions(const ScrollOptions& scrollOptions, ScrollBehavior& scrollBehavior, ExceptionState& exceptionState)
-{
-    if (!scrollOptions.hasBehavior()) {
-        scrollBehavior = ScrollBehaviorAuto;
-        return true;
-    }
-
-    if (ScrollableArea::scrollBehaviorFromString(scrollOptions.behavior(), scrollBehavior))
-        return true;
-
-    exceptionState.throwTypeError("The ScrollBehavior provided is invalid.");
-    return false;
-}
-
 // FIXME: This class shouldn't be explicitly moving the viewport around. crbug.com/371896
 static void scrollViewportTo(LocalFrame* frame, DoublePoint offset, ScrollBehavior scrollBehavior)
 {
@@ -1482,15 +1468,20 @@ void LocalDOMWindow::scrollBy(double x, double y, ScrollBehavior scrollBehavior)
     scrollViewportTo(frame(), currentOffset + scaledOffset, scrollBehavior);
 }
 
-void LocalDOMWindow::scrollBy(double x, double y, const ScrollOptions& scrollOptions, ExceptionState &exceptionState) const
+void LocalDOMWindow::scrollBy(const ScrollToOptions& scrollToOptions) const
 {
+    double x = 0.0;
+    double y = 0.0;
+    if (scrollToOptions.hasLeft())
+        x = scrollToOptions.left();
+    if (scrollToOptions.hasTop())
+        y = scrollToOptions.top();
     ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
-    if (!scrollBehaviorFromScrollOptions(scrollOptions, scrollBehavior, exceptionState))
-        return;
+    ScrollableArea::scrollBehaviorFromString(scrollToOptions.behavior(), scrollBehavior);
     scrollBy(x, y, scrollBehavior);
 }
 
-void LocalDOMWindow::scrollTo(double x, double y, ScrollBehavior scrollBehavior) const
+void LocalDOMWindow::scrollTo(double x, double y) const
 {
     if (!isCurrentlyDisplayedInFrame())
         return;
@@ -1501,15 +1492,48 @@ void LocalDOMWindow::scrollTo(double x, double y, ScrollBehavior scrollBehavior)
         return;
 
     DoublePoint layoutPos(x * frame()->pageZoomFactor(), y * frame()->pageZoomFactor());
-    scrollViewportTo(frame(), layoutPos, scrollBehavior);
+    scrollViewportTo(frame(), layoutPos, ScrollBehaviorAuto);
 }
 
-void LocalDOMWindow::scrollTo(double x, double y, const ScrollOptions& scrollOptions, ExceptionState& exceptionState) const
+void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const
 {
-    ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
-    if (!scrollBehaviorFromScrollOptions(scrollOptions, scrollBehavior, exceptionState))
+    if (!isCurrentlyDisplayedInFrame())
         return;
-    scrollTo(x, y, scrollBehavior);
+
+    document()->updateLayoutIgnorePendingStylesheets();
+
+    FrameView* view = frame()->view();
+    if (!view)
+        return;
+
+    FrameHost* host = frame()->host();
+    if (!host)
+        return;
+
+    double scaledX = 0.0;
+    double scaledY = 0.0;
+
+    DoublePoint currentOffset = host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame()
+        ? DoublePoint(host->pinchViewport().visibleRectInDocument().location())
+        : view->scrollPositionDouble();
+    scaledX = currentOffset.x();
+    scaledY = currentOffset.y();
+
+    if (scrollToOptions.hasLeft()) {
+        if (std::isnan(scrollToOptions.left()))
+            return;
+        scaledX = scrollToOptions.left() * frame()->pageZoomFactor();
+    }
+
+    if (scrollToOptions.hasTop()) {
+        if (std::isnan(scrollToOptions.top()))
+            return;
+        scaledY = scrollToOptions.top() * frame()->pageZoomFactor();
+    }
+
+    ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
+    ScrollableArea::scrollBehaviorFromString(scrollToOptions.behavior(), scrollBehavior);
+    scrollViewportTo(frame(), DoublePoint(scaledX, scaledY), scrollBehavior);
 }
 
 void LocalDOMWindow::moveBy(float x, float y) const
