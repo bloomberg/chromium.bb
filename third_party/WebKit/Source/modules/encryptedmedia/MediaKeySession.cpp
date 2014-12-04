@@ -855,7 +855,7 @@ void MediaKeySession::close()
     m_isClosed = true;
 
     // Resolve the closed promise.
-    m_closedPromise->resolve(V8UndefinedType());
+    m_closedPromise->resolve(ToV8UndefinedGenerator());
 }
 
 // Queue a task to fire a simple event named keyadded at the MediaKeySession object.

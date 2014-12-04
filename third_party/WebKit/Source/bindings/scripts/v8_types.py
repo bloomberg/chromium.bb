@@ -843,7 +843,7 @@ CPP_VALUE_TO_V8_VALUE = {
     'ScriptValue': '{cpp_value}.v8Value()',
     'SerializedScriptValue': '{cpp_value} ? {cpp_value}->deserialize() : v8::Handle<v8::Value>(v8::Null({isolate}))',
     # General
-    'array': 'v8Array({cpp_value}, {creation_context}, {isolate})',
+    'array': 'toV8({cpp_value}, {creation_context}, {isolate})',
     'DOMWrapper': 'toV8({cpp_value}, {creation_context}, {isolate})',
     # Union types or dictionaries
     'DictionaryOrUnion': 'toV8({cpp_value}, {creation_context}, {isolate})',

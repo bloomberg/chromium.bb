@@ -14,6 +14,7 @@ import v8_utilities
 
 
 DICTIONARY_H_INCLUDES = frozenset([
+    'bindings/core/v8/ToV8.h',
     'bindings/core/v8/V8Binding.h',
     'platform/heap/Handle.h',
 ])

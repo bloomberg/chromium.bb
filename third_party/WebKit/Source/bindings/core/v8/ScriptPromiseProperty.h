@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromisePropertyBase.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/ToV8.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 
@@ -119,7 +119,7 @@ void ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::reject(PassR
 template<typename HolderType, typename ResolvedType, typename RejectedType>
 v8::Handle<v8::Object> ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::holder(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    v8::Handle<v8::Value> value = V8ValueTraits<HolderType>::toV8Value(m_holder, creationContext, isolate);
+    v8::Handle<v8::Value> value = toV8(m_holder, creationContext, isolate);
     return value.As<v8::Object>();
 }
 
@@ -127,14 +127,14 @@ template<typename HolderType, typename ResolvedType, typename RejectedType>
 v8::Handle<v8::Value> ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::resolvedValue(v8::Isolate* isolate, v8::Handle<v8::Object> creationContext)
 {
     ASSERT(state() == Resolved);
-    return V8ValueTraits<ResolvedType>::toV8Value(m_resolved, creationContext, isolate);
+    return toV8(m_resolved, creationContext, isolate);
 }
 
 template<typename HolderType, typename ResolvedType, typename RejectedType>
 v8::Handle<v8::Value> ScriptPromiseProperty<HolderType, ResolvedType, RejectedType>::rejectedValue(v8::Isolate* isolate, v8::Handle<v8::Object> creationContext)
 {
     ASSERT(state() == Rejected);
-    return V8ValueTraits<RejectedType>::toV8Value(m_rejected, creationContext, isolate);
+    return toV8(m_rejected, creationContext, isolate);
 }
 
 template<typename HolderType, typename ResolvedType, typename RejectedType>

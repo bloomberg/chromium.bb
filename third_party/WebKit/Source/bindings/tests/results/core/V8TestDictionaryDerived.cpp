@@ -61,12 +61,6 @@ v8::Handle<v8::Value> toV8(const TestDictionaryDerivedImplementedAs& impl, v8::H
     return v8Object;
 }
 
-template<>
-v8::Handle<v8::Value> toV8NoInline(const TestDictionaryDerivedImplementedAs* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(*impl, creationContext, isolate);
-}
-
 void toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplementedAs& impl, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (impl.hasDerivedStringMember()) {

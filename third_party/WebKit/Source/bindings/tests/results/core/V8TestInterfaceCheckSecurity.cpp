@@ -532,10 +532,4 @@ void V8TestInterfaceCheckSecurity::derefObject(ScriptWrappable* scriptWrappable)
     scriptWrappable->toImpl<TestInterfaceCheckSecurity>()->deref();
 }
 
-template<>
-v8::Handle<v8::Value> toV8NoInline(TestInterfaceCheckSecurity* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(impl, creationContext, isolate);
-}
-
 } // namespace blink

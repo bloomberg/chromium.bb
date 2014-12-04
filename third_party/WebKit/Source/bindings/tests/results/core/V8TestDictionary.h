@@ -7,6 +7,7 @@
 #ifndef V8TestDictionary_h
 #define V8TestDictionary_h
 
+#include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/tests/idls/core/TestDictionary.h"
 #include "platform/heap/Handle.h"

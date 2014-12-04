@@ -51,7 +51,7 @@ private:
         {
             Vector<ScriptValue> entry;
             entry.append(ScriptValue(scriptState, v8String(scriptState->isolate(), i->key)));
-            entry.append(ScriptValue(scriptState, V8ValueTraits<T*>::toV8Value(i->value, scriptState->context()->Global(), scriptState->isolate())));
+            entry.append(ScriptValue(scriptState, toV8(i->value, scriptState->context()->Global(), scriptState->isolate())));
             return entry;
         }
     };

@@ -175,8 +175,6 @@ private:
 };
 
 {% if has_custom_to_v8 %}
-v8::Handle<v8::Value> toV8({{cpp_class}}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
-
 template<typename CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}* impl)
 {

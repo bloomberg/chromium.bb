@@ -63,10 +63,4 @@ void V8Uint8ClampedArray::derefObject(ScriptWrappable* scriptWrappable)
     scriptWrappable->toImpl<TestUint8ClampedArray>()->deref();
 }
 
-template<>
-v8::Handle<v8::Value> toV8NoInline(TestUint8ClampedArray* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(impl, creationContext, isolate);
-}
-
 } // namespace blink

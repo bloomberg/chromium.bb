@@ -89,7 +89,7 @@ void V8TestCallbackInterface::voidMethodSequenceArg(const Vector<RefPtr<TestInte
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
-    v8::Handle<v8::Value> sequenceArgHandle = v8Array(sequenceArg, m_scriptState->context()->Global(), m_scriptState->isolate());
+    v8::Handle<v8::Value> sequenceArgHandle = toV8(sequenceArg, m_scriptState->context()->Global(), m_scriptState->isolate());
     if (sequenceArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
@@ -201,7 +201,7 @@ void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedSequenceArg(const 
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
-    v8::Handle<v8::Value> sequenceArgHandle = v8Array(sequenceArg, m_scriptState->context()->Global(), m_scriptState->isolate());
+    v8::Handle<v8::Value> sequenceArgHandle = toV8(sequenceArg, m_scriptState->context()->Global(), m_scriptState->isolate());
     if (sequenceArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
@@ -221,7 +221,7 @@ void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedArrayArg(const Wil
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
-    v8::Handle<v8::Value> arrayArgHandle = v8Array(arrayArg, m_scriptState->context()->Global(), m_scriptState->isolate());
+    v8::Handle<v8::Value> arrayArgHandle = toV8(arrayArg, m_scriptState->context()->Global(), m_scriptState->isolate());
     if (arrayArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();

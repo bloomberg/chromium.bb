@@ -319,12 +319,6 @@ v8::Handle<v8::Value> toV8(const TestDictionary& impl, v8::Handle<v8::Object> cr
     return v8Object;
 }
 
-template<>
-v8::Handle<v8::Value> toV8NoInline(const TestDictionary* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(*impl, creationContext, isolate);
-}
-
 void toV8TestDictionary(const TestDictionary& impl, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (impl.hasBooleanMember()) {
@@ -356,7 +350,7 @@ void toV8TestDictionary(const TestDictionary& impl, v8::Handle<v8::Object> dicti
     }
 
     if (impl.hasInternalDictionarySequenceMember()) {
-        dictionary->Set(v8String(isolate, "internalDictionarySequenceMember"), v8Array(impl.internalDictionarySequenceMember(), creationContext, isolate));
+        dictionary->Set(v8String(isolate, "internalDictionarySequenceMember"), toV8(impl.internalDictionarySequenceMember(), creationContext, isolate));
     }
 
     if (impl.hasLongMember()) {
@@ -376,7 +370,7 @@ void toV8TestDictionary(const TestDictionary& impl, v8::Handle<v8::Object> dicti
     }
 
     if (impl.hasStringArrayMember()) {
-        dictionary->Set(v8String(isolate, "stringArrayMember"), v8Array(impl.stringArrayMember(), creationContext, isolate));
+        dictionary->Set(v8String(isolate, "stringArrayMember"), toV8(impl.stringArrayMember(), creationContext, isolate));
     }
 
     if (impl.hasStringMember()) {
@@ -390,7 +384,7 @@ void toV8TestDictionary(const TestDictionary& impl, v8::Handle<v8::Object> dicti
     }
 
     if (impl.hasStringSequenceMember()) {
-        dictionary->Set(v8String(isolate, "stringSequenceMember"), v8Array(impl.stringSequenceMember(), creationContext, isolate));
+        dictionary->Set(v8String(isolate, "stringSequenceMember"), toV8(impl.stringSequenceMember(), creationContext, isolate));
     }
 
     if (impl.hasTestInterfaceGarbageCollectedMember()) {

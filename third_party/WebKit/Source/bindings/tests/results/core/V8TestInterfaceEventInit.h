@@ -7,6 +7,7 @@
 #ifndef V8TestInterfaceEventInit_h
 #define V8TestInterfaceEventInit_h
 
+#include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/tests/idls/core/TestInterfaceEventInit.h"
 #include "platform/heap/Handle.h"

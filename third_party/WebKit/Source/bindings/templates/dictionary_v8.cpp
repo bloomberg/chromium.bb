@@ -80,12 +80,6 @@ v8::Handle<v8::Value> toV8(const {{cpp_class}}& impl, v8::Handle<v8::Object> cre
     return v8Object;
 }
 
-template<>
-v8::Handle<v8::Value> toV8NoInline(const {{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(*impl, creationContext, isolate);
-}
-
 void toV8{{cpp_class}}(const {{cpp_class}}& impl, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     {% for member in members %}

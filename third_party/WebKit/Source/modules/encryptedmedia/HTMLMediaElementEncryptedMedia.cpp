@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/ExceptionCode.h"
@@ -280,7 +281,7 @@ ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(ScriptState* scriptSt
     // 1. If mediaKeys and the mediaKeys attribute are the same object, return
     //    a promise resolved with undefined.
     if (thisElement.m_mediaKeys == mediaKeys)
-        return ScriptPromise::cast(scriptState, V8ValueTraits<V8UndefinedType>::toV8Value(V8UndefinedType(), scriptState->context()->Global(), scriptState->isolate()));
+        return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
 
     // 2. Let promise be a new promise. Remaining steps done in handler.
     return SetMediaKeysHandler::create(scriptState, element, mediaKeys);

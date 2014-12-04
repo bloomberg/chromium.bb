@@ -140,7 +140,7 @@ private:
     bool m_isClosed; // Is the CDM finished with this session?
 
     // Keep track of the closed promise.
-    typedef ScriptPromiseProperty<Member<MediaKeySession>, V8UndefinedType, RefPtrWillBeMember<DOMException> > ClosedPromise;
+    typedef ScriptPromiseProperty<Member<MediaKeySession>, ToV8UndefinedGenerator, RefPtrWillBeMember<DOMException> > ClosedPromise;
     Member<ClosedPromise> m_closedPromise;
 
     HeapDeque<Member<PendingAction> > m_pendingActions;

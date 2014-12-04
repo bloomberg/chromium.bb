@@ -5,6 +5,9 @@
 #include "config.h"
 #include "bindings/core/v8/WebGLAny.h"
 
+#include "bindings/core/v8/ToV8.h"
+#include "wtf/text/WTFString.h"
+
 namespace blink {
 
 ScriptValue WebGLAny(ScriptState* scriptState)

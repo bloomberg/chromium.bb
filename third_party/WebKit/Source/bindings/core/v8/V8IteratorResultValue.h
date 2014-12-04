@@ -6,7 +6,7 @@
 #define V8IteratorResultValue_h
 
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/ToV8.h"
 #include <v8.h>
 
 namespace blink {
@@ -21,7 +21,7 @@ inline ScriptValue v8IteratorResult(ScriptState* scriptState, const T& value)
         v8IteratorResultValue(
             scriptState->isolate(),
             false,
-            V8ValueTraits<T>::toV8Value(value, scriptState->context()->Global(), scriptState->isolate())));
+            toV8(value, scriptState->context()->Global(), scriptState->isolate())));
 }
 
 inline ScriptValue v8IteratorResultDone(ScriptState* scriptState)

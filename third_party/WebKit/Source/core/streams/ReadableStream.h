@@ -65,8 +65,8 @@ protected:
     void readPostAction();
 
 private:
-    typedef ScriptPromiseProperty<Member<ReadableStream>, V8UndefinedType, RefPtrWillBeMember<DOMException> > WaitPromise;
-    typedef ScriptPromiseProperty<Member<ReadableStream>, V8UndefinedType, RefPtrWillBeMember<DOMException> > ClosedPromise;
+    typedef ScriptPromiseProperty<Member<ReadableStream>, ToV8UndefinedGenerator, RefPtrWillBeMember<DOMException> > WaitPromise;
+    typedef ScriptPromiseProperty<Member<ReadableStream>, ToV8UndefinedGenerator, RefPtrWillBeMember<DOMException> > ClosedPromise;
 
     virtual bool isQueueEmpty() const = 0;
     virtual void clearQueue() = 0;

@@ -9,6 +9,7 @@
 
 #if ENABLE(CONDITION)
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
@@ -41,8 +42,6 @@ public:
     static void installConditionallyEnabledProperties(v8::Handle<v8::Object>, v8::Isolate*);
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*);
 };
-
-v8::Handle<v8::Value> toV8(TestInterface5Implementation*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 template<typename CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface5Implementation* impl)

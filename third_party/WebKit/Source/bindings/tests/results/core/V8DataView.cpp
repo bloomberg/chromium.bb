@@ -62,10 +62,4 @@ void V8DataView::derefObject(ScriptWrappable* scriptWrappable)
     scriptWrappable->toImpl<TestDataView>()->deref();
 }
 
-template<>
-v8::Handle<v8::Value> toV8NoInline(TestDataView* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(impl, creationContext, isolate);
-}
-
 } // namespace blink

@@ -33,10 +33,9 @@
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMException.h"
-
 #include <v8.h>
 
 namespace blink {
@@ -162,7 +161,7 @@ ScriptPromise ScriptPromise::reject(ScriptState* scriptState, v8::Handle<v8::Val
 ScriptPromise ScriptPromise::rejectWithDOMException(ScriptState* scriptState, PassRefPtrWillBeRawPtr<DOMException> exception)
 {
     ASSERT(scriptState->isolate()->InContext());
-    return reject(scriptState, V8ValueTraits<PassRefPtrWillBeRawPtr<DOMException> >::toV8Value(exception, scriptState->context()->Global(), scriptState->isolate()));
+    return reject(scriptState, toV8(exception, scriptState->context()->Global(), scriptState->isolate()));
 }
 
 v8::Local<v8::Promise> ScriptPromise::rejectRaw(v8::Isolate* isolate, v8::Handle<v8::Value> value)

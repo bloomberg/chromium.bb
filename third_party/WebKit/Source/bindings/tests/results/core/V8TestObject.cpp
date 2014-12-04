@@ -1442,7 +1442,7 @@ static void stringArrayAttributeAttributeGetter(const v8::PropertyCallbackInfo<v
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValue(info, v8Array(impl->stringArrayAttribute(), info.Holder(), info.GetIsolate()));
+    v8SetReturnValue(info, toV8(impl->stringArrayAttribute(), info.Holder(), info.GetIsolate()));
 }
 
 static void stringArrayAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1472,7 +1472,7 @@ static void testInterfaceEmptyArrayAttributeAttributeGetter(const v8::PropertyCa
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValue(info, v8Array(impl->testInterfaceEmptyArrayAttribute(), info.Holder(), info.GetIsolate()));
+    v8SetReturnValue(info, toV8(impl->testInterfaceEmptyArrayAttribute(), info.Holder(), info.GetIsolate()));
 }
 
 static void testInterfaceEmptyArrayAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1502,7 +1502,7 @@ static void floatArrayAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValue(info, v8Array(impl->floatArrayAttribute(), info.Holder(), info.GetIsolate()));
+    v8SetReturnValue(info, toV8(impl->floatArrayAttribute(), info.Holder(), info.GetIsolate()));
 }
 
 static void floatArrayAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1995,8 +1995,8 @@ static void cachedArrayAttributeAttributeGetter(const v8::PropertyCallbackInfo<v
         }
     }
     Vector<String> cppValue(impl->cachedArrayAttribute());
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, v8Array(cppValue, info.Holder(), info.GetIsolate()));
-    v8SetReturnValue(info, v8Array(cppValue, info.Holder(), info.GetIsolate()));
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, toV8(cppValue, info.Holder(), info.GetIsolate()));
+    v8SetReturnValue(info, toV8(cppValue, info.Holder(), info.GetIsolate()));
 }
 
 static void cachedArrayAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -6136,7 +6136,7 @@ static void voidMethodUint8ArrayArgMethodCallback(const v8::FunctionCallbackInfo
 static void longArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    v8SetReturnValue(info, v8Array(impl->longArrayMethod(), info.Holder(), info.GetIsolate()));
+    v8SetReturnValue(info, toV8(impl->longArrayMethod(), info.Holder(), info.GetIsolate()));
 }
 
 static void longArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6149,7 +6149,7 @@ static void longArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Val
 static void stringArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    v8SetReturnValue(info, v8Array(impl->stringArrayMethod(), info.Holder(), info.GetIsolate()));
+    v8SetReturnValue(info, toV8(impl->stringArrayMethod(), info.Holder(), info.GetIsolate()));
 }
 
 static void stringArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6162,7 +6162,7 @@ static void stringArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void testInterfaceEmptyArrayMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    v8SetReturnValue(info, v8Array(impl->testInterfaceEmptyArrayMethod(), info.Holder(), info.GetIsolate()));
+    v8SetReturnValue(info, toV8(impl->testInterfaceEmptyArrayMethod(), info.Holder(), info.GetIsolate()));
 }
 
 static void testInterfaceEmptyArrayMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6244,7 +6244,7 @@ static void voidMethodArrayTestInterfaceEmptyArgMethodCallback(const v8::Functio
 static void longSequenceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    v8SetReturnValue(info, v8Array(impl->longSequenceMethod(), info.Holder(), info.GetIsolate()));
+    v8SetReturnValue(info, toV8(impl->longSequenceMethod(), info.Holder(), info.GetIsolate()));
 }
 
 static void longSequenceMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6257,7 +6257,7 @@ static void longSequenceMethodMethodCallback(const v8::FunctionCallbackInfo<v8::
 static void stringSequenceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    v8SetReturnValue(info, v8Array(impl->stringSequenceMethod(), info.Holder(), info.GetIsolate()));
+    v8SetReturnValue(info, toV8(impl->stringSequenceMethod(), info.Holder(), info.GetIsolate()));
 }
 
 static void stringSequenceMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6270,7 +6270,7 @@ static void stringSequenceMethodMethodCallback(const v8::FunctionCallbackInfo<v8
 static void testInterfaceEmptySequenceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    v8SetReturnValue(info, v8Array(impl->testInterfaceEmptySequenceMethod(), info.Holder(), info.GetIsolate()));
+    v8SetReturnValue(info, toV8(impl->testInterfaceEmptySequenceMethod(), info.Holder(), info.GetIsolate()));
 }
 
 static void testInterfaceEmptySequenceMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6422,7 +6422,7 @@ static void nullableLongSequenceMethodMethod(const v8::FunctionCallbackInfo<v8::
     if (result.isNull())
         v8SetReturnValueNull(info);
     else
-        v8SetReturnValue(info, v8Array(result.get(), info.Holder(), info.GetIsolate()));
+        v8SetReturnValue(info, toV8(result.get(), info.Holder(), info.GetIsolate()));
 }
 
 static void nullableLongSequenceMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -11105,12 +11105,6 @@ void V8TestObject::refObject(ScriptWrappable* scriptWrappable)
 void V8TestObject::derefObject(ScriptWrappable* scriptWrappable)
 {
     scriptWrappable->toImpl<TestObject>()->deref();
-}
-
-template<>
-v8::Handle<v8::Value> toV8NoInline(TestObject* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(impl, creationContext, isolate);
 }
 
 bool V8TestObject::PrivateScript::voidMethodImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl)

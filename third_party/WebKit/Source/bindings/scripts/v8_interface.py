@@ -53,6 +53,7 @@ from v8_utilities import (cpp_name_or_partial, capitalize, conditional_string, c
 
 INTERFACE_H_INCLUDES = frozenset([
     'bindings/core/v8/ScriptWrappable.h',
+    'bindings/core/v8/ToV8.h',
     'bindings/core/v8/V8Binding.h',
     'bindings/core/v8/V8DOMWrapper.h',
     'bindings/core/v8/WrapperTypeInfo.h',

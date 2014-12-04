@@ -122,7 +122,7 @@ public:
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->resolve(V8UndefinedType());
+        m_resolver->resolve();
     }
 
     virtual void onError(typename T::WebType* error) override

@@ -453,7 +453,7 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
 {##############################################################################}
 {% block to_active_dom_object %}{% endblock %}
 {% block get_shadow_object_template %}{% endblock %}
-{% block deref_object_and_to_v8_no_inline %}{% endblock %}
+{% block ref_object_and_deref_object %}{% endblock %}
 {% for method in methods if method.is_implemented_in_private_script %}
 {{method_implemented_in_private_script(method)}}
 {% endfor %}

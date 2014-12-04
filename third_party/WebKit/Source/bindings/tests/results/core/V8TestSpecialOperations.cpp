@@ -192,10 +192,4 @@ void V8TestSpecialOperations::derefObject(ScriptWrappable* scriptWrappable)
     scriptWrappable->toImpl<TestSpecialOperations>()->deref();
 }
 
-template<>
-v8::Handle<v8::Value> toV8NoInline(TestSpecialOperations* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(impl, creationContext, isolate);
-}
-
 } // namespace blink

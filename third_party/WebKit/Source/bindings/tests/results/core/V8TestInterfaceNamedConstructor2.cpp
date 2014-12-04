@@ -125,10 +125,4 @@ void V8TestInterfaceNamedConstructor2::derefObject(ScriptWrappable* scriptWrappa
     scriptWrappable->toImpl<TestInterfaceNamedConstructor2>()->deref();
 }
 
-template<>
-v8::Handle<v8::Value> toV8NoInline(TestInterfaceNamedConstructor2* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(impl, creationContext, isolate);
-}
-
 } // namespace blink

@@ -922,7 +922,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::getShadowObjectTemplate(v8::Isolate* is
 
 
 {##############################################################################}
-{% block deref_object_and_to_v8_no_inline %}
+{% block ref_object_and_deref_object %}
 void {{v8_class}}::refObject(ScriptWrappable* scriptWrappable)
 {
 {% if gc_type == 'WillBeGarbageCollectedObject' %}
@@ -943,12 +943,6 @@ void {{v8_class}}::derefObject(ScriptWrappable* scriptWrappable)
 {% elif gc_type == 'RefCountedObject' %}
     scriptWrappable->toImpl<{{cpp_class}}>()->deref();
 {% endif %}
-}
-
-template<>
-v8::Handle<v8::Value> toV8NoInline({{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(impl, creationContext, isolate);
 }
 
 {% endblock %}

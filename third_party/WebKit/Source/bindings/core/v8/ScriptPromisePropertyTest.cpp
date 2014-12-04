@@ -162,7 +162,7 @@ public:
         v8::HandleScope handleScope(isolate());
         ScriptState* scriptState = ScriptState::from(toV8Context(&document(), world));
         ScriptState::Scope scope(scriptState);
-        return ScriptValue(scriptState, V8ValueTraits<T>::toV8Value(value, scriptState->context()->Global(), isolate()));
+        return ScriptValue(scriptState, toV8(value, scriptState->context()->Global(), isolate()));
     }
 
 private:
@@ -514,7 +514,7 @@ public:
     template <typename T>
     void test(const T& value, const char* expected, const char* file, size_t line)
     {
-        typedef ScriptPromiseProperty<Member<GarbageCollectedScriptWrappable>, T, V8UndefinedType> Property;
+        typedef ScriptPromiseProperty<Member<GarbageCollectedScriptWrappable>, T, ToV8UndefinedGenerator> Property;
         Property* property = new Property(&document(), new GarbageCollectedScriptWrappable("holder"), Property::Ready);
         size_t nResolveCalls = 0;
         ScriptValue actualValue;
@@ -530,7 +530,7 @@ public:
             actual = toCoreString(actualValue.v8Value()->ToString(isolate()));
         }
         if (expected != actual) {
-            ADD_FAILURE_AT(file, line) << "toV8Value returns an incorrect value.\n  Actual: " << actual.utf8().data() << "\nExpected: " << expected;
+            ADD_FAILURE_AT(file, line) << "toV8 returns an incorrect value.\n  Actual: " << actual.utf8().data() << "\nExpected: " << expected;
             return;
         }
     }
@@ -538,7 +538,7 @@ public:
 
 TEST_F(ScriptPromisePropertyNonScriptWrappableResolutionTargetTest, ResolveWithUndefined)
 {
-    test(V8UndefinedType(), "undefined", __FILE__, __LINE__);
+    test(ToV8UndefinedGenerator(), "undefined", __FILE__, __LINE__);
 }
 
 TEST_F(ScriptPromisePropertyNonScriptWrappableResolutionTargetTest, ResolveWithString)
@@ -548,7 +548,7 @@ TEST_F(ScriptPromisePropertyNonScriptWrappableResolutionTargetTest, ResolveWithS
 
 TEST_F(ScriptPromisePropertyNonScriptWrappableResolutionTargetTest, ResolveWithInteger)
 {
-    test<int>(-1, "-1", __FILE__, __LINE__);
+    test(-1, "-1", __FILE__, __LINE__);
 }
 
 } // namespace

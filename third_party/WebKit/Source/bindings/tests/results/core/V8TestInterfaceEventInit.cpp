@@ -49,12 +49,6 @@ v8::Handle<v8::Value> toV8(const TestInterfaceEventInit& impl, v8::Handle<v8::Ob
     return v8Object;
 }
 
-template<>
-v8::Handle<v8::Value> toV8NoInline(const TestInterfaceEventInit* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(*impl, creationContext, isolate);
-}
-
 void toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Handle<v8::Object> dictionary, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (impl.hasStringMember()) {

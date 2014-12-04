@@ -96,7 +96,7 @@ bool ReadableStream::enqueuePostAction()
         // ScriptPromiseProperty::resolve and ScriptPromiseProperty::reject
         // *before* changing state, no matter if the state change actually
         // changes hasPendingActivity return value.
-        m_wait->resolve(V8UndefinedType());
+        m_wait->resolve(ToV8UndefinedGenerator());
         m_state = Readable;
     }
 
@@ -106,8 +106,8 @@ bool ReadableStream::enqueuePostAction()
 void ReadableStream::close()
 {
     if (m_state == Waiting) {
-        m_wait->resolve(V8UndefinedType());
-        m_closed->resolve(V8UndefinedType());
+        m_wait->resolve(ToV8UndefinedGenerator());
+        m_closed->resolve(ToV8UndefinedGenerator());
         m_state = Closed;
     } else if (m_state == Readable) {
         m_isDraining = true;
@@ -135,7 +135,7 @@ void ReadableStream::readPostAction()
     ASSERT(m_state == Readable);
     if (isQueueEmpty()) {
         if (m_isDraining) {
-            m_closed->resolve(V8UndefinedType());
+            m_closed->resolve(ToV8UndefinedGenerator());
             m_state = Closed;
         } else {
             m_wait->reset();
@@ -159,9 +159,9 @@ ScriptPromise ReadableStream::cancel(ScriptState* scriptState, ScriptValue reaso
 
     ASSERT(m_state == Readable || m_state == Waiting);
     if (m_state == Waiting)
-        m_wait->resolve(V8UndefinedType());
+        m_wait->resolve(ToV8UndefinedGenerator());
     clearQueue();
-    m_closed->resolve(V8UndefinedType());
+    m_closed->resolve(ToV8UndefinedGenerator());
     m_state = Closed;
     return m_source->cancelSource(scriptState, reason).then(ConstUndefined::create(scriptState));
 }
@@ -226,4 +226,3 @@ void ReadableStream::trace(Visitor* visitor)
 }
 
 } // namespace blink
-

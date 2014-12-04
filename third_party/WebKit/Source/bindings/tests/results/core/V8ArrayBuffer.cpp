@@ -74,10 +74,4 @@ void V8ArrayBuffer::derefObject(ScriptWrappable* scriptWrappable)
     scriptWrappable->toImpl<TestArrayBuffer>()->deref();
 }
 
-template<>
-v8::Handle<v8::Value> toV8NoInline(TestArrayBuffer* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(impl, creationContext, isolate);
-}
-
 } // namespace blink
