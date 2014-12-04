@@ -6,11 +6,6 @@ tommi@chromium.org
 vrk@chromium.org
 xhwang@chromium.org
 
-per-file cast_*=hclam@chromium.org
-per-file cast_*=hubbe@chromium.org
-per-file cast_*=mikhal@chromium.org
-per-file cast_*=pwestin@google.com
-
 per-file midi_*=toyoshim@chromium.org
 
 # For changes related to the tab media indicators.
