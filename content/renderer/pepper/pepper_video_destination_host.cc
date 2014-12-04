@@ -80,13 +80,10 @@ int32_t PepperVideoDestinationHost::OnHostMsgPutFrame(
   if (!frame_writer_.get())
     return PP_ERROR_FAILED;
 
-  // Convert PP_TimeTicks (a double, in seconds) to a TimeDelta (int64,
-  // microseconds) and then to a video timestamp (int64, nanoseconds). All times
-  // are relative to the Unix Epoch so don't subtract it to get a delta.
-  base::TimeDelta time_delta =
-      base::Time::FromDoubleT(timestamp) - base::Time();
-  int64_t timestamp_ns =
-      time_delta.InMicroseconds() * base::Time::kNanosecondsPerMicrosecond;
+  // Convert PP_TimeTicks (a double, in seconds) to a video timestamp (int64,
+  // nanoseconds).
+  const int64_t timestamp_ns =
+      static_cast<int64_t>(timestamp * base::Time::kNanosecondsPerSecond);
   frame_writer_->PutFrame(image_data_impl, timestamp_ns);
 
   return PP_OK;
