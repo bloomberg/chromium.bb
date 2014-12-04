@@ -129,9 +129,6 @@ class ThemeProperties {
   // generate a CSS value.
   static std::string TilingToString(int tiling);
 
-  // Returns true if the image is themeable.
-  static bool IsThemeableImage(int resource_id);
-
   // Returns the set of IDR_* resources that should be tinted.
   // This method is not thread safe.
   static const std::set<int>& GetTintableToolbarButtons();

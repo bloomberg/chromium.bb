@@ -67,9 +67,9 @@ class BrowserThemePack : public CustomThemeSupplier {
   static scoped_refptr<BrowserThemePack> BuildFromDataPack(
       const base::FilePath& path, const std::string& expected_id);
 
-  // Returns the set of image IDRs which can be overwritten by a user provided
-  // theme.
-  static void GetThemeableImageIDRs(std::set<int>* result);
+  // Returns whether the specified identifier is one of the images we persist
+  // in the data pack.
+  static bool IsPersistentImageID(int id);
 
   // Builds a data pack on disk at |path| for future quick loading by
   // BuildFromDataPack(). Often (but not always) called from the file thread;

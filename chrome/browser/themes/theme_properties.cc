@@ -201,14 +201,6 @@ std::string ThemeProperties::TilingToString(int tiling) {
 }
 
 // static
-bool ThemeProperties::IsThemeableImage(int id) {
-  // TODO(pkotwicz): Cache results to improve lookup speed.
-  std::set<int> themeable_idrs;
-  BrowserThemePack::GetThemeableImageIDRs(&themeable_idrs);
-  return themeable_idrs.find(id) != themeable_idrs.end();
-}
-
-// static
 const std::set<int>& ThemeProperties::GetTintableToolbarButtons() {
   CR_DEFINE_STATIC_LOCAL(std::set<int>, button_set, ());
   if (button_set.empty()) {

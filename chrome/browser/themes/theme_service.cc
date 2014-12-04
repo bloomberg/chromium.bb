@@ -236,13 +236,8 @@ bool ThemeService::ShouldUseNativeFrame() const {
 }
 
 bool ThemeService::HasCustomImage(int id) const {
-  if (!Properties::IsThemeableImage(id))
-    return false;
-
-  if (theme_supplier_.get())
-    return theme_supplier_->HasCustomImage(id);
-
-  return false;
+  return BrowserThemePack::IsPersistentImageID(id) &&
+      theme_supplier_ && theme_supplier_->HasCustomImage(id);
 }
 
 base::RefCountedMemory* ThemeService::GetRawData(

@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resources_util.h"
 #include "chrome/browser/search/instant_io_context.h"
+#include "chrome/browser/themes/browser_theme_pack.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -113,7 +114,7 @@ base::MessageLoop* ThemeSource::MessageLoopForRequestPath(
 
   // If it's not a themeable image, we don't need to go to the UI thread.
   int resource_id = ResourcesUtil::GetThemeResourceId(uncached_path);
-  if (!ThemeProperties::IsThemeableImage(resource_id))
+  if (!BrowserThemePack::IsPersistentImageID(resource_id))
     return NULL;
 
   return content::URLDataSource::MessageLoopForRequestPath(path);
@@ -140,7 +141,7 @@ void ThemeSource::SendThemeBitmap(
     float scale_factor) {
   ui::ScaleFactor resource_scale_factor =
       ui::GetSupportedScaleFactor(scale_factor);
-  if (ThemeProperties::IsThemeableImage(resource_id)) {
+  if (BrowserThemePack::IsPersistentImageID(resource_id)) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
     DCHECK(tp);

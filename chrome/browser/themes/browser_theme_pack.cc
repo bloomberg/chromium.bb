@@ -779,18 +779,18 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
 }
 
 // static
-void BrowserThemePack::GetThemeableImageIDRs(std::set<int>* result) {
-  if (!result)
-    return;
-
-  result->clear();
+bool BrowserThemePack::IsPersistentImageID(int id) {
   for (size_t i = 0; i < kPersistingImagesLength; ++i)
-    result->insert(kPersistingImages[i].idr_id);
+    if (kPersistingImages[i].idr_id == id)
+      return true;
 
 #if defined(USE_ASH) && !defined(OS_CHROMEOS)
   for (size_t i = 0; i < kPersistingImagesDesktopAuraLength; ++i)
-    result->insert(kPersistingImagesDesktopAura[i].idr_id);
+    if (kPersistingImagesDesktopAura[i].idr_id == id)
+      return true;
 #endif
+
+  return false;
 }
 
 bool BrowserThemePack::WriteToDisk(const base::FilePath& path) const {

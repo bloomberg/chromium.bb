@@ -131,12 +131,11 @@ void RegisterFontFamilyMapObserver(
     PrefChangeRegistrar* registrar,
     const char* map_name,
     const PrefChangeRegistrar::NamedChangeCallback& obs) {
-  bool result = StartsWithASCII(map_name, "webkit.webprefs.", true);
-  DCHECK(result);
+  DCHECK(StartsWithASCII(map_name, "webkit.webprefs.", true));
+
   for (size_t i = 0; i < prefs::kWebKitScriptsForFontFamilyMapsLength; ++i) {
     const char* script = prefs::kWebKitScriptsForFontFamilyMaps[i];
-    std::string pref_name = base::StringPrintf("%s.%s", map_name, script);
-    registrar->Add(pref_name.c_str(), obs);
+    registrar->Add(base::StringPrintf("%s.%s", map_name, script), obs);
   }
 }
 
@@ -632,7 +631,7 @@ void PrefsTabHelper::OnFontFamilyPrefChanged(const std::string& pref_name) {
                                              &generic_family,
                                              &script)) {
     PrefService* prefs = GetProfile()->GetPrefs();
-    std::string pref_value = prefs->GetString(pref_name.c_str());
+    std::string pref_value = prefs->GetString(pref_name);
     if (pref_value.empty()) {
       WebPreferences web_prefs =
           web_contents_->GetRenderViewHost()->GetWebkitPreferences();
