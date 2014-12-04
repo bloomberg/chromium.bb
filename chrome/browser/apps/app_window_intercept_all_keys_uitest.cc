@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInterceptAllKeysTest,
 // Currently this is implemented only for Windows.
 #if defined(OS_WIN)
 #define MAYBE_NoopCallingEnableWithoutPermission \
-  NoopCallingEnableWithoutPermission
+  DISABLED_NoopCallingEnableWithoutPermission
 #else
 #define MAYBE_NoopCallingEnableWithoutPermission \
   DISABLED_NoopCallingEnableWithoutPermission
