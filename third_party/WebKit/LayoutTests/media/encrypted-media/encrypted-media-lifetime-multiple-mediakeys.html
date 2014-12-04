@@ -88,8 +88,12 @@
                     // doing anything with the event in this test).
                     return delayToAllowEventProcessingPromise();
                 }).then(function(result) {
-                    // Should be just 5 MediaKeySessions.
-                    assert_equals(numActiveDOMObjectsCreated(), 5);
+                    // In non-Oilpan, numActiveDOMObjectsCreated() is 5
+                    // (5 MediaKeySession objects).
+                    // In Oilpan, numActiveDOMObjectsCreated() is 6
+                    // (5 MediaKeySession objects + 1 DOMTimer created in the
+                    // above delayToAllowEventProcessingPromise()).
+                    assert_true(numActiveDOMObjectsCreated() >= 5);
 
                     // As we only have a reference (|mediaKeys|) to the last
                     // created MediaKeys object, the other 4 MediaKeys objects
