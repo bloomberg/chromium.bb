@@ -13,7 +13,7 @@ namespace gfx {
 
 std::vector<std::string> GetFallbackFontFamilies(
     const std::string& font_family) {
-  NOTIMPLEMENTED();
+  // TODO(jiangj): Not implemented, see crbug.com/439039.
   return std::vector<std::string>(1, font_family);
 }
 
