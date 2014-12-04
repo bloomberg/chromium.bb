@@ -120,7 +120,12 @@ using Result = WebDataConsumerHandle::Result;
 class XMLHttpRequest::ReadableStreamSource final : public GarbageCollectedFinalized<ReadableStreamSource>, public UnderlyingSource, public WebDataConsumerHandle::Client {
     USING_GARBAGE_COLLECTED_MIXIN(ReadableStreamSource);
 public:
-    ReadableStreamSource(XMLHttpRequest* owner, PassOwnPtr<WebDataConsumerHandle> body) : m_owner(owner), m_body(body), m_needsMore(false)
+    ReadableStreamSource(XMLHttpRequest* owner, PassOwnPtr<WebDataConsumerHandle> body)
+        : m_owner(owner)
+        , m_body(body)
+        , m_needsMore(false)
+        , m_hasReadBody(false)
+        , m_hasGotDidFinishLoading(false)
     {
         if (m_body) {
             // |m_body| has |this| as a raw pointer, but it is not a problem
@@ -167,13 +172,14 @@ public:
 
     void didReceiveFinishLoadingNotification()
     {
-        if (!m_body) {
-            // When |this| is receiving data via didReceiveData, that means
-            // didFinishLoading specifies the end of data. Hence we close
-            // |m_stream| here. On the other hand, when |this| has the body
-            // stream, it receives data from the stream and the end of data
-            // will be detected via the stream itself. So we don't close
-            // |m_stream| here.
+        m_hasGotDidFinishLoading = true;
+        if (m_body && !m_hasReadBody) {
+            // If |this| is receiving data via |m_body| stream and it has not
+            // read all data from it yet, we should not close |m_stream|.
+        } else {
+            // When |this| is receiving data via didReceiveData or
+            // |m_hasReadBody| is true, we have read all data and enqueued them
+            // to |m_stream|. Hence we close |m_stream| here.
             m_stream->close();
         }
     }
@@ -196,11 +202,14 @@ private:
             if (result == WebDataConsumerHandle::ShouldWait)
                 return;
             if (result == WebDataConsumerHandle::Done) {
-                // When there is an error, didFail will be notified before we
-                // reach here and |m_stream->error| will be called at that time.
-                // |close| does nothing when errored, so we don't have to worry
-                // about it.
-                m_stream->close();
+                m_hasReadBody = true;
+                if (m_hasGotDidFinishLoading) {
+                    // If we got didFinishLoading, we should close the stream
+                    // here. If we didn't, it's possible that the loading
+                    // actually failed and didFail will be notified, so we
+                    // don't close the stream.
+                    m_stream->close();
+                }
                 m_needsMore = false;
                 return;
             }
@@ -230,6 +239,8 @@ private:
     Member<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>> m_stream;
     OwnPtr<WebDataConsumerHandle> m_body;
     bool m_needsMore;
+    bool m_hasReadBody;
+    bool m_hasGotDidFinishLoading;
 };
 
 class XMLHttpRequest::BlobLoader final : public NoBaseWillBeGarbageCollectedFinalized<XMLHttpRequest::BlobLoader>, public FileReaderLoaderClient {

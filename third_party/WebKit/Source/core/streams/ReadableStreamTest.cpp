@@ -178,6 +178,10 @@ TEST_F(ReadableStreamTest, Start)
     EXPECT_FALSE(stream->isDraining());
     EXPECT_TRUE(stream->isPulling());
     EXPECT_EQ(stream->state(), ReadableStream::Waiting);
+
+    // We need to call |error| in order to make
+    // ActiveDOMObject::hasPendingActivity return false.
+    stream->error(DOMException::create(AbortError, "done"));
 }
 
 TEST_F(ReadableStreamTest, StartFail)
@@ -211,6 +215,8 @@ TEST_F(ReadableStreamTest, WaitOnWaiting)
 
     EXPECT_EQ(ReadableStream::Waiting, stream->state());
     EXPECT_EQ(q, p);
+
+    stream->error(DOMException::create(AbortError, "done"));
 }
 
 TEST_F(ReadableStreamTest, WaitDuringStarting)
@@ -237,6 +243,8 @@ TEST_F(ReadableStreamTest, WaitDuringStarting)
     EXPECT_EQ(ReadableStream::Waiting, stream->state());
     EXPECT_TRUE(stream->isStarted());
     EXPECT_TRUE(stream->isPulling());
+
+    stream->error(DOMException::create(AbortError, "done"));
 }
 
 TEST_F(ReadableStreamTest, WaitAndError)
@@ -305,6 +313,8 @@ TEST_F(ReadableStreamTest, EnqueueAndWait)
     EXPECT_FALSE(stream->isPulling());
     EXPECT_EQ("undefined", onFulfilled);
     EXPECT_TRUE(onRejected.isNull());
+
+    stream->error(DOMException::create(AbortError, "done"));
 }
 
 TEST_F(ReadableStreamTest, WaitAndEnqueue)
@@ -331,6 +341,8 @@ TEST_F(ReadableStreamTest, WaitAndEnqueue)
     isolate()->RunMicrotasks();
     EXPECT_EQ("undefined", onFulfilled);
     EXPECT_TRUE(onRejected.isNull());
+
+    stream->error(DOMException::create(AbortError, "done"));
 }
 
 TEST_F(ReadableStreamTest, WaitAndEnqueueAndError)
@@ -419,6 +431,8 @@ TEST_F(ReadableStreamTest, ReadWhenWaiting)
     EXPECT_TRUE(m_exceptionState.hadException());
     EXPECT_EQ(V8TypeError, m_exceptionState.code());
     EXPECT_EQ("read is called while state is waiting", m_exceptionState.message());
+
+    stream->error(DOMException::create(AbortError, "done"));
 }
 
 TEST_F(ReadableStreamTest, ReadWhenClosed)
@@ -488,6 +502,9 @@ TEST_F(ReadableStreamTest, EnqueuedAndRead)
     EXPECT_NE(promise, newPromise);
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_TRUE(onRejected.isNull());
+
+    stream->error(DOMException::create(AbortError, "done"));
+    isolate()->RunMicrotasks();
 }
 
 TEST_F(ReadableStreamTest, EnqueueTwiceAndRead)
@@ -520,6 +537,8 @@ TEST_F(ReadableStreamTest, EnqueueTwiceAndRead)
 
     ScriptPromise newPromise = stream->wait(scriptState());
     EXPECT_EQ(promise, newPromise);
+
+    stream->error(DOMException::create(AbortError, "done"));
 }
 
 TEST_F(ReadableStreamTest, CloseWhenReadable)
@@ -667,8 +686,9 @@ TEST_F(ReadableStreamTest, CancelWhenReadable)
 
 TEST_F(ReadableStreamTest, ReadableArrayBufferCompileTest)
 {
-    // This test tests if ReadableStreamImpl<DOMArrayBuffer> can be instantiated.
-    new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer> >(scriptState()->executionContext(), m_underlyingSource);
+    // This test tests if ReadableStreamImpl<DOMArrayBuffer> can be
+    // instantiated.
+    new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>(scriptState()->executionContext(), m_underlyingSource);
 }
 
 TEST_F(ReadableStreamTest, BackpressureOnEnqueueing)
@@ -677,7 +697,6 @@ TEST_F(ReadableStreamTest, BackpressureOnEnqueueing)
     Checkpoint checkpoint;
 
     StringStream* stream = construct(strategy);
-    String onFulfilled, onRejected;
     EXPECT_EQ(ReadableStream::Waiting, stream->state());
 
     {
@@ -700,6 +719,8 @@ TEST_F(ReadableStreamTest, BackpressureOnEnqueueing)
     result = stream->enqueue("world");
     checkpoint.Call(3);
     EXPECT_FALSE(result);
+
+    stream->error(DOMException::create(AbortError, "done"));
 }
 
 TEST_F(ReadableStreamTest, BackpressureOnReading)
@@ -749,6 +770,8 @@ TEST_F(ReadableStreamTest, BackpressureOnReading)
     EXPECT_TRUE(stream->read(scriptState(), m_exceptionState).toString(chunk));
     EXPECT_EQ("foo", chunk);
     checkpoint.Call(4);
+
+    stream->error(DOMException::create(AbortError, "done"));
 }
 
 } // namespace blink

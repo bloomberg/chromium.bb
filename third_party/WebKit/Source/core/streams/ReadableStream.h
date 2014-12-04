@@ -11,7 +11,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -23,7 +23,7 @@ class DOMException;
 class ExceptionState;
 class UnderlyingSource;
 
-class ReadableStream : public GarbageCollectedFinalized<ReadableStream>, public ScriptWrappable {
+class ReadableStream : public GarbageCollectedFinalized<ReadableStream>, public ScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum State {
@@ -55,6 +55,7 @@ public:
 
     void didSourceStart();
 
+    bool hasPendingActivity() const override;
     virtual void trace(Visitor*);
 
 protected:

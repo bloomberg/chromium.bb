@@ -36,7 +36,8 @@ private:
 } // namespace
 
 ReadableStream::ReadableStream(ExecutionContext* executionContext, UnderlyingSource* source)
-    : m_source(source)
+    : ActiveDOMObject(executionContext)
+    , m_source(source)
     , m_isStarted(false)
     , m_isDraining(false)
     , m_isPulling(false)
@@ -44,6 +45,7 @@ ReadableStream::ReadableStream(ExecutionContext* executionContext, UnderlyingSou
     , m_wait(new WaitPromise(executionContext, this, WaitPromise::Ready))
     , m_closed(new ClosedPromise(executionContext, this, ClosedPromise::Closed))
 {
+    suspendIfNeeded();
 }
 
 ReadableStream::~ReadableStream()
@@ -87,8 +89,15 @@ bool ReadableStream::enqueuePostAction()
         return false;
 
     if (m_state == Waiting) {
-        m_state = Readable;
+        // ReadableStream::hasPendingActivity return value gets false when
+        // |m_state| is changed to Closed or Errored from Waiting or Readable.
+        // On the other hand, the wrappers should be kept alive when |m_wait|
+        // and |m_close| resolution and rejection are called. Hence we call
+        // ScriptPromiseProperty::resolve and ScriptPromiseProperty::reject
+        // *before* changing state, no matter if the state change actually
+        // changes hasPendingActivity return value.
         m_wait->resolve(V8UndefinedType());
+        m_state = Readable;
     }
 
     return !shouldApplyBackpressure;
@@ -126,11 +135,11 @@ void ReadableStream::readPostAction()
     ASSERT(m_state == Readable);
     if (isQueueEmpty()) {
         if (m_isDraining) {
-            m_state = Closed;
             m_closed->resolve(V8UndefinedType());
+            m_state = Closed;
         } else {
-            m_state = Waiting;
             m_wait->reset();
+            m_state = Waiting;
         }
     }
     callPullIfNeeded();
@@ -152,8 +161,8 @@ ScriptPromise ReadableStream::cancel(ScriptState* scriptState, ScriptValue reaso
     if (m_state == Waiting)
         m_wait->resolve(V8UndefinedType());
     clearQueue();
-    m_state = Closed;
     m_closed->resolve(V8UndefinedType());
+    m_state = Closed;
     return m_source->cancelSource(scriptState, reason).then(ConstUndefined::create(scriptState));
 }
 
@@ -166,18 +175,18 @@ void ReadableStream::error(PassRefPtrWillBeRawPtr<DOMException> exception)
 {
     switch (m_state) {
     case Waiting:
-        m_state = Errored;
         m_exception = exception;
         m_wait->reject(m_exception);
         m_closed->reject(m_exception);
+        m_state = Errored;
         break;
     case Readable:
         clearQueue();
-        m_state = Errored;
         m_exception = exception;
         m_wait->reset();
         m_wait->reject(m_exception);
         m_closed->reject(m_exception);
+        m_state = Errored;
         break;
     default:
         break;
@@ -201,6 +210,11 @@ void ReadableStream::callPullIfNeeded()
         return;
     m_isPulling = true;
     m_source->pullSource();
+}
+
+bool ReadableStream::hasPendingActivity() const
+{
+    return m_state == Waiting || m_state == Readable;
 }
 
 void ReadableStream::trace(Visitor* visitor)
