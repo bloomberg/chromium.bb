@@ -39,6 +39,7 @@ PASS face.variant = '???' threw exception SyntaxError: Failed to set the 'varian
 PASS face.featureSettings = null threw exception SyntaxError: Failed to set the 'featureSettings' property on 'FontFace': Failed to set 'null' as a property value..
 PASS promise1 === promise2 is true
 PASS promise1 === promise3 is true
+PASS "A network error occurred." is "A network error occurred."
 PASS successfullyParsed is true
 
 TEST COMPLETE

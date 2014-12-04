@@ -83,6 +83,13 @@ function runTests() {
     promise3 = face.loaded;
     shouldBeTrue('promise1 === promise2');
     shouldBeTrue('promise1 === promise3');
+
+    promise1.then(
+        function() {
+            debug('FAIL: Expected NetworkError');
+        }).catch(function(err) {
+            shouldBeEqualToString('"' +  err.message + '"' , 'A network error occurred.');
+        });
 }
 
 if (document.fonts)
