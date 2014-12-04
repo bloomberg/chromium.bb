@@ -13,7 +13,8 @@ namespace crypto {
 namespace {
 
 bool RunExchange(P224EncryptedKeyExchange* client,
-                 P224EncryptedKeyExchange* server) {
+                 P224EncryptedKeyExchange* server,
+                 bool is_password_same) {
   for (;;) {
     std::string client_message, server_message;
     client_message = client->GetMessage();
@@ -24,23 +25,24 @@ bool RunExchange(P224EncryptedKeyExchange* client,
     server_result = server->ProcessMessage(client_message);
 
     // Check that we never hit the case where only one succeeds.
-    if ((client_result == P224EncryptedKeyExchange::kResultSuccess) ^
-        (server_result == P224EncryptedKeyExchange::kResultSuccess)) {
-      CHECK(false) << "Parties differ on whether authentication was successful";
-    }
+    EXPECT_EQ(client_result == P224EncryptedKeyExchange::kResultSuccess,
+              server_result == P224EncryptedKeyExchange::kResultSuccess);
 
     if (client_result == P224EncryptedKeyExchange::kResultFailed ||
         server_result == P224EncryptedKeyExchange::kResultFailed) {
       return false;
     }
 
+    EXPECT_EQ(is_password_same,
+              client->GetUnverifiedKey() == server->GetUnverifiedKey());
+
     if (client_result == P224EncryptedKeyExchange::kResultSuccess &&
         server_result == P224EncryptedKeyExchange::kResultSuccess) {
       return true;
     }
 
-    CHECK_EQ(P224EncryptedKeyExchange::kResultPending, client_result);
-    CHECK_EQ(P224EncryptedKeyExchange::kResultPending, server_result);
+    EXPECT_EQ(P224EncryptedKeyExchange::kResultPending, client_result);
+    EXPECT_EQ(P224EncryptedKeyExchange::kResultPending, server_result);
   }
 }
 
@@ -54,7 +56,7 @@ TEST(MutualAuth, CorrectAuth) {
   P224EncryptedKeyExchange server(
       P224EncryptedKeyExchange::kPeerTypeServer, kPassword);
 
-  EXPECT_TRUE(RunExchange(&client, &server));
+  EXPECT_TRUE(RunExchange(&client, &server, true));
   EXPECT_EQ(client.GetKey(), server.GetKey());
 }
 
@@ -66,7 +68,7 @@ TEST(MutualAuth, IncorrectPassword) {
       P224EncryptedKeyExchange::kPeerTypeServer,
       "wrongpassword");
 
-  EXPECT_FALSE(RunExchange(&client, &server));
+  EXPECT_FALSE(RunExchange(&client, &server, false));
 }
 
 TEST(MutualAuth, Fuzz) {

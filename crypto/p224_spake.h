@@ -68,7 +68,11 @@ class CRYPTO_EXPORT P224EncryptedKeyExchange {
 
   // The key established as result of the key exchange. Must be called
   // at then end after ProcessMessage() returns kResultSuccess.
-  const std::string& GetKey();
+  const std::string& GetKey() const;
+
+  // The key established as result of the key exchange. Can be called after
+  // the first ProcessMessage()
+  const std::string& GetUnverifiedKey() const;
 
  private:
   // The authentication state machine is very simple and each party proceeds

@@ -240,8 +240,16 @@ const std::string& P224EncryptedKeyExchange::error() const {
   return error_;
 }
 
-const std::string& P224EncryptedKeyExchange::GetKey() {
+const std::string& P224EncryptedKeyExchange::GetKey() const {
   DCHECK_EQ(state_, kStateDone);
+  return GetUnverifiedKey();
+}
+
+const std::string& P224EncryptedKeyExchange::GetUnverifiedKey() const {
+  // Key is already final when state is kStateSendHash. Subsequent states are
+  // used only for verification of the key. Some users may combine verification
+  // with sending verifiable data instead of |expected_authenticator_|.
+  DCHECK_GE(state_, kStateSendHash);
   return key_;
 }
 
