@@ -230,10 +230,6 @@ HICON ChromeViewsDelegate::GetDefaultWindowIcon() const {
   return GetAppIcon();
 }
 
-HICON ChromeViewsDelegate::GetSmallWindowIcon() const {
-  return GetSmallAppIcon();
-}
-
 bool ChromeViewsDelegate::IsWindowInMetro(gfx::NativeWindow window) const {
   return chrome::IsNativeViewInAsh(window);
 }

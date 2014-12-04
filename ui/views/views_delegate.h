@@ -95,8 +95,6 @@ class VIEWS_EXPORT ViewsDelegate {
 #if defined(OS_WIN)
   // Retrieves the default window icon to use for windows if none is specified.
   virtual HICON GetDefaultWindowIcon() const;
-  // Retrieves the small window icon to use for windows if none is specified.
-  virtual HICON GetSmallWindowIcon() const = 0;
   // Returns true if the window passed in is in the Windows 8 metro
   // environment.
   virtual bool IsWindowInMetro(gfx::NativeWindow window) const;
