@@ -14,20 +14,23 @@ TextureMailbox::TextureMailbox() : shared_memory_(NULL) {}
 TextureMailbox::TextureMailbox(const gpu::MailboxHolder& mailbox_holder)
     : mailbox_holder_(mailbox_holder),
       shared_memory_(NULL),
-      allow_overlay_(false) {}
+      allow_overlay_(false),
+      nearest_neighbor_(false) {}
 
 TextureMailbox::TextureMailbox(const gpu::Mailbox& mailbox,
                                uint32 target,
                                uint32 sync_point)
     : mailbox_holder_(mailbox, target, sync_point),
       shared_memory_(NULL),
-      allow_overlay_(false) {}
+      allow_overlay_(false),
+      nearest_neighbor_(false) {}
 
 TextureMailbox::TextureMailbox(base::SharedMemory* shared_memory,
                                const gfx::Size& size)
     : shared_memory_(shared_memory),
       shared_memory_size_(size),
-      allow_overlay_(false) {
+      allow_overlay_(false),
+      nearest_neighbor_(false) {
   // If an embedder of cc gives an invalid TextureMailbox, we should crash
   // here to identify the offender.
   CHECK(SharedBitmap::VerifySizeInBytes(shared_memory_size_));

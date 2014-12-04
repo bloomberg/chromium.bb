@@ -332,6 +332,14 @@ void CompareDrawQuad(DrawQuad* quad,
   }                                                        \
   SETUP_AND_COPY_QUAD_ALL(Type, quad_all);
 
+#define CREATE_QUAD_10_NEW(Type, a, b, c, d, e, f, g, h, i, j)   \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>(); \
+  {                                                              \
+    QUAD_DATA quad_new->SetNew(                                  \
+        shared_state, quad_rect, a, b, c, d, e, f, g, h, i, j);  \
+  }                                                              \
+  SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
+
 #define CREATE_QUAD_ALL_RP(Type, a, b, c, d, e, f, g, copy_a)    \
   Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>(); \
   {                                                              \
@@ -541,18 +549,20 @@ TEST(DrawQuadTest, CopyTextureDrawQuad) {
   gfx::PointF uv_bottom_right(51.5f, 260.f);
   const float vertex_opacity[] = { 1.0f, 1.0f, 1.0f, 1.0f };
   bool flipped = true;
+  bool nearest_neighbor = true;
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_9_NEW(TextureDrawQuad,
-                    opaque_rect,
-                    visible_rect,
-                    resource_id,
-                    premultiplied_alpha,
-                    uv_top_left,
-                    uv_bottom_right,
-                    SK_ColorTRANSPARENT,
-                    vertex_opacity,
-                    flipped);
+  CREATE_QUAD_10_NEW(TextureDrawQuad,
+                     opaque_rect,
+                     visible_rect,
+                     resource_id,
+                     premultiplied_alpha,
+                     uv_top_left,
+                     uv_bottom_right,
+                     SK_ColorTRANSPARENT,
+                     vertex_opacity,
+                     flipped,
+                     nearest_neighbor);
   EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, copy_quad->material);
   EXPECT_RECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_RECT_EQ(opaque_rect, copy_quad->opaque_rect);
@@ -562,15 +572,17 @@ TEST(DrawQuadTest, CopyTextureDrawQuad) {
   EXPECT_EQ(uv_bottom_right, copy_quad->uv_bottom_right);
   EXPECT_FLOAT_ARRAY_EQ(vertex_opacity, copy_quad->vertex_opacity, 4);
   EXPECT_EQ(flipped, copy_quad->flipped);
+  EXPECT_EQ(nearest_neighbor, copy_quad->nearest_neighbor);
 
-  CREATE_QUAD_7_ALL(TextureDrawQuad,
+  CREATE_QUAD_8_ALL(TextureDrawQuad,
                     resource_id,
                     premultiplied_alpha,
                     uv_top_left,
                     uv_bottom_right,
                     SK_ColorTRANSPARENT,
                     vertex_opacity,
-                    flipped);
+                    flipped,
+                    nearest_neighbor);
   EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, copy_quad->material);
   EXPECT_EQ(resource_id, copy_quad->resource_id);
   EXPECT_EQ(premultiplied_alpha, copy_quad->premultiplied_alpha);
@@ -578,6 +590,7 @@ TEST(DrawQuadTest, CopyTextureDrawQuad) {
   EXPECT_EQ(uv_bottom_right, copy_quad->uv_bottom_right);
   EXPECT_FLOAT_ARRAY_EQ(vertex_opacity, copy_quad->vertex_opacity, 4);
   EXPECT_EQ(flipped, copy_quad->flipped);
+  EXPECT_EQ(nearest_neighbor, copy_quad->nearest_neighbor);
 }
 
 TEST(DrawQuadTest, CopyTileDrawQuad) {
@@ -832,18 +845,20 @@ TEST_F(DrawQuadIteratorTest, TextureDrawQuad) {
   gfx::PointF uv_bottom_right(51.5f, 260.f);
   const float vertex_opacity[] = { 1.0f, 1.0f, 1.0f, 1.0f };
   bool flipped = true;
+  bool nearest_neighbor = true;
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_9_NEW(TextureDrawQuad,
-                    opaque_rect,
-                    visible_rect,
-                    resource_id,
-                    premultiplied_alpha,
-                    uv_top_left,
-                    uv_bottom_right,
-                    SK_ColorTRANSPARENT,
-                    vertex_opacity,
-                    flipped);
+  CREATE_QUAD_10_NEW(TextureDrawQuad,
+                     opaque_rect,
+                     visible_rect,
+                     resource_id,
+                     premultiplied_alpha,
+                     uv_top_left,
+                     uv_bottom_right,
+                     SK_ColorTRANSPARENT,
+                     vertex_opacity,
+                     flipped,
+                     nearest_neighbor);
   EXPECT_EQ(resource_id, quad_new->resource_id);
   EXPECT_EQ(1, IterateAndCount(quad_new));
   EXPECT_EQ(resource_id + 1, quad_new->resource_id);

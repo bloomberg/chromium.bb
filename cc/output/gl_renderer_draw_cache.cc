@@ -10,6 +10,7 @@ TexturedQuadDrawCache::TexturedQuadDrawCache()
     : program_id(-1),
       resource_id(-1),
       needs_blending(false),
+      nearest_neighbor(false),
       background_color(0),
       uv_xform_location(-1),
       background_color_location(-1),

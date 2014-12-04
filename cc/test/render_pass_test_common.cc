@@ -171,6 +171,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                        gfx::PointF(1.f, 1.f),
                        SK_ColorTRANSPARENT,
                        vertex_opacity,
+                       false,
                        false);
 
   TextureDrawQuad* mailbox_texture_quad =
@@ -185,6 +186,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                                gfx::PointF(1.f, 1.f),
                                SK_ColorTRANSPARENT,
                                vertex_opacity,
+                               false,
                                false);
 
   TileDrawQuad* scaled_tile_quad =

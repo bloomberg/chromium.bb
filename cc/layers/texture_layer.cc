@@ -27,6 +27,7 @@ TextureLayer::TextureLayer(TextureLayerClient* client)
     : Layer(),
       client_(client),
       flipped_(true),
+      nearest_neighbor_(false),
       uv_top_left_(0.f, 0.f),
       uv_bottom_right_(1.f, 1.f),
       premultiplied_alpha_(true),
@@ -62,6 +63,13 @@ void TextureLayer::SetFlipped(bool flipped) {
   if (flipped_ == flipped)
     return;
   flipped_ = flipped;
+  SetNeedsCommit();
+}
+
+void TextureLayer::SetNearestNeighbor(bool nearest_neighbor) {
+  if (nearest_neighbor_ == nearest_neighbor)
+    return;
+  nearest_neighbor_ = nearest_neighbor;
   SetNeedsCommit();
 }
 
@@ -238,6 +246,7 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
 
   TextureLayerImpl* texture_layer = static_cast<TextureLayerImpl*>(layer);
   texture_layer->SetFlipped(flipped_);
+  texture_layer->SetNearestNeighbor(nearest_neighbor_);
   texture_layer->SetUVTopLeft(uv_top_left_);
   texture_layer->SetUVBottomRight(uv_bottom_right_);
   texture_layer->SetVertexOpacity(vertex_opacity_);

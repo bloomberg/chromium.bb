@@ -152,6 +152,7 @@ TextureDrawQuad* CreateCandidateQuadAt(ResourceProvider* resource_provider,
   ResourceProvider::ResourceId resource_id = CreateResource(resource_provider);
   bool premultiplied_alpha = false;
   bool flipped = false;
+  bool nearest_neighbor = false;
   float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
   TextureDrawQuad* overlay_quad =
@@ -166,7 +167,8 @@ TextureDrawQuad* CreateCandidateQuadAt(ResourceProvider* resource_provider,
                        kUVBottomRight,
                        SK_ColorTRANSPARENT,
                        vertex_opacity,
-                       flipped);
+                       flipped,
+                       nearest_neighbor);
 
   return overlay_quad;
 }

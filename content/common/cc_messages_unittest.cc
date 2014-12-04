@@ -186,6 +186,7 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->vertex_opacity[2], b->vertex_opacity[2]);
     EXPECT_EQ(a->vertex_opacity[3], b->vertex_opacity[3]);
     EXPECT_EQ(a->flipped, b->flipped);
+    EXPECT_EQ(a->nearest_neighbor, b->nearest_neighbor);
   }
 
   void Compare(const TileDrawQuad* a, const TileDrawQuad* b) {
@@ -251,6 +252,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   bool arbitrary_bool1 = true;
   bool arbitrary_bool2 = false;
   bool arbitrary_bool3 = true;
+  bool arbitrary_bool4 = true;
   int arbitrary_context_id1 = 12;
   int arbitrary_context_id2 = 57;
   int arbitrary_context_id3 = -503;
@@ -440,7 +442,8 @@ TEST_F(CCMessagesTest, AllQuads) {
                      arbitrary_pointf2,
                      arbitrary_color,
                      arbitrary_float_array,
-                     arbitrary_bool3);
+                     arbitrary_bool3,
+                     arbitrary_bool4);
   pass_cmp->CopyFromAndAppendDrawQuad(texture_in,
                                       texture_in->shared_quad_state);
 

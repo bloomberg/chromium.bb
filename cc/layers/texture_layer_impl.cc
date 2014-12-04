@@ -23,6 +23,7 @@ TextureLayerImpl::TextureLayerImpl(LayerTreeImpl* tree_impl, int id)
       premultiplied_alpha_(true),
       blend_background_color_(false),
       flipped_(true),
+      nearest_neighbor_(false),
       uv_top_left_(0.f, 0.f),
       uv_bottom_right_(1.f, 1.f),
       own_mailbox_(false),
@@ -62,6 +63,7 @@ void TextureLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   texture_layer->SetVertexOpacity(vertex_opacity_);
   texture_layer->SetPremultipliedAlpha(premultiplied_alpha_);
   texture_layer->SetBlendBackgroundColor(blend_background_color_);
+  texture_layer->SetNearestNeighbor(nearest_neighbor_);
   if (own_mailbox_) {
     texture_layer->SetTextureMailbox(texture_mailbox_,
                                      release_callback_.Pass());
@@ -176,7 +178,8 @@ void TextureLayerImpl::AppendQuads(RenderPass* render_pass,
                uv_bottom_right_,
                bg_color,
                vertex_opacity_,
-               flipped_);
+               flipped_,
+               nearest_neighbor_);
 }
 
 SimpleEnclosedRegion TextureLayerImpl::VisibleContentOpaqueRegion() const {
@@ -208,6 +211,11 @@ void TextureLayerImpl::SetBlendBackgroundColor(bool blend) {
 
 void TextureLayerImpl::SetFlipped(bool flipped) {
   flipped_ = flipped;
+  SetNeedsPushProperties();
+}
+
+void TextureLayerImpl::SetNearestNeighbor(bool nearest_neighbor) {
+  nearest_neighbor_ = nearest_neighbor;
   SetNeedsPushProperties();
 }
 

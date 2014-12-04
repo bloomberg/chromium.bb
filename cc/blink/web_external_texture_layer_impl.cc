@@ -62,6 +62,11 @@ void WebExternalTextureLayerImpl::setRateLimitContext(bool rate_limit) {
   static_cast<TextureLayer*>(layer_->layer())->SetRateLimitContext(rate_limit);
 }
 
+void WebExternalTextureLayerImpl::setNearestNeighbor(bool nearest_neighbor) {
+  static_cast<TextureLayer*>(layer_->layer())
+      ->SetNearestNeighbor(nearest_neighbor);
+}
+
 bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
     scoped_ptr<cc::SingleReleaseCallback>* release_callback,
@@ -85,6 +90,7 @@ bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
         cc::TextureMailbox(name, GL_TEXTURE_2D, client_mailbox.syncPoint);
   }
   mailbox->set_allow_overlay(client_mailbox.allowOverlay);
+  mailbox->set_nearest_neighbor(client_mailbox.nearestNeighbor);
 
   if (mailbox->IsValid()) {
     *release_callback = cc::SingleReleaseCallback::Create(

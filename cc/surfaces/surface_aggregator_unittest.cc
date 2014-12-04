@@ -1275,6 +1275,7 @@ void SubmitFrameWithResources(ResourceProvider::ResourceId* resource_ids,
     SkColor background_color = SK_ColorGREEN;
     const float vertex_opacity[4] = {0.f, 0.f, 1.f, 1.f};
     bool flipped = false;
+    bool nearest_neighbor = false;
     quad->SetAll(sqs,
                  rect,
                  opaque_rect,
@@ -1286,7 +1287,8 @@ void SubmitFrameWithResources(ResourceProvider::ResourceId* resource_ids,
                  uv_bottom_right,
                  background_color,
                  vertex_opacity,
-                 flipped);
+                 flipped,
+                 nearest_neighbor);
 
     quad->shared_quad_state = sqs;
   }

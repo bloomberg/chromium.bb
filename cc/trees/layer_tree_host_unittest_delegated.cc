@@ -113,6 +113,7 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
     SkColor background_color = 0;
     float vertex_opacity[4] = {1.f, 1.f, 1.f, 1.f};
     bool flipped = false;
+    bool nearest_neighbor = false;
 
     TextureDrawQuad* invalid_draw_quad =
         root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -126,7 +127,8 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                               uv_bottom_right,
                               background_color,
                               vertex_opacity,
-                              flipped);
+                              flipped,
+                              nearest_neighbor);
 
     frame->render_pass_list.push_back(root_pass.Pass());
     return frame.Pass();
@@ -162,6 +164,7 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
                  gfx::PointF(1.f, 1.f),
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
+                 false,
                  false);
   }
 

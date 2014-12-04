@@ -615,7 +615,7 @@ ResourceProvider::ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
                         gfx::Size(),
                         Resource::External,
                         mailbox.target(),
-                        GL_LINEAR,
+                        mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR,
                         0,
                         GL_CLAMP_TO_EDGE,
                         TextureHintImmutable,

@@ -112,6 +112,7 @@ void UIResourceLayerImpl::AppendQuads(
     return;
 
   static const bool flipped = false;
+  static const bool nearest_neighbor = false;
   static const bool premultiplied_alpha = true;
 
   DCHECK(!bounds().IsEmpty());
@@ -138,7 +139,8 @@ void UIResourceLayerImpl::AppendQuads(
                uv_bottom_right_,
                SK_ColorTRANSPARENT,
                vertex_opacity_,
-               flipped);
+               flipped,
+               nearest_neighbor);
 }
 
 const char* UIResourceLayerImpl::LayerTypeAsString() const {

@@ -2054,8 +2054,10 @@ void GLRenderer::FlushTextureQuadCache() {
   GLC(gl_, gl_->Uniform1i(draw_cache_.sampler_location, 0));
 
   // Assume the current active textures is 0.
-  ResourceProvider::ScopedReadLockGL locked_quad(resource_provider_,
-                                                 draw_cache_.resource_id);
+  ResourceProvider::ScopedSamplerGL locked_quad(
+      resource_provider_,
+      draw_cache_.resource_id,
+      draw_cache_.nearest_neighbor ? GL_NEAREST : GL_LINEAR);
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
   GLC(gl_, gl_->BindTexture(GL_TEXTURE_2D, locked_quad.texture_id()));
 
@@ -2133,12 +2135,14 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
   if (draw_cache_.program_id != binding.program_id ||
       draw_cache_.resource_id != resource_id ||
       draw_cache_.needs_blending != quad->ShouldDrawWithBlending() ||
+      draw_cache_.nearest_neighbor != quad->nearest_neighbor ||
       draw_cache_.background_color != quad->background_color ||
       draw_cache_.matrix_data.size() >= 8) {
     FlushTextureQuadCache();
     draw_cache_.program_id = binding.program_id;
     draw_cache_.resource_id = resource_id;
     draw_cache_.needs_blending = quad->ShouldDrawWithBlending();
+    draw_cache_.nearest_neighbor = quad->nearest_neighbor;
     draw_cache_.background_color = quad->background_color;
 
     draw_cache_.uv_xform_location = binding.tex_transform_location;

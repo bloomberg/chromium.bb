@@ -667,6 +667,7 @@ static void AppendQuadsToFillScreen(
                 overhang_resource_scaled_size.height()),
         screen_background_color,
         vertex_opacity,
+        false,
         false);
   }
 }

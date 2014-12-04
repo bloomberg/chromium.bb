@@ -16,7 +16,8 @@ TextureDrawQuad::TextureDrawQuad()
     : resource_id(0),
       premultiplied_alpha(false),
       background_color(SK_ColorTRANSPARENT),
-      flipped(false) {
+      flipped(false),
+      nearest_neighbor(false) {
   this->vertex_opacity[0] = 0.f;
   this->vertex_opacity[1] = 0.f;
   this->vertex_opacity[2] = 0.f;
@@ -33,7 +34,8 @@ void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              const gfx::PointF& uv_bottom_right,
                              SkColor background_color,
                              const float vertex_opacity[4],
-                             bool flipped) {
+                             bool flipped,
+                             bool nearest_neighbor) {
   bool needs_blending = vertex_opacity[0] != 1.0f || vertex_opacity[1] != 1.0f
       || vertex_opacity[2] != 1.0f || vertex_opacity[3] != 1.0f;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::TEXTURE_CONTENT, rect,
@@ -48,18 +50,22 @@ void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   this->vertex_opacity[2] = vertex_opacity[2];
   this->vertex_opacity[3] = vertex_opacity[3];
   this->flipped = flipped;
+  this->nearest_neighbor = nearest_neighbor;
 }
 
 void TextureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                              const gfx::Rect& rect,
                              const gfx::Rect& opaque_rect,
-                             const gfx::Rect& visible_rect, bool needs_blending,
-                             unsigned resource_id, bool premultiplied_alpha,
+                             const gfx::Rect& visible_rect,
+                             bool needs_blending,
+                             unsigned resource_id,
+                             bool premultiplied_alpha,
                              const gfx::PointF& uv_top_left,
                              const gfx::PointF& uv_bottom_right,
                              SkColor background_color,
                              const float vertex_opacity[4],
-                             bool flipped) {
+                             bool flipped,
+                             bool nearest_neighbor) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::TEXTURE_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   this->resource_id = resource_id;
@@ -72,6 +78,7 @@ void TextureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->vertex_opacity[2] = vertex_opacity[2];
   this->vertex_opacity[3] = vertex_opacity[3];
   this->flipped = flipped;
+  this->nearest_neighbor = nearest_neighbor;
 }
 
 void TextureDrawQuad::IterateResources(
@@ -103,6 +110,7 @@ void TextureDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
   value->EndArray();
 
   value->SetBoolean("flipped", flipped);
+  value->SetBoolean("nearest_neighbor", nearest_neighbor);
 }
 
 }  // namespace cc

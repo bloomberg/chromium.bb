@@ -73,6 +73,7 @@ void PaintedScrollbarLayerImpl::AppendQuads(
     AppendQuadsData* append_quads_data) {
   bool premultipled_alpha = true;
   bool flipped = false;
+  bool nearest_neighbor = false;
   gfx::PointF uv_top_left(0.f, 0.f);
   gfx::PointF uv_bottom_right(1.f, 1.f);
   gfx::Rect bounds_rect(bounds());
@@ -109,7 +110,8 @@ void PaintedScrollbarLayerImpl::AppendQuads(
                  uv_bottom_right,
                  SK_ColorTRANSPARENT,
                  opacity,
-                 flipped);
+                 flipped,
+                 nearest_neighbor);
   }
 
   gfx::Rect track_quad_rect = content_bounds_rect;
@@ -130,7 +132,8 @@ void PaintedScrollbarLayerImpl::AppendQuads(
                  uv_bottom_right,
                  SK_ColorTRANSPARENT,
                  opacity,
-                 flipped);
+                 flipped,
+                 nearest_neighbor);
   }
 }
 

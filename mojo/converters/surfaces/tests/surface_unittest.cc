@@ -108,6 +108,7 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
   SkColor background_color = SK_ColorYELLOW;
   float vertex_opacity[4] = {0.1f, 0.5f, 0.4f, 0.8f};
   bool flipped = false;
+  bool nearest_neighbor = false;
   texture_quad->SetAll(sqs,
                        rect,
                        opaque_rect,
@@ -119,7 +120,8 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
                        uv_bottom_right,
                        background_color,
                        vertex_opacity,
-                       flipped);
+                       flipped,
+                       nearest_neighbor);
 
   QuadPtr mojo_quad = Quad::From<cc::DrawQuad>(*texture_quad);
   ASSERT_FALSE(mojo_quad.is_null());
@@ -267,6 +269,7 @@ TEST(SurfaceLibTest, RenderPass) {
   SkColor background_color = SK_ColorYELLOW;
   float vertex_opacity[4] = {0.1f, 0.5f, 0.4f, 0.8f};
   bool flipped = false;
+  bool nearest_neighbor = false;
   texture_quad->SetAll(sqs,
                        rect,
                        opaque_rect,
@@ -278,7 +281,8 @@ TEST(SurfaceLibTest, RenderPass) {
                        uv_bottom_right,
                        background_color,
                        vertex_opacity,
-                       flipped);
+                       flipped,
+                       nearest_neighbor);
 
   PassPtr mojo_pass = Pass::From(*pass);
   ASSERT_FALSE(mojo_pass.is_null());

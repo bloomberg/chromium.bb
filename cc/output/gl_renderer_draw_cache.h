@@ -33,6 +33,7 @@ struct TexturedQuadDrawCache {
   int program_id;
   int resource_id;
   bool needs_blending;
+  bool nearest_neighbor;
   SkColor background_color;
 
   // Information about the program binding that is required to draw.

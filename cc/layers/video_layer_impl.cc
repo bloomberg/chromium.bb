@@ -200,6 +200,7 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
       float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
       bool flipped = false;
+      bool nearest_neighbor = false;
       TextureDrawQuad* texture_quad =
           render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
       texture_quad->SetNew(shared_quad_state,
@@ -212,7 +213,8 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
                            uv_bottom_right,
                            SK_ColorTRANSPARENT,
                            opacity,
-                           flipped);
+                           flipped,
+                           nearest_neighbor);
       break;
     }
     case VideoFrameExternalResources::YUV_RESOURCE: {
@@ -249,6 +251,7 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       gfx::PointF uv_bottom_right(tex_width_scale, tex_height_scale);
       float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
       bool flipped = false;
+      bool nearest_neighbor = false;
       TextureDrawQuad* texture_quad =
           render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
       texture_quad->SetNew(shared_quad_state,
@@ -261,7 +264,8 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
                            uv_bottom_right,
                            SK_ColorTRANSPARENT,
                            opacity,
-                           flipped);
+                           flipped,
+                           nearest_neighbor);
       break;
     }
     case VideoFrameExternalResources::STREAM_TEXTURE_RESOURCE: {

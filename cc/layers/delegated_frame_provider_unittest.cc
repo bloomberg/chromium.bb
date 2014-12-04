@@ -59,6 +59,7 @@ class DelegatedFrameProviderTest
                  gfx::PointF(1.f, 1.f),
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
+                 false,
                  false);
   }
 

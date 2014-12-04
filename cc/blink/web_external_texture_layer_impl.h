@@ -43,6 +43,7 @@ class WebExternalTextureLayerImpl
   virtual void setPremultipliedAlpha(bool premultiplied);
   virtual void setBlendBackgroundColor(bool blend);
   virtual void setRateLimitContext(bool rate_limit);
+  virtual void setNearestNeighbor(bool nearest_neighbor);
 
   // TextureLayerClient implementation.
   bool PrepareTextureMailbox(

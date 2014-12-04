@@ -102,6 +102,7 @@ void NinePatchLayerImpl::AppendQuads(
     return;
 
   static const bool flipped = false;
+  static const bool nearest_neighbor = false;
   static const bool premultiplied_alpha = true;
 
   DCHECK(!bounds().IsEmpty());
@@ -228,7 +229,8 @@ void NinePatchLayerImpl::AppendQuads(
                  uv_top_left.bottom_right(),
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
-                 flipped);
+                 flipped,
+                 nearest_neighbor);
   }
 
   visible_rect =
@@ -247,7 +249,8 @@ void NinePatchLayerImpl::AppendQuads(
                  uv_top_right.bottom_right(),
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
-                 flipped);
+                 flipped,
+                 nearest_neighbor);
   }
 
   visible_rect =
@@ -266,7 +269,8 @@ void NinePatchLayerImpl::AppendQuads(
                  uv_bottom_left.bottom_right(),
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
-                 flipped);
+                 flipped,
+                 nearest_neighbor);
   }
 
   visible_rect =
@@ -285,7 +289,8 @@ void NinePatchLayerImpl::AppendQuads(
                  uv_bottom_right.bottom_right(),
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
-                 flipped);
+                 flipped,
+                 nearest_neighbor);
   }
 
   visible_rect = occlusion_in_content_space.GetUnoccludedContentRect(layer_top);
@@ -303,7 +308,8 @@ void NinePatchLayerImpl::AppendQuads(
                  uv_top.bottom_right(),
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
-                 flipped);
+                 flipped,
+                 nearest_neighbor);
   }
 
   visible_rect =
@@ -322,7 +328,8 @@ void NinePatchLayerImpl::AppendQuads(
                  uv_left.bottom_right(),
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
-                 flipped);
+                 flipped,
+                 nearest_neighbor);
   }
 
   visible_rect =
@@ -341,7 +348,8 @@ void NinePatchLayerImpl::AppendQuads(
                  uv_right.bottom_right(),
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
-                 flipped);
+                 flipped,
+                 nearest_neighbor);
   }
 
   visible_rect =
@@ -360,7 +368,8 @@ void NinePatchLayerImpl::AppendQuads(
                  uv_bottom.bottom_right(),
                  SK_ColorTRANSPARENT,
                  vertex_opacity,
-                 flipped);
+                 flipped,
+                 nearest_neighbor);
   }
 
   if (fill_center_) {
@@ -380,7 +389,8 @@ void NinePatchLayerImpl::AppendQuads(
                    uv_center.bottom_right(),
                    SK_ColorTRANSPARENT,
                    vertex_opacity,
-                   flipped);
+                   flipped,
+                   nearest_neighbor);
     }
   }
 }

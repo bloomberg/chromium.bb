@@ -140,7 +140,8 @@ bool ConvertDrawQuad(const QuadPtr& input,
           texture_quad_state->uv_bottom_right.To<gfx::PointF>(),
           texture_quad_state->background_color.To<SkColor>(),
           &texture_quad_state->vertex_opacity.storage()[0],
-          texture_quad_state->flipped);
+          texture_quad_state->flipped,
+          texture_quad_state->nearest_neighbor);
       break;
     }
     case MATERIAL_TILED_CONTENT: {

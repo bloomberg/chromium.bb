@@ -41,6 +41,7 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   void SetPremultipliedAlpha(bool premultiplied_alpha);
   void SetBlendBackgroundColor(bool blend);
   void SetFlipped(bool flipped);
+  void SetNearestNeighbor(bool nearest_neighbor);
   void SetUVTopLeft(const gfx::PointF top_left);
   void SetUVBottomRight(const gfx::PointF bottom_right);
 
@@ -63,6 +64,7 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   bool premultiplied_alpha_;
   bool blend_background_color_;
   bool flipped_;
+  bool nearest_neighbor_;
   gfx::PointF uv_top_left_;
   gfx::PointF uv_bottom_right_;
   float vertex_opacity_[4];
