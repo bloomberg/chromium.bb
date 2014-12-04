@@ -99,6 +99,10 @@ void RenderCombineText::combineText()
     if (style()->isHorizontalWritingMode())
         return;
 
+    // Nothing to combine.
+    if (hasEmptyText())
+        return;
+
     TextRun run = constructTextRun(this, originalFont(), this, style(), style()->direction());
     FontDescription description = originalFont().fontDescription();
     float emWidth = description.computedSize() * textCombineMargin;

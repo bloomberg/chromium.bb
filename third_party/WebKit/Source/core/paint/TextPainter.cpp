@@ -174,6 +174,9 @@ TextPainter::Style TextPainter::selectionPaintingStyle(RenderObject& renderer, b
 template <TextPainter::PaintInternalStep step>
 void TextPainter::paintInternalRun(TextRunPaintInfo& textRunPaintInfo, int from, int to)
 {
+    ASSERT(from <= textRunPaintInfo.run.length());
+    ASSERT(to <= textRunPaintInfo.run.length());
+
     textRunPaintInfo.from = from;
     textRunPaintInfo.to = to;
 
