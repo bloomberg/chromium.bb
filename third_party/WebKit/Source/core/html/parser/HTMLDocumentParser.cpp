@@ -503,8 +503,10 @@ void HTMLDocumentParser::pumpPendingSpeculations()
     ASSERT(!inPumpSession());
 
     // Do not allow pumping speculations in nested event loops.
-    if (m_pumpSpeculationsSessionNestingLevel)
+    if (m_pumpSpeculationsSessionNestingLevel) {
         m_parserScheduler->scheduleForResume();
+        return;
+    }
 
     // FIXME: Pass in current input length.
     TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ParseHTML", "beginData", InspectorParseHtmlEvent::beginData(document(), lineNumber().zeroBasedInt()));
