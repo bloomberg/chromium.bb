@@ -546,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
   content::RenderProcessHostWatcher crash_observer(
       child_process,
       content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  base::KillProcess(child_process->GetHandle(), 0, false);
+  child_process->Shutdown(0, false);
   crash_observer.Wait();
   EXPECT_FALSE(dialog_queue->HasActiveDialog());
 
@@ -573,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsSubframeDialogs) {
   content::RenderProcessHostWatcher crash_observer(
       child_process,
       content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  base::KillProcess(child_process->GetHandle(), 0, false);
+  child_process->Shutdown(0, false);
   crash_observer.Wait();
   EXPECT_FALSE(dialog_queue->HasActiveDialog());
 

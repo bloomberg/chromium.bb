@@ -48,8 +48,7 @@ IN_PROC_BROWSER_TEST_F(ChildProcessSecurityPolicyInProcessBrowserTest, NoLeak) {
           1U);
 
   WebContents* web_contents = shell()->web_contents();
-  base::KillProcess(web_contents->GetRenderProcessHost()->GetHandle(),
-                    RESULT_CODE_KILLED, true);
+  web_contents->GetRenderProcessHost()->Shutdown(RESULT_CODE_KILLED, true);
 
   web_contents->GetController().Reload(true);
   EXPECT_EQ(

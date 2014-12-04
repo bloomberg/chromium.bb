@@ -1472,12 +1472,12 @@ void WebContentsImpl::CreateNewWindow(
   // this WebContentsImpl instance. If any other process sends the request,
   // it is invalid and the process must be terminated.
   if (GetRenderProcessHost()->GetID() != render_process_id) {
-    base::ProcessHandle process_handle =
-        RenderProcessHost::FromID(render_process_id)->GetHandle();
+    RenderProcessHost* rph = RenderProcessHost::FromID(render_process_id);
+    base::ProcessHandle process_handle = rph->GetHandle();
     if (process_handle != base::kNullProcessHandle) {
       RecordAction(
           base::UserMetricsAction("Terminate_ProcessMismatch_CreateNewWindow"));
-      base::KillProcess(process_handle, RESULT_CODE_KILLED, false);
+      rph->Shutdown(RESULT_CODE_KILLED, false);
     }
     return;
   }
@@ -1606,12 +1606,12 @@ void WebContentsImpl::CreateNewWidget(int render_process_id,
   // this WebContentsImpl instance. If any other process sends the request,
   // it is invalid and the process must be terminated.
   if (process->GetID() != render_process_id) {
-    base::ProcessHandle process_handle =
-        RenderProcessHost::FromID(render_process_id)->GetHandle();
+    RenderProcessHost* rph = RenderProcessHost::FromID(render_process_id);
+    base::ProcessHandle process_handle = rph->GetHandle();
     if (process_handle != base::kNullProcessHandle) {
       RecordAction(
           base::UserMetricsAction("Terminate_ProcessMismatch_CreateNewWidget"));
-      base::KillProcess(process_handle, RESULT_CODE_KILLED, false);
+      rph->Shutdown(RESULT_CODE_KILLED, false);
     }
     return;
   }

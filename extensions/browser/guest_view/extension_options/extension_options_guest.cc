@@ -240,8 +240,7 @@ void ExtensionOptionsGuest::DidNavigateMainFrame(
     const content::FrameNavigateParams& params) {
   if (attached() && (params.url.GetOrigin() != options_page_.GetOrigin())) {
     base::RecordAction(base::UserMetricsAction("BadMessageTerminate_EOG"));
-    base::KillProcess(
-        web_contents()->GetRenderProcessHost()->GetHandle(),
+    web_contents()->GetRenderProcessHost()->Shutdown(
         content::RESULT_CODE_KILLED_BAD_MESSAGE, false /* wait */);
   }
 }

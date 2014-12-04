@@ -752,8 +752,7 @@ void RenderViewHostImpl::SetWebUIProperty(const std::string& name,
   } else {
     RecordAction(
         base::UserMetricsAction("BindingsMismatchTerminate_RVH_WebUI"));
-    base::KillProcess(
-        GetProcess()->GetHandle(), content::RESULT_CODE_KILLED, false);
+    GetProcess()->Shutdown(content::RESULT_CODE_KILLED, false);
   }
 }
 

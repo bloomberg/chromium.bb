@@ -387,7 +387,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrashSubframe) {
     RenderProcessHostWatcher crash_observer(
         child_process,
         RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-    base::KillProcess(child_process->GetHandle(), 0, false);
+    child_process->Shutdown(0, false);
     crash_observer.Wait();
   }
 
@@ -406,7 +406,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrashSubframe) {
     RenderProcessHostWatcher crash_observer(
         root_process,
         RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-    base::KillProcess(root_process->GetHandle(), 0, false);
+    root_process->Shutdown(0, false);
     crash_observer.Wait();
   }
   EXPECT_EQ(0U, root->child_count());

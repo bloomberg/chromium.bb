@@ -47,6 +47,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool IsIsolatedGuest() const override;
   StoragePartition* GetStoragePartition() const override;
   virtual void AddWord(const base::string16& word);
+  bool Shutdown(int exit_code, bool wait) override;
   bool FastShutdownIfPossible() override;
   bool FastShutdownStarted() const override;
   void DumpHandles() override;

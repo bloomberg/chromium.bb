@@ -242,9 +242,8 @@ void WebViewGuest::CreateWebContents(
   if (!base::IsStringUTF8(storage_partition_id)) {
     content::RecordAction(
         base::UserMetricsAction("BadMessageTerminate_BPGM"));
-    base::KillProcess(
-        owner_render_process_host->GetHandle(),
-        content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
+    owner_render_process_host->Shutdown(content::RESULT_CODE_KILLED_BAD_MESSAGE,
+                                        false);
     callback.Run(NULL);
     return;
   }
@@ -672,7 +671,8 @@ void WebViewGuest::Terminate() {
   base::ProcessHandle process_handle =
       web_contents()->GetRenderProcessHost()->GetHandle();
   if (process_handle)
-    base::KillProcess(process_handle, content::RESULT_CODE_KILLED, false);
+    web_contents()->GetRenderProcessHost()->Shutdown(
+        content::RESULT_CODE_KILLED, false);
 }
 
 bool WebViewGuest::ClearData(const base::Time remove_since,

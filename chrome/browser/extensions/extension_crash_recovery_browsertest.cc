@@ -76,8 +76,8 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
         GetBackgroundHostForExtension(extension_id);
     ASSERT_TRUE(extension_host);
 
-    base::KillProcess(extension_host->render_process_host()->GetHandle(),
-                      content::RESULT_CODE_KILLED, false);
+    extension_host->render_process_host()->Shutdown(content::RESULT_CODE_KILLED,
+                                                    false);
     ASSERT_TRUE(WaitForExtensionCrash(extension_id));
     ASSERT_FALSE(GetProcessManager()->
                  GetBackgroundHostForExtension(extension_id));

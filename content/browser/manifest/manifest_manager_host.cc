@@ -19,7 +19,8 @@ void KillRenderer(RenderFrameHost* render_frame_host) {
       render_frame_host->GetProcess()->GetHandle();
   if (process_handle == base::kNullProcessHandle)
     return;
-  base::KillProcess(process_handle, RESULT_CODE_KILLED_BAD_MESSAGE, false);
+  render_frame_host->GetProcess()->Shutdown(RESULT_CODE_KILLED_BAD_MESSAGE,
+                                            false);
 }
 
 } // anonymous namespace

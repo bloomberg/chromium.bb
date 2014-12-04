@@ -152,6 +152,7 @@
 #include "ui/native_theme/native_theme_switches.h"
 
 #if defined(OS_ANDROID)
+#include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/media/android/browser_demuxer_android.h"
 #include "content/browser/screen_orientation/screen_orientation_message_filter_android.h"
 #endif
@@ -974,8 +975,7 @@ void RenderProcessHostImpl::ReceivedBadMessage() {
   }
   // We kill the renderer but don't include a NOTREACHED, because we want the
   // browser to try to survive when it gets illegal messages from the renderer.
-  base::KillProcess(GetHandle(), RESULT_CODE_KILLED_BAD_MESSAGE,
-                    false);
+  Shutdown(RESULT_CODE_KILLED_BAD_MESSAGE, false);
 }
 
 void RenderProcessHostImpl::WidgetRestored() {
@@ -1331,9 +1331,22 @@ base::ProcessHandle RenderProcessHostImpl::GetHandle() const {
   return child_process_launcher_->GetProcess().Handle();
 }
 
+bool RenderProcessHostImpl::Shutdown(int exit_code, bool wait) {
+  if (run_renderer_in_process())
+    return false;  // Single process mode never shuts down the renderer.
+
+#if defined(OS_ANDROID)
+  // Android requires a different approach for killing.
+  StopChildProcess(GetHandle());
+  return true;
+#else
+  return base::KillProcess(GetHandle(), exit_code, wait);
+#endif
+}
+
 bool RenderProcessHostImpl::FastShutdownIfPossible() {
   if (run_renderer_in_process())
-    return false;  // Single process mode never shutdown the renderer.
+    return false;  // Single process mode never shuts down the renderer.
 
   if (!GetContentClient()->browser()->IsFastShutdownPossible())
     return false;

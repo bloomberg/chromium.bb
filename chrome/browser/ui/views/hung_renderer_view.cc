@@ -196,12 +196,12 @@ bool HungRendererDialogView::IsFrameActive(WebContents* contents) {
 
 // static
 void HungRendererDialogView::KillRendererProcess(
-    base::ProcessHandle process_handle) {
+    content::RenderProcessHost* rph) {
 #if defined(OS_WIN)
   // Try to generate a crash report for the hung process.
-  CrashDumpAndTerminateHungChildProcess(process_handle);
+  CrashDumpAndTerminateHungChildProcess(rph->GetHandle());
 #else
-  base::KillProcess(process_handle, content::RESULT_CODE_HUNG, false);
+  rph->Shutdown(content::RESULT_CODE_HUNG, false);
 #endif
 }
 
@@ -342,10 +342,7 @@ void HungRendererDialogView::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
   if (sender == kill_button_ &&
       hung_pages_table_model_->GetRenderProcessHost()) {
-    base::ProcessHandle process_handle =
-        hung_pages_table_model_->GetRenderProcessHost()->GetHandle();
-
-    KillRendererProcess(process_handle);
+    KillRendererProcess(hung_pages_table_model_->GetRenderProcessHost());
   }
 }
 

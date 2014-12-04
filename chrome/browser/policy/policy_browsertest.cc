@@ -1832,8 +1832,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   extensions::ExtensionHost* extension_host =
       extensions::ProcessManager::Get(browser()->profile())
           ->GetBackgroundHostForExtension(kGoodCrxId);
-  base::KillProcess(extension_host->render_process_host()->GetHandle(),
-                    content::RESULT_CODE_KILLED, false);
+  extension_host->render_process_host()->Shutdown(content::RESULT_CODE_KILLED,
+                                                  false);
   extension_crashed_observer.Wait();
   extension_loaded_observer.Wait();
 }

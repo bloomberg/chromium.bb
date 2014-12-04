@@ -105,8 +105,8 @@ class HungRendererDialogView : public views::DialogDelegateView,
   static HungRendererDialogView* GetInstance();
 
   // Platform specific function to kill the renderer process identified by the
-  // handle passed in.
-  static void KillRendererProcess(base::ProcessHandle process_handle);
+  // render process host passed in.
+  static void KillRendererProcess(content::RenderProcessHost* rph);
 
   // Returns true if the frame is in the foreground.
   static bool IsFrameActive(content::WebContents* contents);

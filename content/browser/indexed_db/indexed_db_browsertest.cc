@@ -686,8 +686,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ConnectionsClosedOnTabClose) {
   base::string16 expected_title16(ASCIIToUTF16("setVersion(3) complete"));
   TitleWatcher title_watcher(new_shell->web_contents(), expected_title16);
 
-  base::KillProcess(
-      shell()->web_contents()->GetRenderProcessHost()->GetHandle(), 0, true);
+  shell()->web_contents()->GetRenderProcessHost()->Shutdown(0, true);
   shell()->Close();
 
   EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());

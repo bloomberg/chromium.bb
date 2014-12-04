@@ -401,8 +401,8 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, ClosePanelsOnExtensionCrash) {
       extensions::ProcessManager::Get(browser()->profile())
           ->GetBackgroundHostForExtension(extension->id());
   ASSERT_TRUE(extension_host);
-  base::KillProcess(extension_host->render_process_host()->GetHandle(),
-                    content::RESULT_CODE_KILLED, false);
+  extension_host->render_process_host()->Shutdown(content::RESULT_CODE_KILLED,
+                                                  false);
   WaitForExtensionCrash(extension->id());
 
   // Only expect panels to close. The rest stay open to show a sad-tab.

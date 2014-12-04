@@ -299,7 +299,7 @@ void CrashTab(WebContents* web_contents) {
   RenderProcessHost* rph = web_contents->GetRenderProcessHost();
   RenderProcessHostWatcher watcher(
       rph, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  base::KillProcess(rph->GetHandle(), 0, false);
+  rph->Shutdown(0, false);
   watcher.Wait();
 }
 

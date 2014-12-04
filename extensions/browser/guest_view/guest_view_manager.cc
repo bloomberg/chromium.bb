@@ -288,10 +288,8 @@ bool GuestViewManager::CanEmbedderAccessInstanceIDMaybeKill(
     // The embedder process is trying to access a guest it does not own.
     content::RecordAction(
         base::UserMetricsAction("BadMessageTerminate_BPGM"));
-    base::KillProcess(
-        content::RenderProcessHost::FromID(embedder_render_process_id)->
-            GetHandle(),
-        content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
+    content::RenderProcessHost::FromID(embedder_render_process_id)
+        ->Shutdown(content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
     return false;
   }
   return true;
