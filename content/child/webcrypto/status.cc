@@ -166,17 +166,17 @@ Status Status::ErrorUnexpectedKeyType() {
 }
 
 Status Status::ErrorIncorrectSizeAesCbcIv() {
-  return Status(blink::WebCryptoErrorTypeData,
+  return Status(blink::WebCryptoErrorTypeOperation,
                 "The \"iv\" has an unexpected length -- must be 16 bytes");
 }
 
 Status Status::ErrorIncorrectSizeAesCtrCounter() {
-  return Status(blink::WebCryptoErrorTypeData,
+  return Status(blink::WebCryptoErrorTypeOperation,
                 "The \"counter\" has an unexpected length -- must be 16 bytes");
 }
 
 Status Status::ErrorInvalidAesCtrCounterLength() {
-  return Status(blink::WebCryptoErrorTypeData,
+  return Status(blink::WebCryptoErrorTypeOperation,
                 "The \"length\" property must be >= 1 and <= 128");
 }
 

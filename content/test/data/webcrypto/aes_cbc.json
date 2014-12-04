@@ -41,7 +41,7 @@
     "key": "3132383d5369787465656e4279746573",
     "iv": "5300",
     "plain_text": "0000",
-    "encrypt_error": "DataError: The \"iv\" has an unexpected length -- must be 16 bytes"
+    "encrypt_error": "OperationError: The \"iv\" has an unexpected length -- must be 16 bytes"
   },
 
   // Fail decrypting because the IV is too small.
@@ -50,7 +50,7 @@
     "key": "3132383d5369787465656e4279746573",
     "iv": "5300",
     "cipher_text": "8518b8878d34e7185e300d0fcc426396",
-    "decrypt_error": "DataError: The \"iv\" has an unexpected length -- must be 16 bytes"
+    "decrypt_error": "OperationError: The \"iv\" has an unexpected length -- must be 16 bytes"
   },
 
   // Fail encrypting because the IV is too large.
@@ -59,7 +59,7 @@
     "key": "3132383d5369787465656e4279746573",
     "iv": "5377656574205369787465656e2049560000000000000000",
     "plain_text": "0000",
-    "encrypt_error": "DataError: The \"iv\" has an unexpected length -- must be 16 bytes"
+    "encrypt_error": "OperationError: The \"iv\" has an unexpected length -- must be 16 bytes"
   },
 
   // Fail decrypting because the IV is too large.
@@ -68,7 +68,7 @@
     "key": "3132383d5369787465656e4279746573",
     "iv": "5377656574205369787465656e2049560000000000000000",
     "cipher_text": "8518b8878d34e7185e300d0fcc426396",
-    "decrypt_error": "DataError: The \"iv\" has an unexpected length -- must be 16 bytes"
+    "decrypt_error": "OperationError: The \"iv\" has an unexpected length -- must be 16 bytes"
   },
 
   // Fail importing the key because not enough bytes were specified.
