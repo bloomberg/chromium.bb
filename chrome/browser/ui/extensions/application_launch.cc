@@ -144,9 +144,6 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
   prefs->SetActiveBit(extension->id(), true);
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "Extensions.AppLaunchContainer", params.container, 100);
-
   if (CanLaunchViaEvent(extension)) {
     // Remember what desktop the launch happened on so that when the app opens a
     // window we can open them on the right desktop.
@@ -160,6 +157,10 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
                                            params.source);
     return NULL;
   }
+
+  UMA_HISTOGRAM_ENUMERATION("Extensions.HostedAppLaunchContainer",
+                            params.container,
+                            extensions::NUM_LAUNCH_CONTAINERS);
 
   // Record v1 app launch. Platform app launch is recorded when dispatching
   // the onLaunched event.

@@ -161,7 +161,8 @@ enum LaunchContainer {
   LAUNCH_CONTAINER_TAB,
   // For platform apps, which don't actually have a container (they just get a
   // "onLaunched" event).
-  LAUNCH_CONTAINER_NONE
+  LAUNCH_CONTAINER_NONE,
+  NUM_LAUNCH_CONTAINERS
 };
 
 }  // namespace extensions

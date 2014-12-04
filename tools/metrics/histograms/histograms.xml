@@ -522,6 +522,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Apps.HostedAppLaunchContainer" enum="AppLaunchContainer">
+  <owner>benwells@chromium.org</owner>
+  <summary>
+    Records the container used for a hosted app launch. The definition of
+    'launch' for the purposes of this histogram is different to that used for
+    the launch type histograms. This definition is less inclusive, for example
+    it does not include navigations to the hosted app due to normal browsing,
+    which the other definition does include. This definition could be thought of
+    more as explicit launches via a launch surface such as the app launcher,
+    chrome://apps, or a shortcut.
+  </summary>
+</histogram>
+
 <histogram name="Ash.ActiveTouchPoints">
   <owner>kuscher@google.com</owner>
   <owner>rbyers@chromium.org</owner>
@@ -7681,6 +7694,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Extensions.AppLaunchContainer" enum="AppLaunchContainer">
   <owner>benwells@chromium.org</owner>
   <owner>tapted@chromium.org</owner>
+  <obsolete>
+    Deprecated as of 12/2014, replaced by Apps.HostedAppLaunchContainer.
+  </obsolete>
   <summary>
     The number of times apps are launched grouped by
     extensions::LaunchContainer.
