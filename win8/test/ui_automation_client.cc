@@ -377,7 +377,7 @@ HRESULT UIAutomationClient::Context::InvokeDesiredItem(
   var.Reset();
   if (FAILED(result)) {
     LOG(ERROR) << std::hex << result;
-    return false;
+    return result;
   }
 
   var.Set(item_name_.c_str());
