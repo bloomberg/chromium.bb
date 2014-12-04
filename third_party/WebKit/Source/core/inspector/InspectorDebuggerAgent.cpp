@@ -1573,7 +1573,7 @@ bool InspectorDebuggerAgent::canBreakProgram()
 
 void InspectorDebuggerAgent::breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data)
 {
-    if (m_skipAllPauses || isCallStackEmptyOrBlackboxed())
+    if (m_skipAllPauses || m_pausedScriptState || isCallStackEmptyOrBlackboxed())
         return;
     m_breakReason = breakReason;
     m_breakAuxData = data;
