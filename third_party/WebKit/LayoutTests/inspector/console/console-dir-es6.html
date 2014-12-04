@@ -52,17 +52,7 @@ function onload()
 
 function test()
 {
-    InspectorTest.expandConsoleMessages(step1);
-
-    function expandTreeElementFilter(treeElement)
-    {
-        return treeElement.title === "<entries>";
-    }
-
-    function step1()
-    {
-        InspectorTest.expandConsoleMessages(dumpConsoleMessages, expandTreeElementFilter);
-    }
+    InspectorTest.expandConsoleMessages(dumpConsoleMessages);
 
     function dumpConsoleMessages()
     {

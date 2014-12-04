@@ -83,7 +83,8 @@ Object {getter: (...), a: Symbol(), Symbol(a): 2}
 console-format-es6.html:11 Map {Object {getter: (...), a: Symbol(), Symbol(a): 2} => Object {foo: 1}}
     size: (...)
     __proto__: Map
-    <entries>
+    <entries>[1]
+        0: {Object => Object}
 console-format-es6.html:12 [Map]
     0: Map
     length: 1
@@ -92,10 +93,12 @@ globals[4]
 Map {Object {getter: (...), a: Symbol(), Symbol(a): 2} => Object {foo: 1}}
     size: (...)
     __proto__: Map
-    <entries>
+    <entries>[1]
+        0: {Object => Object}
 console-format-es6.html:11 WeakMap {Object {getter: (...), a: Symbol(), Symbol(a): 2} => Object {foo: 1}}
     __proto__: WeakMap
-    <entries>
+    <entries>[1]
+        0: {Object => Object}
 console-format-es6.html:12 [WeakMap]
     0: WeakMap
     length: 1
@@ -103,11 +106,13 @@ console-format-es6.html:12 [WeakMap]
 globals[5]
 WeakMap {Object {getter: (...), a: Symbol(), Symbol(a): 2} => Object {foo: 1}}
     __proto__: WeakMap
-    <entries>
+    <entries>[1]
+        0: {Object => Object}
 console-format-es6.html:11 Set {Object {getter: (...), a: Symbol(), Symbol(a): 2}}
     size: (...)
     __proto__: Set
-    <entries>
+    <entries>[1]
+        0: Object
 console-format-es6.html:12 [Set]
     0: Set
     length: 1
@@ -116,10 +121,12 @@ globals[6]
 Set {Object {getter: (...), a: Symbol(), Symbol(a): 2}}
     size: (...)
     __proto__: Set
-    <entries>
+    <entries>[1]
+        0: Object
 console-format-es6.html:11 WeakSet {Object {getter: (...), a: Symbol(), Symbol(a): 2}}
     __proto__: WeakSet
-    <entries>
+    <entries>[1]
+        0: Object
 console-format-es6.html:12 [WeakSet]
     0: WeakSet
     length: 1
@@ -127,7 +134,8 @@ console-format-es6.html:12 [WeakSet]
 globals[7]
 WeakSet {Object {getter: (...), a: Symbol(), Symbol(a): 2}}
     __proto__: WeakSet
-    <entries>
+    <entries>[1]
+        0: Object
 console-format-es6.html:11 Map {Map {} => WeakMap {}}
 console-format-es6.html:12 [Map]
     0: Map
@@ -138,7 +146,8 @@ Map {Map {} => WeakMap {}}
 console-format-es6.html:11 Map {Map {…} => WeakMap {…}}
     size: (...)
     __proto__: Map
-    <entries>
+    <entries>[1]
+        0: {Map => WeakMap}
 console-format-es6.html:12 [Map]
     0: Map
     length: 1
@@ -147,7 +156,8 @@ globals[9]
 Map {Map {…} => WeakMap {…}}
     size: (...)
     __proto__: Map
-    <entries>
+    <entries>[1]
+        0: {Map => WeakMap}
 console-format-es6.html:11 Set {WeakSet {}}
 console-format-es6.html:12 [Set]
     0: Set
@@ -158,7 +168,8 @@ Set {WeakSet {}}
 console-format-es6.html:11 Set {WeakSet {…}}
     size: (...)
     __proto__: Set
-    <entries>
+    <entries>[1]
+        0: WeakSet
 console-format-es6.html:12 [Set]
     0: Set
     length: 1
@@ -167,7 +178,8 @@ globals[11]
 Set {WeakSet {…}}
     size: (...)
     __proto__: Set
-    <entries>
+    <entries>[1]
+        0: WeakSet
 console-format-es6.html:11 Map {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, Object {foo: "from"} => Object {foo: "to"}}
 console-format-es6.html:12 [Map]
     0: Map
@@ -180,7 +192,9 @@ console-format-es6.html:11 MapIterator {41, Object {foo: 1}}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "keys"
-    <entries>
+    <entries>[2]
+        0: 41
+        1: Object
 console-format-es6.html:12 [MapIterator]
     0: MapIterator
     length: 1
@@ -191,13 +205,17 @@ MapIterator {41, Object {foo: 1}}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "keys"
-    <entries>
+    <entries>[2]
+        0: 41
+        1: Object
 console-format-es6.html:11 MapIterator {42, Object {foo: 2}}
     __proto__: Object
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    <entries>
+    <entries>[2]
+        0: 42
+        1: Object
 console-format-es6.html:12 [MapIterator]
     0: MapIterator
     length: 1
@@ -208,13 +226,17 @@ MapIterator {42, Object {foo: 2}}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    <entries>
+    <entries>[2]
+        0: 42
+        1: Object
 console-format-es6.html:11 MapIterator {[41, 42], [Object, Object]}
     __proto__: Object
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
-    <entries>
+    <entries>[2]
+        0: Array[2]
+        1: Array[2]
 console-format-es6.html:12 [MapIterator]
     0: MapIterator
     length: 1
@@ -225,13 +247,17 @@ MapIterator {[41, 42], [Object, Object]}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
-    <entries>
+    <entries>[2]
+        0: Array[2]
+        1: Array[2]
 console-format-es6.html:11 SetIterator {41, Object {foo: 1}}
     __proto__: Object
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    <entries>
+    <entries>[2]
+        0: 41
+        1: Object
 console-format-es6.html:12 [SetIterator]
     0: SetIterator
     length: 1
@@ -242,13 +268,17 @@ SetIterator {41, Object {foo: 1}}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    <entries>
+    <entries>[2]
+        0: 41
+        1: Object
 console-format-es6.html:11 SetIterator {41, Object {foo: 1}}
     __proto__: Object
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    <entries>
+    <entries>[2]
+        0: 41
+        1: Object
 console-format-es6.html:12 [SetIterator]
     0: SetIterator
     length: 1
@@ -259,13 +289,17 @@ SetIterator {41, Object {foo: 1}}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    <entries>
+    <entries>[2]
+        0: 41
+        1: Object
 console-format-es6.html:11 SetIterator {[41, 41], [Object, Object]}
     __proto__: Object
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
-    <entries>
+    <entries>[2]
+        0: Array[2]
+        1: Array[2]
 console-format-es6.html:12 [SetIterator]
     0: SetIterator
     length: 1
@@ -276,13 +310,16 @@ SetIterator {[41, 41], [Object, Object]}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
-    <entries>
+    <entries>[2]
+        0: Array[2]
+        1: Array[2]
 console-format-es6.html:11 MapIterator {Object {foo: 2}}
     __proto__: Object
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 1
     [[IteratorKind]]: "values"
-    <entries>
+    <entries>[1]
+        0: Object
 console-format-es6.html:12 [MapIterator]
     0: MapIterator
     length: 1
@@ -293,13 +330,15 @@ MapIterator {Object {foo: 2}}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 1
     [[IteratorKind]]: "values"
-    <entries>
+    <entries>[1]
+        0: Object
 console-format-es6.html:11 SetIterator {Object {foo: 1}}
     __proto__: Object
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 1
     [[IteratorKind]]: "values"
-    <entries>
+    <entries>[1]
+        0: Object
 console-format-es6.html:12 [SetIterator]
     0: SetIterator
     length: 1
@@ -310,5 +349,6 @@ SetIterator {Object {foo: 1}}
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 1
     [[IteratorKind]]: "values"
-    <entries>
+    <entries>[1]
+        0: Object
 
