@@ -735,6 +735,9 @@ NPObject* WebPluginDelegateProxy::GetPluginScriptableObject() {
   if (route_id == MSG_ROUTING_NONE)
     return NULL;
 
+  if (!channel_host_.get())
+    return nullptr;
+
   npobject_ = NPObjectProxy::Create(
       channel_host_.get(), route_id, 0, page_url_, GetPluginNPP());
 
