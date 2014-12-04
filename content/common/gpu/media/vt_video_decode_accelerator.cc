@@ -372,6 +372,7 @@ void VTVideoDecodeAccelerator::DecodeTask(
   // Locate relevant NALUs and compute the size of the rewritten data. Also
   // record any parameter sets for VideoToolbox initialization.
   bool config_changed = false;
+  bool has_slice = false;
   size_t data_size = 0;
   std::vector<media::H264NALU> nalus;
   parser_.SetStream(buf, size);
@@ -416,18 +417,14 @@ void VTVideoDecodeAccelerator::DecodeTask(
       case media::H264NALU::kSliceDataA:
       case media::H264NALU::kSliceDataB:
       case media::H264NALU::kSliceDataC:
-        DLOG(ERROR) << "Coded slide data partitions not implemented.";
-        NotifyError(PLATFORM_FAILURE);
-        return;
-
       case media::H264NALU::kNonIDRSlice:
         // TODO(sandersd): Check that there has been an IDR slice since the
         // last reset.
       case media::H264NALU::kIDRSlice:
-        {
-          // TODO(sandersd): Make sure this only happens once per frame.
-          DCHECK_EQ(frame->pic_order_cnt, 0);
-
+        // Compute the |pic_order_cnt| for the picture from the first slice.
+        // TODO(sandersd): Make sure that any further slices are part of the
+        // same picture or a redundant coded picture.
+        if (!has_slice) {
           media::H264SliceHeader slice_hdr;
           result = parser_.ParseSliceHeader(nalu, &slice_hdr);
           if (result != media::H264Parser::kOk) {
@@ -466,6 +463,7 @@ void VTVideoDecodeAccelerator::DecodeTask(
                                              kMaxReorderQueueSize - 1);
           }
         }
+        has_slice = true;
       default:
         nalus.push_back(nalu);
         data_size += kNALUHeaderLength + nalu.size;
@@ -487,9 +485,9 @@ void VTVideoDecodeAccelerator::DecodeTask(
       return;
   }
 
-  // If there are no non-configuration units, drop the bitstream buffer by
-  // returning an empty frame.
-  if (!data_size) {
+  // If there are no image slices, drop the bitstream buffer by returning an
+  // empty frame.
+  if (!has_slice) {
     if (!FinishDelayedFrames())
       return;
     gpu_task_runner_->PostTask(FROM_HERE, base::Bind(
