@@ -1515,7 +1515,7 @@ void RenderBlock::addOverflowFromPositionedObjects()
 
         // Fixed positioned elements don't contribute to layout overflow, since they don't scroll with the content.
         if (positionedObject->style()->position() != FixedPosition)
-            addOverflowFromChild(positionedObject, LayoutSize(positionedObject->x(), positionedObject->y()));
+            addOverflowFromChild(positionedObject, toLayoutSize(positionedObject->location()));
     }
 }
 
@@ -3349,13 +3349,13 @@ static int getHeightForLineCount(RenderBlock* block, int l, bool includeBottom, 
                 if (shouldCheckLines(obj)) {
                     int result = getHeightForLineCount(toRenderBlock(obj), l, false, count);
                     if (result != -1)
-                        return result + obj->y() + (includeBottom ? (block->borderBottom() + block->paddingBottom()) : LayoutUnit());
+                        return result + obj->location().y() + (includeBottom ? (block->borderBottom() + block->paddingBottom()) : LayoutUnit());
                 } else if (!obj->isFloatingOrOutOfFlowPositioned()) {
                     normalFlowChildWithoutLines = obj;
                 }
             }
             if (normalFlowChildWithoutLines && l == 0)
-                return normalFlowChildWithoutLines->y() + normalFlowChildWithoutLines->height();
+                return normalFlowChildWithoutLines->location().y() + normalFlowChildWithoutLines->height();
         }
     }
 

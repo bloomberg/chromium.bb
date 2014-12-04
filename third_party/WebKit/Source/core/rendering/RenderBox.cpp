@@ -330,22 +330,22 @@ LayoutUnit RenderBox::clientHeight() const
 
 int RenderBox::pixelSnappedClientWidth() const
 {
-    return snapSizeToPixel(clientWidth(), x() + clientLeft());
+    return snapSizeToPixel(clientWidth(), location().x() + clientLeft());
 }
 
 int RenderBox::pixelSnappedClientHeight() const
 {
-    return snapSizeToPixel(clientHeight(), y() + clientTop());
+    return snapSizeToPixel(clientHeight(), location().y() + clientTop());
 }
 
 int RenderBox::pixelSnappedOffsetWidth() const
 {
-    return snapSizeToPixel(offsetWidth(), x() + clientLeft());
+    return snapSizeToPixel(offsetWidth(), location().x() + clientLeft());
 }
 
 int RenderBox::pixelSnappedOffsetHeight() const
 {
-    return snapSizeToPixel(offsetHeight(), y() + clientTop());
+    return snapSizeToPixel(offsetHeight(), location().y() + clientTop());
 }
 
 LayoutUnit RenderBox::scrollWidth() const
@@ -380,7 +380,7 @@ LayoutUnit RenderBox::scrollTop() const
 
 int RenderBox::pixelSnappedScrollWidth() const
 {
-    return snapSizeToPixel(scrollWidth(), x() + clientLeft());
+    return snapSizeToPixel(scrollWidth(), location().x() + clientLeft());
 }
 
 int RenderBox::pixelSnappedScrollHeight() const
@@ -389,7 +389,7 @@ int RenderBox::pixelSnappedScrollHeight() const
         return layer()->scrollableArea()->scrollHeight();
     // For objects with visible overflow, this matches IE.
     // FIXME: Need to work right with writing modes.
-    return snapSizeToPixel(scrollHeight(), y() + clientTop());
+    return snapSizeToPixel(scrollHeight(), location().y() + clientTop());
 }
 
 void RenderBox::setScrollLeft(LayoutUnit newLeft)
@@ -3620,7 +3620,7 @@ LayoutRect RenderBox::localCaretRect(InlineBox* box, int caretOffset, LayoutUnit
         rect.setHeight(fontHeight);
 
     if (extraWidthToEndOfLine)
-        *extraWidthToEndOfLine = x() + width() - rect.maxX();
+        *extraWidthToEndOfLine = location().x() + width() - rect.maxX();
 
     // Move to local coords
     rect.moveBy(-location());
@@ -3674,9 +3674,9 @@ PositionWithAffinity RenderBox::positionForPoint(const LayoutPoint& point)
 
         RenderBox* renderer = toRenderBox(renderObject);
 
-        LayoutUnit top = renderer->borderTop() + renderer->paddingTop() + (isTableRow() ? LayoutUnit() : renderer->y());
+        LayoutUnit top = renderer->borderTop() + renderer->paddingTop() + (isTableRow() ? LayoutUnit() : renderer->location().y());
         LayoutUnit bottom = top + renderer->contentHeight();
-        LayoutUnit left = renderer->borderLeft() + renderer->paddingLeft() + (isTableRow() ? LayoutUnit() : renderer->x());
+        LayoutUnit left = renderer->borderLeft() + renderer->paddingLeft() + (isTableRow() ? LayoutUnit() : renderer->location().x());
         LayoutUnit right = left + renderer->contentWidth();
 
         if (point.x() <= right && point.x() >= left && point.y() <= top && point.y() >= bottom) {
@@ -4286,8 +4286,8 @@ LayoutPoint RenderBox::flipForWritingModeForChild(const RenderBox* child, const 
     // The child is going to add in its x() and y(), so we have to make sure it ends up in
     // the right place.
     if (isHorizontalWritingMode())
-        return LayoutPoint(point.x(), point.y() + height() - child->height() - (2 * child->y()));
-    return LayoutPoint(point.x() + width() - child->width() - (2 * child->x()), point.y());
+        return LayoutPoint(point.x(), point.y() + height() - child->height() - (2 * child->location().y()));
+    return LayoutPoint(point.x() + width() - child->width() - (2 * child->location().x()), point.y());
 }
 
 LayoutPoint RenderBox::flipForWritingModeIncludingColumns(const LayoutPoint& point) const

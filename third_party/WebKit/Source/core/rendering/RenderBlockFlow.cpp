@@ -2629,8 +2629,8 @@ bool RenderBlockFlow::hitTestFloats(const HitTestRequest& request, HitTestResult
         --it;
         FloatingObject* floatingObject = it->get();
         if (floatingObject->shouldPaint() && !floatingObject->renderer()->hasSelfPaintingLayer()) {
-            LayoutUnit xOffset = xPositionForFloatIncludingMargin(floatingObject) - floatingObject->renderer()->x();
-            LayoutUnit yOffset = yPositionForFloatIncludingMargin(floatingObject) - floatingObject->renderer()->y();
+            LayoutUnit xOffset = xPositionForFloatIncludingMargin(floatingObject) - floatingObject->renderer()->location().x();
+            LayoutUnit yOffset = yPositionForFloatIncludingMargin(floatingObject) - floatingObject->renderer()->location().y();
             LayoutPoint childPoint = flipFloatForWritingModeForChild(floatingObject, adjustedLocation + LayoutSize(xOffset, yOffset));
             if (floatingObject->renderer()->hitTest(request, result, locationInContainer, childPoint)) {
                 updateHitTestResult(result, locationInContainer.point() - toLayoutSize(childPoint));
@@ -2696,7 +2696,7 @@ static void clipOutPositionedObjects(const PaintInfo& paintInfo, const LayoutPoi
     TrackedRendererListHashSet::const_iterator end = positionedObjects->end();
     for (TrackedRendererListHashSet::const_iterator it = positionedObjects->begin(); it != end; ++it) {
         RenderBox* r = *it;
-        paintInfo.context->clipOut(IntRect(offset.x() + r->x(), offset.y() + r->y(), r->width(), r->height()));
+        paintInfo.context->clipOut(IntRect(flooredIntPoint(r->location() + offset), flooredIntSize(r->size())));
     }
 }
 
@@ -2712,7 +2712,7 @@ GapRects RenderBlockFlow::selectionGaps(const RenderBlock* rootBlock, const Layo
         clipOutPositionedObjects(*paintInfo, flippedBlockRect.location(), positionedObjects());
         if (isBody() || isDocumentElement()) // The <body> must make sure to examine its containingBlock's positioned objects.
             for (RenderBlock* cb = containingBlock(); cb && !cb->isRenderView(); cb = cb->containingBlock())
-                clipOutPositionedObjects(*paintInfo, LayoutPoint(cb->x(), cb->y()), cb->positionedObjects()); // FIXME: Not right for flipped writing modes.
+                clipOutPositionedObjects(*paintInfo, cb->location(), cb->positionedObjects()); // FIXME: Not right for flipped writing modes.
         clipOutFloatingObjects(rootBlock, paintInfo, rootBlockPhysicalPosition, offsetFromRootBlock);
     }
 
@@ -2885,7 +2885,7 @@ GapRects RenderBlockFlow::blockSelectionGaps(const RenderBlock* rootBlock, const
             lastLogicalRight = logicalRightSelectionOffset(rootBlock, curr->logicalBottom());
         } else if (childState != SelectionNone && curr->isRenderBlockFlow()) {
             // We must be a block that has some selected object inside it.  Go ahead and recur.
-            result.unite(toRenderBlockFlow(curr)->selectionGaps(rootBlock, rootBlockPhysicalPosition, LayoutSize(offsetFromRootBlock.width() + curr->x(), offsetFromRootBlock.height() + curr->y()),
+            result.unite(toRenderBlockFlow(curr)->selectionGaps(rootBlock, rootBlockPhysicalPosition, LayoutSize(offsetFromRootBlock.width() + curr->location().x(), offsetFromRootBlock.height() + curr->location().y()),
                 lastLogicalTop, lastLogicalLeft, lastLogicalRight, paintInfo));
         }
     }

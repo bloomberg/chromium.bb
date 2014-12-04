@@ -551,12 +551,12 @@ LayoutUnit RenderLayerScrollableArea::scrollHeight() const
 
 int RenderLayerScrollableArea::pixelSnappedScrollWidth() const
 {
-    return snapSizeToPixel(scrollWidth(), box().clientLeft() + box().x());
+    return snapSizeToPixel(scrollWidth(), box().clientLeft() + box().location().x());
 }
 
 int RenderLayerScrollableArea::pixelSnappedScrollHeight() const
 {
-    return snapSizeToPixel(scrollHeight(), box().clientTop() + box().y());
+    return snapSizeToPixel(scrollHeight(), box().clientTop() + box().location().y());
 }
 
 void RenderLayerScrollableArea::computeScrollDimensions()

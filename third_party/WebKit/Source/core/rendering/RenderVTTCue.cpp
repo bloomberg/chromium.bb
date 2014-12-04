@@ -115,10 +115,10 @@ void RenderVTTCue::placeBoxInDefaultPosition(LayoutUnit position, bool& switched
     // 8. Move all boxes in boxes ...
     if (m_cue->getWritingDirection() == VTTCue::Horizontal) {
         // Horizontal: ... down by the distance given by position
-        setY(y() + position);
+        setY(location().y() + position);
     } else {
         // Vertical: ... right by the distance given by position
-        setX(x() + position);
+        setX(location().x() + position);
     }
 
     // 9. Default: Remember the position of all the boxes in boxes as their
@@ -149,8 +149,8 @@ bool RenderVTTCue::isOverlapping() const
 
 bool RenderVTTCue::shouldSwitchDirection(InlineFlowBox* firstLineBox, LayoutUnit step) const
 {
-    LayoutUnit top = y();
-    LayoutUnit left = x();
+    LayoutUnit top = location().y();
+    LayoutUnit left = location().x();
     LayoutUnit bottom = top + firstLineBox->height();
     LayoutUnit right = left + firstLineBox->width();
 
@@ -181,13 +181,13 @@ void RenderVTTCue::moveBoxesByStep(LayoutUnit step)
     // given by step. (If step is negative, then this will actually
     // result in an upwards movement of the boxes in absolute terms.)
     if (m_cue->getWritingDirection() == VTTCue::Horizontal)
-        setY(y() + step);
+        setY(location().y() + step);
 
     // 13. Vertical: Move all the boxes in boxes right by the distance
     // given by step. (If step is negative, then this will actually
     // result in a leftwards movement of the boxes in absolute terms.)
     else
-        setX(x() + step);
+        setX(location().x() + step);
 }
 
 bool RenderVTTCue::switchDirection(bool& switched, LayoutUnit& step)
@@ -256,7 +256,7 @@ void RenderVTTCue::repositionCueSnapToLinesSet()
             adjustment = bottomOverflow;
 
         if (adjustment)
-            setY(y() + adjustment);
+            setY(location().y() + adjustment);
     }
 }
 

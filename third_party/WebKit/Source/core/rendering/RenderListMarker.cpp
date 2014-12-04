@@ -1628,7 +1628,7 @@ LayoutRect RenderListMarker::selectionRectForPaintInvalidation(const RenderLayer
         return LayoutRect();
 
     RootInlineBox& root = inlineBoxWrapper()->root();
-    LayoutRect rect(0, root.selectionTop() - y(), width(), root.selectionHeight());
+    LayoutRect rect(0, root.selectionTop() - location().y(), width(), root.selectionHeight());
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
     // FIXME: groupedMapping() leaks the squashing abstraction.
     if (paintInvalidationContainer->layer()->groupedMapping())

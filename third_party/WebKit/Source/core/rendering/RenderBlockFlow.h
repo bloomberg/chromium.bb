@@ -330,9 +330,10 @@ public:
     struct FloatWithRect {
         FloatWithRect(RenderBox* f)
             : object(f)
-            , rect(LayoutRect(f->x() - f->marginLeft(), f->y() - f->marginTop(), f->width() + f->marginWidth(), f->height() + f->marginHeight()))
+            , rect(f->frameRect())
             , everHadLayout(f->everHadLayout())
         {
+            rect.expand(f->marginBox());
         }
 
         RenderBox* object;

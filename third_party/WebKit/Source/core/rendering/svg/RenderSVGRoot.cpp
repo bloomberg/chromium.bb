@@ -287,10 +287,10 @@ const AffineTransform& RenderSVGRoot::localToParentTransform() const
 {
     // Slightly optimized version of m_localToParentTransform = AffineTransform::translation(x(), y()) * m_localToBorderBoxTransform;
     m_localToParentTransform = m_localToBorderBoxTransform;
-    if (x())
-        m_localToParentTransform.setE(m_localToParentTransform.e() + roundToInt(x()));
-    if (y())
-        m_localToParentTransform.setF(m_localToParentTransform.f() + roundToInt(y()));
+    if (location().x())
+        m_localToParentTransform.setE(m_localToParentTransform.e() + roundToInt(location().x()));
+    if (location().y())
+        m_localToParentTransform.setF(m_localToParentTransform.f() + roundToInt(location().y()));
     return m_localToParentTransform;
 }
 

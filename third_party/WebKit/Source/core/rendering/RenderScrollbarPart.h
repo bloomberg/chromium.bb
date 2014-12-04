@@ -46,6 +46,7 @@ public:
     virtual void layout() override;
 
     // Scrollbar parts needs to be rendered at device pixel boundaries.
+    virtual LayoutBoxExtent marginBox() const override { ASSERT(isIntegerValue(m_marginBox.top())); return m_marginBox; }
     virtual LayoutUnit marginTop() const override { ASSERT(isIntegerValue(m_marginBox.top())); return m_marginBox.top(); }
     virtual LayoutUnit marginBottom() const override { ASSERT(isIntegerValue(m_marginBox.bottom())); return m_marginBox.bottom(); }
     virtual LayoutUnit marginLeft() const override { ASSERT(isIntegerValue(m_marginBox.left())); return m_marginBox.left(); }

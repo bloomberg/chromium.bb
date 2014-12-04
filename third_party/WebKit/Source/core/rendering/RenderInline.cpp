@@ -726,6 +726,11 @@ static LayoutUnit computeMargin(const RenderInline* renderer, const Length& marg
     return 0;
 }
 
+LayoutBoxExtent RenderInline::marginBox() const
+{
+    return LayoutBoxExtent(marginTop(), marginRight(), marginBottom(), marginLeft());
+}
+
 LayoutUnit RenderInline::marginLeft() const
 {
     return computeMargin(this, style()->marginLeft());

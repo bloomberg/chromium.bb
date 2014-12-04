@@ -28,8 +28,8 @@ void BlockFlowPainter::paintFloats(const PaintInfo& paintInfo, const LayoutPoint
             // FIXME: LayoutPoint version of xPositionForFloatIncludingMargin would make this much cleaner.
             LayoutPoint childPoint = m_renderBlockFlow.flipFloatForWritingModeForChild(
                 floatingObject, LayoutPoint(paintOffset.x()
-                + m_renderBlockFlow.xPositionForFloatIncludingMargin(floatingObject) - floatingObject->renderer()->x(), paintOffset.y()
-                + m_renderBlockFlow.yPositionForFloatIncludingMargin(floatingObject) - floatingObject->renderer()->y()));
+                + m_renderBlockFlow.xPositionForFloatIncludingMargin(floatingObject) - floatingObject->renderer()->location().x(), paintOffset.y()
+                + m_renderBlockFlow.yPositionForFloatIncludingMargin(floatingObject) - floatingObject->renderer()->location().y()));
             floatingObject->renderer()->paint(currentPaintInfo, childPoint);
             if (!preservePhase) {
                 currentPaintInfo.phase = PaintPhaseChildBlockBackgrounds;

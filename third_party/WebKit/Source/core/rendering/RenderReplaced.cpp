@@ -408,8 +408,8 @@ PositionWithAffinity RenderReplaced::positionForPoint(const LayoutPoint& point)
     LayoutUnit top = rootBox ? rootBox->selectionTop() : logicalTop();
     LayoutUnit bottom = rootBox ? rootBox->selectionBottom() : logicalBottom();
 
-    LayoutUnit blockDirectionPosition = isHorizontalWritingMode() ? point.y() + y() : point.x() + x();
-    LayoutUnit lineDirectionPosition = isHorizontalWritingMode() ? point.x() + x() : point.y() + y();
+    LayoutUnit blockDirectionPosition = isHorizontalWritingMode() ? point.y() + location().y() : point.x() + location().x();
+    LayoutUnit lineDirectionPosition = isHorizontalWritingMode() ? point.x() + location().x() : point.y() + location().y();
 
     if (blockDirectionPosition < top)
         return createPositionWithAffinity(caretMinOffset(), DOWNSTREAM); // coordinates are above

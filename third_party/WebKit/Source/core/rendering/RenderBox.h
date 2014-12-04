@@ -89,8 +89,6 @@ public:
     RenderBox* firstChildBox() const;
     RenderBox* lastChildBox() const;
 
-    LayoutUnit x() const { return m_frameRect.x(); }
-    LayoutUnit y() const { return m_frameRect.y(); }
     LayoutUnit width() const { return m_frameRect.width(); }
     LayoutUnit height() const { return m_frameRect.height(); }
 
@@ -102,9 +100,9 @@ public:
     void setWidth(LayoutUnit width) { m_frameRect.setWidth(width); }
     void setHeight(LayoutUnit height) { m_frameRect.setHeight(height); }
 
-    LayoutUnit logicalLeft() const { return style()->isHorizontalWritingMode() ? x() : y(); }
+    LayoutUnit logicalLeft() const { return style()->isHorizontalWritingMode() ? m_frameRect.x() : m_frameRect.y(); }
     LayoutUnit logicalRight() const { return logicalLeft() + logicalWidth(); }
-    LayoutUnit logicalTop() const { return style()->isHorizontalWritingMode() ? y() : x(); }
+    LayoutUnit logicalTop() const { return style()->isHorizontalWritingMode() ? m_frameRect.y() : m_frameRect.x(); }
     LayoutUnit logicalBottom() const { return logicalTop() + logicalHeight(); }
     LayoutUnit logicalWidth() const { return style()->isHorizontalWritingMode() ? width() : height(); }
     LayoutUnit logicalHeight() const { return style()->isHorizontalWritingMode() ? height() : width(); }
@@ -153,7 +151,7 @@ public:
     }
 
     LayoutPoint location() const { return m_frameRect.location(); }
-    LayoutSize locationOffset() const { return LayoutSize(x(), y()); }
+    LayoutSize locationOffset() const { return LayoutSize(m_frameRect.x(), m_frameRect.y()); }
     LayoutSize size() const { return m_frameRect.size(); }
     IntSize pixelSnappedSize() const { return m_frameRect.pixelSnappedSize(); }
 
@@ -225,6 +223,7 @@ public:
 
     LayoutUnit contentWidth() const { return clientWidth() - paddingLeft() - paddingRight(); }
     LayoutUnit contentHeight() const { return clientHeight() - paddingTop() - paddingBottom(); }
+    LayoutSize contentSize() const { return LayoutSize(contentWidth(), contentHeight()); }
     LayoutUnit contentLogicalWidth() const { return style()->isHorizontalWritingMode() ? contentWidth() : contentHeight(); }
     LayoutUnit contentLogicalHeight() const { return style()->isHorizontalWritingMode() ? contentHeight() : contentWidth(); }
 
@@ -268,6 +267,7 @@ public:
     void scrollByRecursively(const DoubleSize& delta, ScrollOffsetClamping = ScrollOffsetUnclamped);
     void scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
 
+    virtual LayoutBoxExtent marginBox() const override { return m_marginBox; }
     virtual LayoutUnit marginTop() const override { return m_marginBox.top(); }
     virtual LayoutUnit marginBottom() const override { return m_marginBox.bottom(); }
     virtual LayoutUnit marginLeft() const override { return m_marginBox.left(); }
