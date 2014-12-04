@@ -1048,8 +1048,12 @@ void PictureLayerImpl::RecalculateRasterScales() {
     if (maximum_scale) {
       gfx::Size bounds_at_maximum_scale = gfx::ToCeiledSize(
           gfx::ScaleSize(raster_source_->GetSize(), maximum_scale));
-      if (bounds_at_maximum_scale.GetArea() <=
-          layer_tree_impl()->device_viewport_size().GetArea())
+      int64 maximum_area = static_cast<int64>(bounds_at_maximum_scale.width()) *
+                           static_cast<int64>(bounds_at_maximum_scale.height());
+      gfx::Size viewport = layer_tree_impl()->device_viewport_size();
+      int64 viewport_area = static_cast<int64>(viewport.width()) *
+                            static_cast<int64>(viewport.height());
+      if (maximum_area <= viewport_area)
         can_raster_at_maximum_scale = true;
     }
     // Use the computed scales for the raster scale directly, do not try to use
