@@ -991,9 +991,6 @@ void InspectorDebuggerAgent::pause(ErrorString*)
         return;
     clearBreakDetails();
     m_javaScriptPauseScheduled = true;
-    m_scheduledDebuggerStep = NoStep;
-    m_skippedStepFrameCount = 0;
-    m_steppingFromFramework = false;
     scriptDebugServer().setPauseOnNextStatement(true);
 }
 
@@ -1500,13 +1497,15 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(ScriptSta
     ScriptDebugListener::SkipPauseRequest result;
     if (callFrames.isEmpty())
         result = ScriptDebugListener::Continue; // Skip pauses inside V8 internal scripts and on syntax errors.
+    else if (m_javaScriptPauseScheduled)
+        result = ScriptDebugListener::NoSkip; // Don't skip explicit pause requests from front-end.
     else if (m_skipAllPauses)
         result = ScriptDebugListener::Continue;
     else if (!hitBreakpoints.isEmpty())
         result = ScriptDebugListener::NoSkip; // Don't skip explicit breakpoints even if set in frameworks.
     else if (!exception.isEmpty())
         result = shouldSkipExceptionPause();
-    else if (m_scheduledDebuggerStep != NoStep || m_javaScriptPauseScheduled || m_pausingOnNativeEvent)
+    else if (m_scheduledDebuggerStep != NoStep || m_pausingOnNativeEvent)
         result = shouldSkipStepPause();
     else
         result = ScriptDebugListener::NoSkip;
