@@ -416,7 +416,7 @@ void CompositorImpl::SetVisible(bool visible) {
       current_composite_task_.reset();
     }
   } else if (!host_) {
-    DCHECK(!WillComposite());
+    DCHECK(!WillCompositeThisFrame());
     needs_composite_ = false;
     defer_composite_for_gpu_channel_ = false;
     pending_swapbuffers_ = 0;
