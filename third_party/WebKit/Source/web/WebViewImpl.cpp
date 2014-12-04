@@ -535,17 +535,17 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
     }
 
     // Dispatch the contextmenu event regardless of if the click was swallowed.
-#if OS(WIN)
-    // On Windows, we handle it on mouse up, not down.
-#elif OS(MACOSX)
-    if (event.button == WebMouseEvent::ButtonRight
-        || (event.button == WebMouseEvent::ButtonLeft
-            && event.modifiers & WebMouseEvent::ControlKey))
-        mouseContextMenu(event);
+    if (!page()->settings().showContextMenuOnMouseUp()) {
+#if OS(MACOSX)
+        if (event.button == WebMouseEvent::ButtonRight
+            || (event.button == WebMouseEvent::ButtonLeft
+                && event.modifiers & WebMouseEvent::ControlKey))
+            mouseContextMenu(event);
 #else
-    if (event.button == WebMouseEvent::ButtonRight)
-        mouseContextMenu(event);
+        if (event.button == WebMouseEvent::ButtonRight)
+            mouseContextMenu(event);
 #endif
+    }
 }
 
 void WebViewImpl::mouseContextMenu(const WebMouseEvent& event)
@@ -585,12 +585,12 @@ void WebViewImpl::handleMouseUp(LocalFrame& mainFrame, const WebMouseEvent& even
 {
     PageWidgetEventHandler::handleMouseUp(mainFrame, event);
 
-#if OS(WIN)
-    // Dispatch the contextmenu event regardless of if the click was swallowed.
-    // On Mac/Linux, we handle it on mouse down, not up.
-    if (event.button == WebMouseEvent::ButtonRight)
-        mouseContextMenu(event);
-#endif
+    if (page()->settings().showContextMenuOnMouseUp()) {
+        // Dispatch the contextmenu event regardless of if the click was swallowed.
+        // On Mac/Linux, we handle it on mouse down, not up.
+        if (event.button == WebMouseEvent::ButtonRight)
+            mouseContextMenu(event);
+    }
 }
 
 bool WebViewImpl::handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEvent& event)

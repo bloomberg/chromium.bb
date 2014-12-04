@@ -2829,11 +2829,10 @@ bool EventHandler::sendContextMenuEventForKey()
 
 bool EventHandler::sendContextMenuEventForGesture(const GestureEventWithHitTestResults& targetedEvent)
 {
-#if OS(WIN)
-    PlatformEvent::Type eventType = PlatformEvent::MouseReleased;
-#else
     PlatformEvent::Type eventType = PlatformEvent::MousePressed;
-#endif
+
+    if (m_frame->settings()->showContextMenuOnMouseUp())
+        eventType = PlatformEvent::MouseReleased;
 
     PlatformMouseEvent mouseEvent(targetedEvent.event().position(), targetedEvent.event().globalPosition(), RightButton, eventType, 1, false, false, false, false, PlatformMouseEvent::FromTouch, WTF::currentTime());
     // To simulate right-click behavior, we send a right mouse down and then
