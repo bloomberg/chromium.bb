@@ -1396,7 +1396,7 @@ TEST_PPAPI_NACL_SUBTESTS(MAYBE_Compositor1, RUN_COMPOSITOR_SUBTESTS_1)
 #else
 #define MAYBE_MediaStreamAudioTrack MediaStreamAudioTrack
 #endif
-TEST_PPAPI_NACL(MediaStreamAudioTrack)
+TEST_PPAPI_NACL(MAYBE_MediaStreamAudioTrack)
 
 TEST_PPAPI_NACL(MediaStreamVideoTrack)
 
