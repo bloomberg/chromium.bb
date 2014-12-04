@@ -995,20 +995,20 @@ class DeviceUtilsForceStopTest(DeviceUtilsNewImplTest):
       self.device.ForceStop('this.is.a.test.package')
 
 
-class DeviceUtilsClearApplicationStateTest(DeviceUtilsOldImplTest):
+class DeviceUtilsClearApplicationStateTest(DeviceUtilsNewImplTest):
+
+  def testClearApplicationState_packageDoesntExist(self):
+    with self.assertCall(
+        self.call.device.GetApplicationPath('this.package.does.not.exist'),
+        None):
+      self.device.ClearApplicationState('this.package.does.not.exist')
 
   def testClearApplicationState_packageExists(self):
     with self.assertCalls(
-        "adb -s 0123456789abcdef shell 'pm path this.package.does.not.exist'",
-        ''):
-      self.device.ClearApplicationState('this.package.does.not.exist')
-
-  def testClearApplicationState_packageDoesntExist(self):
-    with self.assertCallsSequence([
-        ("adb -s 0123456789abcdef shell 'pm path this.package.exists'",
-         'package:/data/app/this.package.exists.apk'),
-        ("adb -s 0123456789abcdef shell 'pm clear this.package.exists'",
-         'Success\r\n')]):
+        (self.call.device.GetApplicationPath('this.package.exists'),
+         '/data/app/this.package.exists.apk'),
+        (self.call.adb.Shell('pm clear this.package.exists'),
+         'Success\r\n')):
       self.device.ClearApplicationState('this.package.exists')
 
 
