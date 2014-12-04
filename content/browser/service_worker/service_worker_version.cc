@@ -45,16 +45,15 @@ void RunCallbacks(ServiceWorkerVersion* version,
   CallbackArray callbacks;
   callbacks.swap(*callbacks_ptr);
   scoped_refptr<ServiceWorkerVersion> protect(version);
-  for (typename CallbackArray::const_iterator i = callbacks.begin();
-       i != callbacks.end(); ++i)
-    (*i).Run(arg);
+  for (const auto& callback : callbacks)
+    callback.Run(arg);
 }
 
-template <typename IDMAP, typename Method, typename Params>
-void RunIDMapCallbacks(IDMAP* callbacks, Method method, const Params& params) {
+template <typename IDMAP, typename... Params>
+void RunIDMapCallbacks(IDMAP* callbacks, const Params&... params) {
   typename IDMAP::iterator iter(callbacks);
   while (!iter.IsAtEnd()) {
-    DispatchToMethod(iter.GetCurrentValue(), method, params);
+    iter.GetCurrentValue()->Run(params...);
     iter.Advance();
   }
   callbacks->Clear();
@@ -145,10 +144,8 @@ void ServiceWorkerVersion::SetStatus(Status status) {
 
   std::vector<base::Closure> callbacks;
   callbacks.swap(status_change_callbacks_);
-  for (std::vector<base::Closure>::const_iterator i = callbacks.begin();
-       i != callbacks.end(); ++i) {
-    (*i).Run();
-  }
+  for (const auto& callback : callbacks)
+    callback.Run();
 
   FOR_EACH_OBSERVER(Listener, listeners_, OnVersionStateChanged(this));
 }
@@ -566,25 +563,19 @@ void ServiceWorkerVersion::OnStopped(
   // callbacks for events).
   // TODO(kinuko): Consider if we want to add queue+resend mechanism here.
   RunIDMapCallbacks(&activate_callbacks_,
-                    &StatusCallback::Run,
-                    MakeTuple(SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED));
+                    SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED);
   RunIDMapCallbacks(&install_callbacks_,
-                    &StatusCallback::Run,
-                    MakeTuple(SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED));
+                    SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED);
   RunIDMapCallbacks(&fetch_callbacks_,
-                    &FetchCallback::Run,
-                    MakeTuple(SERVICE_WORKER_ERROR_FAILED,
-                              SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
-                              ServiceWorkerResponse()));
+                    SERVICE_WORKER_ERROR_FAILED,
+                    SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
+                    ServiceWorkerResponse());
   RunIDMapCallbacks(&sync_callbacks_,
-                    &StatusCallback::Run,
-                    MakeTuple(SERVICE_WORKER_ERROR_FAILED));
+                    SERVICE_WORKER_ERROR_FAILED);
   RunIDMapCallbacks(&push_callbacks_,
-                    &StatusCallback::Run,
-                    MakeTuple(SERVICE_WORKER_ERROR_FAILED));
+                    SERVICE_WORKER_ERROR_FAILED);
   RunIDMapCallbacks(&geofencing_callbacks_,
-                    &StatusCallback::Run,
-                    MakeTuple(SERVICE_WORKER_ERROR_FAILED));
+                    SERVICE_WORKER_ERROR_FAILED);
 
   FOR_EACH_OBSERVER(Listener, listeners_, OnWorkerStopped(this));
 
