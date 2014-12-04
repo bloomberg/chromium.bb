@@ -58,7 +58,7 @@ class POLICY_EXPORT AsyncPolicyProvider : public ConfigurationPolicyProvider,
 
   // The |loader_| that does the platform-specific policy loading. It lives
   // on the background thread but is owned by |this|.
-  AsyncPolicyLoader* loader_;
+  scoped_ptr<AsyncPolicyLoader> loader_;
 
   // Callback used to synchronize RefreshPolicies() calls with the background
   // thread. See the implementation for the details.

@@ -13,20 +13,21 @@ namespace policy {
 ConfigurationPolicyProvider::Observer::~Observer() {}
 
 ConfigurationPolicyProvider::ConfigurationPolicyProvider()
-    : did_shutdown_(false),
+    : initialized_(false),
       schema_registry_(NULL) {}
 
 ConfigurationPolicyProvider::~ConfigurationPolicyProvider() {
-  DCHECK(did_shutdown_);
+  DCHECK(!initialized_);
 }
 
 void ConfigurationPolicyProvider::Init(SchemaRegistry* registry) {
   schema_registry_ = registry;
   schema_registry_->AddObserver(this);
+  initialized_ = true;
 }
 
 void ConfigurationPolicyProvider::Shutdown() {
-  did_shutdown_ = true;
+  initialized_ = false;
   if (schema_registry_) {
     // Unit tests don't initialize the BrowserPolicyConnector but call
     // shutdown; handle that.

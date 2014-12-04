@@ -19,7 +19,7 @@ namespace policy {
 AsyncPolicyProvider::AsyncPolicyProvider(
     SchemaRegistry* registry,
     scoped_ptr<AsyncPolicyLoader> loader)
-    : loader_(loader.release()),
+    : loader_(loader.Pass()),
       weak_factory_(this) {
   // Make an immediate synchronous load on startup.
   OnLoaderReloaded(loader_->InitialLoad(registry->schema_map()));
@@ -27,8 +27,6 @@ AsyncPolicyProvider::AsyncPolicyProvider(
 
 AsyncPolicyProvider::~AsyncPolicyProvider() {
   DCHECK(CalledOnValidThread());
-  // Shutdown() must have been called before.
-  DCHECK(!loader_);
 }
 
 void AsyncPolicyProvider::Init(SchemaRegistry* registry) {
@@ -45,7 +43,7 @@ void AsyncPolicyProvider::Init(SchemaRegistry* registry) {
   bool post = loader_->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&AsyncPolicyLoader::Init,
-                 base::Unretained(loader_),
+                 base::Unretained(loader_.get()),
                  callback));
   DCHECK(post) << "AsyncPolicyProvider::Init() called with threads not running";
 }
@@ -59,11 +57,11 @@ void AsyncPolicyProvider::Shutdown() {
   // is only posted from here. The |loader_| posts back to the
   // AsyncPolicyProvider through the |update_callback_|, which has a WeakPtr to
   // |this|.
-  if (!loader_->task_runner()->DeleteSoon(FROM_HERE, loader_)) {
-    // The background thread doesn't exist; this only happens on unit tests.
-    delete loader_;
-  }
-  loader_ = NULL;
+  // If threads are spinning, delete the loader on the thread it lives on. If
+  // there are no threads, kill it immediately.
+  AsyncPolicyLoader* loader_to_delete = loader_.release();
+  if (!loader_to_delete->task_runner()->DeleteSoon(FROM_HERE, loader_to_delete))
+    delete loader_to_delete;
   ConfigurationPolicyProvider::Shutdown();
 }
 
@@ -108,7 +106,7 @@ void AsyncPolicyProvider::ReloadAfterRefreshSync() {
   loader_->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&AsyncPolicyLoader::RefreshPolicies,
-                 base::Unretained(loader_),
+                 base::Unretained(loader_.get()),
                  schema_map()));
 }
 
