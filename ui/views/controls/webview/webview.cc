@@ -204,9 +204,16 @@ bool WebView::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
 }
 
 bool WebView::OnMousePressed(const ui::MouseEvent& event) {
+  // A left-click within WebView is a request to focus.  The area within the
+  // native view child is excluded since it will be handling mouse pressed
+  // events itself (http://crbug.com/436192).
   if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location())) {
-    RequestFocus();
-    return true;
+    gfx::Point location_in_holder = event.location();
+    ConvertPointToTarget(this, holder_, &location_in_holder);
+    if (!holder_->HitTestPoint(location_in_holder)) {
+      RequestFocus();
+      return true;
+    }
   }
   return View::OnMousePressed(event);
 }

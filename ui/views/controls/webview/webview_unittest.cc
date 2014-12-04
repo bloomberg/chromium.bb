@@ -419,18 +419,22 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_ClickToFocus) {
   EXPECT_FALSE(holder()->HasFocus());
   EXPECT_TRUE(something_to_focus->HasFocus());
 
-  // Send a mouse press event within the bounds of the holder, and confirm the
-  // WebView took focus.
+  // Send a mouse press event within the bounds of the holder and expect no
+  // focus change.  The reason is that WebView is not supposed to handle mouse
+  // events within the bounds of the holder, and it would be up to the
+  // WebContents native view to grab the focus instead.  In this test
+  // environment, the WebContents native view doesn't include the implementation
+  // needed to grab focus, so no focus change will occur.
   const ui::MouseEvent click_inside_holder(ui::ET_MOUSE_PRESSED,
                                            web_view()->bounds().CenterPoint(),
                                            gfx::Point(),  // Immaterial.
                                            ui::EF_LEFT_MOUSE_BUTTON,
                                            0);
-  EXPECT_TRUE(static_cast<views::View*>(web_view())->
+  EXPECT_FALSE(static_cast<views::View*>(web_view())->
                   OnMousePressed(click_inside_holder));
-  EXPECT_TRUE(web_view()->HasFocus());
+  EXPECT_FALSE(web_view()->HasFocus());
   EXPECT_FALSE(holder()->HasFocus());
-  EXPECT_FALSE(something_to_focus->HasFocus());
+  EXPECT_TRUE(something_to_focus->HasFocus());
 }
 
 }  // namespace views
