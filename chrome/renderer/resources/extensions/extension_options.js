@@ -62,6 +62,11 @@ ExtensionOptionsImpl.setupElement = function(proto) {
   GuestViewContainer.forwardApiMethods(proto, apiMethods);
 }
 
+ExtensionOptionsImpl.prototype.onElementAttached = function() {
+  this.parseExtensionAttribute();
+  this.createGuest();
+}
+
 ExtensionOptionsImpl.prototype.onElementDetached = function() {
   this.guest.destroy();
 };
@@ -87,12 +92,8 @@ ExtensionOptionsImpl.prototype.attachWindow = function() {
   return true;
 };
 
-ExtensionOptionsImpl.prototype.createGuestIfNecessary = function() {
+ExtensionOptionsImpl.prototype.createGuest = function() {
   if (!this.elementAttached) {
-    return;
-  }
-  if (this.guest.getId() != 0) {
-    this.attachWindow();
     return;
   }
   var params = {
@@ -127,7 +128,7 @@ ExtensionOptionsImpl.prototype.handleAttributeMutation =
   if (oldValue === newValue)
     return;
 
-  if (name == 'extension' && !oldValue && newValue) {
+  if (name == 'extension' && !oldValue && !!newValue) {
     this.extensionId = newValue;
     // If the browser plugin is not ready then don't create the guest until
     // it is ready (in handleBrowserPluginAttributeMutation).
@@ -136,7 +137,7 @@ ExtensionOptionsImpl.prototype.handleAttributeMutation =
 
     // If a guest view does not exist then create one.
     if (!this.guest.getId()) {
-      this.createGuestIfNecessary();
+      this.createGuest();
       return;
     }
     // TODO(ericzeng): Implement navigation to another guest view if we want
@@ -165,11 +166,12 @@ ExtensionOptionsImpl.prototype.handleAttributeMutation =
 ExtensionOptionsImpl.prototype.handleBrowserPluginAttributeMutation =
     function(name, oldValue, newValue) {
   if (name == 'internalinstanceid' && !oldValue && !!newValue) {
-    this.elementAttached = true;
     this.internalInstanceId = parseInt(newValue);
     this.browserPluginElement.removeAttribute('internalinstanceid');
-    if (this.extensionId)
-      this.createGuestIfNecessary();
+    if (!this.guest.getId() || !this.extensionId) {
+      return;
+    }
+    this.attachWindow();
   }
 };
 
@@ -316,4 +318,4 @@ ExtensionOptionsImpl.prototype.resumeDeferredAutoSize = function() {
   }
 };
 
-GuestViewContainer.listenForReadyStateChange(ExtensionOptionsImpl);
+GuestViewContainer.registerElement(ExtensionOptionsImpl);

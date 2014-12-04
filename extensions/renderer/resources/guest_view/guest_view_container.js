@@ -31,7 +31,7 @@ GuestViewContainer.forwardApiMethods = function(proto, apiMethods) {
 
 // Registers the browserplugin and guestview as custom elements once the
 // document has loaded.
-GuestViewContainer.listenForReadyStateChange =
+GuestViewContainer.registerElement =
     function(guestViewContainerType) {
   var useCapture = true;
   window.addEventListener('readystatechange', function listener(event) {

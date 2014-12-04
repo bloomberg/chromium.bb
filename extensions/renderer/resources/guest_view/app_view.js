@@ -109,4 +109,4 @@ AppViewImpl.prototype.handleBrowserPluginAttributeMutation =
   }
 };
 
-GuestViewContainer.listenForReadyStateChange(AppViewImpl);
+GuestViewContainer.registerElement(AppViewImpl);

@@ -336,7 +336,7 @@ WebViewImpl.prototype.maybeGetChromeWebViewEvents = function() {};
 WebViewImpl.maybeGetExperimentalApiMethods = function() { return []; };
 WebViewImpl.prototype.setupExperimentalContextMenus = function() {};
 
-GuestViewContainer.listenForReadyStateChange(WebViewImpl);
+GuestViewContainer.registerElement(WebViewImpl);
 
 // Exports.
 exports.WebViewImpl = WebViewImpl;
