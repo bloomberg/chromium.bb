@@ -192,9 +192,10 @@ IN_PROC_BROWSER_TEST_F(AppWindowInterceptAllKeysTest,
 
 // Test no effect when called without permissions
 // Currently this is implemented only for Windows.
+// Disabled test http://crbug.com/438209
 #if defined(OS_WIN)
 #define MAYBE_NoopCallingEnableWithoutPermission \
-  NoopCallingEnableWithoutPermission
+    DISABLED_NoopCallingDisableInterceptAllKeys
 #else
 #define MAYBE_NoopCallingEnableWithoutPermission \
   DISABLED_NoopCallingEnableWithoutPermission
