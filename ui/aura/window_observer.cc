@@ -13,8 +13,6 @@ WindowObserver::WindowObserver() : observing_(0) {
 }
 
 WindowObserver::~WindowObserver() {
-  // TODO(flackr): Remove this check and observing_ counter when the cause of
-  // http://crbug.com/365364 is discovered.
   CHECK_EQ(0, observing_);
 }
 
