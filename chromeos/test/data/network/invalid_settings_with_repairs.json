@@ -158,6 +158,37 @@
         },
         "ConnectionState": "NotConnected"
     },
+    "network-wifi-hexssid-invalid-length": {
+        "GUID": "guid",
+        "Type": "WiFi",
+        "Name": "name",
+        "WiFi": {
+            "Passphrase": "some passphrase",
+            "HexSSID": "0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEFAB",
+            "Security": "WPA-PSK"
+        }
+    },
+    "network-wifi-invalid-hexssid": {
+        "GUID": "guid",
+        "Type": "WiFi",
+        "Name": "name",
+        "WiFi": {
+            "Passphrase": "some passphrase",
+            "HexSSID": "invalidhex",
+            "Security": "WPA-PSK"
+        }
+    },
+    "network-wifi-ssid-and-hexssid-inconsistent": {
+        "GUID": "guid",
+        "Type": "WiFi",
+        "Name": "name",
+        "WiFi": {
+            "Passphrase": "some passphrase",
+            "SSID": "ssid",
+            "HexSSID": "FFFFFF",
+            "Security": "WPA-PSK"
+        }
+    },
     "network-unknown-value": {
         "GUID": "guid",
         "Type": "LTE",

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "components/onc/onc_constants.h"
 
 namespace chromeos {
@@ -232,6 +233,7 @@ void Normalizer::NormalizeWiFi(base::DictionaryValue* wifi) {
   RemoveEntryUnless(wifi, kEAP, security == kWEP_8021X || security == kWPA_EAP);
   RemoveEntryUnless(wifi, kPassphrase,
                     security == kWEP_PSK || security == kWPA_PSK);
+  FillInHexSSIDField(wifi);
 }
 
 }  // namespace onc

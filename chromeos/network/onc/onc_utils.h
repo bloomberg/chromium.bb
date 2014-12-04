@@ -83,6 +83,17 @@ CHROMEOS_EXPORT void ExpandStringsInNetworks(
     const StringSubstitution& substitution,
     base::ListValue* network_configs);
 
+// Fills in all missing HexSSID fields that are mentioned in the ONC
+// specification. The object of |onc_object| is modified in place.
+CHROMEOS_EXPORT void FillInHexSSIDFieldsInOncObject(
+    const OncValueSignature& signature,
+    base::DictionaryValue* onc_object);
+
+// If the SSID field is set, but HexSSID is not, converts the contents of the
+// SSID field to UTF-8 encoding, creates the hex representation and assigns the
+// result to HexSSID.
+CHROMEOS_EXPORT void FillInHexSSIDField(base::DictionaryValue* wifi_fields);
+
 // Creates a copy of |onc_object| with all values of sensitive fields replaced
 // by |mask|. To find sensitive fields, signature and field name are checked
 // with the function FieldIsCredential().

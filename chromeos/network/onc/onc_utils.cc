@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/network_event_log.h"
@@ -240,6 +241,39 @@ void ExpandStringsInNetworks(const StringSubstitution& substitution,
   }
 }
 
+void FillInHexSSIDFieldsInOncObject(const OncValueSignature& signature,
+                                    base::DictionaryValue* onc_object) {
+  if (&signature == &kWiFiSignature)
+    FillInHexSSIDField(onc_object);
+
+  // Recurse into nested objects.
+  for (base::DictionaryValue::Iterator it(*onc_object); !it.IsAtEnd();
+       it.Advance()) {
+    base::DictionaryValue* inner_object = nullptr;
+    if (!onc_object->GetDictionaryWithoutPathExpansion(it.key(), &inner_object))
+      continue;
+
+    const OncFieldSignature* field_signature =
+        GetFieldSignature(signature, it.key());
+    if (!field_signature)
+      continue;
+
+    FillInHexSSIDFieldsInOncObject(*field_signature->value_signature,
+                                   inner_object);
+  }
+}
+
+void FillInHexSSIDField(base::DictionaryValue* wifi_fields) {
+  if (!wifi_fields->HasKey(::onc::wifi::kHexSSID)) {
+    std::string ssid_string;
+    wifi_fields->GetStringWithoutPathExpansion(::onc::wifi::kSSID,
+                                               &ssid_string);
+    wifi_fields->SetStringWithoutPathExpansion(
+        ::onc::wifi::kHexSSID,
+        base::HexEncode(ssid_string.c_str(), ssid_string.size()));
+  }
+}
+
 namespace {
 
 class OncMaskValues : public Mapper {
@@ -397,6 +431,9 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
       &kToplevelConfigurationSignature,
       *toplevel_onc,
       &validation_result);
+
+  FillInHexSSIDFieldsInOncObject(kToplevelConfigurationSignature,
+                                 toplevel_onc.get());
 
   if (from_policy) {
     UMA_HISTOGRAM_BOOLEAN("Enterprise.ONC.PolicyValidation",

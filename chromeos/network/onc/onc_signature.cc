@@ -206,6 +206,7 @@ const OncFieldSignature wifi_fields[] = {
     { ::onc::wifi::kAllowGatewayARPPolling, &kBoolSignature},
     { ::onc::wifi::kAutoConnect, &kBoolSignature},
     { ::onc::wifi::kEAP, &kEAPSignature},
+    { ::onc::wifi::kHexSSID, &kStringSignature},
     { ::onc::wifi::kHiddenSSID, &kBoolSignature},
     { ::onc::wifi::kPassphrase, &kStringSignature},
     { ::onc::wifi::kSSID, &kStringSignature},

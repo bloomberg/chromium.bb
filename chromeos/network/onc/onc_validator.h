@@ -182,6 +182,8 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   bool FieldExistsAndIsEmpty(const base::DictionaryValue& object,
                              const std::string& field_name);
 
+  bool IsSSIDOrHexSSIDValid(const base::DictionaryValue& object);
+
   // Returns true if |key| is a key of |dict|. Otherwise, returns false and,
   // depending on |error_on_missing_field_|, logs a message and sets
   // |error_or_warning_found_|.

@@ -669,6 +669,21 @@
       EAP settings.
     </dd>
 
+    <dt class="field">HexSSID</dt>
+    <dd>
+      <span class="field_meta">
+        (optional if <span class="field">SSID</span> is set, if so defaults to
+        a hex representation of <span class="field">SSID</span>)
+        <span class="type">string</span>
+      </span>
+      Hex representation of the network's SSID. If the
+      <span class="field">SSID</span> field is set, but
+      <span class="field">HexSSID</span> is not, converts the contents of the
+      <span class="field">SSID</span> field to UTF-8 encoding,
+      creates the hex representation and assigns the result to
+      <span class="field">HexSSID</span>.
+    </dd>
+
     <dt class="field">HiddenSSID</dt>
     <dd>
       <span class="field_meta">
@@ -711,10 +726,12 @@
     <dt class="field">SSID</dt>
     <dd>
       <span class="field_meta">
-        (required)
+        (optional if <span class="field">HexSSID</span> is set)
         <span class="type">string</span>
       </span>
-      SSID of the network.
+      SSID of the network. This field can only used for unicode strings in the
+      UTF-8 encoding. For non-UTF-8 encodings the
+      <span class="field">HexSSID</span> field must be used.
     </dd>
 
     <dt class="field">SignalStrength</dt>
@@ -728,6 +745,14 @@
       be set to '0' or not present.
     </dd>
   </dl>
+  <span class="rule">
+    <span class="rule_id"></span>
+      At least one of the fields <span class="field">HexSSID</span> or
+      <span class="field">SSID</span> must be present. If both
+      <span class="field">HexSSID</span> and <span class="field">SSID</span>
+      are set, the values must be consistent.
+    </span>
+  </span>
 </section>
 
 <section>

@@ -32,6 +32,7 @@
 #include "chromeos/network/onc/onc_merger.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/onc/onc_validator.h"
 #include "chromeos/network/policy_util.h"
 #include "chromeos/network/shill_property_util.h"
@@ -288,6 +289,13 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
           &onc::kNetworkConfigurationSignature,
           *user_settings_copy,
           &validation_result);
+
+  // Fill in HexSSID field from contents of SSID field if not set already.
+  if (user_settings_copy) {
+    onc::FillInHexSSIDFieldsInOncObject(
+        onc::kNetworkConfigurationSignature, validated_user_settings.get());
+  }
+
 
   if (validation_result == onc::Validator::INVALID) {
     InvokeErrorCallback(service_path, error_callback, kInvalidUserSettings);
