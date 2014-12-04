@@ -13,7 +13,9 @@ source_set("system_thunks") {
     "system_thunks.cc",
   ]
   defines = [ "MOJO_SYSTEM_IMPLEMENTATION" ]
-  deps = [ "//mojo/public/c/system" ]
+  deps = [
+    "//mojo/public/c/system",
+  ]
 
   # The GYP target analogous to this one builds this code into a
   # static library.  When building for Android, both the GYP and GN
@@ -40,9 +42,7 @@ source_set("gles2_thunks") {
     "gles2_impl_chromium_sync_point_thunks.h",
   ]
 
-  defines = [
-    "MOJO_GLES2_IMPLEMENTATION",
-  ]
+  defines = [ "MOJO_GLES2_IMPLEMENTATION" ]
 
   configs += [ "//third_party/khronos:khronos_headers" ]
 

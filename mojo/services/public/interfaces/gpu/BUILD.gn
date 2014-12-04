@@ -6,10 +6,10 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("gpu") {
   sources = [
-   "command_buffer.mojom",
-   "gpu.mojom",
-   "gpu_capabilities.mojom",
-   "viewport_parameter_listener.mojom",
+    "command_buffer.mojom",
+    "gpu.mojom",
+    "gpu_capabilities.mojom",
+    "viewport_parameter_listener.mojom",
   ]
 
   deps = [

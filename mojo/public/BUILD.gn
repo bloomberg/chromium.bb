@@ -19,15 +19,11 @@ group("public") {
   ]
 
   if (is_linux) {
-    deps += [
-      "//mojo/public/python",
-    ]
+    deps += [ "//mojo/public/python" ]
   }
 
   if (mojo_use_dart) {
-    deps += [
-      "//mojo/public/dart",
-    ]
+    deps += [ "//mojo/public/dart" ]
   }
 
   if (is_android) {
@@ -52,5 +48,7 @@ group("sdk") {
 
 static_library("libmojo_sdk") {
   complete_static_lib = true
-  deps = [ ":sdk" ]
+  deps = [
+    ":sdk",
+  ]
 }

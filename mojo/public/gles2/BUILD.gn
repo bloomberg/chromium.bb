@@ -16,20 +16,30 @@
 
 group("for_shared_library") {
   public_configs = [ "//third_party/khronos:khronos_headers" ]
-  public_deps = [ "//mojo/public/c/gles2" ]
+  public_deps = [
+    "//mojo/public/c/gles2",
+  ]
 
   if (is_component_build) {
-    deps = [ "//mojo/gles2" ]
+    deps = [
+      "//mojo/gles2",
+    ]
   } else {
-    deps = [ "//mojo/public/platform/native:gles2_thunks" ]
+    deps = [
+      "//mojo/public/platform/native:gles2_thunks",
+    ]
   }
 }
 
 group("for_component") {
   public_configs = [ "//third_party/khronos:khronos_headers" ]
-  public_deps = [ "//mojo/public/c/gles2" ]
+  public_deps = [
+    "//mojo/public/c/gles2",
+  ]
 
   if (is_component_build) {
-    deps = [ "//mojo/gles2" ]
+    deps = [
+      "//mojo/gles2",
+    ]
   }
 }

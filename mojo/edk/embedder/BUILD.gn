@@ -16,6 +16,7 @@ source_set("embedder") {
     "embedder.h",
     "embedder_internal.h",
     "entrypoints.cc",
+
     # Test-only code:
     # TODO(vtl): It's a little unfortunate that these end up in the same
     # component as non-test-only code. In the static build, this code should
@@ -36,7 +37,9 @@ source_set("embedder") {
     "//mojo/public/cpp/system",
   ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+  ]
 }
 
 source_set("platform") {
@@ -75,7 +78,9 @@ source_set("platform") {
 
   configs += [ "//mojo/edk/system:system_config" ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+  ]
 }
 
 source_set("embedder_unittests") {

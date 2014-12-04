@@ -16,7 +16,9 @@ mojo_native_application("network") {
     "//mojo/services/public/interfaces/network",
   ]
 
-  sources = [ "network_service.cc" ]
+  sources = [
+    "network_service.cc",
+  ]
 }
 
 source_set("lib") {

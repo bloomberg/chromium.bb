@@ -19,7 +19,6 @@ mojom("surfaces") {
   ]
 }
 
-
 mojom("surface_id") {
   sources = [
     "surface_id.mojom",

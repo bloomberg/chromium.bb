@@ -17,9 +17,7 @@ component("geometry") {
     "//mojo/services/public/interfaces/geometry",
   ]
 
-  defines = [
-    "MOJO_GEOMETRY_IMPLEMENTATION",
-  ]
+  defines = [ "MOJO_GEOMETRY_IMPLEMENTATION" ]
 
   sources = [
     "geometry_type_converters.cc",

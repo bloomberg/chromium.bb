@@ -23,5 +23,7 @@ source_set("js_to_cpp_tests") {
 }
 
 mojom("js_to_cpp_bindings") {
-  sources = [ "js_to_cpp.mojom" ]
+  sources = [
+    "js_to_cpp.mojom",
+  ]
 }

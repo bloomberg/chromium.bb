@@ -33,7 +33,9 @@ source_set("run_all_unittests") {
     "//testing/gtest",
   ]
 
-  sources = [ "run_all_unittests.cc" ]
+  sources = [
+    "run_all_unittests.cc",
+  ]
 }
 
 # GYP version: mojo/edk/mojo_edk.gyp:mojo_run_all_perftests
@@ -47,9 +49,10 @@ source_set("run_all_perftests") {
     "//mojo/public/c/test_support",
   ]
 
-  sources = [ "run_all_perftests.cc" ]
+  sources = [
+    "run_all_perftests.cc",
+  ]
 }
-
 
 # GYP version: mojo/edk/mojo_edk.gyp:mojo_test_support_impl
 source_set("test_support_impl") {

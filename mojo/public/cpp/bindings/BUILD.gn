@@ -69,5 +69,7 @@ source_set("callback") {
     "lib/shared_ptr.h",
   ]
 
-  deps = [ "//mojo/public/cpp/system" ]
+  deps = [
+    "//mojo/public/cpp/system",
+  ]
 }

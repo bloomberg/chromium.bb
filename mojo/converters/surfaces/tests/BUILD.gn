@@ -23,5 +23,7 @@ test("mojo_surfaces_lib_unittests") {
     "//ui/gfx:test_support",
   ]
 
-  sources = [ "surface_unittest.cc" ]
+  sources = [
+    "surface_unittest.cc",
+  ]
 }

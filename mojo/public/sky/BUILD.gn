@@ -20,6 +20,6 @@ action_foreach("sky") {
     "--input",
     "{{source}}",
     "--output",
-    rebase_path(target_gen_dir, root_build_dir) + "/{{source_name_part}}.sky"
+    rebase_path(target_gen_dir, root_build_dir) + "/{{source_name_part}}.sky",
   ]
 }

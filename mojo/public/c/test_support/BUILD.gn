@@ -11,14 +11,15 @@ shared_library("test_support") {
   sources = [
     "test_support.h",
     "test_support_export.h",
+
     # TODO(vtl): Convert this to thunks http://crbug.com/386799
     "../../tests/test_support_private.cc",
     "../../tests/test_support_private.h",
   ]
 
   if (is_mac) {
-# TODO(GYP)
-#   # Make it a run-path dependent library.
-#   'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+    # TODO(GYP)
+    #   # Make it a run-path dependent library.
+    #   'DYLIB_INSTALL_NAME_BASE': '@loader_path',
   }
 }

@@ -130,6 +130,7 @@ test("mojo_system_unittests") {
     "run_all_unittests.cc",
     "shared_buffer_dispatcher_unittest.cc",
     "simple_dispatcher_unittest.cc",
+
     # TODO(vtl): Factor test_utils.* into their own source set.
     "test_utils.cc",
     "test_utils.h",
@@ -149,9 +150,7 @@ test("mojo_system_unittests") {
   ]
 
   if (is_android) {
-    deps += [
-      "//testing/android:native_test_native_code",
-    ]
+    deps += [ "//testing/android:native_test_native_code" ]
   }
 
   allow_circular_includes_from = [ "//mojo/edk/embedder:embedder_unittests" ]

@@ -17,7 +17,9 @@ test("js_unittests") {
     "//mojo/public/interfaces/bindings/tests:test_interfaces",
   ]
 
-  sources = [ "run_js_tests.cc" ]
+  sources = [
+    "run_js_tests.cc",
+  ]
 }
 
 test("js_integration_tests") {
@@ -34,6 +36,6 @@ test("js_integration_tests") {
   ]
 
   sources = [
-    "run_js_integration_tests.cc"
+    "run_js_integration_tests.cc",
   ]
 }

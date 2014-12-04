@@ -10,7 +10,11 @@ if (use_prebuilt_mojo_shell) {
     if (is_win) {
       filename += ".exe"
     }
-    sources = [ "prebuilt/$filename" ]
-    outputs = [ "$root_out_dir/$filename" ]
+    sources = [
+      "prebuilt/$filename",
+    ]
+    outputs = [
+      "$root_out_dir/$filename",
+    ]
   }
 }

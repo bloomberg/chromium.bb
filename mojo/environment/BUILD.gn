@@ -8,6 +8,7 @@ source_set("chromium") {
 
   sources = [
     "environment.cc",
+
     # TODO(vtl): This is kind of ugly. (See TODO in logging.h.)
     "../public/cpp/environment/logging.h",
     "../public/cpp/environment/lib/logging.cc",
@@ -32,9 +33,7 @@ component("chromium_impl") {
     "default_run_loop_impl.h",
   ]
 
-  defines = [
-    "MOJO_ENVIRONMENT_IMPL_IMPLEMENTATION",
-  ]
+  defines = [ "MOJO_ENVIRONMENT_IMPL_IMPLEMENTATION" ]
 
   deps = [
     "//base",

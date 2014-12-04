@@ -35,10 +35,12 @@ source_set("application") {
 # GYP version: mojo/public/mojo_public.gyp:mojo_application_standalone
 source_set("standalone") {
   sources = [
-    "lib/application_runner.cc"
+    "lib/application_runner.cc",
   ]
 
-  public_deps = [ ":application" ]
+  public_deps = [
+    ":application",
+  ]
 
   deps = [
     "//mojo/public/cpp/environment:standalone",
@@ -64,9 +66,13 @@ source_set("test_support") {
 
 source_set("test_support_standalone") {
   testonly = true
-  sources = [ "lib/application_test_main.cc" ]
+  sources = [
+    "lib/application_test_main.cc",
+  ]
 
-  public_deps = [ ":test_support" ]
+  public_deps = [
+    ":test_support",
+  ]
   deps = [
     ":application",
     "//mojo/public/cpp/environment:standalone",

@@ -32,17 +32,27 @@ source_set("system") {
 # //mojo/public/c/system:for_shared_library to your deps
 
 group("for_shared_library") {
-  public_deps = [ ":system" ]
+  public_deps = [
+    ":system",
+  ]
   if (is_component_build) {
-    deps = [ "//mojo/edk/system" ]
+    deps = [
+      "//mojo/edk/system",
+    ]
   } else {
-    deps = [ "//mojo/public/platform/native:system_thunks" ]
+    deps = [
+      "//mojo/public/platform/native:system_thunks",
+    ]
   }
 }
 
 group("for_component") {
-  public_deps = [ ":system" ]
+  public_deps = [
+    ":system",
+  ]
   if (is_component_build) {
-    deps = [ "//mojo/edk/system" ]
+    deps = [
+      "//mojo/edk/system",
+    ]
   }
 }

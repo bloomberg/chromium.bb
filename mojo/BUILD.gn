@@ -15,9 +15,7 @@ group("mojo") {
   ]
 
   if (is_android) {
-    deps += [
-      "//mojo/android",
-    ]
+    deps += [ "//mojo/android" ]
   }
 }
 

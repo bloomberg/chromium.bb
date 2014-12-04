@@ -7,5 +7,7 @@ source_set("geometry") {
     "geometry_util.h",
   ]
 
-  deps = [ "//mojo/services/public/interfaces/geometry" ]
+  deps = [
+    "//mojo/services/public/interfaces/geometry",
+  ]
 }

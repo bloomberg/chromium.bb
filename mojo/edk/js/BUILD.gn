@@ -45,5 +45,4 @@ source_set("js_unittests") {
     "//mojo/public/cpp/system",
     "//testing/gtest",
   ]
-
 }

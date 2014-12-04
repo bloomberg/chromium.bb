@@ -10,8 +10,10 @@ source_set("system") {
     "functions.h",
     "handle.h",
     "macros.h",
-    "message_pipe.h"
+    "message_pipe.h",
   ]
 
-  public_deps = [ "//mojo/public/c/system" ]
+  public_deps = [
+    "//mojo/public/c/system",
+  ]
 }

@@ -11,9 +11,7 @@ component("input_events") {
     "mojo_input_events_export.h",
   ]
 
-  defines = [
-    "MOJO_INPUT_EVENTS_IMPLEMENTATION",
-  ]
+  defines = [ "MOJO_INPUT_EVENTS_IMPLEMENTATION" ]
 
   deps = [
     "//base",

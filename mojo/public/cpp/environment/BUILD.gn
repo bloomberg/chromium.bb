@@ -9,7 +9,9 @@ source_set("environment") {
     "environment.h",
   ]
 
-  public_deps = [ "//mojo/public/c/environment" ]
+  public_deps = [
+    "//mojo/public/c/environment",
+  ]
 
   deps = [
     "//mojo/public/cpp/bindings:callback",
@@ -28,7 +30,9 @@ source_set("standalone") {
     "lib/logging.cc",
   ]
 
-  public_deps = [ ":environment" ]
+  public_deps = [
+    ":environment",
+  ]
 
   deps = [
     "//mojo/public/c/environment",
