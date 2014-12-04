@@ -158,6 +158,12 @@ static_library("browser") {
     sources += rebase_path(gypi_values.chrome_browser_bookmark_sources,
                            ".",
                            "//chrome")
+    sources += rebase_path(gypi_values.chrome_browser_browser_process_sources,
+                           ".",
+                           "//chrome")
+    sources += rebase_path(gypi_values.chrome_browser_content_settings_sources,
+                           ".",
+                           "//chrome")
     sources +=
         rebase_path(gypi_values.chrome_browser_favicon_sources, ".", "//chrome")
     sources +=
@@ -186,7 +192,11 @@ static_library("browser") {
                            ".",
                            "//chrome")
     sources +=
+        rebase_path(gypi_values.chrome_browser_session_sources, ".", "//chrome")
+    sources +=
         rebase_path(gypi_values.chrome_browser_signin_sources, ".", "//chrome")
+    sources +=
+        rebase_path(gypi_values.chrome_browser_ssl_sources, ".", "//chrome")
     sources +=
         rebase_path(gypi_values.chrome_browser_sync_sources, ".", "//chrome")
     sources += rebase_path(gypi_values.chrome_browser_web_resource_sources,
