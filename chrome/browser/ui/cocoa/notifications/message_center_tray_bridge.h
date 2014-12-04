@@ -55,9 +55,22 @@ class MessageCenterTrayBridge :
   // Opens the message center tray.
   void OpenTrayWindow();
 
-  // Uses the pref controlled by the main menu to determine whether the status
-  // item should be shown.
-  bool ShouldShowStatusItem() const;
+  // Returns whether the status item allowed based on the preference value.
+  bool CanShowStatusItem() const;
+
+  // Returns whether the status item should be shown if allowed.
+  bool NeedsStatusItem() const;
+
+  // Constructs the status item view and registers its callback.
+  void ShowStatusItem();
+
+  // Destroys the status item view.
+  void HideStatusItem();
+
+  // Called after returning to the event loop from the
+  // OnMessageCenterTrayChanged event to prevent multiple updates from being
+  // rendered as the message center is modified.
+  void HandleMessageCenterTrayChanged();
 
   // Notifies that the user has changed the show menubar item preference.
   void OnShowStatusItemChanged();
@@ -76,6 +89,9 @@ class MessageCenterTrayBridge :
 
   // Obj-C controller for the on-screen popup notifications.
   base::scoped_nsobject<MCPopupCollection> popup_collection_;
+
+  // Used to ensure only one status item update happens in a given call stack.
+  bool status_item_update_pending_;
 
   // A PrefMember that calls OnShowStatusItemChanged when the pref is updated
   // by the user's selection in the main menu.

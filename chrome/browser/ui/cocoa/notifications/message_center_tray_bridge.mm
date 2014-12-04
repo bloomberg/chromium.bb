@@ -33,6 +33,7 @@ MessageCenterTrayBridge::MessageCenterTrayBridge(
     message_center::MessageCenter* message_center)
     : message_center_(message_center),
       tray_(new message_center::MessageCenterTray(this, message_center)),
+      status_item_update_pending_(false),
       weak_ptr_factory_(this) {
   show_status_item_.Init(
       prefs::kMessageCenterShowIcon,
@@ -48,9 +49,13 @@ MessageCenterTrayBridge::~MessageCenterTrayBridge() {
 void MessageCenterTrayBridge::OnMessageCenterTrayChanged() {
   // Update the status item on the next run of the message loop so that if a
   // popup is displayed, the item doesn't flash the unread count.
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&MessageCenterTrayBridge::UpdateStatusItem,
-                 weak_ptr_factory_.GetWeakPtr()));
+  if (!status_item_update_pending_) {
+    status_item_update_pending_ = true;
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&MessageCenterTrayBridge::HandleMessageCenterTrayChanged,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 
   [tray_controller_ onMessageCenterTrayChanged];
 }
@@ -97,20 +102,8 @@ MessageCenterTrayBridge::GetMessageCenterTray() {
 }
 
 void MessageCenterTrayBridge::UpdateStatusItem() {
-  // Only show the status item if there are notifications.
-  if (!ShouldShowStatusItem()) {
-    [status_item_view_ removeItem];
-    status_item_view_.reset();
-    return;
-  }
-
-  if (!status_item_view_) {
-    status_item_view_.reset([[MCStatusItemView alloc] init]);
-    [status_item_view_ setCallback:^{ tray_->ToggleMessageCenterBubble(); }];
-  }
-
   // We want a static message center icon while it's visible.
-  if (message_center()->IsMessageCenterVisible())
+  if (!status_item_view_ || message_center()->IsMessageCenterVisible())
     return;
 
   size_t unread_count = message_center_->UnreadNotificationCount();
@@ -147,11 +140,44 @@ void MessageCenterTrayBridge::OpenTrayWindow() {
                                                   NSMinY(frame))];
 }
 
-bool MessageCenterTrayBridge::ShouldShowStatusItem() const {
+bool MessageCenterTrayBridge::CanShowStatusItem() const {
   return g_browser_process->local_state()->GetBoolean(
       prefs::kMessageCenterShowIcon);
 }
 
+bool MessageCenterTrayBridge::NeedsStatusItem() const {
+  return status_item_view_ || message_center_->NotificationCount() > 0;
+}
+
+void MessageCenterTrayBridge::ShowStatusItem() {
+  if (status_item_view_)
+    return;
+  status_item_view_.reset([[MCStatusItemView alloc] init]);
+  [status_item_view_ setCallback:^{
+      tray_->ToggleMessageCenterBubble();
+  }];
+}
+
+void MessageCenterTrayBridge::HideStatusItem() {
+  [status_item_view_ removeItem];
+  status_item_view_.reset();
+}
+
+void MessageCenterTrayBridge::HandleMessageCenterTrayChanged() {
+  status_item_update_pending_ = false;
+  if (CanShowStatusItem() && NeedsStatusItem()) {
+    ShowStatusItem();
+    UpdateStatusItem();
+  } else {
+    HideStatusItem();
+  }
+}
+
 void MessageCenterTrayBridge::OnShowStatusItemChanged() {
-  UpdateStatusItem();
+  if (CanShowStatusItem()) {
+    ShowStatusItem();
+    UpdateStatusItem();
+  } else {
+    HideStatusItem();
+  }
 }

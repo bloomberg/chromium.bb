@@ -79,6 +79,10 @@ class MessageCenterTrayBridgeTestPrefNever
 TEST_F(MessageCenterTrayBridgeTest, StatusItemOnlyAfterFirstNotification) {
   EXPECT_FALSE(status_item());
 
+  bridge_->OnMessageCenterTrayChanged();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(status_item());
+
   center_->AddNotification(GetNotification());
 
   base::RunLoop().RunUntilIdle();
