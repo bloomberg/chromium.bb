@@ -28,9 +28,9 @@ void CleanupDeprecatedTrackedPreferences(
     PrefHashStoreTransaction* hash_store_transaction) {
   // Add deprecated previously tracked preferences below for them to be cleaned
   // up from both the pref files and the hash store.
-  static const char* kDeprecatedTrackedPreferences[] = {
-    // TODO(gab): Remove in M41+.
-    "extensions.known_disabled",
+  static const char* const kDeprecatedTrackedPreferences[] = {
+    // TODO(grt): Remove in M44+.
+    "safebrowsing.incident_report_sent",
   };
 
   for (size_t i = 0; i < arraysize(kDeprecatedTrackedPreferences); ++i) {

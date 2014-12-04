@@ -701,40 +701,6 @@ TEST_F(IncidentReportingServiceTest, ProfileDestroyedDuringUpload) {
   // the service while handling the upload response.
 }
 
-// Tests that no upload takes place if the old pref was present.
-TEST_F(IncidentReportingServiceTest, MigrateOldPref) {
-  Profile* profile = CreateProfile(
-      "profile1", SAFE_BROWSING_OPT_IN, ON_PROFILE_ADDITION_NO_ACTION);
-
-  // This is a legacy profile.
-  profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingIncidentReportSent, true);
-
-  // Add the test incident.
-  AddTestIncident(profile);
-
-  // Let all tasks run.
-  task_runner_->RunUntilIdle();
-
-  // No upload should have taken place.
-  AssertNoUpload();
-
-  // The legacy pref should have been cleared.
-  ASSERT_FALSE(
-      profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingIncidentReportSent));
-
-  // Adding the same incident again should still result in no upload.
-  AddTestIncident(profile);
-
-  // Let all tasks run.
-  task_runner_->RunUntilIdle();
-
-  // No upload should have taken place.
-  AssertNoUpload();
-
-  // Ensure that no report processing remains.
-  ASSERT_FALSE(instance_->IsProcessingReport());
-}
-
 // Tests that no upload results from adding an incident that is not affiliated
 // with a profile.
 TEST_F(IncidentReportingServiceTest, ProcessWideNoProfileNoUpload) {

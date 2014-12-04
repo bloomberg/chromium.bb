@@ -841,47 +841,22 @@ void IncidentReportingService::UploadIfCollectionComplete() {
     std::vector<PersistentIncidentState> states;
     const base::DictionaryValue* incidents_sent =
         prefs->GetDictionary(prefs::kSafeBrowsingIncidentsSent);
-    // Prep persistent data and prune any incidents already sent. Note: capture
-    // a reference to the pointer held in the ScopedVector so that it can be
-    // nulled out upon pruning.
-    for (ClientIncidentReport_IncidentData*& incident : context->incidents) {
+    // Prep persistent data and prune any incidents already sent.
+    for (ClientIncidentReport_IncidentData* incident : context->incidents) {
       const PersistentIncidentState state = ComputeIncidentState(*incident);
       if (IncidentHasBeenReported(incidents_sent, state)) {
         LogIncidentDataType(PRUNED, *incident);
         ++prune_count;
         delete incident;
-        incident = nullptr;
       } else {
+        LogIncidentDataType(ACCEPTED, *incident);
+        // Ownership of the incident is passed to the report.
+        report->mutable_incident()->AddAllocated(incident);
         states.push_back(state);
       }
     }
-    if (prefs->GetBoolean(prefs::kSafeBrowsingIncidentReportSent)) {
-      // Prune all incidents as if they had been reported, migrating to the new
-      // technique. TODO(grt): remove this branch after it has shipped.
-      for (ClientIncidentReport_IncidentData* incident : context->incidents) {
-        if (incident) {
-          LogIncidentDataType(PRUNED, *incident);
-          ++prune_count;
-        }
-      }
-      context->incidents.clear();
-      prefs->ClearPref(prefs::kSafeBrowsingIncidentReportSent);
-      DictionaryPrefUpdate pref_update(prefs,
-                                       prefs::kSafeBrowsingIncidentsSent);
-      MarkIncidentsAsReported(states, pref_update.Get());
-    } else {
-      for (ClientIncidentReport_IncidentData* incident : context->incidents) {
-        if (incident) {
-          LogIncidentDataType(ACCEPTED, *incident);
-          // Ownership of the incident is passed to the report.
-          report->mutable_incident()->AddAllocated(incident);
-        }
-      }
-      context->incidents.weak_clear();
-      std::vector<PersistentIncidentState>& profile_states =
-          profiles_to_state[scan->first];
-      profile_states.swap(states);
-    }
+    context->incidents.weak_clear();
+    profiles_to_state[scan->first].swap(states);
   }
 
   const int count = report->incident_size();

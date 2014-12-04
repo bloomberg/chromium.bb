@@ -332,10 +332,6 @@ const char kSafeBrowsingExtendedReportingEnabled[] =
 const char kSafeBrowsingProceedAnywayDisabled[] =
     "safebrowsing.proceed_anyway_disabled";
 
-// Boolean that is true when SafeBrowsing has sent an incident report.
-const char kSafeBrowsingIncidentReportSent[] =
-    "safebrowsing.incident_report_sent";
-
 // A dictionary mapping incident types to a dict of incident key:digest pairs.
 const char kSafeBrowsingIncidentsSent[] = "safebrowsing.incidents_sent";
 
