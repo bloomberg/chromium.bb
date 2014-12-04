@@ -20,7 +20,6 @@ namespace chromeos {
 void EnrollmentUMA(policy::MetricEnrollment sample, EnrollmentMode mode) {
   switch (mode) {
     case ENROLLMENT_MODE_MANUAL:
-    case ENROLLMENT_MODE_AUTO:
       UMA_HISTOGRAM_SPARSE_SLOWLY(kMetricEnrollment, sample);
       break;
     case ENROLLMENT_MODE_FORCED:

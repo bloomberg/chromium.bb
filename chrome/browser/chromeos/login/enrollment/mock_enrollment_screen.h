@@ -32,7 +32,6 @@ class MockEnrollmentScreenActor
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD0(ShowSigninScreen, void());
   MOCK_METHOD0(ShowEnrollmentSpinnerScreen, void());
-  MOCK_METHOD0(ShowLoginSpinnerScreen, void());
   MOCK_METHOD1(ShowAuthError, void(const GoogleServiceAuthError&));
   MOCK_METHOD1(ShowOtherError, void(EnterpriseEnrollmentHelper::OtherError));
   MOCK_METHOD1(ShowEnrollmentStatus, void(policy::EnrollmentStatus status));

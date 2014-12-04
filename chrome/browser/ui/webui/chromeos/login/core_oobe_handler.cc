@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 
 #include "ash/shell.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -175,11 +174,10 @@ void CoreOobeHandler::ShowDeviceResetScreen() {
     if (wizard_controller && !wizard_controller->login_screen_started()) {
       wizard_controller->AdvanceToScreen(WizardController::kResetScreenName);
     } else {
-      scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
       DCHECK(LoginDisplayHostImpl::default_host());
       if (LoginDisplayHostImpl::default_host()) {
         LoginDisplayHostImpl::default_host()->StartWizard(
-            WizardController::kResetScreenName, params.Pass());
+            WizardController::kResetScreenName);
       }
     }
   }

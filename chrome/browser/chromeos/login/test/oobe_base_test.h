@@ -25,7 +25,6 @@ namespace chromeos {
 
 class FakeUserManager;
 class NetworkPortalDetectorTestImpl;
-class SigninScreenHandler;
 
 // Base class for OOBE and Kiosk tests.
 class OobeBaseTest : public ExtensionApiTest {
@@ -55,9 +54,6 @@ class OobeBaseTest : public ExtensionApiTest {
 
   // Returns chrome://oobe WebUI.
   content::WebUI* GetLoginUI();
-
-  // Returns SigninScreenHandler for login screen.
-  SigninScreenHandler* GetSigninScreenHandler();
 
   // Returns login display.
   WebUILoginDisplay* GetLoginDisplay();

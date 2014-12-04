@@ -40,7 +40,6 @@
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
-#include "chrome/browser/chromeos/login/test_login_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
@@ -59,10 +58,6 @@
 #include "chromeos/chromeos_test_utils.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/login/auth/key.h"
-#include "chromeos/login/auth/mock_auth_status_consumer.h"
-#include "chromeos/login/auth/mock_authenticator.h"
-#include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/timezone_settings.h"
@@ -88,9 +83,6 @@ using ::testing::Return;
 namespace chromeos {
 
 namespace {
-
-const char kUsername[] = "test_user@managedchrome.com";
-const char kPassword[] = "test_password";
 
 const char kGeolocationResponseBody[] =
     "{\n"
@@ -703,41 +695,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
-                       ControlFlowAutoEnrollmentCompleted) {
-  WizardController::default_controller()->SkipPostLoginScreensForTesting();
-  CheckCurrentScreen(WizardController::kNetworkScreenName);
-  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(0);
-
-  UserContext user_context(kUsername);
-  user_context.SetKey(Key(kPassword));
-  user_context.SetUserIDHash(user_context.GetUserID());
-  LoginUtils::Set(new TestLoginUtils(user_context));
-  MockAuthStatusConsumer mock_consumer;
-
-  // Must have a pending signin to resume after auto-enrollment:
-  LoginDisplayHostImpl::default_host()->StartSignInScreen(LoginScreenContext());
-  EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
-  ExistingUserController::current_controller()->DoAutoEnrollment();
-  ExistingUserController::current_controller()->set_login_status_consumer(
-      &mock_consumer);
-  // This calls StartWizard, destroying the current controller() and its mocks;
-  // don't set expectations on those objects.
-  ExistingUserController::current_controller()->CompleteLogin(user_context);
-  // Run the tasks posted to complete the login:
-  base::MessageLoop::current()->RunUntilIdle();
-
-  CheckCurrentScreen(WizardController::kEnrollmentScreenName);
-  // This is the main expectation: after auto-enrollment, login is resumed.
-  EXPECT_CALL(mock_consumer, OnAuthSuccess(_)).Times(1);
-  OnExit(*mock_enrollment_screen_,
-         BaseScreenDelegate::ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED);
-  // Prevent browser launch when the profile is prepared:
-  browser_shutdown::SetTryingToQuit(true);
-  // Run the tasks posted to complete the login:
-  base::MessageLoop::current()->RunUntilIdle();
-}
-
-IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
                        ControlFlowWrongHWIDScreenFromLogin) {
   CheckCurrentScreen(WizardController::kNetworkScreenName);
 
@@ -1261,7 +1218,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
 // TODO(dzhioev): Add tests for controller/host pairing flow.
 // http://crbug.com/375191
 
-COMPILE_ASSERT(BaseScreenDelegate::EXIT_CODES_COUNT == 25,
+COMPILE_ASSERT(BaseScreenDelegate::EXIT_CODES_COUNT == 24,
                add_tests_for_new_control_flow_you_just_introduced);
 
 }  // namespace chromeos

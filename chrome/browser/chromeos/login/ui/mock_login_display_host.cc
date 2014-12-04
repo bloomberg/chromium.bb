@@ -12,10 +12,4 @@ MockLoginDisplayHost::MockLoginDisplayHost() {
 MockLoginDisplayHost::~MockLoginDisplayHost() {
 }
 
-void MockLoginDisplayHost::StartWizard(
-    const std::string& name,
-    scoped_ptr<base::DictionaryValue> value) {
-  return StartWizardPtr(name, value.get());
-}
-
 }  // namespace chromeos

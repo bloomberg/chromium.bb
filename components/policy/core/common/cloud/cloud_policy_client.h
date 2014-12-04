@@ -113,7 +113,6 @@ class POLICY_EXPORT CloudPolicyClient {
       enterprise_management::DeviceRegisterRequest::Type registration_type,
       const std::string& auth_token,
       const std::string& client_id,
-      bool is_auto_enrollment,
       const std::string& requisition,
       const std::string& current_state_key);
 

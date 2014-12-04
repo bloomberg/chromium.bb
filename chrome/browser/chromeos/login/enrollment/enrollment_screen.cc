@@ -13,12 +13,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_uma.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -84,11 +82,9 @@ EnrollmentScreen::~EnrollmentScreen() {
 void EnrollmentScreen::SetParameters(
     EnrollmentMode enrollment_mode,
     const std::string& management_domain,
-    const std::string& user,
     pairing_chromeos::ControllerPairingController* shark_controller,
     pairing_chromeos::HostPairingController* remora_controller) {
   enrollment_mode_ = enrollment_mode;
-  user_ = user.empty() ? user : gaia::CanonicalizeEmail(user);
   shark_controller_ = shark_controller;
   if (remora_controller_)
     remora_controller_->RemoveObserver(this);
@@ -101,7 +97,7 @@ void EnrollmentScreen::SetParameters(
 void EnrollmentScreen::CreateEnrollmentHelper() {
   DCHECK(!enrollment_helper_);
   enrollment_helper_ =
-      EnterpriseEnrollmentHelper::Create(this, enrollment_mode_, user_);
+      EnterpriseEnrollmentHelper::Create(this, enrollment_mode_, domain_);
 }
 
 void EnrollmentScreen::ClearAuth(const base::Closure& callback) {
@@ -124,18 +120,9 @@ void EnrollmentScreen::PrepareToShow() {
 }
 
 void EnrollmentScreen::Show() {
-  if (is_auto_enrollment() && !enrollment_failed_once_) {
-    actor_->Show();
-    UMA(policy::kMetricEnrollmentAutoStarted);
-    actor_->ShowEnrollmentSpinnerScreen();
-    CreateEnrollmentHelper();
-    enrollment_helper_->EnrollUsingProfile(ProfileHelper::GetSigninProfile(),
-                                           false /* fetch_additional_token */);
-  } else {
-    UMA(policy::kMetricEnrollmentTriggered);
-    ClearAuth(base::Bind(&EnrollmentScreen::ShowSigninScreen,
-                         weak_ptr_factory_.GetWeakPtr()));
-  }
+  UMA(policy::kMetricEnrollmentTriggered);
+  ClearAuth(base::Bind(&EnrollmentScreen::ShowSigninScreen,
+                       weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnrollmentScreen::Hide() {
@@ -176,14 +163,10 @@ void EnrollmentScreen::EnrollHost(const std::string& auth_token) {
 
 void EnrollmentScreen::OnLoginDone(const std::string& user) {
   elapsed_timer_.reset(new base::ElapsedTimer());
-  user_ = gaia::CanonicalizeEmail(user);
+  domain_ = gaia::ExtractDomainName(user);
 
-  if (is_auto_enrollment())
-    UMA(policy::kMetricEnrollmentAutoRestarted);
-  else if (enrollment_failed_once_)
-    UMA(policy::kMetricEnrollmentRestarted);
-  else
-    UMA(policy::kMetricEnrollmentStarted);
+  UMA(enrollment_failed_once_ ? policy::kMetricEnrollmentRestarted
+                              : policy::kMetricEnrollmentStarted);
 
   actor_->ShowEnrollmentSpinnerScreen();
   CreateEnrollmentHelper();
@@ -198,8 +181,7 @@ void EnrollmentScreen::OnRetry() {
 }
 
 void EnrollmentScreen::OnCancel() {
-  UMA(is_auto_enrollment() ? policy::kMetricEnrollmentAutoCancelled
-                           : policy::kMetricEnrollmentCancelled);
+  UMA(policy::kMetricEnrollmentCancelled);
   if (elapsed_timer_)
     UMA_ENROLLMENT_TIME(kMetricEnrollmentTimeCancel, elapsed_timer_);
   if (enrollment_mode_ == ENROLLMENT_MODE_FORCED ||
@@ -208,9 +190,6 @@ void EnrollmentScreen::OnCancel() {
                          BaseScreenDelegate::ENTERPRISE_ENROLLMENT_BACK));
     return;
   }
-
-  if (is_auto_enrollment())
-    policy::AutoEnrollmentClient::CancelAutoEnrollment();
 
   ClearAuth(base::Bind(&EnrollmentScreen::Finish, base::Unretained(this),
                        BaseScreenDelegate::ENTERPRISE_ENROLLMENT_COMPLETED));
@@ -226,16 +205,8 @@ void EnrollmentScreen::OnConfirmationClosed() {
     return;
   }
 
-  if (is_auto_enrollment() &&
-      !enrollment_failed_once_ &&
-      !user_.empty() &&
-      LoginUtils::IsWhitelisted(user_, NULL)) {
-    actor_->ShowLoginSpinnerScreen();
-    Finish(BaseScreenDelegate::ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED);
-  } else {
-    ClearAuth(base::Bind(&EnrollmentScreen::Finish, base::Unretained(this),
-                         BaseScreenDelegate::ENTERPRISE_ENROLLMENT_COMPLETED));
-  }
+  ClearAuth(base::Bind(&EnrollmentScreen::Finish, base::Unretained(this),
+                       BaseScreenDelegate::ENTERPRISE_ENROLLMENT_COMPLETED));
 }
 
 void EnrollmentScreen::OnAuthError(const GoogleServiceAuthError& error) {

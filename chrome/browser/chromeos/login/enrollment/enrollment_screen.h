@@ -58,7 +58,6 @@ class EnrollmentScreen
   void SetParameters(
       EnrollmentMode enrollment_mode,
       const std::string& management_domain,
-      const std::string& enrollment_user,
       pairing_chromeos::ControllerPairingController* shark_controller,
       pairing_chromeos::HostPairingController* remora_controller);
 
@@ -123,11 +122,6 @@ class EnrollmentScreen
   // Shows the signin screen. Used as a callback to run after auth reset.
   void ShowSigninScreen();
 
-  // Convenience helper to check for auto enrollment mode.
-  bool is_auto_enrollment() const {
-    return enrollment_mode_ == ENROLLMENT_MODE_AUTO;
-  }
-
   void OnAnyEnrollmentError();
 
   pairing_chromeos::ControllerPairingController* shark_controller_;
@@ -135,7 +129,7 @@ class EnrollmentScreen
   EnrollmentScreenActor* actor_;
   EnrollmentMode enrollment_mode_;
   bool enrollment_failed_once_;
-  std::string user_;
+  std::string domain_;
   scoped_ptr<base::ElapsedTimer> elapsed_timer_;
   scoped_ptr<EnterpriseEnrollmentHelper> enrollment_helper_;
   base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_;

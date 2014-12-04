@@ -10,7 +10,7 @@ namespace {
 
 // Enrollment mode strings.
 const char* const kModeStrings[chromeos::ENROLLMENT_MODE_COUNT] =
-    {"manual", "forced", "auto", "recovery"};
+    {"manual", "forced", "recovery"};
 
 }  // namespace
 

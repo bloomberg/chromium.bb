@@ -53,9 +53,6 @@ class EnrollmentScreenActor {
   // Shows the spinner screen for enrollment.
   virtual void ShowEnrollmentSpinnerScreen() = 0;
 
-  // Shows the spinner screen for login after auto-enrollment.
-  virtual void ShowLoginSpinnerScreen() = 0;
-
   // Show an authentication error.
   virtual void ShowAuthError(const GoogleServiceAuthError& error) = 0;
 

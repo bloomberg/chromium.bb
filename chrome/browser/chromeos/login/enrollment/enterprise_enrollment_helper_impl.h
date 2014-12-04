@@ -33,7 +33,7 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper,
  public:
   EnterpriseEnrollmentHelperImpl(EnrollmentStatusConsumer* status_consumer,
                                  EnrollmentMode enrollment_mode,
-                                 std::string& user);
+                                 std::string& domain);
   virtual ~EnterpriseEnrollmentHelperImpl();
 
   // Overridden from EnterpriseEnrollmentHelper:
@@ -57,20 +57,14 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper,
   void ReportEnrollmentStatus(policy::EnrollmentStatus status);
 
   // Logs an UMA event in the kMetricEnrollment or the kMetricEnrollmentRecovery
-  // histogram, depending on |enrollment_mode_|.  If auto-enrollment is on,
-  // |sample| is ignored and a kMetricEnrollmentAutoFailed sample is logged
-  // instead.
-  void UMAFailure(policy::MetricEnrollment sample);
-
-  bool is_auto_enrollment() const {
-    return enrollment_mode_ == ENROLLMENT_MODE_AUTO;
-  }
+  // histogram, depending on |enrollment_mode_|.
+  void UMA(policy::MetricEnrollment sample);
 
   // Overridden from BrowsingDataRemover::Observer:
   virtual void OnBrowsingDataRemoverDone() override;
 
   EnrollmentMode enrollment_mode_;
-  std::string user_;
+  std::string domain_;
   Profile* profile_;
   bool fetch_additional_token_;
 

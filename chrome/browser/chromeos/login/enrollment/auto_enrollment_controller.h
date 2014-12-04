@@ -31,7 +31,6 @@ class AutoEnrollmentController {
 
   // Parameter values for the kEnterpriseEnableForcedReEnrollment flag.
   static const char kForcedReEnrollmentAlways[];
-  static const char kForcedReEnrollmentLegacy[];
   static const char kForcedReEnrollmentNever[];
   static const char kForcedReEnrollmentOfficialBuild[];
 
@@ -39,8 +38,6 @@ class AutoEnrollmentController {
   enum Mode {
     // No automatic enrollment.
     MODE_NONE,
-    // Legacy auto-enrollment.
-    MODE_LEGACY_AUTO_ENROLLMENT,
     // Forced re-enrollment.
     MODE_FORCED_RE_ENROLLMENT,
   };
@@ -64,9 +61,6 @@ class AutoEnrollmentController {
   // Registers a callback to invoke on state changes.
   scoped_ptr<ProgressCallbackList::Subscription> RegisterProgressCallback(
       const ProgressCallbackList::CallbackType& callback);
-
-  // Checks whether legacy auto-enrollment should be performed.
-  bool ShouldEnrollSilently();
 
   policy::AutoEnrollmentState state() const { return state_; }
 

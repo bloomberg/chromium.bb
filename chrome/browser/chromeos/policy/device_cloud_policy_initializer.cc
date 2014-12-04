@@ -97,7 +97,6 @@ void DeviceCloudPolicyInitializer::StartEnrollment(
     ManagementMode management_mode,
     DeviceManagementService* device_management_service,
     const std::string& auth_token,
-    bool is_auto_enrollment,
     const AllowedDeviceModes& allowed_device_modes,
     const EnrollmentCallback& enrollment_callback) {
   DCHECK(is_initialized_);
@@ -113,7 +112,6 @@ void DeviceCloudPolicyInitializer::StartEnrollment(
       background_task_runner_,
       auth_token,
       install_attributes_->GetDeviceId(),
-      is_auto_enrollment,
       manager_->GetDeviceRequisition(),
       allowed_device_modes,
       management_mode,

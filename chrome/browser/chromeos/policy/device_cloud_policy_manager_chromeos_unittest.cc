@@ -347,8 +347,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
 
  protected:
   DeviceCloudPolicyManagerChromeOSEnrollmentTest()
-      : is_auto_enrollment_(false),
-        management_mode_(MANAGEMENT_MODE_ENTERPRISE_MANAGED),
+      : management_mode_(MANAGEMENT_MODE_ENTERPRISE_MANAGED),
         register_status_(DM_STATUS_SUCCESS),
         policy_fetch_status_(DM_STATUS_SUCCESS),
         robot_auth_fetch_status_(DM_STATUS_SUCCESS),
@@ -421,7 +420,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     initializer_->StartEnrollment(
         management_mode_,
         &device_management_service_,
-        "auth token", is_auto_enrollment_, modes,
+        "auth token", modes,
         base::Bind(&DeviceCloudPolicyManagerChromeOSEnrollmentTest::Done,
                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
@@ -523,7 +522,6 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     ReloadDeviceSettings();
   }
 
-  bool is_auto_enrollment_;
   ManagementMode management_mode_;
 
   DeviceManagementStatus register_status_;
@@ -551,13 +549,6 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, Success) {
   RunTest();
   ExpectSuccessfulEnrollment();
-}
-
-TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, AutoEnrollment) {
-  is_auto_enrollment_ = true;
-  RunTest();
-  ExpectSuccessfulEnrollment();
-  EXPECT_TRUE(register_request_.register_request().auto_enrolled());
 }
 
 TEST_F(DeviceCloudPolicyManagerChromeOSEnrollmentTest, Reenrollment) {

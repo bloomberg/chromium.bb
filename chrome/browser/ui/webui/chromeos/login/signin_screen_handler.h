@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
@@ -246,11 +245,6 @@ class SigninScreenHandler
   // Required Local State preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  void set_kiosk_enable_flow_aborted_callback_for_test(
-      const base::Closure& callback) {
-    kiosk_enable_flow_aborted_callback_for_test_ = callback;
-  }
-
   // OobeUI::Observer implemetation.
   virtual void OnCurrentScreenChanged(OobeUI::Screen current_screen,
                                       OobeUI::Screen new_screen) override;
@@ -437,11 +431,6 @@ class SigninScreenHandler
   void SetUserInputMethod(const std::string& username,
                           input_method::InputMethodManager::State* ime_state);
 
-  // Invoked when auto enrollment check progresses to decide whether to
-  // continue kiosk enable flow. Kiosk enable flow is resumed when
-  // |state| indicates that enrollment is not applicable.
-  void ContinueKioskEnableFlow(policy::AutoEnrollmentState state);
-
   // Shows signin.
   void OnShowAddUser();
 
@@ -501,12 +490,7 @@ class SigninScreenHandler
   // NOTIFICATION_AUTH_CANCELLED.
   bool has_pending_auth_ui_;
 
-  scoped_ptr<AutoEnrollmentController::ProgressCallbackList::Subscription>
-      auto_enrollment_progress_subscription_;
-
   bool caps_lock_enabled_;
-
-  base::Closure kiosk_enable_flow_aborted_callback_for_test_;
 
   // Non-owning ptr.
   // TODO(ygorshenin@): remove this dependency.

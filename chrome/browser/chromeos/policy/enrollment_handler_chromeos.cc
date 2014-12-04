@@ -47,7 +47,6 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const std::string& auth_token,
     const std::string& client_id,
-    bool is_auto_enrollment,
     const std::string& requisition,
     const AllowedDeviceModes& allowed_device_modes,
     ManagementMode management_mode,
@@ -60,7 +59,6 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       background_task_runner_(background_task_runner),
       auth_token_(auth_token),
       client_id_(client_id),
-      is_auto_enrollment_(is_auto_enrollment),
       requisition_(requisition),
       allowed_device_modes_(allowed_device_modes),
       management_mode_(management_mode),
@@ -240,9 +238,8 @@ void EnrollmentHandlerChromeOS::StartRegistration() {
   CHECK_EQ(STEP_LOADING_STORE, enrollment_step_);
   if (store_->is_initialized()) {
     enrollment_step_ = STEP_REGISTRATION;
-    client_->Register(em::DeviceRegisterRequest::DEVICE,
-                      auth_token_, client_id_, is_auto_enrollment_,
-                      requisition_, current_state_key_);
+    client_->Register(em::DeviceRegisterRequest::DEVICE, auth_token_,
+                      client_id_, requisition_, current_state_key_);
   } else {
     // Do nothing. StartRegistration() will be called again from OnStoreLoaded()
     // after the CloudPolicyStore has initialized.

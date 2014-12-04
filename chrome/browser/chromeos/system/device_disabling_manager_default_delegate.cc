@@ -21,8 +21,7 @@ void DeviceDisablingManagerDefaultDelegate::RestartToLoginScreen() {
 
 void DeviceDisablingManagerDefaultDelegate::ShowDeviceDisabledScreen() {
   LoginDisplayHostImpl::default_host()->StartWizard(
-      WizardController::kDeviceDisabledScreenName,
-      nullptr);
+      WizardController::kDeviceDisabledScreenName);
 }
 
 }  // namespace system

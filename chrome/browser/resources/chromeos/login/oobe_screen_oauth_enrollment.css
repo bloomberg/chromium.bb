@@ -21,7 +21,6 @@
 
 .oauth-enroll-state-working #oauth-enroll-step-working,
 .oauth-enroll-state-error #oauth-enroll-step-error,
-.oauth-enroll-state-explain #oauth-enroll-step-explain,
 .oauth-enroll-state-success #oauth-enroll-step-success {
   display: table;
   height: 480px;
@@ -71,18 +70,13 @@
   margin-top: 20px;
 }
 
-#oauth-enroll-learn-more-link,
-.oauth-enroll-explain-link {
+#oauth-enroll-learn-more-link {
   display: none;
 }
 
 #oauth-enrollment.mode-manual #oauth-enroll-learn-more-link,
 #oauth-enrollment.mode-forced #oauth-enroll-learn-more-link,
 #oauth-enrollment.mode-recovery #oauth-enroll-learn-more-link {
-  display: inline;
-}
-
-#oauth-enrollment.mode-auto .oauth-enroll-explain-link {
   display: inline;
 }
 
@@ -107,19 +101,11 @@
   width: 22px;
 }
 
-#oauth-enrollment.mode-auto #oauth-enroll-error-retry {
-  display: none;
-}
-
 .oauth-enroll-step-message {
   display: inline-block;
   max-width: 400px;
   text-align: left;
   vertical-align: top;
-}
-
-#oauth-enroll-explain-message {
-  white-space: pre-line;
 }
 
 .oauth-enroll-link {
@@ -139,10 +125,8 @@
 .oauth-enroll-state-working.mode-forced #oauth-enroll-back-button,
 .oauth-enroll-state-working.mode-recovery #oauth-enroll-back-button,
 .oauth-enroll-state-error.mode-manual #oauth-enroll-cancel-button,
-.oauth-enroll-state-error.mode-auto #oauth-enroll-retry-button,
 .oauth-enroll-state-error.mode-forced #oauth-enroll-back-button,
 .oauth-enroll-state-error.mode-recovery #oauth-enroll-back-button,
-.oauth-enroll-state-explain #oauth-enroll-explain-retry-button,
 .oauth-enroll-state-success #oauth-enroll-done-button {
   display: inline;
 }

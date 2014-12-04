@@ -167,7 +167,6 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
       is_login_in_progress_(false),
       password_changed_(false),
       auth_mode_(LoginPerformer::AUTH_MODE_EXTENSION),
-      do_auto_enrollment_(false),
       signin_screen_ready_(false),
       network_state_helper_(new login::NetworkStateHelper),
       weak_factory_(this) {
@@ -261,17 +260,6 @@ void ExistingUserController::UpdateLoginDisplay(
   login_display_->Init(
       filtered_users, show_guest, show_users_on_signin, show_new_user);
   host_->OnPreferencesChanged();
-}
-
-void ExistingUserController::DoAutoEnrollment() {
-  do_auto_enrollment_ = true;
-}
-
-void ExistingUserController::ResumeLogin() {
-  // This means the user signed-in, then auto-enrollment used his credentials
-  // to enroll and succeeded.
-  resume_login_callback_.Run();
-  resume_login_callback_.Reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -368,40 +356,7 @@ void ExistingUserController::CompleteLogin(const UserContext& user_context) {
   }
 
   host_->OnCompleteLogin();
-
-  // Do an ownership check now to avoid auto-enrolling if the device has
-  // already been owned.
-  DeviceSettingsService::Get()->GetOwnershipStatusAsync(
-      base::Bind(&ExistingUserController::CompleteLoginInternal,
-                 weak_factory_.GetWeakPtr(),
-                 user_context));
-}
-
-void ExistingUserController::CompleteLoginInternal(
-    const UserContext& user_context,
-    DeviceSettingsService::OwnershipStatus ownership_status) {
-  // Auto-enrollment must have made a decision by now. It's too late to enroll
-  // if the protocol isn't done at this point.
-  if (do_auto_enrollment_ &&
-      ownership_status == DeviceSettingsService::OWNERSHIP_NONE) {
-    VLOG(1) << "Forcing auto-enrollment before completing login";
-    // The only way to get out of the enrollment screen from now on is to either
-    // complete enrollment, or opt-out of it. So this controller shouldn't force
-    // enrollment again if it is reused for another sign-in.
-    do_auto_enrollment_ = false;
-    auto_enrollment_username_ = user_context.GetUserID();
-    resume_login_callback_ = base::Bind(
-        &ExistingUserController::PerformLogin,
-        weak_factory_.GetWeakPtr(),
-        user_context, LoginPerformer::AUTH_MODE_EXTENSION);
-    ShowEnrollmentScreen(true, user_context.GetUserID());
-    // Enable UI for the enrollment screen. SetUIEnabled(true) will post a
-    // request to show the sign-in screen again when invoked at the sign-in
-    // screen; invoke SetUIEnabled() after navigating to the enrollment screen.
-    PerformLoginFinishedActions(false /* don't start public session timer */);
-  } else {
-    PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
-  }
+  PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
 }
 
 base::string16 ExistingUserController::GetConnectedNetworkName() {
@@ -598,8 +553,7 @@ void ExistingUserController::SetDisplayEmail(const std::string& email) {
 }
 
 void ExistingUserController::ShowWrongHWIDScreen() {
-  scoped_ptr<base::DictionaryValue> params;
-  host_->StartWizard(WizardController::kWrongHWIDScreenName, params.Pass());
+  host_->StartWizard(WizardController::kWrongHWIDScreenName);
 }
 
 void ExistingUserController::Signout() {
@@ -615,7 +569,7 @@ void ExistingUserController::OnConsumerKioskAutoLaunchCheckCompleted(
 void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
     DeviceSettingsService::OwnershipStatus status) {
   if (status == DeviceSettingsService::OWNERSHIP_NONE) {
-    ShowEnrollmentScreen(false, std::string());
+    ShowEnrollmentScreen();
   } else if (status == DeviceSettingsService::OWNERSHIP_TAKEN) {
     // On a device that is already owned we might want to allow users to
     // re-enroll if the policy information is invalid.
@@ -625,7 +579,7 @@ void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
                 &ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
                 weak_factory_.GetWeakPtr(), status));
     if (trusted_status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
-      ShowEnrollmentScreen(false, std::string());
+      ShowEnrollmentScreen();
     }
   } else {
     // OwnershipService::GetStatusAsync is supposed to return either
@@ -634,38 +588,24 @@ void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
   }
 }
 
-void ExistingUserController::ShowEnrollmentScreen(bool is_auto_enrollment,
-                                                  const std::string& user) {
-  scoped_ptr<base::DictionaryValue> params;
-  if (is_auto_enrollment) {
-    params.reset(new base::DictionaryValue());
-    params->SetBoolean("is_auto_enrollment", true);
-    params->SetString("user", user);
-  }
-  host_->StartWizard(WizardController::kEnrollmentScreenName,
-                     params.Pass());
+void ExistingUserController::ShowEnrollmentScreen() {
+  host_->StartWizard(WizardController::kEnrollmentScreenName);
 }
 
 void ExistingUserController::ShowResetScreen() {
-  scoped_ptr<base::DictionaryValue> params;
-  host_->StartWizard(WizardController::kResetScreenName, params.Pass());
+  host_->StartWizard(WizardController::kResetScreenName);
 }
 
 void ExistingUserController::ShowEnableDebuggingScreen() {
-  scoped_ptr<base::DictionaryValue> params;
-  host_->StartWizard(WizardController::kEnableDebuggingScreenName,
-                     params.Pass());
+  host_->StartWizard(WizardController::kEnableDebuggingScreenName);
 }
 
 void ExistingUserController::ShowKioskEnableScreen() {
-  scoped_ptr<base::DictionaryValue> params;
-  host_->StartWizard(WizardController::kKioskEnableScreenName, params.Pass());
+  host_->StartWizard(WizardController::kKioskEnableScreenName);
 }
 
 void ExistingUserController::ShowKioskAutolaunchScreen() {
-  scoped_ptr<base::DictionaryValue> params;
-  host_->StartWizard(WizardController::kKioskAutolaunchScreenName,
-                     params.Pass());
+  host_->StartWizard(WizardController::kKioskAutolaunchScreenName);
 }
 
 void ExistingUserController::ShowTPMError() {

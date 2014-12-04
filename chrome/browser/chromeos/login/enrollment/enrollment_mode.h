@@ -14,7 +14,6 @@ namespace chromeos {
 enum EnrollmentMode {
   ENROLLMENT_MODE_MANUAL,    // Manually triggered enrollment.
   ENROLLMENT_MODE_FORCED,    // Forced enrollment, user can't skip.
-  ENROLLMENT_MODE_AUTO,      // Auto-enrollment during first sign-in.
   ENROLLMENT_MODE_RECOVERY,  // Recover from "spontaneous unenrollment".
   ENROLLMENT_MODE_COUNT      // Counter must be last. Not an enrollment mode.
 };

@@ -73,7 +73,6 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
       ManagementMode management_mode,
       DeviceManagementService* device_management_service,
       const std::string& auth_token,
-      bool is_auto_enrollment,
       const AllowedDeviceModes& allowed_modes,
       const EnrollmentCallback& enrollment_callback);
 

@@ -265,9 +265,9 @@ class CloudPolicyTest : public InProcessBrowserTest,
 #else
         em::DeviceRegisterRequest::BROWSER;
 #endif
-    policy_manager->core()->client()->Register(
-        registration_type, "bogus", std::string(), false, std::string(),
-        std::string());
+    policy_manager->core()->client()->Register(registration_type, "bogus",
+                                               std::string(), std::string(),
+                                               std::string());
     run_loop.Run();
     Mock::VerifyAndClearExpectations(&observer);
     policy_manager->core()->client()->RemoveObserver(&observer);

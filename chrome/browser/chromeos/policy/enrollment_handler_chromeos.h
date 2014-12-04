@@ -69,7 +69,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const std::string& auth_token,
       const std::string& client_id,
-      bool is_auto_enrollment,
       const std::string& requisition,
       const AllowedDeviceModes& allowed_device_modes,
       ManagementMode management_mode,
@@ -166,7 +165,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
 
   std::string auth_token_;
   std::string client_id_;
-  bool is_auto_enrollment_;
   std::string requisition_;
   std::string current_state_key_;
   std::string refresh_token_;

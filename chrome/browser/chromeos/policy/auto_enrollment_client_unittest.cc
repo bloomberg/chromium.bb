@@ -51,7 +51,7 @@ class AutoEnrollmentClientTest : public testing::Test {
         state_(AUTO_ENROLLMENT_STATE_PENDING) {}
 
   virtual void SetUp() override {
-    CreateClient(kStateKey, true, 4, 8);
+    CreateClient(kStateKey, 4, 8);
     ASSERT_FALSE(local_state_->GetUserPref(prefs::kShouldAutoEnroll));
     ASSERT_FALSE(local_state_->GetUserPref(prefs::kAutoEnrollmentPowerLimit));
   }
@@ -62,7 +62,6 @@ class AutoEnrollmentClientTest : public testing::Test {
   }
 
   void CreateClient(const std::string& state_key,
-                    bool retrieve_device_state,
                     int power_initial,
                     int power_limit) {
     state_ = AUTO_ENROLLMENT_STATE_PENDING;
@@ -77,7 +76,6 @@ class AutoEnrollmentClientTest : public testing::Test {
         new net::TestURLRequestContextGetter(
             base::MessageLoop::current()->message_loop_proxy()),
         state_key,
-        retrieve_device_state,
         power_initial,
         power_limit));
   }
@@ -376,16 +374,8 @@ TEST_F(AutoEnrollmentClientTest, DeviceDisabled) {
                           kDisabledMessage);
 }
 
-TEST_F(AutoEnrollmentClientTest, NoSerial) {
-  CreateClient("", true, 4, 8);
-  client_->Start();
-  EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
-  EXPECT_FALSE(HasCachedDecision());
-  EXPECT_FALSE(HasServerBackedState());
-}
-
 TEST_F(AutoEnrollmentClientTest, NoBitsUploaded) {
-  CreateClient(kStateKey, true, 0, 0);
+  CreateClient(kStateKey, 0, 0);
   ServerWillReply(-1, false, false);
   client_->Start();
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
@@ -400,7 +390,7 @@ TEST_F(AutoEnrollmentClientTest, NoBitsUploaded) {
 TEST_F(AutoEnrollmentClientTest, ManyBitsUploaded) {
   int64 bottom62 = GG_INT64_C(0x386e7244d097c3e6);
   for (int i = 0; i <= 62; ++i) {
-    CreateClient(kStateKey, true, i, i);
+    CreateClient(kStateKey, i, i);
     ServerWillReply(-1, false, false);
     client_->Start();
     EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
@@ -415,7 +405,7 @@ TEST_F(AutoEnrollmentClientTest, ManyBitsUploaded) {
 }
 
 TEST_F(AutoEnrollmentClientTest, MoreThan32BitsUploaded) {
-  CreateClient(kStateKey, true, 10, 37);
+  CreateClient(kStateKey, 10, 37);
   InSequence sequence;
   ServerWillReply(GG_INT64_C(1) << 37, false, false);
   ServerWillReply(-1, true, true);
@@ -432,24 +422,28 @@ TEST_F(AutoEnrollmentClientTest, MoreThan32BitsUploaded) {
 }
 
 TEST_F(AutoEnrollmentClientTest, ReuseCachedDecision) {
-  EXPECT_CALL(*service_, CreateJob(_, _)).Times(0);
+  // No bucket download requests should be issued.
+  EXPECT_CALL(*service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT, _))
+      .Times(0);
   local_state_->SetUserPref(prefs::kShouldAutoEnroll,
                             new base::FundamentalValue(true));
   local_state_->SetUserPref(prefs::kAutoEnrollmentPowerLimit,
                             new base::FundamentalValue(8));
+
+  // Note that device state will be retrieved every time, regardless of any
+  // cached information. This is intentional, the idea is that device state on
+  // the server may change.
   ServerWillSendState(
       "example.com",
       em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ENFORCED,
       kDisabledMessage);
+
   client_->Start();
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT, state_);
   VerifyServerBackedState("example.com",
                           kDeviceStateRestoreModeReEnrollmentEnforced,
                           kDisabledMessage);
-  AutoEnrollmentClient::CancelAutoEnrollment();
-  client_->Start();
-  EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
-  EXPECT_FALSE(HasServerBackedState());
 }
 
 TEST_F(AutoEnrollmentClientTest, RetryIfPowerLargerThanCached) {
@@ -457,7 +451,7 @@ TEST_F(AutoEnrollmentClientTest, RetryIfPowerLargerThanCached) {
                             new base::FundamentalValue(false));
   local_state_->SetUserPref(prefs::kAutoEnrollmentPowerLimit,
                             new base::FundamentalValue(8));
-  CreateClient(kStateKey, true, 5, 10);
+  CreateClient(kStateKey, 5, 10);
   ServerWillReply(-1, true, true);
   ServerWillSendState(
       "example.com",
@@ -624,18 +618,6 @@ TEST_F(AutoEnrollmentClientTest, NetworkFailureThenRequireUpdatedModulus) {
                           kDeviceStateRestoreModeReEnrollmentEnforced,
                           kDisabledMessage);
   Mock::VerifyAndClearExpectations(service_.get());
-}
-
-TEST_F(AutoEnrollmentClientTest, NoDeviceStateRetrieval) {
-  CreateClient(kStateKey, false, 4, 8);
-  ServerWillReply(-1, true, true);
-  EXPECT_CALL(*service_,
-              CreateJob(DeviceManagementRequestJob::TYPE_DEVICE_STATE_RETRIEVAL,
-                        _)).Times(0);
-  client_->Start();
-  EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT, state_);
-  VerifyCachedResult(true, 8);
-  EXPECT_FALSE(HasServerBackedState());
 }
 
 }  // namespace

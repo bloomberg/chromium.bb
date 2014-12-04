@@ -47,7 +47,6 @@ class EnrollmentScreenHandler
   virtual void Hide() override;
   virtual void ShowSigninScreen() override;
   virtual void ShowEnrollmentSpinnerScreen() override;
-  virtual void ShowLoginSpinnerScreen() override;
   virtual void ShowAuthError(const GoogleServiceAuthError& error) override;
   virtual void ShowEnrollmentStatus(policy::EnrollmentStatus status) override;
   virtual void ShowOtherError(

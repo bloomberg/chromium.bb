@@ -16,9 +16,9 @@ EnterpriseEnrollmentHelper::~EnterpriseEnrollmentHelper() {
 scoped_ptr<EnterpriseEnrollmentHelper> EnterpriseEnrollmentHelper::Create(
     EnrollmentStatusConsumer* status_consumer,
     EnrollmentMode enrollment_mode,
-    std::string& user) {
+    std::string& domain) {
   return make_scoped_ptr(new EnterpriseEnrollmentHelperImpl(
-      status_consumer, enrollment_mode, user));
+      status_consumer, enrollment_mode, domain));
 }
 
 EnterpriseEnrollmentHelper::EnterpriseEnrollmentHelper(

@@ -136,21 +136,14 @@ enum MetricEnrollment {
   // Registration / policy fetch failed: DM server reports that the serial
   // number we try to register is not assigned to the domain used.
   kMetricEnrollmentRegisterPolicyInvalidSerial = 8,
-  // Auto-enrollment started automatically after the user signed in.
-  kMetricEnrollmentAutoStarted = 9,
-  // Auto-enrollment failed.
-  kMetricEnrollmentAutoFailed = 10,
-  // Auto-enrollment was retried after having failed before.
-  kMetricEnrollmentAutoRestarted = 11,
-  // Auto-enrollment was canceled through the opt-out dialog.
-  kMetricEnrollmentAutoCancelled = 12,
-  // Auto-enrollment succeeded.
-  kMetricEnrollmentAutoOK = 13,
+  /* kMetricEnrollmentAutoStarted = 9 REMOVED */
+  /* kMetricEnrollmentAutoFailed = 10 REMOVED */
+  /* kMetricEnrollmentAutoRestarted = 11 REMOVED */
+  /* kMetricEnrollmentAutoCancelled = 12 REMOVED */
+  /* kMetricEnrollmentAutoOK = 13 REMOVED */
   // Registration failed: DM server returns unknown/disallowed enrollment mode.
   kMetricEnrollmentInvalidEnrollmentMode = 14,
-  // Auto-enrollment is not supported for the mode supplied by the server.  This
-  // presently means trying to auto-enroll in kiosk mode.
-  kMetricEnrollmentAutoEnrollmentNotSupported = 15,
+  /* kMetricEnrollmentAutoEnrollmentNotSupported = 15 REMOVED */
   // Lockbox initialization took too long to complete.
   kMetricEnrollmentLockboxTimeoutError = 16,
   // Lockbox error at re-enrollment: domain does not match install attributes.

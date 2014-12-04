@@ -9,8 +9,6 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "ui/gfx/native_widget_types.h"
@@ -67,10 +65,7 @@ class LoginDisplayHost {
   // Starts out-of-box-experience flow or shows other screen handled by
   // Wizard controller i.e. camera, recovery.
   // One could specify start screen with |first_screen_name|.
-  // Takes ownership of |screen_parameters|, which can also be NULL.
-  virtual void StartWizard(
-      const std::string& first_screen_name,
-      scoped_ptr<base::DictionaryValue> screen_parameters) = 0;
+  virtual void StartWizard(const std::string& first_screen_name) = 0;
 
   // Returns current WizardController, if it exists.
   // Result should not be stored.
@@ -87,9 +82,6 @@ class LoginDisplayHost {
 
   // Starts sign in screen.
   virtual void StartSignInScreen(const LoginScreenContext& context) = 0;
-
-  // Resumes a previously started sign in screen.
-  virtual void ResumeSignInScreen() = 0;
 
   // Invoked when system preferences that affect the signin screen have changed.
   virtual void OnPreferencesChanged() = 0;

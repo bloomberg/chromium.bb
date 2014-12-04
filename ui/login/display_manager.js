@@ -365,10 +365,6 @@ cr.define('cr.ui.login', function() {
           // In this case update check will be skipped and OOBE will
           // proceed straight to enrollment screen when EULA is accepted.
           chrome.send('skipUpdateEnrollAfterEula');
-        } else if (currentStepId == SCREEN_OOBE_ENROLLMENT) {
-          // This accelerator is also used to manually cancel auto-enrollment.
-          if (this.currentScreen.cancelAutoEnrollment)
-            this.currentScreen.cancelAutoEnrollment();
         }
       } else if (name == ACCELERATOR_KIOSK_ENABLE) {
         if (currentStepId == SCREEN_GAIA_SIGNIN ||

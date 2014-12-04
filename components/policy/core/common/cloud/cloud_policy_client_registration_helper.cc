@@ -270,8 +270,8 @@ void CloudPolicyClientRegistrationHelper::OnGetUserInfoSuccess(
 
   // Kick off registration of the CloudPolicyClient with our newly minted
   // oauth_access_token_.
-  client_->Register(registration_type_, oauth_access_token_,
-                    std::string(), false, std::string(), std::string());
+  client_->Register(registration_type_, oauth_access_token_, std::string(),
+                    std::string(), std::string());
 }
 
 void CloudPolicyClientRegistrationHelper::OnPolicyFetched(

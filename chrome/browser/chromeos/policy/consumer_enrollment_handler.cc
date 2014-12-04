@@ -113,7 +113,6 @@ void ConsumerEnrollmentHandler::OnOwnerAccessTokenAvailable(
       MANAGEMENT_MODE_CONSUMER_MANAGED,
       device_management_service_,
       access_token,
-      false,  // is_auto_enrollment
       device_modes,
       base::Bind(&ConsumerEnrollmentHandler::OnEnrollmentCompleted,
                  weak_ptr_factory_.GetWeakPtr()));

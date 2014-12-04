@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_MOCK_LOGIN_DISPLAY_HOST_H_
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -28,12 +27,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD1(SetStatusAreaVisible, void(bool));
   MOCK_METHOD0(ShowBackground, void(void));
   MOCK_METHOD0(GetAutoEnrollmentController, AutoEnrollmentController*(void));
-  // GMock currently doesn't support move-only arguments, so we have
-  // to use this hack here.
-  MOCK_METHOD2(StartWizardPtr, void(const std::string&,
-                                    base::DictionaryValue*));
-  virtual void StartWizard(const std::string& name,
-                           scoped_ptr<base::DictionaryValue> value) override;
+  MOCK_METHOD1(StartWizard, void(const std::string&));
   MOCK_METHOD0(GetWizardController, WizardController*(void));
   MOCK_METHOD0(GetAppLaunchController, AppLaunchController*(void));
   MOCK_METHOD1(StartUserAdding, void(const base::Closure&));

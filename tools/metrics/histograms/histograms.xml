@@ -43817,23 +43817,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Registration / policy fetch failed: DM server reports that the serial number
     we try to register is not assigned to the domain used.
   </int>
-  <int value="9" label="Auto-enrollment Started">
-    Auto-enrollment started automatically after sign-in.
+  <int value="9" label="Auto-enrollment Started (unused)">
+    UNUSED: Auto-enrollment started automatically after sign-in.
   </int>
-  <int value="10" label="Auto-enrollment Failed">Auto-enrollment failed.</int>
-  <int value="11" label="Auto-enrollment Restarted">
-    Auto-enrollment started again after a failure.
+  <int value="10" label="Auto-enrollment Failed (unused)">
+    UNUSED: Auto-enrollment failed.
   </int>
-  <int value="12" label="Auto-enrollment Cancelled">
-    User opted-out of auto-enrollment.
+  <int value="11" label="Auto-enrollment Restarted (unused)">
+    UNUSED: Auto-enrollment started again after a failure.
   </int>
-  <int value="13" label="Auto-enrollment OK">Auto-enrollment OK.</int>
+  <int value="12" label="Auto-enrollment Cancelled (unused)">
+    UNUSED: User opted-out of auto-enrollment.
+  </int>
+  <int value="13" label="Auto-enrollment OK (unused)">
+    UNUSED: Auto-enrollment OK.
+  </int>
   <int value="14" label="Invalid enrollment mode">
     Registration failed: DM server returns unknown/disallowed enrollment mode.
   </int>
-  <int value="15" label="Auto-enrollment not supported">
-    Auto-enrollment is not supported for the mode supplied by the server.  This
-    presently means trying to auto-enroll in kiosk mode.
+  <int value="15" label="Auto-enrollment not supported (unused)">
+    UNUSED: Auto-enrollment is not supported for the mode supplied by the
+    server.  This presently means trying to auto-enroll in kiosk mode.
   </int>
   <int value="16" label="Install attributes timeout">
     Lockbox initialization took too long to complete.

@@ -35,6 +35,7 @@ const char kJsScreenPath[] = "login.OAuthEnrollmentScreen";
 // Enrollment step names.
 const char kEnrollmentStepSignin[] = "signin";
 const char kEnrollmentStepSuccess[] = "success";
+const char kEnrollmentStepWorking[] = "working";
 
 // Returns network name by service path.
 std::string GetNetworkName(const std::string& service_path) {
@@ -149,11 +150,7 @@ void EnrollmentScreenHandler::ShowSigninScreen() {
 }
 
 void EnrollmentScreenHandler::ShowEnrollmentSpinnerScreen() {
-  ShowWorking(IDS_ENTERPRISE_ENROLLMENT_WORKING);
-}
-
-void EnrollmentScreenHandler::ShowLoginSpinnerScreen() {
-  ShowWorking(IDS_ENTERPRISE_ENROLLMENT_RESUMING_LOGIN);
+  ShowStep(kEnrollmentStepWorking);
 }
 
 void EnrollmentScreenHandler::ShowAuthError(
@@ -190,9 +187,6 @@ void EnrollmentScreenHandler::ShowOtherError(
   switch (error) {
     case EnterpriseEnrollmentHelper::OTHER_ERROR_DOMAIN_MISMATCH:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_WRONG_USER, true);
-      return;
-    case EnterpriseEnrollmentHelper::OTHER_ERROR_AUTO_ENROLLMENT_BAD_MODE:
-      ShowError(IDS_ENTERPRISE_AUTO_ENROLLMENT_BAD_MODE, true);
       return;
     case EnterpriseEnrollmentHelper::OTHER_ERROR_FATAL:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_FATAL_ENROLLMENT_ERROR, true);
@@ -320,19 +314,12 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
                IDS_ENTERPRISE_ENROLLMENT_RE_ENROLLMENT_TEXT);
   builder->Add("oauthEnrollRetry", IDS_ENTERPRISE_ENROLLMENT_RETRY);
   builder->Add("oauthEnrollCancel", IDS_ENTERPRISE_ENROLLMENT_CANCEL);
+  builder->Add("oauthEnrollBack", IDS_ENTERPRISE_ENROLLMENT_BACK);
   builder->Add("oauthEnrollDone", IDS_ENTERPRISE_ENROLLMENT_DONE);
   builder->Add("oauthEnrollSuccess", IDS_ENTERPRISE_ENROLLMENT_SUCCESS);
-  builder->Add("oauthEnrollExplain", IDS_ENTERPRISE_ENROLLMENT_EXPLAIN);
   builder->Add("oauthEnrollExplainLink",
                IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_LINK);
-  builder->Add("oauthEnrollExplainButton",
-               IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_BUTTON);
-  builder->Add("oauthEnrollCancelAutoEnrollmentReally",
-               IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_REALLY);
-  builder->Add("oauthEnrollCancelAutoEnrollmentConfirm",
-               IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_CONFIRM);
-  builder->Add("oauthEnrollCancelAutoEnrollmentGoBack",
-               IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_GO_BACK);
+  builder->Add("oauthEnrollWorking", IDS_ENTERPRISE_ENROLLMENT_WORKING);
 }
 
 OobeUI::Screen EnrollmentScreenHandler::GetCurrentScreen() const {
@@ -502,10 +489,6 @@ void EnrollmentScreenHandler::ShowError(int message_id, bool retry) {
 void EnrollmentScreenHandler::ShowErrorMessage(const std::string& message,
                                                bool retry) {
   CallJS("showError", message, retry);
-}
-
-void EnrollmentScreenHandler::ShowWorking(int message_id) {
-  CallJS("showWorking", l10n_util::GetStringUTF16(message_id));
 }
 
 void EnrollmentScreenHandler::DoShow() {

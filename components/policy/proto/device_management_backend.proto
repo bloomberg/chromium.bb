@@ -41,11 +41,8 @@ message DeviceRegisterRequest {
   // "Android", or "Chrome OS".
   optional string machine_model = 4;
 
-  // When true, indicates that the |machine_id| has been identified as auto-
-  // enrollment candidate on the client and the server can use it to verify
-  // that the client is to be enrolled in the correct mode.
-  // Defaults to false when not present.
-  optional bool auto_enrolled = 5;
+  // OBSOLETE: Legacy auto-enrollment is not longer supported.
+  optional bool OBSOLETE_auto_enrolled = 5 [deprecated = true];
 
   // Indicates a requisition of the registering entity that the server can act
   // upon. This allows clients to pass hints e.g. at device enrollment time

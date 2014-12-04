@@ -73,19 +73,12 @@ class AutoEnrollmentClient
       PrefService* local_state,
       scoped_refptr<net::URLRequestContextGetter> system_request_context,
       const std::string& server_backed_state_key,
-      bool retrieve_device_state,
       int power_initial,
       int power_limit);
   virtual ~AutoEnrollmentClient();
 
   // Registers preferences in local state.
   static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  // Cancels auto-enrollment.
-  // This function does not interrupt a running auto-enrollment check. It only
-  // stores a pref in |local_state| that prevents the client from entering
-  // auto-enrollment mode for the future.
-  static void CancelAutoEnrollment();
 
   // Starts the auto-enrollment check protocol with the device management
   // service. Subsequent calls drop any previous requests. Notice that this
@@ -134,10 +127,10 @@ class AutoEnrollmentClient
   void NextStep();
 
   // Sends an auto-enrollment check request to the device management service.
-  bool SendBucketDownloadRequest();
+  void SendBucketDownloadRequest();
 
   // Sends a device state download request to the device management service.
-  bool SendDeviceStateRequest();
+  void SendDeviceStateRequest();
 
   // Runs the response handler for device management requests and calls
   // NextStep().
@@ -186,9 +179,6 @@ class AutoEnrollmentClient
   // Stable state key and its SHA-256 digest.
   std::string server_backed_state_key_;
   std::string server_backed_state_key_hash_;
-
-  // Whether device state should be retrieved from the server.
-  bool retrieve_device_state_;
 
   // Power-of-2 modulus to try next.
   int current_power_;

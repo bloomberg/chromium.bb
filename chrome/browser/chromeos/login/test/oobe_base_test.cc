@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
@@ -160,13 +159,6 @@ void OobeBaseTest::JsExpect(const std::string& expression) {
 content::WebUI* OobeBaseTest::GetLoginUI() {
   return static_cast<chromeos::LoginDisplayHostImpl*>(
       chromeos::LoginDisplayHostImpl::default_host())->GetOobeUI()->web_ui();
-}
-
-SigninScreenHandler* OobeBaseTest::GetSigninScreenHandler() {
-  return static_cast<chromeos::LoginDisplayHostImpl*>(
-      chromeos::LoginDisplayHostImpl::default_host())
-      ->GetOobeUI()
-      ->signin_screen_handler_for_test();
 }
 
 WebUILoginDisplay* OobeBaseTest::GetLoginDisplay() {

@@ -5651,9 +5651,6 @@ All users must sign out to continue.
   <message name="IDS_ENTERPRISE_ENROLLMENT_AUTH_INSECURE_URL_ERROR" desc="Error message to show when a redirect to an insecure URL was detected and blocked when authenticating for enrollment.">
     Oops!  Authentication failed because it was configured to use a non-secure URL (<ph name="BLOCKED_URL">$1<ex>http://www.example.com/login.html</ex></ph>).  Please contact your administrator.
   </message>
-  <message name="IDS_ENTERPRISE_AUTO_ENROLLMENT_BAD_MODE" desc="Error message to show when auto-enrollment is not supported for the enrollment mode supplied by the DMServer.">
-    Oops!  Something went wrong while auto-enrolling this device.  Please try again from the sign-in screen using the Ctrl-Alt-E key combination, or contact your support representative.
-  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_FATAL_ENROLLMENT_ERROR" desc="Error message to show when there is an unrecoverable error while performing enrollment.">
     Oops!  Something went really wrong while enrolling this device.  Please try again or contact your support representative.
   </message>
@@ -5684,6 +5681,9 @@ All users must sign out to continue.
   <message name="IDS_ENTERPRISE_ENROLLMENT_CANCEL" desc="Label for the cancel button on the enterprise enrollment dialog.">
     Cancel
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_BACK" desc="Label for the back button on the enterprise enrollment dialog.">
+    Back
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_DONE" desc="Label for the done button on the success screen in the enterprise enrollment dialog.">
     Done
   </message>
@@ -5693,32 +5693,8 @@ All users must sign out to continue.
   <message name="IDS_ENTERPRISE_ENROLLMENT_WORKING" desc="Status message to show while enterprise enrollment is underway.">
     Enrolling the device. Please wait...
   </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_RESUMING_LOGIN" desc="Status message to show after enterprise enrollment is complete and the first user sign-in is prepared.">
-    Preparing for first enterprise sign-in...
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_EXPLAIN" desc="Explanatory text describing what enterprise enrollment is and guiding the user to sign in with an account from the enterprise domain.">
-    Welcome to your managed Chromebook!
-
-    To complete the setup of this Chromebook, you must sign in with a username given to you by your organization.
-
-    Contact your system administrator for more information.
-
-    If this device does not belong to your organization, and is your personal device, you can press Ctrl+Alt+E now to cancel enrollment of the device and go back to the sign-in screen.
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_LINK" desc="Text on the link to the screen that explain what enterprise enrollment is.">
+  <message name="IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_LINK" desc="Text on the link to the enterprise enrollment help article.">
     Learn more about Enterprise Enrollment
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_EXPLAIN_BUTTON" desc="Text on the button that closes the explanatory dialog and sends to user back to the sign-in screen.">
-    Sign in now
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_REALLY" desc="Message asking the user to confirm if he really wants to cancel auto enrollment.">
-    Please confirm that this is not an enterprise device. Enterprise enrollment will be cancelled.
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_CONFIRM" desc="Text on the button that confirms opting out of auto enrollment.">
-    Cancel enterprise enrollment
-  </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_GO_BACK" desc="Text on the button that goes back to enrollment from the confirmation dialog.">
-    Back
   </message>
 
   <!-- About network UI display strings -->

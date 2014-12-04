@@ -28,14 +28,10 @@
 class PrefRegistrySimple;
 class PrefService;
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace pairing_chromeos {
-class SharkConnectionListener;
 class ControllerPairingController;
 class HostPairingController;
+class SharkConnectionListener;
 }
 
 namespace chromeos {
@@ -111,9 +107,8 @@ class WizardController : public BaseScreenDelegate,
   static std::string GetEnrollmentRecoveryDomain();
 
   // Shows the first screen defined by |first_screen_name| or by default
-  // if the parameter is empty. Takes ownership of |screen_parameters|.
-  void Init(const std::string& first_screen_name,
-            scoped_ptr<base::DictionaryValue> screen_parameters);
+  // if the parameter is empty.
+  void Init(const std::string& first_screen_name);
 
   // Advances to screen defined by |screen_name| and shows it.
   void AdvanceToScreen(const std::string& screen_name);
@@ -362,9 +357,6 @@ class WizardController : public BaseScreenDelegate,
 
   // Default WizardController.
   static WizardController* default_controller_;
-
-  // Parameters for the first screen. May be NULL.
-  scoped_ptr<base::DictionaryValue> screen_parameters_;
 
   base::OneShotTimer<WizardController> smooth_show_timer_;
 

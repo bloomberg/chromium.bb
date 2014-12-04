@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
+#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -42,7 +42,6 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
-#include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/ui/focus_ring_controller.h"
@@ -168,8 +167,7 @@ void ShowLoginWizardFinish(
     chromeos::LoginDisplayHost* display_host) {
   TRACE_EVENT0("chromeos", "ShowLoginWizard::ShowLoginWizardFinish");
 
-  scoped_ptr<base::DictionaryValue> params;
-  display_host->StartWizard(first_screen_name, params.Pass());
+  display_host->StartWizard(first_screen_name);
 
   // Set initial timezone if specified by customization.
   const std::string timezone_name = startup_manifest->initial_timezone();
@@ -505,19 +503,12 @@ void LoginDisplayHostImpl::SetStatusAreaVisible(bool visible) {
 }
 
 AutoEnrollmentController* LoginDisplayHostImpl::GetAutoEnrollmentController() {
-  if (!auto_enrollment_controller_) {
+  if (!auto_enrollment_controller_)
     auto_enrollment_controller_.reset(new AutoEnrollmentController());
-    auto_enrollment_progress_subscription_ =
-        auto_enrollment_controller_->RegisterProgressCallback(
-            base::Bind(&LoginDisplayHostImpl::OnAutoEnrollmentProgress,
-                       base::Unretained(this)));
-  }
   return auto_enrollment_controller_.get();
 }
 
-void LoginDisplayHostImpl::StartWizard(
-    const std::string& first_screen_name,
-    scoped_ptr<base::DictionaryValue> screen_parameters) {
+void LoginDisplayHostImpl::StartWizard(const std::string& first_screen_name) {
   if (login::LoginScrollIntoViewEnabled())
     DisableKeyboardOverscroll();
 
@@ -527,10 +518,6 @@ void LoginDisplayHostImpl::StartWizard(
   // Keep parameters to restore if renderer crashes.
   restore_path_ = RESTORE_WIZARD;
   first_screen_name_ = first_screen_name;
-  if (screen_parameters.get())
-    screen_parameters_.reset(screen_parameters->DeepCopy());
-  else
-    screen_parameters_.reset();
   is_showing_login_ = false;
 
   if (waiting_for_wallpaper_load_ && !initialize_webui_hidden_) {
@@ -552,7 +539,7 @@ void LoginDisplayHostImpl::StartWizard(
 
   oobe_progress_bar_visible_ = !StartupUtils::IsDeviceRegistered();
   SetOobeProgressBarVisible(oobe_progress_bar_visible_);
-  wizard_controller_->Init(first_screen_name, screen_parameters.Pass());
+  wizard_controller_->Init(first_screen_name);
 }
 
 WizardController* LoginDisplayHostImpl::GetWizardController() {
@@ -665,10 +652,7 @@ void LoginDisplayHostImpl::StartSignInScreen(
   // We might be here after a reboot that was triggered after OOBE was complete,
   // so check for auto-enrollment again. This might catch a cached decision from
   // a previous oobe flow, or might start a new check with the server.
-  if (GetAutoEnrollmentController()->ShouldEnrollSilently())
-    existing_user_controller_->DoAutoEnrollment();
-  else
-    GetAutoEnrollmentController()->Start();
+  GetAutoEnrollmentController()->Start();
 
   // Initiate mobile config load.
   MobileConfig::GetInstance();
@@ -692,18 +676,6 @@ void LoginDisplayHostImpl::StartSignInScreen(
   BootTimesLoader::Get()->RecordCurrentStats(
       "login-wait-for-signin-state-initialize");
 }
-
-void LoginDisplayHostImpl::ResumeSignInScreen() {
-  // We only get here after a previous call the StartSignInScreen. That sign-in
-  // was successful but was interrupted by an auto-enrollment execution; once
-  // auto-enrollment is complete we resume the normal login flow from here.
-  DVLOG(1) << "Resuming sign in screen";
-  CHECK(existing_user_controller_.get());
-  SetOobeProgressBarVisible(oobe_progress_bar_visible_);
-  SetStatusAreaVisible(true);
-  existing_user_controller_->ResumeLogin();
-}
-
 
 void LoginDisplayHostImpl::OnPreferencesChanged() {
   if (is_showing_login_)
@@ -992,16 +964,6 @@ void LoginDisplayHostImpl::ScheduleFadeOutAnimation() {
   layer->SetOpacity(0);
 }
 
-void LoginDisplayHostImpl::OnAutoEnrollmentProgress(
-    policy::AutoEnrollmentState state) {
-  VLOG(1) << "OnAutoEnrollmentProgress, state " << state;
-
-  if (existing_user_controller_ &&
-      auto_enrollment_controller_->ShouldEnrollSilently()) {
-    existing_user_controller_->DoAutoEnrollment();
-  }
-}
-
 void LoginDisplayHostImpl::LoadURL(const GURL& url) {
   InitLoginWindowAndView();
   // Subscribe to crash events.
@@ -1043,7 +1005,7 @@ void LoginDisplayHostImpl::StartPostponedWebUI() {
 
   switch (restore_path_) {
     case RESTORE_WIZARD:
-      StartWizard(first_screen_name_, screen_parameters_.Pass());
+      StartWizard(first_screen_name_);
       break;
     case RESTORE_SIGN_IN:
       StartSignInScreen(LoginScreenContext());
@@ -1253,8 +1215,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
     // Shows networks screen instead of enrollment screen to resume the
     // interrupted auto start enrollment flow because enrollment screen does
     // not handle flaky network. See http://crbug.com/332572
-    display_host->StartWizard(WizardController::kNetworkScreenName,
-                              scoped_ptr<base::DictionaryValue>());
+    display_host->StartWizard(WizardController::kNetworkScreenName);
     return;
   }
 
