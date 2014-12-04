@@ -26,6 +26,7 @@ namespace blink {
 class WebFrame;
 class WebRTCDataChannelHandler;
 class WebRTCOfferOptions;
+class WebRTCPeerConnectionHandlerClient;
 }
 
 namespace content {

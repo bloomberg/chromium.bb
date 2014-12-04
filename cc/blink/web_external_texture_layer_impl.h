@@ -13,6 +13,7 @@
 #include "third_party/WebKit/public/platform/WebExternalTextureLayer.h"
 
 namespace blink {
+class WebExternalTextureLayerClient;
 struct WebFloatRect;
 struct WebExternalTextureMailbox;
 }

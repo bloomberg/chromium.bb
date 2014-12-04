@@ -21,7 +21,9 @@
 
 namespace blink {
 class WebFrame;
+class WebGraphicsContext3D;
 class WebLayer;
+struct WebPluginParams;
 }
 
 namespace content {

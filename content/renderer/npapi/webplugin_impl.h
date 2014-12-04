@@ -36,6 +36,7 @@ class WebPluginContainer;
 class WebURLResponse;
 class WebURLLoader;
 class WebURLRequest;
+struct WebPluginParams;
 }
 
 namespace content {

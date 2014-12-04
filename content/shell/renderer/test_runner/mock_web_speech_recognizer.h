@@ -16,6 +16,7 @@ namespace blink {
 class WebSpeechRecognitionHandle;
 class WebSpeechRecognitionParams;
 class WebSpeechRecognizerClient;
+class WebString;
 }
 
 namespace content {

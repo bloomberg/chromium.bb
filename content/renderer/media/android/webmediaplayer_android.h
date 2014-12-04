@@ -45,6 +45,7 @@ namespace blink {
 class WebContentDecryptionModule;
 class WebContentDecryptionModuleResult;
 class WebFrame;
+class WebMediaPlayerClient;
 class WebURL;
 }
 
