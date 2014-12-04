@@ -40,6 +40,17 @@ const int kTestFrameHeight2 = 150;
 
 const int kFrameRate = 30;
 
+// The value of the padding bytes in unpacked frames.
+const uint8_t kFramePaddingValue = 0;
+
+// Use a special value for frame pixels to tell pixel bytes apart from the
+// padding bytes in the unpacked frame test.
+const uint8_t kFakePixelValue = 1;
+
+// Use a special value for the first pixel to verify the result in the inverted
+// frame test.
+const uint8_t kFakePixelValueFirst = 2;
+
 class MockDeviceClient : public media::VideoCaptureDevice::Client {
  public:
   MOCK_METHOD2(ReserveOutputBuffer,
@@ -58,6 +69,22 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
                     const scoped_refptr<media::VideoFrame>& frame,
                     base::TimeTicks timestamp));
 };
+
+// Creates a DesktopFrame that has the first pixel bytes set to
+// kFakePixelValueFirst, and the rest of the bytes set to kFakePixelValue, for
+// UnpackedFrame and InvertedFrame verification.
+webrtc::BasicDesktopFrame* CreateBasicFrame(const webrtc::DesktopSize& size) {
+  webrtc::BasicDesktopFrame* frame = new webrtc::BasicDesktopFrame(size);;
+  DCHECK_EQ(frame->size().width() * webrtc::DesktopFrame::kBytesPerPixel,
+            frame->stride());
+  memset(frame->data(),
+         kFakePixelValue,
+         frame->stride() * frame->size().height());
+  memset(frame->data(),
+         kFakePixelValueFirst,
+         webrtc::DesktopFrame::kBytesPerPixel);
+  return frame;
+}
 
 // DesktopFrame wrapper that flips wrapped frame upside down by inverting
 // stride.
@@ -83,18 +110,46 @@ class InvertedDesktopFrame : public webrtc::DesktopFrame {
   DISALLOW_COPY_AND_ASSIGN(InvertedDesktopFrame);
 };
 
+// DesktopFrame wrapper that copies the input frame and doubles the stride.
+class UnpackedDesktopFrame : public webrtc::DesktopFrame {
+ public:
+  // Takes ownership of |frame|.
+  explicit UnpackedDesktopFrame(webrtc::DesktopFrame* frame)
+      : webrtc::DesktopFrame(
+            frame->size(),
+            frame->stride() * 2,
+            new uint8_t[frame->stride() * 2 * frame->size().height()],
+            NULL) {
+    memset(data(), kFramePaddingValue, stride() * size().height());
+    CopyPixelsFrom(*frame,
+                   webrtc::DesktopVector(),
+                   webrtc::DesktopRect::MakeSize(size()));
+    delete frame;
+  }
+  ~UnpackedDesktopFrame() override {
+    delete[] data_;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(UnpackedDesktopFrame);
+};
+
 // TODO(sergeyu): Move this to a separate file where it can be reused.
 class FakeScreenCapturer : public webrtc::ScreenCapturer {
  public:
   FakeScreenCapturer()
       : callback_(NULL),
         frame_index_(0),
-        generate_inverted_frames_(false) {
+        generate_inverted_frames_(false),
+        generate_cropped_frames_(false) {
   }
   ~FakeScreenCapturer() override {}
 
   void set_generate_inverted_frames(bool generate_inverted_frames) {
     generate_inverted_frames_ = generate_inverted_frames;
+  }
+
+  void set_generate_cropped_frames(bool generate_cropped_frames) {
+    generate_cropped_frames_ = generate_cropped_frames;
   }
 
   // VideoFrameCapturer interface.
@@ -109,9 +164,13 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
     }
     frame_index_++;
 
-    webrtc::DesktopFrame* frame = new webrtc::BasicDesktopFrame(size);
-    if (generate_inverted_frames_)
+    webrtc::DesktopFrame* frame = CreateBasicFrame(size);;
+
+    if (generate_inverted_frames_) {
       frame = new InvertedDesktopFrame(frame);
+    } else if (generate_cropped_frames_) {
+      frame = new UnpackedDesktopFrame(frame);
+    }
     callback_->OnCaptureCompleted(frame);
   }
 
@@ -123,6 +182,7 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
   Callback* callback_;
   int frame_index_;
   bool generate_inverted_frames_;
+  bool generate_cropped_frames_;
 };
 
 }  // namespace
@@ -134,8 +194,16 @@ class DesktopCaptureDeviceTest : public testing::Test {
         new DesktopCaptureDevice(capturer.Pass(), DesktopMediaID::TYPE_SCREEN));
   }
 
+  void CopyFrame(const uint8_t* frame, int size,
+                 const media::VideoCaptureFormat&, int, base::TimeTicks) {
+    ASSERT_TRUE(output_frame_.get() != NULL);
+    ASSERT_EQ(output_frame_->stride() * output_frame_->size().height(), size);
+    memcpy(output_frame_->data(), frame, size);
+  }
+
  protected:
   scoped_ptr<DesktopCaptureDevice> capture_device_;
+  scoped_ptr<webrtc::DesktopFrame> output_frame_;
 };
 
 // There is currently no screen capturer implementation for ozone. So disable
@@ -260,6 +328,95 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
   EXPECT_EQ(kTestFrameHeight1, format.frame_size.height());
   EXPECT_EQ(kFrameRate, format.frame_rate);
   EXPECT_EQ(media::PIXEL_FORMAT_ARGB, format.pixel_format);
+}
+
+// This test verifies that an unpacked frame is converted to a packed frame.
+TEST_F(DesktopCaptureDeviceTest, UnpackedFrame) {
+  FakeScreenCapturer* mock_capturer = new FakeScreenCapturer();
+  mock_capturer->set_generate_cropped_frames(true);
+  CreateScreenCaptureDevice(scoped_ptr<webrtc::DesktopCapturer>(mock_capturer));
+
+  media::VideoCaptureFormat format;
+  base::WaitableEvent done_event(false, false);
+
+  int frame_size = 0;
+  output_frame_.reset(new webrtc::BasicDesktopFrame(
+      webrtc::DesktopSize(kTestFrameWidth1, kTestFrameHeight1)));
+
+  scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
+  EXPECT_CALL(*client, OnError(_)).Times(0);
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _)).WillRepeatedly(
+      DoAll(Invoke(this, &DesktopCaptureDeviceTest::CopyFrame),
+            SaveArg<1>(&frame_size),
+            InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
+
+  media::VideoCaptureParams capture_params;
+  capture_params.requested_format.frame_size.SetSize(kTestFrameWidth1,
+                                                     kTestFrameHeight1);
+  capture_params.requested_format.frame_rate = kFrameRate;
+  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+
+  capture_device_->AllocateAndStart(capture_params, client.Pass());
+
+  EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
+  done_event.Reset();
+  capture_device_->StopAndDeAllocate();
+
+  // Verifies that |output_frame_| has the same data as a packed frame of the
+  // same size.
+  scoped_ptr<webrtc::BasicDesktopFrame> expected_frame(CreateBasicFrame(
+      webrtc::DesktopSize(kTestFrameWidth1, kTestFrameHeight1)));
+  EXPECT_EQ(output_frame_->stride() * output_frame_->size().height(),
+            frame_size);
+  EXPECT_EQ(
+      0, memcmp(output_frame_->data(), expected_frame->data(), frame_size));
+}
+
+// The test verifies that a bottom-to-top frame is converted to top-to-bottom.
+TEST_F(DesktopCaptureDeviceTest, InvertedFrame) {
+  FakeScreenCapturer* mock_capturer = new FakeScreenCapturer();
+  mock_capturer->set_generate_inverted_frames(true);
+  CreateScreenCaptureDevice(scoped_ptr<webrtc::DesktopCapturer>(mock_capturer));
+
+  media::VideoCaptureFormat format;
+  base::WaitableEvent done_event(false, false);
+
+  int frame_size = 0;
+  output_frame_.reset(new webrtc::BasicDesktopFrame(
+      webrtc::DesktopSize(kTestFrameWidth1, kTestFrameHeight1)));
+
+  scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
+  EXPECT_CALL(*client, OnError(_)).Times(0);
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _)).WillRepeatedly(
+      DoAll(Invoke(this, &DesktopCaptureDeviceTest::CopyFrame),
+            SaveArg<1>(&frame_size),
+            InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
+
+  media::VideoCaptureParams capture_params;
+  capture_params.requested_format.frame_size.SetSize(kTestFrameWidth1,
+                                                     kTestFrameHeight1);
+  capture_params.requested_format.frame_rate = kFrameRate;
+  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+
+  capture_device_->AllocateAndStart(capture_params, client.Pass());
+
+  EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
+  done_event.Reset();
+  capture_device_->StopAndDeAllocate();
+
+  // Verifies that |output_frame_| has the same pixel values as the inverted
+  // frame.
+  scoped_ptr<webrtc::DesktopFrame> inverted_frame(
+      new InvertedDesktopFrame(CreateBasicFrame(
+          webrtc::DesktopSize(kTestFrameWidth1, kTestFrameHeight1))));
+  EXPECT_EQ(output_frame_->stride() * output_frame_->size().height(),
+            frame_size);
+  for (int i = 0; i < output_frame_->size().height(); ++i) {
+    EXPECT_EQ(0,
+        memcmp(inverted_frame->data() + i * inverted_frame->stride(),
+               output_frame_->data() + i * output_frame_->stride(),
+               output_frame_->stride()));
+  }
 }
 
 }  // namespace content
