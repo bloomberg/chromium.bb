@@ -123,7 +123,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
   }
   virtual bool SwapBuffers() override {
     // TODO: this should be replaced by a fence when supported by the driver.
-    glFinish();
+    glFlush();
     return ozone_surface_->OnSwapBuffers();
   }
   virtual bool ScheduleOverlayPlane(int z_order,
