@@ -30821,6 +30821,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SBIRS.DiscardedIncident" enum="IncidentType">
+  <owner>grt@google.com</owner>
+  <summary>
+    The type of incident discarded by the safe browsing incident reporting
+    service as a result of profile or service destruction.
+  </summary>
+</histogram>
+
 <histogram name="SBIRS.DownloadMetadata.DeleteSuccess" enum="BooleanSuccess">
   <owner>grt@chromium.org</owner>
   <summary>The result of deleting a profile's download metadata file.</summary>
@@ -30863,7 +30871,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="SBIRS.Incident" enum="IncidentType">
   <owner>grt@google.com</owner>
   <summary>
-    The type of incident given to the safe browsing incident reporting service.
+    The type of incident included in an incident report by the safe browsing
+    incident reporting service.
   </summary>
 </histogram>
 
@@ -30883,11 +30892,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SBIRS.PrunedIncident" enum="IncidentType">
+  <owner>grt@google.com</owner>
+  <summary>
+    The type of incident pruned from a report in the safe browsing incident
+    reporting service as a result of having previously been reported.
+  </summary>
+</histogram>
+
 <histogram name="SBIRS.PruneRatio" units="percentage">
   <owner>grt@google.com</owner>
   <summary>
     The percentage of incidents pruned from a safe browsing incident report on
     account of having been previously reported.
+  </summary>
+</histogram>
+
+<histogram name="SBIRS.ReceivedIncident" enum="IncidentType">
+  <owner>grt@google.com</owner>
+  <summary>
+    The type of incident received by the safe browsing incident reporting
+    service.
   </summary>
 </histogram>
 
