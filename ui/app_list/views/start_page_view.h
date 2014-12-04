@@ -46,6 +46,9 @@ class APP_LIST_EXPORT StartPageView : public SearchResultContainerView {
   // Overridden from SearchResultContainerView:
   void OnContainerSelected(bool from_bottom) override;
 
+  // Returns search box bounds to use when the start page is active.
+  gfx::Rect GetSearchBoxBounds() const;
+
  private:
   // Overridden from SearchResultContainerView:
   int Update() override;

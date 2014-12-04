@@ -48,7 +48,7 @@ const int kTileSpacing = 10;
 // (because it is visible on many different pages).
 class SearchBoxSpacerView : public views::View {
  public:
-  SearchBoxSpacerView(const gfx::Size& search_box_size)
+  explicit SearchBoxSpacerView(const gfx::Size& search_box_size)
       : size_(kStartPageSearchBoxWidth, search_box_size.height()) {}
 
   ~SearchBoxSpacerView() override {}
@@ -176,6 +176,10 @@ void StartPageView::Layout() {
 }
 
 void StartPageView::OnContainerSelected(bool from_bottom) {
+}
+
+gfx::Rect StartPageView::GetSearchBoxBounds() const {
+  return search_box_spacer_view_->bounds();
 }
 
 int StartPageView::Update() {

@@ -33,6 +33,7 @@ class AppListViewDelegate;
 class AppsContainerView;
 class ContentsAnimator;
 class PaginationModel;
+class SearchBoxView;
 class SearchResultListView;
 class SearchResultPageView;
 class StartPageView;
@@ -76,6 +77,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // The index of the currently active launcher page.
   int GetActivePageIndex() const;
 
+  // The currently active state.
+  AppListModel::State GetActiveState() const;
+
   // True if |state| is the current active laucher page.
   bool IsStateActive(AppListModel::State state) const;
 
@@ -83,20 +87,30 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // -1 if there is no view for |state|.
   int GetPageIndexForState(AppListModel::State state) const;
 
+  // Gets the state of a launcher page in |view_model_|, by index. Returns
+  // INVALID_STATE if there is no state for |index|.
+  AppListModel::State GetStateForPageIndex(int index) const;
+
   int NumLauncherPages() const;
 
   void Prerender();
 
-  AppsContainerView* apps_container_view() { return apps_container_view_; }
-  StartPageView* start_page_view() { return start_page_view_; }
-  views::View* custom_page_view() { return custom_page_view_; }
-  SearchResultListView* search_results_list_view() {
+  AppsContainerView* apps_container_view() const {
+    return apps_container_view_;
+  }
+  StartPageView* start_page_view() const { return start_page_view_; }
+  views::View* custom_page_view() const { return custom_page_view_; }
+  SearchResultListView* search_results_list_view() const {
     return search_results_list_view_;
   }
   SearchResultPageView* search_results_page_view() {
     return search_results_page_view_;
   }
   views::View* GetPageView(int index) const;
+
+  SearchBoxView* GetSearchBoxView() const;
+
+  AppListMainView* app_list_main_view() const { return app_list_main_view_; }
 
   // Adds a blank launcher page. For use in tests only.
   void AddBlankPageForTesting();
@@ -107,6 +121,12 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Returns search box bounds to use for content views that do not specify
   // their own custom layout.
   gfx::Rect GetDefaultSearchBoxBounds() const;
+
+  // Returns search box bounds to use for a given state.
+  gfx::Rect GetSearchBoxBoundsForState(AppListModel::State state) const;
+
+  // Returns search box bounds to use for a given page index.
+  gfx::Rect GetSearchBoxBoundsForPageIndex(int index) const;
 
   // Returns the content area bounds to use for content views that do not
   // specify their own custom layout.

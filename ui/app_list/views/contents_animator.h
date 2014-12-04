@@ -56,6 +56,12 @@ class ContentsAnimator {
                                            int from_page,
                                            int to_page) const;
 
+  // Updates the position of the search box view, placing it in the correct
+  // position for the transition from |from_page| to |to_page|.
+  void UpdateSearchBoxForDefaultAnimation(double progress,
+                                          int from_page,
+                                          int to_page) const;
+
  private:
   ContentsView* contents_view_;
 

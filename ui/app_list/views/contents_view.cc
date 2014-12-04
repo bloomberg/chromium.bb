@@ -150,6 +150,10 @@ int ContentsView::GetActivePageIndex() const {
   return pagination_model_.SelectedTargetPage();
 }
 
+AppListModel::State ContentsView::GetActiveState() const {
+  return GetStateForPageIndex(GetActivePageIndex());
+}
+
 bool ContentsView::IsStateActive(AppListModel::State state) const {
   int active_page_index = GetActivePageIndex();
   return active_page_index >= 0 &&
@@ -162,6 +166,15 @@ int ContentsView::GetPageIndexForState(AppListModel::State state) const {
       state_to_view_.find(state);
   if (it == state_to_view_.end())
     return -1;
+
+  return it->second;
+}
+
+AppListModel::State ContentsView::GetStateForPageIndex(int index) const {
+  std::map<int, AppListModel::State>::const_iterator it =
+      view_to_state_.find(index);
+  if (it == view_to_state_.end())
+    return AppListModel::INVALID_STATE;
 
   return it->second;
 }
@@ -322,6 +335,10 @@ views::View* ContentsView::GetPageView(int index) const {
   return view_model_->view_at(index);
 }
 
+SearchBoxView* ContentsView::GetSearchBoxView() const {
+  return app_list_main_view_->search_box_view();
+}
+
 void ContentsView::AddBlankPageForTesting() {
   AddLauncherPage(new views::View);
   pagination_model_.SetTotalPages(view_model_->view_size());
@@ -348,16 +365,31 @@ int ContentsView::AddLauncherPage(views::View* view,
 }
 
 gfx::Rect ContentsView::GetDefaultSearchBoxBounds() const {
-  gfx::Rect search_box_bounds(
-      0,
-      0,
-      GetDefaultContentsSize().width(),
-      app_list_main_view_->search_box_view()->GetPreferredSize().height());
+  gfx::Rect search_box_bounds(0, 0, GetDefaultContentsSize().width(),
+                              GetSearchBoxView()->GetPreferredSize().height());
   if (switches::IsExperimentalAppListEnabled()) {
     search_box_bounds.set_y(kExperimentalWindowPadding);
     search_box_bounds.Inset(kExperimentalWindowPadding, 0);
   }
   return search_box_bounds;
+}
+
+gfx::Rect ContentsView::GetSearchBoxBoundsForState(
+    AppListModel::State state) const {
+  // On the start page, the search box is in a different location.
+  if (state == AppListModel::STATE_START) {
+    DCHECK(start_page_view_);
+    // Convert to ContentsView space, assuming that the StartPageView is in the
+    // ContentsView's default bounds.
+    return start_page_view_->GetSearchBoxBounds() +
+           GetDefaultContentsBounds().OffsetFromOrigin();
+  }
+
+  return GetDefaultSearchBoxBounds();
+}
+
+gfx::Rect ContentsView::GetSearchBoxBoundsForPageIndex(int index) const {
+  return GetSearchBoxBoundsForState(GetStateForPageIndex(index));
 }
 
 gfx::Rect ContentsView::GetDefaultContentsBounds() const {
@@ -396,7 +428,7 @@ bool ContentsView::Back() {
         SetActivePage(GetPageIndexForState(AppListModel::STATE_START));
       break;
     case AppListModel::STATE_SEARCH_RESULTS:
-      app_list_main_view_->search_box_view()->ClearSearch();
+      GetSearchBoxView()->ClearSearch();
       ShowSearchResults(false);
       break;
     case AppListModel::INVALID_STATE:
