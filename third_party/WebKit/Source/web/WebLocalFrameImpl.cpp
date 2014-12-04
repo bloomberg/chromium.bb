@@ -1487,7 +1487,7 @@ WebString WebLocalFrameImpl::contentAsMarkup() const
 
 WebString WebLocalFrameImpl::renderTreeAsText(RenderAsTextControls toShow) const
 {
-    RenderAsTextBehavior behavior = RenderAsTextBehaviorNormal;
+    RenderAsTextBehavior behavior = RenderAsTextShowAllLayers;
 
     if (toShow & RenderAsTextDebug)
         behavior |= RenderAsTextShowCompositedLayers | RenderAsTextShowAddresses | RenderAsTextShowIDAndClass | RenderAsTextShowLayerNesting;
