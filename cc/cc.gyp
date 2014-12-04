@@ -88,6 +88,7 @@
         'base/swap_promise.h',
         'base/swap_promise_monitor.cc',
         'base/swap_promise_monitor.h',
+        'base/synced_property.h',
         'base/switches.cc',
         'base/switches.h',
         'base/tiling_data.cc',

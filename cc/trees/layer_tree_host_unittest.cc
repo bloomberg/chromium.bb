@@ -1041,14 +1041,14 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
     // until the second draw.
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
-        EXPECT_EQ(1.f, impl->active_tree()->page_scale_factor());
+        EXPECT_EQ(1.f, impl->active_tree()->current_page_scale_factor());
         // We'll start an animation when we get back to the main thread.
         break;
       case 1:
-        EXPECT_EQ(1.f, impl->active_tree()->page_scale_factor());
+        EXPECT_EQ(1.f, impl->active_tree()->current_page_scale_factor());
         break;
       case 2:
-        EXPECT_EQ(1.25f, impl->active_tree()->page_scale_factor());
+        EXPECT_EQ(1.25f, impl->active_tree()->current_page_scale_factor());
         EndTest();
         break;
       default:
@@ -5571,7 +5571,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     switch (frame_) {
       case 1:
         // Drew at page scale 1 before any pinching.
-        EXPECT_EQ(1.f, host_impl->active_tree()->total_page_scale_factor());
+        EXPECT_EQ(1.f, host_impl->active_tree()->current_page_scale_factor());
         EXPECT_EQ(1.f, quad_scale_delta);
         PostNextAfterDraw(host_impl);
         break;
@@ -5579,7 +5579,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
         if (quad_scale_delta != 1.f)
           break;
         // Drew at page scale 1.5 after pinching in.
-        EXPECT_EQ(1.5f, host_impl->active_tree()->total_page_scale_factor());
+        EXPECT_EQ(1.5f, host_impl->active_tree()->current_page_scale_factor());
         EXPECT_EQ(1.f, quad_scale_delta);
         PostNextAfterDraw(host_impl);
         break;
@@ -5590,7 +5590,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
         if (frame_data->has_no_damage)
           break;
         // Drew at page scale 1 with the 1.5 tiling while pinching out.
-        EXPECT_EQ(1.f, host_impl->active_tree()->total_page_scale_factor());
+        EXPECT_EQ(1.f, host_impl->active_tree()->current_page_scale_factor());
         EXPECT_EQ(1.5f, quad_scale_delta);
         // We don't PostNextAfterDraw here, instead we wait for the new tiling
         // to finish rastering so we don't get any noise in further steps.
@@ -5598,7 +5598,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
       case 4:
         // Drew at page scale 1 with the 1.5 tiling after pinching out completed
         // while waiting for texture uploads to complete.
-        EXPECT_EQ(1.f, host_impl->active_tree()->total_page_scale_factor());
+        EXPECT_EQ(1.f, host_impl->active_tree()->current_page_scale_factor());
         // This frame will not have any damage, since it's actually the same as
         // the last frame, and should contain no incomplete tiles. We just want
         // to make sure we drew here at least once after the pinch ended to be
@@ -5610,7 +5610,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
         if (quad_scale_delta != 1.f)
           break;
         // Drew at scale 1 after texture uploads are done.
-        EXPECT_EQ(1.f, host_impl->active_tree()->total_page_scale_factor());
+        EXPECT_EQ(1.f, host_impl->active_tree()->current_page_scale_factor());
         EXPECT_EQ(1.f, quad_scale_delta);
         EndTest();
         break;
@@ -5781,19 +5781,19 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     switch (step_) {
       case 1:
         // Drew at scale 1 before any pinching.
-        EXPECT_EQ(1.f, host_impl->active_tree()->total_page_scale_factor());
+        EXPECT_EQ(1.f, host_impl->active_tree()->current_page_scale_factor());
         EXPECT_EQ(1.f, quad_scale_delta);
         break;
       case 2:
         if (quad_scale_delta != 1.f / 1.5f)
           break;
         // Drew at scale 1 still though the ideal is 1.5.
-        EXPECT_EQ(1.5f, host_impl->active_tree()->total_page_scale_factor());
+        EXPECT_EQ(1.5f, host_impl->active_tree()->current_page_scale_factor());
         EXPECT_EQ(1.f / 1.5f, quad_scale_delta);
         break;
       case 3:
         // Continuous draws are attempted.
-        EXPECT_EQ(1.5f, host_impl->active_tree()->total_page_scale_factor());
+        EXPECT_EQ(1.5f, host_impl->active_tree()->current_page_scale_factor());
         if (!frame_data->has_no_damage)
           EXPECT_EQ(1.f / 1.5f, quad_scale_delta);
         break;
@@ -5801,7 +5801,7 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
         if (quad_scale_delta != 1.f)
           break;
         // Drew at scale 1.5 when all the tiles completed.
-        EXPECT_EQ(1.5f, host_impl->active_tree()->total_page_scale_factor());
+        EXPECT_EQ(1.5f, host_impl->active_tree()->current_page_scale_factor());
         EXPECT_EQ(1.f, quad_scale_delta);
         break;
       case 5:

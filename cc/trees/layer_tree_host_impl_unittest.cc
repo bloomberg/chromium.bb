@@ -924,9 +924,9 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
 
   // The impl-based pinch zoom should adjust the max scroll position.
   {
-    host_impl_->active_tree()->SetPageScaleFactorAndLimits(
+    host_impl_->active_tree()->PushPageScaleFromMainThread(
         page_scale_factor, min_page_scale, max_page_scale);
-    host_impl_->active_tree()->SetPageScaleDelta(1.f);
+    host_impl_->SetPageScaleOnActiveTree(page_scale_factor);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
 
     float page_scale_delta = 2.f;
@@ -952,9 +952,9 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
   // Scrolling after a pinch gesture should always be in local space.  The
   // scroll deltas have the page scale factor applied.
   {
-    host_impl_->active_tree()->SetPageScaleFactorAndLimits(
+    host_impl_->active_tree()->PushPageScaleFromMainThread(
         page_scale_factor, min_page_scale, max_page_scale);
-    host_impl_->active_tree()->SetPageScaleDelta(1.f);
+    host_impl_->SetPageScaleOnActiveTree(page_scale_factor);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
 
     float page_scale_delta = 2.f;
@@ -1009,8 +1009,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
 
   // Basic pinch zoom in gesture
   {
-    host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
-                                                           min_page_scale,
+    host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
 
@@ -1031,8 +1030,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
 
   // Zoom-in clamping
   {
-    host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
-                                                           min_page_scale,
+    host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
     float page_scale_delta = 10.f;
@@ -1050,8 +1048,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
 
   // Zoom-out clamping
   {
-    host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
-                                                           min_page_scale,
+    host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
     scroll_layer->SetScrollOffset(gfx::ScrollOffset(50, 50));
@@ -1072,8 +1069,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
 
   // Two-finger panning should not happen based on pinch events only
   {
-    host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
-                                                           min_page_scale,
+    host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
     scroll_layer->SetScrollOffset(gfx::ScrollOffset(20, 20));
@@ -1094,8 +1090,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
 
   // Two-finger panning should work with interleaved scroll events
   {
-    host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
-                                                           min_page_scale,
+    host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
     scroll_layer->SetScrollOffset(gfx::ScrollOffset(20, 20));
@@ -1117,9 +1112,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
 
   // Two-finger panning should work when starting fully zoomed out.
   {
-    host_impl_->active_tree()->SetPageScaleFactorAndLimits(0.5f,
-                                                           0.5f,
-                                                           4.f);
+    host_impl_->active_tree()->PushPageScaleFromMainThread(0.5f, 0.5f, 4.f);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
     scroll_layer->SetScrollOffset(gfx::ScrollOffset(0, 0));
 
@@ -1157,8 +1150,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
 
   // Non-anchor zoom-in
   {
-    host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
-                                                           min_page_scale,
+    host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     scroll_layer->SetScrollOffset(gfx::ScrollOffset(50, 50));
 
@@ -1201,8 +1193,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
 
   // Anchor zoom-out
   {
-    host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
-                                                           min_page_scale,
+    host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     scroll_layer->SetScrollOffset(gfx::ScrollOffset(50, 50));
 
@@ -1258,8 +1249,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationNoOp) {
 
   // Anchor zoom with unchanged page scale should not change scroll or scale.
   {
-    host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
-                                                           min_page_scale,
+    host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                            max_page_scale);
     scroll_layer->SetScrollOffset(gfx::ScrollOffset(50, 50));
 
@@ -1296,8 +1286,7 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
 
   float min_page_scale = 0.5f;
   float max_page_scale = 4.f;
-  host_impl_->sync_tree()->SetPageScaleFactorAndLimits(1.f,
-                                                       min_page_scale,
+  host_impl_->sync_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
                                                        max_page_scale);
   host_impl_->ActivateSyncTree();
 
@@ -1527,7 +1516,7 @@ TEST_F(LayerTreeHostImplTest, ScrollbarFadePinchZoomScrollbars) {
 
   base::TimeTicks fake_now = gfx::FrameTime::Now();
 
-  host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f, 1.f, 4.f);
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 4.f);
 
   EXPECT_EQ(base::TimeDelta(), requested_scrollbar_animation_delay_);
   EXPECT_FALSE(did_request_animate_);
@@ -1554,7 +1543,7 @@ TEST_F(LayerTreeHostImplTest, ScrollbarFadePinchZoomScrollbars) {
   EXPECT_FALSE(did_request_animate_);
 
   // Make page scale > min so that subsequent scrolls will trigger fades.
-  host_impl_->active_tree()->SetPageScaleDelta(1.1f);
+  host_impl_->SetPageScaleOnActiveTree(1.1f);
 
   // After a scroll, a fade animation should be scheduled about 20ms from now.
   host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel);
@@ -1669,7 +1658,7 @@ TEST_F(LayerTreeHostImplTest, MouseMoveAtWithDeviceScaleOf2) {
 TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
-  host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f, 0.5f, 4.f);
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
   DrawFrame();
   {
     CompositorFrameMetadata metadata =
@@ -1717,8 +1706,8 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
 
   // Likewise if set from the main thread.
   host_impl_->ProcessScrollDeltas();
-  host_impl_->active_tree()->SetPageScaleFactorAndLimits(4.f, 0.5f, 4.f);
-  host_impl_->active_tree()->SetPageScaleDelta(1.f);
+  host_impl_->active_tree()->PushPageScaleFromMainThread(4.f, 0.5f, 4.f);
+  host_impl_->SetPageScaleOnActiveTree(4.f);
   {
     CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
@@ -2438,7 +2427,7 @@ TEST_F(LayerTreeHostImplTopControlsTest,
 
   // Need SetDrawsContent so ScrollBegin's hit test finds an actual layer.
   outer_scroll->SetDrawsContent(true);
-  host_impl_->active_tree()->SetPageScaleFactorAndLimits(2.f, 1.f, 2.f);
+  host_impl_->active_tree()->PushPageScaleFromMainThread(2.f, 1.f, 2.f);
 
   EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
@@ -2507,7 +2496,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, FixedContainerDelta) {
 
   // Zoom in, since the fixed container is the outer viewport, the delta should
   // not be scaled.
-  host_impl_->active_tree()->SetPageScaleFactorAndLimits(page_scale, 1.f, 2.f);
+  host_impl_->active_tree()->PushPageScaleFromMainThread(page_scale, 1.f, 2.f);
 
   EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
@@ -3022,8 +3011,7 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnMainThread) {
   host_impl_->ScrollEnd();
 
   // Set new page scale from main thread.
-  host_impl_->active_tree()->SetPageScaleFactorAndLimits(page_scale,
-                                                         page_scale,
+  host_impl_->active_tree()->PushPageScaleFromMainThread(page_scale, page_scale,
                                                          page_scale);
 
   scoped_ptr<ScrollAndScaleSet> scroll_info = host_impl_->ProcessScrollDeltas();
@@ -3057,7 +3045,7 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnImplThread) {
                                                       Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
   host_impl_->SetViewportSize(viewport_size);
-  host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f, 1.f, page_scale);
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, page_scale);
   DrawFrame();
 
   LayerImpl* root_scroll =
@@ -3089,7 +3077,7 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnImplThread) {
   EXPECT_EQ(expected_max_scroll, root_scroll->MaxScrollOffset());
 
   // The page scale delta should match the new scale on the impl side.
-  EXPECT_EQ(page_scale, host_impl_->active_tree()->total_page_scale_factor());
+  EXPECT_EQ(page_scale, host_impl_->active_tree()->current_page_scale_factor());
 }
 
 TEST_F(LayerTreeHostImplTest, PageScaleDeltaAppliedToRootScrollLayerOnly) {
@@ -3185,8 +3173,7 @@ TEST_F(LayerTreeHostImplTest, ScrollChildAndChangePageScaleOnMainThread) {
   host_impl_->ScrollEnd();
 
   float page_scale = 2.f;
-  host_impl_->active_tree()->SetPageScaleFactorAndLimits(page_scale,
-                                                         1.f,
+  host_impl_->active_tree()->PushPageScaleFromMainThread(page_scale, 1.f,
                                                          page_scale);
 
   DrawOneFrame();
@@ -3341,8 +3328,8 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
 
 
     // Scrolling should be adjusted from viewport space.
-    host_impl_->active_tree()->SetPageScaleFactorAndLimits(2.f, 2.f, 2.f);
-    host_impl_->active_tree()->SetPageScaleDelta(1.f);
+    host_impl_->active_tree()->PushPageScaleFromMainThread(2.f, 2.f, 2.f);
+    host_impl_->SetPageScaleOnActiveTree(2.f);
 
     scroll_delta = gfx::Vector2d(0, -2);
     EXPECT_EQ(InputHandler::ScrollStarted,
@@ -3616,7 +3603,7 @@ TEST_F(LayerTreeHostImplTest, ScrollViewportRounding) {
   host_impl_->active_tree()->InnerViewportContainerLayer()->SetBounds(
       gfx::Size(width * scale - 1, height * scale));
   host_impl_->SetDeviceScaleFactor(scale);
-  host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f, 0.5f, 4.f);
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
 
   LayerImpl* inner_viewport_scroll_layer =
       host_impl_->active_tree()->InnerViewportScrollLayer();
@@ -3717,16 +3704,16 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   EXPECT_EQ(0.f, scroll_delegate.max_page_scale_factor());
 
   // Updating page scale immediately updates the delegate.
-  host_impl_->active_tree()->SetPageScaleFactorAndLimits(2.f, 0.5f, 4.f);
+  host_impl_->active_tree()->PushPageScaleFromMainThread(2.f, 0.5f, 4.f);
   EXPECT_EQ(2.f, scroll_delegate.page_scale_factor());
   EXPECT_EQ(0.5f, scroll_delegate.min_page_scale_factor());
   EXPECT_EQ(4.f, scroll_delegate.max_page_scale_factor());
-  host_impl_->active_tree()->SetPageScaleDelta(1.5f);
+  host_impl_->SetPageScaleOnActiveTree(2.f * 1.5f);
   EXPECT_EQ(3.f, scroll_delegate.page_scale_factor());
   EXPECT_EQ(0.5f, scroll_delegate.min_page_scale_factor());
   EXPECT_EQ(4.f, scroll_delegate.max_page_scale_factor());
-  host_impl_->active_tree()->SetPageScaleDelta(1.f);
-  host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f, 0.5f, 4.f);
+  host_impl_->SetPageScaleOnActiveTree(2.f);
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
   EXPECT_EQ(1.f, scroll_delegate.page_scale_factor());
   EXPECT_EQ(0.5f, scroll_delegate.min_page_scale_factor());
   EXPECT_EQ(4.f, scroll_delegate.max_page_scale_factor());
@@ -3823,7 +3810,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollRoot) {
   InputHandlerScrollResult scroll_result;
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
-  host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f, 0.5f, 4.f);
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
   DrawFrame();
   EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());
 
@@ -4042,7 +4029,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollAlways) {
   LayerImpl* clip_layer = scroll_layer->parent()->parent();
   clip_layer->SetBounds(gfx::Size(50, 50));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
-  host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f, 0.5f, 4.f);
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
   DrawFrame();
   EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());
 
@@ -4065,9 +4052,9 @@ TEST_F(LayerTreeHostImplTest, NoOverscrollOnFractionalDeviceScale) {
   scoped_ptr<LayerImpl> child =
       CreateScrollableLayer(2, content_size, root_clip.get());
   root->scroll_clip_layer()->SetBounds(gfx::Size(320, 469));
-  host_impl_->active_tree()->SetPageScaleFactorAndLimits(
-      0.326531f, 0.326531f, 5.f);
-  host_impl_->active_tree()->SetPageScaleDelta(1.f);
+  host_impl_->active_tree()->PushPageScaleFromMainThread(0.326531f, 0.326531f,
+                                                         5.f);
+  host_impl_->SetPageScaleOnActiveTree(0.326531f);
   child->SetScrollClipLayer(Layer::INVALID_ID);
   root->AddChild(child.Pass());
   root_clip->AddChild(root.Pass());
@@ -6159,8 +6146,8 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   host_impl_->SetViewportSize(device_viewport_size);
 
   host_impl_->CreatePendingTree();
-  host_impl_->pending_tree()
-      ->SetPageScaleFactorAndLimits(1.f, 1.f / 16.f, 16.f);
+  host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f / 16.f,
+                                                          16.f);
 
   scoped_ptr<LayerImpl> scoped_root =
       LayerImpl::Create(host_impl_->pending_tree(), 1);
@@ -7839,9 +7826,9 @@ TEST_F(LayerTreeHostImplTest, WheelScrollWithPageScaleFactorOnInnerLayer) {
 
   // The scroll deltas should have the page scale factor applied.
   {
-    host_impl_->active_tree()->SetPageScaleFactorAndLimits(
+    host_impl_->active_tree()->PushPageScaleFromMainThread(
         page_scale_factor, min_page_scale, max_page_scale);
-    host_impl_->active_tree()->SetPageScaleDelta(1.f);
+    host_impl_->SetPageScaleOnActiveTree(page_scale_factor);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
 
     float page_scale_delta = 2.f;

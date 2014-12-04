@@ -134,7 +134,7 @@ class PictureLayerImplTest : public testing::Test {
 
   void SetupPendingTree(scoped_refptr<RasterSource> raster_source) {
     host_impl_.CreatePendingTree();
-    host_impl_.pending_tree()->SetPageScaleFactorAndLimits(1.f, 0.25f, 100.f);
+    host_impl_.pending_tree()->PushPageScaleFromMainThread(1.f, 0.25f, 100.f);
     LayerTreeImpl* pending_tree = host_impl_.pending_tree();
 
     // Steal from the recycled tree.

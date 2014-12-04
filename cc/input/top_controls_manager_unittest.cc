@@ -31,7 +31,8 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
         top_controls_top_offset_(0.f),
         top_controls_show_threshold_(top_controls_show_threshold),
         top_controls_hide_threshold_(top_controls_hide_threshold) {
-    active_tree_ = LayerTreeImpl::create(&host_impl_);
+    active_tree_ =
+        LayerTreeImpl::create(&host_impl_, new SyncedProperty<ScaleGroup>);
     root_scroll_layer_ = LayerImpl::Create(active_tree_.get(), 1);
   }
 

@@ -306,10 +306,10 @@ class LayerTreeHostScrollTestScrollAbortedCommit
       EXPECT_VECTOR_EQ(root_scroll_layer->scroll_offset(), initial_scroll_);
 
       EXPECT_EQ(1.f, impl->active_tree()->page_scale_delta());
-      EXPECT_EQ(1.f, impl->active_tree()->total_page_scale_factor());
-      impl->active_tree()->SetPageScaleDelta(impl_scale_);
+      EXPECT_EQ(1.f, impl->active_tree()->current_page_scale_factor());
+      impl->SetPageScaleOnActiveTree(impl_scale_);
       EXPECT_EQ(impl_scale_, impl->active_tree()->page_scale_delta());
-      EXPECT_EQ(impl_scale_, impl->active_tree()->total_page_scale_factor());
+      EXPECT_EQ(impl_scale_, impl->active_tree()->current_page_scale_factor());
 
       // To simplify the testing flow, don't redraw here, just commit.
       impl->SetNeedsCommit();
@@ -326,11 +326,11 @@ class LayerTreeHostScrollTestScrollAbortedCommit
           gfx::ScrollOffsetWithDelta(initial_scroll_, impl_scroll_));
 
       EXPECT_EQ(1.f, impl->active_tree()->page_scale_delta());
-      EXPECT_EQ(impl_scale_, impl->active_tree()->total_page_scale_factor());
-      impl->active_tree()->SetPageScaleDelta(impl_scale_);
+      EXPECT_EQ(impl_scale_, impl->active_tree()->current_page_scale_factor());
+      impl->SetPageScaleOnActiveTree(impl_scale_ * impl_scale_);
       EXPECT_EQ(impl_scale_, impl->active_tree()->page_scale_delta());
       EXPECT_EQ(impl_scale_ * impl_scale_,
-                impl->active_tree()->total_page_scale_factor());
+                impl->active_tree()->current_page_scale_factor());
 
       impl->SetNeedsCommit();
     } else if (impl->active_tree()->source_frame_number() == 1) {
@@ -897,7 +897,7 @@ class ImplSidePaintingScrollTestImplOnlyScroll
     : public ImplSidePaintingScrollTest {
  public:
   ImplSidePaintingScrollTestImplOnlyScroll()
-      : initial_scroll_(20, 10), impl_thread_scroll_(-2, 3) {}
+      : initial_scroll_(20, 10), impl_thread_scroll_(-2, 3), impl_scale_(2.f) {}
 
   void SetupTree() override {
     LayerTreeHostScrollTest::SetupTree();
@@ -943,6 +943,7 @@ class ImplSidePaintingScrollTestImplOnlyScroll
       ASSERT_TRUE(active_root);
       ASSERT_TRUE(active_scroll_layer);
       active_scroll_layer->ScrollBy(impl_thread_scroll_);
+      impl->SetPageScaleOnActiveTree(impl_scale_);
     }
   }
 
@@ -990,7 +991,6 @@ class ImplSidePaintingScrollTestImplOnlyScroll
         EXPECT_VECTOR_EQ(pending_scroll_layer->ScrollDelta(), gfx::Vector2d());
         EXPECT_VECTOR_EQ(pending_scroll_layer->sent_scroll_delta(),
                          gfx::Vector2d());
-        EndTest();
         break;
     }
   }
@@ -1006,13 +1006,24 @@ class ImplSidePaintingScrollTestImplOnlyScroll
         EXPECT_VECTOR_EQ(scroll_layer->scroll_offset(), initial_scroll_);
         EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), gfx::Vector2d());
         EXPECT_VECTOR_EQ(scroll_layer->sent_scroll_delta(), gfx::Vector2d());
+        EXPECT_EQ(1.f, impl->active_tree()->page_scale_delta());
+        EXPECT_EQ(1.f, impl->active_tree()->current_page_scale_factor());
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
         EXPECT_VECTOR_EQ(scroll_layer->scroll_offset(), initial_scroll_);
         EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), impl_thread_scroll_);
         EXPECT_VECTOR_EQ(scroll_layer->sent_scroll_delta(), gfx::Vector2d());
+        EXPECT_EQ(impl_scale_, impl->active_tree()->page_scale_delta());
+        EXPECT_EQ(impl_scale_,
+                  impl->active_tree()->current_page_scale_factor());
         PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        EXPECT_EQ(1.f, impl->active_tree()->page_scale_delta());
+        EXPECT_EQ(impl_scale_,
+                  impl->active_tree()->current_page_scale_factor());
+        EndTest();
         break;
     }
   }
@@ -1022,6 +1033,7 @@ class ImplSidePaintingScrollTestImplOnlyScroll
  private:
   gfx::ScrollOffset initial_scroll_;
   gfx::Vector2dF impl_thread_scroll_;
+  float impl_scale_;
 };
 
 MULTI_THREAD_TEST_F(ImplSidePaintingScrollTestImplOnlyScroll);

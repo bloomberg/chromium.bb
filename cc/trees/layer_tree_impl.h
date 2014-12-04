@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/base/swap_promise.h"
+#include "cc/base/synced_property.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/output/renderer.h"
 #include "cc/resources/ui_resource_client.h"
@@ -53,8 +54,10 @@ typedef std::list<UIResourceRequest> UIResourceRequestQueue;
 class CC_EXPORT LayerTreeImpl {
  public:
   static scoped_ptr<LayerTreeImpl> create(
-      LayerTreeHostImpl* layer_tree_host_impl) {
-    return make_scoped_ptr(new LayerTreeImpl(layer_tree_host_impl));
+      LayerTreeHostImpl* layer_tree_host_impl,
+      scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor) {
+    return make_scoped_ptr(
+        new LayerTreeImpl(layer_tree_host_impl, page_scale_factor));
   }
   virtual ~LayerTreeImpl();
 
@@ -161,23 +164,20 @@ class CC_EXPORT LayerTreeImpl {
     has_transparent_background_ = transparent;
   }
 
-  void SetPageScaleFactorAndLimits(float page_scale_factor,
-      float min_page_scale_factor, float max_page_scale_factor);
-  void SetPageScaleDelta(float delta);
-  void SetPageScaleValues(float page_scale_factor,
-      float min_page_scale_factor, float max_page_scale_factor,
-      float page_scale_delta);
-  float total_page_scale_factor() const {
-    return page_scale_factor_ * page_scale_delta_;
+  void SetPageScaleOnActiveTree(float active_page_scale);
+  void PushPageScaleFromMainThread(float page_scale_factor,
+                                   float min_page_scale_factor,
+                                   float max_page_scale_factor);
+  float current_page_scale_factor() const {
+    return page_scale_factor()->Current(IsActiveTree());
   }
-  float page_scale_factor() const { return page_scale_factor_; }
   float min_page_scale_factor() const { return min_page_scale_factor_; }
   float max_page_scale_factor() const { return max_page_scale_factor_; }
-  float page_scale_delta() const  { return page_scale_delta_; }
-  void set_sent_page_scale_delta(float delta) {
-    sent_page_scale_delta_ = delta;
-  }
-  float sent_page_scale_delta() const { return sent_page_scale_delta_; }
+
+  float page_scale_delta() const { return page_scale_factor()->Delta(); }
+
+  SyncedProperty<ScaleGroup>* page_scale_factor();
+  const SyncedProperty<ScaleGroup>* page_scale_factor() const;
 
   // Updates draw properties and render surface layer list, as well as tile
   // priorities. Returns false if it was unable to update.
@@ -321,8 +321,17 @@ class CC_EXPORT LayerTreeImpl {
   scoped_ptr<PendingPageScaleAnimation> TakePendingPageScaleAnimation();
 
  protected:
-  explicit LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
+  explicit LayerTreeImpl(
+      LayerTreeHostImpl* layer_tree_host_impl,
+      scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor);
   void ReleaseResourcesRecursive(LayerImpl* current);
+  float ClampPageScaleFactorToLimits(float page_scale_factor) const;
+  void PushPageScaleFactorAndLimits(const float* page_scale_factor,
+                                    float min_page_scale_factor,
+                                    float max_page_scale_factor);
+  bool SetPageScaleFactorLimits(float min_page_scale_factor,
+                                float max_page_scale_factor);
+  void DidUpdatePageScale();
 
   LayerTreeHostImpl* layer_tree_host_impl_;
   int source_frame_number_;
@@ -345,9 +354,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerSelectionBound selection_start_;
   LayerSelectionBound selection_end_;
 
-  float page_scale_factor_;
-  float page_scale_delta_;
-  float sent_page_scale_delta_;
+  scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor_;
   float min_page_scale_factor_;
   float max_page_scale_factor_;
 

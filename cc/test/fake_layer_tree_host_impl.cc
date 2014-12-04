@@ -52,7 +52,7 @@ FakeLayerTreeHostImpl::~FakeLayerTreeHostImpl() {}
 void FakeLayerTreeHostImpl::CreatePendingTree() {
   LayerTreeHostImpl::CreatePendingTree();
   float arbitrary_large_page_scale = 100000.f;
-  pending_tree()->SetPageScaleFactorAndLimits(
+  pending_tree()->PushPageScaleFromMainThread(
       1.f, 1.f / arbitrary_large_page_scale, arbitrary_large_page_scale);
 }
 

@@ -14,6 +14,7 @@
 #include "cc/animation/scrollbar_animation_controller_linear_fade.h"
 #include "cc/animation/scrollbar_animation_controller_thinning.h"
 #include "cc/base/math_util.h"
+#include "cc/base/synced_property.h"
 #include "cc/base/util.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
@@ -72,7 +73,9 @@ class LayerScrollOffsetDelegateProxy : public LayerImpl::ScrollOffsetDelegate {
   gfx::ScrollOffset last_set_scroll_offset_;
 };
 
-LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
+LayerTreeImpl::LayerTreeImpl(
+    LayerTreeHostImpl* layer_tree_host_impl,
+    scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor)
     : layer_tree_host_impl_(layer_tree_host_impl),
       source_frame_number_(-1),
       hud_layer_(0),
@@ -83,9 +86,7 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
       page_scale_layer_(NULL),
       inner_viewport_scroll_layer_(NULL),
       outer_viewport_scroll_layer_(NULL),
-      page_scale_factor_(1),
-      page_scale_delta_(1),
-      sent_page_scale_delta_(1),
+      page_scale_factor_(page_scale_factor),
       min_page_scale_factor_(0),
       max_page_scale_factor_(0),
       scrolling_layer_id_from_previous_tree_(0),
@@ -216,10 +217,10 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
           target_tree->sent_top_controls_delta_;
   target_tree->sent_top_controls_delta_ = 0.f;
 
-  target_tree->SetPageScaleValues(
-      page_scale_factor(), min_page_scale_factor(), max_page_scale_factor(),
-      target_tree->page_scale_delta() / target_tree->sent_page_scale_delta());
-  target_tree->set_sent_page_scale_delta(1);
+  // Active tree already shares the page_scale_factor object with pending
+  // tree so only the limits need to be provided.
+  target_tree->PushPageScaleFactorAndLimits(nullptr, min_page_scale_factor(),
+                                            max_page_scale_factor());
 
   target_tree->pending_page_scale_animation_ =
       pending_page_scale_animation_.Pass();
@@ -312,64 +313,83 @@ void ForceScrollbarParameterUpdateAfterScaleChange(LayerImpl* current_layer) {
 
 }  // namespace
 
-void LayerTreeImpl::SetPageScaleFactorAndLimits(float page_scale_factor,
-    float min_page_scale_factor, float max_page_scale_factor) {
-  SetPageScaleValues(page_scale_factor, min_page_scale_factor,
-      max_page_scale_factor, page_scale_delta_);
+float LayerTreeImpl::ClampPageScaleFactorToLimits(
+    float page_scale_factor) const {
+  if (min_page_scale_factor_ && page_scale_factor < min_page_scale_factor_)
+    page_scale_factor = min_page_scale_factor_;
+  else if (max_page_scale_factor_ && page_scale_factor > max_page_scale_factor_)
+    page_scale_factor = max_page_scale_factor_;
+  return page_scale_factor;
 }
 
-void LayerTreeImpl::SetPageScaleDelta(float delta) {
-  SetPageScaleValues(page_scale_factor_, min_page_scale_factor_,
-      max_page_scale_factor_, delta);
+void LayerTreeImpl::SetPageScaleOnActiveTree(float active_page_scale) {
+  DCHECK(IsActiveTree());
+  if (page_scale_factor()->SetCurrent(
+          ClampPageScaleFactorToLimits(active_page_scale)))
+    DidUpdatePageScale();
 }
 
-void LayerTreeImpl::SetPageScaleValues(float page_scale_factor,
-      float min_page_scale_factor, float max_page_scale_factor,
-      float page_scale_delta) {
-  bool page_scale_changed =
-      min_page_scale_factor != min_page_scale_factor_ ||
-      max_page_scale_factor != max_page_scale_factor_ ||
-      page_scale_factor != page_scale_factor_;
+void LayerTreeImpl::PushPageScaleFromMainThread(float page_scale_factor,
+                                                float min_page_scale_factor,
+                                                float max_page_scale_factor) {
+  PushPageScaleFactorAndLimits(&page_scale_factor, min_page_scale_factor,
+                               max_page_scale_factor);
+}
+
+void LayerTreeImpl::PushPageScaleFactorAndLimits(const float* page_scale_factor,
+                                                 float min_page_scale_factor,
+                                                 float max_page_scale_factor) {
+  DCHECK(page_scale_factor || IsActiveTree());
+  bool changed_page_scale = false;
+  if (page_scale_factor) {
+    DCHECK(!IsActiveTree() || !layer_tree_host_impl_->pending_tree());
+    changed_page_scale |=
+        page_scale_factor_->PushFromMainThread(*page_scale_factor);
+  }
+  if (IsActiveTree())
+    changed_page_scale |= page_scale_factor_->PushPendingToActive();
+  changed_page_scale |=
+      SetPageScaleFactorLimits(min_page_scale_factor, max_page_scale_factor);
+
+  if (changed_page_scale)
+    DidUpdatePageScale();
+}
+
+bool LayerTreeImpl::SetPageScaleFactorLimits(float min_page_scale_factor,
+                                             float max_page_scale_factor) {
+  if (min_page_scale_factor == min_page_scale_factor_ &&
+      max_page_scale_factor == max_page_scale_factor_)
+    return false;
 
   min_page_scale_factor_ = min_page_scale_factor;
   max_page_scale_factor_ = max_page_scale_factor;
-  page_scale_factor_ = page_scale_factor;
 
-  float total = page_scale_factor_ * page_scale_delta;
-  if (min_page_scale_factor_ && total < min_page_scale_factor_)
-    page_scale_delta = min_page_scale_factor_ / page_scale_factor_;
-  else if (max_page_scale_factor_ && total > max_page_scale_factor_)
-    page_scale_delta = max_page_scale_factor_ / page_scale_factor_;
+  return true;
+}
 
-  if (page_scale_delta_ == page_scale_delta && !page_scale_changed)
-    return;
+void LayerTreeImpl::DidUpdatePageScale() {
+  if (IsActiveTree())
+    page_scale_factor()->SetCurrent(
+        ClampPageScaleFactorToLimits(current_page_scale_factor()));
 
-  if (page_scale_delta_ != page_scale_delta) {
-    page_scale_delta_ = page_scale_delta;
-
-    if (IsActiveTree()) {
-      LayerTreeImpl* pending_tree = layer_tree_host_impl_->pending_tree();
-      if (pending_tree) {
-        DCHECK_EQ(1, pending_tree->sent_page_scale_delta());
-        pending_tree->SetPageScaleDelta(
-            page_scale_delta_ / sent_page_scale_delta_);
-      }
-    }
-
-    set_needs_update_draw_properties();
-  }
+  set_needs_update_draw_properties();
 
   if (root_layer_scroll_offset_delegate_) {
     root_layer_scroll_offset_delegate_->UpdateRootLayerState(
-        TotalScrollOffset(),
-        TotalMaxScrollOffset(),
-        ScrollableSize(),
-        total_page_scale_factor(),
-        min_page_scale_factor_,
+        TotalScrollOffset(), TotalMaxScrollOffset(), ScrollableSize(),
+        current_page_scale_factor(), min_page_scale_factor_,
         max_page_scale_factor_);
   }
 
   ForceScrollbarParameterUpdateAfterScaleChange(page_scale_layer());
+}
+
+SyncedProperty<ScaleGroup>* LayerTreeImpl::page_scale_factor() {
+  return page_scale_factor_.get();
+}
+
+const SyncedProperty<ScaleGroup>* LayerTreeImpl::page_scale_factor() const {
+  return page_scale_factor_.get();
 }
 
 gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {
@@ -377,7 +397,7 @@ gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {
     return gfx::SizeF();
 
   return gfx::ScaleSize(InnerViewportContainerLayer()->BoundsForScrolling(),
-                        1.0f / total_page_scale_factor());
+                        1.0f / current_page_scale_factor());
 }
 
 gfx::Rect LayerTreeImpl::RootScrollLayerDeviceViewportBounds() const {
@@ -398,9 +418,7 @@ static void ApplySentScrollDeltasFromAbortedCommitTo(LayerImpl* layer) {
 void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
   DCHECK(IsActiveTree());
 
-  page_scale_factor_ *= sent_page_scale_delta_;
-  page_scale_delta_ /= sent_page_scale_delta_;
-  sent_page_scale_delta_ = 1.f;
+  page_scale_factor()->AbortCommit();
 
   top_controls_content_offset_ += sent_top_controls_delta_;
   top_controls_delta_ -= sent_top_controls_delta_;
@@ -496,7 +514,7 @@ bool LayerTreeImpl::UpdateDrawProperties() {
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         root_layer(), DrawViewportSize(),
         layer_tree_host_impl_->DrawTransform(), device_scale_factor(),
-        total_page_scale_factor(), page_scale_layer,
+        current_page_scale_factor(), page_scale_layer,
         resource_provider()->max_texture_size(), settings().can_use_lcd_text,
         settings().layers_always_allowed_lcd_text,
         can_render_to_separate_surface,
@@ -910,11 +928,8 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
 
   if (root_layer_scroll_offset_delegate_) {
     root_layer_scroll_offset_delegate_->UpdateRootLayerState(
-        TotalScrollOffset(),
-        TotalMaxScrollOffset(),
-        ScrollableSize(),
-        total_page_scale_factor(),
-        min_page_scale_factor(),
+        TotalScrollOffset(), TotalMaxScrollOffset(), ScrollableSize(),
+        current_page_scale_factor(), min_page_scale_factor(),
         max_page_scale_factor());
 
     if (inner_viewport_scroll_layer_) {
@@ -962,11 +977,8 @@ void LayerTreeImpl::UpdateScrollOffsetDelegate() {
     offset += outer_viewport_scroll_delegate_proxy_->last_set_scroll_offset();
 
   root_layer_scroll_offset_delegate_->UpdateRootLayerState(
-      offset,
-      TotalMaxScrollOffset(),
-      ScrollableSize(),
-      total_page_scale_factor(),
-      min_page_scale_factor(),
+      offset, TotalMaxScrollOffset(), ScrollableSize(),
+      current_page_scale_factor(), min_page_scale_factor(),
       max_page_scale_factor());
 }
 
