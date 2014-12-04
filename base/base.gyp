@@ -479,6 +479,7 @@
         'containers/stack_container_unittest.cc',
         'cpu_unittest.cc',
         'debug/crash_logging_unittest.cc',
+        'debug/debugger_unittest.cc',
         'debug/leak_tracker_unittest.cc',
         'debug/proc_maps_linux_unittest.cc',
         'debug/stack_trace_unittest.cc',
