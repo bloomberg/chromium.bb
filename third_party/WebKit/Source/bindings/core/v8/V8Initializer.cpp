@@ -52,6 +52,7 @@
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
+#include "platform/heap/AddressSanitizer.h"
 #include "platform/scheduler/Scheduler.h"
 #include "public/platform/Platform.h"
 #include "wtf/RefPtr.h"
@@ -500,6 +501,10 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
 
 static const int kWorkerMaxStackSize = 500 * 1024;
 
+// This function uses a local stack variable to determine the isolate's stack limit. AddressSanitizer may
+// relocate that local variable to a fake stack, which may lead to problems during JavaScript execution.
+// Therefore we disable AddressSanitizer for V8Initializer::initializeWorker().
+NO_SANITIZE_ADDRESS
 void V8Initializer::initializeWorker(v8::Isolate* isolate)
 {
     initializeV8Common(isolate);
