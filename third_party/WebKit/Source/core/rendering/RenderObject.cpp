@@ -2400,7 +2400,10 @@ void RenderObject::destroyAndCleanupAnonymousWrappers()
         // Anonymous block continuations are tracked and destroyed elsewhere (see the bottom of RenderBlock::removeChild)
         if (destroyRootParent->isRenderBlock() && toRenderBlock(destroyRootParent)->isAnonymousBlockContinuation())
             break;
-        // Column spans are tracked elsewhere, so we can't destroy them here.
+        // A flow thread is tracked by its containing block. Whether its children are removed or not is irrelevant.
+        if (destroyRootParent->isRenderFlowThread())
+            break;
+        // Column spans are tracked elsewhere.
         if (destroyRootParent->isAnonymousColumnSpanBlock())
             break;
 
