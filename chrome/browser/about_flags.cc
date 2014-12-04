@@ -1673,7 +1673,7 @@ const Experiment kExperiments[] = {
     "enable-single-click-autofill",
     IDS_FLAGS_ENABLE_SINGLE_CLICK_AUTOFILL_NAME,
     IDS_FLAGS_ENABLE_SINGLE_CLICK_AUTOFILL_DESCRIPTION,
-    kOsCrOS | kOsMac | kOsWin | kOsLinux,
+    kOsCrOS | kOsMac | kOsWin | kOsLinux | kOsAndroid,
     ENABLE_DISABLE_VALUE_TYPE(
         autofill::switches::kEnableSingleClickAutofill,
         autofill::switches::kDisableSingleClickAutofill)
