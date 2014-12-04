@@ -986,11 +986,11 @@ class DeviceUtilsGoHomeTest(DeviceUtilsOldImplTest):
       self.device.GoHome()
 
 
-class DeviceUtilsForceStopTest(DeviceUtilsOldImplTest):
+class DeviceUtilsForceStopTest(DeviceUtilsNewImplTest):
 
   def testForceStop(self):
-    with self.assertCalls(
-        "adb -s 0123456789abcdef shell 'am force-stop this.is.a.test.package'",
+    with self.assertCall(
+        self.call.adb.Shell('am force-stop this.is.a.test.package'),
         ''):
       self.device.ForceStop('this.is.a.test.package')
 
