@@ -716,7 +716,8 @@ ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetContext() const {
 
 gfx::Size ContentViewCoreImpl::GetViewSize() const {
   gfx::Size size = GetViewportSizeDip();
-  size.Enlarge(0, -GetTopControlsLayoutHeightDip());
+  if (DoTopControlsShrinkBlinkSize())
+    size.Enlarge(0, -GetTopControlsHeightDip());
   return size;
 }
 
@@ -740,12 +741,12 @@ gfx::Size ContentViewCoreImpl::GetViewportSizePix() const {
       Java_ContentViewCore_getViewportHeightPix(env, j_obj.obj()));
 }
 
-int ContentViewCoreImpl::GetTopControlsLayoutHeightPix() const {
+int ContentViewCoreImpl::GetTopControlsHeightPix() const {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return 0;
-  return Java_ContentViewCore_getTopControlsLayoutHeightPix(env, j_obj.obj());
+  return Java_ContentViewCore_getTopControlsHeightPix(env, j_obj.obj());
 }
 
 gfx::Size ContentViewCoreImpl::GetViewportSizeDip() const {
@@ -753,8 +754,16 @@ gfx::Size ContentViewCoreImpl::GetViewportSizeDip() const {
       gfx::ScaleSize(GetViewportSizePix(), 1.0f / dpi_scale()));
 }
 
-float ContentViewCoreImpl::GetTopControlsLayoutHeightDip() const {
-  return GetTopControlsLayoutHeightPix() / dpi_scale();
+bool ContentViewCoreImpl::DoTopControlsShrinkBlinkSize() const {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return false;
+  return Java_ContentViewCore_doTopControlsShrinkBlinkSize(env, j_obj.obj());
+}
+
+float ContentViewCoreImpl::GetTopControlsHeightDip() const {
+  return GetTopControlsHeightPix() / dpi_scale();
 }
 
 void ContentViewCoreImpl::AttachLayer(scoped_refptr<cc::Layer> layer) {

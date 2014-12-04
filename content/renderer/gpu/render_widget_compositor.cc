@@ -241,22 +241,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 
   settings.calculate_top_controls_position =
       cmd->HasSwitch(cc::switches::kEnableTopControlsPositionCalculation);
-  if (cmd->HasSwitch(cc::switches::kTopControlsHeight)) {
-    std::string controls_height_str =
-        cmd->GetSwitchValueASCII(cc::switches::kTopControlsHeight);
-    double controls_height;
-    if (base::StringToDouble(controls_height_str, &controls_height) &&
-        controls_height > 0)
-      settings.top_controls_height = controls_height;
-  }
-
-  if (settings.calculate_top_controls_position &&
-      settings.top_controls_height <= 0) {
-    DCHECK(false)
-        << "Top controls repositioning enabled without valid height set.";
-    settings.calculate_top_controls_position = false;
-  }
-
   if (cmd->HasSwitch(cc::switches::kTopControlsShowThreshold)) {
       std::string top_threshold_str =
           cmd->GetSwitchValueASCII(cc::switches::kTopControlsShowThreshold);
@@ -463,8 +447,12 @@ void RenderWidgetCompositor::UpdateTopControlsState(
                                            animate);
 }
 
-void RenderWidgetCompositor::SetTopControlsLayoutHeight(float height) {
-  layer_tree_host_->SetTopControlsLayoutHeight(height);
+void RenderWidgetCompositor::SetTopControlsShrinkBlinkSize(bool shrink) {
+  layer_tree_host_->SetTopControlsShrinkBlinkSize(shrink);
+}
+
+void RenderWidgetCompositor::SetTopControlsHeight(float height) {
+  layer_tree_host_->SetTopControlsHeight(height);
 }
 
 void RenderWidgetCompositor::SetNeedsRedrawRect(gfx::Rect damage_rect) {

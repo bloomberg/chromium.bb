@@ -282,9 +282,11 @@ public class DOMUtils {
         Rect bounds = getNodeBounds(viewCore.getWebContents(), nodeName);
         Assert.assertNotNull("Failed to get DOM element bounds of '" + nodeName + "'.", bounds);
 
+        int topControlsLayoutHeight = viewCore.doTopControlsShrinkBlinkSize()
+                ? viewCore.getTopControlsHeightPix() : 0;
         int clickX = (int) viewCore.getRenderCoordinates().fromLocalCssToPix(bounds.exactCenterX());
         int clickY = (int) viewCore.getRenderCoordinates().fromLocalCssToPix(bounds.exactCenterY())
-                + viewCore.getTopControlsLayoutHeightPix();
+                + topControlsLayoutHeight;
         return new int[] { clickX, clickY };
     }
 }

@@ -118,7 +118,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   virtual bool IsShowing() override;
   virtual gfx::Rect GetViewBounds() const override;
   virtual gfx::Size GetPhysicalBackingSize() const override;
-  virtual float GetTopControlsLayoutHeight() const override;
+  virtual bool DoTopControlsShrinkBlinkSize() const override;
+  virtual float GetTopControlsHeight() const override;
   virtual void UpdateCursor(const WebCursor& cursor) override;
   virtual void SetIsLoading(bool is_loading) override;
   virtual void TextInputTypeChanged(ui::TextInputType type,

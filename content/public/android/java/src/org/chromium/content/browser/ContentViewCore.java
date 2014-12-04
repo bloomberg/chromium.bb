@@ -418,7 +418,8 @@ public class ContentViewCore
     private int mViewportHeightPix;
     private int mPhysicalBackingWidthPix;
     private int mPhysicalBackingHeightPix;
-    private int mTopControlsLayoutHeightPix;
+    private int mTopControlsHeightPix;
+    private boolean mTopControlsShrinkBlinkSize;
 
     // Cached copy of all positions and scales as reported by the renderer.
     private final RenderCoordinates mRenderCoordinates;
@@ -567,21 +568,27 @@ public class ContentViewCore
         return mWebContents;
     }
 
-    /* TODO(aelias): Remove this after downstream callers switch to setTopControlsLayoutHeight. */
+    /* TODO(aelias): Remove this after downstream callers switch to setTopControlsHeight. */
     public void setViewportSizeOffset(int offsetXPix, int offsetYPix) {
-        setTopControlsLayoutHeight(offsetYPix);
+        setTopControlsHeight(mTopControlsHeightPix, offsetYPix != 0);
     }
 
     /**
-     * Specifies how much smaller the Blink layout size should be relative to the size of this
-     * view.
-     * @param topControlsLayoutHeightPix The Y amount in pixels to shrink the viewport by.
+     *
+     * @param topControlsHeightPix       The height of the top controls in pixels.
+     * @param topControlsShrinkBlinkSize The Y amount in pixels to shrink the viewport by.  This
+     *                                   specifies how much smaller the Blink layout size should be
+     *                                   relative to the size of this View.
      */
-    public void setTopControlsLayoutHeight(int topControlsLayoutHeightPix) {
-        if (topControlsLayoutHeightPix != mTopControlsLayoutHeightPix) {
-            mTopControlsLayoutHeightPix = topControlsLayoutHeightPix;
-            if (mNativeContentViewCore != 0) nativeWasResized(mNativeContentViewCore);
+    public void setTopControlsHeight(int topControlsHeightPix, boolean topControlsShrinkBlinkSize) {
+        if (topControlsHeightPix == mTopControlsHeightPix
+                && topControlsShrinkBlinkSize == mTopControlsShrinkBlinkSize) {
+            return;
         }
+
+        mTopControlsHeightPix = topControlsHeightPix;
+        mTopControlsShrinkBlinkSize = topControlsShrinkBlinkSize;
+        if (mNativeContentViewCore != 0) nativeWasResized(mNativeContentViewCore);
     }
 
     /**
@@ -1013,15 +1020,20 @@ public class ContentViewCore
 
     @VisibleForTesting
     public int getViewportSizeOffsetHeightPix() {
-        return getTopControlsLayoutHeightPix();
+        return mTopControlsShrinkBlinkSize ? mTopControlsHeightPix : 0;
     }
 
     /**
      * @return The amount that the viewport size given to Blink is shrunk by the URL-bar..
      */
     @CalledByNative
-    public int getTopControlsLayoutHeightPix() {
-        return mTopControlsLayoutHeightPix;
+    public boolean doTopControlsShrinkBlinkSize() {
+        return mTopControlsShrinkBlinkSize;
+    }
+
+    @CalledByNative
+    public int getTopControlsHeightPix() {
+        return mTopControlsHeightPix;
     }
 
     /**

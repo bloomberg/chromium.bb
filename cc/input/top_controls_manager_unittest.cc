@@ -19,16 +19,16 @@
 namespace cc {
 namespace {
 
-static const float kTopControlsHeight = 100;
-
 class MockTopControlsManagerClient : public TopControlsManagerClient {
  public:
-  MockTopControlsManagerClient(float top_controls_show_threshold,
+  MockTopControlsManagerClient(float top_controls_height,
+                               float top_controls_show_threshold,
                                float top_controls_hide_threshold)
       : host_impl_(&proxy_, &shared_bitmap_manager_),
         redraw_needed_(false),
         update_draw_properties_needed_(false),
         top_controls_top_offset_(0.f),
+        top_controls_height_(top_controls_height),
         top_controls_show_threshold_(top_controls_show_threshold),
         top_controls_hide_threshold_(top_controls_hide_threshold) {
     active_tree_ =
@@ -58,9 +58,9 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
   TopControlsManager* manager() {
     if (!manager_) {
       manager_ = TopControlsManager::Create(this,
-                                            kTopControlsHeight,
                                             top_controls_show_threshold_,
                                             top_controls_hide_threshold_);
+      manager_->SetTopControlsHeight(top_controls_height_);
     }
     return manager_.get();
   }
@@ -76,12 +76,13 @@ class MockTopControlsManagerClient : public TopControlsManagerClient {
   bool update_draw_properties_needed_;
 
   float top_controls_top_offset_;
+  float top_controls_height_;
   float top_controls_show_threshold_;
   float top_controls_hide_threshold_;
 };
 
 TEST(TopControlsManagerTest, EnsureScrollThresholdApplied) {
-  MockTopControlsManagerClient client(0.5f, 0.5f);
+  MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
 
   manager->ScrollBegin();
@@ -125,7 +126,7 @@ TEST(TopControlsManagerTest, EnsureScrollThresholdApplied) {
 }
 
 TEST(TopControlsManagerTest, PartialShownHideAnimation) {
-  MockTopControlsManagerClient client(0.5f, 0.5f);
+  MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
   manager->ScrollBegin();
   manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
@@ -155,7 +156,7 @@ TEST(TopControlsManagerTest, PartialShownHideAnimation) {
 }
 
 TEST(TopControlsManagerTest, PartialShownShowAnimation) {
-  MockTopControlsManagerClient client(0.5f, 0.5f);
+  MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
   manager->ScrollBegin();
   manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
@@ -185,7 +186,7 @@ TEST(TopControlsManagerTest, PartialShownShowAnimation) {
 }
 
 TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdShows) {
-  MockTopControlsManagerClient client(0.25f, 0.25f);
+  MockTopControlsManagerClient client(100.f, 0.25f, 0.25f);
   TopControlsManager* manager = client.manager();
 
   manager->ScrollBegin();
@@ -211,7 +212,7 @@ TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdShows) {
 }
 
 TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdHides) {
-  MockTopControlsManagerClient client(0.25f, 0.25f);
+  MockTopControlsManagerClient client(100.f, 0.25f, 0.25f);
   TopControlsManager* manager = client.manager();
 
   manager->ScrollBegin();
@@ -237,7 +238,7 @@ TEST(TopControlsManagerTest, PartialHiddenWithAmbiguousThresholdHides) {
 }
 
 TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdHides) {
-  MockTopControlsManagerClient client(0.25f, 0.25f);
+  MockTopControlsManagerClient client(100.f, 0.25f, 0.25f);
   TopControlsManager* manager = client.manager();
 
   manager->ScrollBy(gfx::Vector2dF(0.f, 200.f));
@@ -267,7 +268,7 @@ TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdHides) {
 }
 
 TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdShows) {
-  MockTopControlsManagerClient client(0.25f, 0.25f);
+  MockTopControlsManagerClient client(100.f, 0.25f, 0.25f);
   TopControlsManager* manager = client.manager();
 
   manager->ScrollBy(gfx::Vector2dF(0.f, 200.f));
@@ -297,7 +298,7 @@ TEST(TopControlsManagerTest, PartialShownWithAmbiguousThresholdShows) {
 }
 
 TEST(TopControlsManagerTest, PinchIgnoresScroll) {
-  MockTopControlsManagerClient client(0.5f, 0.5f);
+  MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
 
   // Hide the controls.
@@ -326,7 +327,7 @@ TEST(TopControlsManagerTest, PinchIgnoresScroll) {
 }
 
 TEST(TopControlsManagerTest, PinchBeginStartsAnimationIfNecessary) {
-  MockTopControlsManagerClient client(0.5f, 0.5f);
+  MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
   TopControlsManager* manager = client.manager();
 
   manager->ScrollBegin();
@@ -379,5 +380,80 @@ TEST(TopControlsManagerTest, PinchBeginStartsAnimationIfNecessary) {
   EXPECT_EQ(0.f, manager->ControlsTopOffset());
 }
 
+TEST(TopControlsManagerTest, HeightChangeMaintainsFullyVisibleControls) {
+  MockTopControlsManagerClient client(0.f, 0.5f, 0.5f);
+  TopControlsManager* manager = client.manager();
+
+  EXPECT_EQ(0.f, manager->top_controls_height());
+  EXPECT_EQ(0.f, manager->ControlsTopOffset());
+
+  manager->SetTopControlsHeight(100.f);
+  EXPECT_FALSE(manager->animation());
+  EXPECT_EQ(100.f, manager->top_controls_height());
+  EXPECT_EQ(0, manager->ControlsTopOffset());
+
+  manager->SetTopControlsHeight(50.f);
+  EXPECT_FALSE(manager->animation());
+  EXPECT_EQ(50.f, manager->top_controls_height());
+  EXPECT_EQ(0.f, manager->ControlsTopOffset());
+}
+
+TEST(TopControlsManagerTest, ShrinkingHeightKeepsTopControlsHidden) {
+  MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
+  TopControlsManager* manager = client.manager();
+
+  manager->ScrollBegin();
+  manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
+  EXPECT_EQ(-100.f, manager->ControlsTopOffset());
+  EXPECT_EQ(0.f, manager->ContentTopOffset());
+  manager->ScrollEnd();
+
+  manager->SetTopControlsHeight(50.f);
+  EXPECT_FALSE(manager->animation());
+  EXPECT_EQ(-50.f, manager->ControlsTopOffset());
+  EXPECT_EQ(0.f, manager->ContentTopOffset());
+
+  manager->SetTopControlsHeight(0.f);
+  EXPECT_FALSE(manager->animation());
+  EXPECT_EQ(0.f, manager->ControlsTopOffset());
+  EXPECT_EQ(0.f, manager->ContentTopOffset());
+}
+
+TEST(TopControlsManagerTest, HiddenTopControlsReadjustOnIncreasedHeight) {
+  MockTopControlsManagerClient client(10.f, 0.5f, 0.5f);
+  TopControlsManager* manager = client.manager();
+
+  manager->ScrollBegin();
+  manager->ScrollBy(gfx::Vector2dF(0.f, 300.f));
+  EXPECT_EQ(-10.f, manager->ControlsTopOffset());
+  EXPECT_EQ(0.f, manager->ContentTopOffset());
+  manager->ScrollEnd();
+
+  manager->SetTopControlsHeight(15.f);
+  EXPECT_TRUE(manager->animation());
+  base::TimeTicks time = base::TimeTicks::Now();
+  float previous_offset = manager->ControlsTopOffset();
+  while (manager->animation()) {
+    time = base::TimeDelta::FromMicroseconds(100) + time;
+    manager->Animate(time);
+    EXPECT_LT(manager->ControlsTopOffset(), previous_offset);
+    previous_offset = manager->ControlsTopOffset();
+  }
+  EXPECT_FALSE(manager->animation());
+  EXPECT_EQ(-15.f, manager->ControlsTopOffset());
+
+  manager->SetTopControlsHeight(35.f);
+  EXPECT_TRUE(manager->animation());
+  time = base::TimeTicks::Now();
+  previous_offset = manager->ControlsTopOffset();
+  while (manager->animation()) {
+    time = base::TimeDelta::FromMicroseconds(100) + time;
+    manager->Animate(time);
+    EXPECT_GT(manager->ControlsTopOffset(), previous_offset);
+    previous_offset = manager->ControlsTopOffset();
+  }
+  EXPECT_FALSE(manager->animation());
+  EXPECT_EQ(0.f, manager->ControlsTopOffset());
+}
 }  // namespace
 }  // namespace cc

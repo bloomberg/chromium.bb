@@ -287,9 +287,10 @@ class CC_EXPORT LayerTreeImpl {
   void RegisterPictureLayerImpl(PictureLayerImpl* layer);
   void UnregisterPictureLayerImpl(PictureLayerImpl* layer);
 
-  void set_top_controls_layout_height(float height) {
-    top_controls_layout_height_ = height;
+  void set_top_controls_shrink_blink_size(bool shrink) {
+    top_controls_shrink_blink_size_ = shrink;
   }
+  void set_top_controls_height(float height) { top_controls_height_ = height; }
   void set_top_controls_content_offset(float offset) {
     top_controls_content_offset_ = offset;
   }
@@ -300,9 +301,10 @@ class CC_EXPORT LayerTreeImpl {
     sent_top_controls_delta_ = sent_delta;
   }
 
-  float top_controls_layout_height() const {
-    return top_controls_layout_height_;
+  bool top_controls_shrink_blink_size() const {
+    return top_controls_shrink_blink_size_;
   }
+  float top_controls_height() const { return top_controls_height_; }
   float top_controls_content_offset() const {
     return top_controls_content_offset_;
   }
@@ -387,10 +389,11 @@ class CC_EXPORT LayerTreeImpl {
 
   int render_surface_layer_list_id_;
 
-  // The top controls content offset at the time of the last layout (and thus,
-  // viewport resize) in Blink. i.e. How much the viewport was shrunk by the top
-  // controls.
-  float top_controls_layout_height_;
+  // Whether or not Blink's viewport size was shrunk by the height of the top
+  // controls at the time of the last layout.
+  bool top_controls_shrink_blink_size_;
+
+  float top_controls_height_;
 
   // The up-to-date content offset of the top controls, i.e. the amount that the
   // web contents have been shifted down from the top of the device viewport.

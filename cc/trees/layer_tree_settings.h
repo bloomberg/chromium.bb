@@ -54,7 +54,6 @@ class CC_EXPORT LayerTreeSettings {
   bool layers_always_allowed_lcd_text;
   float minimum_contents_scale;
   float low_res_contents_scale_factor;
-  float top_controls_height;
   float top_controls_show_threshold;
   float top_controls_hide_threshold;
   double background_animation_rate;

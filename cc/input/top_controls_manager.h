@@ -34,12 +34,10 @@ class CC_EXPORT TopControlsManager
 
   static scoped_ptr<TopControlsManager> Create(
       TopControlsManagerClient* client,
-      float top_controls_height,
       float top_controls_show_threshold,
       float top_controls_hide_threshold);
   virtual ~TopControlsManager();
 
-  float controls_height() { return top_controls_height_; }
   float ControlsTopOffset();
   float ContentTopOffset();
 
@@ -63,11 +61,11 @@ class CC_EXPORT TopControlsManager
 
   gfx::Vector2dF Animate(base::TimeTicks monotonic_time);
   void SetControlsTopOffset(float offset);
+  void SetTopControlsHeight(float top_controls_height);
   float top_controls_height() { return top_controls_height_; }
 
  protected:
   TopControlsManager(TopControlsManagerClient* client,
-                     float top_controls_height,
                      float top_controls_show_threshold,
                      float top_controls_hide_threshold);
 
@@ -88,13 +86,13 @@ class CC_EXPORT TopControlsManager
   float current_scroll_delta_;
   float controls_scroll_begin_offset_;
 
-  // The height of the visible top control such that it must be shown when
-  // the user stops the scroll.
-  float top_controls_show_height_;
+  // The percent height of the visible top control such that it must be shown
+  // when the user stops the scroll.
+  float top_controls_show_threshold_;
 
-  // The height of the visible top control such that it must be hidden when
-  // the user stops the scroll.
-  float top_controls_hide_height_;
+  // The percent height of the visible top control such that it must be hidden
+  // when the user stops the scroll.
+  float top_controls_hide_threshold_;
 
   bool pinch_gesture_active_;
 

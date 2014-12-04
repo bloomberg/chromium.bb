@@ -27,9 +27,6 @@ const char kEnableMainFrameBeforeActivation[] =
 const char kEnableTopControlsPositionCalculation[] =
     "enable-top-controls-position-calculation";
 
-// The height of the movable top controls.
-const char kTopControlsHeight[] = "top-controls-height";
-
 // Percentage of the top controls need to be hidden before they will auto hide.
 const char kTopControlsHideThreshold[] = "top-controls-hide-threshold";
 

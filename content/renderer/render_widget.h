@@ -352,7 +352,8 @@ class CONTENT_EXPORT RenderWidget
   // Resizes the render widget.
   void Resize(const gfx::Size& new_size,
               const gfx::Size& physical_backing_size,
-              float top_controls_layout_height,
+              bool top_controls_shrink_blink_size,
+              float top_controls_height,
               const gfx::Size& visible_viewport_size,
               const gfx::Rect& resizer_rect,
               bool is_fullscreen,
@@ -586,9 +587,13 @@ class CONTENT_EXPORT RenderWidget
   // The size of the view's backing surface in non-DPI-adjusted pixels.
   gfx::Size physical_backing_size_;
 
-  // The amount that the viewport size given to Blink was shrunk by the URL-bar
-  // (always 0 on platforms where URL-bar hiding isn't supported).
-  float top_controls_layout_height_;
+  // Whether or not Blink's viewport size should be shrunk by the height of the
+  // URL-bar (always false on platforms where URL-bar hiding isn't supported).
+  bool top_controls_shrink_blink_size_;
+
+  // The height of the top controls (always 0 on platforms where URL-bar hiding
+  // isn't supported).
+  float top_controls_height_;
 
   // The size of the visible viewport in DPI-adjusted pixels.
   gfx::Size visible_viewport_size_;

@@ -3064,7 +3064,8 @@ void RenderViewImpl::OnDisableAutoResize(const gfx::Size& new_size) {
   if (!new_size.IsEmpty()) {
     Resize(new_size,
            physical_backing_size_,
-           top_controls_layout_height_,
+           top_controls_shrink_blink_size_,
+           top_controls_height_,
            visible_viewport_size_,
            resizer_rect_,
            is_fullscreen_,
@@ -4124,7 +4125,8 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   params.visible_viewport_size = visible_viewport_size_;
   params.physical_backing_size =
       gfx::ToCeiledSize(gfx::ScaleSize(size(), factor));
-  params.top_controls_layout_height = 0.f;
+  params.top_controls_shrink_blink_size = false;
+  params.top_controls_height = 0.f;
   params.resizer_rect = WebRect();
   params.is_fullscreen = is_fullscreen();
   OnResize(params);

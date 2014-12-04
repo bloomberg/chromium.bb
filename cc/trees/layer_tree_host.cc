@@ -117,7 +117,8 @@ LayerTreeHost::LayerTreeHost(
       num_failed_recreate_attempts_(0),
       settings_(settings),
       debug_state_(settings.initial_debug_state),
-      top_controls_layout_height_(0.f),
+      top_controls_shrink_blink_size_(false),
+      top_controls_height_(0.f),
       top_controls_content_offset_(0.f),
       device_scale_factor_(1.f),
       visible_(true),
@@ -365,10 +366,19 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   sync_tree->PassSwapPromises(&swap_promise_list_);
 
-  sync_tree->set_top_controls_layout_height(top_controls_layout_height_);
+  // Track the change in top controls height to offset the top_controls_delta
+  // properly.  This is so that the top controls offset will be maintained
+  // across height changes.
+  float top_controls_height_delta =
+      sync_tree->top_controls_height() - top_controls_height_;
+
+  sync_tree->set_top_controls_shrink_blink_size(
+      top_controls_shrink_blink_size_);
+  sync_tree->set_top_controls_height(top_controls_height_);
   sync_tree->set_top_controls_content_offset(top_controls_content_offset_);
   sync_tree->set_top_controls_delta(sync_tree->top_controls_delta() -
-      sync_tree->sent_top_controls_delta());
+                                    sync_tree->sent_top_controls_delta() -
+                                    top_controls_height_delta);
   sync_tree->set_sent_top_controls_delta(0.f);
 
   host_impl->SetUseGpuRasterization(UseGpuRasterization());
@@ -668,11 +678,19 @@ void LayerTreeHost::SetViewportSize(const gfx::Size& device_viewport_size) {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetTopControlsLayoutHeight(float height) {
-  if (top_controls_layout_height_ == height)
+void LayerTreeHost::SetTopControlsShrinkBlinkSize(bool shrink) {
+  if (top_controls_shrink_blink_size_ == shrink)
     return;
 
-  top_controls_layout_height_ = height;
+  top_controls_shrink_blink_size_ = shrink;
+  SetNeedsCommit();
+}
+
+void LayerTreeHost::SetTopControlsHeight(float height) {
+  if (top_controls_height_ == height)
+    return;
+
+  top_controls_height_ = height;
   SetNeedsCommit();
 }
 

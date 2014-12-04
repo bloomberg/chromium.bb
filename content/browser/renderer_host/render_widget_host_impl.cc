@@ -579,8 +579,9 @@ void RenderWidgetHostImpl::GetResizeParams(
   if (view_) {
     resize_params->new_size = view_->GetRequestedRendererSize();
     resize_params->physical_backing_size = view_->GetPhysicalBackingSize();
-    resize_params->top_controls_layout_height =
-        view_->GetTopControlsLayoutHeight();
+    resize_params->top_controls_height = view_->GetTopControlsHeight();
+    resize_params->top_controls_shrink_blink_size =
+        view_->DoTopControlsShrinkBlinkSize();
     resize_params->visible_viewport_size = view_->GetVisibleViewportSize();
     resize_params->is_fullscreen = IsFullscreen();
   }
@@ -619,8 +620,10 @@ void RenderWidgetHostImpl::WasResized() {
         old_resize_params_->physical_backing_size !=
             params->physical_backing_size ||
         old_resize_params_->is_fullscreen != params->is_fullscreen ||
-        old_resize_params_->top_controls_layout_height !=
-            params->top_controls_layout_height ||
+        old_resize_params_->top_controls_height !=
+            params->top_controls_height ||
+        old_resize_params_->top_controls_shrink_blink_size !=
+            params->top_controls_shrink_blink_size ||
         old_resize_params_->visible_viewport_size !=
             params->visible_viewport_size;
   }

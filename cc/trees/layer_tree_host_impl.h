@@ -492,8 +492,6 @@ class CC_EXPORT LayerTreeHostImpl
   void GetPictureLayerImplPairs(std::vector<PictureLayerImpl::Pair>* layers,
                                 bool need_valid_tile_priorities) const;
 
-  void SetTopControlsLayoutHeight(float height);
-
   void SetRequiresHighResToDraw() { requires_high_res_to_draw_ = true; }
   void ResetRequiresHighResToDraw() { requires_high_res_to_draw_ = false; }
   bool RequiresHighResToDraw() const { return requires_high_res_to_draw_; }

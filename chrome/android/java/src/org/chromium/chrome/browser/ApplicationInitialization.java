@@ -37,12 +37,6 @@ public final class ApplicationInitialization {
 
         commandLine.appendSwitch(ContentSwitches.ENABLE_TOP_CONTROLS_POSITION_CALCULATION);
 
-        float controlsHeightDp =
-                resources.getDimensionPixelSize(resControlContainerHeight)
-                / resources.getDisplayMetrics().density;
-        commandLine.appendSwitchWithValue(
-                ContentSwitches.TOP_CONTROLS_HEIGHT, Float.toString(controlsHeightDp));
-
         TypedValue threshold = new TypedValue();
         resources.getValue(R.floats.top_controls_show_threshold, threshold, true);
         commandLine.appendSwitchWithValue(

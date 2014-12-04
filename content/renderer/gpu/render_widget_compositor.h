@@ -53,7 +53,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void UpdateTopControlsState(cc::TopControlsState constraints,
                               cc::TopControlsState current,
                               bool animate);
-  void SetTopControlsLayoutHeight(float height);
+  void SetTopControlsShrinkBlinkSize(bool shrink);
+  void SetTopControlsHeight(float height);
   void SetNeedsRedrawRect(gfx::Rect damage_rect);
   // Like setNeedsRedraw but forces the frame to be drawn, without early-outs.
   // Redraw will be forced after the next commit

@@ -267,7 +267,8 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   gfx::Size GetPhysicalBackingSize() const;
   gfx::Size GetViewportSizeDip() const;
-  float GetTopControlsLayoutHeightDip() const;
+  bool DoTopControlsShrinkBlinkSize() const;
+  float GetTopControlsHeightDip() const;
 
   void AttachLayer(scoped_refptr<cc::Layer> layer);
   void RemoveLayer(scoped_refptr<cc::Layer> layer);
@@ -301,7 +302,7 @@ class ContentViewCoreImpl : public ContentViewCore,
       blink::WebInputEvent::Type type, int64 time_ms, float x, float y) const;
 
   gfx::Size GetViewportSizePix() const;
-  int GetTopControlsLayoutHeightPix() const;
+  int GetTopControlsHeightPix() const;
 
   void SendGestureEvent(const blink::WebGestureEvent& event);
 

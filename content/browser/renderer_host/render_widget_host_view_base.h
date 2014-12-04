@@ -120,8 +120,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // The size of the view's backing surface in non-DPI-adjusted pixels.
   virtual gfx::Size GetPhysicalBackingSize() const;
 
-  // The amount that the viewport size given to Blink is shrunk by the URL-bar.
-  virtual float GetTopControlsLayoutHeight() const;
+  // Whether or not Blink's viewport size should be shrunk by the height of the
+  // URL-bar.
+  virtual bool DoTopControlsShrinkBlinkSize() const;
+
+  // The height of the URL-bar top controls.
+  virtual float GetTopControlsHeight() const;
 
   // Called prior to forwarding input event messages to the renderer, giving
   // the view a chance to perform in-process event filtering or processing.

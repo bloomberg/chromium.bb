@@ -245,15 +245,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   if (settings.calculate_top_controls_position) {
     top_controls_manager_ =
         TopControlsManager::Create(this,
-                                   settings.top_controls_height,
                                    settings.top_controls_show_threshold,
                                    settings.top_controls_hide_threshold);
-
-    // TODO(bokan): This is a quick fix. The browser should lock the top
-    // controls to shown on creation but this appears not to work. Tracked
-    // in crbug.com/417680.
-    // Initialize with top controls showing.
-    SetControlsTopOffset(0.f);
   }
 }
 
@@ -1661,9 +1654,13 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
 
   // Adjust the inner viewport by shrinking/expanding the container to account
   // for the change in top controls height since the last Resize from Blink.
+  float top_controls_layout_height =
+      active_tree_->top_controls_shrink_blink_size()
+          ? active_tree_->top_controls_height()
+          : 0.f;
   inner_container->SetBoundsDelta(
-      gfx::Vector2dF(0, active_tree_->top_controls_layout_height() -
-          active_tree_->total_top_controls_content_offset()));
+      gfx::Vector2dF(0, top_controls_layout_height -
+                            active_tree_->total_top_controls_content_offset()));
 
   if (!outer_container || outer_container->BoundsForScrolling().IsEmpty())
     return;
@@ -1684,15 +1681,6 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
   active_tree_->InnerViewportScrollLayer()->SetBoundsDelta(delta);
 
   anchor.ResetViewportToAnchoredPosition();
-}
-
-void LayerTreeHostImpl::SetTopControlsLayoutHeight(float height) {
-  if (active_tree_->top_controls_layout_height() == height)
-    return;
-
-  active_tree_->set_top_controls_layout_height(height);
-  UpdateViewportContainerSizes();
-  SetFullRootLayerDamage();
 }
 
 void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {
@@ -1767,6 +1755,7 @@ void LayerTreeHostImpl::CreatePendingTree() {
   pending_tree_->set_top_controls_delta(
       active_tree_->top_controls_delta() -
       active_tree_->sent_top_controls_delta());
+  pending_tree_->set_top_controls_height(active_tree_->top_controls_height());
 
   client_->OnCanDrawStateChanged(CanDraw());
   TRACE_EVENT_ASYNC_BEGIN0("cc", "PendingTree:waiting", pending_tree_.get());
@@ -1803,9 +1792,11 @@ void LayerTreeHostImpl::ActivateSyncTree() {
         root_layer_scroll_offset_delegate_);
 
     if (top_controls_manager_) {
+      top_controls_manager_->SetTopControlsHeight(
+          active_tree_->top_controls_height());
       top_controls_manager_->SetControlsTopOffset(
           active_tree_->total_top_controls_content_offset() -
-          top_controls_manager_->top_controls_height());
+          active_tree_->top_controls_height());
     }
 
     UpdateViewportContainerSizes();
@@ -2273,13 +2264,13 @@ void LayerTreeHostImpl::DidChangeTopControlsPosition() {
 
 void LayerTreeHostImpl::SetControlsTopOffset(float offset) {
   float current_top_offset = active_tree_->top_controls_content_offset() -
-      top_controls_manager_->top_controls_height();
+                             active_tree_->top_controls_height();
   active_tree_->set_top_controls_delta(offset - current_top_offset);
 }
 
 float LayerTreeHostImpl::ControlsTopOffset() const {
   return active_tree_->total_top_controls_content_offset() -
-      top_controls_manager_->top_controls_height();
+         active_tree_->top_controls_height();
 }
 
 void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {

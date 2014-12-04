@@ -97,7 +97,8 @@ LayerTreeImpl::LayerTreeImpl(
       next_activation_forces_redraw_(false),
       has_ever_been_drawn_(false),
       render_surface_layer_list_id_(0),
-      top_controls_layout_height_(0),
+      top_controls_shrink_blink_size_(false),
+      top_controls_height_(0),
       top_controls_content_offset_(0),
       top_controls_delta_(0),
       sent_top_controls_delta_(0) {
@@ -210,11 +211,19 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   target_tree->PassSwapPromises(&swap_promise_list_);
 
-  target_tree->top_controls_layout_height_ = top_controls_layout_height_;
+  // Track the change in top controls height to offset the top_controls_delta
+  // properly.  This is so that the top controls offset will be maintained
+  // across height changes.
+  float top_controls_height_delta =
+      target_tree->top_controls_height_ - top_controls_height_;
+
+  target_tree->top_controls_shrink_blink_size_ =
+      top_controls_shrink_blink_size_;
+  target_tree->top_controls_height_ = top_controls_height_;
   target_tree->top_controls_content_offset_ = top_controls_content_offset_;
-  target_tree->top_controls_delta_ =
-      target_tree->top_controls_delta_ -
-          target_tree->sent_top_controls_delta_;
+  target_tree->top_controls_delta_ = target_tree->top_controls_delta_ -
+                                     target_tree->sent_top_controls_delta_ -
+                                     top_controls_height_delta;
   target_tree->sent_top_controls_delta_ = 0.f;
 
   // Active tree already shares the page_scale_factor object with pending

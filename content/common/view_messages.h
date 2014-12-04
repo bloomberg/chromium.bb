@@ -420,9 +420,12 @@ IPC_STRUCT_BEGIN(ViewMsg_Resize_Params)
   IPC_STRUCT_MEMBER(gfx::Size, new_size)
   // The size of the view's backing surface in non-DPI-adjusted pixels.
   IPC_STRUCT_MEMBER(gfx::Size, physical_backing_size)
-  // The amount that the viewport size given to Blink was shrunk by the URL-bar
-  // (always 0 on platforms where URL-bar hiding isn't supported).
-  IPC_STRUCT_MEMBER(float, top_controls_layout_height)
+  // Whether or not Blink's viewport size should be shrunk by the height of the
+  // URL-bar (always false on platforms where URL-bar hiding isn't supported).
+  IPC_STRUCT_MEMBER(bool, top_controls_shrink_blink_size)
+  // The height of the top controls (always 0 on platforms where URL-bar hiding
+  // isn't supported).
+  IPC_STRUCT_MEMBER(float, top_controls_height)
   // The size of the visible viewport, which may be smaller than the view if the
   // view is partially occluded (e.g. by a virtual keyboard).  The size is in
   // DPI-adjusted pixels.

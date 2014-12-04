@@ -406,7 +406,11 @@ gfx::Size RenderWidgetHostViewBase::GetPhysicalBackingSize() const {
                                           display.device_scale_factor()));
 }
 
-float RenderWidgetHostViewBase::GetTopControlsLayoutHeight() const {
+bool RenderWidgetHostViewBase::DoTopControlsShrinkBlinkSize() const {
+  return false;
+}
+
+float RenderWidgetHostViewBase::GetTopControlsHeight() const {
   return 0.f;
 }
 

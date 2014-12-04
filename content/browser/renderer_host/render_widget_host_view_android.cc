@@ -667,12 +667,21 @@ gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {
   return content_view_core_->GetPhysicalBackingSize();
 }
 
-float RenderWidgetHostViewAndroid::GetTopControlsLayoutHeight() const {
+bool RenderWidgetHostViewAndroid::DoTopControlsShrinkBlinkSize() const {
+  if (!content_view_core_)
+    return false;
+
+  // Whether or not Blink's viewport size should be shrunk by the height of the
+  // URL-bar.
+  return content_view_core_->DoTopControlsShrinkBlinkSize();
+}
+
+float RenderWidgetHostViewAndroid::GetTopControlsHeight() const {
   if (!content_view_core_)
     return 0.f;
 
-  // The amount that the viewport size given to Blink is shrunk by the URL-bar.
-  return content_view_core_->GetTopControlsLayoutHeightDip();
+  // The height of the top controls.
+  return content_view_core_->GetTopControlsHeightDip();
 }
 
 void RenderWidgetHostViewAndroid::UpdateCursor(const WebCursor& cursor) {

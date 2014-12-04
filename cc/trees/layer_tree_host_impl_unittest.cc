@@ -160,8 +160,8 @@ class LayerTreeHostImplTest : public testing::Test,
     reduce_memory_result_ = reduce_memory_result;
   }
 
-  bool CreateHostImpl(const LayerTreeSettings& settings,
-                      scoped_ptr<OutputSurface> output_surface) {
+  virtual bool CreateHostImpl(const LayerTreeSettings& settings,
+                              scoped_ptr<OutputSurface> output_surface) {
     host_impl_ = LayerTreeHostImpl::Create(settings,
                                            this,
                                            &proxy_,
@@ -2259,14 +2259,27 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
       // Make the clip size the same as the layer (content) size so the layer is
       // non-scrollable.
       : layer_size_(10, 10),
-        clip_size_(layer_size_) {
+        clip_size_(layer_size_),
+        top_controls_height_(50) {
     settings_.calculate_top_controls_position = true;
-    settings_.top_controls_height = 50;
     settings_.use_pinch_virtual_viewport = true;
 
-    viewport_size_ =
-        gfx::Size(clip_size_.width(),
-                  clip_size_.height() + settings_.top_controls_height);
+    viewport_size_ = gfx::Size(clip_size_.width(),
+                               clip_size_.height() + top_controls_height_);
+  }
+
+  bool CreateHostImpl(const LayerTreeSettings& settings,
+                      scoped_ptr<OutputSurface> output_surface) override {
+    bool init =
+        LayerTreeHostImplTest::CreateHostImpl(settings, output_surface.Pass());
+    if (init && settings.calculate_top_controls_position) {
+      host_impl_->active_tree()->set_top_controls_height(top_controls_height_);
+      host_impl_->active_tree()->set_top_controls_delta(top_controls_height_);
+      host_impl_->top_controls_manager()->SetTopControlsHeight(
+          top_controls_height_);
+      host_impl_->DidChangeTopControlsPosition();
+    }
+    return init;
   }
 
   void SetupTopControlsAndScrollLayer() {
@@ -2291,8 +2304,9 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
     // Set a viewport size that is large enough to contain both the top controls
     // and some content.
     host_impl_->SetViewportSize(viewport_size_);
-    host_impl_->SetTopControlsLayoutHeight(
-        settings_.top_controls_height);
+    host_impl_->sync_tree()->set_top_controls_shrink_blink_size(true);
+
+    host_impl_->DidChangeTopControlsPosition();
 
     host_impl_->CreatePendingTree();
     root =
@@ -2316,8 +2330,8 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
     // Set a viewport size that is large enough to contain both the top controls
     // and some content.
     host_impl_->SetViewportSize(viewport_size_);
-    host_impl_->sync_tree()->set_top_controls_layout_height(
-        settings_.top_controls_height);
+    host_impl_->sync_tree()->set_top_controls_shrink_blink_size(true);
+    host_impl_->DidChangeTopControlsPosition();
   }
 
   void SetupTopControlsAndScrollLayerWithVirtualViewport(
@@ -2325,8 +2339,8 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
       const gfx::Size& outer_viewport_size,
       const gfx::Size& scroll_layer_size) {
     CreateHostImpl(settings_, CreateOutputSurface());
-    host_impl_->SetTopControlsLayoutHeight(
-        settings_.top_controls_height);
+    host_impl_->sync_tree()->set_top_controls_shrink_blink_size(true);
+    host_impl_->DidChangeTopControlsPosition();
 
     scoped_ptr<LayerImpl> root =
         LayerImpl::Create(host_impl_->active_tree(), 1);
@@ -2379,6 +2393,7 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
   gfx::Size layer_size_;
   gfx::Size clip_size_;
   gfx::Size viewport_size_;
+  float top_controls_height_;
 
   LayerTreeSettings settings_;
 };  // class LayerTreeHostImplTopControlsTest
@@ -2490,7 +2505,6 @@ TEST_F(LayerTreeHostImplTopControlsTest, FixedContainerDelta) {
   DrawFrame();
 
   float page_scale = 1.5f;
-  float top_controls_height = settings_.top_controls_height;
   LayerImpl* outer_viewport_scroll_layer =
       host_impl_->active_tree()->OuterViewportScrollLayer();
 
@@ -2506,7 +2520,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, FixedContainerDelta) {
   gfx::Vector2dF top_controls_scroll_delta(0.f, 20.f);
   host_impl_->top_controls_manager()->ScrollBegin();
   host_impl_->top_controls_manager()->ScrollBy(top_controls_scroll_delta);
-  EXPECT_EQ(top_controls_height - top_controls_scroll_delta.y(),
+  EXPECT_EQ(top_controls_height_ - top_controls_scroll_delta.y(),
             host_impl_->top_controls_manager()->ContentTopOffset());
   EXPECT_VECTOR_EQ(top_controls_scroll_delta,
                    outer_viewport_scroll_layer->FixedContainerSizeDelta());
@@ -2519,7 +2533,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, FixedContainerDelta) {
   host_impl_->top_controls_manager()->ScrollBy(top_controls_scroll_delta);
   host_impl_->top_controls_manager()->ScrollBy(top_controls_scroll_delta);
   EXPECT_EQ(0.f, host_impl_->top_controls_manager()->ContentTopOffset());
-  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, top_controls_height),
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, top_controls_height_),
                    outer_viewport_scroll_layer->FixedContainerSizeDelta());
   host_impl_->ScrollEnd();
 
@@ -2529,7 +2543,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, FixedContainerDelta) {
   EXPECT_EQ(top_controls_scroll_delta.y(),
             host_impl_->top_controls_manager()->ContentTopOffset());
   EXPECT_VECTOR_EQ(
-      gfx::Vector2dF(0, top_controls_height - top_controls_scroll_delta.y()),
+      gfx::Vector2dF(0, top_controls_height_ - top_controls_scroll_delta.y()),
       outer_viewport_scroll_layer->FixedContainerSizeDelta());
   host_impl_->top_controls_manager()->ScrollEnd();
 }
@@ -2600,12 +2614,11 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsLayoutHeightChanged) {
   SetupTopControlsAndScrollLayer();
   DrawFrame();
 
-  host_impl_->sync_tree()->set_top_controls_content_offset(15.f);
-  host_impl_->sync_tree()->set_top_controls_layout_height(15.f);
+  host_impl_->sync_tree()->set_top_controls_content_offset(50.f);
+  host_impl_->sync_tree()->set_top_controls_shrink_blink_size(true);
 
-  host_impl_->active_tree()->set_top_controls_content_offset(20.f);
-  host_impl_->active_tree()->set_top_controls_delta(-20.f);
-  host_impl_->active_tree()->set_sent_top_controls_delta(-5.f);
+  host_impl_->active_tree()->set_top_controls_content_offset(50.f);
+  host_impl_->active_tree()->set_top_controls_delta(-50.f);
 
   host_impl_->DidChangeTopControlsPosition();
   LayerImpl* root_clip_ptr = host_impl_->active_tree()->root_layer();
@@ -2614,7 +2627,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsLayoutHeightChanged) {
 
   host_impl_->sync_tree()->root_layer()->SetBounds(
       gfx::Size(root_clip_ptr->bounds().width(),
-                root_clip_ptr->bounds().height() - 15.f));
+                root_clip_ptr->bounds().height() - 50.f));
 
   host_impl_->ActivateSyncTree();
 
@@ -2625,14 +2638,14 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsLayoutHeightChanged) {
   // account for the difference between the layout height and the current
   // top controls offset.
   EXPECT_EQ(viewport_size_, root_clip_ptr->bounds());
-  EXPECT_VECTOR_EQ(gfx::Vector2dF(0.f, 15.f), root_clip_ptr->bounds_delta());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0.f, 50.f), root_clip_ptr->bounds_delta());
 
   host_impl_->active_tree()->set_top_controls_delta(0.f);
   host_impl_->DidChangeTopControlsPosition();
 
-  EXPECT_EQ(15.f, host_impl_->top_controls_manager()->ContentTopOffset());
+  EXPECT_EQ(50.f, host_impl_->top_controls_manager()->ContentTopOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0.f, 0.f), root_clip_ptr->bounds_delta());
-  EXPECT_EQ(gfx::Size(viewport_size_.width(), viewport_size_.height()-15.f),
+  EXPECT_EQ(gfx::Size(viewport_size_.width(), viewport_size_.height() - 50.f),
             root_clip_ptr->bounds());
 }
 
@@ -2644,7 +2657,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsViewportOffsetClamping) {
       gfx::Size(100, 100), gfx::Size(200, 200), gfx::Size(200, 400));
   DrawFrame();
 
-  EXPECT_EQ(settings_.top_controls_height,
+  EXPECT_EQ(top_controls_height_,
             host_impl_->active_tree()->total_top_controls_content_offset());
 
   LayerImpl* outer_scroll = host_impl_->OuterViewportScrollLayer();
@@ -2666,7 +2679,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsViewportOffsetClamping) {
 
   // scrolling down at the max extents no longer hides the top controls
   EXPECT_EQ(0.f,
-            settings_.top_controls_height -
+            top_controls_height_ -
                 host_impl_->active_tree()->total_top_controls_content_offset());
 
   // forcefully hide the top controls by 25px
@@ -2674,7 +2687,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsViewportOffsetClamping) {
   host_impl_->ScrollEnd();
 
   EXPECT_EQ(scroll_delta.y(),
-            settings_.top_controls_height -
+            top_controls_height_ -
                 host_impl_->active_tree()->total_top_controls_content_offset());
 
   inner_scroll->ClampScrollToMaxScrollOffset();
@@ -2711,7 +2724,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsAspectRatio) {
       gfx::Size(100, 100), gfx::Size(200, 200), gfx::Size(200, 400));
   DrawFrame();
 
-  EXPECT_EQ(settings_.top_controls_height,
+  EXPECT_EQ(top_controls_height_,
             host_impl_->active_tree()->total_top_controls_content_offset());
 
   gfx::Vector2dF scroll_delta(0.f, 25.f);
@@ -2721,7 +2734,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsAspectRatio) {
   host_impl_->ScrollEnd();
 
   EXPECT_EQ(scroll_delta.y(),
-            settings_.top_controls_height -
+            top_controls_height_ -
                 host_impl_->active_tree()->total_top_controls_content_offset());
 
   // Top controls were hidden by 25px so the inner viewport should have expanded
@@ -2747,7 +2760,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollOuterViewport) {
       gfx::Size(100, 100), gfx::Size(200, 200), gfx::Size(200, 400));
   DrawFrame();
 
-  EXPECT_EQ(settings_.top_controls_height,
+  EXPECT_EQ(top_controls_height_,
             host_impl_->active_tree()->total_top_controls_content_offset());
 
   // Send a gesture scroll that will scroll the outer viewport, make sure the
@@ -2761,7 +2774,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollOuterViewport) {
   host_impl_->ScrollEnd();
 
   EXPECT_EQ(scroll_delta.y(),
-            settings_.top_controls_height -
+            top_controls_height_ -
                 host_impl_->active_tree()->total_top_controls_content_offset());
 
   scroll_delta = gfx::Vector2dF(0.f, 50.f);
@@ -2785,11 +2798,11 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollOuterViewport) {
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
   host_impl_->ScrollBy(gfx::Point(), scroll_delta);
 
-  EXPECT_EQ(settings_.top_controls_height,
+  EXPECT_EQ(top_controls_height_,
             host_impl_->active_tree()->total_top_controls_content_offset());
-  EXPECT_EQ(inner_viewport_offset.y() +
-                (scroll_delta.y() + settings_.top_controls_height),
-            host_impl_->InnerViewportScrollLayer()->ScrollDelta().y());
+  EXPECT_EQ(
+      inner_viewport_offset.y() + (scroll_delta.y() + top_controls_height_),
+      host_impl_->InnerViewportScrollLayer()->ScrollDelta().y());
 
   host_impl_->ScrollEnd();
 }
@@ -7180,8 +7193,11 @@ class LayerTreeHostImplWithTopControlsTest : public LayerTreeHostImplTest {
   void SetUp() override {
     LayerTreeSettings settings = DefaultSettings();
     settings.calculate_top_controls_position = true;
-    settings.top_controls_height = top_controls_height_;
     CreateHostImpl(settings, CreateOutputSurface());
+    host_impl_->active_tree()->set_top_controls_height(top_controls_height_);
+    host_impl_->active_tree()->set_top_controls_delta(top_controls_height_);
+    host_impl_->top_controls_manager()->SetTopControlsHeight(
+        top_controls_height_);
   }
 
  protected:
@@ -7195,6 +7211,31 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, NoIdleAnimations) {
       ->SetScrollOffset(gfx::ScrollOffset(0, 10));
   host_impl_->Animate(base::TimeTicks());
   EXPECT_FALSE(did_request_redraw_);
+}
+
+TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsHeightIsCommitted) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  EXPECT_FALSE(did_request_redraw_);
+  host_impl_->CreatePendingTree();
+  host_impl_->sync_tree()->set_top_controls_height(100);
+  host_impl_->ActivateSyncTree();
+  EXPECT_EQ(100, host_impl_->top_controls_manager()->top_controls_height());
+}
+
+TEST_F(LayerTreeHostImplWithTopControlsTest,
+       TopControlsStayFullyVisibleOnHeightChange) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  EXPECT_EQ(0.f, host_impl_->ControlsTopOffset());
+
+  host_impl_->CreatePendingTree();
+  host_impl_->sync_tree()->set_top_controls_height(0);
+  host_impl_->ActivateSyncTree();
+  EXPECT_EQ(0.f, host_impl_->ControlsTopOffset());
+
+  host_impl_->CreatePendingTree();
+  host_impl_->sync_tree()->set_top_controls_height(50);
+  host_impl_->ActivateSyncTree();
+  EXPECT_EQ(0.f, host_impl_->ControlsTopOffset());
 }
 
 TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationScheduling) {

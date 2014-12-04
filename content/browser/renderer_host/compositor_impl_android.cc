@@ -421,7 +421,6 @@ void CompositorImpl::SetVisible(bool visible) {
     settings.renderer_settings.highp_threshold_min = 2048;
     settings.impl_side_painting = false;
     settings.calculate_top_controls_position = false;
-    settings.top_controls_height = 0.f;
 
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     settings.initial_debug_state.SetRecordRenderingStats(

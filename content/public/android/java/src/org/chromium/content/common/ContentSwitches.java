@@ -45,9 +45,6 @@ public abstract class ContentSwitches {
     public static final String ENABLE_TOP_CONTROLS_POSITION_CALCULATION =
             "enable-top-controls-position-calculation";
 
-    // The height of the movable top controls.
-    public static final String TOP_CONTROLS_HEIGHT = "top-controls-height";
-
     // How much of the top controls need to be shown before they will auto show.
     public static final String TOP_CONTROLS_SHOW_THRESHOLD = "top-controls-show-threshold";
 

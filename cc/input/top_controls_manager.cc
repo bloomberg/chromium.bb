@@ -26,29 +26,24 @@ const int64 kShowHideMaxDurationMs = 200;
 // static
 scoped_ptr<TopControlsManager> TopControlsManager::Create(
     TopControlsManagerClient* client,
-    float top_controls_height,
     float top_controls_show_threshold,
     float top_controls_hide_threshold) {
   return make_scoped_ptr(new TopControlsManager(client,
-                                                top_controls_height,
                                                 top_controls_show_threshold,
                                                 top_controls_hide_threshold));
 }
 
 TopControlsManager::TopControlsManager(TopControlsManagerClient* client,
-                                       float top_controls_height,
                                        float top_controls_show_threshold,
                                        float top_controls_hide_threshold)
     : client_(client),
       animation_direction_(NO_ANIMATION),
       permitted_state_(BOTH),
-      top_controls_height_(top_controls_height),
+      top_controls_height_(0.f),
       current_scroll_delta_(0.f),
       controls_scroll_begin_offset_(0.f),
-      top_controls_show_height_(
-          top_controls_height * top_controls_hide_threshold),
-      top_controls_hide_height_(
-          top_controls_height * (1.f - top_controls_show_threshold)),
+      top_controls_show_threshold_(top_controls_hide_threshold),
+      top_controls_hide_threshold_(top_controls_show_threshold),
       pinch_gesture_active_(false) {
   CHECK(client_);
 }
@@ -163,6 +158,19 @@ void TopControlsManager::SetControlsTopOffset(float controls_top_offset) {
   client_->DidChangeTopControlsPosition();
 }
 
+void TopControlsManager::SetTopControlsHeight(float top_controls_height) {
+  DCHECK_GE(top_controls_height, 0);
+
+  if (top_controls_height == top_controls_height_)
+    return;
+
+  ResetAnimations();
+  float top_controls_offset = client_->ControlsTopOffset();
+  top_controls_height_ = top_controls_height;
+  SetControlsTopOffset(top_controls_offset);
+  StartAnimationIfNecessary();
+}
+
 gfx::Vector2dF TopControlsManager::Animate(base::TimeTicks monotonic_time) {
   if (!top_controls_animation_ || !client_->HaveRootScrollLayer())
     return gfx::Vector2dF();
@@ -217,10 +225,14 @@ void TopControlsManager::StartAnimationIfNecessary() {
       && client_->ControlsTopOffset() != -top_controls_height_) {
     AnimationDirection show_controls = NO_ANIMATION;
 
-    if (client_->ControlsTopOffset() >= -top_controls_show_height_) {
+    float top_controls_show_height =
+        top_controls_height_ * top_controls_hide_threshold_;
+    float top_controls_hide_height =
+        top_controls_height_ * (1.f - top_controls_show_threshold_);
+    if (client_->ControlsTopOffset() >= -top_controls_show_height) {
       // If we're showing so much that the hide threshold won't trigger, show.
       show_controls = SHOWING_CONTROLS;
-    } else if (client_->ControlsTopOffset() <= -top_controls_hide_height_) {
+    } else if (client_->ControlsTopOffset() <= -top_controls_hide_height) {
       // If we're showing so little that the show threshold won't trigger, hide.
       show_controls = HIDING_CONTROLS;
     } else {

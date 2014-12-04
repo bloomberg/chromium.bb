@@ -41,7 +41,6 @@ LayerTreeSettings::LayerTreeSettings()
       layers_always_allowed_lcd_text(false),
       minimum_contents_scale(0.0625f),
       low_res_contents_scale_factor(0.25f),
-      top_controls_height(0.f),
       top_controls_show_threshold(0.5f),
       top_controls_hide_threshold(0.5f),
       background_animation_rate(1.0),
