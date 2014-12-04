@@ -228,26 +228,12 @@ hr {
   margin: rhythm(1) 0;
 }
 
-.capitalize {
-  text-transform: uppercase;
-}
-
-/* Support a hack for the ::first-element rules below, which only apply if
-* the element has a subset of displays, which include inline-block.
-*
+/*
 * Use the data-inline-block attribute rather than a class on the element
 * because the templates may end up overriding the class attribute.
 */
 [data-list-item] {
   display: list-item;
-}
-
-.uncapitalize::first-letter {
-  text-transform: lowercase;
-}
-
-.capitalize::first-letter {
-  text-transform: uppercase;
 }
 
 .kbd {
