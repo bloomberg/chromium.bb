@@ -1433,7 +1433,7 @@ crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrolling-apis-subpixel
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrolling-apis-nan-scroll-position.html [ Crash ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scroll-without-document-element-renderer.html [ Crash ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scroll-without-document-element.html [ Crash ]
-crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-prevent-default.html [ Failure ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-prevent-default.html [ Failure Pass Crash ]
 
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-document.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/hover-during-scroll.html [ Failure ]
