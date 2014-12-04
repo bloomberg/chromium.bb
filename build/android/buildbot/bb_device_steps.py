@@ -80,6 +80,16 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
       None),
     ])
 
+InstallablePackage = collections.namedtuple('InstallablePackage', [
+    'name', 'apk', 'apk_package'])
+
+INSTALLABLE_PACKAGES = dict((package.name, package) for package in (
+    [InstallablePackage(i.name, i.apk, i.apk_package)
+     for i in INSTRUMENTATION_TESTS.itervalues()] +
+    [InstallablePackage('ChromeDriverWebViewShell',
+                        'ChromeDriverWebViewShell.apk',
+                        'org.chromium.chromedriver_webview_shell')]))
+
 VALID_TESTS = set(['chromedriver', 'chrome_proxy', 'gpu',
                    'telemetry_unittests', 'telemetry_perf_unittests', 'ui',
                    'unit', 'webkit', 'webkit_layout', 'python_unittests'])
@@ -639,8 +649,8 @@ def MainTestWrapper(options):
 
     if options.install:
       for i in options.install:
-        test_obj = INSTRUMENTATION_TESTS[i]
-        InstallApk(options, test_obj, print_step=True)
+        install_obj = INSTALLABLE_PACKAGES[i]
+        InstallApk(options, install_obj, print_step=True)
 
     if options.test_filter:
       bb_utils.RunSteps(options.test_filter, GetTestStepCmds(), options)
