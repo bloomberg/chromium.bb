@@ -24,12 +24,12 @@ class QuicSocketUtils {
   // If the msghdr contains IP_PKTINFO or IPV6_PKTINFO, this will return the
   // IPAddressNumber in that header.  Returns an uninitialized IPAddress on
   // failure.
-  static IPAddressNumber GetAddressFromMsghdr(struct msghdr *hdr);
+  static IPAddressNumber GetAddressFromMsghdr(struct msghdr* hdr);
 
   // If the msghdr contains an SO_RXQ_OVFL entry, this will set dropped_packets
   // to the correct value and return true. Otherwise it will return false.
-  static bool GetOverflowFromMsghdr(struct msghdr *hdr,
-                                    QuicPacketCount *dropped_packets);
+  static bool GetOverflowFromMsghdr(struct msghdr* hdr,
+                                    QuicPacketCount* dropped_packets);
 
   // Sets either IP_PKTINFO or IPV6_PKTINFO on the socket, based on
   // address_family.  Returns the return code from setsockopt.

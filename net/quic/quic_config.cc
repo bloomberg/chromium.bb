@@ -431,7 +431,7 @@ QuicConfig::QuicConfig()
       congestion_feedback_(kCGST, PRESENCE_REQUIRED),
       connection_options_(kCOPT, PRESENCE_OPTIONAL),
       idle_connection_state_lifetime_seconds_(kICSL, PRESENCE_REQUIRED),
-      keepalive_timeout_seconds_(kKATO, PRESENCE_OPTIONAL),
+      silent_close_(kSCLS, PRESENCE_OPTIONAL),
       max_streams_per_connection_(kMSPC, PRESENCE_REQUIRED),
       bytes_for_connection_id_(kTCID, PRESENCE_OPTIONAL),
       initial_round_trip_time_us_(kIRTT, PRESENCE_OPTIONAL),
@@ -493,9 +493,12 @@ QuicTime::Delta QuicConfig::IdleConnectionStateLifetime() const {
       idle_connection_state_lifetime_seconds_.GetUint32());
 }
 
-QuicTime::Delta QuicConfig::KeepaliveTimeout() const {
-  return QuicTime::Delta::FromSeconds(
-      keepalive_timeout_seconds_.GetUint32());
+void QuicConfig::SetSilentClose(bool silent_close) {
+  silent_close_.set(silent_close ? 1 : 0, silent_close ? 1 : 0);
+}
+
+bool QuicConfig::SilentClose() const {
+  return silent_close_.GetUint32() > 0;
 }
 
 void QuicConfig::SetMaxStreamsPerConnection(size_t max_streams,
@@ -631,7 +634,6 @@ bool QuicConfig::negotiated() const {
   // ProcessServerHello.
   return congestion_feedback_.negotiated() &&
       idle_connection_state_lifetime_seconds_.negotiated() &&
-      keepalive_timeout_seconds_.negotiated() &&
       max_streams_per_connection_.negotiated();
 }
 
@@ -641,8 +643,11 @@ void QuicConfig::SetDefaults() {
   congestion_feedback_.set(congestion_feedback, kQBIC);
   idle_connection_state_lifetime_seconds_.set(kMaximumIdleTimeoutSecs,
                                               kDefaultIdleTimeoutSecs);
-  // kKATO is optional. Return 0 if not negotiated.
-  keepalive_timeout_seconds_.set(0, 0);
+  if (FLAGS_quic_allow_silent_close) {
+    silent_close_.set(1, 0);
+  } else {
+    silent_close_.set(0, 0);
+  }
   SetMaxStreamsPerConnection(kDefaultMaxStreamsPerConnection,
                              kDefaultMaxStreamsPerConnection);
   max_time_before_crypto_handshake_ =
@@ -659,7 +664,7 @@ void QuicConfig::SetDefaults() {
 void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   congestion_feedback_.ToHandshakeMessage(out);
   idle_connection_state_lifetime_seconds_.ToHandshakeMessage(out);
-  keepalive_timeout_seconds_.ToHandshakeMessage(out);
+  silent_close_.ToHandshakeMessage(out);
   max_streams_per_connection_.ToHandshakeMessage(out);
   bytes_for_connection_id_.ToHandshakeMessage(out);
   initial_round_trip_time_us_.ToHandshakeMessage(out);
@@ -686,8 +691,8 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
         peer_hello, hello_type, error_details);
   }
   if (error == QUIC_NO_ERROR) {
-    error = keepalive_timeout_seconds_.ProcessPeerHello(
-        peer_hello, hello_type, error_details);
+    error =
+        silent_close_.ProcessPeerHello(peer_hello, hello_type, error_details);
   }
   if (error == QUIC_NO_ERROR) {
     error = max_streams_per_connection_.ProcessPeerHello(

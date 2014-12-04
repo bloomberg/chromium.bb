@@ -745,6 +745,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Contains the connection close packet if the connection has been closed.
   scoped_ptr<QuicEncryptedPacket> connection_close_packet_;
 
+  // When true, the connection does not send a close packet on timeout.
+  bool silent_close_enabled_;
+
   FecGroupMap group_map_;
 
   QuicReceivedPacketManager received_packet_manager_;

@@ -305,7 +305,8 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
   }
 
   // Test that bandwidth estimate updates are sent to the client, only after the
-  // bandwidth estimate has changes sufficiently, and enough time has passed.
+  // bandwidth estimate has changes sufficiently, and enough time has passed,
+  // and we don't have any other data to write.
 
   int32 bandwidth_estimate_kbytes_per_second = 123;
   int32 max_bandwidth_estimate_kbytes_per_second = 134;
@@ -332,6 +333,10 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
   QuicSustainedBandwidthRecorderPeer::SetMaxBandwidthEstimate(
       &bandwidth_recorder, max_bandwidth_estimate_kbytes_per_second,
       max_bandwidth_estimate_timestamp);
+  // Queue up some pending data.
+  session_->MarkWriteBlocked(kCryptoStreamId,
+                             QuicWriteBlockedList::kHighestPriority);
+  EXPECT_TRUE(session_->HasDataToWrite());
 
   // There will be no update sent yet - not enough time has passed.
   QuicTime now = QuicTime::Zero();
@@ -349,6 +354,11 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
       sent_packet_manager->GetRttStats()->smoothed_rtt().ToMilliseconds();
   now = now.Add(QuicTime::Delta::FromMilliseconds(
       kMinIntervalBetweenServerConfigUpdatesRTTs * srtt_ms));
+  session_->OnCongestionWindowChange(now);
+
+  // The connection no longer has pending data to be written.
+  session_->OnCanWrite();
+  EXPECT_FALSE(session_->HasDataToWrite());
   session_->OnCongestionWindowChange(now);
 
   // Bandwidth estimate has now changed sufficiently, enough time has passed,

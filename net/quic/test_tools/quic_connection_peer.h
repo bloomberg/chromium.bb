@@ -91,6 +91,8 @@ class QuicConnectionPeer {
   static void SetPeerAddress(QuicConnection* connection,
                              const IPEndPoint& peer_address);
 
+  static bool IsSilentCloseEnabled(QuicConnection* connection);
+
   static void SwapCrypters(QuicConnection* connection, QuicFramer* framer);
 
   static QuicConnectionHelperInterface* GetHelper(QuicConnection* connection);

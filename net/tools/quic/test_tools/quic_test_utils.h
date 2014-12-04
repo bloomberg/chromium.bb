@@ -29,7 +29,7 @@ namespace tools {
 namespace test {
 
 static const QuicConnectionId kTestConnectionId = 42;
-static const int kTestPort = 123;
+static const uint16 kTestPort = 123;
 static const uint32 kInitialStreamFlowControlWindowForTest =
     32 * 1024;  // 32 KB
 static const uint32 kInitialSessionFlowControlWindowForTest =

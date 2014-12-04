@@ -2987,6 +2987,7 @@ TEST_P(QuicConnectionTest, TimeoutAfterSend) {
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _, _));
   QuicConfig config;
   connection_.SetFromConfig(config);
+  EXPECT_FALSE(QuicConnectionPeer::IsSilentCloseEnabled(&connection_));
 
   const QuicTime::Delta initial_idle_timeout =
       QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs - 1);
@@ -3014,6 +3015,67 @@ TEST_P(QuicConnectionTest, TimeoutAfterSend) {
   // This time, we should time out.
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_CONNECTION_TIMED_OUT, false));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
+  clock_.AdvanceTime(five_ms);
+  EXPECT_EQ(default_timeout.Add(five_ms), clock_.ApproximateNow());
+  connection_.GetTimeoutAlarm()->Fire();
+  EXPECT_FALSE(connection_.GetTimeoutAlarm()->IsSet());
+  EXPECT_FALSE(connection_.connected());
+}
+
+TEST_P(QuicConnectionTest, TimeoutAfterSendSilentClose) {
+  // Same test as above, but complete a handshake which enables silent close,
+  // causing no connection close packet to be sent.
+  ValueRestore<bool> old_flag(&FLAGS_quic_allow_silent_close, true);
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _, _));
+  QuicConfig config;
+
+  // Create a handshake message that also enables silent close.
+  CryptoHandshakeMessage msg;
+  string error_details;
+  QuicConfig client_config;
+  client_config.SetInitialFlowControlWindowToSend(
+      kInitialSessionFlowControlWindowForTest);
+  client_config.SetInitialStreamFlowControlWindowToSend(
+      kInitialStreamFlowControlWindowForTest);
+  client_config.SetInitialSessionFlowControlWindowToSend(
+      kInitialSessionFlowControlWindowForTest);
+  client_config.SetIdleConnectionStateLifetime(
+      QuicTime::Delta::FromSeconds(kDefaultIdleTimeoutSecs),
+      QuicTime::Delta::FromSeconds(kDefaultIdleTimeoutSecs));
+  client_config.ToHandshakeMessage(&msg);
+  const QuicErrorCode error =
+      config.ProcessPeerHello(msg, CLIENT, &error_details);
+  EXPECT_EQ(QUIC_NO_ERROR, error);
+
+  connection_.SetFromConfig(config);
+  EXPECT_TRUE(QuicConnectionPeer::IsSilentCloseEnabled(&connection_));
+
+  const QuicTime::Delta default_idle_timeout =
+      QuicTime::Delta::FromSeconds(kDefaultIdleTimeoutSecs - 1);
+  const QuicTime::Delta five_ms = QuicTime::Delta::FromMilliseconds(5);
+  QuicTime default_timeout = clock_.ApproximateNow().Add(default_idle_timeout);
+
+  // When we send a packet, the timeout will change to 5ms +
+  // kInitialIdleTimeoutSecs.
+  clock_.AdvanceTime(five_ms);
+
+  // Send an ack so we don't set the retransmission alarm.
+  SendAckPacketToPeer();
+  EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());
+
+  // The original alarm will fire.  We should not time out because we had a
+  // network event at t=5ms.  The alarm will reregister.
+  clock_.AdvanceTime(default_idle_timeout.Subtract(five_ms));
+  EXPECT_EQ(default_timeout, clock_.ApproximateNow());
+  connection_.GetTimeoutAlarm()->Fire();
+  EXPECT_TRUE(connection_.GetTimeoutAlarm()->IsSet());
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_EQ(default_timeout.Add(five_ms),
+            connection_.GetTimeoutAlarm()->deadline());
+
+  // This time, we should time out.
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_CONNECTION_TIMED_OUT, false));
   clock_.AdvanceTime(five_ms);
   EXPECT_EQ(default_timeout.Add(five_ms), clock_.ApproximateNow());
   connection_.GetTimeoutAlarm()->Fire();

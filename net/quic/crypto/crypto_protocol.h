@@ -94,7 +94,7 @@ const QuicTag kCGST = TAG('C', 'G', 'S', 'T');   // Congestion control
 const QuicTag kCOPT = TAG('C', 'O', 'P', 'T');   // Connection options
 const QuicTag kICSL = TAG('I', 'C', 'S', 'L');   // Idle connection state
                                                  // lifetime
-const QuicTag kKATO = TAG('K', 'A', 'T', 'O');   // Keepalive timeout
+const QuicTag kSCLS = TAG('S', 'C', 'L', 'S');   // Silently close on timeout
 const QuicTag kMSPC = TAG('M', 'S', 'P', 'C');   // Max streams per connection.
 const QuicTag kIRTT = TAG('I', 'R', 'T', 'T');   // Estimated initial RTT in us.
 const QuicTag kSWND = TAG('S', 'W', 'N', 'D');   // Server's Initial congestion

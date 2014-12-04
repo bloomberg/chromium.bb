@@ -83,6 +83,11 @@ void QuicServerSession::OnCongestionWindowChange(QuicTime now) {
     return;
   }
 
+  // Only send updates when the application has no data to write.
+  if (HasDataToWrite()) {
+    return;
+  }
+
   // If not enough time has passed since the last time we sent an update to the
   // client, or not enough packets have been sent, then return early.
   const QuicSentPacketManager& sent_packet_manager =

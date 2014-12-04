@@ -154,6 +154,11 @@ void QuicConnectionPeer::SetPeerAddress(QuicConnection* connection,
 }
 
 // static
+bool QuicConnectionPeer::IsSilentCloseEnabled(QuicConnection* connection) {
+  return connection->silent_close_enabled_;
+}
+
+// static
 void QuicConnectionPeer::SwapCrypters(QuicConnection* connection,
                                       QuicFramer* framer) {
   QuicFramerPeer::SwapCrypters(framer, &connection->framer_);

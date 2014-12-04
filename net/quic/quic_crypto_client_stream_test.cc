@@ -98,7 +98,6 @@ TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
             config->IdleConnectionStateLifetime().ToSeconds());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection,
             config->MaxStreamsPerConnection());
-  EXPECT_EQ(0, config->KeepaliveTimeout().ToSeconds());
 
   const QuicCryptoNegotiatedParameters& crypto_params(
       stream_->crypto_negotiated_params());

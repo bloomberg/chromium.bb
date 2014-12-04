@@ -244,7 +244,6 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
       case kCFCW:
       case kSFCW:
       case kIRTT:
-      case kKATO:
       case kMSPC:
       case kSWND:
         // uint32 value

@@ -235,6 +235,10 @@ void QuicClient::SendRequestsAndWaitForResponse(
     headers.SetRequestFirstlineFromStringPieces("GET", args[i], "HTTP/1.1");
     QuicSpdyClientStream* stream = CreateReliableClientStream();
     DCHECK(stream != nullptr);
+    if (stream == nullptr) {
+      LOG(ERROR) << "stream creation failed!";
+      break;
+    }
     stream->SendRequest(headers, "", true);
     stream->set_visitor(this);
   }
@@ -315,6 +319,10 @@ void QuicClient::OnClose(QuicDataStream* stream) {
 bool QuicClient::connected() const {
   return session_.get() && session_->connection() &&
       session_->connection()->connected();
+}
+
+bool QuicClient::goaway_received() const {
+  return session_ != nullptr && session_->goaway_received();
 }
 
 QuicConnectionId QuicClient::GenerateConnectionId() {

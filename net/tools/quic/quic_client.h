@@ -120,6 +120,7 @@ class QuicClient : public EpollCallbackInterface,
   QuicClientSession* session() { return session_.get(); }
 
   bool connected() const;
+  bool goaway_received() const;
 
   void set_bind_to_address(IPAddressNumber address) {
     bind_to_address_ = address;

@@ -95,6 +95,7 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   client_config.SetConnectionOptionsToSend(copt);
   CryptoHandshakeMessage msg;
   client_config.ToHandshakeMessage(&msg);
+
   string error_details;
   const QuicErrorCode error =
       config_.ProcessPeerHello(msg, CLIENT, &error_details);
@@ -105,7 +106,6 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
             config_.IdleConnectionStateLifetime());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection,
             config_.MaxStreamsPerConnection());
-  EXPECT_EQ(QuicTime::Delta::FromSeconds(0), config_.KeepaliveTimeout());
   EXPECT_EQ(10 * kNumMicrosPerMilli, config_.ReceivedInitialRoundTripTimeUs());
   EXPECT_TRUE(config_.HasReceivedConnectionOptions());
   EXPECT_EQ(2u, config_.ReceivedConnectionOptions().size());
@@ -152,7 +152,6 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
             config_.IdleConnectionStateLifetime());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection / 2,
             config_.MaxStreamsPerConnection());
-  EXPECT_EQ(QuicTime::Delta::FromSeconds(0), config_.KeepaliveTimeout());
   EXPECT_EQ(10 * kNumMicrosPerMilli, config_.ReceivedInitialRoundTripTimeUs());
   EXPECT_EQ(config_.ReceivedInitialFlowControlWindowBytes(),
             2 * kInitialSessionFlowControlWindowForTest);
@@ -179,6 +178,7 @@ TEST_F(QuicConfigTest, MissingOptionalValuesInCHLO) {
   const QuicErrorCode error =
       config_.ProcessPeerHello(msg, CLIENT, &error_details);
   EXPECT_EQ(QUIC_NO_ERROR, error);
+  EXPECT_TRUE(config_.negotiated());
 
   EXPECT_FALSE(config_.HasReceivedInitialFlowControlWindowBytes());
 }
@@ -196,6 +196,7 @@ TEST_F(QuicConfigTest, MissingOptionalValuesInSHLO) {
   const QuicErrorCode error =
       config_.ProcessPeerHello(msg, SERVER, &error_details);
   EXPECT_EQ(QUIC_NO_ERROR, error);
+  EXPECT_TRUE(config_.negotiated());
 
   EXPECT_FALSE(config_.HasReceivedInitialFlowControlWindowBytes());
 }

@@ -134,8 +134,8 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
         clock_, &rtt_stats_, kReno, stats_, initial_congestion_window_));
   }
   if (HasClientSentConnectionOption(config, kPACE) ||
-      (FLAGS_quic_allow_bbr &&
-       HasClientSentConnectionOption(config, kTBBR))) {
+      FLAGS_quic_enable_pacing ||
+      (FLAGS_quic_allow_bbr && HasClientSentConnectionOption(config, kTBBR))) {
     EnablePacing();
   }
   if (HasClientSentConnectionOption(config, k1CON)) {

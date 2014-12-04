@@ -1347,6 +1347,28 @@ TEST_P(EndToEndTest, RequestWithNoBodyWillNeverSendStreamFrameWithFIN) {
   server_thread_->Resume();
 }
 
+TEST_P(EndToEndTest, EnablePacingViaFlag) {
+  // When pacing is enabled via command-line flag, it will always be enabled,
+  // regardless of the config. or the specific congestion-control algorithm.
+  ValueRestore<bool> old_flag(&FLAGS_quic_enable_pacing, true);
+  ASSERT_TRUE(Initialize());
+
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+  server_thread_->WaitForCryptoHandshakeConfirmed();
+
+  // Pause the server so we can access the server's internals without races.
+  server_thread_->Pause();
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  ASSERT_EQ(1u, dispatcher->session_map().size());
+  const QuicSentPacketManager& client_sent_packet_manager =
+      client_->client()->session()->connection()->sent_packet_manager();
+  const QuicSentPacketManager& server_sent_packet_manager =
+      *GetSentPacketManagerFromFirstServerSession();
+  EXPECT_TRUE(server_sent_packet_manager.using_pacing());
+  EXPECT_TRUE(client_sent_packet_manager.using_pacing());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace tools

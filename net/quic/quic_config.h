@@ -277,7 +277,9 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   QuicTime::Delta IdleConnectionStateLifetime() const;
 
-  QuicTime::Delta KeepaliveTimeout() const;
+  void SetSilentClose(bool silent_close);
+
+  bool SilentClose() const;
 
   void SetMaxStreamsPerConnection(size_t max_streams, size_t default_streams);
 
@@ -400,8 +402,8 @@ class NET_EXPORT_PRIVATE QuicConfig {
   QuicFixedTagVector connection_options_;
   // Idle connection state lifetime
   QuicNegotiableUint32 idle_connection_state_lifetime_seconds_;
-  // Keepalive timeout, or 0 to turn off keepalive probes
-  QuicNegotiableUint32 keepalive_timeout_seconds_;
+  // Whether to use silent close.  Defaults to 0 (false) and is otherwise true.
+  QuicNegotiableUint32 silent_close_;
   // Maximum number of streams that the connection can support.
   QuicNegotiableUint32 max_streams_per_connection_;
   // The number of bytes required for the connection ID.
