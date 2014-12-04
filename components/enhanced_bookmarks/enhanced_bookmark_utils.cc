@@ -5,37 +5,9 @@
 #include "components/enhanced_bookmarks/enhanced_bookmark_utils.h"
 
 #include "base/i18n/string_compare.h"
-#include "base/i18n/string_search.h"
-#include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "ui/base/models/tree_node_iterator.h"
 
 namespace enhanced_bookmarks {
-
-std::vector<const BookmarkNode*> FindBookmarksWithQuery(
-    BookmarkModel* bookmark_model,
-    const std::string& query) {
-  std::vector<const BookmarkNode*> results;
-  base::string16 query16 = base::UTF8ToUTF16(query);
-  base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents pattern16(query16);
-
-  ui::TreeNodeIterator<const BookmarkNode> iterator(
-      bookmark_model->root_node());
-  while (iterator.has_next()) {
-    const BookmarkNode* node = iterator.Next();
-    if (!node->is_url())
-      continue;
-
-    // Search the title for the query.
-    size_t match_index;
-    size_t match_length;
-    bool found =
-        pattern16.Search(node->GetTitle(), &match_index, &match_length);
-    if (found)
-      results.push_back(node);
-  }
-  return results;
-}
 
 // Comparator used to sort bookmarks. No folders are allowed.
 class BookmarkNameComparator : public std::binary_function<const BookmarkNode*,

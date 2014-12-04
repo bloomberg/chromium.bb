@@ -14,12 +14,6 @@ class BookmarkNode;
 
 namespace enhanced_bookmarks {
 
-// Returns an ordered vector of bookmarks that are urls that match |query|.
-// |query| must be UTF8 encoded.
-std::vector<const BookmarkNode*> FindBookmarksWithQuery(
-    BookmarkModel* bookmark_model,
-    const std::string& query);
-
 // The vector is sorted in place.
 // All of the bookmarks in |nodes| must be urls.
 void SortBookmarksByName(std::vector<const BookmarkNode*>& nodes);
