@@ -471,6 +471,11 @@ void WebSettingsImpl::setWebGLErrorsToConsoleEnabled(bool enabled)
     m_settings->setWebGLErrorsToConsoleEnabled(enabled);
 }
 
+void WebSettingsImpl::setShowContextMenuOnMouseUp(bool enabled)
+{
+    m_settings->setShowContextMenuOnMouseUp(enabled);
+}
+
 void WebSettingsImpl::setShowFPSCounter(bool show)
 {
     m_showFPSCounter = show;

@@ -144,6 +144,7 @@ public:
     virtual void setShouldPrintBackgrounds(bool) override;
     virtual void setShouldClearDocumentBackground(bool) override;
     virtual void setShouldRespectImageOrientation(bool) override;
+    virtual void setShowContextMenuOnMouseUp(bool) override;
     virtual void setShowFPSCounter(bool) override;
     virtual void setShowPaintRects(bool) override;
     virtual void setShrinksStandaloneImagesToFit(bool) override;
