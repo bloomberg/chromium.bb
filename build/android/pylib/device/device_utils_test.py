@@ -1237,49 +1237,52 @@ class DeviceUtilsWriteFileTest(DeviceUtilsNewImplTest):
       self.device.WriteFile('/test/file', 'contents', as_root=True)
 
 
-class DeviceUtilsLsTest(DeviceUtilsOldImplTest):
-
-  def testLs_nothing(self):
-    with self.assertCallsSequence([
-        ("adb -s 0123456789abcdef shell 'ls -lR /this/file/does.not.exist'",
-         '/this/file/does.not.exist: No such file or directory\r\n'),
-        ("adb -s 0123456789abcdef shell 'date +%z'", '+0000')]):
-      self.assertEqual({}, self.device.Ls('/this/file/does.not.exist'))
-
-  def testLs_file(self):
-    with self.assertCallsSequence([
-        ("adb -s 0123456789abcdef shell 'ls -lR /this/is/a/test.file'",
-         '-rw-rw---- testuser testgroup 4096 1970-01-01 00:00 test.file\r\n'),
-        ("adb -s 0123456789abcdef shell 'date +%z'", '+0000')]):
-      self.assertEqual(
-          {'test.file': (4096, datetime.datetime(1970, 1, 1))},
-          self.device.Ls('/this/is/a/test.file'))
+class DeviceUtilsLsTest(DeviceUtilsNewImplTest):
 
   def testLs_directory(self):
-    with self.assertCallsSequence([
-        ("adb -s 0123456789abcdef shell 'ls -lR /this/is/a/test.directory'",
-         '\r\n'
-         '/this/is/a/test.directory:\r\n'
-         '-rw-rw---- testuser testgroup 4096 1970-01-01 18:19 test.file\r\n'),
-        ("adb -s 0123456789abcdef shell 'date +%z'", '+0000')]):
-      self.assertEqual(
-          {'test.file': (4096, datetime.datetime(1970, 1, 1, 18, 19))},
-          self.device.Ls('/this/is/a/test.directory'))
+    result = [('.', adb_wrapper.DeviceStat(16889, 4096, 1417436123)),
+              ('..', adb_wrapper.DeviceStat(16873, 4096, 12382237)),
+              ('testfile.txt', adb_wrapper.DeviceStat(33206, 3, 1417436122))]
+    with self.assertCalls(
+        (self.call.adb.Ls('/data/local/tmp'), result)):
+      self.assertEquals(result,
+                        self.device.Ls('/data/local/tmp'))
 
-  def testLs_directories(self):
-    with self.assertCallsSequence([
-        ("adb -s 0123456789abcdef shell 'ls -lR /this/is/a/test.directory'",
-         '\r\n'
-         '/this/is/a/test.directory:\r\n'
-         'drwxr-xr-x testuser testgroup 1970-01-01 00:00 test.subdirectory\r\n'
-         '\r\n'
-         '/this/is/a/test.directory/test.subdirectory:\r\n'
-         '-rw-rw---- testuser testgroup 4096 1970-01-01 00:00 test.file\r\n'),
-        ("adb -s 0123456789abcdef shell 'date +%z'", '-0700')]):
-      self.assertEqual(
-          {'test.subdirectory/test.file':
-              (4096, datetime.datetime(1970, 1, 1, 7, 0, 0))},
-          self.device.Ls('/this/is/a/test.directory'))
+  def testLs_nothing(self):
+    with self.assertCalls(
+        (self.call.adb.Ls('/data/local/tmp/testfile.txt'), [])):
+      self.assertEquals([],
+                        self.device.Ls('/data/local/tmp/testfile.txt'))
+
+
+class DeviceUtilsStatTest(DeviceUtilsNewImplTest):
+
+  def testStat_file(self):
+    result = [('.', adb_wrapper.DeviceStat(16889, 4096, 1417436123)),
+              ('..', adb_wrapper.DeviceStat(16873, 4096, 12382237)),
+              ('testfile.txt', adb_wrapper.DeviceStat(33206, 3, 1417436122))]
+    with self.assertCalls(
+        (self.call.adb.Ls('/data/local/tmp'), result)):
+      self.assertEquals(adb_wrapper.DeviceStat(33206, 3, 1417436122),
+                        self.device.Stat('/data/local/tmp/testfile.txt'))
+
+  def testStat_directory(self):
+    result = [('.', adb_wrapper.DeviceStat(16873, 4096, 12382237)),
+              ('..', adb_wrapper.DeviceStat(16873, 4096, 12382237)),
+              ('tmp', adb_wrapper.DeviceStat(16889, 4096, 1417436123))]
+    with self.assertCalls(
+        (self.call.adb.Ls('/data/local'), result)):
+      self.assertEquals(adb_wrapper.DeviceStat(16889, 4096, 1417436123),
+                        self.device.Stat('/data/local/tmp'))
+
+  def testStat_doesNotExist(self):
+    result = [('.', adb_wrapper.DeviceStat(16889, 4096, 1417436123)),
+              ('..', adb_wrapper.DeviceStat(16873, 4096, 12382237)),
+              ('testfile.txt', adb_wrapper.DeviceStat(33206, 3, 1417436122))]
+    with self.assertCalls(
+        (self.call.adb.Ls('/data/local/tmp'), result)):
+      with self.assertRaises(device_errors.CommandFailedError):
+        self.device.Stat('/data/local/tmp/does.not.exist.txt')
 
 
 class DeviceUtilsSetJavaAssertsTest(DeviceUtilsOldImplTest):

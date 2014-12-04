@@ -44,11 +44,14 @@ class TestAdbWrapper(unittest.TestCase):
     with self.assertRaises(device_errors.AdbCommandFailedError):
         self._adb.Shell('echo test', expect_status=1)
 
-  def testPushPull(self):
+  def testPushLsPull(self):
     path = self._MakeTempFile('foo')
     device_path = '/data/local/tmp/testfile.txt'
     local_tmpdir = os.path.dirname(path)
     self._adb.Push(path, device_path)
+    files = dict(self._adb.Ls('/data/local/tmp'))
+    self.assertTrue('testfile.txt' in files)
+    self.assertEquals(3, files['testfile.txt'].st_size)
     self.assertEqual(self._adb.Shell('cat %s' % device_path), 'foo')
     self._adb.Pull(device_path, local_tmpdir)
     with open(os.path.join(local_tmpdir, 'testfile.txt'), 'r') as f:
