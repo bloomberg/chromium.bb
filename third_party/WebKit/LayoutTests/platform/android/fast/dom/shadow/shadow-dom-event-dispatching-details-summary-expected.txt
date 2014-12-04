@@ -5,7 +5,7 @@ DIV	 id=sandbox
 	DIV	 id=top
 		DETAILS	 id=details
 			SUMMARY	 id=summary
-				DIV	 id=details-marker
+				DIV	
 			DIV	 id=details-content
 
 
