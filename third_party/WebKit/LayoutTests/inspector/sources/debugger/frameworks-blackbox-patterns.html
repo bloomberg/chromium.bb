@@ -14,13 +14,14 @@ function test()
         "http://www.google.com/", "www\\.google\\.com\\b",
         "data:text/html,foo", "",
         "about:blank", "",
+        "", "",
         "chrome-extension://extensionName/main.js", "^chrome-extension://extensionName\\b.*/main\\.js$",
         "extensions::unload_events", "^extensions::unload_events$",
     ];
 
     for (var i = 0; i < testCases.length; i += 2) {
         var url = testCases[i];
-        InspectorTest.addResult("Testing " + url);
+        InspectorTest.addResult("Testing \"" + url + "\"");
         var regexValue = WebInspector.BlackboxSupport._urlToRegExpString(url);
         InspectorTest.assertEquals(testCases[i + 1], regexValue);
         if (!regexValue)
