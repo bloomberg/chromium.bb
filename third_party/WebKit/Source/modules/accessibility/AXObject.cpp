@@ -245,7 +245,6 @@ bool AXObject::isClickable() const
     case CheckBoxRole:
     case ColorWellRole:
     case ComboBoxRole:
-    case EditableTextRole:
     case ImageMapLinkRole:
     case LinkRole:
     case ListBoxOptionRole:
