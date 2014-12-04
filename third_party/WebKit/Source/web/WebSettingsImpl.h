@@ -69,7 +69,6 @@ public:
     virtual void setAutoZoomFocusedNodeToLegibleScale(bool) override;
     virtual void setCaretBrowsingEnabled(bool) override;
     virtual void setClobberUserAgentInitialScaleQuirk(bool) override;
-    virtual void setContainerCullingEnabled(bool) override;
     virtual void setCookieEnabled(bool) override;
     virtual void setNavigateOnDragDrop(bool) override;
     virtual void setCursiveFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;

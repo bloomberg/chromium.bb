@@ -526,11 +526,6 @@ void WebSettingsImpl::setAntialiasedClips2dCanvasEnabled(bool enabled)
     m_settings->setAntialiasedClips2dCanvasEnabled(enabled);
 }
 
-void WebSettingsImpl::setContainerCullingEnabled(bool enabled)
-{
-    m_settings->setContainerCullingEnabled(enabled);
-}
-
 void WebSettingsImpl::setDeferredImageDecodingEnabled(bool enabled)
 {
     DeferredImageDecoder::setEnabled(enabled);

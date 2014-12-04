@@ -24,7 +24,6 @@
 #include "core/rendering/RenderView.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/GraphicsContextCullSaver.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
@@ -39,12 +38,11 @@ void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
 
     PaintPhase originalPhase = localPaintInfo.phase;
 
-    LayoutRect overflowBox;
     // Check if we need to do anything at all.
     // FIXME: Could eliminate the isDocumentElement() check if we fix background painting so that the RenderView
     // paints the root's background.
     if (!m_renderBlock.isDocumentElement()) {
-        overflowBox = overflowRectForPaintRejection();
+        LayoutRect overflowBox = overflowRectForPaintRejection();
         m_renderBlock.flipForWritingMode(overflowBox);
         overflowBox.moveBy(adjustedPaintOffset);
         if (!overflowBox.intersects(localPaintInfo.rect))
@@ -67,15 +65,6 @@ void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
 
     {
         BoxClipper boxClipper(m_renderBlock, localPaintInfo, adjustedPaintOffset, contentsClipBehavior);
-
-        // FIXME: does this work correctly with Slimming Paint?
-        GraphicsContextCullSaver cullSaver(*localPaintInfo.context);
-        // Cull if we have more than one child and we didn't already clip.
-        bool shouldCull = m_renderBlock.document().settings()->containerCullingEnabled() && !boxClipper.pushedClip() && !m_renderBlock.isDocumentElement()
-            && m_renderBlock.firstChild() && m_renderBlock.lastChild() && m_renderBlock.firstChild() != m_renderBlock.lastChild();
-        if (shouldCull)
-            cullSaver.cull(overflowBox);
-
         m_renderBlock.paintObject(localPaintInfo, adjustedPaintOffset);
     }
 

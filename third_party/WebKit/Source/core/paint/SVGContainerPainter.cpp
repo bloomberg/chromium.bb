@@ -5,7 +5,6 @@
 #include "config.h"
 #include "core/paint/SVGContainerPainter.h"
 
-#include "core/frame/Settings.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
@@ -14,7 +13,6 @@
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGSVGElement.h"
-#include "platform/graphics/GraphicsContextCullSaver.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
@@ -46,14 +44,10 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
         childPaintInfo.applyTransform(m_renderSVGContainer.localToParentTransform());
 
         SVGRenderingContext renderingContext;
-        GraphicsContextCullSaver cullSaver(*childPaintInfo.context);
         bool continueRendering = true;
         if (childPaintInfo.phase == PaintPhaseForeground) {
             renderingContext.prepareToRenderSVGContent(&m_renderSVGContainer, childPaintInfo);
             continueRendering = renderingContext.isRenderingPrepared();
-
-            if (continueRendering && m_renderSVGContainer.document().settings()->containerCullingEnabled())
-                cullSaver.cull(paintInvalidationRect);
         }
 
         if (continueRendering) {

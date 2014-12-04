@@ -134,7 +134,6 @@ public:
     virtual void setAutoZoomFocusedNodeToLegibleScale(bool) = 0;
     virtual void setCaretBrowsingEnabled(bool) = 0;
     virtual void setClobberUserAgentInitialScaleQuirk(bool) = 0;
-    virtual void setContainerCullingEnabled(bool) = 0;
     virtual void setCookieEnabled(bool) = 0;
     virtual void setNavigateOnDragDrop(bool) = 0;
     virtual void setCursiveFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
