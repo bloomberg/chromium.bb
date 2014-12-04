@@ -76,6 +76,14 @@
       'includes': [ '../../build/android/java_cpp_enum.gypi' ],
     },
     {
+      'target_name': 'touch_device_types_java',
+      'type': 'none',
+      'variables': {
+        'source_file': '../base/touch/touch_device.h',
+      },
+      'includes': [ '../../build/android/java_cpp_enum.gypi' ],
+    },
+    {
       'target_name': 'window_open_disposition_java',
       'type': 'none',
       'variables': {
@@ -106,6 +114,7 @@
         'bitmap_format_java',
         'page_transition_types_java',
         'system_ui_resource_type_java',
+        'touch_device_types_java',
         'ui_strings_grd',
         'window_open_disposition_java',
         'text_input_type_java',

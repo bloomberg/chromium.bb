@@ -21,4 +21,24 @@ int MaxTouchPoints() {
   return GetSystemMetrics(SM_MAXIMUMTOUCHES);
 }
 
+int GetAvailablePointerTypes() {
+  // TODO(mustaq): Replace the stub below
+  return POINTER_TYPE_NONE;
+}
+
+PointerType GetPrimaryPointerType() {
+  // TODO(mustaq): Replace the stub below
+  return POINTER_TYPE_NONE;
+}
+
+int GetAvailableHoverTypes() {
+  // TODO(mustaq): Replace the stub below
+  return HOVER_TYPE_NONE;
+}
+
+HoverType GetPrimaryHoverType() {
+  // TODO(mustaq): Replace the stub below
+  return HOVER_TYPE_NONE;
+}
+
 }  // namespace ui

@@ -422,6 +422,11 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
   prefs.touch_enabled = ui::AreTouchEventsEnabled();
   prefs.device_supports_touch = prefs.touch_enabled &&
       ui::IsTouchDevicePresent();
+  prefs.available_pointer_types = ui::GetAvailablePointerTypes();
+  prefs.primary_pointer_type = ui::GetPrimaryPointerType();
+  prefs.available_hover_types = ui::GetAvailableHoverTypes();
+  prefs.primary_hover_type = ui::GetPrimaryHoverType();
+
 #if defined(OS_ANDROID)
   prefs.device_supports_mouse = false;
 #endif

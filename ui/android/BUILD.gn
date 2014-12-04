@@ -35,6 +35,7 @@ generate_jni("ui_android_jni_headers") {
 java_cpp_enum("java_enums_srcjar") {
   sources = [
     "../base/page_transition_types.h",
+    "../base/touch/touch_device.h",
     "../base/window_open_disposition.h",
     "../base/android/system_ui_resource_type.h",
     "../base/ime/text_input_type.h",
@@ -45,6 +46,8 @@ java_cpp_enum("java_enums_srcjar") {
     "org/chromium/ui/WindowOpenDisposition.java",
     "org/chromium/ui/base/PageTransition.java",
     "org/chromium/ui/base/SystemUIResourceType.java",
+    "org/chromium/ui/base/HoverType.java",
+    "org/chromium/ui/base/PointerType.java",
     "org/chromium/ui/base/ime/TextInputType.java",
     "org/chromium/ui/gfx/BitmapFormat.java",
     "org/chromium/ui/resources/AndroidResourceType.java",

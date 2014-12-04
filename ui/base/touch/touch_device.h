@@ -11,6 +11,8 @@
 #include <jni.h>
 #endif
 
+// FIXME: This covers more than just touches. Rename to input_device?
+// crbug.com/438794
 
 namespace ui {
 
@@ -29,6 +31,8 @@ UI_BASE_EXPORT int MaxTouchPoints();
 // Bit field values indicating available pointer types. Identical to
 // blink::WebSettings::PointerType enums, enforced by compile-time assertions
 // in content/public/common/web_preferences.cc .
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui.base
+// GENERATED_JAVA_PREFIX_TO_STRIP: POINTER_TYPE_
 enum PointerType {
   POINTER_TYPE_NONE = 1 << 0,
   POINTER_TYPE_FIRST = POINTER_TYPE_NONE,
@@ -40,6 +44,8 @@ enum PointerType {
 // Bit field values indicating available hover types. Identical to
 // blink::WebSettings::HoverType enums, enforced by compile-time assertions
 // in content/public/common/web_preferences.cc .
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui.base
+// GENERATED_JAVA_PREFIX_TO_STRIP: HOVER_TYPE_
 enum HoverType {
   HOVER_TYPE_NONE = 1 << 0,
   HOVER_TYPE_FIRST = HOVER_TYPE_NONE,
@@ -47,6 +53,11 @@ enum HoverType {
   HOVER_TYPE_HOVER = 1 << 2,
   HOVER_TYPE_LAST = HOVER_TYPE_HOVER
 };
+
+UI_BASE_EXPORT int GetAvailablePointerTypes();
+UI_BASE_EXPORT PointerType GetPrimaryPointerType();
+UI_BASE_EXPORT int GetAvailableHoverTypes();
+UI_BASE_EXPORT HoverType GetPrimaryHoverType();
 
 #if defined(OS_ANDROID)
 bool RegisterTouchDeviceAndroid(JNIEnv* env);
