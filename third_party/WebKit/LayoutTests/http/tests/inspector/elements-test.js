@@ -539,11 +539,21 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
     print(rootNode ? treeOutline.findTreeElement(rootNode) : treeOutline, "", depth || 10000);
 };
 
-InspectorTest.dumpDOMUpdateHighlights = function(rootNode, depth)
+InspectorTest.dumpDOMUpdateHighlights = function(rootNode, callback, depth)
 {
-    var treeOutline = InspectorTest.firstElementsTreeOutline();
-    treeOutline._updateModifiedNodes();
-    print(rootNode ? treeOutline.findTreeElement(rootNode) : treeOutline, "", depth || 10000);
+    var hasHighlights = false;
+
+    InspectorTest.addSniffer(WebInspector.ElementsTreeUpdater.prototype, "_updateModifiedNodes", didUpdate);
+
+    function didUpdate()
+    {
+        var treeOutline = InspectorTest.firstElementsTreeOutline();
+        print(rootNode ? treeOutline.findTreeElement(rootNode) : treeOutline, "", depth || 10000);
+        if (!hasHighlights)
+            InspectorTest.addResult("<No highlights>");
+        if (callback)
+            callback();
+    }
 
     function print(treeItem, prefix, depth)
     {
@@ -563,6 +573,7 @@ InspectorTest.dumpDOMUpdateHighlights = function(rootNode, depth)
                     xpath += "/text() \"" + element.textContent + "\"";
                 }
                 InspectorTest.addResult(prefix + xpath);
+                hasHighlights = true;
             }
         }
 

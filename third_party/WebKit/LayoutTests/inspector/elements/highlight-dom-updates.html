@@ -2,6 +2,7 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/elements-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
 <script>
 
 function appendChild(parentId, id)
@@ -42,7 +43,6 @@ function setFirstChildTextContent(id, content)
 
 function test()
 {
-    var containerNode;
     var attrTestNode;
     var childTestNode;
     var textTestNode;
@@ -52,15 +52,13 @@ function test()
         {
             function callback(node)
             {
-                containerNode = InspectorTest.expandedNodeWithId("container");
                 attrTestNode = InspectorTest.expandedNodeWithId("attrTest");
                 childTestNode = InspectorTest.expandedNodeWithId("childTest");
                 textTestNode = InspectorTest.expandedNodeWithId("textTest");
-
-                InspectorTest.addResult("========= Original ========");
-                InspectorTest.dumpDOMUpdateHighlights(containerNode);
                 next();
             }
+            InspectorTest.addResult("========= Original ========");
+            InspectorTest.dumpDOMUpdateHighlights(null);
             InspectorTest.expandElementsTree(callback);
         },
 
@@ -132,17 +130,33 @@ function test()
         function testClearTextNodeTextContent(next)
         {
             runAndDumpHighlights("setFirstChildTextContent('textTest', '')", textTestNode, next);
+        },
+
+        function testAppendChildWhenHidden(next)
+        {
+            WebInspector.ConsolePanel.show();
+            InspectorTest.evaluateInPage("appendChild('childTest', 'child1')", callback);
+
+            function callback()
+            {
+                dumpHighlights(childTestNode, next);
+                WebInspector.ElementsPanel.show();
+            }
         }
     ]);
 
     function runAndDumpHighlights(script, root, next)
     {
-        InspectorTest.evaluateInPage(script, callback);
+        dumpHighlights(root, next);
+        InspectorTest.evaluateInPage(script);
+    }
+
+    function dumpHighlights(root, next)
+    {
+        InspectorTest.dumpDOMUpdateHighlights(root, callback);
 
         function callback()
         {
-            // InspectorTest.dumpElementsTree(root);
-            InspectorTest.dumpDOMUpdateHighlights(root);
             var treeOutline = InspectorTest.firstElementsTreeOutline();
             var highlights = treeOutline._element.getElementsByClassName("dom-update-highlight");
             for (var i = 0; i < highlights.length; ++i)

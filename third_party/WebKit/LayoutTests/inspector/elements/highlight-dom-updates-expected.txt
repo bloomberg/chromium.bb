@@ -3,6 +3,7 @@ Tests DOM update highlights in the DOM tree.
 
 Running: testDumpInitial
 ========= Original ========
+<No highlights>
 
 Running: testSetAttributeOtherValue
 //*[@id="attrTest"]/@attrfoo bar
@@ -43,4 +44,7 @@ Running: testSetTextContentWithEmptyText
 Running: testClearTextNodeTextContent
 //*[@id="textTest"]
 //*[@id="textTest"]/text() ""
+
+Running: testAppendChildWhenHidden
+<No highlights>
 
