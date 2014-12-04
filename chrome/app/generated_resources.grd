@@ -14959,7 +14959,7 @@ Do you accept?
         Smart Lock phone changed
       </message>
       <message name="IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_MESSAGE" desc="Message for notification shown when the paired phone is changed.">
-        Next time you unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>, Smart Lock will update and you can just click your picture to enter.
+        Next time you unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>, Smart Lock will update so you'll be able to just click your picture to enter.
       </message>
       <message name="IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_UPDATE_BUTTON" desc="Label of a button on the notification shown when the paired phone is changed to update Smart lock now.">
         Update now
@@ -15112,7 +15112,7 @@ Do you accept?
         Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> has been manually locked. You'll need to type your password to enter.
       </message>
       <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_CHANGED" desc="Tooltip text shown on a user's lock screen pod when Easy Unlock feature is enabled for the user, but the pairing data is changed. A password has to be entered to unlock the device.">
-        Your phone for Smart Lock changed. Type your password to update Smart Lock on this device. Next time, you can just click your picture to enter.
+        Your phone used for Smart Lock changed. Type your password to update Smart Lock on this device. Next time, you can just click your picture to enter.
       </message>
       <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_ADDED" desc="Tooltip text shown on a user's lock screen pod when Easy Unlock pairing data is synced on a new Chromebook.">
         One-time activation: Type your password to activate Smart Lock. With Smart Lock, your phone will unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>—without a password. To change or disable this feature, visit your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>'s settings.
