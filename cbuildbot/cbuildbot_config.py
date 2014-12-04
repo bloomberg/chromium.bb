@@ -2148,41 +2148,32 @@ ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
 _CreateConfigsForBoards(pre_cq, _all_boards, 'pre-cq')
 _CreateConfigsForBoards(no_vmtest_pre_cq, _all_boards, 'no-vmtest-pre-cq')
 
-# The Pre-CQ tests 6 platforms. Because we test so many platforms in parallel,
-# it is important to delay the launch of some builds in order to conserve RAM.
-# We build rambi and daisy_spring and duck in parallel first. When duck finishes
-# BuildPackages, the remaining boards start BuildPackages. Because Rambi runs
-# VMTest and this takes a long time, the remaining boards still finish well
-# before Rambi finishes.
 # TODO(davidjames): Add peach_pit, nyan, and beaglebone to pre-cq.
-# TODO(davidjames): Update daisy_spring and duck to build images again.
-_config.add_group(constants.PRE_CQ_GROUP_CONFIG,
-  # amd64 w/kernel 3.10. This builder runs VMTest so it's going to be
-  # the slowest one.
-  pre_cq.add_config('rambi-grouped-pre-cq', _base_configs['rambi']),
-
+# TODO(davidjames): Update daisy_spring to build images again.
+_config.add_group('mixed-a-pre-cq',
   # daisy_spring w/kernel 3.8.
   compile_only_pre_cq.add_config('daisy_spring-grouped-pre-cq',
-                                 _base_configs['daisy_spring']),
-
-  # brillo config. We set build_packages_in_background=False here, so
-  # that subsequent boards (samus, lumpy, parrot) don't get launched until
-  # after duck finishes BuildPackages.
-  unittest_only_pre_cq.add_config('duck-grouped-pre-cq',
-                                  _base_configs['duck'],
-                                  build_packages_in_background=False),
-
-  # samus w/kernel 3.14.
-  compile_only_pre_cq.add_config('samus-grouped-pre-cq',
-                                 _base_configs['samus']),
-
+                                 _base_configs['daisy_spring'],
+                                 build_packages_in_background=False),
   # lumpy w/kernel 3.8.
   compile_only_pre_cq.add_config('lumpy-grouped-pre-cq',
                                  _base_configs['lumpy']),
+)
 
+_config.add_group('mixed-b-pre-cq',
   # arm64 w/kernel 3.4.
   compile_only_pre_cq.add_config('rush_ryu-grouped-pre-cq',
-                                 _base_configs['rush_ryu']),
+                                 _base_configs['rush_ryu'],
+                                 build_packages_in_background=False),
+  # samus w/kernel 3.14.
+  compile_only_pre_cq.add_config('samus-grouped-pre-cq',
+                                 _base_configs['samus']),
+)
+
+_config.add_group('mixed-c-pre-cq',
+  # brillo
+  compile_only_pre_cq.add_config('duck-grouped-pre-cq',
+                                 _base_configs['duck']),
 )
 
 internal_paladin.add_config('pre-cq-launcher',
