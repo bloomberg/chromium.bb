@@ -1137,6 +1137,10 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setRubberBandingOnCompositorThread(
       prefs.rubber_banding_on_compositor_thread);
   settings->setUseSolidColorScrollbars(prefs.use_solid_color_scrollbars);
+
+#if defined(OS_WIN)
+  settings->setShowContextMenuOnMouseUp(true);
+#endif
 }
 
 /*static*/
