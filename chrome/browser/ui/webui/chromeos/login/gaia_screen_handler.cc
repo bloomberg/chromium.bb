@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
+#include "chrome/browser/chromeos/policy/consumer_management_stage.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
@@ -454,13 +455,12 @@ void GaiaScreenHandler::OnSetOwnerDone(const std::string& gaia_id,
                                        bool success) {
   CHECK(consumer_management_);
   if (success) {
-    consumer_management_->SetEnrollmentStage(
-        policy::ConsumerManagementService::ENROLLMENT_STAGE_OWNER_STORED);
+    consumer_management_->SetStage(
+        policy::ConsumerManagementStage::EnrollmentOwnerStored());
   } else {
     LOG(ERROR) << "Failed to write owner e-mail to boot lockbox.";
-    consumer_management_->SetEnrollmentStage(
-        policy::ConsumerManagementService::
-            ENROLLMENT_STAGE_BOOT_LOCKBOX_FAILED);
+    consumer_management_->SetStage(
+        policy::ConsumerManagementStage::EnrollmentBootLockboxFailed());
     // We should continue logging in the user, as there's not much we can do
     // here.
   }

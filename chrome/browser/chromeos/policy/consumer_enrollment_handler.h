@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -18,6 +17,8 @@ class Profile;
 
 namespace policy {
 
+class ConsumerManagementService;
+class ConsumerManagementStage;
 class DeviceManagementService;
 class EnrollmentStatus;
 
@@ -67,7 +68,7 @@ class ConsumerEnrollmentHandler
   void OnEnrollmentCompleted(EnrollmentStatus status);
 
   // Ends the enrollment process.
-  void EndEnrollment(ConsumerManagementService::EnrollmentStage stage);
+  void EndEnrollment(const ConsumerManagementStage& stage);
 
   Profile* profile_;
   ConsumerManagementService* consumer_management_service_;

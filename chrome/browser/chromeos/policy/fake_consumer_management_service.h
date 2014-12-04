@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
+#include "chrome/browser/chromeos/policy/consumer_management_stage.h"
 
 namespace policy {
 
@@ -15,17 +16,17 @@ class FakeConsumerManagementService : public ConsumerManagementService {
   FakeConsumerManagementService();
   ~FakeConsumerManagementService() override;
 
-  // Set both status and enrollment stage.
-  void SetStatusAndEnrollmentStage(Status status, EnrollmentStage stage);
+  // Set both status and stage.
+  void SetStatusAndStage(Status status, const ConsumerManagementStage& stage);
 
   // ConsumerManagementServcie:
   Status GetStatus() const override;
-  EnrollmentStage GetEnrollmentStage() const override;
-  void SetEnrollmentStage(EnrollmentStage stage) override;
+  ConsumerManagementStage GetStage() const override;
+  void SetStage(const ConsumerManagementStage& stage) override;
 
  private:
   Status status_;
-  EnrollmentStage enrollment_stage_;
+  ConsumerManagementStage stage_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConsumerManagementService);
 };

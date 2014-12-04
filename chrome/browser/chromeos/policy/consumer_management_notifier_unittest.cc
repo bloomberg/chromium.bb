@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
+#include "chrome/browser/chromeos/policy/consumer_management_stage.h"
 #include "chrome/browser/chromeos/policy/fake_consumer_management_service.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -22,9 +23,9 @@ class ConsumerManagementNotifierTest : public BrowserWithTestWindowTest {
  public:
   ConsumerManagementNotifierTest()
       : fake_service_(new FakeConsumerManagementService()) {
-    fake_service_->SetStatusAndEnrollmentStage(
+    fake_service_->SetStatusAndStage(
         ConsumerManagementService::STATUS_UNENROLLED,
-        ConsumerManagementService::ENROLLMENT_STAGE_NONE);
+        ConsumerManagementStage::None());
 
     // Inject objects.
     BrowserPolicyConnectorChromeOS* connector =
@@ -69,33 +70,31 @@ class ConsumerManagementNotifierTest : public BrowserWithTestWindowTest {
 };
 
 TEST_F(ConsumerManagementNotifierTest, ShowsNotificationWhenCreated) {
-  fake_service_->SetStatusAndEnrollmentStage(
+  fake_service_->SetStatusAndStage(
       ConsumerManagementService::STATUS_UNENROLLED,
-      ConsumerManagementService::ENROLLMENT_STAGE_CANCELED);
+      ConsumerManagementStage::EnrollmentCanceled());
   EXPECT_FALSE(HasEnrollmentNotification());
 
   CreateConsumerManagementNotifier();
 
-  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_STAGE_NONE,
-            fake_service_->GetEnrollmentStage());
+  EXPECT_EQ(ConsumerManagementStage::None(), fake_service_->GetStage());
   EXPECT_TRUE(HasEnrollmentNotification());
 }
 
 TEST_F(ConsumerManagementNotifierTest, ShowsNotificationWhenStatusChanged) {
-  fake_service_->SetStatusAndEnrollmentStage(
+  fake_service_->SetStatusAndStage(
       ConsumerManagementService::STATUS_ENROLLING,
-      ConsumerManagementService::ENROLLMENT_STAGE_OWNER_STORED);
+      ConsumerManagementStage::EnrollmentOwnerStored());
 
   CreateConsumerManagementNotifier();
-  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_STAGE_OWNER_STORED,
-            fake_service_->GetEnrollmentStage());
+  EXPECT_EQ(ConsumerManagementStage::EnrollmentOwnerStored(),
+            fake_service_->GetStage());
   EXPECT_FALSE(HasEnrollmentNotification());
 
-  fake_service_->SetStatusAndEnrollmentStage(
+  fake_service_->SetStatusAndStage(
       ConsumerManagementService::STATUS_ENROLLED,
-      ConsumerManagementService::ENROLLMENT_STAGE_SUCCESS);
-  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_STAGE_NONE,
-            fake_service_->GetEnrollmentStage());
+      ConsumerManagementStage::EnrollmentSuccess());
+  EXPECT_EQ(ConsumerManagementStage::None(), fake_service_->GetStage());
   EXPECT_TRUE(HasEnrollmentNotification());
 }
 

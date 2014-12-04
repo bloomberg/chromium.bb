@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
+#include "chrome/browser/chromeos/policy/consumer_management_stage.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/fake_consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/fake_device_cloud_policy_initializer.h"
@@ -44,9 +45,9 @@ class ConsumerEnrollmentHandlerTest : public testing::Test {
         testing_profile_manager_(new TestingProfileManager(
             TestingBrowserProcess::GetGlobal())) {
     // Set up FakeConsumerManagementService.
-    fake_service_->SetStatusAndEnrollmentStage(
+    fake_service_->SetStatusAndStage(
         ConsumerManagementService::STATUS_ENROLLING,
-        ConsumerManagementService::ENROLLMENT_STAGE_OWNER_STORED);
+        ConsumerManagementStage::EnrollmentOwnerStored());
 
     // Inject fake objects.
     BrowserPolicyConnectorChromeOS* connector =
@@ -104,8 +105,8 @@ TEST_F(ConsumerEnrollmentHandlerTest, EnrollsSuccessfully) {
   RunEnrollmentTest();
 
   EXPECT_TRUE(fake_initializer_->was_start_enrollment_called());
-  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_STAGE_SUCCESS,
-            fake_service_->GetEnrollmentStage());
+  EXPECT_EQ(ConsumerManagementStage::EnrollmentSuccess(),
+            fake_service_->GetStage());
 }
 
 TEST_F(ConsumerEnrollmentHandlerTest, FailsToGetAccessToken) {
@@ -128,8 +129,8 @@ TEST_F(ConsumerEnrollmentHandlerTest, FailsToGetAccessToken) {
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR));
 
   EXPECT_FALSE(fake_initializer_->was_start_enrollment_called());
-  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_STAGE_GET_TOKEN_FAILED,
-            fake_service_->GetEnrollmentStage());
+  EXPECT_EQ(ConsumerManagementStage::EnrollmentGetTokenFailed(),
+            fake_service_->GetStage());
 }
 
 TEST_F(ConsumerEnrollmentHandlerTest, FailsToRegister) {
@@ -140,8 +141,8 @@ TEST_F(ConsumerEnrollmentHandlerTest, FailsToRegister) {
   RunEnrollmentTest();
 
   EXPECT_TRUE(fake_initializer_->was_start_enrollment_called());
-  EXPECT_EQ(ConsumerManagementService::ENROLLMENT_STAGE_DM_SERVER_FAILED,
-            fake_service_->GetEnrollmentStage());
+  EXPECT_EQ(ConsumerManagementStage::EnrollmentDMServerFailed(),
+            fake_service_->GetStage());
 }
 
 }  // namespace policy

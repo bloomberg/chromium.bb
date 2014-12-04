@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
+#include "chrome/browser/chromeos/policy/consumer_management_stage.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -83,8 +84,8 @@ void ConsumerManagementHandler::HandleEnrollConsumerManagement(
   }
 
   CHECK(management_service_);
-  management_service_->SetEnrollmentStage(
-      policy::ConsumerManagementService::ENROLLMENT_STAGE_REQUESTED);
+  management_service_->SetStage(
+      policy::ConsumerManagementStage::EnrollmentRequested());
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
 

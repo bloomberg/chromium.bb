@@ -12,6 +12,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/consumer_management_service.h"
+#include "chrome/browser/chromeos/policy/consumer_management_stage.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -72,7 +74,7 @@ void ConsumerEnrollmentHandler::OnGetTokenFailure(
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, token_request_.release());
 
   LOG(ERROR) << "Failed to get the access token: " << error.ToString();
-  EndEnrollment(ConsumerManagementService::ENROLLMENT_STAGE_GET_TOKEN_FAILED);
+  EndEnrollment(ConsumerManagementStage::EnrollmentGetTokenFailed());
 }
 
 void ConsumerEnrollmentHandler::ContinueEnrollmentProcess() {
@@ -126,16 +128,16 @@ void ConsumerEnrollmentHandler::OnEnrollmentCompleted(EnrollmentStatus status) {
                << " http_status=" << status.http_status()
                << " store_status=" << status.store_status()
                << " validation_status=" << status.validation_status();
-    EndEnrollment(ConsumerManagementService::ENROLLMENT_STAGE_DM_SERVER_FAILED);
+    EndEnrollment(ConsumerManagementStage::EnrollmentDMServerFailed());
     return;
   }
 
-  EndEnrollment(ConsumerManagementService::ENROLLMENT_STAGE_SUCCESS);
+  EndEnrollment(ConsumerManagementStage::EnrollmentSuccess());
 }
 
 void ConsumerEnrollmentHandler::EndEnrollment(
-    ConsumerManagementService::EnrollmentStage stage) {
-  consumer_management_service_->SetEnrollmentStage(stage);
+    const ConsumerManagementStage& stage) {
+  consumer_management_service_->SetStage(stage);
 }
 
 }  // namespace policy

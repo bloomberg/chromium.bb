@@ -9,16 +9,16 @@ namespace policy {
 FakeConsumerManagementService::FakeConsumerManagementService()
     : ConsumerManagementService(NULL, NULL),
       status_(STATUS_UNKNOWN),
-      enrollment_stage_(ENROLLMENT_STAGE_NONE) {
+      stage_(ConsumerManagementStage::None()) {
 }
 
 FakeConsumerManagementService::~FakeConsumerManagementService() {
 }
 
-void FakeConsumerManagementService::SetStatusAndEnrollmentStage(
-    Status status, EnrollmentStage stage) {
+void FakeConsumerManagementService::SetStatusAndStage(
+    Status status, const ConsumerManagementStage& stage) {
   status_ = status;
-  SetEnrollmentStage(stage);
+  SetStage(stage);
 }
 
 ConsumerManagementService::Status
@@ -26,13 +26,13 @@ FakeConsumerManagementService::GetStatus() const {
   return status_;
 }
 
-ConsumerManagementService::EnrollmentStage
-FakeConsumerManagementService::GetEnrollmentStage() const {
-  return enrollment_stage_;
+ConsumerManagementStage FakeConsumerManagementService::GetStage() const {
+  return stage_;
 }
 
-void FakeConsumerManagementService::SetEnrollmentStage(EnrollmentStage stage) {
-  enrollment_stage_ = stage;
+void FakeConsumerManagementService::SetStage(
+    const ConsumerManagementStage& stage) {
+  stage_ = stage;
   NotifyStatusChanged();
 }
 

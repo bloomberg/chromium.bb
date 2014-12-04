@@ -8,9 +8,11 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/consumer_management_stage.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -96,25 +98,23 @@ void ConsumerManagementNotifier::Shutdown() {
 }
 
 void ConsumerManagementNotifier::OnConsumerManagementStatusChanged() {
-  if (consumer_management_service_->HasPendingEnrollmentNotification()) {
-    const ConsumerManagementService::EnrollmentStage stage =
-        consumer_management_service_->GetEnrollmentStage();
-    // Reset the enrollment stage so that we won't show the same notification,
-    // again.
-    consumer_management_service_->SetEnrollmentStage(
-        ConsumerManagementService::ENROLLMENT_STAGE_NONE);
+  const ConsumerManagementStage stage =
+      consumer_management_service_->GetStage();
+  if (stage.HasPendingNotification()) {
+    // Reset the stage so that we won't show the same notification, again.
+    consumer_management_service_->SetStage(ConsumerManagementStage::None());
     ShowDesktopNotification(stage);
   }
 }
 
 void ConsumerManagementNotifier::ShowDesktopNotification(
-    ConsumerManagementService::EnrollmentStage stage) {
+    const ConsumerManagementStage& stage) {
   base::string16 title;
   base::string16 body;
   base::string16 button_label;
   base::Closure button_click_callback;
 
-  if (stage == ConsumerManagementService::ENROLLMENT_STAGE_SUCCESS) {
+  if (stage.HasEnrollmentSucceeded()) {
     title = l10n_util::GetStringUTF16(
         IDS_CONSUMER_MANAGEMENT_ENROLLMENT_NOTIFICATION_TITLE);
     body = l10n_util::GetStringUTF16(
@@ -124,7 +124,7 @@ void ConsumerManagementNotifier::ShowDesktopNotification(
     button_click_callback = base::Bind(
         &ConsumerManagementNotifier::OpenSettingsPage,
         weak_ptr_factory_.GetWeakPtr());
-  } else {
+  } else if (stage.HasEnrollmentFailed()) {
     title = l10n_util::GetStringUTF16(
         IDS_CONSUMER_MANAGEMENT_ENROLLMENT_FAILURE_NOTIFICATION_TITLE);
     body = l10n_util::GetStringUTF16(
@@ -134,6 +134,9 @@ void ConsumerManagementNotifier::ShowDesktopNotification(
     button_click_callback = base::Bind(
         &ConsumerManagementNotifier::TryEnrollmentAgain,
         weak_ptr_factory_.GetWeakPtr());
+  } else {
+    NOTREACHED();
+    return;
   }
 
   message_center::RichNotificationData optional_field;

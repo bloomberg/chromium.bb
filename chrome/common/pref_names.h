@@ -670,7 +670,7 @@ extern const char kUsedPolicyCertificates[];
 extern const char kServerBackedDeviceState[];
 extern const char kCustomizationDefaultWallpaperURL[];
 extern const char kLogoutStartedLast[];
-extern const char kConsumerManagementEnrollmentStage[];
+extern const char kConsumerManagementStage[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kClearPluginLSODataEnabled[];

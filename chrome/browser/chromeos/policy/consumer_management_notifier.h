@@ -14,6 +14,8 @@ class Profile;
 
 namespace policy {
 
+class ConsumerManagementStage;
+
 // ConsumerManagementNotifier observes ConsumerManagementService and shows
 // a desktop notification to the device owner if consumer enrollment or
 // unenrollment suceeds or fails.
@@ -33,8 +35,7 @@ class ConsumerManagementNotifier
 
  private:
   // Shows a desktop notification.
-  void ShowDesktopNotification(
-      ConsumerManagementService::EnrollmentStage stage);
+  void ShowDesktopNotification(const ConsumerManagementStage& stage);
 
   // Opens the settings page.
   void OpenSettingsPage() const;

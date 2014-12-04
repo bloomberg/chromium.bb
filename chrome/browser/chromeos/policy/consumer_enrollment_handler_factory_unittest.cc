@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
+#include "chrome/browser/chromeos/policy/consumer_management_stage.h"
 #include "chrome/browser/chromeos/policy/fake_consumer_management_service.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -31,9 +32,9 @@ class ConsumerEnrollmentHandlerFactoryTest : public testing::Test {
         testing_profile_manager_(new TestingProfileManager(
             TestingBrowserProcess::GetGlobal())) {
     // Set up FakeConsumerManagementService.
-    fake_service_->SetStatusAndEnrollmentStage(
+    fake_service_->SetStatusAndStage(
         ConsumerManagementService::STATUS_ENROLLING,
-        ConsumerManagementService::ENROLLMENT_STAGE_OWNER_STORED);
+        ConsumerManagementStage::EnrollmentOwnerStored());
 
     // Inject fake objects.
     BrowserPolicyConnectorChromeOS* connector =
@@ -69,9 +70,9 @@ TEST_F(ConsumerEnrollmentHandlerFactoryTest, ServiceIsNotCreatedForNonOwner) {
 
 TEST_F(ConsumerEnrollmentHandlerFactoryTest,
        ServiceIsNotCreatedIfItHasNothingToDo) {
-  fake_service_->SetStatusAndEnrollmentStage(
+  fake_service_->SetStatusAndStage(
       ConsumerManagementService::STATUS_UNENROLLED,
-      ConsumerManagementService::ENROLLMENT_STAGE_NONE);
+      ConsumerManagementStage::None());
 
   Profile* profile = testing_profile_manager_->CreateTestingProfile(kTestOwner);
   EXPECT_FALSE(ConsumerEnrollmentHandlerFactory::GetForBrowserContext(profile));

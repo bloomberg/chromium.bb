@@ -41,6 +41,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
+#include "chrome/browser/chromeos/policy/consumer_management_stage.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -287,8 +288,7 @@ SigninScreenHandler::SigninScreenHandler(
           GetConsumerManagementService();
   is_enrolling_consumer_management_ =
       consumer_management &&
-      consumer_management->GetEnrollmentStage() ==
-          policy::ConsumerManagementService::ENROLLMENT_STAGE_REQUESTED;
+      consumer_management->GetStage().IsEnrollmentRequested();
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
@@ -1380,8 +1380,8 @@ void SigninScreenHandler::HandleCancelConsumerManagementEnrollment() {
       g_browser_process->platform_part()->browser_policy_connector_chromeos()->
           GetConsumerManagementService();
   CHECK(consumer_management);
-  consumer_management->SetEnrollmentStage(
-      policy::ConsumerManagementService::ENROLLMENT_STAGE_CANCELED);
+  consumer_management->SetStage(
+      policy::ConsumerManagementStage::EnrollmentCanceled());
   is_enrolling_consumer_management_ = false;
   ShowImpl();
 }
