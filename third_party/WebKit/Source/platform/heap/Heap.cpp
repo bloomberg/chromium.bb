@@ -1226,7 +1226,7 @@ void OrphanedPagePool::addOrphanedPage(int index, BaseHeapPage* page)
 NO_SANITIZE_ADDRESS
 void OrphanedPagePool::decommitOrphanedPages()
 {
-    ASSERT(Heap::isInGC());
+    ASSERT(ThreadState::current()->isInGC());
 
 #if ENABLE(ASSERT)
     // No locking needed as all threads are at safepoints at this point in time.
@@ -1532,7 +1532,6 @@ void ThreadHeap<Header>::makeConsistentForSweeping()
 template<typename Header>
 void ThreadHeap<Header>::markUnmarkedObjectsDead()
 {
-    ASSERT(Heap::isInGC());
     ASSERT(isConsistentForSweeping());
     for (HeapPage<Header>* page = m_firstPage; page; page = page->next()) {
         page->markUnmarkedObjectsDead();
@@ -1667,7 +1666,6 @@ void HeapPage<Header>::sweep(ThreadHeap<Header>* heap)
 template<typename Header>
 void HeapPage<Header>::markUnmarkedObjectsDead()
 {
-    ASSERT(Heap::isInGC());
     for (Address headerAddress = payload(); headerAddress < end();) {
         Header* header = reinterpret_cast<Header*>(headerAddress);
         ASSERT(header->size() < blinkPagePayloadSize());
@@ -1922,8 +1920,6 @@ void LargeObject<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo*
 
 void HeapDoesNotContainCache::flush()
 {
-    ASSERT(Heap::isInGC());
-
     if (m_hasEntries) {
         for (int i = 0; i < numberOfEntries; i++)
             m_entries[i] = 0;
@@ -1942,7 +1938,7 @@ size_t HeapDoesNotContainCache::hash(Address address)
 
 bool HeapDoesNotContainCache::lookup(Address address)
 {
-    ASSERT(Heap::isInGC());
+    ASSERT(ThreadState::current()->isInGC());
 
     size_t index = hash(address);
     ASSERT(!(index & 1));
@@ -1956,7 +1952,7 @@ bool HeapDoesNotContainCache::lookup(Address address)
 
 void HeapDoesNotContainCache::addEntry(Address address)
 {
-    ASSERT(Heap::isInGC());
+    ASSERT(ThreadState::current()->isInGC());
 
     m_hasEntries = true;
     size_t index = hash(address);
@@ -2004,7 +2000,7 @@ public:
         // call Heap::contains when outside a GC and we call mark
         // when doing weakness for ephemerons. Hence we only check
         // when called within.
-        ASSERT(!Heap::isInGC() || Heap::containedInHeapOrOrphanedPage(header));
+        ASSERT(!ThreadState::current()->isInGC() || Heap::containedInHeapOrOrphanedPage(header));
 
         if (Mode == ThreadLocalMarking && !objectInTerminatingThreadHeap(objectPointer))
             return;
@@ -2299,7 +2295,6 @@ void Heap::doShutdown()
     if (!s_markingVisitor)
         return;
 
-    ASSERT(!Heap::isInGC());
     ASSERT(!ThreadState::attachedThreads().size());
     delete s_markingVisitor;
     s_markingVisitor = 0;
@@ -2325,7 +2320,7 @@ void Heap::doShutdown()
 
 BaseHeapPage* Heap::contains(Address address)
 {
-    ASSERT(Heap::isInGC());
+    ASSERT(ThreadState::current()->isInGC());
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
         BaseHeapPage* page = (*it)->contains(address);
@@ -2344,7 +2339,7 @@ bool Heap::containedInHeapOrOrphanedPage(void* object)
 
 Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
 {
-    ASSERT(Heap::isInGC());
+    ASSERT(ThreadState::current()->isInGC());
 
 #if !ENABLE(ASSERT)
     if (s_heapDoesNotContainCache->lookup(address))
@@ -2511,7 +2506,7 @@ bool Heap::weakTableRegistered(const void* table)
 
 void Heap::preGC()
 {
-    ASSERT(Heap::isInGC());
+    ASSERT(!ThreadState::current()->isInGC());
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
         (*it)->preGC();
@@ -2519,7 +2514,7 @@ void Heap::preGC()
 
 void Heap::postGC()
 {
-    ASSERT(Heap::isInGC());
+    ASSERT(ThreadState::current()->isInGC());
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
         (*it)->postGC();
@@ -2556,7 +2551,6 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     // torn down).
     ThreadState::NoAllocationScope noAllocationScope(state);
 
-    enterGC();
     preGC();
 
     Heap::resetMarkedObjectSize();
@@ -2587,7 +2581,6 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     orphanedPagePool()->decommitOrphanedPages();
 
     postGC();
-    leaveGC();
 
 #if ENABLE(GC_PROFILE_MARKING)
     static_cast<MarkingVisitor*>(s_markingVisitor)->reportStats();
@@ -2613,7 +2606,6 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         MarkingVisitor<ThreadLocalMarking> markingVisitor(s_markingStack);
         ThreadState::NoAllocationScope noAllocationScope(state);
 
-        enterGC();
         state->preGC();
 
         // 1. trace the thread local persistent roots. For thread local GCs we
@@ -2636,7 +2628,6 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         globalWeakProcessing(&markingVisitor);
 
         state->postGC();
-        leaveGC();
     }
     state->performPendingSweep();
 }
@@ -2718,12 +2709,15 @@ void ThreadHeap<Header>::prepareHeapForTermination()
 size_t Heap::objectPayloadSizeForTesting()
 {
     size_t objectPayloadSize = 0;
-    ASSERT(Heap::isInGC());
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     typedef ThreadState::AttachedThreadStateSet::iterator ThreadStateIterator;
     for (ThreadStateIterator it = threads.begin(), end = threads.end(); it != end; ++it) {
+        (*it)->setGCState(ThreadState::GCRunning);
         (*it)->makeConsistentForSweeping();
         objectPayloadSize += (*it)->objectPayloadSizeForTesting();
+        (*it)->setGCState(ThreadState::SweepScheduled);
+        (*it)->setGCState(ThreadState::Sweeping);
+        (*it)->setGCState(ThreadState::NoGCScheduled);
     }
     return objectPayloadSize;
 }
@@ -2731,10 +2725,10 @@ size_t Heap::objectPayloadSizeForTesting()
 template<typename HeapTraits, typename HeapType, typename HeaderType>
 void HeapAllocator::backingFree(void* address)
 {
-    if (!address || Heap::isInGC())
+    ThreadState* state = ThreadState::current();
+    if (!address || state->isInGC())
         return;
 
-    ThreadState* state = ThreadState::current();
     if (state->sweepForbidden())
         return;
 
@@ -2772,10 +2766,10 @@ void HeapAllocator::hashTableBackingFree(void* address)
 template<typename HeapTraits, typename HeapType, typename HeaderType>
 bool HeapAllocator::backingExpand(void* address, size_t newSize)
 {
-    if (!address || Heap::isInGC())
+    ThreadState* state = ThreadState::current();
+    if (!address || state->isInGC())
         return false;
 
-    ThreadState* state = ThreadState::current();
     if (state->sweepForbidden())
         return false;
     ASSERT(state->isAllocationAllowed());
@@ -2809,9 +2803,9 @@ void HeapAllocator::vectorBackingShrinkInternal(void* address, size_t quantizedC
     if (quantizedCurrentSize <= quantizedShrunkSize + sizeof(BasicObjectHeader) + sizeof(void*) * 32)
         return;
 
-    if (!address || Heap::isInGC())
-        return;
     ThreadState* state = ThreadState::current();
+    if (!address || state->isInGC())
+        return;
     if (state->sweepForbidden())
         return;
     ASSERT(state->isAllocationAllowed());
@@ -2841,7 +2835,7 @@ void HeapAllocator::vectorBackingShrinkInternal(void* address, size_t quantizedC
 
 BaseHeapPage* Heap::lookup(Address address)
 {
-    ASSERT(Heap::isInGC());
+    ASSERT(ThreadState::current()->isInGC());
     if (!s_regionTree)
         return 0;
     if (PageMemoryRegion* region = s_regionTree->lookup(address)) {
@@ -2868,7 +2862,6 @@ void Heap::removePageMemoryRegion(PageMemoryRegion* region)
 
 void Heap::addPageMemoryRegion(PageMemoryRegion* region)
 {
-    ASSERT(Heap::isInGC());
     RegionTree::add(new RegionTree(region), &s_regionTree);
 }
 
@@ -2944,7 +2937,6 @@ CallbackStack* Heap::s_ephemeronStack;
 HeapDoesNotContainCache* Heap::s_heapDoesNotContainCache;
 bool Heap::s_shutdownCalled = false;
 bool Heap::s_lastGCWasConservative = false;
-bool Heap::s_inGC = false;
 FreePagePool* Heap::s_freePagePool;
 OrphanedPagePool* Heap::s_orphanedPagePool;
 Heap::RegionTree* Heap::s_regionTree = 0;

@@ -827,7 +827,7 @@ void ThreadState::runScheduledGC(StackState stackState)
 
 void ThreadState::makeConsistentForSweeping()
 {
-    ASSERT(Heap::isInGC());
+    ASSERT(isInGC());
     for (int i = 0; i < NumberOfHeaps; i++)
         m_heaps[i]->makeConsistentForSweeping();
 }
@@ -850,7 +850,7 @@ void ThreadState::flushHeapDoesNotContainCacheIfNeeded()
 
 void ThreadState::preGC()
 {
-    ASSERT(Heap::isInGC());
+    ASSERT(!isInGC());
     for (int i = 0; i < NumberOfHeaps; i++) {
         BaseHeap* heap = m_heaps[i];
         heap->makeConsistentForSweeping();
@@ -864,13 +864,13 @@ void ThreadState::preGC()
             heap->markUnmarkedObjectsDead();
     }
     prepareRegionTree();
-    setGCState(ThreadState::GCRunning);
     flushHeapDoesNotContainCacheIfNeeded();
+    setGCState(ThreadState::GCRunning);
 }
 
 void ThreadState::postGC()
 {
-    ASSERT(Heap::isInGC());
+    ASSERT(isInGC());
     setGCState(ThreadState::SweepScheduled);
 }
 
@@ -1146,7 +1146,7 @@ void ThreadState::invokePreFinalizers(Visitor& visitor)
 #if ENABLE(GC_PROFILE_MARKING)
 const GCInfo* ThreadState::findGCInfoFromAllThreads(Address address)
 {
-    bool needLockForIteration = !Heap::isInGC();
+    bool needLockForIteration = !ThreadState::current()->isInGC();
     if (needLockForIteration)
         threadAttachMutex().lock();
 

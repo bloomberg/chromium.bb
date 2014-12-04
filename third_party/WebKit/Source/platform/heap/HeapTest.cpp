@@ -197,7 +197,7 @@ public:
     {
         m_state->checkThread();
         if (LIKELY(ThreadState::stopThreads())) {
-            Heap::enterGC();
+            Heap::preGC();
             m_parkedAllThreads = true;
         }
     }
@@ -209,7 +209,7 @@ public:
         // Only cleanup if we parked all threads in which case the GC happened
         // and we need to resume the other threads.
         if (LIKELY(m_parkedAllThreads)) {
-            Heap::leaveGC();
+            Heap::postGC();
             ThreadState::resumeThreads();
         }
     }
@@ -219,13 +219,6 @@ private:
     ThreadState::SafePointScope m_safePointScope;
     bool m_parkedAllThreads; // False if we fail to park all threads
 };
-
-static size_t objectPayloadSize()
-{
-    TestGCScope scope(ThreadState::NoHeapPointersOnStack);
-    EXPECT_TRUE(scope.allThreadsParked());
-    return Heap::objectPayloadSizeForTesting();
-}
 
 #define DEFINE_VISITOR_METHODS(Type)                                       \
     virtual void mark(const Type* object, TraceCallback callback) override \
@@ -381,9 +374,9 @@ private:
 static void clearOutOldGarbage()
 {
     while (true) {
-        size_t used = objectPayloadSize();
+        size_t used = Heap::objectPayloadSizeForTesting();
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-        if (objectPayloadSize() >= used)
+        if (Heap::objectPayloadSizeForTesting() >= used)
             break;
     }
 }
@@ -1525,7 +1518,7 @@ TEST(HeapTest, ThreadedWeakness)
 TEST(HeapTest, BasicFunctionality)
 {
     clearOutOldGarbage();
-    size_t initialObjectPayloadSize = objectPayloadSize();
+    size_t initialObjectPayloadSize = Heap::objectPayloadSizeForTesting();
     {
         size_t slack = 0;
 
@@ -1546,7 +1539,7 @@ TEST(HeapTest, BasicFunctionality)
 
         size_t total = 96;
 
-        CheckWithSlack(baseLevel + total, objectPayloadSize(), slack);
+        CheckWithSlack(baseLevel + total, Heap::objectPayloadSizeForTesting(), slack);
         if (testPagesAllocated)
             EXPECT_EQ(Heap::allocatedSpace(), 2 * blinkPageSize);
 
@@ -1566,7 +1559,7 @@ TEST(HeapTest, BasicFunctionality)
     clearOutOldGarbage();
     size_t total = 0;
     size_t slack = 0;
-    size_t baseLevel = objectPayloadSize();
+    size_t baseLevel = Heap::objectPayloadSizeForTesting();
     bool testPagesAllocated = !baseLevel;
     if (testPagesAllocated)
         EXPECT_EQ(Heap::allocatedSpace(), 0ul);
@@ -1585,7 +1578,7 @@ TEST(HeapTest, BasicFunctionality)
         total += size;
         persistents[persistentCount++] = new Persistent<DynamicallySizedObject>(DynamicallySizedObject::create(size));
         slack += 4;
-        CheckWithSlack(baseLevel + total, objectPayloadSize(), slack);
+        CheckWithSlack(baseLevel + total, Heap::objectPayloadSizeForTesting(), slack);
         if (testPagesAllocated)
             EXPECT_EQ(0ul, Heap::allocatedSpace() & (blinkPageSize - 1));
     }
@@ -1600,7 +1593,7 @@ TEST(HeapTest, BasicFunctionality)
         EXPECT_TRUE(alloc32b != alloc64b);
 
         total += 96;
-        CheckWithSlack(baseLevel + total, objectPayloadSize(), slack);
+        CheckWithSlack(baseLevel + total, Heap::objectPayloadSizeForTesting(), slack);
         if (testPagesAllocated)
             EXPECT_EQ(0ul, Heap::allocatedSpace() & (blinkPageSize - 1));
     }
@@ -1617,11 +1610,11 @@ TEST(HeapTest, BasicFunctionality)
 
     total -= big;
     slack -= 4;
-    CheckWithSlack(baseLevel + total, objectPayloadSize(), slack);
+    CheckWithSlack(baseLevel + total, Heap::objectPayloadSizeForTesting(), slack);
     if (testPagesAllocated)
         EXPECT_EQ(0ul, Heap::allocatedSpace() & (blinkPageSize - 1));
 
-    CheckWithSlack(baseLevel + total, objectPayloadSize(), slack);
+    CheckWithSlack(baseLevel + total, Heap::objectPayloadSizeForTesting(), slack);
     if (testPagesAllocated)
         EXPECT_EQ(0ul, Heap::allocatedSpace() & (blinkPageSize - 1));
 
@@ -1648,11 +1641,11 @@ TEST(HeapTest, BasicFunctionality)
 TEST(HeapTest, SimpleAllocation)
 {
     clearOutOldGarbage();
-    EXPECT_EQ(0ul, objectPayloadSize());
+    EXPECT_EQ(0ul, Heap::objectPayloadSizeForTesting());
 
     // Allocate an object in the heap.
     HeapAllocatedArray* array = new HeapAllocatedArray();
-    EXPECT_TRUE(objectPayloadSize() >= sizeof(HeapAllocatedArray));
+    EXPECT_TRUE(Heap::objectPayloadSizeForTesting() >= sizeof(HeapAllocatedArray));
 
     // Sanity check of the contents in the heap.
     EXPECT_EQ(0, array->at(0));
@@ -1827,7 +1820,7 @@ TEST(HeapTest, HashMapOfMembers)
     IntWrapper::s_destructorCalls = 0;
 
     clearOutOldGarbage();
-    size_t initialObjectPayloadSize = objectPayloadSize();
+    size_t initialObjectPayloadSize = Heap::objectPayloadSizeForTesting();
     {
         typedef HeapHashMap<
             Member<IntWrapper>,
@@ -1839,11 +1832,11 @@ TEST(HeapTest, HashMapOfMembers)
         Persistent<HeapObjectIdentityMap> map = new HeapObjectIdentityMap();
 
         map->clear();
-        size_t afterSetWasCreated = objectPayloadSize();
+        size_t afterSetWasCreated = Heap::objectPayloadSizeForTesting();
         EXPECT_TRUE(afterSetWasCreated > initialObjectPayloadSize);
 
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-        size_t afterGC = objectPayloadSize();
+        size_t afterGC = Heap::objectPayloadSizeForTesting();
         EXPECT_EQ(afterGC, afterSetWasCreated);
 
         // If the additions below cause garbage collections, these
@@ -1853,7 +1846,7 @@ TEST(HeapTest, HashMapOfMembers)
 
         map->add(one, one);
 
-        size_t afterOneAdd = objectPayloadSize();
+        size_t afterOneAdd = Heap::objectPayloadSizeForTesting();
         EXPECT_TRUE(afterOneAdd > afterGC);
 
         HeapObjectIdentityMap::iterator it(map->begin());
@@ -1870,7 +1863,7 @@ TEST(HeapTest, HashMapOfMembers)
         // stack scanning as that could find a pointer to the
         // old backing.
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-        size_t afterAddAndGC = objectPayloadSize();
+        size_t afterAddAndGC = Heap::objectPayloadSizeForTesting();
         EXPECT_TRUE(afterAddAndGC >= afterOneAdd);
 
         EXPECT_EQ(map->size(), 2u); // Two different wrappings of '1' are distinct.
@@ -1883,7 +1876,7 @@ TEST(HeapTest, HashMapOfMembers)
         EXPECT_EQ(gotten->value(), one->value());
         EXPECT_EQ(gotten, one);
 
-        size_t afterGC2 = objectPayloadSize();
+        size_t afterGC2 = Heap::objectPayloadSizeForTesting();
         EXPECT_EQ(afterGC2, afterAddAndGC);
 
         IntWrapper* dozen = 0;
@@ -1895,7 +1888,7 @@ TEST(HeapTest, HashMapOfMembers)
             if (i == 12)
                 dozen = iWrapper;
         }
-        size_t afterAdding1000 = objectPayloadSize();
+        size_t afterAdding1000 = Heap::objectPayloadSizeForTesting();
         EXPECT_TRUE(afterAdding1000 > afterGC2);
 
         IntWrapper* gross(map->get(dozen));
@@ -1903,33 +1896,33 @@ TEST(HeapTest, HashMapOfMembers)
 
         // This should clear out any junk backings created by all the adds.
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-        size_t afterGC3 = objectPayloadSize();
+        size_t afterGC3 = Heap::objectPayloadSizeForTesting();
         EXPECT_TRUE(afterGC3 <= afterAdding1000);
     }
 
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     // The objects 'one', anotherOne, and the 999 other pairs.
     EXPECT_EQ(IntWrapper::s_destructorCalls, 2000);
-    size_t afterGC4 = objectPayloadSize();
+    size_t afterGC4 = Heap::objectPayloadSizeForTesting();
     EXPECT_EQ(afterGC4, initialObjectPayloadSize);
 }
 
 TEST(HeapTest, NestedAllocation)
 {
     clearOutOldGarbage();
-    size_t initialObjectPayloadSize = objectPayloadSize();
+    size_t initialObjectPayloadSize = Heap::objectPayloadSizeForTesting();
     {
         Persistent<ConstructorAllocation> constructorAllocation = ConstructorAllocation::create();
     }
     clearOutOldGarbage();
-    size_t afterFree = objectPayloadSize();
+    size_t afterFree = Heap::objectPayloadSizeForTesting();
     EXPECT_TRUE(initialObjectPayloadSize == afterFree);
 }
 
 TEST(HeapTest, LargeHeapObjects)
 {
     clearOutOldGarbage();
-    size_t initialObjectPayloadSize = objectPayloadSize();
+    size_t initialObjectPayloadSize = Heap::objectPayloadSizeForTesting();
     size_t initialAllocatedSpace = Heap::allocatedSpace();
     IntWrapper::s_destructorCalls = 0;
     LargeHeapObject::s_destructorCalls = 0;
@@ -1953,7 +1946,7 @@ TEST(HeapTest, LargeHeapObjects)
             object->set(object->length() - 1, 'b');
             EXPECT_EQ('b', object->get(object->length() - 1));
             size_t expectedObjectPayloadSize = sizeof(LargeHeapObject) + sizeof(IntWrapper);
-            size_t actualObjectPayloadSize = objectPayloadSize() - initialObjectPayloadSize;
+            size_t actualObjectPayloadSize = Heap::objectPayloadSizeForTesting() - initialObjectPayloadSize;
             CheckWithSlack(expectedObjectPayloadSize, actualObjectPayloadSize, slack);
             // There is probably space for the IntWrapper in a heap page without
             // allocating extra pages. However, the IntWrapper allocation might cause
@@ -1975,7 +1968,7 @@ TEST(HeapTest, LargeHeapObjects)
         EXPECT_EQ(10, LargeHeapObject::s_destructorCalls);
     }
     clearOutOldGarbage();
-    EXPECT_TRUE(initialObjectPayloadSize == objectPayloadSize());
+    EXPECT_TRUE(initialObjectPayloadSize == Heap::objectPayloadSizeForTesting());
     EXPECT_TRUE(initialAllocatedSpace == Heap::allocatedSpace());
     EXPECT_EQ(11, IntWrapper::s_destructorCalls);
     EXPECT_EQ(11, LargeHeapObject::s_destructorCalls);
@@ -3413,7 +3406,6 @@ TEST(HeapTest, CheckAndMarkPointer)
     {
         TestGCScope scope(ThreadState::HeapPointersOnStack);
         EXPECT_TRUE(scope.allThreadsParked()); // Fail the test if we could not park all threads.
-        Heap::preGC();
         Heap::flushHeapDoesNotContainCache();
         for (size_t i = 0; i < objectAddresses.size(); i++) {
             EXPECT_TRUE(Heap::checkAndMarkPointer(&visitor, objectAddresses[i]));
@@ -3425,7 +3417,6 @@ TEST(HeapTest, CheckAndMarkPointer)
         EXPECT_TRUE(Heap::checkAndMarkPointer(&visitor, largeObjectEndAddress));
         EXPECT_EQ(2ul, visitor.count());
         visitor.reset();
-        Heap::postGC();
     }
     // This forces a GC without stack scanning which results in the objects
     // being collected. This will also rebuild the above mentioned freelists,
@@ -3434,7 +3425,6 @@ TEST(HeapTest, CheckAndMarkPointer)
     {
         TestGCScope scope(ThreadState::HeapPointersOnStack);
         EXPECT_TRUE(scope.allThreadsParked());
-        Heap::preGC();
         Heap::flushHeapDoesNotContainCache();
         for (size_t i = 0; i < objectAddresses.size(); i++) {
             // We would like to assert that checkAndMarkPointer returned false
@@ -3451,7 +3441,6 @@ TEST(HeapTest, CheckAndMarkPointer)
         Heap::checkAndMarkPointer(&visitor, largeObjectAddress);
         Heap::checkAndMarkPointer(&visitor, largeObjectEndAddress);
         EXPECT_EQ(0ul, visitor.count());
-        Heap::postGC();
     }
     // This round of GC is important to make sure that the object start
     // bitmap are cleared out and that the free lists are rebuild.

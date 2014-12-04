@@ -449,6 +449,7 @@ public:
     }
     void setGCState(GCState);
     GCState gcState() const;
+    bool isInGC() const { return gcState() == GCRunning; }
 
     void preGC();
     void postGC();

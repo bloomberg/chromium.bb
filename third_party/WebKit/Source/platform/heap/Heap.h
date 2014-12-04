@@ -964,10 +964,6 @@ public:
     static void decreaseAllocatedSpace(size_t delta) { atomicSubtract(&s_allocatedSpace, static_cast<long>(delta)); }
     static size_t allocatedSpace() { return s_allocatedSpace; }
 
-    static void enterGC() { ASSERT(!s_inGC); s_inGC = true; }
-    static void leaveGC() { ASSERT(s_inGC); s_inGC = false; }
-    static bool isInGC() { return s_inGC; }
-
 private:
     // A RegionTree is a simple binary search tree of PageMemoryRegions sorted
     // by base addresses.
@@ -988,8 +984,8 @@ private:
         RegionTree* m_right;
     };
 
-    static void resetAllocatedObjectSize() { ASSERT(Heap::isInGC()); s_allocatedObjectSize = 0; }
-    static void resetMarkedObjectSize() { ASSERT(Heap::isInGC()); s_markedObjectSize = 0; }
+    static void resetAllocatedObjectSize() { ASSERT(ThreadState::current()->isInGC()); s_allocatedObjectSize = 0; }
+    static void resetMarkedObjectSize() { ASSERT(ThreadState::current()->isInGC()); s_markedObjectSize = 0; }
 
     static Visitor* s_markingVisitor;
     static CallbackStack* s_markingStack;
@@ -999,7 +995,6 @@ private:
     static HeapDoesNotContainCache* s_heapDoesNotContainCache;
     static bool s_shutdownCalled;
     static bool s_lastGCWasConservative;
-    static bool s_inGC;
     static FreePagePool* s_freePagePool;
     static OrphanedPagePool* s_orphanedPagePool;
     static RegionTree* s_regionTree;
