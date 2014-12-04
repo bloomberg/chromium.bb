@@ -990,6 +990,10 @@ li[renaming=''] .filename-label {
   -webkit-animation: fadeIn 180ms ease-in-out;
 }
 
+.preview-thumbnails img.cached {
+  -webkit-animation: fadeIn 0;
+}
+
 .preview-thumbnails > .popup > img {
   flex: 1 1 0;
   -webkit-user-drag: none;

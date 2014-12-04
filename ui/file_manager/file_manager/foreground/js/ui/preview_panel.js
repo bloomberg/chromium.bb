@@ -482,15 +482,7 @@ PreviewPanel.Thumbnails.prototype = {
    * @param {FileSelection} value Entries.
    */
   set selection(value) {
-    // Create hash for the selection.
-    var hash = value.entries.slice(
-        0, PreviewPanel.Thumbnails.MAX_THUMBNAIL_COUNT).map(function(entry) {
-      return entry.toURL();
-    }).sort().join('\n');
-    if (hash !== this.lastEntriesHash_) {
-      this.lastEntriesHash_ = hash;
-      this.loadThumbnails_(value);
-    }
+    this.loadThumbnails_(value);
   },
 
   /**
@@ -510,40 +502,61 @@ PreviewPanel.Thumbnails.prototype = {
  */
 PreviewPanel.Thumbnails.prototype.loadThumbnails_ = function(selection) {
   var entries = selection.entries;
-  this.element_.classList.remove('has-zoom');
-  this.element_.innerText = '';
+  var length = Math.min(
+      entries.length, PreviewPanel.Thumbnails.MAX_THUMBNAIL_COUNT);
   var clickHandler = selection.tasks &&
       selection.tasks.executeDefault.bind(selection.tasks);
-  var length = Math.min(entries.length,
-                        PreviewPanel.Thumbnails.MAX_THUMBNAIL_COUNT);
-  for (var i = 0; i < length; i++) {
-    // Create a box.
-    var box = this.element_.ownerDocument.createElement('div');
-    box.style.zIndex = PreviewPanel.Thumbnails.MAX_THUMBNAIL_COUNT + 1 - i;
+  var hash = selection.entries.
+      slice(0, PreviewPanel.Thumbnails.MAX_THUMBNAIL_COUNT).
+      map(function(entry) { return entry.toURL(); }).
+      sort().
+      join('\n');
+  var entrySetChanged = hash !== this.lastEntriesHash_;
 
+  this.lastEntriesHash_ = hash;
+  this.element_.classList.remove('has-zoom');
+
+  // Create new thumbnail image if the selection is changed.
+  var boxList;
+  if (entrySetChanged) {
+    this.element_.innerText = '';
+    boxList = [];
+    for (var i = 0; i < length; i++) {
+      // Create a box.
+      var box = this.element_.ownerDocument.createElement('div');
+      box.style.zIndex = PreviewPanel.Thumbnails.MAX_THUMBNAIL_COUNT + 1 - i;
+
+      // Register the click handler.
+      if (clickHandler) {
+        box.addEventListener('click', function(event) {
+          clickHandler();
+        });
+      }
+
+      // Append
+      this.element_.appendChild(box);
+      boxList.push(box);
+    }
+  } else {
+    boxList = this.element_.querySelectorAll('.img-container');
+    assert(length === boxList.length);
+  }
+
+  // Update images in the boxes.
+  for (var i = 0; i < length; i++) {
     // Load the image.
     if (entries[i]) {
       FileGrid.decorateThumbnailBox(
-          box,
+          boxList[i],
           entries[i],
           this.metadataCache_,
           this.volumeManager_,
           this.historyLoader_,
           ThumbnailLoader.FillMode.FILL,
           FileGrid.ThumbnailQuality.LOW,
-          /* animation */ true,
+          /* animation */ entrySetChanged,
           i == 0 && length == 1 ? this.setZoomedImage_.bind(this) : undefined);
     }
-
-    // Register the click handler.
-    if (clickHandler) {
-      box.addEventListener('click', function(event) {
-        clickHandler();
-      });
-    }
-
-    // Append
-    this.element_.appendChild(box);
   }
 };
 
