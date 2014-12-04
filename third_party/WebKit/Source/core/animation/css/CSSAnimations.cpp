@@ -137,14 +137,17 @@ static void resolveKeyframes(StyleResolver* resolver, const Element* animatingEl
         blink::Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property));
     }
 
-    // Remove duplicate keyframes. In CSS the last keyframe at a given offset takes priority.
+    // Merge duplicate keyframes.
     std::stable_sort(keyframes.begin(), keyframes.end(), Keyframe::compareOffsets);
     size_t targetIndex = 0;
     for (size_t i = 1; i < keyframes.size(); i++) {
-        if (keyframes[i]->offset() != keyframes[targetIndex]->offset())
+        if (keyframes[i]->offset() == keyframes[targetIndex]->offset()) {
+            for (CSSPropertyID property : keyframes[i]->properties())
+                keyframes[targetIndex]->setPropertyValue(property, keyframes[i]->propertyValue(property));
+        } else {
             targetIndex++;
-        if (targetIndex != i)
             keyframes[targetIndex] = keyframes[i];
+        }
     }
     keyframes.shrink(targetIndex + 1);
 

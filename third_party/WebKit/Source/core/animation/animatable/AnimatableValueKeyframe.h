@@ -18,7 +18,7 @@ public:
     }
     void setPropertyValue(CSSPropertyID property, PassRefPtrWillBeRawPtr<AnimatableValue> value)
     {
-        m_propertyValues.add(property, value);
+        m_propertyValues.set(property, value);
     }
     void clearPropertyValue(CSSPropertyID property) { m_propertyValues.remove(property); }
     AnimatableValue* propertyValue(CSSPropertyID property) const
