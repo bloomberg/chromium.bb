@@ -767,10 +767,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityHeading) {
   RunTest(FILE_PATH_LITERAL("heading.html"));
 }
 
-// Disabling temporarily. Will Enable once blink returns correct
-// role for hr tag.
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       DISABLED_AccessibilityHR) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityHR) {
   RunTest(FILE_PATH_LITERAL("hr.html"));
 }
 
@@ -829,6 +826,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
     return;
 #endif
   RunTest(FILE_PATH_LITERAL("input-datetime-local.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputFile) {
+  RunTest(FILE_PATH_LITERAL("input-file.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
