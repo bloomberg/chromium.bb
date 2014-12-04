@@ -57,7 +57,8 @@ class BufferingState
   // |high_level_buffer_cb| is used to adjust the high buffer threshold
   // when the underlying buffer is not large enough to accomodate
   // the current high buffer level.
-  BufferingState(const scoped_refptr<BufferingConfig>& config,
+  BufferingState(const std::string& stream_id,
+                 const scoped_refptr<BufferingConfig>& config,
                  const base::Closure& state_changed_cb,
                  const HighLevelBufferCB& high_level_buffer_cb);
 
@@ -105,6 +106,7 @@ class BufferingState
   // Updates the state to |new_state|.
   void UpdateState(State new_state);
 
+  std::string const stream_id_;
   scoped_refptr<BufferingConfig> const config_;
 
   // Callback invoked each time there is a change of state.

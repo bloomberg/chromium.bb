@@ -187,7 +187,7 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
   if (has_audio_) {
     scoped_refptr<BufferingState> buffering_state;
     if (buffering_controller_)
-      buffering_state = buffering_controller_->AddStream();
+      buffering_state = buffering_controller_->AddStream("audio");
     if (!audio_pipeline_->StartPlayingFrom(time, buffering_state)) {
       OnError(::media::PIPELINE_ERROR_ABORT);
       return;
@@ -196,7 +196,7 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
   if (has_video_) {
     scoped_refptr<BufferingState> buffering_state;
     if (buffering_controller_)
-      buffering_state = buffering_controller_->AddStream();
+      buffering_state = buffering_controller_->AddStream("video");
     if (!video_pipeline_->StartPlayingFrom(time, buffering_state)) {
       OnError(::media::PIPELINE_ERROR_ABORT);
       return;

@@ -24,10 +24,12 @@ BufferingConfig::~BufferingConfig() {
 
 
 BufferingState::BufferingState(
+    const std::string& stream_id,
     const scoped_refptr<BufferingConfig>& config,
     const base::Closure& state_changed_cb,
     const HighLevelBufferCB& high_level_buffer_cb)
-    : config_(config),
+    : stream_id_(stream_id),
+      config_(config),
       state_changed_cb_(state_changed_cb),
       high_level_buffer_cb_(high_level_buffer_cb),
       state_(kLowLevel),
@@ -94,7 +96,7 @@ void BufferingState::NotifyMaxCapacity(base::TimeDelta buffered_time) {
 
 std::string BufferingState::ToString() const {
   std::ostringstream s;
-  s << "state=" << state_
+  s << stream_id_ << " state=" << state_
     << " media_time_ms=" << media_time_.InMilliseconds()
     << " buffered_time_ms=" << buffered_time_.InMilliseconds()
     << " low_level_ms=" << config_->low_level().InMilliseconds()

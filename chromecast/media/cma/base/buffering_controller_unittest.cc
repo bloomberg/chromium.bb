@@ -83,7 +83,7 @@ BufferingControllerTest::~BufferingControllerTest() {
 TEST_F(BufferingControllerTest, OneStream_Typical) {
   EXPECT_CALL(client_, OnBufferingNotification(true)).Times(1);
   scoped_refptr<BufferingState> buffering_state =
-      buffering_controller_->AddStream();
+      buffering_controller_->AddStream("test");
   buffering_state->SetMediaTime(base::TimeDelta());
 
   // Simulate pre-buffering.
@@ -121,7 +121,7 @@ TEST_F(BufferingControllerTest, OneStream_Typical) {
 TEST_F(BufferingControllerTest, OneStream_LeaveBufferingOnEos) {
   EXPECT_CALL(client_, OnBufferingNotification(true)).Times(1);
   scoped_refptr<BufferingState> buffering_state =
-      buffering_controller_->AddStream();
+      buffering_controller_->AddStream("test");
   buffering_state->SetMediaTime(base::TimeDelta());
 
   EXPECT_CALL(client_, OnBufferingNotification(false)).Times(1);
