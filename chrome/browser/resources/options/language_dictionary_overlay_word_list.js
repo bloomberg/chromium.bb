@@ -236,7 +236,8 @@ cr.define('options.dictionary_words', function() {
 
     /** @override */
     getInitialFocusableItem: function() {
-      return this.getListItemByIndex(this.selectionModel.length - 1);
+      return /** @type {options.InlineEditableItem} */(
+          this.getListItemByIndex(this.selectionModel.length - 1));
     },
   };
 

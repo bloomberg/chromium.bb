@@ -684,7 +684,8 @@ cr.define('options', function() {
     * @protected
     */
     getInitialFocusableItem: function() {
-      return this.getListItemByIndex(0);
+      return /** @type {options.InlineEditableItem} */(
+          this.getListItemByIndex(0));
     },
   };
 
