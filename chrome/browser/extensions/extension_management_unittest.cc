@@ -43,6 +43,7 @@ const char kExampleDictPreference[] =
     "  \"abcdefghijklmnopabcdefghijklmnop\": {"  // kTargetExtension
     "    \"installation_mode\": \"allowed\","
     "    \"blocked_permissions\": [\"fileSystem\", \"bookmarks\"],"
+    "    \"minimum_version_required\": \"1.1.0\","
     "  },"
     "  \"bcdefghijklmnopabcdefghijklmnopa\": {"  // kTargetExtension2
     "    \"installation_mode\": \"force_installed\","
@@ -158,19 +159,37 @@ class ExtensionManagementServiceTest : public testing::Test {
     SetPref(true, pref_names::kExtensionManagement, parsed.release());
   }
 
+  // Wrapper of ExtensionManagement::GetInstallationMode, |id| and
+  // |update_url| are used to construct an Extension for testing.
   ExtensionManagement::InstallationMode GetInstallationMode(
       const std::string& id,
       const std::string& update_url) {
     scoped_refptr<const Extension> extension =
-        CreateExtensionWithIdAndUpdateUrl(Manifest::UNPACKED, id, update_url);
+        CreateExtension(Manifest::UNPACKED, "0.1", id, update_url);
     return extension_management_->GetInstallationMode(extension.get());
   }
 
+  // Wrapper of ExtensionManagement::GetBlockedAPIPermissions, |id| and
+  // |update_url| are used to construct an Extension for testing.
   APIPermissionSet GetBlockedAPIPermissions(const std::string& id,
                                             const std::string& update_url) {
     scoped_refptr<const Extension> extension =
-        CreateExtensionWithIdAndUpdateUrl(Manifest::UNPACKED, id, update_url);
+        CreateExtension(Manifest::UNPACKED, "0.1", id, update_url);
     return extension_management_->GetBlockedAPIPermissions(extension.get());
+  }
+
+  // Wrapper of ExtensionManagement::CheckMinimumVersion, |id| and
+  // |version| are used to construct an Extension for testing.
+  bool CheckMinimumVersion(const std::string& id, const std::string& version) {
+    scoped_refptr<const Extension> extension =
+        CreateExtension(Manifest::UNPACKED, version, id, kNonExistingUpdateUrl);
+    std::string minimum_version_required;
+    bool ret = extension_management_->CheckMinimumVersion(
+        extension.get(), &minimum_version_required);
+    EXPECT_EQ(ret, minimum_version_required.empty());
+    EXPECT_EQ(ret, extension_management_->CheckMinimumVersion(extension.get(),
+                                                              nullptr));
+    return ret;
   }
 
  protected:
@@ -178,14 +197,16 @@ class ExtensionManagementServiceTest : public testing::Test {
   scoped_ptr<ExtensionManagement> extension_management_;
 
  private:
-  // Create an extension with specified |location|, |id| and |update_url|.
-  scoped_refptr<const Extension> CreateExtensionWithIdAndUpdateUrl(
+  // Create an extension with specified |location|, |version|, |id| and
+  // |update_url|.
+  scoped_refptr<const Extension> CreateExtension(
       Manifest::Location location,
+      const std::string& version,
       const std::string& id,
       const std::string& update_url) {
     base::DictionaryValue manifest_dict;
     manifest_dict.SetString(manifest_keys::kName, "test");
-    manifest_dict.SetString(manifest_keys::kVersion, "0.1");
+    manifest_dict.SetString(manifest_keys::kVersion, version);
     manifest_dict.SetString(manifest_keys::kUpdateURL, update_url);
     std::string error;
     scoped_refptr<const Extension> extension =
@@ -449,6 +470,11 @@ TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
   api_permission_set.insert(APIPermission::kBookmark);
   EXPECT_EQ(api_permission_set,
             GetBlockedAPIPermissionsByUpdateUrl(kExampleUpdateUrl));
+
+  // Verifies minimum version settings.
+  EXPECT_FALSE(CheckMinimumVersion(kTargetExtension, "1.0.99"));
+  EXPECT_TRUE(CheckMinimumVersion(kTargetExtension, "1.1"));
+  EXPECT_TRUE(CheckMinimumVersion(kTargetExtension, "1.1.0.1"));
 }
 
 // Tests the handling of installation mode in case it's specified in both
@@ -495,6 +521,24 @@ TEST_F(ExtensionManagementServiceTest, BlockedPermissionsConflictHandling) {
   api_permission_set.insert(APIPermission::kHistory);
   EXPECT_EQ(api_permission_set,
             GetBlockedAPIPermissions(kTargetExtension3, kExampleUpdateUrl));
+}
+
+// Tests the 'minimum_version_required' settings of extension management.
+TEST_F(ExtensionManagementServiceTest, kMinimumVersionRequired) {
+  EXPECT_TRUE(CheckMinimumVersion(kTargetExtension, "0.0"));
+  EXPECT_TRUE(CheckMinimumVersion(kTargetExtension, "3.0.0"));
+  EXPECT_TRUE(CheckMinimumVersion(kTargetExtension, "9999.0"));
+
+  {
+    PrefUpdater pref(pref_service_.get());
+    pref.SetMinimumVersionRequired(kTargetExtension, "3.0");
+  }
+
+  EXPECT_FALSE(CheckMinimumVersion(kTargetExtension, "0.0"));
+  EXPECT_FALSE(CheckMinimumVersion(kTargetExtension, "2.99"));
+  EXPECT_TRUE(CheckMinimumVersion(kTargetExtension, "3.0.0"));
+  EXPECT_TRUE(CheckMinimumVersion(kTargetExtension, "3.0.1"));
+  EXPECT_TRUE(CheckMinimumVersion(kTargetExtension, "4.0"));
 }
 
 // Tests functionality of new preference as to deprecate legacy

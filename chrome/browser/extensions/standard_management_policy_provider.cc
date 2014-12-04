@@ -138,6 +138,25 @@ bool StandardManagementPolicyProvider::MustRemainEnabled(
           ExternalComponentLoader::IsModifiable(extension));
 }
 
+bool StandardManagementPolicyProvider::MustRemainDisabled(
+    const Extension* extension,
+    Extension::DisableReason* reason,
+    base::string16* error) const {
+  std::string required_version;
+  if (!settings_->CheckMinimumVersion(extension, &required_version)) {
+    if (reason)
+      *reason = Extension::DISABLE_UPDATE_REQUIRED_BY_POLICY;
+    if (error) {
+      *error = l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_DISABLED_UPDATE_REQUIRED_BY_POLICY,
+          base::UTF8ToUTF16(extension->name()),
+          base::ASCIIToUTF16(required_version));
+    }
+    return true;
+  }
+  return false;
+}
+
 bool StandardManagementPolicyProvider::MustRemainInstalled(
     const Extension* extension,
     base::string16* error) const {

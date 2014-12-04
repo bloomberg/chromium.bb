@@ -62,13 +62,19 @@ class ExtensionManagementPrefUpdaterBase {
                                const std::string& permission);
 
   // Helper functions for 'allowed_permissions' manipulation. |id| must be a
-  // valid extension id.
+  // valid extension ID.
   void UnsetAllowedPermissions(const std::string& id);
   void ClearAllowedPermissions(const std::string& id);
   void AddAllowedPermission(const std::string& id,
                             const std::string& permission);
   void RemoveAllowedPermission(const std::string& id,
                                const std::string& permission);
+
+  // Helper functions for 'minimum_version_required' manipulation. |id| must be
+  // a valid extension ID.
+  void SetMinimumVersionRequired(const std::string& id,
+                                 const std::string& version);
+  void UnsetMinimumVersionRequired(const std::string& id);
 
   // Expose a read-only preference to user.
   const base::DictionaryValue* GetPref();

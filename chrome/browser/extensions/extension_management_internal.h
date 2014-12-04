@@ -14,6 +14,7 @@
 
 namespace base {
 class DictionaryValue;
+class Version;
 }  // namespace base
 
 namespace extensions {
@@ -47,6 +48,7 @@ struct IndividualSettings {
   };
 
   IndividualSettings();
+  explicit IndividualSettings(const IndividualSettings* default_settings);
   ~IndividualSettings();
 
   void Reset();
@@ -86,8 +88,13 @@ struct IndividualSettings {
   // settings, both settings will be enforced.
   APIPermissionSet blocked_permissions;
 
+  // Minimum version required for an extensions, applies to per-extension
+  // settings only. Extension (with specified extension ID) with version older
+  // than the specified minimum version will be disabled.
+  scoped_ptr<base::Version> minimum_version_required;
+
  private:
-  DISALLOW_ASSIGN(IndividualSettings);
+  DISALLOW_COPY_AND_ASSIGN(IndividualSettings);
 };
 
 // Global extension management settings, applicable to all extensions.

@@ -105,7 +105,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                                                // disabled to prevent activity.
     DISABLE_EXTERNAL_EXTENSION = 1 << 13,  // External extensions might be
                                            // disabled for user prompting.
-    DISABLE_REASON_LAST = 1 << 14,  // This should always be the last value
+    DISABLE_UPDATE_REQUIRED_BY_POLICY = 1 << 14,  // Doesn't meet minimum
+                                                  // version requirement.
+    DISABLE_REASON_LAST = 1 << 15,  // This should always be the last value
   };
 
   // A base class for parsed manifest data that APIs want to store on

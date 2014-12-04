@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"
@@ -21,6 +22,16 @@ const char kMalformedPreferenceWarning[] =
 
 IndividualSettings::IndividualSettings() {
   Reset();
+}
+
+// Initializes from default settings.
+IndividualSettings::IndividualSettings(
+    const IndividualSettings* default_settings) {
+  installation_mode = default_settings->installation_mode;
+  update_url = default_settings->installation_mode;
+  blocked_permissions = default_settings->blocked_permissions;
+  // We are not initializing |minimum_version_required| from |default_settings|
+  // here since it's not applicable to default settings.
 }
 
 IndividualSettings::~IndividualSettings() {
@@ -116,6 +127,22 @@ bool IndividualSettings::Parse(const base::DictionaryValue* dict,
     }
     APIPermissionSet::Union(
         permissions_to_merge_from, permissions_parsed, &blocked_permissions);
+  }
+
+  // Parses the minimum version settings.
+  std::string minimum_version_required_str;
+  if (scope == SCOPE_INDIVIDUAL &&
+      dict->GetStringWithoutPathExpansion(
+          schema_constants::kMinimumVersionRequired,
+          &minimum_version_required_str)) {
+    scoped_ptr<base::Version> version(
+        new Version(minimum_version_required_str));
+    // We accept a general version string here. Note that count of components in
+    // version string of extensions is limited to 4.
+    if (!version->IsValid())
+      LOG(WARNING) << kMalformedPreferenceWarning;
+    else
+      minimum_version_required = version.Pass();
   }
 
   return true;

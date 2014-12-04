@@ -52,6 +52,7 @@
  *            runtimeErrors: (Array.<RuntimeError>|undefined),
  *            suspiciousInstall: boolean,
  *            terminated: boolean,
+ *            updateRequiredByPolicy: boolean,
  *            version: string,
  *            views: Array.<{renderViewId: number, renderProcessId: number,
  *                path: string, incognito: boolean,
@@ -175,7 +176,9 @@ cr.define('options', function() {
         node.classList.add('may-not-remove');
       } else if (extension.recommendedInstall) {
         node.classList.add('may-not-remove');
-      } else if (extension.suspiciousInstall || extension.corruptInstall) {
+      } else if (extension.suspiciousInstall ||
+                 extension.corruptInstall ||
+                 extension.updateRequiredByPolicy) {
         node.classList.add('may-not-modify');
       }
 
@@ -356,6 +359,7 @@ cr.define('options', function() {
         var enableCheckboxDisabled = extension.managedInstall ||
                                      extension.suspiciousInstall ||
                                      extension.corruptInstall ||
+                                     extension.updateRequiredByPolicy ||
                                      extension.dependentExtensions.length > 0;
         enable.querySelector('input').disabled = enableCheckboxDisabled;
 
@@ -422,6 +426,16 @@ cr.define('options', function() {
           // Then the 'This is a corrupt extension' message.
           node.querySelector('.corrupt-install-message').hidden = false;
         }
+      }
+
+      // Then the 'An update required by enterprise policy' message. Note that
+      // a force-installed extension might be disabled due to being outdated
+      // as well.
+      if (extension.updateRequiredByPolicy) {
+        node.querySelector('.update-required-message').hidden = false;
+        // We would like to hide managed installed message since this
+        // extension is disabled.
+        node.querySelector('.managed-message').hidden = true;
       }
 
       if (extension.dependentExtensions.length > 0) {

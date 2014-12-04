@@ -399,6 +399,10 @@ void ExtensionUpdater::SetExtensionCacheForTesting(
   extension_cache_ = extension_cache;
 }
 
+void ExtensionUpdater::StopTimerForTesting() {
+  timer_.Stop();
+}
+
 void ExtensionUpdater::DoCheckSoon() {
   DCHECK(will_check_soon_);
   CheckNow(default_params_);

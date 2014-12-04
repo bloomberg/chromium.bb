@@ -121,6 +121,13 @@ class ExtensionManagement : public KeyedService {
   bool IsPermissionSetAllowed(const Extension* extension,
                               scoped_refptr<const PermissionSet> perms) const;
 
+  // Returns true if |extension| meets the minimum required version set for it.
+  // If there is no such requirement set for it, returns true as well.
+  // If false is returned and |required_version| is not null, the minimum
+  // required version is returned.
+  bool CheckMinimumVersion(const Extension* extension,
+                           std::string* required_version) const;
+
  private:
   typedef base::ScopedPtrHashMap<ExtensionId, internal::IndividualSettings>
       SettingsIdMap;

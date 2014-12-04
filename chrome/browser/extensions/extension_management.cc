@@ -12,6 +12,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "base/version.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/extension_management_internal.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
@@ -217,6 +218,21 @@ bool ExtensionManagement::IsPermissionSetAllowed(
   return true;
 }
 
+bool ExtensionManagement::CheckMinimumVersion(
+    const Extension* extension,
+    std::string* required_version) const {
+  auto iter = settings_by_id_.find(extension->id());
+  // If there are no minimum version required for |extension|, return true.
+  if (iter == settings_by_id_.end() || !iter->second->minimum_version_required)
+    return true;
+  bool meets_requirement = extension->version()->CompareTo(
+                             *iter->second->minimum_version_required) >= 0;
+  // Output a human readable version string for prompting if necessary.
+  if (!meets_requirement && required_version)
+    *required_version = iter->second->minimum_version_required->GetString();
+  return meets_requirement;
+}
+
 void ExtensionManagement::Refresh() {
   // Load all extension management settings preferences.
   const base::ListValue* allowed_list_pref =
@@ -419,7 +435,7 @@ internal::IndividualSettings* ExtensionManagement::AccessById(
   SettingsIdMap::iterator it = settings_by_id_.find(id);
   if (it == settings_by_id_.end()) {
     scoped_ptr<internal::IndividualSettings> settings(
-        new internal::IndividualSettings(*default_settings_));
+        new internal::IndividualSettings(default_settings_.get()));
     it = settings_by_id_.add(id, settings.Pass()).first;
   }
   return it->second;
@@ -431,7 +447,7 @@ internal::IndividualSettings* ExtensionManagement::AccessByUpdateUrl(
   SettingsUpdateUrlMap::iterator it = settings_by_update_url_.find(update_url);
   if (it == settings_by_update_url_.end()) {
     scoped_ptr<internal::IndividualSettings> settings(
-        new internal::IndividualSettings(*default_settings_));
+        new internal::IndividualSettings(default_settings_.get()));
     it = settings_by_update_url_.add(update_url, settings.Pass()).first;
   }
   return it->second;

@@ -24,6 +24,8 @@ const char kUpdateUrl[] = "update_url";
 const char kInstallSources[] = "install_sources";
 const char kAllowedTypes[] = "allowed_types";
 
+const char kMinimumVersionRequired[] = "minimum_version_required";
+
 const char kUpdateUrlPrefix[] = "update_url:";
 
 const AllowedTypesMapEntry kAllowedTypesMap[] = {

@@ -27,6 +27,8 @@ extern const char kUpdateUrl[];
 extern const char kInstallSources[];
 extern const char kAllowedTypes[];
 
+extern const char kMinimumVersionRequired[];
+
 extern const char kUpdateUrlPrefix[];
 
 struct AllowedTypesMapEntry {

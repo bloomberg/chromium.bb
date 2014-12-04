@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_STANDARD_MANAGEMENT_POLICY_PROVIDER_H_
 #define CHROME_BROWSER_EXTENSIONS_STANDARD_MANAGEMENT_POLICY_PROVIDER_H_
 
+#include <string>
+
+#include "base/strings/string16.h"
 #include "extensions/browser/management_policy.h"
 
 namespace extensions {
@@ -30,6 +33,9 @@ class StandardManagementPolicyProvider : public ManagementPolicy::Provider {
                              base::string16* error) const override;
   bool MustRemainEnabled(const Extension* extension,
                          base::string16* error) const override;
+  bool MustRemainDisabled(const Extension* extension,
+                          Extension::DisableReason* reason,
+                          base::string16* error) const override;
   bool MustRemainInstalled(const Extension* extension,
                            base::string16* error) const override;
 

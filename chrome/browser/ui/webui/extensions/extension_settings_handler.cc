@@ -258,6 +258,11 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
       (disable_reasons & Extension::DISABLE_CORRUPTED) != 0;
   extension_data->SetBoolean("corruptInstall", corrupt_install);
 
+  bool update_required_by_policy =
+      (disable_reasons & Extension::DISABLE_UPDATE_REQUIRED_BY_POLICY) != 0;
+  extension_data->SetBoolean("updateRequiredByPolicy",
+                             update_required_by_policy);
+
   bool managed_install =
       !management_policy_->UserMayModifySettings(extension, NULL);
   extension_data->SetBoolean("managedInstall", managed_install);
@@ -626,6 +631,9 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
   source->AddString("extensionSettingsHideDetails",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS));
+  source->AddString("extensionSettingsUpdateRequiredBePolicy",
+                    l10n_util::GetStringUTF16(
+                        IDS_EXTENSIONS_DISABLED_UPDATE_REQUIRED_BY_POLICY));
 
   // TODO(estade): comb through the above strings to find ones no longer used in
   // uber extensions.

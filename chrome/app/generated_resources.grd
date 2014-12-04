@@ -5327,6 +5327,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSIONS_CORRUPTED_EXTENSION_5" desc="The warning for the user that an extension may have been tampered with on disk.">
         This extension may have been corrupted. Please try uninstalling and reinstalling.
       </message>
+      <message name="IDS_EXTENSIONS_DISABLED_UPDATE_REQUIRED_BY_POLICY" desc="Text shown in the extensions settings for extensions disabled due to minimum version requirement from enterprise policy">
+        This extension is outdated and disabled by enterprise policy. It might become enabled automatically when a newer version is available.
+      </message>
 
       <!-- Settings API bubble -->
       <if expr="use_titlecase">

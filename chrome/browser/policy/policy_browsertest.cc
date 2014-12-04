@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
+#include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -129,6 +130,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
@@ -217,6 +219,8 @@ const base::FilePath::CharType kGood2CrxManifestName[] =
     FILE_PATH_LITERAL("good2_update_manifest.xml");
 const base::FilePath::CharType kGoodV1CrxManifestName[] =
     FILE_PATH_LITERAL("good_v1_update_manifest.xml");
+const base::FilePath::CharType kGoodV1CrxName[] =
+    FILE_PATH_LITERAL("good_v1.crx");
 const base::FilePath::CharType kGoodUnpackedExt[] =
     FILE_PATH_LITERAL("good_unpacked");
 const base::FilePath::CharType kAppUnpackedExt[] =
@@ -1962,6 +1966,192 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
   // The first extension shouldn't be present, the second should be there.
   EXPECT_FALSE(extension_service()->GetExtensionById(kGoodCrxId, true));
   EXPECT_TRUE(extension_service()->GetExtensionById(kAdBlockCrxId, false));
+}
+
+// Verifies that extensions with version older than the minimum version required
+// by policy will get disabled, and will be auto-updated and/or re-enabled upon
+// policy changes as well as regular auto-updater scheduled updates.
+IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
+  ExtensionService* service = extension_service();
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  extensions::ExtensionPrefs* extension_prefs =
+      extensions::ExtensionPrefs::Get(browser()->profile());
+
+  // Explicitly stop the timer to avoid all scheduled extension auto-updates.
+  service->updater()->StopTimerForTesting();
+
+  // Setup interceptor for extension updates.
+  base::FilePath test_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_path));
+  TestRequestInterceptor interceptor(
+      "update.extension",
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  interceptor.PushJobCallback(TestRequestInterceptor::BadRequestJob());
+  interceptor.PushJobCallback(TestRequestInterceptor::FileJob(
+      test_path.Append(kTestExtensionsDir).Append(kGood2CrxManifestName)));
+
+  // Install the extension.
+  EXPECT_TRUE(InstallExtension(kGoodV1CrxName));
+  EXPECT_TRUE(registry->enabled_extensions().Contains(kGoodCrxId));
+
+  // Update policy to set a minimum version of 1.0.0.0, the extension (with
+  // version 1.0.0.0) should still be enabled.
+  {
+    extensions::ExtensionManagementPolicyUpdater management_policy(&provider_);
+    management_policy.SetMinimumVersionRequired(kGoodCrxId, "1.0.0.0");
+  }
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(registry->enabled_extensions().Contains(kGoodCrxId));
+
+  // Update policy to set a minimum version of 1.0.0.1, the extension (with
+  // version 1.0.0.0) should now be disabled.
+  EXPECT_EQ(2u, interceptor.GetPendingSize());
+  base::RunLoop service_request_run_loop;
+  interceptor.AddRequestServicedCallback(
+      service_request_run_loop.QuitClosure());
+  {
+    extensions::ExtensionManagementPolicyUpdater management_policy(&provider_);
+    management_policy.SetMinimumVersionRequired(kGoodCrxId, "1.0.0.1");
+  }
+  service_request_run_loop.Run();
+  EXPECT_EQ(1u, interceptor.GetPendingSize());
+
+  EXPECT_TRUE(registry->disabled_extensions().Contains(kGoodCrxId));
+  EXPECT_EQ(extensions::Extension::DISABLE_UPDATE_REQUIRED_BY_POLICY,
+            extension_prefs->GetDisableReasons(kGoodCrxId));
+
+  // Provide a new version (1.0.0.1) which is expected to be auto updated to
+  // via the update URL in the manifest of the older version.
+  EXPECT_EQ(1u, interceptor.GetPendingSize());
+  {
+    content::WindowedNotificationObserver update_observer(
+        extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+        content::NotificationService::AllSources());
+    service->updater()->CheckSoon();
+    update_observer.Wait();
+  }
+  EXPECT_EQ(0u, interceptor.GetPendingSize());
+
+  // The extension should be auto-updated to newer version and re-enabled.
+  EXPECT_EQ("1.0.0.1",
+            service->GetInstalledExtension(kGoodCrxId)->version()->GetString());
+  EXPECT_TRUE(registry->enabled_extensions().Contains(kGoodCrxId));
+}
+
+// Similar to ExtensionMinimumVersionRequired test, but with different settings
+// and orders.
+IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
+  ExtensionService* service = extension_service();
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  extensions::ExtensionPrefs* extension_prefs =
+      extensions::ExtensionPrefs::Get(browser()->profile());
+
+  // Explicitly stop the timer to avoid all scheduled extension auto-updates.
+  service->updater()->StopTimerForTesting();
+
+  // Setup interceptor for extension updates.
+  base::FilePath test_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_path));
+  TestRequestInterceptor interceptor(
+      "update.extension",
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  interceptor.PushJobCallback(TestRequestInterceptor::FileJob(
+      test_path.Append(kTestExtensionsDir).Append(kGood2CrxManifestName)));
+
+  // Set the policy to require an even higher minimum version this time.
+  {
+    extensions::ExtensionManagementPolicyUpdater management_policy(&provider_);
+    management_policy.SetMinimumVersionRequired(kGoodCrxId, "1.0.0.2");
+  }
+  base::RunLoop().RunUntilIdle();
+
+  // Install the 1.0.0.0 version, it should be installed but disabled.
+  EXPECT_TRUE(InstallExtension(kGoodV1CrxName));
+  EXPECT_TRUE(registry->disabled_extensions().Contains(kGoodCrxId));
+  EXPECT_EQ(extensions::Extension::DISABLE_UPDATE_REQUIRED_BY_POLICY,
+            extension_prefs->GetDisableReasons(kGoodCrxId));
+  EXPECT_EQ("1.0.0.0",
+            service->GetInstalledExtension(kGoodCrxId)->version()->GetString());
+
+  // An extension management policy update should trigger an update as well.
+  EXPECT_EQ(1u, interceptor.GetPendingSize());
+  {
+    content::WindowedNotificationObserver update_observer(
+        extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+        content::NotificationService::AllSources());
+    {
+      // Set a higher minimum version, just intend to trigger a policy update.
+      extensions::ExtensionManagementPolicyUpdater management_policy(
+          &provider_);
+      management_policy.SetMinimumVersionRequired(kGoodCrxId, "1.0.0.3");
+    }
+    base::RunLoop().RunUntilIdle();
+    update_observer.Wait();
+  }
+  EXPECT_EQ(0u, interceptor.GetPendingSize());
+
+  // It should be updated to 1.0.0.1 but remain disabled.
+  EXPECT_EQ("1.0.0.1",
+            service->GetInstalledExtension(kGoodCrxId)->version()->GetString());
+  EXPECT_TRUE(registry->disabled_extensions().Contains(kGoodCrxId));
+  EXPECT_EQ(extensions::Extension::DISABLE_UPDATE_REQUIRED_BY_POLICY,
+            extension_prefs->GetDisableReasons(kGoodCrxId));
+
+  // Remove the minimum version requirement. The extension should be re-enabled.
+  {
+    extensions::ExtensionManagementPolicyUpdater management_policy(&provider_);
+    management_policy.UnsetMinimumVersionRequired(kGoodCrxId);
+  }
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(registry->enabled_extensions().Contains(kGoodCrxId));
+  EXPECT_FALSE(extension_prefs->HasDisableReason(
+      kGoodCrxId, extensions::Extension::DISABLE_UPDATE_REQUIRED_BY_POLICY));
+}
+
+// Verifies that a force-installed extension which does not meet a subsequently
+// set minimum version requirement is handled well.
+IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionForceInstalled) {
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  extensions::ExtensionPrefs* extension_prefs =
+      extensions::ExtensionPrefs::Get(browser()->profile());
+
+  // Prepare the update URL for force installing.
+  const base::FilePath path =
+      base::FilePath(kTestExtensionsDir).Append(kGoodV1CrxManifestName);
+  const GURL url(URLRequestMockHTTPJob::GetMockUrl(path));
+
+  // Set policy to force-install the extension, it should be installed and
+  // enabled.
+  content::WindowedNotificationObserver install_observer(
+      extensions::NOTIFICATION_EXTENSION_WILL_BE_INSTALLED_DEPRECATED,
+      content::NotificationService::AllSources());
+  EXPECT_FALSE(registry->enabled_extensions().Contains(kGoodCrxId));
+  {
+    extensions::ExtensionManagementPolicyUpdater management_policy(&provider_);
+    management_policy.SetIndividualExtensionAutoInstalled(kGoodCrxId,
+                                                          url.spec(), true);
+  }
+  base::RunLoop().RunUntilIdle();
+  install_observer.Wait();
+
+  EXPECT_TRUE(registry->enabled_extensions().Contains(kGoodCrxId));
+
+  // Set policy a minimum version of "1.0.0.1", the extension now should be
+  // disabled.
+  {
+    extensions::ExtensionManagementPolicyUpdater management_policy(&provider_);
+    management_policy.SetMinimumVersionRequired(kGoodCrxId, "1.0.0.1");
+  }
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(registry->enabled_extensions().Contains(kGoodCrxId));
+  EXPECT_TRUE(registry->disabled_extensions().Contains(kGoodCrxId));
+  EXPECT_EQ(extensions::Extension::DISABLE_UPDATE_REQUIRED_BY_POLICY,
+            extension_prefs->GetDisableReasons(kGoodCrxId));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {

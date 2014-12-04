@@ -1802,6 +1802,10 @@
                   'allowed_permissions': {
                     '$ref': 'ListOfPermissions',
                   },
+                  'minimum_version_required': {
+                    'type': 'string',
+                    'pattern': '^[0-9]+([.][0-9]+)*$',
+                  },
                 },
               },
               '^update_url:': {
@@ -1851,6 +1855,7 @@
             'abcdefghijklmnopabcdefghijklmnop' : {
               'installation_mode': 'allowed',
               'blocked_permissions': ['history'],
+              'minimum_version_required': '1.0.1',
             },
             'bcdefghijklmnopabcdefghijklmnopa' : {
               'installation_mode': 'force_installed',
@@ -1890,6 +1895,8 @@
           "blocked_permissions": maps to a list of strings indicating the blocked API permissions for the extension. The permissions names are same as the permission strings declared in manifest of extension as described at <ph name="LINK_TO_EXTENSION_DOC3">https://developer.chrome.com/extensions/declare_permissions</ph>. This setting also can be configured for "*" extension. If the extension requires a permission which is on the blocklist, it will not be allowed to load. If it contains a blocked permission as optional requirement, it will be handled in the normal way, but requesting conflicting permissions will be declined automatically at runtime.
 
           "allowed_permissions": similar to "blocked_permissions", but instead explicitly allow some permissions which might be blocked by global blocked permission list, thus can not be configured for "*" extension. Note that this setting doesn't give granted permissions to extensions automatically.
+
+          "minimum_version_required": maps to a version string. The format of the version string is the same as the one used in extension manifest, as described at <ph name="LINK_TO_EXTENSION_DOC4">https://developer.chrome.com/apps/manifest/version</ph>. An extension with a version older than the specified minimum version will be disabled. This applies to force-installed extensions as well.
 
           The following settings can be used only for the default "*" configuration:
 

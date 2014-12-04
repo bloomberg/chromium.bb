@@ -44562,6 +44562,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2048" label="REMOTE_INSTALL"/>
   <int value="4096" label="INACTIVE_EPHEMERAL_APP"/>
   <int value="8192" label="EXTERNAL_EXTENSION"/>
+  <int value="16384" label="UPDATE_REQUIRED_BY_POLICY"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">

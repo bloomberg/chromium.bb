@@ -41,7 +41,7 @@ ExtensionManagementPrefUpdaterBase::~ExtensionManagementPrefUpdaterBase() {
 void ExtensionManagementPrefUpdaterBase::UnsetPerExtensionSettings(
     const ExtensionId& id) {
   DCHECK(crx_file::id_util::IdIsValid(id));
-  pref_->RemoveWithoutPathExpansion(id, NULL);
+  pref_->RemoveWithoutPathExpansion(id, nullptr);
 }
 
 void ExtensionManagementPrefUpdaterBase::ClearPerExtensionSettings(
@@ -64,8 +64,8 @@ void ExtensionManagementPrefUpdaterBase::
     DCHECK(it.value().IsType(base::Value::TYPE_DICTIONARY));
     if (it.key() != schema::kWildcard) {
       DCHECK(crx_file::id_util::IdIsValid(it.key()));
-      pref_->Remove(make_path(it.key(), schema::kInstallationMode), NULL);
-      pref_->Remove(make_path(it.key(), schema::kUpdateUrl), NULL);
+      pref_->Remove(make_path(it.key(), schema::kInstallationMode), nullptr);
+      pref_->Remove(make_path(it.key(), schema::kUpdateUrl), nullptr);
     }
   }
 }
@@ -77,7 +77,7 @@ ExtensionManagementPrefUpdaterBase::SetIndividualExtensionInstallationAllowed(
   DCHECK(crx_file::id_util::IdIsValid(id));
   pref_->SetString(make_path(id, schema::kInstallationMode),
                    allowed ? schema::kAllowed : schema::kBlocked);
-  pref_->Remove(make_path(id, schema::kUpdateUrl), NULL);
+  pref_->Remove(make_path(id, schema::kUpdateUrl), nullptr);
 }
 
 void ExtensionManagementPrefUpdaterBase::SetIndividualExtensionAutoInstalled(
@@ -93,7 +93,7 @@ void ExtensionManagementPrefUpdaterBase::SetIndividualExtensionAutoInstalled(
 // Helper functions for 'install_sources' manipulation -------------------------
 
 void ExtensionManagementPrefUpdaterBase::UnsetInstallSources() {
-  pref_->Remove(kInstallSourcesPath, NULL);
+  pref_->Remove(kInstallSourcesPath, nullptr);
 }
 
 void ExtensionManagementPrefUpdaterBase::ClearInstallSources() {
@@ -113,7 +113,7 @@ void ExtensionManagementPrefUpdaterBase::RemoveInstallSource(
 // Helper functions for 'allowed_types' manipulation ---------------------------
 
 void ExtensionManagementPrefUpdaterBase::UnsetAllowedTypes() {
-  pref_->Remove(kAllowedTypesPath, NULL);
+  pref_->Remove(kAllowedTypesPath, nullptr);
 }
 
 void ExtensionManagementPrefUpdaterBase::ClearAllowedTypes() {
@@ -135,7 +135,7 @@ void ExtensionManagementPrefUpdaterBase::RemoveAllowedType(
 void ExtensionManagementPrefUpdaterBase::UnsetBlockedPermissions(
     const std::string& prefix) {
   DCHECK(prefix == schema::kWildcard || crx_file::id_util::IdIsValid(prefix));
-  pref_->Remove(make_path(prefix, schema::kBlockedPermissions), NULL);
+  pref_->Remove(make_path(prefix, schema::kBlockedPermissions), nullptr);
 }
 
 void ExtensionManagementPrefUpdaterBase::ClearBlockedPermissions(
@@ -164,7 +164,7 @@ void ExtensionManagementPrefUpdaterBase::RemoveBlockedPermission(
 void ExtensionManagementPrefUpdaterBase::UnsetAllowedPermissions(
     const std::string& id) {
   DCHECK(crx_file::id_util::IdIsValid(id));
-  pref_->Remove(make_path(id, schema::kAllowedPermissions), NULL);
+  pref_->Remove(make_path(id, schema::kAllowedPermissions), nullptr);
 }
 
 void ExtensionManagementPrefUpdaterBase::ClearAllowedPermissions(
@@ -185,6 +185,21 @@ void ExtensionManagementPrefUpdaterBase::RemoveAllowedPermission(
     const std::string& permission) {
   DCHECK(crx_file::id_util::IdIsValid(id));
   RemoveStringFromList(make_path(id, schema::kAllowedPermissions), permission);
+}
+
+// Helper functions for 'minimum_version_required' manipulation ----------------
+
+void ExtensionManagementPrefUpdaterBase::SetMinimumVersionRequired(
+    const std::string& id,
+    const std::string& version) {
+  DCHECK(crx_file::id_util::IdIsValid(id));
+  pref_->SetString(make_path(id, schema::kMinimumVersionRequired), version);
+}
+
+void ExtensionManagementPrefUpdaterBase::UnsetMinimumVersionRequired(
+    const std::string& id) {
+  DCHECK(crx_file::id_util::IdIsValid(id));
+  pref_->Remove(make_path(id, schema::kMinimumVersionRequired), nullptr);
 }
 
 // Expose a read-only preference to user ---------------------------------------
@@ -211,7 +226,7 @@ void ExtensionManagementPrefUpdaterBase::ClearList(const std::string& path) {
 void ExtensionManagementPrefUpdaterBase::AddStringToList(
     const std::string& path,
     const std::string& str) {
-  base::ListValue* list_value = NULL;
+  base::ListValue* list_value = nullptr;
   if (!pref_->GetList(path, &list_value)) {
     list_value = new base::ListValue();
     pref_->Set(path, list_value);
@@ -222,9 +237,9 @@ void ExtensionManagementPrefUpdaterBase::AddStringToList(
 void ExtensionManagementPrefUpdaterBase::RemoveStringFromList(
     const std::string& path,
     const std::string& str) {
-  base::ListValue* list_value = NULL;
+  base::ListValue* list_value = nullptr;
   if (pref_->GetList(path, &list_value))
-    CHECK(list_value->Remove(base::StringValue(str), NULL));
+    CHECK(list_value->Remove(base::StringValue(str), nullptr));
 }
 
 // ExtensionManagementPolicyUpdater --------------------------------------------
