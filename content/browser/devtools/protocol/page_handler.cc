@@ -545,11 +545,12 @@ void PageHandler::ScreencastFrameCaptured(
       base::Bind(&EncodeScreencastFrame,
                  bitmap, screencast_format_, screencast_quality_),
       base::Bind(&PageHandler::ScreencastFrameEncoded,
-                 weak_factory_.GetWeakPtr(), metadata));
+                 weak_factory_.GetWeakPtr(), metadata, base::Time::Now()));
 }
 
 void PageHandler::ScreencastFrameEncoded(
     const cc::CompositorFrameMetadata& metadata,
+    const base::Time& timestamp,
     const std::string& data) {
   processing_screencast_frame_ = false;
 
@@ -571,7 +572,8 @@ void PageHandler::ScreencastFrameEncoded(
           ->set_device_width(screen_size_dip.width())
           ->set_device_height(screen_size_dip.height())
           ->set_scroll_offset_x(metadata.root_scroll_offset.x())
-          ->set_scroll_offset_y(metadata.root_scroll_offset.y());
+          ->set_scroll_offset_y(metadata.root_scroll_offset.y())
+          ->set_timestamp(timestamp.ToDoubleT());
   client_->ScreencastFrame(ScreencastFrameParams::Create()
       ->set_data(data)
       ->set_metadata(param_metadata)

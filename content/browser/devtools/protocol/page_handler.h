@@ -94,6 +94,7 @@ class PageHandler {
                                const SkBitmap& bitmap,
                                ReadbackResponse response);
   void ScreencastFrameEncoded(const cc::CompositorFrameMetadata& metadata,
+                              const base::Time& timestamp,
                               const std::string& data);
 
   void ScreenshotCaptured(
