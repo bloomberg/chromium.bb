@@ -39,8 +39,6 @@ class AutomationManagerAsh : public extensions::AutomationActionAdapter {
                    views::View* view,
                    ui::AXEvent event_type);
 
-  void HandleAlert(content::BrowserContext* context, const std::string& text);
-
   // AutomationActionAdapter implementation.
   void DoDefault(int32 id) override;
   void Focus(int32 id) override;

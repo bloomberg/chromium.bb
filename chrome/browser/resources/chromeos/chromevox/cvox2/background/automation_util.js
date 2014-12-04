@@ -181,9 +181,7 @@ AutomationUtil.getDivergence = function(ancestorsA, ancestorsB) {
     if (ancestorsA[i] !== ancestorsB[i])
       return i;
   }
-  if (ancestorsA.length == ancestorsB.length)
-    return -1;
-  return ancestorsA.length;
+  return -1;
 };
 
 /**
