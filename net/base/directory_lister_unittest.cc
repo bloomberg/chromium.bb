@@ -4,12 +4,15 @@
 
 #include <list>
 #include <utility>
+#include <vector>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/directory_lister.h"
 #include "net/base/net_errors.h"
@@ -18,29 +21,59 @@
 
 namespace net {
 
+namespace {
+
+const int kMaxDepth = 3;
+const int kBranchingFactor = 4;
+const int kFilesPerDirectory = 5;
+
 class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
  public:
-  ListerDelegate(bool recursive,
-                 bool quit_loop_after_each_file)
-      : error_(-1),
-        recursive_(recursive),
-        quit_loop_after_each_file_(quit_loop_after_each_file) {
+  explicit ListerDelegate(bool recursive)
+      : cancel_lister_on_list_file_(false),
+        cancel_lister_on_list_done_(false),
+        lister_(nullptr),
+        done_(false),
+        error_(-1),
+        recursive_(recursive) {
+  }
+
+  // When set to true, this signals that the directory list operation should be
+  // cancelled (And the run loop quit) in the first call to OnListFile.
+  void set_cancel_lister_on_list_file(bool cancel_lister_on_list_file) {
+    cancel_lister_on_list_file_ = cancel_lister_on_list_file;
+  }
+
+  // When set to true, this signals that the directory list operation should be
+  // cancelled (And the run loop quit) when OnDone is called.
+  void set_cancel_lister_on_list_done(bool cancel_lister_on_list_done) {
+    cancel_lister_on_list_done_ = cancel_lister_on_list_done;
   }
 
   void OnListFile(const DirectoryLister::DirectoryListerData& data) override {
+    ASSERT_FALSE(done_);
+
     file_list_.push_back(data.info);
     paths_.push_back(data.path);
-    if (quit_loop_after_each_file_)
-      base::MessageLoop::current()->Quit();
+    if (cancel_lister_on_list_file_) {
+      lister_->Cancel();
+      run_loop.Quit();
+    }
   }
 
   void OnListDone(int error) override {
+    ASSERT_FALSE(done_);
+
+    done_ = true;
     error_ = error;
-    base::MessageLoop::current()->Quit();
     if (recursive_)
       CheckRecursiveSort();
     else
       CheckSort();
+
+    if (cancel_lister_on_list_done_)
+      lister_->Cancel();
+    run_loop.Quit();
   }
 
   void CheckRecursiveSort() {
@@ -77,25 +110,45 @@ class ListerDelegate : public DirectoryLister::DirectoryListerDelegate {
     }
   }
 
+  void Run(DirectoryLister* lister) {
+    lister_ = lister;
+    lister_->Start();
+    run_loop.Run();
+  }
+
   int error() const { return error_; }
 
   int num_files() const { return file_list_.size(); }
 
+  bool done() const { return done_; }
+
  private:
+  bool cancel_lister_on_list_file_;
+  bool cancel_lister_on_list_done_;
+
+  // This is owned by the individual tests, rather than the ListerDelegate.
+  DirectoryLister* lister_;
+
+  base::RunLoop run_loop;
+
+  bool done_;
   int error_;
   bool recursive_;
-  bool quit_loop_after_each_file_;
+
   std::vector<base::FileEnumerator::FileInfo> file_list_;
   std::vector<base::FilePath> paths_;
 };
 
+}  // namespace
+
 class DirectoryListerTest : public PlatformTest {
  public:
-  void SetUp() override {
-    const int kMaxDepth = 3;
-    const int kBranchingFactor = 4;
-    const int kFilesPerDirectory = 5;
+  DirectoryListerTest()
+      : total_created_file_system_objects_in_temp_root_dir_(0),
+        created_file_system_objects_in_temp_root_dir_(0) {
+  }
 
+  void SetUp() override {
     // Randomly create a directory structure of depth 3 in a temporary root
     // directory.
     std::list<std::pair<base::FilePath, int> > directories;
@@ -110,12 +163,18 @@ class DirectoryListerTest : public PlatformTest {
         base::File file(file_path,
                         base::File::FLAG_CREATE | base::File::FLAG_WRITE);
         ASSERT_TRUE(file.IsValid());
+        ++total_created_file_system_objects_in_temp_root_dir_;
+        if (dir_data.first == temp_root_dir_.path())
+          ++created_file_system_objects_in_temp_root_dir_;
       }
       if (dir_data.second < kMaxDepth - 1) {
         for (int i = 0; i < kBranchingFactor; i++) {
           std::string dir_name = base::StringPrintf("child_dir_%d", i);
           base::FilePath dir_path = dir_data.first.AppendASCII(dir_name);
           ASSERT_TRUE(base::CreateDirectory(dir_path));
+          ++total_created_file_system_objects_in_temp_root_dir_;
+          if (dir_data.first == temp_root_dir_.path())
+            ++created_file_system_objects_in_temp_root_dir_;
           directories.push_back(std::make_pair(dir_path, dir_data.second + 1));
         }
       }
@@ -127,62 +186,125 @@ class DirectoryListerTest : public PlatformTest {
     return temp_root_dir_.path();
   }
 
+  int expected_list_length_recursive() const {
+    // List should include everything but the top level directory, and does not
+    // include "..".
+    return total_created_file_system_objects_in_temp_root_dir_;
+  }
+
+  int expected_list_length_non_recursive() const {
+    // List should include everything in the top level directory, and "..".
+    return created_file_system_objects_in_temp_root_dir_ + 1;
+  }
+
  private:
+  // Number of files and directories created in SetUp, excluding
+  // |temp_root_dir_| itself.  Includes all nested directories and their files.
+  int total_created_file_system_objects_in_temp_root_dir_;
+  // Number of files and directories created directly in |temp_root_dir_|.
+  int created_file_system_objects_in_temp_root_dir_;
+
   base::ScopedTempDir temp_root_dir_;
 };
 
 TEST_F(DirectoryListerTest, BigDirTest) {
-  ListerDelegate delegate(false, false);
+  ListerDelegate delegate(false);
   DirectoryLister lister(root_path(), &delegate);
-  lister.Start();
+  delegate.Run(&lister);
 
-  base::MessageLoop::current()->Run();
-
+  EXPECT_TRUE(delegate.done());
   EXPECT_EQ(OK, delegate.error());
+  EXPECT_EQ(expected_list_length_non_recursive(), delegate.num_files());
 }
 
 TEST_F(DirectoryListerTest, BigDirRecursiveTest) {
-  ListerDelegate delegate(true, false);
-  DirectoryLister lister(root_path(), true, DirectoryLister::FULL_PATH,
-                         &delegate);
-  lister.Start();
+  ListerDelegate delegate(true);
+  DirectoryLister lister(
+      root_path(), true, DirectoryLister::FULL_PATH, &delegate);
+  delegate.Run(&lister);
 
-  base::MessageLoop::current()->Run();
-
+  EXPECT_TRUE(delegate.done());
   EXPECT_EQ(OK, delegate.error());
-}
-
-TEST_F(DirectoryListerTest, CancelTest) {
-  ListerDelegate delegate(false, true);
-  DirectoryLister lister(root_path(), &delegate);
-  lister.Start();
-
-  base::MessageLoop::current()->Run();
-
-  int num_files = delegate.num_files();
-
-  lister.Cancel();
-
-  base::MessageLoop::current()->RunUntilIdle();
-
-  EXPECT_EQ(num_files, delegate.num_files());
+  EXPECT_EQ(expected_list_length_recursive(), delegate.num_files());
 }
 
 TEST_F(DirectoryListerTest, EmptyDirTest) {
   base::ScopedTempDir tempDir;
   EXPECT_TRUE(tempDir.CreateUniqueTempDir());
 
-  bool kRecursive = false;
-  bool kQuitLoopAfterEachFile = false;
-  ListerDelegate delegate(kRecursive, kQuitLoopAfterEachFile);
+  ListerDelegate delegate(false);
   DirectoryLister lister(tempDir.path(), &delegate);
-  lister.Start();
+  delegate.Run(&lister);
 
-  base::MessageLoop::current()->Run();
-
-  // Contains only the parent directory ("..")
-  EXPECT_EQ(1, delegate.num_files());
+  EXPECT_TRUE(delegate.done());
   EXPECT_EQ(OK, delegate.error());
+  // Contains only the parent directory ("..").
+  EXPECT_EQ(1, delegate.num_files());
+}
+
+// This doesn't really test much, except make sure calling cancel before any
+// callbacks are invoked doesn't crash.  Can't wait for all tasks running on a
+// worker pool to complete, unfortunately.
+// TODO(mmenke):  See if there's a way to make this fail more reliably on
+// regression.
+TEST_F(DirectoryListerTest, BasicCancelTest) {
+  ListerDelegate delegate(false);
+  scoped_ptr<DirectoryLister> lister(new DirectoryLister(
+      root_path(), &delegate));
+  lister->Start();
+  lister->Cancel();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(delegate.done());
+  EXPECT_EQ(0, delegate.num_files());
+}
+
+TEST_F(DirectoryListerTest, CancelOnListFileTest) {
+  ListerDelegate delegate(false);
+  DirectoryLister lister(root_path(), &delegate);
+  delegate.set_cancel_lister_on_list_file(true);
+  delegate.Run(&lister);
+
+  EXPECT_FALSE(delegate.done());
+  EXPECT_EQ(1, delegate.num_files());
+}
+
+TEST_F(DirectoryListerTest, CancelOnListDoneTest) {
+  ListerDelegate delegate(false);
+  DirectoryLister lister(root_path(), &delegate);
+  delegate.set_cancel_lister_on_list_done(true);
+  delegate.Run(&lister);
+
+  EXPECT_TRUE(delegate.done());
+  EXPECT_EQ(OK, delegate.error());
+  EXPECT_EQ(expected_list_length_non_recursive(), delegate.num_files());
+}
+
+TEST_F(DirectoryListerTest, CancelOnLastElementTest) {
+  base::ScopedTempDir tempDir;
+  EXPECT_TRUE(tempDir.CreateUniqueTempDir());
+
+  ListerDelegate delegate(false);
+  DirectoryLister lister(tempDir.path(), &delegate);
+  delegate.set_cancel_lister_on_list_file(true);
+  delegate.Run(&lister);
+
+  EXPECT_FALSE(delegate.done());
+  // Contains only the parent directory ("..").
+  EXPECT_EQ(1, delegate.num_files());
+}
+
+TEST_F(DirectoryListerTest, NoSuchDirTest) {
+  base::ScopedTempDir tempDir;
+  EXPECT_TRUE(tempDir.CreateUniqueTempDir());
+
+  ListerDelegate delegate(false);
+  DirectoryLister lister(
+      tempDir.path().AppendASCII("this_path_does_not_exist"), &delegate);
+  delegate.Run(&lister);
+
+  EXPECT_EQ(ERR_FILE_NOT_FOUND, delegate.error());
+  EXPECT_EQ(0, delegate.num_files());
 }
 
 }  // namespace net

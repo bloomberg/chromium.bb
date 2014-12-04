@@ -7,21 +7,22 @@
 
 #include <vector>
 
+#include "base/atomicops.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "net/base/net_export.h"
 
 namespace net {
 
-//
-// This class provides an API for listing the contents of a directory on the
-// filesystem asynchronously.  It spawns a background thread, and enumerates
-// the specified directory on that thread.  It marshalls WIN32_FIND_DATA
-// structs over to the main application thread.  The consumer of this class
-// is insulated from any of the multi-threading details.
-//
+// This class provides an API for asynchronously listing the contents of a
+// directory on the filesystem.  It runs a task on a background thread, and
+// enumerates all files in the specified directory on that thread.  Destroying
+// the lister cancels the list operation.  The DirectoryLister must only be
+// used on a thread with a MessageLoop.
 class NET_EXPORT DirectoryLister  {
  public:
   // Represents one file found.
@@ -48,6 +49,9 @@ class NET_EXPORT DirectoryLister  {
   //   directories first in name order, then files by name order
   // FULL_PATH sorts by paths as strings, ignoring files v. directories
   // DATE sorts by last modified date
+  // TODO(mmenke):  Only NO_SORT and ALPHA_DIRS_FIRST appear to be used in
+  //     production code, and there's very little testing of some of these
+  //     options.  Remove unused options, improve testing of the others.
   enum SortType {
     NO_SORT,
     DATE,
@@ -74,6 +78,15 @@ class NET_EXPORT DirectoryLister  {
   void Cancel();
 
  private:
+  typedef std::vector<DirectoryListerData> DirectoryList;
+
+  // Class responsible for retrieving and sorting the actual directory list on
+  // a worker pool thread. Created on the DirectoryLister's thread. As it's
+  // refcounted, it's destroyed when the final reference is released, which may
+  // happen on either thread.
+  //
+  // It's kept alive during the calls to Start() and DoneOnOriginThread() by the
+  // reference owned by the callback itself.
   class Core : public base::RefCountedThreadSafe<Core> {
    public:
     Core(const base::FilePath& dir,
@@ -81,9 +94,11 @@ class NET_EXPORT DirectoryLister  {
          SortType sort,
          DirectoryLister* lister);
 
-    bool Start();
+    // May only be called on a worker pool thread.
+    void Start();
 
-    void Cancel();
+    // Must be called on the origin thread.
+    void CancelOnOriginThread();
 
    private:
     friend class base::RefCountedThreadSafe<Core>;
@@ -91,28 +106,35 @@ class NET_EXPORT DirectoryLister  {
 
     ~Core();
 
-    // This method runs on a WorkerPool thread.
-    void StartInternal();
+    // Called on both threads.
+    bool IsCancelled() const;
 
-    void SendData(const std::vector<DirectoryListerData>& data);
+    // Called on origin thread.
+    void DoneOnOriginThread(scoped_ptr<DirectoryList> directory_list,
+                            int error) const;
 
-    void OnDone(int error);
+    const base::FilePath dir_;
+    const bool recursive_;
+    const SortType sort_;
+    const scoped_refptr<base::MessageLoopProxy> origin_loop_;
 
-    base::FilePath dir_;
-    bool recursive_;
-    SortType sort_;
-    scoped_refptr<base::MessageLoopProxy> origin_loop_;
-
-    // |lister_| gets set to NULL when canceled.
+    // Only used on the origin thread.
     DirectoryLister* lister_;
+
+    // Set to 1 on cancellation. Used both to abort listing files early on the
+    // worker pool thread for performance reasons and to ensure |lister_| isn't
+    // called after cancellation on the origin thread.
+    base::subtle::Atomic32 cancelled_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
 
-  void OnReceivedData(const DirectoryListerData& data);
-  void OnDone(int error);
+  // Call into the corresponding DirectoryListerDelegate. Must not be called
+  // after cancellation.
+  void OnListFile(const DirectoryListerData& data);
+  void OnListDone(int error);
 
-  const scoped_refptr<Core> core_;
+  scoped_refptr<Core> core_;
   DirectoryListerDelegate* const delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryLister);
