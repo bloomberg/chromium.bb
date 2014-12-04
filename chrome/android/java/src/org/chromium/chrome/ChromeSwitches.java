@@ -88,6 +88,13 @@ public abstract class ChromeSwitches {
     public static final String DISABLE_CONTEXTUAL_SEARCH_PROMO_FOR_TESTING =
             "disable-contextual-search-promo-for-testing";
 
+    // How many thumbnails should we allow in the cache (per tab stack)?
+    public static final String THUMBNAILS = "thumbnails";
+
+    // How many "approximated" thumbnails should we allow in the cache
+    // (per tab stack)?  These take very low memory but have poor quality.
+    public static final String APPROXIMATION_THUMBNAILS = "approximation-thumbnails";
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Native Switches
     ///////////////////////////////////////////////////////////////////////////////////////////////
