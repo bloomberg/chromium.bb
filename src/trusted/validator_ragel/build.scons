@@ -323,64 +323,45 @@ if ragel_involved:
 
   snapshots_dir = '${MAIN_DIR}/../validator_snapshots'
   trie_proofs = [
-    # (proof_file_name, bitness, old_trie_path, new_trie_path)
-    ('vzero_proof.py', '32', '20141001', '20141020.vzero'),
-    ('vzero_proof.py', '64', '20141001', '20141020.vzero'),
-    ('movbe_proof.py', '32', '20141020.vzero', '20141021.movbe'),
-    ('movbe_proof.py', '64', '20141020.vzero', '20141021.movbe'),
-    ('bsr_bsf_proof.py', '32', '20141021.movbe', '20141027.bsr_bsf'),
-    ('bsr_bsf_proof.py', '64', '20141021.movbe', '20141027.bsr_bsf'),
-    ('shld_shrd_proof.py', '32', '20141027.bsr_bsf', '20141028.shld_shrd'),
-    ('shld_shrd_proof.py', '64', '20141027.bsr_bsf', '20141028.shld_shrd'),
-    ('xadd16_proof.py', '32', '20141028.shld_shrd', '20141029.xadd16'),
-    ('xadd16_proof.py', '64', '20141028.shld_shrd', '20141029.xadd16'),
-    ('cmpxchg16_proof.py', '32', '20141029.xadd16', '20141030.cmpxchg16'),
-    ('cmpxchg16_proof.py', '64', '20141029.xadd16', '20141030.cmpxchg16'),
-    ('avx1_xmm_ymm_memory_3op_pd_proof.py', '32', '20141030.cmpxchg16',
+    # (proof_file_name, (bitnesses), old_trie_path, new_trie_path)
+    ('vzero_proof.py', ('32', '64'), '20141001', '20141020.vzero'),
+    ('movbe_proof.py', ('32', '64'), '20141020.vzero', '20141021.movbe'),
+    ('bsr_bsf_proof.py', ('32', '64'), '20141021.movbe', '20141027.bsr_bsf'),
+    ('shld_shrd_proof.py', ('32', '64'), '20141027.bsr_bsf',
+     '20141028.shld_shrd'),
+    ('xadd16_proof.py', ('32', '64'), '20141028.shld_shrd', '20141029.xadd16'),
+    ('cmpxchg16_proof.py', ('32', '64'), '20141029.xadd16',
+     '20141030.cmpxchg16'),
+    ('avx1_xmm_ymm_memory_3op_pd_proof.py', ('32', '64'), '20141030.cmpxchg16',
      '20141031.avx1_3op_fp_pd'),
-    ('avx1_xmm_ymm_memory_3op_pd_proof.py', '64', '20141030.cmpxchg16',
-     '20141031.avx1_3op_fp_pd'),
-    ('avx1_xmm_ymm_memory_3op_ps_proof.py', '32',
+    ('avx1_xmm_ymm_memory_3op_ps_proof.py', ('32', '64'),
      '20141031.avx1_3op_fp_pd', '20141104.avx1_3op_fp_ps'),
-    ('avx1_xmm_ymm_memory_3op_ps_proof.py', '64',
-     '20141031.avx1_3op_fp_pd', '20141104.avx1_3op_fp_ps'),
-    ('avx1_xmm_memory_3op_pi_proof.py', '32',
+    ('avx1_xmm_memory_3op_pi_proof.py', ('32', '64'),
      '20141104.avx1_3op_fp_ps', '20141105.avx1_3op_pi'),
-    ('avx1_xmm_memory_3op_pi_proof.py', '64',
-     '20141104.avx1_3op_fp_ps', '20141105.avx1_3op_pi'),
-    ('avx1_xmm_memory_3op_pb_proof.py', '32',
+    ('avx1_xmm_memory_3op_pb_proof.py', ('32', '64'),
      '20141105.avx1_3op_pi', '20141106.avx1_3op_pb'),
-    ('avx1_xmm_memory_3op_pb_proof.py', '64',
-     '20141105.avx1_3op_pi', '20141106.avx1_3op_pb'),
-    ('avx1_xmm_memory_3op_fp_scalars_proof.py', '32',
+    ('avx1_xmm_memory_3op_fp_scalars_proof.py', ('32', '64'),
       '20141106.avx1_3op_pb', '20141110.avx1_3op_fp_scalars'),
-    ('avx1_xmm_memory_3op_fp_scalars_proof.py', '64',
-      '20141106.avx1_3op_pb', '20141110.avx1_3op_fp_scalars'),
-    ('vbroadcast_proof.py', '32',
+    ('vbroadcast_proof.py', ('32', '64'),
      '20141110.avx1_3op_fp_scalars', '20141115.avx1_vbroadcast'),
-    ('vbroadcast_proof.py', '64',
-     '20141110.avx1_3op_fp_scalars', '20141115.avx1_vbroadcast'),
-    ('avx1_3op_simd_or_memory_others_proof.py', '32',
+    ('avx1_3op_simd_or_memory_others_proof.py', ('32', '64'),
      '20141115.avx1_vbroadcast', '20141118.avx1_remaining_3operand'),
-    ('avx1_3op_simd_or_memory_others_proof.py', '64',
-     '20141115.avx1_vbroadcast', '20141118.avx1_remaining_3operand'),
-    ('avx1_xmm_ymm_memory_moves.py', '32',
-     '20141118.avx1_remaining_3operand', '20141119.avx1_moves'),
-    ('avx1_xmm_ymm_memory_moves.py', '64',
+    ('avx1_xmm_ymm_memory_moves.py', ('32', '64'),
      '20141118.avx1_remaining_3operand', '20141119.avx1_moves'),
   ]
-  for proof_file, bitness, old, new in trie_proofs:
-    trie_subdirs = {'32': 'ragel_trie_x86_32', '64': 'ragel_trie_x86_64'}
-    check_proof = env.AutoDepsCommand(
-      '%s_%s_results' % (proof_file, bitness),
-      ['${PYTHON}',
-       env.File(proof_file),
-       '--validator_dll', validator_dll,
-       '--decoder_dll', decoder_dll,
-       '--bitness', bitness,
-       '--old', snapshots_dir + '/' + trie_subdirs[bitness] + '/' + old,
-       '--new', snapshots_dir + '/' + trie_subdirs[bitness] + '/' + new])
-    check_tries.append(check_proof)
+  for proof_file, bitnesses, old, new in trie_proofs:
+    for bitness in bitnesses:
+      trie_subdirs = {'32': 'ragel_trie_x86_32', '64': 'ragel_trie_x86_64'}
+      check_proof = env.AutoDepsCommand(
+        '%s_%s_results' % (proof_file, bitness),
+        ['${PYTHON}',
+         env.File(proof_file),
+         '--validator_dll', validator_dll,
+         '--decoder_dll', decoder_dll,
+         '--bitness', bitness,
+         '--old', snapshots_dir + '/' + trie_subdirs[bitness] + '/' + old,
+         '--new', snapshots_dir + '/' + trie_subdirs[bitness] + '/' + new])
+      check_tries.append(check_proof)
 
   # Don't run gen_trie tests in parallel because they can take all CPU.
   SideEffect('check_tries', check_tries)
