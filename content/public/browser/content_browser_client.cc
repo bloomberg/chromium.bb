@@ -320,6 +320,13 @@ net::CookieStore* ContentBrowserClient::OverrideCookieStoreForRenderProcess(
   return NULL;
 }
 
+bool ContentBrowserClient::CheckMediaAccessPermission(
+    BrowserContext* browser_context,
+    const GURL& security_origin,
+    MediaStreamType type) {
+  return false;
+}
+
 #if defined(OS_WIN)
 const wchar_t* ContentBrowserClient::GetResourceDllName() {
   return NULL;
@@ -333,12 +340,5 @@ ContentBrowserClient::OverrideCreateExternalVideoSurfaceContainer(
   return NULL;
 }
 #endif
-
-bool ContentBrowserClient::CheckMediaAccessPermission(
-    BrowserContext* browser_context,
-    const GURL& security_origin,
-    MediaStreamType type) {
-  return false;
-}
 
 }  // namespace content

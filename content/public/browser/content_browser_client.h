@@ -100,6 +100,7 @@ class RenderFrameHost;
 class RenderProcessHost;
 class RenderViewHost;
 class ResourceContext;
+class ServiceRegistry;
 class SiteInstance;
 class SpeechRecognitionManagerDelegate;
 class VibrationProvider;
@@ -594,6 +595,17 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual net::CookieStore* OverrideCookieStoreForRenderProcess(
       int render_process_id);
 
+  // Checks if |security_origin| has permission to access the microphone or
+  // camera. Note that this does not query the user. |type| must be
+  // MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
+  virtual bool CheckMediaAccessPermission(BrowserContext* browser_context,
+                                          const GURL& security_origin,
+                                          MediaStreamType type);
+
+  // Allows to override browser Mojo services exposed through the
+  // RenderProcessHost.
+  virtual void OverrideRenderProcessMojoServices(ServiceRegistry* registry) {}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Populates |mappings| with all files that need to be mapped before launching
   // a child process.
@@ -620,13 +632,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual ExternalVideoSurfaceContainer*
   OverrideCreateExternalVideoSurfaceContainer(WebContents* web_contents);
 #endif
-
-// Checks if |security_origin| has permission to access the microphone or
-// camera. Note that this does not query the user. |type| must be
-// MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
-virtual bool CheckMediaAccessPermission(BrowserContext* browser_context,
-                                        const GURL& security_origin,
-                                        MediaStreamType type);
 };
 
 }  // namespace content

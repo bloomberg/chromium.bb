@@ -890,6 +890,9 @@ void RenderProcessHostImpl::RegisterMojoServices() {
   mojo_application_host_->service_registry()->AddService(
       base::Bind(&PermissionServiceContext::CreateService,
                  base::Unretained(permission_service_context_.get())));
+
+  GetContentClient()->browser()->OverrideRenderProcessMojoServices(
+      mojo_application_host_->service_registry());
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {
