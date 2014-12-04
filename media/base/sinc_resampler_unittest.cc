@@ -66,6 +66,51 @@ TEST(SincResamplerTest, ChunkedResample) {
   resampler.Resample(max_chunk_size, resampled_destination.get());
 }
 
+// Verify priming the resampler avoids changes to ChunkSize() between calls.
+TEST(SincResamplerTest, PrimedResample) {
+  MockSource mock_source;
+
+  // Choose a high ratio of input to output samples which will result in quick
+  // exhaustion of SincResampler's internal buffers.
+  SincResampler resampler(
+      kSampleRateRatio, SincResampler::kDefaultRequestSize,
+      base::Bind(&MockSource::ProvideInput, base::Unretained(&mock_source)));
+
+  // Verify the priming adjusts the chunk size within reasonable limits.
+  const int first_chunk_size = resampler.ChunkSize();
+  resampler.PrimeWithSilence();
+  const int max_chunk_size = resampler.ChunkSize();
+
+  EXPECT_NE(first_chunk_size, max_chunk_size);
+  EXPECT_LE(
+      max_chunk_size,
+      static_cast<int>(first_chunk_size + std::ceil(SincResampler::kKernelSize /
+                                                    (2 * kSampleRateRatio))));
+
+  // Verify Flush() resets to an unprimed state.
+  resampler.Flush();
+  EXPECT_EQ(first_chunk_size, resampler.ChunkSize());
+  resampler.PrimeWithSilence();
+  EXPECT_EQ(max_chunk_size, resampler.ChunkSize());
+
+  const int kChunks = 2;
+  const int kMaxFrames = max_chunk_size * kChunks;
+  scoped_ptr<float[]> resampled_destination(new float[kMaxFrames]);
+
+  // Verify requesting ChunkSize() frames causes a single callback.
+  EXPECT_CALL(mock_source, ProvideInput(_, _))
+      .Times(1).WillOnce(ClearBuffer());
+  resampler.Resample(max_chunk_size, resampled_destination.get());
+  EXPECT_EQ(max_chunk_size, resampler.ChunkSize());
+
+  // Verify requesting kChunks * ChunkSize() frames causes kChunks callbacks.
+  testing::Mock::VerifyAndClear(&mock_source);
+  EXPECT_CALL(mock_source, ProvideInput(_, _))
+      .Times(kChunks).WillRepeatedly(ClearBuffer());
+  resampler.Resample(kMaxFrames, resampled_destination.get());
+  EXPECT_EQ(max_chunk_size, resampler.ChunkSize());
+}
+
 // Test flush resets the internal state properly.
 TEST(SincResamplerTest, Flush) {
   MockSource mock_source;

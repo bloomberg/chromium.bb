@@ -54,11 +54,19 @@ class MEDIA_EXPORT SincResampler {
   void Resample(int frames, float* destination);
 
   // The maximum size in frames that guarantees Resample() will only make a
-  // single call to |read_cb_| for more data.
-  int ChunkSize() const;
+  // single call to |read_cb_| for more data.  Note: If PrimeWithSilence() is
+  // not called, chunk size will grow after the first two Resample() calls by
+  // kKernelSize / (2 * io_sample_rate_ratio).  See the .cc file for details.
+  int ChunkSize() const { return chunk_size_; }
+
+  // Guarantees that ChunkSize() will not change between calls by initializing
+  // the input buffer with silence.  Note, this will cause the first few samples
+  // of output to be biased towards silence. Must be called again after Flush().
+  void PrimeWithSilence();
 
   // Flush all buffered data and reset internal indices.  Not thread safe, do
-  // not call while Resample() is in progress.
+  // not call while Resample() is in progress.  Note, if PrimeWithSilence() was
+  // previously called it must be called again after the Flush().
   void Flush();
 
   // Update |io_sample_rate_ratio_|.  SetRatio() will cause a reconstruction of
@@ -109,6 +117,10 @@ class MEDIA_EXPORT SincResampler {
 
   // The number of source frames processed per pass.
   int block_size_;
+
+  // Cached value used for ChunkSize().  The maximum size in frames that
+  // guarantees Resample() will only ask for input at most once.
+  int chunk_size_;
 
   // The size (in samples) of the internal buffer used by the resampler.
   const int input_buffer_size_;
