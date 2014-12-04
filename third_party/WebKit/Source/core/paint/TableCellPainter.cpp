@@ -174,7 +174,7 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     for (CollapsedBorder* border = borders.nextBorder(); border; border = borders.nextBorder()) {
         if (border->borderValue.isSameIgnoringColor(*m_renderTableCell.table()->currentBorderValue())) {
             ObjectPainter::drawLineForBoxSide(graphicsContext, border->x1, border->y1, border->x2, border->y2, border->side,
-                border->borderValue.color().resolve(m_renderTableCell.style()->visitedDependentColor(CSSPropertyColor)), border->style, 0, 0, antialias);
+                border->borderValue.color().resolve(m_renderTableCell.resolveColor(CSSPropertyColor)), border->style, 0, 0, antialias);
         }
     }
 }

@@ -2450,9 +2450,9 @@ Color FrameView::documentBackgroundColor() const
     // otherwise poses problems when the aggregate is not
     // fully opaque.
     if (htmlElement && htmlElement->renderer())
-        result = result.blend(htmlElement->renderer()->style()->visitedDependentColor(CSSPropertyBackgroundColor));
+        result = result.blend(htmlElement->renderer()->resolveColor(CSSPropertyBackgroundColor));
     if (bodyElement && bodyElement->renderer())
-        result = result.blend(bodyElement->renderer()->style()->visitedDependentColor(CSSPropertyBackgroundColor));
+        result = result.blend(bodyElement->renderer()->resolveColor(CSSPropertyBackgroundColor));
 
     return result;
 }

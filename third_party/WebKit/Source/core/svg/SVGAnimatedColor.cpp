@@ -43,7 +43,7 @@ static inline Color fallbackColorForCurrentColor(SVGElement* targetElement)
 {
     ASSERT(targetElement);
     if (RenderObject* targetRenderer = targetElement->renderer())
-        return targetRenderer->style()->visitedDependentColor(CSSPropertyColor);
+        return targetRenderer->resolveColor(CSSPropertyColor);
     else
         return Color::transparent;
 }
