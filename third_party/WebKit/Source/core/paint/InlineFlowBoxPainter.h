@@ -7,6 +7,7 @@
 
 #include "core/rendering/style/ShadowData.h"
 #include "platform/graphics/GraphicsTypes.h"
+#include "platform/text/TextDirection.h"
 
 namespace blink {
 
@@ -15,6 +16,7 @@ class FillLayer;
 class InlineFlowBox;
 class LayoutPoint;
 class LayoutRect;
+class LayoutSize;
 class LayoutUnit;
 struct PaintInfo;
 class RenderStyle;
@@ -31,6 +33,7 @@ private:
     void paintFillLayer(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, CompositeOperator);
     void paintBoxShadow(const PaintInfo&, RenderStyle*, ShadowStyle, const LayoutRect&);
     LayoutRect roundedFrameRectClampedToLineTopAndBottomIfNeeded() const;
+    LayoutRect paintRectForImageStrip(const LayoutPoint&, const LayoutSize&, TextDirection) const;
 
     InlineFlowBox& m_inlineFlowBox;
 };
