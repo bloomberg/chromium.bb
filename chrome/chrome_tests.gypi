@@ -2304,10 +2304,6 @@
           'dependencies': [
             '../ui/views/views.gyp:views',
           ],
-          'sources!': [
-            # TODO(estade): port to views.
-            'browser/ui/webui/constrained_web_dialog_ui_browsertest.cc',
-          ],
         }, { # else: toolkit_views == 0
           'sources/': [
             ['exclude', '^../ui/views/'],
