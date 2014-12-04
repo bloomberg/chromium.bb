@@ -1052,10 +1052,10 @@ public class AwContents implements SmartClipProvider {
 
     public void onDraw(Canvas canvas) {
         try {
-            TraceEvent.begin();
+            TraceEvent.begin("AwContents.onDraw");
             mAwViewMethods.onDraw(canvas);
         } finally {
-            TraceEvent.end();
+            TraceEvent.end("AwContents.onDraw");
         }
     }
 
