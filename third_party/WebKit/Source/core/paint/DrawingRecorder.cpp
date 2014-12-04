@@ -55,10 +55,8 @@ DrawingRecorder::~DrawingRecorder()
 #ifndef NDEBUG
     if (!m_renderer)
         drawingItem->setClientDebugString("nullptr");
-    else if (m_renderer->node())
-        drawingItem->setClientDebugString(String::format("nodeName: \"%s\", renderer: \"%p\"", m_renderer->node()->nodeName().utf8().data(), m_renderer));
     else
-        drawingItem->setClientDebugString(String::format("renderer: \"%p\"", m_renderer));
+        drawingItem->setClientDebugString(String::format("renderer: \"%p %s\"", m_renderer, m_renderer->debugName().utf8().data()));
 #endif
 
     ASSERT(m_context->displayItemList());
