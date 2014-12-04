@@ -39,8 +39,7 @@ SchedulerSettings::SchedulerSettings(const LayerTreeSettings& settings)
       throttle_frame_production(settings.throttle_frame_production),
       disable_hi_res_timer_tasks_on_battery(
           settings.disable_hi_res_timer_tasks_on_battery),
-      main_thread_should_always_be_low_latency(
-          settings.main_thread_should_always_be_low_latency),
+      main_thread_should_always_be_low_latency(false),
       background_frame_interval(base::TimeDelta::FromSecondsD(
           1.0 / settings.background_animation_rate)) {
 }

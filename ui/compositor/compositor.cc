@@ -152,8 +152,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
         compositor_thread_loop_,
         nullptr);
   } else {
-    settings.main_thread_should_always_be_low_latency = true;
-
     host_ = cc::LayerTreeHost::CreateSingleThreaded(
         this,
         this,

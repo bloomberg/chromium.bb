@@ -78,7 +78,6 @@ class CC_EXPORT LayerTreeSettings {
   bool use_occlusion_for_tile_prioritization;
   bool record_full_layer;
   bool use_display_lists;
-  bool main_thread_should_always_be_low_latency;
 
   LayerTreeDebugState initial_debug_state;
 };

@@ -65,8 +65,7 @@ LayerTreeSettings::LayerTreeSettings()
       scheduled_raster_task_limit(32),
       use_occlusion_for_tile_prioritization(false),
       record_full_layer(false),
-      use_display_lists(false),
-      main_thread_should_always_be_low_latency(false) {
+      use_display_lists(false) {
 }
 
 LayerTreeSettings::~LayerTreeSettings() {}

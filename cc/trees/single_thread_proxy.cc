@@ -90,6 +90,7 @@ void SingleThreadProxy::SetLayerTreeHostClientReady() {
   if (layer_tree_host_->settings().single_thread_proxy_scheduler &&
       !scheduler_on_impl_thread_) {
     SchedulerSettings scheduler_settings(layer_tree_host_->settings());
+    scheduler_settings.main_thread_should_always_be_low_latency = true;
     scheduler_on_impl_thread_ =
         Scheduler::Create(this,
                           scheduler_settings,
