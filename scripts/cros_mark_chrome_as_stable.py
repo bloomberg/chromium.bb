@@ -88,7 +88,7 @@ def _GetSpecificVersionUrl(git_url, revision, time_to_wait=600):
     fh = gob_util.FetchUrl(host, path, ignore_404=True)
     return fh.read() if fh else None
 
-  def _wait_msg(_remaining_minutes):
+  def _wait_msg(_remaining):
     cros_build_lib.Info(
         'Repository does not yet have revision %s.  Sleeping...',
         revision)

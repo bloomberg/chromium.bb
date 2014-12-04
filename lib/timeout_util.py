@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import contextlib
+import datetime
 import functools
 import signal
 import time
@@ -18,6 +19,19 @@ class TimeoutError(Exception):
   """Raises when code within Timeout has been run too long."""
 
 
+def Timedelta(num, zero_ok=False):
+  """Normalize |num| (in seconds) into a datetime.timedelta."""
+  if not isinstance(num, datetime.timedelta):
+    num = datetime.timedelta(seconds=num)
+  if zero_ok:
+    if num.total_seconds() < 0:
+      raise ValueError('timing must be >= 0, not %s' % (num,))
+  else:
+    if num.total_seconds() <= 0:
+      raise ValueError('timing must be greater than 0, not %s' % (num,))
+  return num
+
+
 @contextlib.contextmanager
 def Timeout(max_run_time,
             error_message="Timeout occurred- waited %(time)s seconds."):
@@ -27,12 +41,11 @@ def Timeout(max_run_time,
   is reached. Timeout can also nest underneath FatalTimeout.
 
   Args:
-    max_run_time: Number (integer) of seconds to wait before sending SIGALRM.
+    max_run_time: How long to wait before sending SIGALRM.  May be a number
+      (in seconds) or a datetime.timedelta object.
     error_message: String to wrap in the TimeoutError exception on timeout.
   """
-  max_run_time = int(max_run_time)
-  if max_run_time <= 0:
-    raise ValueError("max_run_time must be greater than zero")
+  max_run_time = int(Timedelta(max_run_time).total_seconds())
 
   # pylint: disable=W0613
   def kill_us(sig_num, frame):
@@ -79,11 +92,10 @@ def FatalTimeout(max_run_time):
   manager.
 
   Args:
-    max_run_time: a positive integer.
+    max_run_time: How long to wait.  May be a number (in seconds) or a
+      datetime.timedelta object.
   """
-  max_run_time = int(max_run_time)
-  if max_run_time <= 0:
-    raise ValueError("max_run_time must be greater than zero")
+  max_run_time = int(Timedelta(max_run_time).total_seconds())
 
   # pylint: disable=W0613
   def kill_us(sig_num, frame):
@@ -196,12 +208,13 @@ def WaitForSuccess(retry_check, func, timeout, period=1, side_effect_func=None,
       the only argument.  If |func| should be retried |retry_check| should
       return True.
     func: The function to run to test for a value.
-    timeout: The maximum amount of time to wait, in integer seconds.
-    period: Integer number of seconds between calls to |func|.
+    timeout: The maximum amount of time to wait.  May be a number (in seconds)
+      or a datetime.timedelta object.
+    period: How long between calls to |func|.  May be a number (in seconds) or
+      a datetime.timedelta object.
     side_effect_func: Optional function to be called between polls of func,
-                      typically to output logging messages. The remaining
-                      time in minutes will be passed as the first arg to
-                      |side_effect_func|.
+      typically to output logging messages. The remaining time will be passed
+      as a datetime.timedelta object.
     func_args: Optional list of positional arguments to be passed to |func|.
     func_kwargs: Optional dictionary of keyword arguments to be passed to
                  |func|.
@@ -216,31 +229,33 @@ def WaitForSuccess(retry_check, func, timeout, period=1, side_effect_func=None,
   Raises:
     TimeoutError when the timeout is exceeded.
   """
-  assert period >= 0
+  timeout = Timedelta(timeout, zero_ok=True)
+  period = Timedelta(period, zero_ok=True)
+  fallback_timeout = Timedelta(fallback_timeout)
   func_args = func_args or []
   func_kwargs = func_kwargs or {}
 
-  timeout_end = time.time() + timeout
+  end = datetime.datetime.now() + timeout
 
   # Use a sigalarm after an extra delay, in case a function we call is
   # blocking for some reason. This should NOT be considered reliable.
   with Timeout(timeout + fallback_timeout):
     while True:
-      period_start = time.time()
-      period_end = period_start + period
-
+      # Guarantee we always run at least once.
       value = func(*func_args, **func_kwargs)
       if not retry_check(value):
         return value
 
+      # Run the user's callback func if available.
       if side_effect_func:
-        # The remaining time may be negative. Add 0.5 minutes to
-        # offset it so we don't return a negative value.
-        side_effect_func((timeout_end - time.time()) / 60 + 0.5)
+        delta = end - datetime.datetime.now()
+        if delta.total_seconds() < 0:
+          delta = datetime.timedelta(seconds=0)
+        side_effect_func(delta)
 
-      time_remaining = min(timeout_end, period_end) - time.time()
-      if time_remaining > 0:
-        time.sleep(time_remaining)
+      # If we're just going to sleep past the timeout period, abort now.
+      delta = end - datetime.datetime.now()
+      if delta <= period:
+        raise TimeoutError('Timed out after %s' % timeout)
 
-      if time.time() >= timeout_end:
-        raise TimeoutError('Timed out after %d seconds' % timeout)
+      time.sleep(period.total_seconds())

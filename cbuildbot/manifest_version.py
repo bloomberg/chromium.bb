@@ -671,8 +671,8 @@ class BuildSpecsManager(object):
       else:
         return 'Builds completed.'
 
-    def _PrintRemainingTime(minutes_left):
-      logging.info('%d more minutes until timeout...', minutes_left)
+    def _PrintRemainingTime(remaining):
+      logging.info('%s until timeout...', remaining)
 
     # Check for build completion until all builders report in.
     try:

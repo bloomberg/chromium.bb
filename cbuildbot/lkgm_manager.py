@@ -474,9 +474,9 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       elif self.dry_run and self.latest:
         return self.latest
 
-    def _PrintRemainingTime(minutes_left):
-      logging.info('Found nothing new to build, will keep trying for %d more'
-                   ' minutes.', minutes_left)
+    def _PrintRemainingTime(remaining):
+      logging.info('Found nothing new to build, will keep trying for %s',
+                   remaining)
       logging.info('If this is a PFQ, then you should have forced the master'
                    ', which runs cbuildbot_master')
 

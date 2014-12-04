@@ -136,6 +136,36 @@ class TestWaitFors(cros_test_lib.TestCase):
     self.assertEquals(1, self.GetTryCount())
     self.assertEquals(0, self.GetTrySeconds())
 
+  def testWaitForCallback(self):
+    """Verify side_effect_func works."""
+    side_effect_called = [False]
+    def _SideEffect(remaining):
+      self.assertTrue(isinstance(remaining, datetime.timedelta))
+      side_effect_called[0] = True
+    self.assertEquals(1, self._TestWaitForSuccess(
+        1, 10, period=0.1, side_effect_func=_SideEffect))
+    self.assertTrue(side_effect_called[0])
+
+  def testWaitForCallbackSleepsLong(self):
+    """Verify a long running side effect doesn't call time.sleep(<negative>)."""
+    side_effect_called = [False]
+    def _SideEffect(_remaining):
+      time.sleep(0.3)
+      side_effect_called[0] = True
+    self.assertRaises(timeout_util.TimeoutError, self._TestWaitForSuccess,
+                      10, 0, period=0.1, side_effect_func=_SideEffect)
+    self.assertTrue(side_effect_called[0])
+
+  def testWaitForCallbackAfterTimeout(self):
+    """If side_effect is called after the timeout, remaining should be zero."""
+    side_effect_called = [False]
+    def _SideEffect(remaining):
+      self.assertGreaterEqual(remaining.total_seconds(), 0)
+      side_effect_called[0] = True
+    self.assertRaises(timeout_util.TimeoutError, self._TestWaitForSuccess,
+                      10, 0, period=0.1, side_effect_func=_SideEffect)
+    self.assertTrue(side_effect_called[0])
+
 
 if __name__ == '__main__':
   cros_test_lib.main()

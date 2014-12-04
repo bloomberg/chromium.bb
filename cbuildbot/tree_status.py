@@ -137,9 +137,8 @@ def WaitForTreeStatus(status_url=None, period=1, timeout=1, throttled_ok=False):
 
   timeout = max(timeout, 1)
 
-  def _LogMessage(minutes_left):
-    logging.info('Waiting for the tree to %s (%d minutes left)...', verb,
-                 minutes_left)
+  def _LogMessage(remaining):
+    logging.info('Waiting for the tree to %s (%s left)...', verb, remaining)
 
   def _get_status():
     return _GetStatus(status_url)
