@@ -23,10 +23,11 @@ namespace content {
 static const int kDocumentMainThreadId = 0;
 
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
-    int process_id, int provider_id,
+    int render_process_id, int render_frame_id, int provider_id,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerDispatcherHost* dispatcher_host)
-    : process_id_(process_id),
+    : render_process_id_(render_process_id),
+      render_frame_id_(render_frame_id),
       provider_id_(provider_id),
       context_(context),
       dispatcher_host_(dispatcher_host),
@@ -95,7 +96,7 @@ bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
 
   ServiceWorkerVersionInfo info = live_version->GetInfo();
   if (info.running_status != ServiceWorkerVersion::STARTING ||
-      info.process_id != process_id_) {
+      info.process_id != render_process_id_) {
     // If we aren't trying to start this version in our process
     // something is amiss.
     return false;
@@ -234,7 +235,7 @@ void ServiceWorkerProviderHost::IncreaseProcessReference(
     const GURL& pattern) {
   if (context_ && context_->process_manager()) {
     context_->process_manager()->AddProcessReferenceToPattern(
-        pattern, process_id_);
+        pattern, render_process_id_);
   }
 }
 
@@ -242,7 +243,7 @@ void ServiceWorkerProviderHost::DecreaseProcessReference(
     const GURL& pattern) {
   if (context_ && context_->process_manager()) {
     context_->process_manager()->RemoveProcessReferenceFromPattern(
-        pattern, process_id_);
+        pattern, render_process_id_);
   }
 }
 

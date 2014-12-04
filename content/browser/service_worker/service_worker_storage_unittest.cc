@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "ipc/ipc_message.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -861,6 +862,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
       registration_.get(), base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
   scoped_ptr<ServiceWorkerProviderHost> host(
       new ServiceWorkerProviderHost(33 /* dummy render process id */,
+                                    MSG_ROUTING_NONE,
                                     1 /* dummy provider_id */,
                                     context_->AsWeakPtr(),
                                     NULL));
@@ -913,6 +915,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
       registration_.get(), base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
   scoped_ptr<ServiceWorkerProviderHost> host(
       new ServiceWorkerProviderHost(33 /* dummy render process id */,
+                                    MSG_ROUTING_NONE,
                                     1 /* dummy provider_id */,
                                     context_->AsWeakPtr(),
                                     NULL));
@@ -1010,6 +1013,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
       registration_.get(), base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
   scoped_ptr<ServiceWorkerProviderHost> host(
       new ServiceWorkerProviderHost(33 /* dummy render process id */,
+                                    MSG_ROUTING_NONE,
                                     1 /* dummy provider_id */,
                                     context_->AsWeakPtr(),
                                     NULL));

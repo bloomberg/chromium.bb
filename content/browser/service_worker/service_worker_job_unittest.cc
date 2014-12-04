@@ -796,6 +796,7 @@ TEST_F(ServiceWorkerJobTest,
 
   scoped_ptr<ServiceWorkerProviderHost> host(
       new ServiceWorkerProviderHost(33 /* dummy render process id */,
+                                    MSG_ROUTING_NONE /* render_frame_id */,
                                     1 /* dummy provider_id */,
                                     context()->AsWeakPtr(),
                                     NULL));
@@ -1180,6 +1181,7 @@ TEST_F(ServiceWorkerJobTest, Update_UninstallingRegistration) {
   // Add a controllee and queue an unregister to force the uninstalling state.
   scoped_ptr<ServiceWorkerProviderHost> host(
       new ServiceWorkerProviderHost(33 /* dummy render_process id */,
+                                    MSG_ROUTING_NONE /* render_frame_id */,
                                     1 /* dummy provider_id */,
                                     helper_->context()->AsWeakPtr(),
                                     NULL));

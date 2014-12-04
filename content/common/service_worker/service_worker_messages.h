@@ -138,8 +138,11 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_PostMessageToWorker,
 
 // Informs the browser of a new ServiceWorkerProvider in the child process,
 // |provider_id| is unique within its child process.
-IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderCreated,
-                     int /* provider_id */)
+// |render_frame_id| identifies the frame associated with the provider, it will
+// it will be MSG_ROUTING_NONE if the context is a worker instead of a document.
+IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_ProviderCreated,
+                     int /* provider_id */,
+                     int /* render_frame_id */)
 
 // Informs the browser of a ServiceWorkerProvider being destroyed.
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderDestroyed,

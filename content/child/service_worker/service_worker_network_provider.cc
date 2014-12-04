@@ -35,13 +35,13 @@ ServiceWorkerNetworkProvider* ServiceWorkerNetworkProvider::FromDocumentState(
       datasource_userdata->GetUserData(&kUserDataKey));
 }
 
-ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider()
+ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(int render_frame_id)
     : provider_id_(GetNextProviderId()),
       context_(new ServiceWorkerProviderContext(provider_id_)) {
   if (!ChildThread::current())
     return;  // May be null in some tests.
   ChildThread::current()->Send(
-      new ServiceWorkerHostMsg_ProviderCreated(provider_id_));
+      new ServiceWorkerHostMsg_ProviderCreated(provider_id_, render_frame_id));
 }
 
 ServiceWorkerNetworkProvider::~ServiceWorkerNetworkProvider() {

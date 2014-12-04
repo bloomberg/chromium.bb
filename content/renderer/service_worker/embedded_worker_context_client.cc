@@ -343,7 +343,7 @@ EmbeddedWorkerContextClient::createServiceWorkerNetworkProvider(
   // Create a content::ServiceWorkerNetworkProvider for this data source so
   // we can observe its requests.
   scoped_ptr<ServiceWorkerNetworkProvider> provider(
-      new ServiceWorkerNetworkProvider());
+      new ServiceWorkerNetworkProvider(MSG_ROUTING_NONE));
 
   // Tell the network provider about which version to load.
   provider->SetServiceWorkerVersionId(service_worker_version_id_);

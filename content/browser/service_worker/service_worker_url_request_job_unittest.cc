@@ -86,7 +86,7 @@ storage::BlobProtocolHandler* CreateMockBlobProtocolHandler(
   // The FileSystemContext and MessageLoopProxy are not actually used but a
   // MessageLoopProxy is needed to avoid a DCHECK in BlobURLRequestJob ctor.
   return new storage::BlobProtocolHandler(
-      blob_storage_context, NULL, base::MessageLoopProxy::current().get());
+      blob_storage_context, nullptr, base::MessageLoopProxy::current().get());
 }
 
 }  // namespace
@@ -118,7 +118,11 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
 
     scoped_ptr<ServiceWorkerProviderHost> provider_host(
         new ServiceWorkerProviderHost(
-            kProcessID, kProviderID, helper_->context()->AsWeakPtr(), NULL));
+            kProcessID,
+            MSG_ROUTING_NONE,
+            kProviderID,
+            helper_->context()->AsWeakPtr(),
+            nullptr));
     provider_host->AssociateRegistration(registration_.get());
     registration_->SetActiveVersion(version_.get());
 
@@ -142,8 +146,8 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
   }
 
   void TearDown() override {
-    version_ = NULL;
-    registration_ = NULL;
+    version_ = nullptr;
+    registration_ = nullptr;
     helper_.reset();
   }
 
@@ -154,7 +158,7 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
         GURL("http://example.com/foo.html"),
         net::DEFAULT_PRIORITY,
         &url_request_delegate_,
-        NULL);
+        nullptr);
 
     request_->set_method("GET");
     request_->Start();

@@ -387,6 +387,7 @@ TEST_F(ServiceWorkerVersionTest, ScheduleStopWorker) {
   // The timer should not be running if a controllee is added.
   scoped_ptr<ServiceWorkerProviderHost> host(
       new ServiceWorkerProviderHost(33 /* dummy render process id */,
+                                    MSG_ROUTING_NONE /* render_frame_id */,
                                     1 /* dummy provider_id */,
                                     helper_->context()->AsWeakPtr(),
                                     NULL));

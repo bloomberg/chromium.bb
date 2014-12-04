@@ -45,13 +45,14 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     : public NON_EXPORTED_BASE(ServiceWorkerRegistration::Listener),
       public base::SupportsWeakPtr<ServiceWorkerProviderHost> {
  public:
-  ServiceWorkerProviderHost(int process_id,
+  ServiceWorkerProviderHost(int render_process_id,
+                            int render_frame_id,
                             int provider_id,
                             base::WeakPtr<ServiceWorkerContextCore> context,
                             ServiceWorkerDispatcherHost* dispatcher_host);
   virtual ~ServiceWorkerProviderHost();
 
-  int process_id() const { return process_id_; }
+  int process_id() const { return render_process_id_; }
   int provider_id() const { return provider_id_; }
 
   bool IsHostToRunningServiceWorker() {
@@ -155,7 +156,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void IncreaseProcessReference(const GURL& pattern);
   void DecreaseProcessReference(const GURL& pattern);
 
-  const int process_id_;
+  const int render_process_id_;
+  const int render_frame_id_;
   const int provider_id_;
   GURL document_url_;
   GURL topmost_frame_url_;

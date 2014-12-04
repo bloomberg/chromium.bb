@@ -50,7 +50,11 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
 
     // An empty host.
     scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
-        kMockRenderProcessId, kMockProviderId, context()->AsWeakPtr(), NULL));
+        kMockRenderProcessId,
+        MSG_ROUTING_NONE,
+        kMockProviderId,
+        context()->AsWeakPtr(),
+        nullptr));
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(host.Pass());
 
@@ -68,8 +72,8 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
   }
 
   void TearDown() override {
-    version_ = NULL;
-    registration_ = NULL;
+    version_ = nullptr;
+    registration_ = nullptr;
     helper_.reset();
   }
 
@@ -84,7 +88,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
                               ResourceType resource_type) {
     const GURL kDocUrl(url);
     scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
-        kDocUrl, net::DEFAULT_PRIORITY, &url_request_delegate_, NULL);
+        kDocUrl, net::DEFAULT_PRIORITY, &url_request_delegate_, nullptr);
     request->set_method(method);
     ServiceWorkerRequestHandler::InitializeHandler(
         request.get(),
@@ -98,8 +102,8 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         resource_type,
         REQUEST_CONTEXT_TYPE_HYPERLINK,
         REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
-        NULL);
-    return ServiceWorkerRequestHandler::GetHandler(request.get()) != NULL;
+        nullptr);
+    return ServiceWorkerRequestHandler::GetHandler(request.get()) != nullptr;
   }
 
  protected:
