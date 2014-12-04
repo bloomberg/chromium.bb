@@ -48902,6 +48902,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-604814313" label="enable-pinch"/>
   <int value="-601384286" label="disable-contextual-search"/>
   <int value="-579192400" label="disable-input-view"/>
+  <int value="-567920515" label="disable-experimental-hotwording"/>
   <int value="-563980787" label="disable-webrtc"/>
   <int value="-562274241" label="enable-extension-action-redesign"/>
   <int value="-536289234" label="ssl-interstitial-v2-colorful"/>

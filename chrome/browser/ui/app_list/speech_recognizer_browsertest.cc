@@ -59,10 +59,6 @@ class AppListSpeechRecognizerBrowserTest : public InProcessBrowserTest {
         browser()->profile(), NULL));
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableExperimentalHotwording);
-  }
-
   void TearDownOnMainThread() override {
     // This puts stuff on the IO loop which needs to be executed.
     test_contents_.reset();

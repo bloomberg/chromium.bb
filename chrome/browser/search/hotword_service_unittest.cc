@@ -95,9 +95,9 @@ class HotwordServiceTest :
 
   void SetUp() override {
     extension_id_ = GetParam();
-    if (extension_id_ == extension_misc::kHotwordSharedModuleId) {
+    if (extension_id_ == extension_misc::kHotwordExtensionId) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kEnableExperimentalHotwording);
+          switches::kDisableExperimentalHotwording);
     }
 
     extensions::ExtensionServiceTestBase::SetUp();

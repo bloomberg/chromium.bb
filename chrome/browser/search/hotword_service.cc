@@ -275,7 +275,7 @@ bool HotwordService::IsExperimentalHotwordingEnabled() {
   }
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kEnableExperimentalHotwording);
+  return !command_line->HasSwitch(switches::kDisableExperimentalHotwording);
 }
 
 #if defined(OS_CHROMEOS)

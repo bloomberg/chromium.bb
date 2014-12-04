@@ -1892,11 +1892,11 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "enable-experimental-hotwording",
-    IDS_FLAGS_ENABLE_EXPERIMENTAL_HOTWORDING_NAME,
-    IDS_FLAGS_ENABLE_EXPERIMENTAL_HOTWORDING_DESCRIPTION,
+    "disable-experimental-hotwording",
+    IDS_FLAGS_DISABLE_EXPERIMENTAL_HOTWORDING_NAME,
+    IDS_FLAGS_DISABLE_EXPERIMENTAL_HOTWORDING_DESCRIPTION,
     kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableExperimentalHotwording)
+    SINGLE_VALUE_TYPE(switches::kDisableExperimentalHotwording)
   },
   {
     "enable-hotword-hardware",

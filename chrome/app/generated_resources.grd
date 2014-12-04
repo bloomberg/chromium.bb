@@ -15140,11 +15140,11 @@ Do you accept?
       </message>
 
     <!-- Built-in hotword detection display strings -->
-    <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_HOTWORDING_NAME" desc="Name of about:flags option for hotword detection.">
-      Enable version 2 'Ok Google' hotword detection features.
+    <message name="IDS_FLAGS_DISABLE_EXPERIMENTAL_HOTWORDING_NAME" desc="Name of about:flags option for hotword detection.">
+      Disable version 2 'Ok Google' hotword detection features.
     </message>
-    <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_HOTWORDING_DESCRIPTION" desc="Description of about:flags option for hotword detection.">
-      Enables the newest version of 'Ok Google' hotword detection, such as using the built-in extension. The hotword extension from the Chrome Web Store will no longer be used.
+    <message name="IDS_FLAGS_DISABLE_EXPERIMENTAL_HOTWORDING_DESCRIPTION" desc="Description of about:flags option for hotword detection.">
+      Disables the newest version of 'Ok Google' hotword detection, such as using the built-in extension. The hotword extension from the Chrome Web Store will be used instead.
     </message>
 
     <!-- Built-in hotword detection display strings -->

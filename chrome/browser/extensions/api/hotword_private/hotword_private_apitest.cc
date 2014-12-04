@@ -270,8 +270,8 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, AlwaysOnEnabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, ExperimentalHotwordEnabled) {
-  // Disabled by default.
-  ExtensionTestMessageListener listener("experimentalHotwordEnabled: false",
+  // Enabled by default.
+  ExtensionTestMessageListener listener("experimentalHotwordEnabled: true",
                                         false);
   ASSERT_TRUE(RunComponentExtensionTest("experimentalHotwordEnabled"))
       << message_;
@@ -280,8 +280,6 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, ExperimentalHotwordEnabled) {
 
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest,
                        ExperimentalHotwordEnabled_Enabled) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalHotwording);
   ExtensionTestMessageListener listener("experimentalHotwordEnabled: true",
                                         false);
   ASSERT_TRUE(RunComponentExtensionTest("experimentalHotwordEnabled"))

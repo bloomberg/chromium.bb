@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/extension.h"
@@ -34,6 +35,9 @@ class HotwordBrowserTest : public ExtensionBrowserTest {
     // extension.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kForceFieldTrials, "VoiceTrigger/Install/");
+    // This test is only valid with version 1 of hotwording.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableExperimentalHotwording);
     // Load the hotword_helper extension.
     ComponentLoader::EnableBackgroundExtensionsForTesting();
 
