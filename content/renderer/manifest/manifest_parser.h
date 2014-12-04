@@ -43,6 +43,13 @@ class CONTENT_EXPORT ManifestParser {
     NoTrim
   };
 
+  // Helper function to parse booleans present on a given |dictionary| in a
+  // given field identified by its |key|.
+  // Returns the parsed boolean if any, or |default_value| if parsing failed.
+  bool ParseBoolean(const base::DictionaryValue& dictionary,
+                    const std::string& key,
+                    bool default_value);
+
   // Helper function to parse strings present on a given |dictionary| in a given
   // field identified by its |key|.
   // Returns the parsed string if any, a null string if the parsing failed.
@@ -122,6 +129,11 @@ class CONTENT_EXPORT ManifestParser {
   // Returns the parsed string if any, a null string if the parsing failed.
   base::NullableString16 ParseGCMSenderID(
       const base::DictionaryValue& dictionary);
+
+  // Parses the 'gcm_user_visible_only' field of the manifest.
+  // This is a proprietary extension of the Web Manifest specification.
+  // Returns true iff the string could be parsed as the boolean true.
+  bool ParseGCMUserVisibleOnly(const base::DictionaryValue& dictionary);
 
   const base::StringPiece& data_;
   const GURL& manifest_url_;

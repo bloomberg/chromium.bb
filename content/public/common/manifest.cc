@@ -18,7 +18,8 @@ Manifest::Icon::~Icon() {
 
 Manifest::Manifest()
     : display(DISPLAY_MODE_UNSPECIFIED),
-      orientation(blink::WebScreenOrientationLockDefault) {
+      orientation(blink::WebScreenOrientationLockDefault),
+      gcm_user_visible_only(false) {
 }
 
 Manifest::~Manifest() {
@@ -31,7 +32,8 @@ bool Manifest::IsEmpty() const {
          display == DISPLAY_MODE_UNSPECIFIED &&
          orientation == blink::WebScreenOrientationLockDefault &&
          icons.empty() &&
-         gcm_sender_id.is_null();
+         gcm_sender_id.is_null() &&
+         !gcm_user_visible_only;
 }
 
 } // namespace content

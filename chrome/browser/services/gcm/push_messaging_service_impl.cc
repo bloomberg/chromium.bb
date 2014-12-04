@@ -229,7 +229,7 @@ void PushMessagingServiceImpl::RegisterFromDocument(
     const std::string& sender_id,
     int renderer_id,
     int render_frame_id,
-    bool user_gesture,
+    bool user_visible_only,
     const content::PushMessagingService::RegisterCallback& callback) {
   if (!gcm_profile_service_->driver()) {
     NOTREACHED() << "There is no GCMDriver. Has GCMProfileService shut down?";
@@ -282,8 +282,13 @@ void PushMessagingServiceImpl::RegisterFromDocument(
     return;
   }
 
+  // TODO(miguelg): Consider the value of |user_visible_only| when making
+  // the permission request.
+  // TODO(mlamouri): Move requesting Push permission over to using Mojo, and
+  // re-introduce the ability of |user_gesture| when bubbles require this.
+  // https://crbug.com/423770.
   permission_context->RequestPermission(
-      web_contents, id, embedding_origin, user_gesture,
+      web_contents, id, embedding_origin, true /* user_gesture */,
       base::Bind(&PushMessagingServiceImpl::DidRequestPermission,
                  weak_factory_.GetWeakPtr(), application_id, sender_id,
                  callback));

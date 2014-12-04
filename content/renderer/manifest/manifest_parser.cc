@@ -128,6 +128,7 @@ void ManifestParser::Parse() {
   manifest_.orientation = ParseOrientation(*dictionary);
   manifest_.icons = ParseIcons(*dictionary);
   manifest_.gcm_sender_id = ParseGCMSenderID(*dictionary);
+  manifest_.gcm_user_visible_only = ParseGCMUserVisibleOnly(*dictionary);
 
   ManifestUmaUtil::ParseSucceeded(manifest_);
 }
@@ -142,6 +143,22 @@ const std::vector<std::string>& ManifestParser::errors() const {
 
 bool ManifestParser::failed() const {
   return failed_;
+}
+
+bool ManifestParser::ParseBoolean(const base::DictionaryValue& dictionary,
+                                  const std::string& key,
+                                  bool default_value) {
+  if (!dictionary.HasKey(key))
+    return default_value;
+
+  bool value;
+  if (!dictionary.GetBoolean(key, &value)) {
+    errors_.push_back(GetErrorPrefix() +
+                      "property '" + key + "' ignored, type boolean expected.");
+    return default_value;
+  }
+
+  return value;
 }
 
 base::NullableString16 ManifestParser::ParseString(
@@ -320,6 +337,11 @@ std::vector<Manifest::Icon> ManifestParser::ParseIcons(
 base::NullableString16 ManifestParser::ParseGCMSenderID(
     const base::DictionaryValue& dictionary)  {
   return ParseString(dictionary, "gcm_sender_id", Trim);
+}
+
+bool ManifestParser::ParseGCMUserVisibleOnly(
+    const base::DictionaryValue& dictionary) {
+  return ParseBoolean(dictionary, "gcm_user_visible_only", false);
 }
 
 } // namespace content

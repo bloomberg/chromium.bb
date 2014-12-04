@@ -14,7 +14,6 @@
 #include "third_party/WebKit/public/platform/WebPushRegistration.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerProvider.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "url/gurl.h"
 
 using blink::WebString;
@@ -76,7 +75,7 @@ void PushMessagingDispatcher::DoRegister(
       manifest.gcm_sender_id.is_null()
           ? std::string()
           : base::UTF16ToUTF8(manifest.gcm_sender_id.string()),
-      blink::WebUserGestureIndicator::isProcessingUserGesture(),
+      manifest.gcm_user_visible_only,
       service_worker_provider_id));
 }
 

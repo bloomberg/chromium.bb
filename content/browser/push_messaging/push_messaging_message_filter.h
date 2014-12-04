@@ -35,7 +35,7 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void OnRegisterFromDocument(int render_frame_id,
                               int request_id,
                               const std::string& sender_id,
-                              bool user_gesture,
+                              bool user_visible_only,
                               int service_worker_provider_id);
 
   void OnRegisterFromWorker(int request_id,
@@ -53,7 +53,7 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void RegisterFromDocumentOnUI(int render_frame_id,
                                 int request_id,
                                 const std::string& sender_id,
-                                bool user_gesture,
+                                bool user_visible_only,
                                 const GURL& requesting_origin,
                                 int64 service_worker_registration_id);
 

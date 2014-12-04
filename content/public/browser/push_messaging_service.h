@@ -38,7 +38,7 @@ class CONTENT_EXPORT PushMessagingService {
                                     const std::string& sender_id,
                                     int renderer_id,
                                     int render_frame_id,
-                                    bool user_gesture,
+                                    bool user_visible_only,
                                     const RegisterCallback& callback) = 0;
 
   // Register the given |sender_id| with the push messaging service. The frame

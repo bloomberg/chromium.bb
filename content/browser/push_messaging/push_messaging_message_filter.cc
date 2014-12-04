@@ -62,7 +62,7 @@ void PushMessagingMessageFilter::OnRegisterFromDocument(
     int render_frame_id,
     int request_id,
     const std::string& sender_id,
-    bool user_gesture,
+    bool user_visible_only,
     int service_worker_provider_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(mvanouwerkerk): Validate arguments?
@@ -81,10 +81,13 @@ void PushMessagingMessageFilter::OnRegisterFromDocument(
   // TODO(mvanouwerkerk): Persist sender id in Service Worker storage.
   // https://crbug.com/437298
 
+  // TODO(peter): Persist |user_visible_only| in Service Worker storage.
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PushMessagingMessageFilter::RegisterFromDocumentOnUI,
-                 this, render_frame_id, request_id, sender_id, user_gesture,
+                 this, render_frame_id, request_id, sender_id,
+                 user_visible_only,
                  service_worker_host->active_version()->scope().GetOrigin(),
                  service_worker_host->active_version()->registration_id()));
 }
@@ -159,7 +162,7 @@ void PushMessagingMessageFilter::RegisterFromDocumentOnUI(
     int render_frame_id,
     int request_id,
     const std::string& sender_id,
-    bool user_gesture,
+    bool user_visible_only,
     const GURL& requesting_origin,
     int64 service_worker_registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -173,7 +176,7 @@ void PushMessagingMessageFilter::RegisterFromDocumentOnUI(
   }
   service()->RegisterFromDocument(
       requesting_origin, service_worker_registration_id, sender_id,
-      render_process_id_, render_frame_id, user_gesture,
+      render_process_id_, render_frame_id, user_visible_only,
       base::Bind(&PushMessagingMessageFilter::DidRegisterFromDocument,
                  weak_factory_ui_to_ui_.GetWeakPtr(),
                  render_frame_id, request_id));

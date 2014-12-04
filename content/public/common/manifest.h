@@ -87,6 +87,11 @@ struct CONTENT_EXPORT Manifest {
   // Null if parsing failed or the field was not present.
   base::NullableString16 gcm_sender_id;
 
+  // This is a proprietary extension of the web Manifest, double-check that it
+  // is okay to use this entry.
+  // False if parsing failed or the field was not present.
+  bool gcm_user_visible_only;
+
   // Maximum length for all the strings inside the Manifest when it is sent over
   // IPC. The renderer process should truncate the strings before sending the
   // Manifest and the browser process must do the same when receiving it.

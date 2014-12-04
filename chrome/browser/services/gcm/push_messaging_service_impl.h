@@ -57,7 +57,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const std::string& sender_id,
       int renderer_id,
       int render_frame_id,
-      bool user_gesture,
+      bool user_visible_only,
       const content::PushMessagingService::RegisterCallback& callback) override;
   void RegisterFromWorker(
       const GURL& requesting_origin,
