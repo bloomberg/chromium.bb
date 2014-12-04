@@ -1448,5 +1448,3 @@ crbug.com/436436 fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Pass Fa
 crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Pass Slow Timeout ]
 
 crbug.com/438676 [ SnowLeopard Debug ] fast/dom/52776.html [ Crash ]
-
-crbug.com/381919 [ Mac ] virtual/textblob/fast/text/textIteratorNilRenderer.html [ NeedsRebaseline ]
