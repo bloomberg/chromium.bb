@@ -557,13 +557,14 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    package, old_intent = intent.action.rsplit('.', 1)
-    if intent.extras is None:
-      args = []
-    else:
-      args = ['-e %s%s' % (k, ' "%s"' % v if v else '')
-              for k, v in intent.extras.items() if len(k) > 0]
-    self.old_interface.BroadcastIntent(package, old_intent, *args)
+    cmd = ['am', 'broadcast', '-a', intent.action]
+    if intent.extras:
+      for key, value in intent.extras.iteritems():
+        if key:
+          cmd.extend(['-e', key])
+          if value:
+            cmd.append(str(value))
+    self.RunShellCommand(cmd, check_return=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GoHome(self, timeout=None, retries=None):

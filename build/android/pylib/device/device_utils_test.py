@@ -943,33 +943,30 @@ class DeviceUtilsStartInstrumentationTest(DeviceUtilsNewImplTest):
           finish=False, raw=False, extras={'foo': 'Foo', 'bar': 'Bar'})
 
 
-class DeviceUtilsBroadcastIntentTest(DeviceUtilsOldImplTest):
+class DeviceUtilsBroadcastIntentTest(DeviceUtilsNewImplTest):
 
   def testBroadcastIntent_noExtras(self):
     test_intent = intent.Intent(action='test.package.with.an.INTENT')
-    with self.assertCalls(
-        "adb -s 0123456789abcdef shell 'am broadcast "
-            "-a test.package.with.an.INTENT '",
+    with self.assertCall(
+        self.call.adb.Shell('am broadcast -a test.package.with.an.INTENT'),
         'Broadcasting: Intent { act=test.package.with.an.INTENT } '):
       self.device.BroadcastIntent(test_intent)
 
   def testBroadcastIntent_withExtra(self):
     test_intent = intent.Intent(action='test.package.with.an.INTENT',
-                                extras={'foo': 'bar'})
-    with self.assertCalls(
-        "adb -s 0123456789abcdef shell 'am broadcast "
-            "-a test.package.with.an.INTENT "
-            "-e foo \"bar\"'",
+                                extras={'foo': 'bar value'})
+    with self.assertCall(
+        self.call.adb.Shell(
+            "am broadcast -a test.package.with.an.INTENT -e foo 'bar value'"),
         'Broadcasting: Intent { act=test.package.with.an.INTENT } '):
       self.device.BroadcastIntent(test_intent)
 
   def testBroadcastIntent_withExtra_noValue(self):
     test_intent = intent.Intent(action='test.package.with.an.INTENT',
                                 extras={'foo': None})
-    with self.assertCalls(
-        "adb -s 0123456789abcdef shell 'am broadcast "
-            "-a test.package.with.an.INTENT "
-            "-e foo'",
+    with self.assertCall(
+        self.call.adb.Shell(
+            'am broadcast -a test.package.with.an.INTENT -e foo'),
         'Broadcasting: Intent { act=test.package.with.an.INTENT } '):
       self.device.BroadcastIntent(test_intent)
 
