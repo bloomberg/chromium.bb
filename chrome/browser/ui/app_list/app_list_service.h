@@ -77,7 +77,8 @@ class AppListService {
   // profile to local prefs as the default app list profile.
   virtual void ShowForProfile(Profile* requested_profile) = 0;
 
-  // Shows the app list, and jump to voice search. Used by always-on hotwording.
+  // Shows the app list, and switches to voice search. Used by always-on
+  // hotwording.
   virtual void ShowForVoiceSearch(Profile* profile) = 0;
 
   // Shows the app list, and reveals the page that contains |extension_id|. This
@@ -88,6 +89,9 @@ class AppListService {
   virtual void ShowForAppInstall(Profile* profile,
                                  const std::string& extension_id,
                                  bool start_discovery_tracking) = 0;
+
+  // Shows the app list, and switches to the custom launcher page.
+  virtual void ShowForCustomLauncherPage(Profile* profile) = 0;
 
   // Dismiss the app list.
   virtual void DismissAppList() = 0;

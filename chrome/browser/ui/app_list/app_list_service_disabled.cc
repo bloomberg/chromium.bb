@@ -21,33 +21,33 @@ class AppListServiceDisabled : public AppListService {
   AppListServiceDisabled() {}
 
   // AppListService overrides:
-  virtual void SetAppListNextPaintCallback(void (*callback)()) override {}
-  virtual void HandleFirstRun() override {}
-  virtual void Init(Profile* initial_profile) override {}
+  void SetAppListNextPaintCallback(void (*callback)()) override {}
+  void HandleFirstRun() override {}
+  void Init(Profile* initial_profile) override {}
 
-  virtual base::FilePath GetProfilePath(
-      const base::FilePath& user_data_dir) override {
+  base::FilePath GetProfilePath(const base::FilePath& user_data_dir) override {
     return base::FilePath();
   }
-  virtual void SetProfilePath(const base::FilePath& profile_path) override {}
+  void SetProfilePath(const base::FilePath& profile_path) override {}
 
-  virtual void Show() override {}
-  virtual void ShowForProfile(Profile* profile) override {}
-  virtual void ShowForVoiceSearch(Profile* profile) override {}
-  virtual void ShowForAppInstall(Profile* profile,
-                                 const std::string& extension_id,
-                                 bool start_discovery_tracking) override {}
-  virtual void DismissAppList() override {}
+  void Show() override {}
+  void ShowForProfile(Profile* profile) override {}
+  void ShowForVoiceSearch(Profile* profile) override {}
+  void ShowForAppInstall(Profile* profile,
+                         const std::string& extension_id,
+                         bool start_discovery_tracking) override {}
+  void DismissAppList() override {}
+  void ShowForCustomLauncherPage(Profile* profile) override {}
 
-  virtual Profile* GetCurrentAppListProfile() override { return NULL; }
-  virtual bool IsAppListVisible() const override { return false; }
-  virtual void EnableAppList(Profile* initial_profile,
-                             AppListEnableSource enable_source) override {}
-  virtual gfx::NativeWindow GetAppListWindow() override { return NULL; }
-  virtual AppListControllerDelegate* GetControllerDelegate() override {
-    return NULL;
+  Profile* GetCurrentAppListProfile() override { return nullptr; }
+  bool IsAppListVisible() const override { return false; }
+  void EnableAppList(Profile* initial_profile,
+                     AppListEnableSource enable_source) override {}
+  gfx::NativeWindow GetAppListWindow() override { return nullptr; }
+  AppListControllerDelegate* GetControllerDelegate() override {
+    return nullptr;
   }
-  virtual void CreateShortcut() override {}
+  void CreateShortcut() override {}
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceDisabled);
 };

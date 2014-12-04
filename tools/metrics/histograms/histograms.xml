@@ -45503,6 +45503,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="926" label="HOTWORDPRIVATE_GETAUDIOHISTORYENABLED"/>
   <int value="927" label="APP_CURRENTWINDOWINTERNAL_SETINTERCEPTALLKEYS"/>
   <int value="928" label="LAUNCHERPAGE_PUSHSUBPAGE"/>
+  <int value="929" label="LAUNCHERPAGE_SHOW"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

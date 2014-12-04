@@ -135,10 +135,14 @@ void ContentsView::SetDragAndDropHostOfCurrentAppList(
 }
 
 void ContentsView::SetActivePage(int page_index) {
+  SetActivePage(page_index, true);
+}
+
+void ContentsView::SetActivePage(int page_index, bool animate) {
   if (GetActivePageIndex() == page_index)
     return;
 
-  SetActivePageInternal(page_index, false);
+  SetActivePageInternal(page_index, false, animate);
 }
 
 int ContentsView::GetActivePageIndex() const {
@@ -167,12 +171,16 @@ int ContentsView::NumLauncherPages() const {
 }
 
 void ContentsView::SetActivePageInternal(int page_index,
-                                         bool show_search_results) {
+                                         bool show_search_results,
+                                         bool animate) {
   if (!show_search_results)
     page_before_search_ = page_index;
   // Start animating to the new page.
-  pagination_model_.SelectPage(page_index, true);
+  pagination_model_.SelectPage(page_index, animate);
   ActivePageChanged();
+
+  if (!animate)
+    Layout();
 }
 
 void ContentsView::ActivePageChanged() {
@@ -220,7 +228,7 @@ void ContentsView::ShowSearchResults(bool show) {
   int search_page = GetPageIndexForState(AppListModel::STATE_SEARCH_RESULTS);
   DCHECK_GE(search_page, 0);
 
-  SetActivePageInternal(show ? search_page : page_before_search_, show);
+  SetActivePageInternal(show ? search_page : page_before_search_, show, true);
 }
 
 bool ContentsView::IsShowingSearchResults() const {

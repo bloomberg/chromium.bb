@@ -26,6 +26,7 @@ class AppListServiceAsh : public AppListServiceImpl {
   // AppListService overrides:
   base::FilePath GetProfilePath(const base::FilePath& user_data_dir) override;
   void ShowForProfile(Profile* default_profile) override;
+  void ShowForCustomLauncherPage(Profile* profile) override;
   bool IsAppListVisible() const override;
   void DismissAppList() override;
   void EnableAppList(Profile* initial_profile,

@@ -71,6 +71,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // Sets the active launcher page and animates the pages into place.
   void SetActivePage(int page_index);
+  void SetActivePage(int page_index, bool animate);
 
   // The index of the currently active launcher page.
   int GetActivePageIndex() const;
@@ -144,7 +145,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
  private:
   // Sets the active launcher page, accounting for whether the change is for
   // search results.
-  void SetActivePageInternal(int page_index, bool show_search_results);
+  void SetActivePageInternal(int page_index,
+                             bool show_search_results,
+                             bool animate);
 
   // Invoked when active view is changed.
   void ActivePageChanged();

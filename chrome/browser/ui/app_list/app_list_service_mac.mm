@@ -413,6 +413,10 @@ void AppListServiceMac::DismissAppList() {
                                closing:YES];
 }
 
+void AppListServiceMac::ShowForCustomLauncherPage(Profile* profile) {
+  NOTIMPLEMENTED();
+}
+
 bool AppListServiceMac::IsAppListVisible() const {
   return [[window_controller_ window] isVisible] &&
       ![animation_controller_ isClosing];

@@ -6,6 +6,8 @@
 // Chrome Launcher with the capabilities and events they need.
 namespace launcherPage {
   callback PushSubpageCallback = void();
+  callback ShowCallback = void();
+
   interface Functions {
     // Pushes a subpage state onto a state stack for the launcher page. This
     // state will be popped when the launcher's back button is pressed,
@@ -16,6 +18,10 @@ namespace launcherPage {
     // Note: All subpages are immediately popped when the launcher is closed or
     // the launcher page is otherwise hidden.
     static void pushSubpage(optional PushSubpageCallback callback);
+
+    // Opens the launcher if it isn't currently open and shows the launcher
+    // page.
+    static void show(optional ShowCallback callback);
   };
 
   interface Events {

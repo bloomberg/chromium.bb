@@ -10,6 +10,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "ui/app_list/app_list_model.h"
+#include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/app_list_view.h"
+#include "ui/app_list/views/contents_view.h"
 
 // static
 AppListServiceAsh* AppListServiceAsh::GetInstance() {
@@ -34,6 +38,28 @@ void AppListServiceAsh::ShowForProfile(Profile* default_profile) {
   // one the ash Shell is currently using.
   // TODO(ananta): Handle profile changes correctly when !defined(OS_CHROMEOS).
   ash::Shell::GetInstance()->ShowAppList(NULL);
+}
+
+void AppListServiceAsh::ShowForCustomLauncherPage(Profile* profile) {
+  bool app_list_was_open = true;
+  app_list::AppListView* app_list_view =
+      ash::Shell::GetInstance()->GetAppListView();
+  if (!app_list_view) {
+    // TODO(calamity): This may cause the app list to show briefly before the
+    // state change. If this becomes an issue, add the ability to ash::Shell to
+    // load the app list without showing it.
+    ash::Shell::GetInstance()->ShowAppList(NULL);
+    app_list_was_open = false;
+    app_list_view = ash::Shell::GetInstance()->GetAppListView();
+    DCHECK(app_list_view);
+  }
+
+  app_list::ContentsView* contents_view =
+      app_list_view->app_list_main_view()->contents_view();
+  contents_view->SetActivePage(
+      contents_view->GetPageIndexForState(
+          app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE),
+      app_list_was_open  /* animate */);
 }
 
 bool AppListServiceAsh::IsAppListVisible() const {

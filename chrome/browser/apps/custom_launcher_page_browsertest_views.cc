@@ -6,10 +6,13 @@
 
 #include "ash/shell.h"
 #include "base/command_line.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_service_views.h"
 #include "chrome/browser/ui/app_list/app_list_shower_views.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -17,6 +20,7 @@
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
+#include "ui/views/controls/webview/webview.h"
 
 namespace {
 
@@ -155,4 +159,53 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSubpages) {
   contents_view->Layout();
   EXPECT_TRUE(
       contents_view->IsStateActive(app_list::AppListModel::STATE_START));
+}
+
+IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
+                       LauncherPageShow) {
+  const base::string16 kLauncherPageShowScript =
+      base::ASCIIToUTF16("chrome.launcherPage.show();");
+
+  LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
+  app_list::AppListView* app_list_view = GetAppListView();
+  app_list::ContentsView* contents_view =
+      app_list_view->app_list_main_view()->contents_view();
+
+  views::WebView* custom_page_view =
+      static_cast<views::WebView*>(contents_view->custom_page_view());
+
+  content::RenderFrameHost* custom_page_frame =
+      custom_page_view->GetWebContents()->GetMainFrame();
+
+  ASSERT_TRUE(
+      contents_view->IsStateActive(app_list::AppListModel::STATE_START));
+
+  // Ensure launcherPage.show() will switch the page to the custom launcher page
+  // if the app launcher is already showing.
+  {
+    ExtensionTestMessageListener listener("onPageProgressAt1", false);
+    custom_page_frame->ExecuteJavaScript(kLauncherPageShowScript);
+
+    listener.WaitUntilSatisfied();
+    EXPECT_TRUE(contents_view->IsStateActive(
+        app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
+  }
+
+  // Ensure launcherPage.show() will show the app list if it's hidden.
+  {
+    // Close the app list immediately.
+    app_list_view->Close();
+    app_list_view->GetWidget()->Close();
+
+    ExtensionTestMessageListener listener("onPageProgressAt1", false);
+    custom_page_frame->ExecuteJavaScript(kLauncherPageShowScript);
+
+    listener.WaitUntilSatisfied();
+
+    // The app list view will have changed on ChromeOS.
+    app_list_view = GetAppListView();
+    contents_view = app_list_view->app_list_main_view()->contents_view();
+    EXPECT_TRUE(contents_view->IsStateActive(
+        app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
+  }
 }
