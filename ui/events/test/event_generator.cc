@@ -123,10 +123,11 @@ void EventGenerator::ClickLeftButton() {
 }
 
 void EventGenerator::DoubleClickLeftButton() {
+  flags_ &= ~ui::EF_IS_DOUBLE_CLICK;
+  ClickLeftButton();
   flags_ |= ui::EF_IS_DOUBLE_CLICK;
-  PressLeftButton();
-  flags_ ^= ui::EF_IS_DOUBLE_CLICK;
-  ReleaseLeftButton();
+  ClickLeftButton();
+  flags_ &= ~ui::EF_IS_DOUBLE_CLICK;
 }
 
 void EventGenerator::PressRightButton() {

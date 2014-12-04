@@ -291,7 +291,6 @@ TEST_F(DesktopScreenX11Test, DoubleClickHeaderMaximizes) {
           GetAcceleratedWidget());
 
   ui::test::EventGenerator generator(window);
-  generator.ClickLeftButton();
   generator.DoubleClickLeftButton();
   RunPendingMessages();
   EXPECT_TRUE(rwh->IsMaximized());
@@ -320,7 +319,9 @@ TEST_F(DesktopScreenX11Test, DoubleClickTwoDifferentTargetsDoesntMaximizes) {
   native_widget->set_window_component(HTCLIENT);
   generator.ClickLeftButton();
   native_widget->set_window_component(HTCAPTION);
-  generator.DoubleClickLeftButton();
+  generator.set_flags(ui::EF_IS_DOUBLE_CLICK);
+  generator.ClickLeftButton();
+  generator.set_flags(ui::EF_NONE);
   RunPendingMessages();
   EXPECT_FALSE(rwh->IsMaximized());
 
@@ -350,7 +351,9 @@ TEST_F(DesktopScreenX11Test, RightClickDuringDoubleClickDoesntMaximize) {
   generator.PressRightButton();
   generator.ReleaseRightButton();
   EXPECT_FALSE(rwh->IsMaximized());
-  generator.DoubleClickLeftButton();
+  generator.set_flags(ui::EF_IS_DOUBLE_CLICK);
+  generator.ClickLeftButton();
+  generator.set_flags(ui::EF_NONE);
   RunPendingMessages();
   EXPECT_FALSE(rwh->IsMaximized());
 
