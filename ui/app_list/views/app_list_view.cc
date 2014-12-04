@@ -585,11 +585,13 @@ void AppListView::Layout() {
   // GetDefaultSearchBoxBounds() returns the bounds in |contents_view|'s
   // coordinate, therefore convert it to this coordinate.
   ContentsView* contents_view = app_list_main_view_->contents_view();
-  gfx::Rect search_box_bounds = contents_view->GetSearchBoxBoundsForState(
-      contents_view->GetActiveState());
+  // TODO(mgiuca): Position the search box in the center of the page, when
+  // in STATE_START.
+  gfx::RectF search_box_bounds = contents_view->GetDefaultSearchBoxBounds();
+  ConvertRectToTarget(contents_view, this, &search_box_bounds);
   if (search_box_widget_) {
     search_box_widget_->SetBounds(
-        contents_view->ConvertRectToWidget(search_box_bounds));
+        ConvertRectToWidget(gfx::ToNearestRect(search_box_bounds)));
   }
 
   if (speech_view_) {
