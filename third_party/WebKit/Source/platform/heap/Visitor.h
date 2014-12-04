@@ -55,7 +55,7 @@
 
 namespace blink {
 
-class FinalizedHeapObjectHeader;
+class GeneralHeapObjectHeader;
 template<typename T> class GarbageCollectedFinalized;
 class HeapObjectHeader;
 template<typename T> class Member;
@@ -402,11 +402,11 @@ public:
     template<typename T> void markNoTracing(const T* pointer) { mark(pointer, reinterpret_cast<TraceCallback>(0)); }
     void markNoTracing(const void* pointer) { mark(pointer, reinterpret_cast<TraceCallback>(0)); }
     void markNoTracing(HeapObjectHeader* header) { mark(header, reinterpret_cast<TraceCallback>(0)); }
-    void markNoTracing(FinalizedHeapObjectHeader* header) { mark(header, reinterpret_cast<TraceCallback>(0)); }
+    void markNoTracing(GeneralHeapObjectHeader* header) { mark(header, reinterpret_cast<TraceCallback>(0)); }
 
     // Used to mark objects during conservative scanning.
     virtual void mark(HeapObjectHeader*, TraceCallback) = 0;
-    virtual void mark(FinalizedHeapObjectHeader*, TraceCallback) = 0;
+    virtual void mark(GeneralHeapObjectHeader*, TraceCallback) = 0;
 
     // Used to delay the marking of objects until the usual marking
     // including emphemeron iteration is done. This is used to delay

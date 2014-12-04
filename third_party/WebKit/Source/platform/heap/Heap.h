@@ -170,7 +170,7 @@ PLATFORM_EXPORT inline BaseHeapPage* pageFromObject(const void* object)
 //
 // The layout of a large heap object is as follows:
 //
-// | BaseHeapPage | next pointer | FinalizedHeapObjectHeader or HeapObjectHeader | payload |
+// | BaseHeapPage | next pointer | GeneralHeapObjectHeader or HeapObjectHeader | payload |
 template<typename Header>
 class LargeObject final : public BaseHeapPage {
 public:
@@ -309,14 +309,14 @@ protected:
 };
 
 // Our heap object layout is layered with the HeapObjectHeader closest
-// to the payload, this can be wrapped in a FinalizedObjectHeader if the
+// to the payload, this can be wrapped in a GeneralHeapObjectHeader if the
 // object is on the GeneralHeap and not on a specific TypedHeap.
 // Finally if the object is a large object (> blinkPageSize/2) then it is
 // wrapped with a LargeObjectHeader.
 //
 // Object memory layout:
-// [ LargeObjectHeader | ] [ FinalizedObjectHeader | ] HeapObjectHeader | payload
-// The [ ] notation denotes that the LargeObjectHeader and the FinalizedObjectHeader
+// [ LargeObjectHeader | ] [ GeneralHeapObjectHeader | ] HeapObjectHeader | payload
+// The [ ] notation denotes that the LargeObjectHeader and the GeneralHeapObjectHeader
 // are independently optional.
 class PLATFORM_EXPORT HeapObjectHeader : public BasicObjectHeader {
 public:
@@ -375,10 +375,10 @@ const size_t objectHeaderSize = sizeof(HeapObjectHeader);
 
 // Each object on the GeneralHeap needs to carry a pointer to its
 // own GCInfo structure for tracing and potential finalization.
-class PLATFORM_EXPORT FinalizedHeapObjectHeader : public HeapObjectHeader {
+class PLATFORM_EXPORT GeneralHeapObjectHeader : public HeapObjectHeader {
 public:
     NO_SANITIZE_ADDRESS
-    FinalizedHeapObjectHeader(size_t encodedSize, const GCInfo* gcInfo)
+    GeneralHeapObjectHeader(size_t encodedSize, const GCInfo* gcInfo)
         : HeapObjectHeader(encodedSize)
         , m_gcInfo(gcInfo)
     {
@@ -398,7 +398,7 @@ public:
     NO_SANITIZE_ADDRESS
     inline bool hasFinalizer() { return m_gcInfo->hasFinalizer(); }
 
-    static FinalizedHeapObjectHeader* fromPayload(const void*);
+    static GeneralHeapObjectHeader* fromPayload(const void*);
 
     NO_SANITIZE_ADDRESS
     bool hasVTable() { return m_gcInfo->hasVTable(); }
@@ -407,7 +407,7 @@ private:
     const GCInfo* m_gcInfo;
 };
 
-const size_t finalizedHeaderSize = sizeof(FinalizedHeapObjectHeader);
+const size_t finalizedHeaderSize = sizeof(GeneralHeapObjectHeader);
 
 class FreeListEntry : public HeapObjectHeader {
 public:
@@ -482,7 +482,7 @@ private:
 // of the objects will have the same GCInfo pointer and therefore that
 // pointer can be stored in the HeapPage instead of in the header of
 // each object. In that case objects have only a HeapObjectHeader and
-// not a FinalizedHeapObjectHeader saving a word per object.
+// not a GeneralHeapObjectHeader saving a word per object.
 template<typename Header>
 class HeapPage final : public BaseHeapPage {
 public:
@@ -1253,12 +1253,12 @@ Address HeapObjectHeader::payloadEnd()
     return reinterpret_cast<Address>(this) + size();
 }
 
-Address FinalizedHeapObjectHeader::payload()
+Address GeneralHeapObjectHeader::payload()
 {
     return reinterpret_cast<Address>(this) + finalizedHeaderSize;
 }
 
-size_t FinalizedHeapObjectHeader::payloadSize()
+size_t GeneralHeapObjectHeader::payloadSize()
 {
     return size() - finalizedHeaderSize;
 }
@@ -1334,7 +1334,7 @@ Address Heap::reallocate(void* previous, size_t size)
     int heapIndex = HeapTypeTrait<T>::index(gcInfo->hasFinalizer(), size);
     // FIXME: Currently only supports raw allocation on the
     // GeneralHeap. Hence we assume the header is a
-    // FinalizedHeapObjectHeader.
+    // GeneralHeapObjectHeader.
     ASSERT((General1Heap <= heapIndex && heapIndex <= General4Heap)
         || (General1HeapNonFinalized <= heapIndex && heapIndex <= General4HeapNonFinalized));
     BaseHeap* heap = state->heap(heapIndex);
@@ -1343,7 +1343,7 @@ Address Heap::reallocate(void* previous, size_t size)
         // This is equivalent to malloc(size).
         return address;
     }
-    FinalizedHeapObjectHeader* previousHeader = FinalizedHeapObjectHeader::fromPayload(previous);
+    GeneralHeapObjectHeader* previousHeader = GeneralHeapObjectHeader::fromPayload(previous);
     ASSERT(!previousHeader->hasFinalizer());
     ASSERT(previousHeader->gcInfo() == gcInfo);
     size_t copySize = previousHeader->payloadSize();
@@ -1421,7 +1421,7 @@ public:
 
     static void markUsingGCInfo(Visitor* visitor, const void* buffer)
     {
-        visitor->mark(buffer, FinalizedHeapObjectHeader::fromPayload(buffer)->traceCallback());
+        visitor->mark(buffer, GeneralHeapObjectHeader::fromPayload(buffer)->traceCallback());
     }
 
     static void markNoTracing(Visitor* visitor, const void* t) { visitor->markNoTracing(t); }
@@ -2026,7 +2026,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
         COMPILE_ASSERT(!ShouldBeTraced<Traits>::value || sizeof(T) > blink::allocationGranularity || Traits::canInitializeWithMemset, HeapOverallocationCanCauseSpuriousVisits);
 
         T* array = reinterpret_cast<T*>(self);
-        blink::FinalizedHeapObjectHeader* header = blink::FinalizedHeapObjectHeader::fromPayload(self);
+        blink::GeneralHeapObjectHeader* header = blink::GeneralHeapObjectHeader::fromPayload(self);
         // Use the payload size as recorded by the heap to determine how many
         // elements to mark.
         size_t length = header->payloadSize() / sizeof(T);
@@ -2044,7 +2044,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
     static bool trace(blink::Visitor* visitor, void* self)
     {
         Value* array = reinterpret_cast<Value*>(self);
-        blink::FinalizedHeapObjectHeader* header = blink::FinalizedHeapObjectHeader::fromPayload(self);
+        blink::GeneralHeapObjectHeader* header = blink::GeneralHeapObjectHeader::fromPayload(self);
         size_t length = header->payloadSize() / sizeof(Value);
         for (size_t i = 0; i < length; i++) {
             if (!HashTableHelper<Value, typename Table::ExtractorType, typename Table::KeyTraitsType>::isEmptyOrDeletedBucket(array[i]))
@@ -2066,7 +2066,7 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections, strongify, blink::Hea
     static bool trace(blink::Visitor* visitor, void* self)
     {
         Node** array = reinterpret_cast<Node**>(self);
-        blink::FinalizedHeapObjectHeader* header = blink::FinalizedHeapObjectHeader::fromPayload(self);
+        blink::GeneralHeapObjectHeader* header = blink::GeneralHeapObjectHeader::fromPayload(self);
         size_t length = header->payloadSize() / sizeof(Node*);
         for (size_t i = 0; i < length; i++) {
             if (!HashTableHelper<Node*, typename Table::ExtractorType, typename Table::KeyTraitsType>::isEmptyOrDeletedBucket(array[i])) {
@@ -2278,7 +2278,7 @@ void HeapHashTableBacking<Table>::finalize(void* pointer)
 {
     typedef typename Table::ValueType Value;
     ASSERT(Table::ValueTraits::needsDestruction);
-    FinalizedHeapObjectHeader* header = FinalizedHeapObjectHeader::fromPayload(pointer);
+    GeneralHeapObjectHeader* header = GeneralHeapObjectHeader::fromPayload(pointer);
     // Use the payload size as recorded by the heap to determine how many
     // elements to finalize.
     size_t length = header->payloadSize() / sizeof(Value);

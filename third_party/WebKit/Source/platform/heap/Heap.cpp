@@ -531,7 +531,7 @@ void HeapObjectHeader::finalize(const GCInfo* gcInfo, Address object, size_t obj
 }
 
 NO_SANITIZE_ADDRESS
-void FinalizedHeapObjectHeader::finalize()
+void GeneralHeapObjectHeader::finalize()
 {
     HeapObjectHeader::finalize(m_gcInfo, payload(), payloadSize());
 }
@@ -589,9 +589,9 @@ static bool isUninitializedMemory(void* objectPointer, size_t objectSize)
 #endif
 
 template<>
-void LargeObject<FinalizedHeapObjectHeader>::mark(Visitor* visitor)
+void LargeObject<GeneralHeapObjectHeader>::mark(Visitor* visitor)
 {
-    FinalizedHeapObjectHeader* header = heapObjectHeader();
+    GeneralHeapObjectHeader* header = heapObjectHeader();
     if (header->hasVTable() && !vTableInitialized(payload())) {
         visitor->markNoTracing(header);
         ASSERT(isUninitializedMemory(header->payload(), header->payloadSize()));
@@ -614,7 +614,7 @@ void LargeObject<HeapObjectHeader>::mark(Visitor* visitor)
 }
 
 template<>
-void LargeObject<FinalizedHeapObjectHeader>::finalize()
+void LargeObject<GeneralHeapObjectHeader>::finalize()
 {
     heapObjectHeader()->finalize();
 }
@@ -626,11 +626,11 @@ void LargeObject<HeapObjectHeader>::finalize()
     HeapObjectHeader::finalize(gcInfo(), payload(), payloadSize());
 }
 
-FinalizedHeapObjectHeader* FinalizedHeapObjectHeader::fromPayload(const void* payload)
+GeneralHeapObjectHeader* GeneralHeapObjectHeader::fromPayload(const void* payload)
 {
     Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
-    FinalizedHeapObjectHeader* header =
-        reinterpret_cast<FinalizedHeapObjectHeader*>(addr - finalizedHeaderSize);
+    GeneralHeapObjectHeader* header =
+        reinterpret_cast<GeneralHeapObjectHeader*>(addr - finalizedHeaderSize);
     return header;
 }
 
@@ -1293,9 +1293,9 @@ bool OrphanedPagePool::contains(void* object)
 #endif
 
 template<>
-void ThreadHeap<FinalizedHeapObjectHeader>::addPageToHeap(const GCInfo* gcInfo)
+void ThreadHeap<GeneralHeapObjectHeader>::addPageToHeap(const GCInfo* gcInfo)
 {
-    // When adding a page to the ThreadHeap using FinalizedHeapObjectHeaders the GCInfo on
+    // When adding a page to the ThreadHeap using GeneralHeapObjectHeaders the GCInfo on
     // the heap should be unused (ie. 0).
     allocatePage(0);
 }
@@ -1780,7 +1780,7 @@ const GCInfo* HeapPage<Header>::findGCInfo(Address address)
     if (address < payload())
         return 0;
 
-    if (gcInfo()) // for non FinalizedObjectHeader
+    if (gcInfo()) // For non GeneralHeapObjects.
         return gcInfo();
 
     Header* header = findHeaderFromAddress(address);
@@ -1844,7 +1844,7 @@ void HeapPage<Header>::poisonUnmarkedObjects()
 #endif
 
 template<>
-inline void HeapPage<FinalizedHeapObjectHeader>::finalize(FinalizedHeapObjectHeader* header)
+inline void HeapPage<GeneralHeapObjectHeader>::finalize(GeneralHeapObjectHeader* header)
 {
     header->finalize();
 }
@@ -1864,7 +1864,7 @@ inline TraceCallback HeapPage<HeapObjectHeader>::traceCallback(HeapObjectHeader*
 }
 
 template<>
-inline TraceCallback HeapPage<FinalizedHeapObjectHeader>::traceCallback(FinalizedHeapObjectHeader* header)
+inline TraceCallback HeapPage<GeneralHeapObjectHeader>::traceCallback(GeneralHeapObjectHeader* header)
 {
     return header->traceCallback();
 }
@@ -1877,7 +1877,7 @@ inline bool HeapPage<HeapObjectHeader>::hasVTable(HeapObjectHeader* header)
 }
 
 template<>
-inline bool HeapPage<FinalizedHeapObjectHeader>::hasVTable(FinalizedHeapObjectHeader* header)
+inline bool HeapPage<GeneralHeapObjectHeader>::hasVTable(GeneralHeapObjectHeader* header)
 {
     return header->hasVTable();
 }
@@ -2032,13 +2032,13 @@ public:
             Heap::pushTraceCallback(m_markingStack, const_cast<void*>(objectPointer), callback);
     }
 
-    // We need both HeapObjectHeader and FinalizedHeapObjectHeader versions to correctly find the payload.
+    // We need both HeapObjectHeader and GeneralHeapObjectHeader versions to correctly find the payload.
     virtual void mark(HeapObjectHeader* header, TraceCallback callback) override
     {
         visitHeader(header, header->payload(), callback);
     }
 
-    virtual void mark(FinalizedHeapObjectHeader* header, TraceCallback callback) override
+    virtual void mark(GeneralHeapObjectHeader* header, TraceCallback callback) override
     {
         visitHeader(header, header->payload(), callback);
     }
@@ -2047,7 +2047,7 @@ public:
     {
         if (!objectPointer)
             return;
-        FinalizedHeapObjectHeader* header = FinalizedHeapObjectHeader::fromPayload(objectPointer);
+        GeneralHeapObjectHeader* header = GeneralHeapObjectHeader::fromPayload(objectPointer);
         visitHeader(header, header->payload(), callback);
     }
 
@@ -2075,7 +2075,7 @@ public:
 
     virtual bool isMarked(const void* objectPointer) override
     {
-        return FinalizedHeapObjectHeader::fromPayload(objectPointer)->isMarked();
+        return GeneralHeapObjectHeader::fromPayload(objectPointer)->isMarked();
     }
 
     virtual bool ensureMarked(const void* objectPointer) override
@@ -2092,8 +2092,8 @@ public:
 #else
         // Inline what the above markNoTracing() call expands to,
         // so as to make sure that we do get all the benefits.
-        FinalizedHeapObjectHeader* header =
-            FinalizedHeapObjectHeader::fromPayload(objectPointer);
+        GeneralHeapObjectHeader* header =
+            GeneralHeapObjectHeader::fromPayload(objectPointer);
         if (header->isMarked())
             return false;
         header->mark();
@@ -2924,9 +2924,9 @@ void Heap::RegionTree::remove(PageMemoryRegion* region, RegionTree** context)
 }
 
 // Force template instantiations for the types that we need.
-template class HeapPage<FinalizedHeapObjectHeader>;
+template class HeapPage<GeneralHeapObjectHeader>;
 template class HeapPage<HeapObjectHeader>;
-template class ThreadHeap<FinalizedHeapObjectHeader>;
+template class ThreadHeap<GeneralHeapObjectHeader>;
 template class ThreadHeap<HeapObjectHeader>;
 
 Visitor* Heap::s_markingVisitor;

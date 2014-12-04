@@ -251,7 +251,7 @@ public:
         m_count++;
     }
 
-    virtual void mark(FinalizedHeapObjectHeader* header, TraceCallback callback) override
+    virtual void mark(GeneralHeapObjectHeader* header, TraceCallback callback) override
     {
         ASSERT(header->payload());
         m_count++;
@@ -909,7 +909,7 @@ public:
         mark(header->payload());
     }
 
-    virtual void mark(FinalizedHeapObjectHeader* header, TraceCallback callback) override
+    virtual void mark(GeneralHeapObjectHeader* header, TraceCallback callback) override
     {
         mark(header->payload());
     }
@@ -1952,7 +1952,7 @@ TEST(HeapTest, LargeHeapObjects)
             // allocating extra pages. However, the IntWrapper allocation might cause
             // the addition of a heap page.
             size_t largeObjectAllocationSize =
-                sizeof(LargeHeapObject) + sizeof(LargeObject<FinalizedHeapObjectHeader>) + sizeof(FinalizedHeapObjectHeader);
+                sizeof(LargeHeapObject) + sizeof(LargeObject<GeneralHeapObjectHeader>) + sizeof(GeneralHeapObjectHeader);
             size_t allocatedSpaceLowerBound = initialAllocatedSpace + largeObjectAllocationSize;
             size_t allocatedSpaceUpperBound = allocatedSpaceLowerBound + slack + blinkPageSize;
             EXPECT_LE(allocatedSpaceLowerBound, afterAllocation);
