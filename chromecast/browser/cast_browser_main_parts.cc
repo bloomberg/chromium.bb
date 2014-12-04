@@ -9,6 +9,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "cc/base/switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
+#include "chromecast/base/metrics/grouped_histogram.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
@@ -90,6 +91,13 @@ CastBrowserMainParts::~CastBrowserMainParts() {
 }
 
 void CastBrowserMainParts::PreMainMessageLoopStart() {
+  // GroupedHistograms needs to be initialized before any threads are created
+  // to prevent race conditions between calls to Preregister and those threads
+  // attempting to collect metrics.
+  // This call must also be before NetworkChangeNotifier, as it generates
+  // Net/DNS metrics.
+  metrics::PreregisterAllGroupedHistograms();
+
 #if defined(OS_ANDROID)
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());

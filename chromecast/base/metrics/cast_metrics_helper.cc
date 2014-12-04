@@ -11,6 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "chromecast/base/metrics/cast_histograms.h"
+#include "chromecast/base/metrics/grouped_histogram.h"
 
 namespace chromecast {
 namespace metrics {
@@ -67,6 +68,8 @@ void CastMetricsHelper::TagAppStart(const std::string& arg_app_name) {
   app_name_ = arg_app_name;
   app_start_time_ = base::TimeTicks::Now();
   new_startup_time_ = true;
+
+  TagAppStartForGroupedHistograms(app_name_);
 }
 
 void CastMetricsHelper::LogMediaPlay() {
