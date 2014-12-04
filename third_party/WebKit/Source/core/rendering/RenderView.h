@@ -160,8 +160,8 @@ public:
     double layoutViewportWidth() const;
     double layoutViewportHeight() const;
 
-    void pushLayoutState(LayoutState&);
-    void popLayoutState();
+    void pushLayoutState(LayoutState& layoutState) { m_layoutState = &layoutState; }
+    void popLayoutState() { ASSERT(m_layoutState); m_layoutState = m_layoutState->next(); }
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) override final;
 
 private:

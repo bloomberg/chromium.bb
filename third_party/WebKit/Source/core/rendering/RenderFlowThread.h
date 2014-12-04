@@ -106,10 +106,6 @@ public:
         return flowThreadPoint + columnOffset(flowThreadPoint);
     }
 
-    void pushFlowThreadLayoutState(const RenderObject&);
-    void popFlowThreadLayoutState();
-    LayoutUnit offsetFromLogicalTopOfFirstRegion(const RenderBlock*) const;
-
     // Used to estimate the maximum height of the flow thread.
     static LayoutUnit maxLogicalHeight() { return LayoutUnit::max() / 2; }
 
@@ -119,12 +115,6 @@ protected:
     void updateRegionsFlowThreadPortionRect();
 
     virtual RenderMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const = 0;
-
-    bool cachedOffsetFromLogicalTopOfFirstRegion(const RenderBox*, LayoutUnit&) const;
-    void setOffsetFromLogicalTopOfFirstRegion(const RenderBox*, LayoutUnit);
-    void clearOffsetFromLogicalTopOfFirstRegion(const RenderBox*);
-
-    const RenderBox* currentStatePusherRenderBox() const;
 
     RenderMultiColumnSetList m_multiColumnSetList;
 
@@ -149,13 +139,6 @@ protected:
         LayoutUnit m_offset;
         RenderRegion* m_result;
     };
-
-    // Stack of objects that pushed a LayoutState object on the RenderView. The
-    // objects on the stack are the ones that are curently in the process of being
-    // laid out.
-    ListHashSet<const RenderObject*> m_statePusherObjectsStack;
-    typedef HashMap<const RenderBox*, LayoutUnit> RenderBoxToOffsetMap;
-    RenderBoxToOffsetMap m_boxesToOffsetMap;
 
     MultiColumnSetIntervalTree m_multiColumnSetIntervalTree;
 

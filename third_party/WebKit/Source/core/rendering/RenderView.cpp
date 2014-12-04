@@ -831,22 +831,6 @@ void RenderView::setIsInWindow(bool isInWindow)
         m_compositor->setIsInWindow(isInWindow);
 }
 
-void RenderView::pushLayoutState(LayoutState& layoutState)
-{
-    if (RenderFlowThread* currentFlowThread = layoutState.flowThread())
-        currentFlowThread->pushFlowThreadLayoutState(layoutState.renderer());
-    m_layoutState = &layoutState;
-}
-
-void RenderView::popLayoutState()
-{
-    ASSERT(m_layoutState);
-    RenderFlowThread* currentFlowThread = m_layoutState->flowThread();
-    m_layoutState = m_layoutState->next();
-    if (currentFlowThread)
-        currentFlowThread->popFlowThreadLayoutState();
-}
-
 IntervalArena* RenderView::intervalArena()
 {
     if (!m_intervalArena)
