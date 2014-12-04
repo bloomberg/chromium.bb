@@ -30,6 +30,7 @@ test(function() {
         var encoded = new TextEncoder(encoding).encode(string);
         assert_array_equals([].slice.call(encoded), bytes);
         assert_equals(new TextDecoder(encoding).decode(new Uint8Array(bytes)), string);
+        assert_equals(new TextDecoder(encoding).decode(new Uint8Array(bytes).buffer), string);
     }
 
     // z (ASCII U+007A), cent (Latin-1 U+00A2), CJK water (BMP U+6C34),

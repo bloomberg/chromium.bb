@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// FIXME: Define this in bindings, since it's from the Web IDL spec.
+typedef (ArrayBuffer or ArrayBufferView) BufferSource;
 [
     Exposed=(Window,Worker),
     Constructor(optional DOMString label = "utf-8", optional TextDecoderOptions options),
@@ -38,5 +40,5 @@
     readonly attribute DOMString encoding;
     readonly attribute boolean fatal;
     readonly attribute boolean ignoreBOM;
-    [RaisesException, MeasureAs=TextDecoderDecode] DOMString decode(optional ArrayBufferView input, optional TextDecodeOptions options);
+    [RaisesException, MeasureAs=TextDecoderDecode] DOMString decode(optional BufferSource input, optional TextDecodeOptions options);
 };
