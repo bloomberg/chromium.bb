@@ -17,8 +17,12 @@ import find_chrome
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 CHROMIUM_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', '..', '..'))
+NACL_DIR = os.path.join(CHROMIUM_DIR, 'native_client')
+
 sys.path.append(os.path.join(CHROMIUM_DIR, 'build'))
+sys.path.append(NACL_DIR)
 import detect_host_arch
+import pynacl.platform
 
 
 # Copied from buildbot/buildbot_lib.py
@@ -82,11 +86,11 @@ def RunCommand(cmd, cwd, env):
     sys.exit(retcode)
 
 
-def RunTests(name, cmd, nacl_dir, env):
+def RunTests(name, cmd, env):
   sys.stdout.write('\n\nBuilding files needed for %s testing...\n\n' % name)
-  RunCommand(cmd + ['do_not_run_tests=1', '-j8'], nacl_dir, env)
+  RunCommand(cmd + ['do_not_run_tests=1', '-j8'], NACL_DIR, env)
   sys.stdout.write('\n\nRunning %s tests...\n\n' % name)
-  RunCommand(cmd, nacl_dir, env)
+  RunCommand(cmd, NACL_DIR, env)
 
 
 def BuildAndTest(options):
@@ -103,15 +107,19 @@ def BuildAndTest(options):
     if os.path.exists(macpython27):
       python = macpython27
 
-  script_dir = os.path.dirname(os.path.abspath(__file__))
-  src_dir = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
-  nacl_dir = os.path.join(src_dir, 'native_client')
+
+  os_name = pynacl.platform.GetOS()
+  arch_name = pynacl.platform.GetArch()
+  toolchain_dir = os.path.join(NACL_DIR, 'toolchain',
+                               '%s_%s' % (os_name, arch_name))
+  nacl_newlib_dir = os.path.join(toolchain_dir, 'nacl_%s_newlib' % arch_name)
+  nacl_glibc_dir = os.path.join(toolchain_dir, 'nacl_%s_glibc' % arch_name)
 
   # Decide platform specifics.
   if options.browser_path:
     chrome_filename = options.browser_path
   else:
-    chrome_filename = find_chrome.FindChrome(src_dir, [options.mode])
+    chrome_filename = find_chrome.FindChrome(CHROMIUM_DIR, [options.mode])
     if chrome_filename is None:
       raise Exception('Cannot find a chrome binary - specify one with '
                       '--browser_path?')
@@ -184,7 +192,7 @@ def BuildAndTest(options):
   # Clean the output of the previous build.
   # Incremental builds can get wedged in weird ways, so we're trading speed
   # for reliability.
-  shutil.rmtree(os.path.join(nacl_dir, 'scons-out'), True)
+  shutil.rmtree(os.path.join(NACL_DIR, 'scons-out'), True)
 
   # check that the HOST (not target) is 64bit
   # this is emulating what msvs_env.bat is doing
@@ -210,6 +218,8 @@ def BuildAndTest(options):
   cmd = scons + ['--verbose', '-k', 'platform=x86-%d' % bits,
       '--mode=opt-host,nacl,nacl_irt_test',
       'chrome_browser_path=%s' % chrome_filename,
+      'nacl_newlib_dir=%s' % nacl_newlib_dir,
+      'nacl_glibc_dir=%s' % nacl_glibc_dir,
   ]
   if not options.integration_bot and not options.morenacl_bot:
     cmd.append('disable_flaky_tests=1')
@@ -224,21 +234,21 @@ def BuildAndTest(options):
                options.json_build_results_output_file)
 
   # Download the toolchain(s).
-  pkg_ver_dir = os.path.join(nacl_dir, 'build', 'package_version')
+  pkg_ver_dir = os.path.join(NACL_DIR, 'build', 'package_version')
   RunCommand([python, os.path.join(pkg_ver_dir, 'package_version.py'),
               '--mode', 'nacl_core_sdk',
               '--exclude', 'pnacl_newlib',
               '--exclude', 'nacl_arm_newlib',
               'sync', '--extract'],
-             nacl_dir, os.environ)
+             NACL_DIR, os.environ)
 
   CleanTempDir()
 
   if options.enable_newlib:
-    RunTests('nacl-newlib', cmd, nacl_dir, env)
+    RunTests('nacl-newlib', cmd, env)
 
   if options.enable_glibc:
-    RunTests('nacl-glibc', cmd + ['--nacl_glibc'], nacl_dir, env)
+    RunTests('nacl-glibc', cmd + ['--nacl_glibc'], env)
 
 
 def MakeCommandLineParser():
