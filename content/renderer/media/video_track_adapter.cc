@@ -30,8 +30,10 @@ const float kNormalFrameTimeoutInFrameIntervals = 25.0f;
 
 // Min delta time between two frames allowed without being dropped if a max
 // frame rate is specified.
-const base::TimeDelta kMinTimeBetweenFrames =
-    base::TimeDelta::FromMilliseconds(5);
+const double kMinTimeInMsBetweenFrames = 5;
+// If the delta between two frames is bigger than this, we will consider it to
+// be invalid and reset the fps calculation.
+const double kMaxTimeInMsBetweenFrames = 1000;
 
 // Empty method used for keeping a reference to the original media::VideoFrame
 // in VideoFrameResolutionAdapter::DeliverFrame if cropping is needed.
@@ -136,7 +138,7 @@ VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
       frame_rate_(MediaStreamVideoSource::kDefaultFrameRate),
       last_time_stamp_(base::TimeDelta::Max()),
       max_frame_rate_(max_frame_rate),
-      keep_frame_counter_(0.0f) {
+      keep_frame_counter_(0.0) {
   DCHECK(renderer_task_runner_.get());
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK_GE(max_aspect_ratio_, min_aspect_ratio_);
@@ -260,13 +262,19 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
     return false;
   }
 
-  if (last_time_stamp_.is_max()) {  // First received frame.
+  const double delta_ms =
+      (frame->timestamp() - last_time_stamp_).InMillisecondsF();
+
+  // Check if the time since the last frame is completely off.
+  if (delta_ms < 0 || delta_ms > kMaxTimeInMsBetweenFrames) {
+    // Reset |last_time_stamp_| and fps calculation.
     last_time_stamp_ = frame->timestamp();
+    frame_rate_ = MediaStreamVideoSource::kDefaultFrameRate;
+    keep_frame_counter_ = 0.0;
     return false;
   }
 
-  base::TimeDelta delta = frame->timestamp() - last_time_stamp_;
-  if (delta < kMinTimeBetweenFrames) {
+  if (delta_ms < kMinTimeInMsBetweenFrames) {
     // We have seen video frames being delivered from camera devices back to
     // back. The simple AR filter for frame rate calculation is too short to
     // handle that. http://crbug/394315
@@ -276,13 +284,13 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
     // Most likely the back to back problem is caused by software and not the
     // actual camera.
     DVLOG(3) << "Drop frame since delta time since previous frame is "
-             << delta.InMilliseconds() << "ms.";
+             << delta_ms << "ms.";
     return true;
   }
   last_time_stamp_ = frame->timestamp();
   // Calculate the frame rate using a simple AR filter.
   // Use a simple filter with 0.1 weight of the current sample.
-  frame_rate_ = 100 / delta.InMillisecondsF() + 0.9 * frame_rate_;
+  frame_rate_ = 100 / delta_ms + 0.9 * frame_rate_;
 
   // Prefer to not drop frames.
   if (max_frame_rate_ + 0.5f > frame_rate_)
