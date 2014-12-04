@@ -49,8 +49,13 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   // TODO(dtseng): Set better states.
   out_node_data->state = 0;
   out_node_data->location = window_->bounds();
-  out_node_data->AddStringAttribute(
-      ui::AX_ATTR_NAME, base::UTF16ToUTF8(window_->title()));
+
+  // Root windows currently have a non readable name (e.g. Display1234...);
+  // ignore them unless the window is the only node in the tree.
+  if (window_->parent() || window_->children().size() == 0) {
+    out_node_data->AddStringAttribute(ui::AX_ATTR_NAME,
+                                      base::UTF16ToUTF8(window_->title()));
+  }
 }
 
 int32 AXWindowObjWrapper::GetID() {

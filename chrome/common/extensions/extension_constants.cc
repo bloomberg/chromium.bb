@@ -66,8 +66,6 @@ const char kChromeVoxExtensionId[] =
 const char kChromeVoxExtensionPath[] = "chromeos/chromevox";
 const char kChromeVoxManifestFilename[] = "manifest.json";
 const char kChromeVoxGuestManifestFilename[] = "manifest_guest.json";
-const char kChromeVoxNextManifestFilename[] = "manifest_next.json";
-const char kChromeVoxNextGuestManifestFilename[] = "manifest_next_guest.json";
 const char kBrailleImeExtensionId[] =
     "jddehjeebkoimngcbdkaahpobgicbffp";
 const char kBrailleImeExtensionPath[] =

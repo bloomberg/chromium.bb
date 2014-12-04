@@ -122,21 +122,14 @@ cvox.ChromeVoxBackground.prototype.init = function() {
       });
 
   var self = this;
-  if (chrome.commandLinePrivate) {
-    chrome.commandLinePrivate.hasSwitch('enable-chromevox-next',
-        goog.bind(function(result) {
-            if (result) {
-              return;
-            }
-            // Inject the content script into all running tabs.
-            chrome.windows.getAll({'populate': true}, function(windows) {
-              for (var i = 0; i < windows.length; i++) {
-                var tabs = windows[i].tabs;
-                self.injectChromeVoxIntoTabs(tabs);
-              }
-            });
-        }, this));
-  }
+
+  // Inject the content script into all running tabs.
+  chrome.windows.getAll({'populate': true}, function(windows) {
+    for (var i = 0; i < windows.length; i++) {
+      var tabs = windows[i].tabs;
+      self.injectChromeVoxIntoTabs(tabs);
+    }
+  });
 
   if (localStorage['active'] == 'false') {
     // Warn the user when the browser first starts if ChromeVox is inactive.

@@ -5,15 +5,28 @@
 #include "chrome/browser/ui/ash/accessibility/ax_root_obj_wrapper.h"
 
 #include "ash/shell.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/window.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 
-AXRootObjWrapper::AXRootObjWrapper(int32 id) : id_(id) {
+AXRootObjWrapper::AXRootObjWrapper(int32 id)
+    : id_(id), alert_window_(new aura::Window(NULL)) {
 }
 
-AXRootObjWrapper::~AXRootObjWrapper() {}
+AXRootObjWrapper::~AXRootObjWrapper() {
+  if (alert_window_) {
+    delete alert_window_;
+    alert_window_ = NULL;
+  }
+}
+
+views::AXAuraObjWrapper* AXRootObjWrapper::GetAlertForText(
+    const std::string& text) {
+  alert_window_->SetTitle(base::UTF8ToUTF16((text)));
+  return views::AXAuraObjCache::GetInstance()->GetOrCreate(alert_window_);
+}
 
 bool AXRootObjWrapper::HasChild(views::AXAuraObjWrapper* child) {
   std::vector<views::AXAuraObjWrapper*> children;
@@ -37,6 +50,9 @@ void AXRootObjWrapper::GetChildren(
     out_children->push_back(
         views::AXAuraObjCache::GetInstance()->GetOrCreate(children[i]));
   }
+
+  out_children->push_back(
+      views::AXAuraObjCache::GetInstance()->GetOrCreate(alert_window_));
 }
 
 void AXRootObjWrapper::Serialize(ui::AXNodeData* out_node_data) {

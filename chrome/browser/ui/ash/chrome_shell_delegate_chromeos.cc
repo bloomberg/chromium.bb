@@ -23,6 +23,7 @@
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
+#include "chrome/browser/ui/ash/accessibility/automation_manager_ash.h"
 #include "chrome/browser/ui/ash/chrome_new_window_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/media_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
@@ -182,6 +183,8 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
               profile, l10n_util::GetStringUTF8(IDS_A11Y_ALERT_WINDOW_NEEDED));
           SendControlAccessibilityNotification(
               ui::AX_EVENT_ALERT, &event);
+          AutomationManagerAsh::GetInstance()->HandleAlert(
+              profile, l10n_util::GetStringUTF8(IDS_A11Y_ALERT_WINDOW_NEEDED));
           break;
         }
         case ui::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED: {
@@ -190,6 +193,9 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
                   IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED));
           SendControlAccessibilityNotification(
               ui::AX_EVENT_ALERT, &event);
+          AutomationManagerAsh::GetInstance()->HandleAlert(
+              profile, l10n_util::GetStringUTF8(
+                           IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED));
           break;
         }
         case ui::A11Y_ALERT_NONE:

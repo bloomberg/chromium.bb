@@ -27,20 +27,6 @@ ChromeVoxNextE2ETest.prototype = {
   testGenCppIncludes: function() {
     ChromeVoxE2ETest.prototype.testGenCppIncludes.call(this);
     GEN('#include "base/command_line.h"');
-    GEN('#include "chromeos/chromeos_switches.h"');
-  },
-
-  /**
-   * This method is called without |this| bound to an instance of
-   * ChromeVoxNextE2ETest.
-   * @override
-   */
-  testGenPreamble: function() {
-    GEN_BLOCK(function() {/*!
-      CommandLine* command_line = CommandLine::ForCurrentProcess();
-      command_line->AppendSwitch(chromeos::switches::kEnableChromeVoxNext);
-    */});
-    ChromeVoxE2ETest.prototype.testGenPreamble.call(this);
   },
 
   runWithAutomation: function(doc, callback) {
