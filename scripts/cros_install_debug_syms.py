@@ -20,6 +20,7 @@ import os
 import pickle
 import sys
 import tempfile
+import urlparse
 
 from chromite.lib import binpkg
 from chromite.lib import cache
@@ -180,17 +181,22 @@ def ListBinhost(binhost, binhost_cache=None):
   key = binhost.split('://')[-1]
   key = key.rstrip('/').split('/')
 
+  should_cache = True
+
   if binhost_cache and binhost_cache.Lookup(key).Exists():
     with open(binhost_cache.Lookup(key).path) as f:
       return pickle.load(f)
 
   pkgindex = binpkg.GrabRemotePackageIndex(binhost)
   if pkgindex is None:
-    binhost = binhost.replace('file://', '')
+    binhost = urlparse.urlsplit(binhost).path
     if not os.path.isdir(binhost):
       raise ValueError('unrecognized binhost format for %s. Supported formats: '
                        'http, gs or local path.' % binhost)
     pkgindex = binpkg.GrabLocalPackageIndex(binhost)
+    # If the package index is local, do not cache as the package index may
+    # change later (for example when reusing packages from other board).
+    should_cache = False
 
   symbols = {}
   for p in pkgindex.packages:
@@ -198,7 +204,7 @@ def ListBinhost(binhost, binhost_cache=None):
       path = p.get('PATH', os.path.join(binhost, p['CPV'] + '.tbz2'))
       symbols[p['CPV']] = path.replace('.tbz2', '.debug.tbz2')
 
-  if binhost_cache:
+  if binhost_cache and should_cache:
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
       pickle.dump(symbols, temp_file)
       temp_file.file.close()
