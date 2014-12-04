@@ -5,7 +5,6 @@
 import("//mojo/public/mojo_application.gni")
 
 # Things needed by multiple targets, like renderer_impl and renderer_app.
-# GYP version: media/media.gyp:media_mojo_lib
 source_set("lib") {
   deps = [
     "//base",
@@ -50,7 +49,6 @@ source_set("renderer_impl_lib") {
 }
 
 # mojo media::Renderer application.
-# GYP version: media/media.gyp:mojo_media_renderer_app
 mojo_native_application("renderer_app") {
   output_name = "mojo_media_renderer_app"
 
@@ -99,8 +97,6 @@ test("mojo_media_lib_unittests") {
 #   out/Debug/mojo_shell mojo:mojo_media_renderer_apptest
 # You may need to get "mojo_shell" from a mojo checkout and symlink all required
 # libraries.
-# TODO(msw): Fix GYP build for ApplicationTestBase so that we can add a GYP
-# version of this test.
 mojo_native_application("media_renderer_apptest") {
   testonly = true
   output_name = "mojo_media_renderer_apptest"

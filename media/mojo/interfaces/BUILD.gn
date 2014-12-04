@@ -4,7 +4,6 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-# GYP version: media/media.gyp:mojo_media_bindings
 mojom("interfaces") {
   sources = [
     "media_types.mojom",
