@@ -82,6 +82,7 @@ webkit.org/b/90488 [ Debug ] http/tests/inspector-enabled/ [ Slow ]
 webkit.org/b/90488 [ Debug ] inspector-protocol/ [ Slow ]
 webkit.org/b/90488 [ Debug ] virtual/deferred/inspector/ [ Slow ]
 webkit.org/b/90488 [ Debug ] virtual/implsidepainting/inspector/ [ Slow ]
+webkit.org/b/90488 inspector/sources/debugger/frameworks-dom-xhr-event-breakpoints.html [ Slow ]
 crbug.com/243492 http/tests/inspector-enabled/injected-script-discard.html [ Slow ]
 crbug.com/246190 [ Release ] http/tests/inspector/indexeddb/ [ Slow ]
 crbug.com/247466 [ Release ] inspector/sources/debugger/dom-breakpoints.html [ Slow ]
@@ -102,6 +103,7 @@ crbug.com/420008 [ Release ] virtual/implsidepainting/inspector/tracing [ Slow ]
 crbug.com/420008 [ Release ] virtual/deferred/inspector/tracing [ Slow ]
 crbug.com/420008 [ Release ] inspector/editor/text-editor-word-jumps.html [ Slow ]
 crbug.com/420008 [ Release ] http/tests/inspector/console-xhr-logging.html [ Slow ]
+
 # inspector tests below are slow on LinuxASAN
 crbug.com/247466 [ Linux Release ] inspector/sources/debugger/debugger-activation-crash2.html [ Slow ]
 
