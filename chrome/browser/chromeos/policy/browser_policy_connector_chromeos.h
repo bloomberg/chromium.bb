@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
@@ -27,7 +28,6 @@ class AppPackUpdater;
 class ConsumerManagementService;
 class DeviceCloudPolicyInitializer;
 class DeviceCloudPolicyInvalidator;
-class DeviceCloudPolicyManagerChromeOS;
 class DeviceLocalAccountPolicyService;
 class DeviceManagementService;
 class EnterpriseInstallAttributes;
@@ -36,7 +36,9 @@ class ProxyPolicyProvider;
 class ServerBackedStateKeysBroker;
 
 // Extends ChromeBrowserPolicyConnector with the setup specific to ChromeOS.
-class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
+class BrowserPolicyConnectorChromeOS
+    : public ChromeBrowserPolicyConnector,
+      public DeviceCloudPolicyManagerChromeOS::Observer {
  public:
   BrowserPolicyConnectorChromeOS();
 
@@ -130,11 +132,12 @@ class BrowserPolicyConnectorChromeOS : public ChromeBrowserPolicyConnector {
   // Registers device refresh rate pref.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // DeviceCloudPolicyManagerChromeOS::Observer:
+  void OnDeviceCloudPolicyManagerConnected() override;
+
  private:
   // Set the timezone as soon as the policies are available.
   void SetTimezoneIfPolicyAvailable();
-
-  void OnDeviceCloudPolicyManagerConnected();
 
   // Components of the device cloud policy implementation.
   scoped_ptr<ServerBackedStateKeysBroker> state_keys_broker_;

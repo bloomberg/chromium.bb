@@ -84,7 +84,8 @@ class TestingDeviceCloudPolicyManagerChromeOS
 };
 
 class DeviceCloudPolicyManagerChromeOSTest
-    : public chromeos::DeviceSettingsTestBase {
+    : public chromeos::DeviceSettingsTestBase,
+      public DeviceCloudPolicyManagerChromeOS::Observer {
  protected:
   DeviceCloudPolicyManagerChromeOSTest()
       : fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
@@ -99,11 +100,11 @@ class DeviceCloudPolicyManagerChromeOSTest
     fake_session_manager_client_.set_server_backed_state_keys(state_keys);
   }
 
-  virtual ~DeviceCloudPolicyManagerChromeOSTest() {
+  ~DeviceCloudPolicyManagerChromeOSTest() override {
     chromeos::system::StatisticsProvider::SetTestProvider(NULL);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     DeviceSettingsTestBase::SetUp();
     dbus_setter_->SetCryptohomeClient(
         scoped_ptr<chromeos::CryptohomeClient>(fake_cryptohome_client_));
@@ -139,7 +140,8 @@ class DeviceCloudPolicyManagerChromeOSTest
                                    "\"refresh_token\":\"refreshToken4Test\"}";
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
+    manager_->RemoveDeviceCloudPolicyManagerObserver(this);
     manager_->Shutdown();
     if (initializer_)
       initializer_->Shutdown();
@@ -164,6 +166,7 @@ class DeviceCloudPolicyManagerChromeOSTest
 
   void ConnectManager() {
     manager_->Initialize(&local_state_);
+    manager_->AddDeviceCloudPolicyManagerObserver(this);
     initializer_.reset(new DeviceCloudPolicyInitializer(
         &local_state_,
         &device_management_service_,
@@ -173,8 +176,7 @@ class DeviceCloudPolicyManagerChromeOSTest
         &state_keys_broker_,
         store_,
         manager_.get(),
-        &device_settings_service_,
-        base::Bind(&base::DoNothing)));
+        &device_settings_service_));
     initializer_->Init();
   }
 
@@ -188,6 +190,8 @@ class DeviceCloudPolicyManagerChromeOSTest
              NULL);
     EXPECT_TRUE(manager_->policies().Equals(bundle));
   }
+
+  MOCK_METHOD0(OnDeviceCloudPolicyManagerConnected, void());
 
   scoped_ptr<EnterpriseInstallAttributes> install_attributes_;
 
@@ -316,6 +320,21 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, ConsumerDevice) {
 
   manager_->Shutdown();
   EXPECT_TRUE(manager_->policies().Equals(bundle));
+}
+
+TEST_F(DeviceCloudPolicyManagerChromeOSTest, ObserverIsNotifiedOnConnected) {
+  LockDevice();
+  FlushDeviceSettings();
+
+  MockDeviceManagementJob* policy_fetch_job = nullptr;
+  EXPECT_CALL(device_management_service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
+      .WillOnce(device_management_service_.CreateAsyncJob(&policy_fetch_job));
+  EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _));
+  EXPECT_CALL(*this, OnDeviceCloudPolicyManagerConnected());
+
+  ConnectManager();
+  base::RunLoop().RunUntilIdle();
 }
 
 class DeviceCloudPolicyManagerChromeOSEnrollmentTest

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
@@ -54,8 +55,7 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
     ServerBackedStateKeysBroker* state_keys_broker,
     DeviceCloudPolicyStoreChromeOS* device_store,
     DeviceCloudPolicyManagerChromeOS* manager,
-    chromeos::DeviceSettingsService* device_settings_service,
-    const base::Closure& on_connected_callback)
+    chromeos::DeviceSettingsService* device_settings_service)
     : local_state_(local_state),
       enterprise_service_(enterprise_service),
       consumer_service_(consumer_service),
@@ -65,7 +65,6 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
       device_store_(device_store),
       manager_(manager),
       device_settings_service_(device_settings_service),
-      on_connected_callback_(on_connected_callback),
       is_initialized_(false) {
 }
 
@@ -239,11 +238,6 @@ void DeviceCloudPolicyInitializer::StartConnection(
     scoped_ptr<CloudPolicyClient> client) {
   if (!manager_->core()->service())
     manager_->StartConnection(client.Pass(), install_attributes_);
-
-  if (!on_connected_callback_.is_null()) {
-    on_connected_callback_.Run();
-    on_connected_callback_.Reset();
-  }
 }
 
 }  // namespace policy

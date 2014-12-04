@@ -126,6 +126,16 @@ void DeviceCloudPolicyManagerChromeOS::Initialize(PrefService* local_state) {
   InitializeRequisition();
 }
 
+void DeviceCloudPolicyManagerChromeOS::AddDeviceCloudPolicyManagerObserver(
+    Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DeviceCloudPolicyManagerChromeOS::RemoveDeviceCloudPolicyManagerObserver(
+    Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 std::string DeviceCloudPolicyManagerChromeOS::GetDeviceRequisition() const {
   std::string requisition;
   const PrefService::Preference* pref = local_state_->FindPreference(
@@ -233,6 +243,8 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
                                 prefs::kDevicePolicyRefreshRate);
   attestation_policy_observer_.reset(
       new chromeos::attestation::AttestationPolicyObserver(client()));
+
+  NotifyConnected();
 }
 
 void DeviceCloudPolicyManagerChromeOS::OnStateKeysUpdated() {
@@ -270,6 +282,11 @@ void DeviceCloudPolicyManagerChromeOS::InitializeRequisition() {
       }
     }
   }
+}
+
+void DeviceCloudPolicyManagerChromeOS::NotifyConnected() {
+  FOR_EACH_OBSERVER(
+      Observer, observers_, OnDeviceCloudPolicyManagerConnected());
 }
 
 }  // namespace policy

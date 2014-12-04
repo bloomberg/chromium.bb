@@ -8,7 +8,7 @@
 #include <bitset>
 #include <string>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -46,8 +46,6 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
 
   // |background_task_runner| is used to execute long-running background tasks
   // that may involve file I/O.
-  // |on_connected_callback| is invoked after the device cloud policy manager
-  // is connected.
   DeviceCloudPolicyInitializer(
       PrefService* local_state,
       DeviceManagementService* enterprise_service,
@@ -57,8 +55,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
       ServerBackedStateKeysBroker* state_keys_broker,
       DeviceCloudPolicyStoreChromeOS* device_store,
       DeviceCloudPolicyManagerChromeOS* manager,
-      chromeos::DeviceSettingsService* device_settings_service,
-      const base::Closure& on_connected_callback);
+      chromeos::DeviceSettingsService* device_settings_service);
 
   virtual ~DeviceCloudPolicyInitializer();
 
@@ -120,7 +117,6 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   DeviceCloudPolicyStoreChromeOS* device_store_;
   DeviceCloudPolicyManagerChromeOS* manager_;
   chromeos::DeviceSettingsService* device_settings_service_;
-  base::Closure on_connected_callback_;
   bool is_initialized_;
 
   // Non-NULL if there is an enrollment operation pending.
