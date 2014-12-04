@@ -79,7 +79,7 @@ int StyleRuleKeyframes::findKeyframeIndex(const String& key) const
     else
         percentageString = key;
 
-    for (unsigned i = 0; i < m_keyframes.size(); ++i) {
+    for (size_t i = m_keyframes.size(); i--; ) {
         if (m_keyframes[i]->keyText() == percentageString)
             return i;
     }

@@ -1,0 +1,21 @@
+<!doctype html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<style>
+  @keyframes anim {
+    0% { left: 0px; }
+    0% { right: 0px; }
+    100% { left: 100px; }
+  }
+</style>
+<script>
+  test(function() {
+    var rules = document.styleSheets[0].rules || document.styleSheets[0].cssRules;
+    for (var i = 0; i < rules.length; i++) {
+      if (rules[i].type == CSSRule.KEYFRAMES_RULE) {
+        assert_equals(rules[i].findRule('0%').cssText, '0% { right: 0px; }');
+        assert_equals(rules[i].findRule('100%').cssText, '100% { left: 100px; }');
+      }
+    }
+  }, 'Check CSSKeyframesRule.findRule returns the last matching keyframe rule');
+</script>
