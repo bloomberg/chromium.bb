@@ -298,7 +298,7 @@ private:
     // Oilpan: This Vector holds connection references. We must call
     // AudioNode::makeConnection when we add an AudioNode to this, and must call
     // AudioNode::breakConnection() when we remove an AudioNode from this.
-    Member<HeapVector<Member<AudioNode>>> m_referencedNodes;
+    HeapVector<Member<AudioNode>> m_referencedNodes;
 
     // Stop rendering the audio graph.
     void stopRendering();
@@ -373,6 +373,7 @@ private:
     unsigned m_connectionCount;
 
     // Graph locking.
+    bool m_didInitializeContextGraphMutex;
     RecursiveMutex m_contextGraphMutex;
     volatile ThreadIdentifier m_audioThread;
 
