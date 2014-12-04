@@ -12,8 +12,8 @@
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "courgette/courgette.h"
 #include "courgette/disassembler_elf_32_arm.h"
 #include "courgette/streams.h"
@@ -292,17 +292,14 @@ enum FieldSelect {
 };
 
 static FieldSelect GetFieldSelect() {
-#if 1
   // TODO(sra): Use better configuration.
   scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string s;
   env->GetVar("A_FIELDS", &s);
-  if (!s.empty()) {
-    return static_cast<FieldSelect>(
-        wcstoul(base::ASCIIToWide(s).c_str(), 0, 0));
-  }
-#endif
-  return  static_cast<FieldSelect>(~0);
+  uint64 fields;
+  if (!base::StringToUint64(s, &fields))
+    return static_cast<FieldSelect>(~0);
+  return static_cast<FieldSelect>(fields);
 }
 
 CheckBool EncodedProgram::WriteTo(SinkStreamSet* streams) {
@@ -746,7 +743,7 @@ CheckBool EncodedProgram::GeneratePeRelocations(SinkStream* buffer,
       block.pod.page_rva = page_rva;
     }
     if (ok)
-      block.Add(((static_cast<uint16>(type)) << 12 ) | (rva & 0xFFF));
+      block.Add(((static_cast<uint16>(type)) << 12) | (rva & 0xFFF));
   }
   ok &= block.Flush(buffer);
   return ok;
@@ -797,4 +794,4 @@ void DeleteEncodedProgram(EncodedProgram* encoded) {
   delete encoded;
 }
 
-}  // end namespace
+}  // namespace courgette

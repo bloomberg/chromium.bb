@@ -228,7 +228,7 @@ CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
   // on a CommandLine with a wrapper is known to break.
   // TODO(phajdan.jr): Give it a try to support CommandLine removing switches.
 #if defined(OS_WIN)
-  new_command_line.PrependWrapper(ASCIIToWide(wrapper));
+  new_command_line.PrependWrapper(ASCIIToUTF16(wrapper));
 #elif defined(OS_POSIX)
   new_command_line.PrependWrapper(wrapper);
 #endif
@@ -242,7 +242,7 @@ CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
 int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
                                       const LaunchOptions& options,
                                       int flags,
-                                      base::TimeDelta timeout,
+                                      TimeDelta timeout,
                                       bool* was_timeout) {
 #if defined(OS_POSIX)
   // Make sure an option we rely on is present - see LaunchChildGTestProcess.
@@ -287,7 +287,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   new_options.allow_new_privs = true;
 #endif
 
-  base::ProcessHandle process_handle;
+  ProcessHandle process_handle;
 
   {
     // Note how we grab the lock before the process possibly gets created.
@@ -295,21 +295,19 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     // in the set.
     AutoLock lock(g_live_processes_lock.Get());
 
-    if (!base::LaunchProcess(command_line, new_options, &process_handle))
+    if (!LaunchProcess(command_line, new_options, &process_handle))
       return -1;
 
     g_live_processes.Get().insert(std::make_pair(process_handle, command_line));
   }
 
   int exit_code = 0;
-  if (!base::WaitForExitCodeWithTimeout(process_handle,
-                                        &exit_code,
-                                        timeout)) {
+  if (!WaitForExitCodeWithTimeout(process_handle, &exit_code, timeout)) {
     *was_timeout = true;
     exit_code = -1;  // Set a non-zero exit code to signal a failure.
 
     // Ensure that the process terminates.
-    base::KillProcess(process_handle, -1, true);
+    KillProcess(process_handle, -1, true);
   }
 
   {
@@ -324,14 +322,14 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
       // or due to it timing out, we need to clean up any child processes that
       // it might have created. On Windows, child processes are automatically
       // cleaned up using JobObjects.
-      base::KillProcessGroup(process_handle);
+      KillProcessGroup(process_handle);
     }
 #endif
 
     g_live_processes.Get().erase(process_handle);
   }
 
-  base::CloseProcessHandle(process_handle);
+  CloseProcessHandle(process_handle);
 
   return exit_code;
 }
@@ -347,7 +345,7 @@ void RunCallback(
 
 void DoLaunchChildTestProcess(
     const CommandLine& command_line,
-    base::TimeDelta timeout,
+    TimeDelta timeout,
     int flags,
     bool redirect_stdio,
     scoped_refptr<MessageLoopProxy> message_loop_proxy,
@@ -355,8 +353,8 @@ void DoLaunchChildTestProcess(
   TimeTicks start_time = TimeTicks::Now();
 
   // Redirect child process output to a file.
-  base::FilePath output_file;
-  CHECK(base::CreateTemporaryFile(&output_file));
+  FilePath output_file;
+  CHECK(CreateTemporaryFile(&output_file));
 
   LaunchOptions options;
 #if defined(OS_WIN)
@@ -385,8 +383,8 @@ void DoLaunchChildTestProcess(
 #elif defined(OS_POSIX)
   options.new_process_group = true;
 
-  base::FileHandleMappingVector fds_mapping;
-  base::ScopedFD output_file_fd;
+  FileHandleMappingVector fds_mapping;
+  ScopedFD output_file_fd;
 
   if (redirect_stdio) {
     output_file_fd.reset(open(output_file.value().c_str(), O_RDWR));
@@ -412,9 +410,9 @@ void DoLaunchChildTestProcess(
   }
 
   std::string output_file_contents;
-  CHECK(base::ReadFileToString(output_file, &output_file_contents));
+  CHECK(ReadFileToString(output_file, &output_file_contents));
 
-  if (!base::DeleteFile(output_file, false)) {
+  if (!DeleteFile(output_file, false)) {
     // This needs to be non-fatal at least for Windows.
     LOG(WARNING) << "Failed to delete " << output_file.AsUTF8Unsafe();
   }
@@ -519,7 +517,7 @@ bool TestLauncher::Run() {
 void TestLauncher::LaunchChildGTestProcess(
     const CommandLine& command_line,
     const std::string& wrapper,
-    base::TimeDelta timeout,
+    TimeDelta timeout,
     int flags,
     const LaunchChildGTestProcessCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -945,10 +943,8 @@ void TestLauncher::RunTests() {
     if (excluded)
       continue;
 
-    if (base::Hash(test_name) % total_shards_ !=
-        static_cast<uint32>(shard_index_)) {
+    if (Hash(test_name) % total_shards_ != static_cast<uint32>(shard_index_))
       continue;
-    }
 
     test_names.push_back(test_name);
   }

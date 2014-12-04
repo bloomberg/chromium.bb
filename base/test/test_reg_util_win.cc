@@ -54,7 +54,7 @@ base::string16 GenerateTempKeyPath(const base::string16& test_key_root,
                                    const base::Time& timestamp) {
   base::string16 key_path = test_key_root;
   key_path += L"\\" + base::Int64ToString16(timestamp.ToInternalValue());
-  key_path += kTimestampDelimiter + base::ASCIIToWide(base::GenerateGUID());
+  key_path += kTimestampDelimiter + base::ASCIIToUTF16(base::GenerateGUID());
 
   return key_path;
 }

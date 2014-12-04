@@ -85,8 +85,8 @@ const double kArbitraryCacheFileSizeLimit = (20 * 1024 * 1024);
 const unsigned int kMaxFontFileNameLength = 34;
 
 const DWORD kCacheFileVersion = 101;
-const DWORD kFileSignature = 0x4D4F5243; // CROM
-const DWORD kMagicCompletionSignature = 0x454E4F44; // DONE
+const DWORD kFileSignature = 0x4D4F5243;  // CROM
+const DWORD kMagicCompletionSignature = 0x454E4F44;  // DONE
 
 const DWORD kUndefinedDWORDS = 36;
 
@@ -151,7 +151,7 @@ class FontCollectionLoader
  public:
   FontCollectionLoader()
       : in_collection_building_mode_(false),
-        create_static_cache_(false) {};
+        create_static_cache_(false) {}
 
   virtual ~FontCollectionLoader();
 
@@ -308,7 +308,7 @@ class FontCacheWriter {
       int bytes_written = static_cache_->Write(0,
           reinterpret_cast<const char*>(&header),
           sizeof(header));
-      DCHECK(bytes_written != -1);
+      DCHECK_NE(bytes_written, -1);
 
       UMA_HISTOGRAM_MEMORY_KB("DirectWrite.Fonts.BuildCache.File.Size",
                               static_cache_->GetLength() / 1024);
@@ -562,7 +562,7 @@ class FontFileStream
   }
 
   FontFileStream::FontFileStream() : font_key_(0), cached_data_(false) {
-  };
+  }
 
   HRESULT RuntimeClassInitialize(UINT32 font_key) {
     if (g_font_loader->InCollectionBuildingMode() &&
@@ -645,7 +645,6 @@ class FontFileLoader
   virtual ~FontFileLoader() {}
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(FontFileLoader);
 };
 
@@ -699,7 +698,6 @@ class FontFileEnumerator
   UINT32 font_idx_;
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(FontFileEnumerator);
 };
 
@@ -1160,15 +1158,15 @@ bool LoadFontCache(const base::FilePath& path) {
   if (!ValidateFontCacheFile(file.get()))
     return false;
 
-  std::string name(content::kFontCacheSharedSectionName);
-  name.append(base::UintToString(base::GetCurrentProcId()));
+  base::string16 name(base::ASCIIToUTF16(content::kFontCacheSharedSectionName));
+  name.append(base::UintToString16(base::GetCurrentProcId()));
   HANDLE mapping = ::CreateFileMapping(
       file->GetPlatformFile(),
       NULL,
       PAGE_READONLY,
       0,
       0,
-      base::ASCIIToWide(name).c_str());
+      name.c_str());
   if (mapping == INVALID_HANDLE_VALUE)
     return false;
 
