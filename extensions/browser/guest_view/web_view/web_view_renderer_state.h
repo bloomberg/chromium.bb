@@ -34,6 +34,12 @@ class WebViewRendererState {
   bool GetInfo(int guest_process_id, int guest_routing_id,
                WebViewInfo* webview_info);
 
+  // Looks up the information for the owner for a given guest process in a
+  // <webview>. Called on the IO thread.
+  bool GetOwnerInfo(int guest_process_id,
+                    int* owner_process_id,
+                    std::string* owner_extension_id) const;
+
   // Looks up the partition info for the embedder <webview> for a given guest
   // process. Called on the IO thread.
   bool GetPartitionID(int guest_process_id, std::string* partition_id);

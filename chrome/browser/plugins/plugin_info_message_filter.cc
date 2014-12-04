@@ -33,7 +33,11 @@
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/webview_info.h"
 #endif
 
 #if defined(OS_WIN)
@@ -131,12 +135,48 @@ void ReportMetrics(const std::string& mime_type,
   }
 }
 
+#if defined(ENABLE_EXTENSIONS)
+// Returns whether a request from a plugin to load |resource| from a renderer
+// with process id |process_id| is a request for an internal resource by an app
+// listed in |accessible_resources| in its manifest.
+bool IsPluginLoadingAccessibleResourceInWebView(
+    extensions::ExtensionRegistry* extension_registry,
+    int process_id,
+    const GURL& resource) {
+  extensions::WebViewRendererState* renderer_state =
+      extensions::WebViewRendererState::GetInstance();
+  std::string partition_id;
+  if (!renderer_state->IsGuest(process_id) ||
+      !renderer_state->GetPartitionID(process_id, &partition_id)) {
+    return false;
+  }
+
+  const std::string extension_id = resource.host();
+  const extensions::Extension* extension =
+      extension_registry->GetExtensionById(extension_id,
+                             extensions::ExtensionRegistry::ENABLED);
+  if (!extensions::WebviewInfo::IsResourceWebviewAccessible(
+          extension, partition_id, resource.path())) {
+    return false;
+  }
+
+  // Make sure the renderer making the request actually belongs to the
+  // same extension.
+  std::string owner_extension;
+  return renderer_state->GetOwnerInfo(process_id, nullptr, &owner_extension) &&
+         owner_extension == extension_id;
+}
+#endif  // defined(ENABLE_EXTENSIONS)
+
 }  // namespace
 
 PluginInfoMessageFilter::Context::Context(int render_process_id,
                                           Profile* profile)
     : render_process_id_(render_process_id),
       resource_context_(profile->GetResourceContext()),
+#if defined(ENABLE_EXTENSIONS)
+      extension_registry_(extensions::ExtensionRegistry::Get(profile)),
+#endif
       host_content_settings_map_(profile->GetHostContentSettingsMap()),
       plugin_prefs_(PluginPrefs::GetForProfile(profile)) {
   allow_outdated_plugins_.Init(prefs::kPluginsAllowOutdated,
@@ -158,8 +198,8 @@ PluginInfoMessageFilter::PluginInfoMessageFilter(int render_process_id,
                                                  Profile* profile)
     : BrowserMessageFilter(ChromeMsgStart),
       context_(render_process_id, profile),
-      weak_ptr_factory_(this),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      weak_ptr_factory_(this) {
 }
 
 bool PluginInfoMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -363,6 +403,17 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     status->value = ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized;
     return;
   }
+
+#if defined(ENABLE_EXTENSIONS)
+  // If an app has explicitly made internal resources available by listing them
+  // in |accessible_resources| in the manifest, then allow them to be loaded by
+  // plugins inside a guest-view.
+  if (!is_managed && plugin_setting == CONTENT_SETTING_BLOCK &&
+      IsPluginLoadingAccessibleResourceInWebView(
+          extension_registry_, render_process_id_, params.url)) {
+    plugin_setting = CONTENT_SETTING_ALLOW;
+  }
+#endif  // defined(ENABLE_EXTENSIONS)
 
   if (plugin_setting == CONTENT_SETTING_ASK) {
       status->value = ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay;

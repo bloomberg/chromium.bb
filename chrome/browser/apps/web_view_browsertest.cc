@@ -46,6 +46,11 @@
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(ENABLE_PLUGINS)
+#include "content/public/browser/plugin_service.h"
+#include "content/public/common/webplugininfo.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
@@ -126,10 +131,8 @@ class WebContentsHiddenObserver : public content::WebContentsObserver {
 
 class EmbedderWebContentsObserver : public content::WebContentsObserver {
  public:
-  EmbedderWebContentsObserver(content:: WebContents* web_contents)
-      : WebContentsObserver(web_contents),
-        terminated_(false) {
-   }
+  explicit EmbedderWebContentsObserver(content::WebContents* web_contents)
+      : WebContentsObserver(web_contents), terminated_(false) {}
 
   // WebContentsObserver.
   void RenderProcessGone(base::TerminationStatus status) override {
@@ -2285,20 +2288,36 @@ class WebViewPluginTest : public WebViewTest {
     // Append the switch to register the pepper plugin.
     // library name = <out dir>/<test_name>.<library_extension>
     // MIME type = application/x-ppapi-<test_name>
-    base::FilePath plugin_dir;
-    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
-
-    base::FilePath plugin_lib = plugin_dir.Append(library_name);
+    base::FilePath plugin_lib = GetPluginPath();
     EXPECT_TRUE(base::PathExists(plugin_lib));
     base::FilePath::StringType pepper_plugin = plugin_lib.value();
     pepper_plugin.append(FILE_PATH_LITERAL(";application/x-ppapi-tests"));
     command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
                                      pepper_plugin);
   }
+
+  base::FilePath GetPluginPath() const {
+    base::FilePath plugin_dir;
+    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
+    return plugin_dir.Append(library_name);
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginEvent) {
   TestHelper("testPluginLoadPermission", "web_view/shim", NO_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginInternalResource) {
+  const char kTestMimeType[] = "application/pdf";
+  const char kTestFileType[] = "pdf";
+  content::WebPluginInfo plugin_info;
+  plugin_info.type = content::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS;
+  plugin_info.mime_types.push_back(
+      content::WebPluginMimeType(kTestMimeType, kTestFileType, std::string()));
+  content::PluginService::GetInstance()->RegisterInternalPlugin(plugin_info,
+                                                                true);
+
+  TestHelper("testPluginLoadInternalResource", "web_view/shim", NO_TEST_SERVER);
 }
 #endif  // defined(ENABLE_PLUGINS)
 

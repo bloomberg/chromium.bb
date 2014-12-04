@@ -70,6 +70,24 @@ bool WebViewRendererState::GetInfo(int guest_process_id,
   return false;
 }
 
+bool WebViewRendererState::GetOwnerInfo(int guest_process_id,
+                                        int* owner_process_id,
+                                        std::string* owner_extension_id) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // TODO(fsamuel): Store per-process info in WebViewPartitionInfo instead of in
+  // WebViewInfo.
+  for (const auto& info : webview_info_map_) {
+    if (info.first.first == guest_process_id) {
+      if (owner_process_id)
+        *owner_process_id = info.second.embedder_process_id;
+      if (owner_extension_id)
+        *owner_extension_id = info.second.owner_extension_id;
+      return true;
+    }
+  }
+  return false;
+}
+
 bool WebViewRendererState::GetPartitionID(int guest_process_id,
                                           std::string* partition_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
