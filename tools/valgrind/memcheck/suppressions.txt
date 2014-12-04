@@ -2412,6 +2412,16 @@
    fun:_ZN18chrome_browser_net27HttpServerPropertiesManager24UpdatePrefsFromCacheOnIOEv
 }
 {
+   bug_290407
+   Memcheck:Leak
+   fun:calloc
+   fun:_swrast_new_soft_renderbuffer
+   fun:_mesa_BindRenderbufferEXT
+   fun:shared_dispatch_stub_939
+   fun:_ZN3gfx9GLApiBase23glBindRenderbufferEXTFnEjj
+   fun:_ZN3gpu5gles216GLES2DecoderImpl18DoBindRenderbufferEjj
+}
+{
    bug_293024_b
    Memcheck:Leak
    fun:malloc
@@ -3377,8 +3387,6 @@
    fun:_ZN5blink19ImageFrameGenerator14decodeAndScaleERK11SkImageInfomPvm
    fun:_ZN5blink22DecodingImageGenerator11onGetPixelsERK11SkImageInfoPvmPjPi
    fun:_ZN16SkImageGenerator9getPixelsERK11SkImageInfoPvmPjPi
-   ...
-   fun:_ZNK6SkDraw10drawBitmapERK8SkBitmapRK8SkMatrixRK7SkPaint
 }
 {
    bug_424056a

@@ -28,7 +28,7 @@
    fun:_ZN7content14WebPreferencesaSERKS0_
    fun:_ZN7content14RenderViewImpl22OnUpdateWebPreferencesERKNS_14WebPreferencesE
    fun:_ZN7content14RenderViewImpl20SetWebkitPreferencesERKNS_14WebPreferencesE
-   fun:_ZThn784_N7content14RenderViewImpl20SetWebkitPreferencesERKNS_14WebPreferencesE
+   fun:_ZThn*_N7content14RenderViewImpl20SetWebkitPreferencesERKNS_14WebPreferencesE
    fun:_ZN7content16WebKitTestRunner5ResetEv
 }
 {
