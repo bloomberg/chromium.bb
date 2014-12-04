@@ -11,7 +11,7 @@ from chromite.cbuildbot import constants
 
 PROJECT = 'chromeos-bot'
 DEFAULT_BASE_IMAGE = 'ubuntu-14-04-server-v20141016'
-DEFAULT_IMAGE_NAME = 'chromeos-bot-v1'
+DEFAULT_IMAGE_NAME = 'chromeos-bot-v2'
 DEFAULT_ZONE = 'us-east1-a'
 DEFAULT_SCOPES = ('https://www.googleapis.com/auth/devstorage.full_control',
                   'https://www.googleapis.com/auth/gerritcodereview')

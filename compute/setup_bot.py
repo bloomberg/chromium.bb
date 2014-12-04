@@ -35,6 +35,10 @@ def SetupPrerequisites():
   packages += ['python-sqlalchemy', 'python-mysqldb']
   # Required for payload generation outside of the chroot.
   packages += ['python-protobuf']
+
+  # Packages to monitor system performance and usage.
+  packages += ['sysstat']
+
   SudoRunCommand(['apt-get', '-y', 'install'] + packages)
 
 
@@ -175,6 +179,23 @@ def SetupBuildbotEnvironment():
   RunCommand(['bash', '-c', r'echo export PATH=\$PATH:%s >> ~/.bashrc'
               % depot_tools_path])
 
+  # Start buildbot slave at startup.
+  crontab_content = ''
+  result = RunCommand(
+      ['crontab', '-l'], capture_output=True, error_code_ok=True)
+  crontab_content = result.output if result.returncode == 0 else ''
+  crontab_content += ('SHELL=/bin/bash\nUSER=chrome-bot\n'
+                      '@reboot cd /b/build/slave && make start\n')
+  RunCommand(['crontab', '-'], input=crontab_content)
+
+
+def TuneSystemSettings():
+  """Tune the system settings for our build environment."""
+  # Increase the user-level file descriptor limits.
+  entries = ('*       soft    nofile  65536\n'
+             '*       hard    nofile  65536\n')
+  SudoRunCommand(['tee', '-a', '/etc/security/limits.conf'], input=entries)
+
 
 def main(_argv):
   assert getpass.getuser() == bot_constants.BUILDBOT_USER, (
@@ -184,3 +205,4 @@ def main(_argv):
   InstallChromeDependencies()
   SetupCredentials()
   SetupBuildbotEnvironment()
+  TuneSystemSettings()

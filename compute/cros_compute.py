@@ -69,9 +69,9 @@ def BotifyInstance(instance, project, zone):
   dest_path = bot_constants.BOT_CREDS_TMP_PATH
   src_path = os.getenv(bot_constants.BOT_CREDS_DIR_ENV_VAR)
   if not src_path:
-    cros_build_lib.Die('Environment variable %s is not set. This is necessary'
-                       'to set up credentials for the bot.'
-                       % bot_constants.BOT_CREDS_DIR_ENV_VAR)
+    raise ValueError('Environment variable %s is not set. This is necessary'
+                     'to set up credentials for the bot.'
+                     % bot_constants.BOT_CREDS_DIR_ENV_VAR)
   gcctx.CopyFilesToInstance(instance, src_path, dest_path)
   gcctx.SSH(
       instance,
@@ -169,10 +169,10 @@ def CreateImageForCrosBots(project, zone):
   gcctx.CreateInstance(instance, image=compute_configs.DEFAULT_BASE_IMAGE)
   try:
     BotifyInstance(instance, project, zone)
-    # TODO: remove unncessary files.
-  except Exception:
+  except:
     # Clean up the temp instance.
     gcctx.DeleteInstance(instance)
+    raise
 
   gcctx.DeleteInstance(instance, keep_disks='boot')
   # By default the name of the boot disk is the same as the name of
