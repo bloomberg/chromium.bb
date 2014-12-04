@@ -135,6 +135,10 @@ EXTRA_ENV = {
   # use up to 4 modules if there are enough cores. If the user overrides,
   # use as many modules as specified (which could be only 1).
   'SPLIT_MODULE' : '0',
+  # Module split scheduling. 'dynamic' will produce non-deterministic results
+  # with faster compilation, whereas 'static' will still use multiple cores but
+  # will be deterministic and slightly slower.
+  'SPLIT_MODULE_SCHED' : 'static',
 }
 
 
@@ -196,6 +200,7 @@ TranslatorPatterns = [
   ( '(--build-id)',    "env.append('LD_FLAGS', $0)"),
   ( '-bitcode-stream-rate=([0-9]+)', "env.set('BITCODE_STREAM_RATE', $0)"),
   ( '-split-module=([0-9]+)', "env.set('SPLIT_MODULE', $0)"),
+  ( '(-split-module-sched=.*)', "env.set('SPLIT_MODULE_SCHED', $0)"),
   ( '-no-stream-bitcode', "env.set('STREAM_BITCODE', '0')"),
 
   # Treat general linker flags as inputs so they don't get re-ordered
@@ -359,8 +364,10 @@ def main(argv):
     if not env.getbool('SANDBOXED') and env.getbool('STREAM_BITCODE'):
       env.append('LLC_FLAGS_EXTRA', '-streaming-bitcode')
   modules = env.getone('SPLIT_MODULE')
+  module_sched = env.getone('SPLIT_MODULE_SCHED')
   env.append('LLC_FLAGS_EXTRA', '-split-module=' + modules)
   env.append('LD_FLAGS', '-split-module=' + modules)
+  env.append('LLC_FLAGS_EXTRA', '-split-module-sched=' + module_sched)
 
   # If there's a bitcode file, translate it now.
   tng = driver_tools.TempNameGen(inputs + bcfiles, output)
