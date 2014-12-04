@@ -383,7 +383,10 @@ function hasLabel(key, label) {
  */
 function mockTypeCharacter(label, keyCode, modifiers, opt_unicode) {
   var key = label.length == 1 ? findKey(label) : findKeyById(label);
-  var unicodeValue = opt_unicode || label.charCodeAt(0);
+  // opt_unicode is allowed to be 0.
+  var unicodeValue = opt_unicode;
+  if (unicodeValue === undefined)
+    unicodeValue = label.charCodeAt(0);
   var send = chrome.virtualKeyboardPrivate.sendKeyEvent;
   send.addExpectation({
     type: 'keydown',

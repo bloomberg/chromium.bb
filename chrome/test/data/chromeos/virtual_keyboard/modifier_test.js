@@ -39,3 +39,28 @@ function testControlKeyStickyAsync(testDoneCallback) {
   };
   onKeyboardReady(testCallback, config);
 }
+
+function testChordedControlKeyAsync(testDoneCallback) {
+  var testCallback = function() {
+    var controlKey = findKeyById('ControlLeft');
+    mockTouchEvent(controlKey, 'touchstart');
+
+    // Expect the first chorded press of Ctrl+a to work.
+    mockTypeCharacter('a', 0x41, Modifier.CONTROL, 0);
+
+    // Expect following chorded presses to work as well.
+    mockTypeCharacter('a', 0x41, Modifier.CONTROL, 0);
+
+    // Expect a regular tap of a key after chording ends.
+    mockTouchEvent(controlKey, 'touchend');
+    mockTypeCharacter('a', 0x41, Modifier.NONE);
+    testDoneCallback();
+  };
+  var config = {
+    keyset: 'us',
+    languageCode: 'en',
+    passwordLayout: 'us',
+    name: 'English'
+  };
+  onKeyboardReady(testCallback, config);
+}
