@@ -81,6 +81,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win', 'amd'], bug=839) # angle bug ID
     self.Fail('conformance/extensions/webgl-depth-texture.html',
         ['win', 'amd'], bug=839) # angle bug ID
+    self.Fail('conformance/textures/texparameter-test.html',
+        ['win', 'amd'], bug=839) # angle bug ID
 
     # Mac / Intel failures
     # Radar 13499466
