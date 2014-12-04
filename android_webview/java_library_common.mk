@@ -44,6 +44,7 @@ LOCAL_SRC_FILES += \
 # Java files generated from .template rules. This list should match list of java dependencies in
 # android_webview/libwebviewchromium.gyp
 LOCAL_GENERATED_SOURCES := \
+$(call intermediates-dir-for,GYP,shared)/enums/android_resource_type_java/org/chromium/ui/resources/AndroidResourceType.java \
 $(call intermediates-dir-for,GYP,shared)/enums/bitmap_format_java/org/chromium/ui/gfx/BitmapFormat.java \
 $(call intermediates-dir-for,GYP,shared)/enums/cert_verify_status_android_java/org/chromium/net/CertVerifyStatusAndroid.java \
 $(call intermediates-dir-for,GYP,shared)/enums/certificate_mime_types_java/org/chromium/net/CertificateMimeType.java \

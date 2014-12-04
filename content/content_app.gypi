@@ -46,6 +46,7 @@
       'dependencies': [
         'content.gyp:content_jni_headers',
         '../skia/skia.gyp:skia',
+        '../ui/android/ui_android.gyp:ui_android',
       ],
       'includes': [
         '../build/android/cpufeatures.gypi',

@@ -32,6 +32,7 @@
 #include "content/public/browser/android/compositor.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
+#include "ui/android/ui_android_jni_registrar.h"
 #include "ui/base/android/ui_base_jni_registrar.h"
 #include "ui/gfx/android/gfx_jni_registrar.h"
 #include "ui/gl/android/gl_jni_registrar.h"
@@ -84,6 +85,7 @@ void ContentTestSuiteBase::Initialize() {
   media::RegisterJni(env);
   net::android::RegisterJni(env);
   ui::android::RegisterJni(env);
+  ui::RegisterUIAndroidJni(env);
   ui::gl::android::RegisterJni(env);
   ui::shell_dialogs::RegisterJni(env);
 

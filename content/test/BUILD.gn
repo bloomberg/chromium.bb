@@ -127,7 +127,10 @@ static_library("test_support") {
     }
 
     if (is_android) {
-      deps += [ "//ui/shell_dialogs" ]
+      deps += [
+        "//ui/android",
+        "//ui/shell_dialogs"
+      ]
     }
 
     if (is_win) {

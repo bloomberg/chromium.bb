@@ -8,6 +8,50 @@
   },
   'targets': [
     {
+      # GN version: //ui/android
+      'target_name': 'ui_android',
+      'type': '<(component)',
+      'dependencies': [
+        '../../cc/cc.gyp:cc',
+        '../../base/base.gyp:base',
+        '../../skia/skia.gyp:skia',
+        '../gfx/gfx.gyp:gfx',
+        '../gfx/gfx.gyp:gfx_geometry',
+        'ui_android_jni_headers',
+      ],
+      'defines': [
+        'UI_ANDROID_IMPLEMENTATION',
+      ],
+      'sources' : [
+        'resources/resource_manager.cc',
+        'resources/resource_manager.h',
+        'resources/ui_resource_android.cc',
+        'resources/ui_resource_android.h',
+        'ui_android_export.h',
+        'ui_android_jni_registrar.cc',
+        'ui_android_jni_registrar.h',
+      ],
+    },
+    {
+      'target_name': 'ui_android_jni_headers',
+      'type': 'none',
+      'sources': [
+        'java/src/org/chromium/ui/resources/ResourceManager.java',
+      ],
+      'variables': {
+        'jni_gen_package': 'ui_android',
+      },
+      'includes': [ '../../build/jni_generator.gypi' ],
+    },
+    { 
+      'target_name': 'android_resource_type_java',
+      'type': 'none',
+      'variables': {
+        'source_file': 'resources/resource_manager.h',
+      },
+      'includes': [ '../../build/android/java_cpp_enum.gypi' ],
+    },
+    {
       'target_name': 'bitmap_format_java',
       'type': 'none',
       'variables': {
@@ -58,6 +102,7 @@
       },
       'dependencies': [
         '../../base/base.gyp:base_java',
+        'android_resource_type_java',
         'bitmap_format_java',
         'page_transition_types_java',
         'system_ui_resource_type_java',

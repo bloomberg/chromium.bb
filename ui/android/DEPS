@@ -1,0 +1,10 @@
+include_rules = [
+  "+cc/resources/ui_resource_client.h",
+  "+cc/resources/ui_resource_bitmap.h",
+  "+content/public/browser/android/ui_resource_client_android.h",
+  "+content/public/browser/android/ui_resource_provider.h",
+  "+jni",
+  "+skia/ext",
+  "+third_party/skia",
+  "+ui/gfx",
+]

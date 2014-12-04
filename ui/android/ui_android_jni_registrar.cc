@@ -1,0 +1,22 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ui/android/ui_android_jni_registrar.h"
+
+#include "base/android/jni_android.h"
+#include "base/android/jni_registrar.h"
+#include "ui/android/resources/resource_manager.h"
+
+namespace ui {
+
+static base::android::RegistrationMethod kAndroidRegisteredMethods[] = {
+    {"ResourceManager", ui::ResourceManager::RegisterResourceManager},
+};
+
+bool RegisterUIAndroidJni(JNIEnv* env) {
+  return RegisterNativeMethods(env, kAndroidRegisteredMethods,
+                               arraysize(kAndroidRegisteredMethods));
+}
+
+}  // namespace ui

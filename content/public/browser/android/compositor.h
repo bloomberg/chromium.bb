@@ -23,6 +23,10 @@ namespace gfx {
 class JavaBitmap;
 }
 
+namespace ui {
+class ResourceManager;
+}
+
 namespace content {
 class CompositorClient;
 class UIResourceProvider;
@@ -67,6 +71,9 @@ class CONTENT_EXPORT Compositor {
 
   // Returns the UI resource provider associated with the compositor.
   virtual UIResourceProvider& GetUIResourceProvider() = 0;
+
+  // Returns the resource manager associated with the compositor.
+  virtual ui::ResourceManager& GetResourceManager() = 0;
 
  protected:
   Compositor() {}

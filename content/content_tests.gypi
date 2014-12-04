@@ -355,6 +355,7 @@
         }],
         ['OS=="android"', {
           'dependencies': [
+            '../ui/android/ui_android.gyp:ui_android',
             '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
             'content.gyp:content_v8_external_data',
           ],

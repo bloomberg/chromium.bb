@@ -44,6 +44,7 @@ if (is_win) {
     "//content/public/android:jni",
     "//skia",
     "//third_party/android_tools:cpu_features",
+    "//ui/android",
   ]
 }
 

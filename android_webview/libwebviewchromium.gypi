@@ -30,6 +30,7 @@
         '../net/net.gyp:network_change_notifier_types_java',
         '../net/net.gyp:net_errors_java',
         '../net/net.gyp:private_key_types_java',
+        '../ui/android/ui_android.gyp:android_resource_type_java',
         '../ui/android/ui_android.gyp:bitmap_format_java',
         '../ui/android/ui_android.gyp:page_transition_types_java',
         '../ui/android/ui_android.gyp:system_ui_resource_type_java',

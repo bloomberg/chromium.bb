@@ -165,8 +165,9 @@ bool CompositorImpl::IsInitialized() {
 CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
     : root_layer_(cc::Layer::Create()),
+      resource_manager_(&ui_resource_provider_),
       surface_id_allocator_(
-        new cc::SurfaceIdAllocator(++g_surface_id_namespace)),
+          new cc::SurfaceIdAllocator(++g_surface_id_namespace)),
       has_transparent_background_(false),
       device_scale_factor_(1),
       window_(NULL),
@@ -320,6 +321,10 @@ void CompositorImpl::Composite(CompositingTrigger trigger) {
 
 UIResourceProvider& CompositorImpl::GetUIResourceProvider() {
   return ui_resource_provider_;
+}
+
+ui::ResourceManager& CompositorImpl::GetResourceManager() {
+  return resource_manager_;
 }
 
 ui::SystemUIResourceManager& CompositorImpl::GetSystemUIResourceManager() {

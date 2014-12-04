@@ -25,6 +25,7 @@
 #include "device/battery/android/battery_jni_registrar.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
+#include "ui/android/ui_android_jni_registrar.h"
 #include "ui/base/android/ui_base_jni_registrar.h"
 #include "ui/gfx/android/gfx_jni_registrar.h"
 #include "ui/gl/android/gl_jni_registrar.h"
@@ -67,6 +68,9 @@ bool EnsureJniRegistered(JNIEnv* env) {
       return false;
 
     if (!media::RegisterJni(env))
+      return false;
+
+    if (!ui::RegisterUIAndroidJni(env))
       return false;
 
     g_jni_init_done = true;

@@ -2,6 +2,36 @@ import("//build/config/android/rules.gni")
 
 assert(is_android)
 
+component("android") {
+  output_name = "ui_android"
+  sources = [
+    "resources/resource_manager.cc",
+    "resources/resource_manager.h",
+    "resources/ui_resource_android.cc",
+    "resources/ui_resource_android.h",
+    "ui_android_export.h",
+    "ui_android_jni_registrar.cc",
+    "ui_android_jni_registrar.h",
+  ]
+
+  defines = [ "UI_ANDROID_IMPLEMENTATION" ]
+
+  deps = [
+    "//cc",
+    "//skia",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    ":ui_android_jni_headers",
+  ]
+}
+
+generate_jni("ui_android_jni_headers") {
+  sources = [
+    "java/src/org/chromium/ui/resources/ResourceManager.java",
+  ]
+  jni_package = "ui_android"
+}
+
 java_cpp_enum("java_enums_srcjar") {
   sources = [
     "../base/page_transition_types.h",
@@ -9,6 +39,7 @@ java_cpp_enum("java_enums_srcjar") {
     "../base/android/system_ui_resource_type.h",
     "../base/ime/text_input_type.h",
     "../gfx/android/java_bitmap.h",
+    "resources/resource_manager.h",
   ]
   outputs = [
     "org/chromium/ui/WindowOpenDisposition.java",
@@ -16,6 +47,7 @@ java_cpp_enum("java_enums_srcjar") {
     "org/chromium/ui/base/SystemUIResourceType.java",
     "org/chromium/ui/base/ime/TextInputType.java",
     "org/chromium/ui/gfx/BitmapFormat.java",
+    "org/chromium/ui/resources/AndroidResourceType.java",
   ]
 }
 
