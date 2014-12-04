@@ -95,7 +95,7 @@ def destdir_configure_make_install(parsed_arguments, environment,
   # Installing to a temporary directory allows us to safely clean up the .la
   # files below.
   destdir = '%s/debian/instrumented_build' % os.getcwd()
-  # Some makefiles use BUILDROOT instead of DESTDIR.
+  # Some makefiles use BUILDROOT or INSTALL_ROOT instead of DESTDIR.
   make_command = 'make DESTDIR=%s BUILDROOT=%s INSTALL_ROOT=%s' % (destdir,
                                                                    destdir,
                                                                    destdir)
