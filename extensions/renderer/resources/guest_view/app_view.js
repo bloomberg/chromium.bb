@@ -8,13 +8,7 @@ var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
 var IdGenerator = requireNative('id_generator');
 
 function AppViewImpl(appviewElement) {
-  GuestViewContainer.call(this, appviewElement)
-
-  this.guest = new GuestView('appview');
-
-  var shadowRoot = this.element.createShadowRoot();
-  shadowRoot.appendChild(this.browserPluginElement);
-  this.viewInstanceId = IdGenerator.GetNextId();
+  GuestViewContainer.call(this, appviewElement, 'appview');
 }
 
 AppViewImpl.prototype.__proto__ = GuestViewContainer.prototype;
@@ -63,7 +57,6 @@ AppViewImpl.prototype.connect = function(app, data, callback) {
 
   this.guest.create(createParams, function() {
     if (!this.guest.getId()) {
-      this.browserPluginElement.style.visibility = 'hidden';
       var errorMsg = 'Unable to connect to app "' + app + '".';
       window.console.warn(errorMsg);
       this.getErrorNode().innerText = errorMsg;
@@ -84,29 +77,6 @@ AppViewImpl.prototype.buildAttachParams = function() {
     'instanceId': this.viewInstanceId
   };
   return params;
-};
-
-AppViewImpl.prototype.attachWindow = function() {
-  if (!this.internalInstanceId) {
-    return true;
-  }
-
-  this.browserPluginElement.style.visibility = 'visible';
-  this.guest.attach(this.internalInstanceId, this.buildAttachParams());
-  return true;
-};
-
-AppViewImpl.prototype.handleBrowserPluginAttributeMutation =
-    function(name, oldValue, newValue) {
-  if (name == 'internalinstanceid' && !oldValue && !!newValue) {
-    this.browserPluginElement.removeAttribute('internalinstanceid');
-    this.internalInstanceId = parseInt(newValue);
-
-    if (!this.guest.getId()) {
-      return;
-    }
-    this.guest.attach(this.internalInstanceId, this.buildAttachParams());
-  }
 };
 
 GuestViewContainer.registerElement(AppViewImpl);

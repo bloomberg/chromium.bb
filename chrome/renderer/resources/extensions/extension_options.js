@@ -22,11 +22,7 @@ var AUTO_SIZE_ATTRIBUTES = {
 };
 
 function ExtensionOptionsImpl(extensionoptionsElement) {
-  GuestViewContainer.call(this, extensionoptionsElement)
-
-  this.guest = new GuestView('extensionoptions');
-  this.viewInstanceId = IdGenerator.GetNextId();
-  this.autosizeDeferred = false;
+  GuestViewContainer.call(this, extensionoptionsElement, 'extensionoptions');
 
   // on* Event handlers.
   this.eventHandlers = {};
@@ -38,13 +34,10 @@ function ExtensionOptionsImpl(extensionoptionsElement) {
   this.setupEventProperty('createfailed');
   new ExtensionOptionsEvents(this, this.viewInstanceId);
 
+  this.autosizeDeferred = false;
+
   this.setupElementProperties();
   this.parseExtensionAttribute();
-
-  // Once the browser plugin has been created, the guest view will be created
-  // and attached. See handleBrowserPluginAttributeMutation().
-  var shadowRoot = this.element.createShadowRoot();
-  shadowRoot.appendChild(this.browserPluginElement);
 };
 
 ExtensionOptionsImpl.prototype.__proto__ = GuestViewContainer.prototype;
@@ -81,15 +74,6 @@ ExtensionOptionsImpl.prototype.buildAttachParams = function() {
     'minwidth': parseInt(this.minwidth || 0)
   };
   return params;
-};
-
-ExtensionOptionsImpl.prototype.attachWindow = function() {
-  if (!this.internalInstanceId) {
-    return true;
-  }
-
-  this.guest.attach(this.internalInstanceId, this.buildAttachParams());
-  return true;
 };
 
 ExtensionOptionsImpl.prototype.createGuest = function() {
@@ -163,18 +147,6 @@ ExtensionOptionsImpl.prototype.handleAttributeMutation =
   }
 };
 
-ExtensionOptionsImpl.prototype.handleBrowserPluginAttributeMutation =
-    function(name, oldValue, newValue) {
-  if (name == 'internalinstanceid' && !oldValue && !!newValue) {
-    this.internalInstanceId = parseInt(newValue);
-    this.browserPluginElement.removeAttribute('internalinstanceid');
-    if (!this.guest.getId() || !this.extensionId) {
-      return;
-    }
-    this.attachWindow();
-  }
-};
-
 ExtensionOptionsImpl.prototype.onSizeChanged =
     function(newWidth, newHeight, oldWidth, oldHeight) {
   if (this.autosizeDeferred) {
@@ -199,12 +171,12 @@ ExtensionOptionsImpl.prototype.parseExtensionAttribute = function() {
 
 ExtensionOptionsImpl.prototype.resize =
     function(newWidth, newHeight, oldWidth, oldHeight) {
-  this.browserPluginElement.style.width = newWidth + 'px';
-  this.browserPluginElement.style.height = newHeight + 'px';
+  this.element.style.width = newWidth + 'px';
+  this.element.style.height = newHeight + 'px';
 
-  // Do not allow the options page's dimensions to shrink so that the options
-  // page has a consistent UI. If the new size is larger than the minimum,
-  // make that the new minimum size.
+  // Do not allow the options page's dimensions to shrink. This ensures that the
+  // options page has a consistent UI. If the new size is larger than the
+  // minimum, make that the new minimum size.
   if (newWidth > this.minwidth)
     this.minwidth = newWidth;
   if (newHeight > this.minheight)

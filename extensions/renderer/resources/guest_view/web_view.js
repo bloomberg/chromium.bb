@@ -9,29 +9,22 @@
 var DocumentNatives = requireNative('document_natives');
 var GuestView = require('guestView').GuestView;
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
-var IdGenerator = requireNative('id_generator');
 var WebViewConstants = require('webViewConstants').WebViewConstants;
 var WebViewEvents = require('webViewEvents').WebViewEvents;
 var WebViewInternal = require('webViewInternal').WebViewInternal;
 
 // Represents the internal state of <webview>.
 function WebViewImpl(webviewElement) {
-  GuestViewContainer.call(this, webviewElement)
+  GuestViewContainer.call(this, webviewElement, 'webview');
 
-  this.guest = new GuestView('webview');
   this.beforeFirstNavigation = true;
-  this.viewInstanceId = IdGenerator.GetNextId();
 
   this.setupWebViewAttributes();
-  this.setupFocusPropagation();
   this.setupElementProperties();
 
   // on* Event handlers.
   this.on = {};
   new WebViewEvents(this, this.viewInstanceId);
-
-  var shadowRoot = this.element.createShadowRoot();
-  shadowRoot.appendChild(this.browserPluginElement);
 }
 
 WebViewImpl.prototype.__proto__ = GuestViewContainer.prototype;
@@ -96,24 +89,6 @@ WebViewImpl.prototype.setRequestPropertyOnWebViewElement = function(request) {
   );
 };
 
-WebViewImpl.prototype.setupFocusPropagation = function() {
-  if (!this.element.hasAttribute('tabIndex')) {
-    // <webview> needs a tabIndex in order to be focusable.
-    // TODO(fsamuel): It would be nice to avoid exposing a tabIndex attribute
-    // to allow <webview> to be focusable.
-    // See http://crbug.com/231664.
-    this.element.setAttribute('tabIndex', -1);
-  }
-  this.element.addEventListener('focus', function(e) {
-    // Focus the BrowserPlugin when the <webview> takes focus.
-    this.browserPluginElement.focus();
-  }.bind(this));
-  this.element.addEventListener('blur', function(e) {
-    // Blur the BrowserPlugin when the <webview> loses focus.
-    this.browserPluginElement.blur();
-  }.bind(this));
-};
-
 WebViewImpl.prototype.setupElementProperties = function() {
   // We cannot use {writable: true} property descriptor because we want a
   // dynamic getter value.
@@ -140,21 +115,6 @@ WebViewImpl.prototype.handleAttributeMutation = function(
 
   // Let the changed attribute handle its own mutation;
   this.attributes[attributeName].handleMutation(oldValue, newValue);
-};
-
-WebViewImpl.prototype.handleBrowserPluginAttributeMutation = function(
-    attributeName, oldValue, newValue) {
-  if (attributeName == WebViewConstants.ATTRIBUTE_INTERNALINSTANCEID &&
-      !oldValue && !!newValue) {
-    this.browserPluginElement.removeAttribute(
-        WebViewConstants.ATTRIBUTE_INTERNALINSTANCEID);
-    this.internalInstanceId = parseInt(newValue);
-
-    if (!this.guest.getId()) {
-      return;
-    }
-    this.guest.attach(this.internalInstanceId, this.buildAttachParams());
-  }
 };
 
 WebViewImpl.prototype.onSizeChanged = function(webViewEvent) {
@@ -303,12 +263,7 @@ WebViewImpl.prototype.attachWindow = function(opt_guestInstanceId) {
     this.guest = new GuestView('webview', opt_guestInstanceId);
   }
 
-  if (!this.internalInstanceId) {
-    return true;
-  }
-
-  this.guest.attach(this.internalInstanceId, this.buildAttachParams());
-  return true;
+  return GuestViewContainer.prototype.attachWindow.call(this);
 };
 
 // Shared implementation of executeScript() and insertCSS().

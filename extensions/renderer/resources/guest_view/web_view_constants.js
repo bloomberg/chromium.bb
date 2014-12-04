@@ -17,9 +17,6 @@ var WebViewConstants = {
   ATTRIBUTE_PARTITION: 'partition',
   ATTRIBUTE_SRC: 'src',
 
-  // Internal attribute.
-  ATTRIBUTE_INTERNALINSTANCEID: 'internalinstanceid',
-
   // Error messages.
   ERROR_MSG_ALREADY_NAVIGATED:
       'The object has already navigated, so its partition cannot be changed.',
