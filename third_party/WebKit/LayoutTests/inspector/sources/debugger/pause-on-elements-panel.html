@@ -1,0 +1,61 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function callback()
+{
+    return 0;
+}
+
+function test()
+{
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function step1()
+    {
+        WebInspector.inspectorView.showPanel("sources").then(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.nodeWithId("test", step3);
+    }
+
+    function step3(node)
+    {
+        InspectorTest.assertTrue(!!node);
+        InspectorTest.evaluateInPage("setTimeout(callback, 200)", step4.bind(null, node));
+    }
+
+    function step4(node)
+    {
+        InspectorTest.assertTrue(!WebInspector.panels.sources.paused());
+        WebInspector.panels.sources.togglePause();
+
+        // This used to skip the pause request (the test used to timeout).
+        node.highlight();
+
+        InspectorTest.waitUntilPaused(step5);
+    }
+
+    function step5(callFrames)
+    {
+        InspectorTest.captureStackTrace(callFrames);
+        InspectorTest.addResult("PASS: Debugger paused.");
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<div id="test"></div>
+<p>
+Tests that debugger pause button works on Elements panel after a DOM node highlighting. <a href="https://code.google.com/p/chromium/issues/detail?id=433366">Chromium bug 433366</a>
+</p>
+</body>
+</html>
