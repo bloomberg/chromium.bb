@@ -53,6 +53,7 @@
 #include "core/page/StorageClient.h"
 #include "core/page/ValidationMessageClient.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/storage/StorageNamespace.h"
@@ -187,8 +188,11 @@ PassRefPtrWillBeRawPtr<ClientRectList> Page::nonFastScrollableRects(const LocalF
         deprecatedLocalMainFrame()->document()->updateLayout();
 
     Vector<IntRect> rects;
-    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
+    if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator()) {
+        // Hits in compositing/iframes/iframe-composited-scrolling.html
+        DisableCompositingQueryAsserts disabler;
         rects = scrollingCoordinator->computeShouldHandleScrollGestureOnMainThreadRegion(frame, IntPoint()).rects();
+    }
 
     Vector<FloatQuad> quads(rects.size());
     for (size_t i = 0; i < rects.size(); ++i)

@@ -84,9 +84,9 @@ RenderLayerCompositor::~RenderLayerCompositor()
 
 bool RenderLayerCompositor::inCompositingMode() const
 {
-    // FIXME: This should assert that lificycle is >= CompositingClean since
+    // FIXME: This should assert that lifecycle is >= CompositingClean since
     // the last step of updateIfNeeded can set this bit to false.
-    ASSERT(!m_rootShouldAlwaysCompositeDirty);
+    ASSERT(m_renderView.layer()->isAllowedToQueryCompositingState());
     return m_compositing;
 }
 

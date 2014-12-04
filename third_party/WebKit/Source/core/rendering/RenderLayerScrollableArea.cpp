@@ -392,17 +392,20 @@ void RenderLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffs
 
     bool requiresPaintInvalidation = true;
 
-    if (box().view()->compositor()->inCompositingMode()) {
-        // Hits in virtual/gpu/fast/canvas/canvas-scroll-path-into-view.html.
+    {
+        // FIXME(420741): Since scrolling depends on compositing state, the scroll should be
+        // deferred until after the compositing update.
         DisableCompositingQueryAsserts disabler;
-        bool onlyScrolledCompositedLayers = scrollsOverflow()
-            && !layer()->hasVisibleNonLayerContent()
-            && !layer()->hasNonCompositedChild()
-            && !layer()->hasBlockSelectionGapBounds()
-            && box().style()->backgroundLayers().attachment() != LocalBackgroundAttachment;
+        if (box().view()->compositor()->inCompositingMode()) {
+            bool onlyScrolledCompositedLayers = scrollsOverflow()
+                && !layer()->hasVisibleNonLayerContent()
+                && !layer()->hasNonCompositedChild()
+                && !layer()->hasBlockSelectionGapBounds()
+                && box().style()->backgroundLayers().attachment() != LocalBackgroundAttachment;
 
-        if (usesCompositedScrolling() || onlyScrolledCompositedLayers)
-            requiresPaintInvalidation = false;
+            if (usesCompositedScrolling() || onlyScrolledCompositedLayers)
+                requiresPaintInvalidation = false;
+        }
     }
 
     // Just schedule a full paint invalidation of our object.
@@ -1442,10 +1445,10 @@ void RenderLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)
 
 void RenderLayerScrollableArea::updateCompositingLayersAfterScroll()
 {
+    DisableCompositingQueryAsserts disabler;
     RenderLayerCompositor* compositor = box().view()->compositor();
     if (compositor->inCompositingMode()) {
         if (usesCompositedScrolling()) {
-            DisableCompositingQueryAsserts disabler;
             ASSERT(layer()->hasCompositedLayerMapping());
             layer()->compositedLayerMapping()->setNeedsGraphicsLayerUpdate(GraphicsLayerUpdateSubtree);
             compositor->setNeedsCompositingUpdate(CompositingUpdateAfterGeometryChange);
