@@ -16,7 +16,13 @@
 }
 
 .CaretBrowsing_FlashVert {
-  position: fixed;
+  position: absolute;
   z-index: 2147483647;
-  background: linear-gradient(left, rgba(128, 128, 255, 0) 0%,rgba(128, 128, 255, 0.3) 45%,rgba(128, 128, 255, 0.8) 50%,rgba(128, 128, 255, 0.3) 65%,rgba(128, 128, 255, 0) 100%);
+  background: linear-gradient(
+      270deg,
+      rgba(128, 128, 255, 0) 0%,
+      rgba(128, 128, 255, 0.3) 45%,
+      rgba(128, 128, 255, 0.8) 50%,
+      rgba(128, 128, 255, 0.3) 65%,
+      rgba(128, 128, 255, 0) 100%);
 }

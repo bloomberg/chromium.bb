@@ -125,6 +125,12 @@
       <message desc="The description of the application, displayed in the web store." name="IDS_ALT_APPDESC">
         Replace images with their alt text.
       </message>
+      <message desc="Message informing the user that images have been replaced with alt text. Do not translate the word 'Alt', it refers to the ALT attribute in HTML. Okay to put it in quotes.." name="IDS_ALT_INFOBAR">
+        Images have been replaced by their alt text.
+      </message>
+      <message desc="Text of an Undo button." name="IDS_ALT_UNDO">
+        Undo
+      </message>
 
       <!-- Long Descriptions in Context Menu extension -->
 
@@ -132,10 +138,16 @@
         Long Descriptions in Context Menu
       </message>
       <message desc="The description of the application, displayed in the web store." name="IDS_LONGDESC_APPDESC">
-        Any HTML element with either a "longdesc" or "aria-describedat" attribute will get a thick vibrant border, and if you right-click on it, an option to view the long description is added to the context menu.
+        Right-click on anything with a "longdesc" or "aria-describedat" attribute to access its long description.
       </message>
       <message desc="Context menu item that opens the long description of an image in a new browser tab." name="IDS_LONGDESC_CONTEXT_MENU_ITEM">
         Open Long Description In New Tab
+      </message>
+      <message desc="Title of checkbox that determines whether certain elements should get a border added. Do not translate aria-describedat or longdesc, they are technical terms." name="IDS_LONGDESC_ADD_BORDER_CHECKBOX">
+        Add border to elements with aria-describedat or longdesc attributes.
+      </message>
+      <message desc="The title of the options page for the long description extension." name="IDS_LONGDESC_OPTIONS">
+        Options
       </message>
 
       <!-- High Contrast extension -->

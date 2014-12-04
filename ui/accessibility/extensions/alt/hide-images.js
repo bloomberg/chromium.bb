@@ -87,15 +87,14 @@ function createInfobar() {
 
   var showAltInfoContent = document.createElement('div');
   showAltInfoContent.className = 'content';
-  // TODO(aboxhall): i18n
   var showAltInfoText = document.createElement('span');
-  showAltInfoText.textContent = 'Images have been replaced by their alt text.';
+  showAltInfoText.textContent = chrome.i18n.getMessage('alt_infobar');
   showAltInfoText.setAttribute('role', 'status');
   showAltInfoContent.appendChild(showAltInfoText);
 
   var undoButton = document.createElement('button');
   undoButton.className = 'link-button';
-  undoButton.textContent = 'Undo';
+  undoButton.textContent = chrome.i18n.getMessage('alt_undo');
   undoButton.addEventListener('click', toggleEnabled);
 
   var closeButton = document.createElement('button');

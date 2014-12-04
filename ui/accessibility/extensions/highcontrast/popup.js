@@ -18,14 +18,16 @@ function update() {
   document.body.className = getEnabled() ? '' : 'disabled';
 
   if (getEnabled()) {
-    $('title').innerText = 'High Contrast is Enabled';
-    $('toggle').innerHTML = '<b>Disable</b> ' +
-                            '<span class="kb">(' + key1 + ')</span>';
+    $('title').innerText = chrome.i18n.getMessage('highcontrast_enabled');
+    $('toggle').innerHTML =
+        '<b>' + chrome.i18n.getMessage('highcontrast_disable') + '</b><br>' +
+        '<span class="kb">(' + key1 + ')</span>';
     $('subcontrols').style.display = 'block';
   } else {
-    $('title').innerText = 'High Contrast is Disabled';
-    $('toggle').innerHTML = '<b>Enable</b> ' +
-                            '<span class="kb">(' + key1 + ')</span>';
+    $('title').innerText = chrome.i18n.getMessage('highcontrast_disabled');
+    $('toggle').innerHTML =
+        '<b>' + chrome.i18n.getMessage('highcontrast_enable') + '</b><br>' +
+        '<span class="kb">(' + key1 + ')</span>';
     $('subcontrols').style.display = 'none';
   }
 
@@ -119,12 +121,15 @@ function init() {
       var tab = window.tabs[i];
       if (tab.active) {
         if (isDisallowedUrl(tab.url)) {
-          $('scheme_title').innerText = 'Default color scheme:';
+          $('scheme_title').innerText =
+              chrome.i18n.getMessage('highcontrast_default');
           $('make_default').style.display = 'none';
         } else {
           site = siteFromUrl(tab.url);
-          $('scheme_title').innerHTML = 'Color scheme for <b>' + site +
-              '</b>:<br><span class="kb">(' + key2 + ')</span>';
+          $('scheme_title').innerHTML =
+              chrome.i18n.getMessage('highcontrast_',
+                  '<b>' + site + '</b>:<br>' +
+                  '<span class="kb">(' + key2 + ')</span>');
           $('make_default').style.display = 'block';
         }
         update();

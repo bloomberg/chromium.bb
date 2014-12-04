@@ -1,7 +1,7 @@
 {
-  "name": "__MSG_appName__",
-  "version": "0.1",
-  "description": "__MSG_appDesc__",
+  "name": "__MSG_LONGDESC_APPNAME__",
+  "version": "1.0",
+  "description": "__MSG_LONGDESC_APPDESC__",
   "background": {
     "scripts": [ "background.js" ]
   },
@@ -19,5 +19,11 @@
     "<all_urls>"
   ],
   "manifest_version": 2,
-  "options_page": "options.html"
+  "default_locale": "en",
+  "options_page": "options.html",
+  "icons": {
+    "16": "icon-16.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  }
 }

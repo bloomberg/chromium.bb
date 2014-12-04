@@ -419,8 +419,8 @@ CaretBrowsing.animateCaretElement = function() {
  * Quick flash and then show the normal caret style.
  */
 CaretBrowsing.flashCaretElement = function() {
-  var x = CaretBrowsing.caretX - window.pageXOffset;
-  var y = CaretBrowsing.caretY - window.pageYOffset;
+  var x = CaretBrowsing.caretX;
+  var y = CaretBrowsing.caretY;
   var height = CaretBrowsing.caretHeight;
 
   var vert = document.createElement('div');

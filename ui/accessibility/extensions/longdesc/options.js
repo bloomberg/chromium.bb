@@ -28,3 +28,11 @@ function restore_options() {
 
 document.addEventListener('DOMContentLoaded', restore_options);
 document.getElementById('border').addEventListener('click', save_options);
+
+document.title = chrome.i18n.getMessage('longdesc_options');
+var i18nElements = document.querySelectorAll('*[i18n-content]');
+for (var i = 0; i < i18nElements.length; i++) {
+  var elem = i18nElements[i];
+  var msg = elem.getAttribute('i18n-content');
+  elem.innerHTML = chrome.i18n.getMessage(msg);
+}

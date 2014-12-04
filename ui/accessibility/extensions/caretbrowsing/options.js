@@ -51,7 +51,8 @@ function load() {
   var sel = window.getSelection();
   sel.setBaseAndExtent(heading, 0, heading, 0);
 
-  document.title = chrome.i18n.getMessage('caretBrowsingOptions');
+  document.title =
+      chrome.i18n.getMessage('caret_browsing_caretBrowsingOptions');
   var i18nElements = document.querySelectorAll('*[i18n-content]');
   for (var i = 0; i < i18nElements.length; i++) {
     var elem = i18nElements[i];

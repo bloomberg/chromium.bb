@@ -1,7 +1,7 @@
 {
-  "name": "__MSG_appName__",
-  "version": "0.3",
-  "description": "__MSG_appDesc__",
+  "name": "__MSG_CARET_BROWSING_APPNAME__",
+  "version": "1.0",
+  "description": "__MSG_CARET_BROWSING_APPDESC__",
   "manifest_version": 2,
   "permissions": [
     "<all_urls>",
@@ -15,7 +15,7 @@
   },
   "browser_action": {
     "default_icon": "caret_19.png",
-    "default_title": "__MSG_toggle__"
+    "default_title": "__MSG_CARET_BROWSING_APPNAME__"
   },
   "content_scripts": [
     {
@@ -27,7 +27,7 @@
         "caretbrowsing.css"
       ],
       "js": [
-        "accessibility_utils.js",
+        "axs_testing.js",
         "traverse_util.js",
         "caretbrowsing.js"
       ]

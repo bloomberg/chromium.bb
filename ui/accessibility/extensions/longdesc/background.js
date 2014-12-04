@@ -26,7 +26,7 @@ chrome.windows.getAll({'populate': true}, function(windows) {
  * Add context menu item when the extension is installed.
  */
 chrome.contextMenus.create({
-    "title": chrome.i18n.getMessage('openLongDescription'),
+    "title": chrome.i18n.getMessage('longdesc_context_menu_item'),
     "contexts": ["all"],
     "id": "moreInfo",
     "onclick": contextMenuClicked,
