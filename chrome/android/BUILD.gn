@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/module_args/v8.gni")
 import("//chrome/version.gni")
 import("//third_party/icu/config.gni")
 import("channel.gni")
@@ -313,6 +314,12 @@ copy_ex("chrome_shell_assets") {
 
   if (icu_use_data_file) {
     sources += [ "$root_build_dir/icudtl.dat" ]
+  }
+  if (v8_use_external_startup_data) {
+    sources += [
+      "$root_gen_dir/natives_blob.bin",
+      "$root_gen_dir/snapshot_blob.bin",
+    ]
   }
 }
 

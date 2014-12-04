@@ -6,6 +6,7 @@ import("//build/config/allocator.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build/module_args/v8.gni")
 
 declare_args() {
   # When set, turns off the (normally-on) iterator debugging and related stuff
@@ -206,6 +207,9 @@ config("feature_flags") {
   }
   if (enable_hangout_services_extension) {
     defines += [ "ENABLE_HANGOUT_SERVICES_EXTENSION=1" ]
+  }
+  if (v8_use_external_startup_data) {
+    defines += [ "V8_USE_EXTERNAL_STARTUP_DATA" ]
   }
 }
 

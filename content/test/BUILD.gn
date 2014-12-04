@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build/module_args/v8.gni")
 
 content_tests_gypi_values =
     exec_script("//build/gypi_to_gn.py",
@@ -150,6 +151,9 @@ static_library("test_support") {
       "test/test_content_browser_client.cc",
       "test/test_content_client.cc",
     ]
+  }
+  if (v8_use_external_startup_data) {
+    deps += [ "//gin:gin" ]
   }
 }
 
