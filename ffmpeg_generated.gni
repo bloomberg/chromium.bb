@@ -27,8 +27,6 @@ ffmpeg_c_sources += [
   "libavcodec/fft_fixed_32.c",
   "libavcodec/fft_float.c",
   "libavcodec/fft_init_table.c",
-  "libavcodec/flac.c",
-  "libavcodec/flacdata.c",
   "libavcodec/fmtconvert.c",
   "libavcodec/golomb.c",
   "libavcodec/h264pred.c",
@@ -271,7 +269,9 @@ if (cpu_arch == "arm" || (cpu_arch == "arm" && arm_use_neon)) {
 
 if (ffmpeg_branding == "ChromiumOS" || ffmpeg_branding == "ChromeOS") {
   ffmpeg_c_sources += [
+    "libavcodec/flac.c",
     "libavcodec/flac_parser.c",
+    "libavcodec/flacdata.c",
     "libavcodec/flacdec.c",
     "libavcodec/flacdsp.c",
     "libavformat/flacdec.c",
