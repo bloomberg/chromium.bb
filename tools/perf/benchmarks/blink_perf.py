@@ -16,7 +16,7 @@ BLINK_PERF_BASE_DIR = os.path.join(util.GetChromiumSrcDir(),
 SKIPPED_FILE = os.path.join(BLINK_PERF_BASE_DIR, 'Skipped')
 
 
-def _CreatePageSetFromPath(path, skipped_file):
+def CreatePageSetFromPath(path, skipped_file):
   assert os.path.exists(path)
 
   page_urls = []
@@ -53,7 +53,8 @@ def _CreatePageSetFromPath(path, skipped_file):
     _AddDir(path, tuple(skipped))
   else:
     _AddPage(path)
-  ps = page_set.PageSet(file_path=os.getcwd()+os.sep, serving_dirs=serving_dirs)
+  ps = page_set.PageSet(file_path=os.getcwd()+os.sep,
+                        serving_dirs=serving_dirs)
   for url in page_urls:
     ps.AddPageWithDefaultRunNavigate(url)
   return ps
@@ -116,7 +117,7 @@ class BlinkPerfAnimation(benchmark.Benchmark):
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Animation')
-    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+    return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
 class BlinkPerfBindings(benchmark.Benchmark):
@@ -125,7 +126,7 @@ class BlinkPerfBindings(benchmark.Benchmark):
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Bindings')
-    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+    return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
 class BlinkPerfCSS(benchmark.Benchmark):
@@ -134,7 +135,7 @@ class BlinkPerfCSS(benchmark.Benchmark):
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'CSS')
-    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+    return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
 class BlinkPerfCanvas(benchmark.Benchmark):
@@ -143,7 +144,7 @@ class BlinkPerfCanvas(benchmark.Benchmark):
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Canvas')
-    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+    return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
 class BlinkPerfDOM(benchmark.Benchmark):
@@ -152,7 +153,7 @@ class BlinkPerfDOM(benchmark.Benchmark):
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'DOM')
-    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+    return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
 class BlinkPerfEvents(benchmark.Benchmark):
@@ -161,7 +162,7 @@ class BlinkPerfEvents(benchmark.Benchmark):
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Events')
-    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+    return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
 class BlinkPerfInteractive(benchmark.Benchmark):
@@ -170,7 +171,7 @@ class BlinkPerfInteractive(benchmark.Benchmark):
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Interactive')
-    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+    return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
 class BlinkPerfLayout(benchmark.Benchmark):
@@ -179,7 +180,7 @@ class BlinkPerfLayout(benchmark.Benchmark):
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Layout')
-    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+    return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
 @benchmark.Enabled('content-shell')
@@ -194,7 +195,7 @@ class BlinkPerfMutation(benchmark.Benchmark):
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Mutation')
-    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+    return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
 class BlinkPerfParser(benchmark.Benchmark):
@@ -203,7 +204,7 @@ class BlinkPerfParser(benchmark.Benchmark):
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'Parser')
-    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+    return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
 class BlinkPerfSVG(benchmark.Benchmark):
@@ -212,7 +213,7 @@ class BlinkPerfSVG(benchmark.Benchmark):
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'SVG')
-    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+    return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
 @benchmark.Enabled('content-shell')
@@ -227,7 +228,7 @@ class BlinkPerfShadowDOM(benchmark.Benchmark):
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'ShadowDOM')
-    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+    return CreatePageSetFromPath(path, SKIPPED_FILE)
 
 
 # This benchmark is for local testing, doesn't need to run on bots.
@@ -238,4 +239,4 @@ class BlinkPerfXMLHttpRequest(benchmark.Benchmark):
 
   def CreatePageSet(self, options):
     path = os.path.join(BLINK_PERF_BASE_DIR, 'XMLHttpRequest')
-    return _CreatePageSetFromPath(path, SKIPPED_FILE)
+    return CreatePageSetFromPath(path, SKIPPED_FILE)
