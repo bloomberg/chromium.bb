@@ -1443,6 +1443,13 @@ crbug.com/431643 [ Win ] http/tests/w3c/webperf/submission/Intel/resource-timing
 
 crbug.com/435525 [ Mac Debug ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ NeedsManualRebaseline ]
 
+# Need to update width variant test case after https://codereview.chromium.org/764463003.
+crbug.com/437197 fast/text/font-variant-width.html [ NeedsRebaseline ]
+crbug.com/437197 virtual/textblob/fast/text/font-variant-width.html [ NeedsRebaseline ]
+crbug.com/437197 virtual/antialiasedtext/fast/text/font-variant-width.html [ NeedsRebaseline ]
+crbug.com/437197 [ Mac ] virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ NeedsRebaseline ]
+crbug.com/437197 [ Win Mac ] virtual/slimmingpaint/fast/text/font-variant-width.html [ NeedsRebaseline ]
+
 crbug.com/436436 fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Pass Failure ]
 
 crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Pass Slow Timeout ]
