@@ -9,6 +9,8 @@
 #include "ui/ozone/platform/caca/caca_window.h"
 #include "ui/ozone/platform/caca/caca_window_manager.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
+#include "ui/ozone/public/gpu_platform_support.h"
+#include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/system_input_injector.h"
 
@@ -32,10 +34,10 @@ class OzonePlatformCaca : public OzonePlatform {
     return nullptr;  // no input setting need
   }
   GpuPlatformSupport* GetGpuPlatformSupport() override {
-    return NULL;  // no GPU support
+    return gpu_platform_support_.get();
   }
   GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
-    return NULL;  // no GPU support
+    return gpu_platform_support_host_.get();
   }
   scoped_ptr<SystemInputInjector> CreateSystemInputInjector() override {
     return nullptr;  // no input injection support.
@@ -57,14 +59,19 @@ class OzonePlatformCaca : public OzonePlatform {
     window_manager_.reset(new CacaWindowManager);
     event_source_.reset(new CacaEventSource());
     cursor_factory_ozone_.reset(new CursorFactoryOzone());
+    gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
   }
 
-  void InitializeGPU() override {}
+  void InitializeGPU() override {
+    gpu_platform_support_.reset(CreateStubGpuPlatformSupport());
+  }
 
  private:
   scoped_ptr<CacaWindowManager> window_manager_;
   scoped_ptr<CacaEventSource> event_source_;
   scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
+  scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
+  scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformCaca);
 };
