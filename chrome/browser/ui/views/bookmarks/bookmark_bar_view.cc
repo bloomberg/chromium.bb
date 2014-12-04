@@ -119,12 +119,6 @@ static const int kRightMargin = 1;
 // Padding between buttons.
 static const int kButtonPadding = 0;
 
-// Icon to display when one isn't found for the page.
-static gfx::ImageSkia* kDefaultFavicon = NULL;
-
-// Icon used for folders.
-static gfx::ImageSkia* kFolderIcon = NULL;
-
 // Color of the drop indicator.
 static const SkColor kDropIndicatorColor = SK_ColorBLACK;
 
@@ -170,20 +164,8 @@ namespace {
 // animations are enabled by default.
 bool animations_enabled = true;
 
-const gfx::ImageSkia& GetDefaultFavicon() {
-  if (!kDefaultFavicon) {
-    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-    kDefaultFavicon = rb->GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
-  }
-  return *kDefaultFavicon;
-}
-
-const gfx::ImageSkia& GetFolderIcon() {
-  if (!kFolderIcon) {
-    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-    kFolderIcon = rb->GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER);
-  }
-  return *kFolderIcon;
+gfx::ImageSkia* GetImageSkiaNamed(int id) {
+  return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
 // BookmarkButtonBase -----------------------------------------------
@@ -1277,22 +1259,23 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
 
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     if (sender == GetBookmarkButton(i)) {
-      views::LabelButton* button = GetBookmarkButton(i);
       const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(i);
-
       const gfx::Image& image_from_model = model_->GetFavicon(node);
-      const gfx::ImageSkia& icon = image_from_model.IsEmpty() ?
-          (node->is_folder() ? GetFolderIcon() : GetDefaultFavicon()) :
-          *image_from_model.ToImageSkia();
+      const gfx::ImageSkia* icon = nullptr;
+      if (image_from_model.IsEmpty()) {
+        icon = GetImageSkiaNamed(node->is_folder() ? IDR_BOOKMARK_BAR_FOLDER
+                                                   : IDR_DEFAULT_FAVICON);
+      } else {
+        icon = image_from_model.ToImageSkia();
+      }
 
-      button_drag_utils::SetDragImage(
-          node->url(),
-          node->GetTitle(),
-          icon,
-          &press_pt,
-          data,
-          button->GetWidget());
-      WriteBookmarkDragData(model_->bookmark_bar_node()->GetChild(i), data);
+      button_drag_utils::SetDragImage(node->url(),
+                                      node->GetTitle(),
+                                      *icon,
+                                      &press_pt,
+                                      data,
+                                      GetBookmarkButton(i)->GetWidget());
+      WriteBookmarkDragData(node, data);
       return;
     }
   }
@@ -1546,7 +1529,8 @@ MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
   MenuButton* button =
       new BookmarkFolderButton(this, base::string16(), this, false);
   button->set_id(VIEW_ID_OTHER_BOOKMARKS);
-  button->SetImage(views::Button::STATE_NORMAL, GetFolderIcon());
+  button->SetImage(views::Button::STATE_NORMAL,
+                   *GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER));
   button->set_context_menu_controller(this);
   button->set_tag(kOtherFolderButtonTag);
   return button;
@@ -1557,20 +1541,17 @@ MenuButton* BookmarkBarView::CreateManagedBookmarksButton() {
   MenuButton* button =
       new BookmarkFolderButton(this, base::string16(), this, false);
   button->set_id(VIEW_ID_MANAGED_BOOKMARKS);
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  gfx::ImageSkia* image =
-      rb->GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER_MANAGED);
-  button->SetImage(views::Button::STATE_NORMAL, *image);
+  button->SetImage(views::Button::STATE_NORMAL,
+                   *GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER_MANAGED));
   button->set_context_menu_controller(this);
   button->set_tag(kManagedFolderButtonTag);
   return button;
 }
 
 MenuButton* BookmarkBarView::CreateOverflowButton() {
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   MenuButton* button = new OverFlowButton(this);
   button->SetImage(views::Button::STATE_NORMAL,
-                   *rb->GetImageSkiaNamed(IDR_BOOKMARK_BAR_CHEVRONS));
+                   *GetImageSkiaNamed(IDR_BOOKMARK_BAR_CHEVRONS));
 
   // The overflow button's image contains an arrow and therefore it is a
   // direction sensitive image and we need to flip it if the UI layout is
@@ -1598,7 +1579,8 @@ views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
   }
   views::MenuButton* button =
       new BookmarkFolderButton(this, node->GetTitle(), this, false);
-  button->SetImage(views::Button::STATE_NORMAL, GetFolderIcon());
+  button->SetImage(views::Button::STATE_NORMAL,
+                   *GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER));
   ConfigureButton(node, button);
   return button;
 }
@@ -1609,9 +1591,8 @@ views::LabelButton* BookmarkBarView::CreateAppsPageShortcutButton() {
   button->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_BOOKMARK_BAR_APPS_SHORTCUT_TOOLTIP));
   button->set_id(VIEW_ID_BOOKMARK_BAR_ELEMENT);
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   button->SetImage(views::Button::STATE_NORMAL,
-                   *rb->GetImageSkiaNamed(IDR_BOOKMARK_BAR_APPS_SHORTCUT));
+                   *GetImageSkiaNamed(IDR_BOOKMARK_BAR_APPS_SHORTCUT));
   button->set_context_menu_controller(this);
   button->set_tag(kAppsShortcutButtonTag);
   return button;
@@ -1634,10 +1615,12 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
   button->set_drag_controller(this);
   if (node->is_url()) {
     const gfx::Image& favicon = model_->GetFavicon(node);
-    if (!favicon.IsEmpty())
+    if (!favicon.IsEmpty()) {
       button->SetImage(views::Button::STATE_NORMAL, *favicon.ToImageSkia());
-    else
-      button->SetImage(views::Button::STATE_NORMAL, GetDefaultFavicon());
+    } else {
+      button->SetImage(views::Button::STATE_NORMAL,
+                       *GetImageSkiaNamed(IDR_DEFAULT_FAVICON));
+    }
   }
   button->SetMaxSize(gfx::Size(kMaxButtonWidth, 0));
 }
