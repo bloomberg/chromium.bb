@@ -55,7 +55,7 @@ RenderObject* HTMLSummaryElement::createRenderer(RenderStyle*)
 
 void HTMLSummaryElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
-    RefPtr<DetailsMarkerControl> markerControl = DetailsMarkerControl::create(document());
+    RefPtrWillBeRawPtr<DetailsMarkerControl> markerControl = DetailsMarkerControl::create(document());
     markerControl->setIdAttribute(ShadowElementNames::detailsMarker());
     root.appendChild(markerControl);
     root.appendChild(HTMLContentElement::create(document()));
