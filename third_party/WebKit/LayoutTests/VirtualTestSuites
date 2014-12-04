@@ -168,5 +168,10 @@
     "prefix": "slimmingpaint",
     "base": "fast/text",
     "args": ["--enable-slimming-paint"]
+  },
+  {
+    "prefix": "rootlayerscrolls",
+    "base": "fast/scrolling",
+    "args": ["--root-layer-scrolls"]
   }
 ]

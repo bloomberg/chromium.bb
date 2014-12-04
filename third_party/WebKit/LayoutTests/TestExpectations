@@ -1,6 +1,6 @@
 crbug.com/438356 virtual/slimmingpaint/fast/block/float/021.html [ ImageOnlyFailure ]
 crbug.com/438356 virtual/slimmingpaint/fast/block/positioning/relative-overflow-block.html [ ImageOnlyFailure ]
-crbug.com/438356 virtual/slimmingpaint/fast/block/positioning/relative-overflow-replaced-float.html [ ImageOnlyFailure ] 
+crbug.com/438356 virtual/slimmingpaint/fast/block/positioning/relative-overflow-replaced-float.html [ ImageOnlyFailure ]
 crbug.com/438356 virtual/slimmingpaint/fast/block/positioning/relative-overflow-replaced.html [ ImageOnlyFailure ]
 
 crbug.com/434560 virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
@@ -1427,6 +1427,27 @@ crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/word-break.html [ Pass 
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/atsui-bidi-control.html [ Crash ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/international/bidi-neutral-run.html [ Crash ]
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/aat-morx.html [ Failure ]
+
+# These crash because window.scrollTo hasn't been properly wired up yet.
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrolling-apis-subpixel.html [ Crash ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrolling-apis-nan-scroll-position.html [ Crash ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scroll-without-document-element-renderer.html [ Crash ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scroll-without-document-element.html [ Crash ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-prevent-default.html [ Crash ]
+
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-document.html [ Failure ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/hover-during-scroll.html [ Failure ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overflow-hidden.html [ Failure ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overried-inherited-visibility-hidden.html [ Failure ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-scrolling-no-overried-inherited-visibility-hidden.html [ Failure ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-scrolling-no-visibility-hidden-child.html [ Failure ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-scrolling-no.html [ Failure ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-scrolling-yes.html [ Failure ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-visibility-hidden-child.html [ Failure ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-zero-size-and-border.html [ Failure ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame.html [ Failure ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled.html [ ImageOnlyFailure ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
 crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 
