@@ -1336,481 +1336,464 @@
         ], # end target_conditions for glibc (nexe/nlib/nso, x86-32/64)
       },
     }], # end target_arch == ia32 or x64
-    # Using an always true condition to match the evaluation order of the
-    # non-pnacl stanzas.
-    # Gyp's evaluation order is deterministic, but undocumented.
-    # Matching the level of nesting reduces the differences in how
-    # these stanzas get expanded.
-    # See: https://code.google.com/p/chromium/issues/detail?id=427427
-    # 1==1 is used, as gyp's conditions do not have a boolean true value.
-    ['1==1', {
-      'target_defaults': {
-        'gcc_compile_flags': [],
-        'pnacl_compile_flags': [],
-        'variables': {
-          'disable_pnacl%': 0,
-          'build_pnacl_newlib': 0,
-          # Flag to translate pexes into nexes at build time (vs in the
-          # browser).
-          'translate_pexe_with_build': 0,
-          # Flag to indicate that PNaCl should compile with the native ABI
-          # instead of the le32 ABI.
-          'pnacl_native_biased': 0,
-          'nexe_target': '',
-          'nlib_target': '',
-          'extra_deps_pnacl_newlib': [],
-          'tc_lib_dir_pnacl_newlib': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib',
-          'tc_lib_dir_pnacl_translate' :'<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate',
-          'tc_include_dir_pnacl_newlib': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/include',
-          'compile_flags': [
-            '<@(nacl_default_compile_flags)',
-          ],
-          'gcc_compile_flags': [
-            '-fomit-frame-pointer',
-            # A debugger should be able to unwind IRT call frames. As the IRT is
-            # compiled with high level of optimizations and without debug info,
-            # compiler is requested to generate unwind tables explicitly. This
-            # is the default behavior on x86-64 and when compiling C++ with
-            # exceptions enabled, the change is for the benefit of x86-32 C.
-            # These are only required for the IRT but are here for all
-            # nacl-gcc-compiled binaries because the IRT depends on other libs
-            '-fasynchronous-unwind-tables',
-          ],
-          'pnacl_compile_flags': [
-            '-Wno-extra-semi',
-            '-Wno-unused-private-field',
-            '-Wno-char-subscripts',
-            '-Wno-unused-function',
-          ],
-          # IRT compile/link flags to make the binary smaller.
-          # Omitted from non-IRT libraries to keep the libraries themselves
-          # small.
-          'gcc_irt_compile_flags': [
-            '-ffunction-sections',
-            '-fdata-sections',
-          ],
-          'gcc_irt_link_flags': [
-            '-Wl,--gc-sections',
-          ],
-          'pnacl_irt_link_flags': [
-            '-Wt,-ffunction-sections',
-            '-Wt,-fdata-sections',
-            '-Wn,--gc-sections',
-          ],
-        },
-        'target_conditions': [
-          # pnacl actions for building pexes and translating them
-          ['nexe_target!="" and disable_pnacl==0 and build_pnacl_newlib!=0 '
-           'and pnacl_native_biased==0', {
+  ],
+  'target_defaults': {
+    'gcc_compile_flags': [],
+    'pnacl_compile_flags': [],
+    'variables': {
+      'disable_pnacl%': 0,
+      'build_pnacl_newlib': 0,
+      # Flag to translate pexes into nexes at build time (vs in the browser).
+      'translate_pexe_with_build': 0,
+      # Flag to indicate that PNaCl should compile with the native ABI
+      # instead of the le32 ABI.
+      'pnacl_native_biased': 0,
+      'nexe_target': '',
+      'nlib_target': '',
+      'extra_deps_pnacl_newlib': [],
+      'tc_lib_dir_pnacl_newlib': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib',
+      'tc_lib_dir_pnacl_translate' :'<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_translate',
+      'tc_include_dir_pnacl_newlib': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/include',
+      'compile_flags': [
+        '<@(nacl_default_compile_flags)',
+      ],
+      'gcc_compile_flags': [
+        '-fomit-frame-pointer',
+        # A debugger should be able to unwind IRT call frames. As the IRT is
+        # compiled with high level of optimizations and without debug info,
+        # compiler is requested to generate unwind tables explicitly. This
+        # is the default behavior on x86-64 and when compiling C++ with
+        # exceptions enabled, the change is for the benefit of x86-32 C.
+        # These are only required for the IRT but are here for all
+        # nacl-gcc-compiled binaries because the IRT depends on other libs
+        '-fasynchronous-unwind-tables',
+      ],
+      'pnacl_compile_flags': [
+        '-Wno-extra-semi',
+        '-Wno-unused-private-field',
+        '-Wno-char-subscripts',
+        '-Wno-unused-function',
+      ],
+      # IRT compile/link flags to make the binary smaller.
+      # Omitted from non-IRT libraries to keep the libraries themselves small.
+      'gcc_irt_compile_flags': [
+        '-ffunction-sections',
+        '-fdata-sections',
+      ],
+      'gcc_irt_link_flags': [
+        '-Wl,--gc-sections',
+      ],
+      'pnacl_irt_link_flags': [
+        '-Wt,-ffunction-sections',
+        '-Wt,-fdata-sections',
+        '-Wn,--gc-sections',
+      ],
+    },
+    'target_conditions': [
+      # pnacl actions for building pexes and translating them
+      ['nexe_target!="" and disable_pnacl==0 and build_pnacl_newlib!=0 '
+       'and pnacl_native_biased==0', {
+         'variables': {
+           'out_pnacl_newlib_x86_32_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x32.nexe',
+           'out_pnacl_newlib_x86_64_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x64.nexe',
+           'out_pnacl_newlib_arm_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_arm.nexe',
+           'out_pnacl_newlib_mips_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_mips32.nexe',
+           'out_pnacl_newlib_x86_32_nonsfi_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x32_nonsfi.nexe',
+           'out_pnacl_newlib_arm_nonsfi_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_arm_nonsfi.nexe',
+           'tool_name': 'pnacl_newlib',
+           'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib',
+           'out_pnacl_newlib%': '<(PRODUCT_DIR)/>(nexe_target)_newlib.pexe',
+           'objdir_pnacl_newlib%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
+           'link_flags': [
+             '-O3',
+           ],
+           'translate_flags': [],
+         },
+         'actions': [
+           {
+             'action_name': 'build newlib pexe',
              'variables': {
-               'out_pnacl_newlib_x86_32_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x32.nexe',
-               'out_pnacl_newlib_x86_64_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x64.nexe',
-               'out_pnacl_newlib_arm_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_arm.nexe',
-               'out_pnacl_newlib_mips_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_mips32.nexe',
-               'out_pnacl_newlib_x86_32_nonsfi_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x32_nonsfi.nexe',
-               'out_pnacl_newlib_arm_nonsfi_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_arm_nonsfi.nexe',
-               'tool_name': 'pnacl_newlib',
-               'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib',
-               'out_pnacl_newlib%': '<(PRODUCT_DIR)/>(nexe_target)_newlib.pexe',
-               'objdir_pnacl_newlib%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
-               'link_flags': [
-                 '-O3',
-               ],
-               'translate_flags': [],
+               'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
              },
-             'actions': [
-               {
-                 'action_name': 'build newlib pexe',
-                 'variables': {
-                   'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
-                 },
-                 'msvs_cygwin_shell': 0,
-                 'description': 'building >(out_pnacl_newlib)',
-                 'inputs': [
-                   '<@(common_inputs)',
-                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
-                   '>@(extra_deps)',
-                   '>@(extra_deps_pnacl_newlib)',
-                   '^(source_list_pnacl_newlib)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep',
-                 ],
-                 'outputs': ['>(out_pnacl_newlib)'],
-                 'action': [
-                   '<@(common_args)',
-                   '>@(extra_args)',
-                   '--arch', 'pnacl',
-                   '--build', 'newlib_pexe',
-                   '--name', '>(out_pnacl_newlib)',
-                   '--objdir', '>(objdir_pnacl_newlib)',
-                   '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
-                   # TODO(dschuff): try removing gline-tables-only after 3.5
-                   # merge when debug metadata is less memory-intensive
-                   '--compile_flags=^(compile_flags) >(_compile_flags) -gline-tables-only ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
-                   '--gomadir', '<(gomadir)',
-                   '--defines=^(defines) >(_defines)',
-                   '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib ^(link_flags) >(_link_flags)',
-                   '--source-list=^(source_list_pnacl_newlib)',
-                 ],
-               }],
-             'target_conditions': [
-               [ 'enable_x86_32!=0 and translate_pexe_with_build!=0', {
-                 'actions': [{
-                   'action_name': 'translate newlib pexe to x86-32 nexe',
-                   'msvs_cygwin_shell': 0,
-                   'description': 'translating >(out_pnacl_newlib_x86_32_nexe)',
-                   'inputs': [
-                     # Depending on out_pnacl_newlib helps depend on
-                     # common_inputs.
-                     '>(out_pnacl_newlib)',
-                   ],
-                   'outputs': [ '>(out_pnacl_newlib_x86_32_nexe)' ],
-                   'action' : [
-                     '<@(common_args)',
-                     '--arch', 'x86-32',
-                     '--build', 'newlib_translate',
-                     '--name', '>(out_pnacl_newlib_x86_32_nexe)',
-                     '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-x86-32',
-                     '>(out_pnacl_newlib)',
-                   ],
-                 }],
-               }],
-               [ 'enable_x86_32_nonsfi!=0 and translate_pexe_with_build!=0', {
-                 'actions': [{
-                   'action_name': 'translate newlib pexe to x86-32-nonsfi nexe',
-                   'msvs_cygwin_shell': 0,
-                   'description': 'translating >(out_pnacl_newlib_x86_32_nonsfi_nexe)',
-                   'inputs': [
-                     # Depending on out_pnacl_newlib helps depend on
-                     # common_inputs.
-                     '>(out_pnacl_newlib)',
-                   ],
-                   'outputs': [ '>(out_pnacl_newlib_x86_32_nonsfi_nexe)' ],
-                   'action' : [
-                     '<@(common_args)',
-                     '--arch', 'x86-32-nonsfi',
-                     '--build', 'newlib_translate',
-                     '--name', '>(out_pnacl_newlib_x86_32_nonsfi_nexe)',
-                     '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-x86-32-nonsfi',
-                     '>(out_pnacl_newlib)',
-                   ],
-                 }],
-               }],
-               [ 'enable_x86_64!=0 and translate_pexe_with_build!=0', {
-                 'actions': [{
-                   'action_name': 'translate newlib pexe to x86-64 nexe',
-                   'msvs_cygwin_shell': 0,
-                   'description': 'translating >(out_pnacl_newlib_x86_64_nexe)',
-                   'inputs': [
-                     # Depending on out_pnacl_newlib helps depend on
-                     # common_inputs.
-                     '>(out_pnacl_newlib)',
-                   ],
-                   'outputs': [ '>(out_pnacl_newlib_x86_64_nexe)' ],
-                   'action' : [
-                     '<@(common_args)',
-                     '--arch', 'x86-64',
-                     '--build', 'newlib_translate',
-                     '--name', '>(out_pnacl_newlib_x86_64_nexe)',
-                     '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-x86-64',
-                     '>(out_pnacl_newlib)',
-                   ],
-                 }],
-               }],
-               [ 'enable_arm!=0 and translate_pexe_with_build!=0', {
-                 'actions': [{
-                   'action_name': 'translate newlib pexe to ARM nexe',
-                   'msvs_cygwin_shell': 0,
-                   'description': 'translating >(out_pnacl_newlib_arm_nexe)',
-                   'inputs': [
-                     # Depending on out_pnacl_newlib helps depend on
-                     # common_inputs.
-                     '>(out_pnacl_newlib)',
-                   ],
-                   'outputs': [ '>(out_pnacl_newlib_arm_nexe)' ],
-                   'action' : [
-                     '<@(common_args)',
-                     '--arch', 'arm',
-                     '--build', 'newlib_translate',
-                     '--name', '>(out_pnacl_newlib_arm_nexe)',
-                     '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-arm',
-                     '>(out_pnacl_newlib)',
-                   ],
-                 }],
-               }],
-               [ 'enable_arm_nonsfi!=0 and translate_pexe_with_build!=0', {
-                 'actions': [{
-                   'action_name': 'translate newlib pexe to ARM-nonsfi nexe',
-                   'msvs_cygwin_shell': 0,
-                   'description': 'translating >(out_pnacl_newlib_arm_nonsfi_nexe)',
-                   'inputs': [
-                     # Depending on out_pnacl_newlib helps depend on
-                     # common_inputs.
-                     '>(out_pnacl_newlib)',
-                   ],
-                   'outputs': [ '>(out_pnacl_newlib_arm_nonsfi_nexe)' ],
-                   'action' : [
-                     '<@(common_args)',
-                     '--arch', 'arm-nonsfi',
-                     '--build', 'newlib_translate',
-                     '--name', '>(out_pnacl_newlib_arm_nonsfi_nexe)',
-                     '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-arm-nonsfi',
-                     '>(out_pnacl_newlib)',
-                   ],
-                 }],
-               }],
-               [ 'enable_mips!=0 and translate_pexe_with_build!=0', {
-                 'actions': [{
-                   'action_name': 'translate newlib pexe to MIPS nexe',
-                   'msvs_cygwin_shell': 0,
-                   'description': 'translating >(out_pnacl_newlib_mips_nexe)',
-                   'inputs': [
-                     # Depending on out_pnacl_newlib helps depend on
-                     # common_inputs.
-                     '>(out_pnacl_newlib)',
-                   ],
-                   'outputs': [ '>(out_pnacl_newlib_mips_nexe)' ],
-                   'action' : [
-                     '<@(common_args)',
-                     '--arch', 'mips',
-                     '--build', 'newlib_translate',
-                     '--name', '>(out_pnacl_newlib_mips_nexe)',
-                     '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-mips32',
-                     '>(out_pnacl_newlib)',
-                   ],
-                 }],
-               }],
+             'msvs_cygwin_shell': 0,
+             'description': 'building >(out_pnacl_newlib)',
+             'inputs': [
+               '<@(common_inputs)',
+               '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
+               '>@(extra_deps)',
+               '>@(extra_deps_pnacl_newlib)',
+               '^(source_list_pnacl_newlib)',
+               '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep',
              ],
-           }],  # end pnacl actions for building pexes and translating to nexes
-          # pnacl action for building portable bitcode libraries
-          ['nlib_target!="" and disable_pnacl==0 and build_pnacl_newlib!=0'
-           'and pnacl_native_biased==0', {
+             'outputs': ['>(out_pnacl_newlib)'],
+             'action': [
+               '<@(common_args)',
+               '>@(extra_args)',
+               '--arch', 'pnacl',
+               '--build', 'newlib_pexe',
+               '--name', '>(out_pnacl_newlib)',
+               '--objdir', '>(objdir_pnacl_newlib)',
+               '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
+               # TODO(dschuff): try removing gline-tables-only after 3.5 merge
+               # when debug metadata is less memory-intensive
+               '--compile_flags=^(compile_flags) >(_compile_flags) -gline-tables-only ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+               '--gomadir', '<(gomadir)',
+               '--defines=^(defines) >(_defines)',
+               '--link_flags=-B<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib/lib ^(link_flags) >(_link_flags)',
+               '--source-list=^(source_list_pnacl_newlib)',
+             ],
+           }],
+         'target_conditions': [
+           [ 'enable_x86_32!=0 and translate_pexe_with_build!=0', {
+             'actions': [{
+               'action_name': 'translate newlib pexe to x86-32 nexe',
+               'msvs_cygwin_shell': 0,
+               'description': 'translating >(out_pnacl_newlib_x86_32_nexe)',
+               'inputs': [
+                 # Depending on out_pnacl_newlib helps depend on common_inputs.
+                 '>(out_pnacl_newlib)',
+               ],
+               'outputs': [ '>(out_pnacl_newlib_x86_32_nexe)' ],
+               'action' : [
+                 '<@(common_args)',
+                 '--arch', 'x86-32',
+                 '--build', 'newlib_translate',
+                 '--name', '>(out_pnacl_newlib_x86_32_nexe)',
+                 '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-x86-32',
+                 '>(out_pnacl_newlib)',
+               ],
+             }],
+           }],
+           [ 'enable_x86_32_nonsfi!=0 and translate_pexe_with_build!=0', {
+             'actions': [{
+               'action_name': 'translate newlib pexe to x86-32-nonsfi nexe',
+               'msvs_cygwin_shell': 0,
+               'description': 'translating >(out_pnacl_newlib_x86_32_nonsfi_nexe)',
+               'inputs': [
+                 # Depending on out_pnacl_newlib helps depend on common_inputs.
+                 '>(out_pnacl_newlib)',
+               ],
+               'outputs': [ '>(out_pnacl_newlib_x86_32_nonsfi_nexe)' ],
+               'action' : [
+                 '<@(common_args)',
+                 '--arch', 'x86-32-nonsfi',
+                 '--build', 'newlib_translate',
+                 '--name', '>(out_pnacl_newlib_x86_32_nonsfi_nexe)',
+                 '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-x86-32-nonsfi',
+                 '>(out_pnacl_newlib)',
+               ],
+             }],
+           }],
+           [ 'enable_x86_64!=0 and translate_pexe_with_build!=0', {
+             'actions': [{
+               'action_name': 'translate newlib pexe to x86-64 nexe',
+               'msvs_cygwin_shell': 0,
+               'description': 'translating >(out_pnacl_newlib_x86_64_nexe)',
+               'inputs': [
+                 # Depending on out_pnacl_newlib helps depend on common_inputs.
+                 '>(out_pnacl_newlib)',
+               ],
+               'outputs': [ '>(out_pnacl_newlib_x86_64_nexe)' ],
+               'action' : [
+                 '<@(common_args)',
+                 '--arch', 'x86-64',
+                 '--build', 'newlib_translate',
+                 '--name', '>(out_pnacl_newlib_x86_64_nexe)',
+                 '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-x86-64',
+                 '>(out_pnacl_newlib)',
+               ],
+             }],
+           }],
+           [ 'enable_arm!=0 and translate_pexe_with_build!=0', {
+             'actions': [{
+               'action_name': 'translate newlib pexe to ARM nexe',
+               'msvs_cygwin_shell': 0,
+               'description': 'translating >(out_pnacl_newlib_arm_nexe)',
+               'inputs': [
+                 # Depending on out_pnacl_newlib helps depend on common_inputs.
+                 '>(out_pnacl_newlib)',
+               ],
+               'outputs': [ '>(out_pnacl_newlib_arm_nexe)' ],
+               'action' : [
+                 '<@(common_args)',
+                 '--arch', 'arm',
+                 '--build', 'newlib_translate',
+                 '--name', '>(out_pnacl_newlib_arm_nexe)',
+                 '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-arm',
+                 '>(out_pnacl_newlib)',
+               ],
+             }],
+           }],
+           [ 'enable_arm_nonsfi!=0 and translate_pexe_with_build!=0', {
+             'actions': [{
+               'action_name': 'translate newlib pexe to ARM-nonsfi nexe',
+               'msvs_cygwin_shell': 0,
+               'description': 'translating >(out_pnacl_newlib_arm_nonsfi_nexe)',
+               'inputs': [
+                 # Depending on out_pnacl_newlib helps depend on common_inputs.
+                 '>(out_pnacl_newlib)',
+               ],
+               'outputs': [ '>(out_pnacl_newlib_arm_nonsfi_nexe)' ],
+               'action' : [
+                 '<@(common_args)',
+                 '--arch', 'arm-nonsfi',
+                 '--build', 'newlib_translate',
+                 '--name', '>(out_pnacl_newlib_arm_nonsfi_nexe)',
+                 '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-arm-nonsfi',
+                 '>(out_pnacl_newlib)',
+               ],
+             }],
+           }],
+           [ 'enable_mips!=0 and translate_pexe_with_build!=0', {
+             'actions': [{
+               'action_name': 'translate newlib pexe to MIPS nexe',
+               'msvs_cygwin_shell': 0,
+               'description': 'translating >(out_pnacl_newlib_mips_nexe)',
+               'inputs': [
+                 # Depending on out_pnacl_newlib helps depend on common_inputs.
+                 '>(out_pnacl_newlib)',
+               ],
+               'outputs': [ '>(out_pnacl_newlib_mips_nexe)' ],
+               'action' : [
+                 '<@(common_args)',
+                 '--arch', 'mips',
+                 '--build', 'newlib_translate',
+                 '--name', '>(out_pnacl_newlib_mips_nexe)',
+                 '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-mips32',
+                 '>(out_pnacl_newlib)',
+               ],
+             }],
+           }],
+         ],
+       }],  # end pnacl actions for building pexes and translating to nexes
+      # pnacl action for building portable bitcode libraries
+      ['nlib_target!="" and disable_pnacl==0 and build_pnacl_newlib!=0'
+       'and pnacl_native_biased==0', {
+         'variables': {
+           'tool_name': 'pnacl_newlib',
+           'objdir_pnacl_newlib%': '>(INTERMEDIATE_DIR)/<(tool_name)-pnacl/>(_target_name)',
+           'out_pnacl_newlib%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib/>(nlib_target)',
+         },
+         'actions': [
+           {
+             'action_name': 'build newlib plib',
              'variables': {
-               'tool_name': 'pnacl_newlib',
-               'objdir_pnacl_newlib%': '>(INTERMEDIATE_DIR)/<(tool_name)-pnacl/>(_target_name)',
-               'out_pnacl_newlib%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib/>(nlib_target)',
+               'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+             },
+             'msvs_cygwin_shell': 0,
+             'description': 'building >(out_pnacl_newlib)',
+             'inputs': [
+               '<@(common_inputs)',
+               '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
+               '>@(extra_deps)',
+               '>@(extra_deps_pnacl_newlib)',
+               '^(source_list_pnacl_newlib)',
+               '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep',
+             ],
+             'outputs': ['>(out_pnacl_newlib)'],
+             'action': [
+               '<@(common_args)',
+               '>@(extra_args)',
+               '--arch', 'pnacl',
+               '--build', 'newlib_plib',
+               '--name', '>(out_pnacl_newlib)',
+               '--objdir', '>(objdir_pnacl_newlib)',
+               '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
+               # TODO(dschuff): try removing gline-tables-only after 3.5 merge
+               # when debug metadata is less memory-intensive
+               '--compile_flags=^(compile_flags) >(_compile_flags) -gline-tables-only ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+               '--gomadir', '<(gomadir)',
+               '--defines=^(defines) >(_defines)',
+               '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
+               '--source-list=^(source_list_pnacl_newlib)',
+             ],
+           },
+         ],
+       }], # end pnacl actions for bitcode libraries
+    ], # end target conditions for pnacl pexe/plib
+    # pnacl actions for building ABI-biased native libraries
+    'conditions': [
+      # ARM
+      ['target_arch=="arm"', {
+        'target_conditions': [
+          ['disable_pnacl==0 and pnacl_native_biased==1 and nlib_target!="" and build_pnacl_newlib!=0', {
+            'variables': {
+               'tool_name': 'pnacl_newlib_arm',
+               'out_pnacl_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
+               'objdir_pnacl_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
+             },
+            'actions': [
+              {
+                'action_name': 'build newlib arm nlib (via pnacl)',
+                'variables': {
+                  'source_list_pnacl_newlib_arm%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                },
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_pnacl_newlib_arm)',
+                'inputs': [
+                  '<@(common_inputs)',
+                  '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
+                  '>@(extra_deps)',
+                  '>@(extra_deps_pnacl_newlib)',
+                  '^(source_list_pnacl_newlib_arm)',
+                  '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep'
+                ],
+                'outputs': ['>(out_pnacl_newlib_arm)'],
+                'action': [
+                  '<@(common_args)',
+                  '>@(extra_args)',
+                  '--arch', 'arm',
+                  '--build', 'newlib_nlib_pnacl',
+                  '--name', '>(out_pnacl_newlib_arm)',
+                  '--objdir', '>(objdir_pnacl_newlib_arm)',
+                  '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
+                  '--compile_flags=--target=armv7-unknown-nacl-gnueabi -mfloat-abi=hard --pnacl-allow-translate -arch arm ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                  '--gomadir', '<(gomadir)',
+                  '--defines=^(defines) >(_defines)',
+                  '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
+                  '--source-list=^(source_list_pnacl_newlib_arm)',
+                ],
+              },
+            ],
+          }],
+        ],
+      }], # end ARM
+      # ia32 or x64 (want to build both for Windows)
+      ['target_arch=="ia32" or target_arch=="x64"', {
+        'target_conditions': [
+          # x64
+          ['enable_x86_64!=0 and disable_pnacl==0 and pnacl_native_biased==1 '
+           'and nlib_target!="" and build_pnacl_newlib!=0', {
+             'variables': {
+               'tool_name': 'pnacl_newlib_x86_64',
+               'out_pnacl_newlib_x86_64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib-x86-64/>(nlib_target)',
+               'objdir_pnacl_newlib_x86_64%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
              },
              'actions': [
                {
-                 'action_name': 'build newlib plib',
+                 'action_name': 'build newlib x86-64 nlib (via pnacl)',
                  'variables': {
-                   'source_list_pnacl_newlib%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                   'source_list_pnacl_newlib_x86_64%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
                  },
                  'msvs_cygwin_shell': 0,
-                 'description': 'building >(out_pnacl_newlib)',
+                 'description': 'building >(out_pnacl_newlib_x86_64)',
                  'inputs': [
                    '<@(common_inputs)',
                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_pnacl_newlib)',
-                   '^(source_list_pnacl_newlib)',
-                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep',
+                   '^(source_list_pnacl_newlib_x86_64)',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep'
                  ],
-                 'outputs': ['>(out_pnacl_newlib)'],
+                 'outputs': ['>(out_pnacl_newlib_x86_64)'],
                  'action': [
                    '<@(common_args)',
                    '>@(extra_args)',
-                   '--arch', 'pnacl',
-                   '--build', 'newlib_plib',
-                   '--name', '>(out_pnacl_newlib)',
-                   '--objdir', '>(objdir_pnacl_newlib)',
+                   '--arch', 'x86-64',
+                   '--build', 'newlib_nlib_pnacl',
+                   '--name', '>(out_pnacl_newlib_x86_64)',
+                   '--objdir', '>(objdir_pnacl_newlib_x86_64)',
                    '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
-                   # TODO(dschuff): try removing gline-tables-only after 3.5
-                   # merge when debug metadata is less memory-intensive
-                   '--compile_flags=^(compile_flags) >(_compile_flags) -gline-tables-only ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                   '--compile_flags=--target=x86_64-unknown-nacl --pnacl-allow-translate -arch x86-64 ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
                    '--gomadir', '<(gomadir)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
-                   '--source-list=^(source_list_pnacl_newlib)',
+                   '--source-list=^(source_list_pnacl_newlib_x86_64)',
                  ],
                },
              ],
-           }], # end pnacl actions for bitcode libraries
-        ], # end target conditions for pnacl pexe/plib
-        # pnacl actions for building ABI-biased native libraries
-        'conditions': [
-          # ARM
-          ['target_arch=="arm"', {
-            'target_conditions': [
-              ['disable_pnacl==0 and pnacl_native_biased==1 and nlib_target!="" and build_pnacl_newlib!=0', {
+           }], # end x64
+          # ia32
+          ['enable_x86_32!=0 and disable_pnacl==0 and pnacl_native_biased==1 '
+           'and nlib_target!="" and build_pnacl_newlib!=0', {
+             'variables': {
+               'tool_name': 'pnacl_newlib_x86_32',
+               'out_pnacl_newlib_x86_32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib-x86-32/>(nlib_target)',
+               'objdir_pnacl_newlib_x86_32%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
+             },
+             'actions': [
+               {
+                 'action_name': 'build newlib x86-32 nlib (via pnacl)',
+                 'variables': {
+                   'source_list_pnacl_newlib_x86_32%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
+                 'msvs_cygwin_shell': 0,
+                 'description': 'building >(out_pnacl_newlib_x86_32)',
+                 'inputs': [
+                   '<@(common_inputs)',
+                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
+                   '>@(extra_deps)',
+                   '>@(extra_deps_pnacl_newlib)',
+                   '^(source_list_pnacl_newlib_x86_32)',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep'
+                 ],
+                 'outputs': ['>(out_pnacl_newlib_x86_32)'],
+                 'action': [
+                   '<@(common_args)',
+                   '>@(extra_args)',
+                   '--arch', 'x86-32',
+                   '--build', 'newlib_nlib_pnacl',
+                   '--name', '>(out_pnacl_newlib_x86_32)',
+                   '--objdir', '>(objdir_pnacl_newlib_x86_32)',
+                   '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
+                   '--compile_flags=--target=i686-unknown-nacl --pnacl-allow-translate -arch x86-32 ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                   '--gomadir', '<(gomadir)',
+                   '--defines=^(defines) >(_defines)',
+                   '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
+                   '--source-list=^(source_list_pnacl_newlib_x86_32)',
+                 ],
+               },
+             ],
+           }], # end ia32
+        ], # end ia32 or x64
+      }],
+      # MIPS
+      # The shim is not biased since the IRT itself is not biased.
+      ['target_arch=="mipsel"', {
+        'target_conditions': [
+          ['disable_pnacl==0 and pnacl_native_biased==1 and nlib_target!="" and build_pnacl_newlib!=0', {
+            'variables': {
+               'tool_name': 'pnacl_newlib_mips',
+               'out_pnacl_newlib_mips%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libmips/>(nlib_target)',
+               'objdir_pnacl_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
+             },
+            'actions': [
+              {
+                'action_name': 'build newlib mips nlib (via pnacl)',
                 'variables': {
-                   'tool_name': 'pnacl_newlib_arm',
-                   'out_pnacl_newlib_arm%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
-                   'objdir_pnacl_newlib_arm%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
-                 },
-                'actions': [
-                  {
-                    'action_name': 'build newlib arm nlib (via pnacl)',
-                    'variables': {
-                      'source_list_pnacl_newlib_arm%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
-                    },
-                    'msvs_cygwin_shell': 0,
-                    'description': 'building >(out_pnacl_newlib_arm)',
-                    'inputs': [
-                      '<@(common_inputs)',
-                      '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
-                      '>@(extra_deps)',
-                      '>@(extra_deps_pnacl_newlib)',
-                      '^(source_list_pnacl_newlib_arm)',
-                      '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep'
-                    ],
-                    'outputs': ['>(out_pnacl_newlib_arm)'],
-                    'action': [
-                      '<@(common_args)',
-                      '>@(extra_args)',
-                      '--arch', 'arm',
-                      '--build', 'newlib_nlib_pnacl',
-                      '--name', '>(out_pnacl_newlib_arm)',
-                      '--objdir', '>(objdir_pnacl_newlib_arm)',
-                      '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
-                      '--compile_flags=--target=armv7-unknown-nacl-gnueabi -mfloat-abi=hard --pnacl-allow-translate -arch arm ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
-                      '--gomadir', '<(gomadir)',
-                      '--defines=^(defines) >(_defines)',
-                      '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
-                      '--source-list=^(source_list_pnacl_newlib_arm)',
-                    ],
-                  },
+                  'source_list_pnacl_newlib_mips%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                },
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_pnacl_newlib_mips)',
+                'inputs': [
+                  '<@(common_inputs)',
+                  '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
+                  '>@(extra_deps)',
+                  '>@(extra_deps_pnacl_newlib)',
+                  '^(source_list_pnacl_newlib_mips)',
+                  '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep'
                 ],
-              }],
+                'outputs': ['>(out_pnacl_newlib_mips)'],
+                'action': [
+                  '<@(common_args)',
+                  '>@(extra_args)',
+                  '--arch', 'mips',
+                  '--build', 'newlib_nlib_pnacl',
+                  '--name', '>(out_pnacl_newlib_mips)',
+                  '--objdir', '>(objdir_pnacl_newlib_mips)',
+                  '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
+                  '--compile_flags=--pnacl-allow-translate -arch mips ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                  '--gomadir', '<(gomadir)',
+                  '--defines=^(defines) >(_defines)',
+                  '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
+                  '--source-list=^(source_list_pnacl_newlib_mips)',
+                ],
+              },
             ],
-          }], # end ARM
-          # ia32 or x64 (want to build both for Windows)
-          ['target_arch=="ia32" or target_arch=="x64"', {
-            'target_conditions': [
-              # x64
-              ['enable_x86_64!=0 and disable_pnacl==0 and pnacl_native_biased==1 '
-               'and nlib_target!="" and build_pnacl_newlib!=0', {
-                 'variables': {
-                   'tool_name': 'pnacl_newlib_x86_64',
-                   'out_pnacl_newlib_x86_64%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib-x86-64/>(nlib_target)',
-                   'objdir_pnacl_newlib_x86_64%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
-                 },
-                 'actions': [
-                   {
-                     'action_name': 'build newlib x86-64 nlib (via pnacl)',
-                     'variables': {
-                       'source_list_pnacl_newlib_x86_64%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
-                     },
-                     'msvs_cygwin_shell': 0,
-                     'description': 'building >(out_pnacl_newlib_x86_64)',
-                     'inputs': [
-                       '<@(common_inputs)',
-                       '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
-                       '>@(extra_deps)',
-                       '>@(extra_deps_pnacl_newlib)',
-                       '^(source_list_pnacl_newlib_x86_64)',
-                       '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep'
-                     ],
-                     'outputs': ['>(out_pnacl_newlib_x86_64)'],
-                     'action': [
-                       '<@(common_args)',
-                       '>@(extra_args)',
-                       '--arch', 'x86-64',
-                       '--build', 'newlib_nlib_pnacl',
-                       '--name', '>(out_pnacl_newlib_x86_64)',
-                       '--objdir', '>(objdir_pnacl_newlib_x86_64)',
-                       '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
-                       '--compile_flags=--target=x86_64-unknown-nacl --pnacl-allow-translate -arch x86-64 ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
-                       '--gomadir', '<(gomadir)',
-                       '--defines=^(defines) >(_defines)',
-                       '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
-                       '--source-list=^(source_list_pnacl_newlib_x86_64)',
-                     ],
-                   },
-                 ],
-               }], # end x64
-              # ia32
-              ['enable_x86_32!=0 and disable_pnacl==0 and pnacl_native_biased==1 '
-               'and nlib_target!="" and build_pnacl_newlib!=0', {
-                 'variables': {
-                   'tool_name': 'pnacl_newlib_x86_32',
-                   'out_pnacl_newlib_x86_32%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib-x86-32/>(nlib_target)',
-                   'objdir_pnacl_newlib_x86_32%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
-                 },
-                 'actions': [
-                   {
-                     'action_name': 'build newlib x86-32 nlib (via pnacl)',
-                     'variables': {
-                       'source_list_pnacl_newlib_x86_32%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
-                     },
-                     'msvs_cygwin_shell': 0,
-                     'description': 'building >(out_pnacl_newlib_x86_32)',
-                     'inputs': [
-                       '<@(common_inputs)',
-                       '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
-                       '>@(extra_deps)',
-                       '>@(extra_deps_pnacl_newlib)',
-                       '^(source_list_pnacl_newlib_x86_32)',
-                       '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep'
-                     ],
-                     'outputs': ['>(out_pnacl_newlib_x86_32)'],
-                     'action': [
-                       '<@(common_args)',
-                       '>@(extra_args)',
-                       '--arch', 'x86-32',
-                       '--build', 'newlib_nlib_pnacl',
-                       '--name', '>(out_pnacl_newlib_x86_32)',
-                       '--objdir', '>(objdir_pnacl_newlib_x86_32)',
-                       '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
-                       '--compile_flags=--target=i686-unknown-nacl --pnacl-allow-translate -arch x86-32 ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
-                       '--gomadir', '<(gomadir)',
-                       '--defines=^(defines) >(_defines)',
-                       '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
-                       '--source-list=^(source_list_pnacl_newlib_x86_32)',
-                     ],
-                   },
-                 ],
-               }], # end ia32
-            ], # end ia32 or x64
           }],
-          # MIPS
-          # The shim is not biased since the IRT itself is not biased.
-          ['target_arch=="mipsel"', {
-            'target_conditions': [
-              ['disable_pnacl==0 and pnacl_native_biased==1 and nlib_target!="" and build_pnacl_newlib!=0', {
-                'variables': {
-                   'tool_name': 'pnacl_newlib_mips',
-                   'out_pnacl_newlib_mips%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libmips/>(nlib_target)',
-                   'objdir_pnacl_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
-                 },
-                'actions': [
-                  {
-                    'action_name': 'build newlib mips nlib (via pnacl)',
-                    'variables': {
-                      'source_list_pnacl_newlib_mips%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
-                    },
-                    'msvs_cygwin_shell': 0,
-                    'description': 'building >(out_pnacl_newlib_mips)',
-                    'inputs': [
-                      '<@(common_inputs)',
-                      '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
-                      '>@(extra_deps)',
-                      '>@(extra_deps_pnacl_newlib)',
-                      '^(source_list_pnacl_newlib_mips)',
-                      '<(SHARED_INTERMEDIATE_DIR)/sdk/<(TOOLCHAIN_OS)_x86/pnacl_newlib/stamp.prep'
-                    ],
-                    'outputs': ['>(out_pnacl_newlib_mips)'],
-                    'action': [
-                      '<@(common_args)',
-                      '>@(extra_args)',
-                      '--arch', 'mips',
-                      '--build', 'newlib_nlib_pnacl',
-                      '--name', '>(out_pnacl_newlib_mips)',
-                      '--objdir', '>(objdir_pnacl_newlib_mips)',
-                      '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
-                      '--compile_flags=--pnacl-allow-translate -arch mips ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
-                      '--gomadir', '<(gomadir)',
-                      '--defines=^(defines) >(_defines)',
-                      '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
-                      '--source-list=^(source_list_pnacl_newlib_mips)',
-                    ],
-                  },
-                ],
-              }],
-            ],
-          }], # end MIPS
-          # end pnacl actions for building ABI-biased native libraries
-        ], # end conditions for pnacl biased nlib
-      },
-    }],
-  ],
+        ],
+      }], # end MIPS
+      # end pnacl actions for building ABI-biased native libraries
+    ], # end conditions for pnacl biased nlib
+  },
 }
