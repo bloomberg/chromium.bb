@@ -121,12 +121,10 @@ WebViewImpl::WebViewImpl(const std::string& id,
       browser_info_(browser_info),
       dom_tracker_(new DomTracker(client.get())),
       frame_tracker_(new FrameTracker(client.get())),
-      navigation_tracker_(new NavigationTracker(client.get(), browser_info)),
+      navigation_tracker_(new NavigationTracker(client.get())),
       dialog_manager_(new JavaScriptDialogManager(client.get())),
       mobile_emulation_override_manager_(
-          new MobileEmulationOverrideManager(client.get(),
-                                             device_metrics,
-                                             browser_info)),
+          new MobileEmulationOverrideManager(client.get(), device_metrics)),
       geolocation_override_manager_(
           new GeolocationOverrideManager(client.get())),
       heap_snapshot_taker_(new HeapSnapshotTaker(client.get())),
@@ -283,18 +281,6 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
     Status status = client_->SendCommand("Input.dispatchMouseEvent", params);
     if (status.IsError())
       return status;
-    if (browser_info_->build_no < 1569 && it->button == kRightMouseButton &&
-        it->type == kReleasedMouseEventType) {
-      base::ListValue args;
-      args.AppendInteger(it->x);
-      args.AppendInteger(it->y);
-      args.AppendInteger(it->modifiers);
-      scoped_ptr<base::Value> result;
-      status = CallFunction(
-          frame, kDispatchContextMenuEventScript, args, &result);
-      if (status.IsError())
-        return status;
-    }
   }
   return Status(kOk);
 }

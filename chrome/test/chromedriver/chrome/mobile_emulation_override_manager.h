@@ -16,7 +16,6 @@ namespace base {
 class DictionaryValue;
 }
 
-struct BrowserInfo;
 class DevToolsClient;
 struct DeviceMetrics;
 class Status;
@@ -26,8 +25,7 @@ class Status;
 class MobileEmulationOverrideManager : public DevToolsEventListener {
  public:
   MobileEmulationOverrideManager(DevToolsClient* client,
-                                 const DeviceMetrics* device_metrics,
-                                 const BrowserInfo* browser_info);
+                                 const DeviceMetrics* device_metrics);
   ~MobileEmulationOverrideManager() override;
 
   // Overridden from DevToolsEventListener:
@@ -41,7 +39,6 @@ class MobileEmulationOverrideManager : public DevToolsEventListener {
 
   DevToolsClient* client_;
   const DeviceMetrics* overridden_device_metrics_;
-  const BrowserInfo* browser_info_;
 
   DISALLOW_COPY_AND_ASSIGN(MobileEmulationOverrideManager);
 };

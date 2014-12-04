@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/values.h"
-#include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/device_metrics.h"
 #include "chrome/test/chromedriver/chrome/mobile_emulation_override_manager.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -82,10 +81,7 @@ void AssertDeviceMetricsCommand(const Command& command,
 TEST(MobileEmulationOverrideManager, SendsCommandOnConnect) {
   RecorderDevToolsClient client;
   DeviceMetrics device_metrics(1, 2, 3.0);
-  BrowserInfo browser_info;
-  MobileEmulationOverrideManager manager(&client,
-                                         &device_metrics,
-                                         &browser_info);
+  MobileEmulationOverrideManager manager(&client, &device_metrics);
   ASSERT_EQ(0u, client.commands_.size());
   ASSERT_EQ(kOk, manager.OnConnected(&client).code());
 
@@ -99,10 +95,7 @@ TEST(MobileEmulationOverrideManager, SendsCommandOnConnect) {
 TEST(MobileEmulationOverrideManager, SendsCommandOnNavigation) {
   RecorderDevToolsClient client;
   DeviceMetrics device_metrics(1, 2, 3.0);
-  BrowserInfo browser_info;
-  MobileEmulationOverrideManager manager(&client,
-                                         &device_metrics,
-                                         &browser_info);
+  MobileEmulationOverrideManager manager(&client, &device_metrics);
   base::DictionaryValue main_frame_params;
   ASSERT_EQ(kOk,
             manager.OnEvent(&client, "Page.frameNavigated", main_frame_params)
