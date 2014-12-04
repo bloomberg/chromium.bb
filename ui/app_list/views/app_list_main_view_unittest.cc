@@ -64,8 +64,10 @@ class GridViewVisibleWaiter {
 class AppListMainViewTest : public views::ViewsTestBase {
  public:
   AppListMainViewTest()
-      : widget_(NULL),
-        main_view_(NULL) {}
+      : main_widget_(nullptr),
+        main_view_(nullptr),
+        search_box_widget_(nullptr),
+        search_box_view_(nullptr) {}
 
   ~AppListMainViewTest() override {}
 
@@ -80,22 +82,29 @@ class AppListMainViewTest : public views::ViewsTestBase {
     main_view_ = new AppListMainView(delegate_.get());
     main_view_->SetPaintToLayer(true);
     main_view_->model()->SetFoldersEnabled(true);
-    search_box_view_.reset(new SearchBoxView(main_view_, delegate_.get()));
-    main_view_->Init(NULL, 0, search_box_view_.get());
+    search_box_view_ = new SearchBoxView(main_view_, delegate_.get());
+    main_view_->Init(nullptr, 0, search_box_view_);
 
-    widget_ = new views::Widget;
-    views::Widget::InitParams params =
+    main_widget_ = new views::Widget;
+    views::Widget::InitParams main_widget_params =
         CreateParams(views::Widget::InitParams::TYPE_POPUP);
-    params.bounds.set_size(main_view_->GetPreferredSize());
-    widget_->Init(params);
+    main_widget_params.bounds.set_size(main_view_->GetPreferredSize());
+    main_widget_->Init(main_widget_params);
+    main_widget_->SetContentsView(main_view_);
 
-    widget_->SetContentsView(main_view_);
+    search_box_widget_ = new views::Widget;
+    views::Widget::InitParams search_box_widget_params =
+        CreateParams(views::Widget::InitParams::TYPE_CONTROL);
+    search_box_widget_params.parent = main_widget_->GetNativeView();
+    search_box_widget_params.opacity =
+        views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    search_box_widget_->Init(search_box_widget_params);
+    search_box_widget_->SetContentsView(search_box_view_);
   }
 
   void TearDown() override {
-    widget_->Close();
+    main_widget_->Close();
     views::ViewsTestBase::TearDown();
-    search_box_view_.reset();
     delegate_.reset();
   }
 
@@ -229,10 +238,11 @@ class AppListMainViewTest : public views::ViewsTestBase {
   }
 
  protected:
-  views::Widget* widget_;  // Owned by native window.
-  AppListMainView* main_view_;  // Owned by |widget_|.
+  views::Widget* main_widget_;  // Owned by native window.
+  AppListMainView* main_view_;  // Owned by |main_widget_|.
   scoped_ptr<AppListTestViewDelegate> delegate_;
-  scoped_ptr<SearchBoxView> search_box_view_;
+  views::Widget* search_box_widget_;  // Owned by |main_widget_|.
+  SearchBoxView* search_box_view_;    // Owned by |search_box_widget_|.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListMainViewTest);
