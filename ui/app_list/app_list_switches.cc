@@ -79,7 +79,11 @@ bool IsExperimentalAppListEnabled() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(kDisableExperimentalAppList))
     return false;
 
+#if defined(OS_CHROMEOS)
+  return true;
+#else
   return false;
+#endif
 }
 
 bool IsCenteredAppListEnabled() {
