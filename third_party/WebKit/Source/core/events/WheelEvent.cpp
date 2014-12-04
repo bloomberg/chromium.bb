@@ -60,10 +60,10 @@ WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializ
 
 WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta, unsigned deltaMode,
     PassRefPtrWillBeRawPtr<AbstractView> view, const IntPoint& screenLocation, const IntPoint& pageLocation,
-    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
+    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons)
     : MouseEvent(EventTypeNames::wheel, true, true, view, 0, screenLocation.x(), screenLocation.y(),
-        pageLocation.x(), pageLocation.y(), 0, 0, ctrlKey, altKey, shiftKey, metaKey, 0, nullptr,
-        nullptr, false, PlatformMouseEvent::RealOrIndistinguishable)
+        pageLocation.x(), pageLocation.y(), 0, 0, ctrlKey, altKey, shiftKey, metaKey, 0, buttons,
+        nullptr, nullptr, false, PlatformMouseEvent::RealOrIndistinguishable)
     , m_wheelDelta(wheelTicks.x() * TickMultiplier, wheelTicks.y() * TickMultiplier)
     , m_deltaX(-rawDelta.x())
     , m_deltaY(-rawDelta.y())
@@ -106,7 +106,8 @@ WheelEventDispatchMediator::WheelEventDispatchMediator(const PlatformWheelEvent&
 {
     setEvent(WheelEvent::create(FloatPoint(event.wheelTicksX(), event.wheelTicksY()), FloatPoint(event.deltaX(), event.deltaY()),
         deltaMode(event), view, event.globalPosition(), event.position(),
-        event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey()));
+        event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
+        MouseEvent::platformModifiersToButtons(event.modifiers())));
 }
 
 WheelEvent& WheelEventDispatchMediator::event() const

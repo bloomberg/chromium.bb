@@ -112,6 +112,32 @@ static unsigned toPlatformEventModifiers(int webModifiers)
     return newModifiers;
 }
 
+static unsigned toPlatformMouseEventModifiers(int webModifiers)
+{
+    unsigned newModifiers = toPlatformEventModifiers(webModifiers);
+    if (webModifiers & WebInputEvent::LeftButtonDown)
+        newModifiers |= PlatformEvent::LeftButtonDown;
+    if (webModifiers & WebInputEvent::MiddleButtonDown)
+        newModifiers |= PlatformEvent::MiddleButtonDown;
+    if (webModifiers & WebInputEvent::RightButtonDown)
+        newModifiers |= PlatformEvent::RightButtonDown;
+    return newModifiers;
+}
+
+static unsigned toPlatformModifierFrom(WebMouseEvent::Button button)
+{
+    if (button == WebMouseEvent::ButtonNone)
+        return 0;
+
+    unsigned webMouseButtonToPlatformModifier[] = {
+        PlatformEvent::LeftButtonDown,
+        PlatformEvent::MiddleButtonDown,
+        PlatformEvent::RightButtonDown
+    };
+
+    return webMouseButtonToPlatformModifier[button];
+}
+
 // MakePlatformMouseEvent -----------------------------------------------------
 
 PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMouseEvent& e)
@@ -122,7 +148,7 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMo
     m_globalPosition = IntPoint(e.globalX, e.globalY);
     m_movementDelta = IntPoint(scaleDeltaToWindow(widget, e.movementX), scaleDeltaToWindow(widget, e.movementY));
     m_button = static_cast<MouseButton>(e.button);
-    m_modifiers = toPlatformEventModifiers(e.modifiers);
+    m_modifiers = toPlatformMouseEventModifiers(e.modifiers);
 
     m_timestamp = e.timeStampSeconds;
     m_clickCount = e.clickCount;
@@ -139,6 +165,12 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMo
 
     case WebInputEvent::MouseUp:
         m_type = PlatformEvent::MouseReleased;
+
+        // The MouseEvent spec requires that buttons indicates the state
+        // immediately after the event takes place. To ensure consistency
+        // between platforms here, we explicitly clear the button that is
+        // in the process of being released.
+        m_modifiers &= ~toPlatformModifierFrom(e.button);
         break;
 
     default:
@@ -161,7 +193,7 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(Widget* widget, const WebMo
 
     m_type = PlatformEvent::Wheel;
 
-    m_modifiers = toPlatformEventModifiers(e.modifiers);
+    m_modifiers = toPlatformMouseEventModifiers(e.modifiers);
 
     m_hasPreciseScrollingDeltas = e.hasPreciseScrollingDeltas;
 #if OS(MACOSX)

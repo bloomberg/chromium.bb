@@ -16,6 +16,7 @@ PASS new MouseEvent('eventType').shiftKey is false
 PASS new MouseEvent('eventType').altKey is false
 PASS new MouseEvent('eventType').metaKey is false
 PASS new MouseEvent('eventType').button is 0
+PASS new MouseEvent('eventType').buttons is 0
 PASS new MouseEvent('eventType').relatedTarget is null
 PASS new MouseEvent('eventType', { bubbles: false }).bubbles is false
 PASS new MouseEvent('eventType', { bubbles: true }).bubbles is true
@@ -173,6 +174,28 @@ PASS new MouseEvent('eventType', { button: [12345, 67890] }).button is 0
 PASS new MouseEvent('eventType', { button: {} }).button is 0
 PASS new MouseEvent('eventType', { button: {moemoe: 12345} }).button is 0
 PASS new MouseEvent('eventType', { button: {valueOf: function () { return 12345; }} }).button is 12345
+PASS new MouseEvent('eventType', { buttons: 0 }).buttons is 0
+PASS new MouseEvent('eventType', { buttons: 1 }).buttons is 1
+PASS new MouseEvent('eventType', { buttons: 65534 }).buttons is 65534
+PASS new MouseEvent('eventType', { buttons: 65535 }).buttons is 65535
+PASS new MouseEvent('eventType', { buttons: 9007199254740991 }).buttons is 65535
+PASS new MouseEvent('eventType', { buttons: -1 }).buttons is 65535
+PASS new MouseEvent('eventType', { buttons: 18446744073709551615 }).buttons is 0
+PASS new MouseEvent('eventType', { buttons: 12345678901234567890 }).buttons is 2048
+PASS new MouseEvent('eventType', { buttons: 123.45 }).buttons is 123
+PASS new MouseEvent('eventType', { buttons: NaN }).buttons is 0
+PASS new MouseEvent('eventType', { buttons: undefined }).buttons is 0
+PASS new MouseEvent('eventType', { buttons: null }).buttons is 0
+PASS new MouseEvent('eventType', { buttons: '' }).buttons is 0
+PASS new MouseEvent('eventType', { buttons: '12345' }).buttons is 12345
+PASS new MouseEvent('eventType', { buttons: '12345a' }).buttons is 0
+PASS new MouseEvent('eventType', { buttons: 'abc' }).buttons is 0
+PASS new MouseEvent('eventType', { buttons: [] }).buttons is 0
+PASS new MouseEvent('eventType', { buttons: [12345] }).buttons is 12345
+PASS new MouseEvent('eventType', { buttons: [12345, 67890] }).buttons is 0
+PASS new MouseEvent('eventType', { buttons: {} }).buttons is 0
+PASS new MouseEvent('eventType', { buttons: {moemoe: 12345} }).buttons is 0
+PASS new MouseEvent('eventType', { buttons: {valueOf: function () { return 12345; }} }).buttons is 12345
 PASS new MouseEvent('eventType', { relatedTarget: testDiv }).relatedTarget is testDiv
 PASS new MouseEvent('eventType', { relatedTarget: document }).relatedTarget is document
 PASS new MouseEvent('eventType', { relatedTarget: xhr }).relatedTarget is xhr
@@ -191,20 +214,20 @@ PASS new MouseEvent('eventType', { relatedTarget: {valueOf: function () { return
 PASS new MouseEvent('eventType', { get relatedTarget() { return testDiv; } }).relatedTarget is testDiv
 PASS new MouseEvent('eventType', { get relatedTarget() { return 123; } }).relatedTarget threw exception TypeError: Failed to construct 'MouseEvent': The 'relatedTarget' property does not have a EventTarget type..
 PASS new MouseEvent('eventType', { get relatedTarget() { throw 'MouseEvent Error'; } }) threw exception MouseEvent Error.
-PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).bubbles is true
-PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).cancelable is true
-PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).view is window
-PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).detail is 111
-PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).screenX is 222
-PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).screenY is 333
-PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).clientX is 444
-PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).clientY is 555
-PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).ctrlKey is true
-PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).shiftKey is true
-PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).altKey is true
-PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).metaKey is true
-PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).button is 666
-PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).relatedTarget is testDiv
+PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).bubbles is true
+PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).cancelable is true
+PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).view is window
+PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).detail is 111
+PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).screenX is 222
+PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).screenY is 333
+PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).clientX is 444
+PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).clientY is 555
+PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).ctrlKey is true
+PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).shiftKey is true
+PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).altKey is true
+PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).metaKey is true
+PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).button is 666
+PASS new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).relatedTarget is testDiv
 PASS successfullyParsed is true
 
 TEST COMPLETE

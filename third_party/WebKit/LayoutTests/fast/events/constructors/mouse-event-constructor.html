@@ -26,6 +26,7 @@ shouldBe("new MouseEvent('eventType').shiftKey", "false");
 shouldBe("new MouseEvent('eventType').altKey", "false");
 shouldBe("new MouseEvent('eventType').metaKey", "false");
 shouldBe("new MouseEvent('eventType').button", "0");
+shouldBe("new MouseEvent('eventType').buttons", "0");
 shouldBe("new MouseEvent('eventType').relatedTarget", "null");
 
 // bubbles is passed.
@@ -133,6 +134,36 @@ shouldBe("new MouseEvent('eventType', { button: {} }).button", "0");
 shouldBe("new MouseEvent('eventType', { button: {moemoe: 12345} }).button", "0");
 shouldBe("new MouseEvent('eventType', { button: {valueOf: function () { return 12345; }} }).button", "12345");
 
+// buttons is passed.
+// Numbers within the unsigned short range.
+shouldBe("new MouseEvent('eventType', { buttons: 0 }).buttons", "0");
+shouldBe("new MouseEvent('eventType', { buttons: 1 }).buttons", "1");
+shouldBe("new MouseEvent('eventType', { buttons: 65534 }).buttons", "65534");
+
+// Numbers out of the unsigned short range.
+// 2^{64}-1
+shouldBe("new MouseEvent('eventType', { buttons: 65535 }).buttons", "65535");
+shouldBe("new MouseEvent('eventType', { buttons: 9007199254740991 }).buttons", "65535");
+shouldBe("new MouseEvent('eventType', { buttons: -1 }).buttons", "65535");
+shouldBe("new MouseEvent('eventType', { buttons: 18446744073709551615 }).buttons", "0");
+shouldBe("new MouseEvent('eventType', { buttons: 12345678901234567890 }).buttons", "2048");
+shouldBe("new MouseEvent('eventType', { buttons: 123.45 }).buttons", "123");
+shouldBe("new MouseEvent('eventType', { buttons: NaN }).buttons", "0");
+
+// Non-numeric values.
+shouldBe("new MouseEvent('eventType', { buttons: undefined }).buttons", "0");
+shouldBe("new MouseEvent('eventType', { buttons: null }).buttons", "0");
+shouldBe("new MouseEvent('eventType', { buttons: '' }).buttons", "0");
+shouldBe("new MouseEvent('eventType', { buttons: '12345' }).buttons", "12345");
+shouldBe("new MouseEvent('eventType', { buttons: '12345a' }).buttons", "0");
+shouldBe("new MouseEvent('eventType', { buttons: 'abc' }).buttons", "0");
+shouldBe("new MouseEvent('eventType', { buttons: [] }).buttons", "0");
+shouldBe("new MouseEvent('eventType', { buttons: [12345] }).buttons", "12345");
+shouldBe("new MouseEvent('eventType', { buttons: [12345, 67890] }).buttons", "0");
+shouldBe("new MouseEvent('eventType', { buttons: {} }).buttons", "0");
+shouldBe("new MouseEvent('eventType', { buttons: {moemoe: 12345} }).buttons", "0");
+shouldBe("new MouseEvent('eventType', { buttons: {valueOf: function () { return 12345; }} }).buttons", "12345");
+
 // relatedTarget is passed.
 // Valid objects.
 shouldBe("new MouseEvent('eventType', { relatedTarget: testDiv }).relatedTarget", "testDiv");
@@ -158,20 +189,20 @@ shouldThrow("new MouseEvent('eventType', { get relatedTarget() { return 123; } }
 shouldThrow("new MouseEvent('eventType', { get relatedTarget() { throw 'MouseEvent Error'; } })");
 
 // All initializers are passed.
-shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).bubbles", "true");
-shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).cancelable", "true");
-shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).view", "window");
-shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).detail", "111");
-shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).screenX", "222");
-shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).screenY", "333");
-shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).clientX", "444");
-shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).clientY", "555");
-shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).ctrlKey", "true");
-shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).shiftKey", "true");
-shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).altKey", "true");
-shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).metaKey", "true");
-shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).button", "666");
-shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, relatedTarget: testDiv }).relatedTarget", "testDiv");
+shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).bubbles", "true");
+shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).cancelable", "true");
+shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).view", "window");
+shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).detail", "111");
+shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).screenX", "222");
+shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).screenY", "333");
+shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).clientX", "444");
+shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).clientY", "555");
+shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).ctrlKey", "true");
+shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).shiftKey", "true");
+shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).altKey", "true");
+shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).metaKey", "true");
+shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).button", "666");
+shouldBe("new MouseEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, screenX: 222, screenY: 333, clientX: 444, clientY: 555, ctrlKey: true, shiftKey: true, altKey: true, metaKey: true, button: 666, buttons: 777, relatedTarget: testDiv }).relatedTarget", "testDiv");
 </script>
 </body>
 </html>

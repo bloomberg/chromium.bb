@@ -77,6 +77,10 @@ public:
         CtrlKey     = 1 << 1,
         MetaKey     = 1 << 2,
         ShiftKey    = 1 << 3,
+
+        LeftButtonDown   = 1 << 6,
+        MiddleButtonDown = 1 << 7,
+        RightButtonDown  = 1 << 8,
     };
 
     Type type() const { return static_cast<Type>(m_type); }

@@ -45,6 +45,7 @@ struct MouseEventInit : public UIEventInit {
     bool shiftKey;
     bool metaKey;
     unsigned short button;
+    unsigned short buttons;
     RefPtrWillBeMember<EventTarget> relatedTarget;
 };
 
@@ -59,7 +60,7 @@ public:
     static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
         int detail, int screenX, int screenY, int pageX, int pageY,
         int movementX, int movementY,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button, unsigned short buttons,
         PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<DataTransfer>,
         bool isSimulated = false, PlatformMouseEvent::SyntheticEventType = PlatformMouseEvent::RealOrIndistinguishable);
 
@@ -69,14 +70,17 @@ public:
 
     virtual ~MouseEvent();
 
+    static unsigned short platformModifiersToButtons(unsigned modifiers);
+
     void initMouseEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
         int detail, int screenX, int screenY, int clientX, int clientY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
-        unsigned short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget);
+        unsigned short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, unsigned short buttons = 0);
 
     // WinIE uses 1,4,2 for left/middle/right but not for click (just for mousedown/up, maybe others),
     // but we will match the standard DOM.
     unsigned short button() const { return m_button; }
+    unsigned short buttons() const { return m_buttons; }
     bool buttonDown() const { return m_buttonDown; }
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
     void setRelatedTarget(PassRefPtrWillBeRawPtr<EventTarget> relatedTarget) { m_relatedTarget = relatedTarget; }
@@ -100,7 +104,7 @@ protected:
     MouseEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
         int detail, int screenX, int screenY, int pageX, int pageY,
         int movementX, int movementY,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button, unsigned short buttons,
         PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<DataTransfer>,
         bool isSimulated, PlatformMouseEvent::SyntheticEventType);
 
@@ -110,6 +114,7 @@ protected:
 
 private:
     unsigned short m_button;
+    unsigned short m_buttons;
     bool m_buttonDown;
     RefPtrWillBeMember<EventTarget> m_relatedTarget;
     RefPtrWillBeMember<DataTransfer> m_dataTransfer;

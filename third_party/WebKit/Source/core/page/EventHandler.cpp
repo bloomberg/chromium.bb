@@ -1636,12 +1636,14 @@ bool EventHandler::dispatchDragEvent(const AtomicString& eventType, Node* dragTa
     if (!view)
         return false;
 
+    // FIXME: The drag event have to support for |buttons| attribute because
+    // the event is derived from mouse event. Please see crbug.com/276941.
     RefPtrWillBeRawPtr<MouseEvent> me = MouseEvent::create(eventType,
         true, true, m_frame->document()->domWindow(),
         0, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(),
         event.movementDelta().x(), event.movementDelta().y(),
         event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
-        0, nullptr, dataTransfer);
+        0, 0, nullptr, dataTransfer);
 
     dragTarget->dispatchEvent(me.get(), IGNORE_EXCEPTION);
     return me->defaultPrevented();
@@ -2233,26 +2235,17 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
 
     UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
 
-    unsigned modifierFlags = 0;
-    if (gestureEvent.altKey())
-        modifierFlags |= PlatformEvent::AltKey;
-    if (gestureEvent.ctrlKey())
-        modifierFlags |= PlatformEvent::CtrlKey;
-    if (gestureEvent.metaKey())
-        modifierFlags |= PlatformEvent::MetaKey;
-    if (gestureEvent.shiftKey())
-        modifierFlags |= PlatformEvent::ShiftKey;
-    PlatformEvent::Modifiers modifiers = static_cast<PlatformEvent::Modifiers>(modifierFlags);
-
     HitTestResult currentHitTest = targetedEvent.hitTestResult();
 
     // We use the adjusted position so the application isn't surprised to see a event with
     // co-ordinates outside the target's bounds.
     IntPoint adjustedPoint = m_frame->view()->windowToContents(gestureEvent.position());
 
+    unsigned modifiers = gestureEvent.modifiers();
     PlatformMouseEvent fakeMouseMove(gestureEvent.position(), gestureEvent.globalPosition(),
         NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
-        modifiers, PlatformMouseEvent::FromTouch, gestureEvent.timestamp());
+        static_cast<PlatformEvent::Modifiers>(modifiers),
+        PlatformMouseEvent::FromTouch, gestureEvent.timestamp());
     dispatchMouseEvent(EventTypeNames::mousemove, currentHitTest.innerNode(), 0, fakeMouseMove, true);
 
     // Do a new hit-test in case the mousemove event changed the DOM.
@@ -2268,7 +2261,8 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
 
     PlatformMouseEvent fakeMouseDown(gestureEvent.position(), gestureEvent.globalPosition(),
         LeftButton, PlatformEvent::MousePressed, gestureEvent.tapCount(),
-        modifiers, PlatformMouseEvent::FromTouch,  gestureEvent.timestamp());
+        static_cast<PlatformEvent::Modifiers>(modifiers | PlatformEvent::LeftButtonDown),
+        PlatformMouseEvent::FromTouch,  gestureEvent.timestamp());
     bool swallowMouseDownEvent = !dispatchMouseEvent(EventTypeNames::mousedown, currentHitTest.innerNode(), gestureEvent.tapCount(), fakeMouseDown, true);
     if (!swallowMouseDownEvent)
         swallowMouseDownEvent = handleMouseFocus(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest));
@@ -2283,7 +2277,8 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
         currentHitTest = hitTestResultInFrame(m_frame, adjustedPoint, hitType);
     PlatformMouseEvent fakeMouseUp(gestureEvent.position(), gestureEvent.globalPosition(),
         LeftButton, PlatformEvent::MouseReleased, gestureEvent.tapCount(),
-        modifiers, PlatformMouseEvent::FromTouch,  gestureEvent.timestamp());
+        static_cast<PlatformEvent::Modifiers>(modifiers),
+        PlatformMouseEvent::FromTouch,  gestureEvent.timestamp());
     bool swallowMouseUpEvent = !dispatchMouseEvent(EventTypeNames::mouseup, currentHitTest.innerNode(), gestureEvent.tapCount(), fakeMouseUp, false);
 
     bool swallowClickEvent = false;
@@ -2312,6 +2307,8 @@ bool EventHandler::handleGestureLongPress(const GestureEventWithHitTestResults& 
     const PlatformGestureEvent& gestureEvent = targetedEvent.event();
     IntPoint adjustedPoint = gestureEvent.position();
 
+    unsigned modifiers = gestureEvent.modifiers();
+
     // FIXME: Ideally we should try to remove the extra mouse-specific hit-tests here (re-using the
     // supplied HitTestResult), but that will require some overhaul of the touch drag-and-drop code
     // and LongPress is such a special scenario that it's unlikely to matter much in practice.
@@ -2319,11 +2316,13 @@ bool EventHandler::handleGestureLongPress(const GestureEventWithHitTestResults& 
     m_longTapShouldInvokeContextMenu = false;
     if (m_frame->settings() && m_frame->settings()->touchDragDropEnabled() && m_frame->view()) {
         PlatformMouseEvent mouseDownEvent(adjustedPoint, gestureEvent.globalPosition(), LeftButton, PlatformEvent::MousePressed, 1,
-            gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), PlatformMouseEvent::FromTouch, WTF::currentTime());
+            static_cast<PlatformEvent::Modifiers>(modifiers | PlatformEvent::LeftButtonDown),
+            PlatformMouseEvent::FromTouch, WTF::currentTime());
         m_mouseDown = mouseDownEvent;
 
         PlatformMouseEvent mouseDragEvent(adjustedPoint, gestureEvent.globalPosition(), LeftButton, PlatformEvent::MouseMoved, 1,
-            gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), PlatformMouseEvent::FromTouch, WTF::currentTime());
+            static_cast<PlatformEvent::Modifiers>(modifiers | PlatformEvent::LeftButtonDown),
+            PlatformMouseEvent::FromTouch, WTF::currentTime());
         HitTestRequest request(HitTestRequest::ReadOnly);
         MouseEventWithHitTestResults mev = prepareMouseEvent(request, mouseDragEvent);
         m_mouseDownMayStartDrag = true;
@@ -2829,12 +2828,17 @@ bool EventHandler::sendContextMenuEventForKey()
 
 bool EventHandler::sendContextMenuEventForGesture(const GestureEventWithHitTestResults& targetedEvent)
 {
+    unsigned modifiers = targetedEvent.event().modifiers();
     PlatformEvent::Type eventType = PlatformEvent::MousePressed;
 
     if (m_frame->settings()->showContextMenuOnMouseUp())
         eventType = PlatformEvent::MouseReleased;
+    else
+        modifiers |= PlatformEvent::RightButtonDown;
 
-    PlatformMouseEvent mouseEvent(targetedEvent.event().position(), targetedEvent.event().globalPosition(), RightButton, eventType, 1, false, false, false, false, PlatformMouseEvent::FromTouch, WTF::currentTime());
+    PlatformMouseEvent mouseEvent(targetedEvent.event().position(), targetedEvent.event().globalPosition(), RightButton, eventType, 1,
+        static_cast<PlatformEvent::Modifiers>(modifiers),
+        PlatformMouseEvent::FromTouch, WTF::currentTime());
     // To simulate right-click behavior, we send a right mouse down and then
     // context menu event.
     // FIXME: Send HitTestResults to avoid redundant hit tests.

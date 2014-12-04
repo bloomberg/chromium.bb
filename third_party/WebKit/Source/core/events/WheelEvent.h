@@ -68,10 +68,10 @@ public:
     static PassRefPtrWillBeRawPtr<WheelEvent> create(const FloatPoint& wheelTicks,
         const FloatPoint& rawDelta, unsigned deltaMode, PassRefPtrWillBeRawPtr<AbstractView> view,
         const IntPoint& screenLocation, const IntPoint& pageLocation,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons)
     {
         return adoptRefWillBeNoop(new WheelEvent(wheelTicks, rawDelta, deltaMode, view,
-        screenLocation, pageLocation, ctrlKey, altKey, shiftKey, metaKey));
+        screenLocation, pageLocation, ctrlKey, altKey, shiftKey, metaKey, buttons));
     }
 
     double deltaX() const { return m_deltaX; } // Positive when scrolling right.
@@ -95,7 +95,7 @@ private:
     WheelEvent(const AtomicString&, const WheelEventInit&);
     WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
         unsigned, PassRefPtrWillBeRawPtr<AbstractView>, const IntPoint& screenLocation, const IntPoint& pageLocation,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons);
 
     IntPoint m_wheelDelta;
     double m_deltaX;

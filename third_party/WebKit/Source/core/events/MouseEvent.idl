@@ -29,6 +29,7 @@
     [InitializedByEventConstructor] readonly attribute boolean          altKey;
     [InitializedByEventConstructor] readonly attribute boolean          metaKey;
     [InitializedByEventConstructor] readonly attribute unsigned short   button;
+    [RuntimeEnabled=MouseEventButtonsAttribute, InitializedByEventConstructor] readonly attribute unsigned short   buttons;
     [InitializedByEventConstructor] readonly attribute EventTarget?     relatedTarget;
     [MeasureAs=MouseEventMovementX] readonly attribute long             movementX;
     [MeasureAs=MouseEventMovementY] readonly attribute long             movementY;
