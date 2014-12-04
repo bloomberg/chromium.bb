@@ -109,6 +109,14 @@ if test "x$enable_documentation" = "xyes"; then
 		AC_MSG_ERROR([Documentation build requested but doxygen not found. Install doxygen or disable the documentation using --disable-documentation])
 	fi
 
+	AC_MSG_CHECKING([for compatible doxygen version])
+	doxygen_version=`$DOXYGEN --version`
+	AS_VERSION_COMPARE([$doxygen_version], [1.6.0],
+	                   [AC_MSG_RESULT([no])
+	                    AC_MSG_ERROR([Doxygen $doxygen_version too old. Doxygen 1.6+ required for documentation build. Install required doxygen version or disable the documentation using --disable-documentation])],
+	                   [AC_MSG_RESULT([yes])],
+	                   [AC_MSG_RESULT([yes])])
+
 	AC_PATH_PROG(XMLTO, xmlto)
 
 	if test "x$XMLTO" = "x"; then
