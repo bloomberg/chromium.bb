@@ -31,17 +31,28 @@ function isConstructor(propertyName) {
     return descriptor.writable && !descriptor.enumerable && descriptor.configurable;
 }
 
-var constructorNames = [];
-var propertyNames = Object.getOwnPropertyNames(this);
-for (var i = 0; i < propertyNames.length; i++) {
-    if (isConstructor(propertyNames[i]))
-        constructorNames[constructorNames.length] = propertyNames[i];
-}
-
-
-constructorNames.sort();
-for (var i = 0; i < constructorNames.length; i++)
-    debug(constructorNames[i]);
+// FIXME: List interfaces with NoInterfaceObject specified in their IDL file.
+debug('[INTERFACES]')
+var interfaceNames = Object.getOwnPropertyNames(this).filter(isConstructor);
+interfaceNames.sort();
+interfaceNames.forEach(function(interfaceName) {
+    debug('interface ' + interfaceName);
+    var propertyStrings = [];
+    var prototype = this[interfaceName].prototype;
+    Object.getOwnPropertyNames(prototype).forEach(function(propertyName) {
+        var descriptor = Object.getOwnPropertyDescriptor(prototype, propertyName);
+        if (typeof descriptor.value !== 'undefined') {
+            var type = typeof descriptor.value === 'function' ? 'method' : 'attribute';
+            propertyStrings.push('    ' + type + ' ' + propertyName);
+        } else {
+            if (descriptor.get)
+                propertyStrings.push('    getter ' + propertyName);
+            if (descriptor.set)
+                propertyStrings.push('    setter ' + propertyName);
+        }
+    });
+    propertyStrings.sort().forEach(debug);
+});
 
 if (isWorker())
-  finishJSTest();
+    finishJSTest();

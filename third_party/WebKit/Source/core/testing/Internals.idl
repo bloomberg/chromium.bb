@@ -136,6 +136,10 @@
     [TypeChecking=Interface] unsigned long touchEventHandlerCount(Document document);
     [RaisesException, TypeChecking=Interface] LayerRectList touchEventTargetLayerRects(Document document);
 
+    DOMString htmlNamespace();
+    sequence<DOMString> htmlTags();
+    DOMString svgNamespace();
+    sequence<DOMString> svgTags();
 
     [RaisesException, TypeChecking=Interface] NodeList nodesFromRect(Document document, long x, long y,
         unsigned long topPadding, unsigned long rightPadding, unsigned long bottomPadding, unsigned long leftPadding,

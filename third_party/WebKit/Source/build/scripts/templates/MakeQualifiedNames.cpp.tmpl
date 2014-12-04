@@ -24,7 +24,6 @@ const {{namespace}}QualifiedName& {{tag|symbol}}Tag = reinterpret_cast<{{namespa
 {% endfor %}
 
 
-{% if namespace == 'SVG' %}
 PassOwnPtr<const {{namespace}}QualifiedName*[]> get{{namespace}}Tags()
 {
     OwnPtr<const {{namespace}}QualifiedName*[]> tags = adoptArrayPtr(new const {{namespace}}QualifiedName*[{{namespace}}TagsCount]);
@@ -32,7 +31,6 @@ PassOwnPtr<const {{namespace}}QualifiedName*[]> get{{namespace}}Tags()
         tags[i] = reinterpret_cast<{{namespace}}QualifiedName*>(&{{suffix}}TagStorage) + i;
     return tags.release();
 }
-{% endif %}
 
 {% endif %}
 // Attributes

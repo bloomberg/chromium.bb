@@ -36,7 +36,9 @@
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "bindings/core/v8/V8ThrowException.h"
+#include "core/HTMLNames.h"
 #include "core/InternalRuntimeFlags.h"
+#include "core/SVGNames.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -177,8 +179,6 @@ private:
 };
 
 } // namespace
-
-using namespace HTMLNames;
 
 static bool markerTypesFrom(const String& markerType, DocumentMarker::MarkerTypes& result)
 {
@@ -1302,6 +1302,34 @@ LayerRectList* Internals::touchEventTargetLayerRects(Document* document, Excepti
     }
 
     return nullptr;
+}
+
+AtomicString Internals::htmlNamespace()
+{
+    return HTMLNames::xhtmlNamespaceURI;
+}
+
+Vector<AtomicString> Internals::htmlTags()
+{
+    Vector<AtomicString> tags(HTMLNames::HTMLTagsCount);
+    OwnPtr<const HTMLQualifiedName*[]> qualifiedNames = HTMLNames::getHTMLTags();
+    for (size_t i = 0; i < HTMLNames::HTMLTagsCount; ++i)
+        tags[i] = qualifiedNames[i]->localName();
+    return tags;
+}
+
+AtomicString Internals::svgNamespace()
+{
+    return SVGNames::svgNamespaceURI;
+}
+
+Vector<AtomicString> Internals::svgTags()
+{
+    Vector<AtomicString> tags(SVGNames::SVGTagsCount);
+    OwnPtr<const SVGQualifiedName*[]> qualifiedNames = SVGNames::getSVGTags();
+    for (size_t i = 0; i < SVGNames::SVGTagsCount; ++i)
+        tags[i] = qualifiedNames[i]->localName();
+    return tags;
 }
 
 PassRefPtrWillBeRawPtr<StaticNodeList> Internals::nodesFromRect(Document* document, int centerX, int centerY, unsigned topPadding, unsigned rightPadding,

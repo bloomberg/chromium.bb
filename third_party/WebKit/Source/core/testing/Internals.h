@@ -184,6 +184,11 @@ public:
     unsigned touchEventHandlerCount(Document*);
     LayerRectList* touchEventTargetLayerRects(Document*, ExceptionState&);
 
+    AtomicString htmlNamespace();
+    Vector<AtomicString> htmlTags();
+    AtomicString svgNamespace();
+    Vector<AtomicString> svgTags();
+
     // This is used to test rect based hit testing like what's done on touch screens.
     PassRefPtrWillBeRawPtr<StaticNodeList> nodesFromRect(Document*, int x, int y, unsigned topPadding, unsigned rightPadding,
         unsigned bottomPadding, unsigned leftPadding, bool ignoreClipping, bool allowChildFrameContent, ExceptionState&) const;
