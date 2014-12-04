@@ -37,13 +37,11 @@ var ActionLink = document.registerElement('action-link', {
 
     /** @this {ActionLink} */
     createdCallback: function() {
-      // Links aren't tabble unless there's an [href] attribute set. Setting
-      // this adds undesirable "Open link in new tab..." context menu handlers
-      // so just manually add to tab order instead.
-      this.tabIndex = 0;
+      // Action links can start disabled (e.g. <a is="action-link" disabled>).
+      this.tabIndex = this.disabled ? -1 : 0;
 
       this.addEventListener('keydown', function(e) {
-        if (e.keyIdentifier == 'Enter') {
+        if (!this.disabled && e.keyIdentifier == 'Enter') {
           // Schedule a click asynchronously because other 'keydown' handlers
           // may still run later (e.g. document.addEventListener('keydown')).
           // Specifically options dialogs break when this timeout isn't here.
@@ -64,6 +62,34 @@ var ActionLink = document.registerElement('action-link', {
         if (document.activeElement != this)
           document.activeElement.blur();
       });
+    },
+
+    /** @type {boolean} */
+    set disabled(disabled) {
+      if (disabled)
+        HTMLAnchorElement.prototype.setAttribute.call(this, 'disabled', '');
+      else
+        HTMLAnchorElement.prototype.removeAttribute.call(this, 'disabled');
+      this.tabIndex = disabled ? -1 : 0;
+    },
+    get disabled() {
+      return this.hasAttribute('disabled');
+    },
+
+    /** @override */
+    setAttribute: function(attr, val) {
+      if (attr.toLowerCase() == 'disabled')
+        this.disabled = true;
+      else
+        HTMLAnchorElement.prototype.setAttribute.apply(this, arguments);
+    },
+
+    /** @override */
+    removeAttribute: function(attr) {
+      if (attr.toLowerCase() == 'disabled')
+        this.disabled = false;
+      else
+        HTMLAnchorElement.prototype.removeAttribute.apply(this, arguments);
     },
   },
   extends: 'a',

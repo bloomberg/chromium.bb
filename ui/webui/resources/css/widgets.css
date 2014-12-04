@@ -270,6 +270,7 @@ input:disabled:-webkit-any([type='password'],
 [is='action-link'][disabled] {
   color: #999;
   cursor: default;
+  pointer-events: none;
   text-decoration: none;
 }
 
