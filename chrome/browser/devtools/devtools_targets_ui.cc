@@ -319,7 +319,7 @@ static void CallOnTarget(
     const DevToolsTargetsUIHandler::TargetCallback& callback,
     DevToolsAndroidBridge* bridge,
     scoped_refptr<DevToolsAndroidBridge::RemotePage> page) {
-  callback.Run(page.get() ? bridge->CreatePageTarget(page) : nullptr);
+  callback.Run(bridge && page.get() ? bridge->CreatePageTarget(page) : nullptr);
 }
 
 void AdbTargetsUIHandler::Open(

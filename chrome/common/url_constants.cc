@@ -247,6 +247,8 @@ const char kChromeUIUberHost[] = "chrome";
 const char kChromeUIUserActionsHost[] = "user-actions";
 const char kChromeUIVersionHost[] = "version";
 const char kChromeUIVoiceSearchHost[] = "voicesearch";
+const char kChromeUIWebRTCDeviceProviderHost[] =
+    "webrtc-device-provider";
 const char kChromeUIWorkersHost[] = "workers";
 
 const char kChromeUIScreenshotPath[] = "screenshots";

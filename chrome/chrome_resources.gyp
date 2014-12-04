@@ -81,6 +81,7 @@
             '../components/components_resources.gyp:components_resources',
             '../content/browser/devtools/devtools_resources.gyp:devtools_resources',
             '../content/browser/tracing/tracing_resources.gyp:tracing_resources',
+            'browser/devtools/webrtc_device_provider_resources.gyp:webrtc_device_provider_resources',
           ],
           'actions': [
             {

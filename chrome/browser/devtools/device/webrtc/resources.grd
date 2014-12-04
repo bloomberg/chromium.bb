@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grit latest_public_release="0" current_release="1">
+  <outputs>
+    <output filename="grit/webrtc_device_provider_resources.h" type="rc_header">
+      <emit emit_type='prepend'></emit>
+    </output>
+    <output filename="grit/webrtc_device_provider_resources_map.cc" type="resource_file_map_source" />
+    <output filename="grit/webrtc_device_provider_resources_map.h" type="resource_map_header" />
+    <output filename="webrtc_device_provider_resources.pak" type="data_package" />
+  </outputs>
+  <release seq="1">
+    <includes>
+      <include name="IDR_BACKGROUND_WORKER_HTML" file="background_worker.html" flattenhtml="false" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_WEBRTC_DEVICE_PROVIDER_JS" file="js/webrtc_device_provider.js" type="BINDATA" />
+    </includes>
+  </release>
+</grit>

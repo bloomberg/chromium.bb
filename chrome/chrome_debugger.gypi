@@ -13,6 +13,7 @@
         '../base/base.gyp:base',
         '../content/content.gyp:content_browser',
         '../net/net.gyp:net',
+        'browser/devtools/webrtc_device_provider_resources.gyp:webrtc_device_provider_resources',
         'browser/devtools/devtools_protocol_constants.gyp:devtools_protocol_constants',
       ],
       'include_dirs': [
@@ -53,6 +54,8 @@
             'common/extensions/api/api.gyp:chrome_api',
           ],
           'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/grit/webrtc_device_provider_resources_map.cc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/grit/webrtc_device_provider_resources_map.h',
             'browser/devtools/device/adb/adb_client_socket.cc',
             'browser/devtools/device/adb/adb_client_socket.h',
             'browser/devtools/device/adb/adb_device_info_query.cc',
@@ -62,6 +65,8 @@
             'browser/devtools/device/android_device_manager.cc',
             'browser/devtools/device/android_device_manager.h',
             'browser/devtools/device/android_web_socket.cc',
+            'browser/devtools/device/webrtc/webrtc_device_provider.cc',
+            'browser/devtools/device/webrtc/webrtc_device_provider.h',
             'browser/devtools/device/devtools_android_bridge.cc',
             'browser/devtools/device/devtools_android_bridge.h',
             'browser/devtools/device/port_forwarding_controller.cc',

@@ -351,18 +351,20 @@ repack("packed_extra_resources") {
   if (!is_ios && !is_android) {
     # New paks should be added here by default.
     sources += [
-      "$root_gen_dir/webkit/devtools_resources.pak",
       "$root_gen_dir/chrome/component_extension_resources.pak",
       "$root_gen_dir/chrome/options_resources.pak",
       "$root_gen_dir/chrome/quota_internals_resources.pak",
       "$root_gen_dir/chrome/sync_file_system_internals_resources.pak",
+      "$root_gen_dir/chrome/webrtc_device_provider_resources.pak",
+      "$root_gen_dir/webkit/devtools_resources.pak",
     ]
     deps += [
-      "//content/browser/devtools:devtools_resources",
+      "//chrome/browser/devtools:webrtc_device_provider_resources",
       "//chrome/browser/resources:component_extension_resources",
       "//chrome/browser/resources:options_resources",
       "//chrome/browser/resources:quota_internals_resources",
       "//chrome/browser/resources:sync_file_system_internals_resources",
+      "//content/browser/devtools:devtools_resources",
     ]
   }
   if (!is_ios) {

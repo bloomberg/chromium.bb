@@ -234,6 +234,9 @@
   "third_party/WebKit/public/blink_resources.grd": {
     "includes": [30500],
   },
+  "chrome/browser/devtools/device/webrtc/resources.grd": {
+    "includes": [30800],
+  },
 
   # These files don't need to reserve resource ids, but are listed here so that
   # translation scripts know of their existence.
