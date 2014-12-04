@@ -38,6 +38,7 @@ import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -148,6 +149,9 @@ public class Tab {
      * The number of pixel of 16DP.
      */
     private int mNumPixel16DP;
+
+    /** Whether or not the TabState has changed. */
+    private boolean mIsTabStateDirty = true;
 
     /**
      * A default {@link ChromeContextMenuItemDelegate} that supports some of the context menu
@@ -543,6 +547,32 @@ public class Tab {
      */
     public final InfoBarContainer getInfoBarContainer() {
         return mInfoBarContainer;
+    }
+
+    /** @return An opaque "state" object that can be persisted to storage. */
+    public TabState getState() {
+        if (!isInitialized()) return null;
+        TabState tabState = new TabState();
+        tabState.contentsState = getWebContentsState();
+        tabState.parentId = getParentId();
+        tabState.syncId = getSyncId();
+        return tabState;
+    }
+
+    /** Returns an object representing the state of the Tab's WebContents. */
+    protected TabState.WebContentsState getWebContentsState() {
+        // Native call returns null when buffer allocation needed to serialize the state failed.
+        ByteBuffer buffer = getWebContentsStateAsByteBuffer();
+        if (buffer == null) return null;
+
+        TabState.WebContentsState state = new TabState.WebContentsStateNative(buffer);
+        state.setVersion(TabState.CONTENTS_STATE_CURRENT_VERSION);
+        return state;
+    }
+
+    /** Returns an ByteBuffer representing the state of the Tab's WebContents. */
+    protected ByteBuffer getWebContentsStateAsByteBuffer() {
+        return TabState.getContentsStateAsByteBuffer(this);
     }
 
     /**
@@ -1184,6 +1214,21 @@ public class Tab {
     @CalledByNative
     private long getNativeInfoBarContainer() {
         return getInfoBarContainer().getNative();
+    }
+
+    /**
+     * @return Whether the TabState representing this Tab has been updated.
+     */
+    public boolean isTabStateDirty() {
+        return mIsTabStateDirty;
+    }
+
+    /**
+     * Set whether the TabState representing this Tab has been updated.
+     * @param isDirty Whether the Tab's state has changed.
+     */
+    public void setIsTabStateDirty(boolean isDirty) {
+        mIsTabStateDirty = isDirty;
     }
 
     /**

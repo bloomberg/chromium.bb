@@ -112,13 +112,17 @@ public class TabState {
         }
     }
 
-    public long timestampMillis = TIMESTAMP_NOT_SET;
-    public WebContentsState contentsState;  // Navigation history of the WebContents.
+    /** Navigation history of the WebContents. */
+    public WebContentsState contentsState;
     public int parentId = Tab.INVALID_TAB_ID;
-    public String openerAppId;
-    public boolean isIncognito;
     public long syncId;
+
+    public long timestampMillis = TIMESTAMP_NOT_SET;
+    public String openerAppId;
     public boolean shouldPreserve;
+
+    /** Whether this TabState was created from a file containing info about an incognito Tab. */
+    protected boolean mIsIncognito;
 
     /** @return Whether a Stable channel build of Chrome is being used. */
     private static boolean isStableChannelBuild() {
@@ -155,11 +159,6 @@ public class TabState {
      * @return TabState that has been restored, or null if it failed.
      */
     public static TabState readState(FileInputStream input, boolean encrypted) throws IOException {
-        return readStateInternal(input, encrypted);
-    }
-
-    private static TabState readStateInternal(FileInputStream input, boolean encrypted)
-            throws IOException {
         DataInputStream stream = null;
         if (encrypted) {
             Cipher cipher = CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);
@@ -231,7 +230,7 @@ public class TabState {
                 Log.w(TAG, "Failed to read shouldPreserve flag from tab state. "
                         + "Assuming shouldPreserve is false");
             }
-            tabState.isIncognito = encrypted;
+            tabState.mIsIncognito = encrypted;
             return tabState;
         } finally {
             stream.close();
@@ -240,20 +239,16 @@ public class TabState {
 
     /**
      * Writes the TabState to disk. This method may be called on either the UI or background thread.
-     * @param foutput Stream to write the tab's state to.
+     * @param output Stream to write the tab's state to.
      * @param state State object obtained from from {@link ChromeTab#getState()}.
      * @param encrypted Whether or not the TabState should be encrypted.
      */
-    public static void saveState(FileOutputStream foutput, TabState state, boolean encrypted)
+    public static void saveState(FileOutputStream output, TabState state, boolean encrypted)
             throws IOException {
         if (state == null || state.contentsState == null) {
             return;
         }
-        saveStateInternal(foutput, state, encrypted);
-    }
 
-    private static void saveStateInternal(FileOutputStream output, TabState state,
-            boolean encrypted) throws IOException {
         DataOutputStream stream;
         if (encrypted) {
             Cipher cipher = CipherFactory.getInstance().getCipher(Cipher.ENCRYPT_MODE);
@@ -302,6 +297,11 @@ public class TabState {
     /** @return URL currently being displayed in the saved state's current entry. */
     public String getVirtualUrlFromState() {
         return nativeGetVirtualUrlFromByteBuffer(contentsState.buffer(), contentsState.version());
+    }
+
+    /** @return Whether an incognito TabState was loaded by {@link #readState}. */
+    public boolean isIncognito() {
+        return mIsIncognito;
     }
 
     /**
