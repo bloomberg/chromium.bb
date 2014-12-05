@@ -310,6 +310,11 @@ C = Conditions
 _COPY_PATHS_COMMON = (
     Path('chrome_sandbox', mode=0o4755, dest=_CHROME_SANDBOX_DEST),
     Path('icudtl.dat', cond=C.GypSet('icu_use_data_file_flag')),
+    # Set as optional for backwards compatibility.
+    Path('lib/libpeerconnection.so',
+         exe=True,
+         cond=C.StagingFlagSet(_CHROME_INTERNAL_FLAG),
+         optional=True),
     Path('libffmpegsumo.so', exe=True, optional=True),
     Path('libosmesa.so', exe=True, optional=True),
     Path('libpdf.so', exe=True, optional=True),
@@ -321,17 +326,16 @@ _COPY_PATHS_COMMON = (
     # Do not strip the nacl_helper_bootstrap binary because the binutils
     # objcopy/strip mangles the ELF program headers.
     Path('nacl_helper_bootstrap',
-         exe=True, strip=False,
+         exe=True,
+         strip=False,
          cond=C.GypNotSet(_DISABLE_NACL)),
-    Path('nacl_irt_*.nexe',
-         cond=C.GypNotSet(_DISABLE_NACL)),
+    Path('nacl_irt_*.nexe', cond=C.GypNotSet(_DISABLE_NACL)),
     Path('nacl_helper',
          exe=True,
          optional=True,
          cond=C.GypNotSet(_DISABLE_NACL)),
     Path('natives_blob.bin', optional=True),
-    Path('pnacl/',
-         cond=C.GypNotSet(_DISABLE_NACL)),
+    Path('pnacl/', cond=C.GypNotSet(_DISABLE_NACL)),
     Path('snapshot_blob.bin', optional=True),
 )
 
@@ -352,14 +356,7 @@ _COPY_PATHS_CHROME = (
          exe=True,
          cond=C.GypSet('component', value='shared_library')),
     # Set as optional for backwards compatibility.
-    Path('lib/libpeerconnection.so',
-         exe=True,
-         cond=C.StagingFlagSet(_CHROME_INTERNAL_FLAG),
-         optional=True),
-    # Set as optional for backwards compatibility.
-    Path('libexif.so',
-         exe=True,
-         optional=True),
+    Path('libexif.so', exe=True, optional=True),
     # Widevine binaries are already pre-stripped.  In addition, they don't
     # play well with the binutils stripping tools, so skip stripping.
     Path('libwidevinecdmadapter.so',
