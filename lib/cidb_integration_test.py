@@ -262,11 +262,12 @@ class DataSeries0Test(CIDBIntegrationTest):
     """Sanity checks on the last_updated column."""
     # We should have a diversity of last_updated times. Since the timestamp
     # resolution is only 1 second, and we have lots of parallelism in the test,
-    # we won't have a distring last_updated time per row. But we will have at
-    # least 100 distinct last_updated times.
+    # we won't have a distinct last_updated time per row.
+    # As the test db gets beefier, we're more likely to get collisions. So we
+    # check for a small number of distinct timestamps.
     distinct_last_updated = db._GetEngine().execute(
         'select count(distinct last_updated) from buildTable').fetchall()[0][0]
-    self.assertTrue(distinct_last_updated > 80)
+    self.assertTrue(distinct_last_updated > 20)
 
     ids_by_last_updated = db._GetEngine().execute(
         'select id from buildTable order by last_updated').fetchall()
