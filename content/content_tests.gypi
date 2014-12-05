@@ -1713,7 +1713,7 @@
           'target_name': 'content_browsertests_manifest',
           'type': 'none',
           'variables': {
-            'jinja_inputs': ['shell/android/browsertests_apk/AndroidManifest.xml'],
+            'jinja_inputs': ['shell/android/browsertests_apk/AndroidManifest.xml.jinja2'],
             'jinja_output': '<(SHARED_INTERMEDIATE_DIR)/content_browsertests_manifest/AndroidManifest.xml',
           },
           'includes': [ '../build/android/jinja_template.gypi' ],
@@ -1772,7 +1772,7 @@
           'target_name': 'chromium_linker_test_manifest',
           'type': 'none',
           'variables': {
-            'jinja_inputs': ['shell/android/linker_test_apk/AndroidManifest.xml'],
+            'jinja_inputs': ['shell/android/linker_test_apk/AndroidManifest.xml.jinja2'],
             'jinja_output': '<(SHARED_INTERMEDIATE_DIR)/chromium_linker_test_manifest/AndroidManifest.xml',
           },
           'includes': [ '../build/android/jinja_template.gypi' ],

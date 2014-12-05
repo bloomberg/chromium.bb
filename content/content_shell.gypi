@@ -1054,7 +1054,7 @@
           'target_name': 'content_shell_manifest',
           'type': 'none',
           'variables': {
-            'jinja_inputs': ['shell/android/shell_apk/AndroidManifest.xml'],
+            'jinja_inputs': ['shell/android/shell_apk/AndroidManifest.xml.jinja2'],
             'jinja_output': '<(SHARED_INTERMEDIATE_DIR)/content_shell_manifest/AndroidManifest.xml',
           },
           'includes': [ '../build/android/jinja_template.gypi' ],

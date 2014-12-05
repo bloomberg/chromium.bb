@@ -329,7 +329,7 @@ chrome_shell_manifest =
 # GYP: //chrome/chrome_shell.gypi:chrome_shell_manifest
 jinja_template("chrome_shell_manifest") {
   testonly = true
-  input = "shell/java/AndroidManifest.xml"
+  input = "shell/java/AndroidManifest.xml.jinja2"
   output = chrome_shell_manifest
 }
 
@@ -364,7 +364,7 @@ chrome_sync_shell_manifest = "$target_gen_dir/chrome_sync_shell_manifest/Android
 # GYP: //chrome/chrome_shell.gypi:chrome_sync_shell_manifest
 jinja_template("chrome_sync_shell_manifest") {
   testonly = true
-  input = "sync_shell/java/AndroidManifest.xml"
+  input = "sync_shell/java/AndroidManifest.xml.jinja2"
   output = chrome_sync_shell_manifest
 }
 

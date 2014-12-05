@@ -97,7 +97,7 @@
       'target_name': 'chrome_shell_manifest',
       'type': 'none',
       'variables': {
-        'jinja_inputs': ['android/shell/java/AndroidManifest.xml'],
+        'jinja_inputs': ['android/shell/java/AndroidManifest.xml.jinja2'],
         'jinja_output': '<(SHARED_INTERMEDIATE_DIR)/chrome_shell_manifest/AndroidManifest.xml',
       },
       'includes': [ '../build/android/jinja_template.gypi' ],
@@ -162,7 +162,7 @@
       'target_name': 'chrome_sync_shell_manifest',
       'type': 'none',
       'variables': {
-        'jinja_inputs': ['android/sync_shell/java/AndroidManifest.xml'],
+        'jinja_inputs': ['android/sync_shell/java/AndroidManifest.xml.jinja2'],
         'jinja_output': '<(SHARED_INTERMEDIATE_DIR)/chrome_sync_shell_manifest/AndroidManifest.xml',
       },
       'includes': [ '../build/android/jinja_template.gypi' ],

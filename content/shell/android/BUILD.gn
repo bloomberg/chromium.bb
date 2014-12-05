@@ -61,7 +61,7 @@ content_shell_manifest = "$target_gen_dir/content_shell_manifest/AndroidManifest
 
 jinja_template("content_shell_manifest") {
   testonly = true
-  input = "shell_apk/AndroidManifest.xml"
+  input = "shell_apk/AndroidManifest.xml.jinja2"
   output = content_shell_manifest
 }
 
@@ -174,7 +174,7 @@ if (cpu_arch != "x64" && cpu_arch != "arm64") {
 
   jinja_template("chromium_linker_test_manifest") {
     testonly = true
-    input = "linker_test_apk/AndroidManifest.xml"
+    input = "linker_test_apk/AndroidManifest.xml.jinja2"
     output = chromium_linker_test_manifest
   }
 

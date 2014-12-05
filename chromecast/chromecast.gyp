@@ -333,7 +333,7 @@
           'target_name': 'cast_shell_manifest',
           'type': 'none',
           'variables': {
-            'jinja_inputs': ['browser/android/apk/AndroidManifest.xml'],
+            'jinja_inputs': ['browser/android/apk/AndroidManifest.xml.jinja2'],
             'jinja_output': '<(SHARED_INTERMEDIATE_DIR)/cast_shell_manifest/AndroidManifest.xml',
           },
           'includes': [ '../build/android/jinja_template.gypi' ],
