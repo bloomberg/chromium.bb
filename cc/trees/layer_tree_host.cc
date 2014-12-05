@@ -363,9 +363,6 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   sync_tree->PushPageScaleFromMainThread(
       page_scale_factor_, min_page_scale_factor_, max_page_scale_factor_);
-  sync_tree->elastic_overscroll()->PushFromMainThread(elastic_overscroll_);
-  if (sync_tree->IsActiveTree())
-    sync_tree->elastic_overscroll()->PushPendingToActive();
 
   sync_tree->PassSwapPromises(&swap_promise_list_);
 
@@ -878,7 +875,6 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
     LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(
         root_layer, device_viewport_size(), gfx::Transform(),
         device_scale_factor_, page_scale_factor_, page_scale_layer,
-        elastic_overscroll_, overscroll_elasticity_layer_.get(),
         GetRendererCapabilities().max_texture_size, settings_.can_use_lcd_text,
         settings_.layers_always_allowed_lcd_text,
         can_render_to_separate_surface,
@@ -1130,8 +1126,9 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   }
 
   if (!inner_viewport_scroll_delta.IsZero() ||
-      !outer_viewport_scroll_delta.IsZero() || info->page_scale_delta != 1.f ||
-      !info->elastic_overscroll_delta.IsZero() || info->top_controls_delta) {
+      !outer_viewport_scroll_delta.IsZero() ||
+      info->page_scale_delta != 1.f ||
+      info->top_controls_delta) {
     // Preemptively apply the scroll offset and scale delta here before sending
     // it to the client.  If the client comes back and sets it to the same
     // value, then the layer can early out without needing a full commit.
@@ -1150,15 +1147,12 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
     }
 
     ApplyPageScaleDeltaFromImplSide(info->page_scale_delta);
-    elastic_overscroll_ += info->elastic_overscroll_delta;
     if (!settings_.use_pinch_virtual_viewport) {
       client_->ApplyViewportDeltas(
           inner_viewport_scroll_delta + outer_viewport_scroll_delta,
           info->page_scale_delta,
           info->top_controls_delta);
     } else {
-      // TODO(ccameron): pass the elastic overscroll here so that input events
-      // may be translated appropriately.
       client_->ApplyViewportDeltas(
           inner_viewport_scroll_delta,
           outer_viewport_scroll_delta,

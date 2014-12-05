@@ -75,8 +75,7 @@ class LayerScrollOffsetDelegateProxy : public LayerImpl::ScrollOffsetDelegate {
 
 LayerTreeImpl::LayerTreeImpl(
     LayerTreeHostImpl* layer_tree_host_impl,
-    scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
-    scoped_refptr<SyncedElasticOverscroll> elastic_overscroll)
+    scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor)
     : layer_tree_host_impl_(layer_tree_host_impl),
       source_frame_number_(-1),
       hud_layer_(0),
@@ -90,7 +89,6 @@ LayerTreeImpl::LayerTreeImpl(
       page_scale_factor_(page_scale_factor),
       min_page_scale_factor_(0),
       max_page_scale_factor_(0),
-      elastic_overscroll_(elastic_overscroll),
       scrolling_layer_id_from_previous_tree_(0),
       contents_textures_purged_(false),
       viewport_size_invalid_(false),
@@ -232,7 +230,6 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   // tree so only the limits need to be provided.
   target_tree->PushPageScaleFactorAndLimits(nullptr, min_page_scale_factor(),
                                             max_page_scale_factor());
-  target_tree->elastic_overscroll()->PushPendingToActive();
 
   target_tree->pending_page_scale_animation_ =
       pending_page_scale_animation_.Pass();
@@ -431,7 +428,6 @@ void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
   DCHECK(IsActiveTree());
 
   page_scale_factor()->AbortCommit();
-  elastic_overscroll()->AbortCommit();
 
   top_controls_content_offset_ += sent_top_controls_delta_;
   top_controls_delta_ -= sent_top_controls_delta_;
@@ -528,9 +524,8 @@ bool LayerTreeImpl::UpdateDrawProperties() {
         root_layer(), DrawViewportSize(),
         layer_tree_host_impl_->DrawTransform(), device_scale_factor(),
         current_page_scale_factor(), page_scale_layer,
-        elastic_overscroll()->Current(IsActiveTree()),
-        overscroll_elasticity_layer_, resource_provider()->max_texture_size(),
-        settings().can_use_lcd_text, settings().layers_always_allowed_lcd_text,
+        resource_provider()->max_texture_size(), settings().can_use_lcd_text,
+        settings().layers_always_allowed_lcd_text,
         can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
         &render_surface_layer_list_, render_surface_layer_list_id_);
