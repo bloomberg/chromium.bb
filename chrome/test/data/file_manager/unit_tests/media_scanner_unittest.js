@@ -77,17 +77,19 @@ function populateDir(filenames, dir) {
 /**
  * Verifies that scanning an empty filesystem produces an empty list.
  */
-function testEmptyList(errorIf) {
+function testEmptyList(callback) {
   var scanner = new MediaScanner([]);
-  scanner.getFiles().then(function(files) {
-    errorIf(files.length !== 0);
-  });
+  reportPromise(
+      scanner.getFiles().then(function(files) {
+        assertEquals(0, files.length);
+      }),
+      callback);
 }
 
 /**
  * Verifies that scanning a simple single-level directory structure works.
  */
-function testSingleLevel(errorIf) {
+function testSingleLevel(callback) {
   var filenames = [
       'foo',
       'foo.jpg',
@@ -101,42 +103,36 @@ function testSingleLevel(errorIf) {
       '/testSingleLevel/bar.gif',
       '/testSingleLevel/baz.avi'
   ];
-  makeTestFilesystemRoot('testSingleLevel')
-      .then(populateDir.bind(null, filenames))
-      .then(
-          /**
-           * Scans the directory.
-           * @param {!DirectoryEntry} root
-           */
-          function(root) {
-            var scanner = new MediaScanner([root]);
-            return scanner.getFiles();
-          })
-      .then(
-          /**
-           * Verifies the results of the media scan.
-           * @param {!Array.<!FileEntry>} scanResults
-           */
-          function(scanResults) {
-            assertEquals(expectedFiles.length, scanResults.length);
-            scanResults.forEach(function(result) {
-              // Verify that the scanner only returns files.
-              assertTrue(result.isFile, result.fullPath + ' is not a file');
-              assertTrue(expectedFiles.indexOf(result.fullPath) != -1,
-                  result.fullPath + ' not found in control set');
-            });
-            // Signal test completion with no errors.
-            errorIf(false);
-          })
-      .catch(
-          function(e) {
-            // Catch failures and print them.
-            console.error(e);
-            errorIf(e);
-          });
+  reportPromise(
+      makeTestFilesystemRoot('testSingleLevel')
+          .then(populateDir.bind(null, filenames))
+          .then(
+              /**
+               * Scans the directory.
+               * @param {!DirectoryEntry} root
+               */
+              function(root) {
+                var scanner = new MediaScanner([root]);
+                return scanner.getFiles();
+              })
+          .then(
+              /**
+               * Verifies the results of the media scan.
+               * @param {!Array.<!FileEntry>} scanResults
+               */
+              function(scanResults) {
+                assertEquals(expectedFiles.length, scanResults.length);
+                scanResults.forEach(function(result) {
+                  // Verify that the scanner only returns files.
+                  assertTrue(result.isFile, result.fullPath + ' is not a file');
+                  assertTrue(expectedFiles.indexOf(result.fullPath) != -1,
+                      result.fullPath + ' not found in control set');
+                });
+              }),
+          callback);
 }
 
-function testMultiLevel(errorIf) {
+function testMultiLevel(callback) {
   var filenames = [
       'foo.jpg',
       'bar',
@@ -160,44 +156,36 @@ function testMultiLevel(errorIf) {
       '/testMultiLevel/foo.1/foo.1.0/bar.1.0.avi'
   ];
 
-  makeTestFilesystemRoot('testMultiLevel')
-      .then(populateDir.bind(null, filenames))
-      .then(
-          /**
-           * Scans the directory.
-           * @param {!DirectoryEntry} root
-           */
-          function(root) {
-            var scanner = new MediaScanner([root]);
-            return scanner.getFiles();
-          })
-      .then(
-          /**
-           * Verifies the results of the media scan.
-           * @param {!Array.<!FileEntry>} scanResults
-           */
-          function(scanResults) {
-            assertEquals(expectedFiles.length, scanResults.length);
-            scanResults.forEach(function(result) {
-              // Verify that the scanner only returns files.
-              assertTrue(result.isFile, result.fullPath + ' is not a file');
-              assertTrue(expectedFiles.indexOf(result.fullPath) != -1,
-                  result.fullPath + ' not found in control set');
-            });
-            // Signal test completion with no errors.
-            errorIf(false);
-          })
-      .catch(
-          function(e) {
-            // Catch failures and print them.
-            console.error(e);
-            errorIf(e);
-          });
-
-  errorIf(false);
+  reportPromise(
+      makeTestFilesystemRoot('testMultiLevel')
+          .then(populateDir.bind(null, filenames))
+          .then(
+              /**
+               * Scans the directory.
+               * @param {!DirectoryEntry} root
+               */
+              function(root) {
+                var scanner = new MediaScanner([root]);
+                return scanner.getFiles();
+              })
+          .then(
+              /**
+               * Verifies the results of the media scan.
+               * @param {!Array.<!FileEntry>} scanResults
+               */
+              function(scanResults) {
+                assertEquals(expectedFiles.length, scanResults.length);
+                scanResults.forEach(function(result) {
+                  // Verify that the scanner only returns files.
+                  assertTrue(result.isFile, result.fullPath + ' is not a file');
+                  assertTrue(expectedFiles.indexOf(result.fullPath) != -1,
+                      result.fullPath + ' not found in control set');
+                });
+              }),
+      callback);
 }
 
-function testMultipleDirectories(errorIf) {
+function testMultipleDirectories(callback) {
   var filenames = [
       'foo',
       'bar',
@@ -223,41 +211,36 @@ function testMultipleDirectories(errorIf) {
           dirname, {create: false}, resolve, reject);
     });
   };
-  makeTestFilesystemRoot('testMultipleDirectories')
-      .then(populateDir.bind(null, filenames))
-      .then(
-          /**
-           * Scans the directories.
-           * @param {!DirectoryEntry} root
-           */
-          function(root) {
-            return Promise.all(['foo.0', 'foo.1'].map(
-                getDirectory.bind(null, root))).then(
-                    function(directories) {
-                      var scanner = new MediaScanner(directories);
-                      return scanner.getFiles();
-                    });
-          })
-      .then(
-          /**
-           * Verifies the results of the media scan.
-           * @param {!Array.<!FileEntry>} scanResults
-           */
-          function(scanResults) {
-            assertEquals(expectedFiles.length, scanResults.length);
-            scanResults.forEach(function(result) {
-              // Verify that the scanner only returns files.
-              assertTrue(result.isFile, result.fullPath + ' is not a file');
-              assertTrue(expectedFiles.indexOf(result.fullPath) != -1,
-                  result.fullPath + ' not found in control set');
-            });
-            // Signal test completion with no errors.
-            errorIf(false);
-          })
-      .catch(
-          function(e) {
-            // Catch failures and print them.
-            console.error(e);
-            errorIf(e);
-          });
+
+  reportPromise(
+      makeTestFilesystemRoot('testMultipleDirectories')
+          .then(populateDir.bind(null, filenames))
+          .then(
+              /**
+               * Scans the directories.
+               * @param {!DirectoryEntry} root
+               */
+              function(root) {
+                return Promise.all(['foo.0', 'foo.1'].map(
+                    getDirectory.bind(null, root))).then(
+                        function(directories) {
+                          var scanner = new MediaScanner(directories);
+                          return scanner.getFiles();
+                        });
+              })
+          .then(
+              /**
+               * Verifies the results of the media scan.
+               * @param {!Array.<!FileEntry>} scanResults
+               */
+              function(scanResults) {
+                assertEquals(expectedFiles.length, scanResults.length);
+                scanResults.forEach(function(result) {
+                  // Verify that the scanner only returns files.
+                  assertTrue(result.isFile, result.fullPath + ' is not a file');
+                  assertTrue(expectedFiles.indexOf(result.fullPath) != -1,
+                      result.fullPath + ' not found in control set');
+                });
+              }),
+      callback);
 }
