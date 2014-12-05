@@ -24,7 +24,8 @@ const int kNoWifiPollingIntervalMilliseconds = 20 * 1000; // 20s
 
 }  // namespace
 
-WifiDataProviderChromeOs::WifiDataProviderChromeOs() : started_(false) {
+WifiDataProviderChromeOs::WifiDataProviderChromeOs()
+    : started_(false), is_first_scan_complete_(false) {
 }
 
 WifiDataProviderChromeOs::~WifiDataProviderChromeOs() {
