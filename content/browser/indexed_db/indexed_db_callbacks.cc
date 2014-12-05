@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/guid.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -223,15 +222,10 @@ void IndexedDBCallbacks::OnSuccess(scoped_ptr<IndexedDBConnection> connection,
 static std::string CreateBlobData(
     const IndexedDBBlobInfo& blob_info,
     scoped_refptr<IndexedDBDispatcherHost> dispatcher_host,
-    storage::BlobStorageContext* blob_storage_context,
     base::TaskRunner* task_runner) {
-  std::string uuid = blob_info.uuid();
-  if (!uuid.empty()) {
+  if (!blob_info.uuid().empty()) {
     // We're sending back a live blob, not a reference into our backing store.
-    scoped_ptr<storage::BlobDataHandle> blob_data_handle(
-        blob_storage_context->GetBlobDataFromUUID(uuid));
-    dispatcher_host->HoldBlobDataHandle(uuid, blob_data_handle.Pass());
-    return uuid;
+    return dispatcher_host->HoldBlobData(blob_info);
   }
   scoped_refptr<ShareableFileReference> shareable_file =
       ShareableFileReference::Get(blob_info.file_path());
@@ -243,17 +237,7 @@ static std::string CreateBlobData(
     if (!blob_info.release_callback().is_null())
       shareable_file->AddFinalReleaseCallback(blob_info.release_callback());
   }
-
-  uuid = base::GenerateGUID();
-  scoped_refptr<storage::BlobData> blob_data = new storage::BlobData(uuid);
-  blob_data->set_content_type(base::UTF16ToUTF8(blob_info.type()));
-  blob_data->AppendFile(
-      blob_info.file_path(), 0, blob_info.size(), blob_info.last_modified());
-  scoped_ptr<storage::BlobDataHandle> blob_data_handle(
-      blob_storage_context->AddFinishedBlob(blob_data.get()));
-  dispatcher_host->HoldBlobDataHandle(uuid, blob_data_handle.Pass());
-
-  return uuid;
+  return dispatcher_host->HoldBlobData(blob_info);
 }
 
 static bool CreateAllBlobs(
@@ -268,7 +252,6 @@ static bool CreateAllBlobs(
     (*blob_or_file_info)[i].uuid =
         CreateBlobData(blob_info[i],
                        dispatcher_host,
-                       dispatcher_host->blob_storage_context(),
                        dispatcher_host->Context()->TaskRunner());
   }
   return true;

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/guid.h"
 #include "base/memory/scoped_vector.h"
 #include "base/process/process.h"
 #include "base/stl_util.h"
@@ -69,7 +70,8 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
 }
 
 IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
-  STLDeleteValues(&blob_data_handle_map_);
+  for (auto& iter : blob_data_handle_map_)
+    delete iter.second.first;
 }
 
 void IndexedDBDispatcherHost::OnChannelConnected(int32 peer_pid) {
@@ -118,10 +120,16 @@ void IndexedDBDispatcherHost::ResetDispatcherHosts() {
 
 base::TaskRunner* IndexedDBDispatcherHost::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
-  if (IPC_MESSAGE_CLASS(message) == IndexedDBMsgStart &&
-      message.type() != IndexedDBHostMsg_DatabasePut::ID)
-    return indexed_db_context_->TaskRunner();
-  return NULL;
+  if (IPC_MESSAGE_CLASS(message) != IndexedDBMsgStart)
+    return NULL;
+
+  switch (message.type()) {
+    case IndexedDBHostMsg_DatabasePut::ID:
+    case IndexedDBHostMsg_AckReceivedBlobs::ID:
+      return NULL;
+    default:
+      return indexed_db_context_->TaskRunner();
+  }
 }
 
 bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
@@ -129,7 +137,8 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     return false;
 
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread() ||
-         message.type() == IndexedDBHostMsg_DatabasePut::ID);
+         (message.type() == IndexedDBHostMsg_DatabasePut::ID ||
+          message.type() == IndexedDBHostMsg_AckReceivedBlobs::ID));
 
   bool handled = database_dispatcher_host_->OnMessageReceived(message) ||
                  cursor_dispatcher_host_->OnMessageReceived(message);
@@ -209,18 +218,44 @@ uint32 IndexedDBDispatcherHost::TransactionIdToProcessId(
   return (host_transaction_id >> 32) & 0xffffffff;
 }
 
-void IndexedDBDispatcherHost::HoldBlobDataHandle(
-    const std::string& uuid,
-    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+std::string IndexedDBDispatcherHost::HoldBlobData(
+    const IndexedDBBlobInfo& blob_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  std::string uuid = blob_info.uuid();
+  storage::BlobStorageContext* context = blob_storage_context_->context();
+  scoped_ptr<storage::BlobDataHandle> blob_data_handle;
+  if (uuid.empty()) {
+    uuid = base::GenerateGUID();
+    scoped_refptr<storage::BlobData> blob_data = new storage::BlobData(uuid);
+    blob_data->set_content_type(base::UTF16ToUTF8(blob_info.type()));
+    blob_data->AppendFile(blob_info.file_path(), 0, blob_info.size(),
+                          blob_info.last_modified());
+    blob_data_handle = context->AddFinishedBlob(blob_data.get());
+  } else {
+    auto iter = blob_data_handle_map_.find(uuid);
+    if (iter != blob_data_handle_map_.end()) {
+      iter->second.second += 1;
+      return uuid;
+    }
+    blob_data_handle = context->GetBlobDataFromUUID(uuid);
+  }
+
   DCHECK(!ContainsKey(blob_data_handle_map_, uuid));
-  blob_data_handle_map_[uuid] = blob_data_handle.release();
+  blob_data_handle_map_[uuid] = std::make_pair(blob_data_handle.release(), 1);
+  return uuid;
 }
 
-void IndexedDBDispatcherHost::DropBlobDataHandle(const std::string& uuid) {
+void IndexedDBDispatcherHost::DropBlobData(const std::string& uuid) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BlobDataHandleMap::iterator iter = blob_data_handle_map_.find(uuid);
   if (iter != blob_data_handle_map_.end()) {
-    delete iter->second;
-    blob_data_handle_map_.erase(iter);
+    DCHECK_GE(iter->second.second, 1);
+    if (iter->second.second == 1) {
+      delete iter->second.first;
+      blob_data_handle_map_.erase(iter);
+    } else {
+      iter->second.second -= 1;
+    }
   } else {
     DLOG(FATAL) << "Failed to find blob UUID in map:" << uuid;
   }
@@ -342,9 +377,9 @@ void IndexedDBDispatcherHost::OnPutHelper(
 
 void IndexedDBDispatcherHost::OnAckReceivedBlobs(
     const std::vector<std::string>& uuids) {
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   for (const auto& uuid : uuids)
-    DropBlobDataHandle(uuid);
+    DropBlobData(uuid);
 }
 
 void IndexedDBDispatcherHost::FinishTransaction(int64 host_transaction_id,
@@ -453,9 +488,9 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::CloseAll() {
 
 bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
     const IPC::Message& message) {
-
   DCHECK(
-      (message.type() == IndexedDBHostMsg_DatabasePut::ID) ||
+      (message.type() == IndexedDBHostMsg_DatabasePut::ID ||
+       message.type() == IndexedDBHostMsg_AckReceivedBlobs::ID) ||
       parent_->indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
 
   bool handled = true;
