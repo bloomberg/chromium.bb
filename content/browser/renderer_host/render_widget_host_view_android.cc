@@ -190,10 +190,14 @@ GLHelperHolder::CreateContext3D() {
           0,  // offscreen
           url, gpu_channel_host.get(), attrs, lose_context_when_out_of_memory,
           limits, nullptr));
-  if (context->InitializeOnCurrentThread())
+  if (context->InitializeOnCurrentThread()) {
     context->pushGroupMarkerEXT(
         base::StringPrintf("CmdBufferImageTransportFactory-%p",
                            context.get()).c_str());
+  } else {
+    context.reset();
+  }
+
   return context.Pass();
 }
 
