@@ -26,6 +26,7 @@ namespace {
 const drmModeModeInfo kDefaultMode =
     {0, 6, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, {'\0'}};
 
+const gfx::AcceleratedWidget kDefaultWidgetHandle = 1;
 const uint32_t kDefaultCrtc = 1;
 const uint32_t kDefaultConnector = 2;
 
@@ -78,18 +79,17 @@ void DriWindowDelegateImplTest::SetUp() {
   window_delegate_manager_.reset(new ui::DriWindowDelegateManager());
 
   scoped_ptr<ui::DriWindowDelegate> window_delegate(
-      new ui::DriWindowDelegateImpl(ui::DriSurfaceFactory::kDefaultWidgetHandle,
-                                    dri_.get(), window_delegate_manager_.get(),
+      new ui::DriWindowDelegateImpl(kDefaultWidgetHandle, dri_.get(),
+                                    window_delegate_manager_.get(),
                                     screen_manager_.get()));
   window_delegate->Initialize();
-  window_delegate_manager_->AddWindowDelegate(
-      ui::DriSurfaceFactory::kDefaultWidgetHandle, window_delegate.Pass());
+  window_delegate_manager_->AddWindowDelegate(kDefaultWidgetHandle,
+                                              window_delegate.Pass());
 }
 
 void DriWindowDelegateImplTest::TearDown() {
   scoped_ptr<ui::DriWindowDelegate> delegate =
-      window_delegate_manager_->RemoveWindowDelegate(
-          ui::DriSurfaceFactory::kDefaultWidgetHandle);
+      window_delegate_manager_->RemoveWindowDelegate(kDefaultWidgetHandle);
   delegate->Shutdown();
   message_loop_.reset();
 }
@@ -103,8 +103,7 @@ TEST_F(DriWindowDelegateImplTest, SetCursorImage) {
 
   std::vector<SkBitmap> cursor_bitmaps;
   cursor_bitmaps.push_back(image);
-  window_delegate_manager_->GetWindowDelegate(
-                                ui::DriSurfaceFactory::kDefaultWidgetHandle)
+  window_delegate_manager_->GetWindowDelegate(kDefaultWidgetHandle)
       ->SetCursor(cursor_bitmaps, gfx::Point(4, 2), 0);
 
   SkBitmap cursor;

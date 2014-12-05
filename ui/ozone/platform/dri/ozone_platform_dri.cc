@@ -99,9 +99,6 @@ class OzonePlatformDri : public OzonePlatform {
         new DriWindowManager(gpu_platform_support_host_.get()));
     event_factory_ozone_.reset(new EventFactoryEvdev(window_manager_->cursor(),
                                                      device_manager_.get()));
-    if (surface_factory_ozone_->InitializeHardware() !=
-        DriSurfaceFactory::INITIALIZED)
-      LOG(FATAL) << "Failed to initialize display hardware.";
 
     if (!ui_thread_gpu_.Initialize())
       LOG(FATAL) << "Failed to initialize dummy channel.";

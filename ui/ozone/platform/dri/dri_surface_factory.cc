@@ -18,42 +18,16 @@
 
 namespace ui {
 
-// static
-const gfx::AcceleratedWidget DriSurfaceFactory::kDefaultWidgetHandle = 1;
-
 DriSurfaceFactory::DriSurfaceFactory(DriWrapper* drm,
                                      DriWindowDelegateManager* window_manager)
-    : drm_(drm), window_manager_(window_manager), state_(UNINITIALIZED) {
+    : drm_(drm), window_manager_(window_manager) {
 }
 
 DriSurfaceFactory::~DriSurfaceFactory() {
-  if (state_ == INITIALIZED)
-    ShutdownHardware();
-}
-
-DriSurfaceFactory::HardwareState DriSurfaceFactory::InitializeHardware() {
-  if (state_ != UNINITIALIZED)
-    return state_;
-
-  if (drm_->get_fd() < 0) {
-    LOG(ERROR) << "Failed to create DRI connection";
-    state_ = FAILED;
-    return state_;
-  }
-
-  state_ = INITIALIZED;
-  return state_;
-}
-
-void DriSurfaceFactory::ShutdownHardware() {
-  DCHECK(state_ == INITIALIZED);
-  state_ = UNINITIALIZED;
 }
 
 scoped_ptr<ui::SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
-  DCHECK(state_ == INITIALIZED);
-
   return scoped_ptr<ui::SurfaceOzoneCanvas>(
       new DriSurface(window_manager_->GetWindowDelegate(widget), drm_));
 }

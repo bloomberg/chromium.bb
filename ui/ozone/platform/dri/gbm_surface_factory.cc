@@ -86,7 +86,6 @@ void GbmSurfaceFactory::InitializeGpu(
 }
 
 intptr_t GbmSurfaceFactory::GetNativeDisplay() {
-  DCHECK(state_ == INITIALIZED);
   return reinterpret_cast<intptr_t>(device_);
 }
 
@@ -114,8 +113,6 @@ bool GbmSurfaceFactory::LoadEGLGLES2Bindings(
 
 scoped_ptr<SurfaceOzoneEGL> GbmSurfaceFactory::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
-  DCHECK(state_ == INITIALIZED);
-
   DriWindowDelegate* delegate = GetOrCreateWindowDelegate(widget);
 
   scoped_ptr<GbmSurface> surface(new GbmSurface(delegate, device_, drm_));

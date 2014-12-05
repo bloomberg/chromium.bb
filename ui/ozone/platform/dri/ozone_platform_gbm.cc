@@ -149,9 +149,6 @@ class OzonePlatformGbm : public OzonePlatform {
     gpu_platform_support_.reset(
         new DriGpuPlatformSupport(dri_.get(), window_delegate_manager_.get(),
                                   screen_manager_.get(), ndd.Pass()));
-    if (surface_factory_ozone_->InitializeHardware() !=
-        DriSurfaceFactory::INITIALIZED)
-      LOG(FATAL) << "failed to initialize display hardware";
   }
 
  private:

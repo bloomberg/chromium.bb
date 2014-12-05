@@ -19,23 +19,8 @@ class SurfaceOzoneCanvas;
 // path.
 class DriSurfaceFactory : public SurfaceFactoryOzone {
  public:
-  static const gfx::AcceleratedWidget kDefaultWidgetHandle;
-
   DriSurfaceFactory(DriWrapper* drm, DriWindowDelegateManager* window_manager);
   ~DriSurfaceFactory() override;
-
-  // Describes the state of the hardware after initialization.
-  enum HardwareState {
-    UNINITIALIZED,
-    INITIALIZED,
-    FAILED,
-  };
-
-  // Open the display device.
-  HardwareState InitializeHardware();
-
-  // Close the display device.
-  void ShutdownHardware();
 
   // SurfaceFactoryOzone:
   scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
@@ -45,10 +30,8 @@ class DriSurfaceFactory : public SurfaceFactoryOzone {
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
 
  protected:
-
   DriWrapper* drm_;  // Not owned.
   DriWindowDelegateManager* window_manager_;  // Not owned.
-  HardwareState state_;
 
   DISALLOW_COPY_AND_ASSIGN(DriSurfaceFactory);
 };

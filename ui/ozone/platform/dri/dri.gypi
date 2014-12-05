@@ -116,7 +116,6 @@
       ],
       'direct_dependent_settings': {
         'sources': [
-          'dri_surface_factory_unittest.cc',
           'dri_surface_unittest.cc',
           'dri_window_delegate_impl_unittest.cc',
           'hardware_display_controller_unittest.cc',
