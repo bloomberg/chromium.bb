@@ -201,7 +201,7 @@ Viewport.prototype.getRotation = function() {
 Viewport.prototype.getFittingScaleForImageSize_ = function(width, height) {
   var scaleX = this.screenBounds_.width / width;
   var scaleY = this.screenBounds_.height / height;
-  return Math.min(scaleX, scaleY);
+  return Math.min(scaleX, scaleY, 1);
 };
 
 /**
