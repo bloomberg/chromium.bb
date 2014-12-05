@@ -1895,12 +1895,16 @@ void Document::updateStyle(StyleRecalcChange change)
 
 void Document::updateRenderTreeForNodeIfNeeded(Node* node)
 {
+    ASSERT(node);
     if (!node->canParticipateInComposedTree())
         return;
-    bool needsRecalc = needsFullRenderTreeUpdate();
 
-    for (const Node* ancestor = node; ancestor && !needsRecalc; ancestor = NodeRenderingTraversal::parent(*ancestor))
-        needsRecalc = ancestor->needsStyleRecalc() || ancestor->needsStyleInvalidation();
+    bool needsRecalc = needsFullRenderTreeUpdate() || childNeedsDistributionRecalc() || node->needsStyleRecalc() || node->needsStyleInvalidation();
+
+    if (!needsRecalc) {
+        for (const ContainerNode* ancestor = NodeRenderingTraversal::parent(*node); ancestor && !needsRecalc; ancestor = NodeRenderingTraversal::parent(*ancestor))
+            needsRecalc = ancestor->needsStyleRecalc() || ancestor->needsStyleInvalidation() || ancestor->needsAdjacentStyleRecalc();
+    }
 
     if (needsRecalc)
         updateRenderTreeIfNeeded();

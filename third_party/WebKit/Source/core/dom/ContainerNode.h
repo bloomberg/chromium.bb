@@ -155,6 +155,8 @@ public:
     bool affectedByLastChildRules() const { return hasRestyleFlag(AffectedByLastChildRules); }
     void setAffectedByLastChildRules() { setRestyleFlag(AffectedByLastChildRules); }
 
+    bool needsAdjacentStyleRecalc() const;
+
     // FIXME: These methods should all be renamed to something better than "check",
     // since it's not clear that they alter the style bits of siblings and children.
     void checkForChildrenAdjacentRuleChanges();
@@ -311,6 +313,13 @@ inline void ContainerNode::detachChildren(const AttachContext& context)
 
     for (Node* child = firstChild(); child; child = child->nextSibling())
         child->detach(childrenContext);
+}
+
+inline bool ContainerNode::needsAdjacentStyleRecalc() const
+{
+    if (!childrenAffectedByDirectAdjacentRules() && !childrenAffectedByIndirectAdjacentRules())
+        return false;
+    return childNeedsStyleRecalc() || childNeedsStyleInvalidation();
 }
 
 inline unsigned Node::countChildren() const
