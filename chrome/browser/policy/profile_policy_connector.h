@@ -69,7 +69,7 @@ class ProfilePolicyConnector : public KeyedService {
   scoped_ptr<ConfigurationPolicyProvider> special_user_policy_provider_;
 #endif  // defined(OS_CHROMEOS)
 
-  scoped_ptr<ConfigurationPolicyProvider> forwarding_policy_provider_;
+  scoped_ptr<ConfigurationPolicyProvider> wrapped_platform_policy_provider_;
   CloudPolicyManager* user_cloud_policy_manager_;
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 

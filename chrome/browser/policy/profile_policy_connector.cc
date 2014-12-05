@@ -15,8 +15,8 @@
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
-#include "components/policy/core/common/forwarding_policy_provider.h"
 #include "components/policy/core/common/policy_service_impl.h"
+#include "components/policy/core/common/schema_registry_tracking_policy_provider.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -84,10 +84,11 @@ void ProfilePolicyConnector::Init(
 #endif
 
   if (connector->GetPlatformProvider()) {
-    forwarding_policy_provider_.reset(
-        new ForwardingPolicyProvider(connector->GetPlatformProvider()));
-    forwarding_policy_provider_->Init(schema_registry);
-    providers.push_back(forwarding_policy_provider_.get());
+    wrapped_platform_policy_provider_.reset(
+        new SchemaRegistryTrackingPolicyProvider(
+            connector->GetPlatformProvider()));
+    wrapped_platform_policy_provider_->Init(schema_registry);
+    providers.push_back(wrapped_platform_policy_provider_.get());
   }
 
 #if defined(OS_CHROMEOS)
@@ -143,8 +144,8 @@ void ProfilePolicyConnector::Shutdown() {
   if (special_user_policy_provider_)
     special_user_policy_provider_->Shutdown();
 #endif
-  if (forwarding_policy_provider_)
-    forwarding_policy_provider_->Shutdown();
+  if (wrapped_platform_policy_provider_)
+    wrapped_platform_policy_provider_->Shutdown();
 }
 
 bool ProfilePolicyConnector::IsManaged() const {
@@ -168,7 +169,7 @@ bool ProfilePolicyConnector::IsPolicyFromCloudPolicy(const char* name) const {
   // |user_cloud_policy_manager_|. These checks must be kept in sync with the
   // order of the providers in Init().
 
-  if (HasChromePolicy(forwarding_policy_provider_.get(), name))
+  if (HasChromePolicy(wrapped_platform_policy_provider_.get(), name))
     return false;
 
 #if defined(OS_CHROMEOS)
