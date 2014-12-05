@@ -42,6 +42,8 @@ private:
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const CSSParserContext&);
     static bool parseFastPath(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, CSSParserMode);
 
+    // FIXME: We should store an OwnPtr<BisonCSSParser> and CSSParserContext here
+    // to avoid initializing the BisonCSSParser when using the new CSS parser.
     BisonCSSParser m_bisonParser;
 };
 

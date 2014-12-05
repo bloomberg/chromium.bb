@@ -82,6 +82,8 @@ public:
     UChar32 unicodeRangeStart() const { ASSERT(m_type == UnicodeRangeToken); return m_unicodeRangeStart; }
     UChar32 unicodeRangeEnd() const { ASSERT(m_type == UnicodeRangeToken); return m_unicodeRangeEnd; }
 
+    CSSPropertyID parseAsCSSPropertyID() const;
+
 private:
     CSSParserTokenType m_type;
     String m_value;

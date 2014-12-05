@@ -27,6 +27,7 @@ public:
     CSSParserTokenRange makeSubRange(const CSSParserToken* first, const CSSParserToken* last);
 
     bool atEnd() const { return m_first == m_last; }
+    const CSSParserToken* end() const { return m_last; }
 
     const CSSParserToken& peek(unsigned offset = 0) const
     {

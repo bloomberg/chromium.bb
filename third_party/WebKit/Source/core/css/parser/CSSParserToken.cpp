@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/css/parser/CSSParserToken.h"
 
+#include "core/css/parser/CSSPropertyParser.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
 #include <limits.h>
@@ -107,6 +108,12 @@ double CSSParserToken::numericValue() const
 {
     ASSERT(m_type == NumberToken || m_type == PercentageToken || m_type == DimensionToken);
     return m_numericValue;
+}
+
+CSSPropertyID CSSParserToken::parseAsCSSPropertyID() const
+{
+    ASSERT(m_type == IdentToken);
+    return cssPropertyID(m_value);
 }
 
 } // namespace blink
