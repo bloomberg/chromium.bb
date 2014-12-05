@@ -995,6 +995,12 @@ void PasswordAutofillAgent::OnFillPasswordForm(
     if (form_data.password_field.name.empty())
       break;
 
+    // We might have already filled this form if there are two <form> elements
+    // with identical markup.
+    if (login_to_password_info_.find(username_element) !=
+        login_to_password_info_.end())
+      continue;
+
     // Get pointer to password element. (We currently only support single
     // password forms).
     password_element =
@@ -1011,11 +1017,6 @@ void PasswordAutofillAgent::OnFillPasswordForm(
                        base::Unretained(&gatekeeper_)))) {
       usernames_usage_ = OTHER_POSSIBLE_USERNAME_SELECTED;
     }
-    // We might have already filled this form if there are two <form> elements
-    // with identical markup.
-    if (login_to_password_info_.find(username_element) !=
-        login_to_password_info_.end())
-      continue;
 
     PasswordInfo password_info;
     password_info.fill_data = form_data;

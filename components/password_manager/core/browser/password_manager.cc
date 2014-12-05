@@ -428,12 +428,15 @@ void PasswordManager::CreatePendingLoginManagers(
     if (EndsWith(iter->signon_realm, kSpdyProxyRealm, true))
       continue;
     bool old_manager_found = false;
-    for (std::vector<PasswordFormManager*>::const_iterator old_manager =
-             old_login_managers.begin();
-         !old_manager_found && old_manager != old_login_managers.end();
-         ++old_manager) {
-      old_manager_found = (*old_manager)->DoesManage(*iter) ==
-                          PasswordFormManager::RESULT_COMPLETE_MATCH;
+    for (const auto& old_manager : old_login_managers) {
+      if (old_manager->DoesManage(*iter) !=
+          PasswordFormManager::RESULT_COMPLETE_MATCH) {
+        continue;
+      }
+      old_manager_found = true;
+      if (old_manager->HasCompletedMatching())
+        old_manager->MaybeTriggerAutofill();
+      break;
     }
     if (old_manager_found)
       continue;  // The current form is already managed.

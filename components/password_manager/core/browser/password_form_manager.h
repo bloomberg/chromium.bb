@@ -109,6 +109,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Takes ownership of the elements in |result|.
   void OnRequestDone(const std::vector<autofill::PasswordForm*>& result);
 
+  // If reasonable, non-blacklisted, candidates were found by the password
+  // store, this will trigger the autofill through PasswordManager.
+  void MaybeTriggerAutofill();
+
   void OnGetPasswordStoreResults(
       const std::vector<autofill::PasswordForm*>& results) override;
 

@@ -365,7 +365,7 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
   PasswordForm* existing_different = new PasswordForm(MakeSimpleForm());
   existing_different->username_value = ASCIIToUTF16("google2");
   result.push_back(existing_different);
-  EXPECT_CALL(driver_, FillPasswordForm(_));
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
   EXPECT_CALL(*store_.get(), GetLogins(_, _, _))
       .WillOnce(DoAll(WithArg<2>(InvokeConsumer(result)), Return()));
 

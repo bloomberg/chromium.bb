@@ -512,6 +512,14 @@ void PasswordFormManager::OnRequestDone(
   // for |observed_form_|.
   driver_->AllowPasswordGenerationForForm(observed_form_);
 
+  MaybeTriggerAutofill();
+}
+
+void PasswordFormManager::MaybeTriggerAutofill() {
+  DCHECK_EQ(POST_MATCHING_PHASE, state_);
+  if (best_matches_.empty() || manager_action_ == kManagerActionBlacklisted)
+    return;
+
   // Proceed to autofill.
   // Note that we provide the choices but don't actually prefill a value if:
   // (1) we are in Incognito mode, (2) the ACTION paths don't match,
