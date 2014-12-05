@@ -329,7 +329,6 @@
         'nine_image_painter_factory.h',
         'page_transition_types.cc',
         'page_transition_types.h',
-        'page_transition_types_list.h',
         'resource/data_pack.cc',
         'resource/data_pack.h',
         'resource/resource_bundle.cc',
