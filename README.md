@@ -14,6 +14,11 @@ visualmetrics requires several image processing tools be installed and available
 The dependencies can be verified by running:
 ```bash
 $python visualmetrics.py --check
+ffmpeg:      OK
+convert:     OK
+compare:     OK
+Pillow:      OK
+orange.png:  OK
 ```
 
 ## Command Line
