@@ -36,9 +36,10 @@ namespace TestInterfaceConstructorV8Internal {
 static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(executionContext, document, exceptionState);
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(scriptState, executionContext, document, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -79,9 +80,10 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         TONATIVE_VOID_EXCEPTIONSTATE_INTERNAL(optionalDictionaryArg, Dictionary(info[6], info.GetIsolate(), exceptionState), exceptionState);
         optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[7]);
     }
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(executionContext, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, sequenceDictionaryArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(scriptState, executionContext, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, sequenceDictionaryArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -99,9 +101,10 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
     {
         TOSTRING_VOID_INTERNAL(arg, info[0]);
         if (UNLIKELY(info.Length() <= 1)) {
+            ScriptState* scriptState = ScriptState::current(info.GetIsolate());
             ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
             Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-            RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(executionContext, document, arg, exceptionState);
+            RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(scriptState, executionContext, document, arg, exceptionState);
             if (exceptionState.hadException()) {
                 exceptionState.throwIfNeeded();
                 return;
@@ -113,9 +116,10 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
         }
         TOSTRING_VOID_INTERNAL(optArg, info[1]);
     }
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(executionContext, document, arg, optArg, exceptionState);
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(scriptState, executionContext, document, arg, optArg, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -136,9 +140,10 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
         TOSTRING_VOID_INTERNAL(arg2, info[1]);
         TOSTRING_VOID_INTERNAL(arg3, info[2]);
     }
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(executionContext, document, arg, arg2, arg3, exceptionState);
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(scriptState, executionContext, document, arg, arg2, arg3, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;
@@ -233,9 +238,10 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
     {
         TOSTRING_VOID_INTERNAL(arg, info[0]);
         if (UNLIKELY(info.Length() <= 1)) {
+            ScriptState* scriptState = ScriptState::current(info.GetIsolate());
             ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
             Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-            RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::createForJSConstructor(executionContext, document, arg, exceptionState);
+            RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::createForJSConstructor(scriptState, executionContext, document, arg, exceptionState);
             if (exceptionState.hadException()) {
                 exceptionState.throwIfNeeded();
                 return;
@@ -247,9 +253,10 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
         }
         TOSTRING_VOID_INTERNAL(optArg, info[1]);
     }
+    ScriptState* scriptState = ScriptState::current(info.GetIsolate());
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::createForJSConstructor(executionContext, document, arg, optArg, exceptionState);
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::createForJSConstructor(scriptState, executionContext, document, arg, optArg, exceptionState);
     if (exceptionState.hadException()) {
         exceptionState.throwIfNeeded();
         return;

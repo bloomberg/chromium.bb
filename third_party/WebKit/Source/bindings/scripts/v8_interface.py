@@ -1034,6 +1034,10 @@ def constructor_context(interface, constructor):
             # [ConstructorCallWith=ExecutionContext]
             has_extended_attribute_value(interface,
                 'ConstructorCallWith', 'ExecutionContext'),
+        'is_call_with_script_state':
+            # [ConstructorCallWith=ScriptState]
+            has_extended_attribute_value(
+                interface, 'ConstructorCallWith', 'ScriptState'),
         'is_constructor': True,
         'is_named_constructor': False,
         'is_raises_exception': is_constructor_raises_exception,
