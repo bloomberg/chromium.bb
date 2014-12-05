@@ -38,7 +38,7 @@ function test()
 
     function onStyleUpdated()
     {
-        InspectorTest.firstElementsTreeOutline()._updateModifiedNodes();
+        InspectorTest.firstElementsTreeOutline().runPendingUpdates();
         InspectorTest.addResult("=== inline style text after change ===");
         InspectorTest.addResult(treeElement.title.textContent);
         InspectorTest.completeTest();

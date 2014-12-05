@@ -113,7 +113,7 @@ function test()
 
     function findNodeTreeElement(id)
     {
-        InspectorTest.firstElementsTreeOutline()._updateModifiedNodes();
+        InspectorTest.firstElementsTreeOutline().runPendingUpdates();
         var expandedNode = InspectorTest.expandedNodeWithId(id);
         if (!expandedNode) {
             InspectorTest.addResult("'" + id + "' node not found");

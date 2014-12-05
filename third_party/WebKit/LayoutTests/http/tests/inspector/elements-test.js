@@ -535,7 +535,7 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
     }
 
     var treeOutline = InspectorTest.firstElementsTreeOutline();
-    treeOutline._updateModifiedNodes();
+    treeOutline.runPendingUpdates();
     print(rootNode ? treeOutline.findTreeElement(rootNode) : treeOutline, "", depth || 10000);
 };
 
@@ -609,7 +609,7 @@ InspectorTest.expandElementsTree = function(callback)
 
     function onAllNodesAvailable()
     {
-        InspectorTest.firstElementsTreeOutline()._updateModifiedNodes();
+        InspectorTest.firstElementsTreeOutline().runPendingUpdates();
         expand(InspectorTest.firstElementsTreeOutline());
         // Make all promises succeed.
         setTimeout(callback.bind(null, expandedSomething));
