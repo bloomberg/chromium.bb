@@ -10,7 +10,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/path.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -28,6 +30,30 @@ gfx::Size GetTextLabelsSize(const views::Label* full_name_label,
   return gfx::Size(std::max(full_name.width(), username.width()),
                    full_name.height() + username.height());
 }
+
+class CircularImageView : public views::ImageView {
+ public:
+  CircularImageView() = default;
+
+ private:
+  // views::ImageView:
+  void OnPaint(gfx::Canvas* canvas) override;
+
+  DISALLOW_COPY_AND_ASSIGN(CircularImageView);
+};
+
+void CircularImageView::OnPaint(gfx::Canvas* canvas) {
+  // Display the avatar picture as a circle.
+  gfx::Rect bounds(GetImageBounds());
+  gfx::Path circular_mask;
+  circular_mask.addCircle(
+      SkIntToScalar(bounds.x() + bounds.right()) / 2,
+      SkIntToScalar(bounds.y() + bounds.bottom()) / 2,
+      SkIntToScalar(std::min(bounds.height(), bounds.width())) / 2);
+  canvas->ClipPath(circular_mask, true);
+  ImageView::OnPaint(canvas);
+}
+
 }  // namespace
 
 CredentialsItemView::CredentialsItemView(views::ButtonListener* button_listener,
@@ -37,7 +63,7 @@ CredentialsItemView::CredentialsItemView(views::ButtonListener* button_listener,
   set_notify_enter_exit_on_child(true);
   // Create an image-view for the avatar. Make sure it ignores events so that
   // the parent can receive the events instead.
-  image_view_ = new views::ImageView;
+  image_view_ = new CircularImageView;
   image_view_->set_interactive(false);
 
   // TODO(vasilii): temporary code below shows the built-in profile icon instead
@@ -67,8 +93,7 @@ CredentialsItemView::CredentialsItemView(views::ButtonListener* button_listener,
   SetFocusable(true);
 }
 
-CredentialsItemView::~CredentialsItemView() {
-}
+CredentialsItemView::~CredentialsItemView() = default;
 
 gfx::Size CredentialsItemView::GetPreferredSize() const {
   gfx::Size labels_size = GetTextLabelsSize(full_name_label_, username_label_);
