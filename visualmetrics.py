@@ -73,27 +73,29 @@ def video_to_frames(video, directory, force):
 def extract_frames(video, directory):
     ok = False
     logging.info("Extracting frames from " + video + " to " + directory)
-    command = [get_exe('ffmpeg', 'ffmpeg'), '-v', 'debug', '-i', video, '-vsync',  '0',
-               '-vf', 'mpdecimate=hi=0:lo=0:frac=0,scale=iw*min(400/iw\,400/ih):ih*min(400/iw\,400/ih)',
-               os.path.join(directory, 'img-%d.png')]
-    logging.debug(' '.join(command))
-    lines = []
-    p = subprocess.Popen(command, stderr=subprocess.PIPE)
-    while p.poll() is None:
-        lines.extend(iter(p.stderr.readline, ""))
+    decimate = get_decimate_filter()
+    if filter is not None:
+        command = ['ffmpeg', '-v', 'debug', '-i', video, '-vsync',  '0',
+                   '-vf', decimate + '=hi=0:lo=0:frac=0,scale=iw*min(400/iw\,400/ih):ih*min(400/iw\,400/ih)',
+                   os.path.join(directory, 'img-%d.png')]
+        logging.debug(' '.join(command))
+        lines = []
+        p = subprocess.Popen(command, stderr=subprocess.PIPE)
+        while p.poll() is None:
+            lines.extend(iter(p.stderr.readline, ""))
 
-    match = re.compile('keep pts:[0-9]+ pts_time:(?P<timecode>[0-9\.]+)')
-    frame_count = 0
-    for line in lines:
-        m = re.search(match, line)
-        if m:
-            frame_count += 1
-            frame_time = int(math.ceil(float(m.groupdict().get('timecode')) * 1000))
-            src = os.path.join(directory, 'img-{0:d}.png'.format(frame_count))
-            dest = os.path.join(directory, 'video-{0:06d}.png'.format(frame_time))
-            logging.debug('Renaming ' + src + ' to ' + dest)
-            os.rename(src, dest)
-            ok = True
+        match = re.compile('keep pts:[0-9]+ pts_time:(?P<timecode>[0-9\.]+)')
+        frame_count = 0
+        for line in lines:
+            m = re.search(match, line)
+            if m:
+                frame_count += 1
+                frame_time = int(math.ceil(float(m.groupdict().get('timecode')) * 1000))
+                src = os.path.join(directory, 'img-{0:d}.png'.format(frame_count))
+                dest = os.path.join(directory, 'video-{0:06d}.png'.format(frame_time))
+                logging.debug('Renaming ' + src + ' to ' + dest)
+                os.rename(src, dest)
+                ok = True
 
     return ok
 
@@ -254,21 +256,18 @@ def eliminate_duplicate_frames(directory, viewport):
         logging.critical('Error processing frames for duplicates')
 
 
-def get_exe(package, app):
-    bits = 'x86'
-    extension = ''
-    if sys.maxsize > 2**32:
-        bits = 'x64'
-    os_name = 'linux'
-    if sys.platform.startswith('win'):
-        os_name = 'win'
-        extension = '.exe'
-    if sys.platform.startswith('darwin'):
-        os_name = 'osx'
-        bits = 'x64'
-    exe = package + '/' + os_name + '-' + bits + '/' + app + extension
-
-    return os.path.realpath(exe)
+def get_decimate_filter():
+    decimate = None
+    filters = subprocess.check_output(['ffmpeg', '-filters'], stderr=subprocess.STDOUT)
+    lines = filters.split("\n")
+    match = re.compile('(?P<filter>[\w]*decimate).*V->V.*Remove near-duplicate frames')
+    for line in lines:
+        m = re.search(match, line)
+        if m is not None:
+            matches = m.groupdict()
+            decimate = m.groupdict().get('filter')
+            break
+    return decimate
 
 
 def clean_directory(directory):
