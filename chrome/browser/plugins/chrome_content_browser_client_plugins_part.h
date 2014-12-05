@@ -1,0 +1,50 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_PLUGINS_CHROME_CONTENT_BROWSER_CLIENT_PLUGINS_PART_H_
+#define CHROME_BROWSER_PLUGINS_CHROME_CONTENT_BROWSER_CLIENT_PLUGINS_PART_H_
+
+#include "chrome/browser/chrome_content_browser_client_parts.h"
+#include "content/public/browser/browser_ppapi_host.h"
+#include "content/public/common/socket_permission_request.h"
+
+namespace plugins {
+
+// Implements the plugins portion of ChromeContentBrowserClient.
+class ChromeContentBrowserClientPluginsPart
+    : public ChromeContentBrowserClientParts {
+ public:
+  ChromeContentBrowserClientPluginsPart();
+  virtual ~ChromeContentBrowserClientPluginsPart();
+
+  // Corresponding to the ChromeContentBrowserClient function of the same name.
+  static bool IsPluginAllowedToUseDevChannelAPIs(
+      content::BrowserContext* browser_context,
+      const GURL& url,
+      const std::set<std::string>& allowed_dev_channel_origins);
+
+  static bool AllowPepperSocketAPI(
+      content::BrowserContext* browser_context,
+      const GURL& url,
+      bool private_api,
+      const content::SocketPermissionRequest* params,
+      const std::set<std::string>& allowed_socket_origin);
+
+  static bool IsPluginAllowedToCallRequestOSFileHandle(
+      content::BrowserContext* browser_context,
+      const GURL& url,
+      const std::set<std::string>& allowed_file_handle_origins);
+
+  static void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host);
+
+ private:
+  // ChromeContentBrowserClientParts:
+  void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClientPluginsPart);
+};
+
+}  // namespace plugins
+
+#endif  // CHROME_BROWSER_PLUGINS_CHROME_CONTENT_BROWSER_CLIENT_PLUGINS_PART_H_

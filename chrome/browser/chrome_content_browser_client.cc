@@ -45,7 +45,6 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/plugins/plugin_info_message_filter.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -127,7 +126,6 @@
 #include "net/cookies/cookie_options.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "ppapi/host/ppapi_host.h"
-#include "ppapi/shared_impl/ppapi_switches.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -241,6 +239,10 @@
 #include "extensions/common/switches.h"
 #endif
 
+#if defined(ENABLE_PLUGINS)
+#include "chrome/browser/plugins/chrome_content_browser_client_plugins_part.h"
+#endif
+
 #if defined(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #endif
@@ -274,6 +276,10 @@ using extensions::ChromeContentBrowserClientExtensionsPart;
 using extensions::Extension;
 using extensions::InfoMap;
 using extensions::Manifest;
+#endif
+
+#if defined(ENABLE_PLUGINS)
+using plugins::ChromeContentBrowserClientPluginsPart;
 #endif
 
 namespace {
@@ -608,6 +614,8 @@ ChromeContentBrowserClient::ChromeContentBrowserClient()
     allowed_file_handle_origins_.insert(kPredefinedAllowedFileHandleOrigins[i]);
   for (size_t i = 0; i < arraysize(kPredefinedAllowedSocketOrigins); ++i)
     allowed_socket_origins_.insert(kPredefinedAllowedSocketOrigins[i]);
+
+  extra_parts_.push_back(new ChromeContentBrowserClientPluginsPart);
 #endif
 
 #if !defined(OS_ANDROID)
@@ -817,9 +825,6 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
       profile->GetRequestContextForRenderProcess(id);
 
   host->AddFilter(new ChromeRenderMessageFilter(id, profile));
-#if defined(ENABLE_PLUGINS)
-  host->AddFilter(new PluginInfoMessageFilter(id, profile));
-#endif
   host->AddFilter(new cast::CastTransportHostFilter);
 #if defined(ENABLE_PRINTING)
   host->AddFilter(new printing::PrintingMessageFilter(id, profile));
@@ -2335,9 +2340,7 @@ std::string ChromeContentBrowserClient::GetDefaultDownloadName() {
 void ChromeContentBrowserClient::DidCreatePpapiPlugin(
     content::BrowserPpapiHost* browser_host) {
 #if defined(ENABLE_PLUGINS)
-  browser_host->GetPpapiHost()->AddHostFactoryFilter(
-      scoped_ptr<ppapi::host::HostFactory>(
-          new ChromeBrowserPepperHostFactory(browser_host)));
+  ChromeContentBrowserClientPluginsPart::DidCreatePpapiPlugin(browser_host);
 #endif
 }
 
@@ -2365,46 +2368,9 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
     const GURL& url,
     bool private_api,
     const content::SocketPermissionRequest* params) {
-#if defined(ENABLE_EXTENSIONS)
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  const extensions::ExtensionSet* extension_set = NULL;
-  if (profile) {
-    extension_set =
-        &extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
-  }
-
-  if (private_api) {
-    // Access to private socket APIs is controlled by the whitelist.
-    if (IsExtensionOrSharedModuleWhitelisted(url, extension_set,
-                                             allowed_socket_origins_)) {
-      return true;
-    }
-  } else {
-    // Access to public socket APIs is controlled by extension permissions.
-    if (url.is_valid() && url.SchemeIs(extensions::kExtensionScheme) &&
-        extension_set) {
-      const Extension* extension = extension_set->GetByID(url.host());
-      if (extension) {
-        const extensions::PermissionsData* permissions_data =
-            extension->permissions_data();
-        if (params) {
-          extensions::SocketPermission::CheckParam check_params(
-              params->type, params->host, params->port);
-          if (permissions_data->CheckAPIPermissionWithParam(
-                  extensions::APIPermission::kSocket, &check_params)) {
-            return true;
-          }
-        } else if (permissions_data->HasAPIPermission(
-                       extensions::APIPermission::kSocket)) {
-          return true;
-        }
-      }
-    }
-  }
-
-  // Allow both public and private APIs if the command line says so.
-  return IsHostAllowedByCommandLine(url, extension_set,
-                                    switches::kAllowNaClSocketAPI);
+#if defined(ENABLE_PLUGINS) && defined(ENABLE_EXTENSIONS)
+  return ChromeContentBrowserClientPluginsPart::AllowPepperSocketAPI(
+      browser_context, url, private_api, params, allowed_socket_origins_);
 #else
   return false;
 #endif
@@ -2599,17 +2565,10 @@ ChromeContentBrowserClient::GetDevToolsManagerDelegate() {
 bool ChromeContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
     content::BrowserContext* browser_context,
     const GURL& url) {
-#if defined(ENABLE_EXTENSIONS)
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  const extensions::ExtensionSet* extension_set = NULL;
-  if (profile) {
-    extension_set =
-        &extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
-  }
-  return IsExtensionOrSharedModuleWhitelisted(url, extension_set,
-                                              allowed_file_handle_origins_) ||
-         IsHostAllowedByCommandLine(url, extension_set,
-                                    switches::kAllowNaClFileHandleAPI);
+#if defined(ENABLE_PLUGINS) && defined(ENABLE_EXTENSIONS)
+  return ChromeContentBrowserClientPluginsPart::
+      IsPluginAllowedToCallRequestOSFileHandle(browser_context, url,
+                                               allowed_file_handle_origins_);
 #else
   return false;
 #endif
@@ -2618,32 +2577,10 @@ bool ChromeContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
 bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
     content::BrowserContext* browser_context,
     const GURL& url) {
-#if defined(ENABLE_EXTENSIONS)
-  // Allow access for tests.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePepperTesting)) {
-    return true;
-  }
-
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  const extensions::ExtensionSet* extension_set = NULL;
-  if (profile) {
-    extension_set =
-        &extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
-  }
-
-  // Allow access for whitelisted applications.
-  if (IsExtensionOrSharedModuleWhitelisted(url,
-                                           extension_set,
-                                           allowed_dev_channel_origins_)) {
-      return true;
-  }
-
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  // Allow dev channel APIs to be used on "Canary", "Dev", and "Unknown"
-  // releases of Chrome. Permitting "Unknown" allows these APIs to be used on
-  // Chromium builds as well.
-  return channel <= chrome::VersionInfo::CHANNEL_DEV;
+#if defined(ENABLE_PLUGINS) && defined(ENABLE_EXTENSIONS)
+  return ChromeContentBrowserClientPluginsPart::
+      IsPluginAllowedToUseDevChannelAPIs(browser_context, url,
+                                         allowed_dev_channel_origins_);
 #else
   return false;
 #endif

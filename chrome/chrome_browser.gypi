@@ -1748,6 +1748,8 @@
       'browser/pepper_broker_infobar_delegate.h',
       'browser/pepper_flash_settings_manager.cc',
       'browser/pepper_flash_settings_manager.h',
+      'browser/plugins/chrome_content_browser_client_plugins_part.cc',
+      'browser/plugins/chrome_content_browser_client_plugins_part.h',
       'browser/plugins/chrome_plugin_service_filter.cc',
       'browser/plugins/chrome_plugin_service_filter.h',
       'browser/plugins/plugin_data_remover_helper.cc',
