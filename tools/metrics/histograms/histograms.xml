@@ -17758,6 +17758,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.AsyncRead">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    True if the result of reading a packet from the network was ERR_IO_PENDING.
+    Recorded for each packet when Read() returns.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.BlockedFrames.Received">
   <owner>rtenneti@chromium.org</owner>
   <summary>
@@ -18065,6 +18073,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     by a server to Chrome at the start of a QUIC connection. This histogram is
     compared, bucket by bucket, with a second histogram to compute the ratio for
     each bucket (each packet sequence number).
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.PacketWriteTime">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The time taken to Write() a QUIC packet to the socket. Recorded for each
+    packet when it is sent. The suffix specifies if the write completed
+    synchonously or asynchronously.
   </summary>
 </histogram>
 
@@ -58544,6 +58561,12 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="more than 10ms, and less than or equal to 20ms."/>
   <suffix name="GreaterThan_20ms" label="greater than 20ms."/>
   <affected-histogram name="Net.TCP_Connection_Latency_Interval"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="IOMode" separator=".">
+  <suffix name="Synchronous"/>
+  <suffix name="Asynchronous"/>
+  <affected-histogram name="Net.QuicSession.PacketWriteTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="IPProtocolType" separator="_">

@@ -6,6 +6,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -24,12 +25,14 @@ QuicDefaultPacketWriter::QuicDefaultPacketWriter(DatagramClientSocket* socket)
 QuicDefaultPacketWriter::~QuicDefaultPacketWriter() {}
 
 WriteResult QuicDefaultPacketWriter::WritePacket(
-    const char* buffer, size_t buf_len,
+    const char* buffer,
+    size_t buf_len,
     const net::IPAddressNumber& self_address,
     const net::IPEndPoint& peer_address) {
   scoped_refptr<StringIOBuffer> buf(
       new StringIOBuffer(std::string(buffer, buf_len)));
   DCHECK(!IsWriteBlocked());
+  base::TimeTicks now = base::TimeTicks::Now();
   int rv = socket_->Write(buf.get(),
                           buf_len,
                           base::Bind(&QuicDefaultPacketWriter::OnWriteComplete,
@@ -43,6 +46,13 @@ WriteResult QuicDefaultPacketWriter::WritePacket(
       status = WRITE_STATUS_BLOCKED;
       write_blocked_ = true;
     }
+  }
+
+  base::TimeDelta delta = base::TimeTicks::Now() - now;
+  if (status == WRITE_STATUS_OK) {
+    UMA_HISTOGRAM_TIMES("Net.QuicSession.PacketWriteTime.Synchronous", delta);
+  } else if (status == WRITE_STATUS_BLOCKED) {
+    UMA_HISTOGRAM_TIMES("Net.QuicSession.PacketWriteTime.Asynchronous", delta);
   }
 
   return WriteResult(status, rv);

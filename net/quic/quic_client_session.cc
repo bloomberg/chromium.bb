@@ -761,6 +761,7 @@ void QuicClientSession::StartReading() {
                          read_buffer_->size(),
                          base::Bind(&QuicClientSession::OnReadComplete,
                                     weak_factory_.GetWeakPtr()));
+  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.AsyncRead", rv == ERR_IO_PENDING);
   if (rv == ERR_IO_PENDING) {
     num_packets_read_ = 0;
     return;
