@@ -26,6 +26,9 @@ static_library("dfa_validate") {
   }
   deps = [
     "//native_client/build/config/nacl:nacl_base",
+    "//native_client/src/trusted/cpu_features:cpu_features",
+    "//native_client/src/trusted/validator:validation_cache",
+    "//native_client/src/trusted/validator_x86:nccopy",
   ]
 }
 

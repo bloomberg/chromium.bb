@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-#  Generated from src/trusted/debug_stub/build.scons.
-
 static_library("debug_stub") {
   sources = [
     "abi.cc",
@@ -32,6 +30,7 @@ static_library("debug_stub") {
   }
   deps = [
     "//native_client/build/config/nacl:nacl_base",
+    "//native_client/src/shared/platform:platform",
   ]
 }
 
@@ -46,6 +45,6 @@ executable("gdb_rsp_unittest") {
 
   deps = [
     "//native_client/build/config/nacl:nacl_base",
-    "debug_stub",
+    ":debug_stub",
   ]
 }

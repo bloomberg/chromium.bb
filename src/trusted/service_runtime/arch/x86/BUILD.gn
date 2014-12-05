@@ -2,14 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-#  Generated from GYP
-
 static_library("service_runtime_x86_common") {
   sources = [
     "nacl_ldt_x86.c",
   ]
   deps = [
     "//native_client/build/config/nacl:nacl_base",
-    "//native_client/src/trusted/validator_ragel:dfa_validate",
   ]
 }
