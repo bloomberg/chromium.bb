@@ -1113,3 +1113,22 @@ def CheckPatchFormatted(input_api, output_api):
   # As this is just a warning, ignore all other errors if the user
   # happens to have a broken clang-format, doesn't use git, etc etc.
   return []
+
+
+def CheckGNFormatted(input_api, output_api):
+  import gn
+  affected_files = input_api.AffectedFiles(
+      include_deletes=False,
+      file_filter=lambda x: x.LocalPath().endswith('.gn') or
+                            x.LocalPath().endswith('.gni'))
+  warnings = []
+  for f in affected_files:
+    cmd = ['gn', 'format', '--dry-run', f.AbsoluteLocalPath()]
+    rc = gn.main(cmd)
+    if rc == 2:
+      warnings.append(output_api.PresubmitPromptWarning(
+          '%s requires formatting. Please run `gn format --in-place %s`.' % (
+              f.AbsoluteLocalPath(), f.LocalPath())))
+  # It's just a warning, so ignore other types of failures assuming they'll be
+  # caught elsewhere.
+  return warnings

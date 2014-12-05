@@ -30,7 +30,7 @@ def main(args):
     print >> sys.stderr, 'gn.py: Could not find gn executable at: %s' % gn_path
     return 2
   else:
-    return subprocess.call([gn_path] + sys.argv[1:])
+    return subprocess.call([gn_path] + args[1:])
 
 
 if __name__ == '__main__':
