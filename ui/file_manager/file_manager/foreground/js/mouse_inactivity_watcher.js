@@ -54,6 +54,7 @@ function MouseInactivityWatcher(container, opt_timeout, opt_toolsActive) {
   var initiateFading = this.activityStopped_.bind(this, this.timeout_);
   this.container_.addEventListener('touchend', initiateFading);
   this.container_.addEventListener('touchcancel', initiateFading);
+  this.container_.addEventListener('focusin', initiateFading);
 }
 
 /**
