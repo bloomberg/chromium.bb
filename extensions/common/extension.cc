@@ -384,6 +384,12 @@ const std::string Extension::VersionString() const {
   return version()->GetString();
 }
 
+const std::string Extension::GetVersionForDisplay() const {
+  if (version_name_.size() > 0)
+    return version_name_;
+  return VersionString();
+}
+
 void Extension::AddInstallWarning(const InstallWarning& new_warning) {
   install_warnings_.push_back(new_warning);
 }
@@ -568,6 +574,12 @@ bool Extension::LoadVersion(base::string16* error) {
   if (!version_->IsValid() || version_->components().size() > 4) {
     *error = base::ASCIIToUTF16(errors::kInvalidVersion);
     return false;
+  }
+  if (manifest_->HasKey(keys::kVersionName)) {
+    if (!manifest_->GetString(keys::kVersionName, &version_name_)) {
+      *error = base::ASCIIToUTF16(errors::kInvalidVersionName);
+      return false;
+    }
   }
   return true;
 }

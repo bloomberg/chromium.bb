@@ -219,7 +219,7 @@ void AppInfoSummaryPanel::AddDetailsControl(views::View* vertical_stack) {
     version_title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
     views::Label* version_value =
-        new views::Label(base::UTF8ToUTF16(app_->VersionString()));
+        new views::Label(base::UTF8ToUTF16(app_->GetVersionForDisplay()));
     version_value->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
     details_list->AddChildView(

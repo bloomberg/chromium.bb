@@ -237,6 +237,10 @@
     "channel": "stable",
     "extension_types": "all"
   },
+  "version_name": {
+    "channel": "stable",
+    "extension_types": "all"
+  },
   "web_accessible_resources": [
     {
       "channel": "stable",

@@ -296,6 +296,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const ExtensionId& id() const;
   const base::Version* version() const { return version_.get(); }
   const std::string VersionString() const;
+  const std::string GetVersionForDisplay() const;
   const std::string& name() const { return name_; }
   const std::string& short_name() const { return short_name_; }
   const std::string& non_localized_name() const { return non_localized_name_; }
@@ -450,6 +451,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The extension's version.
   scoped_ptr<base::Version> version_;
+
+  // The extension's user visible version name.
+  std::string version_name_;
 
   // An optional longer description of the extension.
   std::string description_;

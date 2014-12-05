@@ -43,7 +43,7 @@ void GetExtensionBasicInfo(const Extension* extension,
                    KioskModeInfo::IsKioskOnly(extension));
   info->SetBoolean(kOfflineEnabledKey,
                    OfflineEnabledInfo::IsOfflineEnabled(extension));
-  info->SetString(kVersionKey, extension->VersionString());
+  info->SetString(kVersionKey, extension->GetVersionForDisplay());
   info->SetString(kDescriptionKey, extension->description());
   info->SetString(
       kOptionsUrlKey,

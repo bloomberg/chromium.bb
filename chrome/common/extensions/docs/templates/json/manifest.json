@@ -211,6 +211,10 @@
     "example": "versionString",
     "level": "required"
   },
+  "version_name": {
+    "documentation": "manifest/version",
+    "example": "aString"
+  },
   "web_accessible_resources": {
     "documentation": "manifest/web_accessible_resources",
     "example": []
