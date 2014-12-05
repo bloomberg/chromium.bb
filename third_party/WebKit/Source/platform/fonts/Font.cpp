@@ -75,11 +75,6 @@ Font& Font::operator=(const Font& other)
 
 bool Font::operator==(const Font& other) const
 {
-    // Our FontData don't have to be checked, since checking the font description will be fine.
-    // FIXME: This does not work if the font was made with the FontPlatformData constructor.
-    if (loadingCustomFonts() || other.loadingCustomFonts())
-        return false;
-
     FontSelector* first = m_fontFallbackList ? m_fontFallbackList->fontSelector() : 0;
     FontSelector* second = other.m_fontFallbackList ? other.m_fontFallbackList->fontSelector() : 0;
 

@@ -839,7 +839,8 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
 
         CachedShapingResults* cachedResults = runCache.find(key);
         if (cachedResults) {
-            if (cachedResults->dir == currentRun->direction() && cachedResults->font == *m_font && cachedResults->locale == localeString) {
+            if (cachedResults->dir == currentRun->direction() && cachedResults->font == *m_font
+                && !cachedResults->font.loadingCustomFonts() && !m_font->loadingCustomFonts() && cachedResults->locale == localeString) {
                 currentRun->applyShapeResult(cachedResults->buffer);
                 setGlyphPositionsForHarfBuzzRun(currentRun, cachedResults->buffer);
 

@@ -171,12 +171,12 @@ public:
 
     void willUseFontData(UChar32) const;
 
-private:
     bool loadingCustomFonts() const
     {
         return m_fontFallbackList && m_fontFallbackList->loadingCustomFonts();
     }
 
+private:
     bool shouldSkipDrawing() const
     {
         return m_fontFallbackList && m_fontFallbackList->shouldSkipDrawing();

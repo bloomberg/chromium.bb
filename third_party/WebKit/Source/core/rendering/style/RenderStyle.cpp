@@ -508,6 +508,9 @@ bool RenderStyle::diffNeedsFullLayoutAndPaintInvalidation(const RenderStyle& oth
     if (inherited->textAutosizingMultiplier != other.inherited->textAutosizingMultiplier)
         return true;
 
+    if (inherited->font.loadingCustomFonts() != other.inherited->font.loadingCustomFonts())
+        return true;
+
     if (inherited.get() != other.inherited.get()) {
         if (inherited->line_height != other.inherited->line_height
             || inherited->font != other.inherited->font
