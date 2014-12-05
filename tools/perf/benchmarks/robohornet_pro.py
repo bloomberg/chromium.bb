@@ -41,7 +41,10 @@ class _RobohornetProMeasurement(page_test.PageTest):
         scalar.ScalarValue(results.current_page, 'Total', 'ms', result))
 
 
-
+# We plan to remove this test because it doesn't give useful data, but
+# we need to wait until Chrome OS can implement support for more helpful
+# benchmarks.
+@benchmark.Enabled('chromeos')
 class RobohornetPro(benchmark.Benchmark):
   test = _RobohornetProMeasurement
 

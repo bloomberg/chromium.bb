@@ -32,6 +32,9 @@ class _PageCycler(benchmark.Benchmark):
         report_speed_index = options.report_speed_index)
 
 
+# This is an old page set, we intend to remove it after more modern benchmarks
+# work on CrOS.
+@benchmark.Enabled('chromeos')
 class PageCyclerDhtml(_PageCycler):
   page_set = page_sets.DhtmlPageSet
 
@@ -63,6 +66,9 @@ class PageCyclerMorejs(_PageCycler):
   page_set = page_sets.MorejsPageSet
 
 
+# This is an old page set, we intend to remove it after more modern benchmarks
+# work on CrOS.
+@benchmark.Enabled('chromeos')
 class PageCyclerMoz(_PageCycler):
   page_set = page_sets.MozPageSet
 
