@@ -105,22 +105,7 @@ class NetError(IOError):
   def __init__(self, inner_exc=None):
     super(NetError, self).__init__(str(inner_exc or self.__doc__))
     self.inner_exc = inner_exc
-
-  def format(self, verbose=False):
-    """Human readable description with detailed information about the error."""
-    out = [str(self.inner_exc)]
-    if verbose:
-      headers, body = get_engine_class().parse_request_exception(self.inner_exc)
-      if headers or body:
-        out.append('----------')
-        if headers:
-          for header, value in headers:
-            if not header.startswith('x-'):
-              out.append('%s: %s' % (header.capitalize(), value))
-          out.append('')
-        out.append(body or '<empty body>')
-        out.append('----------')
-    return '\n'.join(out)
+    self.verbose_info = None
 
 
 class TimeoutError(NetError):
@@ -320,14 +305,7 @@ def get_auth_method():
 
 
 def create_authenticator(urlhost):
-  """Makes Authenticator instance used by HttpService to access |urlhost|.
-
-  Used only if request engine (see get_engine_class) doesn't provide
-  authentication already (as indicated by its 'provides_auth=True' class
-  property).
-  """
-  assert not get_engine_class().provides_auth
-
+  """Makes Authenticator instance used by HttpService to access |urlhost|."""
   # We use signed URL for Google Storage, no need for special authentication.
   if GS_STORAGE_HOST_URL_RE.match(urlhost):
     return None
@@ -521,6 +499,7 @@ class HttpService(object):
         if self.authenticator:
           self.authenticator.authorize(request)
         response = self.engine.perform_request(request)
+        response._timeout_exc_classes = self.engine.timeout_exception_classes()
         logging.debug('Request %s succeeded', request.get_full_url())
         return response
 
@@ -528,7 +507,7 @@ class HttpService(object):
         last_error = e
         logging.warning(
             'Unable to open url %s on attempt %d.\n%s',
-            request.get_full_url(), attempt.attempt, e.format())
+            request.get_full_url(), attempt.attempt, self._format_error(e))
         continue
 
       except HttpError as e:
@@ -538,7 +517,7 @@ class HttpService(object):
         if e.code in (401, 403):
           logging.warning(
               'Authentication is required for %s on attempt %d.\n%s',
-              request.get_full_url(), attempt.attempt, e.format())
+              request.get_full_url(), attempt.attempt, self._format_error(e))
           # Try to authenticate only once. If it doesn't help, then server does
           # not support authentication or user doesn't have required access.
           if not auth_attempted:
@@ -549,7 +528,8 @@ class HttpService(object):
               continue
           # Authentication attempt was unsuccessful.
           logging.error(
-              'Unable to authenticate to %s (%s).', self.urlhost, e.format())
+              'Unable to authenticate to %s (%s).',
+              self.urlhost, self._format_error(e))
           if self.authenticator:
             logging.error(
                 'Use auth.py to login: python auth.py login --service=%s',
@@ -562,18 +542,19 @@ class HttpService(object):
           # with the request, so don't retry.
           logging.error(
               'Able to connect to %s but an exception was thrown.\n%s',
-              request.get_full_url(), e.format(verbose=True))
+              request.get_full_url(), self._format_error(e, verbose=True))
           return None
 
         # Retry all other errors.
         logging.warning(
             'Server responded with error on %s on attempt %d.\n%s',
-            request.get_full_url(), attempt.attempt, e.format())
+            request.get_full_url(), attempt.attempt, self._format_error(e))
         continue
 
     logging.error(
         'Unable to open given url, %s, after %d attempts.\n%s',
-        request.get_full_url(), max_attempts, last_error.format(verbose=True))
+        request.get_full_url(), max_attempts,
+        self._format_error(last_error, verbose=True))
     return None
 
   def json_request(self, urlpath, data=None, **kwargs):
@@ -604,6 +585,30 @@ class HttpService(object):
     except ValueError:
       logging.error('Not a JSON response when calling %s: %s', urlpath, text)
       return None
+
+  def _format_error(self, exc, verbose=False):
+    """Returns readable description of a NetError."""
+    if not isinstance(exc, NetError):
+      return str(exc)
+    if not verbose:
+      return str(exc.inner_exc or exc)
+    # Avoid making multiple calls to parse_request_exception since they may
+    # have side effects on the exception, e.g. urllib2 based exceptions are in
+    # fact file-like objects that can not be read twice.
+    if exc.verbose_info is None:
+      out = [str(exc.inner_exc or exc)]
+      headers, body = self.engine.parse_request_exception(exc.inner_exc)
+      if headers or body:
+        out.append('----------')
+        if headers:
+          for header, value in headers:
+            if not header.startswith('x-'):
+              out.append('%s: %s' % (header.capitalize(), value))
+          out.append('')
+        out.append(body or '<empty body>')
+        out.append('----------')
+      exc.verbose_info = '\n'.join(out)
+    return exc.verbose_info
 
 
 class HttpRequest(object):
@@ -659,6 +664,7 @@ class HttpResponse(object):
     self._url = url
     self._headers = get_case_insensitive_dict(headers)
     self._read = 0
+    self._timeout_exc_classes = ()
 
   @property
   def content_length(self):
@@ -677,15 +683,14 @@ class HttpResponse(object):
 
     Raises TimeoutError on read timeout.
     """
-    exception_classes = get_engine_class().timeout_exception_classes()
-    assert isinstance(exception_classes, tuple)
-    assert all(issubclass(e, Exception) for e in exception_classes)
+    assert isinstance(self._timeout_exc_classes, tuple)
+    assert all(issubclass(e, Exception) for e in self._timeout_exc_classes)
     try:
       # cStringIO has a bug: stream.read(None) is not the same as stream.read().
       data = self._stream.read() if size is None else self._stream.read(size)
       self._read += len(data)
       return data
-    except exception_classes as e:
+    except self._timeout_exc_classes as e:
       logging.error('Timeout while reading from %s, read %d of %s: %s',
           self._url, self._read, self.content_length, e)
       raise TimeoutError(e)
