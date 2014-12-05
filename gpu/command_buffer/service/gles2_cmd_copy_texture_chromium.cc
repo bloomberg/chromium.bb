@@ -260,8 +260,9 @@ CopyTextureCHROMIUMResourceManager::CopyTextureCHROMIUMResourceManager()
       framebuffer_(0u) {}
 
 CopyTextureCHROMIUMResourceManager::~CopyTextureCHROMIUMResourceManager() {
-  DCHECK(!buffer_id_);
-  DCHECK(!framebuffer_);
+  // |buffer_id_| and |framebuffer_| can be not-null because when GPU context is
+  // lost, this class can be deleted without releasing resources like
+  // GLES2DecoderImpl.
 }
 
 void CopyTextureCHROMIUMResourceManager::Initialize(
