@@ -326,12 +326,8 @@ GL_FUNCTIONS = [
   'names': ['glDisableVertexAttribArray'],
   'arguments': 'GLuint index', },
 { 'return_type': 'void',
-  'known_as': 'glDiscardFramebufferEXT',
-  'versions': [{ 'name': 'glInvalidateFramebuffer',
-                 'gl_versions': ['es3'],
-                 'extensions': [] },
-               { 'name': 'glDiscardFramebufferEXT',
-                 'gl_versions': ['es1', 'es2'] }],
+  'versions': [{ 'name': 'glDiscardFramebufferEXT',
+                 'extensions': ['GL_EXT_discard_framebuffer'] }],
   'arguments': 'GLenum target, GLsizei numAttachments, '
       'const GLenum* attachments' },
 { 'return_type': 'void',
@@ -697,6 +693,11 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glInsertEventMarkerEXT'],
   'arguments': 'GLsizei length, const char* marker', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'glInvalidateFramebuffer',
+                 'gl_versions': ['gl4', 'es3'] }],  # GL 4.3 or higher.
+  'arguments': 'GLenum target, GLsizei numAttachments, '
+      'const GLenum* attachments' },
 { 'return_type': 'void',
   'versions': [{ 'name': 'glInvalidateSubFramebuffer',
                  'gl_versions': ['gl4', 'es3'] }],  # GL 4.3 or higher.

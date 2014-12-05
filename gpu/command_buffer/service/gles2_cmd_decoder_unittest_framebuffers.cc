@@ -2120,7 +2120,7 @@ TEST_P(GLES2DecoderManualInitTest, InvalidateFramebufferBinding) {
 
   // EXPECT_EQ can't be used to compare function pointers
   EXPECT_TRUE(
-      gfx::MockGLInterface::GetGLProcAddress("glInvalidateFramebuffer") ==
+      gfx::MockGLInterface::GetGLProcAddress("glInvalidateFramebuffer") !=
       gfx::g_driver_gl.fn.glDiscardFramebufferEXTFn);
   EXPECT_TRUE(
       gfx::MockGLInterface::GetGLProcAddress("glInvalidateFramebuffer") !=

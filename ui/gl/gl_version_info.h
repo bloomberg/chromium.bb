@@ -7,10 +7,11 @@
 
 #include <string>
 #include "base/basictypes.h"
+#include "ui/gl/gl_export.h"
 
 namespace gfx {
 
-struct GLVersionInfo {
+struct GL_EXPORT GLVersionInfo {
   GLVersionInfo(const char* version_str, const char* renderer_str);
 
   // New flags, such as is_gl4_4 could be introduced as needed.
@@ -27,7 +28,7 @@ struct GLVersionInfo {
 
   bool is_angle;
 
-private:
+ private:
   DISALLOW_COPY_AND_ASSIGN(GLVersionInfo);
 };
 

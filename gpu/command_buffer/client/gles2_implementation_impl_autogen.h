@@ -1032,6 +1032,62 @@ void GLES2Implementation::Hint(GLenum target, GLenum mode) {
   CheckGLError();
 }
 
+void GLES2Implementation::InvalidateFramebuffer(GLenum target,
+                                                GLsizei count,
+                                                const GLenum* attachments) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glInvalidateFramebuffer("
+                     << GLES2Util::GetStringFrameBufferTarget(target) << ", "
+                     << count << ", " << static_cast<const void*>(attachments)
+                     << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << attachments[0 + i * 1]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glInvalidateFramebuffer", "count < 0");
+    return;
+  }
+  helper_->InvalidateFramebufferImmediate(target, count, attachments);
+  CheckGLError();
+}
+
+void GLES2Implementation::InvalidateSubFramebuffer(GLenum target,
+                                                   GLsizei count,
+                                                   const GLenum* attachments,
+                                                   GLint x,
+                                                   GLint y,
+                                                   GLsizei width,
+                                                   GLsizei height) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glInvalidateSubFramebuffer("
+                     << GLES2Util::GetStringFrameBufferTarget(target) << ", "
+                     << count << ", " << static_cast<const void*>(attachments)
+                     << ", " << x << ", " << y << ", " << width << ", "
+                     << height << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << attachments[0 + i * 1]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glInvalidateSubFramebuffer", "count < 0");
+    return;
+  }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE, "glInvalidateSubFramebuffer", "width < 0");
+    return;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE, "glInvalidateSubFramebuffer", "height < 0");
+    return;
+  }
+  helper_->InvalidateSubFramebufferImmediate(target, count, attachments, x, y,
+                                             width, height);
+  CheckGLError();
+}
+
 GLboolean GLES2Implementation::IsBuffer(GLuint buffer) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   TRACE_EVENT0("gpu", "GLES2Implementation::IsBuffer");
@@ -1154,6 +1210,14 @@ void GLES2Implementation::PolygonOffset(GLfloat factor, GLfloat units) {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glPolygonOffset(" << factor << ", "
                      << units << ")");
   helper_->PolygonOffset(factor, units);
+  CheckGLError();
+}
+
+void GLES2Implementation::ReadBuffer(GLenum src) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glReadBuffer("
+                     << GLES2Util::GetStringEnum(src) << ")");
+  helper_->ReadBuffer(src);
   CheckGLError();
 }
 

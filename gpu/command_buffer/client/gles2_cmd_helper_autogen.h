@@ -813,6 +813,36 @@ void Hint(GLenum target, GLenum mode) {
   }
 }
 
+void InvalidateFramebufferImmediate(GLenum target,
+                                    GLsizei count,
+                                    const GLenum* attachments) {
+  const uint32_t size =
+      gles2::cmds::InvalidateFramebufferImmediate::ComputeSize(count);
+  gles2::cmds::InvalidateFramebufferImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          gles2::cmds::InvalidateFramebufferImmediate>(size);
+  if (c) {
+    c->Init(target, count, attachments);
+  }
+}
+
+void InvalidateSubFramebufferImmediate(GLenum target,
+                                       GLsizei count,
+                                       const GLenum* attachments,
+                                       GLint x,
+                                       GLint y,
+                                       GLsizei width,
+                                       GLsizei height) {
+  const uint32_t size =
+      gles2::cmds::InvalidateSubFramebufferImmediate::ComputeSize(count);
+  gles2::cmds::InvalidateSubFramebufferImmediate* c =
+      GetImmediateCmdSpaceTotalSize<
+          gles2::cmds::InvalidateSubFramebufferImmediate>(size);
+  if (c) {
+    c->Init(target, count, attachments, x, y, width, height);
+  }
+}
+
 void IsBuffer(GLuint buffer,
               uint32_t result_shm_id,
               uint32_t result_shm_offset) {
@@ -899,6 +929,13 @@ void PolygonOffset(GLfloat factor, GLfloat units) {
   gles2::cmds::PolygonOffset* c = GetCmdSpace<gles2::cmds::PolygonOffset>();
   if (c) {
     c->Init(factor, units);
+  }
+}
+
+void ReadBuffer(GLenum src) {
+  gles2::cmds::ReadBuffer* c = GetCmdSpace<gles2::cmds::ReadBuffer>();
+  if (c) {
+    c->Init(src);
   }
 }
 

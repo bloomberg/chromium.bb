@@ -1698,6 +1698,8 @@ TEST_P(GLES2DecoderTest1, HintInvalidArgs0_0) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
+// TODO(gman): InvalidateFramebufferImmediate
+// TODO(gman): InvalidateSubFramebufferImmediate
 
 TEST_P(GLES2DecoderTest1, IsBufferValidArgs) {
   SpecializedSetup<cmds::IsBuffer, 0>(true);
@@ -1874,15 +1876,5 @@ TEST_P(GLES2DecoderTest1, LinkProgramValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 // TODO(gman): PixelStorei
-
-TEST_P(GLES2DecoderTest1, PolygonOffsetValidArgs) {
-  EXPECT_CALL(*gl_, PolygonOffset(1, 2));
-  SpecializedSetup<cmds::PolygonOffset, 0>(true);
-  cmds::PolygonOffset cmd;
-  cmd.Init(1, 2);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-// TODO(gman): ReadPixels
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_1_AUTOGEN_H_

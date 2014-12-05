@@ -206,6 +206,16 @@ virtual void GetVertexAttribPointerv(GLuint index,
                                      GLenum pname,
                                      void** pointer) = 0;
 virtual void Hint(GLenum target, GLenum mode) = 0;
+virtual void InvalidateFramebuffer(GLenum target,
+                                   GLsizei count,
+                                   const GLenum* attachments) = 0;
+virtual void InvalidateSubFramebuffer(GLenum target,
+                                      GLsizei count,
+                                      const GLenum* attachments,
+                                      GLint x,
+                                      GLint y,
+                                      GLsizei width,
+                                      GLsizei height) = 0;
 virtual GLboolean IsBuffer(GLuint buffer) = 0;
 virtual GLboolean IsEnabled(GLenum cap) = 0;
 virtual GLboolean IsFramebuffer(GLuint framebuffer) = 0;
@@ -217,6 +227,7 @@ virtual void LineWidth(GLfloat width) = 0;
 virtual void LinkProgram(GLuint program) = 0;
 virtual void PixelStorei(GLenum pname, GLint param) = 0;
 virtual void PolygonOffset(GLfloat factor, GLfloat units) = 0;
+virtual void ReadBuffer(GLenum src) = 0;
 virtual void ReadPixels(GLint x,
                         GLint y,
                         GLsizei width,

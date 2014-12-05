@@ -4494,7 +4494,13 @@ void GLES2DecoderImpl::DoDiscardFramebufferEXT(GLenum target,
   }
 
   ScopedRenderTo do_render(framebuffer);
-  glDiscardFramebufferEXT(target, numAttachments, translated_attachments.get());
+  if (feature_info_->gl_version_info().is_es3) {
+    glInvalidateFramebuffer(
+        target, numAttachments, translated_attachments.get());
+  } else {
+    glDiscardFramebufferEXT(
+        target, numAttachments, translated_attachments.get());
+  }
 }
 
 void GLES2DecoderImpl::DoEnableVertexAttribArray(GLuint index) {
@@ -5495,7 +5501,7 @@ void GLES2DecoderImpl::RenderbufferStorageMultisampleHelper(
     GLsizei height) {
   // TODO(sievers): This could be resolved at the GL binding level, but the
   // binding process is currently a bit too 'brute force'.
-  if (feature_info->feature_flags().is_angle) {
+  if (feature_info->gl_version_info().is_angle) {
     glRenderbufferStorageMultisampleANGLE(
         target, samples, internal_format, width, height);
   } else if (feature_info->feature_flags().use_core_framebuffer_multisample) {
@@ -5519,7 +5525,7 @@ void GLES2DecoderImpl::BlitFramebufferHelper(GLint srcX0,
                                              GLenum filter) {
   // TODO(sievers): This could be resolved at the GL binding level, but the
   // binding process is currently a bit too 'brute force'.
-  if (feature_info_->feature_flags().is_angle) {
+  if (feature_info_->gl_version_info().is_angle) {
     glBlitFramebufferANGLE(
         srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
   } else if (feature_info_->feature_flags().use_core_framebuffer_multisample) {
@@ -7865,8 +7871,8 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
       glGenBuffersARB(1, &buffer);
       glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, buffer);
       // For ANGLE client version 2, GL_STREAM_READ is not available.
-      const GLenum usage_hint =
-          features().is_angle ? GL_STATIC_DRAW : GL_STREAM_READ;
+      const GLenum usage_hint = feature_info_->gl_version_info().is_angle ?
+          GL_STATIC_DRAW : GL_STREAM_READ;
       glBufferData(GL_PIXEL_PACK_BUFFER_ARB, pixels_size, NULL, usage_hint);
       GLenum error = glGetError();
       if (error == GL_NO_ERROR) {
@@ -9703,7 +9709,7 @@ void GLES2DecoderImpl::DoSwapBuffers() {
       // Ensure the side effects of the copy are visible to the parent
       // context. There is no need to do this for ANGLE because it uses a
       // single D3D device for all contexts.
-      if (!feature_info_->feature_flags().is_angle)
+      if (!feature_info_->gl_version_info().is_angle)
         glFlush();
     }
   } else {

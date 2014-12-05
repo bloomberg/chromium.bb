@@ -3962,6 +3962,131 @@ COMPILE_ASSERT(offsetof(Hint, header) == 0, OffsetOf_Hint_header_not_0);
 COMPILE_ASSERT(offsetof(Hint, target) == 4, OffsetOf_Hint_target_not_4);
 COMPILE_ASSERT(offsetof(Hint, mode) == 8, OffsetOf_Hint_mode_not_8);
 
+struct InvalidateFramebufferImmediate {
+  typedef InvalidateFramebufferImmediate ValueType;
+  static const CommandId kCmdId = kInvalidateFramebufferImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(GLenum) * 1 * count);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(count));  // NOLINT
+  }
+
+  void SetHeader(GLsizei count) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  }
+
+  void Init(GLenum _target, GLsizei _count, const GLenum* _attachments) {
+    SetHeader(_count);
+    target = _target;
+    count = _count;
+    memcpy(ImmediateDataAddress(this), _attachments, ComputeDataSize(_count));
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLsizei _count,
+            const GLenum* _attachments) {
+    static_cast<ValueType*>(cmd)->Init(_target, _count, _attachments);
+    const uint32_t size = ComputeSize(_count);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  int32_t count;
+};
+
+COMPILE_ASSERT(sizeof(InvalidateFramebufferImmediate) == 12,
+               Sizeof_InvalidateFramebufferImmediate_is_not_12);
+COMPILE_ASSERT(offsetof(InvalidateFramebufferImmediate, header) == 0,
+               OffsetOf_InvalidateFramebufferImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(InvalidateFramebufferImmediate, target) == 4,
+               OffsetOf_InvalidateFramebufferImmediate_target_not_4);
+COMPILE_ASSERT(offsetof(InvalidateFramebufferImmediate, count) == 8,
+               OffsetOf_InvalidateFramebufferImmediate_count_not_8);
+
+struct InvalidateSubFramebufferImmediate {
+  typedef InvalidateSubFramebufferImmediate ValueType;
+  static const CommandId kCmdId = kInvalidateSubFramebufferImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(GLenum) * 1 * count);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(count));  // NOLINT
+  }
+
+  void SetHeader(GLsizei count) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  }
+
+  void Init(GLenum _target,
+            GLsizei _count,
+            const GLenum* _attachments,
+            GLint _x,
+            GLint _y,
+            GLsizei _width,
+            GLsizei _height) {
+    SetHeader(_count);
+    target = _target;
+    count = _count;
+    x = _x;
+    y = _y;
+    width = _width;
+    height = _height;
+    memcpy(ImmediateDataAddress(this), _attachments, ComputeDataSize(_count));
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLsizei _count,
+            const GLenum* _attachments,
+            GLint _x,
+            GLint _y,
+            GLsizei _width,
+            GLsizei _height) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _count, _attachments, _x, _y, _width, _height);
+    const uint32_t size = ComputeSize(_count);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  int32_t count;
+  int32_t x;
+  int32_t y;
+  int32_t width;
+  int32_t height;
+};
+
+COMPILE_ASSERT(sizeof(InvalidateSubFramebufferImmediate) == 28,
+               Sizeof_InvalidateSubFramebufferImmediate_is_not_28);
+COMPILE_ASSERT(offsetof(InvalidateSubFramebufferImmediate, header) == 0,
+               OffsetOf_InvalidateSubFramebufferImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(InvalidateSubFramebufferImmediate, target) == 4,
+               OffsetOf_InvalidateSubFramebufferImmediate_target_not_4);
+COMPILE_ASSERT(offsetof(InvalidateSubFramebufferImmediate, count) == 8,
+               OffsetOf_InvalidateSubFramebufferImmediate_count_not_8);
+COMPILE_ASSERT(offsetof(InvalidateSubFramebufferImmediate, x) == 12,
+               OffsetOf_InvalidateSubFramebufferImmediate_x_not_12);
+COMPILE_ASSERT(offsetof(InvalidateSubFramebufferImmediate, y) == 16,
+               OffsetOf_InvalidateSubFramebufferImmediate_y_not_16);
+COMPILE_ASSERT(offsetof(InvalidateSubFramebufferImmediate, width) == 20,
+               OffsetOf_InvalidateSubFramebufferImmediate_width_not_20);
+COMPILE_ASSERT(offsetof(InvalidateSubFramebufferImmediate, height) == 24,
+               OffsetOf_InvalidateSubFramebufferImmediate_height_not_24);
+
 struct IsBuffer {
   typedef IsBuffer ValueType;
   static const CommandId kCmdId = kIsBuffer;
@@ -4425,6 +4550,37 @@ COMPILE_ASSERT(offsetof(PolygonOffset, factor) == 4,
                OffsetOf_PolygonOffset_factor_not_4);
 COMPILE_ASSERT(offsetof(PolygonOffset, units) == 8,
                OffsetOf_PolygonOffset_units_not_8);
+
+struct ReadBuffer {
+  typedef ReadBuffer ValueType;
+  static const CommandId kCmdId = kReadBuffer;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _src) {
+    SetHeader();
+    src = _src;
+  }
+
+  void* Set(void* cmd, GLenum _src) {
+    static_cast<ValueType*>(cmd)->Init(_src);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t src;
+};
+
+COMPILE_ASSERT(sizeof(ReadBuffer) == 8, Sizeof_ReadBuffer_is_not_8);
+COMPILE_ASSERT(offsetof(ReadBuffer, header) == 0,
+               OffsetOf_ReadBuffer_header_not_0);
+COMPILE_ASSERT(offsetof(ReadBuffer, src) == 4, OffsetOf_ReadBuffer_src_not_4);
 
 // ReadPixels has the result separated from the pixel buffer so that
 // it is easier to specify the result going to some specific place

@@ -139,7 +139,6 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       map_buffer_range(false),
       ext_discard_framebuffer(false),
       angle_depth_texture(false),
-      is_angle(false),
       is_swiftshader(false),
       angle_texture_usage(false),
       ext_texture_storage(false),
@@ -271,17 +270,10 @@ void FeatureInfo::InitializeFeatures() {
 
   const char* renderer_str =
       reinterpret_cast<const char*>(glGetString(GL_RENDERER));
-  if (renderer_str) {
-    feature_flags_.is_angle = StartsWithASCII(renderer_str, "ANGLE", true);
-  }
-
-  bool is_es3 = false;
   const char* version_str =
       reinterpret_cast<const char*>(glGetString(GL_VERSION));
-  if (version_str) {
-    std::string lstr(base::StringToLowerASCII(std::string(version_str)));
-    is_es3 = (lstr.substr(0, 12) == "opengl es 3.");
-  }
+
+  gl_version_info_.reset(new gfx::GLVersionInfo(version_str, renderer_str));
 
   AddExtensionString("GL_ANGLE_translated_shader_source");
   AddExtensionString("GL_CHROMIUM_async_pixel_transfers");
@@ -386,7 +378,8 @@ void FeatureInfo::InitializeFeatures() {
   if (!workarounds_.disable_depth_texture &&
       (extensions.Contains("GL_ARB_depth_texture") ||
        extensions.Contains("GL_OES_depth_texture") ||
-       extensions.Contains("GL_ANGLE_depth_texture") || is_es3)) {
+       extensions.Contains("GL_ANGLE_depth_texture") ||
+       gl_version_info_->is_es3)) {
     enable_depth_texture = true;
     feature_flags_.angle_depth_texture =
         extensions.Contains("GL_ANGLE_depth_texture");
@@ -404,7 +397,8 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (extensions.Contains("GL_EXT_packed_depth_stencil") ||
-      extensions.Contains("GL_OES_packed_depth_stencil") || is_es3) {
+      extensions.Contains("GL_OES_packed_depth_stencil") ||
+      gl_version_info_->is_es3) {
     AddExtensionString("GL_OES_packed_depth_stencil");
     feature_flags_.packed_depth24_stencil8 = true;
     if (enable_depth_texture) {
@@ -417,7 +411,8 @@ void FeatureInfo::InitializeFeatures() {
     validators_.render_buffer_format.AddValue(GL_DEPTH24_STENCIL8);
   }
 
-  if (is_es3 || extensions.Contains("GL_OES_vertex_array_object") ||
+  if (gl_version_info_->is_es3 ||
+      extensions.Contains("GL_OES_vertex_array_object") ||
       extensions.Contains("GL_ARB_vertex_array_object") ||
       extensions.Contains("GL_APPLE_vertex_array_object")) {
     feature_flags_.native_vertex_array_object = true;
@@ -430,7 +425,8 @@ void FeatureInfo::InitializeFeatures() {
     feature_flags_.native_vertex_array_object = false;
   }
 
-  if (is_es3 || extensions.Contains("GL_OES_element_index_uint") ||
+  if (gl_version_info_->is_es3 ||
+      extensions.Contains("GL_OES_element_index_uint") ||
       gfx::HasDesktopGLFeatures()) {
     AddExtensionString("GL_OES_element_index_uint");
     validators_.index_type.AddValue(GL_UNSIGNED_INT);
@@ -442,7 +438,8 @@ void FeatureInfo::InitializeFeatures() {
   // sized formats GL_SRGB8 and GL_SRGB8_ALPHA8. Also, SRGB_EXT isn't a valid
   // <format> in this case. So, even with GLES3 explicitly check for
   // GL_EXT_sRGB.
-  if (((is_es3 || extensions.Contains("GL_OES_rgb8_rgba8")) &&
+  if (((gl_version_info_->is_es3 ||
+        extensions.Contains("GL_OES_rgb8_rgba8")) &&
       extensions.Contains("GL_EXT_sRGB")) || gfx::HasDesktopGLFeatures()) {
     AddExtensionString("GL_EXT_sRGB");
     texture_format_validators_[GL_SRGB_EXT].AddValue(GL_UNSIGNED_BYTE);
@@ -503,7 +500,8 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   // Check if we should allow GL_OES_texture_npot
-  if (is_es3 || extensions.Contains("GL_ARB_texture_non_power_of_two") ||
+  if (gl_version_info_->is_es3 ||
+      extensions.Contains("GL_ARB_texture_non_power_of_two") ||
       extensions.Contains("GL_OES_texture_npot")) {
     AddExtensionString("GL_OES_texture_npot");
     feature_flags_.npot_ok = true;
@@ -535,8 +533,9 @@ void FeatureInfo::InitializeFeatures() {
       // This extension allows a variety of floating point formats to be
       // rendered to via framebuffer objects. Enable it's usage only if
       // support for Floating textures is enabled.
-      if ((is_es3 && extensions.Contains("GL_EXT_color_buffer_float")) ||
-          feature_flags_.is_angle) {
+      if ((gl_version_info_->is_es3 &&
+           extensions.Contains("GL_EXT_color_buffer_float")) ||
+          gl_version_info_->is_angle) {
         may_enable_chromium_color_buffer_float = true;
       }
     }
@@ -638,12 +637,13 @@ void FeatureInfo::InitializeFeatures() {
   // Check for multisample support
   if (!workarounds_.disable_multisampling) {
     bool ext_has_multisample =
-        extensions.Contains("GL_EXT_framebuffer_multisample") || is_es3;
-    if (feature_flags_.is_angle) {
+        extensions.Contains("GL_EXT_framebuffer_multisample") ||
+        gl_version_info_->is_es3;
+    if (gl_version_info_->is_angle) {
       ext_has_multisample |=
           extensions.Contains("GL_ANGLE_framebuffer_multisample");
     }
-    feature_flags_.use_core_framebuffer_multisample = is_es3;
+    feature_flags_.use_core_framebuffer_multisample = gl_version_info_->is_es3;
     if (ext_has_multisample) {
       feature_flags_.chromium_framebuffer_multisample = true;
       validators_.frame_buffer_target.AddValue(GL_READ_FRAMEBUFFER_EXT);
@@ -670,14 +670,15 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (extensions.Contains("GL_OES_depth24") || gfx::HasDesktopGLFeatures() ||
-      is_es3) {
+      gl_version_info_->is_es3) {
     AddExtensionString("GL_OES_depth24");
     feature_flags_.oes_depth24 = true;
     validators_.render_buffer_format.AddValue(GL_DEPTH_COMPONENT24);
   }
 
   if (!workarounds_.disable_oes_standard_derivatives &&
-      (is_es3 || extensions.Contains("GL_OES_standard_derivatives") ||
+      (gl_version_info_->is_es3 ||
+       extensions.Contains("GL_OES_standard_derivatives") ||
        gfx::HasDesktopGLFeatures())) {
     AddExtensionString("GL_OES_standard_derivatives");
     feature_flags_.oes_standard_derivatives = true;
@@ -771,8 +772,10 @@ void FeatureInfo::InitializeFeatures() {
   // However we expose GL_EXT_texture_storage when just ES3 because we don't
   // claim to handle GL_BGRA8.
   bool support_texture_storage_on_es3 =
-      (is_es3 && enable_immutable_texture_format_bgra_on_es3) ||
-      (is_es3 && !enable_texture_format_bgra8888);
+      (gl_version_info_->is_es3 &&
+       enable_immutable_texture_format_bgra_on_es3) ||
+      (gl_version_info_->is_es3 &&
+       !enable_texture_format_bgra8888);
   if (extensions.Contains("GL_EXT_texture_storage") ||
       extensions.Contains("GL_ARB_texture_storage") ||
       support_texture_storage_on_es3) {
@@ -825,7 +828,7 @@ void FeatureInfo::InitializeFeatures() {
       (extensions.Contains("GL_ANGLE_instanced_arrays") ||
        (extensions.Contains("GL_ARB_instanced_arrays") &&
         extensions.Contains("GL_ARB_draw_instanced")) ||
-       is_es3)) {
+       gl_version_info_->is_es3)) {
     AddExtensionString("GL_ANGLE_instanced_arrays");
     feature_flags_.angle_instanced_arrays = true;
     validators_.vertex_attribute.AddValue(GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE);
@@ -836,7 +839,8 @@ void FeatureInfo::InitializeFeatures() {
       extensions.Contains("GL_EXT_draw_buffers");
   if (!workarounds_.disable_ext_draw_buffers &&
       (vendor_agnostic_draw_buffers ||
-       (extensions.Contains("GL_NV_draw_buffers") && is_es3))) {
+       (extensions.Contains("GL_NV_draw_buffers") &&
+        gl_version_info_->is_es3))) {
     AddExtensionString("GL_EXT_draw_buffers");
     feature_flags_.ext_draw_buffers = true;
 
@@ -871,7 +875,8 @@ void FeatureInfo::InitializeFeatures() {
     }
   }
 
-  if (is_es3 || extensions.Contains("GL_EXT_blend_minmax") ||
+  if (gl_version_info_->is_es3 ||
+      extensions.Contains("GL_EXT_blend_minmax") ||
       gfx::HasDesktopGLFeatures()) {
     AddExtensionString("GL_EXT_blend_minmax");
     validators_.equation.AddValue(GL_MIN_EXT);
@@ -906,13 +911,15 @@ void FeatureInfo::InitializeFeatures() {
   UMA_HISTOGRAM_BOOLEAN("GPU.FenceSupport", ui_gl_fence_works);
 
   feature_flags_.map_buffer_range =
-      is_es3 || extensions.Contains("GL_ARB_map_buffer_range") ||
+      gl_version_info_->is_es3 ||
+      extensions.Contains("GL_ARB_map_buffer_range") ||
       extensions.Contains("GL_EXT_map_buffer_range");
 
   // Really it's part of core OpenGL 2.1 and up, but let's assume the
   // extension is still advertised.
   bool has_pixel_buffers =
-      is_es3 || extensions.Contains("GL_ARB_pixel_buffer_object") ||
+      gl_version_info_->is_es3 ||
+      extensions.Contains("GL_ARB_pixel_buffer_object") ||
       extensions.Contains("GL_NV_pixel_buffer_object");
 
   // We will use either glMapBuffer() or glMapBufferRange() for async readbacks.
@@ -921,13 +928,15 @@ void FeatureInfo::InitializeFeatures() {
     feature_flags_.use_async_readpixels = true;
   }
 
-  if (is_es3 || extensions.Contains("GL_ARB_sampler_objects")) {
+  if (gl_version_info_->is_es3 ||
+      extensions.Contains("GL_ARB_sampler_objects")) {
     feature_flags_.enable_samplers = true;
     // TODO(dsinclair): Add AddExtensionString("GL_CHROMIUM_sampler_objects")
     // when available.
   }
 
-  if ((is_es3 || extensions.Contains("GL_EXT_discard_framebuffer")) &&
+  if ((gl_version_info_->is_es3 ||
+       extensions.Contains("GL_EXT_discard_framebuffer")) &&
       !workarounds_.disable_ext_discard_framebuffer) {
     // DiscardFramebufferEXT is automatically bound to InvalidateFramebuffer.
     AddExtensionString("GL_EXT_discard_framebuffer");
@@ -974,7 +983,8 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (extensions.Contains("GL_NV_path_rendering")) {
-    if (extensions.Contains("GL_EXT_direct_state_access") || is_es3) {
+    if (extensions.Contains("GL_EXT_direct_state_access") ||
+        gl_version_info_->is_es3) {
       AddExtensionString("GL_CHROMIUM_path_rendering");
       feature_flags_.chromium_path_rendering = true;
       validators_.g_l_state.AddValue(GL_PATH_MODELVIEW_MATRIX_CHROMIUM);
@@ -982,7 +992,7 @@ void FeatureInfo::InitializeFeatures() {
     }
   }
 
-  if ((is_es3 || extensions.Contains("GL_EXT_texture_rg") ||
+  if ((gl_version_info_->is_es3 || extensions.Contains("GL_EXT_texture_rg") ||
        extensions.Contains("GL_ARB_texture_rg")) &&
       IsGL_REDSupportedOnFBOs()) {
     feature_flags_.ext_texture_rg = true;

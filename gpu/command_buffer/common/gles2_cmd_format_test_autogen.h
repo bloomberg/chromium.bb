@@ -1218,6 +1218,59 @@ TEST_F(GLES2FormatTest, Hint) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, InvalidateFramebufferImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLenum data[] = {
+      static_cast<GLenum>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLenum>(kSomeBaseValueToTestWith + 1),
+  };
+  cmds::InvalidateFramebufferImmediate& cmd =
+      *GetBufferAs<cmds::InvalidateFramebufferImmediate>();
+  const GLsizei kNumElements = 2;
+  const size_t kExpectedCmdSize =
+      sizeof(cmd) + kNumElements * sizeof(GLenum) * 1;
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(1), static_cast<GLsizei>(2), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::InvalidateFramebufferImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(1), cmd.target);
+  EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
+TEST_F(GLES2FormatTest, InvalidateSubFramebufferImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLenum data[] = {
+      static_cast<GLenum>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLenum>(kSomeBaseValueToTestWith + 1),
+  };
+  cmds::InvalidateSubFramebufferImmediate& cmd =
+      *GetBufferAs<cmds::InvalidateSubFramebufferImmediate>();
+  const GLsizei kNumElements = 2;
+  const size_t kExpectedCmdSize =
+      sizeof(cmd) + kNumElements * sizeof(GLenum) * 1;
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(1), static_cast<GLsizei>(2), data,
+              static_cast<GLint>(4), static_cast<GLint>(5),
+              static_cast<GLsizei>(6), static_cast<GLsizei>(7));
+  EXPECT_EQ(
+      static_cast<uint32_t>(cmds::InvalidateSubFramebufferImmediate::kCmdId),
+      cmd.header.command);
+  EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(1), cmd.target);
+  EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  EXPECT_EQ(static_cast<GLint>(4), cmd.x);
+  EXPECT_EQ(static_cast<GLint>(5), cmd.y);
+  EXPECT_EQ(static_cast<GLsizei>(6), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(7), cmd.height);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+  // TODO(gman): Check that data was inserted;
+}
+
 TEST_F(GLES2FormatTest, IsBuffer) {
   cmds::IsBuffer& cmd = *GetBufferAs<cmds::IsBuffer>();
   void* next_cmd =
@@ -1351,6 +1404,16 @@ TEST_F(GLES2FormatTest, PolygonOffset) {
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLfloat>(11), cmd.factor);
   EXPECT_EQ(static_cast<GLfloat>(12), cmd.units);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, ReadBuffer) {
+  cmds::ReadBuffer& cmd = *GetBufferAs<cmds::ReadBuffer>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::ReadBuffer::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.src);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

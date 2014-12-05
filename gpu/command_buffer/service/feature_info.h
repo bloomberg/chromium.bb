@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/gpu_export.h"
+#include "ui/gl/gl_version_info.h"
 
 namespace base {
 class CommandLine;
@@ -66,7 +67,6 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool map_buffer_range;
     bool ext_discard_framebuffer;
     bool angle_depth_texture;
-    bool is_angle;
     bool is_swiftshader;
     bool angle_texture_usage;
     bool ext_texture_storage;
@@ -122,6 +122,11 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     return workarounds_;
   }
 
+  const gfx::GLVersionInfo& gl_version_info() const {
+    CHECK(gl_version_info_.get());
+    return *(gl_version_info_.get());
+  }
+
  private:
   friend class base::RefCounted<FeatureInfo>;
   friend class BufferManagerClientSideArraysTest;
@@ -147,6 +152,8 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   // Flags for Workarounds.
   Workarounds workarounds_;
+
+  scoped_ptr<gfx::GLVersionInfo> gl_version_info_;
 
   DISALLOW_COPY_AND_ASSIGN(FeatureInfo);
 };

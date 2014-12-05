@@ -127,7 +127,6 @@ TEST_F(FeatureInfoTest, Basic) {
   EXPECT_FALSE(info_->feature_flags().nv_draw_buffers);
   EXPECT_FALSE(info_->feature_flags().ext_discard_framebuffer);
   EXPECT_FALSE(info_->feature_flags().angle_depth_texture);
-  EXPECT_FALSE(info_->feature_flags().is_angle);
 
 #define GPU_OP(type, name) EXPECT_FALSE(info_->workarounds().name);
   GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
@@ -345,7 +344,7 @@ TEST_F(FeatureInfoTest, InitializeNoExtensions) {
 
 TEST_F(FeatureInfoTest, InitializeWithANGLE) {
   SetupInitExpectationsWithGLVersion("", kGLRendererStringANGLE, "");
-  EXPECT_TRUE(info_->feature_flags().is_angle);
+  EXPECT_TRUE(info_->gl_version_info().is_angle);
 }
 
 TEST_F(FeatureInfoTest, InitializeNPOTExtensionGLES) {

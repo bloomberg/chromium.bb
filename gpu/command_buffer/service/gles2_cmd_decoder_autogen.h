@@ -1493,6 +1493,74 @@ error::Error GLES2DecoderImpl::HandleHint(uint32_t immediate_data_size,
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleInvalidateFramebufferImmediate(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::InvalidateFramebufferImmediate& c =
+      *static_cast<const gles2::cmds::InvalidateFramebufferImmediate*>(
+          cmd_data);
+  (void)c;
+  GLenum target = static_cast<GLenum>(c.target);
+  GLsizei count = static_cast<GLsizei>(c.count);
+  uint32_t data_size;
+  if (!ComputeDataSize(count, sizeof(GLenum), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  const GLenum* attachments =
+      GetImmediateDataAs<const GLenum*>(c, data_size, immediate_data_size);
+  if (attachments == NULL) {
+    return error::kOutOfBounds;
+  }
+  glInvalidateFramebuffer(target, count, attachments);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleInvalidateSubFramebufferImmediate(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::InvalidateSubFramebufferImmediate& c =
+      *static_cast<const gles2::cmds::InvalidateSubFramebufferImmediate*>(
+          cmd_data);
+  (void)c;
+  GLenum target = static_cast<GLenum>(c.target);
+  GLsizei count = static_cast<GLsizei>(c.count);
+  uint32_t data_size;
+  if (!ComputeDataSize(count, sizeof(GLenum), 1, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  const GLenum* attachments =
+      GetImmediateDataAs<const GLenum*>(c, data_size, immediate_data_size);
+  GLint x = static_cast<GLint>(c.x);
+  GLint y = static_cast<GLint>(c.y);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  if (attachments == NULL) {
+    return error::kOutOfBounds;
+  }
+  if (width < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glInvalidateSubFramebuffer",
+                       "width < 0");
+    return error::kNoError;
+  }
+  if (height < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glInvalidateSubFramebuffer",
+                       "height < 0");
+    return error::kNoError;
+  }
+  glInvalidateSubFramebuffer(target, count, attachments, x, y, width, height);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleIsBuffer(uint32_t immediate_data_size,
                                               const void* cmd_data) {
   const gles2::cmds::IsBuffer& c =
@@ -1650,6 +1718,18 @@ error::Error GLES2DecoderImpl::HandlePolygonOffset(uint32_t immediate_data_size,
     state_.polygon_offset_units = units;
     glPolygonOffset(factor, units);
   }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleReadBuffer(uint32_t immediate_data_size,
+                                                const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::ReadBuffer& c =
+      *static_cast<const gles2::cmds::ReadBuffer*>(cmd_data);
+  (void)c;
+  GLenum src = static_cast<GLenum>(c.src);
+  glReadBuffer(src);
   return error::kNoError;
 }
 

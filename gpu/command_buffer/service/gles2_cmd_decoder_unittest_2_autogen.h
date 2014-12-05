@@ -12,6 +12,28 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 
+TEST_P(GLES2DecoderTest2, PolygonOffsetValidArgs) {
+  EXPECT_CALL(*gl_, PolygonOffset(1, 2));
+  SpecializedSetup<cmds::PolygonOffset, 0>(true);
+  cmds::PolygonOffset cmd;
+  cmd.Init(1, 2);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest2, ReadBufferValidArgs) {
+  EXPECT_CALL(*gl_, ReadBuffer(1));
+  SpecializedSetup<cmds::ReadBuffer, 0>(true);
+  cmds::ReadBuffer cmd;
+  cmd.Init(1);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+// TODO(gman): ReadPixels
+
 // TODO(gman): ReleaseShaderCompiler
 
 TEST_P(GLES2DecoderTest2, RenderbufferStorageValidArgs) {
@@ -1015,7 +1037,4 @@ TEST_P(GLES2DecoderTest2, PopGroupMarkerEXTValidArgs) {
 // TODO(gman): GetTranslatedShaderSourceANGLE
 // TODO(gman): PostSubBufferCHROMIUM
 // TODO(gman): TexImageIOSurface2DCHROMIUM
-// TODO(gman): CopyTextureCHROMIUM
-// TODO(gman): DrawArraysInstancedANGLE
-// TODO(gman): DrawElementsInstancedANGLE
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

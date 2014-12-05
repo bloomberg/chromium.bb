@@ -810,6 +810,42 @@ TEST_F(GLES2ImplementationTest, Hint) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, InvalidateFramebuffer) {
+  GLenum data[2][1] = {{0}};
+  struct Cmds {
+    cmds::InvalidateFramebufferImmediate cmd;
+    GLenum data[2][1];
+  };
+
+  Cmds expected;
+  for (int ii = 0; ii < 2; ++ii) {
+    for (int jj = 0; jj < 1; ++jj) {
+      data[ii][jj] = static_cast<GLenum>(ii * 1 + jj);
+    }
+  }
+  expected.cmd.Init(GL_FRAMEBUFFER, 2, &data[0][0]);
+  gl_->InvalidateFramebuffer(GL_FRAMEBUFFER, 2, &data[0][0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, InvalidateSubFramebuffer) {
+  GLenum data[2][1] = {{0}};
+  struct Cmds {
+    cmds::InvalidateSubFramebufferImmediate cmd;
+    GLenum data[2][1];
+  };
+
+  Cmds expected;
+  for (int ii = 0; ii < 2; ++ii) {
+    for (int jj = 0; jj < 1; ++jj) {
+      data[ii][jj] = static_cast<GLenum>(ii * 1 + jj);
+    }
+  }
+  expected.cmd.Init(GL_FRAMEBUFFER, 2, &data[0][0], 4, 5, 6, 7);
+  gl_->InvalidateSubFramebuffer(GL_FRAMEBUFFER, 2, &data[0][0], 4, 5, 6, 7);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, IsBuffer) {
   struct Cmds {
     cmds::IsBuffer cmd;
@@ -984,6 +1020,17 @@ TEST_F(GLES2ImplementationTest, PolygonOffset) {
   expected.cmd.Init(1, 2);
 
   gl_->PolygonOffset(1, 2);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, ReadBuffer) {
+  struct Cmds {
+    cmds::ReadBuffer cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1);
+
+  gl_->ReadBuffer(1);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

@@ -378,6 +378,21 @@ void GLES2GetVertexAttribPointerv(GLuint index, GLenum pname, void** pointer) {
 void GLES2Hint(GLenum target, GLenum mode) {
   gles2::GetGLContext()->Hint(target, mode);
 }
+void GLES2InvalidateFramebuffer(GLenum target,
+                                GLsizei count,
+                                const GLenum* attachments) {
+  gles2::GetGLContext()->InvalidateFramebuffer(target, count, attachments);
+}
+void GLES2InvalidateSubFramebuffer(GLenum target,
+                                   GLsizei count,
+                                   const GLenum* attachments,
+                                   GLint x,
+                                   GLint y,
+                                   GLsizei width,
+                                   GLsizei height) {
+  gles2::GetGLContext()->InvalidateSubFramebuffer(target, count, attachments, x,
+                                                  y, width, height);
+}
 GLboolean GLES2IsBuffer(GLuint buffer) {
   return gles2::GetGLContext()->IsBuffer(buffer);
 }
@@ -410,6 +425,9 @@ void GLES2PixelStorei(GLenum pname, GLint param) {
 }
 void GLES2PolygonOffset(GLfloat factor, GLfloat units) {
   gles2::GetGLContext()->PolygonOffset(factor, units);
+}
+void GLES2ReadBuffer(GLenum src) {
+  gles2::GetGLContext()->ReadBuffer(src);
 }
 void GLES2ReadPixels(GLint x,
                      GLint y,
@@ -1415,6 +1433,14 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glHint),
     },
     {
+     "glInvalidateFramebuffer",
+     reinterpret_cast<GLES2FunctionPointer>(glInvalidateFramebuffer),
+    },
+    {
+     "glInvalidateSubFramebuffer",
+     reinterpret_cast<GLES2FunctionPointer>(glInvalidateSubFramebuffer),
+    },
+    {
      "glIsBuffer",
      reinterpret_cast<GLES2FunctionPointer>(glIsBuffer),
     },
@@ -1457,6 +1483,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
      "glPolygonOffset",
      reinterpret_cast<GLES2FunctionPointer>(glPolygonOffset),
+    },
+    {
+     "glReadBuffer",
+     reinterpret_cast<GLES2FunctionPointer>(glReadBuffer),
     },
     {
      "glReadPixels",

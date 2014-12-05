@@ -88,6 +88,8 @@ GL_APICALL void         GL_APIENTRY glGetVertexAttribfv (GLuint index, GLenumVer
 GL_APICALL void         GL_APIENTRY glGetVertexAttribiv (GLuint index, GLenumVertexAttribute pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetVertexAttribPointerv (GLuint index, GLenumVertexPointer pname, void** pointer);
 GL_APICALL void         GL_APIENTRY glHint (GLenumHintTarget target, GLenumHintMode mode);
+GL_APICALL void         GL_APIENTRY glInvalidateFramebuffer (GLenumFrameBufferTarget target, GLsizeiNotNegative count, const GLenum* attachments);
+GL_APICALL void         GL_APIENTRY glInvalidateSubFramebuffer (GLenumFrameBufferTarget target, GLsizeiNotNegative count, const GLenum* attachments, GLint x, GLint y, GLsizei width, GLsizei height);
 GL_APICALL GLboolean    GL_APIENTRY glIsBuffer (GLidBuffer buffer);
 GL_APICALL GLboolean    GL_APIENTRY glIsEnabled (GLenumCapability cap);
 GL_APICALL GLboolean    GL_APIENTRY glIsFramebuffer (GLidFramebuffer framebuffer);
@@ -99,6 +101,7 @@ GL_APICALL void         GL_APIENTRY glLineWidth (GLfloat width);
 GL_APICALL void         GL_APIENTRY glLinkProgram (GLidProgram program);
 GL_APICALL void         GL_APIENTRY glPixelStorei (GLenumPixelStore pname, GLintPixelStoreAlignment param);
 GL_APICALL void         GL_APIENTRY glPolygonOffset (GLfloat factor, GLfloat units);
+GL_APICALL void         GL_APIENTRY glReadBuffer (GLenum src);
 GL_APICALL void         GL_APIENTRY glReadPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenumReadPixelFormat format, GLenumPixelType type, void* pixels);
 GL_APICALL void         GL_APIENTRY glReleaseShaderCompiler (void);
 GL_APICALL void         GL_APIENTRY glRenderbufferStorage (GLenumRenderBufferTarget target, GLenumRenderBufferFormat internalformat, GLsizei width, GLsizei height);

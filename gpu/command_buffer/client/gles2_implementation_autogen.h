@@ -278,6 +278,18 @@ void GetVertexAttribPointerv(GLuint index,
 
 void Hint(GLenum target, GLenum mode) override;
 
+void InvalidateFramebuffer(GLenum target,
+                           GLsizei count,
+                           const GLenum* attachments) override;
+
+void InvalidateSubFramebuffer(GLenum target,
+                              GLsizei count,
+                              const GLenum* attachments,
+                              GLint x,
+                              GLint y,
+                              GLsizei width,
+                              GLsizei height) override;
+
 GLboolean IsBuffer(GLuint buffer) override;
 
 GLboolean IsEnabled(GLenum cap) override;
@@ -299,6 +311,8 @@ void LinkProgram(GLuint program) override;
 void PixelStorei(GLenum pname, GLint param) override;
 
 void PolygonOffset(GLfloat factor, GLfloat units) override;
+
+void ReadBuffer(GLenum src) override;
 
 void ReadPixels(GLint x,
                 GLint y,

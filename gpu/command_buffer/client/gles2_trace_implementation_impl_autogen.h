@@ -577,6 +577,27 @@ void GLES2TraceImplementation::Hint(GLenum target, GLenum mode) {
   gl_->Hint(target, mode);
 }
 
+void GLES2TraceImplementation::InvalidateFramebuffer(
+    GLenum target,
+    GLsizei count,
+    const GLenum* attachments) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::InvalidateFramebuffer");
+  gl_->InvalidateFramebuffer(target, count, attachments);
+}
+
+void GLES2TraceImplementation::InvalidateSubFramebuffer(
+    GLenum target,
+    GLsizei count,
+    const GLenum* attachments,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::InvalidateSubFramebuffer");
+  gl_->InvalidateSubFramebuffer(target, count, attachments, x, y, width,
+                                height);
+}
+
 GLboolean GLES2TraceImplementation::IsBuffer(GLuint buffer) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::IsBuffer");
   return gl_->IsBuffer(buffer);
@@ -630,6 +651,11 @@ void GLES2TraceImplementation::PixelStorei(GLenum pname, GLint param) {
 void GLES2TraceImplementation::PolygonOffset(GLfloat factor, GLfloat units) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::PolygonOffset");
   gl_->PolygonOffset(factor, units);
+}
+
+void GLES2TraceImplementation::ReadBuffer(GLenum src) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ReadBuffer");
+  gl_->ReadBuffer(src);
 }
 
 void GLES2TraceImplementation::ReadPixels(GLint x,

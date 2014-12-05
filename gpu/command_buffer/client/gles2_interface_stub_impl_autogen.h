@@ -331,6 +331,20 @@ void GLES2InterfaceStub::GetVertexAttribPointerv(GLuint /* index */,
 }
 void GLES2InterfaceStub::Hint(GLenum /* target */, GLenum /* mode */) {
 }
+void GLES2InterfaceStub::InvalidateFramebuffer(
+    GLenum /* target */,
+    GLsizei /* count */,
+    const GLenum* /* attachments */) {
+}
+void GLES2InterfaceStub::InvalidateSubFramebuffer(
+    GLenum /* target */,
+    GLsizei /* count */,
+    const GLenum* /* attachments */,
+    GLint /* x */,
+    GLint /* y */,
+    GLsizei /* width */,
+    GLsizei /* height */) {
+}
 GLboolean GLES2InterfaceStub::IsBuffer(GLuint /* buffer */) {
   return 0;
 }
@@ -360,6 +374,8 @@ void GLES2InterfaceStub::PixelStorei(GLenum /* pname */, GLint /* param */) {
 }
 void GLES2InterfaceStub::PolygonOffset(GLfloat /* factor */,
                                        GLfloat /* units */) {
+}
+void GLES2InterfaceStub::ReadBuffer(GLenum /* src */) {
 }
 void GLES2InterfaceStub::ReadPixels(GLint /* x */,
                                     GLint /* y */,
