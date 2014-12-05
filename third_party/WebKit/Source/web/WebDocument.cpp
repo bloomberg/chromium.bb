@@ -290,12 +290,6 @@ void WebDocument::setIsTransitionDocument()
     unwrap<Document>()->setIsTransitionDocument();
 }
 
-// FIXME: This will be removed once the Chrome side implementation is done
-void WebDocument::beginExitTransition(const WebString& cssSelector)
-{
-    beginExitTransition(cssSelector, false);
-}
-
 void WebDocument::beginExitTransition(const WebString& cssSelector, bool exitToNativeApp)
 {
     RefPtrWillBeRawPtr<Document> document = unwrap<Document>();
