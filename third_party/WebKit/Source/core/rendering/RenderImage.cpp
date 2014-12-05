@@ -292,7 +292,7 @@ void RenderImage::areaElementFocusChanged(HTMLAreaElement* areaElement)
     unsigned short outlineWidth = areaElementStyle->outlineWidth();
 
     IntRect paintInvalidationRect = enclosingIntRect(path.boundingRect());
-    paintInvalidationRect.moveBy(-absoluteContentBox().location());
+    paintInvalidationRect.moveBy(-IntPoint(absoluteContentBoxOffset()));
     paintInvalidationRect.inflate(outlineWidth);
 
     paintInvalidationOrMarkForLayout(false, &paintInvalidationRect);

@@ -3191,7 +3191,7 @@ int RenderBlock::baselinePosition(FontBaseline baselineType, bool firstLine, Lin
             // breaks -webkit-line-clamp, which is used in the wild -- we would
             // calculate the baseline as if -webkit-line-clamp wasn't used.
             // For simplicity, we use this for all uses of deprecated flexbox.
-            LayoutUnit bottomOfContent = direction == HorizontalLine ? borderTop() + paddingTop() + contentHeight() : borderRight() + paddingRight() + contentWidth();
+            LayoutUnit bottomOfContent = direction == HorizontalLine ? height() - borderBottom() - paddingBottom() - horizontalScrollbarHeight() : width() - borderLeft() - paddingLeft() - verticalScrollbarWidth();
             if (baselinePos > bottomOfContent)
                 baselinePos = -1;
         }

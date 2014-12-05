@@ -561,6 +561,14 @@ IntRect RenderBox::absoluteContentBox() const
     return rect;
 }
 
+IntSize RenderBox::absoluteContentBoxOffset() const
+{
+    IntPoint offset = roundedIntPoint(contentBoxOffset());
+    FloatPoint absPos = localToAbsolute();
+    offset.move(absPos.x(), absPos.y());
+    return toIntSize(offset);
+}
+
 FloatQuad RenderBox::absoluteContentQuad() const
 {
     LayoutRect rect = contentBoxRect();
@@ -3647,8 +3655,8 @@ PositionWithAffinity RenderBox::positionForPoint(const LayoutPoint& point)
         return createPositionWithAffinity(nonPseudoNode() ? firstPositionInOrBeforeNode(nonPseudoNode()) : Position());
 
     if (isTable() && nonPseudoNode()) {
-        LayoutUnit right = contentWidth() + borderAndPaddingWidth();
-        LayoutUnit bottom = contentHeight() + borderAndPaddingHeight();
+        LayoutUnit right = width() - verticalScrollbarWidth();
+        LayoutUnit bottom = height() - horizontalScrollbarHeight();
 
         if (point.x() < 0 || point.x() > right || point.y() < 0 || point.y() > bottom) {
             if (point.x() <= right / 2)

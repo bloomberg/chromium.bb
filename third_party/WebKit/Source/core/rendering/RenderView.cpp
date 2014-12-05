@@ -270,7 +270,7 @@ const RenderObject* RenderView::pushMappingToContainer(const RenderLayerModelObj
     if (geometryMap.mapCoordinatesFlags() & TraverseDocumentBoundaries) {
         if (RenderPart* parentDocRenderer = frame()->ownerRenderer()) {
             offset = -LayoutSize(m_frameView->scrollOffset());
-            offset += toLayoutSize(parentDocRenderer->contentBoxRect().location());
+            offset += parentDocRenderer->contentBoxOffset();
             container = parentDocRenderer;
         }
     }

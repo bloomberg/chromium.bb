@@ -440,7 +440,7 @@ void RenderDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
             xPos += child->width() + child->marginRight();
         }
 
-        remainingSpace = borderLeft() + paddingLeft() + contentWidth() - xPos;
+        remainingSpace = width() - borderRight() - paddingRight() - verticalScrollbarWidth() - xPos;
 
         m_stretchingChildren = false;
         if (flexingChildren)
@@ -695,7 +695,7 @@ void RenderDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
         if (oldHeight != height())
             heightSpecified = true;
 
-        remainingSpace = borderTop() + paddingTop() + contentHeight() - yPos;
+        remainingSpace = height() - borderBottom() - paddingBottom() - horizontalScrollbarHeight() - yPos;
 
         if (flexingChildren)
             haveFlex = false; // We're done.

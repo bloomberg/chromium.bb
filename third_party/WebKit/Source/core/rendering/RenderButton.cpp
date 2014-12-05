@@ -100,10 +100,10 @@ int RenderButton::baselinePosition(FontBaseline baseline, bool firstLine, LineDi
         // To ensure that we have a consistent baseline when we have no children,
         // even when we have the anonymous RenderBlock child, we calculate the
         // baseline for the empty case manually here.
-        if (direction == HorizontalLine)
-            return marginTop() + borderTop() + paddingTop() + contentHeight();
-
-        return marginRight() + borderRight() + paddingRight() + contentWidth();
+        if (direction == HorizontalLine) {
+            return marginTop() + height() - borderBottom() - paddingBottom() - horizontalScrollbarHeight();
+        }
+        return marginRight() + width() - borderLeft() - paddingLeft() - verticalScrollbarWidth();
     }
     return RenderFlexibleBox::baselinePosition(baseline, firstLine, direction, linePositionMode);
 }

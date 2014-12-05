@@ -173,6 +173,8 @@ public:
     LayoutSize contentBoxOffset() const { return LayoutSize(borderLeft() + paddingLeft(), borderTop() + paddingTop()); }
     // The content box in absolute coords. Ignores transforms.
     IntRect absoluteContentBox() const;
+    // The offset of the content box in absolute coords, ignoring transforms.
+    IntSize absoluteContentBoxOffset() const;
     // The content box converted to absolute coords (taking transforms into account).
     FloatQuad absoluteContentQuad() const;
 

@@ -74,7 +74,7 @@ LayoutSize RenderMultiColumnSet::flowThreadTranslationAtOffset(LayoutUnit blockO
     flipForWritingMode(portionRect);
     LayoutRect columnRect(columnRectAt(columnIndex));
     flipForWritingMode(columnRect);
-    return contentBoxRect().location() + columnRect.location() - portionRect.location();
+    return toLayoutPoint(contentBoxOffset()) + columnRect.location() - portionRect.location();
 }
 
 LayoutUnit RenderMultiColumnSet::heightAdjustedForSetOffset(LayoutUnit height) const

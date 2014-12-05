@@ -131,7 +131,10 @@ void RenderFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidt
 
 static int synthesizedBaselineFromContentBox(const RenderBox& box, LineDirectionMode direction)
 {
-    return direction == HorizontalLine ? box.borderTop() + box.paddingTop() + box.contentHeight() : box.borderRight() + box.paddingRight() + box.contentWidth();
+    if (direction == HorizontalLine) {
+        return box.height() - box.borderBottom() - box.paddingBottom() - box.verticalScrollbarWidth();
+    }
+    return box.width() - box.borderLeft() - box.paddingLeft() - box.horizontalScrollbarHeight();
 }
 
 int RenderFlexibleBox::baselinePosition(FontBaseline, bool, LineDirectionMode direction, LinePositionMode mode) const
