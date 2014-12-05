@@ -95,14 +95,6 @@
 // The opacity for the toolbar divider; 0 means that it shouldn't be shown.
 - (CGFloat)toolbarDividerOpacity;
 
-// When a view does not have a layer, but it has multiple subviews with layers,
-// the ordering of the layers is not well defined. Removing a subview and
-// re-adding it to the same position has the side effect of updating the layer
-// ordering to better reflect the subview ordering.
-// This is a hack needed because NSThemeFrame is not layer backed, but it has
-// multiple direct subviews which are. http://crbug.com/413009
-- (void)updateLayerOrdering:(NSView*)view;
-
 // Update visibility of the infobar tip, depending on the state of the window.
 - (void)updateInfoBarTipVisibility;
 
@@ -152,10 +144,6 @@
 // Sets the content view's subviews. Attempts to not touch the tabContentArea
 // to prevent redraws.
 - (void)setContentViewSubviews:(NSArray*)subviews;
-
-// A hack required to get NSThemeFrame sub layers to order correctly. See
-// implementation for more details.
-- (void)updateSubviewZOrderHack;
 
 // There is a bug in Mavericks for applications linked against OSX 10.8 and
 // earlier. The bug requires Screens Have Separate Spaces to be enabled, and

@@ -37,7 +37,6 @@
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
-#import "chrome/browser/ui/cocoa/version_independent_window.h"
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_cocoa.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -379,7 +378,7 @@ willPositionSheet:(NSWindow*)sheet
 
     [avatarButtonView removeFromSuperview];
     [avatarButtonView setHidden:YES];  // Will be shown in layout.
-    [[destWindow cr_windowView] addSubview:avatarButtonView];
+    [[destWindow contentView] addSubview:avatarButtonView];
   }
 
   // Add the tab strip after setting the content view and moving the incognito
@@ -464,8 +463,8 @@ willPositionSheet:(NSWindow*)sheet
     // Leaving wantsLayer on for the duration of presentation mode causes
     // performance issues when the dropdown is animated in/out.  It also does
     // not seem to be required for the exit animation.
-    windowViewWantsLayer_ = [[[self window] cr_windowView] wantsLayer];
-    [[[self window] cr_windowView] setWantsLayer:YES];
+    windowViewWantsLayer_ = [[[self window] contentView] wantsLayer];
+    [[[self window] contentView] setWantsLayer:YES];
   }
 
   NSView* contentView = [[self window] contentView];
@@ -737,7 +736,7 @@ willPositionSheet:(NSWindow*)sheet
 
   [self showFullscreenExitBubbleIfNecessary];
   browser_->WindowFullscreenStateChanged();
-  [[[self window] cr_windowView] setWantsLayer:windowViewWantsLayer_];
+  [[[self window] contentView] setWantsLayer:windowViewWantsLayer_];
 }
 
 - (void)windowWillExitFullScreen:(NSNotification*)notification {
@@ -797,38 +796,6 @@ willPositionSheet:(NSWindow*)sheet
 
 - (CGFloat)toolbarDividerOpacity {
   return [bookmarkBarController_ toolbarDividerOpacity];
-}
-
-- (void)updateLayerOrdering:(NSView*)view {
-  // Hold a reference to the view so that it doesn't accidentally get
-  // dealloc'ed.
-  base::scoped_nsobject<NSView> reference([view retain]);
-
-  // If the superview has a layer, then this hack isn't required.
-  NSView* superview = [view superview];
-  if ([superview layer])
-    return;
-
-  // Get the current position of the view.
-  NSArray* subviews = [superview subviews];
-  NSInteger index = [subviews indexOfObject:view];
-  NSView* siblingBelow = nil;
-  if (index > 0)
-    siblingBelow = [subviews objectAtIndex:index - 1];
-
-  // Remove the view.
-  [view removeFromSuperview];
-
-  // Add it to the same position.
-  if (siblingBelow) {
-    [superview addSubview:view
-               positioned:NSWindowAbove
-               relativeTo:siblingBelow];
-  } else {
-    [superview addSubview:view
-               positioned:NSWindowBelow
-               relativeTo:nil];
-  }
 }
 
 - (void)updateInfoBarTipVisibility {
@@ -959,8 +926,6 @@ willPositionSheet:(NSWindow*)sheet
     [self updateSubviewZOrderFullscreen];
   else
     [self updateSubviewZOrderNormal];
-
-  [self updateSubviewZOrderHack];
 }
 
 - (void)updateSubviewZOrderNormal {
@@ -1041,36 +1006,6 @@ willPositionSheet:(NSWindow*)sheet
     [self.chromeContentView addSubview:view
                             positioned:NSWindowAbove
                             relativeTo:nil];
-  }
-}
-
-- (void)updateSubviewZOrderHack {
-  // TODO(erikchen): Remove and then add the tabStripView to the root NSView.
-  // This fixes a layer ordering problem that occurs between the contentView
-  // and the tabStripView. This is a hack required because NSThemeFrame is not
-  // layer backed, and because Chrome adds subviews directly to the
-  // NSThemeFrame.
-  // http://crbug.com/407921
-  if (enteringAppKitFullscreen_) {
-    // The tabstrip frequently lies outside the bounds of its superview.
-    // Repeatedly adding/removing the tabstrip from its superview during the
-    // AppKit Fullscreen transition causes graphical glitches on 10.10. The
-    // correct solution is to use the AppKit fullscreen transition APIs added
-    // in 10.7+.
-    // http://crbug.com/408791
-    if (!hasAdjustedTabStripWhileEnteringAppKitFullscreen_) {
-      // Disable implicit animations.
-      [CATransaction begin];
-      [CATransaction setDisableActions:YES];
-
-      [self updateLayerOrdering:[self tabStripView]];
-      [self updateLayerOrdering:[avatarButtonController_ view]];
-
-      [CATransaction commit];
-      hasAdjustedTabStripWhileEnteringAppKitFullscreen_ = YES;
-    }
-  } else {
-    hasAdjustedTabStripWhileEnteringAppKitFullscreen_ = NO;
   }
 }
 

@@ -1857,7 +1857,7 @@ using content::WebContents;
   [view setHidden:![self shouldShowAvatar]];
 
   // Install the view.
-  [[[self window] cr_windowView] addSubview:view];
+  [[[self window] contentView] addSubview:view];
 }
 
 // Called when we get a three-finger swipe.

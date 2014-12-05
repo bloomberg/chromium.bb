@@ -134,11 +134,6 @@ class Command;
   // AppKit fullscreen mode.
   BOOL enteringAppKitFullscreen_;
 
-  // Only adjust the tab strip once while entering fullscreen. See the
-  // implementation of -[BrowserWindowController updateSubviewZOrder:] for more
-  // details.
-  BOOL hasAdjustedTabStripWhileEnteringAppKitFullscreen_;
-
   // True between |enterImmersiveFullscreen| and |-windowDidEnterFullScreen:|
   // to indicate that the window is in the process of transitioning into
   // AppKit fullscreen mode.

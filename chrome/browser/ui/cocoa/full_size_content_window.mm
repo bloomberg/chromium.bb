@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/version_independent_window.h"
+#import "chrome/browser/ui/cocoa/full_size_content_window.h"
 
 #include "base/logging.h"
 
-@interface VersionIndependentWindow ()
+@interface FullSizeContentWindow ()
 
 + (BOOL)shouldUseFullSizeContentViewForStyle:(NSUInteger)windowStyle;
-
-- (NSView*)chromeWindowView;
 
 @end
 
@@ -32,23 +30,7 @@
 
 @end
 
-@implementation NSWindow (VersionIndependentWindow)
-
-- (NSView*)cr_windowView {
-  if ([self isKindOfClass:[VersionIndependentWindow class]]) {
-    VersionIndependentWindow* window =
-        static_cast<VersionIndependentWindow*>(self);
-    NSView* chromeWindowView = [window chromeWindowView];
-    if (chromeWindowView)
-      return chromeWindowView;
-  }
-
-  return [[self contentView] superview];
-}
-
-@end
-
-@implementation VersionIndependentWindow
+@implementation FullSizeContentWindow
 
 #pragma mark - Lifecycle
 
@@ -79,13 +61,21 @@
                               defer:deferCreation];
   if (self) {
     if (wantsViewsOverTitlebar &&
-        [VersionIndependentWindow
+        [FullSizeContentWindow
             shouldUseFullSizeContentViewForStyle:windowStyle]) {
       chromeWindowView_.reset([[FullSizeContentView alloc] init]);
       [chromeWindowView_
           setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
       [self setContentView:chromeWindowView_];
       [chromeWindowView_ setFrame:[[chromeWindowView_ superview] bounds]];
+
+      // Our content view overlaps the window control buttons, so we must ensure
+      // it is positioned below the buttons.
+      NSView* superview = [chromeWindowView_ superview];
+      [chromeWindowView_ removeFromSuperview];
+      [superview addSubview:chromeWindowView_
+                 positioned:NSWindowBelow
+                 relativeTo:nil];
     }
   }
   return self;
@@ -95,10 +85,6 @@
 
 + (BOOL)shouldUseFullSizeContentViewForStyle:(NSUInteger)windowStyle {
   return windowStyle & NSTitledWindowMask;
-}
-
-- (NSView*)chromeWindowView {
-  return chromeWindowView_;
 }
 
 #pragma mark - NSWindow Overrides

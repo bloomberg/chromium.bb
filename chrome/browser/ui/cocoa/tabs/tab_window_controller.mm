@@ -11,7 +11,6 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_background_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
-#import "chrome/browser/ui/cocoa/version_independent_window.h"
 #import "ui/base/cocoa/focus_tracker.h"
 #include "ui/base/theme_provider.h"
 
@@ -85,7 +84,7 @@
     // When making a tab dragging window (setUseOverlay:), this view stays in
     // the parent window so that it can be translucent, while the tab strip view
     // moves to the child window and stays opaque.
-    NSView* windowView = [window cr_windowView];
+    NSView* windowView = [window contentView];
     tabStripBackgroundView_.reset([[TabStripBackgroundView alloc]
         initWithFrame:NSMakeRect(0,
                                  NSMaxY([windowView bounds]) -
@@ -95,8 +94,6 @@
     [tabStripBackgroundView_
         setAutoresizingMask:NSViewWidthSizable | NSViewMinYMargin];
     [self insertTabStripBackgroundViewIntoWindow:window];
-
-    [self moveContentViewToBack:[window contentView]];
 
     tabStripView_.reset([[TabStripView alloc]
         initWithFrame:NSMakeRect(
@@ -177,7 +174,7 @@
     // window. The content view is added as a subview of the overlay window's
     // content view (rather than using setContentView:) because the overlay
     // window has a different content size (due to it being borderless).
-    [[overlayWindow_ cr_windowView] addSubview:[self tabStripView]];
+    [[overlayWindow_ contentView] addSubview:[self tabStripView]];
     [[overlayWindow_ contentView] addSubview:originalContentView_];
 
     [overlayWindow_ orderFront:nil];
@@ -193,7 +190,7 @@
                           relativeTo:nil];
     originalContentView_.frame = [[window contentView] bounds];
     [self insertTabStripView:[self tabStripView] intoWindow:window];
-    [[window cr_windowView] updateTrackingAreas];
+    [[window contentView] updateTrackingAreas];
 
     [focusBeforeOverlay_ restoreFocusInWindow:window];
     focusBeforeOverlay_.reset();
@@ -330,22 +327,8 @@
   closeDeferred_ = YES;
 }
 
-- (void)moveContentViewToBack:(NSView*)cv {
-  base::scoped_nsobject<NSView> contentView([cv retain]);
-  NSView* superview = [contentView superview];
-  [contentView removeFromSuperview];
-  DCHECK(tabStripBackgroundView_);
-  if (superview == [tabStripBackgroundView_ superview]) {
-    [superview addSubview:contentView
-               positioned:NSWindowAbove
-               relativeTo:tabStripBackgroundView_];
-  } else {
-    [superview addSubview:contentView positioned:NSWindowBelow relativeTo:nil];
-  }
-}
-
 - (void)insertTabStripView:(NSView*)tabStripView intoWindow:(NSWindow*)window {
-  NSView* contentParent = [window cr_windowView];
+  NSView* contentParent = [window contentView];
   if (contentParent == [[window contentView] superview]) {
     // Add the tab strip directly above the content view, if they are siblings.
     [contentParent addSubview:tabStripView
