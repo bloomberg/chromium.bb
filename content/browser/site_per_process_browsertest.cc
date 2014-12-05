@@ -151,6 +151,55 @@ void RedirectNotificationObserver::Observe(
   running_ = false;
 }
 
+// This observer keeps track of the number of created RenderFrameHosts.  Tests
+// can use this to ensure that a certain number of child frames has been
+// created after navigating.
+class RenderFrameHostCreatedObserver : public WebContentsObserver {
+ public:
+  RenderFrameHostCreatedObserver(WebContents* web_contents,
+                                 int expected_frame_count)
+      : WebContentsObserver(web_contents),
+        expected_frame_count_(expected_frame_count),
+        frames_created_(0),
+        message_loop_runner_(new MessageLoopRunner) {}
+
+  ~RenderFrameHostCreatedObserver() override;
+
+  // Runs a nested message loop and blocks until the expected number of
+  // RenderFrameHosts is created.
+  void Wait();
+
+ private:
+  // WebContentsObserver
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
+
+  // The number of RenderFrameHosts to wait for.
+  int expected_frame_count_;
+
+  // The number of RenderFrameHosts that have been created.
+  int frames_created_;
+
+  // The MessageLoopRunner used to spin the message loop.
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostCreatedObserver);
+};
+
+RenderFrameHostCreatedObserver::~RenderFrameHostCreatedObserver() {
+}
+
+void RenderFrameHostCreatedObserver::Wait() {
+  message_loop_runner_->Run();
+}
+
+void RenderFrameHostCreatedObserver::RenderFrameCreated(
+    RenderFrameHost* render_frame_host) {
+  frames_created_++;
+  if (frames_created_ == expected_frame_count_) {
+    message_loop_runner_->Quit();
+  }
+}
+
 //
 // SitePerProcessBrowserTest
 //
@@ -733,6 +782,53 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     EXPECT_EQ(cross_site_url, observer.navigation_url());
     EXPECT_EQ(0U, child->child_count());
   }
+}
+
+// Ensure that A-embed-B-embed-C pages load properly.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteTwoLevelNesting) {
+  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  SitePerProcessWebContentsObserver observer(shell()->web_contents());
+
+  // Navigate the first subframe to a cross-site page with two subframes.
+  // NavigateFrameToURL can't be used here because it doesn't guarantee that
+  // FrameTreeNodes will have been created for child frames when it returns.
+  RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 3);
+  GURL url(embedded_test_server()->GetURL("foo.com", "/frame_tree/1-1.html"));
+  NavigationController::LoadURLParams params(url);
+  params.transition_type = ui::PAGE_TRANSITION_LINK;
+  params.frame_tree_node_id = root->child_at(0)->frame_tree_node_id();
+  root->child_at(0)->navigator()->GetController()->LoadURLWithParams(params);
+  frame_observer.Wait();
+
+  // We can't use a SitePerProcessWebContentsObserver to verify the URL here,
+  // since the frame has children that may have clobbered it in the observer.
+  EXPECT_EQ(url, root->child_at(0)->current_url());
+
+  // Ensure that a new process is created for the subframe.
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            root->child_at(0)->current_frame_host()->GetSiteInstance());
+
+  // Load cross-site page into subframe's subframe.
+  ASSERT_EQ(2U, root->child_at(0)->child_count());
+  url = embedded_test_server()->GetURL("bar.com", "/title1.html");
+  NavigateFrameToURL(root->child_at(0)->child_at(0), url);
+  EXPECT_TRUE(observer.navigation_succeeded());
+  EXPECT_EQ(url, observer.navigation_url());
+
+  // Check that a new process is created and is different from the top one and
+  // the middle one.
+  FrameTreeNode* bottom_child = root->child_at(0)->child_at(0);
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            bottom_child->current_frame_host()->GetSiteInstance());
+  EXPECT_NE(root->child_at(0)->current_frame_host()->GetSiteInstance(),
+            bottom_child->current_frame_host()->GetSiteInstance());
 }
 
 }  // namespace content

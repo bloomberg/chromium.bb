@@ -2925,10 +2925,10 @@ void RenderFrameImpl::willSendRequest(
   extra_data->set_custom_user_agent(custom_user_agent);
   extra_data->set_requested_with(requested_with);
   extra_data->set_render_frame_id(routing_id_);
-  extra_data->set_is_main_frame(frame == top_frame);
+  extra_data->set_is_main_frame(!parent);
   extra_data->set_frame_origin(
       GURL(frame->document().securityOrigin().toString()));
-  extra_data->set_parent_is_main_frame(frame->parent() == top_frame);
+  extra_data->set_parent_is_main_frame(parent && !parent->parent());
   extra_data->set_parent_render_frame_id(parent_routing_id);
   extra_data->set_allow_download(navigation_state->allow_download());
   extra_data->set_transition_type(transition_type);
