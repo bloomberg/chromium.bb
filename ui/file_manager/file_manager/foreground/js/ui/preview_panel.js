@@ -83,7 +83,7 @@ var PreviewPanel = function(element,
    * @private
    */
   this.selection_ = /** @type {FileSelection} */
-      ({entries: [], computeBytes: function() {}});
+      ({entries: [], computeBytes: function() {}, totalCount: 0});
 
   /**
    * Sequence value that is incremented by every selection update and is used to
