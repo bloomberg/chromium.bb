@@ -17,9 +17,6 @@ namespace sandbox {
   struct SandboxInterfaceInfo;
 }
 
-// Gets the path of the current exe with a trailing backslash.
-base::string16 GetExecutablePath();
-
 // Returns the version in the current module's version resource or the empty
 // string if none found.
 base::string16 GetCurrentModuleVersion();
@@ -49,15 +46,18 @@ class MainDllLoader {
   // "renderer", "watcher", etc.
   // |dll_path| refers to the path of the Chrome dll being loaded.
   virtual void OnBeforeLaunch(const std::string& process_type,
-                              const base::string16& dll_path) = 0;
+                              const base::FilePath& dll_path) = 0;
 
   // Called after the chrome.dll entry point returns and before terminating
   // this process. The return value will be used as the process return code.
   // |dll_path| refers to the path of the Chrome dll being loaded.
-  virtual int OnBeforeExit(int return_code, const base::string16& dll_path) = 0;
+  virtual int OnBeforeExit(int return_code, const base::FilePath& dll_path) = 0;
 
  private:
-  HMODULE Load(base::string16* version, base::string16* out_file);
+  // Loads chrome.dll, populating |version| with the version of the DLL loaded
+  // and |module| with the path of the loaded DLL. Returns a reference to the
+  // module, or null on failure.
+  HMODULE Load(base::string16* version, base::FilePath* module);
 
  private:
   HMODULE dll_;

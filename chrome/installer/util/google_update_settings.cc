@@ -214,7 +214,7 @@ bool GoogleUpdateSettings::IsSystemInstall() {
     LOG(WARNING)
         << "Failed to get directory of module; assuming per-user install.";
   } else {
-    system_install = !InstallUtil::IsPerUserInstall(module_dir.value().c_str());
+    system_install = !InstallUtil::IsPerUserInstall(module_dir);
   }
   return system_install;
 }

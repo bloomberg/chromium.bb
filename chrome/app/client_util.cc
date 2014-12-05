@@ -47,34 +47,31 @@ typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
 base::LazyInstance<chrome::ChromeCrashReporterClient>::Leaky
     g_chrome_crash_client = LAZY_INSTANCE_INITIALIZER;
 
-// Expects that |dir| has a trailing backslash. |dir| is modified so it
-// contains the full path that was tried. Caller must check for the return
-// value not being null to determine if this path contains a valid dll.
-HMODULE LoadModuleWithDirectory(base::string16* dir,
-                                const base::char16* dll_name,
-                                bool pre_read) {
-  ::SetCurrentDirectoryW(dir->c_str());
-  dir->append(dll_name);
+// Loads |module| after setting the CWD to |module|'s directory. Returns a
+// reference to the loaded module on success, or null on error.
+HMODULE LoadModuleWithDirectory(const base::FilePath& module, bool pre_read) {
+  ::SetCurrentDirectoryW(module.DirName().value().c_str());
 
   if (pre_read) {
     // We pre-read the binary to warm the memory caches (fewer hard faults to
     // page parts of the binary in).
     const size_t kStepSize = 1024 * 1024;
     size_t percent = 100;
-    ImagePreReader::PartialPreReadImage(dir->c_str(), percent, kStepSize);
+    ImagePreReader::PartialPreReadImage(module.value().c_str(), percent,
+                                        kStepSize);
   }
 
-  return ::LoadLibraryExW(dir->c_str(), nullptr,
+  return ::LoadLibraryExW(module.value().c_str(), nullptr,
                           LOAD_WITH_ALTERED_SEARCH_PATH);
 }
 
-void RecordDidRun(const base::string16& dll_path) {
-  bool system_level = !InstallUtil::IsPerUserInstall(dll_path.c_str());
+void RecordDidRun(const base::FilePath& dll_path) {
+  bool system_level = !InstallUtil::IsPerUserInstall(dll_path);
   GoogleUpdateSettings::UpdateDidRunState(true, system_level);
 }
 
-void ClearDidRun(const base::string16& dll_path) {
-  bool system_level = !InstallUtil::IsPerUserInstall(dll_path.c_str());
+void ClearDidRun(const base::FilePath& dll_path) {
+  bool system_level = !InstallUtil::IsPerUserInstall(dll_path);
   GoogleUpdateSettings::UpdateDidRunState(false, system_level);
 }
 
@@ -85,16 +82,14 @@ bool InMetroMode() {
 
 typedef int (*InitMetro)();
 
-}  // namespace
-
-base::string16 GetExecutablePath() {
+// Returns the directory in which the currently running executable resides.
+base::FilePath GetExecutableDir() {
   base::char16 path[MAX_PATH];
   ::GetModuleFileNameW(nullptr, path, MAX_PATH);
-  if (!::PathRemoveFileSpecW(path))
-    return base::string16();
-  base::string16 exe_path(path);
-  return exe_path.append(1, L'\\');
+  return base::FilePath(path).DirName();
 }
+
+}  // namespace
 
 base::string16 GetCurrentModuleVersion() {
   scoped_ptr<FileVersionInfo> file_version_info(
@@ -122,11 +117,7 @@ MainDllLoader::~MainDllLoader() {
 // If that fails then we look at the version resource in the current
 // module. This is the expected path for chrome.exe browser instances in an
 // installed build.
-HMODULE MainDllLoader::Load(base::string16* version,
-                            base::string16* out_file) {
-  const base::string16 executable_dir(GetExecutablePath());
-  *out_file = executable_dir;
-
+HMODULE MainDllLoader::Load(base::string16* version, base::FilePath* module) {
   const base::char16* dll_name = nullptr;
   if (metro_mode_) {
     dll_name = installer::kChromeMetroDll;
@@ -143,19 +134,20 @@ HMODULE MainDllLoader::Load(base::string16* version,
   }
 
   const bool pre_read = !metro_mode_;
-  HMODULE dll = LoadModuleWithDirectory(out_file, dll_name, pre_read);
+  base::FilePath module_dir = GetExecutableDir();
+  *module = module_dir.Append(dll_name);
+  HMODULE dll = LoadModuleWithDirectory(*module, pre_read);
   if (!dll) {
     base::string16 version_string(GetCurrentModuleVersion());
     if (version_string.empty()) {
       LOG(ERROR) << "No valid Chrome version found";
       return nullptr;
     }
-    *out_file = executable_dir;
     *version = version_string;
-    out_file->append(version_string).append(1, L'\\');
-    dll = LoadModuleWithDirectory(out_file, dll_name, pre_read);
+    *module = module_dir.Append(version_string).Append(dll_name);
+    dll = LoadModuleWithDirectory(*module, pre_read);
     if (!dll) {
-      PLOG(ERROR) << "Failed to load Chrome DLL from " << *out_file;
+      PLOG(ERROR) << "Failed to load Chrome DLL from " << module->value();
       return nullptr;
     }
   }
@@ -172,7 +164,7 @@ int MainDllLoader::Launch(HINSTANCE instance) {
   process_type_ = cmd_line.GetSwitchValueASCII(switches::kProcessType);
 
   base::string16 version;
-  base::string16 file;
+  base::FilePath file;
 
   if (metro_mode_) {
     HMODULE metro_dll = Load(&version, &file);
@@ -249,13 +241,12 @@ void MainDllLoader::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 class ChromeDllLoader : public MainDllLoader {
  protected:
   void OnBeforeLaunch(const std::string& process_type,
-                      const base::string16& dll_path) override;
-  int OnBeforeExit(int return_code,
-                   const base::string16& dll_path) override;
+                      const base::FilePath& dll_path) override;
+  int OnBeforeExit(int return_code, const base::FilePath& dll_path) override;
 };
 
 void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
-                                     const base::string16& dll_path) {
+                                     const base::FilePath& dll_path) {
   if (process_type.empty()) {
     RecordDidRun(dll_path);
 
@@ -274,7 +265,7 @@ void ChromeDllLoader::OnBeforeLaunch(const std::string& process_type,
 }
 
 int ChromeDllLoader::OnBeforeExit(int return_code,
-                                  const base::string16& dll_path) {
+                                  const base::FilePath& dll_path) {
   // NORMAL_EXIT_CANCEL is used for experiments when the user cancels
   // so we need to reset the did_run signal so omaha does not count
   // this run as active usage.
@@ -289,10 +280,8 @@ int ChromeDllLoader::OnBeforeExit(int return_code,
 class ChromiumDllLoader : public MainDllLoader {
  protected:
   void OnBeforeLaunch(const std::string& process_type,
-                      const base::string16& dll_path) override {
-  }
-  int OnBeforeExit(int return_code,
-                   const base::string16& dll_path) override {
+                      const base::FilePath& dll_path) override {}
+  int OnBeforeExit(int return_code, const base::FilePath& dll_path) override {
     return return_code;
   }
 };

@@ -30,9 +30,9 @@ bool ActivateMetroChrome() {
     return false;
   }
 
-  base::string16 app_id = ShellUtil::GetBrowserModelId(
-      BrowserDistribution::GetDistribution(),
-      InstallUtil::IsPerUserInstall(chrome_exe.value().c_str()));
+  base::string16 app_id =
+      ShellUtil::GetBrowserModelId(BrowserDistribution::GetDistribution(),
+                                   InstallUtil::IsPerUserInstall(chrome_exe));
   if (app_id.empty()) {
     NOTREACHED() << "Failed to get chrome app user model id.";
     return false;

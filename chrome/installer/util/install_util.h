@@ -91,10 +91,10 @@ class InstallUtil {
                                    const base::string16& state_key_path,
                                    installer::InstallerStage stage);
 
-  // Returns true if this installation path is per user, otherwise returns
-  // false (per machine install, meaning: the exe_path contains path to
-  // Program Files).
-  static bool IsPerUserInstall(const wchar_t* const exe_path);
+  // Returns true if this installation path is per user, otherwise returns false
+  // (per machine install, meaning: the exe_path contains the path to Program
+  // Files).
+  static bool IsPerUserInstall(const base::FilePath& exe_path);
 
   // Returns true if the installation represented by the pair of |dist| and
   // |system_level| is a multi install.

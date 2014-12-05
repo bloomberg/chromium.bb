@@ -26,9 +26,7 @@ std::string VersionInfo::GetVersionStringModifier() {
   base::FilePath module;
   base::string16 channel;
   if (PathService::Get(base::FILE_MODULE, &module)) {
-    bool is_system_install =
-        !InstallUtil::IsPerUserInstall(module.value().c_str());
-
+    bool is_system_install = !InstallUtil::IsPerUserInstall(module);
     GoogleUpdateSettings::GetChromeChannelAndModifiers(is_system_install,
                                                        &channel);
   }
@@ -49,8 +47,7 @@ VersionInfo::Channel VersionInfo::GetChannel() {
 
   base::FilePath module;
   if (PathService::Get(base::FILE_MODULE, &module)) {
-    bool is_system_install =
-        !InstallUtil::IsPerUserInstall(module.value().c_str());
+    bool is_system_install = !InstallUtil::IsPerUserInstall(module);
     channel = GoogleUpdateSettings::GetChromeChannel(is_system_install);
   }
 

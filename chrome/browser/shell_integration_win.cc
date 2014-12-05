@@ -267,8 +267,8 @@ bool ShellIntegration::SetAsDefaultBrowser() {
 
   // From UI currently we only allow setting default browser for current user.
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!ShellUtil::MakeChromeDefault(dist, ShellUtil::CURRENT_USER,
-                                    chrome_exe.value(), true)) {
+  if (!ShellUtil::MakeChromeDefault(dist, ShellUtil::CURRENT_USER, chrome_exe,
+                                    true /* elevate_if_not_admin */)) {
     LOG(ERROR) << "Chrome could not be set as default browser.";
     return false;
   }
@@ -289,8 +289,8 @@ bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
 
   base::string16 wprotocol(base::UTF8ToUTF16(protocol));
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!ShellUtil::MakeChromeDefaultProtocolClient(dist, chrome_exe.value(),
-        wprotocol)) {
+  if (!ShellUtil::MakeChromeDefaultProtocolClient(dist, chrome_exe,
+                                                  wprotocol)) {
     LOG(ERROR) << "Chrome could not be set as default handler for "
                << protocol << ".";
     return false;
@@ -308,7 +308,7 @@ bool ShellIntegration::SetAsDefaultBrowserInteractive() {
   }
 
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!ShellUtil::ShowMakeChromeDefaultSystemUI(dist, chrome_exe.value())) {
+  if (!ShellUtil::ShowMakeChromeDefaultSystemUI(dist, chrome_exe)) {
     LOG(ERROR) << "Failed to launch the set-default-browser Windows UI.";
     return false;
   }
@@ -327,8 +327,8 @@ bool ShellIntegration::SetAsDefaultProtocolClientInteractive(
 
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   base::string16 wprotocol(base::UTF8ToUTF16(protocol));
-  if (!ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(
-          dist, chrome_exe.value(), wprotocol)) {
+  if (!ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(dist, chrome_exe,
+                                                              wprotocol)) {
     LOG(ERROR) << "Failed to launch the set-default-client Windows UI.";
     return false;
   }
@@ -411,8 +411,8 @@ base::string16 ShellIntegration::GetChromiumModelIdForProfile(
     return dist->GetBaseAppId();
   }
   return GetAppModelIdForProfile(
-      ShellUtil::GetBrowserModelId(
-           dist, InstallUtil::IsPerUserInstall(chrome_exe.value().c_str())),
+      ShellUtil::GetBrowserModelId(dist,
+                                   InstallUtil::IsPerUserInstall(chrome_exe)),
       profile_path);
 }
 
@@ -447,8 +447,7 @@ int ShellIntegration::MigrateShortcutsInPathInternal(
       path, false,  // not recursive
       base::FileEnumerator::FILES, FILE_PATH_LITERAL("*.lnk"));
 
-  bool is_per_user_install =
-      InstallUtil::IsPerUserInstall(chrome_exe.value().c_str());
+  bool is_per_user_install = InstallUtil::IsPerUserInstall(chrome_exe);
 
   int shortcuts_migrated = 0;
   base::FilePath target_path;
@@ -568,8 +567,7 @@ base::FilePath ShellIntegration::GetStartMenuShortcut(
 
   // Check both the common and the per-user Start Menu folders for system-level
   // installs.
-  size_t folder =
-      InstallUtil::IsPerUserInstall(chrome_exe.value().c_str()) ? 1 : 0;
+  size_t folder = InstallUtil::IsPerUserInstall(chrome_exe) ? 1 : 0;
   for (; folder < arraysize(kFolderIds); ++folder) {
     if (!PathService::Get(kFolderIds[folder], &shortcut)) {
       NOTREACHED();

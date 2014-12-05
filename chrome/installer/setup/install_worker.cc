@@ -752,7 +752,7 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
 
     BrowserDistribution* dist = product.distribution();
     base::string16 chrome_icon = ShellUtil::FormatIconLocation(
-        install_path.Append(dist->GetIconFilename()).value(),
+        install_path.Append(dist->GetIconFilename()),
         dist->GetIconIndex(BrowserDistribution::SHORTCUT_CHROME));
     install_list->AddSetRegValueWorkItem(reg_root,
                                          uninstall_reg,

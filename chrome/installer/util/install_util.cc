@@ -363,7 +363,7 @@ void InstallUtil::UpdateInstallerStage(bool system_install,
   }
 }
 
-bool InstallUtil::IsPerUserInstall(const wchar_t* const exe_path) {
+bool InstallUtil::IsPerUserInstall(const base::FilePath& exe_path) {
   const int kProgramFilesKey =
 #if defined(_WIN64)
       // TODO(wfh): Revise this when Chrome is/can be installed in the 64-bit
@@ -377,7 +377,7 @@ bool InstallUtil::IsPerUserInstall(const wchar_t* const exe_path) {
     NOTREACHED();
     return true;
   }
-  return !StartsWith(exe_path, program_files_path.value().c_str(), false);
+  return !StartsWith(exe_path.value(), program_files_path.value(), false);
 }
 
 bool InstallUtil::IsMultiInstall(BrowserDistribution* dist,

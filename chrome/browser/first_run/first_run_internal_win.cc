@@ -129,7 +129,7 @@ void DoPostImportPlatformSpecificTasks(Profile* /* profile */) {
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED();
-  } else if (!InstallUtil::IsPerUserInstall(chrome_exe.value().c_str())) {
+  } else if (!InstallUtil::IsPerUserInstall(chrome_exe)) {
     content::BrowserThread::GetBlockingPool()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&InstallUtil::TriggerActiveSetupCommand),
@@ -146,7 +146,7 @@ bool IsFirstRunSentinelPresent() {
   // from the application directory to the user data directory.
   base::FilePath exe_path;
   if (PathService::Get(base::DIR_EXE, &exe_path) &&
-      InstallUtil::IsPerUserInstall(exe_path.value().c_str())) {
+      InstallUtil::IsPerUserInstall(exe_path)) {
     base::FilePath legacy_sentinel = exe_path.Append(chrome::kFirstRunSentinel);
     if (base::PathExists(legacy_sentinel)) {
       // Copy the file instead of moving it to avoid breaking developer builds

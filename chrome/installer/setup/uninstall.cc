@@ -1046,7 +1046,7 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
 }
 
 void RemoveChromeLegacyRegistryKeys(BrowserDistribution* dist,
-                                    const base::string16& chrome_exe) {
+                                    const base::FilePath& chrome_exe) {
   // We used to register Chrome to handle crx files, but this turned out
   // to be not worth the hassle. Remove these old registry entries if
   // they exist. See: http://codereview.chromium.org/210007
@@ -1097,8 +1097,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
                                const CommandLine& cmd_line) {
   InstallStatus status = installer::UNINSTALL_CONFIRMED;
   BrowserDistribution* browser_dist = product.distribution();
-  const base::string16 chrome_exe(
-      installer_state.target_path().Append(installer::kChromeExe).value());
+  const base::FilePath chrome_exe(
+      installer_state.target_path().Append(installer::kChromeExe));
 
   bool is_chrome = product.is_chrome();
 
@@ -1173,15 +1173,14 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
               Append(installer::kChromeExe));
       VLOG(1) << "Retargeting user-generated Chrome shortcuts.";
       if (base::PathExists(system_chrome_path)) {
-        RetargetUserShortcutsWithArgs(installer_state, product,
-                                      base::FilePath(chrome_exe),
+        RetargetUserShortcutsWithArgs(installer_state, product, chrome_exe,
                                       system_chrome_path);
       } else {
         LOG(ERROR) << "Retarget failed: system-level Chrome not found.";
       }
     }
 
-    DeleteShortcuts(installer_state, product, base::FilePath(chrome_exe));
+    DeleteShortcuts(installer_state, product, chrome_exe);
   }
 
   // Delete the registry keys (Uninstall key and Version key).
@@ -1270,7 +1269,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 
     UninstallActiveSetupEntries(installer_state, product);
 
-    UninstallFirewallRules(browser_dist, base::FilePath(chrome_exe));
+    UninstallFirewallRules(browser_dist, chrome_exe);
 
     RemoveBlacklistState();
 

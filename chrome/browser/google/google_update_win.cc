@@ -41,8 +41,7 @@ GoogleUpdateErrorCode CanUpdateCurrentChrome(
 #if !defined(GOOGLE_CHROME_BUILD)
   return CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY;
 #else
-  DCHECK_NE(InstallUtil::IsPerUserInstall(chrome_exe_path.value().c_str()),
-            system_level);
+  DCHECK_NE(InstallUtil::IsPerUserInstall(chrome_exe_path), system_level);
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   base::FilePath user_exe_path = installer::GetChromeInstallPath(false, dist);
   base::FilePath machine_exe_path = installer::GetChromeInstallPath(true, dist);
@@ -405,8 +404,7 @@ bool UpdateCheckDriver::BeginUpdateCheckInternal(
   if (!PathService::Get(base::DIR_EXE, &chrome_exe))
     NOTREACHED();
 
-  const bool system_level =
-      !InstallUtil::IsPerUserInstall(chrome_exe.value().c_str());
+  const bool system_level = !InstallUtil::IsPerUserInstall(chrome_exe);
 
   // The failures handled here are:
   // CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY,

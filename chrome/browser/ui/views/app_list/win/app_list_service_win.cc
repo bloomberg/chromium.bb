@@ -141,8 +141,7 @@ void SetDidRunForNDayActiveStats() {
     NOTREACHED();
     return;
   }
-  bool system_install =
-      !InstallUtil::IsPerUserInstall(exe_path.value().c_str());
+  bool system_install = !InstallUtil::IsPerUserInstall(exe_path);
   // Using Chrome Binary dist: Chrome dist may not exist for the legacy
   // App Launcher, and App Launcher dist may be "shadow", which does not
   // contain the information needed to determine multi-install.

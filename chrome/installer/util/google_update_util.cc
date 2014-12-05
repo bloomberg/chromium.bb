@@ -155,8 +155,7 @@ void ElevateIfNeededToReenableUpdates() {
   }
   installer::ProductState product_state;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  const bool system_install = !InstallUtil::IsPerUserInstall(
-      chrome_exe.value().c_str());
+  const bool system_install = !InstallUtil::IsPerUserInstall(chrome_exe);
   if (!product_state.Initialize(system_install, dist))
     return;
   base::FilePath exe_path(product_state.GetSetupPath());

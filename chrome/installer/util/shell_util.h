@@ -305,7 +305,7 @@ class ShellUtil {
   // Note: This only checks one deterministic key in HKLM for |chrome_exe| and
   // doesn't otherwise validate a full Chrome install in HKLM.
   static bool QuickIsChromeRegisteredInHKLM(BrowserDistribution* dist,
-                                            const base::string16& chrome_exe,
+                                            const base::FilePath& chrome_exe,
                                             const base::string16& suffix);
 
   // Returns true if the current Windows version supports the presence of
@@ -338,20 +338,20 @@ class ShellUtil {
 
   // Returns the string "|icon_path|,|icon_index|" (see, for example,
   // http://msdn.microsoft.com/library/windows/desktop/dd391573.aspx).
-  static base::string16 FormatIconLocation(const base::string16& icon_path,
+  static base::string16 FormatIconLocation(const base::FilePath& icon_path,
                                            int icon_index);
 
   // This method returns the command to open URLs/files using chrome. Typically
   // this command is written to the registry under shell\open\command key.
   // |chrome_exe|: the full path to chrome.exe
-  static base::string16 GetChromeShellOpenCmd(const base::string16& chrome_exe);
+  static base::string16 GetChromeShellOpenCmd(const base::FilePath& chrome_exe);
 
   // This method returns the command to be called by the DelegateExecute verb
   // handler to launch chrome on Windows 8. Typically this command is written to
   // the registry under the HKCR\Chrome\.exe\shell\(open|run)\command key.
   // |chrome_exe|: the full path to chrome.exe
   static base::string16 GetChromeDelegateCommand(
-      const base::string16& chrome_exe);
+      const base::FilePath& chrome_exe);
 
   // Gets a mapping of all registered browser names (excluding browsers in the
   // |dist| distribution) and their reinstall command (which usually sets
@@ -381,7 +381,7 @@ class ShellUtil {
   // |chrome_exe| The path to the currently installed (or running) chrome.exe.
   static base::string16 GetCurrentInstallationSuffix(
       BrowserDistribution* dist,
-      const base::string16& chrome_exe);
+      const base::FilePath& chrome_exe);
 
   // Returns the application name of the program under |dist|.
   // This application name will be suffixed as is appropriate for the current
@@ -389,7 +389,7 @@ class ShellUtil {
   // This is the name that is registered with Default Programs on Windows and
   // that should thus be used to "make chrome default" and such.
   static base::string16 GetApplicationName(BrowserDistribution* dist,
-                                           const base::string16& chrome_exe);
+                                           const base::FilePath& chrome_exe);
 
   // Returns the AppUserModelId for |dist|. This identifier is unconditionally
   // suffixed with a unique id for this user on user-level installs (in contrast
@@ -443,7 +443,7 @@ class ShellUtil {
   //                       Chrome registration.
   static bool MakeChromeDefault(BrowserDistribution* dist,
                                 int shell_change,
-                                const base::string16& chrome_exe,
+                                const base::FilePath& chrome_exe,
                                 bool elevate_if_not_admin);
 
   // Shows and waits for the Windows 8 "How do you want to open webpages?"
@@ -454,13 +454,13 @@ class ShellUtil {
   // |dist| gives the type of browser distribution currently in use.
   // |chrome_exe| The chrome.exe path to register as default browser.
   static bool ShowMakeChromeDefaultSystemUI(BrowserDistribution* dist,
-                                            const base::string16& chrome_exe);
+                                            const base::FilePath& chrome_exe);
 
   // Make Chrome the default application for a protocol.
   // chrome_exe: The chrome.exe path to register as default browser.
   // protocol: The protocol to register as the default handler for.
   static bool MakeChromeDefaultProtocolClient(BrowserDistribution* dist,
-                                              const base::string16& chrome_exe,
+                                              const base::FilePath& chrome_exe,
                                               const base::string16& protocol);
 
   // Shows and waits for the Windows 8 "How do you want to open links of this
@@ -473,7 +473,7 @@ class ShellUtil {
   // |protocol| is the protocol being registered.
   static bool ShowMakeChromeDefaultProtocolClientSystemUI(
       BrowserDistribution* dist,
-      const base::string16& chrome_exe,
+      const base::FilePath& chrome_exe,
       const base::string16& protocol);
 
   // Registers Chrome as a potential default browser and handler for filetypes
@@ -502,7 +502,7 @@ class ShellUtil {
   //
   // Returns true if Chrome is successfully registered (or already registered).
   static bool RegisterChromeBrowser(BrowserDistribution* dist,
-                                    const base::string16& chrome_exe,
+                                    const base::FilePath& chrome_exe,
                                     const base::string16& unique_suffix,
                                     bool elevate_if_not_admin);
 
@@ -524,7 +524,7 @@ class ShellUtil {
   // |elevate_if_not_admin| if true will make this method try alternate methods
   // as described above.
   static bool RegisterChromeForProtocol(BrowserDistribution* dist,
-                                        const base::string16& chrome_exe,
+                                        const base::FilePath& chrome_exe,
                                         const base::string16& unique_suffix,
                                         const base::string16& protocol,
                                         bool elevate_if_not_admin);

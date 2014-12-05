@@ -250,8 +250,7 @@ STDMETHODIMP CommandExecuteImpl::Execute() {
   }
 
   BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
-  bool is_per_user_install = InstallUtil::IsPerUserInstall(
-      chrome_exe_.value().c_str());
+  bool is_per_user_install = InstallUtil::IsPerUserInstall(chrome_exe_);
   base::string16 app_id = ShellUtil::GetBrowserModelId(
       distribution, is_per_user_install);
 

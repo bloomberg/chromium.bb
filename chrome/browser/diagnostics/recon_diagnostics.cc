@@ -143,7 +143,7 @@ class InstallTypeTest : public DiagnosticsTest {
       RecordFailure(DIAG_RECON_INSTALL_PATH_PROVIDER, "Path provider failure");
       return false;
     }
-    user_level_ = InstallUtil::IsPerUserInstall(chrome_exe.value().c_str());
+    user_level_ = InstallUtil::IsPerUserInstall(chrome_exe);
     const char* type = user_level_ ? "User Level" : "System Level";
     std::string install_type(type);
 #else

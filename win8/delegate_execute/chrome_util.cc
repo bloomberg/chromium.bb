@@ -105,7 +105,7 @@ void UpdateChromeIfNeeded(const base::FilePath& chrome_exe) {
 
   base::Process process;
 
-  if (InstallUtil::IsPerUserInstall(chrome_exe.value().c_str())) {
+  if (InstallUtil::IsPerUserInstall(chrome_exe)) {
     // Read the update command from the registry.
     base::string16 update_command;
     if (!GetUpdateCommand(true, &update_command)) {

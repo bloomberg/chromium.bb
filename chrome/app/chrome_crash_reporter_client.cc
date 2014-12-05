@@ -182,7 +182,7 @@ bool ChromeCrashReporterClient::GetDeferredUploadsSupported(
 
 bool ChromeCrashReporterClient::GetIsPerUserInstall(
     const base::FilePath& exe_path) {
-  return InstallUtil::IsPerUserInstall(exe_path.value().c_str());
+  return InstallUtil::IsPerUserInstall(exe_path);
 }
 
 bool ChromeCrashReporterClient::GetShouldDumpLargerDumps(

@@ -469,9 +469,9 @@ void RegisterChromeOnMachine(const installer::InstallerState& installer_state,
   // Make Chrome the default browser if desired when possible. Otherwise, only
   // register it with Windows.
   BrowserDistribution* dist = product.distribution();
-  const base::string16 chrome_exe(
-      installer_state.target_path().Append(installer::kChromeExe).value());
-  VLOG(1) << "Registering Chrome as browser: " << chrome_exe;
+  const base::FilePath chrome_exe(
+      installer_state.target_path().Append(installer::kChromeExe));
+  VLOG(1) << "Registering Chrome as browser: " << chrome_exe.value();
   if (make_chrome_default && ShellUtil::CanMakeChromeDefaultUnattended()) {
     int level = ShellUtil::CURRENT_USER;
     if (installer_state.system_install())

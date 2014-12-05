@@ -33,8 +33,7 @@ void SyncWithRegistryOnBlockingPool() {
     NOTREACHED() << "Failed to get chrome exe path";
     return;
   }
-  const bool is_system_install =
-      !InstallUtil::IsPerUserInstall(chrome_exe.value().c_str());
+  const bool is_system_install = !InstallUtil::IsPerUserInstall(chrome_exe);
 
   // Read the current bits from the registry.
   base::string16 registry_labels;

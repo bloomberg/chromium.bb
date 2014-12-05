@@ -122,7 +122,7 @@ bool IsSystemInstall() {
     return false;
   }
 
-  return !InstallUtil::IsPerUserInstall(exe_path.value().c_str());
+  return !InstallUtil::IsPerUserInstall(exe_path);
 }
 
 // Sets |is_unstable_channel| to true if the current chrome is on the dev or

@@ -53,7 +53,7 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
 // longer needed. This is used during autoupdate since we don't do full
 // uninstalls/reinstalls to update.
 void RemoveChromeLegacyRegistryKeys(BrowserDistribution* dist,
-                                    const base::string16& chrome_exe);
+                                    const base::FilePath& chrome_exe);
 
 // This function uninstalls a product.  Hence we came up with this awesome
 // name for it.

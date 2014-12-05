@@ -872,8 +872,8 @@ bool CreateEULASentinel(BrowserDistribution* dist) {
 void ActivateMetroChrome() {
   // Check to see if we're per-user or not. Need to do this since we may
   // not have been invoked with --system-level even for a machine install.
-  wchar_t exe_path[MAX_PATH * 2] = {};
-  GetModuleFileName(NULL, exe_path, arraysize(exe_path));
+  base::FilePath exe_path;
+  PathService::Get(base::FILE_EXE, &exe_path);
   bool is_per_user_install = InstallUtil::IsPerUserInstall(exe_path);
 
   base::string16 app_model_id = ShellUtil::GetBrowserModelId(
@@ -953,10 +953,10 @@ installer::InstallStatus RegisterDevChrome(
         delegate_execute_list.get());
     delegate_execute_list->Do();
     if (ShellUtil::CanMakeChromeDefaultUnattended()) {
-      ShellUtil::MakeChromeDefault(
-          chrome_dist, ShellUtil::CURRENT_USER, chrome_exe.value(), true);
+      ShellUtil::MakeChromeDefault(chrome_dist, ShellUtil::CURRENT_USER,
+                                   chrome_exe, true);
     } else {
-      ShellUtil::ShowMakeChromeDefaultSystemUI(chrome_dist, chrome_exe.value());
+      ShellUtil::ShowMakeChromeDefaultSystemUI(chrome_dist, chrome_exe);
     }
   } else {
     LOG(ERROR) << "Path not found: " << chrome_exe.value();
@@ -1077,7 +1077,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       // These options should only be used when setup.exe is launched with admin
       // rights. We do not make any user specific changes with this option.
       DCHECK(IsUserAnAdmin());
-      base::string16 chrome_exe(cmd_line.GetSwitchValueNative(
+      base::FilePath chrome_exe(cmd_line.GetSwitchValuePath(
           installer::switches::kRegisterChromeBrowser));
       base::string16 suffix;
       if (cmd_line.HasSwitch(
@@ -1569,7 +1569,7 @@ InstallStatus InstallProductsHelper(
           *installer_version);
 
       int install_msg_base = IDS_INSTALL_FAILED_BASE;
-      base::string16 chrome_exe;
+      base::FilePath chrome_exe;
       base::string16 quoted_chrome_exe;
       if (install_status == SAME_VERSION_REPAIR_FAILED) {
         install_msg_base = IDS_SAME_VERSION_REPAIR_FAILED_BASE;
@@ -1580,8 +1580,8 @@ InstallStatus InstallProductsHelper(
           install_msg_base = IDS_INSTALL_OS_ERROR_BASE;
           install_status = OS_ERROR;
         } else {
-          chrome_exe = installer_state.target_path().Append(kChromeExe).value();
-          quoted_chrome_exe = L"\"" + chrome_exe + L"\"";
+          chrome_exe = installer_state.target_path().Append(kChromeExe);
+          quoted_chrome_exe = L"\"" + chrome_exe.value() + L"\"";
           install_msg_base = 0;
         }
       }
@@ -1625,7 +1625,7 @@ InstallStatus InstallProductsHelper(
         const Product* chrome = installer_state.FindProduct(
             BrowserDistribution::CHROME_BROWSER);
         if (chrome != NULL) {
-          DCHECK_NE(chrome_exe, base::string16());
+          DCHECK_NE(chrome_exe.value(), base::string16());
           RemoveChromeLegacyRegistryKeys(chrome->distribution(), chrome_exe);
         }
       }
@@ -1753,10 +1753,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   // extension), in which case CommandLineToArgv will not yield an argv with the
   // true path to the program at position 0.
   base::FilePath setup_exe;
-  if (!PathService::Get(base::FILE_EXE, &setup_exe)) {
-    NOTREACHED();
-    return installer::OS_ERROR;
-  }
+  PathService::Get(base::FILE_EXE, &setup_exe);
 
   int exit_code = 0;
   if (HandleNonInstallCmdLineOptions(

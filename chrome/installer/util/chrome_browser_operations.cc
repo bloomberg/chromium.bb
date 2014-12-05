@@ -128,8 +128,7 @@ void ChromeBrowserOperations::AddDefaultShortcutProperties(
   }
 
   if (!properties->has_app_id()) {
-    bool is_per_user_install =
-        InstallUtil::IsPerUserInstall(target_exe.value().c_str());
+    bool is_per_user_install = InstallUtil::IsPerUserInstall(target_exe);
     properties->set_app_id(
         ShellUtil::GetBrowserModelId(dist, is_per_user_install));
   }

@@ -17,7 +17,7 @@
 DidRunUpdater::DidRunUpdater() : system_level_(false) {
   base::FilePath exe_path;
   if (PathService::Get(base::FILE_EXE, &exe_path))
-    system_level_ = !InstallUtil::IsPerUserInstall(exe_path.value().c_str());
+    system_level_ = !InstallUtil::IsPerUserInstall(exe_path);
 
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllSources());
