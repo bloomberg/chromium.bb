@@ -824,7 +824,7 @@ def add_trigger_options(parser):
       '--tags', action='append', default=[],
       help='Tags to assign to the task.')
   parser.task_group.add_option(
-      '--user',
+      '--user', default='',
       help='User associated with the task. Defaults to authenticated user on '
            'the server.')
   parser.task_group.add_option(
@@ -1082,7 +1082,7 @@ def CMDrun(parser, args):
   if file_path.is_url(options.isolate_server):
     auth.ensure_logged_in(options.isolate_server)
 
-  options.user = options.user or user or 'unknown'
+  options.user = options.user or user
   try:
     tasks, task_name = trigger(
         swarming=options.swarming,
@@ -1213,7 +1213,7 @@ def CMDtrigger(parser, args):
   if file_path.is_url(options.isolate_server):
     auth.ensure_logged_in(options.isolate_server)
 
-  options.user = options.user or user or 'unknown'
+  options.user = options.user or user
   try:
     tasks, task_name = trigger(
         swarming=options.swarming,
