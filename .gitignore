@@ -89,6 +89,7 @@
 /tools/zmqsend
 
 # Chromium stuff.
+/build.*
 /chromium/binaries/Chrome
 /*.props
 /*.sln
