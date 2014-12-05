@@ -23,7 +23,14 @@ const char kOnPrefChangeFormat[] =
 class PreferenceWhitelist {
  public:
   PreferenceWhitelist() {
+    // Note: DO NOT add any setting here that does not have a UI element in
+    // chrome://settings unless you write a component extension that is always
+    // installed. Otherwise, users may install your extension, the extension may
+    // toggle settings, and after the extension has been disabled/uninstalled
+    // the toggled setting remains in place. See http://crbug.com/164227#c157 .
     whitelist_.insert("googlegeolocationaccess.enabled");
+    // The following settings need to be checked and probably removed. See
+    // http://crbug.com/164227#c157 .
     whitelist_.insert("spdy_proxy.enabled");
     whitelist_.insert("data_reduction.daily_original_length");
     whitelist_.insert("data_reduction.daily_received_length");
