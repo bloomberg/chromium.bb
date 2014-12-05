@@ -55,7 +55,7 @@ const size_t kFramesToKeepCAContextAfterDiscard = 2;
   CGLError error = CGLCreateContext(
       pixelFormat, storageProvider_->LayerShareGroupContext(), &context);
   if (error != kCGLNoError)
-    DLOG(ERROR) << "CGLCreateContext failed with CGL error: " << error;
+    LOG(ERROR) << "CGLCreateContext failed with CGL error: " << error;
   return context;
 }
 
@@ -121,8 +121,8 @@ bool CALayerStorageProvider::AllocateColorBufferStorage(
   // Allocate an ordinary OpenGL texture to back the FBO.
   GLenum error;
   while ((error = glGetError()) != GL_NO_ERROR) {
-    DLOG(ERROR) << "Error found (and ignored) before allocating buffer "
-                << "storage: " << error;
+    LOG(ERROR) << "OpenGL error hit but ignored before allocating buffer "
+               << "storage: " << error;
   }
   glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,
                0,
@@ -133,12 +133,16 @@ bool CALayerStorageProvider::AllocateColorBufferStorage(
                GL_RGBA,
                GL_UNSIGNED_BYTE,
                NULL);
-  error = glGetError();
-  if (error != GL_NO_ERROR) {
-    DLOG(ERROR) << "glTexImage failed with GL error: " << error;
-    return false;
-  }
   glFlush();
+
+  bool hit_error = false;
+  while ((error = glGetError()) != GL_NO_ERROR) {
+    LOG(ERROR) << "OpenGL error hit while trying to allocate buffer storage: "
+               << error;
+    hit_error = true;
+  }
+  if (hit_error)
+    return false;
 
   // Set the parameters that will be used to allocate the CALayer to draw the
   // texture into.
@@ -341,6 +345,11 @@ void CALayerStorageProvider::LayerDoDraw() {
                       &current_renderer_id) == kCGLNoError) {
     current_renderer_id &= kCGLRendererIDMatchingMask;
     transport_surface_->SetRendererID(current_renderer_id);
+  }
+
+  GLenum error;
+  while ((error = glGetError()) != GL_NO_ERROR) {
+    LOG(ERROR) << "OpenGL error hit while drawing frame: " << error;
   }
 
   // Allow forward progress in the context now that the swap is complete.
