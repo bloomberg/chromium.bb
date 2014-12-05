@@ -423,7 +423,7 @@ def _RunPerformanceTest(config):
 
   results_without_patch = _RunCommandStepForPerformanceTest(
       b, opts, False, True, annotations_dict['results_label2'],
-      annotations_dict['run1'])
+      annotations_dict['run2'])
 
   # Find the link to the cloud stored results file.
   _ParseAndOutputCloudLinks(results_without_patch, results_with_patch)
