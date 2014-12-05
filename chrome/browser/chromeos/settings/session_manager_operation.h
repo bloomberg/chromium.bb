@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "components/ownership/owner_settings_service.h"
 #include "net/cert/x509_util_nss.h"
 
 namespace enterprise_management {
@@ -68,13 +67,6 @@ class SessionManagerOperation {
     force_key_load_ = force_key_load;
   }
 
-  void set_username(const std::string& username) { username_ = username; }
-
-  void set_owner_settings_service(const base::WeakPtr<
-      ownership::OwnerSettingsService>& owner_settings_service) {
-    owner_settings_service_ = owner_settings_service;
-  }
-
  protected:
   // Runs the operation. The result is reported through |callback_|.
   virtual void Run() = 0;
@@ -92,8 +84,6 @@ class SessionManagerOperation {
   SessionManagerClient* session_manager_client() {
     return session_manager_client_;
   }
-
-  base::WeakPtr<ownership::OwnerSettingsService> owner_settings_service_;
 
  private:
   // Loads the owner key from disk. Must be run on a thread that can do I/O.
@@ -121,7 +111,6 @@ class SessionManagerOperation {
 
   scoped_refptr<ownership::PublicKey> public_key_;
   bool force_key_load_;
-  std::string username_;
 
   bool is_loading_;
   scoped_ptr<enterprise_management::PolicyData> policy_data_;
@@ -171,35 +160,6 @@ class StoreSettingsOperation : public SessionManagerOperation {
   base::WeakPtrFactory<StoreSettingsOperation> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StoreSettingsOperation);
-};
-
-// Signs device settings and stores the resulting blob to session_manager.
-class SignAndStoreSettingsOperation : public SessionManagerOperation {
- public:
-  // Creates a new sign-and-store operation.
-  SignAndStoreSettingsOperation(
-      const Callback& callback,
-      scoped_ptr<enterprise_management::PolicyData> new_policy);
-  virtual ~SignAndStoreSettingsOperation();
-
-  // SessionManagerOperation:
-  virtual void Run() override;
-
- private:
-  void StartSigning(bool has_private_key);
-
-  // Stores the signed device settings blob.
-  void StoreDeviceSettings(
-      scoped_ptr<enterprise_management::PolicyFetchResponse> policy_response);
-
-  // Handles the result of the store operation and triggers the load.
-  void HandleStoreResult(bool success);
-
-  scoped_ptr<enterprise_management::PolicyData> new_policy_;
-
-  base::WeakPtrFactory<SignAndStoreSettingsOperation> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(SignAndStoreSettingsOperation);
 };
 
 }  // namespace chromeos

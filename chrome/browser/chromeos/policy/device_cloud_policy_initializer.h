@@ -27,6 +27,7 @@ class SequencedTaskRunner;
 
 namespace chromeos {
 class DeviceSettingsService;
+class OwnerSettingsServiceChromeOS;
 }
 
 namespace policy {
@@ -72,6 +73,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   virtual void StartEnrollment(
       ManagementMode management_mode,
       DeviceManagementService* device_management_service,
+      chromeos::OwnerSettingsServiceChromeOS* owner_settings_service,
       const std::string& auth_token,
       const AllowedDeviceModes& allowed_modes,
       const EnrollmentCallback& enrollment_callback);

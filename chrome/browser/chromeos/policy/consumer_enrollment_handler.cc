@@ -10,11 +10,13 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/consumer_management_stage.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -110,8 +112,9 @@ void ConsumerEnrollmentHandler::OnOwnerAccessTokenAvailable(
   device_modes[policy::DEVICE_MODE_ENTERPRISE] = true;
 
   initializer->StartEnrollment(
-      MANAGEMENT_MODE_CONSUMER_MANAGED,
-      device_management_service_,
+      MANAGEMENT_MODE_CONSUMER_MANAGED, device_management_service_,
+      chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
+          profile_),
       access_token,
       device_modes,
       base::Bind(&ConsumerEnrollmentHandler::OnEnrollmentCompleted,

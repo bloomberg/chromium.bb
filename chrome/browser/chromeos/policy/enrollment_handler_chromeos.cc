@@ -10,12 +10,15 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
+#include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
@@ -43,6 +46,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
     EnterpriseInstallAttributes* install_attributes,
     ServerBackedStateKeysBroker* state_keys_broker,
     chromeos::DeviceSettingsService* device_settings_service,
+    chromeos::OwnerSettingsServiceChromeOS* owner_settings_service,
     scoped_ptr<CloudPolicyClient> client,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const std::string& auth_token,
@@ -55,6 +59,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       install_attributes_(install_attributes),
       state_keys_broker_(state_keys_broker),
       device_settings_service_(device_settings_service),
+      owner_settings_service_(owner_settings_service),
       client_(client.Pass()),
       background_task_runner_(background_task_runner),
       auth_token_(auth_token),
@@ -204,10 +209,11 @@ void EnrollmentHandlerChromeOS::OnStoreLoaded(CloudPolicyStore* store) {
 void EnrollmentHandlerChromeOS::OnStoreError(CloudPolicyStore* store) {
   DCHECK_EQ(store_, store);
   if (enrollment_step_ == STEP_STORE_TOKEN_AND_ID) {
-    // Calling DeviceSettingsService::SetManagementSettings() on a non-
-    // enterprise-managed device will trigger OnStoreError(), as
-    // DeviceCloudPolicyStore listens to all changes on DeviceSettingsService,
-    // and it calls OnStoreError() when the device is not enterprise-managed.
+    // Calling OwnerSettingsServiceChromeOS::SetManagementSettings()
+    // on a non- enterprise-managed device will fail as
+    // DeviceCloudPolicyStore listens to all changes on device
+    // settings, and it calls OnStoreError() when the device is not
+    // enterprise-managed.
     return;
   }
   ReportResult(EnrollmentStatus::ForStoreError(store_->status(),
@@ -340,11 +346,17 @@ void EnrollmentHandlerChromeOS::StartLockDevice() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   if (management_mode_ == MANAGEMENT_MODE_CONSUMER_MANAGED) {
+    CHECK(owner_settings_service_);
+
     // Consumer device enrollment doesn't use install attributes. Instead,
     // we put the information in the owners settings.
     enrollment_step_ = STEP_STORE_TOKEN_AND_ID;
-    device_settings_service_->SetManagementSettings(
-        em::PolicyData::CONSUMER_MANAGED, request_token_, device_id_,
+    chromeos::OwnerSettingsServiceChromeOS::ManagementSettings settings;
+    settings.management_mode = management_mode_;
+    settings.request_token = request_token_;
+    settings.device_id = device_id_;
+    owner_settings_service_->SetManagementSettings(
+        settings,
         base::Bind(&EnrollmentHandlerChromeOS::HandleSetManagementSettingsDone,
                    weak_ptr_factory_.GetWeakPtr()));
   } else {
@@ -355,10 +367,9 @@ void EnrollmentHandlerChromeOS::StartLockDevice() {
   }
 }
 
-void EnrollmentHandlerChromeOS::HandleSetManagementSettingsDone() {
+void EnrollmentHandlerChromeOS::HandleSetManagementSettingsDone(bool success) {
   CHECK_EQ(STEP_STORE_TOKEN_AND_ID, enrollment_step_);
-  if (device_settings_service_->status() !=
-      chromeos::DeviceSettingsService::STORE_SUCCESS) {
+  if (!success) {
     ReportResult(EnrollmentStatus::ForStatus(
         EnrollmentStatus::STATUS_STORE_TOKEN_AND_ID_FAILED));
     return;

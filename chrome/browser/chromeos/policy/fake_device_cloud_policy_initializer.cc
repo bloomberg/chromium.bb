@@ -36,6 +36,7 @@ void FakeDeviceCloudPolicyInitializer::Shutdown() {
 void FakeDeviceCloudPolicyInitializer::StartEnrollment(
     ManagementMode management_mode,
     DeviceManagementService* device_management_service,
+    chromeos::OwnerSettingsServiceChromeOS* owner_settings_service,
     const std::string& auth_token,
     const AllowedDeviceModes& allowed_modes,
     const EnrollmentCallback& enrollment_callback) {

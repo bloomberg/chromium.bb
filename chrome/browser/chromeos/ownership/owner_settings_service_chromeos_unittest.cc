@@ -22,6 +22,8 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace em = enterprise_management;
+
 namespace chromeos {
 
 namespace {
@@ -83,7 +85,8 @@ class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
   OwnerSettingsServiceChromeOSTest()
       : service_(nullptr),
         local_state_(TestingBrowserProcess::GetGlobal()),
-        user_data_dir_override_(chrome::DIR_USER_DATA) {}
+        user_data_dir_override_(chrome::DIR_USER_DATA),
+        management_settings_set_(false) {}
 
   virtual void SetUp() override {
     DeviceSettingsTestBase::SetUp();
@@ -97,6 +100,12 @@ class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
         profile_.get());
     ASSERT_TRUE(service_);
     ASSERT_TRUE(service_->IsOwner());
+
+    device_policy_.policy_data().set_management_mode(
+        em::PolicyData::LOCAL_OWNER);
+    device_policy_.Build();
+    device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+    ReloadDeviceSettings();
   }
 
   virtual void TearDown() override { DeviceSettingsTestBase::TearDown(); }
@@ -110,10 +119,15 @@ class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
     checker.Wait();
   }
 
+  void OnManagementSettingsSet(bool success) {
+    management_settings_set_ = success;
+  }
+
   OwnerSettingsServiceChromeOS* service_;
   ScopedTestingLocalState local_state_;
   scoped_ptr<DeviceSettingsProvider> provider_;
   base::ScopedPathOverride user_data_dir_override_;
+  bool management_settings_set_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OwnerSettingsServiceChromeOSTest);
@@ -156,6 +170,128 @@ TEST_F(OwnerSettingsServiceChromeOSTest, FailedSetRequest) {
   ASSERT_EQ(current_channel, device_settings_service_.device_settings()
                                  ->release_channel()
                                  .release_channel());
+}
+
+TEST_F(OwnerSettingsServiceChromeOSTest, SetManagementSettingsModeTransition) {
+  ReloadDeviceSettings();
+  EXPECT_EQ(DeviceSettingsService::STORE_SUCCESS,
+            device_settings_service_.status());
+
+  // The initial management mode should be LOCAL_OWNER.
+  EXPECT_TRUE(device_settings_service_.policy_data()->has_management_mode());
+  EXPECT_EQ(em::PolicyData::LOCAL_OWNER,
+            device_settings_service_.policy_data()->management_mode());
+
+  OwnerSettingsServiceChromeOS::ManagementSettings management_settings;
+  management_settings.management_mode =
+      policy::MANAGEMENT_MODE_CONSUMER_MANAGED;
+  management_settings.request_token = "fake_request_token";
+  management_settings.device_id = "fake_device_id";
+  OwnerSettingsServiceChromeOS::OnManagementSettingsSetCallback
+      on_management_settings_set_callback =
+          base::Bind(&OwnerSettingsServiceChromeOSTest::OnManagementSettingsSet,
+                     base::Unretained(this));
+
+  // LOCAL_OWNER -> CONSUMER_MANAGED: Okay.
+  service_->SetManagementSettings(management_settings,
+                                  on_management_settings_set_callback);
+  FlushDeviceSettings();
+
+  EXPECT_TRUE(management_settings_set_);
+  EXPECT_EQ(em::PolicyData::CONSUMER_MANAGED,
+            device_settings_service_.policy_data()->management_mode());
+
+  // CONSUMER_MANAGED -> ENTERPRISE_MANAGED: Invalid.
+  management_settings.management_mode =
+      policy::MANAGEMENT_MODE_ENTERPRISE_MANAGED;
+  service_->SetManagementSettings(management_settings,
+                                  on_management_settings_set_callback);
+  FlushDeviceSettings();
+
+  EXPECT_FALSE(management_settings_set_);
+  EXPECT_EQ(em::PolicyData::CONSUMER_MANAGED,
+            device_settings_service_.policy_data()->management_mode());
+
+  // CONSUMER_MANAGED -> LOCAL_OWNER: Okay.
+  management_settings.management_mode = policy::MANAGEMENT_MODE_LOCAL_OWNER;
+  service_->SetManagementSettings(management_settings,
+                                  on_management_settings_set_callback);
+  FlushDeviceSettings();
+
+  EXPECT_TRUE(management_settings_set_);
+  EXPECT_EQ(em::PolicyData::LOCAL_OWNER,
+            device_settings_service_.policy_data()->management_mode());
+
+  // LOCAL_OWNER -> ENTERPRISE_MANAGED: Invalid.
+  management_settings.management_mode =
+      policy::MANAGEMENT_MODE_ENTERPRISE_MANAGED;
+  service_->SetManagementSettings(management_settings,
+                                  on_management_settings_set_callback);
+  FlushDeviceSettings();
+
+  EXPECT_FALSE(management_settings_set_);
+  EXPECT_EQ(em::PolicyData::LOCAL_OWNER,
+            device_settings_service_.policy_data()->management_mode());
+
+  // Inject a policy data with management mode set to ENTERPRISE_MANAGED.
+  device_policy_.policy_data().set_management_mode(
+      em::PolicyData::ENTERPRISE_MANAGED);
+  device_policy_.Build();
+  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  ReloadDeviceSettings();
+  EXPECT_EQ(em::PolicyData::ENTERPRISE_MANAGED,
+            device_settings_service_.policy_data()->management_mode());
+
+  // ENTERPRISE_MANAGED -> LOCAL_OWNER: Invalid.
+  management_settings.management_mode = policy::MANAGEMENT_MODE_LOCAL_OWNER;
+  service_->SetManagementSettings(management_settings,
+                                  on_management_settings_set_callback);
+  FlushDeviceSettings();
+
+  EXPECT_FALSE(management_settings_set_);
+  EXPECT_EQ(em::PolicyData::ENTERPRISE_MANAGED,
+            device_settings_service_.policy_data()->management_mode());
+
+  // ENTERPRISE_MANAGED -> CONSUMER_MANAGED: Invalid.
+  management_settings.management_mode =
+      policy::MANAGEMENT_MODE_CONSUMER_MANAGED;
+  service_->SetManagementSettings(management_settings,
+                                  on_management_settings_set_callback);
+  FlushDeviceSettings();
+
+  EXPECT_FALSE(management_settings_set_);
+  EXPECT_EQ(em::PolicyData::ENTERPRISE_MANAGED,
+            device_settings_service_.policy_data()->management_mode());
+}
+
+TEST_F(OwnerSettingsServiceChromeOSTest, SetManagementSettingsSuccess) {
+  ReloadDeviceSettings();
+  EXPECT_EQ(DeviceSettingsService::STORE_SUCCESS,
+            device_settings_service_.status());
+
+  OwnerSettingsServiceChromeOS::ManagementSettings management_settings;
+  management_settings.management_mode =
+      policy::MANAGEMENT_MODE_CONSUMER_MANAGED;
+  management_settings.request_token = "fake_request_token";
+  management_settings.device_id = "fake_device_id";
+  service_->SetManagementSettings(
+      management_settings,
+      base::Bind(&OwnerSettingsServiceChromeOSTest::OnManagementSettingsSet,
+                 base::Unretained(this)));
+  FlushDeviceSettings();
+
+  EXPECT_EQ(DeviceSettingsService::STORE_SUCCESS,
+            device_settings_service_.status());
+  ASSERT_TRUE(device_settings_service_.device_settings());
+
+  // Check that the loaded policy_data contains the expected values.
+  const em::PolicyData* policy_data = device_settings_service_.policy_data();
+  EXPECT_EQ(policy::dm_protocol::kChromeDevicePolicyType,
+            policy_data->policy_type());
+  EXPECT_EQ(device_settings_service_.GetUsername(), policy_data->username());
+  EXPECT_EQ(em::PolicyData::CONSUMER_MANAGED, policy_data->management_mode());
+  EXPECT_EQ("fake_request_token", policy_data->request_token());
+  EXPECT_EQ("fake_device_id", policy_data->device_id());
 }
 
 class OwnerSettingsServiceChromeOSNoOwnerTest

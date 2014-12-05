@@ -167,8 +167,7 @@ void EnterpriseEnrollmentHelperImpl::DoEnrollUsingToken(
   dcp_initializer->StartEnrollment(
       policy::MANAGEMENT_MODE_ENTERPRISE_MANAGED,
       connector->device_management_service(),
-      token,
-      device_modes,
+      nullptr /* owner_settings_service */, token, device_modes,
       base::Bind(&EnterpriseEnrollmentHelperImpl::OnEnrollmentFinished,
                  weak_ptr_factory_.GetWeakPtr()));
 }

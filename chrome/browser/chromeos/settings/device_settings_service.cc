@@ -36,32 +36,6 @@ int kLoadRetryDelayMs = 1000 * 5;
 // of retry time.
 int kMaxLoadRetries = (1000 * 60 * 10) / kLoadRetryDelayMs;
 
-// Returns true if it is okay to transfer from the current mode to the new
-// mode. This function should be called in SetManagementMode().
-bool CheckManagementModeTransition(em::PolicyData::ManagementMode current_mode,
-                                   em::PolicyData::ManagementMode new_mode) {
-  // Mode is not changed.
-  if (current_mode == new_mode)
-    return true;
-
-  switch (current_mode) {
-    case em::PolicyData::LOCAL_OWNER:
-      // For consumer management enrollment.
-      return new_mode == em::PolicyData::CONSUMER_MANAGED;
-
-    case em::PolicyData::ENTERPRISE_MANAGED:
-      // Management mode cannot be set when it is currently ENTERPRISE_MANAGED.
-      return false;
-
-    case em::PolicyData::CONSUMER_MANAGED:
-      // For consumer management unenrollment.
-      return new_mode == em::PolicyData::LOCAL_OWNER;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
 }  // namespace
 
 namespace chromeos {
@@ -137,42 +111,6 @@ scoped_refptr<PublicKey> DeviceSettingsService::GetPublicKey() {
 
 void DeviceSettingsService::Load() {
   EnqueueLoad(false);
-}
-
-void DeviceSettingsService::SetManagementSettings(
-    em::PolicyData::ManagementMode management_mode,
-    const std::string& request_token,
-    const std::string& device_id,
-    const base::Closure& callback) {
-  if (!owner_settings_service_) {
-    HandleError(STORE_KEY_UNAVAILABLE, callback);
-    return;
-  }
-
-  em::PolicyData::ManagementMode current_mode = em::PolicyData::LOCAL_OWNER;
-  if (policy_data() && policy_data()->has_management_mode())
-    current_mode = policy_data()->management_mode();
-
-  if (!CheckManagementModeTransition(current_mode, management_mode)) {
-    LOG(ERROR) << "Invalid management mode transition: current mode = "
-               << current_mode << ", new mode = " << management_mode;
-    HandleError(DeviceSettingsService::STORE_POLICY_ERROR, callback);
-    return;
-  }
-
-  scoped_ptr<em::PolicyData> policy =
-      OwnerSettingsServiceChromeOS::AssemblePolicy(
-          GetUsername(), policy_data(), device_settings());
-  if (!policy) {
-    HandleError(DeviceSettingsService::STORE_POLICY_ERROR, callback);
-    return;
-  }
-
-  policy->set_management_mode(management_mode);
-  policy->set_request_token(request_token);
-  policy->set_device_id(device_id);
-
-  EnqueueSignAndStore(policy.Pass(), callback);
 }
 
 void DeviceSettingsService::Store(scoped_ptr<em::PolicyFetchResponse> policy,
@@ -274,33 +212,14 @@ void DeviceSettingsService::EnqueueLoad(bool force_key_load) {
                  weak_factory_.GetWeakPtr(),
                  base::Closure())));
   operation->set_force_key_load(force_key_load);
-  operation->set_username(username_);
-  operation->set_owner_settings_service(owner_settings_service_);
-  Enqueue(operation);
-}
-
-void DeviceSettingsService::EnqueueSignAndStore(
-    scoped_ptr<enterprise_management::PolicyData> policy,
-    const base::Closure& callback) {
-  linked_ptr<SessionManagerOperation> operation(
-      new SignAndStoreSettingsOperation(
-          base::Bind(&DeviceSettingsService::HandleCompletedOperation,
-                     weak_factory_.GetWeakPtr(),
-                     callback),
-          policy.Pass()));
-  operation->set_owner_settings_service(owner_settings_service_);
   Enqueue(operation);
 }
 
 void DeviceSettingsService::EnsureReload(bool force_key_load) {
-  if (!pending_operations_.empty()) {
-    pending_operations_.front()->set_username(username_);
-    pending_operations_.front()->set_owner_settings_service(
-        owner_settings_service_);
+  if (!pending_operations_.empty())
     pending_operations_.front()->RestartLoad(force_key_load);
-  } else {
+  else
     EnqueueLoad(force_key_load);
-  }
 }
 
 void DeviceSettingsService::StartNextOperation() {

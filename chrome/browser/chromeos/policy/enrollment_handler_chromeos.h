@@ -27,6 +27,7 @@ class SequencedTaskRunner;
 
 namespace chromeos {
 class DeviceSettingsService;
+class OwnerSettingsServiceChromeOS;
 }
 
 namespace policy {
@@ -65,6 +66,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       EnterpriseInstallAttributes* install_attributes,
       ServerBackedStateKeysBroker* state_keys_broker,
       chromeos::DeviceSettingsService* device_settings_service,
+      chromeos::OwnerSettingsServiceChromeOS* owner_settings_service,
       scoped_ptr<CloudPolicyClient> client,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
       const std::string& auth_token,
@@ -135,9 +137,9 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // enrollment.
   void StartLockDevice();
 
-  // Checks the status after SetManagementSettings() is done. Proceeds to
-  // robot auth code storing if successful.
-  void HandleSetManagementSettingsDone();
+  // Called after SetManagementSettings() is done. Proceeds to robot
+  // auth code storing if successful.
+  void HandleSetManagementSettingsDone(bool success);
 
   // Handle callback from InstallAttributes::LockDevice() and retry on failure.
   void HandleLockDeviceResult(
@@ -159,6 +161,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   EnterpriseInstallAttributes* install_attributes_;
   ServerBackedStateKeysBroker* state_keys_broker_;
   chromeos::DeviceSettingsService* device_settings_service_;
+  chromeos::OwnerSettingsServiceChromeOS* owner_settings_service_;
   scoped_ptr<CloudPolicyClient> client_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   scoped_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;

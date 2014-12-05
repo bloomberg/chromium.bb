@@ -141,6 +141,11 @@ enum ManagementMode {
   MANAGEMENT_MODE_CONSUMER_MANAGED = 2,
 };
 
+// Sets management mode field in the |policy_data|.
+POLICY_EXPORT void SetManagementMode(
+    enterprise_management::PolicyData& policy_data,
+    ManagementMode mode);
+
 // Returns the management mode of |policy_data|. You should use this function
 // instead of using |management_mode| in |policy_data| to handle legacy
 // |policy_data| that doesn't have |management_mode| set.
