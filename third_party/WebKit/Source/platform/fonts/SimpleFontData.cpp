@@ -60,20 +60,16 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platformData, PassRefPtr<
     , m_treatAsFixedPitch(false)
     , m_isTextOrientationFallback(isTextOrientationFallback)
     , m_isBrokenIdeographFallback(false)
-#if ENABLE(OPENTYPE_VERTICAL)
     , m_verticalData(nullptr)
-#endif
     , m_hasVerticalGlyphs(false)
     , m_customFontData(customData)
 {
     platformInit();
     platformGlyphInit();
-#if ENABLE(OPENTYPE_VERTICAL)
     if (platformData.orientation() == Vertical && !isTextOrientationFallback) {
         m_verticalData = platformData.verticalData();
         m_hasVerticalGlyphs = m_verticalData.get() && m_verticalData->hasVerticalMetrics();
     }
-#endif
 }
 
 SimpleFontData::SimpleFontData(PassRefPtr<CustomFontData> customData, float fontSize, bool syntheticBold, bool syntheticItalic)
@@ -81,9 +77,7 @@ SimpleFontData::SimpleFontData(PassRefPtr<CustomFontData> customData, float font
     , m_treatAsFixedPitch(false)
     , m_isTextOrientationFallback(false)
     , m_isBrokenIdeographFallback(false)
-#if ENABLE(OPENTYPE_VERTICAL)
     , m_verticalData(nullptr)
-#endif
     , m_hasVerticalGlyphs(false)
     , m_customFontData(customData)
 {

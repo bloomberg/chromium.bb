@@ -25,8 +25,6 @@
 #ifndef OpenTypeVerticalData_h
 #define OpenTypeVerticalData_h
 
-#if ENABLE(OPENTYPE_VERTICAL)
-
 #include "platform/PlatformExport.h"
 #include "platform/fonts/Glyph.h"
 #include "wtf/HashMap.h"
@@ -50,17 +48,17 @@ public:
     bool isOpenType() const { return !m_advanceWidths.isEmpty(); }
     bool hasVerticalMetrics() const { return !m_advanceHeights.isEmpty(); }
     float advanceHeight(const SimpleFontData*, Glyph) const;
-    void getVerticalTranslationsForGlyphs(const SimpleFontData*, const Glyph*, size_t, float* outXYArray) const;
-    void substituteWithVerticalGlyphs(const SimpleFontData*, GlyphPage*, unsigned offset, unsigned length) const;
 
     bool inFontCache() const { return m_inFontCache; }
     void setInFontCache(bool inFontCache) { m_inFontCache = inFontCache; }
 
+    void getVerticalTranslationsForGlyphs(const SimpleFontData*, const Glyph*, size_t, float* outXYArray) const;
+
 private:
+
     explicit OpenTypeVerticalData(const FontPlatformData&);
 
     void loadMetrics(const FontPlatformData&);
-    void loadVerticalGlyphSubstitutions(const FontPlatformData&);
     bool hasVORG() const { return !m_vertOriginY.isEmpty(); }
 
     HashMap<Glyph, Glyph> m_verticalGlyphMap;
@@ -74,7 +72,5 @@ private:
 };
 
 } // namespace blink
-
-#endif // ENABLE(OPENTYPE_VERTICAL)
 
 #endif // OpenTypeVerticalData_h

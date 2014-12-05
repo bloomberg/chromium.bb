@@ -132,10 +132,8 @@ public:
 #endif
     bool fontContainsCharacter(UChar32 character);
 
-#if ENABLE(OPENTYPE_VERTICAL)
     PassRefPtr<OpenTypeVerticalData> verticalData() const;
     PassRefPtr<SharedBuffer> openTypeTable(uint32_t table) const;
-#endif
 
 #if !OS(MACOSX)
     // The returned styles are all actual styles without FontRenderStyle::NoPreference.

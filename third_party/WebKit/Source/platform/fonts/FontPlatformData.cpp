@@ -354,7 +354,6 @@ bool FontPlatformData::fontContainsCharacter(UChar32 character)
 
 #endif
 
-#if ENABLE(OPENTYPE_VERTICAL)
 PassRefPtr<OpenTypeVerticalData> FontPlatformData::verticalData() const
 {
     return FontCache::fontCache()->getVerticalData(typeface()->uniqueID(), *this);
@@ -373,6 +372,5 @@ PassRefPtr<SharedBuffer> FontPlatformData::openTypeTable(uint32_t table) const
     }
     return buffer.release();
 }
-#endif
 
 } // namespace blink

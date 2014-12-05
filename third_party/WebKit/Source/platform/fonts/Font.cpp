@@ -338,6 +338,9 @@ CodePath Font::codePath(const TextRunPaintInfo& runInfo) const
     if (m_fontDescription.featureSettings() && m_fontDescription.featureSettings()->size() > 0 && m_fontDescription.letterSpacing() == 0)
         return ComplexPath;
 
+    if (m_fontDescription.orientation() == Vertical)
+        return ComplexPath;
+
     if (m_fontDescription.widthVariant() != RegularWidth)
         return ComplexPath;
 
@@ -700,59 +703,11 @@ void Font::paintGlyphsHorizontal(GraphicsContext* gc, const SimpleFontData* font
     }
 }
 
-void Font::paintGlyphsVertical(GraphicsContext* gc, const SimpleFontData* font,
-    const GlyphBuffer& glyphBuffer, unsigned from, unsigned numGlyphs, const FloatPoint& point,
-    const FloatRect& textRect) const
-{
-    const OpenTypeVerticalData* verticalData = font->verticalData();
-
-    SkAutoSTMalloc<32, SkPoint> storage(numGlyphs);
-    SkPoint* pos = storage.get();
-
-    // Bend over backwards to preserve legacy rounding.
-    float initialAdvance = glyphBuffer.xOffsetAt(from);
-    FloatPoint adjustedPoint(point.x() + initialAdvance, point.y());
-
-    GraphicsContextStateSaver stateSaver(*gc);
-    gc->concatCTM(AffineTransform(0, -1, 1, 0, adjustedPoint.x(), adjustedPoint.y()));
-    gc->concatCTM(AffineTransform(1, 0, 0, 1, -adjustedPoint.x(), -adjustedPoint.y()));
-
-    const unsigned kMaxBufferLength = 256;
-    Vector<FloatPoint, kMaxBufferLength> translations;
-
-    const FontMetrics& metrics = font->fontMetrics();
-    float verticalOriginX = adjustedPoint.x() + metrics.floatAscent() - metrics.floatAscent(IdeographicBaseline);
-
-    unsigned glyphIndex = 0;
-    while (glyphIndex < numGlyphs) {
-        unsigned chunkLength = std::min(kMaxBufferLength, numGlyphs - glyphIndex);
-
-        const Glyph* glyphs = glyphBuffer.glyphs(from + glyphIndex);
-
-        translations.resize(chunkLength);
-        verticalData->getVerticalTranslationsForGlyphs(font, glyphs, chunkLength,
-            reinterpret_cast<float*>(&translations[0]));
-
-        for (unsigned i = 0; i < chunkLength; ++i, ++glyphIndex) {
-            SkScalar x = verticalOriginX + lroundf(translations[i].x());
-            SkScalar y = adjustedPoint.y() - SkIntToScalar(
-                -lroundf(glyphBuffer.xOffsetAt(from + glyphIndex) - initialAdvance - translations[i].y()));
-            pos[i].set(x, y);
-        }
-        paintGlyphs(gc, font, glyphs, chunkLength, pos, textRect);
-    }
-}
-
 void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
     const GlyphBuffer& glyphBuffer, unsigned from, unsigned numGlyphs,
     const FloatPoint& point, const FloatRect& textRect) const
 {
     ASSERT(glyphBuffer.size() >= from + numGlyphs);
-
-    if (font->platformData().orientation() == Vertical && font->verticalData()) {
-        paintGlyphsVertical(gc, font, glyphBuffer, from, numGlyphs, point, textRect);
-        return;
-    }
 
     if (!glyphBuffer.hasVerticalOffsets()) {
         SkAutoSTMalloc<64, SkScalar> storage(numGlyphs);
@@ -765,12 +720,23 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
         return;
     }
 
+    bool drawVertically = font->platformData().orientation() == Vertical && font->verticalData();
+
+    GraphicsContextStateSaver stateSaver(*gc, false);
+    if (drawVertically) {
+        stateSaver.save();
+        gc->concatCTM(AffineTransform(0, -1, 1, 0, point.x(), point.y()));
+        gc->concatCTM(AffineTransform(1, 0, 0, 1, -point.x(), -point.y()));
+    }
+
+    const float verticalBaselineXOffset = drawVertically ? SkFloatToScalar(font->fontMetrics().floatAscent() - font->fontMetrics().floatAscent(IdeographicBaseline)) : 0;
+
     ASSERT(glyphBuffer.hasVerticalOffsets());
     SkAutoSTMalloc<32, SkPoint> storage(numGlyphs);
     SkPoint* pos = storage.get();
     for (unsigned i = 0; i < numGlyphs; i++) {
         pos[i].set(
-            SkFloatToScalar(point.x() + glyphBuffer.xOffsetAt(from + i)),
+            SkFloatToScalar(point.x() + verticalBaselineXOffset + glyphBuffer.xOffsetAt(from + i)),
             SkFloatToScalar(point.y() + glyphBuffer.yOffsetAt(from + i)));
     }
 
@@ -831,6 +797,9 @@ void Font::drawGlyphBuffer(GraphicsContext* context,
     const TextRunPaintInfo& runInfo, const GlyphBuffer& glyphBuffer,
     const FloatPoint& point) const
 {
+    if (!glyphBuffer.size())
+        return;
+
     // Draw each contiguous run of glyphs that use the same font data.
     const SimpleFontData* fontData = glyphBuffer.fontDataAt(0);
     unsigned lastFrom = 0;
@@ -852,14 +821,12 @@ void Font::drawGlyphBuffer(GraphicsContext* context,
         runInfo.bounds);
 }
 
-inline static float offsetToMiddleOfGlyph(const SimpleFontData* fontData, Glyph glyph)
+inline static float offsetToMiddleOfGlyph(const SimpleFontData* fontData, Glyph glyph, FontOrientation orientation = Horizontal)
 {
-    if (fontData->platformData().orientation() == Horizontal) {
-        FloatRect bounds = fontData->boundsForGlyph(glyph);
+    FloatRect bounds = fontData->boundsForGlyph(glyph);
+    if (orientation == Horizontal)
         return bounds.x() + bounds.width() / 2;
-    }
-    // FIXME: Use glyph bounds once they make sense for vertical fonts.
-    return fontData->widthForGlyph(glyph) / 2;
+    return bounds.y() + bounds.height() / 2;
 }
 
 void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& runInfo, const GlyphBuffer& glyphBuffer, const AtomicString& mark, const FloatPoint& point) const
@@ -876,7 +843,7 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
         return;
 
     GlyphBuffer markBuffer;
-    float midMarkOffset = offsetToMiddleOfGlyph(markFontData, markGlyphData.glyph);
+    bool drawVertically = markFontData->platformData().orientation() == Vertical && markFontData->verticalData();
     for (unsigned i = 0; i < glyphBuffer.size(); ++i) {
         // Skip marks for suppressed glyphs.
         if (!glyphBuffer.glyphAt(i))
@@ -887,7 +854,12 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
         // is left to do is adjust for 1/2 mark width.
         // FIXME: we could avoid this by passing some additional info to the shaper,
         //        and perform all adjustments at buffer build time.
-        markBuffer.add(markGlyphData.glyph, markFontData, glyphBuffer.xOffsetAt(i) - midMarkOffset);
+        if (!drawVertically) {
+            markBuffer.add(markGlyphData.glyph, markFontData, glyphBuffer.xOffsetAt(i) - offsetToMiddleOfGlyph(markFontData, markGlyphData.glyph));
+        } else {
+            markBuffer.add(markGlyphData.glyph, markFontData, FloatPoint(- offsetToMiddleOfGlyph(markFontData, markGlyphData.glyph),
+                glyphBuffer.xOffsetAt(i) - offsetToMiddleOfGlyph(markFontData, markGlyphData.glyph, Vertical)));
+        }
     }
 
     drawGlyphBuffer(context, runInfo, markBuffer, point);

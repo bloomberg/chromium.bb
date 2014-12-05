@@ -114,7 +114,6 @@ FontPlatformData* FontCache::getFontPlatformData(const FontDescription& fontDesc
     return result;
 }
 
-#if ENABLE(OPENTYPE_VERTICAL)
 typedef HashMap<FontCache::FontFileKey, RefPtr<OpenTypeVerticalData>, IntHash<FontCache::FontFileKey>, UnsignedWithZeroKeyHashTraits<FontCache::FontFileKey> > FontVerticalDataCache;
 
 FontVerticalDataCache& fontVerticalDataCacheInstance()
@@ -136,7 +135,6 @@ PassRefPtr<OpenTypeVerticalData> FontCache::getVerticalData(const FontFileKey& k
     fontVerticalDataCache.set(key, verticalData);
     return verticalData;
 }
-#endif
 
 static FontDataCache* gFontDataCache = 0;
 
@@ -196,7 +194,6 @@ static inline void purgePlatformFontDataCache()
 
 static inline void purgeFontVerticalDataCache()
 {
-#if ENABLE(OPENTYPE_VERTICAL)
     FontVerticalDataCache& fontVerticalDataCache = fontVerticalDataCacheInstance();
     if (!fontVerticalDataCache.isEmpty()) {
         // Mark & sweep unused verticalData
@@ -216,7 +213,6 @@ static inline void purgeFontVerticalDataCache()
         }
         fontVerticalDataCache.removeAll(keysToRemove);
     }
-#endif
 }
 
 void FontCache::purge(PurgeSeverity PurgeSeverity)

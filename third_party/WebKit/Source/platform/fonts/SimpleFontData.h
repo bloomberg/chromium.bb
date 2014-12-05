@@ -61,9 +61,7 @@ public:
     virtual ~SimpleFontData();
 
     const FontPlatformData& platformData() const { return m_platformData; }
-#if ENABLE(OPENTYPE_VERTICAL)
     const OpenTypeVerticalData* verticalData() const { return m_verticalData.get(); }
-#endif
 
     PassRefPtr<SimpleFontData> smallCapsFontData(const FontDescription&) const;
     PassRefPtr<SimpleFontData> emphasisMarkFontData(const FontDescription&) const;
@@ -170,9 +168,7 @@ private:
 
     bool m_isTextOrientationFallback;
     bool m_isBrokenIdeographFallback;
-#if ENABLE(OPENTYPE_VERTICAL)
     RefPtr<OpenTypeVerticalData> m_verticalData;
-#endif
     bool m_hasVerticalGlyphs;
 
     Glyph m_spaceGlyph;
@@ -235,12 +231,7 @@ ALWAYS_INLINE float SimpleFontData::widthForGlyph(Glyph glyph) const
     if (width != cGlyphSizeUnknown)
         return width;
 
-#if ENABLE(OPENTYPE_VERTICAL)
-    if (m_verticalData)
-        width = m_verticalData->advanceHeight(this, glyph);
-    else
-#endif
-        width = platformWidthForGlyph(glyph);
+    width = platformWidthForGlyph(glyph);
 
     m_glyphToWidthMap.setMetricsForGlyph(glyph, width);
     return width;

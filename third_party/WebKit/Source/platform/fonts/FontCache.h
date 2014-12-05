@@ -112,10 +112,8 @@ public:
     static void addSideloadedFontForTesting(SkTypeface*);
 #endif
 
-#if ENABLE(OPENTYPE_VERTICAL)
     typedef uint32_t FontFileKey;
     PassRefPtr<OpenTypeVerticalData> getVerticalData(const FontFileKey&, const FontPlatformData&);
-#endif
 
 #if OS(ANDROID)
     static AtomicString getGenericFamilyNameForScript(const AtomicString& familyName, const FontDescription&);
@@ -130,6 +128,7 @@ public:
     };
     static void getFontForCharacter(UChar32, const char* preferredLocale, PlatformFallbackFont*);
 #endif
+    PassRefPtr<SimpleFontData> fontDataFromFontPlatformData(const FontPlatformData*, ShouldRetain = Retain);
 
 private:
     FontCache();
@@ -154,7 +153,6 @@ private:
     // Implemented on skia platforms.
     PassRefPtr<SkTypeface> createTypeface(const FontDescription&, const FontFaceCreationParams&, CString& name);
 
-    PassRefPtr<SimpleFontData> fontDataFromFontPlatformData(const FontPlatformData*, ShouldRetain = Retain);
     PassRefPtr<SimpleFontData> fallbackOnStandardFontStyle(const FontDescription&, UChar32);
 
     // Don't purge if this count is > 0;

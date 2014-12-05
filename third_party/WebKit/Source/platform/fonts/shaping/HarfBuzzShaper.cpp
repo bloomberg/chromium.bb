@@ -457,12 +457,6 @@ void HarfBuzzShaper::setDrawRange(int from, int to)
 void HarfBuzzShaper::setFontFeatures()
 {
     const FontDescription& description = m_font->fontDescription();
-    if (description.orientation() == Vertical) {
-        static hb_feature_t vert = { HarfBuzzFace::vertTag, 1, 0, static_cast<unsigned>(-1) };
-        static hb_feature_t vrt2 = { HarfBuzzFace::vrt2Tag, 1, 0, static_cast<unsigned>(-1) };
-        m_features.append(vert);
-        m_features.append(vrt2);
-    }
 
     static hb_feature_t noKern = { HB_TAG('k', 'e', 'r', 'n'), 0, 0, static_cast<unsigned>(-1) };
     static hb_feature_t noVkrn = { HB_TAG('v', 'k', 'r', 'n'), 0, 0, static_cast<unsigned>(-1) };
@@ -782,9 +776,10 @@ static inline hb_script_t ICUScriptToHBScript(UScriptCode script)
     return hb_script_from_string(uscript_getShortName(script), -1);
 }
 
-static inline hb_direction_t TextDirectionToHBDirection(TextDirection dir)
+static inline hb_direction_t TextDirectionToHBDirection(TextDirection dir, FontOrientation orientation, const SimpleFontData* fontData)
 {
-    return dir == RTL ? HB_DIRECTION_RTL : HB_DIRECTION_LTR;
+    hb_direction_t harfBuzzDirection = orientation == Vertical && !fontData->isTextOrientationFallback() ? HB_DIRECTION_TTB : HB_DIRECTION_LTR;
+    return dir == RTL ? HB_DIRECTION_REVERSE(harfBuzzDirection) : harfBuzzDirection;
 }
 
 
@@ -798,7 +793,7 @@ void HarfBuzzShaper::addHarfBuzzRun(unsigned startCharacter,
         m_fallbackFonts->add(fontData);
     return m_harfBuzzRuns.append(HarfBuzzRun::create(fontData,
         startCharacter, endCharacter - startCharacter,
-        TextDirectionToHBDirection(m_run.direction()),
+        TextDirectionToHBDirection(m_run.direction(), m_font->fontDescription().orientation(), fontData),
         ICUScriptToHBScript(script)));
 }
 
@@ -906,7 +901,9 @@ void HarfBuzzShaper::setGlyphPositionsForHarfBuzzRun(HarfBuzzRun* currentRun, hb
         uint16_t glyph = glyphInfos[i].codepoint;
         float offsetX = harfBuzzPositionToFloat(glyphPositions[i].x_offset);
         float offsetY = -harfBuzzPositionToFloat(glyphPositions[i].y_offset);
-        float advance = harfBuzzPositionToFloat(glyphPositions[i].x_advance);
+        // One out of x_advance and y_advance is zero, depending on
+        // whether the buffer direction is horizontal or vertical.
+        float advance = harfBuzzPositionToFloat(glyphPositions[i].x_advance + glyphPositions[i].y_advance);
 
         unsigned currentCharacterIndex = currentRun->startIndex() + glyphInfos[i].cluster;
         RELEASE_ASSERT(m_normalizedBufferLength > currentCharacterIndex);
@@ -1143,6 +1140,10 @@ FloatRect HarfBuzzShaper::selectionRect(const FloatPoint& point, int height, int
         fromX = 0;
     if (!foundToX)
         toX = m_run.rtl() ? 0 : m_totalWidth;
+    // None of our HarfBuzzRuns is part of the selection,
+    // possibly invalid from, to arguments.
+    if (!foundToX && !foundFromX)
+        fromX = toX = 0;
 
     if (fromX < toX)
         return FloatRect(point.x() + fromX, point.y(), toX - fromX, height);

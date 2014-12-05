@@ -42,6 +42,7 @@
 #include "SkRect.h"
 #include "SkTypeface.h"
 #include "SkUtils.h"
+#include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
@@ -145,6 +146,7 @@ struct HarfBuzzFontData {
         : m_glyphCacheForFaceCacheEntry(glyphCacheForFaceCacheEntry)
     { }
     SkPaint m_paint;
+    RefPtr<SimpleFontData> m_simpleFontData;
     WTF::HashMap<uint32_t, uint16_t>* m_glyphCacheForFaceCacheEntry;
 };
 
@@ -211,6 +213,33 @@ static hb_bool_t harfBuzzGetGlyphHorizontalOrigin(hb_font_t* hbFont, void* fontD
     return true;
 }
 
+static hb_bool_t harfBuzzGetGlyphVerticalOrigin(hb_font_t* hbFont, void* fontData, hb_codepoint_t glyph, hb_position_t* x, hb_position_t* y, void* userData)
+{
+    HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
+    const OpenTypeVerticalData* verticalData = hbFontData->m_simpleFontData->verticalData();
+    if (!verticalData)
+        return false;
+
+    float result[] = { 0, 0 };
+    Glyph theGlyph = glyph;
+    verticalData->getVerticalTranslationsForGlyphs(hbFontData->m_simpleFontData.get(), &theGlyph, 1, result);
+    *x = SkiaScalarToHarfBuzzPosition(-result[0]);
+    *y = SkiaScalarToHarfBuzzPosition(-result[1]);
+    return true;
+}
+
+static hb_position_t harfBuzzGetGlyphVerticalAdvance(hb_font_t* hbFont, void* fontData, hb_codepoint_t glyph, void* userData)
+{
+    HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
+    const OpenTypeVerticalData* verticalData = hbFontData->m_simpleFontData->verticalData();
+    if (!verticalData)
+        return SkiaScalarToHarfBuzzPosition(hbFontData->m_simpleFontData->fontMetrics().height());
+
+    Glyph theGlyph = glyph;
+    float advanceHeight = verticalData->advanceHeight(hbFontData->m_simpleFontData.get(), theGlyph);
+    return SkiaScalarToHarfBuzzPosition(SkFloatToScalar(advanceHeight));
+}
+
 static hb_position_t harfBuzzGetGlyphHorizontalKerning(hb_font_t*, void* fontData, hb_codepoint_t leftGlyph, hb_codepoint_t rightGlyph, void*)
 {
     HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
@@ -233,7 +262,6 @@ static hb_position_t harfBuzzGetGlyphHorizontalKerning(hb_font_t*, void* fontDat
     return 0;
 }
 
-
 static hb_bool_t harfBuzzGetGlyphExtents(hb_font_t* hbFont, void* fontData, hb_codepoint_t glyph, hb_glyph_extents_t* extents, void* userData)
 {
     HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
@@ -254,6 +282,8 @@ static hb_font_funcs_t* harfBuzzSkiaGetFontFuncs()
         hb_font_funcs_set_glyph_h_advance_func(harfBuzzSkiaFontFuncs, harfBuzzGetGlyphHorizontalAdvance, 0, 0);
         hb_font_funcs_set_glyph_h_kerning_func(harfBuzzSkiaFontFuncs, harfBuzzGetGlyphHorizontalKerning, 0, 0);
         hb_font_funcs_set_glyph_h_origin_func(harfBuzzSkiaFontFuncs, harfBuzzGetGlyphHorizontalOrigin, 0, 0);
+        hb_font_funcs_set_glyph_v_advance_func(harfBuzzSkiaFontFuncs, harfBuzzGetGlyphVerticalAdvance, 0, 0);
+        hb_font_funcs_set_glyph_v_origin_func(harfBuzzSkiaFontFuncs, harfBuzzGetGlyphVerticalOrigin, 0, 0);
         hb_font_funcs_set_glyph_extents_func(harfBuzzSkiaFontFuncs, harfBuzzGetGlyphExtents, 0, 0);
         hb_font_funcs_make_immutable(harfBuzzSkiaFontFuncs);
     }
@@ -304,6 +334,8 @@ hb_font_t* HarfBuzzFace::createFont()
 {
     HarfBuzzFontData* hbFontData = new HarfBuzzFontData(m_glyphCacheForFaceCacheEntry);
     m_platformData->setupPaint(&hbFontData->m_paint);
+    hbFontData->m_simpleFontData = FontCache::fontCache()->fontDataFromFontPlatformData(m_platformData);
+    ASSERT(hbFontData->m_simpleFontData);
     hb_font_t* font = hb_font_create(m_face);
     hb_font_set_funcs(font, harfBuzzSkiaGetFontFuncs(), hbFontData, destroyHarfBuzzFontData);
     float size = m_platformData->size();

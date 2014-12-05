@@ -24,8 +24,6 @@
 
 #include "config.h"
 
-#if ENABLE(OPENTYPE_VERTICAL)
-
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/opentype/OpenTypeTypes.h"
 #include "wtf/RefPtr.h"
@@ -82,5 +80,3 @@ TEST(OpenTypeVerticalDataTest, ValidateOffsetTest)
 }
 
 } // namespace
-
-#endif // ENABLE(OPENTYPE_VERTICAL)

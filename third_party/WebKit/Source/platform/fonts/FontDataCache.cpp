@@ -96,14 +96,12 @@ void FontDataCache::release(const SimpleFontData* fontData)
 
 void FontDataCache::markAllVerticalData()
 {
-#if ENABLE(OPENTYPE_VERTICAL)
     Cache::iterator end = m_cache.end();
     for (Cache::iterator fontData = m_cache.begin(); fontData != end; ++fontData) {
         OpenTypeVerticalData* verticalData = const_cast<OpenTypeVerticalData*>(fontData->value.first->verticalData());
         if (verticalData)
             verticalData->setInFontCache(true);
     }
-#endif
 }
 
 bool FontDataCache::purge(PurgeSeverity PurgeSeverity)

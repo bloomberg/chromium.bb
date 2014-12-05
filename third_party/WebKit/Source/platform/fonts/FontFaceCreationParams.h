@@ -59,7 +59,7 @@ public:
     explicit FontFaceCreationParams(AtomicString family)
         : m_creationType(CreateFontByFamily), m_family(family), m_filename(CString()), m_fontconfigInterfaceId(0), m_ttcIndex(0)
     {
-#if OS(WIN) && ENABLE(OPENTYPE_VERTICAL)
+#if OS(WIN)
     // Leading "@" in the font name enables Windows vertical flow flag for the font.
     // Because we do vertical flow by ourselves, we don't want to use the Windows feature.
     // IE disregards "@" regardless of the orientation, so we follow the behavior and
