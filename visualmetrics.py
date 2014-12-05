@@ -44,7 +44,7 @@ import tempfile
 ########################################################################################################################
 
 
-def video_to_frames(video, directory, force, remove_orange, find_viewport, full_resolution):
+def video_to_frames(video, directory, force, orange_file, find_viewport, full_resolution):
     viewport = None
     first_frame = os.path.join(directory, 'image-000000')
     if (not os.path.isfile(first_frame + '.png') and not os.path.isfile(first_frame + '.jpg')) or force:
@@ -57,8 +57,8 @@ def video_to_frames(video, directory, force, remove_orange, find_viewport, full_
                 directory = os.path.realpath(directory)
                 clean_directory(directory)
                 if extract_frames(video, directory, full_resolution):
-                    if remove_orange:
-                        remove_orange_frames(directory)
+                    if orange_file is not None:
+                        remove_orange_frames(directory, orange_file)
                     if find_viewport:
                         viewport = find_video_viewport(directory)
                     adjust_frame_times(directory)
@@ -107,10 +107,10 @@ def extract_frames(video, directory, full_resolution):
     return ok
 
 
-def remove_orange_frames(directory):
+def remove_orange_frames(directory, orange_file):
     frames = sorted(glob.glob(os.path.join(directory, 'video-*.png')))
     for frame in frames:
-        if is_orange_frame(frame):
+        if is_orange_frame(frame, orange_file):
             os.remove(frame)
         else:
             break
@@ -285,12 +285,11 @@ def clean_directory(directory):
         os.remove(file)
 
 
-def is_orange_frame(file):
+def is_orange_frame(file, orange_file):
     orange = False
-    orange_image = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'orange.png')
-    if os.path.isfile(orange_image):
+    if os.path.isfile(orange_file):
         command = 'convert "{0}" ( "{1}" -gravity Center -crop 80x50%+0+0 -resize 200x200! ) miff:- | ' \
-                  'compare -metric AE - -fuzz 10% null:'.format(orange_image, file)
+                  'compare -metric AE - -fuzz 10% null:'.format(orange_file, file)
         compare = subprocess.Popen(command, stderr=subprocess.PIPE, shell=True)
         out, err = compare.communicate()
         if re.match('^[0-9]+$', err):
@@ -328,6 +327,16 @@ def frames_match(image1, image2, fuzz_percent, crop_region):
     return match
 
 
+def generate_orange_png(orange_file):
+    try:
+        from PIL import Image, ImageDraw
+        im = Image.new('RGB', (200,200))
+        draw = ImageDraw.Draw(im)
+        draw.rectangle([0,0,200,200], fill=(222,100,13))
+        del draw
+        im.save(orange_file, 'PNG')
+    except:
+        logging.debug('Error generating orange png ' + orange_file)
 ########################################################################################################################
 #   Histogram calculations
 ########################################################################################################################
@@ -542,39 +551,32 @@ def calculate_speed_index(progress):
 def check_config():
     ok = True
 
-    print 'ffmpeg:     ',
+    print 'ffmpeg:  ',
     if get_decimate_filter() is not None:
         print 'OK'
     else:
         print 'FAIL'
         ok = False
 
-    print 'convert:    ',
+    print 'convert: ',
     if check_process('convert -version', 'ImageMagick'):
         print 'OK'
     else:
         print 'FAIL'
         ok = False
 
-    print 'compare:    ',
+    print 'compare: ',
     if check_process('compare -version', 'ImageMagick'):
         print 'OK'
     else:
         print 'FAIL'
         ok = False
 
-    print 'Pillow:     ',
+    print 'Pillow:  ',
     try:
-        from PIL import Image
+        from PIL import Image, ImageDraw
         print 'OK'
     except:
-        print 'FAIL'
-        ok = False
-
-    print 'orange.png: ',
-    if os.path.isfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'orange.png')):
-        print 'OK'
-    else:
         print 'FAIL'
         ok = False
 
@@ -618,7 +620,7 @@ if '__main__' == __name__:
     parser.add_argument('-f', '--force', action='store_true', default=False,
                         help="Force processing of a video file (overwrite existing directory).")
     parser.add_argument('-o', '--orange', action='store_true', default=False,
-                        help="Remove orange-colored frames from the beginning of the video (requires orange.png).")
+                        help="Remove orange-colored frames from the beginning of the video.")
     parser.add_argument('-p', '--viewport', action='store_true', default=False,
                         help="Locate and use the viewport from the first video frame.")
     parser.add_argument('-s', '--start', type=int, default=0, help="Start time (in milliseconds) for calculating "
@@ -657,7 +659,14 @@ if '__main__' == __name__:
         if not options.check:
             viewport = None
             if options.video:
-                viewport = video_to_frames(options.video, directory, options.force, options.orange, options.viewport,
+                orange_file = None
+                if options.orange:
+                    orange_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'orange.png')
+                if options.orange and\
+                    not os.path.isfile(orange_file):
+                    orange_file = os.path.join(temp_dir, 'orange.png')
+                    generate_orange_png(orange_file)
+                viewport = video_to_frames(options.video, directory, options.force, orange_file, options.viewport,
                                            options.full)
             calculate_histograms(directory, histogram_file, options.force, viewport)
             if options.dir is not None and options.quality is not None:
