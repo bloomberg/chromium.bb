@@ -375,16 +375,7 @@ ManagePasswordsBubbleView::ConfirmNeverView::ConfirmNeverView(
 
   // Title row.
   BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  views::Label* title_label = new views::Label(l10n_util::GetStringUTF16(
-      IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TITLE));
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label->SetMultiLine(true);
-  title_label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::MediumFont));
-  layout->StartRowWithPadding(
-      0, SINGLE_VIEW_COLUMN_SET, 0, views::kRelatedControlSmallVerticalSpacing);
-  layout->AddView(title_label);
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+  AddTitleRow(layout, parent_->model());
 
   // Confirmation text.
   views::Label* confirmation = new views::Label(l10n_util::GetStringUTF16(
@@ -835,7 +826,6 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
                          anchor_view ? views::BubbleBorder::TOP_RIGHT
                                      : views::BubbleBorder::NONE),
       anchor_view_(anchor_view),
-      never_save_passwords_(false),
       initially_focused_view_(NULL) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
@@ -879,7 +869,7 @@ void ManagePasswordsBubbleView::Refresh() {
   RemoveAllChildViews(true);
   initially_focused_view_ = NULL;
   if (password_manager::ui::IsPendingState(model()->state())) {
-    if (never_save_passwords_)
+    if (model()->never_save_passwords())
       AddChildView(new ConfirmNeverView(this));
     else
       AddChildView(new PendingView(this));
@@ -900,7 +890,7 @@ void ManagePasswordsBubbleView::NotifyNeverForThisSiteClicked() {
     // Skip confirmation if there are no existing passwords for this site.
     NotifyConfirmedNeverForThisSite();
   } else {
-    never_save_passwords_ = true;
+    model()->OnConfirmationForNeverForThisSite();
     Refresh();
   }
 }
@@ -911,7 +901,7 @@ void ManagePasswordsBubbleView::NotifyConfirmedNeverForThisSite() {
 }
 
 void ManagePasswordsBubbleView::NotifyUndoNeverForThisSite() {
-  never_save_passwords_ = false;
+  model()->OnUndoNeverForThisSite();
   Refresh();
 }
 

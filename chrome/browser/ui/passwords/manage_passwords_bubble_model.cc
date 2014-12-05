@@ -43,13 +43,20 @@ void RecordExperimentStatistics(content::WebContents* web_contents,
   password_bubble_experiment::RecordBubbleClosed(profile->GetPrefs(), reason);
 }
 
+base::string16 PendingStateTitleBasedOnSavePasswordPref(
+    bool never_save_passwords) {
+  return l10n_util::GetStringUTF16(
+      never_save_passwords ? IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TITLE
+                           : IDS_SAVE_PASSWORD);
+}
+
 }  // namespace
 
 ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      display_disposition_(
-          metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING),
+      never_save_passwords_(false),
+      display_disposition_(metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING),
       dismissal_reason_(metrics_util::NOT_DISPLAYED) {
   ManagePasswordsUIController* controller =
       ManagePasswordsUIController::FromWebContents(web_contents);
@@ -63,7 +70,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     best_matches_ = controller->best_matches();
 
   if (password_manager::ui::IsPendingState(state_)) {
-    title_ = l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD);
+    title_ = PendingStateTitleBasedOnSavePasswordPref(never_save_passwords_);
   } else if (state_ == password_manager::ui::BLACKLIST_STATE) {
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_BLACKLISTED_TITLE);
   } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
@@ -146,6 +153,16 @@ void ManagePasswordsBubbleModel::OnNopeClicked() {
   RecordExperimentStatistics(web_contents(), dismissal_reason_);
   if (!password_manager::ui::IsCredentialsState(state_))
     state_ = password_manager::ui::PENDING_PASSWORD_STATE;
+}
+
+void ManagePasswordsBubbleModel::OnConfirmationForNeverForThisSite() {
+  never_save_passwords_ = true;
+  title_ = PendingStateTitleBasedOnSavePasswordPref(never_save_passwords_);
+}
+
+void ManagePasswordsBubbleModel::OnUndoNeverForThisSite() {
+  never_save_passwords_ = false;
+  title_ = PendingStateTitleBasedOnSavePasswordPref(never_save_passwords_);
 }
 
 void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
