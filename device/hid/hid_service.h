@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "device/hid/hid_device_info.h"
@@ -20,6 +21,12 @@ class HidConnection;
 
 class HidService {
  public:
+  class Observer {
+   public:
+    virtual void OnDeviceAdded(const HidDeviceInfo& info) {}
+    virtual void OnDeviceRemoved(const HidDeviceId& device_id) {}
+  };
+
   typedef base::Callback<void(scoped_refptr<HidConnection> connection)>
       ConnectCallback;
 
@@ -30,6 +37,9 @@ class HidService {
 
   // Enumerates and returns a list of device identifiers.
   virtual void GetDevices(std::vector<HidDeviceInfo>* devices);
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Fills in a DeviceInfo struct with info for the given device_id.
   // Returns |true| if successful or |false| if |device_id| is invalid.
@@ -59,6 +69,7 @@ class HidService {
   class Destroyer;
 
   DeviceMap devices_;
+  ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HidService);
 };

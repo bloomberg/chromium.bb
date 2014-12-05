@@ -81,6 +81,14 @@ void HidService::GetDevices(std::vector<HidDeviceInfo>* devices) {
   }
 }
 
+void HidService::AddObserver(HidService::Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void HidService::RemoveObserver(HidService::Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 // Fills in the device info struct of the given device_id.
 bool HidService::GetDeviceInfo(const HidDeviceId& device_id,
                                HidDeviceInfo* info) const {
@@ -99,14 +107,17 @@ void HidService::AddDevice(const HidDeviceInfo& info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!ContainsKey(devices_, info.device_id)) {
     devices_[info.device_id] = info;
+    FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceAdded(info));
   }
 }
 
 void HidService::RemoveDevice(const HidDeviceId& device_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DeviceMap::iterator it = devices_.find(device_id);
-  if (it != devices_.end())
+  if (it != devices_.end()) {
     devices_.erase(it);
+    FOR_EACH_OBSERVER(Observer, observer_list_, OnDeviceRemoved(device_id));
+  }
 }
 
 }  // namespace device
