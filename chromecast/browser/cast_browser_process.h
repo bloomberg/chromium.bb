@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
+class PrefService;
+
 namespace breakpad {
 class CrashDumpManager;
 }  // namespace breakpad
@@ -34,14 +36,17 @@ class CastBrowserProcess {
   CastBrowserProcess();
   virtual ~CastBrowserProcess();
 
-  void SetBrowserContext(CastBrowserContext* browser_context);
-  void SetCastService(CastService* cast_service);
-  void SetRemoteDebuggingServer(RemoteDebuggingServer* remote_debugging_server);
-  void SetMetricsHelper(metrics::CastMetricsHelper* metrics_helper);
+  void SetBrowserContext(scoped_ptr<CastBrowserContext*> browser_context);
+  void SetCastService(scoped_ptr<CastService> cast_service);
+  void SetMetricsHelper(scoped_ptr<metrics::CastMetricsHelper> metrics_helper);
   void SetMetricsServiceClient(
-      metrics::CastMetricsServiceClient* metrics_service_client);
+      scoped_ptr<metrics::CastMetricsServiceClient> metrics_service_client);
+  void SetPrefService(scoped_ptr<PrefService> pref_service);
+  void SetRemoteDebuggingServer(
+      scoped_ptr<RemoteDebuggingServer> remote_debugging_server);
 #if defined(OS_ANDROID)
-  void SetCrashDumpManager(breakpad::CrashDumpManager* crash_dump_manager);
+  void SetCrashDumpManager(
+      scoped_ptr<breakpad::CrashDumpManager> crash_dump_manager);
 #endif  // defined(OS_ANDROID)
 
   CastBrowserContext* browser_context() const { return browser_context_.get(); }
@@ -49,11 +54,13 @@ class CastBrowserProcess {
   metrics::CastMetricsServiceClient* metrics_service_client() const {
     return metrics_service_client_.get();
   }
+  PrefService* pref_service() const { return pref_service_.get(); }
 
  private:
   scoped_ptr<CastBrowserContext> browser_context_;
   scoped_ptr<metrics::CastMetricsHelper> metrics_helper_;
   scoped_ptr<metrics::CastMetricsServiceClient> metrics_service_client_;
+  scoped_ptr<PrefService> pref_service_;
   scoped_ptr<RemoteDebuggingServer> remote_debugging_server_;
 #if defined(OS_ANDROID)
   scoped_ptr<breakpad::CrashDumpManager> crash_dump_manager_;

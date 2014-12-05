@@ -9,8 +9,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
+#include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/devtools/cast_dev_tools_delegate.h"
-#include "chromecast/common/chromecast_config.h"
 #include "chromecast/common/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -96,7 +96,7 @@ std::string GetFrontendUrl() {
 RemoteDebuggingServer::RemoteDebuggingServer() : port_(0) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   pref_port_.Init(prefs::kRemoteDebuggingPort,
-                  ChromecastConfig::GetInstance()->pref_service(),
+                  CastBrowserProcess::GetInstance()->pref_service(),
                   base::Bind(&RemoteDebuggingServer::OnPortChanged,
                              base::Unretained(this)));
 

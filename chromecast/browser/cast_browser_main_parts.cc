@@ -15,9 +15,9 @@
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/metrics/cast_metrics_prefs.h"
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
+#include "chromecast/browser/pref_service_helper.h"
 #include "chromecast/browser/service/cast_service.h"
 #include "chromecast/browser/url_request_context_factory.h"
-#include "chromecast/common/chromecast_config.h"
 #include "chromecast/common/platform_client_auth.h"
 #include "chromecast/net/network_change_notifier_cast.h"
 #include "chromecast/net/network_change_notifier_factory_cast.h"
@@ -108,30 +108,28 @@ void CastBrowserMainParts::PreMainMessageLoopStart() {
 }
 
 void CastBrowserMainParts::PostMainMessageLoopStart() {
-  cast_browser_process_->SetMetricsHelper(
-      new metrics::CastMetricsHelper(base::MessageLoopProxy::current()));
+  cast_browser_process_->SetMetricsHelper(make_scoped_ptr(
+      new metrics::CastMetricsHelper(base::MessageLoopProxy::current())));
 
 #if defined(OS_ANDROID)
   base::MessageLoopForUI::current()->Start();
 #endif  // defined(OS_ANDROID)
 }
 
-int CastBrowserMainParts::PreCreateThreads() {
-  PrefRegistrySimple* pref_registry = new PrefRegistrySimple();
-  metrics::RegisterPrefs(pref_registry);
-  ChromecastConfig::Create(pref_registry);
-  return 0;
-}
-
 void CastBrowserMainParts::PreMainMessageLoopRun() {
+  scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple());
+  metrics::RegisterPrefs(pref_registry.get());
+  cast_browser_process_->SetPrefService(
+      PrefServiceHelper::CreatePrefService(pref_registry.get()));
+
   url_request_context_factory_->InitializeOnUIThread();
 
   cast_browser_process_->SetBrowserContext(
-      new CastBrowserContext(url_request_context_factory_));
+      make_scoped_ptr(new CastBrowserContext(url_request_context_factory_)));
   cast_browser_process_->SetMetricsServiceClient(
       metrics::CastMetricsServiceClient::Create(
           content::BrowserThread::GetBlockingPool(),
-          ChromecastConfig::GetInstance()->pref_service(),
+          cast_browser_process_->pref_service(),
           cast_browser_process_->browser_context()->GetRequestContext()));
 
 #if defined(OS_ANDROID)
@@ -140,17 +138,19 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
     LOG(ERROR) << "Could not find crash dump location.";
   }
   cast_browser_process_->SetCrashDumpManager(
-      new breakpad::CrashDumpManager(crash_dumps_dir));
+      make_scoped_ptr(new breakpad::CrashDumpManager(crash_dumps_dir)));
 #endif
 
   if (!PlatformClientAuth::Initialize()) {
     LOG(ERROR) << "PlatformClientAuth::Initialize failed.";
   }
 
-  cast_browser_process_->SetRemoteDebuggingServer(new RemoteDebuggingServer());
+  cast_browser_process_->SetRemoteDebuggingServer(
+      make_scoped_ptr(new RemoteDebuggingServer()));
 
   cast_browser_process_->SetCastService(CastService::Create(
       cast_browser_process_->browser_context(),
+      cast_browser_process_->pref_service(),
       url_request_context_factory_->GetSystemGetter(),
       base::Bind(
           &metrics::CastMetricsServiceClient::EnableMetricsService,

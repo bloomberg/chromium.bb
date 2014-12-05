@@ -5,6 +5,7 @@
 #include "chromecast/browser/cast_browser_process.h"
 
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
@@ -39,6 +40,8 @@ CastBrowserProcess::CastBrowserProcess() {
 
 CastBrowserProcess::~CastBrowserProcess() {
   DCHECK_EQ(g_instance, this);
+  if (pref_service_)
+    pref_service_->CommitPendingWrite();
 #if defined(USE_AURA)
   aura::Env::DeleteInstance();
 #endif
@@ -46,39 +49,44 @@ CastBrowserProcess::~CastBrowserProcess() {
 }
 
 void CastBrowserProcess::SetBrowserContext(
-    CastBrowserContext* browser_context) {
+    scoped_ptr<CastBrowserContext> browser_context) {
   DCHECK(!browser_context_);
-  browser_context_.reset(browser_context);
+  browser_context_.swap(browser_context);
 }
 
-void CastBrowserProcess::SetCastService(CastService* cast_service) {
+void CastBrowserProcess::SetCastService(scoped_ptr<CastService> cast_service) {
   DCHECK(!cast_service_);
-  cast_service_.reset(cast_service);
-}
-
-void CastBrowserProcess::SetRemoteDebuggingServer(
-    RemoteDebuggingServer* remote_debugging_server) {
-  DCHECK(!remote_debugging_server_);
-  remote_debugging_server_.reset(remote_debugging_server);
+  cast_service_.swap(cast_service);
 }
 
 void CastBrowserProcess::SetMetricsHelper(
-    metrics::CastMetricsHelper* metrics_helper) {
+    scoped_ptr<metrics::CastMetricsHelper> metrics_helper) {
   DCHECK(!metrics_helper_);
-  metrics_helper_.reset(metrics_helper);
+  metrics_helper_.swap(metrics_helper);
 }
 
 void CastBrowserProcess::SetMetricsServiceClient(
-    metrics::CastMetricsServiceClient* metrics_service_client) {
+    scoped_ptr<metrics::CastMetricsServiceClient> metrics_service_client) {
   DCHECK(!metrics_service_client_);
-  metrics_service_client_.reset(metrics_service_client);
+  metrics_service_client_.swap(metrics_service_client);
+}
+
+void CastBrowserProcess::SetPrefService(scoped_ptr<PrefService> pref_service) {
+  DCHECK(!pref_service_);
+  pref_service_.swap(pref_service);
+}
+
+void CastBrowserProcess::SetRemoteDebuggingServer(
+    scoped_ptr<RemoteDebuggingServer> remote_debugging_server) {
+  DCHECK(!remote_debugging_server_);
+  remote_debugging_server_.swap(remote_debugging_server);
 }
 
 #if defined(OS_ANDROID)
 void CastBrowserProcess::SetCrashDumpManager(
-    breakpad::CrashDumpManager* crash_dump_manager) {
+    scoped_ptr<breakpad::CrashDumpManager> crash_dump_manager) {
   DCHECK(!crash_dump_manager_);
-  crash_dump_manager_.reset(crash_dump_manager);
+  crash_dump_manager_.swap(crash_dump_manager);
 }
 #endif  // defined(OS_ANDROID)
 

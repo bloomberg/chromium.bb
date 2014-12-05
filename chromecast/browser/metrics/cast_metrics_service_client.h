@@ -37,7 +37,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
  public:
   virtual ~CastMetricsServiceClient();
 
-  static CastMetricsServiceClient* Create(
+  static scoped_ptr<CastMetricsServiceClient> Create(
       base::TaskRunner* io_task_runner,
       PrefService* pref_service,
       net::URLRequestContextGetter* request_context);

@@ -9,17 +9,21 @@
 namespace chromecast {
 
 // static
-CastService* CastService::Create(
+scoped_ptr<CastService> CastService::Create(
     content::BrowserContext* browser_context,
+    PrefService* pref_service,
     net::URLRequestContextGetter* request_context_getter,
     const OptInStatsChangedCallback& opt_in_stats_callback) {
-  return new CastServiceAndroid(browser_context, opt_in_stats_callback);
+  return scoped_ptr<CastService>(new CastServiceAndroid(browser_context,
+                                                        pref_service,
+                                                        opt_in_stats_callback));
 }
 
 CastServiceAndroid::CastServiceAndroid(
     content::BrowserContext* browser_context,
+    PrefService* pref_service,
     const OptInStatsChangedCallback& opt_in_stats_callback)
-    : CastService(browser_context, opt_in_stats_callback) {
+    : CastService(browser_context, pref_service, opt_in_stats_callback) {
 }
 
 CastServiceAndroid::~CastServiceAndroid() {

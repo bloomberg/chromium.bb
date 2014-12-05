@@ -7,9 +7,9 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/i18n/rtl.h"
+#include "base/prefs/pref_service.h"
 #include "chromecast/browser/metrics/cast_stability_metrics_provider.h"
 #include "chromecast/browser/metrics/platform_metrics_providers.h"
-#include "chromecast/common/chromecast_config.h"
 #include "chromecast/common/chromecast_switches.h"
 #include "chromecast/common/pref_names.h"
 #include "components/metrics/client_info.h"
@@ -31,13 +31,13 @@ namespace chromecast {
 namespace metrics {
 
 // static
-CastMetricsServiceClient* CastMetricsServiceClient::Create(
+scoped_ptr<CastMetricsServiceClient> CastMetricsServiceClient::Create(
     base::TaskRunner* io_task_runner,
     PrefService* pref_service,
     net::URLRequestContextGetter* request_context) {
-  return new CastMetricsServiceClient(io_task_runner,
-                                      pref_service,
-                                      request_context);
+  return make_scoped_ptr(new CastMetricsServiceClient(io_task_runner,
+                                                      pref_service,
+                                                      request_context));
 }
 
 void CastMetricsServiceClient::SetMetricsClientId(

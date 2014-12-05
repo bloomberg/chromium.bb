@@ -11,8 +11,8 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
-#include "chromecast/common/chromecast_config.h"
 #include "chromecast/common/pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/proto/system_profile.pb.h"
@@ -29,7 +29,7 @@ namespace metrics {
 namespace {
 
 void IncrementPrefValue(const char* path) {
-  PrefService* pref = ChromecastConfig::GetInstance()->pref_service();
+  PrefService* pref = shell::CastBrowserProcess::GetInstance()->pref_service();
   DCHECK(pref);
   int value = pref->GetInteger(path);
   pref->SetInteger(path, value + 1);
@@ -75,7 +75,7 @@ void CastStabilityMetricsProvider::OnRecordingDisabled() {
 
 void CastStabilityMetricsProvider::ProvideStabilityMetrics(
     ::metrics::SystemProfileProto* system_profile_proto) {
-  PrefService* pref = ChromecastConfig::GetInstance()->pref_service();
+  PrefService* pref = shell::CastBrowserProcess::GetInstance()->pref_service();
   ::metrics::SystemProfileProto_Stability* stability_proto =
       system_profile_proto->mutable_stability();
 

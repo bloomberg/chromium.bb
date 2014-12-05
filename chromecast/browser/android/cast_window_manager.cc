@@ -16,7 +16,6 @@
 #include "chromecast/browser/cast_browser_main_parts.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_content_browser_client.h"
-#include "chromecast/common/chromecast_config.h"
 #include "chromecast/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -80,7 +79,7 @@ void EnableDevTools(JNIEnv* env, jclass clazz, jboolean enable) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // The specific port value doesn't matter since Android uses Unix domain
   // sockets, only whether or not it is zero.
-  chromecast::ChromecastConfig::GetInstance()->pref_service()->
+  CastBrowserProcess::GetInstance()->pref_service()->
       SetInteger(prefs::kRemoteDebuggingPort, enable ? 1 : 0);
 }
 

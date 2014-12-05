@@ -9,6 +9,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
+class PrefService;
+
 namespace base {
 class ThreadChecker;
 }
@@ -35,8 +37,9 @@ class CastService {
   // For example, on Chromecast, it is needed to pass in a system url request
   // context getter that would set the request context for NSS, which the main
   // getter doesn't do.
-  static CastService* Create(
+  static scoped_ptr<CastService> Create(
       content::BrowserContext* browser_context,
+      PrefService* pref_service,
       net::URLRequestContextGetter* request_context_getter,
       const OptInStatsChangedCallback& opt_in_stats_callback);
 
@@ -48,6 +51,7 @@ class CastService {
 
  protected:
   CastService(content::BrowserContext* browser_context,
+              PrefService* pref_service,
               const OptInStatsChangedCallback& opt_in_stats_callback);
   virtual void Initialize() = 0;
 
@@ -56,12 +60,14 @@ class CastService {
   virtual void StopInternal() = 0;
 
   content::BrowserContext* browser_context() const { return browser_context_; }
+  PrefService* pref_service() const { return pref_service_; }
   const OptInStatsChangedCallback& opt_in_stats_callback() const {
     return opt_in_stats_callback_;
   }
 
  private:
   content::BrowserContext* const browser_context_;
+  PrefService* const pref_service_;
   const OptInStatsChangedCallback opt_in_stats_callback_;
   bool stopped_;
   const scoped_ptr<base::ThreadChecker> thread_checker_;
