@@ -44,7 +44,7 @@ import tempfile
 ########################################################################################################################
 
 
-def video_to_frames(video, directory, force):
+def video_to_frames(video, directory, force, remove_orange, find_viewport):
     viewport = None
     first_frame = os.path.join(directory, 'image-000000')
     if (not os.path.isfile(first_frame + '.png') and not os.path.isfile(first_frame + '.jpg')) or force:
@@ -57,7 +57,11 @@ def video_to_frames(video, directory, force):
                 directory = os.path.realpath(directory)
                 clean_directory(directory)
                 if extract_frames(video, directory):
-                    viewport = find_viewport(directory)
+                    if remove_orange:
+                        remove_orange_frames(directory)
+                    if find_viewport:
+                        viewport = find_video_viewport(directory)
+                    adjust_frame_times(directory)
                     eliminate_duplicate_frames(directory, viewport)
                 else:
                     logging.critical("Error extracting the video frames from " + video)
@@ -100,97 +104,97 @@ def extract_frames(video, directory):
     return ok
 
 
-def find_viewport(directory):
+def remove_orange_frames(directory):
+    frames = sorted(glob.glob(os.path.join(directory, 'video-*.png')))
+    for frame in frames:
+        if is_orange_frame(frame):
+            os.remove(frame)
+        else:
+            break
+
+
+def find_video_viewport(directory):
     viewport = None
     try:
         from PIL import Image
         frames = sorted(glob.glob(os.path.join(directory, 'video-*.png')))
         frame = frames[0]
-        if is_orange_frame(frame):
-            # Figure out the viewport
-            im = Image.open(frame)
-            width, height = im.size
-            logging.debug('{0} is {1:d}x{2:d}'.format(frame, width, height))
-            x = int(math.floor(width / 2))
-            y = int(math.floor(height / 2))
-            pixels = im.load()
-            orange = pixels[x, y]
+        im = Image.open(frame)
+        width, height = im.size
+        logging.debug('{0} is {1:d}x{2:d}'.format(frame, width, height))
+        x = int(math.floor(width / 2))
+        y = int(math.floor(height / 2))
+        pixels = im.load()
+        background = pixels[x, y]
 
-            # Find the left edge
-            left = None
-            while left is None and x >= 0:
-                if not colors_are_similar(orange, pixels[x, y]):
-                    left = x + 1
-                else:
-                    x -= 1
-            if left is None:
-                left = 0
-            logging.debug('Viewport left edge is {0:d}'.format(left))
+        # Find the left edge
+        left = None
+        while left is None and x >= 0:
+            if not colors_are_similar(background, pixels[x, y]):
+                left = x + 1
+            else:
+                x -= 1
+        if left is None:
+            left = 0
+        logging.debug('Viewport left edge is {0:d}'.format(left))
 
-            # Find the right edge
-            x = int(math.floor(width / 2))
-            right = None
-            while right is None and x < width:
-                if not colors_are_similar(orange, pixels[x, y]):
-                    right = x - 1
-                else:
-                    x += 1
-            if right is None:
-                right = width
-            logging.debug('Viewport right edge is {0:d}'.format(right))
+        # Find the right edge
+        x = int(math.floor(width / 2))
+        right = None
+        while right is None and x < width:
+            if not colors_are_similar(background, pixels[x, y]):
+                right = x - 1
+            else:
+                x += 1
+        if right is None:
+            right = width
+        logging.debug('Viewport right edge is {0:d}'.format(right))
 
-            # Find the top edge
-            x = int(math.floor(width / 2))
-            top = None
-            while top is None and y >= 0:
-                if not colors_are_similar(orange, pixels[x, y]):
-                    top = y + 1
-                else:
-                    y -= 1
-            if top is None:
-                top = 0
-            logging.debug('Viewport top edge is {0:d}'.format(top))
+        # Find the top edge
+        x = int(math.floor(width / 2))
+        top = None
+        while top is None and y >= 0:
+            if not colors_are_similar(background, pixels[x, y]):
+                top = y + 1
+            else:
+                y -= 1
+        if top is None:
+            top = 0
+        logging.debug('Viewport top edge is {0:d}'.format(top))
 
-            # Find the bottom edge
-            y = int(math.floor(height / 2))
-            bottom = None
-            while bottom is None and y < height:
-                if not colors_are_similar(orange, pixels[x, y]):
-                    bottom = y - 1
-                else:
-                    y +=1
-            if bottom is None:
-                bottom = height
-            logging.debug('Viewport bottom edge is {0:d}'.format(bottom))
+        # Find the bottom edge
+        y = int(math.floor(height / 2))
+        bottom = None
+        while bottom is None and y < height:
+            if not colors_are_similar(background, pixels[x, y]):
+                bottom = y - 1
+            else:
+                y +=1
+        if bottom is None:
+            bottom = height
+        logging.debug('Viewport bottom edge is {0:d}'.format(bottom))
 
-            viewport = {'x': left, 'y': top, 'width': (right - left), 'height': (bottom - top)}
+        viewport = {'x': left, 'y': top, 'width': (right - left), 'height': (bottom - top)}
 
-            # remove all of the orange frames if there are more than one
-            os.remove(frame)
-            for frame in frames:
-                if os.path.isfile(frame):
-                    if is_orange_frame(frame):
-                        os.remove(frame)
-                    else:
-                        break
-
-        #re-number the video frames
-        offset = None
-        frames = sorted(glob.glob(os.path.join(directory, 'video-*.png')))
-        match = re.compile('video-(?P<ms>[0-9]+)\.png')
-        for frame in frames:
-            m = re.search(match, frame)
-            if m is not None:
-                frame_time = int(m.groupdict().get('ms'))
-                if offset is None:
-                    offset = frame_time
-                new_time = frame_time - offset
-                dest = os.path.join(directory, 'image-{0:06d}.png'.format(new_time))
-                os.rename(frame, dest)
     except:
         viewport = None
 
     return viewport
+
+
+def adjust_frame_times(directory):
+    offset = None
+    frames = sorted(glob.glob(os.path.join(directory, 'video-*.png')))
+    match = re.compile('video-(?P<ms>[0-9]+)\.png')
+    for frame in frames:
+        m = re.search(match, frame)
+        if m is not None:
+            frame_time = int(m.groupdict().get('ms'))
+            if offset is None:
+                offset = frame_time
+            new_time = frame_time - offset
+            dest = os.path.join(directory, 'image-{0:06d}.png'.format(new_time))
+            os.rename(frame, dest)
 
 
 def eliminate_duplicate_frames(directory, viewport):
@@ -284,14 +288,16 @@ def clean_directory(directory):
 
 def is_orange_frame(file):
     orange = False
-    command = 'convert  "' + os.path.realpath('images/orange.png') + '" ( "' + file + '"' +\
-              ' -gravity Center -crop 80x50%+0+0 -resize 200x200! ) miff:- | compare -metric AE - -fuzz 10% null:'
-    compare = subprocess.Popen(command, stderr=subprocess.PIPE, shell=True)
-    out, err = compare.communicate()
-    if re.match('^[0-9]+$', err):
-        different_pixels = int(err)
-        if different_pixels < 100:
-            orange = True
+    orange_image = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'orange.png')
+    if os.path.isfile(orange_image):
+        command = 'convert "{0}" ( "{1}" -gravity Center -crop 80x50%+0+0 -resize 200x200! ) miff:- | ' \
+                  'compare -metric AE - -fuzz 10% null:'.format(orange_image, file)
+        compare = subprocess.Popen(command, stderr=subprocess.PIPE, shell=True)
+        out, err = compare.communicate()
+        if re.match('^[0-9]+$', err):
+            different_pixels = int(err)
+            if different_pixels < 100:
+                orange = True
 
     return orange
 
@@ -534,21 +540,24 @@ if '__main__' == __name__:
     parser = argparse.ArgumentParser(description='Calculate visual performance metrics from a video.',
                                      prog='visualmetrics')
     parser.add_argument('--version', action='version', version='%(prog)s 0.1')
-    parser.add_argument('-v', '--verbose', action='count',
-                        help="Increase verbosity (specify multiple times for more).")
+    parser.add_argument('-v', '--verbose', action='count', help="Increase verbosity (specify multiple times for more).")
     parser.add_argument('-i', '--video', help="Input video file.")
     parser.add_argument('-d', '--dir', help="Directory of video frames "
-                        "(as input if exists or as output if a video file is specified).")
+                                            "(as input if exists or as output if a video file is specified).")
     parser.add_argument('-q', '--quality', type=int, help="JPEG Quality "
-                        "(if specified, frames will be converted to JPEG).")
-    parser.add_argument('-g', '--histogram', help="Histogram file "
-                        "(as input if exists or as output if histograms need to be calculated).")
-    parser.add_argument('-f', '--force', action='store_true',
+                                                          "(if specified, frames will be converted to JPEG).")
+    parser.add_argument('-g', '--histogram', help="Histogram file (as input if exists or as output if "
+                                                  "histograms need to be calculated).")
+    parser.add_argument('-f', '--force', action='store_true', default=False,
                         help="Force processing of a video file (overwrite existing directory).")
-    parser.add_argument('-s', '--start', type=int, default=0,
-                        help="Start time (in milliseconds) for calculating visual metrics.")
-    parser.add_argument('-e', '--end', type=int, default=0,
-                        help="End time (in milliseconds) for calculating visual metrics.")
+    parser.add_argument('-o', '--orange', action='store_true', default=False,
+                        help="Remove orange-colored frames from the beginning of the video (requires orange.png).")
+    parser.add_argument('-p', '--viewport', action='store_true', default=False,
+                        help="Locate and use the viewport from the first video frame.")
+    parser.add_argument('-s', '--start', type=int, default=0, help="Start time (in milliseconds) for calculating "
+                                                                   "visual metrics.")
+    parser.add_argument('-e', '--end', type=int, default=0, help="End time (in milliseconds) for calculating "
+                                                                 "visual metrics.")
     options = parser.parse_args()
 
     if not options.dir and not options.video and not options.histogram:
@@ -580,10 +589,10 @@ if '__main__' == __name__:
     try:
         viewport = None
         if options.video:
-            viewport = video_to_frames(options.video, directory, options.force)
+            viewport = video_to_frames(options.video, directory, options.force, options.orange, options.viewport)
         calculate_histograms(directory, histogram_file, options.force, viewport)
-#        if options.dir is not None and options.quality is not None:
-#            convert_to_jpeg(directory, options.quality)
+        if options.dir is not None and options.quality is not None:
+            convert_to_jpeg(directory, options.quality)
         metrics = calculate_visual_metrics(histogram_file, options.start, options.end)
         if metrics is not None:
             ok = True
@@ -591,8 +600,6 @@ if '__main__' == __name__:
                 print "{0}: {1}".format(metric['name'], metric['value'])
     except:
         ok = False
-
-    convert_to_jpeg(directory, options.quality)
 
     # Clean up
     shutil.rmtree(temp_dir)
