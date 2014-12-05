@@ -23,8 +23,6 @@
 
 namespace media {
 
-const int DecryptingAudioDecoder::kSupportedBitsPerChannel = 16;
-
 static inline bool IsOutOfSync(const base::TimeDelta& timestamp_1,
                                const base::TimeDelta& timestamp_2) {
   // Out of sync of 100ms would be pretty noticeable and we should keep any
