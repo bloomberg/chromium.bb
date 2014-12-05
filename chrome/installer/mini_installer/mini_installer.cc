@@ -169,7 +169,7 @@ void SetInstallerFlags(const Configuration& configuration) {
           google_update::kChromeFrameAppGuid :
           configuration.chrome_app_guid();
   StackString<128> value;
-  LONG ret;
+  LONG ret = ERROR_SUCCESS;
 
   // When multi_install is true, we are potentially:
   // 1. Performing a multi-install of some product(s) on a clean machine.
