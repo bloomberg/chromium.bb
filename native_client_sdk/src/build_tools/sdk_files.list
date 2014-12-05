@@ -11,6 +11,7 @@ examples/api/input_event/*
 examples/api/Makefile
 examples/api/media_stream_audio/*
 examples/api/media_stream_video/*
+examples/api/messaging/*
 examples/api/mouse_cursor/*
 examples/api/mouse_lock/*
 examples/api/network_monitor/*

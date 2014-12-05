@@ -25,6 +25,10 @@ sys.path.append(os.path.join(SRC_DIR, 'chrome', 'test', 'nacl_test_injection'))
 import find_chrome
 browser_path = find_chrome.FindChrome(SRC_DIR, ['Debug', 'Release'])
 
+# Fall back to using CHROME_PATH (same as in common.mk)
+if not browser_path:
+  browser_path = os.environ['CHROME_PATH']
+
 
 pepper_ver = str(int(build_version.ChromeMajorVersion()))
 pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
