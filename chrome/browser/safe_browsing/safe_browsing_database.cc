@@ -686,7 +686,7 @@ bool SafeBrowsingDatabaseNew::ContainsUnwantedSoftwareUrl(
 
 bool SafeBrowsingDatabaseNew::PrefixSetContainsUrl(
     const GURL& url,
-    scoped_ptr<safe_browsing::PrefixSet>* prefix_set_getter,
+    scoped_ptr<const safe_browsing::PrefixSet>* prefix_set_getter,
     std::vector<SBPrefix>* prefix_hits,
     std::vector<SBFullHashResult>* cache_hits) {
   // Clear the results first.
@@ -712,7 +712,7 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrlHashesForTesting(
 
 bool SafeBrowsingDatabaseNew::PrefixSetContainsUrlHashes(
     const std::vector<SBFullHash>& full_hashes,
-    scoped_ptr<safe_browsing::PrefixSet>* prefix_set_getter,
+    scoped_ptr<const safe_browsing::PrefixSet>* prefix_set_getter,
     std::vector<SBPrefix>* prefix_hits,
     std::vector<SBFullHashResult>* cache_hits) {
   // Used to determine cache expiration.
@@ -727,7 +727,7 @@ bool SafeBrowsingDatabaseNew::PrefixSetContainsUrlHashes(
   // |prefix_set_getter| can only be accessed while holding |lookup_lock_| hence
   // why it is passed as a parameter rather than passing the |prefix_set|
   // directly.
-  safe_browsing::PrefixSet* prefix_set = prefix_set_getter->get();
+  const safe_browsing::PrefixSet* prefix_set = prefix_set_getter->get();
   if (!prefix_set)
     return false;
 
@@ -1292,7 +1292,7 @@ int64 SafeBrowsingDatabaseNew::UpdateHashPrefixStore(
 void SafeBrowsingDatabaseNew::UpdatePrefixSetUrlStore(
     const base::FilePath& db_filename,
     SafeBrowsingStore* url_store,
-    scoped_ptr<safe_browsing::PrefixSet>* prefix_set,
+    scoped_ptr<const safe_browsing::PrefixSet>* prefix_set,
     FailureType finish_failure_type,
     FailureType write_failure_type) {
   // Measure the amount of IO during the filter build.
@@ -1329,7 +1329,7 @@ void SafeBrowsingDatabaseNew::UpdatePrefixSetUrlStore(
     full_hash_results.push_back(add_full_hashes[i].full_hash);
   }
 
-  scoped_ptr<safe_browsing::PrefixSet> new_prefix_set(
+  scoped_ptr<const safe_browsing::PrefixSet> new_prefix_set(
       builder.GetPrefixSet(full_hash_results));
 
   // Swap in the newly built filter.
@@ -1342,8 +1342,6 @@ void SafeBrowsingDatabaseNew::UpdatePrefixSetUrlStore(
 
   // Persist the prefix set to disk. Note: there is no need to lock since the
   // only write to |*prefix_set| is on this thread (in the swap() above).
-  // TODO(gab): Strengthen this requirement by design (const pointers) rather
-  // than assumptions.
   WritePrefixSet(db_filename, prefix_set->get(), write_failure_type);
 
   // Gather statistics.
@@ -1380,13 +1378,13 @@ void SafeBrowsingDatabaseNew::UpdateSideEffectFreeWhitelistStore() {
     RecordFailure(FAILURE_SIDE_EFFECT_FREE_WHITELIST_UPDATE_FINISH);
     return;
   }
-  scoped_ptr<safe_browsing::PrefixSet>
-      prefix_set(builder.GetPrefixSetNoHashes());
+  scoped_ptr<const safe_browsing::PrefixSet> new_prefix_set(
+      builder.GetPrefixSetNoHashes());
 
   // Swap in the newly built prefix set.
   {
     base::AutoLock locked(lookup_lock_);
-    side_effect_free_whitelist_prefix_set_.swap(prefix_set);
+    side_effect_free_whitelist_prefix_set_.swap(new_prefix_set);
   }
 
   const base::FilePath side_effect_free_whitelist_filename =
@@ -1463,7 +1461,7 @@ void SafeBrowsingDatabaseNew::OnHandleCorruptDatabase() {
 // real error-handling.
 void SafeBrowsingDatabaseNew::LoadPrefixSet(
     const base::FilePath& db_filename,
-    scoped_ptr<safe_browsing::PrefixSet>* prefix_set,
+    scoped_ptr<const safe_browsing::PrefixSet>* prefix_set,
     FailureType read_failure_type) {
   if (!prefix_set)
     return;
@@ -1573,7 +1571,7 @@ bool SafeBrowsingDatabaseNew::Delete() {
 
 void SafeBrowsingDatabaseNew::WritePrefixSet(
     const base::FilePath& db_filename,
-    safe_browsing::PrefixSet* prefix_set,
+    const safe_browsing::PrefixSet* prefix_set,
     FailureType write_failure_type) {
   DCHECK_EQ(creation_loop_, base::MessageLoop::current());
 

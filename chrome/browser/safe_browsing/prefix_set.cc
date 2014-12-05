@@ -157,22 +157,23 @@ void PrefixSet::GetPrefixes(std::vector<SBPrefix>* prefixes) const {
 }
 
 // static
-scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
+scoped_ptr<const PrefixSet> PrefixSet::LoadFile(
+    const base::FilePath& filter_name) {
   int64 size_64;
   if (!base::GetFileSize(filter_name, &size_64))
-    return scoped_ptr<PrefixSet>();
+    return nullptr;
   using base::MD5Digest;
   if (size_64 < static_cast<int64>(sizeof(FileHeader) + sizeof(MD5Digest)))
-    return scoped_ptr<PrefixSet>();
+    return nullptr;
 
   base::ScopedFILE file(base::OpenFile(filter_name, "rb"));
   if (!file.get())
-    return scoped_ptr<PrefixSet>();
+    return nullptr;
 
   FileHeader header;
   size_t read = fread(&header, sizeof(header), 1, file.get());
   if (read != 1)
-    return scoped_ptr<PrefixSet>();
+    return nullptr;
 
   // The file looks valid, start building the digest.
   base::MD5Context context;
@@ -181,15 +182,15 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
                                               sizeof(header)));
 
   if (header.magic != kMagic)
-    return scoped_ptr<PrefixSet>();
+    return nullptr;
 
   // Track version read to inform removal of support for older versions.
   UMA_HISTOGRAM_SPARSE_SLOWLY("SB2.PrefixSetVersionRead", header.version);
 
   if (header.version <= kDeprecatedVersion) {
-    return scoped_ptr<PrefixSet>();
+    return nullptr;
   } else if (header.version != kVersion) {
-    return scoped_ptr<PrefixSet>();
+    return nullptr;
   }
 
   IndexVector index;
@@ -206,7 +207,7 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
   const size_t expected_bytes = sizeof(header) +
       index_bytes + deltas_bytes + full_hashes_bytes + sizeof(MD5Digest);
   if (static_cast<int64>(expected_bytes) != size_64)
-    return scoped_ptr<PrefixSet>();
+    return nullptr;
 
   // Read the index vector.  Herb Sutter indicates that vectors are
   // guaranteed to be contiuguous, so reading to where element 0 lives
@@ -215,7 +216,7 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
     index.resize(header.index_size);
     read = fread(&(index[0]), sizeof(index[0]), index.size(), file.get());
     if (read != index.size())
-      return scoped_ptr<PrefixSet>();
+      return nullptr;
     base::MD5Update(&context,
                     base::StringPiece(reinterpret_cast<char*>(&(index[0])),
                                       index_bytes));
@@ -226,7 +227,7 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
     deltas.resize(header.deltas_size);
     read = fread(&(deltas[0]), sizeof(deltas[0]), deltas.size(), file.get());
     if (read != deltas.size())
-      return scoped_ptr<PrefixSet>();
+      return nullptr;
     base::MD5Update(&context,
                     base::StringPiece(reinterpret_cast<char*>(&(deltas[0])),
                                       deltas_bytes));
@@ -238,7 +239,7 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
     read = fread(&(full_hashes[0]), sizeof(full_hashes[0]), full_hashes.size(),
                  file.get());
     if (read != full_hashes.size())
-      return scoped_ptr<PrefixSet>();
+      return nullptr;
     base::MD5Update(&context,
                     base::StringPiece(
                         reinterpret_cast<char*>(&(full_hashes[0])),
@@ -251,13 +252,14 @@ scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
   base::MD5Digest file_digest;
   read = fread(&file_digest, sizeof(file_digest), 1, file.get());
   if (read != 1)
-    return scoped_ptr<PrefixSet>();
+    return nullptr;
 
   if (0 != memcmp(&file_digest, &calculated_digest, sizeof(file_digest)))
-    return scoped_ptr<PrefixSet>();
+    return nullptr;
 
   // Steals vector contents using swap().
-  return scoped_ptr<PrefixSet>(new PrefixSet(&index, &deltas, &full_hashes));
+  return make_scoped_ptr(
+      new PrefixSet(&index, &deltas, &full_hashes));
 }
 
 bool PrefixSet::WriteFile(const base::FilePath& filter_name) const {
@@ -369,7 +371,7 @@ PrefixSetBuilder::PrefixSetBuilder(const std::vector<SBPrefix>& prefixes)
 PrefixSetBuilder::~PrefixSetBuilder() {
 }
 
-scoped_ptr<PrefixSet> PrefixSetBuilder::GetPrefixSet(
+scoped_ptr<const PrefixSet> PrefixSetBuilder::GetPrefixSet(
     const std::vector<SBFullHash>& hashes) {
   DCHECK(prefix_set_.get());
 
@@ -389,7 +391,7 @@ scoped_ptr<PrefixSet> PrefixSetBuilder::GetPrefixSet(
   return prefix_set_.Pass();
 }
 
-scoped_ptr<PrefixSet> PrefixSetBuilder::GetPrefixSetNoHashes() {
+scoped_ptr<const PrefixSet> PrefixSetBuilder::GetPrefixSetNoHashes() {
   return GetPrefixSet(std::vector<SBFullHash>()).Pass();
 }
 

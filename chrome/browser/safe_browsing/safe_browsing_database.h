@@ -370,7 +370,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
   bool PrefixSetContainsUrl(
       const GURL& url,
-      scoped_ptr<safe_browsing::PrefixSet>* prefix_set_getter,
+      scoped_ptr<const safe_browsing::PrefixSet>* prefix_set_getter,
       std::vector<SBPrefix>* prefix_hits,
       std::vector<SBFullHashResult>* cache_hits);
 
@@ -383,7 +383,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
   bool PrefixSetContainsUrlHashes(
       const std::vector<SBFullHash>& full_hashes,
-      scoped_ptr<safe_browsing::PrefixSet>* prefix_set_getter,
+      scoped_ptr<const safe_browsing::PrefixSet>* prefix_set_getter,
       std::vector<SBPrefix>* prefix_hits,
       std::vector<SBFullHashResult>* cache_hits);
 
@@ -403,14 +403,14 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // and stores it in |prefix_set|.  |read_failure_type| provides a
   // caller-specific error code to be used on failure.
   void LoadPrefixSet(const base::FilePath& db_filename,
-                     scoped_ptr<safe_browsing::PrefixSet>* prefix_set,
+                     scoped_ptr<const safe_browsing::PrefixSet>* prefix_set,
                      FailureType read_failure_type);
 
   // Writes the current prefix set "|db_filename| Prefix Set" on disk.
   // |write_failure_type| provides a caller-specific error code to be used on
   // failure.
   void WritePrefixSet(const base::FilePath& db_filename,
-                      safe_browsing::PrefixSet* prefix_set,
+                      const safe_browsing::PrefixSet* prefix_set,
                       FailureType write_failure_type);
 
   // Loads the given full-length hashes to the given whitelist.  If the number
@@ -452,14 +452,15 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // Updates a PrefixStore store for URLs (|url_store|) which is backed on disk
   // by a "|db_filename| Prefix Set" file. Specific failure types are provided
   // to highlight the specific store who made the initial request on failure.
-  void UpdatePrefixSetUrlStore(const base::FilePath& db_filename,
-                               SafeBrowsingStore* url_store,
-                               scoped_ptr<safe_browsing::PrefixSet>* prefix_set,
-                               FailureType finish_failure_type,
-                               FailureType write_failure_type);
+  void UpdatePrefixSetUrlStore(
+      const base::FilePath& db_filename,
+      SafeBrowsingStore* url_store,
+      scoped_ptr<const safe_browsing::PrefixSet>* prefix_set,
+      FailureType finish_failure_type,
+      FailureType write_failure_type);
 
   void UpdateUrlStore(SafeBrowsingStore* url_store,
-                      scoped_ptr<safe_browsing::PrefixSet>* prefix_set,
+                      scoped_ptr<const safe_browsing::PrefixSet>* prefix_set,
                       FailureType failure_type);
 
   void UpdateSideEffectFreeWhitelistStore();
@@ -529,14 +530,16 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // Used to optimize away database update.
   bool change_detected_;
 
-  // Used to check if a prefix was in the browse database.
-  scoped_ptr<safe_browsing::PrefixSet> browse_prefix_set_;
-
-  // Used to check if a prefix was in the side-effect free whitelist database.
-  scoped_ptr<safe_browsing::PrefixSet> side_effect_free_whitelist_prefix_set_;
-
-  // Used to check if a prexfix was in the unwanted software database.
-  scoped_ptr<safe_browsing::PrefixSet> unwanted_software_prefix_set_;
+  // PrefixSets to speed up lookups for particularly large lists. The PrefixSet
+  // themselves are never modified, instead a new one is swapped in on update
+  // while holding |lookup_lock_|. Any thread other than this class' main thread
+  // (which handles updates) must hold |lookup_lock_| before reading from these
+  // sets.
+  // TODO(gab): Enforce this by design.
+  scoped_ptr<const safe_browsing::PrefixSet> browse_prefix_set_;
+  scoped_ptr<const safe_browsing::PrefixSet>
+      side_effect_free_whitelist_prefix_set_;
+  scoped_ptr<const safe_browsing::PrefixSet> unwanted_software_prefix_set_;
 
   // Used to schedule resetting the database because of corruption.
   base::WeakPtrFactory<SafeBrowsingDatabaseNew> reset_factory_;

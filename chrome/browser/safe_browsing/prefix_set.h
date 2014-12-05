@@ -71,7 +71,8 @@ class PrefixSet {
   bool Exists(const SBFullHash& hash) const;
 
   // Persist the set on disk.
-  static scoped_ptr<PrefixSet> LoadFile(const base::FilePath& filter_name);
+  static scoped_ptr<const PrefixSet> LoadFile(
+      const base::FilePath& filter_name);
   bool WriteFile(const base::FilePath& filter_name) const;
 
  private:
@@ -161,11 +162,12 @@ class PrefixSetBuilder {
   // Flush any buffered prefixes, and return the final PrefixSet instance.
   // |hashes| are sorted and stored in |full_hashes_|.  Any call other than the
   // destructor is illegal after this call.
-  scoped_ptr<PrefixSet> GetPrefixSet(const std::vector<SBFullHash>& hashes);
+  scoped_ptr<const PrefixSet> GetPrefixSet(
+      const std::vector<SBFullHash>& hashes);
 
   // Helper for clients which only track prefixes.  Calls GetPrefixSet() with
   // empty hash vector.
-  scoped_ptr<PrefixSet> GetPrefixSetNoHashes();
+  scoped_ptr<const PrefixSet> GetPrefixSetNoHashes();
 
  private:
   // Encode a run of deltas for |AddRun()|.  The run is broken by a too-large
