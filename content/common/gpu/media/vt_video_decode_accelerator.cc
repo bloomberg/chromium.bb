@@ -86,10 +86,10 @@ BuildImageConfig(CMVideoDimensions coded_dimensions) {
 // not documented), then VideoToolbox will fall back on software decoding
 // internally. If that happens, the likely solution is to expand the scope of
 // this initialization.
-void InitializeVideoToolbox() {
+static bool InitializeVideoToolboxInternal() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableAcceleratedVideoDecode)) {
-    return;
+          switches::kDisableAcceleratedVideoDecode)) {
+    return false;
   }
 
   if (!IsVtInitialized()) {
@@ -101,7 +101,7 @@ void InitializeVideoToolbox() {
     paths[kModuleVt].push_back(FILE_PATH_LITERAL(
         "/System/Library/Frameworks/VideoToolbox.framework/VideoToolbox"));
     if (!InitializeStubs(paths))
-      return;
+      return false;
   }
 
   // Create a decoding session.
@@ -124,8 +124,7 @@ void InitializeVideoToolbox() {
   if (status) {
     OSSTATUS_LOG(ERROR, status) << "Failed to create CMVideoFormatDescription "
                                 << "while initializing VideoToolbox";
-    content_common_gpu_media::UninitializeVt();
-    return;
+    return false;
   }
 
   base::ScopedCFTypeRef<CFMutableDictionaryRef> decoder_config(
@@ -157,9 +156,24 @@ void InitializeVideoToolbox() {
   if (status) {
     OSSTATUS_LOG(ERROR, status) << "Failed to create VTDecompressionSession "
                                 << "while initializing VideoToolbox";
-    content_common_gpu_media::UninitializeVt();
-    return;
+    return false;
   }
+
+  return true;
+}
+
+bool InitializeVideoToolbox() {
+  // InitializeVideoToolbox() is called during GPU process sandbox warmup,
+  // and then only from the GPU process main thread.
+  static bool attempted = false;
+  static bool succeeded = false;
+
+  if (!attempted) {
+    attempted = true;
+    succeeded = InitializeVideoToolboxInternal();
+  }
+
+  return succeeded;
 }
 
 // Route decoded frame callbacks back into the VTVideoDecodeAccelerator.
@@ -230,7 +244,7 @@ bool VTVideoDecodeAccelerator::Initialize(
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
   client_ = client;
 
-  if (!IsVtInitialized())
+  if (!InitializeVideoToolbox())
     return false;
 
   // Only H.264 is supported.

@@ -30,7 +30,7 @@ class SingleThreadTaskRunner;
 namespace content {
 
 // Preload VideoToolbox libraries, needed for sandbox warmup.
-void InitializeVideoToolbox();
+bool InitializeVideoToolbox();
 
 // VideoToolbox.framework implementation of the VideoDecodeAccelerator
 // interface for Mac OS X (currently limited to 10.9+).
