@@ -72,6 +72,7 @@
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/rendering/svg/ReferenceFilterBuilder.h"
+#include "core/rendering/svg/RenderSVGRoot.h"
 #include "platform/LengthFunctions.h"
 #include "platform/Partitions.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -1040,6 +1041,15 @@ void RenderLayer::didUpdateCompositingInputs()
     m_childNeedsCompositingInputsUpdate = false;
     if (m_scrollableArea)
         m_scrollableArea->updateNeedsCompositedScrolling();
+}
+
+bool RenderLayer::hasNonIsolatedDescendantWithBlendMode() const
+{
+    if (descendantDependentCompositingInputs().hasNonIsolatedDescendantWithBlendMode)
+        return true;
+    if (renderer()->isSVGRoot())
+        return toRenderSVGRoot(renderer())->hasNonIsolatedBlendingDescendants();
+    return false;
 }
 
 void RenderLayer::setCompositingReasons(CompositingReasons reasons, CompositingReasons mask)

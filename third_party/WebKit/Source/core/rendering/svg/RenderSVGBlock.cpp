@@ -82,6 +82,12 @@ void RenderSVGBlock::styleDidChange(StyleDifference diff, const RenderStyle* old
     if (diff.needsFullLayout())
         setNeedsBoundariesUpdate();
 
+    if (isBlendingAllowed()) {
+        bool hasBlendModeChanged = (oldStyle && oldStyle->hasBlendMode()) == !style()->hasBlendMode();
+        if (parent() && hasBlendModeChanged)
+            parent()->descendantIsolationRequirementsChanged(style()->hasBlendMode() ? DescendantIsolationRequired : DescendantIsolationNeedsUpdate);
+    }
+
     RenderBlock::styleDidChange(diff, oldStyle);
     SVGResourcesCache::clientStyleChanged(this, diff, style());
 }

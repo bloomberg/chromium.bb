@@ -457,7 +457,7 @@ public:
     RenderLayer* clipParent() const { return const_cast<RenderLayer*>(ancestorDependentCompositingInputs().clipParent); }
     bool hasAncestorWithClipPath() const { return ancestorDependentCompositingInputs().hasAncestorWithClipPath; }
     bool hasDescendantWithClipPath() const { return descendantDependentCompositingInputs().hasDescendantWithClipPath; }
-    bool hasNonIsolatedDescendantWithBlendMode() const { return descendantDependentCompositingInputs().hasNonIsolatedDescendantWithBlendMode; }
+    bool hasNonIsolatedDescendantWithBlendMode() const;
 
     bool lostGroupedMapping() const { ASSERT(isAllowedToQueryCompositingState()); return m_lostGroupedMapping; }
     void setLostGroupedMapping(bool b) { m_lostGroupedMapping = b; }

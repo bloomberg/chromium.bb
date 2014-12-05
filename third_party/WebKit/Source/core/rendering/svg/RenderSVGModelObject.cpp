@@ -103,6 +103,12 @@ void RenderSVGModelObject::styleDidChange(StyleDifference diff, const RenderStyl
             setNeedsTransformUpdate();
     }
 
+    if (isBlendingAllowed()) {
+        bool hasBlendModeChanged = (oldStyle && oldStyle->hasBlendMode()) == !style()->hasBlendMode();
+        if (parent() && hasBlendModeChanged)
+            parent()->descendantIsolationRequirementsChanged(style()->hasBlendMode() ? DescendantIsolationRequired : DescendantIsolationNeedsUpdate);
+    }
+
     RenderObject::styleDidChange(diff, oldStyle);
     SVGResourcesCache::clientStyleChanged(this, diff, style());
 }

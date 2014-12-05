@@ -468,6 +468,14 @@ public:
     virtual void setNeedsTransformUpdate() { }
     virtual void setNeedsBoundariesUpdate();
 
+    bool isBlendingAllowed() const { return !isSVG() || (isSVGContainer() && !isSVGHiddenContainer()) || isSVGShape() || isSVGImage() || isSVGText(); }
+    virtual bool hasNonIsolatedBlendingDescendants() const { return false; }
+    enum DescendantIsolationState {
+        DescendantIsolationRequired,
+        DescendantIsolationNeedsUpdate,
+    };
+    virtual void descendantIsolationRequirementsChanged(DescendantIsolationState) { }
+
     // Per SVG 1.1 objectBoundingBox ignores clipping, masking, filter effects, opacity and stroke-width.
     // This is used for all computation of objectBoundingBox relative units and by SVGLocatable::getBBox().
     // NOTE: Markers are not specifically ignored here by SVG 1.1 spec, but we ignore them

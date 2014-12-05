@@ -450,4 +450,27 @@ bool SVGRenderSupport::isRenderableTextNode(const RenderObject* object)
     return object->isSVGInlineText() && !toRenderSVGInlineText(object)->hasEmptyText();
 }
 
+bool SVGRenderSupport::willIsolateBlendingDescendantsForStyle(const RenderStyle* style)
+{
+    ASSERT(style);
+    const SVGRenderStyle& svgStyle = style->svgStyle();
+
+    return style->hasIsolation() || style->opacity() < 1 || style->hasBlendMode()
+        || svgStyle.hasFilter() || svgStyle.hasMasker() || svgStyle.hasClipper();
+}
+
+bool SVGRenderSupport::willIsolateBlendingDescendantsForObject(const RenderObject* object)
+{
+    if (object->isSVGHiddenContainer())
+        return false;
+    if (!object->isSVGRoot() && !object->isSVGContainer())
+        return false;
+    return willIsolateBlendingDescendantsForStyle(object->style());
+}
+
+bool SVGRenderSupport::isIsolationRequired(const RenderObject* object)
+{
+    return willIsolateBlendingDescendantsForObject(object) && object->hasNonIsolatedBlendingDescendants();
+}
+
 }

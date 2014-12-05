@@ -80,6 +80,7 @@ public:
     // Used by all SVG renderers who apply clip/filter/etc. resources to the renderer content.
     void prepareToRenderSVGContent(RenderObject*, PaintInfo&);
     bool isRenderingPrepared() const { return m_renderingFlags & RenderingPrepared; }
+    bool isIsolationInstalled() const;
 
     static void renderSubtree(GraphicsContext*, RenderObject*);
 

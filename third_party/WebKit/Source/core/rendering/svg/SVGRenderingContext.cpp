@@ -30,6 +30,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "platform/FloatConversion.h"
@@ -93,11 +94,12 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
 
     // Setup transparency layers before setting up SVG resources!
     bool isRenderingMask = paintInfo.isRenderingClipPathAsMaskImage();
-    // RenderLayer takes care of root opacity.
-    float opacity = object->isSVGRoot() ? 1 : style->opacity();
-    bool hasBlendMode = style->hasBlendMode();
 
-    if (!isRenderingMask && (opacity < 1 || hasBlendMode || style->hasIsolation())) {
+    float opacity = style->opacity();
+    bool hasBlendMode = style->hasBlendMode() && object->isBlendingAllowed();
+
+    // RenderLayer takes care of root opacity and blend mode.
+    if (!isRenderingMask && !object->isSVGRoot() && (opacity < 1 || hasBlendMode)) {
         FloatRect paintInvalidationRect = m_object->paintInvalidationRectInLocalCoordinates();
         m_paintInfo->context->clip(paintInvalidationRect);
 
@@ -170,7 +172,23 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
             return;
     }
 
+    if (!isIsolationInstalled() && SVGRenderSupport::isIsolationRequired(object)) {
+        m_paintInfo->context->beginTransparencyLayer(1);
+        m_renderingFlags |= EndOpacityLayer;
+    }
+
     m_renderingFlags |= RenderingPrepared;
+}
+
+bool SVGRenderingContext::isIsolationInstalled() const
+{
+    if (m_renderingFlags & EndOpacityLayer)
+        return true;
+    if (m_masker || m_filter)
+        return true;
+    if (m_clipper && m_clipperState == RenderSVGResourceClipper::ClipperAppliedMask)
+        return true;
+    return false;
 }
 
 static AffineTransform& currentContentTransformation()
