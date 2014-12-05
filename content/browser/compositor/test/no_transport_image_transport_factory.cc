@@ -14,7 +14,9 @@
 namespace content {
 
 NoTransportImageTransportFactory::NoTransportImageTransportFactory()
-    : context_factory_(new ui::InProcessContextFactory),
+    // The context factory created here is for unit tests, thus passing in true
+    // in constructor.
+    : context_factory_(new ui::InProcessContextFactory(true)),
       surface_manager_(new cc::SurfaceManager) {
 }
 

@@ -40,7 +40,7 @@
 
 - (void)drawRect:(NSRect)rect {
   DCHECK(compositor_) << "Drawing with no compositor set.";
-  compositor_->Draw();
+  compositor_->ScheduleFullRedraw();
 }
 @end
 

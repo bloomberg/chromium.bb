@@ -25,8 +25,6 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/vector2d.h"
 
-class SkBitmap;
-
 namespace base {
 class MessageLoopProxy;
 class RunLoop;
@@ -175,9 +173,6 @@ class COMPOSITOR_EXPORT Compositor
   // compositing layers on.
   float device_scale_factor() const { return device_scale_factor_; }
 
-  // Draws the scene created by the layer tree and any visual effects.
-  void Draw();
-
   // Where possible, draws are scissored to a damage region calculated from
   // changes to layer properties.  This bypasses that and indicates that
   // the whole frame needs to be drawn.
@@ -264,13 +259,8 @@ class COMPOSITOR_EXPORT Compositor
   void DidCompleteSwapBuffers() override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
-  void ScheduleComposite() override;
-  void ScheduleAnimation() override;
   void DidPostSwapBuffers() override;
   void DidAbortSwapBuffers() override;
-
-  int last_started_frame() { return last_started_frame_; }
-  int last_ended_frame() { return last_ended_frame_; }
 
   bool IsLocked() { return compositor_lock_ != NULL; }
 
@@ -295,9 +285,6 @@ class COMPOSITOR_EXPORT Compositor
 
   // Called to release any pending CompositorLock
   void CancelCompositorLock();
-
-  // Notifies the compositor that compositing is complete.
-  void NotifyEnd();
 
   gfx::Size size_;
 
@@ -329,15 +316,6 @@ class COMPOSITOR_EXPORT Compositor
   bool disable_schedule_composite_;
 
   CompositorLock* compositor_lock_;
-
-  // Prevent more than one draw from being scheduled.
-  bool defer_draw_scheduling_;
-
-  // Used to prevent Draw()s while a composite is in progress.
-  bool waiting_on_compositing_end_;
-  bool draw_on_compositing_end_;
-  enum SwapState { SWAP_NONE, SWAP_POSTED, SWAP_COMPLETED };
-  SwapState swap_state_;
 
   LayerAnimatorCollection layer_animator_collection_;
 

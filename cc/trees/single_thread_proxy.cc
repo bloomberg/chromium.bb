@@ -90,6 +90,7 @@ void SingleThreadProxy::SetLayerTreeHostClientReady() {
   if (layer_tree_host_->settings().single_thread_proxy_scheduler &&
       !scheduler_on_impl_thread_) {
     SchedulerSettings scheduler_settings(layer_tree_host_->settings());
+    // SingleThreadProxy should run in main thread low latency mode.
     scheduler_settings.main_thread_should_always_be_low_latency = true;
     scheduler_on_impl_thread_ =
         Scheduler::Create(this,
@@ -426,13 +427,10 @@ void SingleThreadProxy::DidActivateSyncTree() {
     // the pending tree is not actually ready in the SingleThreadProxy.
     layer_tree_host_impl_->SetRequiresHighResToDraw();
 
-    // Since activation could cause tasks to run, post CommitComplete
-    // separately so that it runs after these tasks.  This is the loose
-    // equivalent of blocking commit until activation and also running
-    // all tasks posted during commit/activation before CommitComplete.
-    MainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&SingleThreadProxy::CommitComplete,
-                              weak_factory_.GetWeakPtr()));
+    // Synchronously call to CommitComplete. Resetting
+    // |commit_blocking_task_runner| would make sure all tasks posted during
+    // commit/activation before CommitComplete.
+    CommitComplete();
   }
 
   timing_history_.DidActivateSyncTree();
