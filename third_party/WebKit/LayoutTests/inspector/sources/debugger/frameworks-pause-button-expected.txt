@@ -1,6 +1,8 @@
 Tests that hitting on pause button will not stop inside blackboxed framework.
 
 Call stack:
-    0) callback (frameworks-pause-button.html:14)
-  * 1) Framework_bound (framework.js:105)
+    0) callback (frameworks-pause-button.html:12)
+  * 1) Framework.safeRun (framework.js:8)
+  * 2) Framework.safeRun (framework.js:10)
+  * 3) Framework_bound (framework.js:105)
 

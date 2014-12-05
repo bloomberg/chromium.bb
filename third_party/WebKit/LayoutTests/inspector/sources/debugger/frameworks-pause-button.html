@@ -5,13 +5,12 @@
 <script src="resources/framework.js"></script>
 <script>
 
-var func = Framework.willSchedule(Framework.bind(callback, null));
-func = Framework.willSchedule(Framework.bind(Framework.safeRun, null, func));
-func = Framework.willSchedule(func, 0);
+var func = Framework.bind(Framework.safeRun, null, Framework.empty, callback);
 
 function callback()
 {
-    return 0; // Should pause here.
+    var x = 42; // Should pause here.
+    return x;
 }
 
 function test()
