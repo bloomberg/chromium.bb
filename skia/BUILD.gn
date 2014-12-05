@@ -295,9 +295,6 @@ component("skia") {
     "ext/google_logging.cc",
     "ext/image_operations.cc",
     "ext/image_operations.h",
-    "ext/lazy_pixel_ref.cc",
-    "ext/lazy_pixel_ref.h",
-    "ext/SkThread_chrome.cc",
     "ext/opacity_draw_filter.cc",
     "ext/opacity_draw_filter.h",
     "ext/pixel_ref_utils.cc",
@@ -431,13 +428,6 @@ component("skia") {
     ]
   }
 
-  # Fixup Chrome sources.
-  if (is_posix) {
-    sources -= [ "ext/SkThread_chrome.cc" ]
-  }
-  if (is_win) {
-    sources -= [ "ext/SkThread_chrome.cc" ]
-  }
   if (is_android && (!enable_basic_printing && !enable_print_preview)) {
     sources -= [ "ext/skia_utils_base.cc" ]
   }

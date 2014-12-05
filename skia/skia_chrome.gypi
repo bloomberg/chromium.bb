@@ -52,8 +52,6 @@
     'ext/google_logging.cc',
     'ext/image_operations.cc',
     'ext/image_operations.h',
-    'ext/lazy_pixel_ref.cc',
-    'ext/lazy_pixel_ref.h',
     'ext/opacity_draw_filter.cc',
     'ext/opacity_draw_filter.h',
     'ext/pixel_ref_utils.cc',
