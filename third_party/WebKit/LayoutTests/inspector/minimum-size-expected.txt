@@ -3,101 +3,101 @@ Tests how view minimum size works.
 Creating simple hierarchy
 [splitView] left = 0; right = 500; top = 0; bottom = 500
 [mainView] left = 0; right = 250; top = 0; bottom = 500
-[sidebarView] left = 250; right = 500; top = 0; bottom = 500
+[sidebarView] left = 251; right = 500; top = 0; bottom = 500
 Changing sidebar size
 [splitView] left = 0; right = 500; top = 0; bottom = 500
-[mainView] left = 0; right = 460; top = 0; bottom = 500
+[mainView] left = 0; right = 459; top = 0; bottom = 500
 [sidebarView] left = 460; right = 500; top = 0; bottom = 500
 Changing sidebar view minimum size
 [splitView] left = 0; right = 500; top = 0; bottom = 500
-[mainView] left = 0; right = 410; top = 0; bottom = 500
+[mainView] left = 0; right = 409; top = 0; bottom = 500
 [sidebarView] left = 410; right = 500; top = 0; bottom = 500
 Changing orientation
 [splitView] left = 0; right = 500; top = 0; bottom = 500
 [mainView] left = 0; right = 500; top = 0; bottom = 250
-[sidebarView] left = 0; right = 500; top = 250; bottom = 500
+[sidebarView] left = 0; right = 500; top = 251; bottom = 500
 Changing main view minimum size
 [splitView] left = 0; right = 500; top = 0; bottom = 500
 [mainView] left = 0; right = 500; top = 0; bottom = 450
-[sidebarView] left = 0; right = 500; top = 450; bottom = 500
+[sidebarView] left = 0; right = 500; top = 451; bottom = 500
 Changing main view minimum size back and resizing
 [splitView] left = 0; right = 500; top = 0; bottom = 500
 [mainView] left = 0; right = 500; top = 0; bottom = 80
-[sidebarView] left = 0; right = 500; top = 80; bottom = 500
+[sidebarView] left = 0; right = 500; top = 81; bottom = 500
 Wrapping main view to a split view
 [splitView] left = 0; right = 500; top = 0; bottom = 500
 [mainView] left = 0; right = 500; top = 0; bottom = 80
-[sidebarView] left = 0; right = 500; top = 80; bottom = 500
+[sidebarView] left = 0; right = 500; top = 81; bottom = 500
 [childSplitView] left = 0; right = 500; top = 0; bottom = 80
 Adding invisble sidebar
 [splitView] left = 0; right = 500; top = 0; bottom = 500
 [mainView] left = 0; right = 500; top = 0; bottom = 80
-[sidebarView] left = 0; right = 500; top = 80; bottom = 500
+[sidebarView] left = 0; right = 500; top = 81; bottom = 500
 [childSplitView] left = 0; right = 500; top = 0; bottom = 80
 [secondSidebarView] left = 0; right = 0; top = 0; bottom = 0
 Showing sidebar
 [splitView] left = 0; right = 500; top = 0; bottom = 500
 [mainView] left = 0; right = 500; top = 0; bottom = 80
-[sidebarView] left = 0; right = 500; top = 140; bottom = 500
-[childSplitView] left = 0; right = 500; top = 0; bottom = 140
-[secondSidebarView] left = 0; right = 500; top = 80; bottom = 140
+[sidebarView] left = 0; right = 500; top = 142; bottom = 500
+[childSplitView] left = 0; right = 500; top = 0; bottom = 141
+[secondSidebarView] left = 0; right = 500; top = 81; bottom = 141
 Detaching sidebar
 [splitView] left = 0; right = 500; top = 0; bottom = 500
 [mainView] left = 0; right = 500; top = 0; bottom = 80
-[sidebarView] left = 0; right = 500; top = 100; bottom = 500
-[childSplitView] left = 0; right = 500; top = 0; bottom = 100
+[sidebarView] left = 0; right = 500; top = 102; bottom = 500
+[childSplitView] left = 0; right = 500; top = 0; bottom = 101
 Attaching another sidebar
 [splitView] left = 0; right = 500; top = 0; bottom = 500
 [mainView] left = 0; right = 500; top = 0; bottom = 80
-[sidebarView] left = 0; right = 500; top = 160; bottom = 500
-[childSplitView] left = 0; right = 500; top = 0; bottom = 160
-[thirdSidebarView] left = 0; right = 500; top = 80; bottom = 160
+[sidebarView] left = 0; right = 500; top = 162; bottom = 500
+[childSplitView] left = 0; right = 500; top = 0; bottom = 161
+[thirdSidebarView] left = 0; right = 500; top = 81; bottom = 161
 Swapping main and sidebar
 [splitView] left = 0; right = 500; top = 0; bottom = 500
-[mainView] left = 0; right = 500; top = 340; bottom = 420
-[sidebarView] left = 0; right = 500; top = 0; bottom = 340
-[childSplitView] left = 0; right = 500; top = 340; bottom = 500
+[mainView] left = 0; right = 500; top = 339; bottom = 419
+[sidebarView] left = 0; right = 500; top = 0; bottom = 338
+[childSplitView] left = 0; right = 500; top = 339; bottom = 500
 [thirdSidebarView] left = 0; right = 500; top = 420; bottom = 500
 Arranging preferred sizes
 [splitView] left = 0; right = 500; top = 0; bottom = 500
 [mainView] left = 0; right = 500; top = 260; bottom = 420
-[sidebarView] left = 0; right = 500; top = 0; bottom = 260
+[sidebarView] left = 0; right = 500; top = 0; bottom = 259
 [childSplitView] left = 0; right = 500; top = 260; bottom = 500
-[thirdSidebarView] left = 0; right = 500; top = 420; bottom = 500
+[thirdSidebarView] left = 0; right = 500; top = 421; bottom = 500
 Less than sidebar preferred size
 [splitView] left = 0; right = 500; top = 0; bottom = 500
-[mainView] left = 0; right = 500; top = 80; bottom = 400
+[mainView] left = 0; right = 500; top = 81; bottom = 400
 [sidebarView] left = 0; right = 500; top = 0; bottom = 80
-[childSplitView] left = 0; right = 500; top = 80; bottom = 500
-[thirdSidebarView] left = 0; right = 500; top = 400; bottom = 500
+[childSplitView] left = 0; right = 500; top = 81; bottom = 500
+[thirdSidebarView] left = 0; right = 500; top = 401; bottom = 500
 Size changes proportionally
 [splitView] left = 0; right = 500; top = 0; bottom = 500
 [mainView] left = 0; right = 500; top = 320; bottom = 440
-[sidebarView] left = 0; right = 500; top = 0; bottom = 320
+[sidebarView] left = 0; right = 500; top = 0; bottom = 319
 [childSplitView] left = 0; right = 500; top = 320; bottom = 500
-[thirdSidebarView] left = 0; right = 500; top = 440; bottom = 500
+[thirdSidebarView] left = 0; right = 500; top = 441; bottom = 500
 Manual resize inside child split view
 [splitView] left = 0; right = 500; top = 0; bottom = 500
-[mainView] left = 0; right = 500; top = 320; bottom = 450
-[sidebarView] left = 0; right = 500; top = 0; bottom = 320
+[mainView] left = 0; right = 500; top = 320; bottom = 449
+[sidebarView] left = 0; right = 500; top = 0; bottom = 319
 [childSplitView] left = 0; right = 500; top = 320; bottom = 500
 [thirdSidebarView] left = 0; right = 500; top = 450; bottom = 500
 Manual resize inside child split view
 [splitView] left = 0; right = 500; top = 0; bottom = 500
 [mainView] left = 0; right = 500; top = 320; bottom = 380
-[sidebarView] left = 0; right = 500; top = 0; bottom = 320
+[sidebarView] left = 0; right = 500; top = 0; bottom = 319
 [childSplitView] left = 0; right = 500; top = 320; bottom = 500
-[thirdSidebarView] left = 0; right = 500; top = 380; bottom = 500
+[thirdSidebarView] left = 0; right = 500; top = 381; bottom = 500
 Child split view gets more space
 [splitView] left = 0; right = 500; top = 0; bottom = 500
 [mainView] left = 0; right = 500; top = 170; bottom = 380
-[sidebarView] left = 0; right = 500; top = 0; bottom = 170
+[sidebarView] left = 0; right = 500; top = 0; bottom = 169
 [childSplitView] left = 0; right = 500; top = 170; bottom = 500
-[thirdSidebarView] left = 0; right = 500; top = 380; bottom = 500
+[thirdSidebarView] left = 0; right = 500; top = 381; bottom = 500
 Child split view gets less space
 [splitView] left = 0; right = 500; top = 0; bottom = 500
-[mainView] left = 0; right = 500; top = 360; bottom = 450
-[sidebarView] left = 0; right = 500; top = 0; bottom = 360
+[mainView] left = 0; right = 500; top = 360; bottom = 451
+[sidebarView] left = 0; right = 500; top = 0; bottom = 359
 [childSplitView] left = 0; right = 500; top = 360; bottom = 500
-[thirdSidebarView] left = 0; right = 500; top = 450; bottom = 500
+[thirdSidebarView] left = 0; right = 500; top = 452; bottom = 500
 
