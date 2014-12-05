@@ -446,25 +446,9 @@ bool RundownTaskCounter::TimedWait(const base::TimeDelta& max_time) {
   return waitable_event_.TimedWait(max_time);
 }
 
-bool ExperimentUseBrokenSynchronization() {
-  // The logoff behavior used to have a race, whereby it would perform profile
-  // IO writes on the blocking thread pool, but would sycnhronize to the FILE
-  // thread. Windows feels free to terminate any process that's hidden or
-  // destroyed all it's windows, and sometimes Chrome would be terminated
-  // with pending profile IO due to this mis-synchronization.
-  // Under the "WindowsLogoffRace" experiment group, the broken behavior is
-  // emulated, in order to allow measuring what fraction of unclean shutdowns
-  // are due to this bug.
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("WindowsLogoffRace");
-  return group_name == "BrokenSynchronization";
-}
-
 }  // namespace
 
 void BrowserProcessImpl::EndSession() {
-  bool use_broken_synchronization = ExperimentUseBrokenSynchronization();
-
   // Mark all the profiles as clean.
   ProfileManager* pm = profile_manager();
   std::vector<Profile*> profiles(pm->GetLoadedProfiles());
@@ -473,8 +457,7 @@ void BrowserProcessImpl::EndSession() {
     Profile* profile = profiles[i];
     profile->SetExitType(Profile::EXIT_SESSION_ENDED);
 
-    if (!use_broken_synchronization)
-      rundown_counter->Post(profile->GetIOTaskRunner().get());
+    rundown_counter->Post(profile->GetIOTaskRunner().get());
   }
 
   // Tell the metrics service it was cleanly shutdown.
@@ -487,8 +470,7 @@ void BrowserProcessImpl::EndSession() {
     // commit metrics::prefs::kStabilitySessionEndCompleted change immediately.
     local_state()->CommitPendingWrite();
 
-    if (!use_broken_synchronization)
-      rundown_counter->Post(local_state_task_runner_.get());
+    rundown_counter->Post(local_state_task_runner_.get());
 #endif
   }
 
@@ -502,11 +484,6 @@ void BrowserProcessImpl::EndSession() {
   // If you change the condition here, be sure to also change
   // ProfileBrowserTests to match.
 #if defined(USE_X11) || defined(OS_WIN)
-  if (use_broken_synchronization) {
-    rundown_counter->Post(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get());
-  }
-
   // Do a best-effort wait on the successful countdown of rundown tasks. Note
   // that if we don't complete "quickly enough", Windows will terminate our
   // process.

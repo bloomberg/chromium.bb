@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
@@ -251,16 +250,6 @@ void ExitCleanly() {
 }
 #endif
 
-namespace {
-
-bool ExperimentUseBrokenSynchronization() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("WindowsLogoffRace");
-  return group_name == "BrokenSynchronization";
-}
-
-}  // namespace
-
 void SessionEnding() {
   // This is a time-limited shutdown where we need to write as much to
   // disk as we can as soon as we can, and where we must kill the
@@ -294,25 +283,11 @@ void SessionEnding() {
   base::win::SetShouldCrashOnProcessDetach(false);
 #endif
 
-  if (ExperimentUseBrokenSynchronization()) {
-    CloseAllBrowsers();
-
-    // Send out notification. This is used during testing so that the test
-    // harness can properly shutdown before we exit.
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_SESSION_END,
-        content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
-
-    // This will end by terminating the process.
-    content::ImmediateShutdownAndExitProcess();
-  } else {
-    // On Windows 7 and later, the system will consider the process ripe for
-    // termination as soon as it hides or destroys its windows. Since any
-    // execution past that point will be non-deterministically cut short, we
-    // might as well put ourselves out of that misery deterministically.
-    base::KillProcess(base::GetCurrentProcessHandle(), 0, false);
-  }
+  // On Windows 7 and later, the system will consider the process ripe for
+  // termination as soon as it hides or destroys its windows. Since any
+  // execution past that point will be non-deterministically cut short, we
+  // might as well put ourselves out of that misery deterministically.
+  base::KillProcess(base::GetCurrentProcessHandle(), 0, false);
 }
 
 void IncrementKeepAliveCount() {
