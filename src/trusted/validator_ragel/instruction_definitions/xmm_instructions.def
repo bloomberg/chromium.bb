@@ -56,20 +56,16 @@ andps Wps Vps, 0x0f 0x54, CPUFeature_SSE
 vandps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x54, CPUFeature_AVX
 ######## BLENDPD/VBLENDPD ######################################################
 blendpd Ib Wpd Vpd, 0x66 0x0f 0x3a 0x0d, CPUFeature_SSE41
-vblendpd Ib Wpdx Hpdx Vpdx, 0xc4 RXB.00011 x.src.L.01 0x0d,
-    CPUFeature_AVX disabled_untested
+vblendpd Ib Wpdx Hpdx Vpdx, 0xc4 RXB.00011 x.src.L.01 0x0d, CPUFeature_AVX
 ######## BLENDPS/VBLENDPS ######################################################
 blendps Ib Wps Vps, 0x66 0x0f 0x3a 0x0c, CPUFeature_SSE41
-vblendps Ib Wpsx Hpsx Vpsx, 0xc4 RXB.00011 x.src.L.01 0x0c,
-    CPUFeature_AVX disabled_untested
+vblendps Ib Wpsx Hpsx Vpsx, 0xc4 RXB.00011 x.src.L.01 0x0c, CPUFeature_AVX
 ######## BLENDVPD/VBLENDVPD ####################################################
 blendvpd apd Wpd Vpd, 0x66 0x0f 0x38 0x15, CPUFeature_SSE41
-vblendvpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 x.src.L.01 0x4b,
-    CPUFeature_AVX disabled_untested
+vblendvpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 x.src.L.01 0x4b, CPUFeature_AVX
 ######## BLENDVPS/VBLENDVPS ####################################################
 blendvps aps Wps Vps, 0x66 0x0f 0x38 0x14, CPUFeature_SSE41
-vblendvps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 x.src.L.01 0x4a,
-    CPUFeature_AVX disabled_untested
+vblendvps Lpsx Wpsx Hpsx Vpsx, 0xc4 RXB.00011 x.src.L.01 0x4a, CPUFeature_AVX
 ######## CMPPD/VCMPPD ##########################################################
 # "cmppd/vcmppd" actually uses immediate byte as opcode extension.
 # We don't care about fine differences and only recognize three-operand version
@@ -388,20 +384,16 @@ vcmptrue_usss Wss Hss Vss, 0xc4 RXB.00001 x.src.x.10 0xc2 / 0x1f,
     CPUFeature_AVX nacl-forbidden
 ######## COMISD/VCOMISD ########################################################
 comisd Wsd Vsd, 0x66 0x0f 0x2f, CPUFeature_SSE2
-vcomisd Wsd Vsd, 0xc4 RXB.00001 x.src.x.01 0x2f,
-    CPUFeature_AVX disabled_untested
+vcomisd Wsd Vsd, 0xc4 RXB.00001 x.src.x.01 0x2f, CPUFeature_AVX
 ######## COMISS/VCOMISS ########################################################
 comiss Wsd Vsd, 0x0f 0x2f, CPUFeature_SSE
-vcomiss Wsd Vsd, 0xc4 RXB.00001 x.src.x.00 0x2f,
-    CPUFeature_AVX disabled_untested
+vcomiss Wsd Vsd, 0xc4 RXB.00001 x.src.x.00 0x2f, CPUFeature_AVX
 ######## CVTDQ2PD/VCVTDQ2PD ####################################################
 cvtdq2pd Wpj Vpd, 0xf3 0x0f 0xe6, CPUFeature_SSE2
-vcvtdq2pd Wpj Vpdx, 0xc4 RXB.00001 x.1111.L.10 0xe6,
-    CPUFeature_AVX disabled_untested
+vcvtdq2pd Wpj Vpdx, 0xc4 RXB.00001 x.1111.L.10 0xe6, CPUFeature_AVX
 ######## CVTDQ2PS/VCVTDQ2PS ####################################################
 cvtdq2ps Wpj Vps, 0x0f 0x5b, CPUFeature_SSE2
-vcvtdq2ps Wpjx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x5b,
-    CPUFeature_AVX disabled_untested
+vcvtdq2ps Wpjx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x5b, CPUFeature_AVX
 ######## CVTPD2DQ/VCVTPD2DQ ####################################################
 cvtpd2dq Wpd Vpj, 0xf2 0x0f 0xe6, CPUFeature_SSE2
 vcvtpd2dq Wpdx Vpj, 0xc4 RXB.00001 x.1111.L.11 0xe6,
@@ -412,12 +404,10 @@ vcvtpd2ps Wpdx Vps, 0xc4 RXB.00001 x.1111.L.01 0x5a,
     CPUFeature_AVX disabled_untested
 ######## CVTPS2DQ/VCVTPS2DQ ####################################################
 cvtps2dq Wps Vpj, 0x66 0x0f 0x5b, CPUFeature_SSE2
-vcvtps2dq Wpsx Vpjx, 0xc4 RXB.00001 x.1111.L.01 0x5b,
-    CPUFeature_AVX disabled_untested
+vcvtps2dq Wpsx Vpjx, 0xc4 RXB.00001 x.1111.L.01 0x5b, CPUFeature_AVX
 ######## CVTPS2PD/VCVTPS2PD ####################################################
 cvtps2pd Wps Vpd, 0x0f 0x5a, CPUFeature_SSE2
-vcvtps2pd Wps Vpdx, 0xc4 RXB.00001 x.1111.L.00 0x5a,
-    CPUFeature_AVX disabled_untested
+vcvtps2pd Wps Vpdx, 0xc4 RXB.00001 x.1111.L.00 0x5a, CPUFeature_AVX
 ######## CVTSD2SI/VCVTSD2SI ####################################################
 cvtsd2si Wsd Gy, 0xf2 0x0f 0x2d, CPUFeature_SSE2
 vcvtsd2si Wsd Gy, 0xc4 RXB.00001 W.1111.x.11 0x2d,
@@ -470,12 +460,10 @@ divss Wss Vss, 0xf3 0x0f 0x5e, CPUFeature_SSE
 vdivss Wss Hss Vss, 0xc4 RXB.00001 x.src.x.10 0x5e, CPUFeature_AVX
 ######## DPPD/DPPD #############################################################
 dppd Ib Wpd Vpd, 0x66 0x0f 0x3a 0x41, CPUFeature_SSE41
-vdppd Ib Wpd Hpd Vpd, 0xc4 RXB.00011 x.src.0.01 0x41,
-    CPUFeature_AVX disabled_untested
+vdppd Ib Wpd Hpd Vpd, 0xc4 RXB.00011 x.src.0.01 0x41, CPUFeature_AVX
 ######## DPPS/DPPS #############################################################
 dpps Ib Wps Vps, 0x66 0x0f 0x3a 0x40, CPUFeature_SSE41
-vdpps Ib Wpsx Hpsx Vpsx, 0xc4 RXB.00011 x.src.L.01 0x40,
-    CPUFeature_AVX disabled_untested
+vdpps Ib Wpsx Hpsx Vpsx, 0xc4 RXB.00011 x.src.L.01 0x40, CPUFeature_AVX
 ######## EXTRACTPS/VEXTRACTPS ##################################################
 extractps Ib Vps Md, 0x66 0x0f 0x3a 0x17, CPUFeature_SSE41
 extractps Ib Vps Ry, 0x66 0x0f 0x3a 0x17, CPUFeature_SSE41
@@ -501,23 +489,18 @@ vhsubps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.11 0x7d, CPUFeature_AVX
 ######## INSERTPS/VINSERTPS ####################################################
 insertps Ib Md Vps, 0x66 0x0f 0x3a 0x21, CPUFeature_SSE41
 insertps Ib Uo Vps, 0x66 0x0f 0x3a 0x21, CPUFeature_SSE41
-vinsertps Ib Md Ho Vo, 0xc4 RXB.00011 x.src.0.01 0x21,
-    CPUFeature_AVX disabled_untested
-vinsertps Ib Uo Ho Vo, 0xc4 RXB.00011 x.src.0.01 0x21,
-    CPUFeature_AVX disabled_untested
+vinsertps Ib Md Ho Vo, 0xc4 RXB.00011 x.src.0.01 0x21, CPUFeature_AVX
+vinsertps Ib Uo Ho Vo, 0xc4 RXB.00011 x.src.0.01 0x21, CPUFeature_AVX
 ######## INSERTQ ###############################################################
 insertq ib Ib Uq Vq, 0xf2 0x0f 0x78, CPUFeature_SSE4A
 insertq Uq Vq, 0xf2 0x0f 0x79, CPUFeature_SSE4A
 ######## LDDQU/VLDDQU ##########################################################
 lddqu Mdq Vpd, 0xf2 0x0f 0xf0, CPUFeature_SSE3
-vlddqu Mo Vo, 0xc4 RXB.00001 x.1111.0.11 0xf0,
-    CPUFeature_AVX disabled_untested
-vlddqu Mdo Vdo, 0xc4 RXB.00001 x.1111.1.11 0xf0,
-    CPUFeature_AVX disabled_untested
+vlddqu Mo Vo, 0xc4 RXB.00001 x.1111.0.11 0xf0, CPUFeature_AVX
+vlddqu Mdo Vdo, 0xc4 RXB.00001 x.1111.1.11 0xf0, CPUFeature_AVX
 ######## LDMXCSR/VLDMXCSR ######################################################
 ldmxcsr Md, 0x0f 0xae /2, CPUFeature_SSE
-vldmxcsr Md, 0xc4 RXB.00001 x.1111.0.00 0xae /2,
-    CPUFeature_AVX disabled_untested
+vldmxcsr Md, 0xc4 RXB.00001 x.1111.0.00 0xae /2, CPUFeature_AVX
 ######## MASKMOVDQU/VMASKMOVDQU ################################################
 maskmovdqu Upb Vpb, 0x66 0x0f 0xf7, CPUFeature_SSE2 nacl-amd64-forbidden
 vmaskmovdqu Upb Vpb, 0xc4 RXB.00001 x.1111.0.01 0xf7,
@@ -632,8 +615,7 @@ vmovlps Vps Mq, 0xc4 RXB.00001 x.1111.0.00 0x13, CPUFeature_AVX
 # significant two bits and this operation produces precisely idential output for
 # "Gy" and "Gd" operands.  We'll use objdump's description.
 movmskpd Upd Gy, 0x66 0x0f 0x50, CPUFeature_SSE2
-vmovmskpd Updx Gd, 0xc4 RXB.00001 x.1111.L.01 0x50,
-    CPUFeature_AVX disabled_untested
+vmovmskpd Updx Gd, 0xc4 RXB.00001 x.1111.L.01 0x50, CPUFeature_AVX
 ######## MOVMSKPS/VMOVMSKPS ####################################################
 # Textbook definition of "movmskps" as per AMD/Intel manuals looks like this:
 #  movmskps Upd Gd, 0x0f 0x50, CPUFeature_SSE2
@@ -642,26 +624,20 @@ vmovmskpd Updx Gd, 0xc4 RXB.00001 x.1111.L.01 0x50,
 # significant four bits and this operation produces precisely idential output
 # for "Gy" and "Gd" operands.  We'll use objdump's description.
 movmskps Ups Gy, 0x0f 0x50, CPUFeature_SSE
-vmovmskps Upsx Gd, 0xc4 RXB.00001 x.1111.L.00 0x50,
-    CPUFeature_AVX disabled_untested
+vmovmskps Upsx Gd, 0xc4 RXB.00001 x.1111.L.00 0x50, CPUFeature_AVX
 ######## MOVNTDQ/VMOVNTDQ ######################################################
 movntdq Vdq Mdq, 0x66 0x0f 0xe7, CPUFeature_SSE2
-vmovntdq Vo Mo, 0xc4 RXB.00001 x.1111.0.01 0xe7,
-    CPUFeature_AVX disabled_untested
-vmovntdq Vdo Mdo, 0xc4 RXB.00001 x.1111.1.01 0xe7,
-    CPUFeature_AVX disabled_untested
+vmovntdq Vo Mo, 0xc4 RXB.00001 x.1111.0.01 0xe7, CPUFeature_AVX
+vmovntdq Vdo Mdo, 0xc4 RXB.00001 x.1111.1.01 0xe7, CPUFeature_AVX
 ######## MOVNTDQA/VMOVNTDQA ####################################################
 movntdqa Mo Vo, 0x66 0x0f 0x38 0x2a, CPUFeature_SSE41
-vmovntdqa Mo Vo, 0xc4 RXB.00010 x.1111.0.01 0x2a,
-    CPUFeature_AVX disabled_untested
+vmovntdqa Mo Vo, 0xc4 RXB.00010 x.1111.0.01 0x2a, CPUFeature_AVX
 ######## MOVNTPD/VMOVNTPD ######################################################
 movntpd Vpd Mpd, 0x66 0x0f 0x2b, CPUFeature_SSE2
-vmovntpd Vpdx Mpdx, 0xc4 RXB.00001 x.1111.L.01 0x2b,
-    CPUFeature_AVX disabled_untested
+vmovntpd Vpdx Mpdx, 0xc4 RXB.00001 x.1111.L.01 0x2b, CPUFeature_AVX
 ######## MOVNTPS/VMOVNTPS ######################################################
 movntps Vps Mps, 0x0f 0x2b, CPUFeature_SSE
-vmovntps Vpsx Mpsx, 0xc4 RXB.00001 x.1111.L.00 0x2b,
-    CPUFeature_AVX disabled_untested
+vmovntps Vpsx Mpsx, 0xc4 RXB.00001 x.1111.L.00 0x2b, CPUFeature_AVX
 ######## MOVNTSD ###############################################################
 movntsd Vsd Mq, 0xf2 0x0f 0x2b, CPUFeature_SSE4A
 ######## MOVNTSS ###############################################################
@@ -707,8 +683,7 @@ vmovups Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x10, CPUFeature_AVX
 vmovups Vpsx Wpsx, 0xc4 RXB.00001 x.1111.L.00 0x11, CPUFeature_AVX
 ######## MPSADBW/VMPSADBW ######################################################
 mpsadbw Ib Wpk Vpk, 0x66 0x0f 0x3a 0x42, CPUFeature_SSE41
-vmpsadbw Ib Wpk Hpk Vpi, 0xc4 RXB.00011 x.src.0.01 0x42,
-    CPUFeature_AVX disabled_untested
+vmpsadbw Ib Wpk Hpk Vpi, 0xc4 RXB.00011 x.src.0.01 0x42, CPUFeature_AVX
 ######## MULPD/VMULPD ##########################################################
 mulpd Wpd Vpd, 0x66 0x0f 0x59, CPUFeature_SSE2
 vmulpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x59, CPUFeature_AVX
@@ -729,16 +704,13 @@ orps Wpd Vpd, 0x0f 0x56, CPUFeature_SSE
 vorps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x56, CPUFeature_AVX
 ######## PABSB/VPABSB ##########################################################
 pabsb Wpk Vpk, 0x66 0x0f 0x38 0x1c, CPUFeature_SSSE3
-vpabsb Wpk Vpk, 0xc4 RXB.00010 x.1111.0.01 0x1c,
-    CPUFeature_AVX disabled_untested
+vpabsb Wpk Vpk, 0xc4 RXB.00010 x.1111.0.01 0x1c, CPUFeature_AVX
 ######## PABSD/VPABSD ##########################################################
 pabsd Wpj Vpj, 0x66 0x0f 0x38 0x1e, CPUFeature_SSSE3
-vpabsd Wpj Vpj, 0xc4 RXB.00010 x.1111.0.01 0x1e,
-    CPUFeature_AVX disabled_untested
+vpabsd Wpj Vpj, 0xc4 RXB.00010 x.1111.0.01 0x1e, CPUFeature_AVX
 ######## PABSW/VPABSW ##########################################################
 pabsw Wpi Vpi, 0x66 0x0f 0x38 0x1d, CPUFeature_SSSE3
-vpabsw Wpi Vpi, 0xc4 RXB.00010 x.1111.0.01 0x1d,
-    CPUFeature_AVX disabled_untested
+vpabsw Wpi Vpi, 0xc4 RXB.00010 x.1111.0.01 0x1d, CPUFeature_AVX
 ######## PACKSSDW/VPACKSSDW ####################################################
 packssdw Wdq Vdq, 0x66 0x0f 0x6b, CPUFeature_SSE2
 vpackssdw Wpj Hpj Vpi, 0xc4 RXB.00001 0.src1.0.01 0x6b, CPUFeature_AVX
@@ -777,8 +749,7 @@ paddw Wpi Vpi, 0x66 0x0f 0xfd, CPUFeature_SSE2
 vpaddw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xfd, CPUFeature_AVX
 ######## PALIGNR/VPALIGNR ######################################################
 palignr Ib Wpb Vpb, 0x66 0x0f 0x3a 0x0f, CPUFeature_SSSE3
-vpalignr Ib Wpb Hpb Vpb, 0xc4 RXB.00011 x.src.0.01 0x0f,
-    CPUFeature_AVX disabled_untested
+vpalignr Ib Wpb Hpb Vpb, 0xc4 RXB.00011 x.src.0.01 0x0f, CPUFeature_AVX
 ######## PAND/VPAND ############################################################
 pand Wo Vo, 0x66 0x0f 0xdb, CPUFeature_SSE2
 vpand Wo Ho Vo, 0xc4 RXB.00001 x.src.0.01 0xdb, CPUFeature_AVX
@@ -793,12 +764,10 @@ pavgw Wpi Vpi, 0x66 0x0f 0xe3, CPUFeature_SSE2
 vpavgw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xe3, CPUFeature_AVX
 ######## PBLENDVB/VPBLENDVB ####################################################
 pblendvb apb Wpb Vpb, 0x66 0x0f 0x38 0x10, CPUFeature_SSE41
-vpblendvb Lpb Wpb Hpb Vpb, 0xc4 RXB.00011 0.src.0.01 0x4c,
-    CPUFeature_AVX disabled_untested
+vpblendvb Lpb Wpb Hpb Vpb, 0xc4 RXB.00011 0.src.0.01 0x4c, CPUFeature_AVX
 ######## PBLENDW/VPBLENDW ######################################################
 pblendw Ib Wpw Vpw, 0x66 0x0f 0x3a 0x0e, CPUFeature_SSE41
-vpblendw Ib Wpw Hpw Vpw, 0xc4 RXB.00011 x.src.0.01 0x0e,
-    CPUFeature_AVX disabled_untested
+vpblendw Ib Wpw Hpw Vpw, 0xc4 RXB.00011 x.src.0.01 0x0e, CPUFeature_AVX
 ######## PCLMULQDQ/VPCLMULQDQ ##################################################
 # "pclmulqdq/vpclmulqdq" actually uses immediate byte as opcode extension.
 # We don't care about fine differences and only recognize three-operand version
@@ -835,12 +804,10 @@ pcmpeqw Wpi Vpw, 0x66 0x0f 0x75, CPUFeature_SSE2
 vpcmpeqw Wpi Hpi Vpw, 0xc4 RXB.00001 x.src.0.01 0x75, CPUFeature_AVX
 ######## PCMPESTRI/VPCMPESTRI ##################################################
 pcmpestri Ib Wo Vo, 0x66 0x0f 0x3a 0x61, CPUFeature_SSE42
-vpcmpestri Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x61,
-    CPUFeature_AVX disabled_untested
+vpcmpestri Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x61, CPUFeature_AVX
 ######## PCMPESTRM/VPCMPESTRM ##################################################
 pcmpestrm Ib Wo Vo, 0x66 0x0f 0x3a 0x60, CPUFeature_SSE42
-vpcmpestrm Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x60,
-    CPUFeature_AVX disabled_untested
+vpcmpestrm Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x60, CPUFeature_AVX
 ######## PCMPGTB/VPCMPGTB ######################################################
 pcmpgtb Wdq Vdq, 0x66 0x0f 0x64, CPUFeature_SSE2
 vpcmpgtb Wpk Hpk Vpb, 0xc4 RXB.00001 x.src.0.01 0x64, CPUFeature_AVX
@@ -855,12 +822,10 @@ pcmpgtw Wdq Vdq, 0x66 0x0f 0x65, CPUFeature_SSE2
 vpcmpgtw Wpi Hpi Vpw, 0xc4 RXB.00001 x.src.0.01 0x65, CPUFeature_AVX
 ######## PCMPISTRI/VPCMPISTRI ##################################################
 pcmpistri Ib Wo Vo, 0x66 0x0f 0x3a 0x63, CPUFeature_SSE42
-vpcmpistri Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x63,
-    CPUFeature_AVX disabled_untested
+vpcmpistri Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x63, CPUFeature_AVX
 ######## PCMPISTRM/VPCMPISTRM ##################################################
 pcmpistrm Ib Wo Vo, 0x66 0x0f 0x3a 0x62, CPUFeature_SSE42
-vpcmpistrm Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x62,
-    CPUFeature_AVX disabled_untested
+vpcmpistrm Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x62, CPUFeature_AVX
 ######## PEXTRB/VPEXTRB ########################################################
 # Textbook definition of "vpextrb" as per AMD/Intel manuals looks like this:
 #  vpextrb Ib Vpb Ry, 0xc4 RXB.00011 x.1111.0.01 0x14, CPUFeature_AVX
@@ -873,16 +838,13 @@ vpcmpistrm Ib Wo Vo, 0xc4 RXB.00011 x.1111.0.01 0x62,
 # shouldn't use XMM registers to hold addresses.
 pextrb Ib Vpk Mb, 0x66 0x0f 0x3a 0x14, CPUFeature_SSE41
 pextrb Ib Vpk Ry, 0x66 0x0f 0x3a 0x14, CPUFeature_SSE41
-vpextrb Ib Vpb Mb, 0xc4 RXB.00011 x.1111.0.01 0x14,
-    CPUFeature_AVX disabled_untested
-vpextrb Ib Vpb Rd, 0xc4 RXB.00011 x.1111.0.01 0x14,
-    CPUFeature_AVX disabled_untested
+vpextrb Ib Vpb Mb, 0xc4 RXB.00011 x.1111.0.01 0x14, CPUFeature_AVX
+vpextrb Ib Vpb Rd, 0xc4 RXB.00011 x.1111.0.01 0x14, CPUFeature_AVX
 ######## PEXTRD/VPEXTRD ########################################################
 # "pextrd/vpextrd" are not marked as nacl-amd64-zero-extends because you
 # shouldn't use XMM registers to hold addresses.
 pextrd Ib Vpk Ed, 0x66 0x0f 0x3a 0x16, norexw CPUFeature_SSE41
-vpextrd Ib Vpj Ed, 0xc4 RXB.00011 0.1111.0.01 0x16,
-    CPUFeature_AVX disabled_untested
+vpextrd Ib Vpj Ed, 0xc4 RXB.00011 0.1111.0.01 0x16, CPUFeature_AVX
 ######## PEXTRQ/VPEXTRQ ########################################################
 pextrq Ib Vpq Eq, 0x66 rexw 0x0f 0x3a 0x16, amd64 CPUFeature_SSE41
 vpextrq Ib Vpqw Eq, 0xc4 RXB.00011 1.1111.0.01 0x16,
@@ -903,12 +865,9 @@ vpextrq Ib Vpqw Eq, 0xc4 RXB.00011 1.1111.0.01 0x16,
 pextrw Ib Udq Gy, 0x66 0x0f 0xc5, CPUFeature_SSE2
 pextrw Ib Vpw Mw, 0x66 0x0f 0x3a 0x15, CPUFeature_SSE41
 pextrw Ib Vpw Ry, 0x66 0x0f 0x3a 0x15, CPUFeature_SSE41
-vpextrw Ib Upw Gd, 0xc4 RXB.00001 x.1111.0.01 0xc5,
-    CPUFeature_AVX disabled_untested
-vpextrw Ib Vpw Mw, 0xc4 RXB.00011 x.1111.0.01 0x15,
-    CPUFeature_AVX disabled_untested
-vpextrw Ib Vpw Rd, 0xc4 RXB.00011 x.1111.0.01 0x15,
-    CPUFeature_AVX disabled_untested
+vpextrw Ib Upw Gd, 0xc4 RXB.00001 x.1111.0.01 0xc5, CPUFeature_AVX
+vpextrw Ib Vpw Mw, 0xc4 RXB.00011 x.1111.0.01 0x15, CPUFeature_AVX
+vpextrw Ib Vpw Rd, 0xc4 RXB.00011 x.1111.0.01 0x15, CPUFeature_AVX
 ######## PHADDD/VPHADDD ########################################################
 phaddd Wpj Vpj, 0x66 0x0f 0x38 0x02, CPUFeature_SSSE3
 vphaddd Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x02, CPUFeature_AVX
@@ -920,8 +879,7 @@ phaddw Wpi Vpi, 0x66 0x0f 0x38 0x01, CPUFeature_SSSE3
 vphaddw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x01, CPUFeature_AVX
 ######## PHMINPOSUW/VPHMINPOSUW ################################################
 phminposuw Wpi Vpi, 0x66 0x0f 0x38 0x41, CPUFeature_SSE41
-vphminposuw Wpi Vo, 0xc4 RXB.00010 x.1111.0.01 0x41,
-    CPUFeature_AVX disabled_untested
+vphminposuw Wpi Vo, 0xc4 RXB.00010 x.1111.0.01 0x41, CPUFeature_AVX
 ######## PHSUBD/VPHSUBD ########################################################
 phsubd Wpj Vpj, 0x66 0x0f 0x38 0x06, CPUFeature_SSSE3
 vphsubd Wpj Hpj Vpj, 0xc4 RXB.00010 x.src.0.01 0x06, CPUFeature_AVX
@@ -1019,56 +977,43 @@ vpminuw Wpi Hpi Vpi, 0xc4 RXB.00010 x.src.0.01 0x3a, CPUFeature_AVX
 # significant word and this operation produces precisely idential output for "Gy"
 # and "Gd" operands.  We'll use objdump's description.
 pmovmskb Udq Gy, 0x66 0x0f 0xd7, CPUFeature_SSE2
-vpmovmskb Upb Gd, 0xc4 RXB.00001 x.1111.0.01 0xd7,
-    CPUFeature_AVX disabled_untested
+vpmovmskb Upb Gd, 0xc4 RXB.00001 x.1111.0.01 0xd7, CPUFeature_AVX
 ######## PMOVSXBD/VPMOVSXBD ####################################################
 pmovsxbd Wpk Vpj, 0x66 0x0f 0x38 0x21, CPUFeature_SSE41
-vpmovsxbd Wpk Vpj, 0xc4 RXB.00010 x.1111.0.01 0x21,
-    CPUFeature_AVX disabled_untested
+vpmovsxbd Wpk Vpj, 0xc4 RXB.00010 x.1111.0.01 0x21, CPUFeature_AVX
 ######## PMOVSXBQ/VPMOVSXBQ ####################################################
 pmovsxbq Wpk Vpq, 0x66 0x0f 0x38 0x22, CPUFeature_SSE41
-vpmovsxbq Wpk Vpq, 0xc4 RXB.00010 x.1111.0.01 0x22,
-    CPUFeature_AVX disabled_untested
+vpmovsxbq Wpk Vpq, 0xc4 RXB.00010 x.1111.0.01 0x22, CPUFeature_AVX
 ######## PMOVSXBW/VPMOVSXBW ####################################################
 pmovsxbw Wpk Vpi, 0x66 0x0f 0x38 0x20, CPUFeature_SSE41
-vpmovsxbw Wpk Vpi, 0xc4 RXB.00010 x.1111.0.01 0x20,
-    CPUFeature_AVX disabled_untested
+vpmovsxbw Wpk Vpi, 0xc4 RXB.00010 x.1111.0.01 0x20, CPUFeature_AVX
 ######## PMOVSXDQ/VPMOVSXDQ ####################################################
 pmovsxdq Wpj Vpq, 0x66 0x0f 0x38 0x25, CPUFeature_SSE41
-vpmovsxdq Wpj Vpq, 0xc4 RXB.00010 x.1111.0.01 0x25,
-    CPUFeature_AVX disabled_untested
+vpmovsxdq Wpj Vpq, 0xc4 RXB.00010 x.1111.0.01 0x25, CPUFeature_AVX
 ######## PMOVSXWD/VPMOVSXWD ####################################################
 pmovsxwd Wpi Vpj, 0x66 0x0f 0x38 0x23, CPUFeature_SSE41
-vpmovsxwd Wpi Vpj, 0xc4 RXB.00010 x.1111.0.01 0x23,
-    CPUFeature_AVX disabled_untested
+vpmovsxwd Wpi Vpj, 0xc4 RXB.00010 x.1111.0.01 0x23, CPUFeature_AVX
 ######## PMOVSXWQ/VPMOVSXWQ ####################################################
 pmovsxwq Wpi Vpq, 0x66 0x0f 0x38 0x24, CPUFeature_SSE41
-vpmovsxwq Wpi Vpq, 0xc4 RXB.00010 x.1111.0.01 0x24,
-    CPUFeature_AVX disabled_untested
+vpmovsxwq Wpi Vpq, 0xc4 RXB.00010 x.1111.0.01 0x24, CPUFeature_AVX
 ######## PMOVZXBD/VPMOVZXBD ####################################################
 pmovzxbd Wpk Vpj, 0x66 0x0f 0x38 0x31, CPUFeature_SSE41
-vpmovzxbd Wpk Vpj, 0xc4 RXB.00010 x.1111.0.01 0x31,
-    CPUFeature_AVX disabled_untested
+vpmovzxbd Wpk Vpj, 0xc4 RXB.00010 x.1111.0.01 0x31, CPUFeature_AVX
 ######## PMOVZXBQ/VPMOVZXBQ ####################################################
 pmovzxbq Wpk Vpq, 0x66 0x0f 0x38 0x32, CPUFeature_SSE41
-vpmovzxbq Wpk Vpq, 0xc4 RXB.00010 x.1111.0.01 0x32,
-    CPUFeature_AVX disabled_untested
+vpmovzxbq Wpk Vpq, 0xc4 RXB.00010 x.1111.0.01 0x32, CPUFeature_AVX
 ######## PMOVZXBW/VPMOVZXBW ####################################################
 pmovzxbw Wpk Vpi, 0x66 0x0f 0x38 0x30, CPUFeature_SSE41
-vpmovzxbw Wpk Vpi, 0xc4 RXB.00010 x.1111.0.01 0x30,
-    CPUFeature_AVX disabled_untested
+vpmovzxbw Wpk Vpi, 0xc4 RXB.00010 x.1111.0.01 0x30, CPUFeature_AVX
 ######## PMOVZXDQ/VPMOVZXDQ ####################################################
 pmovzxdq Wpj Vpq, 0x66 0x0f 0x38 0x35, CPUFeature_SSE41
-vpmovzxdq Wpj Vpq, 0xc4 RXB.00010 x.1111.0.01 0x35,
-    CPUFeature_AVX disabled_untested
+vpmovzxdq Wpj Vpq, 0xc4 RXB.00010 x.1111.0.01 0x35, CPUFeature_AVX
 ######## PMOVZXWD/VPMOVZXWD ####################################################
 pmovzxwd Wpi Vpj, 0x66 0x0f 0x38 0x33, CPUFeature_SSE41
-vpmovzxwd Wpi Vpj, 0xc4 RXB.00010 x.1111.0.01 0x33,
-    CPUFeature_AVX disabled_untested
+vpmovzxwd Wpi Vpj, 0xc4 RXB.00010 x.1111.0.01 0x33, CPUFeature_AVX
 ######## PMOVZXWQ/VPMOVZXWQ ####################################################
 pmovzxwq Wpi Vpq, 0x66 0x0f 0x38 0x34, CPUFeature_SSE41
-vpmovzxwq Wpi Vpq, 0xc4 RXB.00010 x.1111.0.01 0x34,
-    CPUFeature_AVX disabled_untested
+vpmovzxwq Wpi Vpq, 0xc4 RXB.00010 x.1111.0.01 0x34, CPUFeature_AVX
 ######## PMULDQ/VPMULDQ ########################################################
 pmuldq Wpj Vpq, 0x66 0x0f 0x38 0x28, CPUFeature_SSE41
 vpmuldq Wpj Hpj Vpq, 0xc4 RXB.00010 x.src.0.01 0x28, CPUFeature_AVX
@@ -1101,16 +1046,13 @@ pshufb Wpb Vpb, 0x66 0x0f 0x38 0x00, CPUFeature_SSSE3
 vpshufb Wpb Hpb Vpb, 0xc4 RXB.00010 x.src.0.01 0x00, CPUFeature_AVX
 ######## PSHUFD/VPSHUFD ########################################################
 pshufd Ib Wdq Vdq, 0x66 0x0f 0x70, CPUFeature_SSE2
-vpshufd Ib Wpdw Vpdw, 0xc4 RXB.00001 x.1111.0.01 0x70,
-    CPUFeature_AVX disabled_untested
+vpshufd Ib Wpdw Vpdw, 0xc4 RXB.00001 x.1111.0.01 0x70, CPUFeature_AVX
 ######## PSHUFHW/VPSHUFHW ######################################################
 pshufhw Ib Wq Vq, 0xf3 0x0f 0x70, CPUFeature_SSE2
-vpshufhw Ib Wpw Vpw, 0xc4 RXB.00001 x.1111.0.10 0x70,
-    CPUFeature_AVX disabled_untested
+vpshufhw Ib Wpw Vpw, 0xc4 RXB.00001 x.1111.0.10 0x70, CPUFeature_AVX
 ######## PSHUFLW/VPSHUFLW ######################################################
 pshuflw Ib Wq Vq, 0xf2 0x0f 0x70, CPUFeature_SSE2
-vpshuflw Ib Wpw Vpw, 0xc4 RXB.00001 x.1111.0.11 0x70,
-    CPUFeature_AVX disabled_untested
+vpshuflw Ib Wpw Vpw, 0xc4 RXB.00001 x.1111.0.11 0x70, CPUFeature_AVX
 ######## PSIGNB/VPSIGNB ########################################################
 psignb Wpk Vpk, 0x66 0x0f 0x38 0x08, CPUFeature_SSSE3
 vpsignb Wpk Hpk Vpk, 0xc4 RXB.00010 x.src.0.01 0x08, CPUFeature_AVX
@@ -1124,58 +1066,48 @@ vpsignw Wpi Hpi Vpj, 0xc4 RXB.00010 x.src.0.01 0x09, CPUFeature_AVX
 pslld Wdq Vdq, 0x66 0x0f 0xf2, CPUFeature_SSE2
 pslld Ib Udq, 0x66 0x0f 0x72 /6, CPUFeature_SSE2
 vpslld Wo Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0xf2, CPUFeature_AVX
-vpslld Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x72 /6,
-    CPUFeature_AVX disabled_untested
+vpslld Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x72 /6, CPUFeature_AVX
 ######## PSLLDQ/VPSLLDQ ########################################################
 pslldq Ib Udq, 0x66 0x0f 0x73 /7, CPUFeature_SSE2
-vpslldq Ib Udq Hdq, 0xc4 RXB.00001 0.dest.0.01 0x73 /7,
-    CPUFeature_AVX disabled_untested
+vpslldq Ib Udq Hdq, 0xc4 RXB.00001 0.dest.0.01 0x73 /7, CPUFeature_AVX
 ######## PSLLQ/VPSLLQ ##########################################################
 psllq Wdq Vdq, 0x66 0x0f 0xf3, CPUFeature_SSE2
 psllq Ib Udq, 0x66 0x0f 0x73 /6, CPUFeature_SSE2
 vpsllq Wo Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0xf3, CPUFeature_AVX
-vpsllq Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x73 /6,
-    CPUFeature_AVX disabled_untested
+vpsllq Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x73 /6, CPUFeature_AVX
 ######## PSLLW/VPSLLW ##########################################################
 psllw Wdq Vdq, 0x66 0x0f 0xf1, CPUFeature_SSE2
 psllw Ib Udq, 0x66 0x0f 0x71 /6, CPUFeature_SSE2
 vpsllw Wo Hpw Vpw, 0xc4 RXB.00001 x.src.0.01 0xf1, CPUFeature_AVX
-vpsllw Ib Upw Hpw, 0xc4 RXB.00001 x.dest.0.01 0x71 /6,
-    CPUFeature_AVX disabled_untested
+vpsllw Ib Upw Hpw, 0xc4 RXB.00001 x.dest.0.01 0x71 /6, CPUFeature_AVX
 ######## PSRAD/VPSRAD ##########################################################
 psrad Wdq Vdq, 0x66 0x0f 0xe2, CPUFeature_SSE2
 psrad Ib Udq, 0x66 0x0f 0x72 /4, CPUFeature_SSE2
 vpsrad Wo Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0xe2, CPUFeature_AVX
-vpsrad Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x72 /4,
-    CPUFeature_AVX disabled_untested
+vpsrad Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x72 /4, CPUFeature_AVX
 ######## PSRAW/VPSRAW ##########################################################
 psraw Wdq Vdq, 0x66 0x0f 0xe1, CPUFeature_SSE2
 psraw Ib Udq, 0x66 0x0f 0x71 /4, CPUFeature_SSE2
 vpsraw Wo Hpw Vpw, 0xc4 RXB.00001 x.src.0.01 0xe1, CPUFeature_AVX
-vpsraw Ib Upw Hpw, 0xc4 RXB.00001 x.dest.0.01 0x71 /4,
-    CPUFeature_AVX disabled_untested
+vpsraw Ib Upw Hpw, 0xc4 RXB.00001 x.dest.0.01 0x71 /4, CPUFeature_AVX
 ######## PSRLD/VPSRLD ##########################################################
 psrld Wdq Vdq, 0x66 0x0f 0xd2, CPUFeature_SSE2
 psrld Ib Udq, 0x66 0x0f 0x72 /2, CPUFeature_SSE2
 vpsrld Wo Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0xd2, CPUFeature_AVX
-vpsrld Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x72 /2,
-    CPUFeature_AVX disabled_untested
+vpsrld Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x72 /2, CPUFeature_AVX
 ######## PSRLDQ/VPSRLDQ ########################################################
 psrldq Ib Udq, 0x66 0x0f 0x73 /3, CPUFeature_SSE2
-vpsrldq Ib Udq Hdq, 0xc4 RXB.00001 0.dest.0.01 0x73 /3,
-    CPUFeature_AVX disabled_untested
+vpsrldq Ib Udq Hdq, 0xc4 RXB.00001 0.dest.0.01 0x73 /3, CPUFeature_AVX
 ######## PSRLQ/VPSRLQ ##########################################################
 psrlq Wdq Vdq, 0x66 0x0f 0xd3, CPUFeature_SSE2
 psrlq Ib Udq, 0x66 0x0f 0x73 /2, CPUFeature_SSE2
 vpsrlq Wo Hpdw Vpdw, 0xc4 RXB.00001 x.src.0.01 0xd3, CPUFeature_AVX
-vpsrlq Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x73 /2,
-    CPUFeature_AVX disabled_untested
+vpsrlq Ib Updw Hpdw, 0xc4 RXB.00001 x.dest.0.01 0x73 /2, CPUFeature_AVX
 ######## PSRLW/VPSRLW ##########################################################
 psrlw Wdq Vdq, 0x66 0x0f 0xd1, CPUFeature_SSE2
 psrlw Ib Udq, 0x66 0x0f 0x71 /2, CPUFeature_SSE2
 vpsrlw Wo Hpw Vpw, 0xc4 RXB.00001 x.src.0.01 0xd1, CPUFeature_AVX
-vpsrlw Ib Upw Hpw, 0xc4 RXB.00001 x.dest.0.01 0x71 /2,
-    CPUFeature_AVX disabled_untested
+vpsrlw Ib Upw Hpw, 0xc4 RXB.00001 x.dest.0.01 0x71 /2, CPUFeature_AVX
 ######## PSUBB/VPSUBB ##########################################################
 psubb Wpk Vpk, 0x66 0x0f 0xf8, CPUFeature_SSE2
 vpsubb Wpk Hpk Vpk, 0xc4 RXB.00001 x.src.0.01 0xf8, CPUFeature_AVX
@@ -1202,10 +1134,8 @@ psubw Wpi Vpi, 0x66 0x0f 0xf9, CPUFeature_SSE2
 vpsubw Wpi Hpi Vpi, 0xc4 RXB.00001 x.src.0.01 0xf9, CPUFeature_AVX
 ######## PTEST/VPTEST ##########################################################
 ptest Wo Vo, 0x66 0x0f 0x38 0x17, CPUFeature_SSE41
-vptest Wo Vo, 0xc4 RXB.00010 x.1111.0.01 0x17,
-    CPUFeature_AVX disabled_untested
-vptest Wdo Vdo, 0xc4 RXB.00010 x.1111.1.01 0x17,
-    CPUFeature_AVX disabled_untested
+vptest Wo Vo, 0xc4 RXB.00010 x.1111.0.01 0x17, CPUFeature_AVX
+vptest Wdo Vdo, 0xc4 RXB.00010 x.1111.1.01 0x17, CPUFeature_AVX
 ######## PUNPCKHBW/VPUNPCKHBW ##################################################
 punpckhbw Wq Vdq, 0x66 0x0f 0x68, CPUFeature_SSE2
 vpunpckhbw Wpb Hpb Vpb, 0xc4 RXB.00001 x.src.0.01 0x68, CPUFeature_AVX
@@ -1235,51 +1165,41 @@ pxor Wdq Vdq, 0x66 0x0f 0xef, CPUFeature_SSE2
 vpxor Wo Ho Vo, 0xc4 RXB.00001 x.src.0.01 0xef, CPUFeature_AVX
 ######## RCPPS/VRCPPS ##########################################################
 rcpps Wps Vps, 0x0f 0x53, CPUFeature_SSE
-vrcpps Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x53,
-    CPUFeature_AVX disabled_untested
+vrcpps Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x53, CPUFeature_AVX
 ######## RCPSS/VRCPSS ##########################################################
 rcpss Wss Vss, 0xf3 0x0f 0x53, CPUFeature_SSE
 vrcpss Wss Ho Vo, 0xc4 RXB.00001 x.src.x.10 0x53, CPUFeature_AVX
 ######## ROUNDPD/VROUNDPD ######################################################
 roundpd Ib Wpd Vpd, 0x66 0x0f 0x3a 0x09, CPUFeature_SSE41
-vroundpd Ib Wpdx Vpdx, 0xc4 RXB.00011 x.src.L.01 0x09,
-    CPUFeature_AVX disabled_untested
+vroundpd Ib Wpdx Vpdx, 0xc4 RXB.00011 x.src.L.01 0x09, CPUFeature_AVX
 ######## ROUNDPS/VROUNDPS ######################################################
 roundps Ib Wps Vps, 0x66 0x0f 0x3a 0x08, CPUFeature_SSE41
-vroundps Ib Wpsx Vpsx, 0xc4 RXB.00011 x.src.L.01 0x08,
-    CPUFeature_AVX disabled_untested
+vroundps Ib Wpsx Vpsx, 0xc4 RXB.00011 x.src.L.01 0x08, CPUFeature_AVX
 ######## ROUNDSD/VROUNDSD ######################################################
 roundsd Ib Wsd Vsd, 0x66 0x0f 0x3a 0x0b, CPUFeature_SSE41
-vroundsd Ib Wsd Ho Vo, 0xc4 RXB.00011 x.src.x.01 0x0b,
-    CPUFeature_AVX disabled_untested
+vroundsd Ib Wsd Ho Vo, 0xc4 RXB.00011 x.src.x.01 0x0b, CPUFeature_AVX
 ######## ROUNDSS/VROUNDSS ######################################################
 roundss Ib Wss Vss, 0x66 0x0f 0x3a 0x0a, CPUFeature_SSE41
-vroundss Ib Wss Ho Vo, 0xc4 RXB.00011 x.src.x.01 0x0a,
-    CPUFeature_AVX disabled_untested
+vroundss Ib Wss Ho Vo, 0xc4 RXB.00011 x.src.x.01 0x0a, CPUFeature_AVX
 ######## RSQRTPS/VRSQRTPS ######################################################
 rsqrtps Wps Vps, 0x0f 0x52, CPUFeature_SSE
-vrsqrtps Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x52,
-    CPUFeature_AVX disabled_untested
+vrsqrtps Wpsx Vpsx, 0xc4 RXB.00001 x.1111.L.00 0x52, CPUFeature_AVX
 ######## RSQRTSS/VRSQRTSS ######################################################
 rsqrtss Wss Vss, 0xf3 0x0f 0x52, CPUFeature_SSE
 vrsqrtss Wss Ho Vo, 0xc4 RXB.00001 x.1111.0.10 0x52,
     CPUFeature_AVX disabled_untested
 ######## SHUFPD/VSHUFPD ########################################################
 shufpd Ib Wpd Vpd, 0x66 0x0f 0xc6, CPUFeature_SSE2
-vshufpd Ib Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0xc6,
-    CPUFeature_AVX disabled_untested
+vshufpd Ib Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0xc6, CPUFeature_AVX
 ######## SHUFPS/VSHUFPS ########################################################
 shufps Ib Wps Vps, 0x0f 0xc6, CPUFeature_SSE
-vshufps Ib Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0xc6,
-    CPUFeature_AVX disabled_untested
+vshufps Ib Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0xc6, CPUFeature_AVX
 ######## SQRTPD/VSQRTPD ########################################################
 sqrtpd Wpd Vpd, 0x66 0x0f 0x51, CPUFeature_SSE2
-vsqrtpd Wpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x51,
-    CPUFeature_AVX disabled_untested
+vsqrtpd Wpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x51, CPUFeature_AVX
 ######## SQRTPS/VSQRTPS ########################################################
 sqrtps Wps Vps, 0x0f 0x51, CPUFeature_SSE
-vsqrtps Wpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x51,
-    CPUFeature_AVX disabled_untested
+vsqrtps Wpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x51, CPUFeature_AVX
 ######## SQRTSD/VSQRTSD ########################################################
 sqrtsd Wsd Vsd, 0xf2 0x0f 0x51, CPUFeature_SSE2
 vsqrtsd Wsd Ho Vo, 0xc4 RXB.00001 x.src.x.11 0x51, CPUFeature_AVX
@@ -1288,8 +1208,7 @@ sqrtss Wss Vss, 0xf3 0x0f 0x51, CPUFeature_SSE
 vsqrtss Wss Ho Vo, 0xc4 RXB.00001 x.src.x.10 0x51, CPUFeature_AVX
 ######## LDMXCSR/VLDMXCSR ######################################################
 stmxcsr Md, 0x0f 0xae /3, CPUFeature_SSE
-vstmxcsr Md, 0xc4 RXB.00001 x.1111.0.00 0xae /3,
-    CPUFeature_AVX disabled_untested
+vstmxcsr Md, 0xc4 RXB.00001 x.1111.0.00 0xae /3, CPUFeature_AVX
 ######## SUBPD/VSUBPD ##########################################################
 subpd Wpd Vpd, 0x66 0x0f 0x5c, CPUFeature_SSE2
 vsubpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x5c, CPUFeature_AVX
@@ -1304,12 +1223,10 @@ subss Wss Vss, 0xf3 0x0f 0x5c, CPUFeature_SSE
 vsubss Wss Hss Vss, 0xc4 RXB.00001 x.src.x.10 0x5c, CPUFeature_AVX
 ######## UCOMISD/VUCOMISD ######################################################
 ucomisd Wsd Vsd, 0x66 0x0f 0x2e, CPUFeature_SSE2
-vucomisd Wsd Vsd, 0xc4 RXB.00001 x.src.x.01 0x2e,
-    CPUFeature_AVX disabled_untested
+vucomisd Wsd Vsd, 0xc4 RXB.00001 x.src.x.01 0x2e, CPUFeature_AVX
 ######## UCOMISS/VUCOMISS ######################################################
 ucomiss Wsd Vsd, 0x0f 0x2e, CPUFeature_SSE
-vucomiss Wsd Vsd, 0xc4 RXB.00001 x.src.x.00 0x2e,
-    CPUFeature_AVX disabled_untested
+vucomiss Wsd Vsd, 0xc4 RXB.00001 x.src.x.00 0x2e, CPUFeature_AVX
 ######## UNPCKHPD/VUNPCKHPD ####################################################
 unpckhpd Wq Vpd, 0x66 0x0f 0x15, CPUFeature_SSE2
 vunpckhpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x15, CPUFeature_AVX
@@ -1333,8 +1250,7 @@ vcvtph2ps Wph Vpsx, 0xc4 RXB.02 0.1111.L.01 0x13, CPUFeature_F16C
 ######## VCVTPS2PH #############################################################
 vcvtps2ph Ib Vpsx Wph, 0xc4 RXB.03 0.1111.L.01 0x1d, CPUFeature_F16C
 ######## VEXTRACTF128 ##########################################################
-vextractf128 Ib Vdo Wo, 0xc4 RXB.00011 0.1111.1.01 0x19,
-    CPUFeature_AVX disabled_untested
+vextractf128 Ib Vdo Wo, 0xc4 RXB.00011 0.1111.1.01 0x19, CPUFeature_AVX
 ######## VFMADDPD/VFMADD132PD/VFMADD213PD/VFMADD231PD ##########################
 vfmaddpd Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x69,
     CPUFeature_FMA4 disabled_untested
@@ -1571,15 +1487,11 @@ vfrczss Wss Vss, 0x8f RXB.01001 0.1111.0.00 0x82,
 vinsertf128 Ib Wo Hdo Vdo, 0xc4 RXB.00011 0.1111.1.01 0x18,
     CPUFeature_AVX disabled_untested
 ######## VMASKMOVPD ############################################################
-vmaskmovpd Mpdx Hx Vpdx, 0xc4 RXB.00010 0.src.L.01 0x2d,
-    CPUFeature_AVX disabled_untested
-vmaskmovpd Vpdx Hx Mpdx, 0xc4 RXB.00010 0.src.L.01 0x2f,
-    CPUFeature_AVX disabled_untested
+vmaskmovpd Mpdx Hx Vpdx, 0xc4 RXB.00010 0.src.L.01 0x2d, CPUFeature_AVX
+vmaskmovpd Vpdx Hx Mpdx, 0xc4 RXB.00010 0.src.L.01 0x2f, CPUFeature_AVX
 ######## VMASKMOVPS ############################################################
-vmaskmovps Mpdx Hx Vpdx, 0xc4 RXB.00010 0.src.L.01 0x2c,
-    CPUFeature_AVX disabled_untested
-vmaskmovps Vpdx Hx Mpdx, 0xc4 RXB.00010 0.src.L.01 0x2e,
-    CPUFeature_AVX disabled_untested
+vmaskmovps Mpdx Hx Vpdx, 0xc4 RXB.00010 0.src.L.01 0x2c, CPUFeature_AVX
+vmaskmovps Vpdx Hx Mpdx, 0xc4 RXB.00010 0.src.L.01 0x2e, CPUFeature_AVX
 ######## VPCMOV ################################################################
 vpcmov Lx Wx Hx Vx, 0x8f RXB.01000 0.src.L.00 0xa2,
     CPUFeature_XOP disabled_untested
@@ -1610,8 +1522,7 @@ vpcomuw Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xed,
 vpcomw Ib Wo Ho Vo, 0x8f RXB.01000 0.src.0.00 0xcd,
     CPUFeature_XOP disabled_untested
 ######## VPERM2F128 ############################################################
-vperm2f128 Ib Wdo Hdo Vdo, 0xc4 RXB.00011 0.src.1.01 0x06,
-    CPUFeature_AVX disabled_untested
+vperm2f128 Ib Wdo Hdo Vdo, 0xc4 RXB.00011 0.src.1.01 0x06, CPUFeature_AVX
 ######## VPERMIL2PD ############################################################
 vpermil2pd I2 Lpdx Wpdx Hpdx Vpdx, 0xc4 RXB.00011 0.src.L.01 0x49,
     CPUFeature_XOP disabled_untested
@@ -1624,12 +1535,10 @@ vpermil2ps I2 Wpsx Lpsx Hpsx Vpsx, 0xc4 RXB.00011 1.src.L.01 0x48,
     CPUFeature_XOP disabled_untested
 ######## VPERMILPD #############################################################
 vpermilpd Wpqwx Hpdx Vpdx, 0xc4 RXB.00010 0.src.L.01 0x0d, CPUFeature_AVX
-vpermilpd Ib Wpdx Vpdx, 0xc4 RXB.00011 0.1111.L.01 0x05,
-    CPUFeature_AVX disabled_untested
+vpermilpd Ib Wpdx Vpdx, 0xc4 RXB.00011 0.1111.L.01 0x05, CPUFeature_AVX
 ######## VPERMILPS #############################################################
 vpermilps Wpdwx Hpsx Vpsx, 0xc4 RXB.00010 0.src.L.01 0x0c, CPUFeature_AVX
-vpermilps Ib Wpsx Vpsx, 0xc4 RXB.00011 0.1111.L.01 0x04,
-    CPUFeature_AVX disabled_untested
+vpermilps Ib Wpsx Vpsx, 0xc4 RXB.00011 0.1111.L.01 0x04, CPUFeature_AVX
 ######## VPHADDBD ##############################################################
 vphaddbd Wo Vo, 0x8f RXB.01001 0.1111.0.00 0xc2,
     CPUFeature_XOP disabled_untested
@@ -1785,11 +1694,9 @@ vpshlw Ho Wo Vo, 0x8f RXB.01001 0.src.0.00 0x95,
 vpshlw Wo Ho Vo, 0x8f RXB.01001 1.src.0.00 0x95,
     CPUFeature_XOP disabled_untested
 ######## VTESTPD ###############################################################
-vtestpd Wpdx Vpdx, 0xc4 RXB.00010 0.1111.L.01 0x0f,
-    CPUFeature_AVX disabled_untested
+vtestpd Wpdx Vpdx, 0xc4 RXB.00010 0.1111.L.01 0x0f, CPUFeature_AVX
 ######## VTESTPS ###############################################################
-vtestps Wpsx Vpsx, 0xc4 RXB.00010 0.1111.L.01 0x0e,
-    CPUFeature_AVX disabled_untested
+vtestps Wpsx Vpsx, 0xc4 RXB.00010 0.1111.L.01 0x0e, CPUFeature_AVX
 ######## VZEROALL ##############################################################
 vzeroall, 0xc4 RXB.00001 x.1111.1.00 0x77, CPUFeature_AVX
 ######## VZEROUPPER ############################################################

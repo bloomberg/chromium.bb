@@ -83,10 +83,26 @@ def AllYMMOperands(bitness):
               for i in xrange(8 if bitness == 32 else 16)])
 
 
-def GprOperands(bitness, operand_size):
+def GprOperands(bitness, operand_size, is_write_for_64_bit=True):
+  """Returns all gpr operands as an operand set.
+  Args:
+    bitness: architecture bitness to distinguish x86_32/x86_64: (32, 64)
+    operand_size: size of register to be used in write.
+    is_write_for_64_bit: if bitness == 64, exclude special
+                         registers rsp, rbp, r15 for sandbox reasons.
+  """
   regs = []
-  if bitness == 32 and operand_size == 16:
+  if operand_size == 16 and bitness == 32:
     regs = ['%ax', '%bx', '%cx', '%dx', '%bp', '%sp', '%di', '%si']
+  elif operand_size == 32 and bitness == 32:
+    regs = ['%eax', '%ebp', '%ebx', '%ecx', '%edi', '%edx', '%esi', '%esp']
+  elif bitness == 64 and operand_size == 32:
+    regs = ['%eax', '%ebx', '%ecx', '%edi', '%edx', '%esi',
+            '%r8d', '%r9d', '%r10d', '%r11d', '%r12d', '%r13d', '%r14d']
+    # Don't include '%ebp', '%esp', '%r15d' in allowed registers when
+    # is_write_for_64_bit == True.
+    if is_write_for_64_bit == False:
+      regs += ['%esp', '%ebp', '%r15d']
   else:
     raise AssertionError("Unimplemented")
   return set([Operands(disasms=(reg,)) for reg in regs])
