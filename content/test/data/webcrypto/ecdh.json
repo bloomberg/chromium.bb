@@ -275,7 +275,7 @@
     },
 
     "length_bits": 257,
-    "error": "InvalidAccess: Length specified for ECDH key derivation is too large. Maximum allowed is 256 bits"
+    "error": "OperationError: Length specified for ECDH key derivation is too large. Maximum allowed is 256 bits"
   },
 
   // The length is too long, by 1 byte
@@ -295,7 +295,7 @@
     },
 
     "length_bits": 264,
-    "error": "InvalidAccess: Length specified for ECDH key derivation is too large. Maximum allowed is 256 bits"
+    "error": "OperationError: Length specified for ECDH key derivation is too large. Maximum allowed is 256 bits"
   },
 
   // The public key parameter is in fact a private key
@@ -359,7 +359,7 @@
     },
 
     "length_bits": 529,
-    "error": "InvalidAccess: Length specified for ECDH key derivation is too large. Maximum allowed is 528 bits"
+    "error": "OperationError: Length specified for ECDH key derivation is too large. Maximum allowed is 528 bits"
   }
 ]
 

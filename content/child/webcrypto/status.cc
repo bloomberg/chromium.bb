@@ -320,7 +320,7 @@ Status Status::ErrorEcdhCurveMismatch() {
 }
 
 Status Status::ErrorEcdhLengthTooBig(unsigned int max_length_bits) {
-  return Status(blink::WebCryptoErrorTypeInvalidAccess,
+  return Status(blink::WebCryptoErrorTypeOperation,
                 base::StringPrintf(
                     "Length specified for ECDH key derivation is too large. "
                     "Maximum allowed is %u bits",
