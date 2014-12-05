@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "ui/gfx/size_f.h"
-#include "ui/gfx/vector2d_f.h"
+#include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
 class Layer;

@@ -14,9 +14,9 @@
 #include "ui/events/event.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/gestures/gesture_types.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/vector2d_f.h"
 
 namespace content {
 class BrowserPluginGuest;

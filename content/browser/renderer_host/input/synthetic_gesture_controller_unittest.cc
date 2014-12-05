@@ -20,10 +20,10 @@
 #include "content/test/test_render_view_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/gfx/point.h"
-#include "ui/gfx/point_f.h"
-#include "ui/gfx/vector2d.h"
-#include "ui/gfx/vector2d_f.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
