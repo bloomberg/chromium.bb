@@ -1198,6 +1198,18 @@ cr.define('options', function() {
     },
 
     /**
+     * Controls the visibility of all the hotword sections.
+     * @param {boolean} visible Whether to show hotword sections.
+     * @private
+     */
+    setHotwordSectionVisible_: function(visible) {
+      $('hotword-search').hidden = !visible;
+      $('hotword-always-on-search').hidden = !visible;
+      $('hotword-no-dsp-search').hidden = !visible;
+      $('audio-history').hidden = !visible;
+    },
+
+    /**
      * Shows or hides the hotword retrain link
      * @param {boolean} visible Whether to show the link.
      * @private
@@ -2115,6 +2127,7 @@ cr.define('options', function() {
     'setNativeThemeButtonEnabled',
     'setNetworkPredictionValue',
     'setHighContrastCheckboxState',
+    'setHotwordSectionVisible',
     'setMetricsReportingCheckboxState',
     'setMetricsReportingSettingVisibility',
     'setProfilesInfo',

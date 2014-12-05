@@ -148,6 +148,9 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   // Sets the audio history handler. Used for tests.
   void SetAudioHistoryHandler(HotwordAudioHistoryHandler* handler);
 
+  // Turn off the currently enabled version of hotwording if one exists.
+  void DisableHotwordPreferences();
+
  private:
   class HotwordUserSessionStateObserver;
 

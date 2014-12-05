@@ -743,6 +743,19 @@ void HotwordService::SetAudioHistoryHandler(
   audio_history_handler_.reset(handler);
 }
 
+void HotwordService::DisableHotwordPreferences() {
+  if (IsSometimesOnEnabled()) {
+    if (profile_->GetPrefs()->HasPrefPath(prefs::kHotwordSearchEnabled))
+      profile_->GetPrefs()->SetBoolean(prefs::kHotwordSearchEnabled, false);
+  } else if (IsAlwaysOnEnabled()) {
+    if (profile_->GetPrefs()->HasPrefPath(
+            prefs::kHotwordAlwaysOnSearchEnabled)) {
+      profile_->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled,
+                                       false);
+    }
+  }
+}
+
 void HotwordService::OnHotwordSearchEnabledChanged(
     const std::string& pref_name) {
   DCHECK_EQ(pref_name, std::string(prefs::kHotwordSearchEnabled));
