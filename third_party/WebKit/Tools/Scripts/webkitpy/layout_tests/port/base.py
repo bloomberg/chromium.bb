@@ -1505,7 +1505,7 @@ class Port(object):
         """Returns the port's driver implementation."""
         return driver.Driver
 
-    def _output_contains_sanitizer_messages(self, output):
+    def output_contains_sanitizer_messages(self, output):
         if not output:
             return None
         if 'AddressSanitizer' in output:
@@ -1515,7 +1515,7 @@ class Port(object):
         return None
 
     def _get_crash_log(self, name, pid, stdout, stderr, newer_than):
-        if self._output_contains_sanitizer_messages(stderr):
+        if self.output_contains_sanitizer_messages(stderr):
             # Running the symbolizer script can take a lot of memory, so we need to
             # serialize access to it across all the concurrently running drivers.
 

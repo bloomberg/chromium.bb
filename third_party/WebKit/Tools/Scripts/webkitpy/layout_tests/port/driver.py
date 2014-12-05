@@ -169,7 +169,7 @@ class Driver(object):
         leaked = self._leaked
 
         if not crashed:
-            sanitizer = self._port._output_contains_sanitizer_messages(self.error_from_test)
+            sanitizer = self._port.output_contains_sanitizer_messages(self.error_from_test)
             if sanitizer:
                 self.error_from_test = 'OUTPUT CONTAINS "' + sanitizer + '", so we are treating this test as if it crashed, even though it did not.\n\n' + self.error_from_test
                 crashed = True

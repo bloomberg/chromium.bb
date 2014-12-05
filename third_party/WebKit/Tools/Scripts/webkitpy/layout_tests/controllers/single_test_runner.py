@@ -234,7 +234,7 @@ class SingleTestRunner(object):
             failures.append(test_failures.FailureCrash(bool(reference_filename),
                                                        driver_output.crashed_process_name,
                                                        driver_output.crashed_pid,
-                                                       bool('No crash log found' not in driver_output.crash_log)))
+                                                       self._port.output_contains_sanitizer_messages(driver_output.crash_log)))
             if driver_output.error:
                 _log.debug("%s %s crashed, (stderr lines):" % (self._worker_name, testname))
             else:
