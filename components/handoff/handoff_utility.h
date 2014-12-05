@@ -9,6 +9,9 @@
 
 namespace handoff {
 
+// The activity type that Chrome uses to pass a Handoff to itself.
+extern NSString* const kChromeHandoffActivityType;
+
 // The value of this key in the userInfo dictionary of an NSUserActivity
 // indicates the origin. The value should not be used for any privacy or
 // security sensitive operations, since any application can set the key/value

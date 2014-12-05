@@ -6,6 +6,7 @@
 
 namespace handoff {
 
+NSString* const kChromeHandoffActivityType = @"com.google.chrome.handoff";
 NSString* const kOriginKey = @"kOriginKey";
 NSString* const kOriginiOS = @"kOriginiOS";
 NSString* const kOriginMac = @"kOriginMac";
