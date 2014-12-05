@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.dom_distiller.DomDistillerFeedbackReporter;
 import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.toolbar.ToolbarModel;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
@@ -152,6 +153,16 @@ public class Tab {
 
     /** Whether or not the TabState has changed. */
     private boolean mIsTabStateDirty = true;
+
+    /**
+     * Saves how this tab was launched (from a link, external app, etc) so that
+     * we can determine the different circumstances in which it should be
+     * closed. For example, a tab opened from an external app should be closed
+     * when the back stack is empty and the user uses the back hardware key. A
+     * standard tab however should be kept open and the entire activity should
+     * be moved to the background.
+     */
+    private final TabLaunchType mLaunchType;
 
     /**
      * A default {@link ChromeContextMenuItemDelegate} that supports some of the context menu
@@ -371,7 +382,7 @@ public class Tab {
      * @param window    An instance of a {@link WindowAndroid}.
      */
     public Tab(int id, boolean incognito, Context context, WindowAndroid window) {
-        this(id, INVALID_TAB_ID, incognito, context, window);
+        this(id, INVALID_TAB_ID, incognito, context, window, null);
     }
 
     /**
@@ -382,7 +393,8 @@ public class Tab {
      * @param context   An instance of a {@link Context}.
      * @param window    An instance of a {@link WindowAndroid}.
      */
-    public Tab(int id, int parentId, boolean incognito, Context context, WindowAndroid window) {
+    public Tab(int id, int parentId, boolean incognito, Context context, WindowAndroid window,
+            TabLaunchType type) {
         // We need a valid Activity Context to build the ContentView with.
         assert context == null || context instanceof Activity;
 
@@ -393,6 +405,7 @@ public class Tab {
         mContext = context;
         mApplicationContext = context != null ? context.getApplicationContext() : null;
         mWindowAndroid = window;
+        mLaunchType = type;
         if (mContext != null) {
             mNumPixel16DP = (int) (DeviceDisplayInfo.create(mContext).getDIPScale() * 16);
         }
@@ -1250,6 +1263,13 @@ public class Tab {
      */
     public void createHistoricalTab() {
         nativeCreateHistoricalTab(mNativeTabAndroid);
+    }
+
+    /**
+     * @return The reason the Tab was launched.
+     */
+    public TabLaunchType getLaunchType() {
+        return mLaunchType;
     }
 
     /**
