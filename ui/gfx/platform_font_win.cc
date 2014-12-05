@@ -488,7 +488,9 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
 
   // The calculations below are similar to those in the CreateHFontRef
   // function.
-  const int height = std::round(skia_metrics.fDescent - skia_metrics.fAscent);
+  // The font height is rounded up to ensure that the font size calculated
+  // below matches with GDI.
+  const int height = std::ceil(skia_metrics.fDescent - skia_metrics.fAscent);
   const int baseline = std::max<int>(1, std::round(-skia_metrics.fAscent));
   const int cap_height = std::round(-font_info.lfHeight *
       dwrite_font_metrics.capHeight / dwrite_font_metrics.designUnitsPerEm);
