@@ -8819,6 +8819,28 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Options_Languages_Add">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Languages and input: Add language</description>
+</action>
+
+<action name="Options_Languages_InputMethodCheckbox_Disable">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Languages and input: Input method</description>
+</action>
+
+<action name="Options_Languages_InputMethodCheckbox_Enable">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Languages and input: Input method</description>
+</action>
+
+<action name="Options_Languages_SpellCheck">
+  <owner>michaelpg@chromium.org</owner>
+  <description>
+    Settings: Languages and input: Use language for spell checking
+  </description>
+</action>
+
 <action name="Options_LanuageAndSpellCheckSettings">
   <owner>michaelpg@chromium.org</owner>
   <description>Settings: Language and input settings</description>

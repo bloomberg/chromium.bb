@@ -205,6 +205,8 @@ cr.define('options', function() {
           this.addBlockedLanguage_(addLanguageCode);
         } else {
           PageManager.showPageByName('addLanguage');
+          chrome.send('coreOptionsUserMetricsAction',
+                      ['Options_Languages_Add']);
         }
       };
       $('language-options-add-button').onclick = onclick.bind(this);
@@ -846,6 +848,9 @@ cr.define('options', function() {
       } else {
         this.handleCheckboxUpdate_(checkbox);
       }
+
+      chrome.send('coreOptionsUserMetricsAction',
+                  ['Options_Languages_InputMethodCheckbox']);
     },
 
     /**
@@ -967,6 +972,8 @@ cr.define('options', function() {
       Preferences.setStringPref(SPELL_CHECK_DICTIONARY_PREF,
                                 languageCode, true);
       chrome.send('spellCheckLanguageChange', [languageCode]);
+      chrome.send('coreOptionsUserMetricsAction',
+                  ['Options_Languages_SpellCheck']);
     },
 
     /**
