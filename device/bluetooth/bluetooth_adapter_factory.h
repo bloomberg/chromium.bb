@@ -8,12 +8,13 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_export.h"
 
 namespace device {
 
 // A factory class for building a Bluetooth adapter on platforms where Bluetooth
 // is available.
-class BluetoothAdapterFactory {
+class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
  public:
   typedef base::Callback<void(scoped_refptr<BluetoothAdapter> adapter)>
       AdapterCallback;

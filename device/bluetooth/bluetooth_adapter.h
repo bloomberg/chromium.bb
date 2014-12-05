@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_export.h"
 
 namespace device {
 
@@ -31,7 +32,8 @@ class BluetoothUUID;
 // this class also provides support for obtaining the list of remote devices
 // known to the adapter, discovering new devices, and providing notification of
 // updates to device information.
-class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
+class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
+    : public base::RefCounted<BluetoothAdapter> {
  public:
   // Interface for observing changes from bluetooth adapters.
   class Observer {
@@ -158,7 +160,7 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   };
 
   // Used to configure a listening servie.
-  struct ServiceOptions {
+  struct DEVICE_BLUETOOTH_EXPORT ServiceOptions {
     ServiceOptions();
     ~ServiceOptions();
 

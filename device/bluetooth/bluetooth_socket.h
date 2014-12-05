@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "device/bluetooth/bluetooth_export.h"
 
 namespace net {
 class IOBuffer;
@@ -27,7 +28,8 @@ class BluetoothUUID;
 // various instance methods on the same thread as the thread used at
 // construction time -- platform specific implementation are responsible for
 // marshalling calls to a different thread if required.
-class BluetoothSocket : public base::RefCountedThreadSafe<BluetoothSocket> {
+class DEVICE_BLUETOOTH_EXPORT BluetoothSocket
+    : public base::RefCountedThreadSafe<BluetoothSocket> {
  public:
   enum ErrorReason { kSystemError, kIOPending, kDisconnected };
 

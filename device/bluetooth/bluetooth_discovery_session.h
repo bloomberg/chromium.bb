@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "device/bluetooth/bluetooth_export.h"
 
 namespace device {
 
@@ -25,7 +26,7 @@ class BluetoothAdapter;
 // AdapterDiscoveringChanged method of the BluetoothAdapter::Observer interface
 // to be notified of such a change and promptly request a new
 // BluetoothDiscoverySession if their existing sessions have become inactive.
-class BluetoothDiscoverySession {
+class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoverySession {
  public:
   // The ErrorCallback is used by methods to asynchronously report errors.
   typedef base::Closure ErrorCallback;
