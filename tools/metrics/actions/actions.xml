@@ -9426,6 +9426,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_TimezoneSelect">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Date and time: Timezone</description>
+</action>
+
 <action name="Options_TouchpadNaturalScroll_Disable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -9454,6 +9459,16 @@ should be able to be added at any place in this file.
 <action name="Options_Translate_Enable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Options_Use24HourClockCheckbox_Disable">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Date and time: Use 24-hour clock</description>
+</action>
+
+<action name="Options_Use24HourClockCheckbox_Enable">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Date and time: Use 24-hour clock</description>
 </action>
 
 <action name="Options_UseSpellingServiceCheckbox_Disable">
