@@ -971,7 +971,7 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
 
   // Allow each disposition change test to add additional post-disposition
   // change expectations.
-  virtual void PostDispostionChangeExpectations() {}
+  virtual void PostDispositionChangeExpectations() {}
 
   // Overridden from FocusControllerTestBase:
   void BasicFocus() override {
@@ -996,7 +996,7 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
 
     ChangeWindowDisposition(w2);
     EXPECT_EQ(3, GetActiveWindowId());
-    PostDispostionChangeExpectations();
+    PostDispositionChangeExpectations();
   }
   void FocusEvents() override {
     aura::Window* w211 = root_window()->GetChildById(211);
