@@ -16,7 +16,7 @@
 namespace content {
 
 // A push service-agnostic interface that the Push API uses for talking to
-// push messaging services like GCM.
+// push messaging services like GCM. Must only be used on the UI thread.
 class CONTENT_EXPORT PushMessagingService {
  public:
   typedef base::Callback<void(const std::string& /* registration_id */,

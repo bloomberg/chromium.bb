@@ -82,6 +82,9 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void SendRegisterSuccess(const RegisterData& data,
                            const std::string& push_registration_id);
 
+  // Returns a push messaging service. The embedder owns the service, and is
+  // responsible for ensuring that it outlives RenderProcessHost. It's valid to
+  // return NULL. Must be called on the UI thread.
   PushMessagingService* service();
 
   int render_process_id_;

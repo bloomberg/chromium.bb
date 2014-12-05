@@ -206,6 +206,11 @@ void PushMessagingMessageFilter::DoPermissionStatusRequest(
     int render_frame_id,
     int callback_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!service()) {
+    Send(new PushMessagingMsg_PermissionStatusFailure(render_frame_id,
+                                                      callback_id));
+    return;
+  }
   blink::WebPushPermissionStatus permission_value =
       service()->GetPermissionStatus(
           requesting_origin, render_process_id_, render_frame_id);
@@ -218,6 +223,10 @@ void PushMessagingMessageFilter::GetPermissionStatusOnUI(
     const GURL& requesting_origin,
     int request_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!service()) {
+    Send(new PushMessagingMsg_GetPermissionStatusError(request_id));
+    return;
+  }
   GURL embedding_origin = requesting_origin;
   blink::WebPushPermissionStatus permission_status =
       service()->GetPermissionStatus(requesting_origin, embedding_origin);
@@ -264,6 +273,7 @@ void PushMessagingMessageFilter::SendRegisterSuccess(
 }
 
 PushMessagingService* PushMessagingMessageFilter::service() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!service_) {
     RenderProcessHost* process_host =
         RenderProcessHost::FromID(render_process_id_);
