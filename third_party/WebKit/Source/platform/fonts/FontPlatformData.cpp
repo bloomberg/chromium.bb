@@ -266,17 +266,10 @@ bool FontPlatformData::operator==(const FontPlatformData& a) const
     // If either of the typeface pointers are null then we test for pointer
     // equality. Otherwise, we call SkTypeface::Equal on the valid pointers.
     bool typefacesEqual = false;
-#if !OS(MACOSX)
-    if (!m_typeface || !a.m_typeface)
-        typefacesEqual = m_typeface == a.m_typeface;
+    if (!typeface() || !a.typeface())
+        typefacesEqual = typeface() == a.typeface();
     else
-        typefacesEqual = SkTypeface::Equal(m_typeface.get(), a.m_typeface.get());
-#else
-    if (m_font || a.m_font)
-        typefacesEqual = m_font == a.m_font;
-    else
-        typefacesEqual = m_cgFont == a.m_cgFont;
-#endif
+        typefacesEqual = SkTypeface::Equal(typeface(), a.typeface());
 
     return typefacesEqual
         && m_textSize == a.m_textSize
@@ -315,7 +308,10 @@ bool FontPlatformData::isFixedPitch() const
 SkTypeface* FontPlatformData::typeface() const
 {
 #if OS(MACOSX)
-    if (!m_typeface)
+    // ctFont() will always generate a typeface, even for uninitialized font members.
+    // We only want to generate a Skia typeface if we have a valid font to start from,
+    // to keep hashing and comparisons to the empty object consistent.
+    if (!m_typeface && (m_font || m_cgFont || m_CTFont || m_inMemoryFont))
         m_typeface = adoptRef(SkCreateTypefaceFromCTFont(ctFont()));
 #endif
     return m_typeface.get();
@@ -329,10 +325,9 @@ HarfBuzzFace* FontPlatformData::harfBuzzFace() const
     return m_harfBuzzFace.get();
 }
 
-#if !OS(MACOSX)
 unsigned FontPlatformData::hash() const
 {
-    unsigned h = SkTypeface::UniqueID(m_typeface.get());
+    unsigned h = SkTypeface::UniqueID(typeface());
     h ^= 0x01010101 * ((static_cast<int>(m_isHashTableDeletedValue) << 3) | (static_cast<int>(m_orientation) << 2) | (static_cast<int>(m_syntheticBold) << 1) | static_cast<int>(m_syntheticItalic));
 
     // This memcpy is to avoid a reinterpret_cast that breaks strict-aliasing
@@ -345,6 +340,7 @@ unsigned FontPlatformData::hash() const
     return h;
 }
 
+#if !OS(MACOSX)
 bool FontPlatformData::fontContainsCharacter(UChar32 character)
 {
     SkPaint paint;
