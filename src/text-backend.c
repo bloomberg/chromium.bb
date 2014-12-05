@@ -82,8 +82,6 @@ struct input_method_context {
 	struct text_input *model;
 	struct input_method *input_method;
 
-	struct wl_list link;
-
 	struct wl_resource *keyboard;
 };
 
