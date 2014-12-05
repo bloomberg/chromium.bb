@@ -160,6 +160,7 @@
           'type': 'none',
           'variables': {
             'output_manifest_path': '<(chromevox_dest_dir)/manifest.json',
+            'is_chromevox_classic': 1,
           },
           'includes': [ 'generate_manifest.gypi', ],
         },
@@ -168,8 +169,6 @@
           'type': 'none',
           'variables': {
             'output_manifest_path': '<(chromevox_dest_dir)/manifest.json',
-            # TODO(dtseng): Flip this to 1 once ChromeVox Next is ready.
-            'is_chromevox_next': 0,
           },
           'includes': [ 'generate_manifest.gypi', ],
         },
@@ -179,8 +178,6 @@
           'variables': {
             'output_manifest_path': '<(chromevox_dest_dir)/manifest_guest.json',
             'is_guest_manifest': 1,
-            # TODO(dtseng): Flip this to 1 once ChromeVox Next is ready.
-            'is_chromevox_next': 0,
           },
           'includes': [ 'generate_manifest.gypi', ],
         },

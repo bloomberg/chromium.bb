@@ -10,19 +10,13 @@
   "incognito": "split",
 {% endif %}
   "background": {
-{% if is_chromevox_next == '1' %}
     "page": "cvox2/background/background.html"
-{% else %}
-    "page": "chromevox/background/background.html"
-{% endif %}
   },
   "permissions": [
     "accessibilityPrivate",
     "bookmarks",
     "brailleDisplayPrivate",
-{% if is_chromevox_next == '1' %}
     "commands.accessibility",
-{% endif %}
     "commandLinePrivate",
     "experimental",
     "history",
@@ -58,7 +52,6 @@
     "chromevox/injected/mathjax.js",
     "chromevox/injected/mathjax_external_util.js"
   ],
-{% if is_chromevox_next == '1' %}
   "automation": {
     "desktop": true
   },
@@ -160,7 +153,6 @@
       }
     }
   },
-{% endif %}
   "options_page": "chromevox/background/options.html",
   "default_locale": "en"
 }

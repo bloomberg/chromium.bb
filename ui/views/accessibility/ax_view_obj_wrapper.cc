@@ -14,7 +14,6 @@
 namespace views {
 
 AXViewObjWrapper::AXViewObjWrapper(View* view)  : view_(view) {
-  DCHECK(view->GetWidget());
   if (view->GetWidget())
     AXAuraObjCache::GetInstance()->GetOrCreate(view->GetWidget());
 }
@@ -26,7 +25,10 @@ AXAuraObjWrapper* AXViewObjWrapper::GetParent() {
   if (view_->parent())
     return cache->GetOrCreate(view_->parent());
 
-  return cache->GetOrCreate(view_->GetWidget());
+  if (view_->GetWidget())
+    return cache->GetOrCreate(view_->GetWidget());
+
+  return NULL;
 }
 
 void AXViewObjWrapper::GetChildren(
