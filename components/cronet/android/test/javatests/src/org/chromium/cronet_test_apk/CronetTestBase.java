@@ -12,6 +12,14 @@ import android.text.TextUtils;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import org.chromium.cronet_test_apk.urlconnection.CronetHttpURLConnectionTest;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -123,4 +131,46 @@ public class CronetTestBase extends
         }, WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT,
                 CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
+
+    @Override
+    protected void runTest() throws Throwable {
+        if (!getClass().getName().equals(
+                CronetHttpURLConnectionTest.class.getName())) {
+            super.runTest();
+            return;
+        }
+        try {
+            Method method = getClass().getMethod(getName(), (Class[]) null);
+            if (method.isAnnotationPresent(CompareDefaultWithCronet.class)) {
+                // Run with the default HttpURLConnection implementation first.
+                super.runTest();
+                // Use Cronet's implementation, and run the same test.
+                URL.setURLStreamHandlerFactory(
+                        getActivity().mStreamHandlerFactory);
+                super.runTest();
+            } else if (method.isAnnotationPresent(
+                    OnlyRunCronetHttpURLConnection.class)) {
+                // Run only with Cronet's implementation.
+                URL.setURLStreamHandlerFactory(
+                        getActivity().mStreamHandlerFactory);
+                super.runTest();
+            } else {
+                // For all other tests.
+                super.runTest();
+            }
+        } catch (Throwable e) {
+            throw new Throwable("CronetTestBase#runTest failed.", e);
+        }
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface CompareDefaultWithCronet {
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface OnlyRunCronetHttpURLConnection {
+    }
+
 }

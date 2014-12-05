@@ -15,6 +15,7 @@ import org.chromium.net.HttpUrlRequestFactory;
 import org.chromium.net.HttpUrlRequestListener;
 import org.chromium.net.UrlRequestContext;
 import org.chromium.net.UrlRequestContextConfig;
+import org.chromium.net.urlconnection.CronetURLStreamHandlerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -34,9 +35,10 @@ public class CronetTestActivity extends Activity {
     public static final String CONFIG_KEY = "config";
     public static final String SKIP_FACTORY_INIT_KEY = "skipFactoryInit";
 
+    public CronetURLStreamHandlerFactory mStreamHandlerFactory;
+
     HttpUrlRequestFactory mRequestFactory;
     UrlRequestContext mUrlRequestContext;
-
     String mUrl;
 
     boolean mLoading = false;
@@ -75,6 +77,9 @@ public class CronetTestActivity extends Activity {
             return;
         }
         mRequestFactory = initRequestFactory();
+        mStreamHandlerFactory = new CronetURLStreamHandlerFactory(
+                getApplicationContext(), null);
+
         if (mRequestFactory == null) {
             return;
         }
