@@ -8280,6 +8280,16 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_AutofillAddressAdded">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Autofill: Address added</description>
+</action>
+
+<action name="Options_AutofillAddressDeleted">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Autofill: Address deleted</description>
+</action>
+
 <action name="Options_AutofillAuxiliaryProfiles_Disable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -8288,6 +8298,21 @@ should be able to be added at any place in this file.
 <action name="Options_AutofillAuxiliaryProfiles_Enable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Options_AutofillCreditCardAdded">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Autofill: Credit card added</description>
+</action>
+
+<action name="Options_AutofillCreditCardDeleted">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Autofill: Credit card deleted</description>
+</action>
+
+<action name="Options_AutofillShowAbout">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Autofill: About Autofill</description>
 </action>
 
 <action name="Options_Autologin_Disable">
@@ -9060,6 +9085,23 @@ should be able to be added at any place in this file.
 <action name="Options_PasswordGenerationCheckbox_Enable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Options_PasswordManagerDeletePassword">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Password manager: Delete password</description>
+</action>
+
+<action name="Options_PasswordManagerExceptionsLearnMore">
+  <owner>michaelpg@chromium.org</owner>
+  <description>
+    Settings: Password manager: Learn more about exceptions
+  </description>
+</action>
+
+<action name="Options_PasswordManagerSearch">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Password manager: Search</description>
 </action>
 
 <action name="Options_PasswordManager_Disable">

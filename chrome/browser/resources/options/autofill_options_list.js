@@ -367,7 +367,8 @@ cr.define('options.autofillOptions', function() {
 
     /** @override */
     deleteItemAtIndex: function(index) {
-      AutofillOptions.removeData(this.dataModel.item(index)[0]);
+      AutofillOptions.removeData(this.dataModel.item(index)[0],
+                                 'Options_AutofillAddressDeleted');
     },
   };
 
@@ -400,7 +401,8 @@ cr.define('options.autofillOptions', function() {
 
     /** @override */
     deleteItemAtIndex: function(index) {
-      AutofillOptions.removeData(this.dataModel.item(index)[0]);
+      AutofillOptions.removeData(this.dataModel.item(index)[0],
+                                 'Options_AutofillCreditCardDeleted');
     },
   };
 

@@ -66,6 +66,12 @@ cr.define('options', function() {
       $('password-search-box').addEventListener('search',
           this.handleSearchQueryChange_.bind(this));
 
+      $('exceptions-learn-more').onclick = function() {
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_PasswordManagerExceptionsLearnMore']);
+        return true;  // Always follow the href
+      };
+
       this.createSavedPasswordsList_();
       this.createPasswordExceptionsList_();
     },
@@ -122,6 +128,9 @@ cr.define('options', function() {
       // snappier since users will expect that it's "less work."
       this.queryDelayTimerId_ = window.setTimeout(
           this.searchPasswords_.bind(this), 250);
+
+      chrome.send('coreOptionsUserMetricsAction',
+                  ['Options_PasswordManagerSearch']);
     },
 
     /**
@@ -229,6 +238,8 @@ cr.define('options', function() {
    */
   PasswordManager.removeSavedPassword = function(rowIndex) {
       chrome.send('removeSavedPassword', [String(rowIndex)]);
+      chrome.send('coreOptionsUserMetricsAction',
+                  ['Options_PasswordManagerDeletePassword']);
   };
 
   /**

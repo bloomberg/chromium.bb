@@ -74,6 +74,13 @@ cr.define('options', function() {
       creditCard[3] = $('expiration-month').value;
       creditCard[4] = $('expiration-year').value;
       chrome.send('setCreditCard', creditCard);
+
+      // If the GUID is empty, this form is being used to add a new card,
+      // rather than edit an existing one.
+      if (!this.guid_.length) {
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_AutofillCreditCardAdded']);
+      }
     },
 
     /**

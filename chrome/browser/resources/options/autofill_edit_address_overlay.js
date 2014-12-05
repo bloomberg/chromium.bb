@@ -248,6 +248,13 @@ cr.define('options', function() {
         this.languageCode_,
       ];
       chrome.send('setAddress', address);
+
+      // If the GUID is empty, this form is being used to add a new address,
+      // rather than edit an existing one.
+      if (!this.guid_.length) {
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_AutofillAddressAdded']);
+      }
     },
 
     /**
