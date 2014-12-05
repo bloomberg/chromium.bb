@@ -11,9 +11,12 @@
 
 class GrContext;
 
+namespace gpu_blink {
+class WebGraphicsContext3DImpl;
+}
+
 namespace webkit {
 namespace gpu {
-class WebGraphicsContext3DImpl;
 
 // This class binds an offscreen GrContext to an offscreen context3d. The
 // context3d is used by the GrContext so must be valid as long as this class
@@ -21,7 +24,7 @@ class WebGraphicsContext3DImpl;
 class WEBKIT_GPU_EXPORT GrContextForWebGraphicsContext3D {
  public:
   explicit GrContextForWebGraphicsContext3D(
-      WebGraphicsContext3DImpl* context3d);
+      gpu_blink::WebGraphicsContext3DImpl* context3d);
   virtual ~GrContextForWebGraphicsContext3D();
 
   GrContext* get() { return gr_context_.get(); }

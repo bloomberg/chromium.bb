@@ -34,8 +34,8 @@ namespace android_webview {
 
 namespace {
 
+using gpu_blink::WebGraphicsContext3DImpl;
 using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-using webkit::gpu::WebGraphicsContext3DImpl;
 
 scoped_refptr<cc::ContextProvider> CreateContext(
     scoped_refptr<gfx::GLSurface> surface,

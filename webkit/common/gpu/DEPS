@@ -3,6 +3,7 @@
 include_rules = [
   "+cc/output",
   "+gpu/GLES2",
+  "+gpu/blink",
   "+gpu/command_buffer/client",
   "+gpu/command_buffer/common",
   "+gpu/command_buffer/service",

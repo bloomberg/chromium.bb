@@ -6,10 +6,10 @@
 
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
+#include "gpu/blink/webgraphicscontext3d_impl.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
-#include "webkit/common/gpu/webgraphicscontext3d_impl.h"
 
 namespace webkit {
 namespace gpu {
@@ -31,14 +31,14 @@ base::LazyInstance<GLES2Initializer> g_gles2_initializer =
     LAZY_INSTANCE_INITIALIZER;
 
 void BindWebGraphicsContext3DGLContextCallback(const GrGLInterface* interface) {
-  gles2::SetGLContext(reinterpret_cast<WebGraphicsContext3DImpl*>(
+  gles2::SetGLContext(reinterpret_cast<gpu_blink::WebGraphicsContext3DImpl*>(
                           interface->fCallbackData)->GetGLInterface());
 }
 
-}  // namespace anonymous
+}  // namespace
 
 GrContextForWebGraphicsContext3D::GrContextForWebGraphicsContext3D(
-    WebGraphicsContext3DImpl* context3d) {
+    gpu_blink::WebGraphicsContext3DImpl* context3d) {
   if (!context3d)
     return;
 

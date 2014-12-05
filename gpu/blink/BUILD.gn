@@ -1,0 +1,30 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: //gpu/blink/gpu_blink.gyp:gpu_blink
+component("blink") {
+  output_name = "gpu_blink"
+
+  sources = [
+    "gpu_blink_export.h",
+    "webgraphicscontext3d_impl.cc",
+    "webgraphicscontext3d_impl.h",
+  ]
+
+  defines = [ "GPU_BLINK_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//gpu",
+    "//gpu/command_buffer/client:gles2_c_lib",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/skia_bindings",
+    "//skia",
+    "//third_party/WebKit/public:blink_minimal",
+  ]
+
+  if (is_win) {
+    cflags = [ "/wd4267" ]  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  }
+}

@@ -9,11 +9,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "gpu/blink/webgraphicscontext3d_impl.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "ui/gfx/native_widget_types.h"
-#include "webkit/common/gpu/webgraphicscontext3d_impl.h"
 #include "webkit/common/gpu/webkit_gpu_export.h"
 
 namespace gpu {
@@ -34,7 +34,7 @@ namespace webkit {
 namespace gpu {
 
 class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
-    : public WebGraphicsContext3DImpl {
+    : public gpu_blink::WebGraphicsContext3DImpl {
  public:
   enum MappedMemoryReclaimLimit {
     kNoLimit = 0,

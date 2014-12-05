@@ -14,12 +14,12 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
+#include "gpu/blink/webgraphicscontext3d_impl.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gpu_preference.h"
 #include "url/gurl.h"
-#include "webkit/common/gpu/webgraphicscontext3d_impl.h"
 
 namespace gpu {
 
@@ -42,7 +42,7 @@ const size_t kDefaultMinTransferBufferSize = 1 * 256 * 1024;
 const size_t kDefaultMaxTransferBufferSize = 16 * 1024 * 1024;
 
 class WebGraphicsContext3DCommandBufferImpl
-    : public webkit::gpu::WebGraphicsContext3DImpl {
+    : public gpu_blink::WebGraphicsContext3DImpl {
  public:
   enum MappedMemoryReclaimLimit {
     kNoLimit = 0,

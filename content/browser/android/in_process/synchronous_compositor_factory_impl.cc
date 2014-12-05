@@ -35,8 +35,8 @@ blink::WebGraphicsContext3D::Attributes GetDefaultAttribs() {
   return attributes;
 }
 
+using gpu_blink::WebGraphicsContext3DImpl;
 using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-using webkit::gpu::WebGraphicsContext3DImpl;
 
 scoped_ptr<gpu::GLInProcessContext> CreateOffscreenContext(
     const blink::WebGraphicsContext3D::Attributes& attributes) {
