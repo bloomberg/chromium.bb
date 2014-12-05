@@ -696,6 +696,8 @@ source_set("test_support") {
 
   if (!use_aura) {
     sources -= [ "test/ui_controls_aura.cc" ]
+  } else if (is_win) {
+    sources -= [ "test/ui_controls_win.cc" ]
   }
 }
 
