@@ -160,3 +160,16 @@ Framework.assert = function(var_args)
     var args = Array.prototype.slice.call(arguments, 0);
     return console.assert.apply(console, args);
 }
+
+Framework.createButtonWithEventListenersAndClick = function(eventListener)
+{
+    var button = document.createElement("input");
+    button.type = "button";
+    Framework.addEventListener(button, "click", Framework.empty, true);
+    Framework.addEventListener(button, "click", Framework.bind(Framework.empty, null), false);
+    Framework.addEventListener(button, "click", Framework.bind(Framework.safeRun, null, Framework.empty, Framework.empty, Framework.empty), true);
+    if (eventListener)
+        Framework.addEventListener(button, "click", eventListener, true);
+    button.click();
+    return button;
+}

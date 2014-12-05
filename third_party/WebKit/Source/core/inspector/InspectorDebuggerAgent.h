@@ -42,6 +42,7 @@
 #include "core/inspector/ScriptDebugListener.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
@@ -72,7 +73,11 @@ class XMLHttpRequest;
 
 typedef String ErrorString;
 
-class InspectorDebuggerAgent : public InspectorBaseAgent<InspectorDebuggerAgent>, public ScriptDebugListener, public InspectorBackendDispatcher::DebuggerCommandHandler {
+class InspectorDebuggerAgent
+    : public InspectorBaseAgent<InspectorDebuggerAgent>
+    , public ScriptDebugListener
+    , public AsyncCallStackTracker::Listener
+    , public InspectorBackendDispatcher::DebuggerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDebuggerAgent);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
@@ -124,6 +129,7 @@ public:
     virtual void stepOver(ErrorString*) override final;
     virtual void stepInto(ErrorString*) override final;
     virtual void stepOut(ErrorString*) override final;
+    virtual void stepIntoAsync(ErrorString*) override final;
     virtual void setPauseOnExceptions(ErrorString*, const String& pauseState) override final;
     virtual void evaluateOnCallFrame(ErrorString*,
         const String& callFrameId,
@@ -146,6 +152,10 @@ public:
     virtual void disablePromiseTracker(ErrorString*) override final;
     virtual void getPromises(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::PromiseDetails> >& promises) override final;
     virtual void getPromiseById(ErrorString*, int promiseId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& promise) override final;
+
+    // AsyncCallStackTracker::Listener
+    virtual void didCreateAsyncCallChain(const AsyncCallStackTracker::AsyncCallChain*) override final;
+    virtual void didChangeCurrentAsyncCallChain(const AsyncCallStackTracker::AsyncCallChain*) override final;
 
     void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);
@@ -246,6 +256,7 @@ private:
     PassRefPtr<TypeBuilder::Debugger::Location> resolveBreakpoint(const String& breakpointId, const String& scriptId, const ScriptBreakpoint&, BreakpointSource);
     void removeBreakpoint(const String& breakpointId);
     void clear();
+    void clearStepIntoAsync();
     bool assertPaused(ErrorString*);
     void clearBreakDetails();
 
@@ -284,6 +295,7 @@ private:
     bool m_javaScriptPauseScheduled;
     bool m_steppingFromFramework;
     bool m_pausingOnNativeEvent;
+    bool m_inAsyncOperationForStepInto;
     RawPtrWillBeMember<Listener> m_listener;
 
     int m_skippedStepFrameCount;
@@ -295,6 +307,7 @@ private:
     unsigned m_cachedSkipStackGeneration;
     OwnPtrWillBeMember<AsyncCallStackTracker> m_asyncCallStackTracker;
     OwnPtrWillBeMember<PromiseTracker> m_promiseTracker;
+    HashSet<int> m_asyncOperationIdsForStepInto;
 };
 
 } // namespace blink

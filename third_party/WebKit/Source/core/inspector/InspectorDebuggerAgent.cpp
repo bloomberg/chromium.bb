@@ -127,6 +127,7 @@ InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedSc
     , m_javaScriptPauseScheduled(false)
     , m_steppingFromFramework(false)
     , m_pausingOnNativeEvent(false)
+    , m_inAsyncOperationForStepInto(false)
     , m_listener(nullptr)
     , m_skippedStepFrameCount(0)
     , m_recursionLevelForStepOut(0)
@@ -990,6 +991,7 @@ void InspectorDebuggerAgent::pause(ErrorString*)
     if (m_javaScriptPauseScheduled || isPaused())
         return;
     clearBreakDetails();
+    clearStepIntoAsync();
     m_javaScriptPauseScheduled = true;
     m_scheduledDebuggerStep = NoStep;
     m_skippedStepFrameCount = 0;
@@ -1043,6 +1045,23 @@ void InspectorDebuggerAgent::stepOut(ErrorString* errorString)
     m_steppingFromFramework = isTopCallFrameInFramework();
     m_injectedScriptManager->releaseObjectGroup(InspectorDebuggerAgent::backtraceObjectGroup);
     scriptDebugServer().stepOutOfFunction();
+}
+
+void InspectorDebuggerAgent::stepIntoAsync(ErrorString* errorString)
+{
+    if (!assertPaused(errorString))
+        return;
+    if (!asyncCallStackTracker().isEnabled()) {
+        *errorString = "Can only perform operation if async call stacks are enabled.";
+        return;
+    }
+    m_inAsyncOperationForStepInto = false;
+    m_asyncOperationIdsForStepInto.clear();
+    asyncCallStackTracker().setListener(this);
+    m_scheduledDebuggerStep = NoStep;
+    m_steppingFromFramework = isTopCallFrameInFramework();
+    m_injectedScriptManager->releaseObjectGroup(InspectorDebuggerAgent::backtraceObjectGroup);
+    scriptDebugServer().continueProgram();
 }
 
 void InspectorDebuggerAgent::setPauseOnExceptions(ErrorString* errorString, const String& stringPauseState)
@@ -1237,6 +1256,8 @@ void InspectorDebuggerAgent::setAsyncCallStackDepth(ErrorString*, int depth)
 {
     m_state->setLong(DebuggerAgentState::asyncCallStackDepth, depth);
     asyncCallStackTracker().setAsyncCallStackDepth(depth);
+    if (!asyncCallStackTracker().isEnabled())
+        clearStepIntoAsync();
 }
 
 void InspectorDebuggerAgent::enablePromiseTracker(ErrorString*)
@@ -1273,6 +1294,31 @@ void InspectorDebuggerAgent::getPromiseById(ErrorString* errorString, int promis
     }
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(value.scriptState());
     promise = injectedScript.wrapObject(value, objectGroup ? *objectGroup : "");
+}
+
+void InspectorDebuggerAgent::didCreateAsyncCallChain(const AsyncCallStackTracker::AsyncCallChain* chain)
+{
+    if (m_inAsyncOperationForStepInto || m_asyncOperationIdsForStepInto.isEmpty())
+        m_asyncOperationIdsForStepInto.add(chain->asyncOperationId());
+}
+
+void InspectorDebuggerAgent::didChangeCurrentAsyncCallChain(const AsyncCallStackTracker::AsyncCallChain* chain)
+{
+    if (!chain) {
+        if (m_inAsyncOperationForStepInto) {
+            m_inAsyncOperationForStepInto = false;
+            m_scheduledDebuggerStep = NoStep;
+            scriptDebugServer().setPauseOnNextStatement(false);
+        }
+        return;
+    }
+    if (m_asyncOperationIdsForStepInto.contains(chain->asyncOperationId())) {
+        m_inAsyncOperationForStepInto = true;
+        m_scheduledDebuggerStep = StepInto;
+        m_skippedStepFrameCount = 0;
+        m_recursionLevelForStepFrame = 0;
+        scriptDebugServer().setPauseOnNextStatement(true);
+    }
 }
 
 void InspectorDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)
@@ -1550,6 +1596,7 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(ScriptSta
     m_pausingOnNativeEvent = false;
     m_skippedStepFrameCount = 0;
     m_recursionLevelForStepFrame = 0;
+    clearStepIntoAsync();
 
     if (!m_continueToLocationBreakpointId.isEmpty()) {
         scriptDebugServer().removeBreakpoint(m_continueToLocationBreakpointId);
@@ -1580,6 +1627,7 @@ void InspectorDebuggerAgent::breakProgram(InspectorFrontend::Debugger::Reason::E
     m_scheduledDebuggerStep = NoStep;
     m_steppingFromFramework = false;
     m_pausingOnNativeEvent = false;
+    clearStepIntoAsync();
     scriptDebugServer().breakProgram();
 }
 
@@ -1600,8 +1648,16 @@ void InspectorDebuggerAgent::clear()
     m_pausingOnNativeEvent = false;
     m_skippedStepFrameCount = 0;
     m_recursionLevelForStepFrame = 0;
+    clearStepIntoAsync();
     ErrorString error;
     setOverlayMessage(&error, 0);
+}
+
+void InspectorDebuggerAgent::clearStepIntoAsync()
+{
+    asyncCallStackTracker().setListener(nullptr);
+    m_asyncOperationIdsForStepInto.clear();
+    m_inAsyncOperationForStepInto = false;
 }
 
 bool InspectorDebuggerAgent::assertPaused(ErrorString* errorString)

@@ -1,0 +1,201 @@
+Tests debugger StepIntoAsync action.
+
+
+Set timer for test function.
+Executing StepOver...
+Executing StepOver...
+Executing StepOver...
+Call stack:
+    0) testFunction (debugger-step-into-async.html:17)
+
+Executing StepIntoAsync...
+Call stack:
+    0) callback1 (debugger-step-into-async.html:23)
+    [setTimeout]
+    0) testFunction (debugger-step-into-async.html:17)
+
+Executing StepIntoAsync...
+Call stack:
+    0) callback2 (debugger-step-into-async.html:33)
+    [setTimeout]
+    0) callback1 (debugger-step-into-async.html:28)
+    [setTimeout]
+    0) testFunction (debugger-step-into-async.html:17)
+
+Executing StepIntoAsync...
+Call stack:
+    0) callback3 (debugger-step-into-async.html:44)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework_willSchedule (framework.js:51)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework_willSchedule (framework.js:51)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework_willSchedule (framework.js:51)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+    1) callback2 (debugger-step-into-async.html:38)
+
+Executing StepIntoAsync...
+Call stack:
+    0) callback4 (debugger-step-into-async.html:53)
+  * 1) Framework.safeRun (framework.js:8)
+  * 2) Framework.safeRun (framework.js:13)
+  * 3) Framework.safeRun (framework.js:10)
+  * 4) Framework_bound (framework.js:105)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+    1) callback3 (debugger-step-into-async.html:47)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework_willSchedule (framework.js:51)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework_willSchedule (framework.js:51)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework_willSchedule (framework.js:51)
+
+Executing StepIntoAsync...
+Call stack:
+    0) callback5 (debugger-step-into-async.html:60)
+  * 1) Framework_eventListener (framework.js:86)
+  * 2) Framework.createButtonWithEventListenersAndClick (framework.js:173)
+  * 3) Framework_bound (framework.js:105)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+    1) callback4 (debugger-step-into-async.html:54)
+  * 2) Framework.safeRun (framework.js:8)
+  * 3) Framework.safeRun (framework.js:13)
+  * 4) Framework.safeRun (framework.js:10)
+  * 5) Framework_bound (framework.js:105)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+    1) callback3 (debugger-step-into-async.html:47)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework_willSchedule (framework.js:51)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework_willSchedule (framework.js:51)
+
+Executing StepIntoAsync...
+Call stack:
+    0) callback6 (debugger-step-into-async.html:75)
+    [Promise.resolve]
+    0) callback5 (debugger-step-into-async.html:70)
+  * 1) Framework_eventListener (framework.js:86)
+  * 2) Framework.createButtonWithEventListenersAndClick (framework.js:173)
+  * 3) Framework_bound (framework.js:105)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+    1) callback4 (debugger-step-into-async.html:54)
+  * 2) Framework.safeRun (framework.js:8)
+  * 3) Framework.safeRun (framework.js:13)
+  * 4) Framework.safeRun (framework.js:10)
+  * 5) Framework_bound (framework.js:105)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+    1) callback3 (debugger-step-into-async.html:47)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework_willSchedule (framework.js:51)
+
+Executing StepIntoAsync...
+Call stack:
+    0) callback7 (debugger-step-into-async.html:89)
+    [Promise.resolve]
+    0) callback6 (debugger-step-into-async.html:78)
+    [Promise.resolve]
+    0) callback5 (debugger-step-into-async.html:70)
+  * 1) Framework_eventListener (framework.js:86)
+  * 2) Framework.createButtonWithEventListenersAndClick (framework.js:173)
+  * 3) Framework_bound (framework.js:105)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+    1) callback4 (debugger-step-into-async.html:54)
+  * 2) Framework.safeRun (framework.js:8)
+  * 3) Framework.safeRun (framework.js:13)
+  * 4) Framework.safeRun (framework.js:10)
+  * 5) Framework_bound (framework.js:105)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+    1) callback3 (debugger-step-into-async.html:47)
+
+Executing Resume...
+Executing StepIntoAsync...
+Call stack:
+    0) callback8 (debugger-step-into-async.html:105)
+    [Promise.resolve]
+    0) callback7 (debugger-step-into-async.html:92)
+    [Promise.resolve]
+    0) callback6 (debugger-step-into-async.html:78)
+    [Promise.resolve]
+    0) callback5 (debugger-step-into-async.html:70)
+  * 1) Framework_eventListener (framework.js:86)
+  * 2) Framework.createButtonWithEventListenersAndClick (framework.js:173)
+  * 3) Framework_bound (framework.js:105)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+    1) callback4 (debugger-step-into-async.html:54)
+  * 2) Framework.safeRun (framework.js:8)
+  * 3) Framework.safeRun (framework.js:13)
+  * 4) Framework.safeRun (framework.js:10)
+  * 5) Framework_bound (framework.js:105)
+
+Executing Resume...
+Executing StepIntoAsync...
+Call stack:
+    0) callback9 (debugger-step-into-async.html:115)
+    [Object.observe]
+    0) callback8 (debugger-step-into-async.html:110)
+    [Promise.resolve]
+    0) callback7 (debugger-step-into-async.html:92)
+    [Promise.resolve]
+    0) callback6 (debugger-step-into-async.html:78)
+    [Promise.resolve]
+    0) callback5 (debugger-step-into-async.html:70)
+  * 1) Framework_eventListener (framework.js:86)
+  * 2) Framework.createButtonWithEventListenersAndClick (framework.js:173)
+  * 3) Framework_bound (framework.js:105)
+
+Executing StepIntoAsync...
+Call stack:
+    0) onMessageReceivedInFrame (post-message-listener.html:5)
+    [postMessage]
+    0) callback9 (debugger-step-into-async.html:119)
+    [Object.observe]
+    0) callback8 (debugger-step-into-async.html:110)
+    [Promise.resolve]
+    0) callback7 (debugger-step-into-async.html:92)
+    [Promise.resolve]
+    0) callback6 (debugger-step-into-async.html:78)
+
+Executing Resume...
+Executing StepIntoAsync...
+Call stack:
+    0) inner1 (debugger-step-into-async.html:132)
+    [Promise.resolve]
+    0) callback10 (debugger-step-into-async.html:131)
+    [setTimeout]
+    0) callback9 (debugger-step-into-async.html:121)
+    [Object.observe]
+    0) callback8 (debugger-step-into-async.html:110)
+    [Promise.resolve]
+    0) callback7 (debugger-step-into-async.html:92)
+
+Executing StepIntoAsync...
+Call stack:
+    0) inner2 (debugger-step-into-async.html:138)
+    [Promise.resolve]
+    0) callback10 (debugger-step-into-async.html:131)
+    [setTimeout]
+    0) callback9 (debugger-step-into-async.html:121)
+    [Object.observe]
+    0) callback8 (debugger-step-into-async.html:110)
+    [Promise.resolve]
+    0) callback7 (debugger-step-into-async.html:92)
+
+

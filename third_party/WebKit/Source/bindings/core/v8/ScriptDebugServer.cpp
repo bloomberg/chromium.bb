@@ -170,7 +170,7 @@ void ScriptDebugServer::setPauseOnExceptionsState(PauseOnExceptionsState pauseOn
 
 void ScriptDebugServer::setPauseOnNextStatement(bool pause)
 {
-    ASSERT(!isPaused());
+    ASSERT(!m_runningNestedMessageLoop);
     if (pause)
         v8::Debug::DebugBreak(m_isolate);
     else
