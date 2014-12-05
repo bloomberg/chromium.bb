@@ -196,6 +196,7 @@ source_set("base") {
     sources += [
       "browser_cdm.cc",
       "browser_cdm.h",
+      "browser_cdm_factory.cc",
       "browser_cdm_factory.h",
     ]
   }

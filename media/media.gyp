@@ -660,6 +660,7 @@
           'sources': [
             'base/browser_cdm.cc',
             'base/browser_cdm.h',
+            'base/browser_cdm_factory.cc',
             'base/browser_cdm_factory.h',
           ],
         }],
@@ -1697,6 +1698,7 @@
             'base/android/audio_decoder_job.cc',
             'base/android/audio_decoder_job.h',
             'base/android/browser_cdm_factory_android.cc',
+            'base/android/browser_cdm_factory_android.h',
             'base/android/demuxer_android.h',
             'base/android/demuxer_stream_player_params.cc',
             'base/android/demuxer_stream_player_params.h',

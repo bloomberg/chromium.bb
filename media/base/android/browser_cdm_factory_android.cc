@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/browser_cdm_factory.h"
+#include "media/base/android/browser_cdm_factory_android.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -12,7 +12,7 @@
 
 namespace media {
 
-scoped_ptr<BrowserCdm> CreateBrowserCdm(
+scoped_ptr<BrowserCdm> BrowserCdmFactoryAndroid::CreateBrowserCdm(
     const std::string& key_system,
     const BrowserCdm::SessionCreatedCB& session_created_cb,
     const BrowserCdm::SessionMessageCB& session_message_cb,

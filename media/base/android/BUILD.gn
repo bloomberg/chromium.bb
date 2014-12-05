@@ -15,6 +15,7 @@ source_set("android") {
     "audio_decoder_job.cc",
     "audio_decoder_job.h",
     "browser_cdm_factory_android.cc",
+    "browser_cdm_factory_android.h",
     "demuxer_android.h",
     "demuxer_stream_player_params.cc",
     "demuxer_stream_player_params.h",
