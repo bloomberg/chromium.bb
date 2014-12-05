@@ -2,32 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_BLINK_WEBGRAPHICSCONTEXT3D_IMPL_H_
-#define GPU_BLINK_WEBGRAPHICSCONTEXT3D_IMPL_H_
+#ifndef WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_IMPL_H_
+#define WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_IMPL_H_
 
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "gpu/blink/gpu_blink_export.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-
-// TODO(tfarina): Remove these 'using' declarations. crbug.com/438860
-using blink::WGC3Dbitfield;
-using blink::WGC3Dboolean;
-using blink::WGC3Dbyte;
-using blink::WGC3Dchar;
-using blink::WGC3Dclampf;
-using blink::WGC3Denum;
-using blink::WGC3Dfloat;
-using blink::WGC3Dint;
-using blink::WGC3Dintptr;
-using blink::WGC3Dsizei;
-using blink::WGC3Dsizeiptr;
-using blink::WGC3Duint;
-using blink::WebGLId;
+#include "webkit/common/gpu/webkit_gpu_export.h"
 
 namespace gpu {
 
@@ -38,11 +23,27 @@ struct ContextCreationAttribHelper;
 }
 }
 
-namespace gpu_blink {
+using blink::WebGLId;
+
+using blink::WGC3Dbyte;
+using blink::WGC3Dchar;
+using blink::WGC3Denum;
+using blink::WGC3Dboolean;
+using blink::WGC3Dbitfield;
+using blink::WGC3Dint;
+using blink::WGC3Dsizei;
+using blink::WGC3Duint;
+using blink::WGC3Dfloat;
+using blink::WGC3Dclampf;
+using blink::WGC3Dintptr;
+using blink::WGC3Dsizeiptr;
+
+namespace webkit {
+namespace gpu {
 
 class WebGraphicsContext3DErrorMessageCallback;
 
-class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
+class WEBKIT_GPU_EXPORT WebGraphicsContext3DImpl
     : public NON_EXPORTED_BASE(blink::WebGraphicsContext3D) {
  public:
   virtual ~WebGraphicsContext3DImpl();
@@ -565,7 +566,7 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
 
   virtual GrGLInterface* createGrGLInterface();
 
-  gpu::gles2::GLES2Interface* GetGLInterface() {
+  ::gpu::gles2::GLES2Interface* GetGLInterface() {
     return gl_;
   }
 
@@ -573,18 +574,18 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   // requests.
   static void ConvertAttributes(
       const blink::WebGraphicsContext3D::Attributes& attributes,
-      gpu::gles2::ContextCreationAttribHelper* output_attribs);
+      ::gpu::gles2::ContextCreationAttribHelper* output_attribs);
 
  protected:
   friend class WebGraphicsContext3DErrorMessageCallback;
 
   WebGraphicsContext3DImpl();
 
-  gpu::gles2::GLES2ImplementationErrorMessageCallback*
+  ::gpu::gles2::GLES2ImplementationErrorMessageCallback*
       getErrorMessageCallback();
   virtual void OnErrorMessage(const std::string& message, int id);
 
-  void setGLInterface(gpu::gles2::GLES2Interface* gl) {
+  void setGLInterface(::gpu::gles2::GLES2Interface* gl) {
     gl_ = gl;
   }
 
@@ -602,11 +603,12 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   // Errors raised by synthesizeGLError().
   std::vector<WGC3Denum> synthetic_errors_;
 
-  gpu::gles2::GLES2Interface* gl_;
+  ::gpu::gles2::GLES2Interface* gl_;
   bool lose_context_when_out_of_memory_;
   uint32_t flush_id_;
 };
 
-}  // namespace gpu_blink
+}  // namespace gpu
+}  // namespace webkit
 
-#endif  // GPU_BLINK_WEBGRAPHICSCONTEXT3D_IMPL_H_
+#endif  // WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_IMPL_H_

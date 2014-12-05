@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/blink/webgraphicscontext3d_impl.h"
+#include "webkit/common/gpu/webgraphicscontext3d_impl.h"
 
 #include "base/atomicops.h"
 #include "base/lazy_instance.h"
@@ -19,7 +19,8 @@
 #endif
 #include "third_party/khronos/GLES2/gl2ext.h"
 
-namespace gpu_blink {
+namespace webkit {
+namespace gpu {
 
 namespace {
 
@@ -31,7 +32,7 @@ uint32_t GenFlushID() {
   return static_cast<uint32_t>(my_id);
 }
 
-}  // namespace
+} // namespace anonymous
 
 class WebGraphicsContext3DErrorMessageCallback
     : public ::gpu::gles2::GLES2ImplementationErrorMessageCallback {
@@ -1027,4 +1028,5 @@ void WebGraphicsContext3DImpl::ConvertAttributes(
   output_attribs->bind_generates_resource = false;
 }
 
-}  // namespace gpu_blink
+}  // namespace gpu
+}  // namespace webkit

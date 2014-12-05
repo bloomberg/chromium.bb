@@ -55,7 +55,6 @@ group("root") {
     "//extensions/renderer",
     "//gin",
     "//gpu",
-    "//gpu/blink",
     "//google_apis",
     "//google_apis/gcm",
     "//ipc",
