@@ -74,11 +74,11 @@ class HTMLActionAdditionTest(unittest.TestCase):
 
   def _createActionXMLFile(self):
     content = ('<actions>'
-        '<action name="validaction_Disabled">'
+        '<action name="validaction_Disable">'
         ' <owner>Please list the metric\'s owners.</owner>'
         ' <description>Enter the description of this user action.</description>'
         '</action>'
-        '<action name="validaction_Enabled">'
+        '<action name="validaction_Enable">'
         ' <owner>Please list the metric\'s owners. </owner>'
         ' <description>Enter the description of this user action.</description>'
         '</action>'

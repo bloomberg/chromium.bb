@@ -59,8 +59,8 @@ def IsActionPresent(current_actions, metric_name, is_boolean):
     action = 'name="{0}"'.format(metric_name)
     return action in current_actions
 
-  action_disabled = 'name="{0}_Disabled"'.format(metric_name)
-  action_enabled = 'name="{0}_Enabled"'.format(metric_name)
+  action_disabled = 'name="{0}_Disable"'.format(metric_name)
+  action_enabled = 'name="{0}_Enable"'.format(metric_name)
 
   return (action_disabled in current_actions and
       action_enabled in current_actions)
