@@ -71,7 +71,15 @@ var kHmacTestVectors = [
   }
 ];
 
-function runTest(testCase)
+function hexStringToBufferSource(str, generateArrayBuffer) {
+  var data = hexStringToUint8Array(str);
+  if (generateArrayBuffer) {
+    return data = data.buffer;
+  }
+  return data;
+}
+
+function runTest(testCase, useArrayBufferForSignature, useArrayBufferForData)
 {
     var importAlgorithm = {name: 'HMAC', hash: {name: testCase.hash}};
     var algorithm = {name: 'HMAC'};
@@ -100,7 +108,7 @@ function runTest(testCase)
         bytesShouldMatchHexString("Mac", testCase.mac, result);
 
         // (3) Verify
-        return crypto.subtle.verify(algorithm, key, hexStringToUint8Array(testCase.mac), hexStringToUint8Array(testCase.message));
+        return crypto.subtle.verify(algorithm, key, hexStringToBufferSource(testCase.mac, useArrayBufferForSignature), hexStringToBufferSource(testCase.message, useArrayBufferForData));
     }).then(function(result) {
         verifyResult = result;
         shouldBe("verifyResult", "true");
@@ -117,7 +125,11 @@ function runTest(testCase)
 var lastPromise = Promise.resolve(null);
 
 kHmacTestVectors.forEach(function(testCase) {
-    lastPromise = lastPromise.then(runTest.bind(null, testCase));
+    [true, false].forEach(function(useArrayBufferForSignature) {
+        [true, false].forEach(function(useArrayBufferForData) {
+            lastPromise = lastPromise.then(runTest.bind(null, testCase, useArrayBufferForSignature, useArrayBufferForData));
+        })
+    })
 });
 
 lastPromise.then(finishJSTest, failAndFinishJSTest);
