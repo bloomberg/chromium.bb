@@ -50,14 +50,16 @@ struct RendererCapabilities;
 struct SelectionHandle;
 
 typedef std::list<UIResourceRequest> UIResourceRequestQueue;
+typedef SyncedProperty<AdditionGroup<gfx::Vector2dF>> SyncedElasticOverscroll;
 
 class CC_EXPORT LayerTreeImpl {
  public:
   static scoped_ptr<LayerTreeImpl> create(
       LayerTreeHostImpl* layer_tree_host_impl,
-      scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor) {
-    return make_scoped_ptr(
-        new LayerTreeImpl(layer_tree_host_impl, page_scale_factor));
+      scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
+      scoped_refptr<SyncedElasticOverscroll> elastic_overscroll) {
+    return make_scoped_ptr(new LayerTreeImpl(
+        layer_tree_host_impl, page_scale_factor, elastic_overscroll));
   }
   virtual ~LayerTreeImpl();
 
@@ -178,6 +180,13 @@ class CC_EXPORT LayerTreeImpl {
 
   SyncedProperty<ScaleGroup>* page_scale_factor();
   const SyncedProperty<ScaleGroup>* page_scale_factor() const;
+
+  SyncedElasticOverscroll* elastic_overscroll() {
+    return elastic_overscroll_.get();
+  }
+  const SyncedElasticOverscroll* elastic_overscroll() const {
+    return elastic_overscroll_.get();
+  }
 
   // Updates draw properties and render surface layer list, as well as tile
   // priorities. Returns false if it was unable to update.
@@ -325,7 +334,8 @@ class CC_EXPORT LayerTreeImpl {
  protected:
   explicit LayerTreeImpl(
       LayerTreeHostImpl* layer_tree_host_impl,
-      scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor);
+      scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
+      scoped_refptr<SyncedElasticOverscroll> elastic_overscroll);
   void ReleaseResourcesRecursive(LayerImpl* current);
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
   void PushPageScaleFactorAndLimits(const float* page_scale_factor,
@@ -359,6 +369,8 @@ class CC_EXPORT LayerTreeImpl {
   scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor_;
   float min_page_scale_factor_;
   float max_page_scale_factor_;
+
+  scoped_refptr<SyncedElasticOverscroll> elastic_overscroll_;
 
   typedef base::hash_map<int, LayerImpl*> LayerIdMap;
   LayerIdMap layer_id_map_;

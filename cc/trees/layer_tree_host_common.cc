@@ -1268,6 +1268,8 @@ struct SubtreeGlobals {
   float device_scale_factor;
   float page_scale_factor;
   const LayerType* page_scale_application_layer;
+  gfx::Vector2dF elastic_overscroll;
+  const LayerType* elastic_overscroll_application_layer;
   bool can_adjust_raster_scales;
   bool can_render_to_separate_surface;
   bool layers_always_allowed_lcd_text;
@@ -2121,6 +2123,10 @@ static void CalculateDrawPropertiesInternal(
           globals.page_scale_factor);
       data_for_children.in_subtree_of_page_scale_application_layer = true;
     }
+    if (layer == globals.elastic_overscroll_application_layer) {
+      data_for_children.parent_matrix.Translate(globals.elastic_overscroll.x(),
+                                                globals.elastic_overscroll.y());
+    }
 
     // Flatten to 2D if the layer doesn't preserve 3D.
     if (layer->should_flatten_transform())
@@ -2399,6 +2405,9 @@ static void ProcessCalcDrawPropsInputs(
       inputs.device_scale_factor * device_transform_scale;
   globals->page_scale_factor = inputs.page_scale_factor;
   globals->page_scale_application_layer = inputs.page_scale_application_layer;
+  globals->elastic_overscroll = inputs.elastic_overscroll;
+  globals->elastic_overscroll_application_layer =
+      inputs.elastic_overscroll_application_layer;
   globals->can_render_to_separate_surface =
       inputs.can_render_to_separate_surface;
   globals->can_adjust_raster_scales = inputs.can_adjust_raster_scales;

@@ -32,6 +32,7 @@ bool ScrollElasticityHelper::AllowsVerticalStretching() {
 }
 
 gfx::Vector2dF ScrollElasticityHelper::StretchAmount() {
+  // TODO(ccameron): Use the value of active_tree->elastic_overscroll directly
   return stretch_offset_;
 }
 
@@ -63,7 +64,7 @@ bool ScrollElasticityHelper::CanScrollVertically() {
 
 gfx::Vector2dF ScrollElasticityHelper::AbsoluteScrollPosition() {
   // TODO(ccameron): This is function is redundant and may be removed.
-  return stretch_offset_;
+  return StretchAmount();
 }
 
 void ScrollElasticityHelper::ImmediateScrollBy(const gfx::Vector2dF& scroll) {
@@ -73,9 +74,14 @@ void ScrollElasticityHelper::ImmediateScrollBy(const gfx::Vector2dF& scroll) {
 void ScrollElasticityHelper::ImmediateScrollByWithoutContentEdgeConstraints(
     const gfx::Vector2dF& scroll) {
   stretch_offset_ += scroll;
-
-  // TODO(ccameron): Update the transform of the appropriate layer in the
-  // LayerTreeHostImpl, and request that a frame be drawn.
+  // TODO(ccameron): Use the value of active_tree->elastic_overscroll directly
+  // Note that this assumes that this property's true value is ever changed
+  // by the impl thread. While this is true, it is redundant state.
+  layer_tree_host_impl_->active_tree()->elastic_overscroll()->SetCurrent(
+      -stretch_offset_);
+  layer_tree_host_impl_->active_tree()->set_needs_update_draw_properties();
+  layer_tree_host_impl_->SetNeedsCommit();
+  layer_tree_host_impl_->SetNeedsRedraw();
 }
 
 void ScrollElasticityHelper::StartSnapRubberbandTimer() {
