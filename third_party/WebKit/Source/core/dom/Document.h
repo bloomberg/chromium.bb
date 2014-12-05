@@ -1012,7 +1012,10 @@ public:
     Document& ensureTemplateDocument();
     Document* templateDocumentHost() { return m_templateDocumentHost; }
 
+    // TODO(thestig): Rename these and related functions, since we can call them
+    // for labels and input fields outside of forms as well.
     void didAssociateFormControl(Element*);
+    void removeFormAssociation(Element*);
 
     virtual void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override final;
 

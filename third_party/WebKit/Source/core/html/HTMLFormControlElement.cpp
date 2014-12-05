@@ -253,6 +253,11 @@ Node::InsertionNotificationRequest HTMLFormControlElement::insertedInto(Containe
     HTMLElement::insertedInto(insertionPoint);
     FormAssociatedElement::insertedInto(insertionPoint);
     fieldSetAncestorsSetNeedsValidityCheck(insertionPoint);
+
+    // Trigger for elements outside of forms.
+    if (!formOwner() && insertionPoint->inDocument())
+        document().didAssociateFormControl(this);
+
     return InsertionDone;
 }
 
@@ -266,6 +271,7 @@ void HTMLFormControlElement::removedFrom(ContainerNode* insertionPoint)
     setNeedsWillValidateCheck();
     HTMLElement::removedFrom(insertionPoint);
     FormAssociatedElement::removedFrom(insertionPoint);
+    document().removeFormAssociation(this);
 }
 
 void HTMLFormControlElement::willChangeForm()

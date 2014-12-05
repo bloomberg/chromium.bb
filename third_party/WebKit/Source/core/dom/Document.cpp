@@ -5502,6 +5502,16 @@ void Document::didAssociateFormControl(Element* element)
         m_didAssociateFormControlsTimer.startOneShot(0, FROM_HERE);
 }
 
+void Document::removeFormAssociation(Element* element)
+{
+    auto it = m_associatedFormControls.find(element);
+    if (it == m_associatedFormControls.end())
+        return;
+    m_associatedFormControls.remove(it);
+    if (m_associatedFormControls.isEmpty())
+        m_didAssociateFormControlsTimer.stop();
+}
+
 void Document::didAssociateFormControlsTimerFired(Timer<Document>* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_didAssociateFormControlsTimer);

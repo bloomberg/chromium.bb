@@ -254,6 +254,11 @@ Node::InsertionNotificationRequest HTMLLabelElement::insertedInto(ContainerNode*
         if (scope == treeScope() && scope.shouldCacheLabelsByForAttribute())
             updateLabel(scope, nullAtom, fastGetAttribute(forAttr));
     }
+
+    // Trigger for elements outside of forms.
+    if (!formOwner() && insertionPoint->inDocument())
+        document().didAssociateFormControl(this);
+
     return result;
 }
 
@@ -266,6 +271,7 @@ void HTMLLabelElement::removedFrom(ContainerNode* insertionPoint)
     }
     HTMLElement::removedFrom(insertionPoint);
     FormAssociatedElement::removedFrom(insertionPoint);
+    document().removeFormAssociation(this);
 }
 
 void HTMLLabelElement::trace(Visitor* visitor)
