@@ -133,19 +133,9 @@ EXTRA_LICENSES_DIR = os.path.join(licenses_lib.SCRIPT_DIR,
                                   'extra_package_licenses')
 
 # These packages exist as workarounds....
-#
-# X is listed to avoid installing licensing info for all split X packages.
-# sys-boot packages are listed as a partial work around for not having per-board
-# credits files (TODO(dgarrett): Remove when crbug.com/197970 fixed).
 EXTRA_PACKAGES = (
-    ('x11-base/X-Org-1.9.3',
-     ['http://www.x.org/'], ['X'], []),
     ('sys-kernel/Linux-2.6',
      ['http://www.kernel.org/'], ['GPL-2'], []),
-    ('sys-boot/u-boot-2013.06',
-     ['http://www.denx.de/wiki/U-Boot'], ['GPL-2'], []),
-    ('sys-boot/coreboot-2013.04',
-     ['http://www.coreboot.org/'], ['GPL-2'], []),
     ('app-arch/libarchive-3.1.2',
      ['http://www.libarchive.org/'], ['BSD', 'public-domain'],
      ['libarchive-3.1.2.LICENSE']),
