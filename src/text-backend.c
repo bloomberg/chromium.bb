@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -47,7 +48,7 @@ struct text_input {
 
 	pixman_box32_t cursor_rectangle;
 
-	uint32_t input_panel_visible;
+	bool input_panel_visible;
 };
 
 struct text_input_manager {
@@ -300,7 +301,7 @@ text_input_show_input_panel(struct wl_client *client,
 	struct text_input *text_input = wl_resource_get_user_data(resource);
 	struct weston_compositor *ec = text_input->ec;
 
-	text_input->input_panel_visible = 1;
+	text_input->input_panel_visible = true;
 
 	if (!wl_list_empty(&text_input->input_methods)) {
 		wl_signal_emit(&ec->show_input_panel_signal, text_input->surface);
@@ -315,7 +316,7 @@ text_input_hide_input_panel(struct wl_client *client,
 	struct text_input *text_input = wl_resource_get_user_data(resource);
 	struct weston_compositor *ec = text_input->ec;
 
-	text_input->input_panel_visible = 0;
+	text_input->input_panel_visible = false;
 
 	if (!wl_list_empty(&text_input->input_methods))
 		wl_signal_emit(&ec->hide_input_panel_signal, ec);
