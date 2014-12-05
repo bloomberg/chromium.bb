@@ -623,7 +623,7 @@ if '__main__' == __name__:
                                                                  "visual metrics.")
     options = parser.parse_args()
 
-    if not options.dir and not options.video and not options.histogram:
+    if not options.check and not options.dir and not options.video and not options.histogram:
         parser.error("A video, Directory of images or histograms file needs to be provided.\n\n"
                      "Use -h to see available options")
 
