@@ -219,10 +219,7 @@ int32 PpapiCommandBufferProxy::CreateGpuMemoryBufferImage(
 bool PpapiCommandBufferProxy::Send(IPC::Message* msg) {
   DCHECK(last_state_.error == gpu::error::kNoError);
 
-  // We need hold the Pepper proxy lock for sync IPC, because GPU command buffer
-  // may use a sync IPC with another lock held. It may cause deadlock.
-  // http://crbug.com/418651
-  if (channel_->SendAndStayLocked(msg))
+  if (channel_->Send(msg))
     return true;
 
   last_state_.error = gpu::error::kLostContext;
