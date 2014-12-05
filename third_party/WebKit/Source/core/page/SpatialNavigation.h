@@ -33,9 +33,9 @@ class LocalFrame;
 class HTMLAreaElement;
 class HTMLFrameOwnerElement;
 
-inline long long maxDistance()
+inline double maxDistance()
 {
-    return std::numeric_limits<long long>::max();
+    return std::numeric_limits<double>::max();
 }
 
 inline int fudgeFactor()
@@ -121,7 +121,7 @@ public:
     RawPtrWillBeMember<Node> visibleNode;
     RawPtrWillBeMember<Node> focusableNode;
     RawPtrWillBeMember<Node> enclosingScrollableBox;
-    long long distance;
+    double distance;
     RectsAlignment alignment;
     LayoutRect rect;
     bool isOffscreen;
