@@ -56,8 +56,11 @@ AccessibilityRole AXTableRow::determineAccessibilityRole()
     if (!isTableRow())
         return AXRenderObject::determineAccessibilityRole();
 
-    if ((m_ariaRole = determineAriaRoleAttribute()) != UnknownRole)
-        return m_ariaRole;
+    m_ariaRole = determineAriaRoleAttribute();
+
+    AccessibilityRole ariaRole = ariaRoleAttribute();
+    if (ariaRole != UnknownRole)
+        return ariaRole;
 
     return RowRole;
 }
