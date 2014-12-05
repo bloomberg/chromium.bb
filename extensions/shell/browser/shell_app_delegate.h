@@ -6,11 +6,14 @@
 #define EXTENSIONS_SHELL_BROWSER_SHELL_APP_DELEGATE_H_
 
 #include "extensions/browser/app_window/app_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace extensions {
 
-// app_shell's AppDelegate implementation.
-class ShellAppDelegate : public AppDelegate {
+// AppDelegate implementation for app_shell. Sets focus after the WebContents is
+// created. Ignores most operations that would create a new dialog or window.
+class ShellAppDelegate : public AppDelegate,
+                         public content::WebContentsObserver {
  public:
   ShellAppDelegate();
   ~ShellAppDelegate() override;
@@ -47,6 +50,9 @@ class ShellAppDelegate : public AppDelegate {
                              bool blocked) override;
   bool IsWebContentsVisible(content::WebContents* web_contents) override;
   void SetTerminatingCallback(const base::Closure& callback) override;
+
+  // content::WebContentsObserver:
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellAppDelegate);

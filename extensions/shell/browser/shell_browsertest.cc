@@ -4,15 +4,27 @@
 
 #include "base/logging.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/shell/test/shell_apitest.h"
+#include "ui/aura/window.h"
 
 namespace extensions {
 
 // Test that we can open an app window and wait for it to load.
 IN_PROC_BROWSER_TEST_F(ShellApiTest, Basic) {
   ASSERT_TRUE(RunAppTest("platform_app")) << message_;
+
+  // A window was created.
+  AppWindow* app_window =
+      AppWindowRegistry::Get(browser_context())->app_windows().front();
+  ASSERT_TRUE(app_window);
+
+  // The web contents have focus.
+  EXPECT_TRUE(app_window->web_contents()->GetContentNativeView()->HasFocus());
 }
 
 }  // namespace extensions

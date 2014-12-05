@@ -4,6 +4,7 @@
 
 #include "extensions/shell/browser/shell_app_delegate.h"
 
+#include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
 #include "extensions/shell/browser/media_capture_util.h"
 
@@ -16,6 +17,7 @@ ShellAppDelegate::~ShellAppDelegate() {
 }
 
 void ShellAppDelegate::InitWebContents(content::WebContents* web_contents) {
+  Observe(web_contents);
 }
 
 void ShellAppDelegate::ResizeWebContents(content::WebContents* web_contents,
@@ -90,6 +92,13 @@ void ShellAppDelegate::SetTerminatingCallback(const base::Closure& callback) {
   // TODO(jamescook): Should app_shell continue to close the app window
   // manually or should it use a browser termination callback like Chrome?
   NOTIMPLEMENTED();
+}
+
+void ShellAppDelegate::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
+  // The views implementation of AppWindow takes focus via SetInitialFocus()
+  // and views::WebView but app_shell is aura-only and must do it manually.
+  web_contents()->Focus();
 }
 
 }  // namespace extensions
