@@ -107,6 +107,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
+#include "core/page/SpatialNavigation.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderView.h"
@@ -2117,7 +2118,7 @@ bool Element::supportsSpatialNavigationFocus() const
     // This is the way to make it possible to navigate to (focus) elements
     // which web designer meant for being active (made them respond to click events).
 
-    if (!document().settings() || !document().settings()->spatialNavigationEnabled())
+    if (!isSpatialNavigationEnabled(document().frame()))
         return false;
     if (hasEventListeners(EventTypeNames::click)
         || hasEventListeners(EventTypeNames::keydown)

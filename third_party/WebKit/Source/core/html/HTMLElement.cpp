@@ -53,6 +53,7 @@
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/page/SpatialNavigation.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/Language.h"
 #include "platform/text/BidiResolver.h"
@@ -1008,7 +1009,7 @@ bool HTMLElement::matchesReadWritePseudoClass() const
 
 void HTMLElement::handleKeypressEvent(KeyboardEvent* event)
 {
-    if (!document().settings() || !document().settings()->spatialNavigationEnabled() || !supportsFocus())
+    if (!isSpatialNavigationEnabled(document().frame()) || !supportsFocus())
         return;
     // if the element is a text form control (like <input type=text> or <textarea>)
     // or has contentEditable attribute on, we should enter a space or newline
