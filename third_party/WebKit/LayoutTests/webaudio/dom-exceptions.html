@@ -26,7 +26,7 @@ function runTest() {
     if (window.testRunner) {
         testRunner.dumpAsText();
     }
-    
+
     context = new AudioContext();
     otherContext = new AudioContext();
 
@@ -69,7 +69,7 @@ function runTest() {
     shouldThrow("context.createPeriodicWave(new Float32Array(4100), new Float32Array(4100))");
     // Real and imaginary arrays must have the same size: IndexSizeError
     shouldThrow("context.createPeriodicWave(new Float32Array(10), new Float32Array(7))");
-    
+
 
     // Analysers
     node = context.createAnalyser();
@@ -112,15 +112,25 @@ function runTest() {
     if (node.channelCountMode == currentMode)
       testPassed("Invalid channelCountMode value did not change mode");
     else
-      testFailed("node.channelCountMode incorrectly changed to invalid value " + node.channelCountMode);  
+      testFailed("node.channelCountMode incorrectly changed to invalid value " + node.channelCountMode);
     shouldNotThrow("node.channelInterpretation = mode");
     if (node.channelInterpretation == currentInterpretation)
       testPassed("Invalid channelInterpration value did not change mode");
     else
-      testFailed("node.channelInterpretation incorrectly changed to invalid value " + node.channelInterpreation);  
+      testFailed("node.channelInterpretation incorrectly changed to invalid value " + node.channelInterpreation);
 
-    // Destination: IndexSizeError
-    shouldThrow("context.destination.channelCount = 99");
+    // Destination node channel count: should throw IndexSizeError on invalid
+    // channel count. shouldNotThrow() method cannot be used because the error
+    // message includes the number of channels, which can change depending on
+    // the actual attached hardware.
+    try {
+        eval("context.destination.channelCount = 99");
+    } catch (e) {
+        if (e.message === "Failed to set the 'channelCount' property on 'AudioNode': The channel count provided (99) is outside the range [1, " + context.destination.maxChannelCount + "]." && e.name === "IndexSizeError")
+            testPassed("context.destination.channelCount = 99 threw IndexSizeError exception on invalid channel count.");
+        else
+            testFailed("context.destination.channelCount = 99 should throw IndexSizeError exception on invalid channel count.");
+    }
 
     // Delay nodes are tested elsewhere, so don't duplicate that work here.
 
@@ -189,7 +199,7 @@ function runTest() {
     shouldNotThrow("source.start()");
     shouldNotThrow("source.stop()");
 
-    
+
     // Start/stop for OscillatorNodes
     shouldNotThrow("source = context.createOscillator()");
     shouldThrow("source.start(-1)");
@@ -259,6 +269,6 @@ function runTest() {
 runTest();
 successfullyParsed = true;
 
-</script>    
+</script>
 </body>
 </html>
