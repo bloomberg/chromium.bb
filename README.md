@@ -33,6 +33,7 @@ $ python visualmetrics.py -h
 * **-d, --dir**: Directory of video frames (as input if exists or as output if a video file is specified).  If a directory is not specified and video needs to be processed a temporary directory will be used for processing and deleted automatically.
 * **-g, --histogram**: Histogram file (as input if exists or as output if histograms need to be calculated).  If a histogram file is not specified and histograms need to be calculated a temporary histograms file will be created for processing and deleted automatically.
 * **-q, --quality**: JPEG quality to use when exporting the video frames (if video is being processed).  If not specified the video frames will be saved as PNGs.
+* **-l, --full**: Keep full-resolution images instead of resizing to 400x400 pixels.
 * **-f, --force**: Force re-processing of the provided video. By default if a directory or histogram file already exists then those will be used and the video will not be extracted, even if provided.  With force enabled it will overwrite any images in the video frame directory and overwrite any existing histograms.
 * **-o, --orange**: Remove any orange frames at the beginning of the video.  These are usually used for synchronizing video capture with other data sources.
 * **-p, --viewport**: Find the viewport from the virst video frame and use only the viewport for frame de-duplication and metrics calculation.

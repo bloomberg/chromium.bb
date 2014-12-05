@@ -44,7 +44,7 @@ import tempfile
 ########################################################################################################################
 
 
-def video_to_frames(video, directory, force, remove_orange, find_viewport):
+def video_to_frames(video, directory, force, remove_orange, find_viewport, full_resolution):
     viewport = None
     first_frame = os.path.join(directory, 'image-000000')
     if (not os.path.isfile(first_frame + '.png') and not os.path.isfile(first_frame + '.jpg')) or force:
@@ -56,7 +56,7 @@ def video_to_frames(video, directory, force, remove_orange, find_viewport):
             if os.path.isdir(directory):
                 directory = os.path.realpath(directory)
                 clean_directory(directory)
-                if extract_frames(video, directory):
+                if extract_frames(video, directory, full_resolution):
                     if remove_orange:
                         remove_orange_frames(directory)
                     if find_viewport:
@@ -74,13 +74,16 @@ def video_to_frames(video, directory, force, remove_orange, find_viewport):
     return viewport
 
 
-def extract_frames(video, directory):
+def extract_frames(video, directory, full_resolution):
     ok = False
     logging.info("Extracting frames from " + video + " to " + directory)
     decimate = get_decimate_filter()
     if filter is not None:
+        scale = ',scale=iw*min(400/iw\,400/ih):ih*min(400/iw\,400/ih)'
+        if full_resolution:
+            scale = ''
         command = ['ffmpeg', '-v', 'debug', '-i', video, '-vsync',  '0',
-                   '-vf', decimate + '=hi=0:lo=0:frac=0,scale=iw*min(400/iw\,400/ih):ih*min(400/iw\,400/ih)',
+                   '-vf', decimate + '=hi=0:lo=0:frac=0' + scale,
                    os.path.join(directory, 'img-%d.png')]
         logging.debug(' '.join(command))
         lines = []
@@ -201,10 +204,12 @@ def eliminate_duplicate_frames(directory, viewport):
     try:
         crop = '+0+55'
         if viewport is not None:
-            # Ignore a 4-pixel header on the actual viewport to allow for the progress bar and
-            # a 6 pixel right margin to allow for the scroll bar that fades in and out.
+            # Ignore a top margin on the viewport for a progress bar and a right margin for the scroll bar
             top_margin = 4
             right_margin = 6
+            if viewport['height'] > 400 or viewport['width'] > 400:
+                top_margin = int(math.ceil(float(viewport['height']) * 0.02))
+                right_margin = int(math.ceil(float(viewport['width']) * 0.03))
             top = viewport['y'] + top_margin
             height = max(viewport['height'] - top_margin, 1)
             left = viewport['x']
@@ -235,26 +240,17 @@ def eliminate_duplicate_frames(directory, viewport):
             previous_frame = baseline
             for i in range (1, count):
                 if frames_match(baseline, files[i], 10, crop):
-                    duplicates.append(previous_frame)
+                    if previous_frame is baseline:
+                        duplicates.append(previous_frame)
+                    else:
+                        logging.debug('Removing duplicate frame {0} from the end'.format(previous_frame))
+                        os.remove(previous_frame)
                     previous_frame = files[i]
                 else:
                     break
         for duplicate in duplicates:
             logging.debug('Removing duplicate frame {0} from the end'.format(duplicate))
             os.remove(duplicate)
-
-        # Do a third pass that eliminates frames with duplicate content.
-        previous_file = None
-        files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
-        for file in files:
-            duplicate = False
-            if previous_file is not None:
-                duplicate = frames_match(previous_file, file, 0, crop)
-            if duplicate:
-                logging.debug('Removing duplicate frame {0}'.format(duplicate))
-                os.remove(file)
-            else:
-                previous_file = file
 
     except:
         logging.critical('Error processing frames for duplicates')
@@ -611,6 +607,8 @@ if '__main__' == __name__:
                                                   "histograms need to be calculated).")
     parser.add_argument('-q', '--quality', type=int, help="JPEG Quality "
                                                           "(if specified, frames will be converted to JPEG).")
+    parser.add_argument('-l', '--full', action='store_true', default=False,
+                        help="Keep full-resolution images instead of resizing to 400x400 pixels")
     parser.add_argument('-f', '--force', action='store_true', default=False,
                         help="Force processing of a video file (overwrite existing directory).")
     parser.add_argument('-o', '--orange', action='store_true', default=False,
@@ -653,7 +651,8 @@ if '__main__' == __name__:
         if not options.check:
             viewport = None
             if options.video:
-                viewport = video_to_frames(options.video, directory, options.force, options.orange, options.viewport)
+                viewport = video_to_frames(options.video, directory, options.force, options.orange, options.viewport,
+                                           options.full)
             calculate_histograms(directory, histogram_file, options.force, viewport)
             if options.dir is not None and options.quality is not None:
                 convert_to_jpeg(directory, options.quality)
