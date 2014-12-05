@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_vector.h"
+#include "base/message_loop/message_loop.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/audio_renderer_sink.h"
@@ -19,11 +20,6 @@
 #include "media/mojo/services/demuxer_stream_provider_shim.h"
 #include "media/mojo/services/mojo_demuxer_stream_adapter.h"
 #include "media/mojo/services/renderer_config.h"
-#include "mojo/application/application_runner_chromium.h"
-#include "mojo/public/c/system/main.h"
-#include "mojo/public/cpp/application/application_connection.h"
-#include "mojo/public/cpp/application/application_delegate.h"
-#include "mojo/public/cpp/application/interface_factory_impl.h"
 
 namespace media {
 
@@ -37,24 +33,6 @@ static void LogMediaSourceError(const scoped_refptr<MediaLog>& media_log,
 
 static void PaintNothing(const scoped_refptr<VideoFrame>& frame) {
 }
-
-class MojoRendererApplication
-    : public mojo::ApplicationDelegate,
-      public mojo::InterfaceFactory<mojo::MediaRenderer> {
- public:
-  // mojo::ApplicationDelegate implementation.
-  bool ConfigureIncomingConnection(
-      mojo::ApplicationConnection* connection) override {
-    connection->AddService(this);
-    return true;
-  }
-
-  // mojo::InterfaceFactory<mojo::MediaRenderer> implementation.
-  void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<mojo::MediaRenderer> request) override {
-    mojo::BindToRequest(new MojoRendererService(), &request);
-  }
-};
 
 static void MojoTrampoline(const mojo::Closure& closure) {
   closure.Run();
@@ -203,8 +181,3 @@ void MojoRendererService::OnError(PipelineStatus error) {
 }
 
 }  // namespace media
-
-MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunnerChromium runner(new media::MojoRendererApplication);
-  return runner.Run(shell_handle);
-}

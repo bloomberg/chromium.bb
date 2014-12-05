@@ -57,7 +57,7 @@ blink::WebMediaPlayer* WebMediaPlayerFactory::CreateMediaPlayer(
 
   if (enable_mojo_media_renderer_) {
     ServiceProviderPtr media_renderer_service_provider;
-    shell->ConnectToApplication("mojo:mojo_media_renderer_app",
+    shell->ConnectToApplication("mojo:media",
                                 GetProxy(&media_renderer_service_provider));
     renderer.reset(new media::MojoRendererImpl(
         GetMediaThreadTaskRunner(), media_renderer_service_provider.get()));

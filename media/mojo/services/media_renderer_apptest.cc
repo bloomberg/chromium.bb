@@ -113,7 +113,7 @@ class MojoRendererTest : public mojo::test::ApplicationTestBase {
     demuxer_stream_provider_.reset(new FakeDemuxerStream());
     service_provider_ =
         application_impl()
-            ->ConnectToApplication("mojo:mojo_media_renderer_app")
+            ->ConnectToApplication("mojo:media")
             ->GetServiceProvider();
   }
 
