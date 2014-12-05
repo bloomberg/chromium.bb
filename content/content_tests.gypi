@@ -1879,7 +1879,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_java_test_support',
-            'content.gyp:content_common',
             'content.gyp:content_java',
           ],
           'variables': {
