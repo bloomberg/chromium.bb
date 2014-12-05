@@ -18,3 +18,5 @@ layer at (19,53) size 300x200
     RenderBlock {DIV} at (0,165) size 300x35
 layer at (19,53) size 300x165
   RenderFlexibleBox {DIV} at (0,0) size 300x165
+layer at (19,170) size 100x100 backgroundClip at (19,270) size 285x150 clip at (19,270) size 285x150 outlineClip at (19,270) size 285x150
+  RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#FF0000]

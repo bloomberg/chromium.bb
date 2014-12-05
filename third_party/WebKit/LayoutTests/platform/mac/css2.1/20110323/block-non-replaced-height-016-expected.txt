@@ -10,5 +10,7 @@ layer at (8,8) size 769x159 clip at (8,8) size 754x144 scrollHeight 240
 layer at (8,56) size 754x96
   RenderBlock (relative positioned) {DIV} at (0,48) size 754x96
     RenderBlock {DIV} at (0,0) size 96x96 [bgcolor=#0000FF]
+layer at (8,152) size 96x96 backgroundClip at (8,8) size 754x144 clip at (8,8) size 754x144 outlineClip at (8,8) size 754x144
+  RenderBlock (relative positioned) {DIV} at (0,0) size 96x96
 layer at (104,56) size 96x96
   RenderBlock (positioned) {DIV} at (96,0) size 96x96 [bgcolor=#FFA500]

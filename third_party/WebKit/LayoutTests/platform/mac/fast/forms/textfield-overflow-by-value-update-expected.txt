@@ -6,3 +6,7 @@ layer at (0,0) size 800x52
       RenderTextControl {INPUT} at (0,0) size 102x2 [bgcolor=#FFFFFF]
       RenderText {#text} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0
+layer at (9,9) size 100x0 scrollHeight 38
+  RenderBlock {DIV} at (1,1) size 100x0
+    RenderText {#text} at (0,0) size 66x38
+      text run at (0,0) width 66: "FAIL"

@@ -10,6 +10,8 @@ layer at (0,0) size 800x76
           text run at (0,20) width 92: "red in this test! "
           text run at (92,20) width 691: "Behavior between these two methods should be identical for non-wrapping strings, assuming unicode-bidi: isolate is"
           text run at (0,40) width 231: "implemented and functioning correctly."
+layer at (8,68) size 784x0
+  RenderBlock (relative positioned) {DIV} at (0,60) size 784x0
 layer at (8,68) size 25x400
   RenderBlock (positioned) {DIV} at (0,0) size 25x400 [color=#FF0000]
     RenderBlock {DIV} at (0,0) size 25x20

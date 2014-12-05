@@ -107,6 +107,13 @@ layer at (294,253) size 36x247
     layer at (0,0) size 36x247
       RenderBlock {HTML} at (0,0) size 36x247
         RenderBody {BODY} at (8,8) size 20x231
+layer at (336,0) size 36x0
+  RenderFrame {FRAME} at (0,0) size 36x0
+    layer at (0,0) size 21x8
+      RenderView at (0,0) size 21x0
+    layer at (0,0) size 21x8
+      RenderBlock {HTML} at (0,0) size 21x8
+        RenderBody {BODY} at (8,8) size 5x0
 layer at (336,6) size 36x494
   RenderFrame {FRAME} at (0,6) size 36x494
     layer at (0,0) size 36x494
@@ -114,6 +121,13 @@ layer at (336,6) size 36x494
     layer at (0,0) size 36x494
       RenderBlock {HTML} at (0,0) size 36x494
         RenderBody {BODY} at (8,8) size 20x478
+layer at (378,0) size 36x0
+  RenderFrame {FRAME} at (0,0) size 36x0
+    layer at (0,0) size 21x8
+      RenderView at (0,0) size 21x0
+    layer at (0,0) size 21x8
+      RenderBlock {HTML} at (0,0) size 21x8
+        RenderBody {BODY} at (8,8) size 5x0
 layer at (378,6) size 36x494
   RenderFrame {FRAME} at (0,6) size 36x494
     layer at (0,0) size 36x494
@@ -121,6 +135,13 @@ layer at (378,6) size 36x494
     layer at (0,0) size 36x494
       RenderBlock {HTML} at (0,0) size 36x494
         RenderBody {BODY} at (8,8) size 20x478
+layer at (420,0) size 36x0
+  RenderFrame {FRAME} at (0,0) size 36x0
+    layer at (0,0) size 21x8
+      RenderView at (0,0) size 21x0
+    layer at (0,0) size 21x8
+      RenderBlock {HTML} at (0,0) size 21x8
+        RenderBody {BODY} at (8,8) size 5x0
 layer at (420,6) size 36x494
   RenderFrame {FRAME} at (0,6) size 36x494
     layer at (0,0) size 36x494
@@ -149,6 +170,13 @@ layer at (504,0) size 36x494
     layer at (0,0) size 36x494
       RenderBlock {HTML} at (0,0) size 36x494
         RenderBody {BODY} at (8,8) size 20x478
+layer at (504,500) size 36x0
+  RenderFrame {FRAME} at (0,500) size 36x0
+    layer at (0,0) size 21x8
+      RenderView at (0,0) size 21x0
+    layer at (0,0) size 21x8
+      RenderBlock {HTML} at (0,0) size 21x8
+        RenderBody {BODY} at (8,8) size 5x0
 layer at (546,0) size 36x250
   RenderFrame {FRAME} at (0,0) size 36x250
     layer at (0,0) size 36x250
@@ -198,6 +226,13 @@ layer at (672,0) size 36x494
     layer at (0,0) size 36x494
       RenderBlock {HTML} at (0,0) size 36x494
         RenderBody {BODY} at (8,8) size 20x478
+layer at (672,500) size 36x0
+  RenderFrame {FRAME} at (0,500) size 36x0
+    layer at (0,0) size 21x8
+      RenderView at (0,0) size 21x0
+    layer at (0,0) size 21x8
+      RenderBlock {HTML} at (0,0) size 21x8
+        RenderBody {BODY} at (8,8) size 5x0
 layer at (714,0) size 36x375
   RenderFrame {FRAME} at (0,0) size 36x375
     layer at (0,0) size 36x375

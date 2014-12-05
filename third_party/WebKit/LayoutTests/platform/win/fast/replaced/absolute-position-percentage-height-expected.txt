@@ -26,5 +26,13 @@ layer at (18,60) size 50x100
 layer at (18,270) size 764x200
   RenderBlock (relative positioned) {DIV} at (10,262) size 764x200
     RenderText {#text} at (0,0) size 0x0
+layer at (18,270) size 0x89
+  RenderInline (relative positioned) {SPAN} at (0,0) size 0x89 [bgcolor=#808080]
+    RenderText {#text} at (0,0) size 0x0
+    RenderBR {BR} at (0,0) size 0x17
+    RenderBR {BR} at (0,18) size 0x17
+    RenderBR {BR} at (0,36) size 0x17
+    RenderBR {BR} at (0,54) size 0x17
+    RenderBR {BR} at (0,72) size 0x17
 layer at (18,270) size 50x89
   RenderImage {IMG} at (0,0) size 50x89 [bgcolor=#0000FF]

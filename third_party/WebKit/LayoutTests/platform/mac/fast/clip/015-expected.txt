@@ -9,3 +9,7 @@ layer at (0,0) size 800x132
           text run at (306,0) width 441: "This test makes sure overflow uses containing blocks when clipping."
 layer at (8,24) size 100x100 scrollWidth 300 scrollHeight 300
   RenderBlock {DIV} at (0,16) size 100x100 [bgcolor=#008000]
+layer at (108,124) size 100x100 backgroundClip at (8,24) size 100x100 clip at (8,24) size 100x100 outlineClip at (8,24) size 100x100
+  RenderBlock (relative positioned) {DIV} at (0,0) size 100x100 [bgcolor=#FF0000]
+layer at (208,224) size 100x100 backgroundClip at (8,24) size 100x100 clip at (8,24) size 100x100 outlineClip at (8,24) size 100x100
+  RenderBlock (positioned) {DIV} at (100,100) size 100x100

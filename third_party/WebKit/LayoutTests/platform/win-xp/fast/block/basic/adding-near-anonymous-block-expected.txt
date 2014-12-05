@@ -40,3 +40,7 @@ layer at (0,0) size 800x600
           RenderBlock (floating) {SPAN} at (0,0) size 91x20
             RenderText {#text} at (0,0) size 91x19
               text run at (0,0) width 91: "This should be "
+layer at (99,64) size 0x0
+  RenderBlock (positioned) {SPAN} at (99,64) size 0x0
+layer at (99,104) size 0x0
+  RenderBlock (positioned) {SPAN} at (99,104) size 0x0

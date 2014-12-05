@@ -46,3 +46,37 @@ layer at (8,8) size 750x500
       RenderText {#text} at (0,0) size 364x35
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
         text run at (0,18) width 158: "Nulla varius enim ac mi."
+layer at (8,624) size 367x234 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
+  RenderBlock {DIV} at (0,615.88) size 367x234
+    RenderText {#text} at (0,0) size 172x431
+      text run at (0,0) width 143: "Lorem ipsum dolor sit"
+      text run at (0,18) width 120: "amet, consectetuer"
+      text run at (0,36) width 134: "adipiscing elit. Nulla"
+      text run at (0,54) width 119: "varius enim ac mi."
+      text run at (0,72) width 169: "Curabitur sollicitudin felis"
+      text run at (0,90) width 130: "quis lectus. Quisque"
+      text run at (0,108) width 155: "adipiscing rhoncus sem."
+      text run at (0,126) width 115: "Proin nulla purus,"
+      text run at (0,144) width 151: "vulputate vel, varius ut,"
+      text run at (0,162) width 168: "euismod et, nisi. Sed vitae"
+      text run at (0,180) width 130: "felis vel orci sagittis"
+      text run at (0,198) width 151: "aliquam. Cras convallis"
+      text run at (0,216) width 135: "adipiscing sem. Nam"
+      text run at (0,234) width 157: "nonummy enim. Nullam"
+      text run at (0,252) width 164: "bibendum lobortis neque."
+      text run at (0,270) width 140: "Vestibulum velit orci,"
+      text run at (0,288) width 163: "tempus euismod, pretium"
+      text run at (0,306) width 172: "quis, interdum vitae, nulla."
+      text run at (0,324) width 138: "Phasellus eget ante et"
+      text run at (0,342) width 128: "tortor condimentum"
+      text run at (0,360) width 158: "vestibulum. Suspendisse"
+      text run at (0,378) width 160: "hendrerit quam nec felis."
+      text run at (0,396) width 143: "Sed varius turpis vitae"
+      text run at (0,414) width 39: "pede. "
+    RenderText {#text} at (0,0) size 0x0
+layer at (8,624) size 162x53 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600 transparent
+  RenderInline (relative positioned) {SPAN} at (0,0) size 162x53
+    RenderText {#text} at (38,414) size 162x53
+      text run at (38,414) width 124: "Lorem ipsum dolor"
+      text run at (0,432) width 139: "sit amet, consectetuer"
+      text run at (0,450) width 95: "adipiscing elit."

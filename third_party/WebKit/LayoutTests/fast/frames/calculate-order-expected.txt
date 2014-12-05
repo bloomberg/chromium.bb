@@ -16,6 +16,27 @@ layer at (0,0) size 155x488
     layer at (0,0) size 155x488
       RenderBlock {HTML} at (0,0) size 155x488
         RenderBody {BODY} at (8,8) size 139x472
+layer at (0,494) size 155x0
+  RenderFrame {FRAME} at (0,494) size 155x0
+    layer at (0,0) size 140x8
+      RenderView at (0,0) size 140x0
+    layer at (0,0) size 140x8
+      RenderBlock {HTML} at (0,0) size 140x8
+        RenderBody {BODY} at (8,8) size 124x0
+layer at (0,500) size 155x0
+  RenderFrame {FRAME} at (0,500) size 155x0
+    layer at (0,0) size 140x8
+      RenderView at (0,0) size 140x0
+    layer at (0,0) size 140x8
+      RenderBlock {HTML} at (0,0) size 140x8
+        RenderBody {BODY} at (8,8) size 124x0
+layer at (161,0) size 155x0
+  RenderFrame {FRAME} at (0,0) size 155x0
+    layer at (0,0) size 140x8
+      RenderView at (0,0) size 140x0
+    layer at (0,0) size 140x8
+      RenderBlock {HTML} at (0,0) size 140x8
+        RenderBody {BODY} at (8,8) size 124x0
 layer at (161,6) size 155x122
   RenderFrame {FRAME} at (0,6) size 155x122
     layer at (0,0) size 155x122
@@ -44,6 +65,13 @@ layer at (322,256) size 155x238
     layer at (0,0) size 155x238
       RenderBlock {HTML} at (0,0) size 155x238
         RenderBody {BODY} at (8,8) size 139x222
+layer at (322,500) size 155x0
+  RenderFrame {FRAME} at (0,500) size 155x0
+    layer at (0,0) size 140x8
+      RenderView at (0,0) size 140x0
+    layer at (0,0) size 140x8
+      RenderBlock {HTML} at (0,0) size 140x8
+        RenderBody {BODY} at (8,8) size 124x0
 layer at (483,0) size 155x250
   RenderFrame {FRAME} at (0,0) size 155x250
     layer at (0,0) size 155x250
@@ -58,6 +86,13 @@ layer at (483,256) size 155x238
     layer at (0,0) size 155x238
       RenderBlock {HTML} at (0,0) size 155x238
         RenderBody {BODY} at (8,8) size 139x222
+layer at (483,500) size 155x0
+  RenderFrame {FRAME} at (0,500) size 155x0
+    layer at (0,0) size 140x8
+      RenderView at (0,0) size 140x0
+    layer at (0,0) size 140x8
+      RenderBlock {HTML} at (0,0) size 140x8
+        RenderBody {BODY} at (8,8) size 124x0
 layer at (644,0) size 156x250
   RenderFrame {FRAME} at (0,0) size 156x250
     layer at (0,0) size 156x250

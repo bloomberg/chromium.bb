@@ -20,3 +20,11 @@ layer at (22,142) size 100x100
   RenderBlock (relative positioned) zI: 1 {DIV} at (10,0) size 100x100 [bgcolor=#0000FF]
 layer at (26,266) size 100x100 backgroundClip at (16,256) size 142x52 clip at (16,256) size 142x52 outlineClip at (16,256) size 142x52
   RenderBlock (relative positioned) zI: 1 {DIV} at (14,14) size 100x100 [bgcolor=#0000FF]
+layer at (26,376) size 100x100 backgroundClip at (16,256) size 142x52 clip at (16,256) size 142x52 outlineClip at (16,256) size 142x52
+  RenderBlock (relative positioned) zI: 1 {DIV} at (14,124) size 100x100 [bgcolor=#0000FF]
+layer at (26,486) size 100x100 backgroundClip at (16,256) size 142x52 clip at (16,256) size 142x52 outlineClip at (16,256) size 142x52
+  RenderBlock (relative positioned) zI: 1 {DIV} at (14,234) size 100x100 [bgcolor=#0000FF]
+layer at (26,596) size 100x100 backgroundClip at (16,256) size 142x52 clip at (16,256) size 142x52 outlineClip at (16,256) size 142x52
+  RenderBlock (relative positioned) zI: 1 {DIV} at (14,344) size 100x100 [bgcolor=#0000FF]
+layer at (26,706) size 100x100 backgroundClip at (16,256) size 142x52 clip at (16,256) size 142x52 outlineClip at (16,256) size 142x52
+  RenderBlock (relative positioned) zI: 1 {DIV} at (14,454) size 100x100 [bgcolor=#0000FF]

@@ -20,6 +20,8 @@ layer at (8,8) size 784x60
         text run at (586,20) width 170: "In particular it is a test of the"
         text run at (0,40) width 143: "shrink-to-fit algorithm's "
         text run at (143,40) width 232: "preferred minimum width computation."
+layer at (8,68) size 0x0
+  RenderBlock (positioned) {DIV} at (0,60) size 0x0
 layer at (8,68) size 100x110
   RenderBlock (positioned) {DIV} at (0,0) size 100x110
     RenderBlock {SPAN} at (0,0) size 100x50 [bgcolor=#008000]

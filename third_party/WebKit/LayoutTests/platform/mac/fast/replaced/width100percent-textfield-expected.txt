@@ -33,3 +33,27 @@ layer at (0,0) size 800x600
             RenderTableCell {TD} at (28,2) size 755x18 [r=0 c=3 rs=1 cs=1]
               RenderText {#text} at (1,1) size 4x16
                 text run at (1,1) width 4: " "
+layer at (13,29) size 0x13 scrollWidth 49
+  RenderBlock {DIV} at (3,3) size 0x13
+    RenderText {#text} at (0,0) size 49x13
+      text run at (0,0) width 49: "New Mail"
+layer at (22,29) size 0x13 scrollWidth 30
+  RenderBlock {DIV} at (3,3) size 0x13
+    RenderText {#text} at (0,0) size 29x13
+      text run at (0,0) width 29: "Reply"
+layer at (31,29) size 0x13 scrollWidth 47
+  RenderBlock {DIV} at (3,3) size 0x13
+    RenderText {#text} at (0,0) size 47x13
+      text run at (0,0) width 47: "Reply All"
+layer at (13,84) size 0x13 scrollWidth 49
+  RenderBlock {DIV} at (3,3) size 0x13
+    RenderText {#text} at (0,0) size 49x13
+      text run at (0,0) width 49: "New Mail"
+layer at (22,84) size 0x13 scrollWidth 30
+  RenderBlock {DIV} at (3,3) size 0x13
+    RenderText {#text} at (0,0) size 29x13
+      text run at (0,0) width 29: "Reply"
+layer at (31,84) size 0x13 scrollWidth 47
+  RenderBlock {DIV} at (3,3) size 0x13
+    RenderText {#text} at (0,0) size 47x13
+      text run at (0,0) width 47: "Reply All"

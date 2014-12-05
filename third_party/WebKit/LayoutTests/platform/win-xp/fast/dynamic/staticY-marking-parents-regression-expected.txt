@@ -35,3 +35,5 @@ layer at (8,100) size 792x140
           text run at (0,80) width 691: "sed sem. Donec dui nisi, ultrices non, pretium quis, hendrerit non, est. Donec tellus. Donec eget dui id eros pharetra"
           text run at (0,100) width 658: "rutrum. Suspendisse sodales lectus sit amet nulla. Morbi tortor arcu, convallis blandit, elementum eu, aliquet a,"
           text run at (0,120) width 34: "tellus."
+layer at (108,100) size 0x0
+  RenderBlock (positioned) {DIV} at (100,0) size 0x0

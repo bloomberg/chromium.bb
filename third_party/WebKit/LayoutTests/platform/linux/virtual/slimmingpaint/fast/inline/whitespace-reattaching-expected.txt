@@ -4,3 +4,12 @@ layer at (0,0) size 800x36
   RenderBlock {HTML} at (0,0) size 800x36
     RenderBody {BODY} at (8,8) size 784x20
       RenderText {#text} at (0,0) size 0x0
+layer at (8,23) size 0x0
+  RenderPartObject {IFRAME} at (0,15) size 0x0
+    layer at (0,0) size 0x0
+      RenderView at (0,0) size 0x0
+    layer at (0,0) size 0x8
+      RenderBlock {HTML} at (0,0) size 0x8
+        RenderBody {BODY} at (8,8) size 0x0
+layer at (8,8) size 0x0
+  RenderBlock (positioned) {DIV} at (8,8) size 0x0

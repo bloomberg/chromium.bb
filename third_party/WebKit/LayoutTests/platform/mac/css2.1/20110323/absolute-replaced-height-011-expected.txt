@@ -6,6 +6,8 @@ layer at (0,0) size 800x48
       RenderBlock {P} at (0,0) size 784x16
         RenderText {#text} at (0,0) size 310x16
           text run at (0,0) width 310: "Test passes if there is no red visible on the page."
+layer at (8,48) size 784x0
+  RenderBlock (relative positioned) {DIV} at (0,32) size 784x0
 layer at (8,144) size 306x156
   RenderPartObject {IFRAME} at (0,96) size 306x156 [border: (3px solid #FF0000)]
     layer at (0,0) size 300x150

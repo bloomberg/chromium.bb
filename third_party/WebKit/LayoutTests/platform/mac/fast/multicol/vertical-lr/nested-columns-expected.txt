@@ -74,3 +74,9 @@ layer at (561,8) size 208x367
       text run at (352,0) width 143: "Sed varius turpis vitae"
       text run at (368,0) width 39: "pede. "
     RenderText {#text} at (0,0) size 0x0
+layer at (561,8) size 48x162 transparent
+  RenderInline (relative positioned) {SPAN} at (0,0) size 48x162
+    RenderText {#text} at (368,38) size 48x162
+      text run at (368,38) width 124: "Lorem ipsum dolor"
+      text run at (384,0) width 139: "sit amet, consectetuer"
+      text run at (400,0) width 95: "adipiscing elit."

@@ -211,6 +211,10 @@ layer at (727,242) size 118x30 backgroundClip at (717,179) size 68x328 clip at (
   RenderBlock (relative positioned) {DIV} at (11,64) size 118x30 [border: (1px solid #999999)]
     RenderText {#text} at (6,6) size 52x17
       text run at (6,6) width 52: ".relative"
+layer at (792,155) size 69x30 backgroundClip at (0,0) size 785x1029 clip at (0,0) size 785x1029 outlineClip at (0,0) size 785x1029
+  RenderBlock (positioned) {DIV} at (86.67,6) size 69.33x30 [border: (1px solid #999999)]
+    RenderText {#text} at (6,6) size 58x17
+      text run at (6,6) width 58: ".absolute"
 layer at (738,381) size 96x30 backgroundClip at (728,353) size 57x68 clip at (728,353) size 57x68 outlineClip at (728,353) size 57x68
   RenderBlock (relative positioned) {DIV} at (11,29) size 96x30 [border: (1px solid #999999)]
     RenderText {#text} at (6,6) size 52x17

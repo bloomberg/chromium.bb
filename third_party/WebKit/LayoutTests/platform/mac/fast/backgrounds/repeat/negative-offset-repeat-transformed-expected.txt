@@ -52,6 +52,8 @@ layer at (0,0) size 800x994
       RenderBlock (floating) {DIV} at (6,476) size 34x34 [border: (1px dotted #008000)]
       RenderBlock (floating) {DIV} at (52,476) size 29x29 [border: (1px dotted #008000)]
       RenderBlock (floating) {DIV} at (93,476) size 24x24 [border: (1px dotted #008000)]
+layer at (8,502) size 0x5000
+  RenderBlock (positioned) {P} at (8,502) size 0x5000
 layer at (8,532) size 475x454
   RenderTable {TABLE} at (0,516) size 475x454 [border: (5px outset #808080)]
     RenderTableSection {TBODY} at (5,5) size 465x444

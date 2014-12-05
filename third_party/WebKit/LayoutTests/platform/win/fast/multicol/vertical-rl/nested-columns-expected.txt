@@ -74,3 +74,9 @@ layer at (-73,8) size 234x367 backgroundClip at (0,0) size 785x758 clip at (0,0)
       text run at (396,0) width 143: "Sed varius turpis vitae"
       text run at (414,0) width 39: "pede. "
     RenderText {#text} at (0,0) size 0x0
+layer at (-73,8) size 53x162 backgroundClip at (0,0) size 785x758 clip at (0,0) size 785x758 outlineClip at (0,0) size 785x758 transparent
+  RenderInline (relative positioned) {SPAN} at (0,0) size 53x162
+    RenderText {#text} at (414,38) size 53x162
+      text run at (414,38) width 124: "Lorem ipsum dolor"
+      text run at (432,0) width 139: "sit amet, consectetuer"
+      text run at (450,0) width 95: "adipiscing elit."

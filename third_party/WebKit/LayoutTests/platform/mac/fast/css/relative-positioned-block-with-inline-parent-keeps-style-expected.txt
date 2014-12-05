@@ -19,3 +19,5 @@ layer at (200,256) size 192x16
     RenderBlock {DIV} at (0,0) size 192x16 [bgcolor=#FFA500]
       RenderText {#text} at (0,0) size 68x16
         text run at (0,0) width 68: "Filler Text"
+layer at (200,272) size 0x0
+  RenderInline (relative positioned) {SPAN} at (0,0) size 0x0 [bgcolor=#0000FF]

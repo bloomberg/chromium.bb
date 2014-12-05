@@ -9,6 +9,11 @@ layer at (0,0) size 800x100
       RenderBlock (anonymous) at (0,36) size 784x0
       RenderBlock (anonymous) at (0,56) size 784x20
         RenderText {#text} at (0,0) size 0x0
+layer at (200,244) size 0x0
+  RenderInline (relative positioned) {SPAN} at (0,0) size 0x0 [bgcolor=#0000FF]
+    RenderText {#text} at (0,0) size 0x0
+    RenderInline {I} at (0,0) size 0x0
+      RenderText {#text} at (0,0) size 0x0
 layer at (200,244) size 784x20
   RenderBlock (anonymous) at (0,36) size 784x20
     RenderBlock {DIV} at (0,0) size 192x20 [bgcolor=#FFA500]
