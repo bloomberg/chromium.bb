@@ -156,6 +156,7 @@ void CSSValuePool::trace(Visitor* visitor)
     visitor->trace(m_inheritedValue);
     visitor->trace(m_implicitInitialValue);
     visitor->trace(m_explicitInitialValue);
+    visitor->trace(m_unsetValue);
     visitor->trace(m_identifierValueCache);
     visitor->trace(m_colorValueCache);
     visitor->trace(m_colorTransparent);
