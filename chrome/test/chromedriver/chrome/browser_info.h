@@ -31,10 +31,9 @@ struct BrowserInfo {
 Status ParseBrowserInfo(const std::string& data,
                         BrowserInfo* browser_info);
 
-Status ParseBrowserString(const std::string& browser_string,
-                          std::string* browser_name,
-                          std::string* browser_version,
-                          int* build_no);
+Status ParseBrowserString(bool is_android,
+                          const std::string& browser_string,
+                          BrowserInfo* browser_info);
 
 Status ParseBlinkVersionString(const std::string& blink_version,
                                int* blink_revision);

@@ -37,54 +37,53 @@ Status ParseBrowserInfo(const std::string& data, BrowserInfo* browser_info) {
   if (!value->GetAsDictionary(&dict))
     return Status(kUnknownError, "version info not a dictionary");
 
-  std::string browser;
-  if (!dict->GetString("Browser", &browser)) {
-    return Status(kUnknownError,
-                  "version info doesn't include string 'Browser'");
-  }
+  bool is_android = dict->HasKey("Android-Package");
+  std::string browser_string;
+  if (!dict->GetString("Browser", &browser_string))
+    return Status(kUnknownError, "version doesn't include 'Browser'");
 
-  std::string blink_version;
-  if (!dict->GetString("WebKit-Version", &blink_version)) {
-    return Status(kUnknownError,
-                  "version info doesn't include string 'WebKit-Version'");
-  }
-
-  Status status = ParseBrowserString(browser, &browser_info->browser_name,
-      &browser_info->browser_version, &browser_info->build_no);
-
+  Status status = ParseBrowserString(is_android, browser_string, browser_info);
   if (status.IsError())
     return status;
+
+  std::string blink_version;
+  if (!dict->GetString("WebKit-Version", &blink_version))
+    return Status(kUnknownError, "version doesn't include 'WebKit-Version'");
 
   return ParseBlinkVersionString(blink_version, &browser_info->blink_revision);
 }
 
-Status ParseBrowserString(const std::string& browser_string,
-                          std::string* browser_name,
-                          std::string* browser_version,
-                          int* build_no) {
+Status ParseBrowserString(bool is_android,
+                          const std::string& browser_string,
+                          BrowserInfo* browser_info) {
   if (browser_string.empty()) {
-    *browser_name = "content shell";
-    return Status(kOk);
-  }
-
-  if (browser_string.find("Version/") == 0u) {
-    *browser_name = "webview";
+    browser_info->browser_name = "content shell";
     return Status(kOk);
   }
 
   std::string prefix = "Chrome/";
+  int build_no = 0;
   if (browser_string.find(prefix) == 0u) {
-    *browser_name = "chrome";
-    *browser_version = browser_string.substr(prefix.length());
-
+    std::string version = browser_string.substr(prefix.length());
     std::vector<std::string> version_parts;
-    base::SplitString(*browser_version, '.', &version_parts);
+    base::SplitString(version, '.', &version_parts);
+
     if (version_parts.size() != 4 ||
-        !base::StringToInt(version_parts[2], build_no)) {
-      return Status(kUnknownError,
-                    "unrecognized Chrome version: " + *browser_version);
+        !base::StringToInt(version_parts[2], &build_no)) {
+      return Status(kUnknownError, "unrecognized Chrome version: " + version);
     }
 
+    if (build_no != 0) {
+      browser_info->browser_name = "chrome";
+      browser_info->browser_version = browser_string.substr(prefix.length());
+      browser_info->build_no = build_no;
+      return Status(kOk);
+    }
+  }
+
+  if (browser_string.find("Version/") == 0u ||  // KitKat
+      (is_android && build_no == 0)) {          // Lollipop
+    browser_info->browser_name = "webview";
     return Status(kOk);
   }
 
