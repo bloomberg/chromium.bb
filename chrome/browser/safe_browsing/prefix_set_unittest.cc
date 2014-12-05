@@ -277,8 +277,8 @@ TEST_F(PrefixSetTest, AllBig) {
   std::vector<SBPrefix> prefixes;
 
   const unsigned kDelta = 10 * 1000 * 1000;
-  for (SBPrefix prefix = kHighBitSet;
-       prefix < kHighBitClear; prefix += kDelta) {
+  for (SBPrefix prefix = kHighBitClear;
+       prefix < kHighBitSet; prefix += kDelta) {
     prefixes.push_back(prefix);
   }
 
