@@ -301,6 +301,7 @@ class CONTENT_EXPORT RenderWidget
 
 #if defined(OS_ANDROID)
   void DidChangeBodyBackgroundColor(SkColor bg_color);
+  bool DoesRecordFullLayer() const;
 #endif
 
  protected:

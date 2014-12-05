@@ -332,9 +332,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 
   settings.using_synchronous_renderer_compositor =
       synchronous_compositor_factory;
-  settings.record_full_layer =
-      synchronous_compositor_factory &&
-      synchronous_compositor_factory->RecordFullLayer();
+  settings.record_full_layer = widget->DoesRecordFullLayer();
   settings.report_overscroll_only_for_scrollable_axes =
       !synchronous_compositor_factory;
   settings.max_partial_texture_updates = 0;
