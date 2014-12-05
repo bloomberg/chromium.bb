@@ -17,7 +17,8 @@ TransparencyRecorder::TransparencyRecorder(GraphicsContext* graphicsContext, con
     : m_renderer(renderer)
     , m_graphicsContext(graphicsContext)
 {
-    OwnPtr<BeginTransparencyDisplayItem> beginTransparencyDisplayItem = adoptPtr(new BeginTransparencyDisplayItem(renderer ? renderer->displayItemClient() : nullptr, DisplayItem::BeginTransparency, graphicsContext->compositeOperation(), blendMode, opacity));
+    ASSERT(renderer);
+    OwnPtr<BeginTransparencyDisplayItem> beginTransparencyDisplayItem = adoptPtr(new BeginTransparencyDisplayItem(renderer->displayItemClient(), DisplayItem::BeginTransparency, graphicsContext->compositeOperation(), blendMode, opacity));
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_graphicsContext->displayItemList());
         m_graphicsContext->displayItemList()->add(beginTransparencyDisplayItem.release());
@@ -28,7 +29,7 @@ TransparencyRecorder::TransparencyRecorder(GraphicsContext* graphicsContext, con
 
 TransparencyRecorder::~TransparencyRecorder()
 {
-    OwnPtr<EndTransparencyDisplayItem> endTransparencyDisplayItem = adoptPtr(new EndTransparencyDisplayItem(m_renderer ? m_renderer->displayItemClient() : nullptr, DisplayItem::EndTransparency));
+    OwnPtr<EndTransparencyDisplayItem> endTransparencyDisplayItem = adoptPtr(new EndTransparencyDisplayItem(m_renderer->displayItemClient(), DisplayItem::EndTransparency));
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_graphicsContext->displayItemList());
         m_graphicsContext->displayItemList()->add(endTransparencyDisplayItem.release());

@@ -23,8 +23,10 @@ LayerClipRecorder::LayerClipRecorder(const RenderLayerModelObject* renderer, Gra
     : m_graphicsContext(graphicsContext)
     , m_renderer(renderer)
 {
+    ASSERT(renderer);
+
     IntRect snappedClipRect = pixelSnappedIntRect(clipRect.rect());
-    OwnPtr<ClipDisplayItem> clipDisplayItem = adoptPtr(new ClipDisplayItem(renderer ? renderer->displayItemClient() : nullptr, clipType, snappedClipRect));
+    OwnPtr<ClipDisplayItem> clipDisplayItem = adoptPtr(new ClipDisplayItem(renderer->displayItemClient(), clipType, snappedClipRect));
     if (localPaintingInfo && clipRect.hasRadius())
         collectRoundedRectClips(*renderer->layer(), *localPaintingInfo, graphicsContext, fragmentOffset, paintFlags, rule, clipDisplayItem->roundedRectClips());
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
@@ -77,7 +79,7 @@ void LayerClipRecorder::collectRoundedRectClips(RenderLayer& renderLayer, const 
 LayerClipRecorder::~LayerClipRecorder()
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        OwnPtr<EndClipDisplayItem> endClip = adoptPtr(new EndClipDisplayItem(m_renderer ? m_renderer->displayItemClient() : nullptr));
+        OwnPtr<EndClipDisplayItem> endClip = adoptPtr(new EndClipDisplayItem(m_renderer->displayItemClient()));
         ASSERT(m_graphicsContext->displayItemList());
         m_graphicsContext->displayItemList()->add(endClip.release());
     } else {

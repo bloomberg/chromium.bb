@@ -33,7 +33,7 @@ ClipRecorder::ClipRecorder(RenderLayerModelObject& canvas, const PaintInfo& pain
 
 ClipRecorder::~ClipRecorder()
 {
-    OwnPtr<EndClipDisplayItem> endClipDisplayItem = adoptPtr(new EndClipDisplayItem(&m_canvas));
+    OwnPtr<EndClipDisplayItem> endClipDisplayItem = adoptPtr(new EndClipDisplayItem(m_canvas.displayItemClient()));
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_paintInfo.context->displayItemList());

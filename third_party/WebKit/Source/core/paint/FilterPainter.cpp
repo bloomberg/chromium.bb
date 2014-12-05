@@ -55,7 +55,8 @@ FilterPainter::FilterPainter(RenderLayer& renderLayer, GraphicsContext* context,
         m_clipRecorder = adoptPtr(new LayerClipRecorder(renderLayer.renderer(), context, DisplayItem::ClipLayerFilter, clipRect, &paintingInfo, LayoutPoint(), paintFlags));
     }
 
-    OwnPtr<BeginFilterDisplayItem> filterDisplayItem = adoptPtr(new BeginFilterDisplayItem(m_renderer, DisplayItem::BeginFilter, imageFilter, rootRelativeBounds));
+    ASSERT(m_renderer);
+    OwnPtr<BeginFilterDisplayItem> filterDisplayItem = adoptPtr(new BeginFilterDisplayItem(m_renderer->displayItemClient(), DisplayItem::BeginFilter, imageFilter, rootRelativeBounds));
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(context->displayItemList());
         context->displayItemList()->add(filterDisplayItem.release());

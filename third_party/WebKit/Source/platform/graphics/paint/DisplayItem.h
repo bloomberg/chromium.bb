@@ -11,12 +11,14 @@
 #include "wtf/text/WTFString.h"
 #endif
 
+
 namespace blink {
 
 class GraphicsContext;
 class WebDisplayItemList;
 
-typedef void* DisplayItemClient;
+class DisplayItemClientInternalVoid;
+typedef DisplayItemClientInternalVoid* DisplayItemClient;
 
 class PLATFORM_EXPORT DisplayItem {
 public:

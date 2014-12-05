@@ -1062,7 +1062,7 @@ public:
 
     virtual LayoutRect viewRect() const;
 
-    DisplayItemClient displayItemClient() const { return (void*)this; }
+    DisplayItemClient displayItemClient() const { return static_cast<DisplayItemClientInternalVoid*>((void*)this); }
 
 protected:
     enum RenderObjectType {

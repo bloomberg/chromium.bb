@@ -101,7 +101,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateBasic)
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseChildBlockBackground),
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline));
 
-    rootDisplayItemList().invalidate(second);
+    rootDisplayItemList().invalidate(second->displayItemClient());
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 300, 300));
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 300, 300));
 
@@ -127,7 +127,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateSwapOrder)
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
         TestDisplayItem(unaffected, DisplayItem::DrawingPaintPhaseBlockBackground));
 
-    rootDisplayItemList().invalidate(second);
+    rootDisplayItemList().invalidate(second->displayItemClient());
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
 
@@ -152,7 +152,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateNewItemInMiddle)
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground));
 
-    rootDisplayItemList().invalidate(third);
+    rootDisplayItemList().invalidate(third->displayItemClient());
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
     drawRect(&context, third, PaintPhaseBlockBackground, FloatRect(125, 100, 200, 50));
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
@@ -192,7 +192,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateInvalidationWithPhases)
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline),
         TestDisplayItem(third, DisplayItem::DrawingPaintPhaseOutline));
 
-    rootDisplayItemList().invalidate(second);
+    rootDisplayItemList().invalidate(second->displayItemClient());
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 100, 100));
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 200));
     drawRect(&context, first, PaintPhaseForeground, FloatRect(100, 100, 100, 100));
@@ -211,7 +211,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateInvalidationWithPhases)
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline),
         TestDisplayItem(third, DisplayItem::DrawingPaintPhaseOutline));
 
-    rootDisplayItemList().invalidate(second);
+    rootDisplayItemList().invalidate(second->displayItemClient());
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 6,
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
@@ -236,7 +236,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddFirstNoOverlap)
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline));
 
-    rootDisplayItemList().invalidate(first);
+    rootDisplayItemList().invalidate(first->displayItemClient());
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 50, 50));
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 50, 50));
 
@@ -246,7 +246,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddFirstNoOverlap)
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline));
 
-    rootDisplayItemList().invalidate(first);
+    rootDisplayItemList().invalidate(first->displayItemClient());
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
@@ -267,8 +267,8 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddFirstOverlap)
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline));
 
-    rootDisplayItemList().invalidate(first);
-    rootDisplayItemList().invalidate(second);
+    rootDisplayItemList().invalidate(first->displayItemClient());
+    rootDisplayItemList().invalidate(second->displayItemClient());
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
@@ -280,7 +280,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddFirstOverlap)
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline));
 
-    rootDisplayItemList().invalidate(first);
+    rootDisplayItemList().invalidate(first->displayItemClient());
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
     drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
 
@@ -303,7 +303,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddLastNoOverlap)
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline));
 
-    rootDisplayItemList().invalidate(second);
+    rootDisplayItemList().invalidate(second->displayItemClient());
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
     drawRect(&context, second, PaintPhaseOutline, FloatRect(200, 200, 50, 50));
 
@@ -313,7 +313,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddLastNoOverlap)
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline));
 
-    rootDisplayItemList().invalidate(second);
+    rootDisplayItemList().invalidate(second->displayItemClient());
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
@@ -334,8 +334,8 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddLastOverlap)
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseBlockBackground),
         TestDisplayItem(first, DisplayItem::DrawingPaintPhaseOutline));
 
-    rootDisplayItemList().invalidate(first);
-    rootDisplayItemList().invalidate(second);
+    rootDisplayItemList().invalidate(first->displayItemClient());
+    rootDisplayItemList().invalidate(second->displayItemClient());
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
     drawRect(&context, second, PaintPhaseBlockBackground, FloatRect(200, 200, 50, 50));
@@ -347,8 +347,8 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateAddLastOverlap)
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseBlockBackground),
         TestDisplayItem(second, DisplayItem::DrawingPaintPhaseOutline));
 
-    rootDisplayItemList().invalidate(first);
-    rootDisplayItemList().invalidate(second);
+    rootDisplayItemList().invalidate(first->displayItemClient());
+    rootDisplayItemList().invalidate(second->displayItemClient());
     drawRect(&context, first, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     drawRect(&context, first, PaintPhaseOutline, FloatRect(100, 100, 150, 150));
 
@@ -377,7 +377,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
         TestDisplayItem(secondRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
         TestDisplayItem(firstRenderer, DisplayItem::EndClip));
 
-    rootDisplayItemList().invalidate(firstRenderer);
+    rootDisplayItemList().invalidate(firstRenderer->displayItemClient());
     drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     drawRect(&context, secondRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
 
@@ -385,7 +385,7 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
         TestDisplayItem(firstRenderer, DisplayItem::DrawingPaintPhaseBlockBackground),
         TestDisplayItem(secondRenderer, DisplayItem::DrawingPaintPhaseBlockBackground));
 
-    rootDisplayItemList().invalidate(secondRenderer);
+    rootDisplayItemList().invalidate(secondRenderer->displayItemClient());
     drawRect(&context, firstRenderer, PaintPhaseBlockBackground, FloatRect(100, 100, 150, 150));
     ClipRect secondClipRect(IntRect(1, 1, 2, 2));
     {

@@ -390,7 +390,8 @@ void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, co
     LayoutSize adjustedSubPixelAccumulation = paintingInfo.subPixelAccumulation + (delta - roundedDelta);
 
     if (!transform.isIdentity()) {
-        OwnPtr<BeginTransformDisplayItem> beginTransformDisplayItem = adoptPtr(new BeginTransformDisplayItem(m_renderLayer.renderer(), transform));
+        ASSERT(m_renderLayer.renderer());
+        OwnPtr<BeginTransformDisplayItem> beginTransformDisplayItem = adoptPtr(new BeginTransformDisplayItem(m_renderLayer.renderer()->displayItemClient(), transform));
         // FIXME: we shouldn't be calling replay when Slimming Paint is on. However, replay() currently has an important side-effect that it stores
         // the current matrix on the GraphicsContext, which is used for making conditional painting decisions such as anti-aliasing rotated borders.
         beginTransformDisplayItem->replay(context);
@@ -406,7 +407,7 @@ void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, co
     paintLayerContentsAndReflection(context, transformedPaintingInfo, paintFlags);
 
     if (!transform.isIdentity()) {
-        OwnPtr<EndTransformDisplayItem> endTransformDisplayItem = adoptPtr(new EndTransformDisplayItem(m_renderLayer.renderer()));
+        OwnPtr<EndTransformDisplayItem> endTransformDisplayItem = adoptPtr(new EndTransformDisplayItem(m_renderLayer.renderer()->displayItemClient()));
         // FIXME: the same fix applies are as in the FIXME for BeginTransformDisplayItem above.
         endTransformDisplayItem->replay(context);
         if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
