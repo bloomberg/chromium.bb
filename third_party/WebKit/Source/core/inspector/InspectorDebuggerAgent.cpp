@@ -85,7 +85,6 @@ static const char isRegex[] = "isRegex";
 static const char lineNumber[] = "lineNumber";
 static const char columnNumber[] = "columnNumber";
 static const char condition[] = "condition";
-static const char isAnti[] = "isAnti";
 static const char skipStackPattern[] = "skipStackPattern";
 static const char skipContentScripts[] = "skipContentScripts";
 static const char skipAllPauses[] = "skipAllPauses";
@@ -318,7 +317,7 @@ PassOwnPtr<ScriptSourceCode> InspectorDebuggerAgent::preprocess(LocalFrame* fram
     return scriptDebugServer().preprocess(frame, sourceCode);
 }
 
-static PassRefPtr<JSONObject> buildObjectForBreakpointCookie(const String& url, int lineNumber, int columnNumber, const String& condition, bool isRegex, bool isAnti)
+static PassRefPtr<JSONObject> buildObjectForBreakpointCookie(const String& url, int lineNumber, int columnNumber, const String& condition, bool isRegex)
 {
     RefPtr<JSONObject> breakpointObject = JSONObject::create();
     breakpointObject->setString(DebuggerAgentState::url, url);
@@ -326,7 +325,6 @@ static PassRefPtr<JSONObject> buildObjectForBreakpointCookie(const String& url, 
     breakpointObject->setNumber(DebuggerAgentState::columnNumber, columnNumber);
     breakpointObject->setString(DebuggerAgentState::condition, condition);
     breakpointObject->setBoolean(DebuggerAgentState::isRegex, isRegex);
-    breakpointObject->setBoolean(DebuggerAgentState::isAnti, isAnti);
     return breakpointObject;
 }
 
@@ -339,7 +337,7 @@ static bool matches(const String& url, const String& pattern, bool isRegex)
     return url == pattern;
 }
 
-void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int lineNumber, const String* const optionalURL, const String* const optionalURLRegex, const int* const optionalColumnNumber, const String* const optionalCondition, const bool* isAntiBreakpoint, BreakpointId* outBreakpointId, RefPtr<Array<TypeBuilder::Debugger::Location> >& locations)
+void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int lineNumber, const String* const optionalURL, const String* const optionalURLRegex, const int* const optionalColumnNumber, const String* const optionalCondition, BreakpointId* outBreakpointId, RefPtr<Array<TypeBuilder::Debugger::Location> >& locations)
 {
     locations = Array<TypeBuilder::Debugger::Location>::create();
     if (!optionalURL == !optionalURLRegex) {
@@ -347,18 +345,14 @@ void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int li
         return;
     }
 
-    bool isAntiBreakpointValue = asBool(isAntiBreakpoint);
-
     String url = optionalURL ? *optionalURL : *optionalURLRegex;
-    int columnNumber;
+    int columnNumber = 0;
     if (optionalColumnNumber) {
         columnNumber = *optionalColumnNumber;
         if (columnNumber < 0) {
             *errorString = "Incorrect column number";
             return;
         }
-    } else {
-        columnNumber = isAntiBreakpointValue ? -1 : 0;
     }
     String condition = optionalCondition ? *optionalCondition : "";
     bool isRegex = optionalURLRegex;
@@ -370,19 +364,18 @@ void InspectorDebuggerAgent::setBreakpointByUrl(ErrorString* errorString, int li
         return;
     }
 
-    breakpointsCookie->setObject(breakpointId, buildObjectForBreakpointCookie(url, lineNumber, columnNumber, condition, isRegex, isAntiBreakpointValue));
+    breakpointsCookie->setObject(breakpointId, buildObjectForBreakpointCookie(url, lineNumber, columnNumber, condition, isRegex));
     m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, breakpointsCookie);
 
-    if (!isAntiBreakpointValue) {
-        ScriptBreakpoint breakpoint(lineNumber, columnNumber, condition);
-        for (ScriptsMap::iterator it = m_scripts.begin(); it != m_scripts.end(); ++it) {
-            if (!matches(it->value.sourceURL(), url, isRegex))
-                continue;
-            RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(breakpointId, it->key, breakpoint, UserBreakpointSource);
-            if (location)
-                locations->addItem(location);
-        }
+    ScriptBreakpoint breakpoint(lineNumber, columnNumber, condition);
+    for (ScriptsMap::iterator it = m_scripts.begin(); it != m_scripts.end(); ++it) {
+        if (!matches(it->value.sourceURL(), url, isRegex))
+            continue;
+        RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(breakpointId, it->key, breakpoint, UserBreakpointSource);
+        if (location)
+            locations->addItem(location);
     }
+
     *outBreakpointId = breakpointId;
 }
 
@@ -425,17 +418,9 @@ void InspectorDebuggerAgent::setBreakpoint(ErrorString* errorString, const RefPt
 void InspectorDebuggerAgent::removeBreakpoint(ErrorString*, const String& breakpointId)
 {
     RefPtr<JSONObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
-    JSONObject::iterator it = breakpointsCookie->find(breakpointId);
-    bool isAntibreakpoint = false;
-    if (it != breakpointsCookie->end()) {
-        RefPtr<JSONObject> breakpointObject = it->value->asObject();
-        breakpointObject->getBoolean(DebuggerAgentState::isAnti, &isAntibreakpoint);
-        breakpointsCookie->remove(breakpointId);
-        m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, breakpointsCookie);
-    }
-
-    if (!isAntibreakpoint)
-        removeBreakpoint(breakpointId);
+    breakpointsCookie->remove(breakpointId);
+    m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, breakpointsCookie);
+    removeBreakpoint(breakpointId);
 }
 
 void InspectorDebuggerAgent::removeBreakpoint(const String& breakpointId)
@@ -535,53 +520,15 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipExceptio
 {
     if (m_steppingFromFramework)
         return ScriptDebugListener::NoSkip;
+    // Fast return.
+    if (!m_skipContentScripts && !m_cachedSkipStackRegExp)
+        return ScriptDebugListener::NoSkip;
 
-    // FIXME: Fast return: if (!m_skipContentScripts && !m_cachedSkipStackRegExp && !has_any_anti_breakpoint) return ScriptDebugListener::NoSkip;
-
-    String topFrameScriptUrl;
+    String scriptUrl;
     bool isBlackboxed = false;
-    RefPtrWillBeRawPtr<JavaScriptCallFrame> topFrame = topCallFrameSkipUnknownSources(&topFrameScriptUrl, &isBlackboxed);
-    if (!topFrame)
-        return ScriptDebugListener::NoSkip;
-    if (isBlackboxed)
+    RefPtrWillBeRawPtr<JavaScriptCallFrame> topFrame = topCallFrameSkipUnknownSources(&scriptUrl, &isBlackboxed);
+    if (topFrame && isBlackboxed)
         return ScriptDebugListener::Continue;
-
-    // Match against breakpoints.
-    if (topFrameScriptUrl.isEmpty())
-        return ScriptDebugListener::NoSkip;
-
-    // Prepare top frame parameters.
-    int topFrameLineNumber = topFrame->line();
-    int topFrameColumnNumber = topFrame->column();
-
-    RefPtr<JSONObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
-    for (JSONObject::iterator it = breakpointsCookie->begin(); it != breakpointsCookie->end(); ++it) {
-        RefPtr<JSONObject> breakpointObject = it->value->asObject();
-        bool isAntibreakpoint;
-        breakpointObject->getBoolean(DebuggerAgentState::isAnti, &isAntibreakpoint);
-        if (!isAntibreakpoint)
-            continue;
-
-        int breakLineNumber;
-        breakpointObject->getNumber(DebuggerAgentState::lineNumber, &breakLineNumber);
-        int breakColumnNumber;
-        breakpointObject->getNumber(DebuggerAgentState::columnNumber, &breakColumnNumber);
-
-        if (breakLineNumber != topFrameLineNumber)
-            continue;
-
-        if (breakColumnNumber != -1 && breakColumnNumber != topFrameColumnNumber)
-            continue;
-
-        bool isRegex;
-        breakpointObject->getBoolean(DebuggerAgentState::isRegex, &isRegex);
-        String url;
-        breakpointObject->getString(DebuggerAgentState::url, &url);
-        if (!matches(topFrameScriptUrl, url, isRegex))
-            continue;
-
-        return ScriptDebugListener::Continue;
-    }
 
     return ScriptDebugListener::NoSkip;
 }
@@ -1366,10 +1313,6 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
     RefPtr<JSONObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
     for (JSONObject::iterator it = breakpointsCookie->begin(); it != breakpointsCookie->end(); ++it) {
         RefPtr<JSONObject> breakpointObject = it->value->asObject();
-        bool isAntibreakpoint;
-        breakpointObject->getBoolean(DebuggerAgentState::isAnti, &isAntibreakpoint);
-        if (isAntibreakpoint)
-            continue;
         bool isRegex;
         breakpointObject->getBoolean(DebuggerAgentState::isRegex, &isRegex);
         String url;
