@@ -161,6 +161,12 @@ class BootstrapStage(PatchChangesStage):
     self.chromite_patch_pool = chromite_patch_pool
     self.manifest_patch_pool = manifest_patch_pool
     self.returncode = None
+    # Bootstrap chromite in a subdirectory of the buildroot. This directory
+    # requires exec permissions so that cbuildbot can be re-executed after
+    # chromite is patched.
+    self.tempdir = os.path.join(self._run.options.buildroot,
+                                'chromite-bootstrap')
+    osutils.RmDir(self.tempdir, ignore_missing=True)
 
   def _ApplyManifestPatches(self, patch_pool):
     """Apply a pool of manifest patches to a temp manifest checkout.
@@ -238,7 +244,6 @@ class BootstrapStage(PatchChangesStage):
     else:
       PatchChangesStage.HandleApplyFailures(self, failures)
 
-  @osutils.TempDirDecorator
   def PerformStage(self):
     # The plan for the builders is to use master branch to bootstrap other
     # branches. Now, if we wanted to test patches for both the bootstrap code
