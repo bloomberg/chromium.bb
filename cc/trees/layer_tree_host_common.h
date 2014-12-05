@@ -38,6 +38,8 @@ class CC_EXPORT LayerTreeHostCommon {
                         float device_scale_factor,
                         float page_scale_factor,
                         const LayerType* page_scale_application_layer,
+                        const gfx::Vector2dF& elastic_overscroll,
+                        const LayerType* elastic_overscroll_application_layer,
                         int max_texture_size,
                         bool can_use_lcd_text,
                         bool layers_always_allowed_lcd_text,
@@ -51,6 +53,9 @@ class CC_EXPORT LayerTreeHostCommon {
           device_scale_factor(device_scale_factor),
           page_scale_factor(page_scale_factor),
           page_scale_application_layer(page_scale_application_layer),
+          elastic_overscroll(elastic_overscroll),
+          elastic_overscroll_application_layer(
+              elastic_overscroll_application_layer),
           max_texture_size(max_texture_size),
           can_use_lcd_text(can_use_lcd_text),
           layers_always_allowed_lcd_text(layers_always_allowed_lcd_text),
@@ -66,6 +71,8 @@ class CC_EXPORT LayerTreeHostCommon {
     float device_scale_factor;
     float page_scale_factor;
     const LayerType* page_scale_application_layer;
+    gfx::Vector2dF elastic_overscroll;
+    const LayerType* elastic_overscroll_application_layer;
     int max_texture_size;
     bool can_use_lcd_text;
     bool layers_always_allowed_lcd_text;
@@ -145,6 +152,7 @@ struct CC_EXPORT ScrollAndScaleSet {
 
   std::vector<LayerTreeHostCommon::ScrollUpdateInfo> scrolls;
   float page_scale_delta;
+  gfx::Vector2dF elastic_overscroll_delta;
   float top_controls_delta;
   ScopedPtrVector<SwapPromise> swap_promises;
 };
@@ -223,6 +231,8 @@ LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
           1.f,
           1.f,
           NULL,
+          gfx::Vector2dF(),
+          NULL,
           std::numeric_limits<int>::max() / 2,
           false,
           false,
@@ -247,6 +257,8 @@ LayerTreeHostCommon::CalcDrawPropsInputsForTesting<LayerType,
           identity_transform_,
           1.f,
           1.f,
+          NULL,
+          gfx::Vector2dF(),
           NULL,
           std::numeric_limits<int>::max() / 2,
           false,

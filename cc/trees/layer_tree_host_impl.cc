@@ -237,7 +237,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   SetDebugState(settings.initial_debug_state);
 
   // LTHI always has an active tree.
-  active_tree_ = LayerTreeImpl::create(this, new SyncedProperty<ScaleGroup>());
+  active_tree_ = LayerTreeImpl::create(this, new SyncedProperty<ScaleGroup>(),
+                                       new SyncedElasticOverscroll);
 
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerTreeHostImpl", id_);
@@ -1101,8 +1102,8 @@ void LayerTreeHostImpl::BlockNotifyReadyToActivateForTesting(bool block) {
 void LayerTreeHostImpl::ResetTreesForTesting() {
   if (active_tree_)
     active_tree_->DetachLayerTree();
-  active_tree_ =
-      LayerTreeImpl::create(this, active_tree()->page_scale_factor());
+  active_tree_ = LayerTreeImpl::create(this, active_tree()->page_scale_factor(),
+                                       active_tree()->elastic_overscroll());
   if (pending_tree_)
     pending_tree_->DetachLayerTree();
   pending_tree_ = nullptr;
@@ -1748,7 +1749,8 @@ void LayerTreeHostImpl::CreatePendingTree() {
     recycle_tree_.swap(pending_tree_);
   else
     pending_tree_ =
-        LayerTreeImpl::create(this, active_tree()->page_scale_factor());
+        LayerTreeImpl::create(this, active_tree()->page_scale_factor(),
+                              active_tree()->elastic_overscroll());
 
   // Update the delta from the active tree, which may have
   // adjusted its delta prior to the pending tree being created.
@@ -3022,6 +3024,8 @@ scoped_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
   CollectScrollDeltas(scroll_info.get(), active_tree_->root_layer());
   scroll_info->page_scale_delta =
       active_tree_->page_scale_factor()->PullDeltaForMainThread();
+  scroll_info->elastic_overscroll_delta =
+      active_tree_->elastic_overscroll()->PullDeltaForMainThread();
   scroll_info->swap_promises.swap(swap_promises_for_main_thread_scroll_update_);
   scroll_info->top_controls_delta = active_tree()->top_controls_delta();
   active_tree_->set_sent_top_controls_delta(scroll_info->top_controls_delta);
