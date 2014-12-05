@@ -958,17 +958,34 @@ void SourceBufferStream::OnSetDuration(base::TimeDelta duration) {
 
 SourceBufferStream::Status SourceBufferStream::GetNextBuffer(
     scoped_refptr<StreamParserBuffer>* out_buffer) {
+  DVLOG(2) << __FUNCTION__ << " " << GetStreamTypeName();
   if (!pending_buffer_.get()) {
     const SourceBufferStream::Status status = GetNextBufferInternal(out_buffer);
-    if (status != SourceBufferStream::kSuccess || !SetPendingBuffer(out_buffer))
+    if (status != SourceBufferStream::kSuccess ||
+        !SetPendingBuffer(out_buffer)) {
+      DVLOG(2) << __FUNCTION__ << " " << GetStreamTypeName()
+               << ": no pending buffer, returning status " << status;
       return status;
+    }
   }
 
-  if (!pending_buffer_->splice_buffers().empty())
-    return HandleNextBufferWithSplice(out_buffer);
+  if (!pending_buffer_->splice_buffers().empty()) {
+    const SourceBufferStream::Status status =
+        HandleNextBufferWithSplice(out_buffer);
+    DVLOG(2) << __FUNCTION__ << " " << GetStreamTypeName()
+             << ": handled next buffer with splice, returning status "
+             << status;
+    return status;
+  }
 
   DCHECK(pending_buffer_->preroll_buffer().get());
-  return HandleNextBufferWithPreroll(out_buffer);
+
+  const SourceBufferStream::Status status =
+      HandleNextBufferWithPreroll(out_buffer);
+  DVLOG(2) << __FUNCTION__ << " " << GetStreamTypeName()
+           << ": handled next buffer with preroll, returning status "
+           << status;
+  return status;
 }
 
 SourceBufferStream::Status SourceBufferStream::HandleNextBufferWithSplice(
