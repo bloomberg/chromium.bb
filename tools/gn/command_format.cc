@@ -18,6 +18,7 @@
 
 namespace commands {
 
+const char kSwitchDryRun[] = "dry-run";
 const char kSwitchDumpTree[] = "dump-tree";
 const char kSwitchInPlace[] = "in-place";
 const char kSwitchStdin[] = "stdin";
@@ -31,6 +32,14 @@ const char kFormat_Help[] =
     "  Formats .gn file to a standard format.\n"
     "\n"
     "Arguments\n"
+    "  --dry-run\n"
+    "      Does not change or output anything, but sets the process exit code\n"
+    "      based on whether output would be different than what's on disk.\n"
+    "      This is useful for presubmit/lint-type checks.\n"
+    "      - Exit code 0: successful format, matches on disk.\n"
+    "      - Exit code 1: general failure (parse error, etc.)\n"
+    "      - Exit code 2: successful format, but differs from on disk.\n"
+    "\n"
     "  --dump-tree\n"
     "      For debugging only, dumps the parse tree.\n"
     "\n"
@@ -944,11 +953,20 @@ bool FormatStringToString(const std::string& input,
 }
 
 int RunFormat(const std::vector<std::string>& args) {
+  bool dry_run =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchDryRun);
   bool dump_tree =
       base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchDumpTree);
-
   bool from_stdin =
       base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchStdin);
+  bool in_place =
+    base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchInPlace);
+
+  if (dry_run) {
+    // --dry-run only works with an actual file to compare to.
+    from_stdin = false;
+    in_place = true;
+  }
 
   if (from_stdin) {
     if (args.size() != 0) {
@@ -979,8 +997,6 @@ int RunFormat(const std::vector<std::string>& args) {
 
   std::string output_string;
   if (FormatFileToString(&setup, file, dump_tree, &output_string)) {
-    bool in_place =
-        base::CommandLine::ForCurrentProcess()->HasSwitch(kSwitchInPlace);
     if (in_place) {
       base::FilePath to_write = setup.build_settings().GetFullPath(file);
       std::string original_contents;
@@ -990,6 +1006,8 @@ int RunFormat(const std::vector<std::string>& args) {
                             std::string("\" for comparison.")).PrintToStdout();
         return 1;
       }
+      if (dry_run)
+        return original_contents == output_string ? 0 : 2;
       if (original_contents != output_string) {
         if (base::WriteFile(to_write,
                             output_string.data(),
