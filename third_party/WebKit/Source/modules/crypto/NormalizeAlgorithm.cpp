@@ -207,12 +207,6 @@ void setNotSupportedError(const String& message, AlgorithmError* error)
     error->errorDetails = message;
 }
 
-void setDataError(const String& message, AlgorithmError* error)
-{
-    error->errorType = WebCryptoErrorTypeData;
-    error->errorDetails = message;
-}
-
 // ErrorContext holds a stack of string literals which describe what was
 // happening at the time the error occurred. This is helpful because
 // parsing of the algorithm dictionary can be recursive and it is difficult to
@@ -449,11 +443,6 @@ bool parseAesCbcParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& 
         return false;
 
     DOMArrayPiece iv(ivBufferSource);
-    // FIXME: Layering -- should not enforce length of "iv" here.
-    if (iv.byteLength() != 16) {
-        setDataError(context.toString("iv", "Must be 16 bytes"), error);
-        return false;
-    }
 
     params = adoptPtr(new WebCryptoAesCbcParams(iv.bytes(), iv.byteLength()));
     return true;
