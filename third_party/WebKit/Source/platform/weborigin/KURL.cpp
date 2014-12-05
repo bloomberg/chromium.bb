@@ -248,6 +248,10 @@ KURL::KURL(const KURL& other)
         m_innerURL = adoptPtr(new KURL(other.m_innerURL->copy()));
 }
 
+KURL::~KURL()
+{
+}
+
 KURL& KURL::operator=(const KURL& other)
 {
     m_isValid = other.m_isValid;

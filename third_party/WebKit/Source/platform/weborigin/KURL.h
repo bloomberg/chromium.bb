@@ -77,6 +77,8 @@ public:
     // done with the same input.
     KURL(const AtomicString& canonicalString, const url::Parsed&, bool isValid);
 
+    ~KURL();
+
     String strippedForUseAsReferrer() const;
 
     // FIXME: The above functions should be harmonized so that passing a
