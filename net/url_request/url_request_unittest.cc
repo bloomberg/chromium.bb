@@ -5437,6 +5437,25 @@ TEST_F(URLRequestTestHTTP, NoCacheOnNetworkDelegateRedirect) {
   }
 }
 
+// Make sure an HTTP request using the "unsafe" port 443 fails.
+// See: https://crbug.com/436451
+TEST_F(URLRequestTestHTTP, UnsafePort) {
+  TestDelegate d;
+  {
+    scoped_ptr<URLRequest> r(default_context_.CreateRequest(
+        GURL("http://www.google.com:443/"), DEFAULT_PRIORITY, &d, NULL));
+
+    r->Start();
+    EXPECT_TRUE(r->is_pending());
+
+    base::RunLoop().Run();
+
+    EXPECT_FALSE(r->is_pending());
+    EXPECT_EQ(URLRequestStatus::FAILED, r->status().status());
+    EXPECT_EQ(ERR_UNSAFE_PORT, r->status().error());
+  }
+}
+
 // Tests that redirection to an unsafe URL is allowed when it has been marked as
 // safe.
 TEST_F(URLRequestTestHTTP, UnsafeRedirectToWhitelistedUnsafeURL) {

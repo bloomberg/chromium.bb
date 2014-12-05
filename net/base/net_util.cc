@@ -107,6 +107,7 @@ static const int kRestrictedPorts[] = {
   143,  // imap2
   179,  // BGP
   389,  // ldap
+  443,  // https / wss (see https://crbug.com/436451)
   465,  // smtp+ssl
   512,  // print / exec
   513,  // login
@@ -142,6 +143,11 @@ static const int kRestrictedPorts[] = {
 static const int kAllowedFtpPorts[] = {
   21,   // ftp data
   22,   // ssh
+};
+
+// HTTPS and WSS override the following restricted port.
+static const int kAllowedHttpsOrWssPorts[] = {
+  443,  // https / wss
 };
 
 bool IPNumberPrefixCheck(const IPAddressNumber& ip_number,
@@ -318,6 +324,29 @@ bool IsPortAllowedByFtp(int port) {
   }
   // Port not explicitly allowed by FTP, so return the default restrictions.
   return IsPortAllowedByDefault(port);
+}
+
+bool IsPortAllowedByHttpsOrWss(int port) {
+  int array_size = arraysize(kAllowedHttpsOrWssPorts);
+  for (int i = 0; i < array_size; i++) {
+    if (kAllowedHttpsOrWssPorts[i] == port) {
+        return true;
+    }
+  }
+  // Port not explicitly allowed by HTTPS or WSS, so return the default
+  // restrictions.
+  return IsPortAllowedByDefault(port);
+}
+
+bool IsEffectivePortAllowedByScheme(const GURL& url) {
+  int port = url.EffectiveIntPort();
+  if (url.SchemeIs("ftp")) {
+    return IsPortAllowedByFtp(port);
+  } else if (url.SchemeIs("https") || url.SchemeIs("wss")) {
+    return IsPortAllowedByHttpsOrWss(port);
+  } else {
+    return IsPortAllowedByDefault(port);
+  }
 }
 
 bool IsPortAllowedByOverride(int port) {
