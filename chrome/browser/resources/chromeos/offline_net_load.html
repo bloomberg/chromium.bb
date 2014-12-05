@@ -18,14 +18,16 @@
     <div id="main-message">
       <h1 i18n-content="heading"></h1>
       <p i18n-values=".innerHTML:primaryParagraph"></p>
-      <div id="buttons" class="nav-wrapper">
-        <button id="reload-button" onclick="location = this.url"
-            jsselect="reload" jsvalues=".url:reloadUrl"
-            jscontent="msg"></button>
+      <div id="buttons" class="nav-wrapper suggested-right">
+        <div id="control-buttons">
+          <button id="reload-button" onclick="location = this.url"
+              jsselect="reload" jsvalues=".url:reloadUrl"
+              jscontent="msg"></button>
+        </div>
         <button id="details-button" class="text-button small-link"
-            onclick="toggleHelpBox()" jsdisplay="more"
-            jsvalues=".moreText:more; .lessText:less;"
-            jscontent="more"></button>
+            onclick="toggleHelpBox()" jscontent="details"
+            jsvalues=".detailsText:details; .hideDetailsText:hideDetails;"
+            jsdisplay="details"></button>
       </div>
     </div>
     <!-- Outer and inner divs are needed both for margins and sizing. -->

@@ -5,11 +5,11 @@
 function toggleHelpBox() {
   var helpBoxOuter = $('help-box-outer');
   helpBoxOuter.classList.toggle('hidden');
-  var moreLessButton = $('details-button');
+  var detailsButton = $('details-button');
   if (helpBoxOuter.classList.contains('hidden')) {
-    moreLessButton.innerText = moreLessButton.moreText;
+    detailsButton.innerText = detailsButton.detailsText;
   } else {
-    moreLessButton.innerText = moreLessButton.lessText;
+    detailsButton.innerText = detailsButton.hideDetailsText;
   }
 }
 
