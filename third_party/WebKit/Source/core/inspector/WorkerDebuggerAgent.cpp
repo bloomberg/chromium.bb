@@ -32,6 +32,7 @@
 #include "core/inspector/WorkerDebuggerAgent.h"
 
 #include "bindings/core/v8/ScriptDebugServer.h"
+#include "core/inspector/InjectedScript.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"

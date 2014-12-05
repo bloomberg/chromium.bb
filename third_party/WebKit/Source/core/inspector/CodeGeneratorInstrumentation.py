@@ -445,6 +445,8 @@ def agent_class_name(agent):
     custom_agent_names = ["PageDebugger", "PageRuntime", "WorkerRuntime"]
     if agent in custom_agent_names:
         return "%sAgent" % agent
+    if agent == "AsyncCallStackTracker":
+        return agent
     return "Inspector%sAgent" % agent
 
 

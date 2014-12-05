@@ -31,11 +31,11 @@
 #define InspectorDebuggerAgent_h
 
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "core/InspectorFrontend.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/inspector/AsyncCallStackTracker.h"
 #include "core/inspector/ConsoleAPITypes.h"
-#include "core/inspector/InjectedScript.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/PromiseTracker.h"
 #include "core/inspector/ScriptBreakpoint.h"
@@ -50,26 +50,14 @@
 namespace blink {
 
 class ConsoleMessage;
-class Document;
-class Event;
-class EventListener;
-class EventTarget;
-class ExecutionContextTask;
-class FormData;
-class HTTPHeaderMap;
+class InjectedScript;
 class InjectedScriptManager;
-class InspectorFrontend;
 class JavaScriptCallFrame;
 class JSONObject;
-class KURL;
-class MutationObserver;
 class ScriptAsyncCallStack;
 class ScriptDebugServer;
 class ScriptRegexp;
 class ScriptSourceCode;
-class ScriptValue;
-class ThreadableLoaderClient;
-class XMLHttpRequest;
 
 typedef String ErrorString;
 
@@ -158,33 +146,8 @@ public:
     virtual void didChangeCurrentAsyncCallChain(const AsyncCallStackTracker::AsyncCallChain*) override final;
 
     void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
-    void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);
-    void didRemoveTimer(ExecutionContext*, int timerId);
-    bool willFireTimer(ExecutionContext*, int timerId);
     void didFireTimer();
-    void didRequestAnimationFrame(Document*, int callbackId);
-    void didCancelAnimationFrame(Document*, int callbackId);
-    bool willFireAnimationFrame(Document*, int callbackId);
-    void didFireAnimationFrame();
-    void didEnqueueEvent(EventTarget*, Event*);
-    void didRemoveEvent(EventTarget*, Event*);
-    void willHandleEvent(EventTarget*, Event*, EventListener*, bool useCapture);
     void didHandleEvent();
-    void willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData> body, const HTTPHeaderMap& headers, bool includeCrendentials);
-    void didDispatchXHRLoadendEvent(XMLHttpRequest*);
-    void didEnqueueMutationRecord(ExecutionContext*, MutationObserver*);
-    void didClearAllMutationRecords(ExecutionContext*, MutationObserver*);
-    void willDeliverMutationRecords(ExecutionContext*, MutationObserver*);
-    void didDeliverMutationRecords();
-    void didPostExecutionContextTask(ExecutionContext*, ExecutionContextTask*);
-    void didKillAllExecutionContextTasks(ExecutionContext*);
-    void willPerformExecutionContextTask(ExecutionContext*, ExecutionContextTask*);
-    void didPerformExecutionContextTask();
-    int traceAsyncOperationStarting(ExecutionContext*, const String& operationName, int prevOperationId = 0);
-    void traceAsyncOperationCompleted(ExecutionContext*, int operationId);
-    void traceAsyncOperationCompletedCallbackStarting(ExecutionContext*, int operationId);
-    void traceAsyncCallbackStarting(ExecutionContext*, int operationId);
-    void traceAsyncCallbackCompleted();
     bool canBreakProgram();
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     void scriptExecutionBlockedByCSP(const String& directiveText);
@@ -267,6 +230,7 @@ private:
     AsyncCallStackTracker& asyncCallStackTracker() const { return *m_asyncCallStackTracker; };
     PromiseTracker& promiseTracker() const { return *m_promiseTracker; }
 
+    void internalSetAsyncCallStackDepth(int);
     void increaseCachedSkipStackGeneration();
 
     typedef HashMap<String, Script> ScriptsMap;

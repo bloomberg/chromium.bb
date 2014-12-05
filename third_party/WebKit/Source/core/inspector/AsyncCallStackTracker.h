@@ -46,7 +46,12 @@ class EventListener;
 class EventTarget;
 class ExecutionContext;
 class ExecutionContextTask;
+class FormData;
+class HTTPHeaderMap;
+class KURL;
 class MutationObserver;
+class ScriptDebugServer;
+class ThreadableLoaderClient;
 class XMLHttpRequest;
 
 class AsyncCallStackTracker final : public NoBaseWillBeGarbageCollected<AsyncCallStackTracker> {
@@ -85,37 +90,44 @@ public:
     bool isEnabled() const { return m_maxAsyncCallStackDepth; }
     void setAsyncCallStackDepth(int);
     const AsyncCallChain* currentAsyncCallChain() const;
+    void setScriptDebugServer(ScriptDebugServer* server) { m_scriptDebugServer = server; }
 
-    void didInstallTimer(ExecutionContext*, int timerId, bool singleShot, const ScriptValue& callFrames);
+    void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);
     void didRemoveTimer(ExecutionContext*, int timerId);
-    void willFireTimer(ExecutionContext*, int timerId);
+    bool willFireTimer(ExecutionContext*, int timerId);
+    void didFireTimer() { didFireAsyncCall(); };
 
-    void didRequestAnimationFrame(ExecutionContext*, int callbackId, const ScriptValue& callFrames);
+    void didRequestAnimationFrame(ExecutionContext*, int callbackId);
     void didCancelAnimationFrame(ExecutionContext*, int callbackId);
-    void willFireAnimationFrame(ExecutionContext*, int callbackId);
+    bool willFireAnimationFrame(ExecutionContext*, int callbackId);
+    void didFireAnimationFrame() { didFireAsyncCall(); };
 
-    void didEnqueueEvent(EventTarget*, Event*, const ScriptValue& callFrames);
+    void didEnqueueEvent(EventTarget*, Event*);
     void didRemoveEvent(EventTarget*, Event*);
     void willHandleEvent(EventTarget*, Event*, EventListener*, bool useCapture);
+    void didHandleEvent() { didFireAsyncCall(); };
 
-    void willLoadXHR(XMLHttpRequest*, const ScriptValue& callFrames);
-    void didLoadXHR(XMLHttpRequest*);
+    void willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData> body, const HTTPHeaderMap& headers, bool includeCrendentials);
+    void didDispatchXHRLoadendEvent(XMLHttpRequest*);
 
-    void didEnqueueMutationRecord(ExecutionContext*, MutationObserver*, const ScriptValue& callFrames);
-    bool hasEnqueuedMutationRecord(ExecutionContext*, MutationObserver*);
+    void didEnqueueMutationRecord(ExecutionContext*, MutationObserver*);
     void didClearAllMutationRecords(ExecutionContext*, MutationObserver*);
     void willDeliverMutationRecords(ExecutionContext*, MutationObserver*);
+    void didDeliverMutationRecords() { didFireAsyncCall(); };
 
-    void didPostExecutionContextTask(ExecutionContext*, ExecutionContextTask*, const ScriptValue& callFrames);
+    void didPostExecutionContextTask(ExecutionContext*, ExecutionContextTask*);
     void didKillAllExecutionContextTasks(ExecutionContext*);
     void willPerformExecutionContextTask(ExecutionContext*, ExecutionContextTask*);
+    void didPerformExecutionContextTask() { didFireAsyncCall(); };
 
     void didEnqueueV8AsyncTask(ExecutionContext*, const String& eventName, int id, const ScriptValue& callFrames);
     void willHandleV8AsyncTask(ExecutionContext*, const String& eventName, int id);
 
-    int traceAsyncOperationStarting(ExecutionContext*, const String& operationName, const ScriptValue& callFrames);
+    int traceAsyncOperationStarting(ExecutionContext*, const String& operationName, int prevOperationId = 0);
     void traceAsyncOperationCompleted(ExecutionContext*, int operationId);
+    void traceAsyncOperationCompletedCallbackStarting(ExecutionContext*, int operationId);
     void traceAsyncCallbackStarting(ExecutionContext*, int operationId);
+    void traceAsyncCallbackCompleted() { didFireAsyncCall(); };
 
     void didFireAsyncCall();
     void clear();
@@ -151,6 +163,7 @@ private:
     typedef WillBeHeapHashMap<RawPtrWillBeMember<ExecutionContext>, OwnPtrWillBeMember<ExecutionContextData> > ExecutionContextDataMap;
     ExecutionContextDataMap m_executionContextDataMap;
     Listener* m_listener;
+    ScriptDebugServer* m_scriptDebugServer;
 };
 
 } // namespace blink

@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/inspector/AsyncCallStackTracker.h"
 
+#include "bindings/core/v8/ScriptDebugServer.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8RecursionScope.h"
 #include "core/dom/ContextLifecycleObserver.h"
@@ -131,6 +132,7 @@ AsyncCallStackTracker::AsyncCallStackTracker()
     , m_maxAsyncCallStackDepth(0)
     , m_nestedAsyncCallCount(0)
     , m_listener(0)
+    , m_scriptDebugServer(nullptr)
 {
 }
 
@@ -153,10 +155,12 @@ const AsyncCallStackTracker::AsyncCallChain* AsyncCallStackTracker::currentAsync
     return m_currentAsyncCallChain.get();
 }
 
-void AsyncCallStackTracker::didInstallTimer(ExecutionContext* context, int timerId, bool singleShot, const ScriptValue& callFrames)
+void AsyncCallStackTracker::didInstallTimer(ExecutionContext* context, int timerId, int timeout, bool singleShot)
 {
     ASSERT(context);
     ASSERT(isEnabled());
+    ASSERT(m_scriptDebugServer);
+    ScriptValue callFrames = m_scriptDebugServer->currentCallFramesForAsyncStack();
     if (!validateCallFrames(callFrames))
         return;
     ASSERT(timerId > 0);
@@ -179,7 +183,7 @@ void AsyncCallStackTracker::didRemoveTimer(ExecutionContext* context, int timerI
     data->m_timerCallChains.remove(timerId);
 }
 
-void AsyncCallStackTracker::willFireTimer(ExecutionContext* context, int timerId)
+bool AsyncCallStackTracker::willFireTimer(ExecutionContext* context, int timerId)
 {
     ASSERT(context);
     ASSERT(isEnabled());
@@ -193,12 +197,15 @@ void AsyncCallStackTracker::willFireTimer(ExecutionContext* context, int timerId
     } else {
         setCurrentAsyncCallChain(context, nullptr);
     }
+    return true;
 }
 
-void AsyncCallStackTracker::didRequestAnimationFrame(ExecutionContext* context, int callbackId, const ScriptValue& callFrames)
+void AsyncCallStackTracker::didRequestAnimationFrame(ExecutionContext* context, int callbackId)
 {
     ASSERT(context);
     ASSERT(isEnabled());
+    ASSERT(m_scriptDebugServer);
+    ScriptValue callFrames = m_scriptDebugServer->currentCallFramesForAsyncStack();
     if (!validateCallFrames(callFrames))
         return;
     ASSERT(callbackId > 0);
@@ -216,7 +223,7 @@ void AsyncCallStackTracker::didCancelAnimationFrame(ExecutionContext* context, i
         data->m_animationFrameCallChains.remove(callbackId);
 }
 
-void AsyncCallStackTracker::willFireAnimationFrame(ExecutionContext* context, int callbackId)
+bool AsyncCallStackTracker::willFireAnimationFrame(ExecutionContext* context, int callbackId)
 {
     ASSERT(context);
     ASSERT(isEnabled());
@@ -226,12 +233,15 @@ void AsyncCallStackTracker::willFireAnimationFrame(ExecutionContext* context, in
         setCurrentAsyncCallChain(context, data->m_animationFrameCallChains.take(callbackId));
     else
         setCurrentAsyncCallChain(context, nullptr);
+    return true;
 }
 
-void AsyncCallStackTracker::didEnqueueEvent(EventTarget* eventTarget, Event* event, const ScriptValue& callFrames)
+void AsyncCallStackTracker::didEnqueueEvent(EventTarget* eventTarget, Event* event)
 {
     ASSERT(eventTarget->executionContext());
     ASSERT(isEnabled());
+    ASSERT(m_scriptDebugServer);
+    ScriptValue callFrames = m_scriptDebugServer->currentCallFramesForAsyncStack();
     if (!validateCallFrames(callFrames))
         return;
     ExecutionContextData* data = createContextDataIfNeeded(eventTarget->executionContext());
@@ -261,17 +271,21 @@ void AsyncCallStackTracker::willHandleEvent(EventTarget* eventTarget, Event* eve
     }
 }
 
-void AsyncCallStackTracker::willLoadXHR(XMLHttpRequest* xhr, const ScriptValue& callFrames)
+void AsyncCallStackTracker::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient*, const AtomicString&, const KURL&, bool async, PassRefPtr<FormData>, const HTTPHeaderMap&, bool)
 {
     ASSERT(xhr->executionContext());
     ASSERT(isEnabled());
+    if (!async)
+        return;
+    ASSERT(m_scriptDebugServer);
+    ScriptValue callFrames = m_scriptDebugServer->currentCallFramesForAsyncStack();
     if (!validateCallFrames(callFrames))
         return;
     ExecutionContextData* data = createContextDataIfNeeded(xhr->executionContext());
     data->m_xhrCallChains.set(xhr, createAsyncCallChain(data, xhrSendName, callFrames));
 }
 
-void AsyncCallStackTracker::didLoadXHR(XMLHttpRequest* xhr)
+void AsyncCallStackTracker::didDispatchXHRLoadendEvent(XMLHttpRequest* xhr)
 {
     ASSERT(xhr->executionContext());
     ASSERT(isEnabled());
@@ -290,23 +304,18 @@ void AsyncCallStackTracker::willHandleXHREvent(XMLHttpRequest* xhr, Event* event
         setCurrentAsyncCallChain(context, nullptr);
 }
 
-void AsyncCallStackTracker::didEnqueueMutationRecord(ExecutionContext* context, MutationObserver* observer, const ScriptValue& callFrames)
+void AsyncCallStackTracker::didEnqueueMutationRecord(ExecutionContext* context, MutationObserver* observer)
 {
     ASSERT(context);
     ASSERT(isEnabled());
+    ExecutionContextData* data = createContextDataIfNeeded(context);
+    if (data->m_mutationObserverCallChains.contains(observer))
+        return;
+    ASSERT(m_scriptDebugServer);
+    ScriptValue callFrames = m_scriptDebugServer->currentCallFramesForAsyncStack();
     if (!validateCallFrames(callFrames))
         return;
-    ExecutionContextData* data = createContextDataIfNeeded(context);
     data->m_mutationObserverCallChains.set(observer, createAsyncCallChain(data, enqueueMutationRecordName, callFrames));
-}
-
-bool AsyncCallStackTracker::hasEnqueuedMutationRecord(ExecutionContext* context, MutationObserver* observer)
-{
-    ASSERT(context);
-    ASSERT(isEnabled());
-    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
-        return data->m_mutationObserverCallChains.contains(observer);
-    return false;
 }
 
 void AsyncCallStackTracker::didClearAllMutationRecords(ExecutionContext* context, MutationObserver* observer)
@@ -327,10 +336,14 @@ void AsyncCallStackTracker::willDeliverMutationRecords(ExecutionContext* context
         setCurrentAsyncCallChain(context, nullptr);
 }
 
-void AsyncCallStackTracker::didPostExecutionContextTask(ExecutionContext* context, ExecutionContextTask* task, const ScriptValue& callFrames)
+void AsyncCallStackTracker::didPostExecutionContextTask(ExecutionContext* context, ExecutionContextTask* task)
 {
     ASSERT(context);
     ASSERT(isEnabled());
+    if (task->taskNameForInstrumentation().isEmpty())
+        return;
+    ASSERT(m_scriptDebugServer);
+    ScriptValue callFrames = m_scriptDebugServer->currentCallFramesForAsyncStack();
     if (!validateCallFrames(callFrames))
         return;
     ExecutionContextData* data = createContextDataIfNeeded(context);
@@ -383,10 +396,14 @@ void AsyncCallStackTracker::willHandleV8AsyncTask(ExecutionContext* context, con
         setCurrentAsyncCallChain(context, nullptr);
 }
 
-int AsyncCallStackTracker::traceAsyncOperationStarting(ExecutionContext* context, const String& operationName, const ScriptValue& callFrames)
+int AsyncCallStackTracker::traceAsyncOperationStarting(ExecutionContext* context, const String& operationName, int prevOperationId)
 {
     ASSERT(context);
     ASSERT(isEnabled());
+    if (prevOperationId)
+        traceAsyncOperationCompleted(context, prevOperationId);
+    ASSERT(m_scriptDebugServer);
+    ScriptValue callFrames = m_scriptDebugServer->currentCallFramesForAsyncStack();
     if (!validateCallFrames(callFrames))
         return 0;
     ExecutionContextData* data = createContextDataIfNeeded(context);
@@ -404,6 +421,12 @@ void AsyncCallStackTracker::traceAsyncOperationCompleted(ExecutionContext* conte
         return;
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))
         data->m_asyncOperationCallChains.remove(operationId);
+}
+
+void AsyncCallStackTracker::traceAsyncOperationCompletedCallbackStarting(ExecutionContext* context, int operationId)
+{
+    traceAsyncCallbackStarting(context, operationId);
+    traceAsyncOperationCompleted(context, operationId);
 }
 
 void AsyncCallStackTracker::traceAsyncCallbackStarting(ExecutionContext* context, int operationId)
