@@ -20,9 +20,13 @@
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "content/public/test/test_utils.h"
 #include "policy/policy_constants.h"
+#include "policy/proto/device_management_backend.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace em = enterprise_management;
 
 namespace policy {
 
@@ -68,11 +72,32 @@ class DeviceCloudPolicyStoreChromeOSTest
     ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS, result);
   }
 
+  void SetManagementModeAndLoad(em::PolicyData::ManagementMode mode) {
+    device_policy_.policy_data().set_management_mode(mode);
+    device_policy_.Build();
+    device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+    device_settings_service_.Load();
+    FlushDeviceSettings();
+    EXPECT_EQ(chromeos::DeviceSettingsService::STORE_SUCCESS,
+              device_settings_service_.status());
+  }
+
   void ExpectFailure(CloudPolicyStore::Status expected_status) {
     EXPECT_EQ(expected_status, store_->status());
     EXPECT_TRUE(store_->is_initialized());
     EXPECT_FALSE(store_->has_policy());
     EXPECT_FALSE(store_->is_managed());
+  }
+
+  void ExpectSuccessWithManagementMode(ManagementMode mode) {
+    EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
+    EXPECT_TRUE(store_->is_initialized());
+    EXPECT_TRUE(store_->has_policy());
+    EXPECT_TRUE(store_->is_managed());
+    EXPECT_TRUE(store_->policy());
+    EXPECT_TRUE(store_->policy_map().empty());
+    if (store_->policy())
+      EXPECT_EQ(mode, GetManagementMode(*store_->policy()));
   }
 
   void ExpectSuccess() {
@@ -151,6 +176,17 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, LoadSuccess) {
   store_->Load();
   FlushDeviceSettings();
   ExpectSuccess();
+}
+
+TEST_F(DeviceCloudPolicyStoreChromeOSTest, UpdateFromServiceOnConsumerDevices) {
+  ResetToNonEnterprise();
+
+  SetManagementModeAndLoad(em::PolicyData::CONSUMER_MANAGED);
+  ExpectSuccessWithManagementMode(MANAGEMENT_MODE_CONSUMER_MANAGED);
+
+  // Unenroll from consumer management.
+  SetManagementModeAndLoad(em::PolicyData::LOCAL_OWNER);
+  ExpectSuccessWithManagementMode(MANAGEMENT_MODE_LOCAL_OWNER);
 }
 
 TEST_F(DeviceCloudPolicyStoreChromeOSTest, StoreSuccess) {

@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "components/ownership/owner_key_util.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
@@ -136,61 +137,79 @@ void DeviceCloudPolicyStoreChromeOS::OnPolicyStored() {
 }
 
 void DeviceCloudPolicyStoreChromeOS::UpdateFromService() {
-  if (!install_attributes_->IsEnterpriseDevice()) {
+  const em::PolicyData* policy_data = device_settings_service_->policy_data();
+  const chromeos::DeviceSettingsService::Status status =
+      device_settings_service_->status();
+
+  const bool is_enterprise_managed = install_attributes_->IsEnterpriseDevice();
+  bool is_or_was_consumer_managed = false;
+  if (policy_data) {
+    const ManagementMode management_mode = GetManagementMode(*policy_data);
+    if (management_mode == MANAGEMENT_MODE_CONSUMER_MANAGED ||
+        (management_mode == MANAGEMENT_MODE_LOCAL_OWNER &&
+         policy() &&
+         GetManagementMode(*policy()) == MANAGEMENT_MODE_CONSUMER_MANAGED)) {
+      // The device is consumer-managed, or was consumer-managed and is now
+      // unmanaged.
+      is_or_was_consumer_managed = true;
+    }
+  }
+
+  if (!is_enterprise_managed && !is_or_was_consumer_managed) {
     status_ = STATUS_BAD_STATE;
     NotifyStoreError();
     return;
   }
 
-  // Once per session, validate internal consistency of enrollment state (DM
-  // token must be present on enrolled devices) and in case of failure set flag
-  // to indicate that recovery is required.
-  const chromeos::DeviceSettingsService::Status status =
-      device_settings_service_->status();
-  switch (status) {
-    case chromeos::DeviceSettingsService::STORE_SUCCESS:
-    case chromeos::DeviceSettingsService::STORE_KEY_UNAVAILABLE:
-    case chromeos::DeviceSettingsService::STORE_NO_POLICY:
-    case chromeos::DeviceSettingsService::STORE_INVALID_POLICY:
-    case chromeos::DeviceSettingsService::STORE_VALIDATION_ERROR: {
-      if (!enrollment_validation_done_) {
-        enrollment_validation_done_ = true;
-        const bool has_dm_token =
-            status == chromeos::DeviceSettingsService::STORE_SUCCESS &&
-            device_settings_service_->policy_data() &&
-            device_settings_service_->policy_data()->has_request_token();
+  // For enterprise devices, once per session, validate internal consistency of
+  // enrollment state (DM token must be present on enrolled devices) and in case
+  // of failure set flag to indicate that recovery is required.
+  if (is_enterprise_managed) {
+    switch (status) {
+      case chromeos::DeviceSettingsService::STORE_SUCCESS:
+      case chromeos::DeviceSettingsService::STORE_KEY_UNAVAILABLE:
+      case chromeos::DeviceSettingsService::STORE_NO_POLICY:
+      case chromeos::DeviceSettingsService::STORE_INVALID_POLICY:
+      case chromeos::DeviceSettingsService::STORE_VALIDATION_ERROR: {
+        if (!enrollment_validation_done_) {
+          enrollment_validation_done_ = true;
+          const bool has_dm_token =
+              status == chromeos::DeviceSettingsService::STORE_SUCCESS &&
+              policy_data &&
+              policy_data->has_request_token();
 
-        // At the time LoginDisplayHostImpl decides whether enrollment flow is
-        // to be started, policy hasn't been read yet.  To work around this,
-        // once the need for recovery is detected upon policy load, a flag is
-        // stored in prefs which is accessed by LoginDisplayHostImpl early
-        // during (next) boot.
-        if (!has_dm_token) {
-          LOG(ERROR) << "Device policy read on enrolled device yields "
-                     << "no DM token! Status: " << status << ".";
-          chromeos::StartupUtils::MarkEnrollmentRecoveryRequired();
+          // At the time LoginDisplayHostImpl decides whether enrollment flow is
+          // to be started, policy hasn't been read yet.  To work around this,
+          // once the need for recovery is detected upon policy load, a flag is
+          // stored in prefs which is accessed by LoginDisplayHostImpl early
+          // during (next) boot.
+          if (!has_dm_token) {
+            LOG(ERROR) << "Device policy read on enrolled device yields "
+                       << "no DM token! Status: " << status << ".";
+            chromeos::StartupUtils::MarkEnrollmentRecoveryRequired();
+          }
+          UMA_HISTOGRAM_BOOLEAN("Enterprise.EnrolledPolicyHasDMToken",
+                                has_dm_token);
         }
-        UMA_HISTOGRAM_BOOLEAN("Enterprise.EnrolledPolicyHasDMToken",
-                              has_dm_token);
+        break;
       }
-      break;
+      case chromeos::DeviceSettingsService::STORE_POLICY_ERROR:
+      case chromeos::DeviceSettingsService::STORE_OPERATION_FAILED:
+      case chromeos::DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR:
+        // Do nothing for write errors or transient read errors.
+        break;
     }
-    case chromeos::DeviceSettingsService::STORE_POLICY_ERROR:
-    case chromeos::DeviceSettingsService::STORE_OPERATION_FAILED:
-    case chromeos::DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR:
-      // Do nothing for write errors or transient read errors.
-      break;
   }
 
   switch (status) {
     case chromeos::DeviceSettingsService::STORE_SUCCESS: {
       status_ = STATUS_OK;
       policy_.reset(new em::PolicyData());
-      if (device_settings_service_->policy_data())
-        policy_->MergeFrom(*device_settings_service_->policy_data());
+      if (policy_data)
+        policy_->MergeFrom(*policy_data);
 
       PolicyMap new_policy_map;
-      if (is_managed()) {
+      if (is_enterprise_managed && is_managed()) {
         DecodeDevicePolicy(*device_settings_service_->device_settings(),
                            &new_policy_map, install_attributes_);
       }
