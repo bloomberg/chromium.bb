@@ -579,10 +579,7 @@ base::TimeTicks Scheduler::AdjustedBeginImplFrameDeadline(
     base::TimeDelta draw_duration_estimate) const {
   // The synchronous compositor does not post a deadline task.
   DCHECK(!settings_.using_synchronous_renderer_compositor);
-  if (settings_.main_thread_should_always_be_low_latency) {
-    // In main thread low latency mode, always start deadline early.
-    return base::TimeTicks();
-  } else if (state_machine_.ShouldTriggerBeginImplFrameDeadlineEarly()) {
+  if (state_machine_.ShouldTriggerBeginImplFrameDeadlineEarly()) {
     // We are ready to draw a new active tree immediately.
     // We don't use Now() here because it's somewhat expensive to call.
     return base::TimeTicks();
