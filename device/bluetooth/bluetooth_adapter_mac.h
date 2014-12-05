@@ -17,7 +17,6 @@
 #include "base/observer_list.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_discovery_manager_mac.h"
-#include "device/bluetooth/bluetooth_export.h"
 
 @class IOBluetoothDevice;
 @class NSArray;
@@ -33,9 +32,8 @@ namespace device {
 
 class BluetoothAdapterMacTest;
 
-class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
-    : public BluetoothAdapter,
-      public BluetoothDiscoveryManagerMac::Observer {
+class BluetoothAdapterMac : public BluetoothAdapter,
+                            public BluetoothDiscoveryManagerMac::Observer {
  public:
   static base::WeakPtr<BluetoothAdapter> CreateAdapter();
 

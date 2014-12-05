@@ -10,15 +10,12 @@
     {
       # GN version: //device/bluetooth
       'target_name': 'device_bluetooth',
-      'type': '<(component)',
+      'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
         '../../net/net.gyp:net',
         '../../ui/base/ui_base.gyp:ui_base',
         'bluetooth_strings.gyp:device_bluetooth_strings',
-      ],
-      'defines': [
-        'DEVICE_BLUETOOTH_IMPLEMENTATION',
       ],
       'sources': [
         # Note: file list duplicated in GN build.

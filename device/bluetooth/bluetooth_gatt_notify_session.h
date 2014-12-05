@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "device/bluetooth/bluetooth_export.h"
 
 namespace device {
 
@@ -16,7 +15,7 @@ namespace device {
 // to value updates from GATT characteristics that support notifications and/or
 // indications. Instances are obtained by calling
 // BluetoothGattCharacteristic::StartNotifySession.
-class DEVICE_BLUETOOTH_EXPORT BluetoothGattNotifySession {
+class BluetoothGattNotifySession {
  public:
   // Destructor automatically stops this session.
   virtual ~BluetoothGattNotifySession();

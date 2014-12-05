@@ -14,7 +14,6 @@
 #include "base/observer_list.h"
 #include "base/win/scoped_handle.h"
 #include "device/bluetooth/bluetooth_adapter.h"
-#include "device/bluetooth/bluetooth_export.h"
 
 namespace base {
 
@@ -33,10 +32,10 @@ namespace device {
 // It delegates the blocking Windows API calls to |bluetooth_task_runner_|'s
 // message loop, and receives responses via methods like OnAdapterStateChanged
 // posted to UI thread.
-class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
+class BluetoothTaskManagerWin
     : public base::RefCountedThreadSafe<BluetoothTaskManagerWin> {
  public:
-  struct DEVICE_BLUETOOTH_EXPORT AdapterState {
+  struct AdapterState {
     AdapterState();
     ~AdapterState();
     std::string name;
@@ -44,7 +43,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
     bool powered;
   };
 
-  struct DEVICE_BLUETOOTH_EXPORT ServiceRecordState {
+  struct ServiceRecordState {
     ServiceRecordState();
     ~ServiceRecordState();
     // Properties common to Bluetooth Classic and LE devices.
@@ -55,7 +54,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
     BluetoothUUID gatt_uuid;
   };
 
-  struct DEVICE_BLUETOOTH_EXPORT DeviceState {
+  struct DeviceState {
     DeviceState();
     ~DeviceState();
 
@@ -74,7 +73,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
     base::FilePath path;
   };
 
-  class DEVICE_BLUETOOTH_EXPORT Observer {
+  class Observer {
    public:
      virtual ~Observer() {}
 

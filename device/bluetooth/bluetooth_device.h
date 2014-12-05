@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
-#include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "net/base/net_log.h"
 
@@ -35,7 +34,7 @@ class BluetoothUUID;
 // Since the lifecycle of BluetoothDevice instances is managed by
 // BluetoothAdapter, that class rather than this provides observer methods
 // for devices coming and going, as well as properties being updated.
-class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
+class BluetoothDevice {
  public:
   // Possible values that may be returned by GetVendorIDSource(),
   // indicating different organisations that allocate the identifiers returned

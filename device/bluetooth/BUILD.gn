@@ -15,7 +15,7 @@ config("bluetooth_config") {
   }
 }
 
-component("bluetooth") {
+static_library("bluetooth") {
   sources = [
     "bluetooth_adapter.cc",
     "bluetooth_adapter.h",
@@ -89,10 +89,6 @@ component("bluetooth") {
     "bluetooth_task_manager_win.h",
     "bluetooth_uuid.cc",
     "bluetooth_uuid.h",
-  ]
-
-  defines = [
-    "DEVICE_BLUETOOTH_IMPLEMENTATION",
   ]
 
   all_dependent_configs = [ ":bluetooth_config" ]

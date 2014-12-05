@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "device/bluetooth/bluetooth_export.h"
-
 namespace device {
 
 // Opaque wrapper around a Bluetooth UUID. Instances of UUID represent the
@@ -16,7 +14,7 @@ namespace device {
 // used in Bluetooth based communication, such as a peripheral's services,
 // characteristics, and characteristic descriptors. An instance are
 // constructed using a string representing 16, 32, or 128 bit UUID formats.
-class DEVICE_BLUETOOTH_EXPORT BluetoothUUID {
+class BluetoothUUID {
  public:
   // Possible representation formats used during construction.
   enum Format {
@@ -92,8 +90,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothUUID {
 };
 
 // This is required by gtest to print a readable output on test failures.
-void DEVICE_BLUETOOTH_EXPORT
-PrintTo(const BluetoothUUID& uuid, std::ostream* out);
+void PrintTo(const BluetoothUUID& uuid, std::ostream* out);
 
 }  // namespace device
 
