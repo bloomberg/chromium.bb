@@ -1028,10 +1028,13 @@ blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
     blink::WebGestureDevice device_source,
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {
-  auto curve = WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
-      gfx::Vector2dF(velocity.x, velocity.y),
-      gfx::Vector2dF(cumulative_scroll.width, cumulative_scroll.height));
-  return curve.release();
+  bool is_main_thread =
+      main_thread_task_runner_.get() &&
+      main_thread_task_runner_->BelongsToCurrentThread();
+  return WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
+             gfx::Vector2dF(velocity.x, velocity.y),
+             gfx::Vector2dF(cumulative_scroll.width, cumulative_scroll.height),
+             is_main_thread).release();
 }
 
 void BlinkPlatformImpl::didStartWorkerRunLoop(

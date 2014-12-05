@@ -6714,6 +6714,28 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Event.Frequency.Renderer.FlingAnimate" units="hertz">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    Emitted after a renderer process main-thread fling curve animation
+    terminates, for any reason, reporting the average animation frequency
+    (animations/second) of the fling instance over its lifetime. This is
+    computed as the number of fling animation ticks divided by the fling
+    animation duration.
+  </summary>
+</histogram>
+
+<histogram name="Event.Frequency.RendererImpl.FlingAnimate" units="hertz">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    Emitted after a renderer process impl-thread fling curve animation
+    terminates, for any reason, reporting the average animation frequency
+    (animations/second) of the fling instance over its lifetime. This is
+    computed as the number of fling animation ticks divided by the fling
+    animation duration.
+  </summary>
+</histogram>
+
 <histogram name="Event.GestureCreated" enum="UIEventType">
   <owner>kuscher@google.com</owner>
   <owner>rbyers@chromium.org</owner>
@@ -7053,6 +7075,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     process the event. For touch events on Windows, we measure from when the
     event reaches Chrome, whereas on other platforms we use the timestamp from
     the kernel. On Windows, this metric is only reported when
+    |IsHighResNowFastAndReliable| is true, which will introduce some sampling
+    bias.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.RendererImpl" units="microseconds">
+  <owner>rbyers@chromium.org</owner>
+  <summary>
+    Time between input event creation and the renderer impl thread receiving and
+    starting to process the event. For touch events on Windows, we measure from
+    when the event reaches Chrome, whereas on other platforms we use the
+    timestamp from the kernel. On Windows, this metric is only reported when
     |IsHighResNowFastAndReliable| is true, which will introduce some sampling
     bias.
   </summary>
@@ -60825,6 +60859,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Undefined" label="For unknown or undefined events."/>
   <affected-histogram name="Event.Latency.Renderer"/>
   <affected-histogram name="Event.Latency.Renderer2"/>
+  <affected-histogram name="Event.Latency.RendererImpl"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ResourcePrefetchPredictorNetworkTypePrefetch"

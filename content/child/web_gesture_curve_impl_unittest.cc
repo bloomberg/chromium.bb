@@ -42,7 +42,7 @@ TEST(WebGestureCurveImplTest, Basic) {
   gfx::Vector2dF velocity(5000, 0);
   gfx::Vector2dF offset;
   base::TimeTicks time;
-  auto curve = WebGestureCurveImpl::CreateFrom(
+  auto curve = WebGestureCurveImpl::CreateFromUICurveForTesting(
       scoped_ptr<ui::GestureCurve>(new ui::FlingCurve(velocity, time)), offset);
 
   // coded into the create call above.

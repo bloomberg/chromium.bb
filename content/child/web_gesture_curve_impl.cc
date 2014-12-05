@@ -5,10 +5,12 @@
 #include "content/child/web_gesture_curve_impl.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
 #include "ui/events/gestures/fling_curve.h"
-#include "ui/gfx/vector2d.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 #if defined(OS_ANDROID)
 #include "ui/events/android/scroller.h"
@@ -45,25 +47,57 @@ scoped_ptr<ui::GestureCurve> CreateDefaultPlatformCurve(
 // static
 scoped_ptr<WebGestureCurve> WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
     const gfx::Vector2dF& initial_velocity,
-    const gfx::Vector2dF& initial_offset) {
-  return CreateFrom(CreateDefaultPlatformCurve(initial_velocity),
-                    initial_offset);
+    const gfx::Vector2dF& initial_offset,
+    bool on_main_thread) {
+  return scoped_ptr<WebGestureCurve>(new WebGestureCurveImpl(
+      CreateDefaultPlatformCurve(initial_velocity), initial_offset,
+      on_main_thread ? ThreadType::MAIN : ThreadType::IMPL));
 }
 
 // static
-scoped_ptr<WebGestureCurve> WebGestureCurveImpl::CreateFrom(
+scoped_ptr<WebGestureCurve> WebGestureCurveImpl::CreateFromUICurveForTesting(
     scoped_ptr<ui::GestureCurve> curve,
     const gfx::Vector2dF& initial_offset) {
   return scoped_ptr<WebGestureCurve>(
-      new WebGestureCurveImpl(curve.Pass(), initial_offset));
+      new WebGestureCurveImpl(curve.Pass(), initial_offset, ThreadType::TEST));
 }
 
 WebGestureCurveImpl::WebGestureCurveImpl(scoped_ptr<ui::GestureCurve> curve,
-                                         const gfx::Vector2dF& initial_offset)
-    : curve_(curve.Pass()), last_offset_(initial_offset) {
+                                         const gfx::Vector2dF& initial_offset,
+                                         ThreadType animating_thread_type)
+    : curve_(curve.Pass()),
+      last_offset_(initial_offset),
+      animating_thread_type_(animating_thread_type),
+      ticks_since_first_animate_(0),
+      first_animate_time_(0),
+      last_animate_time_(0) {
 }
 
 WebGestureCurveImpl::~WebGestureCurveImpl() {
+  if (ticks_since_first_animate_ <= 1)
+    return;
+
+  if (last_animate_time_ <= first_animate_time_)
+    return;
+
+  switch (animating_thread_type_) {
+    case ThreadType::MAIN:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Frequency.Renderer.FlingAnimate",
+          gfx::ToRoundedInt(ticks_since_first_animate_ /
+                            (last_animate_time_ - first_animate_time_)),
+          1, 240, 120);
+      break;
+    case ThreadType::IMPL:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Frequency.RendererImpl.FlingAnimate",
+          gfx::ToRoundedInt(ticks_since_first_animate_ /
+                            (last_animate_time_ - first_animate_time_)),
+          1, 240, 120);
+      break;
+    case ThreadType::TEST:
+      break;
+  }
 }
 
 bool WebGestureCurveImpl::apply(double time,
@@ -72,6 +106,16 @@ bool WebGestureCurveImpl::apply(double time,
   // fling termination.
   if (time <= 0)
     return true;
+
+  if (!first_animate_time_) {
+    first_animate_time_ = last_animate_time_ = time;
+  } else if (time != last_animate_time_) {
+    // Animation can occur multiple times a frame, but with the same timestamp.
+    // Suppress recording of such redundant animate calls, avoiding artificially
+    // inflated FPS computation.
+    last_animate_time_ = time;
+    ++ticks_since_first_animate_;
+  }
 
   const base::TimeTicks time_ticks =
       base::TimeTicks() + base::TimeDelta::FromSecondsD(time);

@@ -26,8 +26,9 @@ class CONTENT_EXPORT WebGestureCurveImpl
  public:
   static scoped_ptr<blink::WebGestureCurve> CreateFromDefaultPlatformCurve(
       const gfx::Vector2dF& initial_velocity,
-      const gfx::Vector2dF& initial_offset);
-  static scoped_ptr<blink::WebGestureCurve> CreateFrom(
+      const gfx::Vector2dF& initial_offset,
+      bool on_main_thread);
+  static scoped_ptr<blink::WebGestureCurve> CreateFromUICurveForTesting(
       scoped_ptr<ui::GestureCurve> curve,
       const gfx::Vector2dF& initial_offset);
 
@@ -38,12 +39,24 @@ class CONTENT_EXPORT WebGestureCurveImpl
                      blink::WebGestureCurveTarget* target) override;
 
  private:
+  enum class ThreadType {
+    MAIN,
+    IMPL,
+    TEST
+  };
+
   WebGestureCurveImpl(scoped_ptr<ui::GestureCurve> curve,
-                      const gfx::Vector2dF& initial_offset);
+                      const gfx::Vector2dF& initial_offset,
+                      ThreadType animating_thread_type);
 
   scoped_ptr<ui::GestureCurve> curve_;
 
   gfx::Vector2dF last_offset_;
+
+  ThreadType animating_thread_type_;
+  int64 ticks_since_first_animate_;
+  double first_animate_time_;
+  double last_animate_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGestureCurveImpl);
 };
