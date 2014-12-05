@@ -62,7 +62,7 @@ enum ChannelState {
   // not used right now
   kReadyChannel,
   // IPC abandoned by client side
-  kAbandonnedChannel
+  kAbandonedChannel
 };
 
 // The next two constants control the time outs for the IPC.

@@ -654,7 +654,7 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual scoped_ptr<MediaStreamRendererFactory> CreateRendererFactory();
 
   // Checks that the RenderView is ready to display the navigation to |url|. If
-  // the return value is false, the navigation should be abandonned.
+  // the return value is false, the navigation should be abandoned.
   bool PrepareRenderViewForNavigation(
       const GURL& url,
       FrameMsg_Navigate_Type::Value navigate_type,
