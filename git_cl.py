@@ -2115,7 +2115,7 @@ def SendUpstream(parser, args, cmd):
         revision = RunGit(['rev-parse', 'HEAD']).strip()
     else:
       # dcommit the merge branch.
-      cmd = [
+      cmd_args = [
         'svn', 'dcommit',
         '-C%s' % options.similarity,
         '--no-rebase', '--rmdir',
@@ -2126,8 +2126,8 @@ def SendUpstream(parser, args, cmd):
         remote_url = cl.GetGitSvnRemoteUrl()
         if urlparse.urlparse(remote_url).scheme == 'http':
           remote_url = remote_url.replace('http://', 'https://')
-        cmd.append('--commit-url=%s' % remote_url)
-      _, output = RunGitWithCode(cmd)
+        cmd_args.append('--commit-url=%s' % remote_url)
+      _, output = RunGitWithCode(cmd_args)
       if 'Committed r' in output:
         revision = re.match(
           '.*?\nCommitted r(\\d+)', output, re.DOTALL).group(1)
