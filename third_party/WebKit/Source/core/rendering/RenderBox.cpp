@@ -72,6 +72,8 @@ typedef WTF::HashMap<const RenderBox*, LayoutUnit> OverrideSizeMap;
 // FIXME: Move these into RenderBoxRareData.
 static OverrideSizeMap* gOverrideContainingBlockLogicalHeightMap = 0;
 static OverrideSizeMap* gOverrideContainingBlockLogicalWidthMap = 0;
+static OverrideSizeMap* gExtraInlineOffsetMap = 0;
+static OverrideSizeMap* gExtraBlockOffsetMap = 0;
 
 
 // Size of border belt for autoscroll. When mouse pointer in border belt,
@@ -103,6 +105,7 @@ void RenderBox::willBeDestroyed()
 {
     clearOverrideSize();
     clearContainingBlockOverrideSize();
+    clearExtraInlineAndBlockOffests();
 
     RenderBlock::removePercentHeightDescendantIfNeeded(this);
 
@@ -1017,6 +1020,38 @@ void RenderBox::clearOverrideContainingBlockContentLogicalHeight()
 {
     if (gOverrideContainingBlockLogicalHeightMap)
         gOverrideContainingBlockLogicalHeightMap->remove(this);
+}
+
+LayoutUnit RenderBox::extraInlineOffset() const
+{
+    return gExtraInlineOffsetMap ? gExtraInlineOffsetMap->get(this) : LayoutUnit(0);
+}
+
+LayoutUnit RenderBox::extraBlockOffset() const
+{
+    return gExtraBlockOffsetMap ? gExtraBlockOffsetMap->get(this) : LayoutUnit(0);
+}
+
+void RenderBox::setExtraInlineOffset(LayoutUnit inlineOffest)
+{
+    if (!gExtraInlineOffsetMap)
+        gExtraInlineOffsetMap = new OverrideSizeMap;
+    gExtraInlineOffsetMap->set(this, inlineOffest);
+}
+
+void RenderBox::setExtraBlockOffset(LayoutUnit blockOffest)
+{
+    if (!gExtraBlockOffsetMap)
+        gExtraBlockOffsetMap = new OverrideSizeMap;
+    gExtraBlockOffsetMap->set(this, blockOffest);
+}
+
+void RenderBox::clearExtraInlineAndBlockOffests()
+{
+    if (gExtraInlineOffsetMap)
+        gExtraInlineOffsetMap->remove(this);
+    if (gExtraBlockOffsetMap)
+        gExtraBlockOffsetMap->remove(this);
 }
 
 LayoutUnit RenderBox::adjustBorderBoxLogicalWidthForBoxSizing(LayoutUnit width) const
@@ -2616,6 +2651,9 @@ LayoutUnit RenderBox::containingBlockLogicalWidthForPositioned(const RenderBoxMo
         }
     }
 
+    if (hasOverrideContainingBlockLogicalWidth())
+        return overrideContainingBlockContentLogicalWidth();
+
     if (containingBlock->isBox())
         return toRenderBox(containingBlock)->clientLogicalWidth();
 
@@ -2655,6 +2693,9 @@ LayoutUnit RenderBox::containingBlockLogicalHeightForPositioned(const RenderBoxM
             return containingBlock->isHorizontalWritingMode() ? viewportRect.height() : viewportRect.width();
         }
     }
+
+    if (hasOverrideContainingBlockLogicalHeight())
+        return overrideContainingBlockContentLogicalHeight();
 
     if (containingBlock->isBox()) {
         const RenderBlock* cb = containingBlock->isRenderBlock() ?
@@ -2841,6 +2882,9 @@ void RenderBox::computePositionedLogicalWidth(LogicalExtentComputedValues& compu
             computedValues.m_margins.m_end = minValues.m_margins.m_end;
         }
     }
+
+    if (!style()->hasStaticInlinePosition(isHorizontal))
+        computedValues.m_position += extraInlineOffset();
 
     computedValues.m_extent += bordersPlusPadding;
 }
@@ -3140,6 +3184,9 @@ void RenderBox::computePositionedLogicalHeight(LogicalExtentComputedValues& comp
             computedValues.m_margins.m_after = minValues.m_margins.m_after;
         }
     }
+
+    if (!style()->hasStaticBlockPosition(isHorizontalWritingMode()))
+        computedValues.m_position += extraBlockOffset();
 
     // Set final height value.
     computedValues.m_extent += bordersPlusPadding;

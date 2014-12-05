@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<link href="resources/grid.css" rel="stylesheet">
+<style>
+
+.grid {
+    display: block;
+    margin: 1px;
+    width: 50px;
+    height: 25px;
+    padding: 5px 10px 15px 20px;
+}
+
+.green {
+    background-color: green;
+}
+
+</style>
+<body>
+
+<p>This test checks the behavior of the positioned grid children in combination with the writing modes and text direction properties.</p>
+<p>For the test to pass you should see no red and all the green boxes should have the very the same position and size within each grey box. The black box will be positioned depending on the writing mode and text direction values.</p>
+
+<div class="grid">
+    <div class="sizedToGridArea green">XX</div>
+</div>
+
+<div class="grid verticalRL">
+    <div class="sizedToGridArea green">XX</div>
+</div>
+
+<div class="grid verticalLR">
+    <div class="sizedToGridArea green">XX</div>
+</div>
+
+<div class="grid horizontalBT">
+    <div class="sizedToGridArea green">XX</div>
+</div>
+
+<div class="grid directionRTL">
+    <div class="sizedToGridArea green">XX</div>
+</div>
+
+<div class="grid verticalRL directionRTL">
+    <div class="sizedToGridArea green">XX</div>
+</div>
+
+<div class="grid verticalLR directionRTL">
+    <div class="sizedToGridArea green">XX</div>
+</div>
+
+<div class="grid horizontalBT directionRTL">
+    <div class="sizedToGridArea green">XX</div>
+</div>
+
+</body>
+</html>

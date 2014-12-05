@@ -224,6 +224,10 @@ void RenderGrid::addChild(RenderObject* newChild, RenderObject* beforeChild)
         return;
     }
 
+    // Positioned items shouldn't take up space or otherwise participate in the layout of the grid.
+    if (newChild->isOutOfFlowPositioned())
+        return;
+
     // If the new child has been inserted inside an existent anonymous block, we can simply ignore it as the anonymous
     // block is an already known grid item.
     if (newChild->parent() != this)
@@ -252,18 +256,18 @@ void RenderGrid::addChild(RenderObject* newChild, RenderObject* beforeChild)
 void RenderGrid::addChildToIndexesMap(RenderBox& child)
 {
     ASSERT(!m_gridItemsIndexesMap.contains(&child));
-    RenderBox* sibling = child.nextSiblingBox();
+    RenderBox* sibling = child.nextInFlowSiblingBox();
     bool lastSibling = !sibling;
 
     if (lastSibling)
-        sibling = child.previousSiblingBox();
+        sibling = child.previousInFlowSiblingBox();
 
     size_t index = 0;
     if (sibling)
         index = lastSibling ? m_gridItemsIndexesMap.get(sibling) + 1 : m_gridItemsIndexesMap.get(sibling);
 
     if (sibling && !lastSibling) {
-        for (; sibling; sibling = sibling->nextSiblingBox())
+        for (; sibling; sibling = sibling->nextInFlowSiblingBox())
             m_gridItemsIndexesMap.set(sibling, m_gridItemsIndexesMap.get(sibling) + 1);
     }
 
@@ -285,6 +289,9 @@ void RenderGrid::removeChild(RenderObject* child)
         dirtyGrid();
         return;
     }
+
+    if (child->isOutOfFlowPositioned())
+        return;
 
     const RenderBox* childBox = toRenderBox(child);
     GridCoordinate coordinate = m_gridItemCoordinate.take(childBox);
@@ -907,6 +914,9 @@ void RenderGrid::placeItemsOnGrid()
     Vector<RenderBox*> autoMajorAxisAutoGridItems;
     Vector<RenderBox*> specifiedMajorAxisAutoGridItems;
     for (RenderBox* child = m_orderIterator.first(); child; child = m_orderIterator.next()) {
+        if (child->isOutOfFlowPositioned())
+            continue;
+
         // FIXME: We never re-resolve positions if the grid is grown during auto-placement which may lead auto / <integer>
         // positions to not match the author's intent. The specification is unclear on what should be done in this case.
         OwnPtr<GridSpan> rowPositions = GridResolvedPosition::resolveGridPositionsFromStyle(*style(), *child, ForRows);
@@ -948,7 +958,7 @@ void RenderGrid::populateExplicitGridAndOrderIterator()
 
     ASSERT(m_gridItemsIndexesMap.isEmpty());
     size_t childIndex = 0;
-    for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
+    for (RenderBox* child = firstChildBox(); child; child = child->nextInFlowSiblingBox()) {
         populator.collectChild(child);
         m_gridItemsIndexesMap.set(child, childIndex++);
 
@@ -1109,10 +1119,8 @@ void RenderGrid::layoutGridItems()
 
     for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
         if (child->isOutOfFlowPositioned()) {
-            // FIXME: Absolute positioned grid items should have a special
-            // behavior as described in the spec (crbug.com/273898):
-            // http://www.w3.org/TR/css-grid-1/#abspos-items
             child->containingBlock()->insertPositionedObject(child);
+            continue;
         }
 
         // Because the grid area cannot be styled, we don't need to adjust
@@ -1154,6 +1162,89 @@ void RenderGrid::layoutGridItems()
     // Min / max logical height is handled by the call to updateLogicalHeight in layoutBlock.
 
     setLogicalHeight(logicalHeight() + borderAndPaddingLogicalHeight());
+}
+
+void RenderGrid::layoutPositionedObjects(bool relayoutChildren, PositionedLayoutBehavior info)
+{
+    TrackedRendererListHashSet* positionedDescendants = positionedObjects();
+    if (!positionedDescendants)
+        return;
+
+    bool containerHasHorizontalWritingMode = isHorizontalWritingMode();
+    TrackedRendererListHashSet::iterator end = positionedDescendants->end();
+    for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it) {
+        RenderBox* child = *it;
+
+        bool hasOrthogonalWritingMode = child->isHorizontalWritingMode() != containerHasHorizontalWritingMode;
+        if (hasOrthogonalWritingMode) {
+            // FIXME: Properly support orthogonal writing mode.
+            continue;
+        }
+
+        // FIXME: Detect properly if start/end is auto for inexistent named grid lines.
+        bool columnStartIsAuto = child->style()->gridColumnStart().isAuto();
+        LayoutUnit columnOffset = LayoutUnit(0);
+        LayoutUnit columnBreadth = LayoutUnit(0);
+        offsetAndBreadthForPositionedChild(*child, ForColumns, columnStartIsAuto, child->style()->gridColumnEnd().isAuto(), columnOffset, columnBreadth);
+        bool rowStartIsAuto = child->style()->gridRowStart().isAuto();
+        LayoutUnit rowOffset = LayoutUnit(0);
+        LayoutUnit rowBreadth = LayoutUnit(0);
+        offsetAndBreadthForPositionedChild(*child, ForRows, rowStartIsAuto, child->style()->gridRowEnd().isAuto(), rowOffset, rowBreadth);
+
+        child->setOverrideContainingBlockContentLogicalWidth(columnBreadth);
+        child->setOverrideContainingBlockContentLogicalHeight(rowBreadth);
+        child->setExtraInlineOffset(columnOffset);
+        child->setExtraBlockOffset(rowOffset);
+
+        if (child->parent() == this) {
+            // If column/row start is not auto the padding has been already computed in offsetAndBreadthForPositionedChild().
+            RenderLayer* childLayer = child->layer();
+            if (columnStartIsAuto)
+                childLayer->setStaticInlinePosition(borderAndPaddingStart());
+            else
+                childLayer->setStaticInlinePosition(borderStart() + columnOffset);
+            if (rowStartIsAuto)
+                childLayer->setStaticBlockPosition(borderAndPaddingBefore());
+            else
+                childLayer->setStaticBlockPosition(borderBefore() + rowOffset);
+        }
+    }
+
+    RenderBlock::layoutPositionedObjects(relayoutChildren, info);
+}
+
+void RenderGrid::offsetAndBreadthForPositionedChild(const RenderBox& child, GridTrackSizingDirection direction, bool startIsAuto, bool endIsAuto, LayoutUnit& offset, LayoutUnit& breadth)
+{
+    ASSERT(child.isHorizontalWritingMode() == isHorizontalWritingMode());
+
+    OwnPtr<GridSpan> positions = GridResolvedPosition::resolveGridPositionsFromStyle(*style(), child, direction);
+    if (!positions) {
+        offset = LayoutUnit(0);
+        breadth = (direction == ForColumns) ? clientLogicalWidth() : clientLogicalHeight();
+        return;
+    }
+
+    GridResolvedPosition firstPosition = GridResolvedPosition(0);
+    GridResolvedPosition initialPosition = startIsAuto ? firstPosition : positions->resolvedInitialPosition;
+    GridResolvedPosition lastPosition = GridResolvedPosition((direction == ForColumns ? gridColumnCount() : gridRowCount()) - 1);
+    GridResolvedPosition finalPosition = endIsAuto ? lastPosition : positions->resolvedFinalPosition;
+
+    LayoutUnit start = startIsAuto ? LayoutUnit(0) : (direction == ForColumns) ?  m_columnPositions[initialPosition.toInt()] : m_rowPositions[initialPosition.toInt()];
+    LayoutUnit end = endIsAuto ? (direction == ForColumns) ? logicalWidth() : logicalHeight() : (direction == ForColumns) ?  m_columnPositions[finalPosition.next().toInt()] : m_rowPositions[finalPosition.next().toInt()];
+
+    breadth = end - start;
+
+    if (startIsAuto)
+        breadth -= (direction == ForColumns) ? borderStart() : borderBefore();
+    else
+        start -= ((direction == ForColumns) ? borderStart() : borderBefore());
+
+    if (endIsAuto) {
+        breadth -= (direction == ForColumns) ? borderEnd() : borderAfter();
+        breadth -= scrollbarLogicalWidth();
+    }
+
+    offset = start;
 }
 
 GridCoordinate RenderGrid::cachedGridCoordinate(const RenderBox& gridItem) const

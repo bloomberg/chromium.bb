@@ -186,7 +186,9 @@ public:
 
     // Use this with caution! No type checking is done!
     RenderBox* previousSiblingBox() const;
+    RenderBox* previousInFlowSiblingBox() const;
     RenderBox* nextSiblingBox() const;
+    RenderBox* nextInFlowSiblingBox() const;
     RenderBox* parentBox() const;
 
     bool canResize() const;
@@ -354,6 +356,12 @@ public:
     void clearContainingBlockOverrideSize();
     void clearOverrideContainingBlockContentLogicalHeight();
 
+    LayoutUnit extraInlineOffset() const;
+    LayoutUnit extraBlockOffset() const;
+    void setExtraInlineOffset(LayoutUnit inlineOffest);
+    void setExtraBlockOffset(LayoutUnit blockOffest);
+    void clearExtraInlineAndBlockOffests();
+
     virtual LayoutSize offsetFromContainer(const RenderObject*, const LayoutPoint&, bool* offsetDependsOnPoint = 0) const override;
 
     LayoutUnit adjustBorderBoxLogicalWidthForBoxSizing(LayoutUnit width) const;
@@ -458,6 +466,7 @@ public:
     virtual int verticalScrollbarWidth() const;
     int horizontalScrollbarHeight() const;
     int intrinsicScrollbarLogicalWidth() const;
+    int scrollbarLogicalWidth() const { return style()->isHorizontalWritingMode() ? verticalScrollbarWidth() : horizontalScrollbarHeight(); }
     int scrollbarLogicalHeight() const { return style()->isHorizontalWritingMode() ? horizontalScrollbarHeight() : verticalScrollbarWidth(); }
     virtual bool scroll(ScrollDirection, ScrollGranularity, float delta = 1);
     bool canBeScrolledAndHasScrollableArea() const;
@@ -784,9 +793,25 @@ inline RenderBox* RenderBox::previousSiblingBox() const
     return toRenderBox(previousSibling());
 }
 
+inline RenderBox* RenderBox::previousInFlowSiblingBox() const
+{
+    RenderBox* previous = previousSiblingBox();
+    while (previous && previous->isOutOfFlowPositioned())
+        previous = previous->previousSiblingBox();
+    return previous;
+}
+
 inline RenderBox* RenderBox::nextSiblingBox() const
 {
     return toRenderBox(nextSibling());
+}
+
+inline RenderBox* RenderBox::nextInFlowSiblingBox() const
+{
+    RenderBox* next = nextSiblingBox();
+    while (next && next->isOutOfFlowPositioned())
+        next = next->nextSiblingBox();
+    return next;
 }
 
 inline RenderBox* RenderBox::parentBox() const

@@ -21,10 +21,22 @@
     grid-row: 1;
 }
 
+.onlyFirstRowOnlyFirstColumn {
+    background-color: blue;
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+}
+
 .firstRowSecondColumn {
     background-color: lime;
     grid-column: 2;
     grid-row: 1;
+}
+
+.onlyFirstRowOnlySecondColumn {
+    background-color: lime;
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
 }
 
 .secondRowFirstColumn {
@@ -33,10 +45,28 @@
     grid-row: 2;
 }
 
+.onlySecondRowOnlyFirstColumn {
+    background-color: purple;
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+}
+
 .secondRowSecondColumn {
     background-color: orange;
     grid-column: 2;
     grid-row: 2;
+}
+
+.onlySecondRowOnlySecondColumn {
+    background-color: orange;
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+}
+
+.endSecondRowEndSecondColumn {
+    background-color: orange;
+    grid-column-end: 3;
+    grid-row-end: 3;
 }
 
 .firstAutoRowSecondAutoColumn {
