@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_process_observer.h"
@@ -55,7 +56,8 @@ struct StreamDeviceInfo;
 
 // Object factory for RTC PeerConnections.
 class CONTENT_EXPORT PeerConnectionDependencyFactory
-    : NON_EXPORTED_BASE(public base::NonThreadSafe) {
+    : NON_EXPORTED_BASE(base::MessageLoop::DestructionObserver),
+      NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   PeerConnectionDependencyFactory(
       P2PSocketDispatcher* p2p_socket_dispatcher);
@@ -162,6 +164,11 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   virtual void StartLocalAudioTrack(WebRtcLocalAudioTrack* audio_track);
 
  private:
+  // Implement base::MessageLoop::DestructionObserver.
+  // This makes sure the libjingle PeerConnectionFactory is released before
+  // the renderer message loop is destroyed.
+  virtual void WillDestroyCurrentMessageLoop() override;
+
   // Creates |pc_factory_|, which in turn is used for
   // creating PeerConnection objects.
   void CreatePeerConnectionFactory();
