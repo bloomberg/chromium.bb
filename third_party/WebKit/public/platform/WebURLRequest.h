@@ -38,7 +38,6 @@
 namespace blink {
 
 class ResourceRequest;
-class WebCString;
 class WebHTTPBody;
 class WebHTTPHeaderVisitor;
 class WebString;

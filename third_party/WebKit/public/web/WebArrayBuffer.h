@@ -34,11 +34,6 @@
 #include "../platform/WebCommon.h"
 #include "../platform/WebPrivatePtr.h"
 
-namespace v8 {
-class Value;
-template <class T> class Handle;
-}
-
 #if INSIDE_BLINK
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif

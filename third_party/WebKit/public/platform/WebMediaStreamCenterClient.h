@@ -36,7 +36,6 @@
 namespace blink {
 
 class WebMediaStream;
-class WebMediaStreamTrack;
 
 class BLINK_PLATFORM_EXPORT WebMediaStreamCenterClient {
 public:

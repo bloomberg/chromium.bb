@@ -40,7 +40,6 @@ namespace blink {
 struct WebFontDescription;
 struct WebFloatPoint;
 struct WebFloatRect;
-struct WebPoint;
 struct WebRect;
 struct WebTextRun;
 

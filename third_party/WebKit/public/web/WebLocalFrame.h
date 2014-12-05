@@ -10,6 +10,7 @@
 namespace blink {
 
 class WebAutofillClient;
+class WebFrameClient;
 class WebScriptExecutionCallback;
 struct WebPrintPresetOptions;
 

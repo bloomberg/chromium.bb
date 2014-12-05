@@ -31,7 +31,6 @@
 
 namespace blink {
 
-class WebGraphicsContext3D;
 class WebExternalBitmap;
 struct WebExternalTextureMailbox;
 

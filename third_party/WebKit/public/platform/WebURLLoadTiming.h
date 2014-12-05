@@ -37,7 +37,6 @@
 namespace blink {
 
 class ResourceLoadTiming;
-class WebString;
 
 class WebURLLoadTiming {
 public:

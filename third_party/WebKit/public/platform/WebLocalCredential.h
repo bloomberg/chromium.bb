@@ -12,8 +12,6 @@
 
 namespace blink {
 
-class PlatformLocalCredential;
-
 class WebLocalCredential : public WebCredential {
 public:
     BLINK_PLATFORM_EXPORT WebLocalCredential(const WebString& id, const WebString& password, const WebString& name, const WebURL& avatarURL);

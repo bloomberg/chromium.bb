@@ -39,7 +39,6 @@
 namespace blink {
 
 class DataObject;
-class WebDragDataPrivate;
 template <typename T> class WebVector;
 
 // Holds data that may be exchanged through a drag-n-drop operation. It is

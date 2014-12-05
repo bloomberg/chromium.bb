@@ -38,7 +38,6 @@
 namespace blink {
 
 class WebString;
-class WebURL;
 
 // WebSettings is owned by the WebView and allows code to modify the settings for
 // the WebView's page without any knowledge of WebCore itself.  For the most part,

@@ -12,8 +12,6 @@
 
 namespace blink {
 
-class PlatformFederatedCredential;
-
 class WebFederatedCredential : public WebCredential {
 public:
     BLINK_PLATFORM_EXPORT WebFederatedCredential(const WebString& id, const WebURL& federation, const WebString& name, const WebURL& avatarURL);

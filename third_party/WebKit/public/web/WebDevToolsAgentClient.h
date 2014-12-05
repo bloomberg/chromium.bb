@@ -38,9 +38,6 @@ namespace blink {
 
 class WebString;
 struct WebDeviceEmulationParams;
-struct WebDevToolsMessageData;
-struct WebRect;
-struct WebSize;
 
 class WebDevToolsAgentClient {
 public:

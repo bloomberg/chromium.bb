@@ -46,7 +46,6 @@ namespace blink {
 
 class WebArrayBuffer;
 class WebArrayBufferView;
-class WebDragData;
 class WebElement;
 class WebNode;
 class WebRange;

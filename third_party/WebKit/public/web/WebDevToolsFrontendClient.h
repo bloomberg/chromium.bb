@@ -34,8 +34,6 @@
 namespace blink {
 
 class WebString;
-struct WebFloatPoint;
-struct WebDevToolsMessageData;
 
 class WebDevToolsFrontendClient {
 public:

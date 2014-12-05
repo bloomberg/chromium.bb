@@ -35,9 +35,7 @@
 
 namespace blink {
 
-class WebString;
 class WebMessagePortChannel;
-class WebURL;
 
 // This is the interface to conncect to SharedWorker.
 // Since SharedWorkers communicate entirely through MessagePorts this interface only contains APIs for starting up a SharedWorker.

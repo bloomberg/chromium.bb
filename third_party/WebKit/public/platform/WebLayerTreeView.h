@@ -38,11 +38,8 @@ class SkBitmap;
 namespace blink {
 
 class WebCompositeAndReadbackAsyncCallback;
-class WebGraphicsContext3D;
 class WebLayer;
 struct WebPoint;
-struct WebRect;
-struct WebRenderingStats;
 struct WebSelectionBound;
 
 class WebLayerTreeView {

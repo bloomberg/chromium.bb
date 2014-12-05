@@ -45,13 +45,9 @@ namespace blink {
 
 class WebCompositeAndReadbackAsyncCallback;
 class WebInputEvent;
-class WebLayerTreeView;
-class WebMouseEvent;
 class WebPagePopup;
 class WebString;
-class WebWidgetClient;
 struct WebPoint;
-struct WebRenderingStats;
 template <typename T> class WebVector;
 
 class WebWidget {

@@ -37,7 +37,6 @@
 namespace blink {
 
 class HTMLFormElement;
-class WebInputElement;
 class WebFormControlElement;
 
 // A container for passing around a reference to a form element. Provides some

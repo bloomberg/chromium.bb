@@ -49,8 +49,6 @@ class StringImpl;
 
 namespace blink {
 
-class WebCString;
-
 // A UTF-16 string container.  It is inexpensive to copy a WebString
 // object.
 //

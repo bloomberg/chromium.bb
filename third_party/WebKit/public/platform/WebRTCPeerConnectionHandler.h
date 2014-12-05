@@ -41,7 +41,6 @@ class WebRTCDTMFSenderHandler;
 class WebRTCDataChannelHandler;
 class WebRTCICECandidate;
 class WebRTCOfferOptions;
-class WebRTCPeerConnectionHandlerClient;
 class WebRTCSessionDescription;
 class WebRTCSessionDescriptionRequest;
 class WebRTCStatsRequest;

@@ -35,7 +35,6 @@
 
 namespace blink {
 
-class WebString;
 class WebURL;
 class WebServiceWorker;
 class WebServiceWorkerProviderClient;

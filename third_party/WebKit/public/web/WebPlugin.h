@@ -45,19 +45,16 @@ struct _NPP;
 
 namespace blink {
 
-class WebDataSource;
 class WebDragData;
 class WebInputEvent;
 class WebPluginContainer;
 class WebURLResponse;
 struct WebCompositionUnderline;
 struct WebCursorInfo;
-struct WebPluginParams;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
 struct WebPoint;
 struct WebRect;
-struct WebTextInputInfo;
 struct WebURLError;
 template <typename T> class WebVector;
 

@@ -41,9 +41,7 @@
 namespace blink {
 
 class WebAudioSourceProvider;
-class WebAudioSourceProviderClient;
 class WebContentDecryptionModule;
-class WebMediaPlayerClient;
 class WebString;
 class WebURL;
 struct WebRect;

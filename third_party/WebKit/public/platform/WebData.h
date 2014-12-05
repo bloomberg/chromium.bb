@@ -37,7 +37,6 @@
 namespace blink {
 
 class SharedBuffer;
-class WebDataPrivate;
 
 // A container for raw bytes.  It is inexpensive to copy a WebData object.
 //

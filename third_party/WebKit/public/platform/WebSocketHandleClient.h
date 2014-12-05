@@ -39,7 +39,6 @@ namespace blink {
 class WebSocketHandshakeRequestInfo;
 class WebSocketHandshakeResponseInfo;
 class WebString;
-class WebURL;
 
 class WebSocketHandleClient {
 public:

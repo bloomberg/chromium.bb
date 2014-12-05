@@ -37,8 +37,6 @@
 
 namespace blink {
 
-class WebApplicationCacheHost;
-class WebString;
 class WebURL;
 class WebURLRequest;
 class WebURLResponse;

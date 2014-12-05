@@ -31,8 +31,6 @@
 #include "config.h"
 #include "web/tests/FakeWebPlugin.h"
 
-#include "public/web/WebPluginParams.h"
-
 namespace blink {
 
 FakeWebPlugin::FakeWebPlugin(WebFrame* frame, const WebPluginParams& params)

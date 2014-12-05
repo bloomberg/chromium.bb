@@ -62,7 +62,6 @@ namespace blink {
 class WebAudioBus;
 class WebBlobRegistry;
 class WebBluetooth;
-class WebContentDecryptionModule;
 class WebClipboard;
 class WebCompositorSupport;
 class WebConvertableToTraceFormat;
@@ -76,7 +75,6 @@ class WebFileSystem;
 class WebFileUtilities;
 class WebFlingAnimator;
 class WebGeofencingProvider;
-class WebGestureCurveTarget;
 class WebGestureCurve;
 class WebGraphicsContext3DProvider;
 class WebIDBFactory;

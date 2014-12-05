@@ -36,16 +36,8 @@
 
 namespace blink {
 
-class WebDevToolsAgentClient;
-class WebDevToolsMessageTransport;
 class WebString;
-class WebURLRequest;
-class WebURLResponse;
-class WebView;
-struct WebDevToolsMessageData;
 struct WebPoint;
-struct WebMemoryUsageInfo;
-struct WebURLError;
 
 class WebDevToolsAgent {
 public:

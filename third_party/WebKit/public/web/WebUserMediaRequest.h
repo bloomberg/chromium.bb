@@ -42,8 +42,6 @@ class UserMediaRequest;
 class WebDocument;
 class WebMediaConstraints;
 class WebMediaStream;
-class WebMediaStreamSource;
-template <typename T> class WebVector;
 
 class WebUserMediaRequest {
 public:

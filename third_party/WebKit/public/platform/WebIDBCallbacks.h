@@ -37,7 +37,6 @@ class WebData;
 class WebIDBCursor;
 class WebIDBDatabase;
 class WebIDBDatabaseError;
-class WebIDBIndex;
 class WebIDBKey;
 class WebIDBKeyPath;
 struct WebIDBMetadata;

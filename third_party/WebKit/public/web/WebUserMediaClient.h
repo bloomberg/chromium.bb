@@ -36,7 +36,6 @@ namespace blink {
 class WebMediaDevicesRequest;
 class WebMediaStreamTrackSourcesRequest;
 class WebUserMediaRequest;
-template <typename T> class WebVector;
 
 class WebUserMediaClient {
 public:

@@ -37,7 +37,6 @@ namespace blink {
 class WebData;
 class WebIDBCallbacks;
 class WebIDBDatabaseCallbacks;
-class WebIDBDatabaseError;
 class WebIDBKey;
 class WebIDBKeyPath;
 class WebIDBKeyRange;

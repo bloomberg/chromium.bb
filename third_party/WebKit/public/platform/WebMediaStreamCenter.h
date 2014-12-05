@@ -38,8 +38,6 @@ namespace blink {
 class WebAudioSourceProvider;
 class WebMediaStream;
 class WebMediaStreamTrack;
-class WebSourceInfo;
-class WebString;
 
 class WebMediaStreamCenter {
 public:

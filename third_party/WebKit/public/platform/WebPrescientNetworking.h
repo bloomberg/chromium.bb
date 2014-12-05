@@ -36,8 +36,6 @@
 
 namespace blink {
 
-class WebURL;
-
 class WebPrescientNetworking {
 public:
     virtual ~WebPrescientNetworking() { }

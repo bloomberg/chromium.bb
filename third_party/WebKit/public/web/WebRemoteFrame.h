@@ -8,6 +8,8 @@
 #include "public/web/WebFrame.h"
 
 namespace blink {
+
+class WebFrameClient;
 class WebRemoteFrameClient;
 
 class WebRemoteFrame : public WebFrame {

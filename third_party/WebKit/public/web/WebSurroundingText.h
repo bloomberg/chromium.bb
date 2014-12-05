@@ -33,7 +33,6 @@
 namespace blink {
 
 class SurroundingText;
-class WebHitTestResult;
 class WebNode;
 class WebRange;
 struct WebPoint;

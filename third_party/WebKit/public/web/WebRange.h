@@ -39,7 +39,6 @@
 namespace blink {
 
 class Range;
-class WebNode;
 class WebString;
 
 // Provides readonly access to some properties of a DOM range.

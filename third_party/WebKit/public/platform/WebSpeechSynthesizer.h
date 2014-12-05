@@ -30,7 +30,6 @@
 
 namespace blink {
 
-class WebSpeechSynthesizerClient;
 class WebSpeechSynthesisUtterance;
 
 class WebSpeechSynthesizer {

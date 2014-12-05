@@ -38,8 +38,6 @@ namespace blink {
 class WebInbandTextTrack;
 class WebLayer;
 class WebMediaSource;
-class WebPlugin;
-class WebRequest;
 class WebURL;
 
 class WebMediaPlayerClient {

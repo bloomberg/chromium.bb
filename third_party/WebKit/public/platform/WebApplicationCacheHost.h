@@ -37,11 +37,9 @@
 
 namespace blink {
 
-class WebApplicationCacheHostClient;
 class WebURL;
 class WebURLRequest;
 class WebURLResponse;
-struct WebURLError;
 
 // This interface is used by webkit to call out to the embedder. Webkit uses
 // the WebFrameClient::createApplicationCacheHost method to create instances,

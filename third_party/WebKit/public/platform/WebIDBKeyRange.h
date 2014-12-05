@@ -33,7 +33,6 @@ namespace blink {
 
 class IDBKeyRange;
 class WebIDBKey;
-class WebString;
 
 class WebIDBKeyRange {
 public:

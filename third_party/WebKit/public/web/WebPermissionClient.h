@@ -35,7 +35,6 @@
 
 namespace blink {
 
-class WebDocument;
 class WebSecurityOrigin;
 class WebString;
 class WebURL;

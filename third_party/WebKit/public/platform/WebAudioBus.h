@@ -34,7 +34,6 @@ namespace WTF { template <typename T> class PassRefPtr; }
 namespace blink {
 
 class AudioBus;
-class WebAudioBusPrivate;
 
 // A container for multi-channel linear PCM audio data.
 //

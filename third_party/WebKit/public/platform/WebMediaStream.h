@@ -33,7 +33,6 @@
 namespace blink {
 
 class MediaStreamDescriptor;
-class WebMediaStreamSource;
 class WebMediaStreamTrack;
 class WebString;
 

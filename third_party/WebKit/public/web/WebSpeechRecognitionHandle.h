@@ -32,8 +32,6 @@
 namespace blink {
 
 class SpeechRecognition;
-class WebSpeechRecognitionResult;
-class WebString;
 
 // WebSpeechRecognitionHandle is used by WebSpeechRecognizer to identify a
 // recognition session, and by WebSpeechRecognizerClient to route

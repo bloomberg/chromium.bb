@@ -72,6 +72,7 @@ class RenderLayerCompositor;
 class UserGestureToken;
 class WebActiveGestureAnimation;
 class WebDevToolsAgentPrivate;
+class WebLayerTreeView;
 class WebLocalFrameImpl;
 class WebImage;
 class WebPagePopupImpl;

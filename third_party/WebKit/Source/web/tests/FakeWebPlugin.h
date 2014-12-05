@@ -41,6 +41,7 @@ class WebInputEvent;
 class WebPluginContainer;
 class WebURL;
 class WebURLResponse;
+struct WebPluginParams;
 
 class FakeWebPlugin : public WebPlugin {
 public:

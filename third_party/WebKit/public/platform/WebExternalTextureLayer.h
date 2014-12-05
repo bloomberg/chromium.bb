@@ -32,8 +32,6 @@
 
 namespace blink {
 
-class WebExternalTextureLayerClient;
-
 // This class represents a layer that renders a texture that is generated
 // externally (not managed by the WebLayerTreeView).
 // The texture will be used by the WebLayerTreeView during compositing passes.

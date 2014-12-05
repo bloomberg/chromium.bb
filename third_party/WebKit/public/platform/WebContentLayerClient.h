@@ -36,7 +36,6 @@ namespace blink {
 
 class WebDisplayItemList;
 struct WebRect;
-struct WebFloatRect;
 
 class BLINK_PLATFORM_EXPORT WebContentLayerClient {
 public:

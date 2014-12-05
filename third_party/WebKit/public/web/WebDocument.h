@@ -57,7 +57,6 @@ class WebDocumentType;
 class WebElement;
 class WebFormElement;
 class WebElementCollection;
-class WebNodeList;
 class WebString;
 class WebURL;
 
