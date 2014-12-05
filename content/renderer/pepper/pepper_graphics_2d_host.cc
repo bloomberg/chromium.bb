@@ -384,14 +384,15 @@ void PepperGraphics2DHost::Paint(blink::WebCanvas* canvas,
   canvas->drawBitmap(image, pixel_origin.x(), pixel_origin.y(), &paint);
 }
 
-void PepperGraphics2DHost::ViewInitiatedPaint() {}
-
-void PepperGraphics2DHost::ViewFlushedPaint() {
-  TRACE_EVENT0("pepper", "PepperGraphics2DHost::ViewFlushedPaint");
+void PepperGraphics2DHost::ViewInitiatedPaint() {
+  TRACE_EVENT0("pepper", "PepperGraphics2DHost::ViewInitiatedPaint");
   if (need_flush_ack_) {
     SendFlushAck();
     need_flush_ack_ = false;
   }
+}
+
+void PepperGraphics2DHost::ViewFlushedPaint() {
 }
 
 void PepperGraphics2DHost::SetScale(float scale) { scale_ = scale; }
