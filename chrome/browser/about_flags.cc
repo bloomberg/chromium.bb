@@ -2011,13 +2011,6 @@ const Experiment kExperiments[] = {
 #endif
 #if defined(OS_CHROMEOS)
   {
-    "enable-remote-assistance",
-    IDS_FLAGS_ENABLE_REMOTE_ASSISTANCE_NAME,
-    IDS_FLAGS_ENABLE_REMOTE_ASSISTANCE_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(extensions::switches::kEnableRemoteAssistance)
-  },
-  {
     "disable-new-zip-unpacker",
     IDS_FLAGS_DISABLE_NEW_ZIP_UNPACKER_NAME,
     IDS_FLAGS_DISABLE_NEW_ZIP_UNPACKER_DESCRIPTION,
