@@ -13,7 +13,6 @@
 #include "content/browser/speech/google_one_shot_remote_engine.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "media/base/audio_converter.h"
-#include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_WIN)
 #include "media/audio/win/core_audio_util_win.h"
