@@ -92,6 +92,12 @@ void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
 #endif
 }
 
+void ManagePasswordsUIController::OnAskToReportURL(const GURL& url) {
+  origin_ = url;
+  state_ = password_manager::ui::ASK_USER_REPORT_URL_STATE;
+  UpdateBubbleAndIconVisibility();
+}
+
 void ManagePasswordsUIController::OnPasswordSubmitted(
     scoped_ptr<PasswordFormManager> form_manager) {
   form_manager_ = form_manager.Pass();
@@ -250,6 +256,16 @@ void ManagePasswordsUIController::DidNavigateMainFrame(
   // interact with the password bubble.
   if (timer_ && timer_->Elapsed() < base::TimeDelta::FromSeconds(1))
     return;
+
+  // This allows "Allow to collect URL?" bubble to outlive the coming
+  // navigation.
+  if (state_ == password_manager::ui::
+                    ASK_USER_REPORT_URL_BUBBLE_SHOWN_BEFORE_TRANSITION_STATE) {
+    // TODO(melandory): Substitute this with a proper solution using
+    // provisional_save_manager.
+    state_ = password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE;
+    return;
+  }
 
   // Otherwise, reset the password manager and the timer.
   state_ = password_manager::ui::INACTIVE_STATE;

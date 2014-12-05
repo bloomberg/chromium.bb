@@ -35,6 +35,24 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
 
   void TearDown() override { model_.reset(); }
 
+  void PretendNeedToAskUserToSubmitURL() {
+    model_->set_state(password_manager::ui::ASK_USER_REPORT_URL_STATE);
+    model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
+    controller()->SetState(
+        password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE);
+  }
+
+  void PretendUserInteractedWithAllowToSubmitBubbleBeforeNavigation() {
+    // TODO(melandory) This method should be removed after solution where
+    // "Ask to collect URL?" doesn't appear before navigation is implemented.
+    model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
+    model_->set_state(
+        password_manager::ui::
+            ASK_USER_REPORT_URL_BUBBLE_SHOWN_BEFORE_TRANSITION_STATE);
+    controller()->SetState(
+        password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE);
+  }
+
   void PretendPasswordWaiting() {
     model_->set_state(password_manager::ui::PENDING_PASSWORD_AND_BUBBLE_STATE);
     model_->OnBubbleShown(ManagePasswordsBubble::AUTOMATIC);
@@ -258,6 +276,100 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickCancelCredential) {
       kUIDismissalReasonMetric,
       password_manager::metrics_util::CLICKED_NOPE,
       1);
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, ClickCollectURL) {
+  base::HistogramTester histogram_tester;
+  PretendNeedToAskUserToSubmitURL();
+  model_->OnCollectURLClicked();
+  model_->OnBubbleHidden();
+  EXPECT_EQ(model_->dismissal_reason(),
+            password_manager::metrics_util::CLICKED_COLLECT_URL);
+  EXPECT_EQ(password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE,
+            model_->state());
+
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::CLICKED_COLLECT_URL, 1);
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, ClickDoNotCollectURL) {
+  base::HistogramTester histogram_tester;
+  PretendNeedToAskUserToSubmitURL();
+  model_->OnDoNotCollectURLClicked();
+  model_->OnBubbleHidden();
+  EXPECT_EQ(model_->dismissal_reason(),
+            password_manager::metrics_util::CLICKED_DO_NOT_COLLECT_URL);
+  EXPECT_EQ(password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE,
+            model_->state());
+
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::CLICKED_DO_NOT_COLLECT_URL, 1);
+}
+
+TEST_F(ManagePasswordsBubbleModelTest,
+       CollectURLBubbleCloseWithoutInteraction) {
+  base::HistogramTester histogram_tester;
+  PretendNeedToAskUserToSubmitURL();
+  model_->OnBubbleHidden();
+  EXPECT_EQ(model_->dismissal_reason(),
+            password_manager::metrics_util::NO_DIRECT_INTERACTION);
+  EXPECT_EQ(password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE,
+            model_->state());
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::NO_DIRECT_INTERACTION, 1);
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, ClickCollectURLBeforeNavigation) {
+  // TODO(melandory) This test case should be removed after solution where
+  // "Ask to collect URL?" doesn't appear before navigation is implemented.
+  base::HistogramTester histogram_tester;
+  PretendUserInteractedWithAllowToSubmitBubbleBeforeNavigation();
+  model_->OnCollectURLClicked();
+  model_->OnBubbleHidden();
+  EXPECT_EQ(model_->dismissal_reason(),
+            password_manager::metrics_util::CLICKED_COLLECT_URL);
+  EXPECT_EQ(password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE,
+            model_->state());
+
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::CLICKED_COLLECT_URL, 1);
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, ClickDoNotCollectURLBeforeNavigation) {
+  // TODO(melandory) This test case should be removed after solution where
+  // "Ask to collect URL?" doesn't appear before navigation is implemented.
+  base::HistogramTester histogram_tester;
+  PretendUserInteractedWithAllowToSubmitBubbleBeforeNavigation();
+  model_->OnDoNotCollectURLClicked();
+  model_->OnBubbleHidden();
+  EXPECT_EQ(model_->dismissal_reason(),
+            password_manager::metrics_util::CLICKED_DO_NOT_COLLECT_URL);
+  EXPECT_EQ(password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE,
+            model_->state());
+
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::CLICKED_DO_NOT_COLLECT_URL, 1);
+}
+
+TEST_F(ManagePasswordsBubbleModelTest,
+       CollectURLBubbleCloseWithoutInteractionBeforeNavigation) {
+  // TODO(melandory) This test case should be removed after solution where
+  // "Ask to collect URL?" doesn't appear before navigation is implemented.
+  base::HistogramTester histogram_tester;
+  PretendUserInteractedWithAllowToSubmitBubbleBeforeNavigation();
+  model_->OnBubbleHidden();
+  EXPECT_EQ(model_->dismissal_reason(),
+            password_manager::metrics_util::NO_DIRECT_INTERACTION);
+  EXPECT_EQ(password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE,
+            model_->state());
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::NO_DIRECT_INTERACTION, 1);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, DismissCredential) {

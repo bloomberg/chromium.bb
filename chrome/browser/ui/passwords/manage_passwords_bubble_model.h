@@ -43,6 +43,11 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // Called by the view code when the "Never for this site." button in clicked
   // by the user and user gets confirmation bubble.
   void OnConfirmationForNeverForThisSite();
+  // Call by the view code when user agreed to URL collection.
+  void OnCollectURLClicked();
+
+  // Called by the view code when user didn't allow to collect URL.
+  void OnDoNotCollectURLClicked();
 
   // Called by the view code when the "Nope" button in clicked by the user.
   void OnNopeClicked();
@@ -77,6 +82,8 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
 
   // Called by the view code to notify about chosen credential.
   void OnChooseCredentials(const autofill::PasswordForm& password_form);
+
+  GURL origin() const { return origin_; }
 
   password_manager::ui::State state() const { return state_; }
 
@@ -120,6 +127,8 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   static int PasswordFieldWidth();
 
  private:
+  // URL of the page from where this bubble was triggered.
+  GURL origin_;
   password_manager::ui::State state_;
   base::string16 title_;
   autofill::PasswordForm pending_password_;

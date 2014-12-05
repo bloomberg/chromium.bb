@@ -199,14 +199,14 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   }
 
   if (!is_saving_enabled) {
-    RecordFailure(SAVING_DISABLED, form.origin.host(), logger.get());
+    RecordFailure(SAVING_DISABLED, form.origin, logger.get());
     return;
   }
 
   // No password to save? Then don't.
   if ((form.new_password_element.empty() && form.password_value.empty()) ||
       (!form.new_password_element.empty() && form.new_password_value.empty())) {
-    RecordFailure(EMPTY_PASSWORD, form.origin.host(), logger.get());
+    RecordFailure(EMPTY_PASSWORD, form.origin, logger.get());
     return;
   }
 
@@ -260,23 +260,23 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     // tried to submit credentials before we had time to even find matching
     // results for the given form and autofill. If this is the case, we just
     // give up.
-    RecordFailure(MATCHING_NOT_COMPLETE, form.origin.host(), logger.get());
+    RecordFailure(MATCHING_NOT_COMPLETE, form.origin, logger.get());
     return;
   } else {
-    RecordFailure(NO_MATCHING_FORM, form.origin.host(), logger.get());
+    RecordFailure(NO_MATCHING_FORM, form.origin, logger.get());
     return;
   }
 
   // Also get out of here if the user told us to 'never remember' passwords for
   // this form.
   if (manager->IsBlacklisted()) {
-    RecordFailure(FORM_BLACKLISTED, form.origin.host(), logger.get());
+    RecordFailure(FORM_BLACKLISTED, form.origin, logger.get());
     return;
   }
 
   // Bail if we're missing any of the necessary form components.
   if (!manager->HasValidPasswordForm()) {
-    RecordFailure(INVALID_FORM, form.origin.host(), logger.get());
+    RecordFailure(INVALID_FORM, form.origin, logger.get());
     return;
   }
 
@@ -285,7 +285,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   if (ShouldDropSyncCredential() &&
       client_->IsSyncAccountCredential(
           base::UTF16ToUTF8(form.username_value), form.signon_realm)) {
-    RecordFailure(SYNC_CREDENTIAL, form.origin.host(), logger.get());
+    RecordFailure(SYNC_CREDENTIAL, form.origin, logger.get());
     return;
   }
 
@@ -312,20 +312,22 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
 }
 
 void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
-                                    const std::string& form_origin,
+                                    const GURL& form_origin,
                                     BrowserSavePasswordProgressLogger* logger) {
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.ProvisionalSaveFailure", failure, MAX_FAILURE_VALUE);
 
-  std::string group_name = metrics_util::GroupIdToString(
-      metrics_util::MonitoredDomainGroupId(form_origin, client_->GetPrefs()));
+  std::string group_name =
+      metrics_util::GroupIdToString(metrics_util::MonitoredDomainGroupId(
+          form_origin.host(), client_->GetPrefs()));
   if (!group_name.empty()) {
     metrics_util::LogUMAHistogramEnumeration(
         "PasswordManager.ProvisionalSaveFailure_" + group_name,
         failure,
         MAX_FAILURE_VALUE);
   }
-  if (failure == NO_MATCHING_FORM && client_->ShouldAskUserToSubmitURL()) {
+  if (failure == NO_MATCHING_FORM &&
+      client_->ShouldAskUserToSubmitURL(form_origin)) {
     client_->AskUserAndMaybeReportURL(form_origin);
   }
 

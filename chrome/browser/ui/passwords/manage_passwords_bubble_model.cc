@@ -61,6 +61,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   ManagePasswordsUIController* controller =
       ManagePasswordsUIController::FromWebContents(web_contents);
 
+  origin_ = controller->origin();
   state_ = controller->state();
   if (password_manager::ui::IsPendingState(state_))
     pending_password_ = controller->PendingPassword();
@@ -78,6 +79,9 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TITLE);
   } else if (password_manager::ui::IsCredentialsState(state_)) {
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CHOOSE_TITLE);
+  } else if (password_manager::ui::IsAskSubmitURLState(state_)) {
+    title_ =
+        l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_ASK_TO_SUBMIT_URL_TITLE);
   } else {
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_TITLE);
   }
@@ -142,10 +146,29 @@ void ManagePasswordsBubbleModel::OnBubbleHidden() {
   if (dismissal_reason_ == metrics_util::NOT_DISPLAYED)
     return;
 
+  if (password_manager::ui::IsAskSubmitURLState(state_)) {
+    state_ = password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE;
+  }
   metrics_util::LogUIDismissalReason(dismissal_reason_);
   // Other use cases have been reported in the callbacks like OnSaveClicked().
   if (dismissal_reason_ == metrics_util::NO_DIRECT_INTERACTION)
     RecordExperimentStatistics(web_contents(), dismissal_reason_);
+}
+
+void ManagePasswordsBubbleModel::OnCollectURLClicked() {
+  dismissal_reason_ = metrics_util::CLICKED_COLLECT_URL;
+  RecordExperimentStatistics(web_contents(), dismissal_reason_);
+  // User interaction with bubble has happened, do not need to show bubble
+  // in case it was before transition to another page.
+  state_ = password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE;
+}
+
+void ManagePasswordsBubbleModel::OnDoNotCollectURLClicked() {
+  dismissal_reason_ = metrics_util::CLICKED_DO_NOT_COLLECT_URL;
+  RecordExperimentStatistics(web_contents(), dismissal_reason_);
+  // User interaction with bubble has happened, do not need to show bubble
+  // in case it was before transition to another page.
+  state_ = password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE;
 }
 
 void ManagePasswordsBubbleModel::OnNopeClicked() {

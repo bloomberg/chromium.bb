@@ -127,7 +127,7 @@ class PasswordManager : public LoginModel {
   // values of |failure| also sends logs to the internals page through |logger|,
   // it |logger| is not NULL.
   void RecordFailure(ProvisionalSaveFailure failure,
-                     const std::string& form_origin,
+                     const GURL& form_origin,
                      BrowserSavePasswordProgressLogger* logger);
 
   // Possibly set up FieldTrial for testing other possible usernames. This only

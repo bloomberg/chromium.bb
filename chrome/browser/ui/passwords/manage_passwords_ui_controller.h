@@ -32,6 +32,11 @@ class ManagePasswordsUIController
  public:
   ~ManagePasswordsUIController() override;
 
+  // Called when password manager failed to detect the form and user is a part
+  // of corresponding experiment. Triggers the UI to allow the user to
+  // report the |url|.
+  void OnAskToReportURL(const GURL& url);
+
   // Called when the user submits a form containing login information, so we
   // can handle later requests to save or blacklist that login information.
   // This stores the provided object in form_manager_ and triggers the UI to

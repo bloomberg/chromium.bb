@@ -45,7 +45,7 @@ class PasswordManagerClient {
   // Return true if "Allow to collect URL?" should be shown.
   // TODO(vabr): If http://crbug.com/437528 gets fixed, make this a const
   // method.
-  virtual bool ShouldAskUserToSubmitURL();
+  virtual bool ShouldAskUserToSubmitURL(const GURL& url);
 
   // Return true if |form| should not be available for autofill.
   virtual bool ShouldFilterAutofillResult(
@@ -63,7 +63,7 @@ class PasswordManagerClient {
   // This should be called if the password manager encounters a problem on
   // |url|. The implementation should show the "Allow to collect URL?" bubble
   // and, if the user confirms, report the |url|.
-  virtual void AskUserAndMaybeReportURL(const std::string& url) const;
+  virtual void AskUserAndMaybeReportURL(const GURL& url) const;
 
   // Called when all autofill results have been computed. Client can use
   // this signal to report statistics. Default implementation is a noop.

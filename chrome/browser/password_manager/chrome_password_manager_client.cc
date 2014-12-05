@@ -131,9 +131,10 @@ bool ChromePasswordManagerClient::IsPasswordManagerEnabledForCurrentPage()
   return entry->GetURL().host() != chrome::kChromeUIChromeSigninHost;
 }
 
-bool ChromePasswordManagerClient::ShouldAskUserToSubmitURL() {
-  return password_manager::urls_collection_experiment::ShouldShowBubble(
-      GetPrefs());
+bool ChromePasswordManagerClient::ShouldAskUserToSubmitURL(const GURL& url) {
+  return url.is_valid() && !url.is_empty() && url.has_host() &&
+         password_manager::urls_collection_experiment::ShouldShowBubble(
+             GetPrefs());
 }
 
 bool ChromePasswordManagerClient::ShouldFilterAutofillResult(
@@ -167,9 +168,10 @@ bool ChromePasswordManagerClient::IsSyncAccountCredential(
 }
 
 void ChromePasswordManagerClient::AskUserAndMaybeReportURL(
-    const std::string& url) const {
-  // TODO(melandory) Show bubble which asks user if he wants to report the URL
-  // and report URL if needed.
+    const GURL& url) const {
+  ManagePasswordsUIController* manage_passwords_ui_controller =
+      ManagePasswordsUIController::FromWebContents(web_contents());
+  manage_passwords_ui_controller->OnAskToReportURL(url);
 }
 
 void ChromePasswordManagerClient::AutofillResultsComputed() {

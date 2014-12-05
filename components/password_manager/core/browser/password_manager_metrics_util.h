@@ -46,6 +46,8 @@ enum UIDismissalReason {
   CLICKED_UNBLACKLIST,
   CLICKED_OK,
   CLICKED_CREDENTIAL,
+  CLICKED_COLLECT_URL,
+  CLICKED_DO_NOT_COLLECT_URL,
   NUM_UI_RESPONSES,
 
   // If we add the omnibox icon _without_ intending to display the bubble,

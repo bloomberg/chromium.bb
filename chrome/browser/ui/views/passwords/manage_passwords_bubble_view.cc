@@ -29,6 +29,7 @@
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/layout/fill_layout.h"
@@ -122,6 +123,16 @@ void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
   column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
 }
 
+// Given |layout| and |color| adds border with |color| using
+// SINGLE_VIEW_COLUMN_SET.
+void AddBorderRow(views::GridLayout* layout, SkColor color) {
+  layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET, 0,
+                              views::kRelatedControlVerticalSpacing);
+  views::Separator* border = new views::Separator(views::Separator::HORIZONTAL);
+  border->SetColor(color);
+  layout->AddView(border);
+}
+
 // Given a layout and a model, add an appropriate title using a
 // SINGLE_VIEW_COLUMN_SET, followed by a spacer row.
 void AddTitleRow(views::GridLayout* layout, ManagePasswordsBubbleModel* model) {
@@ -136,6 +147,18 @@ void AddTitleRow(views::GridLayout* layout, ManagePasswordsBubbleModel* model) {
       0, SINGLE_VIEW_COLUMN_SET, 0, views::kRelatedControlSmallVerticalSpacing);
   layout->AddView(title_label);
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+}
+
+// Given a |layout| and |text|, adds a text row with small font using a
+// SINGLE_VIEW_COLUMN_SET.
+void AddTextRow(views::GridLayout* layout, const base::string16& text) {
+  views::Label* text_label = new views::Label(text);
+  text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  text_label->SetMultiLine(true);
+  text_label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::SmallFont));
+  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+  layout->AddView(text_label);
 }
 
 }  // namespace
@@ -242,6 +265,94 @@ void ManagePasswordsBubbleView::AccountChooserView::ButtonPressed(
   } else {
     parent_->model()->OnNopeClicked();
   }
+  parent_->Close();
+}
+
+// ManagePasswordsBubbleView::AskUserToSubmitURLView -------------------------
+
+// Asks users if they want to report the URL when the password manager failed
+// to detect the form. View has following structure:
+// We detected that Chrome password manager failed to handle this URL.
+// Do you want to send this URL to Google to improve Chrome?
+// -------------------------------------------------------------
+// https://strangesite.com/
+// -------------------------------------------------------------
+//                                  [Send URL]            [Nope]
+class ManagePasswordsBubbleView::AskUserToSubmitURLView
+    : public views::View,
+      public views::ButtonListener {
+ public:
+  explicit AskUserToSubmitURLView(ManagePasswordsBubbleView* parent);
+  ~AskUserToSubmitURLView() override;
+
+ private:
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  ManagePasswordsBubbleView* parent_;
+
+  views::LabelButton* send_button_;
+  views::LabelButton* no_button_;
+};
+
+ManagePasswordsBubbleView::AskUserToSubmitURLView::AskUserToSubmitURLView(
+    ManagePasswordsBubbleView* parent)
+    : parent_(parent) {
+  GURL origin = parent->model()->origin();
+  DCHECK(origin.is_valid() && !origin.is_empty() && origin.has_host());
+  views::GridLayout* layout = new views::GridLayout(this);
+  layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
+  SetLayoutManager(layout);
+
+  send_button_ = new views::LabelButton(
+      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));
+  send_button_->SetStyle(views::Button::STYLE_BUTTON);
+  no_button_ = new views::LabelButton(
+      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SEND_URL_BUTTON));
+  no_button_->SetStyle(views::Button::STYLE_BUTTON);
+
+  // Title row.
+  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
+  AddTitleRow(layout, parent_->model());
+  // Confirmation text.
+  AddTextRow(layout, l10n_util::GetStringUTF16(
+                         IDS_MANAGE_PASSWORDS_ASK_TO_SUBMIT_URL_TEXT));
+  // Border row.
+  SkColor color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor);
+  AddBorderRow(layout, color);
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
+  // URL row.
+  // TODO(melandory) Use full URL instead of host.
+  AddTextRow(layout, base::UTF8ToUTF16(parent->model()->origin().host()));
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
+  // Border row.
+  AddBorderRow(layout, color);
+  // Button row.
+  BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
+  layout->StartRowWithPadding(0, DOUBLE_BUTTON_COLUMN_SET, 0,
+                              views::kRelatedControlVerticalSpacing);
+  layout->AddView(no_button_);
+  layout->AddView(send_button_);
+
+  // Extra padding for visual awesomeness.
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+  parent_->set_initially_focused_view(no_button_);
+}
+
+ManagePasswordsBubbleView::AskUserToSubmitURLView::~AskUserToSubmitURLView() {
+}
+
+void ManagePasswordsBubbleView::AskUserToSubmitURLView::ButtonPressed(
+    views::Button* sender,
+    const ui::Event& event) {
+  DCHECK(sender == send_button_ || sender == no_button_);
+  // TODO(melandory): Add actions on button clicks: url reporting, pref saving.
+  if (sender == send_button_)
+    parent_->model()->OnCollectURLClicked();
+  else if (sender == no_button_)
+    parent_->model()->OnDoNotCollectURLClicked();
   parent_->Close();
 }
 
@@ -873,6 +984,8 @@ void ManagePasswordsBubbleView::Refresh() {
       AddChildView(new ConfirmNeverView(this));
     else
       AddChildView(new PendingView(this));
+  } else if (IsAskSubmitURLState(model()->state())) {
+    AddChildView(new AskUserToSubmitURLView(this));
   } else if (model()->state() == password_manager::ui::BLACKLIST_STATE) {
     AddChildView(new BlacklistedView(this));
   } else if (model()->state() == password_manager::ui::CONFIRMATION_STATE) {
