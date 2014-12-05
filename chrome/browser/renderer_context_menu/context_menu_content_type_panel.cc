@@ -21,6 +21,7 @@ bool ContextMenuContentTypePanel::SupportsGroup(int group) {
       return params().unfiltered_link_url.is_valid();
     case ITEM_GROUP_EDITABLE:
     case ITEM_GROUP_COPY:
+    case ITEM_GROUP_SEARCH_PROVIDER:
       return ContextMenuContentType::SupportsGroup(group);
     case ITEM_GROUP_CURRENT_EXTENSION:
       return true;
