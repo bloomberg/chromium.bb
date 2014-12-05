@@ -1554,6 +1554,7 @@ class Port(object):
             #                   ['--force-compositing-mode']),
             PhysicalTestSuite('compositing', ['--enable-impl-side-painting']),
             PhysicalTestSuite('fast', ['--enable-impl-side-painting']),
+            PhysicalTestSuite('svg', ['--enable-impl-side-painting']),
         ]
 
     def virtual_test_suites(self):
