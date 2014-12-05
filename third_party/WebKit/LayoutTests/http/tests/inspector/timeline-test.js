@@ -23,6 +23,7 @@ InspectorTest.timelinePropertyFormatters = {
     columnNumber: "formatAsTypeName",
     frameId: "formatAsTypeName",
     frame: "formatAsTypeName",
+    page: "formatAsTypeName",
     encodedDataLength: "formatAsTypeName",
     identifier: "formatAsTypeName",
     clip: "formatAsTypeName",
@@ -285,7 +286,7 @@ InspectorTest.printTimelineRecordProperties = function(record)
     var names = ["data", "endTime", "frameId", "stackTrace", "startTime", "thread", "type"];
     for (var i = 0; i < names.length; i++) {
         var name = names[i];
-        var value = record[name].call(record)
+        var value = record[name].call(record);
         if (value)
             object[name] = value;
     }

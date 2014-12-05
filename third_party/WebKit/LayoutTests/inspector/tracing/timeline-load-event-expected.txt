@@ -8,6 +8,7 @@ MarkDOMContent Properties:
     data : {
         frame : <string>
         isMainFrame : true
+        page : <string>
     }
     endTime : <number>
     frameId : <string>
@@ -20,6 +21,7 @@ MarkLoad Properties:
     data : {
         frame : <string>
         isMainFrame : true
+        page : <string>
     }
     endTime : <number>
     frameId : <string>

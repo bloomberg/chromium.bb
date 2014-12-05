@@ -539,6 +539,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> frameEventData(LocalFrame* fram
     value->setString("frame", toHexString(frame));
     bool isMainFrame = frame && frame->isMainFrame();
     value->setBoolean("isMainFrame", isMainFrame);
+    value->setString("page", toHexString(frame->page()));
     return value.release();
 }
 
@@ -673,6 +674,22 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTracingSessionIdForWor
     value->setString("sessionId", sessionId);
     value->setInteger("workerId", workerId);
     value->setDouble("workerThreadId", workerThread->platformThreadId());
+    return value.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorTracingStartedInPage::data(const String& sessionId, Page* page)
+{
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("sessionId", sessionId);
+    value->setString("page", toHexString(page));
+    return value.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorSetLayerTreeId::data(const String& sessionId, int layerTreeId)
+{
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("sessionId", sessionId);
+    value->setInteger("layerTreeId", layerTreeId);
     return value.release();
 }
 

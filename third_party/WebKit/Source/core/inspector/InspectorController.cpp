@@ -107,7 +107,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
 
     OwnPtrWillBeRawPtr<InspectorWorkerAgent> workerAgentPtr = InspectorWorkerAgent::create();
 
-    OwnPtrWillBeRawPtr<InspectorTracingAgent> tracingAgentPtr = InspectorTracingAgent::create(inspectorClient, workerAgentPtr.get());
+    OwnPtrWillBeRawPtr<InspectorTracingAgent> tracingAgentPtr = InspectorTracingAgent::create(inspectorClient, workerAgentPtr.get(), page);
     m_tracingAgent = tracingAgentPtr.get();
     m_agents.append(tracingAgentPtr.release());
 

@@ -23,7 +23,7 @@ function test()
             "ts": 100,
         },
         {
-            "args": { "layerTreeId": 17 },
+            "args": { "sessionId": sessionId, "layerTreeId": 17 },
             "cat": "disabled-by-default-devtools.timeline",
             "name": "SetLayerTreeId",
             "ph": "I",
@@ -219,7 +219,7 @@ function test()
         var tracingTimelineModel = InspectorTest.tracingTimelineModel();
         tracingTimelineModel.setEventsForTest(events);
         frameModel.reset();
-        frameModel.addTraceEvents(WebInspector.targetManager.mainTarget(), tracingTimelineModel.inspectedTargetEvents());
+        frameModel.addTraceEvents(WebInspector.targetManager.mainTarget(), tracingTimelineModel.inspectedTargetEvents(), sessionId);
     }
 
     for (var testName in testData) {

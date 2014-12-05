@@ -28,6 +28,7 @@ class LayoutRect;
 class LocalFrame;
 class Node;
 class QualifiedName;
+class Page;
 class RenderImage;
 class RenderLayer;
 class RenderObject;
@@ -274,6 +275,16 @@ public:
 class InspectorTracingSessionIdForWorkerEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, int workerId, WorkerThread*);
+};
+
+class InspectorTracingStartedInPage {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, Page*);
+};
+
+class InspectorSetLayerTreeId {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, int layerTreeId);
 };
 
 } // namespace blink

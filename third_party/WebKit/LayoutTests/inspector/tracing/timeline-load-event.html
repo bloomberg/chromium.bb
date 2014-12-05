@@ -5,7 +5,13 @@
 <script>
 function display(callback)
 {
-    requestAnimationFrame(testRunner.displayAsyncThen.bind(testRunner, callback));
+    if (window.testRunner)
+        testRunner.setCanOpenWindows(true);
+    var popup = window.open("data:text/html,<b>Hello, world</b>");
+    popup.onload = function()
+    {
+        requestAnimationFrame(testRunner.displayAsyncThen.bind(testRunner, callback));
+    }
 }
 
 function test()
