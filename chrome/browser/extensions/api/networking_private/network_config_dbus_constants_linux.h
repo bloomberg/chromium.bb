@@ -25,6 +25,7 @@ extern const char kNetworkManagerAddAndActivateConnectionMethod[];
 extern const char kNetworkManagerGetMethod[];
 extern const char kNetworkManagerSsidProperty[];
 extern const char kNetworkManagerStrengthProperty[];
+extern const char kNetworkManagerRsnFlagsProperty[];
 extern const char kNetworkManagerWpaFlagsProperty[];
 
 // Network manager connection configuration strings.

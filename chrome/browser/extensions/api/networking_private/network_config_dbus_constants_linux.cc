@@ -29,6 +29,7 @@ const char kNetworkManagerAddAndActivateConnectionMethod[] =
 const char kNetworkManagerGetMethod[] = "Get";
 const char kNetworkManagerSsidProperty[] = "Ssid";
 const char kNetworkManagerStrengthProperty[] = "Strength";
+const char kNetworkManagerRsnFlagsProperty[] = "RsnFlags";
 const char kNetworkManagerWpaFlagsProperty[] = "WpaFlags";
 
 // Network manager connection configuration strings.

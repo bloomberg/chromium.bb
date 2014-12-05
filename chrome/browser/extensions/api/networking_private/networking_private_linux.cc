@@ -580,7 +580,11 @@ bool NetworkingPrivateLinux::GetAccessPointInfo(
                                   strength);
   }
 
-  // Read the security type.
+  // Read the security type. This is from the WpaFlags and RsnFlags property
+  // which are of the same type and can be OR'd together to find all supported
+  // security modes.
+
+  uint32 wpa_security_flags = 0;
   {
     scoped_ptr<dbus::Response> response(GetAccessPointProperty(
         access_point_proxy,
@@ -590,18 +594,35 @@ bool NetworkingPrivateLinux::GetAccessPointInfo(
     }
 
     dbus::MessageReader reader(response.get());
-    uint32 security_flags = 0;
-    if (!reader.PopVariantOfUint32(&security_flags)) {
+
+    if (!reader.PopVariantOfUint32(&wpa_security_flags)) {
       LOG(ERROR) << "Unexpected response for " << access_point_path.value()
                  << ": " << response->ToString();
       return false;
     }
-
-    std::string security;
-    MapSecurityFlagsToString(security_flags, &security);
-    access_point_info->SetString(kAccessPointInfoWifiSecurityDotted, security);
   }
 
+  uint32 rsn_security_flags = 0;
+  {
+    scoped_ptr<dbus::Response> response(GetAccessPointProperty(
+        access_point_proxy,
+        networking_private::kNetworkManagerRsnFlagsProperty));
+    if (!response) {
+      return false;
+    }
+
+    dbus::MessageReader reader(response.get());
+
+    if (!reader.PopVariantOfUint32(&rsn_security_flags)) {
+      LOG(ERROR) << "Unexpected response for " << access_point_path.value()
+                 << ": " << response->ToString();
+      return false;
+    }
+  }
+
+  std::string security;
+  MapSecurityFlagsToString(rsn_security_flags | wpa_security_flags, &security);
+  access_point_info->SetString(kAccessPointInfoWifiSecurityDotted, security);
   access_point_info->SetString(kAccessPointInfoType, kAccessPointInfoTypeWifi);
   access_point_info->SetBoolean(kAccessPointInfoConnectable, true);
   return true;
@@ -717,9 +738,6 @@ void NetworkingPrivateLinux::AddOrUpdateAccessPoint(
 
 void NetworkingPrivateLinux::MapSecurityFlagsToString(uint32 security_flags,
                                                       std::string* security) {
-  // TODO(zentaro): Correct mapping - this may not be correct but the underlying
-  // API appears not to work on Trusty so I can't verify yet.
-  // Everything returns 0.
   // Valid values are None, WEP-PSK, WEP-8021X, WPA-PSK, WPA-EAP
   if (security_flags == NetworkingPrivateLinux::NM_802_11_AP_SEC_NONE) {
     *security = kAccessPointSecurityNone;
