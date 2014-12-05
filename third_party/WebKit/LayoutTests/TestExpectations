@@ -242,11 +242,8 @@ crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip 
 # Untriaged Mavericks failures
 
 crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
-
-# Mavericks bots seem to fail lots of tests on occasion.
-# crbug.com/331582 [ Mavericks ] fast/inline/justify-emphasis-inline-box.html [ Pass ImageOnlyFailure ]
 # crbug.com/331583 [ Mavericks ] fast/parser/fonts.html [ Pass ImageOnlyFailure ]
-# crbug.com/331583 [ Mavericks ] fast/repaint/text-emphasis-h.html [ Pass ImageOnlyFailure ]
+crbug.com/331583 [ Mavericks ] fast/repaint/text-emphasis-h.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/repaint/text-emphasis-v.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/shapes/shape-outside-floats/shape-outside-boxes-001.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/shapes/shape-outside-floats/shape-outside-boxes-002.html [ Pass ImageOnlyFailure ]
@@ -407,7 +404,6 @@ crbug.com/290411 [ Mac ] virtual/antialiasedtext/fast/text/sub-pixel/text-scalin
 crbug.com/393157 [ Mac ] virtual/threaded/printing/print-document-without-documentElement-crash.html [ Pass Crash ]
 
 # Switching to content shell failures
-# crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
 crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
 
@@ -763,42 +759,10 @@ crbug.com/334269 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/zero-wi
 crbug.com/334269 [ Mac ] editing/spelling/spellcheck-editable-on-focus-sync.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ Mac ] fast/repaint/4776765.html [ NeedsManualRebaseline ]
 
-crbug.com/334269 [ Mac ] fast/repaint/text-emphasis-h.html [ NeedsManualRebaseline ]
 #crbug.com/381919 fast/sub-pixel/sub-pixel-composited-layers.html [ NeedsRebaseline ]
 crbug.com/437078 fast/text/text-letter-spacing.html [ Pass ImageOnlyFailure ]
 crbug.com/437078 fast/text/international/rtl-negative-letter-spacing.html [ Pass ImageOnlyFailure ]
 crbug.com/437112 fast/canvas/canvas-scale-drawImage-shadow.html [ Pass Failure ]
-crbug.com/334269 [ Mac ] fast/transforms/shadows.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] fast/writing-mode/broken-ideographic-font.html [ Crash NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] fast/writing-mode/japanese-rl-text-with-broken-font.html [ Crash NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] svg/dynamic-updates/SVGForeignObjectElement-svgdom-height-prop.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] svg/dynamic-updates/SVGForeignObjectElement-svgdom-width-prop.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] svg/dynamic-updates/SVGImageElement-dom-height-attr.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] svg/dynamic-updates/SVGImageElement-dom-preserveAspectRatio-attr.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] svg/dynamic-updates/SVGImageElement-dom-width-attr.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] fast/backgrounds/animated-gif-as-background.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] fast/inline/justify-emphasis-inline-box.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] fast/repaint/box-shadow-h.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] fast/repaint/box-shadow-v.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] fast/transforms/transformed-focused-text-input.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] fast/writing-mode/broken-ideograph-small-caps.html [ Crash NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] svg/custom/foreign-object-skew.svg [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/002.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/003.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/004.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/005.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/006.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/007.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/008.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/009.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/010.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/011.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/012.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/013.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/014.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/015.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/016.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] virtual/antialiasedtext/fast/text/whitespace/018.html [ NeedsManualRebaseline ]
 
 # Recheck this when rebaseline lands.
 crbug.com/334269 [ Mac ] virtual/slimmingpaint/fast/inline/justify-emphasis-inline-box.html [ NeedsManualRebaseline ]
@@ -1098,13 +1062,6 @@ crbug.com/381373 [ Win ] virtual/implsidepainting/inspector/tracing/decode-resiz
 crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ ImageOnlyFailure ]
 
 crbug.com/373430 [ Linux Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
-
-crbug.com/374936 [ Win Debug ] svg/dynamic-updates/SVGImageElement-dom-height-attr.html [ ImageOnlyFailure ]
-#crbug.com/374936 [ Win Debug ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.html [ ImageOnlyFailure ]
-crbug.com/374936 [ Linux Debug ] svg/dynamic-updates/SVGImageElement-dom-height-attr.html [ ImageOnlyFailure Pass ]
-# crbug.com/374936 [ Mac Debug ] svg/dynamic-updates/SVGImageElement-dom-preserveAspectRatio-attr.html [ ImageOnlyFailure Pass ]
-# crbug.com/374936 [ Mac Debug ] svg/dynamic-updates/SVGImageElement-dom-height-attr.html [ ImageOnlyFailure Pass ]
-# crbug.com/374936 [ Mac Debug ] svg/dynamic-updates/SVGImageElement-dom-width-attr.html [ ImageOnlyFailure Pass ]
 # crbug.com/374936 [ Mac Debug ] svg/dynamic-updates/SVGImageElement-svgdom-height-prop.html [ ImageOnlyFailure Pass ]
 # crbug.com/374936 [ Mac Debug ] svg/dynamic-updates/SVGImageElement-svgdom-width-prop.html [ ImageOnlyFailure Pass ]
 
@@ -1155,7 +1112,6 @@ crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/frameworks-wit
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger/async-callstack-get-as-string.html [ Crash ]
 
 # Ahem font is sometimes not loaded on Windows.
-crbug.com/392046 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/002.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/003.html [ Pass Failure ]
 crbug.com/392046 [ Win ] fast/text/whitespace/004.html [ Pass Failure ]
@@ -1191,9 +1147,6 @@ crbug.com/395127 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_mea
 
 crbug.com/396791 [ Debug ] virtual/threaded/printing/print-close-crash.html [ Pass Crash ]
 
-# crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ Crash ]
-# crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ Crash ]
-# crbug.com/396936 [ Lion ] fast/writing-mode/japanese-rl-text-with-broken-font.html [ Crash ]
 crbug.com/397244 [ Snowleopard Debug ] inspector/elements/edit-dom-actions.html [ Crash ]
 crbug.com/401380 inspector/elements/styles/styles-should-not-force-sync-style-recalc.html [ Pass Failure ]
 crbug.com/401381 [ XP ] http/tests/serviceworker/fetch-event.html [ Pass Failure ]
