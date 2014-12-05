@@ -199,7 +199,7 @@ TEST_F(AnimationAnimationPlayerTest, SetCurrentTimeBeforeTimelineStarted)
 TEST_F(AnimationAnimationPlayerTest, SetCurrentTimePastContentEndBeforeTimelineStarted)
 {
     setUpWithoutStartingTimeline();
-    player->setCurrentTime(250 * 1000);
+    player->setCurrentTimeInternal(250);
     EXPECT_EQ(250, player->currentTimeInternal());
     startTimeline();
     simulateFrame(10);
@@ -456,7 +456,7 @@ TEST_F(AnimationAnimationPlayerTest, ReverseSeeksToStart)
 
 TEST_F(AnimationAnimationPlayerTest, ReverseSeeksToEnd)
 {
-    player->setCurrentTime(40 * 1000);
+    player->setCurrentTimeInternal(40);
     player->reverse();
     EXPECT_EQ(30, player->currentTimeInternal());
 }
@@ -492,7 +492,7 @@ TEST_F(AnimationAnimationPlayerTest, Finish)
 
 TEST_F(AnimationAnimationPlayerTest, FinishAfterSourceEnd)
 {
-    player->setCurrentTime(40 * 1000);
+    player->setCurrentTimeInternal(40);
     player->finish(exceptionState);
     EXPECT_EQ(30, player->currentTimeInternal());
 }
