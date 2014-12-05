@@ -104,11 +104,14 @@ struct text_backend {
 	struct wl_listener destroy_listener;
 };
 
-static void input_method_context_create(struct text_input *model,
-					struct input_method *input_method);
-static void input_method_context_end_keyboard_grab(struct input_method_context *context);
+static void
+input_method_context_create(struct text_input *model,
+			    struct input_method *input_method);
+static void
+input_method_context_end_keyboard_grab(struct input_method_context *context);
 
-static void input_method_init_seat(struct weston_seat *seat);
+static void
+input_method_init_seat(struct weston_seat *seat);
 
 static void
 deactivate_text_input(struct text_input *text_input,
