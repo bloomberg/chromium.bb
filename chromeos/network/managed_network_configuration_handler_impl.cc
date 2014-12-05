@@ -73,10 +73,9 @@ void InvokeErrorCallback(const std::string& service_path,
 void LogErrorWithDict(const tracked_objects::Location& from_where,
                       const std::string& error_name,
                       scoped_ptr<base::DictionaryValue> error_data) {
-  network_event_log::internal::AddEntry(
-       from_where.file_name(), from_where.line_number(),
-       network_event_log::LOG_LEVEL_ERROR,
-       error_name, "");
+  device_event_log::AddEntry(from_where.file_name(), from_where.line_number(),
+                             device_event_log::LOG_TYPE_NETWORK,
+                             device_event_log::LOG_LEVEL_ERROR, error_name);
 }
 
 const base::DictionaryValue* GetByGUID(const GuidToPolicyMap& policies,

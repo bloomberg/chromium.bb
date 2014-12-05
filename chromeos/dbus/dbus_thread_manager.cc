@@ -49,6 +49,7 @@
 #include "chromeos/dbus/sms_client.h"
 #include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/device_event_log.h"
 #include "dbus/bus.h"
 #include "dbus/dbus_statistics.h"
 
@@ -59,6 +60,7 @@ static bool g_using_dbus_thread_manager_for_testing = false;
 
 DBusThreadManager::DBusThreadManager(scoped_ptr<DBusClientBundle> client_bundle)
     : client_bundle_(client_bundle.Pass()) {
+  device_event_log::Initialize(0 /* default max entries */);
   dbus::statistics::Initialize();
 
   if (client_bundle_->IsUsingAnyRealClient()) {
@@ -92,6 +94,7 @@ DBusThreadManager::~DBusThreadManager() {
     dbus_thread_->Stop();
 
   dbus::statistics::Shutdown();
+  device_event_log::Shutdown();
 
   if (!g_dbus_thread_manager)
     return;  // Called form Shutdown() or local test instance.

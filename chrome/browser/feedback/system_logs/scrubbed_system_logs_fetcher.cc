@@ -14,8 +14,8 @@
 #include "chrome/browser/chromeos/system_logs/command_line_log_source.h"
 #include "chrome/browser/chromeos/system_logs/dbus_log_source.h"
 #include "chrome/browser/chromeos/system_logs/debug_daemon_log_source.h"
+#include "chrome/browser/chromeos/system_logs/device_event_log_source.h"
 #include "chrome/browser/chromeos/system_logs/lsb_release_log_source.h"
-#include "chrome/browser/chromeos/system_logs/network_event_log_source.h"
 #include "chrome/browser/chromeos/system_logs/touch_log_source.h"
 #endif
 
@@ -30,8 +30,8 @@ ScrubbedSystemLogsFetcher::ScrubbedSystemLogsFetcher() {
 #if defined(OS_CHROMEOS)
   data_sources_.push_back(new CommandLineLogSource());
   data_sources_.push_back(new DBusLogSource());
+  data_sources_.push_back(new DeviceEventLogSource());
   data_sources_.push_back(new LsbReleaseLogSource());
-  data_sources_.push_back(new NetworkEventLogSource());
   data_sources_.push_back(new TouchLogSource());
 
   // Debug Daemon data source - currently only this data source supports

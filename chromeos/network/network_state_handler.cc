@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/guid.h"
+#include "base/json/json_string_value_serializer.h"
+#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -51,6 +53,13 @@ std::string GetLogName(const ManagedState* state) {
                             state->path().c_str());
 }
 
+std::string ValueAsString(const base::Value& value) {
+  std::string vstr;
+  base::JSONWriter::WriteWithOptions(
+      &value, base::JSONWriter::OPTIONS_OMIT_BINARY_VALUES, &vstr);
+  return vstr.empty() ? "''" : vstr;
+}
+
 }  // namespace
 
 const char NetworkStateHandler::kDefaultCheckPortalList[] =
@@ -82,20 +91,20 @@ void NetworkStateHandler::AddObserver(
     NetworkStateHandlerObserver* observer,
     const tracked_objects::Location& from_here) {
   observers_.AddObserver(observer);
-  network_event_log::internal::AddEntry(
-      from_here.file_name(), from_here.line_number(),
-      network_event_log::LOG_LEVEL_DEBUG,
-      "NetworkStateHandler::AddObserver", "");
+  device_event_log::AddEntry(from_here.file_name(), from_here.line_number(),
+                             device_event_log::LOG_TYPE_NETWORK,
+                             device_event_log::LOG_LEVEL_DEBUG,
+                             "NetworkStateHandler::AddObserver");
 }
 
 void NetworkStateHandler::RemoveObserver(
     NetworkStateHandlerObserver* observer,
     const tracked_objects::Location& from_here) {
   observers_.RemoveObserver(observer);
-  network_event_log::internal::AddEntry(
-      from_here.file_name(), from_here.line_number(),
-      network_event_log::LOG_LEVEL_DEBUG,
-      "NetworkStateHandler::RemoveObserver", "");
+  device_event_log::AddEntry(from_here.file_name(), from_here.line_number(),
+                             device_event_log::LOG_TYPE_NETWORK,
+                             device_event_log::LOG_LEVEL_DEBUG,
+                             "NetworkStateHandler::RemoveObserver");
 }
 
 NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(
@@ -569,12 +578,12 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
       }
       // Log event.
       std::string detail = network->name() + "." + key;
-      detail += " = " + network_event_log::ValueAsString(value);
-      network_event_log::LogLevel log_level;
+      detail += " = " + ValueAsString(value);
+      device_event_log::LogLevel log_level;
       if (key == shill::kErrorProperty || key == shill::kErrorDetailsProperty) {
-        log_level = network_event_log::LOG_LEVEL_ERROR;
+        log_level = device_event_log::LOG_LEVEL_ERROR;
       } else {
-        log_level = network_event_log::LOG_LEVEL_EVENT;
+        log_level = device_event_log::LOG_LEVEL_EVENT;
       }
       NET_LOG_LEVEL(log_level, log_event, detail);
     }
@@ -599,7 +608,7 @@ void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
     return;
 
   std::string detail = device->name() + "." + key;
-  detail += " = " + network_event_log::ValueAsString(value);
+  detail += " = " + ValueAsString(value);
   NET_LOG_EVENT("DevicePropertyUpdated", detail);
 
   NotifyDeviceListChanged();
