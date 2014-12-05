@@ -17,6 +17,7 @@
 #include "cc/trees/layer_sorter.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -1418,6 +1419,14 @@ static LayerImplList* GetLayerListForSorting(LayerImplList* layer_list) {
   return layer_list;
 }
 
+static inline gfx::Vector2d BoundsDelta(Layer* layer) {
+  return gfx::Vector2d();
+}
+
+static inline gfx::Vector2d BoundsDelta(LayerImpl* layer) {
+  return gfx::ToCeiledVector2d(layer->bounds_delta());
+}
+
 template <typename LayerType, typename GetIndexAndCountType>
 static void SortLayerListContributions(
     const LayerType& parent,
@@ -1806,8 +1815,6 @@ static void CalculateDrawPropertiesInternal(
                              layer->contents_opaque();
   }
 
-  gfx::Rect content_rect(layer->content_bounds());
-
   // full_hierarchy_matrix is the matrix that transforms objects between screen
   // space (except projection matrix) and the most recent RenderSurfaceImpl's
   // space.  next_hierarchy_matrix will only change if this layer uses a new
@@ -2044,8 +2051,22 @@ static void CalculateDrawPropertiesInternal(
   if (adjust_text_aa)
     layer_draw_properties.can_use_lcd_text = layer_can_use_lcd_text;
 
-  gfx::Rect rect_in_target_space =
-      MathUtil::MapEnclosingClippedRect(layer->draw_transform(), content_rect);
+  gfx::Size content_size_affected_by_delta(layer->content_bounds());
+
+  // Non-zero BoundsDelta imply the contents_scale of 1.0
+  // because BoundsDela is only set on Android where
+  // ContentScalingLayer is never used.
+  DCHECK_IMPLIES(!BoundsDelta(layer).IsZero(),
+                 (layer->contents_scale_x() == 1.0 &&
+                  layer->contents_scale_y() == 1.0));
+
+  // Thus we can omit contents scale in the following calculation.
+  gfx::Vector2d bounds_delta =  BoundsDelta(layer);
+  content_size_affected_by_delta.Enlarge(bounds_delta.x(), bounds_delta.y());
+
+  gfx::Rect rect_in_target_space = MathUtil::MapEnclosingClippedRect(
+      layer->draw_transform(),
+      gfx::Rect(content_size_affected_by_delta));
 
   if (LayerClipsSubtree(layer)) {
     layer_or_ancestor_clips_descendants = true;

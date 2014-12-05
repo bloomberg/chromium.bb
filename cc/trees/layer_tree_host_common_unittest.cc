@@ -8661,5 +8661,68 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {
   EXPECT_EQ(gfx::Rect(768 / 2, 582 / 2), content->visible_content_rect());
 }
 
+TEST_F(LayerTreeHostCommonTest, BoundsDeltaAffectVisibleContentRect) {
+  FakeImplProxy proxy;
+  TestSharedBitmapManager shared_bitmap_manager;
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
+
+  // Set two layers: the root layer clips it's child,
+  // the child draws its content.
+
+  gfx::Size root_size = gfx::Size(300, 500);
+
+  // Sublayer should be bigger than the root enlarged by bounds_delta.
+  gfx::Size sublayer_size = gfx::Size(300, 1000);
+
+  // Device viewport accomidated the root and the top controls.
+  gfx::Size device_viewport_size = gfx::Size(300, 600);
+  gfx::Transform identity_matrix;
+
+  host_impl.active_tree()->SetRootLayer(
+      LayerImpl::Create(host_impl.active_tree(), 1));
+
+  LayerImpl* root = host_impl.active_tree()->root_layer();
+  SetLayerPropertiesForTesting(root,
+                               identity_matrix,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               root_size,
+                               false,
+                               false);
+
+  root->SetContentBounds(root_size);
+  root->SetMasksToBounds(true);
+
+  root->AddChild(LayerImpl::Create(host_impl.active_tree(), 2));
+
+  LayerImpl* sublayer = root->child_at(0);
+  SetLayerPropertiesForTesting(sublayer,
+                               identity_matrix,
+                               gfx::Point3F(),
+                               gfx::PointF(),
+                               sublayer_size,
+                               false,
+                               false);
+
+  sublayer->SetContentBounds(sublayer_size);
+  sublayer->SetDrawsContent(true);
+
+  LayerImplList layer_impl_list;
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root, device_viewport_size, &layer_impl_list);
+
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+  EXPECT_EQ(gfx::Rect(root_size), sublayer->visible_content_rect());
+
+  root->SetBoundsDelta(gfx::Vector2dF(0.0, 50.0));
+
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+  gfx::Rect affected_by_delta(0, 0, root_size.width(),
+                              root_size.height() + 50);
+  EXPECT_EQ(affected_by_delta, sublayer->visible_content_rect());
+}
+
 }  // namespace
 }  // namespace cc
