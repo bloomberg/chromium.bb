@@ -832,5 +832,14 @@ void HotwordService::ActiveUserChanged() {
 }
 
 bool HotwordService::UserIsActive() {
-  return profile_ == ProfileManager::GetActiveUserProfile();
+#if defined(OS_CHROMEOS)
+  // Only support multiple profiles and profile switching in ChromeOS.
+  if (user_manager::UserManager::IsInitialized()) {
+    user_manager::User* user =
+        user_manager::UserManager::Get()->GetActiveUser();
+    if (user && user->is_profile_created())
+      return profile_ == ProfileManager::GetActiveUserProfile();
+  }
+#endif
+  return true;
 }
