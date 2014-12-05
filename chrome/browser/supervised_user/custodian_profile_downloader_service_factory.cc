@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/supervised_user/custodian_profile_downloader_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -30,6 +31,7 @@ CustodianProfileDownloaderServiceFactory()
           BrowserContextDependencyManager::GetInstance()) {
   // Indirect dependency via ProfileDownloader.
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  DependsOn(SigninManagerFactory::GetInstance());
 }
 
 CustodianProfileDownloaderServiceFactory::

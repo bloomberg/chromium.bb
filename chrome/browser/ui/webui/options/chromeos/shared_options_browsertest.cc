@@ -12,12 +12,14 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -132,8 +134,8 @@ class SharedOptionsTest : public LoginManagerTest {
   // Creates a browser and navigates to the Settings page.
   Browser* CreateBrowserForUser(const user_manager::User* user) {
     Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
-    profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                   user->email());
+    SigninManagerFactory::GetForProfile(profile)->
+        SetAuthenticatedUsername(user->email());
 
     ui_test_utils::BrowserAddedObserver observer;
     Browser* browser = CreateBrowser(profile);

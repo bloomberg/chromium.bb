@@ -36,8 +36,6 @@ class SigninGlobalErrorTest : public testing::Test {
                               FakeSigninManagerBase::Build);
     profile_ = builder.Build();
 
-    profile_->GetPrefs()->SetString(
-        prefs::kGoogleServicesUsername, kTestAccountId);
     SigninManagerFactory::GetForProfile(profile_.get())
         ->SetAuthenticatedUsername(kTestAccountId);
 

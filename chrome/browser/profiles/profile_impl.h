@@ -186,7 +186,6 @@ class ProfileImpl : public Profile {
   }
 
   // Updates the ProfileInfoCache with data from this profile.
-  void UpdateProfileUserNameCache();
   void UpdateProfileSupervisedUserIdCache();
   void UpdateProfileNameCache();
   void UpdateProfileAvatarCache();

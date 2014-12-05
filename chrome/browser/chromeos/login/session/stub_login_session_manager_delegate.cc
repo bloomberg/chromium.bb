@@ -6,7 +6,9 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/signin/core/browser/signin_manager.h"
 
 namespace chromeos {
 
@@ -23,9 +25,8 @@ void StubLoginSessionManagerDelegate::Start() {
   session_manager_->SetSessionState(session_manager::SESSION_STATE_ACTIVE);
 
   // For dev machines and stub user emulate as if sync has been initialized.
-  profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                   login_user_id());
-
+  SigninManagerFactory::GetForProfile(profile())
+      ->SetAuthenticatedUsername(login_user_id());
   RestoreAfterCrashSessionManagerDelegate::Start();
 }
 

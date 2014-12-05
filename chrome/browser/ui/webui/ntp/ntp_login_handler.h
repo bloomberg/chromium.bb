@@ -69,7 +69,6 @@ class NTPLoginHandler : public content::WebUIMessageHandler,
   // Internal helper method
   void UpdateLogin();
 
-  StringPrefMember username_pref_;
   BooleanPrefMember signin_allowed_pref_;
   content::NotificationRegistrar registrar_;
 };

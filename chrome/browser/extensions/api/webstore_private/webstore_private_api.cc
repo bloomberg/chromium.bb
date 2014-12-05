@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/gpu/gpu_feature_checker.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
@@ -33,6 +34,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -523,8 +525,9 @@ bool WebstorePrivateEnableAppLauncherFunction::RunSync() {
 
 bool WebstorePrivateGetBrowserLoginFunction::RunSync() {
   GetBrowserLogin::Results::Info info;
-  info.login = GetProfile()->GetOriginalProfile()->GetPrefs()->GetString(
-      prefs::kGoogleServicesUsername);
+  info.login =
+      SigninManagerFactory::GetForProfile(GetProfile()->GetOriginalProfile())
+          ->GetAuthenticatedUsername();
   results_ = GetBrowserLogin::Results::Create(info);
   return true;
 }

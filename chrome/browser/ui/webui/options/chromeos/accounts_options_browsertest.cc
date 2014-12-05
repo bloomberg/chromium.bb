@@ -63,8 +63,6 @@ class AccountsOptionsTest : public LoginManagerTest {
  protected:
   void CheckAccountsUI(const user_manager::User* user, bool is_owner) {
     Profile* profile = ProfileHelper::Get()->GetProfileByUserUnsafe(user);
-    profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                   user->email());
 
     ui_test_utils::BrowserAddedObserver observer;
     Browser* browser = CreateBrowser(profile);

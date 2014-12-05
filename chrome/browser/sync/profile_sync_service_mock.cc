@@ -46,7 +46,8 @@ ProfileSyncServiceMock::~ProfileSyncServiceMock() {
 // static
 TestingProfile* ProfileSyncServiceMock::MakeSignedInTestingProfile() {
   TestingProfile* profile = new TestingProfile();
-  profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "foo");
+  SigninManagerFactory::GetForProfile(profile)->
+      SetAuthenticatedUsername("foo");
   return profile;
 }
 

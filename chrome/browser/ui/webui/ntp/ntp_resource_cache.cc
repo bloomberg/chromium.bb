@@ -21,6 +21,7 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -40,6 +41,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -553,8 +555,9 @@ void NTPResourceCache::CreateNewTabHTML() {
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableNTPOtherSessionsMenu);
   load_time_data.SetBoolean("showOtherSessionsMenu", show_other_sessions_menu);
-  load_time_data.SetBoolean("isUserSignedIn",
-      !prefs->GetString(prefs::kGoogleServicesUsername).empty());
+  load_time_data.SetBoolean(
+      "isUserSignedIn",
+      SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated());
 
   // Load the new tab page appropriate for this build.
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().

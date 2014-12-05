@@ -231,9 +231,23 @@ NETWORK_EVENT_DETAILS_2 = {
 
 TEST_F('SyncInternalsWebUITest', 'Uninitialized', function() {
   assertNotEquals(null, chrome.sync.aboutInfo);
-  expectTrue(this.hasInDetails(true, 'Username', ''));
   expectTrue(this.hasInDetails(false, 'Summary', 'Uninitialized'));
 });
+
+// Test that username is set correctly when the user is signed in or not.
+// On chromeos, browser tests are signed in by default.  On other platforms,
+// browser tests are signed out.
+GEN('#if defined(OS_CHROMEOS)');
+TEST_F('SyncInternalsWebUITest', 'SignedIn', function() {
+  assertNotEquals(null, chrome.sync.aboutInfo);
+  expectTrue(this.hasInDetails(true, 'Username', 'stub-user@example.com'));
+});
+GEN('#else');
+TEST_F('SyncInternalsWebUITest', 'SignedOut', function() {
+  assertNotEquals(null, chrome.sync.aboutInfo);
+  expectTrue(this.hasInDetails(true, 'Username', ''));
+});
+GEN('#endif  // defined(OS_CHROMEOS)');
 
 TEST_F('SyncInternalsWebUITest', 'LoadPastedAboutInfo', function() {
   // Expose the text field.

@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chromeos/attestation/attestation_constants.h"
@@ -25,6 +26,7 @@
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "extensions/common/test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -187,10 +189,18 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
 
     // Set the user preferences.
     prefs_ = browser()->profile()->GetPrefs();
-    prefs_->SetString(prefs::kGoogleServicesUsername, "test@google.com");
     base::ListValue whitelist;
     whitelist.AppendString(extension_->id());
     prefs_->Set(prefs::kAttestationExtensionWhitelist, whitelist);
+
+    SetAuthenticatedUser();
+  }
+
+  // Derived classes can override this method to set the required authenticated
+  // user in the SigninManager class.
+  virtual void SetAuthenticatedUser() {
+    SigninManagerFactory::GetForProfile(browser()->profile())->
+        SetAuthenticatedUsername("test@google.com");
   }
 
   NiceMock<chromeos::MockCryptohomeClient> mock_cryptohome_client_;
@@ -246,13 +256,6 @@ TEST_F(EPKPChallengeMachineKeyTest, ExtensionNotWhitelisted) {
   prefs_->Set(prefs::kAttestationExtensionWhitelist, empty_whitelist);
 
   EXPECT_EQ(EPKPChallengeKeyBase::kExtensionNotWhitelistedError,
-            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
-}
-
-TEST_F(EPKPChallengeMachineKeyTest, UserNotManaged) {
-  prefs_->SetString(prefs::kGoogleServicesUsername, "test@chromium.org");
-
-  EXPECT_EQ(EPKPChallengeKeyBase::kUserNotManaged,
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 
@@ -393,13 +396,6 @@ TEST_F(EPKPChallengeUserKeyTest, ExtensionNotWhitelisted) {
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 
-TEST_F(EPKPChallengeUserKeyTest, UserNotManaged) {
-  prefs_->SetString(prefs::kGoogleServicesUsername, "test@chromium.org");
-
-  EXPECT_EQ(EPKPChallengeKeyBase::kUserNotManaged,
-            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
-}
-
 TEST_F(EPKPChallengeUserKeyTest, DevicePolicyDisabled) {
   stub_settings_provider_.Set(chromeos::kDeviceAttestationEnabled,
                               base::FundamentalValue(false));
@@ -513,6 +509,33 @@ TEST_F(EPKPChallengeUserKeyTest, AttestationPreparedDbusFailed) {
           chromeos::DBUS_METHOD_CALL_FAILURE, true)));
 
   EXPECT_EQ(GetCertificateError(kDBusError),
+            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
+}
+
+class EPKPChallengeMachineKeyUnmanagedUserTest
+    : public EPKPChallengeMachineKeyTest {
+ protected:
+  void SetAuthenticatedUser() override {
+    SigninManagerFactory::GetForProfile(browser()->profile())->
+        SetAuthenticatedUsername("test@chromium.com");
+  }
+};
+
+TEST_F(EPKPChallengeMachineKeyUnmanagedUserTest, UserNotManaged) {
+  EXPECT_EQ(EPKPChallengeKeyBase::kUserNotManaged,
+            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
+}
+
+class EPKPChallengeUserKeyUnmanagedUserTest : public EPKPChallengeUserKeyTest {
+ protected:
+  void SetAuthenticatedUser() override {
+    SigninManagerFactory::GetForProfile(browser()->profile())->
+        SetAuthenticatedUsername("test@chromium.com");
+  }
+};
+
+TEST_F(EPKPChallengeUserKeyUnmanagedUserTest, UserNotManaged) {
+  EXPECT_EQ(EPKPChallengeKeyBase::kUserNotManaged,
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 

@@ -39,6 +39,7 @@
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_app_menu_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -46,6 +47,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
@@ -710,8 +712,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NotSignedInWithGAIAAccount) {
 
   Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
   ASSERT_TRUE(app_profile);
-  EXPECT_FALSE(app_profile->GetPrefs()->HasPrefPath(
-      prefs::kGoogleServicesUsername));
+  EXPECT_FALSE(
+      SigninManagerFactory::GetForProfile(app_profile)->IsAuthenticated());
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, PRE_LaunchAppNetworkDown) {
@@ -1723,8 +1725,8 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
   // account.
   Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
   ASSERT_TRUE(app_profile);
-  EXPECT_FALSE(app_profile->GetPrefs()->HasPrefPath(
-      prefs::kGoogleServicesUsername));
+  EXPECT_FALSE(
+      SigninManagerFactory::GetForProfile(app_profile)->IsAuthenticated());
 
   // Terminate the app.
   window->GetBaseWindow()->Close();

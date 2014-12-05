@@ -69,6 +69,7 @@
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/services/gcm/push_messaging_service_impl.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
@@ -93,6 +94,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/metrics/metrics_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "components/url_fixer/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
@@ -528,10 +530,6 @@ void ProfileImpl::DoFinalInit() {
   PrefService* prefs = GetPrefs();
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(
-      prefs::kGoogleServicesUsername,
-      base::Bind(&ProfileImpl::UpdateProfileUserNameCache,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(
       prefs::kSupervisedUserId,
       base::Bind(&ProfileImpl::UpdateProfileSupervisedUserIdCache,
                  base::Unretained(this)));
@@ -575,10 +573,7 @@ void ProfileImpl::DoFinalInit() {
                                           BrowserThread::GetBlockingPool());
   CreateProfileDirectory(sequenced_task_runner.get(), base_cache_path_);
 
-  // Now that the profile is hooked up to receive pref change notifications to
-  // kGoogleServicesUsername, initialize components that depend on it to reflect
-  // the current value.
-  UpdateProfileUserNameCache();
+  // Initialize components that depend on the current value.
   UpdateProfileSupervisedUserIdCache();
   UpdateProfileIsEphemeralCache();
   GAIAInfoUpdateServiceFactory::GetForProfile(this);
@@ -841,7 +836,12 @@ ProfileImpl::~ProfileImpl() {
 }
 
 std::string ProfileImpl::GetProfileName() {
-  return GetPrefs()->GetString(prefs::kGoogleServicesUsername);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(this);
+  if (signin_manager)
+    return signin_manager->GetAuthenticatedUsername();
+
+  return std::string();
 }
 
 Profile::ProfileType ProfileImpl::GetProfileType() const {
@@ -1324,18 +1324,6 @@ GURL ProfileImpl::GetHomePage() {
   if (!home_page.is_valid())
     return GURL(chrome::kChromeUINewTabURL);
   return home_page;
-}
-
-void ProfileImpl::UpdateProfileUserNameCache() {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
-  size_t index = cache.GetIndexOfProfileWithPath(GetPath());
-  if (index != std::string::npos) {
-    std::string user_name =
-        GetPrefs()->GetString(prefs::kGoogleServicesUsername);
-    cache.SetUserNameOfProfileAtIndex(index, base::UTF8ToUTF16(user_name));
-    ProfileMetrics::UpdateReportedProfilesStatistics(profile_manager);
-  }
 }
 
 void ProfileImpl::UpdateProfileSupervisedUserIdCache() {

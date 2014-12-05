@@ -2501,10 +2501,7 @@ SigninManagerBase* ProfileSyncService::signin() const {
 void ProfileSyncService::UnsuppressAndStart() {
   DCHECK(profile_);
   sync_prefs_.SetStartSuppressed(false);
-  if (signin_.get() && !signin_->GetOriginal()->IsAuthenticated()) {
-    signin_->GetOriginal()->SetAuthenticatedUsername(
-        profile_->GetPrefs()->GetString(prefs::kGoogleServicesUsername));
-  }
+  DCHECK(!signin_.get() || signin_->GetOriginal()->IsAuthenticated());
   startup_controller_.TryStart();
 }
 

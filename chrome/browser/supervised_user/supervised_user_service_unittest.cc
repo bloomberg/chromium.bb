@@ -11,6 +11,7 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/supervised_user/custodian_profile_downloader_service.h"
 #include "chrome/browser/supervised_user/custodian_profile_downloader_service_factory.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
@@ -20,6 +21,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -140,7 +142,8 @@ TEST_F(SupervisedUserServiceTest, ShutDownCustodianProfileDownloader) {
 
   // Emulate being logged in, then start to download a profile so a
   // ProfileDownloader gets created.
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "Logged In");
+  SigninManagerFactory::GetForProfile(profile_.get())->
+      SetAuthenticatedUsername("Logged In");
   downloader_service->DownloadProfile(base::Bind(&OnProfileDownloadedFail));
 }
 

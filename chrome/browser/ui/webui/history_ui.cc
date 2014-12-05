@@ -27,6 +27,7 @@
 #include "chrome/browser/history/web_history_service.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -41,6 +42,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/search/search.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/device_info.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -113,10 +115,17 @@ static const char kDeviceTypeTablet[] = "tablet";
 content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
 
+  // Check if the profile is authenticated.  Guest profiles or incognito
+  // windows may not have a sign in manager, and are considered not
+  // authenticated.
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+  bool is_authenticated = signin_manager != nullptr &&
+      signin_manager->IsAuthenticated();
+
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIHistoryFrameHost);
-  source->AddBoolean("isUserSignedIn",
-      !prefs->GetString(prefs::kGoogleServicesUsername).empty());
+  source->AddBoolean("isUserSignedIn", is_authenticated);
   source->AddLocalizedString("collapseSessionMenuItemText",
       IDS_NEW_TAB_OTHER_SESSIONS_COLLAPSE_SESSION);
   source->AddLocalizedString("expandSessionMenuItemText",

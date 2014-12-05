@@ -86,10 +86,6 @@ NTPLoginHandler::~NTPLoginHandler() {
 
 void NTPLoginHandler::RegisterMessages() {
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  username_pref_.Init(prefs::kGoogleServicesUsername,
-                      pref_service,
-                      base::Bind(&NTPLoginHandler::UpdateLogin,
-                                 base::Unretained(this)));
   signin_allowed_pref_.Init(prefs::kSigninAllowed,
                             pref_service,
                             base::Bind(&NTPLoginHandler::UpdateLogin,
@@ -125,8 +121,8 @@ void NTPLoginHandler::HandleInitializeSyncLogin(const base::ListValue* args) {
 
 void NTPLoginHandler::HandleShowSyncLoginUI(const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
-  std::string username = profile->GetPrefs()->GetString(
-      prefs::kGoogleServicesUsername);
+  std::string username =
+      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedUsername();
   content::WebContents* web_contents = web_ui()->GetWebContents();
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
@@ -195,8 +191,8 @@ void NTPLoginHandler::HandleShowAdvancedLoginUI(const base::ListValue* args) {
 
 void NTPLoginHandler::UpdateLogin() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  std::string username = profile->GetPrefs()->GetString(
-      prefs::kGoogleServicesUsername);
+  std::string username =
+      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedUsername();
 
   base::string16 header, sub_header;
   std::string icon_url;

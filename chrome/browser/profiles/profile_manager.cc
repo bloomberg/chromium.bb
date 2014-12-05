@@ -38,6 +38,7 @@
 #include "chrome/browser/profiles/startup_task_runner_service_factory.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -53,6 +54,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -1182,8 +1184,10 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
   if (cache.GetIndexOfProfileWithPath(profile->GetPath()) != std::string::npos)
     return;
 
-  base::string16 username = base::UTF8ToUTF16(profile->GetPrefs()->GetString(
-      prefs::kGoogleServicesUsername));
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+  base::string16 username = base::UTF8ToUTF16(
+      signin_manager->GetAuthenticatedUsername());
 
   // Profile name and avatar are set by InitProfileUserPrefs and stored in the
   // profile. Use those values to setup the cache entry.

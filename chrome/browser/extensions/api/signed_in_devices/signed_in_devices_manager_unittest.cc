@@ -6,10 +6,12 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_store.h"
 #include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/extensions/api/signed_in_devices.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "extensions/browser/event_router.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +27,8 @@ KeyedService* CreateProfileSyncServiceMock(content::BrowserContext* profile) {
 // Adds a listener and removes it.
 TEST(SignedInDevicesManager, UpdateListener) {
   scoped_ptr<TestingProfile> profile(new TestingProfile());
-  profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "foo");
+  SigninManagerFactory::GetForProfile(profile.get())->
+      SetAuthenticatedUsername("foo");
   ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
       profile.get(), CreateProfileSyncServiceMock);
   SignedInDevicesManager manager(profile.get());

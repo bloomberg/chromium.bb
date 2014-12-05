@@ -6,7 +6,9 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 CustodianProfileDownloaderService::CustodianProfileDownloaderService(
@@ -23,10 +25,10 @@ void CustodianProfileDownloaderService::Shutdown() {
 void CustodianProfileDownloaderService::DownloadProfile(
     const DownloadProfileCallback& callback) {
   // The user must be logged in.
-  std::string username = custodian_profile_->GetPrefs()->GetString(
-      prefs::kGoogleServicesUsername);
-  if (username.empty())
+  if (!SigninManagerFactory::GetForProfile(custodian_profile_)
+          ->IsAuthenticated()) {
     return;
+  }
 
   download_callback_ = callback;
   std::string current_email = custodian_profile_->GetProfileName();

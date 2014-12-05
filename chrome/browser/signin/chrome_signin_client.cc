@@ -7,11 +7,13 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/signin_cookie_changed_subscription.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
@@ -215,4 +217,12 @@ void ChromeSigninClient::GoogleSigninSucceeded(const std::string& account_id,
   if (switches::IsNewProfileManagement() && !password.empty())
     chrome::SetLocalAuthCredentials(profile_, password);
 #endif
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
+  if (index != std::string::npos) {
+    cache.SetUserNameOfProfileAtIndex(index, base::UTF8ToUTF16(username));
+    ProfileMetrics::UpdateReportedProfilesStatistics(profile_manager);
+  }
 }
