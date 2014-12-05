@@ -112,7 +112,7 @@ class ImageDataPlatformBackend : public PPB_ImageData_Impl::Backend {
  public:
   // |is_browser_allocated| indicates whether the backing shared memory should
   // be allocated by the browser process.
-  ImageDataPlatformBackend(bool is_browser_allocated);
+  ImageDataPlatformBackend();
   ~ImageDataPlatformBackend() override;
 
   // PPB_ImageData_Impl::Backend implementation.
@@ -136,8 +136,6 @@ class ImageDataPlatformBackend : public PPB_ImageData_Impl::Backend {
   int width_;
   int height_;
   scoped_ptr<TransportDIB> dib_;
-
-  bool is_browser_allocated_;
 
   // When the device is mapped, this is the image. Null when umapped.
   scoped_ptr<SkCanvas> mapped_canvas_;

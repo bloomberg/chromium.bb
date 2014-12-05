@@ -17,7 +17,6 @@
 #include "content/public/common/window_container_type.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/surface/transport_dib.h"
 
 namespace IPC {
 class Message;
@@ -116,20 +115,6 @@ class RenderWidgetHelper
                        int* surface_id);
   void CreateNewFullscreenWidget(int opener_id, int* route_id, int* surface_id);
 
-#if defined(OS_POSIX)
-  // Called on the IO thread to handle the allocation of a TransportDIB.  If
-  // |cache_in_browser| is |true|, then a copy of the shmem is kept by the
-  // browser, and it is the caller's repsonsibility to call
-  // FreeTransportDIB().  In all cases, the caller is responsible for deleting
-  // the resulting TransportDIB.
-  void AllocTransportDIB(uint32 size,
-                         bool cache_in_browser,
-                         TransportDIB::Handle* result);
-
-  // Called on the IO thread to handle the freeing of a transport DIB
-  void FreeTransportDIB(TransportDIB::Id dib_id);
-#endif
-
  private:
   friend class base::RefCountedThreadSafe<RenderWidgetHelper>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
@@ -162,16 +147,6 @@ class RenderWidgetHelper
   // Called on the IO thread to resume a navigation paused immediately after
   // receiving response headers.
   void OnResumeResponseDeferredAtStart(const GlobalRequestID& request_id);
-
-#if defined(OS_POSIX)
-  // Called on destruction to release all allocated transport DIBs
-  void ClearAllocatedDIBs();
-
-  // On POSIX we keep file descriptors to all the allocated DIBs around until
-  // the renderer frees them.
-  base::Lock allocated_dibs_lock_;
-  std::map<TransportDIB::Id, int> allocated_dibs_;
-#endif
 
   int render_process_id_;
 

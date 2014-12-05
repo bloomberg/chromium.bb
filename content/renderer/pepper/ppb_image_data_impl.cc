@@ -24,19 +24,6 @@ using ppapi::thunk::PPB_ImageData_API;
 
 namespace content {
 
-namespace {
-// Returns true if the ImageData shared memory should be allocated in the
-// browser process for the current platform.
-bool IsBrowserAllocated() {
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
-  // On the Mac, shared memory has to be created in the browser in order to
-  // work in the sandbox.
-  return true;
-#endif
-  return false;
-}
-}  // namespace
-
 PPB_ImageData_Impl::PPB_ImageData_Impl(PP_Instance instance,
                                        PPB_ImageData_Shared::ImageDataType type)
     : Resource(ppapi::OBJECT_IS_IMPL, instance),
@@ -45,7 +32,7 @@ PPB_ImageData_Impl::PPB_ImageData_Impl(PP_Instance instance,
       height_(0) {
   switch (type) {
     case PPB_ImageData_Shared::PLATFORM:
-      backend_.reset(new ImageDataPlatformBackend(IsBrowserAllocated()));
+      backend_.reset(new ImageDataPlatformBackend());
       return;
     case PPB_ImageData_Shared::SIMPLE:
       backend_.reset(new ImageDataSimpleBackend);
@@ -60,7 +47,7 @@ PPB_ImageData_Impl::PPB_ImageData_Impl(PP_Instance instance, ForTest)
       format_(PP_IMAGEDATAFORMAT_BGRA_PREMUL),
       width_(0),
       height_(0) {
-  backend_.reset(new ImageDataPlatformBackend(false));
+  backend_.reset(new ImageDataPlatformBackend());
 }
 
 PPB_ImageData_Impl::~PPB_ImageData_Impl() {}
@@ -137,19 +124,10 @@ const SkBitmap* PPB_ImageData_Impl::GetMappedBitmap() const {
 
 // ImageDataPlatformBackend ----------------------------------------------------
 
-ImageDataPlatformBackend::ImageDataPlatformBackend(bool is_browser_allocated)
-    : width_(0), height_(0), is_browser_allocated_(is_browser_allocated) {}
+ImageDataPlatformBackend::ImageDataPlatformBackend() : width_(0), height_(0) {
+}
 
-// On POSIX, we have to tell the browser to free the transport DIB.
 ImageDataPlatformBackend::~ImageDataPlatformBackend() {
-  if (is_browser_allocated_) {
-#if defined(OS_POSIX)
-    if (dib_) {
-      RenderThreadImpl::current()->Send(
-          new ViewHostMsg_FreeTransportDIB(dib_->id()));
-    }
-#endif
-  }
 }
 
 bool ImageDataPlatformBackend::Init(PPB_ImageData_Impl* impl,
@@ -161,35 +139,20 @@ bool ImageDataPlatformBackend::Init(PPB_ImageData_Impl* impl,
   width_ = width;
   height_ = height;
   uint32 buffer_size = width_ * height_ * 4;
+  scoped_ptr<base::SharedMemory> shared_memory =
+      RenderThread::Get()->HostAllocateSharedMemoryBuffer(buffer_size);
+  if (!shared_memory)
+    return false;
 
-  // Allocate the transport DIB and the PlatformCanvas pointing to it.
-  TransportDIB* dib = NULL;
-  if (is_browser_allocated_) {
-#if defined(OS_POSIX)
-    // Allocate the image data by sending a message to the browser requesting a
-    // TransportDIB (see also chrome/renderer/webplugin_delegate_proxy.cc,
-    // method WebPluginDelegateProxy::CreateBitmap() for similar code). The
-    // TransportDIB is cached in the browser, and is freed (in typical cases) by
-    // the TransportDIB's destructor.
-    TransportDIB::Handle dib_handle;
-    IPC::Message* msg =
-        new ViewHostMsg_AllocTransportDIB(buffer_size, true, &dib_handle);
-    if (!RenderThreadImpl::current()->Send(msg))
-      return false;
-    if (!TransportDIB::is_valid_handle(dib_handle))
-      return false;
+  // The TransportDIB is always backed by shared memory, so give the shared
+  // memory handle to it.
+  base::SharedMemoryHandle handle;
+  if (!shared_memory->GiveToProcess(base::GetCurrentProcessHandle(), &handle))
+    return false;
 
-    dib = TransportDIB::CreateWithHandle(dib_handle);
-#endif
-  } else {
-    static int next_dib_id = 0;
-    dib = TransportDIB::Create(buffer_size, next_dib_id++);
-    if (!dib)
-      return false;
-  }
-  DCHECK(dib);
-  dib_.reset(dib);
-  return true;
+  dib_.reset(TransportDIB::CreateWithHandle(handle));
+
+  return !!dib_;
 }
 
 bool ImageDataPlatformBackend::IsMapped() const {

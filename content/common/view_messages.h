@@ -1649,27 +1649,6 @@ IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_PreCacheFontCharacters,
                             base::string16 /* characters */)
 #endif
 
-#if defined(OS_POSIX)
-// On POSIX, we cannot allocated shared memory from within the sandbox, so
-// this call exists for the renderer to ask the browser to allocate memory
-// on its behalf. We return a file descriptor to the POSIX shared memory.
-// If the |cache_in_browser| flag is |true|, then a copy of the shmem is kept
-// by the browser, and it is the caller's repsonsibility to send a
-// ViewHostMsg_FreeTransportDIB message in order to release the cached shmem.
-// In all cases, the caller is responsible for deleting the resulting
-// TransportDIB.
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_AllocTransportDIB,
-                            uint32_t, /* bytes requested */
-                            bool, /* cache in the browser */
-                            TransportDIB::Handle /* DIB */)
-
-// Since the browser keeps handles to the allocated transport DIBs, this
-// message is sent to tell the browser that it may release them when the
-// renderer is finished with them.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_FreeTransportDIB,
-                     TransportDIB::Id /* DIB id */)
-#endif
-
 // Adding a new message? Stick to the sort order above: first platform
 // independent ViewMsg, then ifdefs for platform specific ViewMsg, then platform
 // independent ViewHostMsg, then ifdefs for platform specific ViewHostMsg.

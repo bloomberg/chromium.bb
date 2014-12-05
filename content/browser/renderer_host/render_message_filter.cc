@@ -413,10 +413,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(
         ChildProcessHostMsg_SyncAllocateLockedDiscardableSharedMemory,
         OnAllocateLockedDiscardableSharedMemory)
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AllocTransportDIB, OnAllocTransportDIB)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FreeTransportDIB, OnFreeTransportDIB)
-#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
                         OnCacheableMetadataAvailable)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_Keygen, OnKeygen)
@@ -970,18 +966,6 @@ net::CookieStore* RenderMessageFilter::GetCookieStoreForURL(
   // for this renderer.
   return request_context_->GetURLRequestContext()->cookie_store();
 }
-
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
-void RenderMessageFilter::OnAllocTransportDIB(
-    uint32 size, bool cache_in_browser, TransportDIB::Handle* handle) {
-  render_widget_helper_->AllocTransportDIB(size, cache_in_browser, handle);
-}
-
-void RenderMessageFilter::OnFreeTransportDIB(
-    TransportDIB::Id dib_id) {
-  render_widget_helper_->FreeTransportDIB(dib_id);
-}
-#endif
 
 void RenderMessageFilter::OnCacheableMetadataAvailable(
     const GURL& url,

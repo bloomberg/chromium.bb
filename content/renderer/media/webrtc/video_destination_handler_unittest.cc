@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
+#include "content/public/test/mock_render_thread.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_registry.h"
@@ -37,6 +38,7 @@ class VideoDestinationHandlerTest : public PpapiUnittest {
  public:
   VideoDestinationHandlerTest()
      : child_process_(new ChildProcess()),
+       render_thread_(new MockRenderThread),
        registry_(new MockMediaStreamRegistry()) {
     registry_->Init(kTestStreamUrl);
   }
@@ -53,6 +55,7 @@ class VideoDestinationHandlerTest : public PpapiUnittest {
 
  protected:
   scoped_ptr<ChildProcess> child_process_;
+  scoped_ptr<MockRenderThread> render_thread_;
   scoped_ptr<MockMediaStreamRegistry> registry_;
 };
 
