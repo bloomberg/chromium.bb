@@ -96,6 +96,7 @@ class WebViewImpl : public WebView {
   Status EndProfile(scoped_ptr<base::Value>* profile_data) override;
 
  private:
+  Status TraverseHistoryWithJavaScript(int delta);
   Status CallAsyncFunctionInternal(const std::string& frame,
                                    const std::string& function,
                                    const base::ListValue& args,

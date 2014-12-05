@@ -170,8 +170,20 @@ Status WebViewImpl::TraverseHistory(int delta) {
   scoped_ptr<base::DictionaryValue> result;
   Status status = client_->SendCommandAndGetResult(
       "Page.getNavigationHistory", params, &result);
-  if (status.IsError())
-    return status;
+  if (status.IsError()) {
+    // TODO(samuong): remove this once we stop supporting WebView on KitKat.
+    // Older versions of WebView on Android (on KitKat and earlier) do not have
+    // the Page.getNavigationHistory DevTools command handler, so fall back to
+    // using JavaScript to navigate back and forward. WebView reports its build
+    // number as 0, so use the error message to detect if we can't use the
+    // DevTools command.
+    std::string message;
+    result->GetString("message", &message);
+    if (message == "'Page.getNavigationHistory' wasn't found")
+      return TraverseHistoryWithJavaScript(delta);
+    else
+      return status;
+  }
 
   int current_index;
   if (!result->GetInteger("currentIndex", &current_index))
@@ -195,6 +207,16 @@ Status WebViewImpl::TraverseHistory(int delta) {
   params.SetInteger("entryId", entry_id);
 
   return client_->SendCommand("Page.navigateToHistoryEntry", params);
+}
+
+Status WebViewImpl::TraverseHistoryWithJavaScript(int delta) {
+  scoped_ptr<base::Value> value;
+  if (delta == -1)
+    return EvaluateScript(std::string(), "window.history.back();", &value);
+  else if (delta == 1)
+    return EvaluateScript(std::string(), "window.history.forward();", &value);
+  else
+    return Status(kUnknownError, "expected delta to be 1 or -1");
 }
 
 Status WebViewImpl::EvaluateScript(const std::string& frame,
