@@ -522,11 +522,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   env = env.copy() if env is not None else os.environ.copy()
   env.update(extra_env if extra_env else {})
   if enter_chroot and not IsInsideChroot():
-    path = os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk')
-    if os.path.exists(path):
-      wrapper = [path]
-    else:
-      wrapper = ['cros_sdk']
+    wrapper = ['cros_sdk']
 
     if chroot_args:
       wrapper += chroot_args

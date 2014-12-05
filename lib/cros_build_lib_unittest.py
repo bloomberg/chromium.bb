@@ -401,8 +401,7 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     cmd_list = ['foo', 'bar', 'roger']
     real_cmd = cmd_list
     if not cros_build_lib.IsInsideChroot():
-      real_cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk'),
-                  '--'] + cmd_list
+      real_cmd = ['cros_sdk', '--'] + cmd_list
     self._TestCmd(cmd_list, real_cmd, rc_kv=dict(enter_chroot=True))
 
   @_ForceLoggingLevel
@@ -512,9 +511,7 @@ class TestRunCommand(cros_test_lib.MockTestCase):
 
     # Run.  We expect the env= to be passed through from sp (subprocess.Popen)
     # to rc (RunCommand).
-    self._TestCmd(cmd_list, [os.path.join(constants.CHROMITE_BIN_DIR,
-                                          'cros_sdk'),
-                             'Pinky=Brain', '--'] + cmd_list,
+    self._TestCmd(cmd_list, ['cros_sdk', 'Pinky=Brain', '--'] + cmd_list,
                   sp_kv=dict(env=total_env),
                   rc_kv=dict(env=env, extra_env=extra_env, enter_chroot=True))
 

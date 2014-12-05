@@ -39,8 +39,6 @@ class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTest):
 
   def setUp(self):
     self.PatchObject(cros_build_lib, 'GetChrootVersion', return_value='12')
-    self.cros_sdk = os.path.join(self.tempdir, 'buildroot',
-                                 constants.CHROMITE_BIN_SUBDIR, 'cros_sdk')
 
   def ConstructStage(self):
     return build_stages.InitSDKStage(self._run)
@@ -49,7 +47,7 @@ class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTest):
     """Tests whether we create chroots for full builds."""
     self._PrepareFull()
     self._Run(dir_exists=True)
-    self.assertCommandContains([self.cros_sdk])
+    self.assertCommandContains(['cros_sdk'])
 
   def testBinBuildWithMissingChroot(self):
     """Tests whether we create chroots when needed."""
@@ -57,19 +55,19 @@ class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTest):
     # Do not force chroot replacement in build config.
     self._run._config.chroot_replace = False
     self._Run(dir_exists=False)
-    self.assertCommandContains([self.cros_sdk])
+    self.assertCommandContains(['cros_sdk'])
 
   def testFullBuildWithMissingChroot(self):
     """Tests whether we create chroots when needed."""
     self._PrepareFull()
     self._Run(dir_exists=True)
-    self.assertCommandContains([self.cros_sdk])
+    self.assertCommandContains(['cros_sdk'])
 
   def testFullBuildWithNoSDK(self):
     """Tests whether the --nosdk option works."""
     self._PrepareFull(extra_cmd_args=['--nosdk'])
     self._Run(dir_exists=False)
-    self.assertCommandContains([self.cros_sdk, '--bootstrap'])
+    self.assertCommandContains(['cros_sdk', '--bootstrap'])
 
   def testBinBuildWithExistingChroot(self):
     """Tests whether the --nosdk option works."""
@@ -78,7 +76,7 @@ class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTest):
     self._run._config.chroot_replace = False
     self._run.config.useflags = ['foo']
     self._Run(dir_exists=True)
-    self.assertCommandContains([self.cros_sdk], expected=False)
+    self.assertCommandContains(['cros_sdk'], expected=False)
     self.assertCommandContains(['./run_chroot_version_hooks'],
                                enter_chroot=True, extra_env={'USE': 'foo'})
 
@@ -126,7 +124,7 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTest):
     self.assertCommandContains(['./setup_board'], expected=run_setup_board)
     cmd = ['./setup_board', '--skip_chroot_upgrade']
     self.assertCommandContains(cmd, expected=run_setup_board)
-    cmd = ['./setup_board', '--nousepkg']
+    cmd = ['./setup_board', '--nousepkg'],
     self.assertCommandContains(cmd,
         expected=run_setup_board and not self._run.config.usepkg_build_packages)
 
