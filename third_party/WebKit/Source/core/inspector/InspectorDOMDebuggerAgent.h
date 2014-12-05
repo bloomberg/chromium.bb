@@ -63,18 +63,18 @@ class InspectorDOMDebuggerAgent final
 public:
     static PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> create(InspectorDOMAgent*, InspectorDebuggerAgent*);
 
-    virtual ~InspectorDOMDebuggerAgent();
-    virtual void trace(Visitor*) override;
+    ~InspectorDOMDebuggerAgent() override;
+    void trace(Visitor*) override;
 
     // DOMDebugger API for InspectorFrontend
-    virtual void setXHRBreakpoint(ErrorString*, const String& url) override;
-    virtual void removeXHRBreakpoint(ErrorString*, const String& url) override;
-    virtual void setEventListenerBreakpoint(ErrorString*, const String& eventName, const String* targetName) override;
-    virtual void removeEventListenerBreakpoint(ErrorString*, const String& eventName, const String* targetName) override;
-    virtual void setInstrumentationBreakpoint(ErrorString*, const String& eventName) override;
-    virtual void removeInstrumentationBreakpoint(ErrorString*, const String& eventName) override;
-    virtual void setDOMBreakpoint(ErrorString*, int nodeId, const String& type) override;
-    virtual void removeDOMBreakpoint(ErrorString*, int nodeId, const String& type) override;
+    void setXHRBreakpoint(ErrorString*, const String& url) override;
+    void removeXHRBreakpoint(ErrorString*, const String& url) override;
+    void setEventListenerBreakpoint(ErrorString*, const String& eventName, const String* targetName) override;
+    void removeEventListenerBreakpoint(ErrorString*, const String& eventName, const String* targetName) override;
+    void setInstrumentationBreakpoint(ErrorString*, const String& eventName) override;
+    void removeInstrumentationBreakpoint(ErrorString*, const String& eventName) override;
+    void setDOMBreakpoint(ErrorString*, int nodeId, const String& type) override;
+    void removeDOMBreakpoint(ErrorString*, int nodeId, const String& type) override;
     // InspectorInstrumentation API
     void willInsertDOMNode(Node* parent);
     void didInvalidateStyleAttr(Node*);
@@ -95,8 +95,8 @@ public:
     void didFireWebGLErrorOrWarning(const String& message);
     void willCloseWindow();
 
-    virtual void clearFrontend() override;
-    virtual void discardAgent() override;
+    void clearFrontend() override;
+    void discardAgent() override;
 
 private:
     InspectorDOMDebuggerAgent(InspectorDOMAgent*, InspectorDebuggerAgent*);
@@ -105,16 +105,16 @@ private:
     PassRefPtr<JSONObject> preparePauseOnNativeEventData(const String& eventName, const String* targetName);
 
     // InspectorDOMAgent::Listener implementation.
-    virtual void domAgentWasEnabled() override;
-    virtual void domAgentWasDisabled() override;
+    void domAgentWasEnabled() override;
+    void domAgentWasDisabled() override;
 
     // InspectorDebuggerAgent::Listener implementation.
-    virtual void debuggerWasEnabled() override;
-    virtual void debuggerWasDisabled() override;
-    virtual bool canPauseOnPromiseEvent() override;
-    virtual void didCreatePromise() override;
-    virtual void didResolvePromise() override;
-    virtual void didRejectPromise() override;
+    void debuggerWasEnabled() override;
+    void debuggerWasDisabled() override;
+    bool canPauseOnPromiseEvent() override;
+    void didCreatePromise() override;
+    void didResolvePromise() override;
+    void didRejectPromise() override;
     void disable();
 
     void descriptionForDOMEvent(Node* target, int breakpointType, bool insertion, JSONObject* description);

@@ -50,29 +50,29 @@ class PageDebuggerAgent final
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PageDebuggerAgent);
 public:
     static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
-    virtual ~PageDebuggerAgent();
-    virtual void trace(Visitor*) override;
+    ~PageDebuggerAgent() override;
+    void trace(Visitor*) override;
 
     void didClearDocumentOfWindowObject(LocalFrame*);
     void didCommitLoad(LocalFrame*, DocumentLoader*);
 
 protected:
-    virtual void enable() override;
-    virtual void disable() override;
+    void enable() override;
+    void disable() override;
 
 private:
-    virtual void startListeningScriptDebugServer() override;
-    virtual void stopListeningScriptDebugServer() override;
-    virtual PageScriptDebugServer& scriptDebugServer() override;
-    virtual void muteConsole() override;
-    virtual void unmuteConsole() override;
+    void startListeningScriptDebugServer() override;
+    void stopListeningScriptDebugServer() override;
+    PageScriptDebugServer& scriptDebugServer() override;
+    void muteConsole() override;
+    void unmuteConsole() override;
 
     // InspectorOverlayHost::Listener implementation.
-    virtual void overlayResumed() override;
-    virtual void overlaySteppedOver() override;
+    void overlayResumed() override;
+    void overlaySteppedOver() override;
 
-    virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
-    virtual void setOverlayMessage(ErrorString*, const String*) override;
+    InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
+    void setOverlayMessage(ErrorString*, const String*) override;
 
     PageDebuggerAgent(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
     // FIXME: Oilpan: Move PageScriptDebugServer to heap in follow-up CL.

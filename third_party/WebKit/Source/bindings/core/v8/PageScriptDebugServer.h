@@ -61,25 +61,25 @@ public:
     };
     void setClientMessageLoop(PassOwnPtr<ClientMessageLoop>);
 
-    virtual void compileScript(ScriptState*, const String& expression, const String& sourceURL, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace) override;
-    virtual void clearCompiledScripts() override;
-    virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace) override;
-    virtual void setPreprocessorSource(const String&) override;
-    virtual void preprocessBeforeCompile(const v8::Debug::EventDetails&) override;
-    virtual PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&) override;
-    virtual String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName) override;
-    virtual void clearPreprocessor() override;
+    void compileScript(ScriptState*, const String& expression, const String& sourceURL, String* scriptId, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace) override;
+    void clearCompiledScripts() override;
+    void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionDetailsText, int* lineNumber, int* columnNumber, RefPtrWillBeRawPtr<ScriptCallStack>* stackTrace) override;
+    void setPreprocessorSource(const String&) override;
+    void preprocessBeforeCompile(const v8::Debug::EventDetails&) override;
+    PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&) override;
+    String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName) override;
+    void clearPreprocessor() override;
 
-    virtual void muteWarningsAndDeprecations() override;
-    virtual void unmuteWarningsAndDeprecations() override;
+    void muteWarningsAndDeprecations() override;
+    void unmuteWarningsAndDeprecations() override;
 
 private:
     PageScriptDebugServer();
-    virtual ~PageScriptDebugServer();
+    ~PageScriptDebugServer() override;
 
-    virtual ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>) override;
-    virtual void runMessageLoopOnPause(v8::Handle<v8::Context>) override;
-    virtual void quitMessageLoopOnPause() override;
+    ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>) override;
+    void runMessageLoopOnPause(v8::Handle<v8::Context>) override;
+    void quitMessageLoopOnPause() override;
 
     typedef HashMap<Page*, ScriptDebugListener*> ListenersMap;
     ListenersMap m_listenersMap;
