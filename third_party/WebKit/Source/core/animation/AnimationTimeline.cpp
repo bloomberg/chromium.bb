@@ -222,6 +222,8 @@ void AnimationTimeline::setCurrentTime(double currentTime)
 void AnimationTimeline::setCurrentTimeInternal(double currentTime)
 {
     m_zeroTimeOffset = document()->animationClock().currentTime() - m_zeroTime - currentTime;
+    for (const auto& player : m_players)
+        player->setOutdated();
 }
 
 double AnimationTimeline::effectiveTime()
