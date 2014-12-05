@@ -32,11 +32,11 @@ class CryptAuthApiCallFlow : public OAuth2ApiCallFlow {
   //   result_callback: Called when the flow completes successfully with a
   //       serialized response proto.
   //   error_callback: Called when the flow completes with an error.
-  void Start(net::URLRequestContextGetter* context,
-             const std::string& access_token,
-             const std::string& serialized_request,
-             ResultCallback result_callback,
-             ErrorCallback error_callback);
+  virtual void Start(net::URLRequestContextGetter* context,
+                     const std::string& access_token,
+                     const std::string& serialized_request,
+                     const ResultCallback& result_callback,
+                     const ErrorCallback& error_callback);
 
  protected:
   // Reduce the visibility of OAuth2ApiCallFlow::Start() to avoid exposing

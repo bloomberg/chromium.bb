@@ -4,8 +4,11 @@
 
 source_set("cryptauth") {
   sources = [
+    "cryptauth_access_token_fetcher.h",
     "cryptauth_api_call_flow.cc",
     "cryptauth_api_call_flow.h",
+    "cryptauth_client.cc",
+    "cryptauth_client.h",
   ]
 
   deps = [
@@ -13,12 +16,17 @@ source_set("cryptauth") {
     "//google_apis",
     "//net",
   ]
+
+  public_deps = [
+    "proto",
+  ]
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [
     "cryptauth_api_call_flow_unittest.cc",
+    "cryptauth_client_unittest.cc",
   ]
 
   deps = [

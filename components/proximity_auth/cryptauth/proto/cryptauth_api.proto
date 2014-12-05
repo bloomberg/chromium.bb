@@ -38,10 +38,6 @@ message FindEligibleUnlockDevicesRequest {
   // this field is left unset, no callback will be made, and no message will be
   // pushed to the user's devices.
   optional string callback_bluetooth_address = 2;
-
-  // Identifies what kind of resource this is. Value: the fixed string
-  // <code>"cryptauth#findEligibleUnlockDevicesRequest"</code>.
-  optional string kind = 3;
 }
 
 // Response containing a list of devices that could be made Unlock Keys
@@ -53,10 +49,6 @@ message FindEligibleUnlockDevicesResponse {
   // will not contain any non-gms core devices, even though these are also not
   // eligible to be unlock keys.
   repeated IneligibleDevice ineligible_devices = 2;
-
-  // Identifies what kind of resource this is. Value: the fixed string
-  // <code>"cryptauth#findEligibleUnlockDevicesResponse"</code>.
-  optional string kind = 3;
 }
 
 // Request to complete a device enrollment.
@@ -78,10 +70,6 @@ message FinishEnrollmentResponse {
 
   // A detailed error message if there was a failure.
   optional string error_message = 2;
-
-  // Identifies what kind of resource this is. Value: the fixed string
-  // <code>"cryptauth#finishEnrollmentResponse"</code>.
-  optional string kind = 5;
 }
 
 // Used to request devices that have a specific feature.
@@ -95,10 +83,6 @@ message GetDevicesForFeatureRequest {
 message GetDevicesForFeatureResponse {
   // A (possibly empty) list of devices supporting the requested feature.
   repeated ExternalDeviceInfo result_sets = 1;
-
-  // Identifies what kind of resource this is. Value: the fixed string
-  // <code>"cryptauth#getDevicesForFeatureResponse"</code>.
-  optional string kind = 2;
 }
 
 // Request for a listing of a user's own devices
@@ -106,19 +90,14 @@ message GetMyDevicesRequest {
   // Return only devices that can act as EasyUnlock keys.
   optional bool approved_for_unlock_required = 2;
 
-  // Identifies what kind of resource this is. Value: the fixed string
-  // <code>"cryptauth#getMyDevicesRequest"</code>.
-  optional string kind = 3;
+  // Allow the returned list to be somewhat out of date (read will be faster)
+  optional bool allow_stale_read = 3 [default = false];
 }
 
 // Response containing a listing of the users device's
 message GetMyDevicesResponse {
   // A listing of all sync-able devices
   repeated ExternalDeviceInfo devices = 1;
-
-  // Identifies what kind of resource this is. Value: the fixed string
-  // <code>"cryptauth#getMyDevicesResponse"</code>.
-  optional string kind = 2;
 }
 
 // A device that the server thinks is not eligible to be an unlock key, and the
@@ -137,9 +116,10 @@ message IneligibleDevice {
 
 // Requests to send a "tickle" requesting to sync all of a user's devices now
 message SendDeviceSyncTickleRequest {
-  // Identifies what kind of resource this is. Value: the fixed string
-  // <code>"cryptauth#sendDeviceSyncTickleRequest"</code>.
-  optional string kind = 2;
+}
+
+message SendDeviceSyncTickleResponse {
+  // empty for now
 }
 
 // Contains information needed to begin a device enrollment.
@@ -178,10 +158,6 @@ message SetupEnrollmentResponse {
 
   // Information for each of the requested protocol <code>type</code>s.
   repeated SetupEnrollmentInfo infos = 2;
-
-  // Identifies what kind of resource this is. Value: the fixed string
-  // <code>"cryptauth#setupEnrollmentResponse"</code>.
-  optional string kind = 3;
 }
 
 // Used to enable or disable EasyUnlock features on a specified device, and also
@@ -202,8 +178,8 @@ message ToggleEasyUnlockRequest {
   // set.  NOTE: the case enable=true is not yet supported, so this option can
   // only disable EasyUnlock for all devices.
   optional bool apply_to_all = 3;
+}
 
-  // Identifies what kind of resource this is. Value: the fixed string
-  // <code>"cryptauth#toggleEasyUnlockRequest"</code>.
-  optional string kind = 4;
+message ToggleEasyUnlockResponse {
+  // empty for now
 }

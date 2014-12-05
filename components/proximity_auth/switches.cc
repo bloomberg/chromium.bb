@@ -7,6 +7,10 @@
 namespace proximity_auth {
 namespace switches {
 
+// Overrides the default URL for Google APIs (https://www.googleapis.com) used
+// by CryptAuth.
+const char kCryptAuthHTTPHost[] = "cryptauth-http-host";
+
 // Disable Easy sign-in.
 const char kDisableEasySignin[] = "disable-easy-signin";
 
