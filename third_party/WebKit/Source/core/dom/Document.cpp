@@ -3258,9 +3258,9 @@ bool Document::childTypeAllowed(NodeType type) const
     return false;
 }
 
-bool Document::canReplaceChild(const Node& newChild, const Node& oldChild) const
+bool Document::canAcceptChild(const Node& newChild, const Node* oldChild, ExceptionState& exceptionState) const
 {
-    if (oldChild.nodeType() == newChild.nodeType())
+    if (oldChild && oldChild->nodeType() == newChild.nodeType())
         return true;
 
     int numDoctypes = 0;
@@ -3268,11 +3268,11 @@ bool Document::canReplaceChild(const Node& newChild, const Node& oldChild) const
 
     // First, check how many doctypes and elements we have, not counting
     // the child we're about to remove.
-    for (Node& c : NodeTraversal::childrenOf(*this)) {
-        if (c == oldChild)
+    for (Node& child : NodeTraversal::childrenOf(*this)) {
+        if (oldChild && *oldChild == child)
             continue;
 
-        switch (c.nodeType()) {
+        switch (child.nodeType()) {
         case DOCUMENT_TYPE_NODE:
             numDoctypes++;
             break;
@@ -3286,13 +3286,15 @@ bool Document::canReplaceChild(const Node& newChild, const Node& oldChild) const
 
     // Then, see how many doctypes and elements might be added by the new child.
     if (newChild.isDocumentFragment()) {
-        for (Node& c : NodeTraversal::childrenOf(toDocumentFragment(newChild))) {
-            switch (c.nodeType()) {
+        for (Node& child : NodeTraversal::childrenOf(toDocumentFragment(newChild))) {
+            switch (child.nodeType()) {
             case ATTRIBUTE_NODE:
             case CDATA_SECTION_NODE:
             case DOCUMENT_FRAGMENT_NODE:
             case DOCUMENT_NODE:
             case TEXT_NODE:
+                exceptionState.throwDOMException(HierarchyRequestError, "Nodes of type '" + newChild.nodeName() +
+                    "' may not be inserted inside nodes of type '#document'.");
                 return false;
             case COMMENT_NODE:
             case PROCESSING_INSTRUCTION_NODE:
@@ -3312,6 +3314,8 @@ bool Document::canReplaceChild(const Node& newChild, const Node& oldChild) const
         case DOCUMENT_FRAGMENT_NODE:
         case DOCUMENT_NODE:
         case TEXT_NODE:
+            exceptionState.throwDOMException(HierarchyRequestError, "Nodes of type '" + newChild.nodeName() +
+                "' may not be inserted inside nodes of type '#document'.");
             return false;
         case COMMENT_NODE:
         case PROCESSING_INSTRUCTION_NODE:
@@ -3325,8 +3329,12 @@ bool Document::canReplaceChild(const Node& newChild, const Node& oldChild) const
         }
     }
 
-    if (numElements > 1 || numDoctypes > 1)
+    if (numElements > 1 || numDoctypes > 1) {
+        exceptionState.throwDOMException(HierarchyRequestError,
+            String::format("Only one %s on document allowed.",
+            numElements > 1 ? "element" : "doctype"));
         return false;
+    }
 
     return true;
 }

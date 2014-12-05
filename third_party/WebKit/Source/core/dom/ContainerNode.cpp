@@ -152,13 +152,10 @@ bool ContainerNode::checkAcceptChild(const Node* newChild, const Node* oldChild,
         return false;
     }
 
-    if (oldChild && isDocumentNode()) {
-        if (!toDocument(this)->canReplaceChild(*newChild, *oldChild)) {
-            // FIXME: Adjust 'Document::canReplaceChild' to return some additional detail (or an error message).
-            exceptionState.throwDOMException(HierarchyRequestError, "Failed to replace child.");
-            return false;
-        }
-    } else if (!isChildTypeAllowed(*newChild)) {
+    if (isDocumentNode())
+        return toDocument(this)->canAcceptChild(*newChild, oldChild, exceptionState);
+
+    if (!isChildTypeAllowed(*newChild)) {
         exceptionState.throwDOMException(HierarchyRequestError, "Nodes of type '" + newChild->nodeName() + "' may not be inserted inside nodes of type '" + nodeName() + "'.");
         return false;
     }
