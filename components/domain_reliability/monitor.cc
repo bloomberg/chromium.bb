@@ -285,10 +285,15 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   DomainReliabilityBeacon beacon;
   beacon.status = beacon_status;
   beacon.chrome_error = error_code;
-  if (!request.response_info.was_fetched_via_proxy)
+  // If the response was cached, the socket address was the address that the
+  // response was originally received from, so it shouldn't be copied into the
+  // beacon.
+  //
+  // TODO(ttuttle): Wire up a way to get the real socket address in that case.
+  if (!request.response_info.was_cached &&
+      !request.response_info.was_fetched_via_proxy) {
     beacon.server_ip = request.response_info.socket_address.host();
-  else
-    beacon.server_ip.clear();
+  }
   beacon.protocol = GetDomainReliabilityProtocol(
       request.response_info.connection_info,
       request.response_info.ssl_info.is_valid());

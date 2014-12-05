@@ -73,6 +73,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
         net::HostPortPair::FromString("12.34.56.78:80");
     request.response_info.headers = MakeHttpResponseHeaders(
         "HTTP/1.1 200 OK\n\n");
+    request.response_info.was_cached = false;
     request.response_info.network_accessed = true;
     request.response_info.was_fetched_via_proxy = false;
     request.load_flags = 0;
@@ -253,6 +254,37 @@ TEST_F(DomainReliabilityMonitorTest, WasFetchedViaProxy) {
   EXPECT_TRUE(beacons[0].server_ip.empty());
 
   EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 1u, 0u));
+}
+
+// Make sure the monitor does not log the cached IP returned after a successful
+// cache revalidation request.
+TEST_F(DomainReliabilityMonitorTest,
+       NoCachedIPFromSuccessfulRevalidationRequest) {
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://example/always_report");
+  request.response_info.was_cached = true;
+  OnRequestLegComplete(request);
+
+  BeaconVector beacons;
+  context_->GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(1u, beacons.size());
+  EXPECT_TRUE(beacons[0].server_ip.empty());
+}
+
+// Make sure the monitor does not log the cached IP returned with a failed
+// cache revalidation request.
+TEST_F(DomainReliabilityMonitorTest, NoCachedIPFromFailedRevalidationRequest) {
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://example/always_report");
+  request.response_info.was_cached = true;
+  request.status.set_status(net::URLRequestStatus::FAILED);
+  request.status.set_error(net::ERR_NAME_RESOLUTION_FAILED);
+  OnRequestLegComplete(request);
+
+  BeaconVector beacons;
+  context_->GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(1u, beacons.size());
+  EXPECT_TRUE(beacons[0].server_ip.empty());
 }
 
 TEST_F(DomainReliabilityMonitorTest, AtLeastOneBakedInConfig) {
