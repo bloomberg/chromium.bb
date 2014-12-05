@@ -12,9 +12,8 @@
 namespace base {
 
 int64 TimeValToMicroseconds(const struct timeval& tv) {
-  static const int kMicrosecondsPerSecond = 1000000;
   int64 ret = tv.tv_sec;  // Avoid (int * int) integer overflow.
-  ret *= kMicrosecondsPerSecond;
+  ret *= Time::kMicrosecondsPerSecond;
   ret += tv.tv_usec;
   return ret;
 }
