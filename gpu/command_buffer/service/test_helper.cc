@@ -440,7 +440,7 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
     EXPECT_CALL(*gl, BindTexture(GL_TEXTURE_2D, tx_ids[1]))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_RED_EXT, width, width, 0,
+    EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, _, width, width, 0,
         GL_RED_EXT, GL_UNSIGNED_BYTE, _))
         .Times(1)
         .RetiresOnSaturation();
