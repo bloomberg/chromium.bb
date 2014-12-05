@@ -4,10 +4,13 @@
 
 package org.chromium.content.browser.input;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.view.View;
+import android.view.inputmethod.CursorAnchorInfo;
 import android.view.inputmethod.InputMethodManager;
 
 /**
@@ -63,22 +66,13 @@ public class InputMethodManagerWrapper {
     }
 
     /**
-     * @see android.view.inputmethod.InputMethodManager#isWatchingCursor(View)
+     * @see android.view.inputmethod.InputMethodManager#updateCursorAnchorInfo(View,
+     * CursorAnchorInfo)
      */
-    @SuppressWarnings("deprecation")
-    public boolean isWatchingCursor(View view) {
-        // TODO(aurimas): InputMethodManager.isWatchingCursor() was deprecated in L. Fix
-        // this once the final Android L SDK is released.
-        return getInputMethodManager().isWatchingCursor(view);
-    }
-
-    /**
-     * @see android.view.inputmethod.InputMethodManager#updateCursor(View, int, int, int, int)
-     */
-    @SuppressWarnings("deprecation")
-    public void updateCursor(View view, int left, int top, int right, int bottom) {
-        // TODO(aurimas): InputMethodManager.updateCursor() was deprecated in L. Fix
-        // this once the final Android L SDK is released.
-        getInputMethodManager().updateCursor(view, left, top, right, bottom);
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void updateCursorAnchorInfo(View view, CursorAnchorInfo cursorAnchorInfo) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getInputMethodManager().updateCursorAnchorInfo(view, cursorAnchorInfo);
+        }
     }
 }
