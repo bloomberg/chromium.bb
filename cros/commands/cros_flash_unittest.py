@@ -19,64 +19,6 @@ from chromite.lib import remote_access
 
 
 # pylint: disable=W0212
-class TestXbuddyHelpers(cros_test_lib.MockTempDirTestCase):
-  """Test xbuddy helper functions."""
-  def testGenerateXbuddyRequestForUpdate(self):
-    """Test we generate correct xbuddy requests."""
-    # Use the latest build when 'latest' is given.
-    req = 'xbuddy/latest?for_update=true&return_dir=true'
-    self.assertEqual(
-        cros_flash.GenerateXbuddyRequest('latest', 'update'), req)
-
-    # Convert the path starting with 'xbuddy://' to 'xbuddy/'
-    path = 'xbuddy://remote/stumpy/version'
-    req = 'xbuddy/remote/stumpy/version?for_update=true&return_dir=true'
-    self.assertEqual(cros_flash.GenerateXbuddyRequest(path, 'update'), req)
-
-  def testGenerateXbuddyRequestForImage(self):
-    """Tests that we generate correct requests to get images."""
-    image_path = 'foo/bar/taco'
-    self.assertEqual(cros_flash.GenerateXbuddyRequest(image_path, 'image'),
-                     'xbuddy/foo/bar/taco?return_dir=true')
-
-    image_path = 'xbuddy://foo/bar/taco'
-    self.assertEqual(cros_flash.GenerateXbuddyRequest(image_path, 'image'),
-                     'xbuddy/foo/bar/taco?return_dir=true')
-
-  def testGenerateXbuddyRequestForTranslate(self):
-    """Tests that we generate correct requests for translation."""
-    image_path = 'foo/bar/taco'
-    self.assertEqual(cros_flash.GenerateXbuddyRequest(image_path, 'translate'),
-                     'xbuddy_translate/foo/bar/taco')
-
-    image_path = 'xbuddy://foo/bar/taco'
-    self.assertEqual(cros_flash.GenerateXbuddyRequest(image_path, 'translate'),
-                     'xbuddy_translate/foo/bar/taco')
-
-  def testConvertTranslatedPath(self):
-    """Tests that we convert a translated path to a usable xbuddy path."""
-    path = 'remote/latest-canary'
-    translated_path = 'taco-release/R36-5761.0.0/chromiumos_test_image.bin'
-    self.assertEqual(cros_flash.ConvertTranslatedPath(path, translated_path),
-                     'remote/taco-release/R36-5761.0.0/test')
-
-    path = 'latest'
-    translated_path = 'taco/R36-5600.0.0/chromiumos_image.bin'
-    self.assertEqual(cros_flash.ConvertTranslatedPath(path, translated_path),
-                     'local/taco/R36-5600.0.0/dev')
-
-  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=True)
-  def testTranslatedPathToLocalPath(self, _mock1):
-    """Tests that we convert a translated path to a local path correctly."""
-    translated_path = 'peppy-release/R33-5116.87.0/chromiumos_image.bin'
-    base_path = os.path.join(self.tempdir, 'peppy-release/R33-5116.87.0')
-
-    local_path = os.path.join(base_path, 'chromiumos_image.bin')
-    self.assertEqual(
-        cros_flash.TranslatedPathToLocalPath(translated_path, self.tempdir),
-        local_path)
-
-
 class MockFlashCommand(init_unittest.MockCommand):
   """Mock out the flash command."""
   TARGET = 'chromite.cros.commands.cros_flash.FlashCommand'
@@ -93,14 +35,10 @@ class MockFlashCommand(init_unittest.MockCommand):
 class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
   """Mock out RemoteDeviceUpdater."""
   TARGET = 'chromite.cros.commands.cros_flash.RemoteDeviceUpdater'
-  ATTRS = ('UpdateStateful', 'UpdateRootfs', 'GetUpdatePayloads',
-           'SetupRootfsUpdate', 'Verify')
+  ATTRS = ('UpdateStateful', 'UpdateRootfs', 'SetupRootfsUpdate', 'Verify')
 
   def __init__(self):
     partial_mock.PartialCmdMock.__init__(self)
-
-  def GetUpdatePayloads(self, _inst, *_args, **_kwargs):
-    """Mock out GetUpdatePayloads."""
 
   def UpdateStateful(self, _inst, *_args, **_kwargs):
     """Mock out UpdateStateful."""
@@ -132,11 +70,12 @@ class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
     """Patches objects."""
     self.cmd_mock = None
     self.updater_mock = self.StartPatcher(RemoteDeviceUpdaterMock())
-    self.PatchObject(cros_flash, 'GenerateXbuddyRequest',
+    self.PatchObject(dev_server_wrapper, 'GenerateXbuddyRequest',
                      return_value='xbuddy/local/latest')
     self.PatchObject(dev_server_wrapper, 'DevServerWrapper')
-    self.PatchObject(cros_flash, 'GetImagePathWithXbuddy',
+    self.PatchObject(dev_server_wrapper, 'GetImagePathWithXbuddy',
                      return_value='taco-paladin/R36/chromiumos_test_image.bin')
+    self.PatchObject(dev_server_wrapper, 'GetUpdatePayloads')
     self.PatchObject(remote_access, 'CHECK_INTERVAL', new=0)
     self.PatchObject(remote_access, 'ChromiumOSDevice')
 
@@ -219,10 +158,10 @@ class ImagingRunThroughTest(cros_test_lib.MockTempDirTestCase,
     self.cmd_mock = None
     self.usb_mock = USBImagerMock()
     self.imager_mock = self.StartPatcher(self.usb_mock)
-    self.PatchObject(cros_flash, 'GenerateXbuddyRequest',
+    self.PatchObject(dev_server_wrapper, 'GenerateXbuddyRequest',
                      return_value='xbuddy/local/latest')
     self.PatchObject(dev_server_wrapper, 'DevServerWrapper')
-    self.PatchObject(cros_flash, 'GetImagePathWithXbuddy',
+    self.PatchObject(dev_server_wrapper, 'GetImagePathWithXbuddy',
                      return_value='taco-paladin/R36/chromiumos_test_image.bin')
     self.PatchObject(os.path, 'exists', return_value=True)
 
@@ -254,7 +193,8 @@ class ImagingRunThroughTest(cros_test_lib.MockTempDirTestCase,
   def testNonLocalImagePath(self):
     """Tests that we try to get the image path using xbuddy."""
     self.SetupCommandMock(['usb:///dev/foo', self.IMAGE])
-    with mock.patch.object(cros_flash, 'GetImagePathWithXbuddy') as mock_xbuddy:
+    with mock.patch.object(dev_server_wrapper,
+                           'GetImagePathWithXbuddy') as mock_xbuddy:
       with mock.patch('os.path.isfile', return_value=False):
         with mock.patch('os.path.isdir', return_value=False):
           self.cmd_mock.inst.Run()

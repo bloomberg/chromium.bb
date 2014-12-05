@@ -11,9 +11,12 @@ import logging
 import multiprocessing
 import os
 import socket
+import shutil
+import sys
 import tempfile
 import httplib
 import urllib2
+import urlparse
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
@@ -23,6 +26,274 @@ from chromite.lib import remote_access
 
 
 DEFAULT_PORT = 8080
+
+DEVSERVER_PKG_DIR = os.path.join(constants.SOURCE_ROOT, 'src/platform/dev')
+DEFAULT_STATIC_DIR = cros_build_lib.FromChrootPath(
+    os.path.join(constants.SOURCE_ROOT, 'src', 'platform', 'dev', 'static'))
+
+IMAGE_NAME_TO_TYPE = {
+    'chromiumos_test_image.bin': 'test',
+    'chromiumos_image.bin': 'dev',
+    'chromiumos_base_image.bin': 'base',
+    'recovery_image.bin': 'recovery',
+}
+
+IMAGE_TYPE_TO_NAME = {
+    'test': 'chromiumos_test_image.bin',
+    'dev': 'chromiumos_image.bin',
+    'base': 'chromiumos_base_image.bin',
+    'recovery': 'recovery_image.bin',
+}
+
+XBUDDY_REMOTE = 'remote'
+XBUDDY_LOCAL = 'local'
+
+ROOTFS_FILENAME = 'update.gz'
+STATEFUL_FILENAME = 'stateful.tgz'
+
+
+def ConvertTranslatedPath(original_path, translated_path):
+  """Converts a translated xbuddy path to an xbuddy path.
+
+  Devserver/xbuddy does not accept requests with translated xbuddy
+  path (build-id/version/image-name). This function converts such a
+  translated path to an xbuddy path that is suitable to used in
+  devserver requests.
+
+  Args:
+    original_path: the xbuddy path before translation.
+      (e.g., remote/peppy/latest-canary).
+    translated_path: the translated xbuddy path
+      (e.g., peppy-release/R36-5760.0.0).
+
+  Returns:
+    A xbuddy path uniquely identifies a build and can be used in devserver
+      requests: {local|remote}/build-id/version/image_type
+  """
+  chunks = translated_path.split(os.path.sep)
+  chunks[-1] = IMAGE_NAME_TO_TYPE[chunks[-1]]
+
+  if GetXbuddyPath(original_path).startswith(XBUDDY_REMOTE):
+    chunks = [XBUDDY_REMOTE] + chunks
+  else:
+    chunks = [XBUDDY_LOCAL] + chunks
+
+  return os.path.sep.join(chunks)
+
+
+def GetXbuddyPath(path):
+  """A helper function to parse an xbuddy path.
+
+  Args:
+    path: Either a path without no scheme or an xbuddy://path/for/xbuddy
+
+  Returns:
+    path/for/xbuddy if |path| is xbuddy://path/for/xbuddy; otherwise,
+    returns |path|.
+
+  Raises:
+    ValueError if |path| uses any scheme other than xbuddy://.
+  """
+  parsed = urlparse.urlparse(path)
+
+  # pylint: disable=E1101
+  if parsed.scheme == 'xbuddy':
+    return '%s%s' % (parsed.netloc, parsed.path)
+  elif parsed.scheme == '':
+    logging.debug('Assuming %s is an xbuddy path.', path)
+    return path
+  else:
+    raise ValueError('Do not support scheme %s.', parsed.scheme)
+
+
+# pylint: disable=import-error
+def GetImagePathWithXbuddy(path, board, static_dir=DEFAULT_STATIC_DIR,
+                           device='<DEVICE>'):
+  """Gets image path using xbuddy.
+
+  Ask xbuddy to translate |path|, and if necessary, download and stage the
+  image, then return a translated path to the image.
+
+  Args:
+    path: The xbuddy path.
+    board: The default board to use if board is not specified in |path|.
+    static_dir: Static directory to stage the image in.
+    device: The device specified by the user.
+
+  Returns:
+    A translated path to the image: build-id/version/image_name.
+  """
+  # Import xbuddy for translating, downloading and staging the image.
+  if not os.path.exists(DEVSERVER_PKG_DIR):
+    raise Exception('Cannot find xbuddy module. Devserver package directory '
+                    'does not exist: %s' % DEVSERVER_PKG_DIR)
+  sys.path.append(DEVSERVER_PKG_DIR)
+  import xbuddy
+
+  xb = xbuddy.XBuddy(static_dir=static_dir, board=board,
+                     log_screen=False)
+  path_list = GetXbuddyPath(path).rsplit(os.path.sep)
+
+  try:
+    build_id, file_name = xb.Get(path_list)
+    return os.path.join(build_id, file_name)
+  except xbuddy.XBuddyException as e:
+    logging.error('Locating image "%s" failed. The path might not be valid or '
+                  'the image might not exist. To get the latest remote image, '
+                  'please run:\ncros flash --board=%s %s remote/latest', path,
+                  board, device)
+    raise ValueError('Cannot locate image %s: %s' % (path, e))
+
+
+def GenerateXbuddyRequest(path, req_type):
+  """Generate an xbuddy request used to retreive payloads.
+
+  This function generates a xbuddy request based on |path| and
+  |req_type|, which can be used to query the devserver. For request
+  type 'image' ('update'), the devserver will repond with a URL
+  pointing to the folder where the image (update payloads) is stored.
+
+  Args:
+    path: An xbuddy path (with or without xbuddy://).
+    req_type: xbuddy request type ('update', 'image', or 'translate').
+
+  Returns:
+    A xbuddy request.
+  """
+  if req_type == 'update':
+    return 'xbuddy/%s?for_update=true&return_dir=true' % GetXbuddyPath(path)
+  elif req_type == 'image':
+    return 'xbuddy/%s?return_dir=true' % GetXbuddyPath(path)
+  elif req_type == 'translate':
+    return 'xbuddy_translate/%s' % GetXbuddyPath(path)
+  else:
+    raise ValueError('Does not support xbuddy request type %s' % req_type)
+
+
+def TranslatedPathToLocalPath(translated_path, static_dir):
+  """Convert the translated path to a local path to the image file.
+
+  Args:
+    translated_path: the translated xbuddy path
+      (e.g., peppy-release/R36-5760.0.0/chromiumos_image).
+    static_dir: The static directory used by the devserver.
+
+  Returns:
+    A local path to the image file.
+  """
+  real_path = osutils.ExpandPath(os.path.join(static_dir, translated_path))
+
+  if os.path.exists(real_path):
+    return real_path
+  else:
+    return cros_build_lib.FromChrootPath(real_path)
+
+
+def GetUpdatePayloadsFromLocalPath(path, payload_dir,
+                                   src_image_to_delta=None,
+                                   static_dir=DEFAULT_STATIC_DIR):
+  """Generates update payloads from a local image path.
+
+  This function wraps around ConvertLocalPathToXbuddy and GetUpdatePayloads,
+  managing the creation and destruction of the necessary temporary directories
+  required by this process.
+
+  Args:
+    path: Path to an image.
+    payload_dir: The directory to store the payloads. On failure, the devserver
+                 log will be copied to |payload_dir|.
+    src_image_to_delta: Image used as the base to generate the delta payloads.
+    static_dir: Devserver static dir to use.
+  """
+
+  with cros_build_lib.ContextManagerStack() as stack:
+    image_tempdir = stack.Add(
+        osutils.TempDir, base_dir=cros_build_lib.FromChrootPath('/tmp'),
+        prefix='dev_server_wrapper_local_image', sudo_rm=True)
+    static_tempdir = stack.Add(osutils.TempDir,
+                               base_dir=static_dir,
+                               prefix='local_image', sudo_rm=True)
+    xbuddy_path = ConvertLocalPathToXbuddyPath(path, image_tempdir,
+                                               static_tempdir, static_dir)
+    GetUpdatePayloads(xbuddy_path, payload_dir,
+                      src_image_to_delta=src_image_to_delta,
+                      static_dir=static_dir)
+
+
+def ConvertLocalPathToXbuddyPath(path, image_tempdir, static_tempdir,
+                                 static_dir=DEFAULT_STATIC_DIR):
+  """Converts |path| to an xbuddy path.
+
+  This function copies the image into a temprary directory in chroot
+  and creates a symlink in static_dir for devserver/xbuddy to
+  access.
+
+  Note that the temporary directories need to be cleaned up by the caller
+  once they are no longer needed.
+
+  Args:
+    path: Path to an image.
+    image_tempdir: osutils.TempDir instance to copy the image into. The
+                   directory must be located within the chroot.
+    static_tempdir: osutils.TempDir instance to be symlinked to by the static
+                    directory.
+    static_dir: Static directory to create the symlink in.
+
+  Returns:
+    The xbuddy path for |path|
+  """
+  tempdir_path = image_tempdir.tempdir
+  logging.info('Copying image to temporary directory %s', tempdir_path)
+  # Devserver only knows the image names listed in IMAGE_TYPE_TO_NAME.
+  # Rename the image to chromiumos_test_image.bin when copying.
+  TEMP_IMAGE_TYPE = 'test'
+  shutil.copy(path,
+              os.path.join(tempdir_path, IMAGE_TYPE_TO_NAME[TEMP_IMAGE_TYPE]))
+  chroot_path = cros_build_lib.ToChrootPath(tempdir_path)
+  # Create and link static_dir/local_imagexxxx/link to the image
+  # folder, so that xbuddy/devserver can understand the path.
+  relative_dir = os.path.join(os.path.basename(static_tempdir.tempdir), 'link')
+  symlink_path = os.path.join(static_dir, relative_dir)
+  logging.info('Creating a symlink %s -> %s', symlink_path, chroot_path)
+  os.symlink(chroot_path, symlink_path)
+  return os.path.join(relative_dir, TEMP_IMAGE_TYPE)
+
+
+def GetUpdatePayloads(path, payload_dir, board=None,
+                      src_image_to_delta=None, timeout=60 * 15,
+                      static_dir=DEFAULT_STATIC_DIR):
+  """Launch devserver to get the update payloads.
+
+  Args:
+    path: The xbuddy path.
+    payload_dir: The directory to store the payloads. On failure, the devserver
+                 log will be copied to |payload_dir|.
+    board: The default board to use when |path| is None.
+    src_image_to_delta: Image used as the base to generate the delta payloads.
+    timeout: Timeout for launching devserver (seconds).
+    static_dir: Devserver static dir to use.
+  """
+  ds = DevServerWrapper(static_dir=static_dir,
+                        src_image=src_image_to_delta, board=board)
+  req = GenerateXbuddyRequest(path, 'update')
+  logging.info('Starting local devserver to generate/serve payloads...')
+  try:
+    ds.Start()
+    url = ds.OpenURL(ds.GetURL(sub_dir=req), timeout=timeout)
+    ds.DownloadFile(os.path.join(url, ROOTFS_FILENAME), payload_dir)
+    ds.DownloadFile(os.path.join(url, STATEFUL_FILENAME), payload_dir)
+  except DevServerException:
+    logging.warning(ds.TailLog() or 'No devserver log is available.')
+    raise
+  else:
+    logging.debug(ds.TailLog() or 'No devserver log is available.')
+  finally:
+    ds.Stop()
+    if os.path.exists(ds.log_file):
+      shutil.copyfile(ds.log_file,
+                      os.path.join(payload_dir, 'local_devserver.log'))
+    else:
+      logging.warning('Could not find %s', ds.log_file)
 
 
 def GenerateUpdateId(target, src, key, for_vm):
