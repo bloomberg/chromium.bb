@@ -572,10 +572,7 @@ crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-duri
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-beyond-duration.html [ Failure ]
 
 # Pixel captures are currently totally broken on Android Nexus4's at the moment.
-crbug.com/293932 [ Android ] css1/formatting_model/horizontal_formatting.html [ Failure ]
-crbug.com/293932 [ Android ] svg/canvas/canvas-pattern-svg.html [ ImageOnlyFailure ]
 crbug.com/293932 [ Android ] css3/images/optimize-contrast-image.html [ ImageOnlyFailure Timeout Pass ]
-crbug.com/293932 [ Android ] svg/as-background-image/svg-width-100p-as-background.html [ ImageOnlyFailure Pass ]
 
 crbug.com/436766 [ Mac ] fast/transforms/transform-on-inline.html [ Pass ImageOnlyFailure ]
 
@@ -793,18 +790,37 @@ crbug.com/323130 imported/web-platform-tests/shadow-dom/styles/test-002.html [ S
 
 crbug.com/338475 crbug.com/307777 [ Android ] css1/cascade/important.html [ Failure Timeout ]
 crbug.com/338475 crbug.com/307777 [ Android ] css1/classification/list_style.html [ Failure Timeout ]
-crbug.com/338475 [ Android ] css1/classification/list_style_position.html [ Failure ]
-crbug.com/338475 [ Android ] css1/classification/list_style_image.html [ Failure ]
 crbug.com/338475 crbug.com/307777 [ Android ] css1/color_and_background/background_color.html [ Failure Timeout ]
 crbug.com/338475 crbug.com/307777 [ Android ] css1/color_and_background/color.html [ Failure Timeout ]
-crbug.com/338475 [ Android ] css1/font_properties/font_style.html [ Failure ]
-crbug.com/338475 [ Android ] css1/formatting_model/canvas.html [ Failure ]
-crbug.com/338475 [ Android ] css1/text_properties/text_align.html [ Failure ]
-crbug.com/338475 [ Android ] fast/compact/002.html [ Failure ]
 crbug.com/338475 crbug.com/307777 [ Android ] fast/hidpi/clip-text-in-hidpi.html [ Failure Timeout ]
-crbug.com/338475 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 crbug.com/338475 crbug.com/307777 [ Android ] fast/invalid/009.html [ Failure Timeout ]
-crbug.com/338475 [ Android ] svg/batik/text/textAnchor3.svg [ Failure ]
+
+crbug.com/439457 [ Android ] compositing/draws-content/canvas-background-layer.html [ Slow Crash ]
+crbug.com/439457 [ Android ] http/tests/media/media-source/mediasource-play.html [ Slow Crash ]
+crbug.com/439457 [ Android ] compositing/repaint/invalidations-on-composited-layers.html [ Slow Crash ]
+crbug.com/439457 [ Android ] compositing/repaint/resize-repaint.html [ Slow Crash ]
+crbug.com/439457 [ Android ] css1/classification/list_style_image.html [ Slow Crash ]
+crbug.com/439457 [ Android ] css1/classification/list_style_position.html [ Slow Crash ]
+crbug.com/439457 [ Android ] css1/font_properties/font_style.html [ Slow Crash ]
+crbug.com/439457 [ Android ] css1/font_properties/font_variant.html [ Slow Crash ]
+crbug.com/439457 [ Android ] css1/formatting_model/canvas.html [ Slow Crash ]
+crbug.com/439457 [ Android ] css1/formatting_model/horizontal_formatting.html [ Slow Crash ]
+crbug.com/439457 [ Android ] css1/text_properties/text_align.html [ Slow Crash ]
+crbug.com/439457 [ Android ] editing/caret/caret-color.html [ Slow Crash ]
+crbug.com/439457 [ Android ] fast/compact/002.html [ Slow Crash ]
+crbug.com/439457 [ Android ] fast/inline-block/overflow-clip.html [ Slow Crash ]
+crbug.com/439457 [ Android ] fast/text/chromium-linux-fontconfig-renderstyle.html [ Slow Crash ]
+crbug.com/439457 [ Android ] media/media-load-event.html [ Slow Crash ]
+crbug.com/439457 [ Android ] media/video-autoplay.html [ Slow Crash ]
+crbug.com/439457 [ Android ] svg/W3C-SVG-1.1-SE/coords-dom-02-f.svg [ Slow Crash ]
+crbug.com/439457 [ Android ] svg/as-background-image/svg-width-100p-as-background.html [ Slow Crash ]
+crbug.com/439457 [ Android ] svg/batik/text/textAnchor3.svg [ Slow Crash ]
+crbug.com/439457 [ Android ] svg/canvas/canvas-pattern-svg.html [ Slow Crash ]
+crbug.com/439457 [ Android ] svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ Slow Crash ]
+
+crbug.com/439466 [ Mac Win ] svg/custom/relative-sized-image.xhtml [ NeedsRebaseline ]
+crbug.com/439466 [ Linux Win ] virtual/textblob/svg/text/bidi-text-anchor-direction.svg [ NeedsRebaseline ]
+crbug.com/439466 [ Win ] virtual/textblob/svg/text/selection-styles.xhtml [ NeedsRebaseline ]
 
 crbug.com/340150 [ Mac Debug ] plugins/plugin-document-back-forward.html [ Pass Failure ]
 
