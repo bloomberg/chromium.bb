@@ -607,9 +607,10 @@ cvox.ChromeVoxUserCommands.doCommand_ = function(cmdStruct) {
     case 'speakTableLocation':
     case 'exitShifterContent':
       if (!cvox.DomPredicates.tablePredicate(cvox.DomUtil.getAncestors(
-              cvox.ChromeVox.navigationManager.getCurrentNode())) ||
-          !cvox.ChromeVox.navigationManager.performAction(cmd)) {
+          cvox.ChromeVox.navigationManager.getCurrentNode()))) {
         errorMsg = 'not_inside_table';
+      } else if (!cvox.ChromeVox.navigationManager.performAction(cmd)) {
+        errorMsg = 'not_in_table_mode';
       }
       break;
 

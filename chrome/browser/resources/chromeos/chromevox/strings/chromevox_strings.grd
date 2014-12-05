@@ -692,6 +692,9 @@
       <message desc="Spoken when the user attempts a table mode command, but is not in a table." name="IDS_CHROMEVOX_NOT_INSIDE_TABLE">
         Not inside table.
       </message>
+      <message desc="Spoken when the user attempts to use a table command inside a table, but without using table mode." name="IDS_CHROMEVOX_NOT_IN_TABLE_MODE">
+        Not in table mode.
+      </message>
       <message desc="Spoken, in table mode, when the user attempts to navigate to a non-existant next row." name="IDS_CHROMEVOX_NO_CELL_BELOW">
         No cell below.
       </message>
