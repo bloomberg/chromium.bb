@@ -5527,7 +5527,7 @@ display_create(int *argc, char *argv[])
 	d->registry = wl_display_get_registry(d->display);
 	wl_registry_add_listener(d->registry, &registry_listener, d);
 
-	if (wl_display_dispatch(d->display) < 0) {
+	if (wl_display_roundtrip(d->display) < 0) {
 		fprintf(stderr, "Failed to process Wayland connection: %m\n");
 		return NULL;
 	}
