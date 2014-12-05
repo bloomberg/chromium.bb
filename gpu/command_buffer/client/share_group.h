@@ -19,6 +19,7 @@ class GLES2ImplementationTest;
 class ProgramInfoManager;
 
 typedef void (GLES2Implementation::*DeleteFn)(GLsizei n, const GLuint* ids);
+typedef void (GLES2Implementation::*BindFn)(GLenum target, GLuint id);
 
 class ShareGroupContextData {
  public:
@@ -55,7 +56,11 @@ class IdHandlerInterface {
       DeleteFn delete_fn) = 0;
 
   // Marks an id as used for glBind functions. id = 0 does nothing.
-  virtual bool MarkAsUsedForBind(GLuint id) = 0;
+  virtual bool MarkAsUsedForBind(
+      GLES2Implementation* gl_impl,
+      GLenum target,
+      GLuint id,
+      BindFn bind_fn) = 0;
 
   // Called when a context in the share group is destructed.
   virtual void FreeContext(GLES2Implementation* gl_impl) = 0;

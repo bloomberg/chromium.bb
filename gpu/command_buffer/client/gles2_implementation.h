@@ -432,13 +432,19 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   bool IsProgramReservedId(GLuint id) { return false; }
   bool IsValuebufferReservedId(GLuint id) { return false; }
 
-  bool BindBufferHelper(GLenum target, GLuint texture);
-  bool BindFramebufferHelper(GLenum target, GLuint texture);
-  bool BindRenderbufferHelper(GLenum target, GLuint texture);
-  bool BindTextureHelper(GLenum target, GLuint texture);
-  bool BindVertexArrayOESHelper(GLuint array);
-  bool BindValuebufferCHROMIUMHelper(GLenum target, GLuint valuebuffer);
-  bool UseProgramHelper(GLuint program);
+  void BindBufferHelper(GLenum target, GLuint buffer);
+  void BindFramebufferHelper(GLenum target, GLuint framebuffer);
+  void BindRenderbufferHelper(GLenum target, GLuint renderbuffer);
+  void BindTextureHelper(GLenum target, GLuint texture);
+  void BindVertexArrayOESHelper(GLuint array);
+  void BindValuebufferCHROMIUMHelper(GLenum target, GLuint valuebuffer);
+  void UseProgramHelper(GLuint program);
+
+  void BindBufferStub(GLenum target, GLuint buffer);
+  void BindFramebufferStub(GLenum target, GLuint framebuffer);
+  void BindRenderbufferStub(GLenum target, GLuint renderbuffer);
+  void BindTextureStub(GLenum target, GLuint texture);
+  void BindValuebufferCHROMIUMStub(GLenum target, GLuint valuebuffer);
 
   void GenBuffersHelper(GLsizei n, const GLuint* buffers);
   void GenFramebuffersHelper(GLsizei n, const GLuint* framebuffers);

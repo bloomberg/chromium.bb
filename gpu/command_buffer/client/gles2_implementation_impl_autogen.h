@@ -30,9 +30,7 @@ void GLES2Implementation::BindBuffer(GLenum target, GLuint buffer) {
     SetGLError(GL_INVALID_OPERATION, "BindBuffer", "buffer reserved id");
     return;
   }
-  if (BindBufferHelper(target, buffer)) {
-    helper_->BindBuffer(target, buffer);
-  }
+  BindBufferHelper(target, buffer);
   CheckGLError();
 }
 
@@ -46,9 +44,7 @@ void GLES2Implementation::BindFramebuffer(GLenum target, GLuint framebuffer) {
                "framebuffer reserved id");
     return;
   }
-  if (BindFramebufferHelper(target, framebuffer)) {
-    helper_->BindFramebuffer(target, framebuffer);
-  }
+  BindFramebufferHelper(target, framebuffer);
   CheckGLError();
 }
 
@@ -62,9 +58,7 @@ void GLES2Implementation::BindRenderbuffer(GLenum target, GLuint renderbuffer) {
                "renderbuffer reserved id");
     return;
   }
-  if (BindRenderbufferHelper(target, renderbuffer)) {
-    helper_->BindRenderbuffer(target, renderbuffer);
-  }
+  BindRenderbufferHelper(target, renderbuffer);
   CheckGLError();
 }
 
@@ -77,9 +71,7 @@ void GLES2Implementation::BindTexture(GLenum target, GLuint texture) {
     SetGLError(GL_INVALID_OPERATION, "BindTexture", "texture reserved id");
     return;
   }
-  if (BindTextureHelper(target, texture)) {
-    helper_->BindTexture(target, texture);
-  }
+  BindTextureHelper(target, texture);
   CheckGLError();
 }
 
@@ -2061,9 +2053,7 @@ void GLES2Implementation::UseProgram(GLuint program) {
     SetGLError(GL_INVALID_OPERATION, "UseProgram", "program reserved id");
     return;
   }
-  if (UseProgramHelper(program)) {
-    helper_->UseProgram(program);
-  }
+  UseProgramHelper(program);
   CheckGLError();
 }
 
@@ -2472,9 +2462,7 @@ void GLES2Implementation::BindVertexArrayOES(GLuint array) {
     SetGLError(GL_INVALID_OPERATION, "BindVertexArrayOES", "array reserved id");
     return;
   }
-  if (BindVertexArrayOESHelper(array)) {
-    helper_->BindVertexArrayOES(array);
-  }
+  BindVertexArrayOESHelper(array);
   CheckGLError();
 }
 
@@ -2622,9 +2610,7 @@ void GLES2Implementation::BindValuebufferCHROMIUM(GLenum target,
                "valuebuffer reserved id");
     return;
   }
-  if (BindValuebufferCHROMIUMHelper(target, valuebuffer)) {
-    helper_->BindValuebufferCHROMIUM(target, valuebuffer);
-  }
+  BindValuebufferCHROMIUMHelper(target, valuebuffer);
   CheckGLError();
 }
 

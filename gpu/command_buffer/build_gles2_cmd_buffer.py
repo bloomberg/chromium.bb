@@ -4235,9 +4235,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     SetGLError(GL_INVALID_OPERATION, "%(name)s\", \"%(id)s reserved id");
     return;
   }
-  if (%(name)sHelper(%(arg_string)s)) {
-    helper_->%(name)s(%(arg_string)s);
-  }
+  %(name)sHelper(%(arg_string)s);
   CheckGLError();
 }
 

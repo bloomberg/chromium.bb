@@ -67,11 +67,14 @@ class IdHandler : public IdHandlerInterface {
   }
 
   // Overridden from IdHandlerInterface.
-  bool MarkAsUsedForBind(GLuint id) override {
-    if (id == 0)
-      return true;
+  bool MarkAsUsedForBind(GLES2Implementation* gl_impl,
+                         GLenum target,
+                         GLuint id,
+                         BindFn bind_fn) override {
     base::AutoLock auto_lock(lock_);
-    return id_allocator_.MarkAsUsed(id);
+    bool result = id ? id_allocator_.MarkAsUsed(id) : true;
+    (gl_impl->*bind_fn)(target, id);
+    return result;
   }
 
   void FreeContext(GLES2Implementation* gl_impl) override {}
@@ -147,13 +150,20 @@ class StrictIdHandler : public IdHandlerInterface {
   }
 
   // Overridden from IdHandler.
-  bool MarkAsUsedForBind(GLuint id) override {
+  bool MarkAsUsedForBind(GLES2Implementation* gl_impl,
+                         GLenum target,
+                         GLuint id,
+                         BindFn bind_fn) override {
 #ifndef NDEBUG
     if (id != 0) {
       base::AutoLock auto_lock(lock_);
       DCHECK(id_states_[id - 1] == kIdInUse);
     }
 #endif
+    // StrictIdHandler is used if |bind_generates_resource| is false. In that
+    // case, |bind_fn| will not use Flush() after helper->Bind*(), so it is OK
+    // to call |bind_fn| without holding the lock.
+    (gl_impl->*bind_fn)(target, id);
     return true;
   }
 
@@ -218,7 +228,10 @@ class NonReusedIdHandler : public IdHandlerInterface {
   }
 
   // Overridden from IdHandlerInterface.
-  bool MarkAsUsedForBind(GLuint /* id */) override {
+  bool MarkAsUsedForBind(GLES2Implementation* /* gl_impl */,
+                         GLenum /* target */,
+                         GLuint /* id */,
+                         BindFn /* bind_fn */) override {
     // This is only used for Shaders and Programs which have no bind.
     return false;
   }
