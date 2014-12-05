@@ -26,7 +26,7 @@ UdevLoader* UdevLoader::Get() {
   // will only build an instrumented copy of libudev0 and not libudev1. If one
   // runs the binary on Trusty, it will end up loading an uninstrumented
   // libudev1 at run time. http://crbug.com/437464
-  // TODO(thestig): Remove this after upgrading our MSAN LKGR builders to
+  // TODO(earthdok): Remove this after upgrading our MSAN LKGR builders to
   // Trusty.
 #if !defined(MEMORY_SANITIZER)
   udev_loader.reset(new Udev1Loader);
