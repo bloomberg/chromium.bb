@@ -82,34 +82,12 @@
     "extension_types": ["extension", "legacy_packaged_app"],
     "location": "component"
   },
-  "background": [
-    {
-      "channel": "stable",
-      "extension_types": [
-        "extension", "legacy_packaged_app", "hosted_app"
-      ]
-    },
-    {
-      "channel": "stable",
-      "extension_types": ["platform_app"],
-      "whitelist": [
-        "5B5DA6D054D10DB917AF7D9EAE3C56044D1B0B03",  // http://crbug.com/286542
-        "2843C1E82A9B6C6FB49308FDDF4E157B6B44BC2B",  // http://crbug.com/286542
-        "3F596D221126DCDFD115CFAA2E5A3141806358AD",  // http://crbug.com/286542
-        "F7FA7ABC1ECB89BA8EE6656847EFABBF43BB9BCA",  // http://crbug.com/320952
-        "4B1D0E19C6C43C008C44A8278C8B5BFE15ABEB3C",  // http://crbug.com/320952
-        "4FE45FA56EF6A25FDE8C302C44045CA9CE8A605A",  // http://crbug.com/320952
-        "3D14248405B8A59043420AAC160077C99E7788A9",  // http://crbug.com/398585
-        "A6C87307BBE5886CC5F1393025000E2FE8060BF2",  // http://crbug.com/398585
-        "3407516021EA3669C0EC8E65E6B9837E5A521B9C",  // http://crbug.com/398585
-        "0F585FB1D0FDFBEBCE1FEB5E9DFFB6DA476B8C9B",  // http://crbug.com/405800
-        "2D22CDB6583FD0A13758AEBE8B15E45208B4E9A7",  // http://crbug.com/405800
-        "A07A5B743CD82A1C2579DB77D353C98A23201EEF",  // http://crbug.com/405800
-        "0F42756099D914A026DADFA182871C015735DD95",  // http://crbug.com/405800
-        "F16F23C83C5F6DAD9B65A120448B34056DD80691"   // http://crbug.com/413748
-      ]
-    }
-  ],
+  "background": {
+    "channel": "stable",
+    "extension_types": [
+      "platform_app", "extension", "legacy_packaged_app", "hosted_app"
+    ]
+  },
   "bookmarkManagerPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"],
