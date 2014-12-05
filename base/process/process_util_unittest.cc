@@ -888,14 +888,14 @@ bool IsProcessDead(base::ProcessHandle child) {
 }
 
 TEST_F(ProcessUtilTest, DelayedTermination) {
-  base::ProcessHandle child_process = SpawnChild("process_util_test_never_die");
-  ASSERT_TRUE(child_process);
-  base::EnsureProcessTerminated(child_process);
-  base::WaitForSingleProcess(child_process, base::TimeDelta::FromSeconds(5));
+  base::Process child_process(SpawnChild("process_util_test_never_die"));
+  ASSERT_TRUE(child_process.IsValid());
+  base::EnsureProcessTerminated(child_process.Duplicate());
+  base::WaitForSingleProcess(child_process.Handle(),
+                             base::TimeDelta::FromSeconds(5));
 
   // Check that process was really killed.
-  EXPECT_TRUE(IsProcessDead(child_process));
-  base::CloseProcessHandle(child_process);
+  EXPECT_TRUE(IsProcessDead(child_process.Handle()));
 }
 
 MULTIPROCESS_TEST_MAIN(process_util_test_never_die) {
@@ -906,16 +906,14 @@ MULTIPROCESS_TEST_MAIN(process_util_test_never_die) {
 }
 
 TEST_F(ProcessUtilTest, ImmediateTermination) {
-  base::ProcessHandle child_process =
-      SpawnChild("process_util_test_die_immediately");
-  ASSERT_TRUE(child_process);
+  base::Process child_process(SpawnChild("process_util_test_die_immediately"));
+  ASSERT_TRUE(child_process.IsValid());
   // Give it time to die.
   sleep(2);
-  base::EnsureProcessTerminated(child_process);
+  base::EnsureProcessTerminated(child_process.Duplicate());
 
   // Check that process was really killed.
-  EXPECT_TRUE(IsProcessDead(child_process));
-  base::CloseProcessHandle(child_process);
+  EXPECT_TRUE(IsProcessDead(child_process.Handle()));
 }
 
 MULTIPROCESS_TEST_MAIN(process_util_test_die_immediately) {

@@ -248,7 +248,7 @@ void Zygote::HandleReapRequest(int fd,
     // with this for now.
 #if !defined(THREAD_SANITIZER)
     // TODO(jln): this old code is completely broken. See crbug.com/274855.
-    base::EnsureProcessTerminated(child_info.internal_pid);
+    base::EnsureProcessTerminated(base::Process(child_info.internal_pid));
 #else
     LOG(WARNING) << "Zygote process omitting a call to "
         << "base::EnsureProcessTerminated() for child pid " << child

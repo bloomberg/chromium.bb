@@ -17,7 +17,7 @@
 #include "base/md5.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
-#include "base/process/process_handle.h"
+#include "base/process/process.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -103,7 +103,7 @@ void UpdateChromeIfNeeded(const base::FilePath& chrome_exe) {
   if (IsBrowserRunning(chrome_exe) || !NewChromeExeExists(chrome_exe))
     return;
 
-  base::win::ScopedHandle process_handle;
+  base::Process process;
 
   if (InstallUtil::IsPerUserInstall(chrome_exe.value().c_str())) {
     // Read the update command from the registry.
@@ -115,8 +115,8 @@ void UpdateChromeIfNeeded(const base::FilePath& chrome_exe) {
       // Run the update command.
       base::LaunchOptions launch_options;
       launch_options.start_hidden = true;
-      if (!base::LaunchProcess(update_command, launch_options,
-                               &process_handle)) {
+      process = base::LaunchProcess(update_command, launch_options);
+      if (!process.IsValid()) {
         AtlTrace("%hs. Failed to launch command to finalize update; "
                  "error %u.\n", __FUNCTION__, ::GetLastError());
       }
@@ -139,16 +139,17 @@ void UpdateChromeIfNeeded(const base::FilePath& chrome_exe) {
         AtlTrace("%hs. Failed to launch command to finalize update; "
                  "hr=0x%X.\n", __FUNCTION__, hr);
       } else {
-        process_handle.Set(reinterpret_cast<base::ProcessHandle>(handle));
+        process = base::Process(reinterpret_cast<base::ProcessHandle>(handle));
       }
     }
   }
 
   // Wait for the update to complete and report the results.
-  if (process_handle.IsValid()) {
+  if (process.IsValid()) {
     int exit_code = 0;
-    // WaitForExitCode will close the handle in all cases.
-    if (!base::WaitForExitCode(process_handle.Take(), &exit_code)) {
+    if (!base::WaitForExitCodeWithTimeout(
+            process.Handle(), &exit_code,
+            base::TimeDelta::FromMilliseconds(INFINITE))) {
       AtlTrace("%hs. Failed to get result when finalizing update.\n",
                __FUNCTION__);
     } else if (exit_code != installer::RENAME_SUCCESSFUL) {

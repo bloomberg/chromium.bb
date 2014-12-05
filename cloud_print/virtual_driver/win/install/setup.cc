@@ -138,16 +138,16 @@ HRESULT RegisterPortMonitor(bool install, const base::FilePath& install_path) {
   base::LaunchOptions options;
   options.wait = true;
 
-  base::win::ScopedHandle regsvr32_handle;
-  if (!base::LaunchProcess(command_line.GetCommandLineString(), options,
-                           &regsvr32_handle)) {
+  base::Process regsvr32_process =
+      base::LaunchProcess(command_line.GetCommandLineString(), options);
+  if (!regsvr32_process.IsValid()) {
     LOG(ERROR) << "Unable to launch regsvr32.exe.";
     return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
   }
 
   DWORD exit_code = S_OK;
   if (install) {
-    if (!GetExitCodeProcess(regsvr32_handle.Get(), &exit_code)) {
+    if (!GetExitCodeProcess(regsvr32_process.Handle(), &exit_code)) {
       LOG(ERROR) << "Unable to get regsvr32.exe exit code.";
       return GetLastHResult();
     }

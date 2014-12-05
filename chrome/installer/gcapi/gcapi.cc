@@ -519,8 +519,7 @@ BOOL __stdcall LaunchGoogleChrome() {
     // Couldn't get Omaha's process launcher, Omaha may not be installed at
     // system level. Try just running Chrome instead.
     ret = base::LaunchProcess(chrome_command.GetCommandLineString(),
-                              base::LaunchOptions(),
-                              NULL);
+                              base::LaunchOptions()).IsValid();
   }
 
   if (impersonation_success)
