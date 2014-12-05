@@ -33,11 +33,14 @@ enum PassphraseRequiredReason {
 
 // The different states for the encryption passphrase. These control if and how
 // the user should be prompted for a decryption passphrase.
+// Do not re-order or delete these entries; they are used in a UMA histogram.
+// Please edit SyncPassphraseType in histograms.xml if a value is added.
 enum PassphraseType {
   IMPLICIT_PASSPHRASE = 0,             // GAIA-based passphrase (deprecated).
   KEYSTORE_PASSPHRASE = 1,             // Keystore passphrase.
   FROZEN_IMPLICIT_PASSPHRASE = 2,      // Frozen GAIA passphrase.
   CUSTOM_PASSPHRASE = 3,               // User-provided passphrase.
+  PASSPHRASE_TYPE_SIZE,                // The size of this enum; keep last.
 };
 
 // Enum used to distinguish which bootstrap encryption token is being updated.

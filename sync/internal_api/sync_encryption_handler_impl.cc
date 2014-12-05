@@ -255,6 +255,10 @@ void SyncEncryptionHandlerImpl::Init() {
     WriteEncryptionStateToNigori(&trans);
   }
 
+  UMA_HISTOGRAM_ENUMERATION("Sync.PassphraseType",
+                            GetPassphraseType(),
+                            PASSPHRASE_TYPE_SIZE);
+
   bool has_pending_keys = UnlockVault(
       trans.GetWrappedTrans()).cryptographer.has_pending_keys();
   bool is_ready = UnlockVault(
