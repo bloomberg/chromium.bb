@@ -9,7 +9,7 @@
     '<(DEPTH)/android_webview/android_webview.gyp:android_webview_pak',
   ],
   'variables': {
-    'android_sdk_jar': '<(DEPTH)/third_party/android_platform/webview/frameworks_1597296.jar',
+    'android_sdk_jar': '<(DEPTH)/third_party/android_platform/webview/frameworks_1622219.jar',
     'app_manifest_version_code%': '999999',
     'java_in_dir': 'src/chromium',
     'java_in_dir_suffix': '/java',
