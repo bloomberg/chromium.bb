@@ -17,6 +17,7 @@
 #include "content/public/browser/web_ui.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/media_log_event.h"
+#include "media/filters/decrypting_video_decoder.h"
 #include "media/filters/gpu_video_decoder.h"
 
 namespace {
@@ -198,17 +199,22 @@ class MediaInternals::MediaInternalsUMAHandler : public NotificationObserver {
     media::PipelineStatus last_pipeline_status;
     bool has_audio;
     bool has_video;
+    bool video_dds;
     std::string audio_codec_name;
     std::string video_codec_name;
     std::string video_decoder;
     PipelineInfo()
         : last_pipeline_status(media::PIPELINE_OK),
           has_audio(false),
-          has_video(false) {}
+          has_video(false),
+          video_dds(false) {}
   };
 
   // Helper function to report PipelineStatus associated with a player to UMA.
   void ReportUMAForPipelineStatus(const PipelineInfo& player_info);
+
+  // Helper to generate PipelineStatus UMA name for AudioVideo streams.
+  std::string GetUMANameForAVStream(const PipelineInfo& player_info);
 
   // Key is playerid
   typedef std::map<int, PipelineInfo> PlayerInfoMap;
@@ -286,6 +292,9 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
         event.params.GetString("video_decoder",
                                &player_info[event.id].video_decoder);
       }
+      if (event.params.HasKey("video_dds")) {
+        event.params.GetBoolean("video_dds", &player_info[event.id].video_dds);
+      }
       break;
     default:
       break;
@@ -293,33 +302,47 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
   return;
 }
 
+std::string MediaInternals::MediaInternalsUMAHandler::GetUMANameForAVStream(
+    const PipelineInfo& player_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  static const char kPipelineUmaPrefix[] = "Media.PipelineStatus.AudioVideo.";
+  std::string uma_name = kPipelineUmaPrefix;
+  if (player_info.video_codec_name == "vp8") {
+    uma_name += "VP8.";
+  } else if (player_info.video_codec_name == "vp9") {
+    uma_name += "VP9.";
+  } else if (player_info.video_codec_name == "h264") {
+    uma_name += "H264.";
+  } else {
+    return uma_name + "Other";
+  }
+
+  if (player_info.video_decoder ==
+      media::DecryptingVideoDecoder::kDecoderName) {
+    return uma_name + "DVD";
+  }
+
+  if (player_info.video_dds) {
+    uma_name += "DDS.";
+  }
+
+  if (player_info.video_decoder == media::GpuVideoDecoder::kDecoderName) {
+    uma_name += "HW";
+  } else {
+    uma_name += "SW";
+  }
+  return uma_name;
+}
+
 void MediaInternals::MediaInternalsUMAHandler::ReportUMAForPipelineStatus(
     const PipelineInfo& player_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (player_info.has_video && player_info.has_audio) {
-    if (player_info.video_codec_name == "vp8") {
-      UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.VP8.SW",
-                                player_info.last_pipeline_status,
-                                media::PIPELINE_STATUS_MAX + 1);
-    } else if (player_info.video_codec_name == "vp9") {
-      UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.VP9.SW",
-                                player_info.last_pipeline_status,
-                                media::PIPELINE_STATUS_MAX + 1);
-    } else if (player_info.video_codec_name == "h264") {
-      if (player_info.video_decoder == media::GpuVideoDecoder::kDecoderName) {
-        UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.H264.HW",
-                                  player_info.last_pipeline_status,
-                                  media::PIPELINE_STATUS_MAX + 1);
-      } else {
-        UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.H264.SW",
-                                  player_info.last_pipeline_status,
-                                  media::PIPELINE_STATUS_MAX + 1);
-      }
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.Other",
-                                player_info.last_pipeline_status,
-                                media::PIPELINE_STATUS_MAX + 1);
-    }
+    base::LinearHistogram::FactoryGet(
+        GetUMANameForAVStream(player_info), 1, media::PIPELINE_STATUS_MAX,
+        media::PIPELINE_STATUS_MAX + 1,
+        base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->Add(player_info.last_pipeline_status);
   } else if (player_info.has_audio) {
     UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioOnly",
                               player_info.last_pipeline_status,

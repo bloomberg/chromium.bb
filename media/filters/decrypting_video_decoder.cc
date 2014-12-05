@@ -19,6 +19,8 @@
 
 namespace media {
 
+const char DecryptingVideoDecoder::kDecoderName[] = "DecryptingVideoDecoder";
+
 DecryptingVideoDecoder::DecryptingVideoDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const SetDecryptorReadyCB& set_decryptor_ready_cb)
@@ -31,7 +33,7 @@ DecryptingVideoDecoder::DecryptingVideoDecoder(
       weak_factory_(this) {}
 
 std::string DecryptingVideoDecoder::GetDisplayName() const {
-  return "DecryptingVideoDecoder";
+  return kDecoderName;
 }
 
 void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
