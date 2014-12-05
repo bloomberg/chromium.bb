@@ -63,7 +63,7 @@ cr.define('cr.ui', function() {
 
     /**
      * Function used to create grid items.
-     * @type {function(new:cr.ui.GridItem, Object)}
+     * @type {function(new:cr.ui.GridItem, *)}
      * @override
      */
     itemConstructor_: GridItem,
@@ -250,11 +250,9 @@ cr.define('cr.ui', function() {
      * puts spacers on the right places.
      * @param {number} firstIndex The index of first item, inclusively.
      * @param {number} lastIndex The index of last item, exclusively.
-     * @param {Object.<string, cr.ui.ListItem>} cachedItems Old items cache.
-     * @param {Object.<string, cr.ui.ListItem>} newCachedItems New items cache.
      * @override
      */
-    mergeItems: function(firstIndex, lastIndex, cachedItems, newCachedItems) {
+    mergeItems: function(firstIndex, lastIndex) {
       List.prototype.mergeItems.call(this, firstIndex, lastIndex);
 
       var afterFiller = this.afterFiller_;

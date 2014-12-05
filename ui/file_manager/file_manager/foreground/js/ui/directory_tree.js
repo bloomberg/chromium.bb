@@ -836,8 +836,7 @@ DirectoryTree.prototype = {
    * The DirectoryEntry corresponding to this DirectoryItem. This may be
    * a dummy DirectoryEntry.
    * @type {DirectoryEntry|Object}
-   * @override
-   **/
+   */
   get entry() {
     return this.dirEntry_;
   },
