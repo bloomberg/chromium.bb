@@ -137,6 +137,10 @@ class MockPatch(mock.MagicMock):
     else:
       return flag_value == allowed
 
+  def IsDraft(self):
+    """Return whether this patch is a draft patchset."""
+    return self.current_patch_set['draft']
+
 
 class BaseCQTestCase(generic_stages_unittest.StageTest):
   """Helper class for testing the CommitQueueSync stage"""

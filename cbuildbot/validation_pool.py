@@ -1139,24 +1139,6 @@ class ValidationPool(object):
             self.pre_cq))
 
   @classmethod
-  def FilterDraftChanges(cls, changes):
-    """Filter out draft changes based on the status of the latest patch set.
-
-    Our Gerrit query cannot exclude changes whose latest patch set has
-    not yet been published as long as there is one published patchset
-    in the change. Such changes will fail when we try to merge them,
-    which may lead to undesirable consequence (e.g. dependencies not
-    respected).
-
-    Args:
-      changes: List of changes to filter.
-
-    Returns:
-      List of published changes.
-    """
-    return [x for x in changes if not x.patch_dict['currentPatchSet']['draft']]
-
-  @classmethod
   @failures_lib.SetFailureType(failures_lib.BuilderFailure)
   def AcquirePreCQPool(cls, *args, **kwargs):
     """See ValidationPool.__init__ for arguments."""
@@ -1237,30 +1219,26 @@ class ValidationPool(object):
       pool = ValidationPool(overlays, repo.directory, build_number,
                             builder_name, True, dryrun, builder_run=builder_run)
 
-      draft_changes = []
       # Iterate through changes from all gerrit instances we care about.
       for helper in cls.GetGerritHelpersForOverlays(overlays):
-        raw_changes = helper.Query(gerrit_query, sort='lastUpdated')
-        raw_changes.reverse()
-
-        # We always filter draft CLs, even if the query allowed them.
-        published_changes = cls.FilterDraftChanges(raw_changes)
-        draft_changes.extend(set(raw_changes) - set(published_changes))
+        changes = helper.Query(gerrit_query, sort='lastUpdated')
+        changes.reverse()
 
         if ready_fn:
           # The query passed in may include a dictionary of flags to use for
           # revalidating the query results. We need to do this because Gerrit
           # caches are sometimes stale and need sanity checking.
-          published_changes = [x for x in published_changes if ready_fn(x)]
+          changes = [x for x in changes if ready_fn(x)]
+
+        # Tell users to publish drafts before marking them commit ready.
+        for change in changes:
+          if change.HasApproval('COMR', ('1', '2')) and change.IsDraft():
+            pool.HandleDraftChange(change)
 
         changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
-            published_changes, git.ManifestCheckout.Cached(repo.directory))
+            changes, git.ManifestCheckout.Cached(repo.directory))
         pool.changes.extend(changes)
         pool.non_manifest_changes.extend(non_manifest_changes)
-
-      for change in draft_changes:
-        if change.HasApproval('COMR', ('1', '2')):
-          pool.HandleDraftChange(change)
 
       # Filter out unwanted changes.
       pool.changes, pool.non_manifest_changes = change_filter(

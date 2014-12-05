@@ -1490,6 +1490,10 @@ class GerritPatch(GerritFetchOnlyPatch):
     """Whether the patch is merged or in the progress of being merged."""
     return self.status in ('SUBMITTED', 'MERGED')
 
+  def IsDraft(self):
+    """Return true if the latest patchset is a draft."""
+    return self.patch_dict['currentPatchSet']['draft']
+
   def HasApproval(self, field, value):
     """Return whether the current patchset has the specified approval.
 
@@ -1530,6 +1534,7 @@ class GerritPatch(GerritFetchOnlyPatch):
   def IsMergeable(self):
     """Return true if all Gerrit approvals required for submission are set."""
     return (self.status == 'NEW' and not self.WasVetoed() and
+            not self.IsDraft() and
             self.HasApprovals({'CRVW': '2', 'VRIF': '1', 'COMR': ('1', '2')}))
 
   def HasReadyFlag(self):
