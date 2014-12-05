@@ -5,14 +5,14 @@
 #ifndef IOS_PUBLIC_PROVIDER_WEB_WEB_STATE_H_
 #define IOS_PUBLIC_PROVIDER_WEB_WEB_STATE_H_
 
-#include "ios/public/consumer/base/supports_user_data.h"
+#include "base/supports_user_data.h"
 
 namespace ios {
 
 // Core interface for interaction with the web.
-class WebState : public ios::SupportsUserData {
+class WebState : public base::SupportsUserData {
  public:
-  virtual ~WebState() {}
+  ~WebState() override {}
 
  protected:
   WebState() {}

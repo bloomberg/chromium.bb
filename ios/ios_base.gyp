@@ -16,10 +16,7 @@
         '..',
       ],
       'sources': [
-        'consumer/base/supports_user_data.cc',
         'consumer/base/util.mm',
-        'public/consumer/base/supports_user_data.h',
-        'public/consumer/base/util.h',
       ],
     },
   ],

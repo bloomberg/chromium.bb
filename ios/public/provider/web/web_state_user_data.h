@@ -5,7 +5,7 @@
 #ifndef IOS_PUBLIC_PROVIDER_WEB_WEB_STATE_USER_DATA_H_
 #define IOS_PUBLIC_PROVIDER_WEB_WEB_STATE_USER_DATA_H_
 
-#include "ios/public/consumer/base/supports_user_data.h"
+#include "base/supports_user_data.h"
 #include "ios/public/provider/web/web_state.h"
 
 namespace ios {
@@ -27,7 +27,7 @@ namespace ios {
 // DEFINE_WEB_CONTENTS_USER_DATA_KEY(Foo);
 //
 template <typename T>
-class WebStateUserData : public ios::SupportsUserData::Data {
+class WebStateUserData : public base::SupportsUserData::Data {
  public:
   // Creates an object of type T, and attaches it to the specified WebState.
   // If an instance is already attached, does nothing.
