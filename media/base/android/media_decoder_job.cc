@@ -88,7 +88,7 @@ void MediaDecoderJob::OnDataReceived(const DemuxerData& data) {
 
   if (stop_decode_pending_) {
     DCHECK(is_decoding());
-    OnDecodeCompleted(MEDIA_CODEC_STOPPED, kNoTimestamp(), kNoTimestamp());
+    OnDecodeCompleted(MEDIA_CODEC_ABORT, kNoTimestamp(), kNoTimestamp());
     return;
   }
 
@@ -381,8 +381,7 @@ void MediaDecoderJob::DecodeInternal(
 
   // For aborted access unit, just skip it and inform the player.
   if (unit.status == DemuxerStream::kAborted) {
-    // TODO(qinmin): use a new enum instead of MEDIA_CODEC_STOPPED.
-    callback.Run(MEDIA_CODEC_STOPPED, kNoTimestamp(), kNoTimestamp());
+    callback.Run(MEDIA_CODEC_ABORT, kNoTimestamp(), kNoTimestamp());
     return;
   }
 
@@ -528,7 +527,7 @@ void MediaDecoderJob::OnDecodeCompleted(
     case MEDIA_CODEC_DEQUEUE_INPUT_AGAIN_LATER:
     case MEDIA_CODEC_INPUT_END_OF_STREAM:
     case MEDIA_CODEC_NO_KEY:
-    case MEDIA_CODEC_STOPPED:
+    case MEDIA_CODEC_ABORT:
     case MEDIA_CODEC_ERROR:
       // Do nothing.
       break;

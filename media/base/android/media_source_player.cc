@@ -522,10 +522,10 @@ void MediaSourcePlayer::MediaDecoderCallback(
   // and video in one file. If we separate them, we should be able to remove a
   // lot of duplication.
 
-  // If the status is MEDIA_CODEC_STOPPED, stop decoding new data. The player is
+  // If the status is MEDIA_CODEC_ABORT, stop decoding new data. The player is
   // in the middle of a seek or stop event and needs to wait for the IPCs to
   // come.
-  if (status == MEDIA_CODEC_STOPPED)
+  if (status == MEDIA_CODEC_ABORT)
     return;
 
   if (prerolling_ && IsPrerollFinished(is_audio)) {

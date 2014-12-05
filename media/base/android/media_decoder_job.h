@@ -70,7 +70,7 @@ class MediaDecoderJob {
   // this method will just allow the decode to complete as normal. If
   // this object is waiting for a data request to complete, then this method
   // will wait for the data to arrive and then call the |callback|
-  // passed to Decode() with a status of MEDIA_CODEC_STOPPED. This ensures that
+  // passed to Decode() with a status of MEDIA_CODEC_ABORT. This ensures that
   // the |callback| passed to Decode() is always called and the status
   // reflects whether data was actually decoded or the decode terminated early.
   void StopDecode();

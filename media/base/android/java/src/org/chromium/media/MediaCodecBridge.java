@@ -43,7 +43,7 @@ class MediaCodecBridge {
     private static final int MEDIA_CODEC_INPUT_END_OF_STREAM = 5;
     private static final int MEDIA_CODEC_OUTPUT_END_OF_STREAM = 6;
     private static final int MEDIA_CODEC_NO_KEY = 7;
-    private static final int MEDIA_CODEC_STOPPED = 8;
+    private static final int MEDIA_CODEC_ABORT = 8;
     private static final int MEDIA_CODEC_ERROR = 9;
 
     // Codec direction.  Keep this in sync with media_codec_bridge.h.
