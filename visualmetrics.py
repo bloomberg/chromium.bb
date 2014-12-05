@@ -262,15 +262,18 @@ def eliminate_duplicate_frames(directory, viewport):
 
 def get_decimate_filter():
     decimate = None
-    filters = subprocess.check_output(['ffmpeg', '-filters'], stderr=subprocess.STDOUT)
-    lines = filters.split("\n")
-    match = re.compile('(?P<filter>[\w]*decimate).*V->V.*Remove near-duplicate frames')
-    for line in lines:
-        m = re.search(match, line)
-        if m is not None:
-            matches = m.groupdict()
-            decimate = m.groupdict().get('filter')
-            break
+    try:
+        filters = subprocess.check_output(['ffmpeg', '-filters'], stderr=subprocess.STDOUT)
+        lines = filters.split("\n")
+        match = re.compile('(?P<filter>[\w]*decimate).*V->V.*Remove near-duplicate frames')
+        for line in lines:
+            m = re.search(match, line)
+            if m is not None:
+                matches = m.groupdict()
+                decimate = m.groupdict().get('filter')
+                break
+    except:
+        decimate = None
     return decimate
 
 
@@ -530,6 +533,64 @@ def calculate_speed_index(progress):
 
 
 ########################################################################################################################
+#   Check any dependencies
+########################################################################################################################
+
+
+def check_config():
+    ok = True
+
+    print 'ffmpeg:     ',
+    if get_decimate_filter() is not None:
+        print 'OK'
+    else:
+        print 'FAIL'
+        ok = False
+
+    print 'convert:    ',
+    if check_process('convert -version', 'ImageMagick'):
+        print 'OK'
+    else:
+        print 'FAIL'
+        ok = False
+
+    print 'compare:    ',
+    if check_process('compare -version', 'ImageMagick'):
+        print 'OK'
+    else:
+        print 'FAIL'
+        ok = False
+
+    print 'Pillow:     ',
+    try:
+        from PIL import Image
+        print 'OK'
+    except:
+        print 'FAIL'
+        ok = False
+
+    print 'orange.png: ',
+    if os.path.isfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'orange.png')):
+        print 'OK'
+    else:
+        print 'FAIL'
+        ok = False
+
+    return ok
+
+
+def check_process(command, output):
+    ok = False
+    try:
+        out = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+        if out.find(output) > -1:
+            ok = True
+    except:
+        ok = False
+    return ok
+
+
+########################################################################################################################
 #   Main Entry Point
 ########################################################################################################################
 
@@ -540,14 +601,16 @@ if '__main__' == __name__:
     parser = argparse.ArgumentParser(description='Calculate visual performance metrics from a video.',
                                      prog='visualmetrics')
     parser.add_argument('--version', action='version', version='%(prog)s 0.1')
+    parser.add_argument('-c', '--check', action='store_true', default=False,
+                        help="Check dependencies (ffmpeg, imagemagick, PIL).")
     parser.add_argument('-v', '--verbose', action='count', help="Increase verbosity (specify multiple times for more).")
     parser.add_argument('-i', '--video', help="Input video file.")
     parser.add_argument('-d', '--dir', help="Directory of video frames "
                                             "(as input if exists or as output if a video file is specified).")
-    parser.add_argument('-q', '--quality', type=int, help="JPEG Quality "
-                                                          "(if specified, frames will be converted to JPEG).")
     parser.add_argument('-g', '--histogram', help="Histogram file (as input if exists or as output if "
                                                   "histograms need to be calculated).")
+    parser.add_argument('-q', '--quality', type=int, help="JPEG Quality "
+                                                          "(if specified, frames will be converted to JPEG).")
     parser.add_argument('-f', '--force', action='store_true', default=False,
                         help="Force processing of a video file (overwrite existing directory).")
     parser.add_argument('-o', '--orange', action='store_true', default=False,
@@ -587,17 +650,20 @@ if '__main__' == __name__:
 
     ok = False
     try:
-        viewport = None
-        if options.video:
-            viewport = video_to_frames(options.video, directory, options.force, options.orange, options.viewport)
-        calculate_histograms(directory, histogram_file, options.force, viewport)
-        if options.dir is not None and options.quality is not None:
-            convert_to_jpeg(directory, options.quality)
-        metrics = calculate_visual_metrics(histogram_file, options.start, options.end)
-        if metrics is not None:
-            ok = True
-            for metric in metrics:
-                print "{0}: {1}".format(metric['name'], metric['value'])
+        if not options.check:
+            viewport = None
+            if options.video:
+                viewport = video_to_frames(options.video, directory, options.force, options.orange, options.viewport)
+            calculate_histograms(directory, histogram_file, options.force, viewport)
+            if options.dir is not None and options.quality is not None:
+                convert_to_jpeg(directory, options.quality)
+            metrics = calculate_visual_metrics(histogram_file, options.start, options.end)
+            if metrics is not None:
+                ok = True
+                for metric in metrics:
+                    print "{0}: {1}".format(metric['name'], metric['value'])
+        else:
+            ok = check_config()
     except:
         ok = False
 
