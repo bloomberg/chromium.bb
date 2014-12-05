@@ -668,3 +668,25 @@ TEST_F('CvoxEditableTextUnitTest', 'TextChangeEvent', function() {
   assertEquals(1, event3.start);
   assertEquals(1, event3.end);
 });
+
+TEST_F('CvoxEditableTextUnitTest', 'ContentEditableBraille', function() {
+  this.loadDoc(function() {/*!
+    <div id='1' contenteditable='true'>
+      Some &nbsp; text.<br><br>
+      After blank line.
+    </div>
+  */});
+  var element = $('1');
+  element.focus();
+  var editable = new cvox.ChromeVoxEditableContentEditable(
+      element, new TestTts());
+  var firstLine = 'Some   text.\n';
+  for (var i = 0; i < firstLine.length; ++i) {
+    editable.update(true);
+    TestBraille.assertContent(firstLine, i, i);
+    window.getSelection().modify('move', 'forward', 'character');
+  }
+  // We should have crossed the line break to the second line which is blank.
+  editable.update(true);
+  TestBraille.assertContent('', 0, 0);
+});

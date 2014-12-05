@@ -375,16 +375,33 @@ cvox.ChromeVoxEditableTextBase.prototype.changed = function(evt) {
   this.start = evt.start;
   this.end = evt.end;
 
-  if (this.brailleHandler_) {
-    var line = this.getLine(this.getLineIndex(evt.start));
-    var lineStart = this.getLineStart(this.getLineIndex(evt.start));
-    var start = evt.start - lineStart;
-    var end = Math.min(evt.end - lineStart, line.length);
-    this.brailleHandler_.changed(line, start, end, this.multiline, this.node,
-                                lineStart);
-  }
+  this.brailleCurrentLine_();
 };
 
+
+/**
+ * Shows the current line on the braille display.
+ * @private
+ */
+cvox.ChromeVoxEditableTextBase.prototype.brailleCurrentLine_ = function() {
+  if (this.brailleHandler_) {
+    var lineIndex = this.getLineIndex(this.start);
+    var line = this.getLine(lineIndex);
+    // Collapsable whitespace inside the contenteditable is represented
+    // as non-breaking spaces.  This confuses braille input (which relies on
+    // the text being added to be the same as the text in the input field).
+    // Since the non-breaking spaces are just an artifact of how
+    // contenteditable is implemented, normalize to normal spaces instead.
+    if (this instanceof cvox.ChromeVoxEditableContentEditable) {
+      line = line.replace(/\u00A0/g, ' ');
+    }
+    var lineStart = this.getLineStart(lineIndex);
+    var start = this.start - lineStart;
+    var end = Math.min(this.end - lineStart, line.length);
+    this.brailleHandler_.changed(line, start, end, this.multiline, this.node,
+                                 lineStart);
+  }
+};
 
 /**
  * Describe a change in the selection or cursor position when the text
@@ -1248,6 +1265,11 @@ cvox.ChromeVoxEditableContentEditable.prototype.changed =
   // Take over here if we can't describe a change; assume it's a blank line.
   if (!this.shouldDescribeChange(evt)) {
     this.speak(cvox.ChromeVox.msgs.getMsg('text_box_blank'), true);
+    if (this.brailleHandler_) {
+      this.brailleHandler_.changed('' /*line*/, 0 /*start*/, 0 /*end*/,
+                                   true /*multiline*/, null /*element*/,
+                                   evt.start /*lineStart*/);
+    }
   } else {
     goog.base(this, 'changed', evt);
   }
