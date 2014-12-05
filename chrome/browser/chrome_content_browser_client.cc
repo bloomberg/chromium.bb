@@ -1372,6 +1372,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kCloudPrintXmppEndpoint,
       switches::kDisableBundledPpapiFlash,
       switches::kDisableCastStreamingHWEncoding,
+      switches::kDisableJavaScriptHarmonyShipping,
       switches::kDisableOutOfProcessPdf,
       switches::kEnableBenchmarking,
       switches::kEnableNaCl,

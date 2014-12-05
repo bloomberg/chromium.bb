@@ -719,6 +719,13 @@ const Experiment kExperiments[] = {
   },
 #endif  // defined(OS_ANDROID)
   {
+    "disable-javascript-harmony-shipping",
+    IDS_FLAGS_DISABLE_JAVASCRIPT_HARMONY_SHIPPING_NAME,
+    IDS_FLAGS_DISABLE_JAVASCRIPT_HARMONY_SHIPPING_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kDisableJavaScriptHarmonyShipping)
+  },
+  {
     "enable-javascript-harmony",
     IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_NAME,
     IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_DESCRIPTION,

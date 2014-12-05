@@ -262,6 +262,11 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
   if (command_line.HasSwitch(switches::kEnableShowModalDialog))
     WebRuntimeFeatures::enableShowModalDialog(true);
 
+  if (command_line.HasSwitch(switches::kDisableJavaScriptHarmonyShipping)) {
+    std::string flag("--noharmony-shipping");
+    v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
+  }
+
   if (command_line.HasSwitch(switches::kJavaScriptHarmony)) {
     std::string flag("--harmony");
     v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));

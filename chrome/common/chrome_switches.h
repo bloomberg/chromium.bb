@@ -82,6 +82,7 @@ extern const char kDisableExtensionsFileAccessCheck[];
 extern const char kDisableExtensionsHttpThrottling[];
 extern const char kDisableExtensions[];
 extern const char kDisableIPv6[];
+extern const char kDisableJavaScriptHarmonyShipping[];
 extern const char kDisableMinimizeOnSecondLauncherItemClick[];
 extern const char kDisableMaterialDesignNTP[];
 extern const char kDisableNTPOtherSessionsMenu[];
