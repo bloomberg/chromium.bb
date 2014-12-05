@@ -49,4 +49,5 @@ First Visual Change: 1806
 Last Visual Change: 1955
 Visually Complete: 1955
 Speed Index: 1835
+Visual Progress: 0=0%, 1806=45%, 1827=48%, 1844=53%, 1861=99%, 1879=99%, 1901=98%, 1922=99%, 1938=99%, 1955=100%
 ```

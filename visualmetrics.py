@@ -439,6 +439,12 @@ def calculate_visual_metrics(histograms_file, start, end):
                 {'name': 'Visually Complete', 'value': histograms[0]['time']},
                 {'name': 'Speed Index', 'value': 0}
             ]
+        prog = ''
+        for p in progress:
+            if len(prog):
+                prog += ", "
+            prog += '{0:d}={1:d}%'.format(p['time'], int(p['progress']))
+        metrics.append({'name': 'Visual Progress', 'value': prog})
 
     return metrics
 
@@ -663,7 +669,7 @@ if '__main__' == __name__:
                     print "{0}: {1}".format(metric['name'], metric['value'])
         else:
             ok = check_config()
-    except:
+    except Exception as e:
         ok = False
 
     # Clean up
