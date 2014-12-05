@@ -653,7 +653,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   void DeliverHpackBlockAsSpdy3Block();
 
   // Helpers for above internal breakouts from ProcessInput.
-  void ProcessControlFrameHeader(uint16 control_frame_type_field);
+  void ProcessControlFrameHeader(int control_frame_type_field);
   // Always passed exactly 1 setting's worth of data.
   bool ProcessSetting(const char* data);
 

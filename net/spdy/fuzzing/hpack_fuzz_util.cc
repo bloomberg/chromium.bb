@@ -107,7 +107,8 @@ map<string, string> HpackFuzzUtil::NextGeneratedHeaderSet(
 
 // static
 size_t HpackFuzzUtil::SampleExponential(size_t mean, size_t sanity_bound) {
-  return std::min<size_t>(-std::log(base::RandDouble()) * mean, sanity_bound);
+  return std::min(static_cast<size_t>(-std::log(base::RandDouble()) * mean),
+                  sanity_bound);
 }
 
 // static

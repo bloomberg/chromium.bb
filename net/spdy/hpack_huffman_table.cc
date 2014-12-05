@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "net/spdy/hpack_input_stream.h"
 #include "net/spdy/hpack_output_stream.h"
 
@@ -56,10 +57,11 @@ HpackHuffmanTable::~HpackHuffmanTable() {}
 bool HpackHuffmanTable::Initialize(const HpackHuffmanSymbol* input_symbols,
                                    size_t symbol_count) {
   CHECK(!IsInitialized());
+  DCHECK(base::IsValueInRangeForNumericType<uint16>(symbol_count));
 
   std::vector<Symbol> symbols(symbol_count);
   // Validate symbol id sequence, and copy into |symbols|.
-  for (size_t i = 0; i != symbol_count; i++) {
+  for (uint16 i = 0; i < symbol_count; i++) {
     if (i != input_symbols[i].id) {
       failed_symbol_id_ = i;
       return false;

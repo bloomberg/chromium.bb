@@ -238,18 +238,12 @@ TEST_F(HpackHuffmanTableTest, ValidateInternalsWithSmallCode) {
     {bits32("10011000000000000000000000000000"), 8, 6},  // 8th.
     {bits32("10010000000000000000000000000000"), 5, 7}};  // 7th.
   EXPECT_TRUE(table_.Initialize(code, arraysize(code)));
-
-  EXPECT_THAT(peer_.code_by_id(), ElementsAre(
-      bits32("01100000000000000000000000000000"),
-      bits32("01110000000000000000000000000000"),
-      bits32("00000000000000000000000000000000"),
-      bits32("01000000000000000000000000000000"),
-      bits32("10000000000000000000000000000000"),
-      bits32("10001000000000000000000000000000"),
-      bits32("10011000000000000000000000000000"),
-      bits32("10010000000000000000000000000000")));
-  EXPECT_THAT(peer_.length_by_id(), ElementsAre(
-      4, 4, 2, 3, 5, 5, 8, 5));
+  ASSERT_EQ(arraysize(code), peer_.code_by_id().size());
+  ASSERT_EQ(arraysize(code), peer_.length_by_id().size());
+  for (size_t i = 0; i < arraysize(code); ++i) {
+    EXPECT_EQ(code[i].code, peer_.code_by_id()[i]);
+    EXPECT_EQ(code[i].length, peer_.length_by_id()[i]);
+  }
 
   EXPECT_EQ(1u, peer_.decode_tables().size());
   {

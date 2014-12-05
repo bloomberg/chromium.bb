@@ -106,7 +106,7 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
   }
   bool WriteUInt64(uint64 value) {
     uint32 upper = htonl(value >> 32);
-    uint32 lower = htonl(value);
+    uint32 lower = htonl(static_cast<uint32>(value));
     return (WriteBytes(&upper, sizeof(upper)) &&
             WriteBytes(&lower, sizeof(lower)));
   }

@@ -336,7 +336,7 @@ SpdyFrame* BufferedSpdyFramer::CreateSettings(
 }
 
 // TODO(jgraettinger): Eliminate uses of this method (prefer SpdyPingIR).
-SpdyFrame* BufferedSpdyFramer::CreatePingFrame(uint32 unique_id,
+SpdyFrame* BufferedSpdyFramer::CreatePingFrame(SpdyPingId unique_id,
                                                bool is_ack) const {
   SpdyPingIR ping_ir(unique_id);
   ping_ir.set_is_ack(is_ack);

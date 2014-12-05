@@ -67,7 +67,8 @@ class NET_EXPORT_PRIVATE HpackHuffmanTable {
   // Prepares HpackHuffmanTable to encode & decode the canonical Huffman
   // code as determined by the given symbols. Must be called exactly once.
   // Returns false if the input symbols define an invalid coding, and true
-  // otherwise. Symbols must be presented in ascending ID order with no gaps.
+  // otherwise. Symbols must be presented in ascending ID order with no gaps,
+  // and |symbol_count| must fit in a uint16.
   bool Initialize(const Symbol* input_symbols, size_t symbol_count);
 
   // Returns whether Initialize() has been successfully called.

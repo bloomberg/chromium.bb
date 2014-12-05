@@ -11,6 +11,7 @@
 #ifndef NET_SPDY_SPDY_PROTOCOL_H_
 #define NET_SPDY_SPDY_PROTOCOL_H_
 
+#include <limits>
 #include <map>
 #include <string>
 #include <vector>
@@ -983,12 +984,8 @@ class NET_EXPORT_PRIVATE SpdyAltSvcIR : public SpdyFrameWithStreamIdIR {
   void set_protocol_id(SpdyProtocolId protocol_id) {
     protocol_id_ = protocol_id;
   }
-  void set_host(std::string host) {
-    host_ = host;
-  }
-  void set_origin(std::string origin) {
-    origin_ = origin;
-  }
+  void set_host(std::string host) { host_ = host; }
+  void set_origin(std::string origin) { origin_ = origin; }
 
   void Visit(SpdyFrameVisitor* visitor) const override;
 

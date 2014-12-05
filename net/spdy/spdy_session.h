@@ -729,7 +729,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                              RequestPriority priority);
 
   // Send the PING frame.
-  void WritePingFrame(uint32 unique_id, bool is_ack);
+  void WritePingFrame(SpdyPingId unique_id, bool is_ack);
 
   // Post a CheckPingStatus call after delay. Don't post if there is already
   // CheckPingStatus running.
@@ -948,7 +948,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   int64 pings_in_flight() const { return pings_in_flight_; }
 
-  uint32 next_ping_id() const { return next_ping_id_; }
+  SpdyPingId next_ping_id() const { return next_ping_id_; }
 
   base::TimeTicks last_activity_time() const { return last_activity_time_; }
 
@@ -1085,7 +1085,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   int64 pings_in_flight_;
 
   // This is the next ping_id (unique_id) to be sent in PING frame.
-  uint32 next_ping_id_;
+  SpdyPingId next_ping_id_;
 
   // This is the last time we have sent a PING.
   base::TimeTicks last_ping_sent_time_;
