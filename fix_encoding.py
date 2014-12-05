@@ -229,7 +229,7 @@ class WinUnicodeConsoleOutput(WinUnicodeOutputBase):
         remaining -= n.value
         if not remaining:
           break
-        text = text[n.value:]
+        text = text[int(n.value):]
     except Exception, e:
       complain('%s.write: %r' % (self.name, e))
       raise

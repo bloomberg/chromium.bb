@@ -298,7 +298,7 @@ class GitWrapper(SCMWrapper):
     gclient_utils.CheckCallAndFilter(
         ['git', 'diff', merge_base],
         cwd=self.checkout_path,
-        filter_fn=GitDiffFilterer(self.relpath).Filter, print_func=self.Print)
+        filter_fn=GitDiffFilterer(self.relpath, print_func=self.Print).Filter)
 
   def _FetchAndReset(self, revision, file_list, options):
     """Equivalent to git fetch; git reset."""
@@ -1188,7 +1188,7 @@ class SVNWrapper(SCMWrapper):
         ['svn', 'diff', '-x', '--ignore-eol-style'] + args,
         cwd=self.checkout_path,
         print_stdout=False,
-        filter_fn=SvnDiffFilterer(self.relpath).Filter, print_func=self.Print)
+        filter_fn=SvnDiffFilterer(self.relpath, print_func=self.Print).Filter)
 
   def update(self, options, args, file_list):
     """Runs svn to update or transparently checkout the working copy.
