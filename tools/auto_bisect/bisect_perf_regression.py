@@ -76,7 +76,7 @@ MAX_LINUX_BUILD_TIME = 14400
 
 # The confidence percentage we require to consider the initial range a
 # regression based on the test results of the inital good and bad revisions.
-REGRESSION_CONFIDENCE = 95
+REGRESSION_CONFIDENCE = 80
 
 # Patch template to add a new file, DEPS.sha under src folder.
 # This file contains SHA1 value of the DEPS changes made while bisecting

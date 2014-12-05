@@ -28,6 +28,7 @@ CLEAR_NON_REGRESSION = [
      [28.46], [29.143], [40.058], [40.303], [40.558], [41.918], [42.44],
      [45.223], [46.494], [50.002], [50.625], [50.839]]
 ]
+
 # Regression confidence: ~ 90%
 ALMOST_REGRESSION = [
     # Mean: 30.042 Std. Dev.: 2.002
@@ -38,6 +39,7 @@ ALMOST_REGRESSION = [
     [[34.963], [30.741], [39.677], [39.512], [34.314], [31.39], [34.361],
      [25.2], [30.489], [29.434]]
 ]
+
 # Regression confidence: ~ 98%
 BARELY_REGRESSION = [
     # Mean: 28.828 Std. Dev.: 1.993
@@ -49,6 +51,7 @@ BARELY_REGRESSION = [
      [30.174], [30.534], [32.285], [32.295], [32.552], [32.572], [32.967],
      [33.165], [33.403], [33.588], [33.744], [34.147], [35.84]]
 ]
+
 # Regression confidence: 99.5%
 CLEAR_REGRESSION = [
     # Mean: 30.254 Std. Dev.: 2.987
@@ -65,43 +68,32 @@ CLEAR_REGRESSION = [
 # Specifically from Builder android_nexus10_perf_bisect Build #1198
 MULTIPLE_VALUES = [
     [
-        [18.916000,22.371000,8.527000,5.877000,5.407000,9.476000,8.100000,
-         5.334000,4.507000,4.842000,8.485000,8.308000,27.490000,4.560000,
-         4.804000,23.068000,17.577000,17.346000,26.738000,60.330000,32.307000,
-         5.468000,27.803000,27.373000,17.823000,5.158000,27.439000,5.236000,
-         11.413000
-         ],
-        [18.999000,22.642000,8.158000,5.995000,5.495000,9.499000,8.092000,
-         5.324000,4.468000,4.788000,8.248000,7.853000,27.533000,4.410000,
-         4.622000,22.341000,22.313000,17.072000,26.731000,57.513000,33.001000,
-         5.500000,28.297000,27.277000,26.462000,5.009000,27.361000,5.130000,
-         10.955000
-        ]
+        [18.916, 22.371, 8.527, 5.877, 5.407, 9.476, 8.100, 5.334,
+        4.507, 4.842, 8.485, 8.308, 27.490, 4.560, 4.804, 23.068, 17.577,
+        17.346, 26.738, 60.330, 32.307, 5.468, 27.803, 27.373, 17.823,
+        5.158, 27.439, 5.236, 11.413],
+        [18.999, 22.642, 8.158, 5.995, 5.495, 9.499, 8.092, 5.324,
+        4.468, 4.788, 8.248, 7.853, 27.533, 4.410, 4.622, 22.341, 22.313,
+        17.072, 26.731, 57.513, 33.001, 5.500, 28.297, 27.277, 26.462,
+        5.009, 27.361, 5.130, 10.955]
     ],
     [
-        [18.238000,22.365000,8.555000,5.939000,5.437000,9.463000,7.047000,
-         5.345000,4.517000,4.796000,8.593000,7.901000,27.499000,4.378000,
-         5.040000,4.904000,4.816000,4.828000,4.853000,57.363000,34.184000,
-         5.482000,28.190000,27.290000,26.694000,5.099000,4.905000,5.290000,
-         4.813000
-        ],
-        [18.301000,22.522000,8.035000,6.021000,5.565000,9.037000,6.998000,
-         5.321000,4.485000,4.768000,8.397000,7.865000,27.636000,4.640000,
-         5.015000,4.962000,4.933000,4.977000,4.961000,60.648000,34.593000,
-         5.538000,28.454000,27.297000,26.490000,5.099000,5,5.247000,4.945000
-        ],
-        [18.907000,23.368000,8.100000,6.169000,5.621000,9.971000,8.161000,
-         5.331000,4.513000,4.837000,8.255000,7.852000,26.209000,4.388000,
-         5.045000,5.029000,5.032000,4.946000,4.973000,60.334000,33.377000,
-         5.499000,28.275000,27.550000,26.103000,5.108000,4.951000,5.285000,
-         4.910000
-        ],
-       [18.715000,23.748000,8.128000,6.148000,5.691000,9.361000,8.106000,
-        5.334000,4.528000,4.965000,8.261000,7.851000,27.282000,4.391000,
-        4.949000,4.981000,4.964000,4.935000,4.933000,60.231000,33.361000,
-        5.489000,28.106000,27.457000,26.648000,5.108000,4.963000,5.272000,
-        4.954000
-       ]
+        [18.238, 22.365, 8.555, 5.939, 5.437, 9.463, 7.047, 5.345, 4.517,
+        4.796, 8.593, 7.901, 27.499, 4.378, 5.040, 4.904, 4.816, 4.828,
+        4.853, 57.363, 34.184, 5.482, 28.190, 27.290, 26.694, 5.099,
+        4.905, 5.290, 4.813],
+        [18.301, 22.522, 8.035, 6.021, 5.565, 9.037, 6.998, 5.321, 4.485,
+        4.768, 8.397, 7.865, 27.636, 4.640, 5.015, 4.962, 4.933, 4.977,
+        4.961, 60.648, 34.593, 5.538, 28.454, 27.297, 26.490, 5.099, 5,
+        5.247, 4.945],
+        [18.907, 23.368, 8.100, 6.169, 5.621, 9.971, 8.161, 5.331, 4.513,
+        4.837, 8.255, 7.852, 26.209, 4.388, 5.045, 5.029, 5.032, 4.946,
+        4.973, 60.334, 33.377, 5.499, 28.275, 27.550, 26.103, 5.108,
+        4.951, 5.285, 4.910],
+        [18.715, 23.748, 8.128, 6.148, 5.691, 9.361, 8.106, 5.334, 4.528,
+        4.965, 8.261, 7.851, 27.282, 4.391, 4.949, 4.981, 4.964, 4.935,
+        4.933, 60.231, 33.361, 5.489, 28.106, 27.457, 26.648, 5.108,
+        4.963, 5.272, 4.954]
     ]
 ]
 
@@ -117,19 +109,20 @@ DEFAULT_OPTIONS = {
     'bad_revision': 280005,
 }
 
-# This global is a placeholder for a generator to be defined by the testcases
-# that use _MockRunTest
+# This global is a placeholder for a generator to be defined by the test cases
+# that use _MockRunTests.
 _MockResultsGenerator = (x for x in [])
-
-def _FakeTestResult(values):
-  result_dict = {'mean': 0.0, 'std_err': 0.0, 'std_dev': 0.0, 'values': values}
-  success_code = 0
-  return (result_dict, success_code)
 
 
 def _MockRunTests(*args, **kwargs):
   _, _ = args, kwargs
   return _FakeTestResult(_MockResultsGenerator.next())
+
+
+def _FakeTestResult(values):
+  result_dict = {'mean': 0.0, 'std_err': 0.0, 'std_dev': 0.0, 'values': values}
+  success_code = 0
+  return (result_dict, success_code)
 
 
 def _GetBisectPerformanceMetricsInstance(options_dict):
@@ -353,37 +346,42 @@ class BisectPerfRegressionTest(unittest.TestCase):
     results = _GenericDryRun(_GetExtendedOptions(1, -100))
     self.assertIsNone(results.error)
 
-  @mock.patch('bisect_perf_regression.BisectPerformanceMetrics.'
-              'RunPerformanceTestAndParseResults', _MockRunTests)
-  def testBisectStopsOnDoubtfulRegression(self):
+  def _CheckAbortsEarly(self, results):
+    """Returns True if the bisect job would abort early."""
     global _MockResultsGenerator
-    _MockResultsGenerator = (rs for rs in CLEAR_NON_REGRESSION)
-    results = _GenericDryRun(_GetExtendedOptions(0, 0, False))
-    confidence_warnings = [x for x in results.warnings if x.startswith(
-        '\nWe could not reproduce the regression')]
-    self.assertGreater(len(confidence_warnings), 0)
+    _MockResultsGenerator = (r for r in results)
+    bisect_class = bisect_perf_regression.BisectPerformanceMetrics
+    original_run_tests = bisect_class.RunPerformanceTestAndParseResults
+    bisect_class.RunPerformanceTestAndParseResults = _MockRunTests
 
-    _MockResultsGenerator = (rs for rs in ALMOST_REGRESSION)
-    results = _GenericDryRun(_GetExtendedOptions(0, 0, False))
-    confidence_warnings = [x for x in results.warnings if x.startswith(
-        '\nWe could not reproduce the regression')]
-    self.assertGreater(len(confidence_warnings), 0)
-
-  @mock.patch('bisect_perf_regression.BisectPerformanceMetrics.'
-              'RunPerformanceTestAndParseResults', _MockRunTests)
-  def testBisectContinuesOnClearRegression(self):
-    global _MockResultsGenerator
-    _MockResultsGenerator = (rs for rs in CLEAR_REGRESSION)
-    with self.assertRaises(StopIteration):
+    try:
       _GenericDryRun(_GetExtendedOptions(0, 0, False))
+    except StopIteration:
+      # If StopIteration was raised, that means that the next value after
+      # the first two values was requested, so the job was not aborted.
+      return False
+    finally:
+      bisect_class.RunPerformanceTestAndParseResults = original_run_tests
 
-    _MockResultsGenerator = (rs for rs in BARELY_REGRESSION)
-    with self.assertRaises(StopIteration):
-      _GenericDryRun(_GetExtendedOptions(0, 0, False))
+    # If the job was aborted, there should be a warning about it.
+    assert [w for w in results.warnings
+            if 'could not reproduce the regression' in w]
+    return True
 
-    _MockResultsGenerator = (rs for rs in MULTIPLE_VALUES)
-    with self.assertRaises(StopIteration):
-      _GenericDryRun(_GetExtendedOptions(0, 0, False))
+  def testBisectStopsOnClearUnclearRegression(self):
+    self.assertTrue(self._CheckAbortsEarly(CLEAR_NON_REGRESSION))
+
+  def testBisectStopsOnClearUnclearRegression(self):
+    self.assertFalse(self._CheckAbortsEarly(ALMOST_REGRESSION))
+
+  def testBisectStopsOnClearUnclearRegression(self):
+    self.assertFalse(self._CheckAbortsEarly(CLEAR_REGRESSION))
+
+  def testBisectStopsOnClearUnclearRegression(self):
+    self.assertFalse(self._CheckAbortsEarly(BARELY_REGRESSION))
+
+  def testBisectStopsOnClearUnclearRegression(self):
+    self.assertFalse(self._CheckAbortsEarly(MULTIPLE_VALUES))
 
   def testGetCommitPosition(self):
     cp_git_rev = '7017a81991de983e12ab50dfc071c70e06979531'
