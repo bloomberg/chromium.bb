@@ -102,10 +102,36 @@ class LoginDatabaseTest : public testing::Test {
     EXPECT_TRUE(db_.GetLogins(second_non_html_auth, &result.get()));
     EXPECT_EQ(0U, result.size());
 
-    // non-html auth still matches again itself.
+    // non-html auth still matches against itself.
     EXPECT_TRUE(db_.GetLogins(non_html_auth, &result.get()));
     ASSERT_EQ(1U, result.size());
     EXPECT_EQ(result[0]->signon_realm, "http://example.com/Realm");
+
+    // Clear state.
+    db_.RemoveLoginsCreatedBetween(now, base::Time());
+  }
+
+  // Checks that a form of a given |scheme|, once stored, can be successfully
+  // retrieved from the database.
+  void TestRetrievingIPAddress(const PasswordForm::Scheme& scheme) {
+    SCOPED_TRACE(testing::Message() << "scheme = " << scheme);
+    ScopedVector<PasswordForm> result;
+
+    base::Time now = base::Time::Now();
+    std::string origin("http://56.7.8.90");
+
+    PasswordForm ip_form;
+    ip_form.origin = GURL(origin);
+    ip_form.username_value = ASCIIToUTF16("test@gmail.com");
+    ip_form.password_value = ASCIIToUTF16("test");
+    ip_form.signon_realm = origin;
+    ip_form.scheme = scheme;
+    ip_form.date_created = now;
+
+    EXPECT_EQ(AddChangeForForm(ip_form), db_.AddLogin(ip_form));
+    EXPECT_TRUE(db_.GetLogins(ip_form, &result.get()));
+    ASSERT_EQ(1U, result.size());
+    EXPECT_EQ(result[0]->signon_realm, origin);
 
     // Clear state.
     db_.RemoveLoginsCreatedBetween(now, base::Time());
@@ -321,6 +347,22 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDisabledForNonHTMLForms) {
   TestNonHTMLFormPSLMatching(PasswordForm::SCHEME_BASIC);
   TestNonHTMLFormPSLMatching(PasswordForm::SCHEME_DIGEST);
   TestNonHTMLFormPSLMatching(PasswordForm::SCHEME_OTHER);
+}
+
+TEST_F(LoginDatabaseTest, TestIPAddressMatches_HTML) {
+  TestRetrievingIPAddress(PasswordForm::SCHEME_HTML);
+}
+
+TEST_F(LoginDatabaseTest, TestIPAddressMatches_basic) {
+  TestRetrievingIPAddress(PasswordForm::SCHEME_BASIC);
+}
+
+TEST_F(LoginDatabaseTest, TestIPAddressMatches_digest) {
+  TestRetrievingIPAddress(PasswordForm::SCHEME_DIGEST);
+}
+
+TEST_F(LoginDatabaseTest, TestIPAddressMatches_other) {
+  TestRetrievingIPAddress(PasswordForm::SCHEME_OTHER);
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {

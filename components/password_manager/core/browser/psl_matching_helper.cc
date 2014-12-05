@@ -18,7 +18,8 @@ namespace password_manager {
 
 bool ShouldPSLDomainMatchingApply(
     const std::string& registry_controlled_domain) {
-  return registry_controlled_domain != "google.com";
+  return !registry_controlled_domain.empty() &&
+         registry_controlled_domain != "google.com";
 }
 
 bool IsPublicSuffixDomainMatch(const std::string& url1,
@@ -28,6 +29,9 @@ bool IsPublicSuffixDomainMatch(const std::string& url1,
 
   if (!gurl1.is_valid() || !gurl2.is_valid())
     return false;
+
+  if (gurl1 == gurl2)
+    return true;
 
   std::string domain1(GetRegistryControlledDomain(gurl1));
   std::string domain2(GetRegistryControlledDomain(gurl2));
