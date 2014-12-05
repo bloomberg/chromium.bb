@@ -31,7 +31,6 @@
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSUnsetValue.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -48,7 +47,6 @@ public:
     PassRefPtrWillBeRawPtr<CSSInheritedValue> createInheritedValue() { return m_inheritedValue; }
     PassRefPtrWillBeRawPtr<CSSInitialValue> createImplicitInitialValue() { return m_implicitInitialValue; }
     PassRefPtrWillBeRawPtr<CSSInitialValue> createExplicitInitialValue() { return m_explicitInitialValue; }
-    PassRefPtrWillBeRawPtr<CSSUnsetValue> createUnsetValue() { return m_unsetValue; }
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createIdentifierValue(CSSValueID identifier);
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createIdentifierValue(CSSPropertyID identifier);
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createColorValue(unsigned rgbValue);
@@ -66,7 +64,6 @@ private:
     RefPtrWillBeMember<CSSInheritedValue> m_inheritedValue;
     RefPtrWillBeMember<CSSInitialValue> m_implicitInitialValue;
     RefPtrWillBeMember<CSSInitialValue> m_explicitInitialValue;
-    RefPtrWillBeMember<CSSUnsetValue> m_unsetValue;
 
     WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>, numCSSValueKeywords> m_identifierValueCache;
 

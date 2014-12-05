@@ -1367,14 +1367,6 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
         if (!isPropertyForPass<pass>(property))
             continue;
 
-        if (current.value()->isUnsetValue()) {
-            if (CSSPropertyMetadata::isInheritedProperty(property))
-                StyleBuilder::applyProperty(property, state, cssValuePool().createInheritedValue().get());
-            else
-                StyleBuilder::applyProperty(property, state, cssValuePool().createExplicitInitialValue().get());
-            continue;
-        }
-
         StyleBuilder::applyProperty(current.id(), state, current.value());
     }
 }

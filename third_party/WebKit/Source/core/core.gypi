@@ -766,8 +766,6 @@
             'css/CSSUnicodeRangeValue.cpp',
             'css/CSSUnicodeRangeValue.h',
             'css/CSSUnknownRule.h',
-            'css/CSSUnsetValue.cpp',
-            'css/CSSUnsetValue.h',
             'css/CSSValue.cpp',
             'css/CSSValueList.cpp',
             'css/CSSValuePool.cpp',

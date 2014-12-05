@@ -67,7 +67,6 @@ public:
     bool isImageValue() const { return m_classType == ImageClass; }
     bool isImplicitInitialValue() const;
     bool isInheritedValue() const { return m_classType == InheritedClass; }
-    bool isUnsetValue() const { return m_classType == UnsetClass; }
     bool isInitialValue() const { return m_classType == InitialClass; }
     bool isLinearGradientValue() const { return m_classType == LinearGradientClass; }
     bool isRadialGradientValue() const { return m_classType == RadialGradientClass; }
@@ -122,7 +121,6 @@ protected:
 
         InheritedClass,
         InitialClass,
-        UnsetClass,
 
         ReflectClass,
         ShadowClass,
