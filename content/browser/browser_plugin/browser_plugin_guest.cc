@@ -72,7 +72,7 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
                                        WebContentsImpl* web_contents,
                                        BrowserPluginGuestDelegate* delegate)
     : WebContentsObserver(web_contents),
-      owner_web_contents_(NULL),
+      owner_web_contents_(nullptr),
       attached_(false),
       browser_plugin_instance_id_(browser_plugin::kInstanceIDNone),
       guest_device_scale_factor_(1.0f),
@@ -84,6 +84,7 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
       is_full_page_plugin_(false),
       has_render_view_(has_render_view),
       is_in_destruction_(false),
+      initialized_(false),
       last_text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       last_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
       last_input_flags_(0),
@@ -97,6 +98,22 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
   web_contents->SetBrowserPluginGuest(this);
   delegate->RegisterDestructionCallback(
       base::Bind(&BrowserPluginGuest::WillDestroy, AsWeakPtr()));
+}
+
+void BrowserPluginGuest::Init() {
+  if (initialized_)
+    return;
+  initialized_ = true;
+
+  // TODO(fsamuel): Initiailization prior to attachment should be behind a
+  // command line flag once we introduce experimental guest types that rely on
+  // this functionality.
+  if (!delegate_->CanRunInDetachedState())
+    return;
+
+  WebContentsImpl* owner_web_contents = static_cast<WebContentsImpl*>(
+      delegate_->GetOwnerWebContents());
+  InitInternal(BrowserPluginHostMsg_Attach_Params(), owner_web_contents);
 }
 
 void BrowserPluginGuest::WillDestroy() {
@@ -193,26 +210,30 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
   return handled;
 }
 
-void BrowserPluginGuest::Initialize(
-    int browser_plugin_instance_id,
+void BrowserPluginGuest::InitInternal(
     const BrowserPluginHostMsg_Attach_Params& params,
-    WebContentsImpl* embedder_web_contents) {
-  browser_plugin_instance_id_ = browser_plugin_instance_id;
+    WebContentsImpl* owner_web_contents) {
   focused_ = params.focused;
+  OnSetFocus(browser_plugin::kInstanceIDNone, focused_);
+
   guest_visible_ = params.visible;
+  UpdateVisibility();
+
   is_full_page_plugin_ = params.is_full_page_plugin;
   guest_window_rect_ = gfx::Rect(params.origin,
                                  params.resize_guest_params.view_size);
 
-  WebContentsViewGuest* new_view =
-      static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
-  if (attached())
-    new_view->OnGuestDetached(owner_web_contents_->GetView());
+  if (owner_web_contents_ != owner_web_contents) {
+    WebContentsViewGuest* new_view =
+        static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
+    if (owner_web_contents_)
+      new_view->OnGuestDetached(owner_web_contents_->GetView());
 
-  // Once a BrowserPluginGuest has an embedder WebContents, it's considered to
-  // be attached.
-  owner_web_contents_ = embedder_web_contents;
-  new_view->OnGuestAttached(owner_web_contents_->GetView());
+    // Once a BrowserPluginGuest has an embedder WebContents, it's considered to
+    // be attached.
+    owner_web_contents_ = owner_web_contents;
+    new_view->OnGuestAttached(owner_web_contents_->GetView());
+  }
 
   RendererPreferences* renderer_prefs =
       GetWebContents()->GetMutableRendererPrefs();
@@ -238,7 +259,9 @@ void BrowserPluginGuest::Initialize(
 
   embedder_visibility_observer_.reset(new EmbedderVisibilityObserver(this));
 
-  OnResizeGuest(browser_plugin_instance_id_, params.resize_guest_params);
+  // The instance ID does not matter here. This instance ID is used by the IPC
+  // for routing, but here we're calling OnResizeGuest for initialization.
+  OnResizeGuest(browser_plugin::kInstanceIDNone, params.resize_guest_params);
 
   // TODO(chrishtr): this code is wrong. The navigate_on_drag_drop field will
   // be reset again the next time preferences are updated.
@@ -320,14 +343,15 @@ void BrowserPluginGuest::SwapCompositorFrame(
     last_seen_view_size_ = view_size;
   }
 
-  FrameMsg_CompositorFrameSwapped_Params guest_params;
-  frame->AssignTo(&guest_params.frame);
-  guest_params.output_surface_id = output_surface_id;
-  guest_params.producing_route_id = host_routing_id;
-  guest_params.producing_host_id = host_process_id;
+  last_pending_frame_.reset(new FrameMsg_CompositorFrameSwapped_Params());
+  frame->AssignTo(&last_pending_frame_->frame);
+  last_pending_frame_->output_surface_id = output_surface_id;
+  last_pending_frame_->producing_route_id = host_routing_id;
+  last_pending_frame_->producing_host_id = host_process_id;
+
   SendMessageToEmbedder(
       new BrowserPluginMsg_CompositorFrameSwapped(
-          browser_plugin_instance_id(), guest_params));
+          browser_plugin_instance_id(), *last_pending_frame_));
 }
 
 void BrowserPluginGuest::SetContentsOpaque(bool opaque) {
@@ -513,6 +537,21 @@ void BrowserPluginGuest::Attach(
     int browser_plugin_instance_id,
     WebContentsImpl* embedder_web_contents,
     const BrowserPluginHostMsg_Attach_Params& params) {
+  browser_plugin_instance_id_ = browser_plugin_instance_id;
+  // If a guest is detaching from one container and attaching to another
+  // container, then late arriving ACKs may be lost if the mapping from
+  // |browser_plugin_instance_id| to |guest_instance_id| changes. Thus we
+  // ensure that we always get new frames on attachment by ACKing the pending
+  // frame if it's still waiting on the ACK.
+  if (last_pending_frame_) {
+    cc::CompositorFrameAck ack;
+    RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+        last_pending_frame_->producing_route_id,
+        last_pending_frame_->output_surface_id,
+        last_pending_frame_->producing_host_id,
+        ack);
+    last_pending_frame_.reset();
+  }
   delegate_->WillAttach(embedder_web_contents, browser_plugin_instance_id,
                         params.is_full_page_plugin);
 
@@ -531,7 +570,7 @@ void BrowserPluginGuest::Attach(
     }
   }
 
-  Initialize(browser_plugin_instance_id, params, embedder_web_contents);
+  InitInternal(params, embedder_web_contents);
 
   attached_ = true;
   SendQueuedMessages();
@@ -561,6 +600,7 @@ void BrowserPluginGuest::OnCompositorFrameSwappedACK(
                                                    params.output_surface_id,
                                                    params.producing_host_id,
                                                    params.ack);
+  last_pending_frame_.reset();
 }
 
 void BrowserPluginGuest::OnDetach(int browser_plugin_instance_id) {

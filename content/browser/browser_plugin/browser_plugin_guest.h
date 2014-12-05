@@ -43,6 +43,8 @@ struct BrowserPluginHostMsg_Attach_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct FrameHostMsg_CompositorFrameSwappedACK_Params;
 struct FrameHostMsg_ReclaimCompositorResources_Params;
+struct FrameMsg_CompositorFrameSwapped_Params;
+
 #if defined(OS_MACOSX)
 struct FrameHostMsg_ShowPopup_Params;
 #endif
@@ -97,6 +99,14 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
 
   // Returns whether the given RenderviewHost is a BrowserPlugin guest.
   static bool IsGuest(RenderViewHostImpl* render_view_host);
+
+  // BrowserPluginGuest::Init is called after the associated guest WebContents
+  // initializes. If this guest cannot navigate without being attached to a
+  // container, then this call is a no-op. For guest types that can be
+  // navigated, this call adds the associated RenderWdigetHostViewGuest to the
+  // view hierachy and sets up the appropriate RendererPreferences so that this
+  // guest can navigate and resize offscreen.
+  void Init();
 
   // Returns a WeakPtr to this BrowserPluginGuest.
   base::WeakPtr<BrowserPluginGuest> AsWeakPtr();
@@ -216,9 +226,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
 
   void WillDestroy();
 
-  void Initialize(int browser_plugin_instance_id,
-                  const BrowserPluginHostMsg_Attach_Params& params,
-                  WebContentsImpl* embedder_web_contents);
+  void InitInternal(const BrowserPluginHostMsg_Attach_Params& params,
+                    WebContentsImpl* owner_web_contents);
 
   bool InAutoSizeBounds(const gfx::Size& size) const;
 
@@ -252,7 +261,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   void OnLockMouseAck(int instance_id, bool succeeded);
   // Resizes the guest's web contents.
   void OnResizeGuest(
-      int instance_id, const BrowserPluginHostMsg_ResizeGuest_Params& params);
+      int browser_plugin_instance_id,
+      const BrowserPluginHostMsg_ResizeGuest_Params& params);
   void OnSetFocus(int instance_id, bool focused);
   // Sets the name of the guest so that other guests in the same partition can
   // access it.
@@ -358,6 +368,10 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
 
   bool is_in_destruction_;
 
+  // BrowserPluginGuest::Init can only be called once. This flag allows it to
+  // exit early if it's already been called.
+  bool initialized_;
+
   // Text input type states.
   ui::TextInputType last_text_input_type_;
   ui::TextInputMode last_input_mode_;
@@ -367,6 +381,15 @@ class CONTENT_EXPORT BrowserPluginGuest : public WebContentsObserver {
   // The is the routing ID for a swapped out RenderView for the guest
   // WebContents in the embedder's process.
   int guest_proxy_routing_id_;
+
+  // Guests generate frames and send a CompositorFrameSwapped (CFS) message
+  // indicating the next frame is ready to be positioned and composited.
+  // Subsequent frames are not generated until the IPC is ACKed. We would like
+  // to ensure that the guest generates frames on attachment so we directly ACK
+  // an unACKed CFS. ACKs could get lost between the time a guest is detached
+  // from a container and the time it is attached elsewhere. This mitigates this
+  // race by ensuring the guest is ACKed on attachment.
+  scoped_ptr<FrameMsg_CompositorFrameSwapped_Params> last_pending_frame_;
 
   // This is a queue of messages that are destined to be sent to the embedder
   // once the guest is attached to a particular embedder.

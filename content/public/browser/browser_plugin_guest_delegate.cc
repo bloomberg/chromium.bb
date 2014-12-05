@@ -6,8 +6,16 @@
 
 namespace content {
 
+bool BrowserPluginGuestDelegate::CanRunInDetachedState() const {
+  return false;
+}
+
 WebContents* BrowserPluginGuestDelegate::CreateNewGuestWindow(
     const WebContents::CreateParams& create_params) {
+  return NULL;
+}
+
+WebContents* BrowserPluginGuestDelegate::GetOwnerWebContents() const {
   return NULL;
 }
 

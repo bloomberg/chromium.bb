@@ -1196,6 +1196,11 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
 #if defined(OS_ANDROID)
   date_time_chooser_.reset(new DateTimeChooserAndroid());
 #endif
+
+  // BrowserPluginGuest::Init needs to be called after this WebContents has
+  // a RenderWidgetHostViewGuest. That is, |view_->CreateView| above.
+  if (browser_plugin_guest_)
+    browser_plugin_guest_->Init();
 }
 
 void WebContentsImpl::OnWebContentsDestroyed(WebContentsImpl* web_contents) {

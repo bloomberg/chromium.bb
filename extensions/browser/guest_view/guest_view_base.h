@@ -241,6 +241,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void DidDetach() final;
   void ElementSizeChanged(const gfx::Size& old_size,
                           const gfx::Size& new_size) final;
+  content::WebContents* GetOwnerWebContents() const final;
   void GuestSizeChanged(const gfx::Size& old_size,
                         const gfx::Size& new_size) final;
   void RegisterDestructionCallback(const DestructionCallback& callback) final;

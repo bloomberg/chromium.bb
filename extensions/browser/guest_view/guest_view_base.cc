@@ -335,6 +335,10 @@ void GuestViewBase::ElementSizeChanged(const gfx::Size& old_size,
   element_size_ = new_size;
 }
 
+WebContents* GuestViewBase::GetOwnerWebContents() const {
+  return owner_web_contents_;
+}
+
 void GuestViewBase::GuestSizeChanged(const gfx::Size& old_size,
                                      const gfx::Size& new_size) {
   if (!auto_size_enabled_)
