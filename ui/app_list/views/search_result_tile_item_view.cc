@@ -5,6 +5,7 @@
 #include "ui/app_list/views/search_result_tile_item_view.h"
 
 #include "ui/app_list/search_result.h"
+#include "ui/views/controls/menu/menu_runner.h"
 
 namespace app_list {
 
@@ -12,6 +13,8 @@ SearchResultTileItemView::SearchResultTileItemView() : item_(NULL) {
   // When |item_| is null, the tile is invisible. Calling SetSearchResult with a
   // non-null item makes the tile visible.
   SetVisible(false);
+
+  set_context_menu_controller(this);
 }
 
 SearchResultTileItemView::~SearchResultTileItemView() {
@@ -65,6 +68,29 @@ void SearchResultTileItemView::OnResultDestroying() {
   if (item_)
     item_->RemoveObserver(this);
   item_ = NULL;
+}
+
+void SearchResultTileItemView::ShowContextMenuForView(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
+  // |item_| could be null when result list is changing.
+  if (!item_)
+    return;
+
+  ui::MenuModel* menu_model = item_->GetContextMenuModel();
+  if (!menu_model)
+    return;
+
+  context_menu_runner_.reset(
+      new views::MenuRunner(menu_model, views::MenuRunner::HAS_MNEMONICS));
+  // If RunMenuAt() fails, return immediately. This is future-proofing for
+  // adding code after this call.
+  if (context_menu_runner_->RunMenuAt(
+          GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
+          views::MENU_ANCHOR_TOPLEFT,
+          source_type) == views::MenuRunner::MENU_DELETED)
+    return;
 }
 
 }  // namespace app_list

@@ -7,14 +7,21 @@
 
 #include "ui/app_list/search_result_observer.h"
 #include "ui/app_list/views/tile_item_view.h"
+#include "ui/views/context_menu_controller.h"
+
+namespace views {
+class MenuRunner;
+}
 
 namespace app_list {
 
 class SearchResult;
 
 // A TileItemView that displays a search result.
-class APP_LIST_EXPORT SearchResultTileItemView : public TileItemView,
-                                                 public SearchResultObserver {
+class APP_LIST_EXPORT SearchResultTileItemView
+    : public TileItemView,
+      public views::ContextMenuController,
+      public SearchResultObserver {
  public:
   SearchResultTileItemView();
   ~SearchResultTileItemView() override;
@@ -29,9 +36,16 @@ class APP_LIST_EXPORT SearchResultTileItemView : public TileItemView,
   void OnIconChanged() override;
   void OnResultDestroying() override;
 
+  // views::ContextMenuController overrides:
+  void ShowContextMenuForView(views::View* source,
+                              const gfx::Point& point,
+                              ui::MenuSourceType source_type) override;
+
  private:
   // Owned by the model provided by the AppListViewDelegate.
   SearchResult* item_;
+
+  scoped_ptr<views::MenuRunner> context_menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemView);
 };
