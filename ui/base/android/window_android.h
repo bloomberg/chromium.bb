@@ -7,12 +7,13 @@
 
 #include <jni.h>
 #include <vector>
+
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/base/ui_base_export.h"
-#include "ui/gfx/vector2d_f.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace ui {
 

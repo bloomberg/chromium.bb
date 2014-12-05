@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/renderer/input/input_handler_manager_client.h"
-#include "ui/gfx/vector2d_f.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace blink {
 class WebInputEvent;
