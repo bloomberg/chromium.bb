@@ -5,6 +5,7 @@
 #ifndef WebNotificationManager_h
 #define WebNotificationManager_h
 
+#include "WebCallbacks.h"
 #include "WebNotificationPermission.h"
 
 namespace blink {
@@ -12,17 +13,30 @@ namespace blink {
 struct WebNotificationData;
 class WebNotificationDelegate;
 class WebSerializedOrigin;
+class WebServiceWorkerRegistration;
+class WebString;
+
+using WebNotificationShowCallbacks = WebCallbacks<void, void>;
 
 // Provides the services to show platform notifications to the user.
 class WebNotificationManager {
 public:
     virtual ~WebNotificationManager() { }
 
-    // Shows a notification on the user's system.
-    virtual void show(const blink::WebSerializedOrigin&, const WebNotificationData&, WebNotificationDelegate*) = 0;
+    // Shows a page notification on the user's system. These notifications will have their
+    // events delivered to the delegate specified in this call.
+    virtual void show(const WebSerializedOrigin&, const WebNotificationData&, WebNotificationDelegate*) = 0;
+
+    // Shows a persistent notification on the user's system. These notifications will have
+    // their events delivered to a Service Worker rather than the object's delegate. Will
+    // take ownership of the WebNotificationShowCallbacks object.
+    virtual void showPersistent(const WebSerializedOrigin&, const WebNotificationData&, WebServiceWorkerRegistration*, WebNotificationShowCallbacks*) { }
 
     // Closes a notification previously shown, and removes it if being shown.
     virtual void close(WebNotificationDelegate*) = 0;
+
+    // Closes a persistent notification identified by its persistent notification Id.
+    virtual void closePersistent(const WebString& persistentNotificationId) { }
 
     // Indicates that the delegate object is being destroyed, and must no longer
     // be used by the embedder to dispatch events.
