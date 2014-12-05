@@ -242,26 +242,29 @@ class MediaResourceGetter {
                 Log.e(TAG, "Error configuring data source", e);
                 return false;
             }
-        } else {
-            final String host = uri.getHost();
-            if (!isLoopbackAddress(host) && !isNetworkReliable(context)) {
-                Log.w(TAG, "non-file URI can't be read due to unsuitable network conditions");
-                return false;
-            }
-            Map<String, String> headersMap = new HashMap<String, String>();
-            if (!TextUtils.isEmpty(cookies)) {
-                headersMap.put("Cookie", cookies);
-            }
-            if (!TextUtils.isEmpty(userAgent)) {
-                headersMap.put("User-Agent", userAgent);
-            }
-            try {
-                configure(url, headersMap);
-                return true;
-            } catch (RuntimeException e) {
-                Log.e(TAG, "Error configuring data source", e);
-                return false;
-            }
+        }
+        if (uri.getPath() != null && uri.getPath().endsWith(".m3u8")) {
+            // MediaMetadataRetriever does not work with HLS correctly.
+            return false;
+        }
+        final String host = uri.getHost();
+        if (!isLoopbackAddress(host) && !isNetworkReliable(context)) {
+            Log.w(TAG, "non-file URI can't be read due to unsuitable network conditions");
+            return false;
+        }
+        Map<String, String> headersMap = new HashMap<String, String>();
+        if (!TextUtils.isEmpty(cookies)) {
+            headersMap.put("Cookie", cookies);
+        }
+        if (!TextUtils.isEmpty(userAgent)) {
+            headersMap.put("User-Agent", userAgent);
+        }
+        try {
+            configure(url, headersMap);
+            return true;
+        } catch (RuntimeException e) {
+            Log.e(TAG, "Error configuring data source", e);
+            return false;
         }
     }
 
