@@ -469,11 +469,15 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             return false;
         addExpandedPropertyForValue(propId, cssValuePool().createInheritedValue(), important);
         return true;
-    }
-    else if (id == CSSValueInitial) {
+    } else if (id == CSSValueInitial) {
         if (num != 1)
             return false;
         addExpandedPropertyForValue(propId, cssValuePool().createExplicitInitialValue(), important);
+        return true;
+    } else if (id == CSSValueUnset) {
+        if (num != 1)
+            return false;
+        addExpandedPropertyForValue(propId, cssValuePool().createUnsetValue(), important);
         return true;
     }
 

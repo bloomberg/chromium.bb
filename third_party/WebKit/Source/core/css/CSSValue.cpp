@@ -53,6 +53,7 @@
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/CSSTransformValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
+#include "core/css/CSSUnsetValue.h"
 #include "core/css/CSSValueList.h"
 
 namespace blink {
@@ -121,6 +122,8 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSInheritedValue>(*this, other);
         case InitialClass:
             return compareCSSValues<CSSInitialValue>(*this, other);
+        case UnsetClass:
+            return compareCSSValues<CSSUnsetValue>(*this, other);
         case GridLineNamesClass:
             return compareCSSValues<CSSGridLineNamesValue>(*this, other);
         case GridTemplateAreasClass:
@@ -191,6 +194,8 @@ String CSSValue::cssText() const
         return toCSSImageValue(this)->customCSSText();
     case InheritedClass:
         return toCSSInheritedValue(this)->customCSSText();
+    case UnsetClass:
+        return toCSSUnsetValue(this)->customCSSText();
     case InitialClass:
         return toCSSInitialValue(this)->customCSSText();
     case GridLineNamesClass:
@@ -271,6 +276,9 @@ void CSSValue::destroy()
         return;
     case InitialClass:
         delete toCSSInitialValue(this);
+        return;
+    case UnsetClass:
+        delete toCSSUnsetValue(this);
         return;
     case GridLineNamesClass:
         delete toCSSGridLineNamesValue(this);
@@ -366,6 +374,9 @@ void CSSValue::finalizeGarbageCollectedObject()
     case InitialClass:
         toCSSInitialValue(this)->~CSSInitialValue();
         return;
+    case UnsetClass:
+        toCSSUnsetValue(this)->~CSSUnsetValue();
+        return;
     case GridLineNamesClass:
         toCSSGridLineNamesValue(this)->~CSSGridLineNamesValue();
         return;
@@ -459,6 +470,9 @@ void CSSValue::trace(Visitor* visitor)
         return;
     case InitialClass:
         toCSSInitialValue(this)->traceAfterDispatch(visitor);
+        return;
+    case UnsetClass:
+        toCSSUnsetValue(this)->traceAfterDispatch(visitor);
         return;
     case GridLineNamesClass:
         toCSSGridLineNamesValue(this)->traceAfterDispatch(visitor);
