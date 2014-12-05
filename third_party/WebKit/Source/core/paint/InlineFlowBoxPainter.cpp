@@ -61,6 +61,7 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
             }
         }
     } else if (paintInfo.phase == PaintPhaseMask) {
+        DrawingRecorder recorder(paintInfo.context, &m_inlineFlowBox.renderer(), paintInfo.phase, pixelSnappedIntRect(overflowRect));
         paintMask(paintInfo, paintOffset);
         return;
     } else if (paintInfo.phase == PaintPhaseForeground) {
