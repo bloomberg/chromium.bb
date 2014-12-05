@@ -340,9 +340,9 @@ void BlockPainter::paintColumnRules(const PaintInfo& paintInfo, const LayoutPoin
 
         if (!topToBottom) {
             if (m_renderBlock.isHorizontalWritingMode())
-                ruleRect.setY(m_renderBlock.height() - ruleRect.maxY());
+                ruleRect.setY(m_renderBlock.size().height() - ruleRect.maxY());
             else
-                ruleRect.setX(m_renderBlock.width() - ruleRect.maxX());
+                ruleRect.setX(m_renderBlock.size().width() - ruleRect.maxX());
         }
 
         ruleRect.moveBy(paintOffset);

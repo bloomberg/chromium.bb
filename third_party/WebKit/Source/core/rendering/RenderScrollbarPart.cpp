@@ -128,7 +128,7 @@ void RenderScrollbarPart::computeScrollbarWidth()
         return;
     // FIXME: We are querying layout information but nothing guarantees that it's up-to-date, especially since we are called at style change.
     // FIXME: Querying the style's border information doesn't work on table cells with collapsing borders.
-    int visibleSize = m_scrollbar->owningRenderer()->width() - m_scrollbar->owningRenderer()->style()->borderLeftWidth() - m_scrollbar->owningRenderer()->style()->borderRightWidth();
+    int visibleSize = m_scrollbar->owningRenderer()->size().width() - m_scrollbar->owningRenderer()->style()->borderLeftWidth() - m_scrollbar->owningRenderer()->style()->borderRightWidth();
     int w = calcScrollbarThicknessUsing(MainOrPreferredSize, style()->width(), visibleSize);
     int minWidth = calcScrollbarThicknessUsing(MinSize, style()->minWidth(), visibleSize);
     int maxWidth = style()->maxWidth().isMaxSizeNone() ? w : calcScrollbarThicknessUsing(MaxSize, style()->maxWidth(), visibleSize);
@@ -145,7 +145,7 @@ void RenderScrollbarPart::computeScrollbarHeight()
         return;
     // FIXME: We are querying layout information but nothing guarantees that it's up-to-date, especially since we are called at style change.
     // FIXME: Querying the style's border information doesn't work on table cells with collapsing borders.
-    int visibleSize = m_scrollbar->owningRenderer()->height() -  m_scrollbar->owningRenderer()->style()->borderTopWidth() - m_scrollbar->owningRenderer()->style()->borderBottomWidth();
+    int visibleSize = m_scrollbar->owningRenderer()->size().height() -  m_scrollbar->owningRenderer()->style()->borderTopWidth() - m_scrollbar->owningRenderer()->style()->borderBottomWidth();
     int h = calcScrollbarThicknessUsing(MainOrPreferredSize, style()->height(), visibleSize);
     int minHeight = calcScrollbarThicknessUsing(MinSize, style()->minHeight(), visibleSize);
     int maxHeight = style()->maxHeight().isMaxSizeNone() ? h : calcScrollbarThicknessUsing(MaxSize, style()->maxHeight(), visibleSize);

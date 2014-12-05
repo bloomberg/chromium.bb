@@ -89,9 +89,6 @@ public:
     RenderBox* firstChildBox() const;
     RenderBox* lastChildBox() const;
 
-    LayoutUnit width() const { return m_frameRect.width(); }
-    LayoutUnit height() const { return m_frameRect.height(); }
-
     int pixelSnappedWidth() const { return m_frameRect.pixelSnappedWidth(); }
     int pixelSnappedHeight() const { return m_frameRect.pixelSnappedHeight(); }
 
@@ -104,8 +101,8 @@ public:
     LayoutUnit logicalRight() const { return logicalLeft() + logicalWidth(); }
     LayoutUnit logicalTop() const { return style()->isHorizontalWritingMode() ? m_frameRect.y() : m_frameRect.x(); }
     LayoutUnit logicalBottom() const { return logicalTop() + logicalHeight(); }
-    LayoutUnit logicalWidth() const { return style()->isHorizontalWritingMode() ? width() : height(); }
-    LayoutUnit logicalHeight() const { return style()->isHorizontalWritingMode() ? height() : width(); }
+    LayoutUnit logicalWidth() const { return style()->isHorizontalWritingMode() ? m_frameRect.width() : m_frameRect.height(); }
+    LayoutUnit logicalHeight() const { return style()->isHorizontalWritingMode() ? m_frameRect.height() : m_frameRect.width(); }
 
     LayoutUnit constrainLogicalWidthByMinMax(LayoutUnit, LayoutUnit, RenderBlock*) const;
     LayoutUnit constrainLogicalHeightByMinMax(LayoutUnit logicalHeight, LayoutUnit intrinsicContentHeight) const;
@@ -233,8 +230,8 @@ public:
 
     // IE extensions. Used to calculate offsetWidth/Height.  Overridden by inlines (RenderFlow)
     // to return the remaining width on a given line (and the height of a single line).
-    virtual LayoutUnit offsetWidth() const override { return width(); }
-    virtual LayoutUnit offsetHeight() const override { return height(); }
+    virtual LayoutUnit offsetWidth() const override { return m_frameRect.width(); }
+    virtual LayoutUnit offsetHeight() const override { return m_frameRect.height(); }
 
     virtual int pixelSnappedOffsetWidth() const override final;
     virtual int pixelSnappedOffsetHeight() const override final;
@@ -318,6 +315,7 @@ public:
     virtual bool isSelfCollapsingBlock() const { return false; }
     virtual LayoutUnit collapsedMarginBefore() const { return marginBefore(); }
     virtual LayoutUnit collapsedMarginAfter() const { return marginAfter(); }
+    LayoutBoxExtent collapsedMarginBox() const { return LayoutBoxExtent(collapsedMarginBefore(), 0, collapsedMarginAfter(), 0); }
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
@@ -567,38 +565,38 @@ public:
     {
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return position;
-        return isHorizontalWritingMode() ? LayoutPoint(position.x(), height() - position.y()) : LayoutPoint(width() - position.x(), position.y());
+        return isHorizontalWritingMode() ? LayoutPoint(position.x(), m_frameRect.height() - position.y()) : LayoutPoint(m_frameRect.width() - position.x(), position.y());
     }
     LayoutPoint flipForWritingModeIncludingColumns(const LayoutPoint&) const;
     LayoutSize flipForWritingMode(const LayoutSize& offset) const WARN_UNUSED_RETURN
     {
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return offset;
-        return isHorizontalWritingMode() ? LayoutSize(offset.width(), height() - offset.height()) : LayoutSize(width() - offset.width(), offset.height());
+        return isHorizontalWritingMode() ? LayoutSize(offset.width(), m_frameRect.height() - offset.height()) : LayoutSize(m_frameRect.width() - offset.width(), offset.height());
     }
     void flipForWritingMode(LayoutRect& rect) const
     {
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return;
         if (isHorizontalWritingMode())
-            rect.setY(height() - rect.maxY());
+            rect.setY(m_frameRect.height() - rect.maxY());
         else
-            rect.setX(width() - rect.maxX());
+            rect.setX(m_frameRect.width() - rect.maxX());
     }
     FloatPoint flipForWritingMode(const FloatPoint& position) const WARN_UNUSED_RETURN
     {
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return position;
-        return isHorizontalWritingMode() ? FloatPoint(position.x(), height() - position.y()) : FloatPoint(width() - position.x(), position.y());
+        return isHorizontalWritingMode() ? FloatPoint(position.x(), m_frameRect.height() - position.y()) : FloatPoint(m_frameRect.width() - position.x(), position.y());
     }
     void flipForWritingMode(FloatRect& rect) const
     {
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return;
         if (isHorizontalWritingMode())
-            rect.setY(height() - rect.maxY());
+            rect.setY(m_frameRect.height() - rect.maxY());
         else
-            rect.setX(width() - rect.maxX());
+            rect.setX(m_frameRect.width() - rect.maxX());
     }
     // These represent your location relative to your container as a physical offset.
     // In layout related methods you almost always want the logical location (e.g. x() and y()).

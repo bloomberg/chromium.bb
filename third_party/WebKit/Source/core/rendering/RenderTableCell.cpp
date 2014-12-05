@@ -352,7 +352,7 @@ LayoutRect RenderTableCell::clippedOverflowRectForPaintInvalidation(const Render
         }
     }
     LayoutPoint location(std::max<LayoutUnit>(left, -visualOverflowRect().x()), std::max<LayoutUnit>(top, -visualOverflowRect().y()));
-    LayoutRect r(-location.x(), -location.y(), location.x() + std::max(width() + right, visualOverflowRect().maxX()), location.y() + std::max(height() + bottom, visualOverflowRect().maxY()));
+    LayoutRect r(-location.x(), -location.y(), location.x() + std::max(size().width() + right, visualOverflowRect().maxX()), location.y() + std::max(size().height() + bottom, visualOverflowRect().maxY()));
 
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, r, paintInvalidationState);
     return r;

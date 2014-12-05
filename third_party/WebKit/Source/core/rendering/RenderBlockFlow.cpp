@@ -679,7 +679,7 @@ void RenderBlockFlow::layoutBlockChild(RenderBox& child, MarginInfo& marginInfo,
     if (paginated) {
         // Check for an after page/column break.
         LayoutUnit newHeight = applyAfterBreak(child, logicalHeight(), marginInfo);
-        if (newHeight != height())
+        if (newHeight != size().height())
             setLogicalHeight(newHeight);
     }
 }
@@ -2125,9 +2125,8 @@ void RenderBlockFlow::clipOutFloatingObjects(const RenderBlock* rootBlock, const
         FloatingObjectSetIterator end = floatingObjectSet.end();
         for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
             FloatingObject* floatingObject = it->get();
-            LayoutRect floatBox(offsetFromRootBlock.width() + xPositionForFloatIncludingMargin(floatingObject),
-                offsetFromRootBlock.height() + yPositionForFloatIncludingMargin(floatingObject),
-                floatingObject->renderer()->width(), floatingObject->renderer()->height());
+            LayoutRect floatBox(LayoutPoint(offsetFromRootBlock), floatingObject->renderer()->size());
+            floatBox.move(positionForFloatIncludingMargin(floatingObject));
             rootBlock->flipForWritingMode(floatBox);
             floatBox.move(rootBlockPhysicalPosition.x(), rootBlockPhysicalPosition.y());
             paintInfo->context->clipOut(pixelSnappedIntRect(floatBox));
@@ -2152,7 +2151,7 @@ void RenderBlockFlow::clearFloats(EClear clear)
     default:
         break;
     }
-    if (height() < newY)
+    if (size().height() < newY)
         setLogicalHeight(newY);
 }
 
@@ -2180,8 +2179,8 @@ LayoutPoint RenderBlockFlow::flipFloatForWritingModeForChild(const FloatingObjec
     // it's going to get added back in. We hide this complication here so that the calling code looks normal for the unflipped
     // case.
     if (isHorizontalWritingMode())
-        return LayoutPoint(point.x(), point.y() + height() - child->renderer()->height() - 2 * yPositionForFloatIncludingMargin(child));
-    return LayoutPoint(point.x() + width() - child->renderer()->width() - 2 * xPositionForFloatIncludingMargin(child), point.y());
+        return LayoutPoint(point.x(), point.y() + size().height() - child->renderer()->size().height() - 2 * yPositionForFloatIncludingMargin(child));
+    return LayoutPoint(point.x() + size().width() - child->renderer()->size().width() - 2 * xPositionForFloatIncludingMargin(child), point.y());
 }
 
 LayoutUnit RenderBlockFlow::logicalLeftOffsetForPositioningFloat(LayoutUnit logicalTop, LayoutUnit fixedOffset, bool applyTextIndent, LayoutUnit* heightRemaining) const
@@ -2706,7 +2705,7 @@ GapRects RenderBlockFlow::selectionGaps(const RenderBlock* rootBlock, const Layo
     // IMPORTANT: Callers of this method that intend for painting to happen need to do a save/restore.
     if (paintInfo) {
         // Note that we don't clip out overflow for positioned objects.  We just stick to the border box.
-        LayoutRect flippedBlockRect(offsetFromRootBlock.width(), offsetFromRootBlock.height(), width(), height());
+        LayoutRect flippedBlockRect(LayoutPoint(offsetFromRootBlock), size());
         rootBlock->flipForWritingMode(flippedBlockRect);
         flippedBlockRect.moveBy(rootBlockPhysicalPosition);
         clipOutPositionedObjects(*paintInfo, flippedBlockRect.location(), positionedObjects());
@@ -3092,8 +3091,8 @@ void RenderBlockFlow::positionDialog()
     FrameView* frameView = document().view();
     LayoutUnit top = (style()->position() == FixedPosition) ? 0 : frameView->scrollOffset().height();
     int visibleHeight = frameView->visibleContentRect(IncludeScrollbars).height();
-    if (height() < visibleHeight)
-        top += (visibleHeight - height()) / 2;
+    if (size().height() < visibleHeight)
+        top += (visibleHeight - size().height()) / 2;
     setY(top);
     dialog->setCentered(top);
 }

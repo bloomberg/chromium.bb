@@ -323,12 +323,12 @@ void RenderBox::layout()
 // excluding border and scrollbar.
 LayoutUnit RenderBox::clientWidth() const
 {
-    return width() - borderLeft() - borderRight() - verticalScrollbarWidth();
+    return m_frameRect.width() - borderLeft() - borderRight() - verticalScrollbarWidth();
 }
 
 LayoutUnit RenderBox::clientHeight() const
 {
-    return height() - borderTop() - borderBottom() - horizontalScrollbarHeight();
+    return m_frameRect.height() - borderTop() - borderBottom() - horizontalScrollbarHeight();
 }
 
 int RenderBox::pixelSnappedClientWidth() const
@@ -515,7 +515,7 @@ void RenderBox::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumul
 
 void RenderBox::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
 {
-    quads.append(localToAbsoluteQuad(FloatRect(0, 0, width().toFloat(), height().toFloat()), 0 /* mode */, wasFixed));
+    quads.append(localToAbsoluteQuad(FloatRect(0, 0, m_frameRect.width().toFloat(), m_frameRect.height().toFloat()), 0 /* mode */, wasFixed));
 }
 
 void RenderBox::updateLayerTransformAfterLayout()
@@ -883,7 +883,7 @@ void RenderBox::applyCachedClipAndScrollOffsetForPaintInvalidation(LayoutRect& p
         return;
     }
 
-    // height() is inaccurate if we're in the middle of a layout of this RenderBox, so use the
+    // size() is inaccurate if we're in the middle of a layout of this RenderBox, so use the
     // layer's size instead. Even if the layer's size is wrong, the layer itself will issue paint invalidations
     // anyway if its size does change.
     LayoutRect clipRect(LayoutPoint(), LayoutSize(layer()->size()));
@@ -1193,7 +1193,7 @@ static bool isCandidateForOpaquenessTest(RenderBox* childBox)
         return false;
     if (childStyle->visibility() != VISIBLE || childStyle->shapeOutside())
         return false;
-    if (!childBox->width() || !childBox->height())
+    if (childBox->size().isZero())
         return false;
     if (RenderLayer* childLayer = childBox->layer()) {
         // FIXME: perhaps this could be less conservative?
@@ -1231,7 +1231,7 @@ bool RenderBox::foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect, u
                 return false;
             continue;
         }
-        if (childLocalRect.maxY() > childBox->height() || childLocalRect.maxX() > childBox->width())
+        if (childLocalRect.maxY() > childBox->size().height() || childLocalRect.maxX() > childBox->size().width())
             continue;
         if (childBox->backgroundIsKnownToBeOpaqueInRect(childLocalRect))
             return true;
@@ -1417,7 +1417,7 @@ LayoutRect RenderBox::clipRect(const LayoutPoint& location)
     }
 
     if (!style()->clipRight().isAuto())
-        clipRect.contract(width() - valueForLength(style()->clipRight(), width()), 0);
+        clipRect.contract(size().width() - valueForLength(style()->clipRight(), size().width()), 0);
 
     if (!style()->clipTop().isAuto()) {
         LayoutUnit c = valueForLength(style()->clipTop(), borderBoxRect.height());
@@ -1426,7 +1426,7 @@ LayoutRect RenderBox::clipRect(const LayoutPoint& location)
     }
 
     if (!style()->clipBottom().isAuto())
-        clipRect.contract(0, height() - valueForLength(style()->clipBottom(), height()));
+        clipRect.contract(0, size().height() - valueForLength(style()->clipBottom(), size().height()));
 
     return clipRect;
 }
@@ -2400,7 +2400,7 @@ LayoutUnit RenderBox::computePercentageLogicalHeight(const Length& height) const
             availableHeight = std::max<LayoutUnit>(0, contentBoxHeight);
         }
     } else if (isOutOfFlowPositionedWithSpecifiedHeight) {
-        // Don't allow this to affect the block' height() member variable, since this
+        // Don't allow this to affect the block' size() member variable, since this
         // can get called while the block is still laying out its kids.
         LogicalExtentComputedValues computedValues;
         cb->computeLogicalHeight(cb->logicalHeight(), 0, computedValues);
@@ -3649,11 +3649,11 @@ LayoutRect RenderBox::localCaretRect(InlineBox* box, int caretOffset, LayoutUnit
     // They never refer to children.
     // FIXME: Paint the carets inside empty blocks differently than the carets before/after elements.
 
-    LayoutRect rect(location(), LayoutSize(caretWidth, height()));
+    LayoutRect rect(location(), LayoutSize(caretWidth, size().height()));
     bool ltr = box ? box->isLeftToRightDirection() : style()->isLeftToRightDirection();
 
     if ((!caretOffset) ^ ltr)
-        rect.move(LayoutSize(width() - caretWidth, 0));
+        rect.move(LayoutSize(size().width() - caretWidth, 0));
 
     if (box) {
         RootInlineBox& rootBox = box->root();
@@ -3675,7 +3675,7 @@ LayoutRect RenderBox::localCaretRect(InlineBox* box, int caretOffset, LayoutUnit
         rect.setHeight(fontHeight);
 
     if (extraWidthToEndOfLine)
-        *extraWidthToEndOfLine = location().x() + width() - rect.maxX();
+        *extraWidthToEndOfLine = location().x() + size().width() - rect.maxX();
 
     // Move to local coords
     rect.moveBy(-location());
@@ -3702,8 +3702,8 @@ PositionWithAffinity RenderBox::positionForPoint(const LayoutPoint& point)
         return createPositionWithAffinity(nonPseudoNode() ? firstPositionInOrBeforeNode(nonPseudoNode()) : Position());
 
     if (isTable() && nonPseudoNode()) {
-        LayoutUnit right = width() - verticalScrollbarWidth();
-        LayoutUnit bottom = height() - horizontalScrollbarHeight();
+        LayoutUnit right = size().width() - verticalScrollbarWidth();
+        LayoutUnit bottom = size().height() - horizontalScrollbarHeight();
 
         if (point.x() < 0 || point.x() > right || point.y() < 0 || point.y() > bottom) {
             if (point.x() <= right / 2)
@@ -3991,8 +3991,8 @@ LayoutBoxExtent RenderBox::computeVisualEffectOverflowExtent() const
 
             int outlineSize = GraphicsContext::focusRingOutsetExtent(style()->outlineOffset(), style()->outlineWidth());
             top = std::max(top, -rect.y() + outlineSize);
-            right = std::max(right, rect.maxX() - width() + outlineSize);
-            bottom = std::max(bottom, rect.maxY() - height() + outlineSize);
+            right = std::max(right, rect.maxX() - size().width() + outlineSize);
+            bottom = std::max(bottom, rect.maxY() - size().height() + outlineSize);
             left = std::max(left, -rect.x() + outlineSize);
         } else {
             LayoutUnit outlineSize = style()->outlineSize();
@@ -4183,7 +4183,7 @@ bool RenderBox::isUnsplittableForPagination() const
 LayoutUnit RenderBox::lineHeight(bool /*firstLine*/, LineDirectionMode direction, LinePositionMode /*linePositionMode*/) const
 {
     if (isReplaced())
-        return direction == HorizontalLine ? m_marginBox.top() + height() + m_marginBox.bottom() : m_marginBox.right() + width() + m_marginBox.left();
+        return direction == HorizontalLine ? m_marginBox.top() + size().height() + m_marginBox.bottom() : m_marginBox.right() + size().width() + m_marginBox.left();
     return 0;
 }
 
@@ -4191,7 +4191,7 @@ int RenderBox::baselinePosition(FontBaseline baselineType, bool /*firstLine*/, L
 {
     ASSERT(linePositionMode == PositionOnContainingLine);
     if (isReplaced()) {
-        int result = direction == HorizontalLine ? m_marginBox.top() + height() + m_marginBox.bottom() : m_marginBox.right() + width() + m_marginBox.left();
+        int result = direction == HorizontalLine ? m_marginBox.top() + size().height() + m_marginBox.bottom() : m_marginBox.right() + size().width() + m_marginBox.left();
         if (baselineType == AlphabeticBaseline)
             return result;
         return result - result / 2;
@@ -4231,9 +4231,9 @@ LayoutRect RenderBox::visualOverflowRectForPropagation(RenderStyle* parentStyle)
     // We are putting ourselves into our parent's coordinate space.  If there is a flipped block mismatch
     // in a particular axis, then we have to flip the rect along that axis.
     if (style()->writingMode() == RightToLeftWritingMode || parentStyle->writingMode() == RightToLeftWritingMode)
-        rect.setX(width() - rect.maxX());
+        rect.setX(size().width() - rect.maxX());
     else if (style()->writingMode() == BottomToTopWritingMode || parentStyle->writingMode() == BottomToTopWritingMode)
-        rect.setY(height() - rect.maxY());
+        rect.setY(size().height() - rect.maxY());
 
     return rect;
 }
@@ -4283,9 +4283,9 @@ LayoutRect RenderBox::layoutOverflowRectForPropagation(RenderStyle* parentStyle)
     // We are putting ourselves into our parent's coordinate space.  If there is a flipped block mismatch
     // in a particular axis, then we have to flip the rect along that axis.
     if (style()->writingMode() == RightToLeftWritingMode || parentStyle->writingMode() == RightToLeftWritingMode)
-        rect.setX(width() - rect.maxX());
+        rect.setX(size().width() - rect.maxX());
     else if (style()->writingMode() == BottomToTopWritingMode || parentStyle->writingMode() == BottomToTopWritingMode)
-        rect.setY(height() - rect.maxY());
+        rect.setY(size().height() - rect.maxY());
 
     return rect;
 }
@@ -4305,7 +4305,7 @@ LayoutRect RenderBox::noOverflowRect() const
     LayoutUnit top = borderTop();
     LayoutUnit right = borderRight();
     LayoutUnit bottom = borderBottom();
-    LayoutRect rect(left, top, width() - left - right, height() - top - bottom);
+    LayoutRect rect(left, top, size().width() - left - right, size().height() - top - bottom);
     flipForWritingMode(rect);
     // Subtract space occupied by scrollbars. Order is important here: first flip, then subtract
     // scrollbars. This may seem backwards and weird, since one would think that a horizontal
@@ -4341,8 +4341,8 @@ LayoutPoint RenderBox::flipForWritingModeForChild(const RenderBox* child, const 
     // The child is going to add in its x() and y(), so we have to make sure it ends up in
     // the right place.
     if (isHorizontalWritingMode())
-        return LayoutPoint(point.x(), point.y() + height() - child->height() - (2 * child->location().y()));
-    return LayoutPoint(point.x() + width() - child->width() - (2 * child->location().x()), point.y());
+        return LayoutPoint(point.x(), point.y() + size().height() - child->size().height() - (2 * child->location().y()));
+    return LayoutPoint(point.x() + size().width() - child->size().width() - (2 * child->location().x()), point.y());
 }
 
 LayoutPoint RenderBox::flipForWritingModeIncludingColumns(const LayoutPoint& point) const

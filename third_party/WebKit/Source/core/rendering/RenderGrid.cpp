@@ -1476,7 +1476,7 @@ LayoutUnit RenderGrid::childIntrinsicHeight(const RenderBox& child) const
 {
     if (child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
         return constrainedChildIntrinsicContentLogicalHeight(child);
-    return child.height();
+    return child.size().height();
 }
 
 // FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to RenderBox.
@@ -1484,7 +1484,7 @@ LayoutUnit RenderGrid::childIntrinsicWidth(const RenderBox& child) const
 {
     if (!child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
         return constrainedChildIntrinsicContentLogicalHeight(child);
-    return child.width();
+    return child.size().width();
 }
 
 // FIXME: This logic is shared by RenderFlexibleBox, so it should be moved to RenderBox.

@@ -2592,7 +2592,7 @@ bool RenderLayer::hasNonEmptyChildRenderers() const
             if (child->isRenderInline() || !child->isBox())
                 return true;
 
-            if (toRenderBox(child)->width() > 0 || toRenderBox(child)->height() > 0)
+            if (!toRenderBox(child)->size().isEmpty())
                 return true;
         }
     }

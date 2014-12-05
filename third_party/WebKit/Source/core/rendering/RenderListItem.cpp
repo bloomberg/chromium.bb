@@ -405,7 +405,7 @@ void RenderListItem::positionListMarker()
         }
 
         if (adjustOverflow) {
-            LayoutRect markerRect(markerLogicalLeft + lineOffset, blockOffset, m_marker->width(), m_marker->height());
+            LayoutRect markerRect(LayoutPoint(markerLogicalLeft + lineOffset, blockOffset), m_marker->size());
             if (!style()->isHorizontalWritingMode())
                 markerRect = markerRect.transposedRect();
             RenderBox* o = m_marker;

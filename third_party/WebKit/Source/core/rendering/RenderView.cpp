@@ -163,10 +163,10 @@ bool RenderView::shouldDoFullPaintInvalidationForNextLayout() const
     if (shouldUsePrintingLayout())
         return true;
 
-    if (!style()->isHorizontalWritingMode() || width() != viewWidth())
+    if (!style()->isHorizontalWritingMode() || size().width() != viewWidth())
         return true;
 
-    if (height() != viewHeight()) {
+    if (size().height() != viewHeight()) {
         if (RenderObject* backgroundRenderer = this->backgroundRenderer()) {
             // When background-attachment is 'fixed', we treat the viewport (instead of the 'root'
             // i.e. html or body) as the background positioning area, and we should full paint invalidation
@@ -194,7 +194,7 @@ void RenderView::layout()
     SubtreeLayoutScope layoutScope(*this);
 
     // Use calcWidth/Height to get the new width/height, since this will take the full page zoom factor into account.
-    bool relayoutChildren = !shouldUsePrintingLayout() && (!m_frameView || width() != viewWidth() || height() != viewHeight());
+    bool relayoutChildren = !shouldUsePrintingLayout() && (!m_frameView || size().width() != viewWidth() || size().height() != viewHeight());
     if (relayoutChildren) {
         layoutScope.setChildNeedsLayout(this);
         for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {

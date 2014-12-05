@@ -1051,7 +1051,7 @@ bool TextIterator::shouldRepresentNodeOffsetZero()
     // Additionally, if the range we are iterating over contains huge sections of unrendered content,
     // we would create VisiblePositions on every call to this function without this check.
     if (!m_node->renderer() || m_node->renderer()->style()->visibility() != VISIBLE
-        || (m_node->renderer()->isRenderBlockFlow() && !toRenderBlock(m_node->renderer())->height() && !isHTMLBodyElement(*m_node)))
+        || (m_node->renderer()->isRenderBlockFlow() && !toRenderBlock(m_node->renderer())->size().height() && !isHTMLBodyElement(*m_node)))
         return false;
 
     // The startPos.isNotNull() check is needed because the start could be before the body,

@@ -22,9 +22,9 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
     // Push a clip.
     GraphicsContextStateSaver stateSaver(*paintInfo.context, false);
     if (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseChildBlockBackgrounds) {
-        IntRect clipRect = enclosingIntRect(LayoutRect(paintOffset.x() + m_renderFileUploadControl.borderLeft(), paintOffset.y() + m_renderFileUploadControl.borderTop(),
-            m_renderFileUploadControl.width() - m_renderFileUploadControl.borderLeft() - m_renderFileUploadControl.borderRight(),
-            m_renderFileUploadControl.height() - m_renderFileUploadControl.borderBottom() - m_renderFileUploadControl.borderTop() + buttonShadowHeight));
+        IntRect clipRect = enclosingIntRect(LayoutRect(
+            LayoutPoint(paintOffset.x() + m_renderFileUploadControl.borderLeft(), paintOffset.y() + m_renderFileUploadControl.borderTop()),
+            m_renderFileUploadControl.size() + LayoutSize(0, -m_renderFileUploadControl.borderWidth() + buttonShadowHeight)));
         if (clipRect.isEmpty())
             return;
         stateSaver.save();

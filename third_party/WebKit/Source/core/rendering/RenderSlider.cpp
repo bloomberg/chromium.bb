@@ -50,7 +50,7 @@ int RenderSlider::baselinePosition(FontBaseline, bool /*firstLine*/, LineDirecti
 {
     ASSERT(linePositionMode == PositionOnContainingLine);
     // FIXME: Patch this function for writing-mode.
-    return height() + marginTop();
+    return size().height() + marginTop();
 }
 
 void RenderSlider::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const

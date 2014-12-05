@@ -205,9 +205,8 @@ void TableCellPainter::paintBackgroundsBehindCell(const PaintInfo& paintInfo, co
         bool shouldClip = backgroundObject->hasLayer() && (backgroundObject == &m_renderTableCell || backgroundObject == m_renderTableCell.parent()) && tableElt->collapseBorders();
         GraphicsContextStateSaver stateSaver(*paintInfo.context, shouldClip);
         if (shouldClip) {
-            LayoutRect clipRect(paintRect.location().x() + m_renderTableCell.borderLeft(), paintRect.location().y() + m_renderTableCell.borderTop(),
-                m_renderTableCell.width() - m_renderTableCell.borderLeft() - m_renderTableCell.borderRight(),
-                m_renderTableCell.height() - m_renderTableCell.borderTop() - m_renderTableCell.borderBottom());
+            LayoutRect clipRect(paintRect.location(), m_renderTableCell.size());
+            clipRect.contract(m_renderTableCell.borderBoxExtent());
             paintInfo.context->clip(clipRect);
         }
         BoxPainter(m_renderTableCell).paintFillLayers(paintInfo, c, bgLayer, paintRect, BackgroundBleedNone, CompositeSourceOver, backgroundObject);

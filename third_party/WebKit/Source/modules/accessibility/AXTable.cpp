@@ -215,7 +215,7 @@ bool AXTable::isDataTable() const
             if (!cellNode)
                 continue;
 
-            if (cell->width() < 1 || cell->height() < 1)
+            if (cell->size().width() < 1 || cell->size().height() < 1)
                 continue;
 
             validCellCount++;

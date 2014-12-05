@@ -125,7 +125,7 @@ FloatWillBeLayoutUnit InlineBox::logicalHeight() const
     if (renderer().isText())
         return m_bitfields.isText() ? renderer().style(isFirstLineStyle())->fontMetrics().height() : 0;
     if (renderer().isBox() && parent())
-        return isHorizontal() ? toRenderBox(renderer()).height().toFloat() : toRenderBox(renderer()).width().toFloat();
+        return isHorizontal() ? toRenderBox(renderer()).size().height().toFloat() : toRenderBox(renderer()).size().width().toFloat();
 
     ASSERT(isInlineFlowBox());
     RenderBoxModelObject* flowObject = boxModelObject();
@@ -315,9 +315,9 @@ FloatPointWillBeLayoutPoint InlineBox::locationIncludingFlipping()
 
     RenderBlockFlow& block = root().block();
     if (block.style()->isHorizontalWritingMode())
-        return FloatPointWillBeLayoutPoint(x(), block.height() - height() - y());
+        return FloatPointWillBeLayoutPoint(x(), block.size().height() - size().height() - y());
 
-    return FloatPointWillBeLayoutPoint(block.width() - width() - x(), y());
+    return FloatPointWillBeLayoutPoint(block.size().width() - size().width() - x(), y());
 }
 
 void InlineBox::flipForWritingMode(FloatRect& rect)

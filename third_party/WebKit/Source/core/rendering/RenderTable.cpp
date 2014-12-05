@@ -591,9 +591,9 @@ void RenderTable::addOverflowFromChildren()
     // Technically it's odd that we are incorporating the borders into layout overflow, which is only supposed to be about overflow from our
     // descendant objects, but since tables don't support overflow:auto, this works out fine.
     if (collapseBorders()) {
-        int rightBorderOverflow = width() + outerBorderRight() - borderRight();
+        int rightBorderOverflow = size().width() + outerBorderRight() - borderRight();
         int leftBorderOverflow = borderLeft() - outerBorderLeft();
-        int bottomBorderOverflow = height() + outerBorderBottom() - borderBottom();
+        int bottomBorderOverflow = size().height() + outerBorderBottom() - borderBottom();
         int topBorderOverflow = borderTop() - outerBorderTop();
         IntRect borderOverflowRect(leftBorderOverflow, topBorderOverflow, rightBorderOverflow - leftBorderOverflow, bottomBorderOverflow - topBorderOverflow);
         if (borderOverflowRect != pixelSnappedBorderBoxRect()) {
@@ -1277,10 +1277,10 @@ LayoutRect RenderTable::overflowClipRect(const LayoutPoint& location, OverlayScr
     // we might have to hack this code first (depending on what order we do these bug fixes in).
     if (!m_captions.isEmpty()) {
         if (style()->isHorizontalWritingMode()) {
-            rect.setHeight(height());
+            rect.setHeight(size().height());
             rect.setY(location.y());
         } else {
-            rect.setWidth(width());
+            rect.setWidth(size().width());
             rect.setX(location.x());
         }
     }

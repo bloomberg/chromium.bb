@@ -129,11 +129,11 @@ void RenderSliderContainer::layout()
 
     double percentageOffset = sliderPosition(input).toDouble();
     LayoutUnit availableExtent = isVertical ? track->contentHeight() : track->contentWidth();
-    availableExtent -= isVertical ? thumb->height() : thumb->width();
+    availableExtent -= isVertical ? thumb->size().height() : thumb->size().width();
     LayoutUnit offset = percentageOffset * availableExtent;
     LayoutPoint thumbLocation = thumb->location();
     if (isVertical)
-        thumbLocation.setY(thumbLocation.y() + track->contentHeight() - thumb->height() - offset);
+        thumbLocation.setY(thumbLocation.y() + track->contentHeight() - thumb->size().height() - offset);
     else if (style()->isLeftToRightDirection())
         thumbLocation.setX(thumbLocation.x() + offset);
     else

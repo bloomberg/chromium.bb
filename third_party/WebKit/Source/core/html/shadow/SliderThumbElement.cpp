@@ -136,12 +136,12 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
     IntRect trackBoundingBox = trackElement->renderer()->absoluteBoundingBoxRectIgnoringTransforms();
     IntRect inputBoundingBox = input->renderer()->absoluteBoundingBoxRectIgnoringTransforms();
     if (isVertical) {
-        trackSize = trackElement->renderBox()->contentHeight() - renderBox()->height();
-        position = offset.y() - renderBox()->height() / 2 - trackBoundingBox.y() + inputBoundingBox.y() - renderBox()->marginBottom();
+        trackSize = trackElement->renderBox()->contentHeight() - renderBox()->size().height();
+        position = offset.y() - renderBox()->size().height() / 2 - trackBoundingBox.y() + inputBoundingBox.y() - renderBox()->marginBottom();
         currentPosition = absoluteThumbOrigin.y() - absoluteSliderContentOrigin.y();
     } else {
-        trackSize = trackElement->renderBox()->contentWidth() - renderBox()->width();
-        position = offset.x() - renderBox()->width() / 2 - trackBoundingBox.x() + inputBoundingBox.x();
+        trackSize = trackElement->renderBox()->contentWidth() - renderBox()->size().width();
+        position = offset.x() - renderBox()->size().width() / 2 - trackBoundingBox.x() + inputBoundingBox.x();
         position -= isLeftToRightDirection ? renderBox()->marginLeft() : renderBox()->marginRight();
         currentPosition = absoluteThumbOrigin.x() - absoluteSliderContentOrigin.x();
     }

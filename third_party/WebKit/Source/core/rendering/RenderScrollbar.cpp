@@ -51,19 +51,18 @@ RenderScrollbar::RenderScrollbar(ScrollableArea* scrollableArea, ScrollbarOrient
     // FIXME: We need to do this because RenderScrollbar::styleChanged is called as soon as the scrollbar is created.
 
     // Update the scrollbar size.
-    int width = 0;
-    int height = 0;
+    IntRect rect(0, 0, 0, 0);
     updateScrollbarPart(ScrollbarBGPart);
     if (RenderScrollbarPart* part = m_parts.get(ScrollbarBGPart)) {
         part->layout();
-        width = part->width();
-        height = part->height();
-    } else if (this->orientation() == HorizontalScrollbar)
-        width = this->width();
-    else
-        height = this->height();
+        rect.setSize(flooredIntSize(part->size()));
+    } else if (this->orientation() == HorizontalScrollbar) {
+        rect.setWidth(this->width());
+    } else {
+        rect.setHeight(this->height());
+    }
 
-    setFrameRect(IntRect(0, 0, width, height));
+    setFrameRect(rect);
 
 #if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(*this);
@@ -199,7 +198,7 @@ void RenderScrollbar::updateScrollbarParts(bool destroy)
     RenderScrollbarPart* part = m_parts.get(ScrollbarBGPart);
     if (part) {
         part->layout();
-        newThickness = isHorizontal ? part->height() : part->width();
+        newThickness = isHorizontal ? part->size().height() : part->size().width();
     }
 
     if (newThickness != oldThickness) {
@@ -364,7 +363,7 @@ int RenderScrollbar::minimumThumbLength()
     if (!partRenderer)
         return 0;
     partRenderer->layout();
-    return orientation() == HorizontalScrollbar ? partRenderer->width() : partRenderer->height();
+    return orientation() == HorizontalScrollbar ? partRenderer->size().width() : partRenderer->size().height();
 }
 
 }

@@ -223,6 +223,17 @@ public:
         return child->y() + child->renderer()->marginTop();
     }
 
+    LayoutSize positionForFloatIncludingMargin(const FloatingObject* child) const
+    {
+        if (isHorizontalWritingMode()) {
+            return LayoutSize(child->x() + child->renderer()->marginLeft(),
+                child->y() + marginBeforeForChild(*(child->renderer())));
+        }
+
+        return LayoutSize(child->x() + marginBeforeForChild(*(child->renderer())),
+            child->y() + child->renderer()->marginTop());
+    }
+
     LayoutPoint flipFloatForWritingModeForChild(const FloatingObject*, const LayoutPoint&) const;
 
 protected:

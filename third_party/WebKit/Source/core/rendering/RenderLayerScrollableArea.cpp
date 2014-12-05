@@ -203,9 +203,9 @@ void RenderLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, co
         return;
 
     if (scrollbar == m_vBar.get())
-        scrollRect.move(verticalScrollbarStart(0, box().width()), box().borderTop());
+        scrollRect.move(verticalScrollbarStart(0, box().size().width()), box().borderTop());
     else
-        scrollRect.move(horizontalScrollbarStart(0), box().height() - box().borderBottom() - scrollbar->height());
+        scrollRect.move(horizontalScrollbarStart(0), box().size().height() - box().borderBottom() - scrollbar->height());
 
     if (scrollRect.isEmpty())
         return;
@@ -849,10 +849,10 @@ LayoutUnit RenderLayerScrollableArea::horizontalScrollbarStart(int minX) const
 IntSize RenderLayerScrollableArea::scrollbarOffset(const Scrollbar* scrollbar) const
 {
     if (scrollbar == m_vBar.get())
-        return IntSize(verticalScrollbarStart(0, box().width()), box().borderTop());
+        return IntSize(verticalScrollbarStart(0, box().size().width()), box().borderTop());
 
     if (scrollbar == m_hBar.get())
-        return IntSize(horizontalScrollbarStart(0), box().height() - box().borderBottom() - scrollbar->height());
+        return IntSize(horizontalScrollbarStart(0), box().size().height() - box().borderBottom() - scrollbar->height());
 
     ASSERT_NOT_REACHED();
     return IntSize();
@@ -1115,10 +1115,10 @@ bool RenderLayerScrollableArea::hitTestOverflowControls(HitTestResult& result, c
 
     int resizeControlSize = max(resizeControlRect.height(), 0);
     if (m_vBar && m_vBar->shouldParticipateInHitTesting()) {
-        LayoutRect vBarRect(verticalScrollbarStart(0, box().width()),
+        LayoutRect vBarRect(verticalScrollbarStart(0, box().size().width()),
             box().borderTop(),
             m_vBar->width(),
-            box().height() - (box().borderTop() + box().borderBottom()) - (m_hBar ? m_hBar->height() : resizeControlSize));
+            box().size().height() - (box().borderTop() + box().borderBottom()) - (m_hBar ? m_hBar->height() : resizeControlSize));
         if (vBarRect.contains(localPoint)) {
             result.setScrollbar(m_vBar.get());
             return true;
@@ -1128,8 +1128,8 @@ bool RenderLayerScrollableArea::hitTestOverflowControls(HitTestResult& result, c
     resizeControlSize = max(resizeControlRect.width(), 0);
     if (m_hBar && m_hBar->shouldParticipateInHitTesting()) {
         LayoutRect hBarRect(horizontalScrollbarStart(0),
-            box().height() - box().borderBottom() - m_hBar->height(),
-            box().width() - (box().borderLeft() + box().borderRight()) - (m_vBar ? m_vBar->width() : resizeControlSize),
+            box().size().height() - box().borderBottom() - m_hBar->height(),
+            box().size().width() - (box().borderLeft() + box().borderRight()) - (m_vBar ? m_vBar->width() : resizeControlSize),
             m_hBar->height());
         if (hBarRect.contains(localPoint)) {
             result.setScrollbar(m_hBar.get());
@@ -1356,7 +1356,8 @@ void RenderLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSiz
     newOffset.setWidth(newOffset.width() / zoomFactor);
     newOffset.setHeight(newOffset.height() / zoomFactor);
 
-    LayoutSize currentSize = LayoutSize(box().width() / zoomFactor, box().height() / zoomFactor);
+    LayoutSize currentSize = box().size();
+    currentSize.scale(1 / zoomFactor);
     LayoutSize minimumSize = element->minimumSizeForResizing().shrunkTo(currentSize);
     element->setMinimumSizeForResizing(minimumSize);
 
@@ -1377,7 +1378,7 @@ void RenderLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSiz
             element->setInlineStyleProperty(CSSPropertyMarginLeft, box().marginLeft() / zoomFactor, CSSPrimitiveValue::CSS_PX);
             element->setInlineStyleProperty(CSSPropertyMarginRight, box().marginRight() / zoomFactor, CSSPrimitiveValue::CSS_PX);
         }
-        LayoutUnit baseWidth = box().width() - (isBoxSizingBorder ? LayoutUnit() : box().borderAndPaddingWidth());
+        LayoutUnit baseWidth = box().size().width() - (isBoxSizingBorder ? LayoutUnit() : box().borderAndPaddingWidth());
         baseWidth = baseWidth / zoomFactor;
         element->setInlineStyleProperty(CSSPropertyWidth, roundToInt(baseWidth + difference.width()), CSSPrimitiveValue::CSS_PX);
     }
@@ -1388,7 +1389,7 @@ void RenderLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSiz
             element->setInlineStyleProperty(CSSPropertyMarginTop, box().marginTop() / zoomFactor, CSSPrimitiveValue::CSS_PX);
             element->setInlineStyleProperty(CSSPropertyMarginBottom, box().marginBottom() / zoomFactor, CSSPrimitiveValue::CSS_PX);
         }
-        LayoutUnit baseHeight = box().height() - (isBoxSizingBorder ? LayoutUnit() : box().borderAndPaddingHeight());
+        LayoutUnit baseHeight = box().size().height() - (isBoxSizingBorder ? LayoutUnit() : box().borderAndPaddingHeight());
         baseHeight = baseHeight / zoomFactor;
         element->setInlineStyleProperty(CSSPropertyHeight, roundToInt(baseHeight + difference.height()), CSSPrimitiveValue::CSS_PX);
     }

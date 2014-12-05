@@ -873,7 +873,7 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::addBlockPlaceholderI
     // append the placeholder to make sure it follows
     // any unrendered blocks
     RenderBlockFlow* block = toRenderBlockFlow(renderer);
-    if (block->height() == 0 || (block->isListItem() && toRenderListItem(block)->isEmpty()))
+    if (block->size().height() == 0 || (block->isListItem() && toRenderListItem(block)->isEmpty()))
         return appendBlockPlaceholder(container);
 
     return nullptr;

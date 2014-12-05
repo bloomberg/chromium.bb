@@ -686,7 +686,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
         if (isNativeImage() && m_renderer->isImage()) {
             // check for one-dimensional image
             RenderImage* image = toRenderImage(m_renderer);
-            if (image->height() <= 1 || image->width() <= 1)
+            if (image->size().height() <= 1 || image->size().width() <= 1)
                 return true;
 
             // check whether rendered image was stretched from one-dimensional file image
@@ -702,7 +702,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
         if (canvasHasFallbackContent())
             return false;
         RenderHTMLCanvas* canvas = toRenderHTMLCanvas(m_renderer);
-        if (canvas->height() <= 1 || canvas->width() <= 1)
+        if (canvas->size().height() <= 1 || canvas->size().width() <= 1)
             return true;
         // Otherwise fall through; use presence of help text, title, or description to decide.
     }

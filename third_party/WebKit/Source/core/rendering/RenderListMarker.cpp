@@ -1122,8 +1122,8 @@ LayoutRect RenderListMarker::localSelectionRect()
     RootInlineBox& root = inlineBoxWrapper()->root();
     LayoutUnit newLogicalTop = root.block().style()->isFlippedBlocksWritingMode() ? inlineBoxWrapper()->logicalBottom() - root.selectionBottom() : root.selectionTop() - inlineBoxWrapper()->logicalTop();
     if (root.block().style()->isHorizontalWritingMode())
-        return LayoutRect(0, newLogicalTop, width(), root.selectionHeight());
-    return LayoutRect(newLogicalTop, 0, root.selectionHeight(), height());
+        return LayoutRect(0, newLogicalTop, size().width(), root.selectionHeight());
+    return LayoutRect(newLogicalTop, 0, root.selectionHeight(), size().height());
 }
 
 void RenderListMarker::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -1163,7 +1163,7 @@ void RenderListMarker::imageChanged(WrappedImagePtr o, const IntRect*)
     if (o != m_image->data())
         return;
 
-    if (width() != m_image->imageSize(this, style()->effectiveZoom()).width() || height() != m_image->imageSize(this, style()->effectiveZoom()).height() || m_image->errorOccurred())
+    if (size() != m_image->imageSize(this, style()->effectiveZoom()) || m_image->errorOccurred())
         setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
     else
         setShouldDoFullPaintInvalidation();
@@ -1605,7 +1605,7 @@ IntRect RenderListMarker::getRelativeMarkerRect()
 
     if (!style()->isHorizontalWritingMode()) {
         relativeRect = relativeRect.transposedRect();
-        relativeRect.setX(width() - relativeRect.x() - relativeRect.width());
+        relativeRect.setX(size().width() - relativeRect.x() - relativeRect.width());
     }
 
     return relativeRect;
@@ -1628,7 +1628,7 @@ LayoutRect RenderListMarker::selectionRectForPaintInvalidation(const RenderLayer
         return LayoutRect();
 
     RootInlineBox& root = inlineBoxWrapper()->root();
-    LayoutRect rect(0, root.selectionTop() - location().y(), width(), root.selectionHeight());
+    LayoutRect rect(0, root.selectionTop() - location().y(), size().width(), root.selectionHeight());
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
     // FIXME: groupedMapping() leaks the squashing abstraction.
     if (paintInvalidationContainer->layer()->groupedMapping())

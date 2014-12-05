@@ -204,7 +204,7 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
         // to clean up the results to dump both the outer box and the intrinsic padding so that both bits of information are
         // captured by the results.
         const RenderTableCell& cell = toRenderTableCell(o);
-        r = LayoutRect(cell.location().x(), cell.location().y() + cell.intrinsicPaddingBefore(), cell.width(), cell.height() - cell.intrinsicPaddingBefore() - cell.intrinsicPaddingAfter());
+        r = LayoutRect(cell.location().x(), cell.location().y() + cell.intrinsicPaddingBefore(), cell.size().width(), cell.size().height() - cell.intrinsicPaddingBefore() - cell.intrinsicPaddingAfter());
     } else if (o.isBox())
         r = toRenderBox(&o)->frameRect();
 
@@ -712,7 +712,7 @@ String externalRepresentation(LocalFrame* frame, RenderAsTextBehavior behavior)
 
     PrintContext printContext(frame);
     if (behavior & RenderAsTextPrintingMode)
-        printContext.begin(toRenderBox(renderer)->width().toFloat());
+        printContext.begin(toRenderBox(renderer)->size().width().toFloat());
 
     return externalRepresentation(toRenderBox(renderer), behavior);
 }

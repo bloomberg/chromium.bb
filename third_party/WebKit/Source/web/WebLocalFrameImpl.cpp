@@ -263,8 +263,8 @@ static void frameContentAsPlainText(size_t maxChars, LocalFrame* frame, StringBu
         // Ignore the text of non-visible frames.
         RenderView* contentRenderer = curLocalChild->contentRenderer();
         RenderPart* ownerRenderer = curLocalChild->ownerRenderer();
-        if (!contentRenderer || !contentRenderer->width() || !contentRenderer->height()
-            || (contentRenderer->location().x() + contentRenderer->width() <= 0) || (contentRenderer->location().y() + contentRenderer->height() <= 0)
+        if (!contentRenderer || !contentRenderer->size().width() || !contentRenderer->size().height()
+            || (contentRenderer->location().x() + contentRenderer->size().width() <= 0) || (contentRenderer->location().y() + contentRenderer->size().height() <= 0)
             || (ownerRenderer && ownerRenderer->style() && ownerRenderer->style()->visibility() != VISIBLE)) {
             continue;
         }

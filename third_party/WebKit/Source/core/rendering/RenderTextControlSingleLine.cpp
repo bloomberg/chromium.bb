@@ -75,9 +75,9 @@ void RenderTextControlSingleLine::paint(const PaintInfo& paintInfo, const Layout
 
         // Center in the block progression direction.
         if (isHorizontalWritingMode())
-            contentsRect.setY((height() - contentsRect.height()) / 2);
+            contentsRect.setY((size().height() - contentsRect.height()) / 2);
         else
-            contentsRect.setX((width() - contentsRect.width()) / 2);
+            contentsRect.setX((size().width() - contentsRect.width()) / 2);
 
         // Convert the rect into the coords used for painting the content
         contentsRect.moveBy(paintOffset + location());
@@ -161,7 +161,7 @@ void RenderTextControlSingleLine::layout()
         RenderBlockFlow::layoutBlock(true);
 
     // Center the child block in the block progression direction (vertical centering for horizontal text fields).
-    if (!container && innerEditorRenderer && innerEditorRenderer->height() != contentLogicalHeight()) {
+    if (!container && innerEditorRenderer && innerEditorRenderer->size().height() != contentLogicalHeight()) {
         LayoutUnit logicalHeightDiff = innerEditorRenderer->logicalHeight() - contentLogicalHeight();
         innerEditorRenderer->setLogicalTop(innerEditorRenderer->logicalTop() - (logicalHeightDiff / 2 + layoutMod(logicalHeightDiff, 2)));
     } else

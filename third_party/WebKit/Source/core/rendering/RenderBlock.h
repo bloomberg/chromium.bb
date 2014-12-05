@@ -206,8 +206,8 @@ public:
     void setPageLogicalOffset(LayoutUnit offset) { m_pageLogicalOffset = offset; }
 
     // Accessors for logical width/height and margins in the containing block's block-flow direction.
-    LayoutUnit logicalWidthForChild(const RenderBox& child) const { return isHorizontalWritingMode() ? child.width() : child.height(); }
-    LayoutUnit logicalHeightForChild(const RenderBox& child) const { return isHorizontalWritingMode() ? child.height() : child.width(); }
+    LayoutUnit logicalWidthForChild(const RenderBox& child) const { return isHorizontalWritingMode() ? child.size().width() : child.size().height(); }
+    LayoutUnit logicalHeightForChild(const RenderBox& child) const { return isHorizontalWritingMode() ? child.size().height() : child.size().width(); }
     LayoutSize logicalSizeForChild(const RenderBox& child) const { return isHorizontalWritingMode() ? child.size() : child.size().transposedSize(); }
     LayoutUnit logicalTopForChild(const RenderBox& child) const { return isHorizontalWritingMode() ? child.location().y() : child.location().x(); }
     LayoutUnit marginBeforeForChild(const RenderBoxModelObject& child) const { return child.marginBefore(style()); }

@@ -591,9 +591,9 @@ void RenderInline::generateCulledLineBoxRects(GeneratorContext& yield, const Ren
                 int logicalTop = rootBox.logicalTop() + (rootBox.renderer().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
                 int logicalHeight = container->style(rootBox.isFirstLineStyle())->font().fontMetrics().height();
                 if (isHorizontal)
-                    yield(FloatRect(currBox->inlineBoxWrapper()->x() - currBox->marginLeft(), logicalTop, (currBox->width() + currBox->marginWidth()).toFloat(), logicalHeight));
+                    yield(FloatRect(currBox->inlineBoxWrapper()->x() - currBox->marginLeft(), logicalTop, (currBox->size().width() + currBox->marginWidth()).toFloat(), logicalHeight));
                 else
-                    yield(FloatRect(logicalTop, currBox->inlineBoxWrapper()->y() - currBox->marginTop(), logicalHeight, (currBox->height() + currBox->marginHeight()).toFloat()));
+                    yield(FloatRect(logicalTop, currBox->inlineBoxWrapper()->y() - currBox->marginTop(), logicalHeight, (currBox->size().height() + currBox->marginHeight()).toFloat()));
             }
         } else if (curr->isRenderInline()) {
             // If the child doesn't need line boxes either, then we can recur.

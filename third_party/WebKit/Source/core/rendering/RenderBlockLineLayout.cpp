@@ -1626,7 +1626,8 @@ void RenderBlockFlow::checkFloatsInCleanLine(RootInlineBox* line, Vector<FloatWi
     for (Vector<RenderBox*>::iterator it = cleanLineFloats->begin(); it != end; ++it) {
         RenderBox* floatingBox = *it;
         floatingBox->layoutIfNeeded();
-        LayoutSize newSize(floatingBox->width() + floatingBox->marginWidth(), floatingBox->height() + floatingBox->marginHeight());
+        LayoutSize newSize = floatingBox->size() +
+            LayoutSize(floatingBox->marginWidth(), floatingBox->marginHeight());
         if (floats[floatIndex].object != floatingBox) {
             encounteredNewFloat = true;
             return;

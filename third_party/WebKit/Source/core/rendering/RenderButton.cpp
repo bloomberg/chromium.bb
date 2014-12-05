@@ -87,7 +87,9 @@ bool RenderButton::canHaveGeneratedChildren() const
 LayoutRect RenderButton::controlClipRect(const LayoutPoint& additionalOffset) const
 {
     // Clip to the padding box to at least give content the extra padding space.
-    return LayoutRect(additionalOffset.x() + borderLeft(), additionalOffset.y() + borderTop(), width() - borderLeft() - borderRight(), height() - borderTop() - borderBottom());
+    LayoutRect rect(additionalOffset, size());
+    rect.contract(borderBoxExtent());
+    return rect;
 }
 
 int RenderButton::baselinePosition(FontBaseline baseline, bool firstLine, LineDirectionMode direction, LinePositionMode linePositionMode) const
@@ -101,9 +103,9 @@ int RenderButton::baselinePosition(FontBaseline baseline, bool firstLine, LineDi
         // even when we have the anonymous RenderBlock child, we calculate the
         // baseline for the empty case manually here.
         if (direction == HorizontalLine) {
-            return marginTop() + height() - borderBottom() - paddingBottom() - horizontalScrollbarHeight();
+            return marginTop() + size().height() - borderBottom() - paddingBottom() - horizontalScrollbarHeight();
         }
-        return marginRight() + width() - borderLeft() - paddingLeft() - verticalScrollbarWidth();
+        return marginRight() + size().width() - borderLeft() - paddingLeft() - verticalScrollbarWidth();
     }
     return RenderFlexibleBox::baselinePosition(baseline, firstLine, direction, linePositionMode);
 }

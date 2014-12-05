@@ -118,7 +118,7 @@ LayoutUnit RenderListBox::itemHeight() const
         return defaultItemHeight();
     if (!baseItemRenderer || !baseItemRenderer->isBox())
         return defaultItemHeight();
-    return toRenderBox(baseItemRenderer)->height();
+    return toRenderBox(baseItemRenderer)->size().height();
 }
 
 void RenderListBox::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, LogicalExtentComputedValues& computedValues) const

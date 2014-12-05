@@ -450,7 +450,7 @@ void BoxPainter::paintFillLayerExtended(RenderBoxModelObject& obj, const PaintIn
         IntRect backgroundRect(pixelSnappedIntRect(scrolledPaintRect));
         bool boxShadowShouldBeAppliedToBackground = obj.boxShadowShouldBeAppliedToBackground(bleedAvoidance, box);
         bool isOpaqueRoot = (isDocumentElementRenderer && !bgColor.hasAlpha()) || isDocumentElementWithOpaqueBackground(obj);
-        if (boxShadowShouldBeAppliedToBackground || !shouldPaintBackgroundImage || !bgLayer.hasOpaqueImage(&obj) || !bgLayer.hasRepeatXY() || (isOpaqueRoot && !toRenderBox(&obj)->height()))  {
+        if (boxShadowShouldBeAppliedToBackground || !shouldPaintBackgroundImage || !bgLayer.hasOpaqueImage(&obj) || !bgLayer.hasRepeatXY() || (isOpaqueRoot && !toRenderBox(&obj)->size().height()))  {
             if (!boxShadowShouldBeAppliedToBackground)
                 backgroundRect.intersect(paintInfo.rect);
 

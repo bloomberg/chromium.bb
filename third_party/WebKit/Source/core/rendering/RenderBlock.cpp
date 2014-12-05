@@ -2521,7 +2521,7 @@ PositionWithAffinity RenderBlock::positionForPointWithInlineChildren(const Layou
 
 static inline bool isChildHitTestCandidate(RenderBox* box)
 {
-    return box->height() && box->style()->visibility() == VISIBLE && !box->isFloatingOrOutOfFlowPositioned();
+    return box->size().height() && box->style()->visibility() == VISIBLE && !box->isFloatingOrOutOfFlowPositioned();
 }
 
 PositionWithAffinity RenderBlock::positionForPoint(const LayoutPoint& point)
@@ -3191,7 +3191,7 @@ int RenderBlock::baselinePosition(FontBaseline baselineType, bool firstLine, Lin
             // breaks -webkit-line-clamp, which is used in the wild -- we would
             // calculate the baseline as if -webkit-line-clamp wasn't used.
             // For simplicity, we use this for all uses of deprecated flexbox.
-            LayoutUnit bottomOfContent = direction == HorizontalLine ? height() - borderBottom() - paddingBottom() - horizontalScrollbarHeight() : width() - borderLeft() - paddingLeft() - verticalScrollbarWidth();
+            LayoutUnit bottomOfContent = direction == HorizontalLine ? size().height() - borderBottom() - paddingBottom() - horizontalScrollbarHeight() : size().width() - borderLeft() - paddingLeft() - verticalScrollbarWidth();
             if (baselinePos > bottomOfContent)
                 baselinePos = -1;
         }
@@ -3248,7 +3248,7 @@ int RenderBlock::inlineBlockBaseline(LineDirectionMode direction) const
 {
     if (!style()->isOverflowVisible()) {
         // We are not calling RenderBox::baselinePosition here because the caller should add the margin-top/margin-right, not us.
-        return direction == HorizontalLine ? height() + m_marginBox.bottom() : width() + m_marginBox.left();
+        return direction == HorizontalLine ? size().height() + m_marginBox.bottom() : size().width() + m_marginBox.left();
     }
 
     return lastLineBoxBaseline(direction);
@@ -3355,7 +3355,7 @@ static int getHeightForLineCount(RenderBlock* block, int l, bool includeBottom, 
                 }
             }
             if (normalFlowChildWithoutLines && l == 0)
-                return normalFlowChildWithoutLines->location().y() + normalFlowChildWithoutLines->height();
+                return normalFlowChildWithoutLines->location().y() + normalFlowChildWithoutLines->size().height();
         }
     }
 
@@ -3444,8 +3444,9 @@ void RenderBlock::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accum
     if (isAnonymousBlockContinuation()) {
         // FIXME: This is wrong for vertical writing-modes.
         // https://bugs.webkit.org/show_bug.cgi?id=46781
-        rects.append(pixelSnappedIntRect(accumulatedOffset.x(), accumulatedOffset.y() - collapsedMarginBefore(),
-                                width(), height() + collapsedMarginBefore() + collapsedMarginAfter()));
+        LayoutRect rect(accumulatedOffset, size());
+        rect.expand(collapsedMarginBox());
+        rects.append(pixelSnappedIntRect(rect));
         continuation()->absoluteRects(rects, accumulatedOffset - toLayoutSize(location() +
                 inlineElementContinuation()->containingBlock()->location()));
     } else
@@ -3460,12 +3461,12 @@ void RenderBlock::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
     if (isAnonymousBlockContinuation()) {
         // FIXME: This is wrong for vertical writing-modes.
         // https://bugs.webkit.org/show_bug.cgi?id=46781
-        FloatRect localRect(0, -collapsedMarginBefore().toFloat(),
-            width().toFloat(), (height() + collapsedMarginBefore() + collapsedMarginAfter()).toFloat());
-        quads.append(localToAbsoluteQuad(localRect, 0 /* mode */, wasFixed));
+        LayoutRect localRect(LayoutPoint(), size());
+        localRect.expand(collapsedMarginBox());
+        quads.append(localToAbsoluteQuad(FloatRect(localRect), 0 /* mode */, wasFixed));
         continuation()->absoluteQuads(quads, wasFixed);
     } else {
-        quads.append(RenderBox::localToAbsoluteQuad(FloatRect(0, 0, width().toFloat(), height().toFloat()), 0 /* mode */, wasFixed));
+        quads.append(RenderBox::localToAbsoluteQuad(FloatRect(0, 0, size().width().toFloat(), size().height().toFloat()), 0 /* mode */, wasFixed));
     }
 }
 
@@ -3516,10 +3517,10 @@ LayoutRect RenderBlock::localCaretRect(InlineBox* inlineBox, int caretOffset, La
     if (firstChild())
         return RenderBox::localCaretRect(inlineBox, caretOffset, extraWidthToEndOfLine);
 
-    LayoutRect caretRect = localCaretRectForEmptyElement(width(), textIndentOffset());
+    LayoutRect caretRect = localCaretRectForEmptyElement(size().width(), textIndentOffset());
 
     if (extraWidthToEndOfLine)
-        *extraWidthToEndOfLine = width() - caretRect.maxX();
+        *extraWidthToEndOfLine = size().width() - caretRect.maxX();
 
     return caretRect;
 }
@@ -3538,10 +3539,12 @@ void RenderBlock::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint
         bool prevInlineHasLineBox = toRenderInline(inlineElementContinuation()->node()->renderer())->firstLineBox();
         LayoutUnit topMargin = prevInlineHasLineBox ? collapsedMarginBefore() : LayoutUnit();
         LayoutUnit bottomMargin = nextInlineHasLineBox ? collapsedMarginAfter() : LayoutUnit();
-        LayoutRect rect(additionalOffset.x(), additionalOffset.y() - topMargin, width(), height() + topMargin + bottomMargin);
+        LayoutRect rect(additionalOffset, size());
+        rect.expandEdges(topMargin, 0, bottomMargin, 0);
+
         if (!rect.isEmpty())
             rects.append(rect);
-    } else if (width() && height()) {
+    } else if (size().width() && size().height()) {
         rects.append(LayoutRect(additionalOffset, size()));
     }
 

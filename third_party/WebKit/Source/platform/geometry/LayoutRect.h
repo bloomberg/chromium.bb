@@ -99,6 +99,11 @@ public:
         m_size.expand(box.left() + box.right(), box.top() + box.bottom());
     }
     void expand(LayoutUnit dw, LayoutUnit dh) { m_size.expand(dw, dh); }
+    void expandEdges(LayoutUnit top, LayoutUnit right, LayoutUnit bottom, LayoutUnit left)
+    {
+        m_location.move(-left, -top);
+        m_size.expand(left + right, top + bottom);
+    }
     void contract(const LayoutSize& size) { m_size -= size; }
     void contract(const LayoutBoxExtent& box)
     {
@@ -106,6 +111,11 @@ public:
         m_size.shrink(box.left() + box.right(), box.top() + box.bottom());
     }
     void contract(LayoutUnit dw, LayoutUnit dh) { m_size.expand(-dw, -dh); }
+    void contractEdges(LayoutUnit top, LayoutUnit right, LayoutUnit bottom, LayoutUnit left)
+    {
+        m_location.move(left, top);
+        m_size.shrink(left + right, top + bottom);
+    }
 
     void shiftXEdgeTo(LayoutUnit edge)
     {

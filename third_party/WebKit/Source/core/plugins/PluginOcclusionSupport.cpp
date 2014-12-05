@@ -121,9 +121,9 @@ static bool intersectsRect(const RenderObject* renderer, const IntRect& rect)
 
 static void addToOcclusions(const RenderBox* renderer, Vector<IntRect>& occlusions)
 {
-    IntPoint point = roundedIntPoint(renderer->localToAbsolute());
-    IntSize size(renderer->width(), renderer->height());
-    occlusions.append(IntRect(point, size));
+    occlusions.append(IntRect(
+        roundedIntPoint(renderer->localToAbsolute()),
+        flooredIntSize(renderer->size())));
 }
 
 static void addTreeToOcclusions(const RenderObject* renderer, const IntRect& frameRect, Vector<IntRect>& occlusions)

@@ -2748,7 +2748,7 @@ void RenderObject::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
         return;
 
     RenderBox* box = toRenderBox(this);
-    FloatRect localBounds(FloatPoint(), FloatSize(box->width().toFloat(), box->height().toFloat()));
+    FloatRect localBounds(FloatPoint(), FloatSize(box->size()));
     FloatRect absBounds = localToAbsoluteQuad(localBounds).boundingBox();
 
     AnnotatedRegionValue region;

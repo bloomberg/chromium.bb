@@ -113,6 +113,7 @@ public:
 
     int borderWidth() const { return borderLeft() + borderRight(); }
     int borderHeight() const { return borderTop() + borderBottom(); }
+    LayoutBoxExtent borderBoxExtent() const { return LayoutBoxExtent(borderTop(), borderRight(), borderBottom(), borderLeft()); }
 
     LayoutUnit borderAndPaddingStart() const { return borderStart() + paddingStart(); }
     LayoutUnit borderAndPaddingBefore() const { return borderBefore() + paddingBefore(); }
@@ -123,7 +124,6 @@ public:
     LayoutUnit borderAndPaddingLogicalHeight() const { return borderAndPaddingBefore() + borderAndPaddingAfter(); }
     LayoutUnit borderAndPaddingLogicalWidth() const { return borderStart() + borderEnd() + paddingStart() + paddingEnd(); }
     LayoutUnit borderAndPaddingLogicalLeft() const { return style()->isHorizontalWritingMode() ? borderLeft() + paddingLeft() : borderTop() + paddingTop(); }
-
 
     LayoutUnit borderLogicalLeft() const { return style()->isHorizontalWritingMode() ? borderLeft() : borderTop(); }
 

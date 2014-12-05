@@ -132,9 +132,9 @@ void RenderFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidt
 static int synthesizedBaselineFromContentBox(const RenderBox& box, LineDirectionMode direction)
 {
     if (direction == HorizontalLine) {
-        return box.height() - box.borderBottom() - box.paddingBottom() - box.verticalScrollbarWidth();
+        return box.size().height() - box.borderBottom() - box.paddingBottom() - box.verticalScrollbarWidth();
     }
-    return box.width() - box.borderLeft() - box.paddingLeft() - box.horizontalScrollbarHeight();
+    return box.size().width() - box.borderLeft() - box.paddingLeft() - box.horizontalScrollbarHeight();
 }
 
 int RenderFlexibleBox::baselinePosition(FontBaseline, bool, LineDirectionMode direction, LinePositionMode mode) const
@@ -345,7 +345,7 @@ Length RenderFlexibleBox::flexBasisForChild(RenderBox& child) const
 
 LayoutUnit RenderFlexibleBox::crossAxisExtentForChild(RenderBox& child) const
 {
-    return isHorizontalFlow() ? child.height() : child.width();
+    return isHorizontalFlow() ? child.size().height() : child.size().width();
 }
 
 static inline LayoutUnit constrainedChildIntrinsicContentLogicalHeight(RenderBox& child)
@@ -358,14 +358,14 @@ LayoutUnit RenderFlexibleBox::childIntrinsicHeight(RenderBox& child) const
 {
     if (child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
         return constrainedChildIntrinsicContentLogicalHeight(child);
-    return child.height();
+    return child.size().height();
 }
 
 LayoutUnit RenderFlexibleBox::childIntrinsicWidth(RenderBox& child) const
 {
     if (!child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
         return constrainedChildIntrinsicContentLogicalHeight(child);
-    return child.width();
+    return child.size().width();
 }
 
 LayoutUnit RenderFlexibleBox::crossAxisIntrinsicExtentForChild(RenderBox& child) const
@@ -375,17 +375,17 @@ LayoutUnit RenderFlexibleBox::crossAxisIntrinsicExtentForChild(RenderBox& child)
 
 LayoutUnit RenderFlexibleBox::mainAxisExtentForChild(RenderBox& child) const
 {
-    return isHorizontalFlow() ? child.width() : child.height();
+    return isHorizontalFlow() ? child.size().width() : child.size().height();
 }
 
 LayoutUnit RenderFlexibleBox::crossAxisExtent() const
 {
-    return isHorizontalFlow() ? height() : width();
+    return isHorizontalFlow() ? size().height() : size().width();
 }
 
 LayoutUnit RenderFlexibleBox::mainAxisExtent() const
 {
-    return isHorizontalFlow() ? width() : height();
+    return isHorizontalFlow() ? size().width() : size().height();
 }
 
 LayoutUnit RenderFlexibleBox::crossAxisContentExtent() const
@@ -664,7 +664,7 @@ void RenderFlexibleBox::layoutFlexItems(bool relayoutChildren)
         LayoutUnit minHeight = borderAndPaddingLogicalHeight()
             + lineHeight(true, isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes)
             + scrollbarLogicalHeight();
-        if (height() < minHeight)
+        if (size().height() < minHeight)
             setLogicalHeight(minHeight);
     }
 

@@ -531,9 +531,9 @@ int RenderTheme::baselinePosition(const RenderObject* o) const
     const RenderBox* box = toRenderBox(o);
 
 #if USE(NEW_THEME)
-    return box->height() + box->marginTop() + m_platformTheme->baselinePositionAdjustment(o->style()->appearance()) * o->style()->effectiveZoom();
+    return box->size().height() + box->marginTop() + m_platformTheme->baselinePositionAdjustment(o->style()->appearance()) * o->style()->effectiveZoom();
 #else
-    return box->height() + box->marginTop();
+    return box->size().height() + box->marginTop();
 #endif
 }
 

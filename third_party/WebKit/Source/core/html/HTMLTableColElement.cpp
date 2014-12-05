@@ -71,7 +71,7 @@ void HTMLTableColElement::parseAttribute(const QualifiedName& name, const Atomic
             if (renderer() && renderer()->isRenderTableCol()) {
                 RenderTableCol* col = toRenderTableCol(renderer());
                 int newWidth = width().toInt();
-                if (newWidth != col->width())
+                if (newWidth != col->size().width())
                     col->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
             }
         }
