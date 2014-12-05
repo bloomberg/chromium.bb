@@ -102,7 +102,10 @@ _OS_NEGATIVE_FILTER['win'] = [
     'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePageAfterSwitching',
     'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePage',
 ]
-_OS_NEGATIVE_FILTER['linux'] = []
+_OS_NEGATIVE_FILTER['linux'] = [
+    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=416
+    'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePage',
+]
 _OS_NEGATIVE_FILTER['mac'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=26
     'AlertsTest.testAlertShouldNotAllowAdditionalCommandsIfDismissed',
