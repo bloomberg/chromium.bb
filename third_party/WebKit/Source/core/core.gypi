@@ -3573,6 +3573,7 @@
             'html/track/vtt/BufferedLineReaderTest.cpp',
             'html/track/vtt/VTTScannerTest.cpp',
             'loader/MixedContentCheckerTest.cpp',
+            'page/ContextMenuControllerTest.cpp',
             'page/NetworkStateNotifierTest.cpp',
             'page/PrintContextTest.cpp',
             'paint/DrawingRecorderTest.cpp',

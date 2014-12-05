@@ -1,0 +1,14 @@
+<script src="../../../resources/js-test.js"></script>
+<menu type=popup>
+  <menuitem id=mi1 type=checkbox>
+</menu>
+<script>
+
+description('Test that the "checked" attribute of menuitem is toggled with click.');
+
+var element = document.getElementById('mi1');
+element.click();
+shouldBeTrue('element.hasAttribute("checked")');
+element.click();
+shouldBeFalse('element.hasAttribute("checked")');
+</script>

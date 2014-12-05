@@ -49,6 +49,12 @@
         <!-- Test menuitem menu with empty label. -->
         <menuitem label=""></menuitem>
         <menuitem label="Item13"></menuitem>
+        <!-- Test menuitem of type "checkbox" without "checked" attribute. -->
+        <menuitem type="checkbox" label="Item14"></menuitem>
+        <!-- Test menuitem of type "checkbox" with "checked" attribute. -->
+        <menuitem type="checkbox" label="Item15" checked></menuitem>
+        <!-- Test default menuitem with "checked" attribute. -->
+        <menuitem label="Item16" checked></menuitem>
         <!-- Test removal of separator at the end. -->
         <hr>
     </menu>
@@ -154,7 +160,7 @@ eventSender.keyDown("escape");
 var button5 = document.getElementById("button_5");
 var items5 = contextClickAndGetMenuItems(button5);
 
-shouldBeEqualToNumber("itemsWithCustomContextMenu.length - items.length", 17);
+shouldBeEqualToNumber("itemsWithCustomContextMenu.length - items.length", 20);
 shouldBeEqualToString("itemsWithCustomContextMenu[0]", "Item1");
 shouldBeEqualToString("itemsWithCustomContextMenu[1]", "#Item2");
 shouldBeEqualToString("itemsWithCustomContextMenu[2]", "---------");
@@ -172,6 +178,9 @@ shouldBeEqualToString("itemsWithCustomContextMenu[13]", "Item11");
 shouldBeEqualToString("itemsWithCustomContextMenu[14]", "Item12");
 shouldBeEqualToString("itemsWithCustomContextMenu[15]", "---------");
 shouldBeEqualToString("itemsWithCustomContextMenu[16]", "Item13");
+shouldBeEqualToString("itemsWithCustomContextMenu[17]", "Item14");
+shouldBeEqualToString("itemsWithCustomContextMenu[18]", "*Item15");
+shouldBeEqualToString("itemsWithCustomContextMenu[19]", "Item16");
 shouldBeEqualToNumber("items1.length - items.length", 0);
 shouldBeEqualToNumber("items2.length - items.length", 0);
 shouldBeEqualToNumber("items3.length - items.length", 0);

@@ -80,7 +80,13 @@ void CustomContextMenuProvider::appendMenuItem(HTMLMenuItemElement* menuItem, Co
         return;
 
     m_menuItems.append(menuItem);
-    contextMenu.appendItem(ContextMenuItem(ActionType, static_cast<ContextMenuAction>(ContextMenuItemBaseCustomTag + m_menuItems.size() - 1), labelString, !menuItem->fastHasAttribute(disabledAttr), false));
+
+    bool enabled = !menuItem->fastHasAttribute(disabledAttr);
+    ContextMenuAction action = static_cast<ContextMenuAction>(ContextMenuItemBaseCustomTag + m_menuItems.size() - 1);
+    if (equalIgnoringCase(menuItem->fastGetAttribute(typeAttr), "checkbox"))
+        contextMenu.appendItem(ContextMenuItem(CheckableActionType, action, labelString, enabled, menuItem->fastHasAttribute(checkedAttr)));
+    else
+        contextMenu.appendItem(ContextMenuItem(ActionType, action, labelString, enabled, false));
 }
 
 void CustomContextMenuProvider::populateContextMenuItems(const HTMLMenuElement& menu, ContextMenu& contextMenu)
