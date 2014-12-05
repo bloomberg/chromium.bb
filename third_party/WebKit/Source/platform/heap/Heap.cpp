@@ -502,7 +502,7 @@ HeapObjectHeader* HeapObjectHeader::fromPayload(const void* payload)
 {
     Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
     HeapObjectHeader* header =
-        reinterpret_cast<HeapObjectHeader*>(addr - objectHeaderSize);
+        reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
     return header;
 }
 
@@ -630,7 +630,7 @@ GeneralHeapObjectHeader* GeneralHeapObjectHeader::fromPayload(const void* payloa
 {
     Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
     GeneralHeapObjectHeader* header =
-        reinterpret_cast<GeneralHeapObjectHeader*>(addr - finalizedHeaderSize);
+        reinterpret_cast<GeneralHeapObjectHeader*>(addr - sizeof(GeneralHeapObjectHeader));
     return header;
 }
 
@@ -837,9 +837,9 @@ void FreeList<Header>::addToFreeList(Address address, size_t size)
     FreeListEntry* entry;
     if (size < sizeof(*entry)) {
         // Create a dummy header with only a size and freelist bit set.
-        ASSERT(size >= sizeof(BasicObjectHeader));
+        ASSERT(size >= sizeof(HeapObjectHeader));
         // Free list encode the size to mark the lost memory as freelist memory.
-        new (NotNull, address) BasicObjectHeader(BasicObjectHeader::freeListEncodedSize(size));
+        new (NotNull, address) HeapObjectHeader(HeapObjectHeader::freeListEncodedSize(size));
         // This memory gets lost. Sweeping can reclaim it.
         return;
     }
@@ -900,8 +900,8 @@ void ThreadHeap<Header>::shrinkObject(Header* header, size_t newSize)
         ASAN_POISON_MEMORY_REGION(m_currentAllocationPoint, shrinkSize);
         header->setSize(allocationSize);
     } else {
-        ASSERT(shrinkSize >= sizeof(BasicObjectHeader));
-        BasicObjectHeader* freedHeader = new (NotNull, header->payloadEnd() - shrinkSize) BasicObjectHeader(shrinkSize);
+        ASSERT(shrinkSize >= sizeof(HeapObjectHeader));
+        HeapObjectHeader* freedHeader = new (NotNull, header->payloadEnd() - shrinkSize) HeapObjectHeader(shrinkSize);
         freedHeader->markPromptlyFreed();
         pageFromAddress(reinterpret_cast<Address>(header))->addToPromptlyFreedSize(shrinkSize);
         m_promptlyFreedCount++;
@@ -996,7 +996,7 @@ bool ThreadHeap<Header>::coalesce(size_t allocationSize)
         size_t freedCount = 0;
         Address startOfGap = page->payload();
         for (Address headerAddress = startOfGap; headerAddress < page->end(); ) {
-            BasicObjectHeader* basicHeader = reinterpret_cast<BasicObjectHeader*>(headerAddress);
+            HeapObjectHeader* basicHeader = reinterpret_cast<HeapObjectHeader*>(headerAddress);
             ASSERT(basicHeader->size() > 0);
             ASSERT(basicHeader->size() < blinkPagePayloadSize());
 
@@ -1600,7 +1600,7 @@ size_t HeapPage<Header>::objectPayloadSizeForTesting()
 template<typename Header>
 bool HeapPage<Header>::isEmpty()
 {
-    BasicObjectHeader* header = reinterpret_cast<BasicObjectHeader*>(payload());
+    HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(payload());
     return header->isFree() && (header->size() == payloadSize());
 }
 
@@ -1612,7 +1612,7 @@ void HeapPage<Header>::sweep(ThreadHeap<Header>* heap)
 
     Address startOfGap = payload();
     for (Address headerAddress = startOfGap; headerAddress < end(); ) {
-        BasicObjectHeader* basicHeader = reinterpret_cast<BasicObjectHeader*>(headerAddress);
+        HeapObjectHeader* basicHeader = reinterpret_cast<HeapObjectHeader*>(headerAddress);
         ASSERT(basicHeader->size() > 0);
         ASSERT(basicHeader->size() < blinkPagePayloadSize());
 
@@ -2800,7 +2800,7 @@ void HeapAllocator::vectorBackingShrinkInternal(void* address, size_t quantizedC
     // We shrink the object only if the shrinking will make a non-small
     // prompt-free block.
     // FIXME: Optimize the threshold size.
-    if (quantizedCurrentSize <= quantizedShrunkSize + sizeof(BasicObjectHeader) + sizeof(void*) * 32)
+    if (quantizedCurrentSize <= quantizedShrunkSize + sizeof(HeapObjectHeader) + sizeof(void*) * 32)
         return;
 
     ThreadState* state = ThreadState::current();

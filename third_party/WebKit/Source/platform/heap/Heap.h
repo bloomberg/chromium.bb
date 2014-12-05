@@ -262,52 +262,6 @@ private:
     LargeObject<Header>* m_next;
 };
 
-// The BasicObjectHeader is the minimal object header. It is used when
-// encountering heap space of size allocationGranularity to mark it as
-// as freelist entry.
-class PLATFORM_EXPORT BasicObjectHeader {
-public:
-    NO_SANITIZE_ADDRESS
-    explicit BasicObjectHeader(size_t encodedSize)
-        : m_size(encodedSize) { }
-
-    static size_t freeListEncodedSize(size_t size) { return size | freeListMask; }
-
-    NO_SANITIZE_ADDRESS
-    bool isFree() { return m_size & freeListMask; }
-
-    NO_SANITIZE_ADDRESS
-    bool isPromptlyFreed() { return (m_size & promptlyFreedMask) == promptlyFreedMask; }
-
-    NO_SANITIZE_ADDRESS
-    void markPromptlyFreed() { m_size |= promptlyFreedMask; }
-
-    NO_SANITIZE_ADDRESS
-    size_t size() const { return m_size & sizeMask; }
-
-    NO_SANITIZE_ADDRESS
-    void setSize(size_t size) { m_size = (size | (m_size & ~sizeMask)); }
-
-#if ENABLE(GC_PROFILE_HEAP)
-    NO_SANITIZE_ADDRESS
-    size_t encodedSize() const { return m_size; }
-
-    NO_SANITIZE_ADDRESS
-    size_t age() const { return m_size >> maxHeapObjectSizeLog2; }
-
-    NO_SANITIZE_ADDRESS
-    void incAge()
-    {
-        size_t current = age();
-        if (current < maxHeapObjectAge)
-            m_size = ((current + 1) << maxHeapObjectSizeLog2) | (m_size & ~heapObjectAgeMask);
-    }
-#endif
-
-protected:
-    volatile unsigned m_size;
-};
-
 // Our heap object layout is layered with the HeapObjectHeader closest
 // to the payload, this can be wrapped in a GeneralHeapObjectHeader if the
 // object is on the GeneralHeap and not on a specific TypedHeap.
@@ -318,23 +272,44 @@ protected:
 // [ LargeObjectHeader | ] [ GeneralHeapObjectHeader | ] HeapObjectHeader | payload
 // The [ ] notation denotes that the LargeObjectHeader and the GeneralHeapObjectHeader
 // are independently optional.
-class PLATFORM_EXPORT HeapObjectHeader : public BasicObjectHeader {
+class PLATFORM_EXPORT HeapObjectHeader {
 public:
     NO_SANITIZE_ADDRESS
     explicit HeapObjectHeader(size_t encodedSize)
-        : BasicObjectHeader(encodedSize)
+        : m_size(encodedSize)
 #if ENABLE(ASSERT)
         , m_magic(magic)
 #endif
-    { }
+    {
+        // sizeof(HeapObjectHeader) must be equal to or smaller than
+        // allocationGranurarity, because HeapObjectHeader is used as a header
+        // for an freed entry. Given that the smallest entry size is
+        // allocationGranurarity, HeapObjectHeader must fit into the size.
+        COMPILE_ASSERT(sizeof(HeapObjectHeader) <= allocationGranularity, SizeOfHeapObjectHeaderMustBeSmallerThanAllocationGranularity);
+    }
 
     NO_SANITIZE_ADDRESS
     HeapObjectHeader(size_t encodedSize, const GCInfo*)
-        : BasicObjectHeader(encodedSize)
+        : m_size(encodedSize)
 #if ENABLE(ASSERT)
         , m_magic(magic)
 #endif
-    { }
+    {
+        COMPILE_ASSERT(sizeof(HeapObjectHeader) <= allocationGranularity, SizeOfHeapObjectHeaderMustBeSmallerThanAllocationGranularity);
+    }
+
+    static size_t freeListEncodedSize(size_t size) { return size | freeListMask; }
+
+    NO_SANITIZE_ADDRESS
+    bool isFree() { return m_size & freeListMask; }
+    NO_SANITIZE_ADDRESS
+    bool isPromptlyFreed() { return (m_size & promptlyFreedMask) == promptlyFreedMask; }
+    NO_SANITIZE_ADDRESS
+    void markPromptlyFreed() { m_size |= promptlyFreedMask; }
+    NO_SANITIZE_ADDRESS
+    size_t size() const { return m_size & sizeMask; }
+    NO_SANITIZE_ADDRESS
+    void setSize(size_t size) { m_size = (size | (m_size & ~sizeMask)); }
 
     inline void checkHeader() const;
     inline bool isMarked() const;
@@ -359,23 +334,38 @@ public:
     static void finalize(const GCInfo*, Address, size_t);
     static HeapObjectHeader* fromPayload(const void*);
 
-    static const intptr_t magic = 0xc0de247;
-    static const intptr_t zappedMagic = 0xC0DEdead;
+    static const uint32_t magic = 0xc0de247;
+    static const uint32_t zappedMagic = 0xC0DEdead;
     // The zap value for vtables should be < 4K to ensure it cannot be
     // used for dispatch.
     static const intptr_t zappedVTable = 0xd0d;
 
+#if ENABLE(GC_PROFILE_HEAP)
+    NO_SANITIZE_ADDRESS
+    size_t encodedSize() const { return m_size; }
+
+    NO_SANITIZE_ADDRESS
+    size_t age() const { return m_size >> maxHeapObjectSizeLog2; }
+
+    NO_SANITIZE_ADDRESS
+    void incAge()
+    {
+        size_t current = age();
+        if (current < maxHeapObjectAge)
+            m_size = ((current + 1) << maxHeapObjectSizeLog2) | (m_size & ~heapObjectAgeMask);
+    }
+#endif
+
 private:
+    volatile uint32_t m_size;
 #if ENABLE(ASSERT)
-    intptr_t m_magic;
+    uint32_t m_magic;
 #endif
 };
 
-const size_t objectHeaderSize = sizeof(HeapObjectHeader);
-
 // Each object on the GeneralHeap needs to carry a pointer to its
 // own GCInfo structure for tracing and potential finalization.
-class PLATFORM_EXPORT GeneralHeapObjectHeader : public HeapObjectHeader {
+class PLATFORM_EXPORT GeneralHeapObjectHeader final : public HeapObjectHeader {
 public:
     NO_SANITIZE_ADDRESS
     GeneralHeapObjectHeader(size_t encodedSize, const GCInfo* gcInfo)
@@ -407,9 +397,7 @@ private:
     const GCInfo* m_gcInfo;
 };
 
-const size_t finalizedHeaderSize = sizeof(GeneralHeapObjectHeader);
-
-class FreeListEntry : public HeapObjectHeader {
+class FreeListEntry final : public HeapObjectHeader {
 public:
     NO_SANITIZE_ADDRESS
     explicit FreeListEntry(size_t size)
@@ -421,7 +409,7 @@ public:
         // For ASan don't zap since we keep accounting in the freelist entry.
         for (size_t i = sizeof(*this); i < size; i++)
             reinterpret_cast<Address>(this)[i] = freelistZapValue;
-        ASSERT(size >= objectHeaderSize);
+        ASSERT(size >= sizeof(HeapObjectHeader));
         zapMagic();
 #endif
     }
@@ -1240,12 +1228,12 @@ void HeapObjectHeader::checkHeader() const
 
 Address HeapObjectHeader::payload()
 {
-    return reinterpret_cast<Address>(this) + objectHeaderSize;
+    return reinterpret_cast<Address>(this) + sizeof(HeapObjectHeader);
 }
 
 size_t HeapObjectHeader::payloadSize()
 {
-    return size() - objectHeaderSize;
+    return size() - sizeof(HeapObjectHeader);
 }
 
 Address HeapObjectHeader::payloadEnd()
@@ -1255,12 +1243,12 @@ Address HeapObjectHeader::payloadEnd()
 
 Address GeneralHeapObjectHeader::payload()
 {
-    return reinterpret_cast<Address>(this) + finalizedHeaderSize;
+    return reinterpret_cast<Address>(this) + sizeof(GeneralHeapObjectHeader);
 }
 
 size_t GeneralHeapObjectHeader::payloadSize()
 {
-    return size() - finalizedHeaderSize;
+    return size() - sizeof(GeneralHeapObjectHeader);
 }
 
 template<typename Header>
