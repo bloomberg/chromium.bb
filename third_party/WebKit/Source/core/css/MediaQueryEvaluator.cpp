@@ -523,27 +523,15 @@ static bool hoverMediaFeatureEval(const MediaQueryExpValue& value, MediaFeatureP
 {
     HoverType hover = mediaValues.primaryHoverType();
 
-    if (RuntimeEnabledFeatures::hoverMediaQueryKeywordsEnabled()) {
-        if (!value.isValid())
-            return hover != HoverTypeNone;
+    if (!value.isValid())
+        return hover != HoverTypeNone;
 
-        if (!value.isID)
-            return false;
+    if (!value.isID)
+        return false;
 
-        return (hover == HoverTypeNone && value.id == CSSValueNone)
-            || (hover == HoverTypeOnDemand && value.id == CSSValueOnDemand)
-            || (hover == HoverTypeHover && value.id == CSSValueHover);
-    } else {
-        float number = 1;
-        if (value.isValid()) {
-            if (!numberValue(value, number))
-                return false;
-        }
-
-        return (hover == HoverTypeNone && !number)
-            || (hover == HoverTypeOnDemand && !number)
-            || (hover == HoverTypeHover && number == 1);
-    }
+    return (hover == HoverTypeNone && value.id == CSSValueNone)
+        || (hover == HoverTypeOnDemand && value.id == CSSValueOnDemand)
+        || (hover == HoverTypeHover && value.id == CSSValueHover);
 }
 
 static bool anyHoverMediaFeatureEval(const MediaQueryExpValue& value, MediaFeaturePrefix, const MediaValues& mediaValues)

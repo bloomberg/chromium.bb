@@ -60,8 +60,6 @@ FileSystem status=stable
 FullscreenUnprefixed status=test
 Geofencing status=experimental
 GeometryInterfaces status=test
-// Temporary setting to allow easy rollback of change to hover media feature.
-HoverMediaQueryKeywords status=stable
 ImageColorProfiles
 ImageDataConstructor status=experimental
 ImageRenderingPixelated status=experimental

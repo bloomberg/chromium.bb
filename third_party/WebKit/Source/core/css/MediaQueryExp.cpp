@@ -50,7 +50,7 @@ static inline bool featureWithCSSValueID(const String& mediaFeature, const CSSPa
     return mediaFeature == orientationMediaFeature
         || mediaFeature == pointerMediaFeature
         || mediaFeature == anyPointerMediaFeature
-        || (mediaFeature == hoverMediaFeature && RuntimeEnabledFeatures::hoverMediaQueryKeywordsEnabled())
+        || mediaFeature == hoverMediaFeature
         || mediaFeature == anyHoverMediaFeature
         || mediaFeature == scanMediaFeature;
 }
@@ -63,8 +63,7 @@ static inline bool featureWithValidIdent(const String& mediaFeature, CSSValueID 
     if (mediaFeature == pointerMediaFeature || mediaFeature == anyPointerMediaFeature)
         return ident == CSSValueNone || ident == CSSValueCoarse || ident == CSSValueFine;
 
-    if ((mediaFeature == hoverMediaFeature && RuntimeEnabledFeatures::hoverMediaQueryKeywordsEnabled())
-        || mediaFeature == anyHoverMediaFeature)
+    if (mediaFeature == hoverMediaFeature || mediaFeature == anyHoverMediaFeature)
         return ident == CSSValueNone || ident == CSSValueOnDemand || ident == CSSValueHover;
 
     if (mediaFeature == scanMediaFeature)
@@ -154,8 +153,7 @@ static inline bool featureWithZeroOrOne(const String& mediaFeature, const CSSPar
     if (!value->isInt || !(value->fValue == 1 || !value->fValue))
         return false;
 
-    return mediaFeature == gridMediaFeature
-        || (mediaFeature == hoverMediaFeature && !RuntimeEnabledFeatures::hoverMediaQueryKeywordsEnabled());
+    return mediaFeature == gridMediaFeature;
 }
 
 static inline bool featureWithAspectRatio(const String& mediaFeature)
