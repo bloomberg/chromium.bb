@@ -78,7 +78,13 @@ def main(argv):
       svn_repo = maybe_repo
       svn_path = '/'.join(path_components[i+1:])
       break
-    except subprocess2.CalledProcessError:
+    except subprocess2.CalledProcessError, e:
+      if 'E170001' in str(e):
+        print 'Authentication failed:'
+        print e
+        print ('Try running "svn ls %s" with the password'
+               ' from https://chromium-access.appspot.com' % maybe_repo)
+        print
       continue
   assert svn_repo is not None, 'Unable to find svn repo for %s' % match.group(1)
   print 'Found upstream svn repo %s and path %s' % (svn_repo, svn_path)
