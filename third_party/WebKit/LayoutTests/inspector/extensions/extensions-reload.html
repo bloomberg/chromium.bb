@@ -3,6 +3,7 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/debugger-test.js"></script>
 <script src="../../http/tests/inspector/extensions-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
 <script type="text/javascript">
 
 window.bar = "foo = " + window.foo;
@@ -30,6 +31,61 @@ function extension_testReloadInjectsCode(nextTest)
     evaluateOnFrontend("InspectorTest.runWhenPageLoads(reply)", onPageWithInjectedCodeLoaded);
     webInspector.inspectedWindow.reload({
         injectedScript: "window.foo = 42;"
+    });
+}
+
+function initialize_testReloadInjectsCodeWithMessage()
+{
+    InspectorTest.lastMessageScriptId = function(callback)
+    {
+        var consoleView = WebInspector.ConsolePanel._view();
+        if (consoleView._needsFullUpdate)
+            consoleView._updateMessageList();
+        var viewMessages = consoleView._visibleViewMessages;
+        if (viewMessages.length !== 1)
+            callback(null);
+        var uiMessage = viewMessages[viewMessages.length - 1];
+        var message = uiMessage.consoleMessage();
+        if (message.stackTrace.length < 1)
+            callback(null);
+        callback(message.stackTrace[0].scriptId);
+    }
+    InspectorTest.getScriptSource = function(scriptId, callback)
+    {
+        DebuggerAgent.getScriptSource(scriptId, didGetScriptSource);
+        function didGetScriptSource(error, source)
+        {
+            callback(error ? "" : source);
+        }
+    }
+}
+
+function extension_testReloadInjectsCodeWithMessage(nextTest)
+{
+    var valueWithInjectedCode;
+
+    function onPageWithInjectedCodeLoaded()
+    {
+        evaluateOnFrontend("InspectorTest.lastMessageScriptId(reply);", onScriptIdReceived);
+    }
+
+    function onScriptIdReceived(scriptId)
+    {
+        if (!scriptId) {
+            output("Script ID unavailable");
+            nextTest();
+        } else {
+            evaluateOnFrontend("InspectorTest.getScriptSource(\"" + scriptId + "\", reply);", function(source) {
+                output("Source received:");
+                output(source);
+                nextTest();
+            });
+        }
+    }
+
+    evaluateOnFrontend("InspectorTest.runWhenPageLoads(reply)", onPageWithInjectedCodeLoaded);
+    webInspector.inspectedWindow.reload({
+        injectedScript: "console.log(42)"
     });
 }
 
