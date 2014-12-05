@@ -8,9 +8,9 @@ from telemetry.page import page_set as page_set_module
 class StartedPage(page_module.Page):
 
   def __init__(self, url, startup_url, page_set):
-    super(StartedPage, self).__init__(url=url, page_set=page_set)
+    super(StartedPage, self).__init__(
+        url=url, page_set=page_set, startup_url=startup_url)
     self.archive_data_file = 'data/startup_pages.json'
-    self.startup_url = startup_url
 
   def RunNavigateSteps(self, action_runner):
     action_runner.Wait(10)

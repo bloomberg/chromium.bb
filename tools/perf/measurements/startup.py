@@ -46,7 +46,7 @@ class StartWithUrl(Startup):
   has already cached much of Chromium's content. For warm tests, you should
   repeat the page set to ensure it's cached.
 
-  The startup URL is taken from the page set's startup_url. This
+  The startup URL is taken from the page's startup_url. This
   allows the testing of multiple different URLs in a single benchmark.
   """
 
