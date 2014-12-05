@@ -164,6 +164,73 @@ bool IsThreadedCompositingEnabled() {
 // be spent in input hanlders before input starts getting throttled.
 const int kInputHandlingTimeThrottlingThresholdMicroseconds = 4166;
 
+int64 GetEventLatencyMicros(const WebInputEvent& event, base::TimeTicks now) {
+  return (now - base::TimeDelta::FromSecondsD(event.timeStampSeconds))
+      .ToInternalValue();
+}
+
+void LogInputEventLatencyUma(const WebInputEvent& event, base::TimeTicks now) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Event.AggregatedLatency.Renderer2",
+      GetEventLatencyMicros(event, now),
+      1,
+      10000000,
+      100);
+
+#define CASE_TYPE(t) \
+    case WebInputEvent::t: \
+      UMA_HISTOGRAM_CUSTOM_COUNTS( \
+          "Event.Latency.Renderer2." #t, \
+          GetEventLatencyMicros(event, now), \
+          1, \
+          10000000, \
+          100); \
+      break;
+
+  switch(event.type) {
+    CASE_TYPE(Undefined);
+    CASE_TYPE(MouseDown);
+    CASE_TYPE(MouseUp);
+    CASE_TYPE(MouseMove);
+    CASE_TYPE(MouseEnter);
+    CASE_TYPE(MouseLeave);
+    CASE_TYPE(ContextMenu);
+    CASE_TYPE(MouseWheel);
+    CASE_TYPE(RawKeyDown);
+    CASE_TYPE(KeyDown);
+    CASE_TYPE(KeyUp);
+    CASE_TYPE(Char);
+    CASE_TYPE(GestureScrollBegin);
+    CASE_TYPE(GestureScrollEnd);
+    CASE_TYPE(GestureScrollUpdate);
+    CASE_TYPE(GestureFlingStart);
+    CASE_TYPE(GestureFlingCancel);
+    CASE_TYPE(GestureShowPress);
+    CASE_TYPE(GestureTap);
+    CASE_TYPE(GestureTapUnconfirmed);
+    CASE_TYPE(GestureTapDown);
+    CASE_TYPE(GestureTapCancel);
+    CASE_TYPE(GestureDoubleTap);
+    CASE_TYPE(GestureTwoFingerTap);
+    CASE_TYPE(GestureLongPress);
+    CASE_TYPE(GestureLongTap);
+    CASE_TYPE(GesturePinchBegin);
+    CASE_TYPE(GesturePinchEnd);
+    CASE_TYPE(GesturePinchUpdate);
+    CASE_TYPE(TouchStart);
+    CASE_TYPE(TouchMove);
+    CASE_TYPE(TouchEnd);
+    CASE_TYPE(TouchCancel);
+    default:
+      // Must include default to let blink::WebInputEvent add new event types
+      // before they're added here.
+      DLOG(WARNING) << "Unhandled WebInputEvent type: " << event.type;
+      break;
+  }
+
+#undef CASE_TYPE
+}
+
 }  // namespace
 
 namespace content {
@@ -998,10 +1065,8 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   if (base::TimeTicks::IsHighResNowFastAndReliable())
     start_time = base::TimeTicks::HighResNow();
 
-  const char* const event_name =
-      WebInputEventTraits::GetName(input_event->type);
   TRACE_EVENT1("renderer", "RenderWidget::OnHandleInputEvent",
-               "event", event_name);
+               "event", WebInputEventTraits::GetName(input_event->type));
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("blink.HandleInputEvent");
   TRACE_EVENT_FLOW_STEP0(
       "input",
@@ -1009,34 +1074,17 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
       TRACE_ID_DONT_MANGLE(latency_info.trace_id),
       "HanldeInputEventMain");
 
+  // If we don't have a high res timer, these metrics won't be accurate enough
+  // to be worth collecting. Note that this does introduce some sampling bias.
+  if (!start_time.is_null())
+    LogInputEventLatencyUma(*input_event, start_time);
+
   scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
   ui::LatencyInfo swap_latency_info(latency_info);
   if (compositor_) {
     latency_info_swap_promise_monitor =
         compositor_->CreateLatencyInfoSwapPromiseMonitor(&swap_latency_info)
             .Pass();
-  }
-
-  if (base::TimeTicks::IsHighResNowFastAndReliable()) {
-    // If we don't have a high res timer, these metrics won't be accurate enough
-    // to be worth collecting. Note that this does introduce some sampling bias.
-
-    base::TimeDelta now = base::TimeDelta::FromInternalValue(
-        base::TimeTicks::HighResNow().ToInternalValue());
-
-    int64 delta =
-        static_cast<int64>((now.InSecondsF() - input_event->timeStampSeconds) *
-                           base::Time::kMicrosecondsPerSecond);
-
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Event.AggregatedLatency.Renderer2", delta, 1, 10000000, 100);
-    base::HistogramBase* counter_for_type = base::Histogram::FactoryGet(
-        base::StringPrintf("Event.Latency.Renderer2.%s", event_name),
-        1,
-        10000000,
-        100,
-        base::HistogramBase::kUmaTargetedHistogramFlag);
-    counter_for_type->Add(delta);
   }
 
   bool prevent_default = false;
@@ -1110,16 +1158,14 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     }
   }
 
-  bool event_type_can_be_rate_limited =
-      input_event->type == WebInputEvent::MouseMove ||
-      input_event->type == WebInputEvent::MouseWheel;
-
   bool frame_pending = compositor_ && compositor_->BeginMainFrameRequested();
 
   // If we don't have a fast and accurate HighResNow, we assume the input
   // handlers are heavy and rate limit them.
-  bool rate_limiting_wanted = true;
-  if (base::TimeTicks::IsHighResNowFastAndReliable()) {
+  bool rate_limiting_wanted =
+      input_event->type == WebInputEvent::MouseMove ||
+      input_event->type == WebInputEvent::MouseWheel;
+  if (rate_limiting_wanted && !start_time.is_null()) {
       base::TimeTicks end_time = base::TimeTicks::HighResNow();
       total_input_handling_time_this_frame_ += (end_time - start_time);
       rate_limiting_wanted =
@@ -1140,8 +1186,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     ack.latency = swap_latency_info;
     scoped_ptr<IPC::Message> response(
         new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
-    if (rate_limiting_wanted && event_type_can_be_rate_limited &&
-        frame_pending && !is_hidden_) {
+    if (rate_limiting_wanted && frame_pending && !is_hidden_) {
       // We want to rate limit the input events in this case, so we'll wait for
       // painting to finish before ACKing this message.
       TRACE_EVENT_INSTANT0("renderer",
