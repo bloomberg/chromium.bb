@@ -6,12 +6,12 @@ layer at (0,0) size 323x600
       RenderBlock {P} at (0,0) size 32x584
         RenderText {#text} at (0,0) size 16x139
           text run at (0,0) width 139: "This is a test case for "
-        RenderInline {I} at (0,0) size 32x571
-          RenderText {#text} at (0,138) size 32x571
+        RenderInline {I} at (0,0) size 32x570
+          RenderText {#text} at (0,138) size 32x570
             text run at (0,138) width 432: "http://bugzilla.opendarwin.org/show_bug.cgi?id=5826 Blocks with"
-            text run at (16,0) width 425: "direction:rtl and overflow:auto or scroll have incorrect scrollbars"
-        RenderText {#text} at (16,424) size 16x5
-          text run at (16,424) width 4: "."
+            text run at (16,0) width 422: "direction:rtl and overflow:auto or scroll have incorrect scrollbars"
+        RenderText {#text} at (16,421) size 16x5
+          text run at (16,421) width 4: "."
       RenderBlock (anonymous) at (48,0) size 16x584
         RenderText {#text} at (0,0) size 16x469
           text run at (0,0) width 469: "The right column should be a mirror-image of the left column in terms of"

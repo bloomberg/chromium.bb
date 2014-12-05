@@ -16,18 +16,18 @@ layer at (0,0) size 440x600
           RenderInline {CODE} at (0,0) size 16x88
             RenderText {#text} at (20,254) size 16x88
               text run at (20,254) width 88: "float: left"
-          RenderText {#text} at (40,0) size 19x26
-            text run at (40,0) width 26: "div. "
-          RenderInline {A} at (0,0) size 19x186 [color=#0000EE]
-            RenderText {#text} at (40,26) size 19x186
-              text run at (40,26) width 186: "Screenshot of correct behavior"
-          RenderText {#text} at (40,212) size 19x8
-            text run at (40,212) width 8: "; "
-          RenderInline {A} at (0,0) size 19x119 [color=#0000EE]
-            RenderText {#text} at (40,220) size 19x119
-              text run at (40,220) width 119: "screenshot of Safari"
-          RenderText {#text} at (40,339) size 19x4
-            text run at (40,339) width 4: "."
+          RenderText {#text} at (40,0) size 19x25
+            text run at (40,0) width 25: "div. "
+          RenderInline {A} at (0,0) size 19x187 [color=#0000EE]
+            RenderText {#text} at (40,24) size 19x187
+              text run at (40,24) width 186: "Screenshot of correct behavior"
+          RenderText {#text} at (40,210) size 19x9
+            text run at (40,210) width 8: "; "
+          RenderInline {A} at (0,0) size 19x120 [color=#0000EE]
+            RenderText {#text} at (40,218) size 19x120
+              text run at (40,218) width 119: "screenshot of Safari"
+          RenderText {#text} at (40,337) size 19x5
+            text run at (40,337) width 4: "."
         RenderBlock {P} at (92,0) size 40x350.39
           RenderText {#text} at (0,0) size 39x348
             text run at (0,0) width 348: "This bug only occurs on pages with a standards-compliant"
@@ -35,14 +35,14 @@ layer at (0,0) size 440x600
           RenderInline {A} at (0,0) size 19x247 [color=#0000EE]
             RenderText {#text} at (20,80) size 19x247
               text run at (20,80) width 247: "View this test case without a DOCTYPE"
-          RenderText {#text} at (20,327) size 19x4
-            text run at (20,327) width 4: "."
+          RenderText {#text} at (20,326) size 19x5
+            text run at (20,326) width 4: "."
         RenderBlock {OL} at (148,0) size 260x350.39
           RenderListItem {LI} at (0,40) size 40x310.39
             RenderListMarker at (0,-21) size 19x16: "1"
             RenderText {#text} at (0,0) size 39x287
               text run at (0,0) width 154: "New larger PowerBook. "
-              text run at (0,154) width 133: "Still 1 GHz, but with a"
+              text run at (0,153) width 133: "Still 1 GHz, but with a"
               text run at (20,0) width 141: "17-inch screen. $3299."
           RenderListItem {LI} at (40,40) size 40x310.39
             RenderListMarker at (0,-21) size 19x16: "2"
@@ -101,9 +101,9 @@ layer at (0,0) size 440x600
             RenderInline {A} at (0,0) size 19x39 [color=#0000EE]
               RenderText {#text} at (0,200) size 19x39
                 text run at (0,200) width 39: "iTunes"
-            RenderText {#text} at (0,239) size 39x297
-              text run at (0,239) width 8: ". "
-              text run at (0,247) width 50: "Bundled"
+            RenderText {#text} at (0,238) size 39x297
+              text run at (0,238) width 8: ". "
+              text run at (0,246) width 50: "Bundled"
               text run at (20,0) width 103: "into a box called "
             RenderInline {A} at (0,0) size 19x26 [color=#0000EE]
               RenderText {#text} at (20,103) size 19x26
@@ -176,9 +176,9 @@ layer at (0,0) size 440x600
         RenderBlock {UL} at (212,0) size 120x584
           RenderListItem {LI} at (0,40) size 20x544
             RenderListMarker at (0,292.39) size 19x7: bullet
-            RenderInline {A} at (0,0) size 19x88 [color=#0000EE]
-              RenderText {#text} at (0,456) size 19x88
-                text run at (0,456) width 88: "RSS Validator"
+            RenderInline {A} at (0,0) size 19x86 [color=#0000EE]
+              RenderText {#text} at (0,458) size 19x86
+                text run at (0,458) width 86: "RSS Validator"
           RenderListItem {LI} at (20,40) size 20x544
             RenderListMarker at (0,292.39) size 19x7: bullet
             RenderInline {A} at (0,0) size 19x135 [color=#0000EE]
