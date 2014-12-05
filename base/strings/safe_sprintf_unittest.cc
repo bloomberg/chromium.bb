@@ -61,7 +61,7 @@ TEST(SafeSPrintfTest, NoArguments) {
   // always add a trailing NUL; it always deduplicates '%' characters).
   static const char text[] = "hello world";
   char ref[20], buf[20];
-  memset(ref, 'X', sizeof(char) * arraysize(buf));
+  memset(ref, 'X', sizeof(ref));
   memcpy(buf, ref, sizeof(buf));
 
   // A negative buffer size should always result in an error.
