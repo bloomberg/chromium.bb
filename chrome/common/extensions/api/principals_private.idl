@@ -4,7 +4,7 @@
 
 // Experimental APIs to trigger Chrome sign in actions.
 // Only enabled if the flag "new-profile-management" is set.
-[nodoc] namespace principalsPrivate {
+namespace principalsPrivate {
 
   interface Functions {
     // Triggers Chrome sign out.

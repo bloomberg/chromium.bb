@@ -4,7 +4,7 @@
 
 // <code>chrome.easyUnlockPrivate</code> API that provides hooks to Chrome to
 // be used by Easy Unlock component app.
-[nodoc] namespace easyUnlockPrivate {
+namespace easyUnlockPrivate {
   // Signature algorithms supported by the crypto library methods used by
   // Easy Unlock.
   enum SignatureType {

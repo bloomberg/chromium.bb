@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.browser</code> API to interact with the Chrome browser
 // associated with the current application and Chrome profile.
-[nodoc] namespace browser {
+namespace browser {
   // Options for the $(ref:openTab) function.
   dictionary OpenTabOptions {
     // The URL to navigate to when the new tab is initially opened.

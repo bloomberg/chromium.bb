@@ -4,7 +4,7 @@
 
 // API for integration testing. To be used on test images with a test component
 // extension.
-[nodoc] namespace autotestPrivate {
+namespace autotestPrivate {
 
   dictionary LoginStatusDict {
     // Are we logged in?

@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.webrtcLoggingPrivate</code> API to control diagnostic
 // WebRTC logging.
-[nodoc] namespace webrtcLoggingPrivate {
+namespace webrtcLoggingPrivate {
   dictionary MetaDataEntry {
     // The meta data entry key.
     DOMString key;

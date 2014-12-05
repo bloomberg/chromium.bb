@@ -14,7 +14,7 @@
 //
 // See http://goo.gl/8rOmgk for further documentation of this API.
 
-[nodoc] namespace webrtcAudioPrivate {
+namespace webrtcAudioPrivate {
 
   dictionary SinkInfo {
     // The opaque identifier of the audio sink device, which is unique

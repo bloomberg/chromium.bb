@@ -7,7 +7,7 @@
 //
 // See the design doc for a detailed description of this API.
 // https://goto.google.com/image-writer-private-designdoc
-[nodoc] namespace imageWriterPrivate {
+namespace imageWriterPrivate {
   // The different stages of a write call.
   //
   // <dl>

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // musicManagerPrivate.
-[nodoc] namespace musicManagerPrivate {
+namespace musicManagerPrivate {
 
   callback GetDeviceIdCallback = void (DOMString device_id);
 
