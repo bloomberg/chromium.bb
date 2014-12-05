@@ -436,7 +436,8 @@ class SpdyTestUtil {
   SpdyFrame* ConstructSpdyConnect(const char* const extra_headers[],
                                   int extra_header_count,
                                   int stream_id,
-                                  RequestPriority priority) const;
+                                  RequestPriority priority,
+                                  const HostPortPair& host_port_pair) const;
 
   // Constructs a standard SPDY push SYN frame.
   // |extra_headers| are the extra header-value pairs, which typically

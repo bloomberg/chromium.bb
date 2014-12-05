@@ -969,11 +969,14 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyConnect(
     const char* const extra_headers[],
     int extra_header_count,
     int stream_id,
-    RequestPriority priority) const {
+    RequestPriority priority,
+    const HostPortPair& host_port_pair) const {
   SpdyHeaderBlock block;
   block[GetMethodKey()] = "CONNECT";
-  block[GetPathKey()] = "www.google.com:443";
-  block[GetHostKey()] = "www.google.com";
+  block[GetPathKey()] = host_port_pair.ToString();
+  block[GetHostKey()] = (host_port_pair.port() == 443)
+                            ? host_port_pair.host()
+                            : host_port_pair.ToString();
   MaybeAddVersionHeader(&block);
   AppendToHeaderBlock(extra_headers, extra_header_count, &block);
   return ConstructSpdySyn(stream_id, block, priority, false, false);
