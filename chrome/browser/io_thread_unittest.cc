@@ -156,17 +156,6 @@ TEST_F(IOThreadTest, EnablePacingFromCommandLine) {
   EXPECT_EQ(options, params.quic_connection_options);
 }
 
-TEST_F(IOThreadTest, EnablePacingFromFieldTrialGroup) {
-  field_trial_group_ = "EnabledWithPacing";
-
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  net::QuicTagVector options;
-  options.push_back(net::kPACE);
-  EXPECT_EQ(options, params.quic_connection_options);
-}
-
 TEST_F(IOThreadTest, EnablePacingFromFieldTrialParams) {
   field_trial_group_ = "Enabled";
   field_trial_params_["enable_pacing"] = "true";
@@ -181,31 +170,22 @@ TEST_F(IOThreadTest, EnablePacingFromFieldTrialParams) {
 
 TEST_F(IOThreadTest, PacketLengthFromCommandLine) {
   command_line_.AppendSwitch("enable-quic");
-  command_line_.AppendSwitchASCII("quic-max-packet-length", "1350");
+  command_line_.AppendSwitchASCII("quic-max-packet-length", "1450");
 
   ConfigureQuicGlobals();
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(1350u, params.quic_max_packet_length);
-}
-
-TEST_F(IOThreadTest, PacketLengthFromFieldTrialGroup) {
-  field_trial_group_ = "Enabled1350BytePackets";
-
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(1350u, params.quic_max_packet_length);
+  EXPECT_EQ(1450u, params.quic_max_packet_length);
 }
 
 TEST_F(IOThreadTest, PacketLengthFromFieldTrialParams) {
   field_trial_group_ = "Enabled";
-  field_trial_params_["max_packet_length"] = "1350";
+  field_trial_params_["max_packet_length"] = "1450";
 
   ConfigureQuicGlobals();
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(1350u, params.quic_max_packet_length);
+  EXPECT_EQ(1450u, params.quic_max_packet_length);
 }
 
 TEST_F(IOThreadTest, QuicVersionFromCommandLine) {

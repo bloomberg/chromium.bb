@@ -124,8 +124,6 @@ const char kTCPFastOpenHttpsEnabledGroupName[] = "HttpsEnabled";
 const char kQuicFieldTrialName[] = "QUIC";
 const char kQuicFieldTrialEnabledGroupName[] = "Enabled";
 const char kQuicFieldTrialHttpsEnabledGroupName[] = "HttpsEnabled";
-const char kQuicFieldTrialPacketLengthSuffix[] = "BytePackets";
-const char kQuicFieldTrialPacingSuffix[] = "WithPacing";
 
 // The SPDY trial composes two different trial plus control groups:
 //  * A "holdback" group with SPDY disabled, and corresponding control
@@ -1286,12 +1284,9 @@ bool IOThread::ShouldEnableQuicPacing(
   if (command_line.HasSwitch(switches::kDisableQuicPacing))
     return false;
 
-  if (LowerCaseEqualsASCII(
+  return LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "enable_pacing"),
-      "true"))
-    return true;
-
-  return quic_trial_group.ends_with(kQuicFieldTrialPacingSuffix);
+      "true");
 }
 
 net::QuicTagVector IOThread::GetQuicConnectionOptions(
@@ -1390,25 +1385,7 @@ size_t IOThread::GetQuicMaxPacketLength(
                          &value)) {
     return value;
   }
-
-  // Format of the packet length group names is:
-  //   (Https)?Enabled<length>BytePackets.
-  base::StringPiece length_str(quic_trial_group);
-  if (length_str.starts_with(kQuicFieldTrialEnabledGroupName)) {
-    length_str.remove_prefix(strlen(kQuicFieldTrialEnabledGroupName));
-  } else if (length_str.starts_with(kQuicFieldTrialHttpsEnabledGroupName)) {
-    length_str.remove_prefix(strlen(kQuicFieldTrialHttpsEnabledGroupName));
-  } else {
-    return 0;
-  }
-  if (!length_str.ends_with(kQuicFieldTrialPacketLengthSuffix)) {
-    return 0;
-  }
-  length_str.remove_suffix(strlen(kQuicFieldTrialPacketLengthSuffix));
-  if (!base::StringToUint(length_str, &value)) {
-    return 0;
-  }
-  return value;
+  return 0;
 }
 
 // static
