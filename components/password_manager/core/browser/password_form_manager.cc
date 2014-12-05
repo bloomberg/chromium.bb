@@ -780,7 +780,7 @@ void PasswordFormManager::UploadPasswordForm(
     const autofill::FormData& form_data,
     const autofill::ServerFieldType& password_type) {
   autofill::AutofillManager* autofill_manager =
-      driver_->GetAutofillManager();
+      client_->GetAutofillManagerForMainFrame();
   if (!autofill_manager)
     return;
 

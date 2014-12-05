@@ -23,6 +23,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/common/password_form.h"
@@ -363,6 +365,16 @@ bool ChromePasswordManagerClient::IsOffTheRecord() {
 password_manager::PasswordManager*
 ChromePasswordManagerClient::GetPasswordManager() {
   return &password_manager_;
+}
+
+autofill::AutofillManager*
+ChromePasswordManagerClient::GetAutofillManagerForMainFrame() {
+  autofill::ContentAutofillDriverFactory* factory =
+      autofill::ContentAutofillDriverFactory::FromWebContents(web_contents());
+  return factory
+             ? factory->DriverForFrame(web_contents()->GetMainFrame())
+                   ->autofill_manager()
+             : nullptr;
 }
 
 void ChromePasswordManagerClient::SetTestObserver(

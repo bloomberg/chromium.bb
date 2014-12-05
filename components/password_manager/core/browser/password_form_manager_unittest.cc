@@ -74,10 +74,6 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
   MOCK_METHOD1(AllowPasswordGenerationForForm,
                void(const autofill::PasswordForm&));
 
-  virtual autofill::AutofillManager* GetAutofillManager() override {
-    return &mock_autofill_manager_;
-  }
-
   MockAutofillManager* mock_autofill_manager() {
     return &mock_autofill_manager_;
   }
@@ -113,6 +109,10 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   }
 
   MockPasswordManagerDriver* mock_driver() { return &driver_; }
+
+  virtual autofill::AutofillManager* GetAutofillManagerForMainFrame() override {
+    return mock_driver()->mock_autofill_manager();
+  }
 
  private:
   autofill::PasswordForm form_to_filter_;

@@ -75,4 +75,9 @@ PasswordManager* PasswordManagerClient::GetPasswordManager() {
   return nullptr;
 }
 
+autofill::AutofillManager*
+PasswordManagerClient::GetAutofillManagerForMainFrame() {
+  return nullptr;
+}
+
 }  // namespace password_manager

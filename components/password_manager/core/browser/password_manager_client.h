@@ -12,6 +12,10 @@
 
 class PrefService;
 
+namespace autofill {
+class AutofillManager;
+}
+
 namespace password_manager {
 
 struct CredentialInfo;
@@ -150,6 +154,9 @@ class PasswordManagerClient {
 
   // Returns the PasswordManager associated with this client.
   virtual PasswordManager* GetPasswordManager();
+
+  // Returns the AutofillManager for the main frame.
+  virtual autofill::AutofillManager* GetAutofillManagerForMainFrame();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

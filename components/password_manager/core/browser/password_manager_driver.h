@@ -63,9 +63,6 @@ class PasswordManagerDriver {
   // Returns the PasswordAutofillManager associated with this instance.
   virtual PasswordAutofillManager* GetPasswordAutofillManager() = 0;
 
-  // Returns the AutofillManager associated with this instance.
-  virtual autofill::AutofillManager* GetAutofillManager() = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDriver);
 };

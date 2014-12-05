@@ -324,6 +324,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   PasswordManagerClient* client_;
 
   // The driver which implements platform-specific PasswordManager operations.
+  // TODO(vabr): remove this due to lifetime issues. http://crbug.com/439387
   PasswordManagerDriver* driver_;
 
   // These three fields record the "ActionsTaken" by the browser and

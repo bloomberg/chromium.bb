@@ -4,8 +4,6 @@
 
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 
-#include "components/autofill/content/browser/content_autofill_driver.h"
-#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -150,15 +148,6 @@ void ContentPasswordManagerDriver::DidNavigateFrame(
   GetPasswordAutofillManager()->Reset();
   if (!render_frame_host_->GetParent())
     GetPasswordManager()->DidNavigateMainFrame(details.is_in_page);
-}
-
-autofill::AutofillManager* ContentPasswordManagerDriver::GetAutofillManager() {
-  autofill::ContentAutofillDriverFactory* factory =
-      autofill::ContentAutofillDriverFactory::FromWebContents(
-          content::WebContents::FromRenderFrameHost(render_frame_host_));
-  return factory
-             ? factory->DriverForFrame(render_frame_host_)->autofill_manager()
-             : nullptr;
 }
 
 }  // namespace password_manager

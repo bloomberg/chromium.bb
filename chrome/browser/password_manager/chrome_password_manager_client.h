@@ -75,6 +75,7 @@ class ChromePasswordManagerClient
   bool DidLastPageLoadEncounterSSLErrors() override;
   bool IsOffTheRecord() override;
   password_manager::PasswordManager* GetPasswordManager() override;
+  autofill::AutofillManager* GetAutofillManagerForMainFrame() override;
 
   // Hides any visible generation UI.
   void HidePasswordGenerationPopup();

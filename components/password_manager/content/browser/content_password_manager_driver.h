@@ -58,7 +58,6 @@ class ContentPasswordManagerDriver : public PasswordManagerDriver {
 
   PasswordGenerationManager* GetPasswordGenerationManager() override;
   PasswordManager* GetPasswordManager() override;
-  autofill::AutofillManager* GetAutofillManager() override;
   PasswordAutofillManager* GetPasswordAutofillManager() override;
 
   bool HandleMessage(const IPC::Message& message);
