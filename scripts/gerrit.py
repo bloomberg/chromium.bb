@@ -271,6 +271,15 @@ def UserActReady(opts, *args):
 UserActReady.arg_min = 2
 
 
+def UserActTrybotready(opts, *args):
+  """Mark CL <n> [n ...] with trybot-ready status <0,1>"""
+  num = args[-1]
+  for arg in args[:-1]:
+    helper, cl = GetGerrit(opts, arg)
+    helper.SetReview(cl, labels={'Trybot-Ready': num}, dryrun=opts.dryrun)
+UserActTrybotready.arg_min = 2
+
+
 def UserActSubmit(opts, *args):
   """Submit CL <n> [n ...]"""
   for arg in args:
@@ -367,8 +376,12 @@ ready.
 Actions:"""
   indent = max([len(x) - len(act_pfx) for x in actions])
   for a in sorted(actions):
-    usage += '\n  %-*s: %s' % (indent, a[len(act_pfx):].lower(),
-                               globals()[a].__doc__)
+    cmd = a[len(act_pfx):]
+    # Sanity check for devs adding new commands.  Should be quick.
+    if cmd != cmd.lower().capitalize():
+      raise RuntimeError('callback "%s" is misnamed; should be "%s"' %
+                         (cmd, cmd.lower().capitalize()))
+    usage += '\n  %-*s: %s' % (indent, cmd.lower(), globals()[a].__doc__)
 
   parser = commandline.ArgumentParser(usage=usage)
   parser.add_argument('-i', '--internal', dest='gob', action='store_const',
