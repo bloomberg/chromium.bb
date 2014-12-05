@@ -27,6 +27,18 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
       ServiceWorkerContextWrapper* service_worker_context);
 
  private:
+  struct RegisterData {
+    RegisterData();
+    RegisterData(const RegisterData& other) = default;
+    bool FromDocument() const;
+    int request_id;
+    GURL requesting_origin;
+    int64 service_worker_registration_id;
+    // The following two members should only be read if FromDocument() is true.
+    int render_frame_id;
+    bool user_visible_only;
+  };
+
   ~PushMessagingMessageFilter() override;
 
   // BrowserMessageFilter implementation.
@@ -50,17 +62,8 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void OnGetPermissionStatus(int request_id,
                              int64 service_worker_registration_id);
 
-  void RegisterFromDocumentOnUI(int render_frame_id,
-                                int request_id,
-                                const std::string& sender_id,
-                                bool user_visible_only,
-                                const GURL& requesting_origin,
-                                int64 service_worker_registration_id);
-
-  void RegisterFromWorkerOnUI(int request_id,
-                              const std::string& sender_id,
-                              const GURL& requesting_origin,
-                              int64 service_worker_registration_id);
+  void RegisterOnUI(const RegisterData& data,
+                    const std::string& sender_id);
 
   // TODO(mvanouwerkerk): Delete once the Push API flows through platform.
   // https://crbug.com/389194
@@ -70,14 +73,14 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
 
   void GetPermissionStatusOnUI(const GURL& requesting_origin, int request_id);
 
-  void DidRegisterFromDocument(int render_frame_id,
-                               int request_id,
-                               const std::string& push_registration_id,
-                               PushRegistrationStatus status);
+  void DidRegister(const RegisterData& data,
+                   const std::string& push_registration_id,
+                   PushRegistrationStatus status);
 
-  void DidRegisterFromWorker(int request_id,
-                             const std::string& push_registration_id,
-                             PushRegistrationStatus status);
+  void SendRegisterError(const RegisterData& data,
+                         PushRegistrationStatus status);
+  void SendRegisterSuccess(const RegisterData& data,
+                           const std::string& push_registration_id);
 
   PushMessagingService* service();
 
