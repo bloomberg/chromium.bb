@@ -535,14 +535,25 @@ const char kLanguageHotkeyPreviousEngine[] =
 // (ex. "en-US,fr,ko").
 const char kLanguagePreferredLanguages[] =
     "settings.language.preferred_languages";
+const char kLanguagePreferredLanguagesSyncable[] =
+    "settings.language.preferred_languages_syncable";
 
 // A string pref (comma-separated list) set to the preloaded (active) input
 // method IDs (ex. "pinyin,mozc").
 const char kLanguagePreloadEngines[] = "settings.language.preload_engines";
+const char kLanguagePreloadEnginesSyncable[] =
+    "settings.language.preload_engines_syncable";
 
-// A List pref (comma-separated list) set to the extension IMEs to be enabled.
+// A string pref (comma-separated list) set to the extension IMEs to be enabled.
 const char kLanguageEnabledExtensionImes[] =
     "settings.language.enabled_extension_imes";
+const char kLanguageEnabledExtensionImesSyncable[] =
+    "settings.language.enabled_extension_imes_syncable";
+
+// A boolean pref to indicate whether we still need to add the globally synced
+// input methods. False after the initial post-OOBE sync.
+const char kLanguageShouldMergeInputMethods[] =
+    "settings.language.merge_input_methods";
 
 // Integer prefs which determine how we remap modifier keys (e.g. swap Alt and
 // Control.) Possible values for these prefs are 0-4. See ModifierKey enum in

@@ -389,6 +389,8 @@
         'browser/chromeos/input_method/input_method_manager_impl.h',
         'browser/chromeos/input_method/input_method_persistence.cc',
         'browser/chromeos/input_method/input_method_persistence.h',
+        'browser/chromeos/input_method/input_method_syncer.cc',
+        'browser/chromeos/input_method/input_method_syncer.h',
         'browser/chromeos/input_method/input_method_util.cc',
         'browser/chromeos/input_method/input_method_util.h',
         'browser/chromeos/input_method/mode_indicator_controller.cc',
