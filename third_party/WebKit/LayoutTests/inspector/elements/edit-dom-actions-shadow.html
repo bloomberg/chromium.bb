@@ -36,7 +36,7 @@ function test()
             function testBody(node, done)
             {
                 var treeElement = InspectorTest.firstElementsTreeOutline().findTreeElement(node);
-                treeElement._editAsHTML();
+                treeElement.toggleEditAsHTML();
                 InspectorTest.runAfterPendingDispatches(step2);
 
                 function step2()
