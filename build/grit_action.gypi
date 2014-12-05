@@ -21,6 +21,20 @@
     # instead of build/common.gypi .
     'grit_additional_defines%': [],
     'grit_rc_header_format%': [],
+
+    'conditions': [
+      # These scripts can skip writing generated files if they are identical
+      # to the already existing files, which avoids further build steps, like
+      # recompilation. However, a dependency (earlier build step) having a
+      # newer timestamp than an output (later build step) confuses some build
+      # systems, so only use this on ninja, which explicitly supports this use
+      # case (gyp turns all actions into ninja restat rules).
+      ['"<(GENERATOR)"=="ninja"', {
+        'write_only_new': '1',
+      }, {
+        'write_only_new': '0',
+      }],
+    ],
   },
   'inputs': [
     '<!@pymod_do_main(grit_info <@(grit_defines) <@(grit_additional_defines) '
@@ -35,6 +49,7 @@
              '-i', '<(grit_grd_file)', 'build',
              '-f', '<(grit_resource_ids)',
              '-o', '<(grit_out_dir)',
+             '--write-only-new=<(write_only_new)',
              '<@(grit_defines)',
              '<@(grit_additional_defines)',
              '<@(grit_rc_header_format)'],
