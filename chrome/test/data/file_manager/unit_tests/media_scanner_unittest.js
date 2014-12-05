@@ -14,8 +14,14 @@ var chrome;
 var timeoutCallbacks;
 
 
+/**
+ * @type {!MediaScanner}
+ */
+var scanner;
+
 // Set up the test components.
 function setUp() {
+  scanner = new MediaScanner();
 }
 
 /**
@@ -78,9 +84,8 @@ function populateDir(filenames, dir) {
  * Verifies that scanning an empty filesystem produces an empty list.
  */
 function testEmptyList(callback) {
-  var scanner = new MediaScanner([]);
   reportPromise(
-      scanner.getFiles().then(function(files) {
+      scanner.scan([]).then(function(files) {
         assertEquals(0, files.length);
       }),
       callback);
@@ -112,8 +117,7 @@ function testSingleLevel(callback) {
                * @param {!DirectoryEntry} root
                */
               function(root) {
-                var scanner = new MediaScanner([root]);
-                return scanner.getFiles();
+                return scanner.scan([root]);
               })
           .then(
               /**
@@ -165,8 +169,7 @@ function testMultiLevel(callback) {
                * @param {!DirectoryEntry} root
                */
               function(root) {
-                var scanner = new MediaScanner([root]);
-                return scanner.getFiles();
+                return scanner.scan([root]);
               })
           .then(
               /**
@@ -224,8 +227,7 @@ function testMultipleDirectories(callback) {
                 return Promise.all(['foo.0', 'foo.1'].map(
                     getDirectory.bind(null, root))).then(
                         function(directories) {
-                          var scanner = new MediaScanner(directories);
-                          return scanner.getFiles();
+                          return scanner.scan(directories);
                         });
               })
           .then(

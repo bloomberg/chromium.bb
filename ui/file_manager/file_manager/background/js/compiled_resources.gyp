@@ -33,6 +33,7 @@
           'file_operation_manager.js',
           'file_operation_util.js',
           'import_history.js',
+          'media_import_handler.js',
           'media_scanner.js',
           'progress_center.js',
           'volume_manager.js',

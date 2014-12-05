@@ -23,25 +23,25 @@ function FileBrowserBackground() {
 
   /**
    * Map of all currently open file dialogs. The key is an app ID.
-   * @type {Object.<string, Window>}
+   * @type {!Object.<string, !Window>}
    */
   this.dialogs = {};
 
   /**
    * Synchronous queue for asynchronous calls.
-   * @type {AsyncUtil.Queue}
+   * @type {!AsyncUtil.Queue}
    */
   this.queue = new AsyncUtil.Queue();
 
   /**
    * Progress center of the background page.
-   * @type {ProgressCenter}
+   * @type {!ProgressCenter}
    */
   this.progressCenter = new ProgressCenter();
 
   /**
    * File operation manager.
-   * @type {FileOperationManager}
+   * @type {!FileOperationManager}
    */
   this.fileOperationManager = new FileOperationManager();
 
@@ -56,15 +56,13 @@ function FileBrowserBackground() {
 
   /**
    * Event handler for progress center.
-   * @type {FileOperationHandler}
-   * @private
+   * @private {!FileOperationHandler}
    */
   this.fileOperationHandler_ = new FileOperationHandler(this);
 
   /**
    * Event handler for C++ sides notifications.
-   * @type {DeviceHandler}
-   * @private
+   * @private {!DeviceHandler}
    */
   this.deviceHandler_ = new DeviceHandler();
   this.deviceHandler_.addEventListener(
@@ -75,7 +73,7 @@ function FileBrowserBackground() {
 
   /**
    * Drive sync handler.
-   * @type {DriveSyncHandler}
+   * @type {!DriveSyncHandler}
    */
   this.driveSyncHandler = new DriveSyncHandler(this.progressCenter);
   this.driveSyncHandler.addEventListener(
@@ -83,8 +81,16 @@ function FileBrowserBackground() {
       function() { this.tryClose(); }.bind(this));
 
   /**
+   * Handles importing of user media (e.g. photos, videos) from removable
+   * devices.
+   * @type {!importer.MediaImportHandler}
+   */
+  this.mediaImportHandler =
+      new importer.MediaImportHandler(this.fileOperationManager);
+
+  /**
    * Promise of string data.
-   * @type {Promise}
+   * @type {!Promise}
    */
   this.stringDataPromise = new Promise(function(fulfill) {
     chrome.fileManagerPrivate.getStrings(fulfill);
@@ -92,7 +98,7 @@ function FileBrowserBackground() {
 
   /**
    * String assets.
-   * @type {Object.<string, string>}
+   * @type {Object<string, string>}
    */
   this.stringData = null;
 
@@ -100,16 +106,14 @@ function FileBrowserBackground() {
    * Callback list to be invoked after initialization.
    * It turns to null after initialization.
    *
-   * @type {Array.<function()>}
-   * @private
+   * @private {!Array<function()>}
    */
   this.initializeCallbacks_ = [];
 
   /**
    * Last time when the background page can close.
    *
-   * @type {?number}
-   * @private
+   * @private {?number}
    */
   this.lastTimeCanClose_ = null;
 
@@ -143,8 +147,7 @@ function FileBrowserBackground() {
 /**
  * A number of delay milliseconds from the first call of tryClose to the actual
  * close action.
- * @type {number}
- * @const
+ * @const {number}
  * @private
  */
 FileBrowserBackground.CLOSE_DELAY_MS_ = 5000;
@@ -460,7 +463,7 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
 /**
  * Registers dialog window to the background page.
  *
- * @param {Window} dialogWindow Window of the dialog.
+ * @param {!Window} dialogWindow Window of the dialog.
  */
 function registerDialog(dialogWindow) {
   var id = DIALOG_ID_PREFIX + (nextFileManagerDialogID++);

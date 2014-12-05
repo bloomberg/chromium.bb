@@ -6,21 +6,18 @@
  * Recursively scans through a list of given files and directories, and creates
  * a list of media files.
  *
- * @param {!Array.<!Entry>} entries A list of file and directory entries.  File
- *     entries are added directly to the media list; directory entries are
- *     recursively traversed to find files, which are added to the media list.
  * @constructor
  */
-function MediaScanner(entries) {
-  /** @private {!Promise<!Array<!FileEntry>>} */
-  this.filesPromise_ = this.scan_(entries);
-}
+function MediaScanner() {}
 
 /**
  * Scans a list of directory and file entries, returning image and video files.
- * @param {!Array<!Entry>} entries
+ * @param {!Array<!Entry>} entries A list of file and directory entries.  File
+ *     entries are added directly to the media list; directory entries are
+ *     recursively traversed to find files, which are added to the media list.
+ * @return {!Promise<!Array<!FileEntry>>}
  */
-MediaScanner.prototype.scan_ = function(entries) {
+MediaScanner.prototype.scan = function(entries) {
   /**
    * Returns files and directories found under the given Entry.
    * @param {!Entry} entry
@@ -46,7 +43,7 @@ MediaScanner.prototype.scan_ = function(entries) {
   /**
    * Filters non-image and non-video files out of the given list.
    * @param {!Array<!Entry>} array
-   * @return {!Array<!Entry>}
+   * @return {!Array<!FileEntry>}
    */
   var filter = function(array) {
     return array.filter(FileType.isImageOrVideo);
@@ -55,11 +52,4 @@ MediaScanner.prototype.scan_ = function(entries) {
   return Promise.all(entries.map(scanRecurse))
       .then(flatten)
       .then(filter);
-};
-
-/**
- * @return {!Promise<!Array<!FileEntry>>}
- */
-MediaScanner.prototype.getFiles = function() {
-  return this.filesPromise_;
 };

@@ -90,9 +90,9 @@ function setUp() {
     }
   ];
   chrome.fileManagerPrivate.fileSystemMap_ = {
-    'download:Downloads': createMockFileSystem('download:Downloads'),
+    'download:Downloads': new MockFileSystem('download:Downloads'),
     'drive:drive-foobar%40chromium.org-hash':
-        createMockFileSystem('drive:drive-foobar%40chromium.org-hash')
+        new MockFileSystem('drive:drive-foobar%40chromium.org-hash')
   };
 }
 
@@ -115,20 +115,9 @@ function getMockProfile() {
   };
 }
 
-/**
- * Creates a mock file system.
- *
- * @return {MockFileSystem} A mock file system.
- */
-function createMockFileSystem(volumeId) {
-  var fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
-  fileSystem.entries['/'] = new MockDirectoryEntry(fileSystem, '/');
-  return fileSystem;
-}
-
 function testGetVolumeInfo(callback) {
   reportPromise(VolumeManager.getInstance().then(function(volumeManager) {
-    var entry = new MockFileEntry(createMockFileSystem('download:Downloads'),
+    var entry = new MockFileEntry(new MockFileSystem('download:Downloads'),
         '/foo/bar/bla.zip');
 
     var volumeInfo = volumeManager.getVolumeInfo(entry);
@@ -163,7 +152,7 @@ function testMountArchiveAndUnmount(callback) {
   const mountSourcePath = '/usr/local/home/test/Downloads/foobar.zip';
   chrome.fileManagerPrivate.mountSourcePath_ = mountSourcePath;
   chrome.fileManagerPrivate.fileSystemMap_['archive:foobar.zip'] =
-      createMockFileSystem('archive:foobar.zip');
+      new MockFileSystem('archive:foobar.zip');
 
   reportPromise(VolumeManager.getInstance().then(function(volumeManager) {
     var numberOfVolumes = volumeManager.volumeInfoList.length;
@@ -197,7 +186,7 @@ function testMountArchiveAndUnmount(callback) {
           resolve(true);
         });
         var entry = new MockFileEntry(
-            createMockFileSystem('archive:foobar.zip'),
+            new MockFileSystem('archive:foobar.zip'),
             '/foo.txt');
         var volumeInfo = volumeManager.getVolumeInfo(entry);
         volumeManager.unmount(volumeInfo);
@@ -220,7 +209,7 @@ function testGetCurrentProfileVolumeInfo(callback) {
 function testGetLocationInfo(callback) {
   reportPromise(VolumeManager.getInstance().then(function(volumeManager) {
     var downloadEntry = new MockFileEntry(
-        createMockFileSystem('download:Downloads'),
+        new MockFileSystem('download:Downloads'),
         '/foo/bar/bla.zip');
     var downloadLocationInfo = volumeManager.getLocationInfo(downloadEntry);
     assertEquals(VolumeManagerCommon.VolumeType.DOWNLOADS,
@@ -229,7 +218,7 @@ function testGetLocationInfo(callback) {
     assertFalse(downloadLocationInfo.isRootEntry);
 
     var driveEntry = new MockFileEntry(
-        createMockFileSystem('drive:drive-foobar%40chromium.org-hash'),
+        new MockFileSystem('drive:drive-foobar%40chromium.org-hash'),
         '/root');
     var driveLocationInfo = volumeManager.getLocationInfo(driveEntry);
     assertEquals(VolumeManagerCommon.VolumeType.DRIVE,

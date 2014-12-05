@@ -16,17 +16,46 @@ function joinPath(a, b) {
  * Mock class for DOMFileSystem.
  *
  * @param {string} volumeId Volume ID.
- * @param {string} rootURL URL string of root which is used in MockEntry.toURL.
+ * @param {string=} opt_rootURL URL string of root which is used in
+ *     MockEntry.toURL.
  * @constructor
  */
-function MockFileSystem(volumeId, rootURL) {
+function MockFileSystem(volumeId, opt_rootURL) {
+  /** @type {string} */
   this.name = volumeId;
+
+  /** @type {!Object<string, !Entry>} */
   this.entries = {};
-  this.rootURL = rootURL;
+  this.entries['/'] = new MockDirectoryEntry(this, '/');
+
+  /** @type {string} */
+  this.rootURL = opt_rootURL || 'filesystem:' + volumeId;
 }
 
 MockFileSystem.prototype = {
   get root() { return this.entries['/']; }
+};
+
+/**
+ * Creates file and directory entries for all the given paths.  Paths ending in
+ * slashes are interpreted as directories.  All intermediate directories leading
+ * up to the files/directories to be created, are also created.
+ * @param {!Array<string>} paths An array of file paths to populate in this file
+ *     system.
+ */
+MockFileSystem.prototype.populate = function(paths) {
+  paths.forEach(function(path) {
+    var pathElements = path.split('/');
+    pathElements.forEach(function(_, i) {
+      var subpath = pathElements.slice(0, i).join('/');
+      if (subpath && !(subpath in this.entries))
+        this.entries[subpath] = new MockDirectoryEntry(this, subpath);
+    }.bind(this));
+
+    // If the path doesn't end in a slash, create a file.
+    if (!/\/$/.test(path))
+    this.entries[path] = new MockFileEntry(this, path, {size: 0});
+  }.bind(this));
 };
 
 /**
@@ -207,12 +236,23 @@ MockDirectoryEntry.prototype.getFile = function(
 MockDirectoryEntry.prototype.getDirectory =
     function(path, option, onSuccess, onError) {
   var fullPath = path[0] === '/' ? path : joinPath(this.fullPath, path);
-  if (!this.filesystem.entries[fullPath])
-    onError({name: util.FileError.NOT_FOUND_ERR});
-  else if (!(this.filesystem.entries[fullPath] instanceof MockDirectoryEntry))
-    onError({name: util.FileError.TYPE_MISMATCH_ERR});
-  else
-    onSuccess(this.filesystem.entries[fullPath]);
+  var result = this.filesystem.entries[fullPath];
+  if (result) {
+    if (!(result instanceof MockDirectoryEntry))
+      onError({name: util.FileError.TYPE_MISMATCH_ERR});
+    else if (option['create'] && option['exclusive'])
+      onError({name: util.FileError.PATH_EXISTS_ERR});
+    else
+      onSuccess(result);
+  } else {
+    if (!option['create']) {
+      onError({name: util.FileError.NOT_FOUND_ERR});
+    } else {
+      var newEntry = new MockDirectoryEntry(this.filesystem, fullPath);
+      this.filesystem.entries[fullPath] = newEntry;
+      onSuccess(newEntry);
+    }
+  }
 };
 
 /**

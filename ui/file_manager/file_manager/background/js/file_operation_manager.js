@@ -231,7 +231,7 @@ FileOperationManager.prototype.filterSameDirectoryEntry = function(
     });
   };
   return processEntries(sourceEntries);
-}
+};
 
 /**
  * Kick off pasting.

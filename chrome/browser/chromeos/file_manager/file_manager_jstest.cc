@@ -85,3 +85,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, LRUCacheTest) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("lru_cache_unittest.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MediaImporterTest) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("media_import_handler_unittest.html")));
+}
