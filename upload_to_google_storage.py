@@ -245,8 +245,10 @@ def main(args):
       parser.error('gsutil not found in %s, bad depot_tools checkout?' %
                    GSUTIL_DEFAULT_PATH)
 
+  base_url = 'gs://%s' % options.bucket
+
   # Check we have a valid bucket with valid permissions.
-  base_url, code = check_bucket_permissions(options.bucket, gsutil)
+  code = check_bucket_permissions(base_url, gsutil)
   if code:
     return code
 
