@@ -7,14 +7,9 @@
 
 #include "modules/EventModules.h"
 #include "modules/gamepad/Gamepad.h"
+#include "modules/gamepad/GamepadEventInit.h"
 
 namespace blink {
-
-struct GamepadEventInit : public EventInit {
-    GamepadEventInit();
-
-    Member<Gamepad> gamepad;
-};
 
 class GamepadEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
