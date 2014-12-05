@@ -29,7 +29,7 @@
   <interface name="wl_input_method_context" version="1">
     <description summary="input method context">
       Corresponds to a text model on input method side. An input method context
-      is created on text mode activation on the input method side. It allows to
+      is created on text model activation on the input method side. It allows to
       receive information about the text model from the application via events.
       Input method contexts do not keep state after deactivation and should be
       destroyed after deactivation is handled.
@@ -257,7 +257,7 @@
 
     <request name="set_toplevel">
       <description summary="set the surface type as a keyboard">
-	A keybaord surface is only shown, when a text model is active
+	A keyboard surface is only shown, when a text model is active
       </description>
       <arg name="output" type="object" interface="wl_output"/>
       <arg name="position" type="uint"/>
