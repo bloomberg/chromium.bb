@@ -483,7 +483,7 @@ bool SparseControl::OpenChild() {
     return KillChildAndContinue(key, false);
 
   if (child_data_.header.last_block_len < 0 ||
-      child_data_.header.last_block_len > kBlockSize) {
+      child_data_.header.last_block_len >= kBlockSize) {
     // Make sure these values are always within range.
     child_data_.header.last_block_len = 0;
     child_data_.header.last_block = -1;
@@ -590,7 +590,7 @@ bool SparseControl::VerifyRange() {
   if (child_map_.FindNextBit(&start, last_bit, false)) {
     // Something is not here.
     DCHECK_GE(child_data_.header.last_block_len, 0);
-    DCHECK_LT(child_data_.header.last_block_len, kMaxEntrySize);
+    DCHECK_LT(child_data_.header.last_block_len, kBlockSize);
     int partial_block_len = PartialBlockLength(start);
     if (start == child_offset_ >> 10) {
       // It looks like we don't have anything.
@@ -615,7 +615,7 @@ void SparseControl::UpdateRange(int result) {
     return;
 
   DCHECK_GE(child_data_.header.last_block_len, 0);
-  DCHECK_LT(child_data_.header.last_block_len, kMaxEntrySize);
+  DCHECK_LT(child_data_.header.last_block_len, kBlockSize);
 
   // Write the bitmap.
   int first_bit = child_offset_ >> 10;
@@ -650,11 +650,6 @@ void SparseControl::UpdateRange(int result) {
 int SparseControl::PartialBlockLength(int block_index) const {
   if (block_index == child_data_.header.last_block)
     return child_data_.header.last_block_len;
-
-  // This may be the last stored index.
-  int entry_len = child_->GetDataSize(kSparseData);
-  if (block_index == entry_len >> 10)
-    return entry_len & (kBlockSize - 1);
 
   // This is really empty.
   return 0;
@@ -769,26 +764,48 @@ int SparseControl::DoGetAvailableRange() {
   if (!child_)
     return child_len_;  // Move on to the next child.
 
-  // Check that there are no holes in this range.
-  int last_bit = (child_offset_ + child_len_ + 1023) >> 10;
+  // Bits on the bitmap should only be set when the corresponding block was
+  // fully written (it's really being used). If a block is partially used, it
+  // has to start with valid data, the length of the valid data is saved in
+  // |header.last_block_len| and the block itself should match
+  // |header.last_block|.
+  //
+  // In other words, (|header.last_block| + |header.last_block_len|) is the
+  // offset where the last write ended, and data in that block (which is not
+  // marked as used because it is not full) will only be reused if the next
+  // write continues at that point.
+  //
+  // This code has to find if there is any data between child_offset_ and
+  // child_offset_ + child_len_.
+  int last_bit = (child_offset_ + child_len_ + kBlockSize - 1) >> 10;
   int start = child_offset_ >> 10;
   int partial_start_bytes = PartialBlockLength(start);
   int found = start;
   int bits_found = child_map_.FindBits(&found, last_bit, true);
+  bool is_last_block_in_range = start < child_data_.header.last_block &&
+                                child_data_.header.last_block < last_bit;
 
-  // We don't care if there is a partial block in the middle of the range.
   int block_offset = child_offset_ & (kBlockSize - 1);
-  if (!bits_found && partial_start_bytes <= block_offset)
-    return child_len_;
+  if (!bits_found && partial_start_bytes <= block_offset) {
+    if (!is_last_block_in_range)
+      return child_len_;
+    found = last_bit - 1;  // There are some bytes here.
+  }
 
   // We are done. Just break the loop and reset result_ to our real result.
   range_found_ = true;
 
-  // found now points to the first 1. Lets see if we have zeros before it.
-  int empty_start = std::max((found << 10) - child_offset_, 0);
-
   int bytes_found = bits_found << 10;
   bytes_found += PartialBlockLength(found + bits_found);
+
+  // found now points to the first bytes. Lets see if we have data before it.
+  int empty_start = std::max((found << 10) - child_offset_, 0);
+  if (empty_start >= child_len_)
+    return child_len_;
+
+  // At this point we have bytes_found stored after (found << 10), and we want
+  // child_len_ bytes after child_offset_. The first empty_start bytes after
+  // child_offset_ are invalid.
 
   if (start == found)
     bytes_found -= block_offset;
@@ -798,7 +815,7 @@ int SparseControl::DoGetAvailableRange() {
   // query that we have to subtract from the range that we searched.
   result_ = std::min(bytes_found, child_len_ - empty_start);
 
-  if (!bits_found) {
+  if (partial_start_bytes) {
     result_ = std::min(partial_start_bytes - block_offset, child_len_);
     empty_start = 0;
   }

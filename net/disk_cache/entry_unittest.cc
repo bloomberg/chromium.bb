@@ -1798,6 +1798,111 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyGetAvailableRange) {
   GetAvailableRange();
 }
 
+// Tests that non-sequential writes that are not aligned with the minimum sparse
+// data granularity (1024 bytes) do in fact result in dropped data.
+TEST_F(DiskCacheEntryTest, SparseWriteDropped) {
+  InitCache();
+  std::string key("the first key");
+  disk_cache::Entry* entry;
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+
+  const int kSize = 180;
+  scoped_refptr<net::IOBuffer> buf_1(new net::IOBuffer(kSize));
+  scoped_refptr<net::IOBuffer> buf_2(new net::IOBuffer(kSize));
+  CacheTestFillBuffer(buf_1->data(), kSize, false);
+
+  // Do small writes (180 bytes) that get increasingly close to a 1024-byte
+  // boundary. All data should be dropped until a boundary is crossed, at which
+  // point the data after the boundary is saved (at least for a while).
+  int offset = 1024 - 500;
+  int rv = 0;
+  net::TestCompletionCallback cb;
+  int64 start;
+  for (int i = 0; i < 5; i++) {
+    // Check result of last GetAvailableRange.
+    EXPECT_EQ(0, rv);
+
+    rv = entry->WriteSparseData(offset, buf_1.get(), kSize, cb.callback());
+    EXPECT_EQ(kSize, cb.GetResult(rv));
+
+    rv = entry->GetAvailableRange(offset - 100, kSize, &start, cb.callback());
+    EXPECT_EQ(0, cb.GetResult(rv));
+
+    rv = entry->GetAvailableRange(offset, kSize, &start, cb.callback());
+    rv = cb.GetResult(rv);
+    if (!rv) {
+      rv = entry->ReadSparseData(offset, buf_2.get(), kSize, cb.callback());
+      EXPECT_EQ(0, cb.GetResult(rv));
+      rv = 0;
+    }
+    offset += 1024 * i + 100;
+  }
+
+  // The last write started 100 bytes below a bundary, so there should be 80
+  // bytes after the boundary.
+  EXPECT_EQ(80, rv);
+  EXPECT_EQ(1024 * 7, start);
+  rv = entry->ReadSparseData(start, buf_2.get(), kSize, cb.callback());
+  EXPECT_EQ(80, cb.GetResult(rv));
+  EXPECT_EQ(0, memcmp(buf_1.get()->data() + 100, buf_2.get()->data(), 80));
+
+  // And even that part is dropped when another write changes the offset.
+  offset = start;
+  rv = entry->WriteSparseData(0, buf_1.get(), kSize, cb.callback());
+  EXPECT_EQ(kSize, cb.GetResult(rv));
+
+  rv = entry->GetAvailableRange(offset, kSize, &start, cb.callback());
+  EXPECT_EQ(0, cb.GetResult(rv));
+  entry->Close();
+}
+
+// Tests that small sequential writes are not dropped.
+TEST_F(DiskCacheEntryTest, SparseSquentialWriteNotDropped) {
+  InitCache();
+  std::string key("the first key");
+  disk_cache::Entry* entry;
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+
+  const int kSize = 180;
+  scoped_refptr<net::IOBuffer> buf_1(new net::IOBuffer(kSize));
+  scoped_refptr<net::IOBuffer> buf_2(new net::IOBuffer(kSize));
+  CacheTestFillBuffer(buf_1->data(), kSize, false);
+
+  // Any starting offset is fine as long as it is 1024-bytes aligned.
+  int rv = 0;
+  net::TestCompletionCallback cb;
+  int64 start;
+  int64 offset = 1024 * 11;
+  for (; offset < 20000; offset += kSize) {
+    rv = entry->WriteSparseData(offset, buf_1.get(), kSize, cb.callback());
+    EXPECT_EQ(kSize, cb.GetResult(rv));
+
+    rv = entry->GetAvailableRange(offset, kSize, &start, cb.callback());
+    EXPECT_EQ(kSize, cb.GetResult(rv));
+    EXPECT_EQ(offset, start);
+
+    rv = entry->ReadSparseData(offset, buf_2.get(), kSize, cb.callback());
+    EXPECT_EQ(kSize, cb.GetResult(rv));
+    EXPECT_EQ(0, memcmp(buf_1.get()->data(), buf_2.get()->data(), kSize));
+  }
+
+  entry->Close();
+  FlushQueueForTest();
+
+  // Verify again the last write made.
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry));
+  offset -= kSize;
+  rv = entry->GetAvailableRange(offset, kSize, &start, cb.callback());
+  EXPECT_EQ(kSize, cb.GetResult(rv));
+  EXPECT_EQ(offset, start);
+
+  rv = entry->ReadSparseData(offset, buf_2.get(), kSize, cb.callback());
+  EXPECT_EQ(kSize, cb.GetResult(rv));
+  EXPECT_EQ(0, memcmp(buf_1.get()->data(), buf_2.get()->data(), kSize));
+
+  entry->Close();
+}
+
 void DiskCacheEntryTest::CouldBeSparse() {
   std::string key("the first key");
   disk_cache::Entry* entry;
@@ -2133,7 +2238,11 @@ void DiskCacheEntryTest::PartialSparseEntry() {
   EXPECT_EQ(0, ReadSparseData(entry, 0, buf2.get(), kSize));
 
   // This read should not change anything.
-  EXPECT_EQ(96, ReadSparseData(entry, 24000, buf2.get(), kSize));
+  if (memory_only_ || simple_cache_mode_)
+    EXPECT_EQ(96, ReadSparseData(entry, 24000, buf2.get(), kSize));
+  else
+    EXPECT_EQ(0, ReadSparseData(entry, 24000, buf2.get(), kSize));
+
   EXPECT_EQ(500, ReadSparseData(entry, kSize, buf2.get(), kSize));
   EXPECT_EQ(0, ReadSparseData(entry, 99, buf2.get(), kSize));
 
@@ -2153,7 +2262,11 @@ void DiskCacheEntryTest::PartialSparseEntry() {
   EXPECT_EQ(500, cb.GetResult(rv));
   EXPECT_EQ(kSize, start);
   rv = entry->GetAvailableRange(20 * 1024, 10000, &start, cb.callback());
-  EXPECT_EQ(3616, cb.GetResult(rv));
+  if (memory_only_ || simple_cache_mode_)
+    EXPECT_EQ(3616, cb.GetResult(rv));
+  else
+    EXPECT_EQ(3072, cb.GetResult(rv));
+
   EXPECT_EQ(20 * 1024, start);
 
   // 1. Query before a filled 1KB block.
