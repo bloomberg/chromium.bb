@@ -29,8 +29,8 @@
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "ui/base/android/window_android_observer.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
-#include "ui/gfx/geometry/size.h"
-#include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/gfx/size.h"
+#include "ui/gfx/vector2d_f.h"
 
 struct ViewHostMsg_TextInputState_Params;
 

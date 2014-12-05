@@ -49,13 +49,13 @@
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/range/range.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/rect_f.h"
+#include "ui/gfx/vector2d.h"
+#include "ui/gfx/vector2d_f.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_descriptor.h"

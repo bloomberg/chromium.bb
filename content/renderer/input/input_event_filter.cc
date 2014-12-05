@@ -18,7 +18,7 @@
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
-#include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/gfx/vector2d_f.h"
 
 using blink::WebInputEvent;
 
