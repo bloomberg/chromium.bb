@@ -22,7 +22,9 @@ template <typename T>
 class EventWithLatencyInfo {
  public:
   T event;
-  ui::LatencyInfo latency;
+  mutable ui::LatencyInfo latency;
+
+  explicit EventWithLatencyInfo(const T& e) : event(e) {}
 
   EventWithLatencyInfo(const T& e, const ui::LatencyInfo& l)
       : event(e), latency(l) {}

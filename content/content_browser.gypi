@@ -1128,6 +1128,8 @@
       'browser/renderer_host/render_widget_host_delegate.h',
       'browser/renderer_host/render_widget_host_impl.cc',
       'browser/renderer_host/render_widget_host_impl.h',
+      'browser/renderer_host/render_widget_host_latency_tracker.cc',
+      'browser/renderer_host/render_widget_host_latency_tracker.h',
       'browser/renderer_host/render_widget_host_view_android.cc',
       'browser/renderer_host/render_widget_host_view_android.h',
       'browser/renderer_host/render_widget_host_view_aura.cc',

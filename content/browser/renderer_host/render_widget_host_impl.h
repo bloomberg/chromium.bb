@@ -29,6 +29,7 @@
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/touch_emulator_client.h"
+#include "content/browser/renderer_host/render_widget_host_latency_tracker.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/view_message_enums.h"
@@ -466,11 +467,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       gfx::Size snapshot_size,
       scoped_refptr<base::RefCountedBytes> png_data);
 
-  // LatencyComponents generated in the renderer must have component IDs
-  // provided to them by the browser process. This function adds the correct
-  // component ID where necessary.
-  void AddLatencyInfoComponentIds(ui::LatencyInfo* latency_info);
-
   InputRouter* input_router() { return input_router_.get(); }
 
   // Get the BrowserAccessibilityManager for the root of the frame tree,
@@ -486,20 +482,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
  protected:
   RenderWidgetHostImpl* AsRenderWidgetHostImpl() override;
-
-  // Create a LatencyInfo struct with INPUT_EVENT_LATENCY_RWH_COMPONENT
-  // component if it is not already in |original|. And if |original| is
-  // not NULL, it is also merged into the resulting LatencyInfo.
-  ui::LatencyInfo CreateInputEventLatencyInfoIfNotExist(
-      const ui::LatencyInfo* original,
-      blink::WebInputEvent::Type type,
-      const ui::LatencyInfo::InputCoordinate* logical_coordinates,
-      size_t logical_coordinates_size);
-  // Add UMA histograms for the latency to the renderer and roundtrip latency
-  // for a given event type.
-  void ComputeInputLatencyHistograms(
-      blink::WebInputEvent::Type type,
-      const ui::LatencyInfo& latency_info) const;
 
   // Called when we receive a notification indicating that the renderer
   // process has gone. This will reset our state so that our state will be
@@ -840,7 +822,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   std::list<HWND> dummy_windows_for_activation_;
 #endif
 
-  int64 last_input_number_;
+  RenderWidgetHostLatencyTracker latency_tracker_;
 
   bool subscribe_uniform_enabled_;
 
