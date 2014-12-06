@@ -30,7 +30,6 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
   bool abortDrawing() override;
 
   // SkCanvas overrides.
-  void clear(SkColor) override;
   void drawPaint(const SkPaint& paint) override;
   void drawPoints(PointMode,
                   size_t count,

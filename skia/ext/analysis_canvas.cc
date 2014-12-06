@@ -95,17 +95,6 @@ void AnalysisCanvas::SetForceNotTransparent(bool flag) {
     is_transparent_ = false;
 }
 
-void AnalysisCanvas::clear(SkColor color) {
-  is_transparent_ = (!is_forced_not_transparent_ && SkColorGetA(color) == 0);
-
-  if (!is_forced_not_solid_ && SkColorGetA(color) == 255) {
-    is_solid_color_ = true;
-    color_ = color;
-  } else {
-    is_solid_color_ = false;
-  }
-}
-
 void AnalysisCanvas::drawPaint(const SkPaint& paint) {
   SkRect rect;
   getClipBounds(&rect);
