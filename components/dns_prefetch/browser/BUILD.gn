@@ -1,0 +1,16 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: components/dns_prefetch.gypi:dns_prefetch_browser
+source_set("browser") {
+  sources = [
+    "net_message_filter.cc",
+    "net_message_filter.h",
+  ]
+
+  public_deps = [
+    "//content/public/browser",
+    "//net",
+  ]
+}

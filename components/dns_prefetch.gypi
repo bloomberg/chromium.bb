@@ -23,6 +23,22 @@
         'dns_prefetch/common/prefetch_messages.h',
       ],
     },
+    {
+      # GN version: //components/dns_prefetch/browser
+      'target_name': 'dns_prefetch_browser',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../content/content.gyp:content_browser',
+        '../net/net.gyp:net',
+      ],
+      'sources': [
+        'dns_prefetch/browser/net_message_filter.cc',
+        'dns_prefetch/browser/net_message_filter.h',
+      ],
+    },
   ],
   'conditions': [
     ['OS!="ios"', {
