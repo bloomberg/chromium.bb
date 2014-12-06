@@ -152,6 +152,9 @@ crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-loca
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-trivial-constraint.html [ Failure ]
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html [ Failure ]
 
+# V8 Allowed eval in contexts after navigation, which changed the error of the test.
+crbug.com/439458 http/tests/security/xss-eval.html [ NeedsManualRebaseline ]
+
 # Requires subpixel precision for offset/client/scroll properties
 crbug.com/360889 fast/sub-pixel/cssom-subpixel-precision.html [ ImageOnlyFailure ]
 crbug.com/360889 fast/dom/HTMLDialogElement/dialog-scrolled-viewport.html [ Failure ]
