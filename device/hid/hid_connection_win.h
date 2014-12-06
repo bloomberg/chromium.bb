@@ -18,7 +18,8 @@ struct PendingHidTransfer;
 
 class HidConnectionWin : public HidConnection {
  public:
-  explicit HidConnectionWin(const HidDeviceInfo& device_info);
+  HidConnectionWin(const HidDeviceInfo& device_info,
+                   base::win::ScopedHandle file);
 
  private:
   friend class HidServiceWin;
@@ -38,8 +39,6 @@ class HidConnectionWin : public HidConnection {
       scoped_refptr<net::IOBuffer> buffer,
       size_t size,
       const WriteCallback& callback) override;
-
-  bool available() const { return file_.IsValid(); }
 
   void OnReadComplete(scoped_refptr<net::IOBuffer> buffer,
                       const ReadCallback& callback,

@@ -102,26 +102,10 @@ void PendingHidTransfer::WillDestroyCurrentMessageLoop() {
   callback_.Run(this, false);
 }
 
-HidConnectionWin::HidConnectionWin(const HidDeviceInfo& device_info)
+HidConnectionWin::HidConnectionWin(const HidDeviceInfo& device_info,
+                                   base::win::ScopedHandle file)
     : HidConnection(device_info) {
-  file_.Set(CreateFileA(device_info.device_id.c_str(),
-                        GENERIC_WRITE | GENERIC_READ,
-                        FILE_SHARE_READ | FILE_SHARE_WRITE,
-                        NULL,
-                        OPEN_EXISTING,
-                        FILE_FLAG_OVERLAPPED,
-                        NULL));
-
-  if (!file_.IsValid() &&
-      GetLastError() == base::File::FILE_ERROR_ACCESS_DENIED) {
-    file_.Set(CreateFileA(device_info.device_id.c_str(),
-                          GENERIC_READ,
-                          FILE_SHARE_READ,
-                          NULL,
-                          OPEN_EXISTING,
-                          FILE_FLAG_OVERLAPPED,
-                          NULL));
-  }
+  file_ = file.Pass();
 }
 
 HidConnectionWin::~HidConnectionWin() {

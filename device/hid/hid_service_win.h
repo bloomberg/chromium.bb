@@ -5,13 +5,6 @@
 #ifndef DEVICE_HID_HID_SERVICE_WIN_H_
 #define DEVICE_HID_HID_SERVICE_WIN_H_
 
-#include <map>
-
-#include "device/hid/hid_device_info.h"
-#include "device/hid/hid_service.h"
-
-#if defined(OS_WIN)
-
 #include <windows.h>
 #include <hidclass.h>
 
@@ -20,17 +13,22 @@ extern "C" {
 #include <hidpi.h>
 }
 
-#endif  // defined(OS_WIN)
+#include "base/memory/scoped_ptr.h"
+#include "base/win/scoped_handle.h"
+#include "device/hid/hid_device_info.h"
+#include "device/hid/hid_service.h"
+
+namespace base {
+namespace win {
+class MessageWindow;
+}
+}
 
 namespace device {
-
-class HidConnection;
 
 class HidServiceWin : public HidService {
  public:
   HidServiceWin();
-
-  virtual void GetDevices(std::vector<HidDeviceInfo>* devices) override;
 
   virtual void Connect(const HidDeviceId& device_id,
                        const ConnectCallback& callback) override;
@@ -38,7 +36,12 @@ class HidServiceWin : public HidService {
  private:
   virtual ~HidServiceWin();
 
-  void Enumerate();
+  void RegisterForDeviceNotifications();
+  bool HandleMessage(UINT message,
+                     WPARAM wparam,
+                     LPARAM lparam,
+                     LRESULT* result);
+  void DoInitialEnumeration();
   static void CollectInfoFromButtonCaps(PHIDP_PREPARSED_DATA preparsed_data,
                                         HIDP_REPORT_TYPE report_type,
                                         USHORT button_caps_length,
@@ -50,7 +53,12 @@ class HidServiceWin : public HidService {
   void PlatformAddDevice(const std::string& device_path);
   void PlatformRemoveDevice(const std::string& device_path);
 
+  // Tries to open the device read-write and falls back to read-only.
+  base::win::ScopedHandle OpenDevice(const std::string& device_path);
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_ptr<base::win::MessageWindow> window_;
+  HDEVNOTIFY notify_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(HidServiceWin);
 };
