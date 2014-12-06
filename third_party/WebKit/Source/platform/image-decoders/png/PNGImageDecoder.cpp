@@ -63,9 +63,6 @@ const double cMaxGamma = 21474.83;
 const double cDefaultGamma = 2.2;
 const double cInverseGamma = 0.45455;
 
-// Protect against large PNGs. See Mozilla's bug #251381 for more info.
-const unsigned long cMaxPNGSize = 1000000UL;
-
 inline blink::PNGImageDecoder* imageDecoder(png_structp png)
 {
     return static_cast<blink::PNGImageDecoder*>(png_get_progressive_ptr(png));
@@ -80,13 +77,11 @@ void PNGAPI decodingFailed(png_structp png, png_const_charp)
 // Callbacks given to the read struct.  The first is for warnings (we want to
 // treat a particular warning as an error, which is why we have to register this
 // callback).
-void PNGAPI decodingWarning(png_structp png, png_const_charp warningMsg)
+void PNGAPI decodingWarning(png_structp png, png_const_charp warning)
 {
-    // Mozilla did this, so we will too.
-    // Convert a tRNS warning to be an error (see
-    // http://bugzilla.mozilla.org/show_bug.cgi?id=251381 )
-    if (!strncmp(warningMsg, "Missing PLTE before tRNS", 24))
-        png_error(png, warningMsg);
+    // Turn PLTE tRNS warnings into errors: http://bugzil.la/251381 for details.
+    if (!strncmp(warning, "Missing PLTE before tRNS", 24))
+        png_error(png, warning);
 }
 
 // Called when we have obtained the header information (including the size).
@@ -317,7 +312,8 @@ void PNGImageDecoder::headerAvailable()
     png_uint_32 width = png_get_image_width(png, info);
     png_uint_32 height = png_get_image_height(png, info);
 
-    // Protect against large images.
+    // Protect against large PNGs. See http://bugzil.la/251381 for more details.
+    const unsigned long cMaxPNGSize = 1000000UL;
     if (width > cMaxPNGSize || height > cMaxPNGSize) {
         longjmp(JMPBUF(png), 1);
         return;
