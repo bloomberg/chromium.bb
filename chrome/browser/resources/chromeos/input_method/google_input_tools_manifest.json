@@ -295,7 +295,7 @@
       "description": "Korean input method.",
       "language": "ko",
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:ko_2set&language=ko&passwordLayout=us&name=inputmethod_hangul",
+      "input_view": "inputview.html#id=ko&language=ko&passwordLayout=us&name=inputmethod_hangul",
       "options_page": "hmm_options.html?code=ko-t-i0-und"
     },
     {
