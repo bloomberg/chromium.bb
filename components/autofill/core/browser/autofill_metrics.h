@@ -310,7 +310,7 @@ class AutofillMetrics {
   AutofillMetrics();
   virtual ~AutofillMetrics();
 
-  virtual void LogCreditCardInfoBarMetric(InfoBarMetric metric) const;
+  static void LogCreditCardInfoBarMetric(InfoBarMetric metric);
 
   virtual void LogDeveloperEngagementMetric(
       DeveloperEngagementMetric metric) const;

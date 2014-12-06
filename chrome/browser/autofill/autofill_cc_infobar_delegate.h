@@ -27,21 +27,18 @@ class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Creates an autofill credit card infobar and delegate and adds the infobar
   // to |infobar_service|.
   static void Create(InfoBarService* infobar_service,
-                     const AutofillMetrics* metric_logger,
                      const base::Closure& save_card_callback);
 
 #if defined(UNIT_TEST)
   static scoped_ptr<ConfirmInfoBarDelegate> Create(
-      const AutofillMetrics* metric_logger,
       const base::Closure& save_card_callback) {
     return scoped_ptr<ConfirmInfoBarDelegate>(
-        new AutofillCCInfoBarDelegate(metric_logger, save_card_callback));
+        new AutofillCCInfoBarDelegate(save_card_callback));
   }
 #endif
 
  private:
-  AutofillCCInfoBarDelegate(const AutofillMetrics* metric_logger,
-                            const base::Closure& save_card_callback);
+  explicit AutofillCCInfoBarDelegate(const base::Closure& save_card_callback);
   ~AutofillCCInfoBarDelegate() override;
 
   void LogUserAction(AutofillMetrics::InfoBarMetric user_action);
@@ -57,10 +54,6 @@ class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool Cancel() override;
   base::string16 GetLinkText() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
-
-  // For logging UMA metrics.
-  // Weak reference. Owned by the AutofillManager that initiated this infobar.
-  const AutofillMetrics* metric_logger_;
 
   // The callback to save credit card if the user accepts the infobar.
   base::Closure save_card_callback_;
