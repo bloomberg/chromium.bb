@@ -45,7 +45,7 @@ layer at (0,0) size 800x280
                 text run at (1,1) width 106: "(18, 26) (18, 22)"
             RenderTableCell {TD} at (392,18) size 135x20 [r=1 c=3 rs=1 cs=1]
               RenderButton {INPUT} at (1,1) size 33.56x18 [bgcolor=#C0C0C0]
-                RenderBlock (anonymous) at (8,2.50) size 17.56x13
+                RenderBlock (anonymous) at (8,2) size 17.56x13
                   RenderText {#text} at (0,0) size 18x13
                     text run at (0,0) width 18: "foo"
             RenderTableCell {TD} at (527,19) size 170x18 [r=1 c=4 rs=1 cs=1]
@@ -64,7 +64,7 @@ layer at (0,0) size 800x280
                 text run at (1,1) width 106: "(15, 14) (15, 10)"
             RenderTableCell {TD} at (392,38) size 135x20 [r=2 c=3 rs=1 cs=1]
               RenderButton {INPUT} at (1,1) size 33.56x18 [bgcolor=#C0C0C0]
-                RenderBlock (anonymous) at (8,2.50) size 17.56x13
+                RenderBlock (anonymous) at (8,2) size 17.56x13
                   RenderText {#text} at (0,0) size 18x13
                     text run at (0,0) width 18: "foo"
             RenderTableCell {TD} at (527,39) size 170x18 [r=2 c=4 rs=1 cs=1]
@@ -83,7 +83,7 @@ layer at (0,0) size 800x280
                 text run at (1,1) width 106: "(25, 26) (25, 22)"
             RenderTableCell {TD} at (392,61) size 135x20 [r=3 c=3 rs=1 cs=1]
               RenderButton {INPUT} at (1,1) size 33.56x18 [bgcolor=#C0C0C0]
-                RenderBlock (anonymous) at (8,2.50) size 17.56x13
+                RenderBlock (anonymous) at (8,2) size 17.56x13
                   RenderText {#text} at (0,0) size 18x13
                     text run at (0,0) width 18: "foo"
             RenderTableCell {TD} at (527,62) size 170x18 [r=3 c=4 rs=1 cs=1]
@@ -102,7 +102,7 @@ layer at (0,0) size 800x280
                 text run at (1,1) width 106: "(17, 18) (17, 14)"
             RenderTableCell {TD} at (392,84) size 135x20 [r=4 c=3 rs=1 cs=1]
               RenderButton {INPUT} at (1,1) size 33.56x18 [bgcolor=#C0C0C0]
-                RenderBlock (anonymous) at (8,2.50) size 17.56x13
+                RenderBlock (anonymous) at (8,2) size 17.56x13
                   RenderText {#text} at (0,0) size 18x13
                     text run at (0,0) width 18: "foo"
             RenderTableCell {TD} at (527,85) size 170x18 [r=4 c=4 rs=1 cs=1]
@@ -121,7 +121,7 @@ layer at (0,0) size 800x280
                 text run at (1,1) width 106: "(18, 26) (18, 22)"
             RenderTableCell {TD} at (392,104) size 135x20 [r=5 c=3 rs=1 cs=1]
               RenderButton {INPUT} at (1,1) size 33.56x18 [bgcolor=#C0C0C0]
-                RenderBlock (anonymous) at (8,2.50) size 17.56x13
+                RenderBlock (anonymous) at (8,2) size 17.56x13
                   RenderText {#text} at (0,0) size 18x13
                     text run at (0,0) width 18: "foo"
             RenderTableCell {TD} at (527,105) size 170x18 [r=5 c=4 rs=1 cs=1]
@@ -140,7 +140,7 @@ layer at (0,0) size 800x280
                 text run at (1,1) width 106: "(19, 28) (19, 24)"
             RenderTableCell {TD} at (392,124) size 135x20 [r=6 c=3 rs=1 cs=1]
               RenderButton {INPUT} at (1,1) size 33.56x18 [bgcolor=#C0C0C0]
-                RenderBlock (anonymous) at (8,2.50) size 17.56x13
+                RenderBlock (anonymous) at (8,2) size 17.56x13
                   RenderText {#text} at (0,0) size 18x13
                     text run at (0,0) width 18: "foo"
             RenderTableCell {TD} at (527,125) size 170x18 [r=6 c=4 rs=1 cs=1]
@@ -159,7 +159,7 @@ layer at (0,0) size 800x280
                 text run at (1,1) width 106: "(53, 54) (53, 50)"
             RenderTableCell {TD} at (392,162) size 135x20 [r=7 c=3 rs=1 cs=1]
               RenderButton {INPUT} at (1,1) size 33.56x18 [bgcolor=#C0C0C0]
-                RenderBlock (anonymous) at (8,2.50) size 17.56x13
+                RenderBlock (anonymous) at (8,2) size 17.56x13
                   RenderText {#text} at (0,0) size 18x13
                     text run at (0,0) width 18: "foo"
             RenderTableCell {TD} at (527,163) size 170x18 [r=7 c=4 rs=1 cs=1]

@@ -13,7 +13,7 @@ layer at (0,-234) size 572x834 backgroundClip at (0,42) size 785x558 clip at (0,
     RenderBlock {DIV} at (0,16) size 572.31x800
     RenderBlock (anonymous) at (0,816) size 572.31x18
       RenderButton {INPUT} at (0,0) size 202.27x18 [bgcolor=#C0C0C0]
-        RenderBlock (anonymous) at (8,2.50) size 186.27x13
+        RenderBlock (anonymous) at (8,2) size 186.27x13
           RenderText {#text} at (0,0) size 187x13
             text run at (0,0) width 187: "If you can see this, test has passed"
       RenderText {#text} at (0,0) size 0x0

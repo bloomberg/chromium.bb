@@ -34,7 +34,7 @@ layer at (8,524) size 304x154
         RenderBlock (anonymous) at (0,516) size 135x34
           RenderBR {BR} at (0,0) size 0x16
           RenderButton {INPUT} at (0,16) size 50.97x18 [bgcolor=#C0C0C0]
-            RenderBlock (anonymous) at (8,2.50) size 34.97x13
+            RenderBlock (anonymous) at (8,2) size 34.97x13
               RenderText {#text} at (0,0) size 35x13
                 text run at (0,0) width 35: "Button"
           RenderText {#text} at (0,0) size 0x0
