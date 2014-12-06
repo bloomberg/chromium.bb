@@ -745,7 +745,8 @@ class WebContentsViewAura::WindowObserver
 WebContentsViewAura::WebContentsViewAura(
     WebContentsImpl* web_contents,
     WebContentsViewDelegate* delegate)
-    : web_contents_(web_contents),
+    : WebContentsObserver(web_contents),
+      web_contents_(web_contents),
       delegate_(delegate),
       current_drag_op_(blink::WebDragOperationNone),
       drag_dest_delegate_(NULL),
@@ -1657,6 +1658,12 @@ int WebContentsViewAura::OnPerformDrop(const ui::DropTargetEvent& event) {
   return ConvertFromWeb(current_drag_op_);
 }
 
+void WebContentsViewAura::RenderProcessGone(base::TerminationStatus status) {
+#if defined(OS_WIN)
+  UpdateLegacyHwndVisibility();
+#endif
+}
+
 void WebContentsViewAura::OnWindowVisibilityChanged(aura::Window* window,
                                                     bool visible) {
   // Ignore any visibility changes in the hierarchy below.
@@ -1689,8 +1696,17 @@ void WebContentsViewAura::UpdateWebContentsVisibility(bool visible) {
   }
 
 #if defined(OS_WIN)
+  UpdateLegacyHwndVisibility();
+#endif
+}
+
+#if defined(OS_WIN)
+void WebContentsViewAura::UpdateLegacyHwndVisibility() {
   if (!legacy_hwnd_)
     return;
+
+  bool visible = (window_->IsVisible() &&
+                  web_contents_->GetRenderWidgetHostView());
 
   if (visible && GetNativeView() && GetNativeView()->GetHost()) {
     legacy_hwnd_->UpdateParent(
@@ -1703,10 +1719,8 @@ void WebContentsViewAura::UpdateWebContentsVisibility(bool visible) {
     legacy_hwnd_->UpdateParent(ui::GetHiddenWindow());
     legacy_hwnd_->Hide();
   }
-#endif
 }
 
-#if defined(OS_WIN)
 gfx::NativeViewAccessible
 WebContentsViewAura::GetNativeViewAccessible() {
   BrowserAccessibilityManager* manager =

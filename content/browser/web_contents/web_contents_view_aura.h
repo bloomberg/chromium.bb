@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -56,7 +57,8 @@ class WebContentsViewAura
       public ui::ImplicitAnimationObserver,
       public aura::WindowDelegate,
       public aura::client::DragDropDelegate,
-      public aura::WindowObserver {
+      public aura::WindowObserver,
+      public WebContentsObserver {
  public:
   WebContentsViewAura(WebContentsImpl* web_contents,
                       WebContentsViewDelegate* delegate);
@@ -196,6 +198,9 @@ class WebContentsViewAura
   void OnDragExited() override;
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
 
+  // Overridden from WebContentsObserver:
+  void RenderProcessGone(base::TerminationStatus status) override;
+
   // Overridden from aura::WindowObserver:
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
@@ -205,6 +210,8 @@ class WebContentsViewAura
 #if defined(OS_WIN)
   // Overridden from LegacyRenderWidgetHostHWNDDelegate:
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() override;
+
+  void UpdateLegacyHwndVisibility();
 #endif
 
   scoped_ptr<aura::Window> window_;
