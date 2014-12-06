@@ -7648,6 +7648,56 @@ TEST_F(LayerTreeHostImplVirtualViewportTest,
   }
 }
 
+TEST_F(LayerTreeHostImplVirtualViewportTest,
+       TouchFlingCanLockToViewportLayerAfterBubbling) {
+  gfx::Size content_size = gfx::Size(100, 160);
+  gfx::Size outer_viewport = gfx::Size(50, 80);
+  gfx::Size inner_viewport = gfx::Size(25, 40);
+
+  SetupVirtualViewportLayers(content_size, outer_viewport, inner_viewport);
+
+  LayerImpl* outer_scroll = host_impl_->OuterViewportScrollLayer();
+  LayerImpl* inner_scroll = host_impl_->InnerViewportScrollLayer();
+
+  scoped_ptr<LayerImpl> child =
+      CreateScrollableLayer(10, outer_viewport, outer_scroll);
+  LayerImpl* child_scroll = child.get();
+  outer_scroll->children()[0]->AddChild(child.Pass());
+
+  DrawFrame();
+  {
+    scoped_ptr<ScrollAndScaleSet> scroll_info;
+
+    gfx::Vector2d scroll_delta(0, inner_viewport.height());
+    EXPECT_EQ(InputHandler::ScrollStarted,
+              host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), scroll_delta).did_scroll);
+
+    // The child should have scrolled up to its limit.
+    scroll_info = host_impl_->ProcessScrollDeltas();
+    ASSERT_EQ(1u, scroll_info->scrolls.size());
+    ExpectContains(*scroll_info, child_scroll->id(), scroll_delta);
+    EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), child_scroll);
+
+    // The first |ScrollBy| after the fling should re-lock the scrolling
+    // layer to the first layer that scrolled, the inner viewport scroll layer.
+    EXPECT_EQ(InputHandler::ScrollStarted, host_impl_->FlingScrollBegin());
+    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), scroll_delta).did_scroll);
+    EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), inner_scroll);
+
+    // The inner viewport should have scrolled up to its limit.
+    scroll_info = host_impl_->ProcessScrollDeltas();
+    ASSERT_EQ(2u, scroll_info->scrolls.size());
+    ExpectContains(*scroll_info, child_scroll->id(), scroll_delta);
+    ExpectContains(*scroll_info, inner_scroll->id(), scroll_delta);
+
+    // As the locked layer is at its limit, no further scrolling can occur.
+    EXPECT_FALSE(host_impl_->ScrollBy(gfx::Point(), scroll_delta).did_scroll);
+    EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), inner_scroll);
+    host_impl_->ScrollEnd();
+  }
+}
+
 class LayerTreeHostImplWithImplicitLimitsTest : public LayerTreeHostImplTest {
  public:
   void SetUp() override {
