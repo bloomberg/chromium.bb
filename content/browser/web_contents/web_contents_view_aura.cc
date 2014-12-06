@@ -1472,6 +1472,17 @@ void WebContentsViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
       window_->children()[i]->SetBounds(bounds);
     }
   }
+
+#if defined(OS_WIN)
+  if (!legacy_hwnd_ && window_ && window_->GetHost()) {
+    HWND parent_hwnd = window_->GetHost()->GetAcceleratedWidget();
+    CHECK(parent_hwnd);
+    legacy_hwnd_.reset(LegacyRenderWidgetHostHWND::Create(parent_hwnd, this));
+  }
+
+  if (legacy_hwnd_)
+    legacy_hwnd_->SetBounds(window_->GetBoundsInRootWindow());
+#endif
 }
 
 gfx::NativeCursor WebContentsViewAura::GetCursor(const gfx::Point& point) {
