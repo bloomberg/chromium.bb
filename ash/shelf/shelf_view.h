@@ -304,9 +304,10 @@ class ASH_EXPORT ShelfView : public views::View,
   void OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) override;
   void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override;
 
-  // Returns false if the click which closed the previous menu is the click
-  // which triggered this event.
-  bool IsUsableEvent(const ui::Event& event);
+  // Returns true if the (press down) |event| is a repost event from an event
+  // which just closed the menu of a shelf item. If it occurs on the same shelf
+  // item, we should ignore the call.
+  bool IsRepostEvent(const ui::Event& event);
 
   // Convenience accessor to model_->items().
   const ShelfItem* ShelfItemForView(const views::View* view) const;
@@ -434,6 +435,15 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // True when ripped item from overflow bubble is entered into Shelf.
   bool dragged_off_from_overflow_to_shelf_;
+
+  // True if the event is a repost event from a event which has just closed the
+  // menu of the same shelf item.
+  bool is_repost_event_;
+
+  // Record the index for the last pressed shelf item. This variable is used to
+  // check if a repost event occurs on the same shelf item as previous one. If
+  // so, the repost event should be ignored.
+  int last_pressed_index_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfView);
 };

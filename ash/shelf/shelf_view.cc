@@ -389,7 +389,9 @@ ShelfView::ShelfView(ShelfModel* model,
       layout_manager_(manager),
       overflow_mode_(false),
       main_shelf_(NULL),
-      dragged_off_from_overflow_to_shelf_(false) {
+      dragged_off_from_overflow_to_shelf_(false),
+      is_repost_event_(false),
+      last_pressed_index_(-1) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
   bounds_animator_->AddObserver(this);
@@ -1571,6 +1573,10 @@ void ShelfView::PointerPressedOnButton(views::View* view,
   if (view_model_->view_size() <= 1 || !item_delegate->IsDraggable())
     return;  // View is being deleted or not draggable, ignore request.
 
+  // Only when the repost event occurs on the same shelf item, we should ignore
+  // the call in ShelfView::ButtonPressed(...).
+  is_repost_event_ = IsRepostEvent(event) && (last_pressed_index_ == index);
+
   CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
   drag_view_ = static_cast<ShelfButton*>(view);
   drag_origin_ = gfx::Point(event.x(), event.y());
@@ -1600,6 +1606,9 @@ void ShelfView::PointerDraggedOnButton(views::View* view,
 void ShelfView::PointerReleasedOnButton(views::View* view,
                                         Pointer pointer,
                                         bool canceled) {
+  // Reset |is_repost_event| to false.
+  is_repost_event_ = false;
+
   if (canceled) {
     CancelDrag(-1);
   } else if (drag_pointer_ == pointer) {
@@ -1663,10 +1672,14 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (view_index == -1)
     return;
 
-  // If the previous menu was closed by the same event as this one, we ignore
-  // the call.
-  if (!IsUsableEvent(event))
+  // If the menu was just closed by the same event as this one, we ignore
+  // the call and don't open the menu again. See crbug.com/343005 for more
+  // detail.
+  if (is_repost_event_)
     return;
+
+  // Record the index for the last pressed shelf item.
+  last_pressed_index_ = view_index;
 
   // Don't activate the item twice on double-click. Otherwise the window starts
   // animating open due to the first click, then immediately minimizes due to
@@ -1877,16 +1890,16 @@ void ShelfView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
   }
 }
 
-bool ShelfView::IsUsableEvent(const ui::Event& event) {
+bool ShelfView::IsRepostEvent(const ui::Event& event) {
   if (closing_event_time_ == base::TimeDelta())
-    return true;
+    return false;
 
   base::TimeDelta delta =
       base::TimeDelta(event.time_stamp() - closing_event_time_);
   closing_event_time_ = base::TimeDelta();
-  // TODO(skuhne): This time seems excessive, but it appears that the reposting
-  // takes that long.  Need to come up with a better way of doing this.
-  return (delta.InMilliseconds() < 0 || delta.InMilliseconds() > 130);
+  // If the current (press down) event is a repost event, the time stamp of
+  // these two events should be the same.
+  return (delta.InMilliseconds() == 0);
 }
 
 const ShelfItem* ShelfView::ShelfItemForView(const views::View* view) const {
