@@ -23,6 +23,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "device/battery/android/battery_jni_registrar.h"
+#include "device/vibration/android/vibration_jni_registrar.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
 #include "ui/android/ui_android_jni_registrar.h"
@@ -65,6 +66,9 @@ bool EnsureJniRegistered(JNIEnv* env) {
       return false;
 
     if (!device::android::RegisterBatteryJni(env))
+      return false;
+
+    if (!device::android::RegisterVibrationJni(env))
       return false;
 
     if (!media::RegisterJni(env))

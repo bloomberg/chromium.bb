@@ -103,7 +103,6 @@ class ResourceContext;
 class ServiceRegistry;
 class SiteInstance;
 class SpeechRecognitionManagerDelegate;
-class VibrationProvider;
 class WebContents;
 class WebContentsViewDelegate;
 struct MainFunctionParams;
@@ -566,13 +565,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Contact Viatcheslav Ostapenko at sl.ostapenko@samsung.com for more
   // information.
   virtual LocationProvider* OverrideSystemLocationProvider();
-
-  // Allows an embedder to return its own VibrationProvider implementation.
-  // Return NULL to use the default one for the platform to be created.
-  // FYI: Used by an external project; please don't remove.
-  // Contact Viatcheslav Ostapenko at sl.ostapenko@samsung.com for more
-  // information.
-  virtual VibrationProvider* OverrideVibrationProvider();
 
   // Creates a new DevToolsManagerDelegate. The caller owns the returned value.
   // It's valid to return NULL.

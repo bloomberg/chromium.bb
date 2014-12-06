@@ -3,6 +3,7 @@ include_rules = [
   "+content/public/renderer",
   "+content/child",
   "+device/battery",  # For battery status service.
+  "+device/vibration",
   "+gin",
   "+jingle/glue",
   "+media",  # For audio input/output and audio/video decoding.

@@ -12,6 +12,7 @@
 #include "content/child/blink_platform_impl.h"
 #include "content/common/content_export.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
+#include "device/vibration/vibration_manager.mojom.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebIDBFactory.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
@@ -199,6 +200,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // Use the data previously set via SetMockDevice...DataForTesting() and send
   // them to the registered listener.
   void SendFakeDeviceEventDataForTesting(blink::WebPlatformEventType type);
+  device::VibrationManagerPtr& GetConnectedVibrationManagerService();
 
   scoped_ptr<WebSchedulerImpl> web_scheduler_;
 
@@ -245,6 +247,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_ptr<blink::WebScrollbarBehavior> web_scrollbar_behavior_;
 
   scoped_ptr<BatteryStatusDispatcher> battery_status_dispatcher_;
+
+  // Handle to the Vibration mojo service.
+  device::VibrationManagerPtr vibration_manager_;
 
   IDMap<PlatformEventObserverBase, IDMapOwnPointer> platform_event_observers_;
 

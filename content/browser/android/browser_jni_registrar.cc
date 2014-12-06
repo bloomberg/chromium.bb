@@ -39,7 +39,6 @@
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 #include "content/browser/speech/speech_recognizer_impl_android.h"
 #include "content/browser/time_zone_monitor_android.h"
-#include "content/browser/vibration/vibration_provider_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "mojo/android/system/core_impl.h"
 
@@ -95,7 +94,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"TouchEventSynthesizer",
      content::SyntheticGestureTargetAndroid::RegisterTouchEventSynthesizer},
     {"TracingControllerAndroid", content::RegisterTracingControllerAndroid},
-    {"VibrationProvider", content::VibrationProviderAndroid::Register},
     {"WebContentsAndroid", content::WebContentsAndroid::Register},
     {"WebContentsObserver", content::RegisterWebContentsObserverAndroid},
     {"WebViewStatics", content::RegisterWebViewStatics},

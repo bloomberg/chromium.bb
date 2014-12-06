@@ -102,7 +102,6 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/streams/stream_context.h"
 #include "content/browser/tracing/trace_message_filter.h"
-#include "content/browser/vibration/vibration_message_filter.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
@@ -132,6 +131,7 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/url_constants.h"
 #include "device/battery/battery_monitor_impl.h"
+#include "device/vibration/vibration_manager_impl.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel.h"
@@ -871,7 +871,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   if (browser_command_line.HasSwitch(switches::kEnableMemoryBenchmarking))
     AddFilter(new MemoryBenchmarkMessageFilter());
 #endif
-  AddFilter(new VibrationMessageFilter());
   AddFilter(new PushMessagingMessageFilter(
       GetID(), storage_partition_impl_->GetServiceWorkerContext()));
 #if defined(OS_ANDROID)
@@ -887,6 +886,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 void RenderProcessHostImpl::RegisterMojoServices() {
   mojo_application_host_->service_registry()->AddService(
       base::Bind(&device::BatteryMonitorImpl::Create));
+
+  mojo_application_host_->service_registry()->AddService(
+      base::Bind(&device::VibrationManagerImpl::Create));
 
   mojo_application_host_->service_registry()->AddService(
       base::Bind(&PermissionServiceContext::CreateService,

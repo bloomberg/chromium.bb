@@ -10,6 +10,8 @@
     '../cc/blink/cc_blink.gyp:cc_blink',
     '../device/battery/battery.gyp:device_battery',
     '../device/battery/battery.gyp:device_battery_mojo_bindings',
+    '../device/vibration/vibration.gyp:device_vibration',
+    '../device/vibration/vibration.gyp:device_vibration_mojo_bindings',
     '../gin/gin.gyp:gin',
     '../gpu/gpu.gyp:gpu',
     '../jingle/jingle.gyp:jingle_glue',

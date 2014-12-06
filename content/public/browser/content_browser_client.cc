@@ -295,10 +295,6 @@ LocationProvider* ContentBrowserClient::OverrideSystemLocationProvider() {
   return NULL;
 }
 
-VibrationProvider* ContentBrowserClient::OverrideVibrationProvider() {
-  return NULL;
-}
-
 DevToolsManagerDelegate* ContentBrowserClient::GetDevToolsManagerDelegate() {
   return NULL;
 }

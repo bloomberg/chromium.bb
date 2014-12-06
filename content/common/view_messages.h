@@ -1555,15 +1555,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_WillInsertBody)
 IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateFaviconURL,
                     std::vector<content::FaviconURL> /* candidates */)
 
-// Sent by the renderer to the browser to start a vibration with the given
-// duration.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_Vibrate,
-                     int64 /* milliseconds */)
-
-// Sent by the renderer to the browser to cancel the currently running
-// vibration, if there is one.
-IPC_MESSAGE_CONTROL0(ViewHostMsg_CancelVibration)
-
 // Message sent from renderer to the browser when the element that is focused
 // has been touched. A bool is passed in this message which indicates if the
 // node is editable.

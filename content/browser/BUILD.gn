@@ -26,6 +26,7 @@ source_set("browser") {
     "//content/public/common:common_sources",
     "//crypto",
     "//device/battery",
+    "//device/vibration",
     "//google_apis",
     "//net",
     "//skia",

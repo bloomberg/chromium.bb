@@ -31,6 +31,7 @@ source_set("renderer") {
     "//content/public/common:common_sources",
     "//content/public/common:mojo_bindings",
     "//device/battery:mojo_bindings",
+    "//device/vibration:mojo_bindings",
     "//gin",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",

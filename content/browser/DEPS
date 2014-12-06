@@ -2,6 +2,7 @@ include_rules = [
   "+content/app/strings/grit",  # For generated headers
   "+content/public/browser",
   "+device/battery",  # For battery status service.
+  "+device/vibration",  # For Vibration API
   "+media/audio",  # For audio input for speech input feature.
   "+media/base",  # For Android JNI registration.
   "+media/filters",  # For reporting GPU decoding UMA.
@@ -59,7 +60,6 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebServiceWorkerResponseType.h",
   "+third_party/WebKit/public/platform/WebServiceWorkerState.h",
   "+third_party/WebKit/public/platform/WebString.h",
-  "+third_party/WebKit/public/platform/WebVibration.h",
   "+third_party/WebKit/public/web/mac/WebScrollbarTheme.h",
   "+third_party/WebKit/public/web/WebAXEnums.h",
   "+third_party/WebKit/public/web/WebCompositionUnderline.h",

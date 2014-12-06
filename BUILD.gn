@@ -49,6 +49,7 @@ group("root") {
     "//device/battery",
     "//device/bluetooth",
     "//device/nfc",
+    "//device/vibration",
     "//extensions/browser",
     "//extensions/common",
     "//extensions/common/api",
