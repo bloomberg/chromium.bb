@@ -10,6 +10,7 @@
 
 namespace content {
 
+class LayoutTestBrowserContext;
 class LayoutTestNotificationManager;
 
 class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
@@ -19,6 +20,8 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
 
   LayoutTestContentBrowserClient();
   ~LayoutTestContentBrowserClient() override;
+
+  LayoutTestBrowserContext* GetLayoutTestBrowserContext();
 
   // Will be lazily created when running layout tests.
   LayoutTestNotificationManager* GetLayoutTestNotificationManager();

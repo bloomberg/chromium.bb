@@ -54,6 +54,8 @@ class LayoutTestMessageFilter : public BrowserMessageFilter {
                                         bool permission_granted);
   void OnClearWebNotificationPermissions();
   void OnSimulateWebNotificationClick(const std::string& title);
+  void OnSetPushMessagingPermission(const GURL& origin, bool allowed);
+  void OnClearPushMessagingPermissions();
   void OnAcceptAllCookies(bool accept);
   void OnDeleteAllCookies();
 

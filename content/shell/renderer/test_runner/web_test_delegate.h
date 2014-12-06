@@ -140,6 +140,10 @@ class WebTestDelegate {
   virtual void ClearWebNotificationPermissions() = 0;
   virtual void SimulateWebNotificationClick(const std::string& title) = 0;
 
+  // Controls the Push API.
+  virtual void SetPushMessagingPermission(const GURL& origin, bool allowed) = 0;
+  virtual void ClearPushMessagingPermissions() = 0;
+
   // Controls the device scale factor of the main WebView for hidpi tests.
   virtual void SetDeviceScaleFactor(float factor) = 0;
 

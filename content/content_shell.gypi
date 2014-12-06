@@ -112,6 +112,8 @@
         'shell/browser/layout_test/layout_test_message_filter.h',
         'shell/browser/layout_test/layout_test_notification_manager.cc',
         'shell/browser/layout_test/layout_test_notification_manager.h',
+        'shell/browser/layout_test/layout_test_push_messaging_service.cc',
+        'shell/browser/layout_test/layout_test_push_messaging_service.h',
         'shell/browser/layout_test/layout_test_resource_dispatcher_host_delegate.cc',
         'shell/browser/layout_test/layout_test_resource_dispatcher_host_delegate.h',
         'shell/browser/layout_test/layout_test_url_request_context_getter.cc',

@@ -8,6 +8,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/shell/browser/layout_test/layout_test_browser_context.h"
 #include "content/shell/browser/layout_test/layout_test_message_filter.h"
 #include "content/shell/browser/layout_test/layout_test_notification_manager.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -51,6 +52,11 @@ LayoutTestContentBrowserClient::~LayoutTestContentBrowserClient() {
 
 LayoutTestContentBrowserClient* LayoutTestContentBrowserClient::Get() {
   return g_layout_test_browser_client;
+}
+
+LayoutTestBrowserContext*
+LayoutTestContentBrowserClient::GetLayoutTestBrowserContext() {
+  return static_cast<LayoutTestBrowserContext*>(browser_context());
 }
 
 LayoutTestNotificationManager*

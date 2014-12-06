@@ -432,6 +432,16 @@ void WebKitTestRunner::SimulateWebNotificationClick(const std::string& title) {
   Send(new LayoutTestHostMsg_SimulateWebNotificationClick(routing_id(), title));
 }
 
+void WebKitTestRunner::SetPushMessagingPermission(const GURL& origin,
+                                                  bool allowed) {
+  Send(new LayoutTestHostMsg_SetPushMessagingPermission(routing_id(), origin,
+                                                        allowed));
+}
+
+void WebKitTestRunner::ClearPushMessagingPermissions() {
+  Send(new LayoutTestHostMsg_ClearPushMessagingPermissions(routing_id()));
+}
+
 void WebKitTestRunner::SetDeviceScaleFactor(float factor) {
   content::SetDeviceScaleFactor(render_view(), factor);
 }

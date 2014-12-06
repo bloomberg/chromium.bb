@@ -61,6 +61,8 @@ static_library("content_shell_lib") {
     "browser/layout_test/layout_test_message_filter.h",
     "browser/layout_test/layout_test_notification_manager.cc",
     "browser/layout_test/layout_test_notification_manager.h",
+    "browser/layout_test/layout_test_push_messaging_service.cc",
+    "browser/layout_test/layout_test_push_messaging_service.h",
     "browser/layout_test/layout_test_resource_dispatcher_host_delegate.cc",
     "browser/layout_test/layout_test_resource_dispatcher_host_delegate.h",
     "browser/layout_test/layout_test_url_request_context_getter.cc",

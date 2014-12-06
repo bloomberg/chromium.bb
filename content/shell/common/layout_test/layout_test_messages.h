@@ -28,6 +28,10 @@ IPC_MESSAGE_ROUTED2(LayoutTestHostMsg_GrantWebNotificationPermission,
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_ClearWebNotificationPermissions)
 IPC_MESSAGE_ROUTED1(LayoutTestHostMsg_SimulateWebNotificationClick,
                     std::string /* title */)
+IPC_MESSAGE_ROUTED2(LayoutTestHostMsg_SetPushMessagingPermission,
+                    GURL /* origin */,
+                    bool /* allowed */)
+IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_ClearPushMessagingPermissions)
 IPC_MESSAGE_ROUTED1(LayoutTestHostMsg_AcceptAllCookies,
                     bool /* accept */)
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_DeleteAllCookies)

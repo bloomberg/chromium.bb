@@ -561,9 +561,20 @@ class TestRunner : public WebTestRunner,
   void CopyImageAtAndCapturePixelsAsyncThen(
       int x, int y, const v8::Handle<v8::Function> callback);
 
+  // TODO(mvanouwerkerk): Delete once refactor to platform is complete.
+  // https://crbug.com/389194
   void SetMockPushClientSuccess(const std::string& endpoint,
                                 const std::string& registration_id);
+
+  // TODO(mvanouwerkerk): Delete once refactor to platform is complete.
+  // https://crbug.com/389194
   void SetMockPushClientError(const std::string& message);
+
+  // Sets the origin's permission to use the Push API to granted or denied.
+  void SetPushMessagingPermission(const GURL& origin, bool allowed);
+
+  // Clears all previously granted Push API permissions.
+  void ClearPushMessagingPermissions();
 
   void GetManifestThen(v8::Handle<v8::Function> callback);
 

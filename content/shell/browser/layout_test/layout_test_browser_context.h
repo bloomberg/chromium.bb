@@ -15,6 +15,8 @@ class NetLog;
 namespace content {
 
 class DownloadManagerDelegate;
+class LayoutTestPushMessagingService;
+class PushMessagingService;
 
 class LayoutTestBrowserContext : public ShellBrowserContext {
  public:
@@ -23,6 +25,9 @@ class LayoutTestBrowserContext : public ShellBrowserContext {
 
   // BrowserContext implementation.
   DownloadManagerDelegate* GetDownloadManagerDelegate() override;
+  PushMessagingService* GetPushMessagingService() override;
+
+  LayoutTestPushMessagingService* GetLayoutTestPushMessagingService();
 
  protected:
   ShellURLRequestContextGetter* CreateURLRequestContextGetter(
@@ -30,6 +35,8 @@ class LayoutTestBrowserContext : public ShellBrowserContext {
       URLRequestInterceptorScopedVector request_interceptors) override;
 
  private:
+  scoped_ptr<LayoutTestPushMessagingService> push_messaging_service_;
+
   DISALLOW_COPY_AND_ASSIGN(LayoutTestBrowserContext);
 };
 

@@ -9,8 +9,10 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/push_messaging_service.h"
 #include "content/public/browser/resource_context.h"
 #include "content/shell/browser/layout_test/layout_test_download_manager_delegate.h"
+#include "content/shell/browser/layout_test/layout_test_push_messaging_service.h"
 #include "content/shell/browser/layout_test/layout_test_url_request_context_getter.h"
 #include "content/shell/browser/shell_url_request_context_getter.h"
 
@@ -49,7 +51,7 @@ LayoutTestBrowserContext::CreateURLRequestContextGetter(
 
 DownloadManagerDelegate*
 LayoutTestBrowserContext::GetDownloadManagerDelegate() {
-  if (!download_manager_delegate_.get()) {
+  if (!download_manager_delegate_) {
     download_manager_delegate_.reset(new LayoutTestDownloadManagerDelegate());
     download_manager_delegate_->SetDownloadManager(
         BrowserContext::GetDownloadManager(this));
@@ -58,6 +60,18 @@ LayoutTestBrowserContext::GetDownloadManagerDelegate() {
   }
 
   return download_manager_delegate_.get();
+}
+
+PushMessagingService* LayoutTestBrowserContext::GetPushMessagingService() {
+  if (!push_messaging_service_)
+    push_messaging_service_.reset(new LayoutTestPushMessagingService());
+  return push_messaging_service_.get();
+}
+
+LayoutTestPushMessagingService*
+LayoutTestBrowserContext::GetLayoutTestPushMessagingService() {
+  return static_cast<LayoutTestPushMessagingService*>(
+      GetPushMessagingService());
 }
 
 }  // namespace content
