@@ -1008,8 +1008,8 @@ class GCMChannelStatusSyncerTest : public GCMDriverTest {
   void SetUp() override;
 
   void CompleteGCMChannelStatusRequest(bool enabled, int poll_interval_seconds);
-  bool CompareDelaySeconds(bool expected_delay_seconds,
-                           bool actual_delay_seconds);
+  bool CompareDelaySeconds(int64 expected_delay_seconds,
+                           int64 actual_delay_seconds);
 
   GCMChannelStatusSyncer* syncer() {
     return driver()->gcm_channel_status_syncer_for_testing();
@@ -1057,7 +1057,7 @@ void GCMChannelStatusSyncerTest::CompleteGCMChannelStatusRequest(
 }
 
 bool GCMChannelStatusSyncerTest::CompareDelaySeconds(
-    bool expected_delay_seconds, bool actual_delay_seconds) {
+    int64 expected_delay_seconds, int64 actual_delay_seconds) {
   // Most of time, the actual delay should not be smaller than the expected
   // delay.
   if (actual_delay_seconds >= expected_delay_seconds)
