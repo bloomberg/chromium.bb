@@ -330,6 +330,10 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   SynchronousCompositorFactory* synchronous_compositor_factory =
       SynchronousCompositorFactory::GetInstance();
 
+  // We can't use GPU rasterization on low-end devices, because the Ganesh
+  // cache would consume too much memory.
+  if (base::SysInfo::IsLowEndDevice())
+    settings.gpu_rasterization_enabled = false;
   settings.using_synchronous_renderer_compositor =
       synchronous_compositor_factory;
   settings.record_full_layer = widget->DoesRecordFullLayer();
@@ -353,12 +357,12 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       synchronous_compositor_factory;
   // Memory policy on Android WebView does not depend on whether device is
   // low end, so always use default policy.
-  bool is_low_end_device =
+  bool use_low_memory_policy =
       base::SysInfo::IsLowEndDevice() && !synchronous_compositor_factory;
   // RGBA_4444 textures are only enabled for low end devices
   // and are disabled for Android WebView as it doesn't support the format.
-  settings.renderer_settings.use_rgba_4444_textures = is_low_end_device;
-  if (is_low_end_device) {
+  settings.renderer_settings.use_rgba_4444_textures = use_low_memory_policy;
+  if (use_low_memory_policy) {
     // On low-end we want to be very carefull about killing other
     // apps. So initially we use 50% more memory to avoid flickering
     // or raster-on-demand.
