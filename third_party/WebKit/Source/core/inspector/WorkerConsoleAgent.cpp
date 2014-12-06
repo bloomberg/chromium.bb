@@ -46,6 +46,12 @@ WorkerConsoleAgent::~WorkerConsoleAgent()
 {
 }
 
+void WorkerConsoleAgent::trace(Visitor* visitor)
+{
+    visitor->trace(m_workerGlobalScope);
+    InspectorConsoleAgent::trace(visitor);
+}
+
 ConsoleMessageStorage* WorkerConsoleAgent::messageStorage()
 {
     return m_workerGlobalScope->messageStorage();

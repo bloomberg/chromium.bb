@@ -46,6 +46,7 @@ public:
         return adoptPtrWillBeNoop(new WorkerConsoleAgent(timelineAgent, injectedScriptManager, workerGlobalScope));
     }
     virtual ~WorkerConsoleAgent();
+    virtual void trace(Visitor*) override;
 
     virtual bool isWorkerAgent() override { return true; }
 
@@ -59,7 +60,7 @@ private:
     WorkerConsoleAgent(InspectorTimelineAgent*, InjectedScriptManager*, WorkerGlobalScope*);
     virtual void addInspectedNode(ErrorString*, int nodeId) override;
 
-    WorkerGlobalScope* m_workerGlobalScope;
+    RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
 };
 
 } // namespace blink
