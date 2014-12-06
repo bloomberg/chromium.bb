@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
@@ -31,7 +32,7 @@ class BluetoothGattNotifySession;
 //      service. To achieve this, users can construct instances of
 //      BluetoothGattCharacteristic directly and add it to the desired
 //      BluetoothGattService instance that represents a local service.
-class BluetoothGattCharacteristic {
+class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristic {
  public:
   // Values representing the possible properties of a characteristic, which
   // define how the characteristic can be used. Each of these properties serve

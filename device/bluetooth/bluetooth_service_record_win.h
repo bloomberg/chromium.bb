@@ -9,12 +9,13 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_init_win.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
 
-class BluetoothServiceRecordWin {
+class DEVICE_BLUETOOTH_EXPORT BluetoothServiceRecordWin {
  public:
   BluetoothServiceRecordWin(const std::string& device_address,
                             const std::string& name,

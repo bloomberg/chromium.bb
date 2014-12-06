@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
 
 namespace device {
@@ -19,7 +20,7 @@ class BluetoothAdapterWin;
 class BluetoothServiceRecordWin;
 class BluetoothSocketThread;
 
-class BluetoothDeviceWin : public BluetoothDevice {
+class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin : public BluetoothDevice {
  public:
   explicit BluetoothDeviceWin(
       const BluetoothTaskManagerWin::DeviceState& device_state,

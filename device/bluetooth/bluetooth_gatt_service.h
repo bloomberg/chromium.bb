@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
@@ -31,7 +32,7 @@ class BluetoothGattDescriptor;
 //      adapter is used in the "peripheral" role. Such instances are meant to be
 //      constructed directly and registered. Once registered, a GATT attribute
 //      hierarchy will be visible to remote devices in the "central" role.
-class BluetoothGattService {
+class DEVICE_BLUETOOTH_EXPORT BluetoothGattService {
  public:
   // The Delegate class is used to send certain events that need to be handled
   // when the device is in peripheral mode. The delegate handles read and write

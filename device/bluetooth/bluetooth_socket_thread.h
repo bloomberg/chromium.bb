@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "device/bluetooth/bluetooth_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -19,7 +20,7 @@ namespace device {
 // Thread abstraction used by |BluetoothSocketChromeOS| and |BluetoothSocketWin|
 // to perform IO operations on the underlying platform sockets. An instance of
 // this class can be shared by many active sockets.
-class BluetoothSocketThread
+class DEVICE_BLUETOOTH_EXPORT BluetoothSocketThread
     : public base::RefCountedThreadSafe<BluetoothSocketThread> {
  public:
   static scoped_refptr<BluetoothSocketThread> Get();

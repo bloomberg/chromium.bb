@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "device/bluetooth/bluetooth_export.h"
 
 namespace device {
 
@@ -17,7 +18,7 @@ namespace device {
 // active BluetoothGattConnection object. BluetoothGattConnection objects
 // automatically update themselves, when the connection is terminated by the
 // operating system (e.g. due to user action).
-class BluetoothGattConnection {
+class DEVICE_BLUETOOTH_EXPORT BluetoothGattConnection {
  public:
   // Destructor automatically closes this GATT connection. If this is the last
   // remaining GATT connection and this results in a call to the OS, that call

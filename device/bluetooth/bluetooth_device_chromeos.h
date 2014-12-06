@@ -15,6 +15,7 @@
 #include "chromeos/dbus/bluetooth_gatt_service_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_export.h"
 
 namespace device {
 class BluetoothSocketThread;
@@ -27,7 +28,7 @@ class BluetoothPairingChromeOS;
 
 // The BluetoothDeviceChromeOS class implements BluetoothDevice for the
 // Chrome OS platform.
-class BluetoothDeviceChromeOS
+class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceChromeOS
     : public device::BluetoothDevice,
       public BluetoothGattServiceClient::Observer {
  public:

@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
@@ -18,7 +19,7 @@ namespace device {
 // descriptor. A GATT characteristic descriptor provides further information
 // about a characteristic's value. They can be used to describe the
 // characteristic's features or to control certain behaviors.
-class BluetoothGattDescriptor {
+class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptor {
  public:
   // The Bluetooth Specification declares several predefined descriptors that
   // profiles can use. The following are definitions for the list of UUIDs
