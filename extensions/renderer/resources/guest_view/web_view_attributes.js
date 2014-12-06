@@ -110,20 +110,20 @@ AutosizeDimensionAttribute.prototype.handleMutation = function(
   if (!this.webViewImpl.guest.getId()) {
     return;
   }
-  GuestViewInternal.setAutoSize(this.webViewImpl.guest.getId(), {
+  this.webViewImpl.guest.setAutoSize({
     'enableAutoSize': this.webViewImpl.attributes[
       WebViewConstants.ATTRIBUTE_AUTOSIZE].getValue(),
     'min': {
       'width': this.webViewImpl.attributes[
-          WebViewConstants.ATTRIBUTE_MINWIDTH].getValue(),
+        WebViewConstants.ATTRIBUTE_MINWIDTH].getValue(),
       'height': this.webViewImpl.attributes[
-          WebViewConstants.ATTRIBUTE_MINHEIGHT].getValue()
+        WebViewConstants.ATTRIBUTE_MINHEIGHT].getValue()
     },
     'max': {
       'width': this.webViewImpl.attributes[
-          WebViewConstants.ATTRIBUTE_MAXWIDTH].getValue(),
+        WebViewConstants.ATTRIBUTE_MAXWIDTH].getValue(),
       'height': this.webViewImpl.attributes[
-          WebViewConstants.ATTRIBUTE_MAXHEIGHT].getValue()
+        WebViewConstants.ATTRIBUTE_MAXHEIGHT].getValue()
     }
   });
   return;

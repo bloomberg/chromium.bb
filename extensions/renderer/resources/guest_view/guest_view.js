@@ -19,6 +19,7 @@ var ERROR_MSG_ATTACH = 'Error calling attach: ';
 var ERROR_MSG_CREATE = 'Error calling create: ';
 var ERROR_MSG_DESTROY = 'Error calling destroy: ';
 var ERROR_MSG_DETACH = 'Error calling detach: ';
+var ERROR_MSG_SETAUTOSIZE = 'Error calling setAutoSize: ';
 var ERROR_MSG_ALREADY_ATTACHED = 'The guest has already been attached.';
 var ERROR_MSG_ALREADY_CREATED = 'The guest has already been created.';
 var ERROR_MSG_INVALID_STATE = 'The guest is in an invalid state.';
@@ -198,6 +199,25 @@ GuestViewImpl.prototype.detachImpl = function(callback) {
   this.state = GUEST_STATE_CREATED;
 };
 
+// Internal implementation of setAutoSize().
+GuestViewImpl.prototype.setAutoSizeImpl = function(autoSizeParams, callback) {
+  // Check the current state.
+  switch (this.state) {
+    case GUEST_STATE_ATTACHED:
+    case GUEST_STATE_CREATED:
+      break;
+    case GUEST_STATE_START:
+      window.console.error(ERROR_MSG_SETAUTOSIZE + ERROR_MSG_NOT_CREATED);
+      return;
+    default:
+      window.console.error(ERROR_MSG_SETAUTOSIZE + ERROR_MSG_INVALID_STATE);
+      return;
+  }
+
+  GuestViewInternal.setAutoSize(this.id, autoSizeParams,
+                                this.handleCallback.bind(this, callback));
+};
+
 // The exposed interface to a guestview. Exposes in its API the functions
 // attach(), create(), destroy(), and getId(). All other implementation details
 // are hidden.
@@ -235,6 +255,14 @@ GuestView.prototype.destroy = function(callback) {
 GuestView.prototype.detach = function(callback) {
   var internal = privates(this).internal;
   internal.actionQueue.push(internal.detachImpl.bind(internal, callback));
+  internal.performNextAction();
+};
+
+// Adjusts the guestview's sizing parameters.
+GuestView.prototype.setAutoSize = function(autoSizeParams, callback) {
+  var internal = privates(this).internal;
+  internal.actionQueue.push(internal.setAutoSizeImpl.bind(
+      internal, autoSizeParams, callback));
   internal.performNextAction();
 };
 

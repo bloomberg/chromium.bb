@@ -133,7 +133,7 @@ ExtensionOptionsImpl.prototype.handleAttributeMutation =
     if (!this.guest.getId())
       return;
 
-    GuestViewInternal.setAutoSize(this.guest.getId(), {
+    this.guest.setAutoSize({
       'enableAutoSize': this.element.hasAttribute('autosize'),
       'min': {
         'width': parseInt(this.minwidth || 0),
@@ -182,7 +182,7 @@ ExtensionOptionsImpl.prototype.resize =
   if (newHeight > this.minheight)
     this.minheight = newHeight;
 
-  GuestViewInternal.setAutoSize(this.guest.getId(), {
+  this.guest.setAutoSize({
     'enableAutoSize': this.element.hasAttribute('autosize'),
     'min': {
       'width': parseInt(this.minwidth || 0),

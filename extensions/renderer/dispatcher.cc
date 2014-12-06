@@ -332,7 +332,6 @@ void Dispatcher::DidCreateScriptContext(
     module_system->Require("webView");
     module_system->Require("webViewApiMethods");
     module_system->Require("webViewAttributes");
-    module_system->Require("webViewConstants");
     if (context->GetAvailability("webViewExperimentalInternal")
             .is_available()) {
       module_system->Require("webViewExperimental");
