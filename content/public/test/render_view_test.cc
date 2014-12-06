@@ -198,6 +198,7 @@ void RenderViewTest::SetUp() {
   view_params.session_storage_namespace_id = kInvalidSessionStorageNamespaceId;
   view_params.frame_name = base::string16();
   view_params.swapped_out = false;
+  view_params.replicated_frame_state = FrameReplicationState();
   view_params.proxy_routing_id = MSG_ROUTING_NONE;
   view_params.hidden = false;
   view_params.never_visible = false;

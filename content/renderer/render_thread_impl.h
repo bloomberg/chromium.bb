@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "content/child/child_thread.h"
 #include "content/common/content_export.h"
+#include "content/common/frame_replication_state.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_result_codes.h"
 #include "content/public/renderer/render_thread.h"
@@ -429,7 +430,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
                         int proxy_routing_id);
   void OnCreateNewFrameProxy(int routing_id,
                              int parent_routing_id,
-                             int render_view_routing_id);
+                             int render_view_routing_id,
+                             const FrameReplicationState& replicated_state);
   void OnSetZoomLevelForCurrentURL(const std::string& scheme,
                                    const std::string& host,
                                    double zoom_level);

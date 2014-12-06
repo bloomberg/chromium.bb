@@ -14,7 +14,9 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
+#include "content/common/frame_replication_state.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -87,6 +89,14 @@ class CONTENT_EXPORT FrameTreeNode {
     current_url_ = url;
   }
 
+  void set_current_origin(const url::Origin& origin) {
+    replication_state_.origin = origin;
+  }
+
+  const FrameReplicationState& current_replication_state() const {
+    return replication_state_;
+  }
+
   RenderFrameHostImpl* current_frame_host() const {
     return render_manager_.current_frame_host();
   }
@@ -130,6 +140,10 @@ class CONTENT_EXPORT FrameTreeNode {
   // TODO(creis): Remove this when we can store subframe URLs in the
   // NavigationController.
   GURL current_url_;
+
+  // Track information that needs to be replicated to processes that have
+  // proxies for this frame.
+  FrameReplicationState replication_state_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTreeNode);
 };

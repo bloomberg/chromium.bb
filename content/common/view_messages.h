@@ -15,6 +15,7 @@
 #include "content/common/content_param_traits.h"
 #include "content/common/cookie_data.h"
 #include "content/common/date_time_suggestion.h"
+#include "content/common/frame_replication_state.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/view_message_enums.h"
 #include "content/common/webplugin_geometry.h"
@@ -464,6 +465,11 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
 
   // Whether the RenderView should initially be swapped out.
   IPC_STRUCT_MEMBER(bool, swapped_out)
+
+  // In --site-per-process mode, if this view is |swapped_out|, its main frame
+  // will become a RenderFrameProxy.  |replicated_frame_state| is used to
+  // replicate information such as security origin to that RenderFrameProxy.
+  IPC_STRUCT_MEMBER(content::FrameReplicationState, replicated_frame_state)
 
   // The ID of the proxy object for the main frame in this view. It is only
   // used if |swapped_out| is true.

@@ -239,6 +239,8 @@
       'common/frame_param.cc',
       'common/frame_param.h',
       'common/frame_param_macros.h',
+      'common/frame_replication_state.cc',
+      'common/frame_replication_state.h',
       'common/gamepad_hardware_buffer.h',
       'common/gamepad_messages.h',
       'common/gamepad_param_traits.cc',

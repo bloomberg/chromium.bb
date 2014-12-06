@@ -199,6 +199,43 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, IsRenderFrameLive) {
   EXPECT_TRUE(root->child_at(0)->current_frame_host()->IsRenderFrameLive());
 }
 
+// Ensure that origins are correctly set on navigations.
+IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, OriginSetOnNavigation) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+  GURL main_url(test_server()->GetURL("files/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()->root();
+
+  // Extra '/' is added because the replicated origin is serialized in RFC 6454
+  // format, which dictates no trailing '/', whereas GURL::GetOrigin does put a
+  // '/' at the end.
+  EXPECT_EQ(root->current_replication_state().origin.string() + '/',
+            main_url.GetOrigin().spec());
+
+  GURL frame_url(test_server()->GetURL("files/title1.html"));
+  NavigateFrameToURL(root->child_at(0), frame_url);
+
+  EXPECT_EQ(
+      root->child_at(0)->current_replication_state().origin.string() + '/',
+      frame_url.GetOrigin().spec());
+
+  GURL data_url("data:text/html,foo");
+  EXPECT_TRUE(NavigateToURL(shell(), data_url));
+
+  // Navigating to a data URL should set a unique origin.  This is represented
+  // as "null" per RFC 6454.
+  EXPECT_EQ(root->current_replication_state().origin.string(), "null");
+
+  // Re-navigating to a normal URL should update the origin.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  EXPECT_EQ(root->current_replication_state().origin.string() + '/',
+            main_url.GetOrigin().spec());
+}
+
 class CrossProcessFrameTreeBrowserTest : public ContentBrowserTest {
  public:
   CrossProcessFrameTreeBrowserTest() {}
@@ -275,6 +312,59 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
       child->current_frame_host()->render_view_host()->IsRenderViewLive());
   EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
   EXPECT_TRUE(root->child_at(0)->current_frame_host()->IsRenderFrameLive());
+}
+
+IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
+                       OriginSetOnCrossProcessNavigations) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+  GURL main_url(test_server()->GetURL("files/site_per_process_main.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()->root();
+
+  EXPECT_EQ(root->current_replication_state().origin.string() + '/',
+            main_url.GetOrigin().spec());
+
+  // First frame is an about:blank frame.  Check that its origin is correctly
+  // inherited from the parent.
+  EXPECT_EQ(
+      root->child_at(0)->current_replication_state().origin.string() + '/',
+      main_url.GetOrigin().spec());
+
+  // Second frame loads a same-site page.  Its origin should also be the same
+  // as the parent.
+  EXPECT_EQ(
+      root->child_at(1)->current_replication_state().origin.string() + '/',
+      main_url.GetOrigin().spec());
+
+  // These must stay in scope with replace_host.
+  GURL::Replacements replace_host;
+  std::string foo_com("foo.com");
+
+  // Load cross-site page into the first frame.
+  GURL cross_site_url(test_server()->GetURL("files/title2.html"));
+  replace_host.SetHostStr(foo_com);
+  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
+  NavigateFrameToURL(root->child_at(0), cross_site_url);
+
+  EXPECT_EQ(
+      root->child_at(0)->current_replication_state().origin.string() + '/',
+      cross_site_url.GetOrigin().spec());
+
+  // The root's origin shouldn't have changed.
+  EXPECT_EQ(root->current_replication_state().origin.string() + '/',
+            main_url.GetOrigin().spec());
+
+  GURL data_url("data:text/html,foo");
+  NavigateFrameToURL(root->child_at(1), data_url);
+
+  // Navigating to a data URL should set a unique origin.  This is represented
+  // as "null" per RFC 6454.
+  EXPECT_EQ(root->child_at(1)->current_replication_state().origin.string(),
+            "null");
 }
 
 }  // namespace content

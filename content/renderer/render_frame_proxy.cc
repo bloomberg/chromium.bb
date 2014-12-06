@@ -9,12 +9,14 @@
 #include "base/lazy_instance.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/frame_replication_state.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -54,7 +56,8 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
 RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     int routing_id,
     int parent_routing_id,
-    int render_view_routing_id) {
+    int render_view_routing_id,
+    const FrameReplicationState& replicated_state) {
   scoped_ptr<RenderFrameProxy> proxy(
       new RenderFrameProxy(routing_id, MSG_ROUTING_NONE));
   RenderViewImpl* render_view = NULL;
@@ -75,6 +78,10 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
   }
 
   proxy->Init(web_frame, render_view);
+
+  // Initialize proxy's WebRemoteFrame with the security origin and other
+  // replicated information.
+  proxy->SetReplicatedState(replicated_state);
 
   return proxy.release();
 }
@@ -139,6 +146,12 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
 void RenderFrameProxy::DidCommitCompositorFrame() {
   if (compositing_helper_.get())
     compositing_helper_->DidCommitCompositorFrame();
+}
+
+void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
+  DCHECK(web_frame_);
+  web_frame_->setReplicatedOrigin(blink::WebSecurityOrigin::createFromString(
+      blink::WebString::fromUTF8(state.origin.string())));
 }
 
 bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {

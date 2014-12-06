@@ -520,6 +520,14 @@ void NavigatorImpl::DidNavigate(
       frame_tree->root()->render_manager()->DidNavigateFrame(render_frame_host);
   }
 
+  // Save the origin of the new page.  Do this before calling
+  // DidNavigateFrame(), because the origin needs to be included in the SwapOut
+  // message, which is sent inside DidNavigateFrame().  SwapOut needs the
+  // origin because it creates a RenderFrameProxy that needs this to initialize
+  // its security context. This origin will also be sent to RenderFrameProxies
+  // created via ViewMsg_New and FrameMsg_NewFrameProxy.
+  render_frame_host->frame_tree_node()->set_current_origin(params.origin);
+
   // When using --site-per-process, we notify the RFHM for all navigations,
   // not just main frame navigations.
   if (use_site_per_process) {

@@ -756,13 +756,17 @@ void RenderFrameHostImpl::SwapOut(RenderFrameProxyHost* proxy) {
 
   // There may be no proxy if there are no active views in the process.
   int proxy_routing_id = MSG_ROUTING_NONE;
+  FrameReplicationState replication_state;
   if (proxy) {
     set_render_frame_proxy_host(proxy);
     proxy_routing_id = proxy->GetRoutingID();
+    replication_state = proxy->frame_tree_node()->current_replication_state();
   }
 
-  if (IsRenderFrameLive())
-    Send(new FrameMsg_SwapOut(routing_id_, proxy_routing_id));
+  if (IsRenderFrameLive()) {
+    Send(new FrameMsg_SwapOut(routing_id_, proxy_routing_id,
+                              replication_state));
+  }
 
   if (!GetParent())
     delegate_->SwappedOut(this);

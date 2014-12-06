@@ -10,7 +10,6 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
-
 #include "third_party/WebKit/public/web/WebRemoteFrame.h"
 #include "third_party/WebKit/public/web/WebRemoteFrameClient.h"
 
@@ -26,6 +25,7 @@ namespace content {
 class ChildFrameCompositingHelper;
 class RenderFrameImpl;
 class RenderViewImpl;
+struct FrameReplicationState;
 
 // When a page's frames are rendered by multiple processes, each renderer has a
 // full copy of the frame tree. It has full RenderFrames for the frames it is
@@ -74,9 +74,11 @@ class CONTENT_EXPORT RenderFrameProxy
   // |parent_routing_id| always identifies a RenderFrameProxy (never a
   // RenderFrame) because a new child of a local frame should always start out
   // as a frame, not a proxy.
-  static RenderFrameProxy* CreateFrameProxy(int routing_id,
-                                            int parent_routing_id,
-                                            int render_view_routing_id);
+  static RenderFrameProxy* CreateFrameProxy(
+      int routing_id,
+      int parent_routing_id,
+      int render_view_routing_id,
+      const FrameReplicationState& replicated_state);
 
   // Returns the RenderFrameProxy for the given routing ID.
   static RenderFrameProxy* FromRoutingID(int routing_id);
@@ -92,6 +94,10 @@ class CONTENT_EXPORT RenderFrameProxy
   // Out-of-process child frames receive a signal from RenderWidgetCompositor
   // when a compositor frame has committed.
   void DidCommitCompositorFrame();
+
+  // Pass replicated information, such as security origin, to this
+  // RenderFrameProxy's WebRemoteFrame.
+  void SetReplicatedState(const FrameReplicationState& state);
 
   int routing_id() { return routing_id_; }
   RenderViewImpl* render_view() { return render_view_; }

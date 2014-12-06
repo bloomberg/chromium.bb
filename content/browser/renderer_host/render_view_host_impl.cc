@@ -293,6 +293,11 @@ bool RenderViewHostImpl::CreateRenderView(
   params.min_size = min_size_for_auto_resize();
   params.max_size = max_size_for_auto_resize();
   GetResizeParams(&params.initial_size);
+  if (!is_active_) {
+    params.replicated_frame_state =
+        static_cast<RenderFrameHostImpl*>(GetMainFrame())->frame_tree_node()
+            ->current_replication_state();
+  }
 
   if (!Send(new ViewMsg_New(params)))
     return false;

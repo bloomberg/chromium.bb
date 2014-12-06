@@ -1348,11 +1348,13 @@ void RenderThreadImpl::OnCreateNewFrame(int routing_id,
   RenderFrameImpl::CreateFrame(routing_id, parent_routing_id, proxy_routing_id);
 }
 
-void RenderThreadImpl::OnCreateNewFrameProxy(int routing_id,
-                                             int parent_routing_id,
-                                             int render_view_routing_id) {
-  RenderFrameProxy::CreateFrameProxy(
-      routing_id, parent_routing_id, render_view_routing_id);
+void RenderThreadImpl::OnCreateNewFrameProxy(
+    int routing_id,
+    int parent_routing_id,
+    int render_view_routing_id,
+    const FrameReplicationState& replicated_state) {
+  RenderFrameProxy::CreateFrameProxy(routing_id, parent_routing_id,
+                                     render_view_routing_id, replicated_state);
 }
 
 void RenderThreadImpl::OnSetZoomLevelForCurrentURL(const std::string& scheme,

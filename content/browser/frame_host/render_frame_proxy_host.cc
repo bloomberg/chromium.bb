@@ -142,7 +142,9 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
                                   parent_routing_id,
                                   frame_tree_node_->frame_tree()
                                       ->GetRenderViewHost(site_instance_.get())
-                                      ->GetRoutingID()));
+                                      ->GetRoutingID(),
+                                  frame_tree_node_
+                                      ->current_replication_state()));
 
   return true;
 }

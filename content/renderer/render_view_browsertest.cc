@@ -19,6 +19,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -531,7 +532,8 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   RenderProcess::current()->AddRefProcess();
 
   // Respond to a swap out request.
-  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId);
+  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId,
+                                          content::FrameReplicationState());
 
   // Ensure the swap out commits synchronously.
   EXPECT_NE(initial_page_id, view_page_id());
@@ -544,7 +546,8 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   // It is possible to get another swap out request.  Ensure that we send
   // an ACK, even if we don't have to do anything else.
   render_thread_->sink().ClearMessages();
-  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId);
+  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId,
+                                          content::FrameReplicationState());
   const IPC::Message* msg2 = render_thread_->sink().GetUniqueMessageMatching(
       FrameHostMsg_SwapOut_ACK::ID);
   ASSERT_TRUE(msg2);
@@ -604,7 +607,8 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   ProcessPendingMessages();
 
   // Respond to a swap out request.
-  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId);
+  view()->GetMainRenderFrame()->OnSwapOut(kProxyRoutingId,
+                                          content::FrameReplicationState());
 
   // Check for a OnSwapOutACK.
   const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
@@ -643,6 +647,44 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   EXPECT_NE(GURL("swappedout://"), commit_params.a.url);
 }
 
+// Verify that security origins are replicated properly to RenderFrameProxies
+// when swapping out.
+TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
+  // This test should only run with --site-per-process, since origin
+  // replication only happens in that mode.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess))
+    return;
+
+  LoadHTML(
+      "Hello <iframe src='data:text/html,frame 1'></iframe>"
+      "<iframe src='data:text/html,frame 2'></iframe>");
+  WebFrame* web_frame = frame()->GetWebFrame();
+  RenderFrameImpl* child_frame = static_cast<RenderFrameImpl*>(
+      RenderFrame::FromWebFrame(web_frame->firstChild()));
+
+  // Swap the child frame out and pass a serialized origin to be set for
+  // WebRemoteFrame.
+  content::FrameReplicationState replication_state;
+  replication_state.origin = url::Origin("http://foo.com");
+  child_frame->OnSwapOut(kProxyRoutingId, replication_state);
+
+  // The child frame should now be a WebRemoteFrame.
+  EXPECT_TRUE(web_frame->firstChild()->isWebRemoteFrame());
+
+  // Expect the origin to be updated properly.
+  blink::WebSecurityOrigin origin = web_frame->firstChild()->securityOrigin();
+  EXPECT_EQ(origin.toString(),
+            WebString::fromUTF8(replication_state.origin.string()));
+
+  // Now, swap out the second frame using a unique origin and verify that it is
+  // replicated correctly.
+  replication_state.origin = url::Origin();
+  RenderFrameImpl* child_frame2 = static_cast<RenderFrameImpl*>(
+      RenderFrame::FromWebFrame(web_frame->lastChild()));
+  child_frame2->OnSwapOut(kProxyRoutingId + 1, replication_state);
+  EXPECT_TRUE(web_frame->lastChild()->isWebRemoteFrame());
+  EXPECT_TRUE(web_frame->lastChild()->securityOrigin().isUnique());
+}
 
 // Test that we get the correct UpdateState message when we go back twice
 // quickly without committing.  Regression test for http://crbug.com/58082.

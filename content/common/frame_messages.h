@@ -9,6 +9,7 @@
 #include "content/common/content_param_traits.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_param.h"
+#include "content/common/frame_replication_state.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/navigation_params.h"
 #include "content/common/resource_request_body.h"
@@ -23,6 +24,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -187,6 +189,10 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // are unwound or moved to RenderFrameHost (crbug.com/304341) we can move the
   // client to be based on the routing_id of the RenderFrameHost.
   IPC_STRUCT_MEMBER(int, render_view_routing_id)
+
+  // Origin of the frame.  This will be replicated to any associated
+  // RenderFrameProxies.
+  IPC_STRUCT_MEMBER(url::Origin, origin)
 IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
@@ -207,6 +213,10 @@ IPC_STRUCT_TRAITS_BEGIN(content::CommitNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(page_state)
   IPC_STRUCT_TRAITS_MEMBER(is_overriding_user_agent)
   IPC_STRUCT_TRAITS_MEMBER(browser_navigation_start)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::FrameReplicationState)
+  IPC_STRUCT_TRAITS_MEMBER(origin)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(FrameMsg_Navigate_Params)
@@ -376,10 +386,11 @@ IPC_MESSAGE_CONTROL3(FrameMsg_NewFrame,
 // |routing_id|. The new proxy should be created as a child of the object
 // identified by |parent_routing_id| or as top level if that is
 // MSG_ROUTING_NONE.
-IPC_MESSAGE_CONTROL3(FrameMsg_NewFrameProxy,
+IPC_MESSAGE_CONTROL4(FrameMsg_NewFrameProxy,
                      int /* routing_id */,
                      int /* parent_routing_id */,
-                     int /* render_view_routing_id */)
+                     int /* render_view_routing_id */,
+                     content::FrameReplicationState /* replication_state */)
 
 // Tells the renderer to perform the specified navigation, interrupting any
 // existing navigation.
@@ -392,8 +403,9 @@ IPC_MESSAGE_ROUTED0(FrameMsg_BeforeUnload)
 // Instructs the frame to swap out for a cross-site transition, including
 // running the unload event handler and creating a RenderFrameProxy with the
 // given |proxy_routing_id|. Expects a SwapOut_ACK message when finished.
-IPC_MESSAGE_ROUTED1(FrameMsg_SwapOut,
-                    int /* proxy_routing_id */)
+IPC_MESSAGE_ROUTED2(FrameMsg_SwapOut,
+                    int /* proxy_routing_id */,
+                    content::FrameReplicationState /* replication_state */)
 
 // Instructs the frame to stop the load in progress, if any.
 IPC_MESSAGE_ROUTED0(FrameMsg_Stop)

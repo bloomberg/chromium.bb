@@ -44,6 +44,7 @@
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/drag_messages.h"
 #include "content/common/frame_messages.h"
+#include "content/common/frame_replication_state.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/input_messages.h"
 #include "content/common/pepper_messages.h"
@@ -773,6 +774,9 @@ void RenderViewImpl::Initialize(
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
       proxy) {
     webview()->setMainFrame(proxy->web_frame());
+    // Initialize the WebRemoteFrame with information replicated from the
+    // browser process.
+    proxy->SetReplicatedState(params.replicated_frame_state);
   } else {
     webview()->setMainFrame(main_render_frame_->GetWebFrame());
   }
@@ -1687,6 +1691,7 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   // WebCore will take care of setting the correct name.
   view_params.frame_name = base::string16();
   view_params.swapped_out = false;
+  view_params.replicated_frame_state = FrameReplicationState();
   view_params.proxy_routing_id = MSG_ROUTING_NONE;
   view_params.hidden = (params.disposition == NEW_BACKGROUND_TAB);
   view_params.never_visible = never_visible;
