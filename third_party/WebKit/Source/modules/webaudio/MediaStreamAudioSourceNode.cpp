@@ -41,7 +41,7 @@ MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(AudioContext* con
 }
 
 MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AudioContext* context, MediaStream* mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
-    : AudioSourceNode(context, context->sampleRate())
+    : AudioSourceNode(NodeTypeMediaStreamAudioSource, context, context->sampleRate())
     , m_mediaStream(mediaStream)
     , m_audioTrack(audioTrack)
     , m_audioSourceProvider(audioSourceProvider)
@@ -50,8 +50,6 @@ MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AudioContext* context, Me
     // Default to stereo. This could change depending on the format of the
     // MediaStream's audio track.
     addOutput(AudioNodeOutput::create(this, 2));
-
-    setNodeType(NodeTypeMediaStreamAudioSource);
 
     initialize();
 }

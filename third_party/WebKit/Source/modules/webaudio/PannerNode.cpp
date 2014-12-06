@@ -48,7 +48,7 @@ static void fixNANs(double &x)
 }
 
 PannerNode::PannerNode(AudioContext* context, float sampleRate)
-    : AudioNode(context, sampleRate)
+    : AudioNode(NodeTypePanner, context, sampleRate)
     , m_panningModel(Panner::PanningModelEqualPower)
     , m_distanceModel(DistanceEffect::ModelInverse)
     , m_position(0, 0, 0)
@@ -75,8 +75,6 @@ PannerNode::PannerNode(AudioContext* context, float sampleRate)
     m_channelCount = 2;
     m_channelCountMode = ClampedMax;
     m_channelInterpretation = AudioBus::Speakers;
-
-    setNodeType(NodeTypePanner);
 
     initialize();
 }

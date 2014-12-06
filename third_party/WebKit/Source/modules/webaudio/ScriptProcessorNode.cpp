@@ -89,7 +89,7 @@ ScriptProcessorNode* ScriptProcessorNode::create(AudioContext* context, float sa
 }
 
 ScriptProcessorNode::ScriptProcessorNode(AudioContext* context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
-    : AudioNode(context, sampleRate)
+    : AudioNode(NodeTypeJavaScript, context, sampleRate)
     , m_doubleBufferIndex(0)
     , m_doubleBufferIndexForEvent(0)
     , m_bufferSize(bufferSize)
@@ -107,7 +107,6 @@ ScriptProcessorNode::ScriptProcessorNode(AudioContext* context, float sampleRate
     addInput();
     addOutput(AudioNodeOutput::create(this, numberOfOutputChannels));
 
-    setNodeType(NodeTypeJavaScript);
     m_channelCount = numberOfInputChannels;
     m_channelCountMode = Explicit;
 

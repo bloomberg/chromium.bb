@@ -21,7 +21,7 @@
 namespace blink {
 
 StereoPannerNode::StereoPannerNode(AudioContext* context, float sampleRate)
-    : AudioNode(context, sampleRate)
+    : AudioNode(NodeTypeStereoPanner, context, sampleRate)
     , m_sampleAccuratePanValues(AudioNode::ProcessingSizeInFrames)
 {
     m_pan = AudioParam::create(context, 0);
@@ -34,8 +34,6 @@ StereoPannerNode::StereoPannerNode(AudioContext* context, float sampleRate)
     m_channelCount = 2;
     m_channelCountMode = ClampedMax;
     m_channelInterpretation = AudioBus::Speakers;
-
-    setNodeType(NodeTypeStereoPanner);
 
     initialize();
 }

@@ -41,8 +41,8 @@ namespace blink {
 
 const double AudioScheduledSourceNode::UnknownTime = -1;
 
-AudioScheduledSourceNode::AudioScheduledSourceNode(AudioContext* context, float sampleRate)
-    : AudioSourceNode(context, sampleRate)
+AudioScheduledSourceNode::AudioScheduledSourceNode(NodeType nodeType, AudioContext* context, float sampleRate)
+    : AudioSourceNode(nodeType, context, sampleRate)
     , m_playbackState(UNSCHEDULED_STATE)
     , m_startTime(0)
     , m_endTime(UnknownTime)

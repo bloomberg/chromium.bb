@@ -56,16 +56,6 @@ class AudioNode : public RefCountedGarbageCollectedWillBeGarbageCollectedFinaliz
 public:
     enum { ProcessingSizeInFrames = 128 };
 
-    AudioNode(AudioContext*, float sampleRate);
-    virtual ~AudioNode();
-    // dispose() is called just before the destructor. This must be called in
-    // the main thread, and while the graph lock is held.
-    virtual void dispose();
-    static unsigned instanceCount() { return s_instanceCount; }
-
-    AudioContext* context() { return m_context.get(); }
-    const AudioContext* context() const { return m_context.get(); }
-
     enum NodeType {
         NodeTypeUnknown,
         NodeTypeDestination,
@@ -89,6 +79,16 @@ public:
         NodeTypeEnd
     };
 
+    AudioNode(NodeType, AudioContext*, float sampleRate);
+    virtual ~AudioNode();
+    // dispose() is called just before the destructor. This must be called in
+    // the main thread, and while the graph lock is held.
+    virtual void dispose();
+    static unsigned instanceCount() { return s_instanceCount; }
+
+    AudioContext* context() { return m_context.get(); }
+    const AudioContext* context() const { return m_context.get(); }
+
     enum ChannelCountMode {
         Max,
         ClampedMax,
@@ -97,7 +97,6 @@ public:
 
     NodeType nodeType() const { return m_nodeType; }
     String nodeTypeName() const;
-    void setNodeType(NodeType);
 
     // This object has been connected to another object. This might have
     // existing connections from others.
@@ -210,6 +209,8 @@ protected:
     void updateChannelsForInputs();
 
 private:
+    void setNodeType(NodeType);
+
     volatile bool m_isInitialized;
     NodeType m_nodeType;
     Member<AudioContext> m_context;

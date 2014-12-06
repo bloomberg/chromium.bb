@@ -37,9 +37,8 @@
 namespace blink {
 
 AnalyserNode::AnalyserNode(AudioContext* context, float sampleRate)
-    : AudioBasicInspectorNode(context, sampleRate, 2)
+    : AudioBasicInspectorNode(NodeTypeAnalyser, context, sampleRate, 2)
 {
-    setNodeType(NodeTypeAnalyser);
     initialize();
 }
 

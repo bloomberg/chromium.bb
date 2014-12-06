@@ -45,7 +45,7 @@ namespace blink {
 
 unsigned AudioNode::s_instanceCount = 0;
 
-AudioNode::AudioNode(AudioContext* context, float sampleRate)
+AudioNode::AudioNode(NodeType nodeType, AudioContext* context, float sampleRate)
     : m_isInitialized(false)
     , m_nodeType(NodeTypeUnknown)
     , m_context(context)
@@ -59,6 +59,8 @@ AudioNode::AudioNode(AudioContext* context, float sampleRate)
     , m_channelInterpretation(AudioBus::Speakers)
     , m_newChannelCountMode(Max)
 {
+    setNodeType(nodeType);
+
     m_context->registerLiveNode(*this);
 #if DEBUG_AUDIONODE_REFERENCES
     if (!s_isNodeCountInitialized) {
@@ -154,6 +156,11 @@ String AudioNode::nodeTypeName() const
 
 void AudioNode::setNodeType(NodeType type)
 {
+    // Don't allow the node type to be changed to a different node type, after it's already been
+    // set!  And the new type can't be unknown or end!
+    ASSERT(m_nodeType == NodeTypeUnknown);
+    ASSERT(type != NodeTypeUnknown && type != NodeTypeEnd);
+
     m_nodeType = type;
 
 #if DEBUG_AUDIONODE_REFERENCES

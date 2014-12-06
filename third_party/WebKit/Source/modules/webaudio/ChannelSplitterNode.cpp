@@ -43,7 +43,7 @@ ChannelSplitterNode* ChannelSplitterNode::create(AudioContext* context, float sa
 }
 
 ChannelSplitterNode::ChannelSplitterNode(AudioContext* context, float sampleRate, unsigned numberOfOutputs)
-    : AudioNode(context, sampleRate)
+    : AudioNode(NodeTypeChannelSplitter, context, sampleRate)
 {
     addInput();
 
@@ -51,7 +51,6 @@ ChannelSplitterNode::ChannelSplitterNode(AudioContext* context, float sampleRate
     for (unsigned i = 0; i < numberOfOutputs; ++i)
         addOutput(AudioNodeOutput::create(this, 1));
 
-    setNodeType(NodeTypeChannelSplitter);
     initialize();
 }
 

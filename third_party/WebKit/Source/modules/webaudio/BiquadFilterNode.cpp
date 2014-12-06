@@ -31,11 +31,10 @@
 namespace blink {
 
 BiquadFilterNode::BiquadFilterNode(AudioContext* context, float sampleRate)
-    : AudioBasicProcessorNode(context, sampleRate)
+    : AudioBasicProcessorNode(NodeTypeBiquadFilter, context, sampleRate)
 {
     // Initially setup as lowpass filter.
     m_processor = new BiquadProcessor(context, sampleRate, 1, false);
-    setNodeType(NodeTypeBiquadFilter);
 }
 
 String BiquadFilterNode::type() const

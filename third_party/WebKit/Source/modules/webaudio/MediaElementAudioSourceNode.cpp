@@ -44,7 +44,7 @@ MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(AudioContext* c
 }
 
 MediaElementAudioSourceNode::MediaElementAudioSourceNode(AudioContext* context, HTMLMediaElement* mediaElement)
-    : AudioSourceNode(context, context->sampleRate())
+    : AudioSourceNode(NodeTypeMediaElementAudioSource, context, context->sampleRate())
     , m_mediaElement(mediaElement)
     , m_sourceNumberOfChannels(0)
     , m_sourceSampleRate(0)
@@ -52,8 +52,6 @@ MediaElementAudioSourceNode::MediaElementAudioSourceNode(AudioContext* context, 
     // Default to stereo. This could change depending on what the media element
     // .src is set to.
     addOutput(AudioNodeOutput::create(this, 2));
-
-    setNodeType(NodeTypeMediaElementAudioSource);
 
     initialize();
 }

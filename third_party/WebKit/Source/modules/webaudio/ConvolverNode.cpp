@@ -48,7 +48,7 @@ const size_t MaxFFTSize = 32768;
 namespace blink {
 
 ConvolverNode::ConvolverNode(AudioContext* context, float sampleRate)
-    : AudioNode(context, sampleRate)
+    : AudioNode(NodeTypeConvolver, context, sampleRate)
     , m_normalize(true)
 {
     addInput();
@@ -59,7 +59,6 @@ ConvolverNode::ConvolverNode(AudioContext* context, float sampleRate)
     m_channelCountMode = ClampedMax;
     m_channelInterpretation = AudioBus::Speakers;
 
-    setNodeType(NodeTypeConvolver);
     initialize();
 }
 

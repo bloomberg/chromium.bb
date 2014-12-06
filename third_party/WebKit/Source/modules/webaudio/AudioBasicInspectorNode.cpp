@@ -34,8 +34,8 @@
 
 namespace blink {
 
-AudioBasicInspectorNode::AudioBasicInspectorNode(AudioContext* context, float sampleRate, unsigned outputChannelCount)
-    : AudioNode(context, sampleRate)
+AudioBasicInspectorNode::AudioBasicInspectorNode(NodeType nodeType, AudioContext* context, float sampleRate, unsigned outputChannelCount)
+    : AudioNode(nodeType, context, sampleRate)
     , m_needAutomaticPull(false)
 {
     addInput();

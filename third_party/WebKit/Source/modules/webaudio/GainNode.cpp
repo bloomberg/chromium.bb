@@ -35,7 +35,7 @@
 namespace blink {
 
 GainNode::GainNode(AudioContext* context, float sampleRate)
-    : AudioNode(context, sampleRate)
+    : AudioNode(NodeTypeGain, context, sampleRate)
     , m_lastGain(1.0)
     , m_sampleAccurateGainValues(AudioNode::ProcessingSizeInFrames) // FIXME: can probably share temp buffer in context
 {
@@ -43,8 +43,6 @@ GainNode::GainNode(AudioContext* context, float sampleRate)
 
     addInput();
     addOutput(AudioNodeOutput::create(this, 1));
-
-    setNodeType(NodeTypeGain);
 
     initialize();
 }

@@ -49,7 +49,7 @@ ChannelMergerNode* ChannelMergerNode::create(AudioContext* context, float sample
 }
 
 ChannelMergerNode::ChannelMergerNode(AudioContext* context, float sampleRate, unsigned numberOfInputs)
-    : AudioNode(context, sampleRate)
+    : AudioNode(NodeTypeChannelMerger, context, sampleRate)
     , m_desiredNumberOfOutputChannels(DefaultNumberOfOutputChannels)
 {
     // Create the requested number of inputs.
@@ -57,7 +57,6 @@ ChannelMergerNode::ChannelMergerNode(AudioContext* context, float sampleRate, un
         addInput();
 
     addOutput(AudioNodeOutput::create(this, 1));
-    setNodeType(NodeTypeChannelMerger);
     initialize();
 }
 

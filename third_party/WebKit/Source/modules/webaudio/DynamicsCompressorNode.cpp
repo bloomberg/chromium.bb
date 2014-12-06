@@ -39,12 +39,10 @@ static const unsigned defaultNumberOfOutputChannels = 2;
 namespace blink {
 
 DynamicsCompressorNode::DynamicsCompressorNode(AudioContext* context, float sampleRate)
-    : AudioNode(context, sampleRate)
+    : AudioNode(NodeTypeDynamicsCompressor, context, sampleRate)
 {
     addInput();
     addOutput(AudioNodeOutput::create(this, defaultNumberOfOutputChannels));
-
-    setNodeType(NodeTypeDynamicsCompressor);
 
     m_threshold = AudioParam::create(context, -24);
     m_knee = AudioParam::create(context, 30);

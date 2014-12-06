@@ -53,7 +53,7 @@ AudioBufferSourceNode* AudioBufferSourceNode::create(AudioContext* context, floa
 }
 
 AudioBufferSourceNode::AudioBufferSourceNode(AudioContext* context, float sampleRate)
-    : AudioScheduledSourceNode(context, sampleRate)
+    : AudioScheduledSourceNode(NodeTypeAudioBufferSource, context, sampleRate)
     , m_buffer(nullptr)
     , m_isLooping(false)
     , m_loopStart(0)
@@ -63,8 +63,6 @@ AudioBufferSourceNode::AudioBufferSourceNode(AudioContext* context, float sample
     , m_grainOffset(0.0)
     , m_grainDuration(DefaultGrainDuration)
 {
-    setNodeType(NodeTypeAudioBufferSource);
-
     m_playbackRate = AudioParam::create(context, 1.0);
 
     // Default to mono. A call to setBuffer() will set the number of output

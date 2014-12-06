@@ -37,12 +37,10 @@
 namespace blink {
 
 AudioDestinationNode::AudioDestinationNode(AudioContext* context, float sampleRate)
-    : AudioNode(context, sampleRate)
+    : AudioNode(NodeTypeDestination, context, sampleRate)
     , m_currentSampleFrame(0)
 {
     addInput();
-
-    setNodeType(NodeTypeDestination);
 }
 
 AudioDestinationNode::~AudioDestinationNode()

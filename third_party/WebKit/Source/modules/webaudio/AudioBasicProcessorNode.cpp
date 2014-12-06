@@ -36,8 +36,8 @@
 
 namespace blink {
 
-AudioBasicProcessorNode::AudioBasicProcessorNode(AudioContext* context, float sampleRate)
-    : AudioNode(context, sampleRate)
+AudioBasicProcessorNode::AudioBasicProcessorNode(NodeType nodeType, AudioContext* context, float sampleRate)
+    : AudioNode(nodeType, context, sampleRate)
 {
     addInput();
     addOutput(AudioNodeOutput::create(this, 1));

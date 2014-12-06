@@ -54,7 +54,7 @@ public:
         FINISHED_STATE = 3
     };
 
-    AudioScheduledSourceNode(AudioContext*, float sampleRate);
+    AudioScheduledSourceNode(NodeType, AudioContext*, float sampleRate);
 
     // Scheduling.
     void start(ExceptionState& exceptionState) { start(0.0, exceptionState); }

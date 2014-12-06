@@ -47,15 +47,13 @@ OscillatorNode* OscillatorNode::create(AudioContext* context, float sampleRate)
 }
 
 OscillatorNode::OscillatorNode(AudioContext* context, float sampleRate)
-    : AudioScheduledSourceNode(context, sampleRate)
+    : AudioScheduledSourceNode(NodeTypeOscillator, context, sampleRate)
     , m_type(SINE)
     , m_firstRender(true)
     , m_virtualReadIndex(0)
     , m_phaseIncrements(AudioNode::ProcessingSizeInFrames)
     , m_detuneValues(AudioNode::ProcessingSizeInFrames)
 {
-    setNodeType(NodeTypeOscillator);
-
     // Use musical pitch standard A440 as a default.
     m_frequency = AudioParam::create(context, 440);
     // Default to no detuning.
