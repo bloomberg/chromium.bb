@@ -175,14 +175,9 @@ Status WebViewImpl::TraverseHistory(int delta) {
     // Older versions of WebView on Android (on KitKat and earlier) do not have
     // the Page.getNavigationHistory DevTools command handler, so fall back to
     // using JavaScript to navigate back and forward. WebView reports its build
-    // number as 0, so use the error message to detect if we can't use the
+    // number as 0, so use the error status to detect if we can't use the
     // DevTools command.
-    std::string message;
-    result->GetString("message", &message);
-    if (message == "'Page.getNavigationHistory' wasn't found")
-      return TraverseHistoryWithJavaScript(delta);
-    else
-      return status;
+    return TraverseHistoryWithJavaScript(delta);
   }
 
   int current_index;
