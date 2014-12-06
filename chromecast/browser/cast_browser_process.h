@@ -36,7 +36,7 @@ class CastBrowserProcess {
   CastBrowserProcess();
   virtual ~CastBrowserProcess();
 
-  void SetBrowserContext(scoped_ptr<CastBrowserContext*> browser_context);
+  void SetBrowserContext(scoped_ptr<CastBrowserContext> browser_context);
   void SetCastService(scoped_ptr<CastService> cast_service);
   void SetMetricsHelper(scoped_ptr<metrics::CastMetricsHelper> metrics_helper);
   void SetMetricsServiceClient(
