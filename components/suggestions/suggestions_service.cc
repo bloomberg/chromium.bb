@@ -30,6 +30,8 @@
 #include "url/gurl.h"
 
 using base::CancelableClosure;
+using base::TimeDelta;
+using base::TimeTicks;
 
 namespace suggestions {
 
@@ -74,17 +76,15 @@ void DispatchRequestsAndClear(
   }
 }
 
-// Default delay used when scheduling a blacklist request.
-const int kBlacklistDefaultDelaySec = 1;
+// Default delay used when scheduling a request.
+const int kDefaultSchedulingDelaySec = 1;
 
-// Multiplier on the delay used when scheduling a blacklist request, in case the
-// last observed request was unsuccessful.
-const int kBlacklistBackoffMultiplier = 2;
+// Multiplier on the delay used when re-scheduling a failed request.
+const int kSchedulingBackoffMultiplier = 2;
 
 // Maximum valid delay for scheduling a request. Candidate delays larger than
-// this are rejected. This means the maximum backoff is at least 300 / 2, i.e.
-// 2.5 minutes.
-const int kBlacklistMaxDelaySec = 300;  // 5 minutes
+// this are rejected. This means the maximum backoff is at least 5 / 2 minutes.
+const int kSchedulingMaxDelaySec = 5 * 60;
 
 }  // namespace
 
@@ -110,7 +110,7 @@ SuggestionsService::SuggestionsService(
       suggestions_store_(suggestions_store.Pass()),
       thumbnail_manager_(thumbnail_manager.Pass()),
       blacklist_store_(blacklist_store.Pass()),
-      blacklist_delay_sec_(kBlacklistDefaultDelaySec),
+      scheduling_delay_(TimeDelta::FromSeconds(kDefaultSchedulingDelaySec)),
       suggestions_url_(kSuggestionsURL),
       blacklist_url_prefix_(kSuggestionsBlacklistURLPrefix),
       weak_ptr_factory_(this) {}
@@ -154,21 +154,40 @@ void SuggestionsService::GetPageThumbnail(
 
 void SuggestionsService::BlacklistURL(
     const GURL& candidate_url,
-    const SuggestionsService::ResponseCallback& callback) {
+    const SuggestionsService::ResponseCallback& callback,
+    const base::Closure& fail_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!blacklist_store_->BlacklistUrl(candidate_url)) {
+    fail_callback.Run();
+    return;
+  }
+
   waiting_requestors_.push_back(callback);
-
-  // Blacklist locally for immediate effect and serve the requestors.
-  blacklist_store_->BlacklistUrl(candidate_url);
   ServeFromCache();
+  // Blacklist uploads are scheduled on any request completion, so only schedule
+  // an upload if there is no ongoing request.
+  if (!pending_request_.get()) {
+    ScheduleBlacklistUpload();
+  }
+}
 
-  // Send blacklisting request. Even if this request ends up not being sent
-  // because of an ongoing request, a blacklist request is later scheduled.
-  // TODO(mathp): Currently, this will not send a request if there is already
-  // a request in flight (for suggestions or blacklist). Should we prioritize
-  // blacklist requests since they actually carry a payload?
-  IssueRequestIfNoneOngoing(
-      BuildBlacklistRequestURL(blacklist_url_prefix_, candidate_url));
+void SuggestionsService::UndoBlacklistURL(
+    const GURL& url,
+    const SuggestionsService::ResponseCallback& callback,
+    const base::Closure& fail_callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  TimeDelta time_delta;
+  if (blacklist_store_->GetTimeUntilURLReadyForUpload(url, &time_delta) &&
+      time_delta > TimeDelta::FromSeconds(0) &&
+      blacklist_store_->RemoveUrl(url)) {
+    // The URL was not yet candidate for upload to the server and could be
+    // removed from the blacklist.
+    waiting_requestors_.push_back(callback);
+    ServeFromCache();
+    return;
+  }
+  fail_callback.Run();
 }
 
 // static
@@ -219,7 +238,7 @@ void SuggestionsService::IssueRequestIfNoneOngoing(const GURL& url) {
   }
   pending_request_.reset(CreateSuggestionsRequest(url));
   pending_request_->Start();
-  last_request_started_time_ = base::TimeTicks::Now();
+  last_request_started_time_ = TimeTicks::Now();
 }
 
 net::URLFetcher* SuggestionsService::CreateSuggestionsRequest(const GURL& url) {
@@ -251,7 +270,8 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
     DVLOG(1) << "Suggestions server request failed with error: "
              << request_status.error() << ": "
              << net::ErrorToString(request_status.error());
-    ScheduleBlacklistUpload(false);
+    UpdateBlacklistDelay(false);
+    ScheduleBlacklistUpload();
     return;
   }
 
@@ -261,12 +281,12 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
     // A non-200 response code means that server has no (longer) suggestions for
     // this user. Aggressively clear the cache.
     suggestions_store_->ClearSuggestions();
-    ScheduleBlacklistUpload(false);
+    UpdateBlacklistDelay(false);
+    ScheduleBlacklistUpload();
     return;
   }
 
-  const base::TimeDelta latency =
-      base::TimeTicks::Now() - last_request_started_time_;
+  const TimeDelta latency = TimeTicks::Now() - last_request_started_time_;
   UMA_HISTOGRAM_MEDIUM_TIMES("Suggestions.FetchSuccessLatency", latency);
 
   // Handle a successful blacklisting.
@@ -295,7 +315,8 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
     LogResponseState(RESPONSE_INVALID);
   }
 
-  ScheduleBlacklistUpload(true);
+  UpdateBlacklistDelay(true);
+  ScheduleBlacklistUpload();
 }
 
 void SuggestionsService::Shutdown() {
@@ -317,20 +338,16 @@ void SuggestionsService::FilterAndServe(SuggestionsProfile* suggestions) {
   DispatchRequestsAndClear(*suggestions, &waiting_requestors_);
 }
 
-void SuggestionsService::ScheduleBlacklistUpload(bool last_request_successful) {
+void SuggestionsService::ScheduleBlacklistUpload() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  UpdateBlacklistDelay(last_request_successful);
-
-  // Schedule a blacklist upload task.
-  GURL blacklist_url;
-  if (blacklist_store_->GetFirstUrlFromBlacklist(&blacklist_url)) {
+  TimeDelta time_delta;
+  if (blacklist_store_->GetTimeUntilReadyForUpload(&time_delta)) {
+    // Blacklist cache is not empty: schedule.
     base::Closure blacklist_cb =
         base::Bind(&SuggestionsService::UploadOneFromBlacklist,
                    weak_ptr_factory_.GetWeakPtr());
     base::MessageLoopProxy::current()->PostDelayedTask(
-        FROM_HERE, blacklist_cb,
-        base::TimeDelta::FromSeconds(blacklist_delay_sec_));
+        FROM_HERE, blacklist_cb, time_delta + scheduling_delay_);
   }
 }
 
@@ -338,24 +355,29 @@ void SuggestionsService::UploadOneFromBlacklist() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   GURL blacklist_url;
-  if (!blacklist_store_->GetFirstUrlFromBlacklist(&blacklist_url))
-    return;  // Local blacklist is empty.
+  if (blacklist_store_->GetCandidateForUpload(&blacklist_url)) {
+    // Issue a blacklisting request. Even if this request ends up not being sent
+    // because of an ongoing request, a blacklist request is later scheduled.
+    IssueRequestIfNoneOngoing(
+        BuildBlacklistRequestURL(blacklist_url_prefix_, blacklist_url));
+    return;
+  }
 
-  // Send blacklisting request. Even if this request ends up not being sent
-  // because of an ongoing request, a blacklist request is later scheduled.
-  IssueRequestIfNoneOngoing(
-      BuildBlacklistRequestURL(blacklist_url_prefix_, blacklist_url));
+  // Even though there's no candidate for upload, the blacklist might not be
+  // empty.
+  ScheduleBlacklistUpload();
 }
 
 void SuggestionsService::UpdateBlacklistDelay(bool last_request_successful) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (last_request_successful) {
-    blacklist_delay_sec_ = kBlacklistDefaultDelaySec;
+    scheduling_delay_ = TimeDelta::FromSeconds(kDefaultSchedulingDelaySec);
   } else {
-    int candidate_delay = blacklist_delay_sec_ * kBlacklistBackoffMultiplier;
-    if (candidate_delay < kBlacklistMaxDelaySec)
-      blacklist_delay_sec_ = candidate_delay;
+    TimeDelta candidate_delay =
+        scheduling_delay_ * kSchedulingBackoffMultiplier;
+    if (candidate_delay < TimeDelta::FromSeconds(kSchedulingMaxDelaySec))
+      scheduling_delay_ = candidate_delay;
   }
 }
 

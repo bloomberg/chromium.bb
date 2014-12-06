@@ -304,7 +304,8 @@ void MostVisitedSites::BlacklistUrl(JNIEnv* env,
           base::Bind(
               &MostVisitedSites::OnSuggestionsProfileAvailable,
               weak_ptr_factory_.GetWeakPtr(),
-              base::Owned(new ScopedJavaGlobalRef<jobject>(observer_))));
+              base::Owned(new ScopedJavaGlobalRef<jobject>(observer_))),
+          base::Closure());
       break;
     }
   }

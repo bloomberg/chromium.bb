@@ -69,6 +69,7 @@ class BlacklistStoreTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(BlacklistStoreTest);
 };
 
+// Tests adding, removing to the blacklist and filtering.
 TEST_F(BlacklistStoreTest, BasicInteractions) {
   BlacklistStore blacklist_store(pref_service());
 
@@ -108,24 +109,65 @@ TEST_F(BlacklistStoreTest, BlacklistTwiceSuceeds) {
   EXPECT_TRUE(blacklist_store.BlacklistUrl(GURL(kTestUrlA)));
 }
 
-TEST_F(BlacklistStoreTest, RemoveUnknownUrlSucceeds) {
+TEST_F(BlacklistStoreTest, RemoveUnknownUrlFails) {
   BlacklistStore blacklist_store(pref_service());
-  EXPECT_TRUE(blacklist_store.RemoveUrl(GURL(kTestUrlA)));
+  EXPECT_FALSE(blacklist_store.RemoveUrl(GURL(kTestUrlA)));
 }
 
-TEST_F(BlacklistStoreTest, GetFirstUrlFromBlacklist) {
-  BlacklistStore blacklist_store(pref_service());
+TEST_F(BlacklistStoreTest, TestGetTimeUntilReadyForUpload) {
+  // Tests assumes completion within 1 hour.
+  base::TimeDelta upload_delay = base::TimeDelta::FromHours(1);
+  base::TimeDelta no_delay = base::TimeDelta::FromHours(0);
+  scoped_ptr<BlacklistStore> blacklist_store(
+      new BlacklistStore(pref_service(), upload_delay));
+  base::TimeDelta candidate_delta;
 
-  // Expect GetFirstUrlFromBlacklist fails when blacklist empty.
+  // Blacklist is empty.
+  EXPECT_FALSE(blacklist_store->GetTimeUntilReadyForUpload(&candidate_delta));
+  EXPECT_FALSE(blacklist_store->GetTimeUntilURLReadyForUpload(
+      GURL(kTestUrlA), &candidate_delta));
+
+  // Blacklist contains kTestUrlA.
+  EXPECT_TRUE(blacklist_store->BlacklistUrl(GURL(kTestUrlA)));
+  candidate_delta = upload_delay + base::TimeDelta::FromDays(1);
+  EXPECT_TRUE(blacklist_store->GetTimeUntilReadyForUpload(&candidate_delta));
+  EXPECT_LE(candidate_delta, upload_delay);
+  EXPECT_GE(candidate_delta, no_delay);
+  candidate_delta = upload_delay + base::TimeDelta::FromDays(1);
+  EXPECT_TRUE(blacklist_store->GetTimeUntilURLReadyForUpload(
+      GURL(kTestUrlA), &candidate_delta));
+  EXPECT_LE(candidate_delta, upload_delay);
+  EXPECT_GE(candidate_delta, no_delay);
+  EXPECT_FALSE(blacklist_store->GetTimeUntilURLReadyForUpload(
+    GURL(kTestUrlB), &candidate_delta));
+
+  // There should be no candidate for upload since the upload delay is 1 day.
+  // Note: this is a test that relies on timing.
   GURL retrieved;
-  EXPECT_FALSE(blacklist_store.GetFirstUrlFromBlacklist(&retrieved));
+  EXPECT_FALSE(blacklist_store->GetCandidateForUpload(&retrieved));
 
-  // Blacklist A and B.
+  // Same, but with an upload delay of 0.
+  blacklist_store.reset(new BlacklistStore(pref_service(), no_delay));
+  EXPECT_TRUE(blacklist_store->BlacklistUrl(GURL(kTestUrlA)));
+  candidate_delta = no_delay + base::TimeDelta::FromDays(1);
+  EXPECT_TRUE(blacklist_store->GetTimeUntilReadyForUpload(&candidate_delta));
+  EXPECT_EQ(candidate_delta, no_delay);
+  candidate_delta = no_delay + base::TimeDelta::FromDays(1);
+  EXPECT_TRUE(blacklist_store->GetTimeUntilURLReadyForUpload(
+      GURL(kTestUrlA), &candidate_delta));
+  EXPECT_EQ(candidate_delta, no_delay);
+}
+
+TEST_F(BlacklistStoreTest, GetCandidateForUpload) {
+  BlacklistStore blacklist_store(pref_service(), base::TimeDelta::FromDays(0));
+  // Empty blacklist.
+  GURL retrieved;
+  EXPECT_FALSE(blacklist_store.GetCandidateForUpload(&retrieved));
+
+  // Blacklist A and B. Expect to retrieve A or B.
   EXPECT_TRUE(blacklist_store.BlacklistUrl(GURL(kTestUrlA)));
   EXPECT_TRUE(blacklist_store.BlacklistUrl(GURL(kTestUrlB)));
-
-  // Expect to retrieve A or B.
-  EXPECT_TRUE(blacklist_store.GetFirstUrlFromBlacklist(&retrieved));
+  EXPECT_TRUE(blacklist_store.GetCandidateForUpload(&retrieved));
   std::string retrieved_string = retrieved.spec();
   EXPECT_TRUE(retrieved_string == std::string(kTestUrlA) ||
               retrieved_string == std::string(kTestUrlB));
@@ -137,7 +179,6 @@ TEST_F(BlacklistStoreTest, LogsBlacklistSize) {
   // Create a first store - blacklist is empty at this point.
   scoped_ptr<BlacklistStore> blacklist_store(
       new BlacklistStore(pref_service()));
-
   histogram_tester.ExpectTotalCount("Suggestions.LocalBlacklistSize", 1);
   histogram_tester.ExpectUniqueSample("Suggestions.LocalBlacklistSize", 0, 1);
 
@@ -147,7 +188,6 @@ TEST_F(BlacklistStoreTest, LogsBlacklistSize) {
 
   // Create a new BlacklistStore and verify the counts.
   blacklist_store.reset(new BlacklistStore(pref_service()));
-
   histogram_tester.ExpectTotalCount("Suggestions.LocalBlacklistSize", 2);
   histogram_tester.ExpectBucketCount("Suggestions.LocalBlacklistSize", 0, 1);
   histogram_tester.ExpectBucketCount("Suggestions.LocalBlacklistSize", 2, 1);

@@ -81,10 +81,18 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
       const GURL& url,
       base::Callback<void(const GURL&, const SkBitmap*)> callback);
 
-  // Issue a blacklist request. If there is already a blacklist or suggestions
-  // request in flight, the new blacklist request is ignored.
+  // Adds a URL to the blacklist cache, invoking |callback| on success or
+  // |fail_callback| otherwise. The URL will eventually be uploaded to the
+  // server.
   void BlacklistURL(const GURL& candidate_url,
-                    const ResponseCallback& callback);
+                    const ResponseCallback& callback,
+                    const base::Closure& fail_callback);
+
+  // Removes a URL from the local blacklist, then invokes |callback|. If the URL
+  // cannot be removed, the |fail_callback| is called.
+  void UndoBlacklistURL(const GURL& url,
+                        const ResponseCallback& callback,
+                        const base::Closure& fail_callback);
 
   // Determines which URL a blacklist request was for, irrespective of the
   // request's status. Returns false if |request| is not a blacklist request.
@@ -103,7 +111,10 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
 
  private:
   friend class SuggestionsServiceTest;
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, BlacklistURLFails);
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, BlacklistURL);
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, BlacklistURLRequestFails);
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UndoBlacklistURL);
+  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UndoBlacklistURLFailsHelper);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UpdateBlacklistDelay);
 
   // Creates a request to the suggestions service, properly setting headers.
@@ -125,20 +136,19 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   void FilterAndServe(SuggestionsProfile* suggestions);
 
   // Schedules a blacklisting request if the local blacklist isn't empty.
-  // |last_request_successful| is used for exponentially backing off when
-  // requests fail.
-  void ScheduleBlacklistUpload(bool last_request_successful);
+  void ScheduleBlacklistUpload();
 
   // If the local blacklist isn't empty, picks a URL from it and issues a
   // blacklist request for it.
   void UploadOneFromBlacklist();
 
-  // Updates |blacklist_delay_sec_| based on the success of the last request.
+  // Updates |scheduling_delay_| based on the success of the last request.
   void UpdateBlacklistDelay(bool last_request_successful);
 
   // Test seams.
-  int blacklist_delay() const { return blacklist_delay_sec_; }
-  void set_blacklist_delay(int delay) { blacklist_delay_sec_ = delay; }
+  base::TimeDelta blacklist_delay() const { return scheduling_delay_; }
+  void set_blacklist_delay(base::TimeDelta delay) {
+    scheduling_delay_ = delay; }
 
   base::ThreadChecker thread_checker_;
 
@@ -154,7 +164,7 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   scoped_ptr<BlacklistStore> blacklist_store_;
 
   // Delay used when scheduling a blacklisting task.
-  int blacklist_delay_sec_;
+  base::TimeDelta scheduling_delay_;
 
   // Contains the current suggestions fetch request. Will only have a value
   // while a request is pending, and will be reset by |OnURLFetchComplete| or

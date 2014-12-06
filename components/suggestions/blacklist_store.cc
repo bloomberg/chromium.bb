@@ -4,6 +4,7 @@
 
 #include "components/suggestions/blacklist_store.h"
 
+#include <algorithm>
 #include <set>
 #include <string>
 
@@ -13,8 +14,10 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/suggestions/suggestions_pref_names.h"
 
-namespace suggestions {
+using base::TimeDelta;
+using base::TimeTicks;
 
+namespace suggestions {
 namespace {
 
 void PopulateBlacklistSet(const SuggestionsBlacklist& blacklist_proto,
@@ -36,8 +39,9 @@ void PopulateBlacklistProto(const std::set<std::string>& blacklist_set,
 
 }  // namespace
 
-BlacklistStore::BlacklistStore(PrefService* profile_prefs)
-    : pref_service_(profile_prefs) {
+BlacklistStore::BlacklistStore(PrefService* profile_prefs,
+                               const base::TimeDelta& upload_delay)
+    : pref_service_(profile_prefs), upload_delay_(upload_delay) {
   DCHECK(pref_service_);
 
   // Log the blacklist's size. A single BlacklistStore is created for the
@@ -55,26 +59,97 @@ bool BlacklistStore::BlacklistUrl(const GURL& url) {
 
   SuggestionsBlacklist blacklist_proto;
   LoadBlacklist(&blacklist_proto);
-
   std::set<std::string> blacklist_set;
   PopulateBlacklistSet(blacklist_proto, &blacklist_set);
 
-  if (!blacklist_set.insert(url.spec()).second) {
+  bool success = false;
+  if (blacklist_set.insert(url.spec()).second) {
+    PopulateBlacklistProto(blacklist_set, &blacklist_proto);
+    success = StoreBlacklist(blacklist_proto);
+  } else {
     // |url| was already in the blacklist.
+    success = true;
+  }
+
+  if (success) {
+    // Update the blacklist time.
+    blacklist_times_[url.spec()] = TimeTicks::Now();
+  }
+
+  return success;
+}
+
+bool BlacklistStore::GetTimeUntilReadyForUpload(TimeDelta* delta) {
+  SuggestionsBlacklist blacklist;
+  LoadBlacklist(&blacklist);
+  if (!blacklist.urls_size())
+    return false;
+
+  // Note: the size is non-negative.
+  if (blacklist_times_.size() < static_cast<size_t>(blacklist.urls_size())) {
+    // A url is not in the timestamp map: it's candidate for upload. This can
+    // happen after a restart. Another (undesired) case when this could happen
+    // is if more than one instance were created.
+    *delta = TimeDelta::FromSeconds(0);
     return true;
   }
 
-  PopulateBlacklistProto(blacklist_set, &blacklist_proto);
-  return StoreBlacklist(blacklist_proto);
+  // Find the minimum blacklist time. Note: blacklist_times_ is NOT empty since
+  // blacklist is non-empty and blacklist_times_ contains as many items.
+  TimeDelta min_delay = TimeDelta::Max();
+  for (const auto& kv : blacklist_times_) {
+    min_delay = std::min(upload_delay_ - (TimeTicks::Now() - kv.second),
+                         min_delay);
+  }
+  DCHECK(min_delay != TimeDelta::Max());
+  *delta = std::max(min_delay, TimeDelta::FromSeconds(0));
+
+  return true;
 }
 
-bool BlacklistStore::GetFirstUrlFromBlacklist(GURL* url) {
+bool BlacklistStore::GetTimeUntilURLReadyForUpload(const GURL& url,
+                                                   TimeDelta* delta) {
+  auto it = blacklist_times_.find(url.spec());
+  if (it != blacklist_times_.end()) {
+    // The url is in the timestamps map.
+    *delta = std::max(upload_delay_ - (TimeTicks::Now() - it->second),
+                      TimeDelta::FromSeconds(0));
+    return true;
+  }
+
+  // The url still might be in the blacklist.
   SuggestionsBlacklist blacklist;
   LoadBlacklist(&blacklist);
-  if (!blacklist.urls_size()) return false;
-  GURL blacklisted(blacklist.urls(0));
-  url->Swap(&blacklisted);
-  return true;
+  for (int i = 0; i < blacklist.urls_size(); ++i) {
+    if (blacklist.urls(i) == url.spec()) {
+      *delta = TimeDelta::FromSeconds(0);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool BlacklistStore::GetCandidateForUpload(GURL* url) {
+  SuggestionsBlacklist blacklist;
+  LoadBlacklist(&blacklist);
+
+  for (int i = 0; i < blacklist.urls_size(); ++i) {
+    bool is_candidate = true;
+    auto it = blacklist_times_.find(blacklist.urls(i));
+    if (it != blacklist_times_.end() &&
+        TimeTicks::Now() < it->second + upload_delay_) {
+      // URL was added too recently.
+      is_candidate = false;
+    }
+    if (is_candidate) {
+      GURL blacklisted(blacklist.urls(i));
+      url->Swap(&blacklisted);
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool BlacklistStore::RemoveUrl(const GURL& url) {
@@ -84,13 +159,22 @@ bool BlacklistStore::RemoveUrl(const GURL& url) {
   SuggestionsBlacklist blacklist;
   LoadBlacklist(&blacklist);
 
+  bool removed = false;
   SuggestionsBlacklist updated_blacklist;
   for (int i = 0; i < blacklist.urls_size(); ++i) {
-    if (blacklist.urls(i) != removal_candidate)
+    if (blacklist.urls(i) == removal_candidate) {
+      removed = true;
+    } else {
       updated_blacklist.add_urls(blacklist.urls(i));
+    }
   }
 
-  return StoreBlacklist(updated_blacklist);
+  if (removed && StoreBlacklist(updated_blacklist)) {
+    blacklist_times_.erase(url.spec());
+    return true;
+  }
+
+  return false;
 }
 
 void BlacklistStore::FilterSuggestions(SuggestionsProfile* profile) {
@@ -131,6 +215,11 @@ void BlacklistStore::RegisterProfilePrefs(
   registry->RegisterStringPref(
       prefs::kSuggestionsBlacklist, std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
+
+// Test seam. For simplicity of mock creation.
+BlacklistStore::BlacklistStore() {
 }
 
 bool BlacklistStore::LoadBlacklist(SuggestionsBlacklist* blacklist) {
