@@ -14,11 +14,8 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace mojo {
-class ServiceProvider;
-}
-
 namespace media {
+
 class DemuxerStreamProvider;
 
 // A media::Renderer that proxies to a mojo::MediaRenderer. That
@@ -30,11 +27,9 @@ class DemuxerStreamProvider;
 class MojoRendererImpl : public Renderer, public mojo::MediaRendererClient {
  public:
   // |task_runner| is the TaskRunner on which all methods are invoked.
-  // |media_renderer_provider| is a ServiceProvider from a connected
-  //     Application that is hosting a mojo::MediaRenderer.
   MojoRendererImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      mojo::ServiceProvider* media_renderer_provider);
+      mojo::MediaRendererPtr remote_media_renderer);
   ~MojoRendererImpl() override;
 
   // Renderer implementation.

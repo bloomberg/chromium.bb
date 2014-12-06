@@ -19,12 +19,12 @@ namespace media {
 
 MojoRendererImpl::MojoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    mojo::ServiceProvider* media_renderer_provider)
+    mojo::MediaRendererPtr remote_media_renderer)
     : task_runner_(task_runner),
+      remote_media_renderer_(remote_media_renderer.Pass()),
       weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
-  DCHECK(media_renderer_provider);
-  mojo::ConnectToService(media_renderer_provider, &remote_media_renderer_);
+  DCHECK(remote_media_renderer_);
   remote_media_renderer_.set_client(this);
 }
 

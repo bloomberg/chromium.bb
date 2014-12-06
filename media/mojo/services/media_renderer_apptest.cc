@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/application_test_base.h"
+#include "mojo/public/cpp/application/connect.h"
 
 namespace {
 
@@ -117,7 +118,13 @@ class MojoRendererTest : public mojo::test::ApplicationTestBase {
             ->GetServiceProvider();
   }
 
-  mojo::ServiceProvider* service_provider() { return service_provider_; }
+  mojo::MediaRendererPtr CreateMediaRenderer() {
+    mojo::MediaRendererPtr mojo_media_renderer;
+    mojo::ConnectToService(service_provider_,
+                           &mojo_media_renderer);
+    return mojo_media_renderer.Pass();
+  }
+
   DemuxerStreamProvider* stream_provider() {
     return demuxer_stream_provider_.get();
   }
@@ -142,7 +149,7 @@ void ErrorCallback(PipelineStatus* output, PipelineStatus status) {
 // connection. The test also initializes a media::AudioRendererImpl which
 // will error-out expectedly due to lack of support for decoder selection.
 TEST_F(MojoRendererTest, BasicInitialize) {
-  MojoRendererImpl mojo_renderer_impl(task_runner(), service_provider());
+  MojoRendererImpl mojo_renderer_impl(task_runner(), CreateMediaRenderer());
   PipelineStatus expected_error(PIPELINE_OK);
   mojo_renderer_impl.Initialize(
       stream_provider(), base::MessageLoop::current()->QuitClosure(),
