@@ -43,11 +43,14 @@
 #include "wtf/PassOwnPtr.h"
 
 #include "png.h"
+#if !defined(PNG_LIBPNG_VER_MAJOR) || !defined(PNG_LIBPNG_VER_MINOR)
+#error version error: compile against a versioned libpng.
+#endif
 #if USE(QCMSLIB)
 #include "qcms.h"
 #endif
 
-#if defined(PNG_LIBPNG_VER_MAJOR) && defined(PNG_LIBPNG_VER_MINOR) && (PNG_LIBPNG_VER_MAJOR > 1 || (PNG_LIBPNG_VER_MAJOR == 1 && PNG_LIBPNG_VER_MINOR >= 4))
+#if PNG_LIBPNG_VER_MAJOR > 1 || (PNG_LIBPNG_VER_MAJOR == 1 && PNG_LIBPNG_VER_MINOR >= 4)
 #define JMPBUF(png_ptr) png_jmpbuf(png_ptr)
 #else
 #define JMPBUF(png_ptr) png_ptr->jmpbuf
@@ -398,7 +401,7 @@ void PNGImageDecoder::headerAvailable()
 
     if (m_reader->decodingSizeOnly()) {
         // If we only needed the size, halt the reader.
-#if defined(PNG_LIBPNG_VER_MAJOR) && defined(PNG_LIBPNG_VER_MINOR) && (PNG_LIBPNG_VER_MAJOR > 1 || (PNG_LIBPNG_VER_MAJOR == 1 && PNG_LIBPNG_VER_MINOR >= 5))
+#if PNG_LIBPNG_VER_MAJOR > 1 || (PNG_LIBPNG_VER_MAJOR == 1 && PNG_LIBPNG_VER_MINOR >= 5)
         // '0' argument to png_process_data_pause means: Do not cache unprocessed data.
         m_reader->setReadOffset(m_reader->currentBufferSize() - png_process_data_pause(png, 0));
 #else
