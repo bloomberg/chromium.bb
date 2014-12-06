@@ -258,15 +258,15 @@ def TargetLibsSrc(GitSyncCmds):
   return source
 
 
-def NewlibDirectoryCmds(bias_arch):
+def NewlibDirectoryCmds(bias_arch, newlib_triple):
   commands = []
   target_triple = TripleFromArch(bias_arch)
   if bias_arch != 'i686':
     commands.extend([
-        # We configured newlib with target=le32-nacl to get its pure C
-        # implementation, so rename its output dir (which matches the
-        # target to the output dir for the package we are building)
-        command.Rename(os.path.join('%(output)s', 'le32-nacl'),
+        # For biased bitcode builds, we configured newlib with target=le32-nacl
+        # to get its pure C implementation, so rename its output dir (which
+        # matches the target to the output dir for the package we are building)
+        command.Rename(os.path.join('%(output)s', newlib_triple),
                        os.path.join('%(output)s', target_triple)),
         # Copy nacl_random.h, used by libc++. It uses the IRT, so should
         # be safe to include in the toolchain.
@@ -281,7 +281,7 @@ def NewlibDirectoryCmds(bias_arch):
     # Use multilib-style directories for i686
     multilib_triple = TripleFromArch(MultilibArch(bias_arch))
     commands.extend([
-        command.Rename(os.path.join('%(output)s', 'le32-nacl'),
+        command.Rename(os.path.join('%(output)s', newlib_triple),
                        os.path.join('%(output)s', multilib_triple)),
         command.RemoveDirectory(
             os.path.join('%(output)s', multilib_triple, 'include')),
@@ -314,6 +314,7 @@ def TargetLibs(bias_arch, is_canonical):
   def T(component_name):
     return GSDJoin(component_name, bias_arch)
   target_triple = TripleFromArch(bias_arch)
+  newlib_triple = target_triple if not IsBCArch(bias_arch) else 'le32-nacl'
   clang_libdir = os.path.join(
       '%(output)s', 'lib', 'clang', CLANG_VER, 'lib', target_triple)
   libc_libdir = os.path.join('%(output)s', MultilibLibDir(bias_arch))
@@ -326,7 +327,6 @@ def TargetLibs(bias_arch, is_canonical):
                   ['sh', '%(newlib_src)s/configure'] +
                   TargetTools(bias_arch) +
                   ['CFLAGS_FOR_TARGET=' + TargetLibCflags(bias_arch),
-                  '--disable-multilib',
                   '--prefix=',
                   '--disable-newlib-supplied-syscalls',
                   '--disable-texinfo',
@@ -340,11 +340,11 @@ def TargetLibs(bias_arch, is_canonical):
                   '--enable-newlib-io-long-double',
                   '--enable-newlib-io-c99-formats',
                   '--enable-newlib-mb',
-                  '--target=le32-nacl'
+                  '--target=' + newlib_triple
               ]),
               command.Command(MakeCommand()),
               command.Command(['make', 'DESTDIR=%(abs_output)s', 'install']),
-          ] + NewlibDirectoryCmds(bias_arch)
+          ] + NewlibDirectoryCmds(bias_arch, newlib_triple)
       },
       T('libcxx'): {
           'type': 'build' if is_canonical else 'work',
@@ -504,7 +504,6 @@ def TargetLibs(bias_arch, is_canonical):
       return GSDJoin(lib, pynacl.platform.GetArch3264(bias_arch))
     def TranslatorFile(lib, filename):
       return os.path.join('%(' + TL(lib) + ')s', filename)
-    setjmp_arch = pynacl.platform.GetArch3264(bias_arch).replace('-', '_')
     libs.update({
       T('libs_support'): {
           'type': 'build' if is_canonical else 'work',
@@ -524,14 +523,6 @@ def TargetLibs(bias_arch, is_canonical):
                                    bias_arch, output_dir=clang_libdir),
               BuildTargetObjectCmd('crtend.c', 'crtend.o',
                                    bias_arch, output_dir=clang_libdir),
-              # Put setjmp.o in libgcc.a for now.
-              # TODO(dschuff): it should probably go back into newlib.
-              BuildTargetObjectCmd('setjmp_%s.S' % setjmp_arch, 'setjmp.o',
-                                   bias_arch),
-              command.Command([PnaclTool('ar', bias_arch), 'rs',
-                               command.path.join('%(output)s', clang_libdir,
-                                                 'libgcc.a'),
-                               'setjmp.o']),
           ],
       }
     })
