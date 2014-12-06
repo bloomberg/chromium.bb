@@ -236,6 +236,7 @@ CONTENT_EXPORT extern const char kEnableNativeGpuMemoryBuffers[];
 CONTENT_EXPORT extern const char kUseImageExternal[];
 CONTENT_EXPORT extern const char kUseMobileUserAgent[];
 extern const char kUseSurfaces[];
+CONTENT_EXPORT extern const char kDisableSurfaces[];
 extern const char kUtilityCmdPrefix[];
 CONTENT_EXPORT extern const char kUtilityProcess[];
 extern const char kUtilityProcessAllowedDir[];
