@@ -385,7 +385,7 @@ public:
     bool isMobileDocument() const { return m_isMobileDocument; }
 
     bool isTransitionDocument() const { return m_isTransitionDocument; }
-    void setIsTransitionDocument() { m_isTransitionDocument = true; }
+    void setIsTransitionDocument(bool isTransitionDocument) { m_isTransitionDocument = isTransitionDocument; }
     void hideTransitionElements(const AtomicString& cssSelector);
     void showTransitionElements(const AtomicString& cssSelector);
 

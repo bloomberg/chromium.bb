@@ -328,10 +328,10 @@ void StyleEngine::modifiedStyleSheetCandidateNode(Node* node)
     markTreeScopeDirty(treeScope);
 }
 
-void StyleEngine::enableExitTransitionStylesheets()
+void StyleEngine::setExitTransitionStylesheetsEnabled(bool enabled)
 {
     TreeScopeStyleSheetCollection* collection = ensureStyleSheetCollectionFor(*m_document);
-    collection->enableExitTransitionStylesheets();
+    collection->setExitTransitionStyleshetsEnabled(enabled);
 }
 
 bool StyleEngine::shouldUpdateDocumentStyleSheetCollection(StyleResolverUpdateMode updateMode) const

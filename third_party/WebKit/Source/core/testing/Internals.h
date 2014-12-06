@@ -331,6 +331,7 @@ public:
     PassRefPtrWillBeRawPtr<ClientRectList> getTransitionElementRects();
     void hideAllTransitionElements();
     void showAllTransitionElements();
+    void setExitTransitionStylesheetsEnabled(bool);
 
     unsigned countHitRegions(CanvasRenderingContext2D*);
 

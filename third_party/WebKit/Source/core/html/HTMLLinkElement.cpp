@@ -251,11 +251,11 @@ void HTMLLinkElement::process()
         link->process();
 }
 
-void HTMLLinkElement::enableIfExitTransitionStyle()
+void HTMLLinkElement::setEnabledIfExitTransitionStyle(bool enabled)
 {
     if (m_relAttribute.isTransitionExitingStylesheet()) {
         if (LinkStyle* link = linkStyle())
-            link->setDisabledState(false);
+            link->setDisabledState(!enabled);
     }
 }
 

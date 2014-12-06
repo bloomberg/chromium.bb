@@ -176,14 +176,14 @@ void TreeScopeStyleSheetCollection::clearMediaQueryRuleSetStyleSheets()
     }
 }
 
-void TreeScopeStyleSheetCollection::enableExitTransitionStylesheets()
+void TreeScopeStyleSheetCollection::setExitTransitionStyleshetsEnabled(bool enabled)
 {
     DocumentOrderedList::iterator begin = m_styleSheetCandidateNodes.begin();
     DocumentOrderedList::iterator end = m_styleSheetCandidateNodes.end();
     for (DocumentOrderedList::iterator it = begin; it != end; ++it) {
         Node* node = *it;
         if (isHTMLLinkElement(*node))
-            toHTMLLinkElement(node)->enableIfExitTransitionStyle();
+            toHTMLLinkElement(node)->setEnabledIfExitTransitionStyle(enabled);
     }
 }
 

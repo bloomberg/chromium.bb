@@ -2319,6 +2319,11 @@ void Internals::showAllTransitionElements()
         frame()->document()->showTransitionElements(AtomicString(iter->selector));
 }
 
+void Internals::setExitTransitionStylesheetsEnabled(bool enabled)
+{
+    frame()->document()->styleEngine()->setExitTransitionStylesheetsEnabled(enabled);
+}
+
 void Internals::forcePluginPlaceholder(HTMLElement* element, PassRefPtrWillBeRawPtr<DocumentFragment> fragment, ExceptionState& exceptionState)
 {
     if (!element->isPluginElement()) {

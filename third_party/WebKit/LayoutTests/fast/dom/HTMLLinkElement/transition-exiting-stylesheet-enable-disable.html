@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<link rel="transition-exiting-stylesheet" type="text/css" href="resources/stylesheet.css">
+<script src="../../../resources/js-test.js"></script>
+<script>
+onload = function() {
+  testPassed("Fired Load event.");
+  testStyle = getComputedStyle(document.getElementById("test"));
+  shouldBe('testStyle.color', '"rgb(0, 0, 0)"' /* black */);
+
+  if (internals)
+    internals.setExitTransitionStylesheetsEnabled(true);
+  window.setTimeout(checkEnable, 300);
+}
+
+function checkEnable() {
+  testStyle = getComputedStyle(document.getElementById("test"));
+  shouldBe('testStyle.color', '"rgb(0, 0, 255)"' /* blue */);
+  
+  if (internals)
+    internals.setExitTransitionStylesheetsEnabled(false);
+  window.setTimeout(checkDisable, 300);
+}
+
+function checkDisable() {
+  testStyle = getComputedStyle(document.getElementById("test"));
+  shouldBe('testStyle.color', '"rgb(0, 0, 0)"' /* black */);
+
+  finishJSTest();
+}
+
+description('This test checks that transition-existing-stylesheet link resources are enabled and disabled correctly.');
+
+if (window.testRunner) {
+  testRunner.waitUntilDone();
+  testRunner.dumpAsText();
+  testRunner.dumpResourceResponseMIMETypes();
+}
+
+window.successfullyParsed = true;
+window.jsTestIsAsync = true;
+</script>
+<h1 id="test"><!-- Test element --></h1>

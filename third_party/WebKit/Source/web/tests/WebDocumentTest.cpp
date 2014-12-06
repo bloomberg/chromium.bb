@@ -182,4 +182,28 @@ TEST(WebDocumentTest, HideAndShowTransitionElements)
     EXPECT_EQ(transitionStyle->opacity(), 1);
 }
 
+
+TEST(WebDocumentTest, SetIsTransitionDocument)
+{
+    std::string baseURL = "http://www.test.com:0/";
+    const char* htmlURL = "transition_exit.html";
+    const char* cssURL = "transition_exit.css";
+    URLTestHelpers::registerMockedURLLoad(toKURL(baseURL + htmlURL), WebString::fromUTF8(htmlURL));
+    URLTestHelpers::registerMockedURLLoad(toKURL(baseURL + cssURL), WebString::fromUTF8(cssURL));
+
+    WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(baseURL + htmlURL);
+
+    WebFrame* frame = webViewHelper.webView()->mainFrame();
+    Document* coreDoc = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->document();
+
+    ASSERT_FALSE(coreDoc->isTransitionDocument());
+
+    frame->document().setIsTransitionDocument(true);
+    ASSERT_TRUE(coreDoc->isTransitionDocument());
+
+    frame->document().setIsTransitionDocument(false);
+    ASSERT_FALSE(coreDoc->isTransitionDocument());
+}
+
 }

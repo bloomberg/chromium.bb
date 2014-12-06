@@ -284,10 +284,19 @@ WebSize WebDocument::maximumScrollOffset() const
     return WebSize();
 }
 
+// FIXME: This will be removed once Chrome side implementation is done.
 void WebDocument::setIsTransitionDocument()
 {
     // This ensures the transition UA stylesheet gets applied.
-    unwrap<Document>()->setIsTransitionDocument();
+    unwrap<Document>()->setIsTransitionDocument(true);
+}
+
+void WebDocument::setIsTransitionDocument(bool isTransitionDocument)
+{
+    // When isTransitionDocument is true, it ensures the transition UA
+    // stylesheet gets applied. When isTransitionDocument is false, it ensures
+    // the transition UA stylesheet is not applied when reverting the transition.
+    unwrap<Document>()->setIsTransitionDocument(isTransitionDocument);
 }
 
 void WebDocument::beginExitTransition(const WebString& cssSelector, bool exitToNativeApp)
@@ -295,7 +304,13 @@ void WebDocument::beginExitTransition(const WebString& cssSelector, bool exitToN
     RefPtrWillBeRawPtr<Document> document = unwrap<Document>();
     if (!exitToNativeApp)
         document->hideTransitionElements(cssSelector);
-    document->styleEngine()->enableExitTransitionStylesheets();
+    document->styleEngine()->setExitTransitionStylesheetsEnabled(true);
+}
+
+void WebDocument::revertExitTransition()
+{
+    RefPtrWillBeRawPtr<Document> document = unwrap<Document>();
+    document->styleEngine()->setExitTransitionStylesheetsEnabled(false);
 }
 
 void WebDocument::hideTransitionElements(const WebString& cssSelector)

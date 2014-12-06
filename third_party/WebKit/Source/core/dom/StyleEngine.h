@@ -87,7 +87,7 @@ public:
     void removeStyleSheetCandidateNode(Node*);
     void removeStyleSheetCandidateNode(Node*, TreeScope&);
     void modifiedStyleSheetCandidateNode(Node*);
-    void enableExitTransitionStylesheets();
+    void setExitTransitionStylesheetsEnabled(bool);
 
     void invalidateInjectedStyleSheetCache();
     void updateInjectedStyleSheetCache() const;

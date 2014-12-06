@@ -812,7 +812,7 @@ PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(const Doc
         document->setCookieURL(ownerDocument->cookieURL());
         document->setSecurityOrigin(ownerDocument->securityOrigin());
         if (ownerDocument->isTransitionDocument())
-            document->setIsTransitionDocument();
+            document->setIsTransitionDocument(true);
     }
 
     frame->loader().didBeginDocument(dispatch);

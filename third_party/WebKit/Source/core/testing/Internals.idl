@@ -290,6 +290,7 @@
     ClientRectList getTransitionElementRects();
     void hideAllTransitionElements();
     void showAllTransitionElements();
+    void setExitTransitionStylesheetsEnabled(boolean enabled);
 
     [RaisesException, TypeChecking=Interface] void forcePluginPlaceholder(HTMLElement plugin, DocumentFragment fragment);
     [RaisesException, TypeChecking=Interface] void forcePluginPlaceholder(HTMLElement plugin, PluginPlaceholderOptions options);

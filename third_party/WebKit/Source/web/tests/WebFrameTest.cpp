@@ -4862,7 +4862,7 @@ TEST_F(WebFrameTest, NavigateToSandboxedMarkup)
     WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad("about:blank", true, &webFrameClient);
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
 
-    frame->document().setIsTransitionDocument();
+    frame->document().setIsTransitionDocument(true);
 
     std::string markup("<div id='foo'></div><script>document.getElementById('foo').setAttribute('dir', 'rtl')</script>");
     frame->navigateToSandboxedMarkup(WebData(markup.data(), markup.length()));
