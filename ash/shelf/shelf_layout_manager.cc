@@ -1031,7 +1031,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_SHOWN;
 
   const std::vector<aura::Window*> windows =
-      ash::MruWindowTracker::BuildWindowList(false);
+      ash::MruWindowTracker::BuildWindowList();
 
   // Process the window list and check if there are any visible windows.
   bool visible_window = false;

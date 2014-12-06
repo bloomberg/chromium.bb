@@ -45,20 +45,17 @@ void AddDraggedWindows(aura::Window* root,
   }
 }
 
-// Returns whether |w1| should be considered less recently used than |w2|. This
+// Returns whether |w1| should be considered more recently used than |w2|. This
 // is used for a stable sort to move minimized windows to the LRU end of the
 // list.
 bool CompareWindowState(aura::Window* w1, aura::Window* w2) {
-  return ash::wm::IsWindowMinimized(w1) && !ash::wm::IsWindowMinimized(w2);
+  return !(ash::wm::IsWindowMinimized(w1) && !ash::wm::IsWindowMinimized(w2));
 }
 
 // Returns a list of windows ordered by their stacking order.
 // If |mru_windows| is passed, these windows are moved to the front of the list.
-// If |top_most_at_end|, the list is returned in descending (bottom-most / least
-// recently used) order.
 MruWindowTracker::WindowList BuildWindowListInternal(
-    const std::list<aura::Window*>* mru_windows,
-    bool top_most_at_end) {
+    const std::list<aura::Window*>* mru_windows) {
   MruWindowTracker::WindowList windows;
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
@@ -111,12 +108,9 @@ MruWindowTracker::WindowList BuildWindowListInternal(
     }
   }
 
-  // Move minimized windows to the beginning (LRU end) of the list.
-  std::stable_sort(windows.begin(), windows.end(), CompareWindowState);
-
   // Window cycling expects the topmost window at the front of the list.
-  if (!top_most_at_end)
-    std::reverse(windows.begin(), windows.end());
+  // Move minimized windows to the end (LRU end) of the list.
+  std::stable_sort(windows.begin(), windows.end(), CompareWindowState);
 
   return windows;
 }
@@ -143,13 +137,12 @@ MruWindowTracker::~MruWindowTracker() {
 }
 
 // static
-MruWindowTracker::WindowList MruWindowTracker::BuildWindowList(
-    bool top_most_at_end) {
-  return BuildWindowListInternal(NULL, top_most_at_end);
+MruWindowTracker::WindowList MruWindowTracker::BuildWindowList() {
+  return BuildWindowListInternal(NULL);
 }
 
 MruWindowTracker::WindowList MruWindowTracker::BuildMruWindowList() {
-  return BuildWindowListInternal(&mru_windows_, false);
+  return BuildWindowListInternal(&mru_windows_);
 }
 
 void MruWindowTracker::SetIgnoreActivations(bool ignore) {
