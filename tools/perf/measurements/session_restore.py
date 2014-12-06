@@ -56,7 +56,7 @@ class SessionRestore(startup.Startup):
     for page in page_set:
       if page.is_local:
         continue
-      wpr_archive_name = page_set.WprFilePathForPage(page)
+      wpr_archive_name = page_set.WprFilePathForUserStory(page)
       wpr_archive_names_to_page_urls[wpr_archive_name].append(page.url)
 
     # Reject any pageset that contains more than one WPR archive.
