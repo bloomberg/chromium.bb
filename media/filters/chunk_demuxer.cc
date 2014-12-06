@@ -106,7 +106,8 @@ class SourceState {
   void Init(const StreamParser::InitCB& init_cb,
             bool allow_audio,
             bool allow_video,
-            const StreamParser::NeedKeyCB& need_key_cb,
+            const StreamParser::EncryptedMediaInitDataCB&
+                encrypted_media_init_data_cb,
             const NewTextTrackCB& new_text_track_cb);
 
   // Appends new data to the StreamParser.
@@ -281,23 +282,21 @@ SourceState::~SourceState() {
   STLDeleteValues(&text_stream_map_);
 }
 
-void SourceState::Init(const StreamParser::InitCB& init_cb,
-                       bool allow_audio,
-                       bool allow_video,
-                       const StreamParser::NeedKeyCB& need_key_cb,
-                       const NewTextTrackCB& new_text_track_cb) {
+void SourceState::Init(
+    const StreamParser::InitCB& init_cb,
+    bool allow_audio,
+    bool allow_video,
+    const StreamParser::EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
+    const NewTextTrackCB& new_text_track_cb) {
   new_text_track_cb_ = new_text_track_cb;
   init_cb_ = init_cb;
 
   stream_parser_->Init(
       base::Bind(&SourceState::OnSourceInitDone, base::Unretained(this)),
-      base::Bind(&SourceState::OnNewConfigs,
-                 base::Unretained(this),
-                 allow_audio,
-                 allow_video),
+      base::Bind(&SourceState::OnNewConfigs, base::Unretained(this),
+                 allow_audio, allow_video),
       base::Bind(&SourceState::OnNewBuffers, base::Unretained(this)),
-      new_text_track_cb_.is_null(),
-      need_key_cb,
+      new_text_track_cb_.is_null(), encrypted_media_init_data_cb,
       base::Bind(&SourceState::OnNewMediaSegment, base::Unretained(this)),
       base::Bind(&SourceState::OnEndOfMediaSegment, base::Unretained(this)),
       log_cb_);
@@ -1103,16 +1102,17 @@ void ChunkDemuxerStream::CompletePendingReadIfPossible_Locked() {
   base::ResetAndReturn(&read_cb_).Run(status, buffer);
 }
 
-ChunkDemuxer::ChunkDemuxer(const base::Closure& open_cb,
-                           const NeedKeyCB& need_key_cb,
-                           const LogCB& log_cb,
-                           const scoped_refptr<MediaLog>& media_log,
-                           bool splice_frames_enabled)
+ChunkDemuxer::ChunkDemuxer(
+    const base::Closure& open_cb,
+    const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
+    const LogCB& log_cb,
+    const scoped_refptr<MediaLog>& media_log,
+    bool splice_frames_enabled)
     : state_(WAITING_FOR_INIT),
       cancel_next_seek_(false),
       host_(NULL),
       open_cb_(open_cb),
-      need_key_cb_(need_key_cb),
+      encrypted_media_init_data_cb_(encrypted_media_init_data_cb),
       enable_text_(false),
       log_cb_(log_cb),
       media_log_(media_log),
@@ -1121,7 +1121,7 @@ ChunkDemuxer::ChunkDemuxer(const base::Closure& open_cb,
       liveness_(DemuxerStream::LIVENESS_UNKNOWN),
       splice_frames_enabled_(splice_frames_enabled) {
   DCHECK(!open_cb_.is_null());
-  DCHECK(!need_key_cb_.is_null());
+  DCHECK(!encrypted_media_init_data_cb_.is_null());
 }
 
 void ChunkDemuxer::Initialize(
@@ -1286,10 +1286,7 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
 
   source_state->Init(
       base::Bind(&ChunkDemuxer::OnSourceInitDone, base::Unretained(this)),
-      has_audio,
-      has_video,
-      need_key_cb_,
-      new_text_track_cb);
+      has_audio, has_video, encrypted_media_init_data_cb_, new_text_track_cb);
 
   source_state_map_[id] = source_state.release();
   return kOk;

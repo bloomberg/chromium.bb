@@ -54,14 +54,15 @@ MPEGAudioStreamParserBase::MPEGAudioStreamParserBase(uint32 start_code_mask,
 
 MPEGAudioStreamParserBase::~MPEGAudioStreamParserBase() {}
 
-void MPEGAudioStreamParserBase::Init(const InitCB& init_cb,
-                                     const NewConfigCB& config_cb,
-                                     const NewBuffersCB& new_buffers_cb,
-                                     bool ignore_text_tracks,
-                                     const NeedKeyCB& need_key_cb,
-                                     const NewMediaSegmentCB& new_segment_cb,
-                                     const base::Closure& end_of_segment_cb,
-                                     const LogCB& log_cb) {
+void MPEGAudioStreamParserBase::Init(
+    const InitCB& init_cb,
+    const NewConfigCB& config_cb,
+    const NewBuffersCB& new_buffers_cb,
+    bool ignore_text_tracks,
+    const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
+    const NewMediaSegmentCB& new_segment_cb,
+    const base::Closure& end_of_segment_cb,
+    const LogCB& log_cb) {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, UNINITIALIZED);
   init_cb_ = init_cb;

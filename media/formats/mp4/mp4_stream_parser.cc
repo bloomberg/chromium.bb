@@ -42,27 +42,28 @@ MP4StreamParser::MP4StreamParser(const std::set<int>& audio_object_types,
 
 MP4StreamParser::~MP4StreamParser() {}
 
-void MP4StreamParser::Init(const InitCB& init_cb,
-                           const NewConfigCB& config_cb,
-                           const NewBuffersCB& new_buffers_cb,
-                           bool /* ignore_text_tracks */ ,
-                           const NeedKeyCB& need_key_cb,
-                           const NewMediaSegmentCB& new_segment_cb,
-                           const base::Closure& end_of_segment_cb,
-                           const LogCB& log_cb) {
+void MP4StreamParser::Init(
+    const InitCB& init_cb,
+    const NewConfigCB& config_cb,
+    const NewBuffersCB& new_buffers_cb,
+    bool /* ignore_text_tracks */,
+    const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
+    const NewMediaSegmentCB& new_segment_cb,
+    const base::Closure& end_of_segment_cb,
+    const LogCB& log_cb) {
   DCHECK_EQ(state_, kWaitingForInit);
   DCHECK(init_cb_.is_null());
   DCHECK(!init_cb.is_null());
   DCHECK(!config_cb.is_null());
   DCHECK(!new_buffers_cb.is_null());
-  DCHECK(!need_key_cb.is_null());
+  DCHECK(!encrypted_media_init_data_cb.is_null());
   DCHECK(!end_of_segment_cb.is_null());
 
   ChangeState(kParsingBoxes);
   init_cb_ = init_cb;
   config_cb_ = config_cb;
   new_buffers_cb_ = new_buffers_cb;
-  need_key_cb_ = need_key_cb;
+  encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
   new_segment_cb_ = new_segment_cb;
   end_of_segment_cb_ = end_of_segment_cb;
   log_cb_ = log_cb;
@@ -316,7 +317,9 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
   if (!init_cb_.is_null())
     base::ResetAndReturn(&init_cb_).Run(true, params);
 
-  EmitNeedKeyIfNecessary(moov_->pssh);
+  if (!moov_->pssh.empty())
+    OnEncryptedMediaInitData(moov_->pssh);
+
   return true;
 }
 
@@ -328,20 +331,20 @@ bool MP4StreamParser::ParseMoof(BoxReader* reader) {
     runs_.reset(new TrackRunIterator(moov_.get(), log_cb_));
   RCHECK(runs_->Init(moof));
   RCHECK(ComputeHighestEndOffset(moof));
-  EmitNeedKeyIfNecessary(moof.pssh);
+
+  if (!moof.pssh.empty())
+    OnEncryptedMediaInitData(moof.pssh);
+
   new_segment_cb_.Run();
   ChangeState(kWaitingForSampleData);
   return true;
 }
 
-void MP4StreamParser::EmitNeedKeyIfNecessary(
+void MP4StreamParser::OnEncryptedMediaInitData(
     const std::vector<ProtectionSystemSpecificHeader>& headers) {
   // TODO(strobe): ensure that the value of init_data (all PSSH headers
   // concatenated in arbitrary order) matches the EME spec.
   // See https://www.w3.org/Bugs/Public/show_bug.cgi?id=17673.
-  if (headers.empty())
-    return;
-
   size_t total_size = 0;
   for (size_t i = 0; i < headers.size(); i++)
     total_size += headers[i].raw_box.size();
@@ -353,7 +356,7 @@ void MP4StreamParser::EmitNeedKeyIfNecessary(
            headers[i].raw_box.size());
     pos += headers[i].raw_box.size();
   }
-  need_key_cb_.Run(kCencInitDataType, init_data);
+  encrypted_media_init_data_cb_.Run(kCencInitDataType, init_data);
 }
 
 bool MP4StreamParser::PrepareAVCBuffer(

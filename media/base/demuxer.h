@@ -49,7 +49,8 @@ class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
   // First parameter - The type of initialization data.
   // Second parameter - The initialization data associated with the stream.
   typedef base::Callback<void(const std::string& type,
-                              const std::vector<uint8>& init_data)> NeedKeyCB;
+                              const std::vector<uint8>& init_data)>
+      EncryptedMediaInitDataCB;
 
   Demuxer();
   ~Demuxer() override;

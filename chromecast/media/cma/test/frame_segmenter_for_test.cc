@@ -263,8 +263,8 @@ BufferList H264SegmenterForTest(const uint8* data, size_t data_size) {
   return video_frames;
 }
 
-void OnDemuxerNeedKey(const std::string& type,
-                      const std::vector<uint8>& init_data) {
+void OnEncryptedMediaInitData(const std::string& init_data_type,
+                              const std::vector<uint8>& init_data) {
   LOG(FATAL) << "Unexpected test failure: file is encrypted.";
 }
 
@@ -307,10 +307,9 @@ DemuxResult FFmpegDemuxForTest(const base::FilePath& filepath,
   ::media::FileDataSource data_source;
   CHECK(data_source.Initialize(filepath));
 
-  ::media::FFmpegDemuxer demuxer(base::MessageLoopProxy::current(),
-                                 &data_source,
-                                 base::Bind(&OnDemuxerNeedKey),
-                                 new ::media::MediaLog());
+  ::media::FFmpegDemuxer demuxer(
+      base::MessageLoopProxy::current(), &data_source,
+      base::Bind(&OnEncryptedMediaInitData), new ::media::MediaLog());
   ::media::WaitableMessageLoopEvent init_event;
   demuxer.Initialize(&fake_demuxer_host,
                      init_event.GetPipelineStatusCB(),

@@ -134,9 +134,9 @@ class FakeEncryptedMedia {
       FAIL() << "Unexpected Key Error";
     }
 
-    virtual void NeedKey(const std::string& type,
-                         const std::vector<uint8>& init_data,
-                         AesDecryptor* decryptor) = 0;
+    virtual void OnEncryptedMediaInitData(const std::string& init_data_type,
+                                          const std::vector<uint8>& init_data,
+                                          AesDecryptor* decryptor) = 0;
   };
 
   FakeEncryptedMedia(AppBase* app)
@@ -175,9 +175,9 @@ class FakeEncryptedMedia {
         web_session_id, error_name, system_code, error_message);
   }
 
-  void NeedKey(const std::string& type,
-               const std::vector<uint8>& init_data) {
-    app_->NeedKey(type, init_data, &decryptor_);
+  void OnEncryptedMediaInitData(const std::string& init_data_type,
+                                const std::vector<uint8>& init_data) {
+    app_->OnEncryptedMediaInitData(init_data_type, init_data, &decryptor_);
   }
 
  private:
@@ -264,13 +264,11 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     EXPECT_EQ(has_additional_usable_key, true);
   }
 
-  void NeedKey(const std::string& type,
-               const std::vector<uint8>& init_data,
-               AesDecryptor* decryptor) override {
+  void OnEncryptedMediaInitData(const std::string& init_data_type,
+                                const std::vector<uint8>& init_data,
+                                AesDecryptor* decryptor) override {
     if (current_session_id_.empty()) {
-      decryptor->CreateSession(type,
-                               kInitData,
-                               arraysize(kInitData),
+      decryptor->CreateSession(init_data_type, kInitData, arraysize(kInitData),
                                MediaKeys::TEMPORARY_SESSION,
                                CreateSessionPromise(RESOLVED));
       EXPECT_FALSE(current_session_id_.empty());
@@ -281,7 +279,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     // correct key ID.
     const uint8* key_id = init_data.empty() ? NULL : &init_data[0];
     size_t key_id_length = init_data.size();
-    if (type == kCencInitDataType) {
+    if (init_data_type == kCencInitDataType) {
       key_id = kKeyId;
       key_id_length = arraysize(kKeyId);
     }
@@ -302,23 +300,22 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
  public:
   RotatingKeyProvidingApp() : num_distint_need_key_calls_(0) {}
   ~RotatingKeyProvidingApp() override {
-    // Expect that NeedKey is fired multiple times with different |init_data|.
+    // Expect that OnEncryptedMediaInitData is fired multiple times with
+    // different |init_data|.
     EXPECT_GT(num_distint_need_key_calls_, 1u);
   }
 
-  void NeedKey(const std::string& type,
-               const std::vector<uint8>& init_data,
-               AesDecryptor* decryptor) override {
+  void OnEncryptedMediaInitData(const std::string& init_data_type,
+                                const std::vector<uint8>& init_data,
+                                AesDecryptor* decryptor) override {
     // Skip the request if the |init_data| has been seen.
     if (init_data == prev_init_data_)
       return;
     prev_init_data_ = init_data;
     ++num_distint_need_key_calls_;
 
-    decryptor->CreateSession(type,
-                             vector_as_array(&init_data),
-                             init_data.size(),
-                             MediaKeys::TEMPORARY_SESSION,
+    decryptor->CreateSession(init_data_type, vector_as_array(&init_data),
+                             init_data.size(), MediaKeys::TEMPORARY_SESSION,
                              CreateSessionPromise(RESOLVED));
 
     std::vector<uint8> key_id;
@@ -392,9 +389,9 @@ class NoResponseApp : public FakeEncryptedMedia::AppBase {
     EXPECT_EQ(has_additional_usable_key, true);
   }
 
-  void NeedKey(const std::string& type,
-               const std::vector<uint8>& init_data,
-               AesDecryptor* decryptor) override {}
+  void OnEncryptedMediaInitData(const std::string& init_data_type,
+                                const std::vector<uint8>& init_data,
+                                AesDecryptor* decryptor) override {}
 };
 
 // Helper class that emulates calls made on the ChunkDemuxer by the
@@ -409,7 +406,7 @@ class MockMediaSource {
         mimetype_(mimetype),
         chunk_demuxer_(new ChunkDemuxer(
             base::Bind(&MockMediaSource::DemuxerOpened, base::Unretained(this)),
-            base::Bind(&MockMediaSource::DemuxerNeedKey,
+            base::Bind(&MockMediaSource::OnEncryptedMediaInitData,
                        base::Unretained(this)),
             LogCB(),
             scoped_refptr<MediaLog>(new MediaLog()),
@@ -428,8 +425,9 @@ class MockMediaSource {
 
   scoped_ptr<Demuxer> GetDemuxer() { return owned_chunk_demuxer_.Pass(); }
 
-  void set_need_key_cb(const Demuxer::NeedKeyCB& need_key_cb) {
-    need_key_cb_ = need_key_cb;
+  void set_encrypted_media_init_data_cb(
+      const Demuxer::EncryptedMediaInitDataCB& encrypted_media_init_data_cb) {
+    encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
   }
 
   void Seek(base::TimeDelta seek_time, int new_position, int seek_append_size) {
@@ -535,11 +533,11 @@ class MockMediaSource {
     AppendData(initial_append_size_);
   }
 
-  void DemuxerNeedKey(const std::string& type,
-                      const std::vector<uint8>& init_data) {
+  void OnEncryptedMediaInitData(const std::string& init_data_type,
+                                const std::vector<uint8>& init_data) {
     DCHECK(!init_data.empty());
-    CHECK(!need_key_cb_.is_null());
-    need_key_cb_.Run(type, init_data);
+    CHECK(!encrypted_media_init_data_cb_.is_null());
+    encrypted_media_init_data_cb_.Run(init_data_type, init_data);
   }
 
   base::TimeDelta last_timestamp_offset() const {
@@ -555,7 +553,7 @@ class MockMediaSource {
   std::string mimetype_;
   ChunkDemuxer* chunk_demuxer_;
   scoped_ptr<Demuxer> owned_chunk_demuxer_;
-  Demuxer::NeedKeyCB need_key_cb_;
+  Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
   base::TimeDelta last_timestamp_offset_;
 };
 
@@ -626,8 +624,9 @@ class PipelineIntegrationTest
         base::Closure(), base::Bind(&PipelineIntegrationTest::OnAddTextTrack,
                                     base::Unretained(this)));
 
-    source->set_need_key_cb(base::Bind(&FakeEncryptedMedia::NeedKey,
-                                       base::Unretained(encrypted_media)));
+    source->set_encrypted_media_init_data_cb(
+        base::Bind(&FakeEncryptedMedia::OnEncryptedMediaInitData,
+                   base::Unretained(encrypted_media)));
 
     message_loop_.Run();
     EXPECT_EQ(PIPELINE_OK, pipeline_status_);
@@ -719,8 +718,9 @@ TEST_F(PipelineIntegrationTest, F32PlaybackHashed) {
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackEncrypted) {
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
-  set_need_key_cb(base::Bind(&FakeEncryptedMedia::NeedKey,
-                             base::Unretained(&encrypted_media)));
+  set_encrypted_media_init_data_cb(
+      base::Bind(&FakeEncryptedMedia::OnEncryptedMediaInitData,
+                 base::Unretained(&encrypted_media)));
 
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240-av_enc-av.webm",
                                encrypted_media.GetCdmContext()));

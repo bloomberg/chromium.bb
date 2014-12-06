@@ -42,6 +42,11 @@ MATCHER(IsEndOfStreamBuffer,
   return arg->end_of_stream();
 }
 
+const uint8 kEncryptedMediaInitData[] = {
+  0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+  0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35,
+};
+
 static void EosOnReadDone(bool* got_eos_buffer,
                           DemuxerStream::Status status,
                           const scoped_refptr<DecoderBuffer>& buffer) {
@@ -78,13 +83,12 @@ class FFmpegDemuxerTest : public testing::Test {
 
     CreateDataSource(name);
 
-    Demuxer::NeedKeyCB need_key_cb =
-        base::Bind(&FFmpegDemuxerTest::NeedKeyCB, base::Unretained(this));
+    Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb = base::Bind(
+        &FFmpegDemuxerTest::OnEncryptedMediaInitData, base::Unretained(this));
 
-    demuxer_.reset(new FFmpegDemuxer(message_loop_.message_loop_proxy(),
-                                     data_source_.get(),
-                                     need_key_cb,
-                                     new MediaLog()));
+    demuxer_.reset(new FFmpegDemuxer(
+        message_loop_.message_loop_proxy(), data_source_.get(),
+        encrypted_media_init_data_cb, new MediaLog()));
   }
 
   MOCK_METHOD1(CheckPoint, void(int v));
@@ -179,17 +183,9 @@ class FFmpegDemuxerTest : public testing::Test {
                       read_expectation);
   }
 
-  // TODO(xhwang): This is a workaround of the issue that move-only parameters
-  // are not supported in mocked methods. Remove this when the issue is fixed
-  // (http://code.google.com/p/googletest/issues/detail?id=395) or when we use
-  // std::string instead of scoped_ptr<uint8[]> (http://crbug.com/130689).
-  MOCK_METHOD3(NeedKeyCBMock, void(const std::string& type,
-                                   const uint8* init_data, int init_data_size));
-  void NeedKeyCB(const std::string& type,
-                 const std::vector<uint8>& init_data) {
-    const uint8* init_data_ptr = init_data.empty() ? NULL : &init_data[0];
-    NeedKeyCBMock(type, init_data_ptr, init_data.size());
-  }
+  MOCK_METHOD2(OnEncryptedMediaInitData,
+               void(const std::string& init_data_type,
+                    const std::vector<uint8>& init_data));
 
   // Accessor to demuxer internals.
   void set_duration_known(bool duration_known) {
@@ -380,8 +376,12 @@ TEST_F(FFmpegDemuxerTest, Initialize_MultitrackText) {
 }
 
 TEST_F(FFmpegDemuxerTest, Initialize_Encrypted) {
-  EXPECT_CALL(*this, NeedKeyCBMock(kWebMInitDataType, NotNull(),
-                                   DecryptConfig::kDecryptionKeySize))
+  EXPECT_CALL(*this,
+              OnEncryptedMediaInitData(
+                  kWebMInitDataType,
+                  std::vector<uint8>(kEncryptedMediaInitData,
+                                     kEncryptedMediaInitData +
+                                         arraysize(kEncryptedMediaInitData))))
       .Times(Exactly(2));
 
   CreateDemuxer("bear-320x240-av_enc-av.webm");

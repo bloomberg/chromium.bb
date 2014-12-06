@@ -147,8 +147,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
 
   // |open_cb| Run when Initialize() is called to signal that the demuxer
   //   is ready to receive media data via AppenData().
-  // |need_key_cb| Run when the demuxer determines that an encryption key is
-  //   needed to decrypt the content.
+  // |encrypted_media_init_data_cb| Run when the demuxer determines that an
+  //   encryption key is needed to decrypt the content.
   // |enable_text| Process inband text tracks in the normal way when true,
   //   otherwise ignore them.
   // |log_cb| Run when parsing error messages need to be logged to the error
@@ -157,7 +157,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   //   per the MSE specification.  Renderers must understand DecoderBuffer's
   //   splice_timestamp() field.
   ChunkDemuxer(const base::Closure& open_cb,
-               const NeedKeyCB& need_key_cb,
+               const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
                const LogCB& log_cb,
                const scoped_refptr<MediaLog>& media_log,
                bool splice_frames_enabled);
@@ -359,7 +359,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
 
   DemuxerHost* host_;
   base::Closure open_cb_;
-  NeedKeyCB need_key_cb_;
+  EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
   bool enable_text_;
   // Callback used to report error strings that can help the web developer
   // figure out what is wrong with the content.

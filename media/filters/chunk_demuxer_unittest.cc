@@ -45,9 +45,14 @@ const uint8 kVP8Keyframe[] = {
 // WebM Block bytes that represent a VP8 interframe.
 const uint8 kVP8Interframe[] = { 0x11, 0x00, 0x00 };
 
-static const uint8 kCuesHeader[] = {
+const uint8 kCuesHeader[] = {
   0x1C, 0x53, 0xBB, 0x6B,  // Cues ID
   0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // cues(size = 0)
+};
+
+const uint8 kEncryptedMediaInitData[] = {
+  0x68, 0xFE, 0xF9, 0xA1, 0xB3, 0x0D, 0x6B, 0x4D,
+  0xF2, 0x22, 0xB5, 0x0B, 0x4D, 0xE9, 0xE9, 0x95,
 };
 
 const int kTracksHeaderSize = sizeof(kTracksHeader);
@@ -171,11 +176,11 @@ class ChunkDemuxerTest : public ::testing::Test {
   void CreateNewDemuxer() {
     base::Closure open_cb =
         base::Bind(&ChunkDemuxerTest::DemuxerOpened, base::Unretained(this));
-    Demuxer::NeedKeyCB need_key_cb =
-        base::Bind(&ChunkDemuxerTest::DemuxerNeedKey, base::Unretained(this));
-    demuxer_.reset(new ChunkDemuxer(open_cb, need_key_cb, base::Bind(&LogFunc),
-                                    scoped_refptr<MediaLog>(new MediaLog()),
-                                    true));
+    Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb = base::Bind(
+        &ChunkDemuxerTest::OnEncryptedMediaInitData, base::Unretained(this));
+    demuxer_.reset(new ChunkDemuxer(
+        open_cb, encrypted_media_init_data_cb, base::Bind(&LogFunc),
+        scoped_refptr<MediaLog>(new MediaLog()), true));
   }
 
   virtual ~ChunkDemuxerTest() {
@@ -1154,17 +1159,9 @@ class ChunkDemuxerTest : public ::testing::Test {
   }
 
   MOCK_METHOD0(DemuxerOpened, void());
-  // TODO(xhwang): This is a workaround of the issue that move-only parameters
-  // are not supported in mocked methods. Remove this when the issue is fixed
-  // (http://code.google.com/p/googletest/issues/detail?id=395) or when we use
-  // std::string instead of scoped_ptr<uint8[]> (http://crbug.com/130689).
-  MOCK_METHOD3(NeedKeyMock, void(const std::string& type,
-                                 const uint8* init_data, int init_data_size));
-  void DemuxerNeedKey(const std::string& type,
-                      const std::vector<uint8>& init_data) {
-    const uint8* init_data_ptr = init_data.empty() ? NULL : &init_data[0];
-    NeedKeyMock(type, init_data_ptr, init_data.size());
-  }
+  MOCK_METHOD2(OnEncryptedMediaInitData,
+               void(const std::string& init_data_type,
+                    const std::vector<uint8>& init_data));
 
   MOCK_METHOD0(InitSegmentReceived, void(void));
 
@@ -1225,8 +1222,12 @@ TEST_F(ChunkDemuxerTest, Init) {
     if (is_audio_encrypted || is_video_encrypted) {
       int need_key_count = (is_audio_encrypted ? 1 : 0) +
                            (is_video_encrypted ? 1 : 0);
-      EXPECT_CALL(*this, NeedKeyMock(kWebMInitDataType, NotNull(),
-                                     DecryptConfig::kDecryptionKeySize))
+      EXPECT_CALL(*this, OnEncryptedMediaInitData(
+                             kWebMInitDataType,
+                             std::vector<uint8>(
+                                 kEncryptedMediaInitData,
+                                 kEncryptedMediaInitData +
+                                     arraysize(kEncryptedMediaInitData))))
           .Times(Exactly(need_key_count));
     }
 

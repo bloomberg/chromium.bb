@@ -61,12 +61,12 @@ void PipelineIntegrationTestBase::OnStatusCallback(
   message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
-void PipelineIntegrationTestBase::DemuxerNeedKeyCB(
+void PipelineIntegrationTestBase::DemuxerEncryptedMediaInitDataCB(
     const std::string& type,
     const std::vector<uint8>& init_data) {
   DCHECK(!init_data.empty());
-  CHECK(!need_key_cb_.is_null());
-  need_key_cb_.Run(type, init_data);
+  CHECK(!encrypted_media_init_data_cb_.is_null());
+  encrypted_media_init_data_cb_.Run(type, init_data);
 }
 
 void PipelineIntegrationTestBase::OnEnded() {
@@ -205,13 +205,12 @@ void PipelineIntegrationTestBase::CreateDemuxer(const std::string& filename) {
                                                  << " missing?";
   data_source_.reset(file_data_source);
 
-  Demuxer::NeedKeyCB need_key_cb = base::Bind(
-      &PipelineIntegrationTestBase::DemuxerNeedKeyCB, base::Unretained(this));
-  demuxer_ =
-      scoped_ptr<Demuxer>(new FFmpegDemuxer(message_loop_.message_loop_proxy(),
-                                            data_source_.get(),
-                                            need_key_cb,
-                                            new MediaLog()));
+  Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb =
+      base::Bind(&PipelineIntegrationTestBase::DemuxerEncryptedMediaInitDataCB,
+                 base::Unretained(this));
+  demuxer_ = scoped_ptr<Demuxer>(
+      new FFmpegDemuxer(message_loop_.message_loop_proxy(), data_source_.get(),
+                        encrypted_media_init_data_cb, new MediaLog()));
 }
 
 scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {

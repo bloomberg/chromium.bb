@@ -700,17 +700,19 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
          BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnCdmAttached, result));
 }
 
-void WebMediaPlayerImpl::OnNeedKey(const std::string& init_data_type,
-                                   const std::vector<uint8>& init_data) {
+void WebMediaPlayerImpl::OnEncryptedMediaInitData(
+    const std::string& init_data_type,
+    const std::vector<uint8>& init_data) {
   DCHECK(!init_data_type.empty());
 
-  // Do not fire NeedKey event if encrypted media is not enabled.
+  // Do not fire "encrypted" event if encrypted media is not enabled.
   // TODO(xhwang): Handle this in |client_|.
   if (!blink::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled() &&
       !blink::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
     return;
   }
 
+  // TODO(xhwang): Update this UMA name.
   UMA_HISTOGRAM_COUNTS("Media.EME.NeedKey", 1);
 
   encrypted_media_support_.SetInitDataType(init_data_type);
@@ -930,18 +932,16 @@ void WebMediaPlayerImpl::StartPipeline() {
                         (load_type_ == LoadTypeMediaSource));
 
   LogCB mse_log_cb;
-  Demuxer::NeedKeyCB need_key_cb =
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNeedKey);
+  Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb =
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnEncryptedMediaInitData);
 
   // Figure out which demuxer to use.
   if (load_type_ != LoadTypeMediaSource) {
     DCHECK(!chunk_demuxer_);
     DCHECK(data_source_);
 
-    demuxer_.reset(new FFmpegDemuxer(
-        media_task_runner_, data_source_.get(),
-        need_key_cb,
-        media_log_));
+    demuxer_.reset(new FFmpegDemuxer(media_task_runner_, data_source_.get(),
+                                     encrypted_media_init_data_cb, media_log_));
   } else {
     DCHECK(!chunk_demuxer_);
     DCHECK(!data_source_);
@@ -950,10 +950,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 
     chunk_demuxer_ = new ChunkDemuxer(
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDemuxerOpened),
-        need_key_cb,
-        mse_log_cb,
-        media_log_,
-        true);
+        encrypted_media_init_data_cb, mse_log_cb, media_log_, true);
     demuxer_.reset(chunk_demuxer_);
   }
 

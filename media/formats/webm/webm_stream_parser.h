@@ -27,7 +27,7 @@ class WebMStreamParser : public StreamParser {
             const NewConfigCB& config_cb,
             const NewBuffersCB& new_buffers_cb,
             bool ignore_text_tracks,
-            const NeedKeyCB& need_key_cb,
+            const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
             const NewMediaSegmentCB& new_segment_cb,
             const base::Closure& end_of_segment_cb,
             const LogCB& log_cb) override;
@@ -63,15 +63,15 @@ class WebMStreamParser : public StreamParser {
   // Returning > 0 indicates success & the number of bytes parsed.
   int ParseCluster(const uint8* data, int size);
 
-  // Fire needkey event through the |need_key_cb_|.
-  void FireNeedKey(const std::string& key_id);
+  // Fire needkey event through the |encrypted_media_init_data_cb_|.
+  void OnEncryptedMediaInitData(const std::string& key_id);
 
   State state_;
   InitCB init_cb_;
   NewConfigCB config_cb_;
   NewBuffersCB new_buffers_cb_;
   bool ignore_text_tracks_;
-  NeedKeyCB need_key_cb_;
+  EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
 
   NewMediaSegmentCB new_segment_cb_;
   base::Closure end_of_segment_cb_;

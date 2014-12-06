@@ -148,14 +148,15 @@ void MediaSourceDelegate::StopDemuxer(const base::Closure& stop_cb) {
 
 void MediaSourceDelegate::InitializeMediaSource(
     const MediaSourceOpenedCB& media_source_opened_cb,
-    const media::Demuxer::NeedKeyCB& need_key_cb,
+    const media::Demuxer::EncryptedMediaInitDataCB&
+        encrypted_media_init_data_cb,
     const media::SetDecryptorReadyCB& set_decryptor_ready_cb,
     const UpdateNetworkStateCB& update_network_state_cb,
     const DurationChangeCB& duration_change_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(!media_source_opened_cb.is_null());
   media_source_opened_cb_ = media_source_opened_cb;
-  need_key_cb_ = need_key_cb;
+  encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
   set_decryptor_ready_cb_ = set_decryptor_ready_cb;
   update_network_state_cb_ = media::BindToCurrentLoop(update_network_state_cb);
   duration_change_cb_ = duration_change_cb;
@@ -164,11 +165,9 @@ void MediaSourceDelegate::InitializeMediaSource(
   chunk_demuxer_.reset(new media::ChunkDemuxer(
       media::BindToCurrentLoop(
           base::Bind(&MediaSourceDelegate::OnDemuxerOpened, main_weak_this_)),
-      media::BindToCurrentLoop(
-          base::Bind(&MediaSourceDelegate::OnNeedKey, main_weak_this_)),
-      base::Bind(&LogMediaSourceError, media_log_),
-      media_log_,
-      false));
+      media::BindToCurrentLoop(base::Bind(
+          &MediaSourceDelegate::OnEncryptedMediaInitData, main_weak_this_)),
+      base::Bind(&LogMediaSourceError, media_log_), media_log_, false));
 
   // |this| will be retained until StopDemuxer() is posted, so Unretained() is
   // safe here.
@@ -667,13 +666,14 @@ void MediaSourceDelegate::OnDemuxerOpened() {
       chunk_demuxer_.get(), base::Bind(&LogMediaSourceError, media_log_)));
 }
 
-void MediaSourceDelegate::OnNeedKey(const std::string& init_data_type,
-                                    const std::vector<uint8>& init_data) {
+void MediaSourceDelegate::OnEncryptedMediaInitData(
+    const std::string& init_data_type,
+    const std::vector<uint8>& init_data) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (need_key_cb_.is_null())
+  if (encrypted_media_init_data_cb_.is_null())
     return;
 
-  need_key_cb_.Run(init_data_type, init_data);
+  encrypted_media_init_data_cb_.Run(init_data_type, init_data);
 }
 
 bool MediaSourceDelegate::IsSeeking() const {

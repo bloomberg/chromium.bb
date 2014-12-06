@@ -107,7 +107,7 @@ class PipelineIntegrationTestBase {
   scoped_refptr<ClocklessAudioSink> clockless_audio_sink_;
   bool ended_;
   PipelineStatus pipeline_status_;
-  Demuxer::NeedKeyCB need_key_cb_;
+  Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
   VideoFrame::Format last_video_frame_format_;
   DummyTickClock dummy_clock_;
   AudioHardwareConfig hardware_config_;
@@ -115,10 +115,11 @@ class PipelineIntegrationTestBase {
 
   void OnSeeked(base::TimeDelta seek_time, PipelineStatus status);
   void OnStatusCallback(PipelineStatus status);
-  void DemuxerNeedKeyCB(const std::string& type,
-                        const std::vector<uint8>& init_data);
-  void set_need_key_cb(const Demuxer::NeedKeyCB& need_key_cb) {
-    need_key_cb_ = need_key_cb;
+  void DemuxerEncryptedMediaInitDataCB(const std::string& type,
+                                       const std::vector<uint8>& init_data);
+  void set_encrypted_media_init_data_cb(
+      const Demuxer::EncryptedMediaInitDataCB& encrypted_media_init_data_cb) {
+    encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
   }
 
   void OnEnded();

@@ -210,8 +210,8 @@ class MEDIA_EXPORT WebMediaPlayerImpl
   scoped_refptr<VideoFrame> GetCurrentFrameFromCompositor();
 
   // Called when the demuxer encounters encrypted streams.
-  void OnNeedKey(const std::string& init_data_type,
-                 const std::vector<uint8>& init_data);
+  void OnEncryptedMediaInitData(const std::string& init_data_type,
+                                const std::vector<uint8>& init_data);
 
   void SetCdm(CdmContext* cdm_context, const CdmAttachedCB& cdm_attached_cb);
 
