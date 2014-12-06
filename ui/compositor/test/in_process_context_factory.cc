@@ -63,10 +63,8 @@ class DirectOutputSurface : public cc::OutputSurface {
 
 }  // namespace
 
-InProcessContextFactory::InProcessContextFactory(bool context_factory_for_test)
-    : next_surface_id_namespace_(1u),
-      use_test_surface_(true),
-      context_factory_for_test_(context_factory_for_test) {
+InProcessContextFactory::InProcessContextFactory()
+    : next_surface_id_namespace_(1u), use_test_surface_(true) {
   DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
       << "gfx::GLSurface::InitializeOneOffForTests()";
@@ -144,9 +142,7 @@ InProcessContextFactory::SharedMainThreadContextProvider() {
 
 void InProcessContextFactory::RemoveCompositor(Compositor* compositor) {}
 
-bool InProcessContextFactory::DoesCreateTestContexts() {
-  return context_factory_for_test_;
-}
+bool InProcessContextFactory::DoesCreateTestContexts() { return false; }
 
 cc::SharedBitmapManager* InProcessContextFactory::GetSharedBitmapManager() {
   return &shared_bitmap_manager_;

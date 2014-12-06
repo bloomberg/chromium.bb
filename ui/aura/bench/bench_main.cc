@@ -297,9 +297,8 @@ int main(int argc, char** argv) {
   gfx::GLSurface::InitializeOneOff();
 
   // The ContextFactory must exist before any Compositors are created.
-  bool context_factory_for_test = false;
   scoped_ptr<ui::InProcessContextFactory> context_factory(
-      new ui::InProcessContextFactory(context_factory_for_test));
+      new ui::InProcessContextFactory());
 
   base::i18n::InitializeICU();
 
