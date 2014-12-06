@@ -830,6 +830,14 @@ WebString WebAXObject::title() const
     return m_private->title();
 }
 
+WebString WebAXObject::language() const
+{
+    if (isDetached())
+        return WebString();
+
+    return m_private->language();
+}
+
 WebAXObject WebAXObject::titleUIElement() const
 {
     if (isDetached())

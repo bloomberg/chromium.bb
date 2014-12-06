@@ -137,6 +137,7 @@ public:
     BLINK_EXPORT unsigned selectionStartLineNumber() const;
     BLINK_EXPORT WebString stringValue() const;
     BLINK_EXPORT WebString title() const;
+    BLINK_EXPORT WebString language() const;
     BLINK_EXPORT WebAXObject titleUIElement() const;
     BLINK_EXPORT WebURL url() const;
 
