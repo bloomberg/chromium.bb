@@ -175,15 +175,15 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateX11::GetDisplays() {
   CHECK(screen_) << "Server not grabbed";
 
   cached_outputs_.clear();
-  RRCrtc last_used_crtc = None;
+  std::set<RRCrtc> last_used_crtcs;
 
   InitModes();
-  for (int i = 0; i < screen_->noutput && cached_outputs_.size() < 2; ++i) {
+  for (int i = 0; i < screen_->noutput; ++i) {
     RROutput output_id = screen_->outputs[i];
     XRROutputInfo* output_info = XRRGetOutputInfo(display_, screen_, output_id);
     if (output_info->connection == RR_Connected) {
       DisplaySnapshotX11* output =
-          InitDisplaySnapshot(output_id, output_info, &last_used_crtc, i);
+          InitDisplaySnapshot(output_id, output_info, &last_used_crtcs, i);
       cached_outputs_.push_back(output);
     }
     XRRFreeOutputInfo(output_info);
@@ -315,7 +315,7 @@ void NativeDisplayDelegateX11::InitModes() {
 DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
     RROutput output,
     XRROutputInfo* info,
-    RRCrtc* last_used_crtc,
+    std::set<RRCrtc>* last_used_crtcs,
     int index) {
   int64_t display_id = 0;
   if (!GetDisplayId(output, static_cast<uint8_t>(index), &display_id))
@@ -341,9 +341,9 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
   RRCrtc crtc = None;
   // Assign a CRTC that isn't already in use.
   for (int i = 0; i < info->ncrtc; ++i) {
-    if (info->crtcs[i] != *last_used_crtc) {
+    if (last_used_crtcs->find(info->crtcs[i]) == last_used_crtcs->end()) {
       crtc = info->crtcs[i];
-      *last_used_crtc = crtc;
+      last_used_crtcs->insert(crtc);
       break;
     }
   }

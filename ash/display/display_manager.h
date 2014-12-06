@@ -343,13 +343,15 @@ private:
   // Creates a display object from the DisplayInfo for |display_id|.
   gfx::Display CreateDisplayFromDisplayInfoById(int64 display_id);
 
-  // Updates the bounds of the secondary display in |display_list|
-  // using the layout registered for the display pair and set the
-  // index of display updated to |updated_index|. Returns true
-  // if the secondary display's bounds has been changed from current
-  // value, or false otherwise.
-  bool UpdateSecondaryDisplayBoundsForLayout(DisplayList* display_list,
-                                             size_t* updated_index) const;
+  // Updates the bounds of all non-primary displays in |display_list| and
+  // append the indices of displays updated to |updated_indices|.
+  // When the size of |display_list| equals 2, the bounds are updated using
+  // the layout registered for the display pair. For more than 2 displays,
+  // the bounds are updated using horizontal layout.
+  // Returns true if any of the non-primary display's bounds has been changed
+  // from current value, or false otherwise.
+  bool UpdateNonPrimaryDisplayBoundsForLayout(
+      DisplayList* display_list, std::vector<size_t>* updated_indices) const;
 
   void CreateMirrorWindowIfAny();
 

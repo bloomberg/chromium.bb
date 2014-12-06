@@ -8,6 +8,7 @@
 #include "ash/wm/window_resizer.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/point.h"
 
@@ -51,7 +52,7 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
   scoped_ptr<WindowResizer> next_window_resizer_;
 
   // Shows a semi-transparent image of the window being dragged.
-  scoped_ptr<DragWindowController> drag_window_controller_;
+  ScopedVector<DragWindowController> drag_window_controllers_;
 
   gfx::Point last_mouse_location_;
 

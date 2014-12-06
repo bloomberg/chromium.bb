@@ -268,6 +268,38 @@ TEST_F(DisplayManagerTest, EmulatorTest) {
   reset();
 }
 
+// Tests support for 3 displays.
+TEST_F(DisplayManagerTest, UpdateThreeDisplaysTest) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  EXPECT_EQ(1U, display_manager()->GetNumDisplays());
+
+  // Test with three displays.
+  UpdateDisplay("0+0-640x480,640+0-320x200,960+0-400x300");
+  EXPECT_EQ(3U, display_manager()->GetNumDisplays());
+  EXPECT_EQ("0,0 640x480",
+            display_manager()->GetDisplayAt(0).bounds().ToString());
+  EXPECT_EQ("640,0 320x200",
+            display_manager()->GetDisplayAt(1).bounds().ToString());
+  EXPECT_EQ("960,0 400x300",
+            display_manager()->GetDisplayAt(2).bounds().ToString());
+
+  EXPECT_EQ("1 2 0", GetCountSummary());
+  EXPECT_EQ(display_manager()->GetDisplayAt(0).id(), changed()[0].id());
+  EXPECT_EQ(display_manager()->GetDisplayAt(1).id(), added()[0].id());
+  EXPECT_EQ(display_manager()->GetDisplayAt(2).id(), added()[1].id());
+  EXPECT_EQ("0,0 640x480", changed()[0].bounds().ToString());
+  // Secondary and terniary displays are on right.
+  EXPECT_EQ("640,0 320x200", added()[0].bounds().ToString());
+  EXPECT_EQ("640,0 320x200",
+            GetDisplayInfo(added()[0]).bounds_in_native().ToString());
+  EXPECT_EQ("960,0 400x300", added()[1].bounds().ToString());
+  EXPECT_EQ("960,0 400x300",
+            GetDisplayInfo(added()[1]).bounds_in_native().ToString());
+  reset();
+}
+
 TEST_F(DisplayManagerTest, OverscanInsetsTest) {
   if (!SupportsMultipleDisplays())
     return;

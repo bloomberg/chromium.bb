@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -106,7 +107,7 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
   // on the passed-in information.
   DisplaySnapshotX11* InitDisplaySnapshot(RROutput id,
                                           XRROutputInfo* info,
-                                          RRCrtc* last_used_crtc,
+                                          std::set<RRCrtc>* last_used_crtcs,
                                           int index);
 
   // Destroys unused CRTCs.

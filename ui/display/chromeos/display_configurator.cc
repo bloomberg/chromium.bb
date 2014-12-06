@@ -61,6 +61,8 @@ std::string DisplayStateToString(MultipleDisplayState state) {
       return "DUAL_MIRROR";
     case MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED:
       return "DUAL_EXTENDED";
+    case MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED:
+      return "MULTI_EXTENDED";
   }
   NOTREACHED() << "Unknown state " << state;
   return "INVALID";
@@ -878,9 +880,14 @@ bool DisplayConfigurator::EnterState(MultipleDisplayState display_state,
       }
       break;
     }
-    case MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED: {
-      if (cached_displays_.size() != 2 ||
-          (num_on_displays != 0 && num_on_displays != 2)) {
+    case MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED:
+    case MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED: {
+      if ((display_state == MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED &&
+           cached_displays_.size() != 2) ||
+          (display_state == MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED &&
+           cached_displays_.size() <= 2) ||
+          (num_on_displays != 0 &&
+           num_on_displays != static_cast<int>(cached_displays_.size()))) {
         LOG(WARNING) << "Ignoring request to enter extended mode with "
                      << cached_displays_.size() << " connected display(s) and "
                      << num_on_displays << " turned on";
@@ -982,12 +989,14 @@ MultipleDisplayState DisplayConfigurator::ChooseDisplayState(
       return MULTIPLE_DISPLAY_STATE_HEADLESS;
     case 1:
       return MULTIPLE_DISPLAY_STATE_SINGLE;
-    case 2: {
+    default: {
       if (num_on_displays == 1) {
         // If only one display is currently turned on, return the "single"
         // state so that its native mode will be used.
         return MULTIPLE_DISPLAY_STATE_SINGLE;
-      } else {
+      } if (num_on_displays >= 3) {
+        return MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
+      } else if (cached_displays_.size() == 2) {
         if (!state_controller_)
           return MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
         // With either both displays on or both displays off, use one of the
@@ -998,9 +1007,8 @@ MultipleDisplayState DisplayConfigurator::ChooseDisplayState(
 
         return state_controller_->GetStateForDisplayIds(display_ids);
       }
-    }
-    default:
       NOTREACHED();
+    }
   }
   return MULTIPLE_DISPLAY_STATE_INVALID;
 }

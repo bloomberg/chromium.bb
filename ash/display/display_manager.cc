@@ -278,11 +278,15 @@ bool DisplayManager::IsInternalDisplayId(int64 id) const {
 }
 
 DisplayLayout DisplayManager::GetCurrentDisplayLayout() {
-  DCHECK_EQ(2U, num_connected_displays());
+  DCHECK_LE(2U, num_connected_displays());
   // Invert if the primary was swapped.
-  if (num_connected_displays() > 1) {
+  if (num_connected_displays() == 2) {
     DisplayIdPair pair = GetCurrentDisplayIdPair();
     return layout_store_->ComputeDisplayLayoutForDisplayIdPair(pair);
+  } else if (num_connected_displays() > 2) {
+    // Return fixed horizontal layout for >= 3 displays.
+    DisplayLayout layout(DisplayLayout::RIGHT, 0);
+    return layout;
   }
   NOTREACHED() << "DisplayLayout is requested for single display";
   // On release build, just fallback to default instead of blowing up.
@@ -302,7 +306,7 @@ DisplayIdPair DisplayManager::GetCurrentDisplayIdPair() const {
     }
     return std::make_pair(displays_[0].id(), mirrored_display_id_);
   } else {
-    CHECK_GE(2u, displays_.size());
+    CHECK_LE(2u, displays_.size());
     int64 id_at_zero = displays_[0].id();
     if (id_at_zero == gfx::Display::InternalDisplayId() ||
         id_at_zero == first_display_id()) {
@@ -315,8 +319,7 @@ DisplayIdPair DisplayManager::GetCurrentDisplayIdPair() const {
 
 void DisplayManager::SetLayoutForCurrentDisplays(
     const DisplayLayout& layout_relative_to_primary) {
-  DCHECK_EQ(2U, GetNumDisplays());
-  if (GetNumDisplays() < 2)
+  if (GetNumDisplays() != 2)
     return;
   const gfx::Display& primary = screen_->GetPrimaryDisplay();
   const DisplayIdPair pair = GetCurrentDisplayIdPair();
@@ -867,17 +870,22 @@ void DisplayManager::UpdateDisplays(
     return;
   }
 
-  size_t updated_index;
-  if (UpdateSecondaryDisplayBoundsForLayout(&new_displays, &updated_index) &&
-      std::find(added_display_indices.begin(),
-                added_display_indices.end(),
-                updated_index) == added_display_indices.end()) {
-    uint32_t metrics = gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS |
-                       gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
-    if (display_changes.find(updated_index) != display_changes.end())
-      metrics |= display_changes[updated_index];
+  std::vector<size_t> updated_indices;
+  if (UpdateNonPrimaryDisplayBoundsForLayout(&new_displays, &updated_indices)) {
+    for (std::vector<size_t>::iterator it = updated_indices.begin();
+         it != updated_indices.end(); ++it) {
+      size_t updated_index = *it;
+      if (std::find(added_display_indices.begin(),
+                    added_display_indices.end(),
+                    updated_index) == added_display_indices.end()) {
+        uint32_t metrics = gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+                           gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
+        if (display_changes.find(updated_index) != display_changes.end())
+          metrics |= display_changes[updated_index];
 
-    display_changes[updated_index] = metrics;
+        display_changes[updated_index] = metrics;
+      }
+    }
   }
 
   displays_ = new_displays;
@@ -961,7 +969,7 @@ const gfx::Display& DisplayManager::GetDisplayAt(size_t index) const {
 }
 
 const gfx::Display& DisplayManager::GetPrimaryDisplayCandidate() const {
-  if (GetNumDisplays() == 1)
+  if (GetNumDisplays() != 2)
     return displays_[0];
   DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(
       GetCurrentDisplayIdPair());
@@ -1171,8 +1179,8 @@ gfx::Display DisplayManager::CreateDisplayFromDisplayInfoById(int64 id) {
   float device_scale_factor = display_info.GetEffectiveDeviceScaleFactor();
 
   // Simply set the origin to (0,0).  The primary display's origin is
-  // always (0,0) and the secondary display's bounds will be updated
-  // in |UpdateSecondaryDisplayBoundsForLayout| called in |UpdateDisplay|.
+  // always (0,0) and the bounds of non-primary display(s) will be updated
+  // in |UpdateNonPrimaryDisplayBoundsForLayout| called in |UpdateDisplay|.
   new_display.SetScaleAndBounds(
       device_scale_factor, gfx::Rect(bounds_in_native.size()));
   new_display.set_rotation(display_info.rotation());
@@ -1180,11 +1188,28 @@ gfx::Display DisplayManager::CreateDisplayFromDisplayInfoById(int64 id) {
   return new_display;
 }
 
-bool DisplayManager::UpdateSecondaryDisplayBoundsForLayout(
+bool DisplayManager::UpdateNonPrimaryDisplayBoundsForLayout(
     DisplayList* displays,
-    size_t* updated_index) const {
-  if (displays->size() != 2U)
+    std::vector<size_t>* updated_indices) const {
+
+  if (displays->size() < 2U)
     return false;
+
+  if (displays->size() > 2U) {
+    // For more than 2 displays, always use horizontal layout.
+    int x_offset = displays->at(0).bounds().width();
+    for (size_t i = 1; i < displays->size(); ++i) {
+      gfx::Display& display = displays->at(i);
+      const gfx::Rect& bounds = display.bounds();
+      gfx::Point origin = gfx::Point(x_offset, 0);
+      gfx::Insets insets = display.GetWorkAreaInsets();
+      display.set_bounds(gfx::Rect(origin, bounds.size()));
+      display.UpdateWorkAreaFromInsets(insets);
+      x_offset += bounds.width();
+      updated_indices->push_back(i);
+    }
+    return true;
+  }
 
   int64 id_at_zero = displays->at(0).id();
   DisplayIdPair pair =
@@ -1213,7 +1238,7 @@ bool DisplayManager::UpdateSecondaryDisplayBoundsForLayout(
         GetDisplayForId(displays->at(secondary_index).id()).bounds();
     UpdateDisplayBoundsForLayout(
         layout, displays->at(primary_index), &displays->at(secondary_index));
-    *updated_index = secondary_index;
+    updated_indices->push_back(secondary_index);
     return bounds != displays->at(secondary_index).bounds();
   }
   return false;
