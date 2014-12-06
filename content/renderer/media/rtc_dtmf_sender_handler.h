@@ -43,9 +43,11 @@ class CONTENT_EXPORT RtcDtmfSenderHandler
  private:
   scoped_refptr<webrtc::DtmfSenderInterface> dtmf_sender_;
   blink::WebRTCDTMFSenderHandlerClient* webkit_client_;
-  base::WeakPtrFactory<RtcDtmfSenderHandler> weak_factory_;
   class Observer;
-  scoped_refptr<Observer> observer_;  // must be after weak_factory_
+  scoped_refptr<Observer> observer_;
+
+  // |weak_factory_| must be the last member.
+  base::WeakPtrFactory<RtcDtmfSenderHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcDtmfSenderHandler);
 };

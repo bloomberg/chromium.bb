@@ -49,15 +49,17 @@ class RtcDtmfSenderHandler::Observer :
 RtcDtmfSenderHandler::RtcDtmfSenderHandler(DtmfSenderInterface* dtmf_sender)
     : dtmf_sender_(dtmf_sender),
       webkit_client_(NULL),
-      weak_factory_(this),
-      observer_(new Observer(weak_factory_.GetWeakPtr())) {
+      weak_factory_(this) {
   DVLOG(1) << "::ctor";
+  observer_ = new Observer(weak_factory_.GetWeakPtr());
   dtmf_sender_->RegisterObserver(observer_.get());
 }
 
 RtcDtmfSenderHandler::~RtcDtmfSenderHandler() {
   DVLOG(1) << "::dtor";
   dtmf_sender_->UnregisterObserver();
+  // Release |observer| before |weak_factory_| is destroyed.
+  observer_ = NULL;
 }
 
 void RtcDtmfSenderHandler::setClient(
