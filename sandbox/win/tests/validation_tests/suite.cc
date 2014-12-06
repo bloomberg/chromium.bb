@@ -142,10 +142,12 @@ TEST(ValidationSuite, TestWindows) {
   TestRunner runner;
   wchar_t command[1024] = {0};
 
-  wsprintf(command, L"ValidWindow %d", ::GetDesktopWindow());
+  wsprintf(command, L"ValidWindow %Id",
+           reinterpret_cast<size_t>(::GetDesktopWindow()));
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(command));
 
-  wsprintf(command, L"ValidWindow %d", ::FindWindow(NULL, NULL));
+  wsprintf(command, L"ValidWindow %Id",
+           reinterpret_cast<size_t>(::FindWindow(NULL, NULL)));
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(command));
 }
 
