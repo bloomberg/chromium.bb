@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -81,21 +80,8 @@ EasyUnlockService* EasyUnlockService::GetForUser(
 
 // static
 bool EasyUnlockService::IsSignInEnabled() {
-  // Note: It's important to query the field trial state first, to ensure that
-  // UMA reports the correct group.
-  const std::string group = base::FieldTrialList::FindFullName("EasySignIn");
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kDisableEasySignin)) {
-    return false;
-  }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          proximity_auth::switches::kEnableEasySignin)) {
-    return true;
-  }
-
-  return group == "Enable";
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      proximity_auth::switches::kDisableEasySignin);
 }
 
 class EasyUnlockService::BluetoothDetector
@@ -247,6 +233,11 @@ void EasyUnlockService::ResetLocalStateForUser(const std::string& user_id) {
 bool EasyUnlockService::IsAllowed() {
   if (shut_down_)
     return false;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kDisableEasyUnlock)) {
+    return false;
+  }
 
   if (!IsAllowedInternal())
     return false;

@@ -17,6 +17,9 @@ const char kDisableEasySignin[] = "disable-easy-signin";
 // Disable Easy unlock.
 const char kDisableEasyUnlock[] = "disable-easy-unlock";
 
+// TODO(xiyuan): Remove obsolete enable flags since feature is on by default.
+//    Also consolidate the two flags into one after http://crbug.com/439638.
+
 // Enable Easy sign-in.
 const char kEnableEasySignin[] = "enable-easy-signin";
 

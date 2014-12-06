@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
@@ -184,7 +185,9 @@ void EasyUnlockServiceSignin::RecordEasySignInOutcome(
 
 void EasyUnlockServiceSignin::RecordPasswordLoginEvent(
     const std::string& user_id) const {
-  DCHECK_EQ(GetUserEmail(), user_id);
+  // This happens during tests where user could login without pod focusing.
+  if (GetUserEmail() != user_id)
+    return;
 
   chromeos::EasyUnlockLoginEvent event =
       chromeos::EASY_SIGN_IN_LOGIN_EVENT_COUNT;
@@ -324,6 +327,10 @@ void EasyUnlockServiceSignin::LoggedInStateChanged() {
 }
 
 void EasyUnlockServiceSignin::LoadCurrentUserDataIfNeeded() {
+  // TODO(xiyuan): Revisit this when adding tests.
+  if (!base::SysInfo::IsRunningOnChromeOS())
+    return;
+
   if (user_id_.empty() || !service_active_)
     return;
 
