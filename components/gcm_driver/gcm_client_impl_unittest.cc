@@ -116,8 +116,7 @@ FakeMCSClient::FakeMCSClient(base::Clock* clock,
                              ConnectionFactory* connection_factory,
                              GCMStore* gcm_store,
                              GCMStatsRecorder* recorder)
-    : MCSClient("", clock, connection_factory, gcm_store, recorder,
-                make_scoped_ptr(new base::Timer(true, false))),
+    : MCSClient("", clock, connection_factory, gcm_store, recorder),
       last_android_id_(0u),
       last_security_token_(0u),
       last_message_tag_(kNumProtoTypes) {

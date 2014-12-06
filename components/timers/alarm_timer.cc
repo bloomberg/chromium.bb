@@ -38,6 +38,27 @@ AlarmTimer::~AlarmTimer() {
   Stop();
 }
 
+void AlarmTimer::OnTimerFired() {
+  if (!base::Timer::IsRunning())
+    return;
+
+  DCHECK(pending_task_.get());
+
+  // Take ownership of the pending user task, which is going to be cleared by
+  // the Stop() or Reset() functions below.
+  scoped_ptr<base::PendingTask> pending_user_task(pending_task_.Pass());
+
+  // Re-schedule or stop the timer as requested.
+  if (base::Timer::is_repeating())
+    Reset();
+  else
+    Stop();
+
+  // Now run the user task.
+  base::MessageLoop::current()->task_annotator()->RunTask(
+      "AlarmTimer::Reset", "AlarmTimer::OnTimerFired", *pending_user_task);
+}
+
 void AlarmTimer::Stop() {
   if (!can_wake_from_suspend_) {
     base::Timer::Stop();
@@ -101,27 +122,6 @@ void AlarmTimer::Reset() {
 
 void AlarmTimer::WillDestroyCurrentMessageLoop() {
   Stop();
-}
-
-void AlarmTimer::OnTimerFired() {
-  if (!base::Timer::is_running())
-    return;
-
-  DCHECK(pending_task_.get());
-
-  // Take ownership of the pending user task, which is going to be cleared by
-  // the Stop() or Reset() functions below.
-  scoped_ptr<base::PendingTask> pending_user_task(pending_task_.Pass());
-
-  // Re-schedule or stop the timer as requested.
-  if (base::Timer::is_repeating())
-    Reset();
-  else
-    Stop();
-
-  // Now run the user task.
-  base::MessageLoop::current()->task_annotator()->RunTask(
-      "AlarmTimer::Reset", "AlarmTimer::OnTimerFired", *pending_user_task);
 }
 
 }  // namespace timers

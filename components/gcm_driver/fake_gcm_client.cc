@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "google_apis/gcm/base/encryptor.h"
 #include "google_apis/gcm/engine/account_mapping.h"
 #include "net/base/ip_endpoint.h"
@@ -131,6 +132,9 @@ void FakeGCMClient::RemoveAccountMapping(const std::string& account_id) {
 }
 
 void FakeGCMClient::SetLastTokenFetchTime(const base::Time& time) {
+}
+
+void FakeGCMClient::UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) {
 }
 
 void FakeGCMClient::PerformDelayedLoading() {

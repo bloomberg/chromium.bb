@@ -51,10 +51,17 @@ std::string WakeOnWifiFeatureToString(
       return kWakeOnSsid;
     case WakeOnWifiManager::WAKE_ON_PACKET_AND_SSID:
       return kWakeOnPacketAndSsid;
+    case WakeOnWifiManager::INVALID:
+      return std::string();
   }
 
   NOTREACHED() << "Unknown wake on wifi feature: " << feature;
   return std::string();
+}
+
+bool IsWakeOnPacketEnabled(WakeOnWifiManager::WakeOnWifiFeature feature) {
+  return feature == WakeOnWifiManager::WAKE_ON_PACKET ||
+         feature == WakeOnWifiManager::WAKE_ON_PACKET_AND_SSID;
 }
 
 // Weak pointer.  This class is owned by ChromeBrowserMainPartsChromeos.
@@ -129,7 +136,8 @@ WakeOnWifiManager* WakeOnWifiManager::Get() {
   return g_wake_on_wifi_manager;
 }
 
-WakeOnWifiManager::WakeOnWifiManager() {
+WakeOnWifiManager::WakeOnWifiManager()
+    : current_feature_(WakeOnWifiManager::INVALID) {
   // This class must be constructed before any users are logged in, i.e., before
   // any profiles are created or added to the ProfileManager.  Additionally,
   // IsUserLoggedIn always returns true when we are not running on a Chrome OS
@@ -164,6 +172,11 @@ WakeOnWifiManager::~WakeOnWifiManager() {
 void WakeOnWifiManager::OnPreferenceChanged(
     WakeOnWifiManager::WakeOnWifiFeature feature) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (feature == current_feature_)
+    return;
+
+  current_feature_ = feature;
+
   const DeviceState* device =
       NetworkHandler::Get()->network_state_handler()->GetDeviceStateByType(
           NetworkTypePattern::WiFi());
@@ -179,6 +192,14 @@ void WakeOnWifiManager::OnPreferenceChanged(
       base::StringValue(feature_string),
       base::Bind(&base::DoNothing),
       network_handler::ErrorCallback());
+
+  bool wake_from_suspend = IsWakeOnPacketEnabled(current_feature_);
+  for (const auto& kv_pair : connection_observers_) {
+    Profile* profile = kv_pair.first;
+    gcm::GCMProfileServiceFactory::GetForProfile(profile)
+        ->driver()
+        ->WakeFromSuspendForHeartbeat(wake_from_suspend);
+  }
 }
 
 void WakeOnWifiManager::Observe(int type,
@@ -200,10 +221,18 @@ void WakeOnWifiManager::Observe(int type,
 
 void WakeOnWifiManager::OnProfileAdded(Profile* profile) {
   // add will do nothing if |profile| already exists in |connection_observers_|.
-  connection_observers_.add(
+  auto result = connection_observers_.add(
       profile,
       make_scoped_ptr(
           new WakeOnWifiManager::WakeOnPacketConnectionObserver(profile)));
+
+  if (result.second) {
+    // This is a profile we haven't seen before.
+    gcm::GCMProfileServiceFactory::GetForProfile(profile)
+        ->driver()
+        ->WakeFromSuspendForHeartbeat(
+            IsWakeOnPacketEnabled(current_feature_));
+  }
 }
 
 void WakeOnWifiManager::OnProfileDestroyed(Profile* profile) {

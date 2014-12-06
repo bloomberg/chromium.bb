@@ -100,8 +100,7 @@ class GCM_EXPORT MCSClient {
             base::Clock* clock,
             ConnectionFactory* connection_factory,
             GCMStore* gcm_store,
-            GCMStatsRecorder* recorder,
-            scoped_ptr<base::Timer> heartbeat_timer);
+            GCMStatsRecorder* recorder);
   virtual ~MCSClient();
 
   // Initialize the client. Will load any previous id/token information as well
@@ -147,6 +146,9 @@ class GCM_EXPORT MCSClient {
 
   // Returns text representation of the state enum.
   std::string GetStateString() const;
+
+  // Updates the timer used by |heartbeat_manager_| for sending heartbeats.
+  void UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer);
 
  private:
   typedef uint32 StreamId;

@@ -25,7 +25,7 @@ namespace gcm {
 // receipt/failures and triggering reconnection as necessary.
 class GCM_EXPORT HeartbeatManager {
  public:
-  explicit HeartbeatManager(scoped_ptr<base::Timer> heartbeat_timer);
+  HeartbeatManager();
   ~HeartbeatManager();
 
   // Start the heartbeat logic.
@@ -51,6 +51,9 @@ class GCM_EXPORT HeartbeatManager {
   // current time (in ticks), the heartbeat has been triggered and an ack is
   // pending.
   base::TimeTicks GetNextHeartbeatTime() const;
+
+  // Updates the timer used for scheduling heartbeats.
+  void UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer);
 
  protected:
   // Helper method to send heartbeat on timer trigger.

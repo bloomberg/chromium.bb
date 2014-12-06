@@ -27,6 +27,7 @@ class WakeOnWifiManager : public content::NotificationObserver {
     WAKE_ON_PACKET          = 1,
     WAKE_ON_SSID            = 2,
     WAKE_ON_PACKET_AND_SSID = 3,
+    INVALID                 = 4,
   };
 
   static WakeOnWifiManager* Get();
@@ -46,6 +47,8 @@ class WakeOnWifiManager : public content::NotificationObserver {
  private:
   void OnProfileAdded(Profile* profile);
   void OnProfileDestroyed(Profile* profile);
+
+  WakeOnWifiFeature current_feature_;
 
   class WakeOnPacketConnectionObserver;
   base::ScopedPtrHashMap<Profile*, WakeOnPacketConnectionObserver>

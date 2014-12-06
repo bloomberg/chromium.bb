@@ -138,6 +138,10 @@ class GCMDriver {
   virtual base::Time GetLastTokenFetchTime() = 0;
   virtual void SetLastTokenFetchTime(const base::Time& time) = 0;
 
+  // Sets whether or not GCM should try to wake the system from suspend in order
+  // to send a heartbeat message.
+  virtual void WakeFromSuspendForHeartbeat(bool wake) = 0;
+
  protected:
   // Ensures that the GCM service starts (if necessary conditions are met).
   virtual GCMClient::Result EnsureStarted() = 0;

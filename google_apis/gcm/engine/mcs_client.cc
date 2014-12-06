@@ -159,8 +159,7 @@ MCSClient::MCSClient(const std::string& version_string,
                      base::Clock* clock,
                      ConnectionFactory* connection_factory,
                      GCMStore* gcm_store,
-                     GCMStatsRecorder* recorder,
-                     scoped_ptr<base::Timer> heartbeat_timer)
+                     GCMStatsRecorder* recorder)
     : version_string_(version_string),
       clock_(clock),
       state_(UNINITIALIZED),
@@ -173,7 +172,6 @@ MCSClient::MCSClient(const std::string& version_string,
       stream_id_out_(0),
       stream_id_in_(0),
       gcm_store_(gcm_store),
-      heartbeat_manager_(heartbeat_timer.Pass()),
       recorder_(recorder),
       weak_ptr_factory_(this) {
 }
@@ -366,6 +364,10 @@ void MCSClient::SendMessage(const MCSMessage& message) {
   NotifyMessageSendStatus(message.GetProtobuf(), QUEUED);
 
   MaybeSendMessage();
+}
+
+void MCSClient::UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) {
+  heartbeat_manager_.UpdateHeartbeatTimer(timer.Pass());
 }
 
 void MCSClient::ResetStateAndBuildLoginRequest(

@@ -108,6 +108,7 @@ class GCMClientImpl
   void UpdateAccountMapping(const AccountMapping& account_mapping) override;
   void RemoveAccountMapping(const std::string& account_id) override;
   void SetLastTokenFetchTime(const base::Time& time) override;
+  void UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) override;
 
   // GCMStatsRecorder::Delegate implemenation.
   void OnActivityRecorded() override;

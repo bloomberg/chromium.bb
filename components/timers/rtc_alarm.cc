@@ -88,7 +88,11 @@ void RtcAlarm::Reset(base::TimeDelta delay) {
   // differently.  We queue the task here but we still go ahead and call
   // timerfd_settime with the zero delay anyway to cancel any previous delay
   // that might have been programmed.
-  if (delay == base::TimeDelta()) {
+  if (delay <= base::TimeDelta::FromMicroseconds(0)) {
+    // The timerfd_settime documentation is vague on what happens when it is
+    // passed a negative delay.  We can sidestep the issue by ensuring that the
+    // delay is 0.
+    delay = base::TimeDelta::FromMicroseconds(0);
     origin_message_loop_->PostTask(FROM_HERE,
                                    base::Bind(&RtcAlarm::OnTimerFired,
                                               scoped_refptr<RtcAlarm>(this),

@@ -61,7 +61,11 @@ class AlarmTimer : public base::Timer,
 
   ~AlarmTimer() override;
 
-  bool can_wake_from_suspend() { return can_wake_from_suspend_; }
+  bool can_wake_from_suspend() const { return can_wake_from_suspend_; }
+
+  // Must be called by the delegate to indicate that the timer has fired and
+  // that the user task should be run.
+  void OnTimerFired();
 
   // Timer overrides.
   void Stop() override;
@@ -69,10 +73,6 @@ class AlarmTimer : public base::Timer,
 
   // MessageLoop::DestructionObserver overrides.
   void WillDestroyCurrentMessageLoop() override;
-
-  // Must be called by the delegate to indicate that the timer has fired and
-  // that the user task should be run.
-  void OnTimerFired();
 
  private:
   // Initializes the timer with the appropriate delegate.

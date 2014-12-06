@@ -97,4 +97,7 @@ base::Time FakeGCMDriver::GetLastTokenFetchTime() {
 void FakeGCMDriver::SetLastTokenFetchTime(const base::Time& time) {
 }
 
+void FakeGCMDriver::WakeFromSuspendForHeartbeat(bool wake) {
+}
+
 }  // namespace gcm

@@ -4,7 +4,9 @@
 
 #include "google_apis/gcm/engine/heartbeat_manager.h"
 
+#include "base/callback.h"
 #include "base/metrics/histogram.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/base/network_change_notifier.h"
@@ -24,11 +26,12 @@ const int64 kHeartbeatAckDefaultMs = 1000 * 60 * 1;  // 1 minute.
 const int kHeartbeatMissedCheckMs = 1000 * 60 * 5;  // 5 minutes.
 }  // namespace
 
-HeartbeatManager::HeartbeatManager(scoped_ptr<base::Timer> heartbeat_timer)
+HeartbeatManager::HeartbeatManager()
     : waiting_for_ack_(false),
       heartbeat_interval_ms_(0),
       server_interval_ms_(0),
-      heartbeat_timer_(heartbeat_timer.Pass()),
+      heartbeat_timer_(new base::Timer(true /* retain_user_task */,
+                                       false /* is_repeating */)),
       weak_ptr_factory_(this) {}
 
 HeartbeatManager::~HeartbeatManager() {}
@@ -78,6 +81,19 @@ base::TimeTicks HeartbeatManager::GetNextHeartbeatTime() const {
     return heartbeat_timer_->desired_run_time();
   else
     return base::TimeTicks();
+}
+
+void HeartbeatManager::UpdateHeartbeatTimer(scoped_ptr<base::Timer> timer) {
+  bool was_running = heartbeat_timer_->IsRunning();
+  base::TimeDelta remaining_delay =
+      heartbeat_timer_->desired_run_time() - base::TimeTicks::Now();
+  base::Closure timer_task(heartbeat_timer_->user_task());
+
+  heartbeat_timer_->Stop();
+  heartbeat_timer_ = timer.Pass();
+
+  if (was_running)
+    heartbeat_timer_->Start(FROM_HERE, remaining_delay, timer_task);
 }
 
 void HeartbeatManager::OnHeartbeatTriggered() {
