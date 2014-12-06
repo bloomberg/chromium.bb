@@ -8,6 +8,7 @@
 #include "content/child/webcrypto/algorithm_implementation.h"
 #include "content/child/webcrypto/algorithm_registry.h"
 #include "content/child/webcrypto/crypto_data.h"
+#include "content/child/webcrypto/generate_key_result.h"
 #include "content/child/webcrypto/platform_crypto.h"
 #include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
@@ -111,7 +112,25 @@ Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
   if (status.IsError())
     return status;
 
-  return impl->GenerateKey(algorithm, extractable, usages, result);
+  status = impl->GenerateKey(algorithm, extractable, usages, result);
+  if (status.IsError())
+    return status;
+
+  const blink::WebCryptoKey* key = NULL;
+  if (result->type() == GenerateKeyResult::TYPE_SECRET_KEY)
+    key = &result->secret_key();
+  if (result->type() == GenerateKeyResult::TYPE_PUBLIC_PRIVATE_KEY_PAIR)
+    key = &result->private_key();
+  if (key == NULL)
+    return Status::ErrorUnexpected();
+
+  // This should only fail if an algorithm is implemented incorrectly and
+  // does not do its own check of the usages.
+  if (key->usages() == 0) {
+    DCHECK(false) << "Key usages for generateKey() must not be empty";
+    return Status::ErrorCreateKeyEmptyUsages();
+  }
+  return status;
 }
 
 Status ImportKey(blink::WebCryptoKeyFormat format,
