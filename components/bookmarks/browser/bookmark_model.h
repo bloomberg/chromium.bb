@@ -283,6 +283,16 @@ class BookmarkModel : public KeyedService {
   void DeleteNodeMetaInfo(const BookmarkNode* node,
                           const std::string& key);
 
+  // Adds |key| to the set of meta info keys that are not copied when a node is
+  // cloned.
+  void AddNonClonedKey(const std::string& key);
+
+  // Returns the set of meta info keys that should not be copied when a node is
+  // cloned.
+  const std::set<std::string>& non_cloned_keys() const {
+    return non_cloned_keys_;
+  }
+
   // Sets the sync transaction version of |node|.
   void SetNodeSyncTransactionVersion(const BookmarkNode* node,
                                      int64 sync_transaction_version);
@@ -431,6 +441,8 @@ class BookmarkModel : public KeyedService {
   int extensive_changes_;
 
   scoped_ptr<bookmarks::BookmarkExpandedStateTracker> expanded_state_tracker_;
+
+  std::set<std::string> non_cloned_keys_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModel);
 };

@@ -91,6 +91,7 @@ EnhancedBookmarkModel::EnhancedBookmarkModel(BookmarkModel* bookmark_model,
       version_(version),
       weak_ptr_factory_(this) {
   bookmark_model_->AddObserver(this);
+  bookmark_model_->AddNonClonedKey(kIdKey);
   if (bookmark_model_->loaded()) {
     InitializeIdMap();
     loaded_ = true;

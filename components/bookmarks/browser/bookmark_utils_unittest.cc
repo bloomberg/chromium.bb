@@ -522,6 +522,57 @@ TEST_F(BookmarkUtilsTest, CloneMetaInfo) {
   EXPECT_EQ("someothervalue", value);
 }
 
+// Verifies that meta info fields in the non cloned set are not copied when
+// cloning a bookmark.
+TEST_F(BookmarkUtilsTest, CloneBookmarkResetsNonClonedKey) {
+  TestBookmarkClient client;
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
+  model->AddNonClonedKey("foo");
+  const BookmarkNode* parent = model->other_node();
+  const BookmarkNode* node = model->AddURL(
+      parent, 0, ASCIIToUTF16("title"), GURL("http://www.google.com"));
+  model->SetNodeMetaInfo(node, "foo", "ignored value");
+  model->SetNodeMetaInfo(node, "bar", "kept value");
+  std::vector<BookmarkNodeData::Element> elements;
+  BookmarkNodeData::Element node_data(node);
+  elements.push_back(node_data);
+
+  // Cloning a bookmark should clear the non cloned key.
+  CloneBookmarkNode(model.get(), elements, parent, 0, true);
+  ASSERT_EQ(2, parent->child_count());
+  std::string value;
+  EXPECT_FALSE(parent->GetChild(0)->GetMetaInfo("foo", &value));
+
+  // Other keys should still be cloned.
+  EXPECT_TRUE(parent->GetChild(0)->GetMetaInfo("bar", &value));
+  EXPECT_EQ("kept value", value);
+}
+
+// Verifies that meta info fields in the non cloned set are not copied when
+// cloning a folder.
+TEST_F(BookmarkUtilsTest, CloneFolderResetsNonClonedKey) {
+  TestBookmarkClient client;
+  scoped_ptr<BookmarkModel> model(client.CreateModel());
+  model->AddNonClonedKey("foo");
+  const BookmarkNode* parent = model->other_node();
+  const BookmarkNode* node = model->AddFolder(parent, 0, ASCIIToUTF16("title"));
+  model->SetNodeMetaInfo(node, "foo", "ignored value");
+  model->SetNodeMetaInfo(node, "bar", "kept value");
+  std::vector<BookmarkNodeData::Element> elements;
+  BookmarkNodeData::Element node_data(node);
+  elements.push_back(node_data);
+
+  // Cloning a folder should clear the non cloned key.
+  CloneBookmarkNode(model.get(), elements, parent, 0, true);
+  ASSERT_EQ(2, parent->child_count());
+  std::string value;
+  EXPECT_FALSE(parent->GetChild(0)->GetMetaInfo("foo", &value));
+
+  // Other keys should still be cloned.
+  EXPECT_TRUE(parent->GetChild(0)->GetMetaInfo("bar", &value));
+  EXPECT_EQ("kept value", value);
+}
+
 TEST_F(BookmarkUtilsTest, RemoveAllBookmarks) {
   TestBookmarkClient client;
   // Load a model with an extra node that is not editable.

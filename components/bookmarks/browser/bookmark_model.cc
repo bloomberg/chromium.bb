@@ -435,6 +435,10 @@ void BookmarkModel::DeleteNodeMetaInfo(const BookmarkNode* node,
                     BookmarkMetaInfoChanged(this, node));
 }
 
+void BookmarkModel::AddNonClonedKey(const std::string& key) {
+  non_cloned_keys_.insert(key);
+}
+
 void BookmarkModel::SetNodeSyncTransactionVersion(
     const BookmarkNode* node,
     int64 sync_transaction_version) {

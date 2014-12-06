@@ -764,3 +764,9 @@ TEST_F(EnhancedBookmarkModelTest,
   bookmark_model_->Remove(gp, gp->GetIndexOf(parent));
   EXPECT_FALSE(model_->BookmarkForRemoteId(remote_id));
 }
+
+TEST_F(EnhancedBookmarkModelTest, AddsRemoteIdToNonClonedKeys) {
+  const std::set<std::string>& non_cloned_keys =
+      bookmark_model_->non_cloned_keys();
+  EXPECT_TRUE(non_cloned_keys.find("stars.id") != non_cloned_keys.end());
+}

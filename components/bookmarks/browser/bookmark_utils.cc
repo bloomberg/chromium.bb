@@ -44,6 +44,11 @@ void CloneBookmarkNodeImpl(BookmarkModel* model,
                            const BookmarkNode* parent,
                            int index_to_add_at,
                            bool reset_node_times) {
+  // Make sure to not copy non clonable keys.
+  BookmarkNode::MetaInfoMap meta_info_map = element.meta_info_map;
+  for (const std::string& key : model->non_cloned_keys())
+    meta_info_map.erase(key);
+
   if (element.is_url) {
     Time date_added = reset_node_times ? Time::Now() : element.date_added;
     DCHECK(!date_added.is_null());
@@ -53,10 +58,10 @@ void CloneBookmarkNodeImpl(BookmarkModel* model,
                                              element.title,
                                              element.url,
                                              date_added,
-                                             &element.meta_info_map);
+                                             &meta_info_map);
   } else {
     const BookmarkNode* cloned_node = model->AddFolderWithMetaInfo(
-        parent, index_to_add_at, element.title, &element.meta_info_map);
+        parent, index_to_add_at, element.title, &meta_info_map);
     if (!reset_node_times) {
       DCHECK(!element.date_folder_modified.is_null());
       model->SetDateFolderModified(cloned_node, element.date_folder_modified);
