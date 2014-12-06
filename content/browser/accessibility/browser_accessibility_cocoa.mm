@@ -1215,7 +1215,6 @@ NSDictionary* attributeToMethodNameMap = nil;
       NSAccessibilityWindowAttribute,
       @"AXAccessKey",
       @"AXInvalid",
-      @"AXRequired",
       @"AXVisited",
       nil];
 
@@ -1349,6 +1348,11 @@ NSDictionary* attributeToMethodNameMap = nil;
       || GetState(browserAccessibility_, ui::AX_STATE_HORIZONTAL)) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityOrientationAttribute, nil]];
+  }
+
+  if (GetState(browserAccessibility_, ui::AX_STATE_REQUIRED)) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        @"AXRequired", nil]];
   }
 
   // Title UI Element.
