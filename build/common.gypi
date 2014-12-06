@@ -213,8 +213,8 @@
             'enable_hidpi%': 1,
           }],
 
-          # Enable the OpenSSL backend on Mac OS.
-          ['OS=="mac"', {
+          # Enable the OpenSSL backend on Mac OS and Windows.
+          ['OS=="mac" or OS=="win"', {
             'use_openssl%': 1,
           }],
 
