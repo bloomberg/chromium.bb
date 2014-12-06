@@ -95,6 +95,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   int32_t RowCount();
   int32_t ColumnCount();
   bool IsClickable();
+  bool IsButtonStateMixed();
 
   // Bound methods.
   std::string AllAttributes();

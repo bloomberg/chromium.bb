@@ -503,6 +503,7 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetProperty("rowCount", &WebAXObjectProxy::RowCount)
       .SetProperty("columnCount", &WebAXObjectProxy::ColumnCount)
       .SetProperty("isClickable", &WebAXObjectProxy::IsClickable)
+      .SetProperty("isButtonStateMixed", &WebAXObjectProxy::IsButtonStateMixed)
       .SetMethod("allAttributes", &WebAXObjectProxy::AllAttributes)
       .SetMethod("attributesOfChildren",
                  &WebAXObjectProxy::AttributesOfChildren)
@@ -795,6 +796,11 @@ int32_t WebAXObjectProxy::ColumnCount() {
 bool WebAXObjectProxy::IsClickable() {
   accessibility_object_.updateLayoutAndCheckValidity();
   return accessibility_object_.isClickable();
+}
+
+bool WebAXObjectProxy::IsButtonStateMixed() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.isButtonStateMixed();
 }
 
 std::string WebAXObjectProxy::AllAttributes() {
