@@ -4479,8 +4479,10 @@ load_modules(struct weston_compositor *ec, const char *modules,
 		end = strchrnul(p, ',');
 		snprintf(buffer, sizeof buffer, "%.*s", (int) (end - p), p);
 		module_init = weston_load_module(buffer, "module_init");
-		if (module_init)
-			module_init(ec, argc, argv);
+		if (!module_init)
+			return -1;
+		if (module_init(ec, argc, argv) < 0)
+			return -1;
 		p = end;
 		while (*p == ',')
 			p++;
