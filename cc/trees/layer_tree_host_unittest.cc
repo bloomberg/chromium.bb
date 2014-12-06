@@ -4742,6 +4742,62 @@ class LayerTreeHostTestBreakSwapPromise : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromise);
 
+class LayerTreeHostTestKeepSwapPromise : public LayerTreeTest {
+ public:
+  LayerTreeHostTestKeepSwapPromise() {}
+
+  void BeginTest() override {
+    layer_ = SolidColorLayer::Create();
+    layer_->SetIsDrawable(true);
+    layer_->SetBounds(gfx::Size(10, 10));
+    layer_tree_host()->SetRootLayer(layer_);
+    gfx::Size bounds(100, 100);
+    layer_tree_host()->SetViewportSize(bounds);
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void DidCommit() override {
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&LayerTreeHostTestKeepSwapPromise::ChangeFrame,
+                              base::Unretained(this)));
+  }
+
+  void ChangeFrame() {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        layer_->SetBounds(gfx::Size(10, 11));
+        layer_tree_host()->QueueSwapPromise(
+            make_scoped_ptr(new TestSwapPromise(&swap_promise_result_)));
+        break;
+      case 2:
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
+    EXPECT_TRUE(result);
+    if (host_impl->active_tree()->source_frame_number() >= 1) {
+      // The commit changes layers so it should cause a swap.
+      base::AutoLock lock(swap_promise_result_.lock);
+      EXPECT_TRUE(swap_promise_result_.did_swap_called);
+      EXPECT_FALSE(swap_promise_result_.did_not_swap_called);
+      EXPECT_TRUE(swap_promise_result_.dtor_called);
+      EndTest();
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  scoped_refptr<Layer> layer_;
+  TestSwapPromiseResult swap_promise_result_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestKeepSwapPromise);
+
 class LayerTreeHostTestBreakSwapPromiseForVisibilityAbortedCommit
     : public LayerTreeHostTest {
  protected:
