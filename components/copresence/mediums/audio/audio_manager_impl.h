@@ -16,6 +16,10 @@
 #include "components/copresence/public/copresence_constants.h"
 #include "components/copresence/timed_map.h"
 
+namespace base {
+class Time;
+}
+
 namespace copresence {
 
 class AudioPlayer;
@@ -94,7 +98,8 @@ class AudioManagerImpl final : public AudioManager {
 
   // Indexed using enum AudioType.
   std::string playing_token_[2];
-  bool heard_own_token_[2];
+  base::Time started_playing_[2];
+  base::Time heard_own_token_[2];
 
   // Cache that holds the encoded samples. After reaching its limit, the cache
   // expires the oldest samples first.

@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "components/copresence/mediums/audio/audio_player_impl.h"
 #include "components/copresence/mediums/audio/audio_recorder_impl.h"
 #include "components/copresence/public/copresence_constants.h"
@@ -36,6 +37,7 @@ std::string FromUrlSafe(std::string token) {
 
 const int kSampleExpiryTimeMs = 60 * 60 * 1000;  // 60 minutes.
 const int kMaxSamples = 10000;
+const int kTokenTimeoutMs = 2000;
 
 }  // namespace
 
@@ -48,8 +50,6 @@ AudioManagerImpl::AudioManagerImpl()
   playing_[INAUDIBLE] = false;
   recording_[AUDIBLE] = false;
   recording_[INAUDIBLE] = false;
-  heard_own_token_[AUDIBLE] = false;
-  heard_own_token_[INAUDIBLE] = false;
 
   player_[AUDIBLE] = nullptr;
   player_[INAUDIBLE] = nullptr;
@@ -107,6 +107,7 @@ AudioManagerImpl::~AudioManagerImpl() {
 void AudioManagerImpl::StartPlaying(AudioType type) {
   DCHECK(type == AUDIBLE || type == INAUDIBLE);
   playing_[type] = true;
+  started_playing_[type] = base::Time::Now();
   // If we don't have our token encoded yet, this check will be false, for now.
   // Once our token is encoded, OnTokenEncoded will call UpdateToken, which
   // will call this code again (if we're still supposed to be playing).
@@ -170,7 +171,15 @@ bool AudioManagerImpl::IsPlaying(AudioType type) {
 }
 
 bool AudioManagerImpl::IsPlayingTokenHeard(AudioType type) {
-  return heard_own_token_[type];
+  base::TimeDelta tokenTimeout =
+      base::TimeDelta::FromMilliseconds(kTokenTimeoutMs);
+
+  // This is a bit of a hack. If we haven't been playing long enough,
+  // return true to avoid tripping an audio fail alarm.
+  if (base::Time::Now() - started_playing_[type] < tokenTimeout)
+    return true;
+
+  return base::Time::Now() - heard_own_token_[type] < tokenTimeout;
 }
 
 // Private methods.
@@ -188,7 +197,7 @@ void AudioManagerImpl::OnTokensFound(const std::vector<AudioToken>& tokens) {
   for (const auto& token : tokens) {
     AudioType type = token.audible ? AUDIBLE : INAUDIBLE;
     if (playing_token_[type] == token.token)
-      heard_own_token_[type] = true;
+      heard_own_token_[type] = base::Time::Now();
 
     if (recording_[AUDIBLE] && token.audible) {
       tokens_to_report.push_back(token);
