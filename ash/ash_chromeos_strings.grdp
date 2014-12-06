@@ -133,10 +133,10 @@
     Stop
   </message>
   <message name="IDS_ASH_STATUS_TRAY_SCREEN_SHARE_BEING_HELPED" desc="label for screen sharing notification">
-    Sharing control of your screen via Hangouts.
+    Sharing control of your screen via Remote Assistance.
   </message>
   <message name="IDS_ASH_STATUS_TRAY_SCREEN_SHARE_BEING_HELPED_NAME" desc="label for screen sharing notification with name">
-    Sharing control of your screen with <ph name="HELPER_NAME">$1<ex>Walder Frey</ex></ph> via Hangouts.
+    Sharing control of your screen with <ph name="HELPER_NAME">$1<ex>Walder Frey</ex></ph> via Remote Assistance.
   </message>
 
   <!-- Status tray audio strings. -->
