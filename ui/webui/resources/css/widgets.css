@@ -254,7 +254,6 @@ input:disabled:-webkit-any([type='password'],
 [is='action-link'] {
   cursor: pointer;
   display: inline-block;
-  padding: 0 4px;
   text-decoration: none;
 }
 
