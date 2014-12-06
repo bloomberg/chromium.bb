@@ -36,7 +36,7 @@ remoting.initElementEventHandlers = function() {
   };
   var reconnect = function() {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
-    remoting.connector.reconnect();
+    remoting.app.getSessionConnector().reconnect();
   };
   var doAuthRedirect = function() {
     if (!base.isAppsV2()) {

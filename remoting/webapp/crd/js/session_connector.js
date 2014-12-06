@@ -104,6 +104,9 @@ remoting.SessionConnectorFactory = function() {};
  * @return {remoting.SessionConnector}
  */
 remoting.SessionConnectorFactory.prototype.createConnector =
+    // TODO(garykac): Can onExtensionMessage be removed from here? It's only
+    // needed to pass to the ClientSession. Investigate why ClientSession
+    // needs this.
     function(clientContainer, onConnected, onError, onExtensionMessage) {};
 
 /**

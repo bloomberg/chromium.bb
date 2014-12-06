@@ -643,6 +643,7 @@ remoting.ClientSession.prototype.disconnect = function(error) {
   this.logToServer.logClientSessionStateChange(state, error);
   this.error_ = error;
   this.setState_(state);
+  remoting.app.onDisconnected();
 };
 
 /**
@@ -1294,6 +1295,10 @@ remoting.ClientSession.prototype.updateDimensions = function() {
               parentNode.style.left + ',' +
               parentNode.style.top + '-' +
               pluginWidth + 'x' + pluginHeight + '.');
+
+  // When we receive the first plugin dimensions from the host, we know that
+  // remote host has started.
+  remoting.app.onVideoStreamingStarted();
 };
 
 /**

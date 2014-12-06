@@ -58,6 +58,7 @@
     ],
     # Remoting core JavaScript files.
     'remoting_webapp_js_core_files': [
+      'webapp/base/js/application.js',
       'webapp/base/js/base.js',
       'webapp/base/js/platform.js',
       'webapp/crd/js/error.js',
@@ -200,6 +201,7 @@
     # The CRD-specific JavaScript files required by main.html.
     'remoting_webapp_crd_main_html_js_files': [
       'webapp/crd/js/crd_main.js',
+      'webapp/crd/js/desktop_remoting.js',
     ],
 
     # The JavaScript files that are used in the background page.

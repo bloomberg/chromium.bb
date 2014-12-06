@@ -24,7 +24,7 @@ var remoting = remoting || {};
  * @implements {remoting.SessionConnector}
  */
 remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
-                                     onExtensionMessage) {
+                                         onExtensionMessage) {
   /**
    * @type {HTMLElement}
    * @private
@@ -599,6 +599,6 @@ remoting.DefaultSessionConnectorFactory = function() {
  */
 remoting.DefaultSessionConnectorFactory.prototype.createConnector =
     function(clientContainer, onConnected, onError, onExtensionMessage) {
-  return new remoting.SessionConnectorImpl(
-      clientContainer, onConnected, onError, onExtensionMessage);
+  return new remoting.SessionConnectorImpl(clientContainer, onConnected,
+                                           onError, onExtensionMessage);
 };

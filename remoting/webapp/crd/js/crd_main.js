@@ -8,64 +8,6 @@
 var remoting = remoting || {};
 
 /**
- * Entry point ('load' handler) for Chromoting webapp.
- */
-remoting.initChromoting = function() {
-  remoting.initGlobalObjects();
-  remoting.initIdentity();
-  remoting.initIdentityEmail(remoting.onEmailAvailable);
-
-  remoting.initElementEventHandlers();
-  remoting.initGlobalEventHandlers();
-
-  if (base.isAppsV2()) {
-    remoting.fullscreen = new remoting.FullscreenAppsV2();
-    remoting.windowFrame = new remoting.WindowFrame(
-        document.getElementById('title-bar'));
-    remoting.optionsMenu = remoting.windowFrame.createOptionsMenu();
-  } else {
-    remoting.fullscreen = new remoting.FullscreenAppsV1();
-    remoting.toolbar = new remoting.Toolbar(
-        document.getElementById('session-toolbar'));
-    remoting.optionsMenu = remoting.toolbar.createOptionsMenu();
-  }
-
-  remoting.initHostlist_();
-
-  var homeFeedback = new remoting.MenuButton(
-      document.getElementById('help-feedback-main'));
-  var toolbarFeedback = new remoting.MenuButton(
-      document.getElementById('help-feedback-toolbar'));
-  remoting.manageHelpAndFeedback(
-      document.getElementById('title-bar'));
-  remoting.manageHelpAndFeedback(
-      document.getElementById('help-feedback-toolbar'));
-  remoting.manageHelpAndFeedback(
-      document.getElementById('help-feedback-main'));
-
-  remoting.windowShape.updateClientWindowShape();
-
-  remoting.showOrHideIT2MeUi();
-  remoting.showOrHideMe2MeUi();
-
-  // For Apps v1, check the tab type to warn the user if they are not getting
-  // the best keyboard experience.
-  if (!base.isAppsV2() && !remoting.platformIsMac()) {
-    /** @param {boolean} isWindowed */
-    var onIsWindowed = function(isWindowed) {
-      if (!isWindowed) {
-        document.getElementById('startup-mode-box-me2me').hidden = false;
-        document.getElementById('startup-mode-box-it2me').hidden = false;
-      }
-    };
-    isWindowed_(onIsWindowed);
-  }
-
-  remoting.ClientPlugin.factory.preloadPlugin();
-
-}
-
-/**
  * Display the user's email address and allow access to the rest of the app,
  * including parsing URL parameters.
  *
@@ -138,9 +80,9 @@ remoting.initHostlist_ = function() {
         getCurrentId().then(function(id) {
           /** @type {string} */
           var accessCode = urlParams['accessCode'];
-          remoting.ensureSessionConnector_();
+          var connector = remoting.app.getSessionConnector();
           remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
-          remoting.connector.connectIT2Me(accessCode);
+          connector.connectIT2Me(accessCode);
 
           document.body.classList.add('hangout-remote-desktop');
           var senderId = /** @type {string} */ String(id);
@@ -234,4 +176,13 @@ remoting.updateLocalHostState = function() {
   remoting.hostController.getLocalHostState(onHostState);
 };
 
-window.addEventListener('load', remoting.initChromoting, false);
+/**
+ * Entry point ('load' handler) for Remote Desktop (CRD) webapp.
+ */
+remoting.initDesktopRemoting = function() {
+  remoting.app = new remoting.Application();
+  var desktop_remoting = new remoting.DesktopRemoting(remoting.app);
+  remoting.app.init();
+};
+
+window.addEventListener('load', remoting.initDesktopRemoting, false);
