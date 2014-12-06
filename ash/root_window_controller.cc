@@ -162,7 +162,8 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
       kShellWindowId_AlwaysOnTopContainer,
       kShellWindowId_SystemModalContainer,
       kShellWindowId_LockSystemModalContainer,
-      kShellWindowId_UnparentedControlContainer, };
+      kShellWindowId_UnparentedControlContainer,
+      kShellWindowId_OverlayContainer, };
   for (size_t i = 0; i < arraysize(kContainerIdsToMove); i++) {
     int id = kContainerIdsToMove[i];
     aura::Window* src_container = Shell::GetContainer(src, id);

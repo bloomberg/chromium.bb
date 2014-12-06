@@ -51,6 +51,10 @@ class ASH_EXPORT StickyKeysOverlay : public ui::LayerAnimationObserver {
   // animating, the returned value is the target of the animation.
   bool is_visible() { return is_visible_; }
 
+  // Returns the underlying views::Widget for testing purposes. The returned
+  // widget is owned by StickyKeysOverlay.
+  views::Widget* GetWidgetForTesting();
+
  private:
   // Returns the current bounds of the overlay, which is based on visibility.
   gfx::Rect CalculateOverlayBounds();
@@ -62,8 +66,7 @@ class ASH_EXPORT StickyKeysOverlay : public ui::LayerAnimationObserver {
 
   bool is_visible_;
   scoped_ptr<views::Widget> overlay_widget_;
-  // Ownership of |overlay_view_| is passed to the view heirarchy.
-  StickyKeysOverlayView* overlay_view_;
+  scoped_ptr<StickyKeysOverlayView> overlay_view_;
   gfx::Size widget_size_;
 };
 

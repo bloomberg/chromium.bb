@@ -101,13 +101,16 @@ void StickyKeyOverlayLabel::SetKeyState(StickyKeyState state) {
 
 ///////////////////////////////////////////////////////////////////////////////
 //  StickyKeysOverlayView
-class StickyKeysOverlayView : public views::WidgetDelegateView {
+class StickyKeysOverlayView : public views::View {
  public:
+  // This object is not owned by the views hiearchy or by the widget. The
+  // StickyKeysOverlay is the only class that should create and destroy this
+  // view.
   StickyKeysOverlayView();
 
   ~StickyKeysOverlayView() override;
 
-  // views::WidgetDelegateView overrides:
+  // views::View overrides:
   void OnPaint(gfx::Canvas* canvas) override;
 
   void SetKeyState(ui::EventFlags modifier, StickyKeyState state);
@@ -127,6 +130,9 @@ class StickyKeysOverlayView : public views::WidgetDelegateView {
 };
 
 StickyKeysOverlayView::StickyKeysOverlayView() {
+  // The parent StickyKeysOverlay object owns this view.
+  set_owned_by_client();
+
   const gfx::Font& font =
       ui::ResourceBundle::GetSharedInstance().GetFont(kKeyLabelFontStyle);
   int font_size = font.GetFontSize();
@@ -163,7 +169,7 @@ void StickyKeysOverlayView::OnPaint(gfx::Canvas* canvas) {
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(SkColorSetARGB(0xB3, 0x55, 0x55, 0x55));
   canvas->DrawRoundRect(GetLocalBounds(), 2, paint);
-  views::WidgetDelegateView::OnPaint(canvas);
+  views::View::OnPaint(canvas);
 }
 
 void StickyKeysOverlayView::SetKeyState(ui::EventFlags modifier,
@@ -215,14 +221,13 @@ StickyKeysOverlay::StickyKeysOverlay()
   params.accept_events = false;
   params.keep_on_top = true;
   params.remove_standard_frame = true;
-  params.delegate = overlay_view_;
   params.bounds = CalculateOverlayBounds();
   params.parent = Shell::GetContainer(Shell::GetTargetRootWindow(),
                                       kShellWindowId_OverlayContainer);
   overlay_widget_.reset(new views::Widget);
   overlay_widget_->Init(params);
   overlay_widget_->SetVisibilityChangedAnimationsEnabled(false);
-  overlay_widget_->SetContentsView(overlay_view_);
+  overlay_widget_->SetContentsView(overlay_view_.get());
   overlay_widget_->GetNativeView()->SetName("StickyKeysOverlay");
 }
 
@@ -277,6 +282,10 @@ void StickyKeysOverlay::SetModifierKeyState(ui::EventFlags modifier,
 StickyKeyState StickyKeysOverlay::GetModifierKeyState(
     ui::EventFlags modifier) {
   return overlay_view_->GetKeyState(modifier);
+}
+
+views::Widget* StickyKeysOverlay::GetWidgetForTesting() {
+  return overlay_widget_.get();
 }
 
 gfx::Rect StickyKeysOverlay::CalculateOverlayBounds() {
