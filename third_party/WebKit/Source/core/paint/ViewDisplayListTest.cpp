@@ -4,8 +4,8 @@
 
 #include "config.h"
 
-#include "core/paint/DrawingRecorder.h"
 #include "core/paint/LayerClipRecorder.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderingTestHelper.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
@@ -59,7 +59,7 @@ public:
 
 void drawRect(GraphicsContext* context, RenderObject* renderer, PaintPhase phase, const FloatRect& bound)
 {
-    DrawingRecorder drawingRecorder(context, renderer, phase, bound);
+    RenderDrawingRecorder drawingRecorder(context, renderer, phase, bound);
     IntRect rect(0, 0, 10, 10);
     context->drawRect(rect);
 }

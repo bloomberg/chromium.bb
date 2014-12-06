@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
-#include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderObject.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -20,10 +18,10 @@ namespace blink {
 static bool s_inDrawingRecorder = false;
 #endif
 
-DrawingRecorder::DrawingRecorder(GraphicsContext* context, const RenderObject* renderer, PaintPhase phase, const FloatRect& clip)
+DrawingRecorder::DrawingRecorder(GraphicsContext* context, const DisplayItemClient displayItemClient, DisplayItem::Type displayItemType, const FloatRect& clip)
     : m_context(context)
-    , m_renderer(renderer)
-    , m_phase(phase)
+    , m_displayItemClient(displayItemClient)
+    , m_displayItemType(displayItemType)
     , m_bounds(clip)
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
@@ -51,16 +49,21 @@ DrawingRecorder::~DrawingRecorder()
         return;
     ASSERT(picture->bounds() == m_bounds);
     OwnPtr<DrawingDisplayItem> drawingItem = adoptPtr(
-        new DrawingDisplayItem(m_renderer->displayItemClient(), (DisplayItem::Type)m_phase, picture->skPicture(), m_bounds.location()));
+        new DrawingDisplayItem(m_displayItemClient, m_displayItemType, picture->skPicture(), m_bounds.location()));
+
 #ifndef NDEBUG
-    if (!m_renderer)
-        drawingItem->setClientDebugString("nullptr");
-    else
-        drawingItem->setClientDebugString(String::format("renderer: \"%p %s\"", m_renderer, m_renderer->debugName().utf8().data()));
+    drawingItem->setClientDebugString(m_clientDebugString);
 #endif
 
     ASSERT(m_context->displayItemList());
     m_context->displayItemList()->add(drawingItem.release());
 }
+
+#ifndef NDEBUG
+void DrawingRecorder::setClientDebugString(const WTF::String& clientDebugString)
+{
+    m_clientDebugString = clientDebugString;
+}
+#endif
 
 } // namespace blink

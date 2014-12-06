@@ -7,7 +7,7 @@
 
 #include "core/html/HTMLCanvasElement.h"
 #include "core/paint/ClipRecorder.h"
-#include "core/paint/DrawingRecorder.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderHTMLCanvas.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -40,7 +40,7 @@ void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPo
         interpolationQuality = InterpolationNone;
     }
 
-    DrawingRecorder recorder(context, &m_renderHTMLCanvas, localPaintInfo.phase, pixelSnappedIntRect(paintRect));
+    RenderDrawingRecorder recorder(context, &m_renderHTMLCanvas, localPaintInfo.phase, pixelSnappedIntRect(paintRect));
     InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
     context->setImageInterpolationQuality(interpolationQuality);
     canvas->paint(context, paintRect);

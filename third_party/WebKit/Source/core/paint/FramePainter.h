@@ -10,6 +10,7 @@ namespace blink {
 class FrameView;
 class GraphicsContext;
 class IntRect;
+class IntPoint;
 class Scrollbar;
 
 class FramePainter {

@@ -70,6 +70,7 @@
 #include "platform/PlatformMouseEvent.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
@@ -1190,6 +1191,8 @@ bool RenderLayerScrollableArea::overflowControlsIntersectRect(const IntRect& loc
 
 void RenderLayerScrollableArea::paintResizer(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect)
 {
+    DrawingRecorder recorder(context, box().displayItemClient(), DisplayItem::Resizer, damageRect);
+
     if (box().style()->resize() == RESIZE_NONE)
         return;
 

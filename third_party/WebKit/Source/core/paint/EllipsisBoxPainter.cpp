@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/paint/EllipsisBoxPainter.h"
 
-#include "core/paint/DrawingRecorder.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/TextPainter.h"
 #include "core/rendering/EllipsisBox.h"
 #include "core/rendering/PaintInfo.h"
@@ -32,7 +32,7 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
         boxOrigin.move(0, -m_ellipsisBox.virtualLogicalHeight());
     FloatRect boxRect(boxOrigin, FloatSize(m_ellipsisBox.logicalWidth(), m_ellipsisBox.virtualLogicalHeight()));
 
-    DrawingRecorder recorder(paintInfo.context, &m_ellipsisBox.renderer(), paintInfo.phase, boxRect);
+    RenderDrawingRecorder recorder(paintInfo.context, &m_ellipsisBox.renderer(), paintInfo.phase, boxRect);
 
     GraphicsContextStateSaver stateSaver(*context);
     if (!m_ellipsisBox.isHorizontal())
