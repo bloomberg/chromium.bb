@@ -8,6 +8,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_test_sink.h"
 #include "ipc/message_filter.h"
@@ -56,6 +57,7 @@ class MockRenderThread : public RenderThread {
   void RecordComputedAction(const std::string& action) override;
   scoped_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       size_t buffer_size) override;
+  cc::SharedBitmapManager* GetSharedBitmapManager() override;
   void RegisterExtension(v8::Extension* extension) override;
   void ScheduleIdleHandler(int64 initial_delay_ms) override;
   void IdleHandler() override;
@@ -162,6 +164,8 @@ class MockRenderThread : public RenderThread {
 
   // Observers to notify.
   ObserverList<RenderProcessObserver> observers_;
+
+  cc::TestSharedBitmapManager shared_bitmap_manager_;
 };
 
 }  // namespace content

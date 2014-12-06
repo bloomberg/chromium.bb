@@ -39,6 +39,7 @@
 #include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_histogram_message_filter.h"
+#include "content/child/child_shared_bitmap_manager.h"
 #include "content/child/content_child_helpers.h"
 #include "content/child/db_message_filter.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
@@ -1028,6 +1029,10 @@ void RenderThreadImpl::RecordComputedAction(const std::string& action) {
 scoped_ptr<base::SharedMemory>
     RenderThreadImpl::HostAllocateSharedMemoryBuffer(size_t size) {
   return ChildThread::AllocateSharedMemory(size, thread_safe_sender());
+}
+
+cc::SharedBitmapManager* RenderThreadImpl::GetSharedBitmapManager() {
+  return shared_bitmap_manager();
 }
 
 void RenderThreadImpl::RegisterExtension(v8::Extension* extension) {

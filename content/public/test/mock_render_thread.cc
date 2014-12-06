@@ -146,6 +146,10 @@ scoped_ptr<base::SharedMemory>
   return scoped_ptr<base::SharedMemory>(shared_buf.release());
 }
 
+cc::SharedBitmapManager* MockRenderThread::GetSharedBitmapManager() {
+  return &shared_bitmap_manager_;
+}
+
 void MockRenderThread::RegisterExtension(v8::Extension* extension) {
   blink::WebScriptController::registerExtension(extension);
 }

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/strings/stringprintf.h"
+#include "cc/resources/shared_bitmap_manager.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -290,15 +291,16 @@ void TestPlugin::updateGeometry(
     uint32 sync_point = context_->insertSyncPoint();
     texture_mailbox_ = cc::TextureMailbox(mailbox, GL_TEXTURE_2D, sync_point);
   } else {
-    size_t bytes = 4 * rect_.width * rect_.height;
-    scoped_ptr<base::SharedMemory> bitmap =
-        RenderThread::Get()->HostAllocateSharedMemoryBuffer(bytes);
-    if (!bitmap->Map(bytes)) {
+    scoped_ptr<cc::SharedBitmap> bitmap =
+        RenderThread::Get()->GetSharedBitmapManager()->AllocateSharedBitmap(
+            gfx::Rect(rect_).size());
+    if (!bitmap) {
       texture_mailbox_ = cc::TextureMailbox();
     } else {
-      DrawSceneSoftware(bitmap->memory(), bytes);
+      DrawSceneSoftware(bitmap->pixels());
+      DCHECK(bitmap->memory());
       texture_mailbox_ = cc::TextureMailbox(
-          bitmap.get(), gfx::Size(rect_.width, rect_.height));
+          bitmap->memory(), gfx::Size(rect_.width, rect_.height));
       shared_bitmap_ = bitmap.Pass();
     }
   }
@@ -318,7 +320,7 @@ bool TestPlugin::isPlaceholder() {
 static void IgnoreReleaseCallback(uint32 sync_point, bool lost) {
 }
 
-static void ReleaseSharedMemory(scoped_ptr<base::SharedMemory> bitmap,
+static void ReleaseSharedMemory(scoped_ptr<cc::SharedBitmap> bitmap,
                                 uint32 sync_point,
                                 bool lost) {
 }
@@ -414,9 +416,7 @@ void TestPlugin::DrawSceneGL() {
     DrawPrimitive();
 }
 
-void TestPlugin::DrawSceneSoftware(void* memory, size_t bytes) {
-  DCHECK_EQ(bytes, rect_.width * rect_.height * 4u);
-
+void TestPlugin::DrawSceneSoftware(void* memory) {
   SkColor background_color =
       SkColorSetARGB(static_cast<uint8>(scene_.opacity * 255),
                      scene_.background_color[0],

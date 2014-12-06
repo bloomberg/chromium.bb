@@ -26,6 +26,10 @@ class WebLayer;
 struct WebPluginParams;
 }
 
+namespace cc {
+class SharedBitmap;
+}
+
 namespace content {
 
 class WebTestDelegate;
@@ -141,7 +145,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
                        const std::string& fragment_source);
 
   // Functions for drawing scene in Software.
-  void DrawSceneSoftware(void* memory, size_t bytes);
+  void DrawSceneSoftware(void* memory);
 
   blink::WebFrame* frame_;
   WebTestDelegate* delegate_;
@@ -151,7 +155,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   blink::WebGraphicsContext3D* context_;
   unsigned color_texture_;
   cc::TextureMailbox texture_mailbox_;
-  scoped_ptr<base::SharedMemory> shared_bitmap_;
+  scoped_ptr<cc::SharedBitmap> shared_bitmap_;
   bool mailbox_changed_;
   unsigned framebuffer_;
   Scene scene_;
