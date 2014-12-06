@@ -110,7 +110,7 @@ do_package() {
   if [ -f "${DEB_CONTROL}" ]; then
     gen_control
   fi
-  fakeroot dpkg-deb -Zlzma -b "${STAGEDIR}" .
+  fakeroot dpkg-deb -Zxz -z9 -b "${STAGEDIR}" .
 }
 
 # Remove temporary files and unwanted packaging output.
