@@ -60,8 +60,9 @@ void RenderSVGEllipse::updateShapeFromElement()
         return;
 
     if (!m_radii.isEmpty()) {
-        // Fallback to RenderSVGShape if shape has a non-scaling stroke.
-        if (hasNonScalingStroke()) {
+        // Fallback to RenderSVGShape and path-based hit detection if the ellipse
+        // has a non-scaling or discontinuous stroke.
+        if (hasNonScalingStroke() || !hasContinuousStroke()) {
             RenderSVGShape::updateShapeFromElement();
             m_usePathFallback = true;
             return;
@@ -96,9 +97,9 @@ void RenderSVGEllipse::calculateRadiiAndCenter()
 
 bool RenderSVGEllipse::shapeDependentStrokeContains(const FloatPoint& point)
 {
-    // The optimized contains code below does not support non-smooth strokes so we need
+    // The optimized code below does not support discontinuous strokes so we need
     // to fall back to RenderSVGShape::shapeDependentStrokeContains in these cases.
-    if (m_usePathFallback || !hasSmoothStroke()) {
+    if (m_usePathFallback || !hasContinuousStroke()) {
         if (!hasPath())
             RenderSVGShape::updateShapeFromElement();
         return RenderSVGShape::shapeDependentStrokeContains(point);
@@ -131,6 +132,12 @@ bool RenderSVGEllipse::shapeDependentFillContains(const FloatPoint& point, const
     float xrX = center.x() / m_radii.width();
     float yrY = center.y() / m_radii.height();
     return xrX * xrX + yrY * yrY <= 1.0;
+}
+
+bool RenderSVGEllipse::hasContinuousStroke() const
+{
+    const SVGRenderStyle& svgStyle = style()->svgStyle();
+    return svgStyle.strokeDashArray()->isEmpty();
 }
 
 }

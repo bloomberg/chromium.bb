@@ -259,13 +259,4 @@ float RenderSVGShape::strokeWidth() const
     return style()->svgStyle().strokeWidth()->value(lengthContext);
 }
 
-bool RenderSVGShape::hasSmoothStroke() const
-{
-    const SVGRenderStyle& svgStyle = style()->svgStyle();
-    return svgStyle.strokeDashArray()->isEmpty()
-        && svgStyle.strokeMiterLimit() == SVGRenderStyle::initialStrokeMiterLimit()
-        && svgStyle.joinStyle() == SVGRenderStyle::initialJoinStyle()
-        && svgStyle.capStyle() == SVGRenderStyle::initialCapStyle();
-}
-
 }

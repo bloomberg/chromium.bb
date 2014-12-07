@@ -64,6 +64,9 @@ crbug.com/436881 fast/preloader/script.html [ Pass Failure ]
 crbug.com/436881 fast/preloader/style.html [ Pass Failure ]
 crbug.com/436881 fast/preloader/understands-base-tag.html [ Pass Failure ]
 
+crbug.com/436214 svg/W3C-SVG-1.2-Tiny/struct-use-recursion-02-t.svg [ NeedsRebaseline ]
+crbug.com/436214 svg/W3C-SVG-1.2-Tiny/struct-use-recursion-03-t.svg [ NeedsRebaseline ]
+
 crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
 
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]

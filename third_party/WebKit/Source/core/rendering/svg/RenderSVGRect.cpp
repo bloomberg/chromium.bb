@@ -62,8 +62,12 @@ void RenderSVGRect::updateShapeFromElement()
 
     // Spec: "A value of zero disables rendering of the element."
     if (!boundingBoxSize.isEmpty()) {
-        // Fallback to RenderSVGShape if rect has rounded corners or a non-scaling stroke.
-        if (rect->rx()->currentValue()->value(lengthContext) > 0 || rect->ry()->currentValue()->value(lengthContext) > 0 || hasNonScalingStroke()) {
+        // Fallback to RenderSVGShape and path-based hit detection if the rect
+        // has rounded corners or a non-scaling or non-simple stroke.
+        if (rect->rx()->currentValue()->value(lengthContext) > 0
+            || rect->ry()->currentValue()->value(lengthContext) > 0
+            || hasNonScalingStroke()
+            || !definitelyHasSimpleStroke()) {
             RenderSVGShape::updateShapeFromElement();
             m_usePathFallback = true;
             return;
@@ -88,9 +92,9 @@ void RenderSVGRect::updateShapeFromElement()
 
 bool RenderSVGRect::shapeDependentStrokeContains(const FloatPoint& point)
 {
-    // The optimized contains code below does not support non-smooth strokes so we need
+    // The optimized code below does not support non-simple strokes so we need
     // to fall back to RenderSVGShape::shapeDependentStrokeContains in these cases.
-    if (m_usePathFallback || !hasSmoothStroke()) {
+    if (m_usePathFallback || !definitelyHasSimpleStroke()) {
         if (!hasPath())
             RenderSVGShape::updateShapeFromElement();
         return RenderSVGShape::shapeDependentStrokeContains(point);
@@ -104,6 +108,32 @@ bool RenderSVGRect::shapeDependentFillContains(const FloatPoint& point, const Wi
     if (m_usePathFallback)
         return RenderSVGShape::shapeDependentFillContains(point, fillRule);
     return m_fillBoundingBox.contains(point.x(), point.y());
+}
+
+// Returns true if the stroke is continuous and definitely uses miter joins.
+bool RenderSVGRect::definitelyHasSimpleStroke() const
+{
+    const SVGRenderStyle& svgStyle = style()->svgStyle();
+
+    // The four angles of a rect are 90 degrees. Using the formula at:
+    // http://www.w3.org/TR/SVG/painting.html#StrokeMiterlimitProperty
+    // when the join style of the rect is "miter", the ratio of the miterLength
+    // to the stroke-width is found to be
+    // miterLength / stroke-width = 1 / sin(45 degrees)
+    //                            = 1 / (1 / sqrt(2))
+    //                            = sqrt(2)
+    //                            = 1.414213562373095...
+    // When sqrt(2) exceeds the miterlimit, then the join style switches to
+    // "bevel". When the miterlimit is greater than or equal to sqrt(2) then
+    // the join style remains "miter".
+    //
+    // An approximation of sqrt(2) is used here because at certain precise
+    // miterlimits, the join style used might not be correct (e.g. a miterlimit
+    // of 1.4142135 should result in bevel joins, but may be drawn using miter
+    // joins).
+    return svgStyle.strokeDashArray()->isEmpty()
+        && svgStyle.joinStyle() == MiterJoin
+        && svgStyle.strokeMiterLimit() >= 1.5;
 }
 
 }

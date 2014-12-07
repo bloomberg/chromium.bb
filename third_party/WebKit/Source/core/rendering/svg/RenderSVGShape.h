@@ -83,7 +83,6 @@ protected:
     virtual void updateShapeFromElement();
     virtual bool shapeDependentStrokeContains(const FloatPoint&);
     virtual bool shapeDependentFillContains(const FloatPoint&, const WindRule) const;
-    bool hasSmoothStroke() const;
 
     // Give RenderSVGPath a hook for updating markers in updateShapeFromElement.
     virtual void processMarkerPositions() { };

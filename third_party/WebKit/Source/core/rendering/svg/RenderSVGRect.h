@@ -46,6 +46,7 @@ private:
     virtual bool isShapeEmpty() const override { return m_usePathFallback ? RenderSVGShape::isShapeEmpty() : m_fillBoundingBox.isEmpty(); }
     virtual bool shapeDependentStrokeContains(const FloatPoint&) override;
     virtual bool shapeDependentFillContains(const FloatPoint&, const WindRule) const override;
+    bool definitelyHasSimpleStroke() const;
 
 private:
     FloatRect m_innerStrokeRect;
