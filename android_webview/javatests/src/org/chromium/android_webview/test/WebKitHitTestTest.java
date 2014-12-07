@@ -39,6 +39,9 @@ public class WebKitHitTestTest extends AwTestBase {
         mTestView = createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = mTestView.getAwContents();
         mWebServer = TestWebServer.start();
+        final String imagePath = "/" + CommonResources.TEST_IMAGE_FILENAME;
+        mWebServer.setResponseBase64(imagePath,
+                CommonResources.FAVICON_DATA_BASE64, CommonResources.getImagePngHeaders(true));
     }
 
     @Override
@@ -311,7 +314,7 @@ public class WebKitHitTestTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "WebKitHitTest"})
     public void testImgeType() throws Throwable {
-        String relImageSrc = "/nonexistent2.jpg";
+        String relImageSrc = "/"  + CommonResources.TEST_IMAGE_FILENAME;
         String fullImageSrc = mWebServer.getResponseUrl(relImageSrc);
         String page = CommonResources.makeHtmlPageFrom("",
                 "<img class=\"full_view\" src=\"" + relImageSrc + "\">");
@@ -395,7 +398,7 @@ public class WebKitHitTestTest extends AwTestBase {
         // Test when the touch and focus paths racing with setting different
         // results.
 
-        String relImageSrc = "/nonexistent3.jpg";
+        String relImageSrc = "/"  + CommonResources.TEST_IMAGE_FILENAME;
         String fullImageSrc = mWebServer.getResponseUrl(relImageSrc);
         String html = CommonResources.makeHtmlPageFrom(
                 "<meta name=\"viewport\" content=\"width=device-width,height=device-height\" />" +
