@@ -14,8 +14,12 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/views/window/non_client_view.h"
 
+namespace {
+
 // How round the 'new tab' style bookmarks bar is.
-static const int kNewtabBarRoundness = 5;
+const int kNewTabBarRoundness = 5;
+
+}  // namespace
 
 const SkColor DetachableToolbarView::kEdgeDividerColor =
     SkColorSetRGB(222, 234, 248);
@@ -51,25 +55,26 @@ void DetachableToolbarView::PaintBackgroundAttachedMode(
 }
 
 // static
-void DetachableToolbarView::CalculateContentArea(
-    double animation_state, double horizontal_padding,
-    double vertical_padding, SkRect* rect,
-    double* roundness, views::View* view) {
+void DetachableToolbarView::CalculateContentArea(double animation_state,
+                                                 double horizontal_padding,
+                                                 double vertical_padding,
+                                                 SkRect* rect,
+                                                 double* roundness,
+                                                 views::View* view) {
   // The 0.5 is to correct for Skia's "draw on pixel boundaries"ness.
   rect->set(SkDoubleToScalar(horizontal_padding - 0.5),
            SkDoubleToScalar(vertical_padding - 0.5),
            SkDoubleToScalar(view->width() - horizontal_padding - 0.5),
            SkDoubleToScalar(view->height() - vertical_padding - 0.5));
 
-  *roundness = static_cast<double>(kNewtabBarRoundness) * animation_state;
+  *roundness = static_cast<double>(kNewTabBarRoundness) * animation_state;
 }
 
 // static
-void DetachableToolbarView::PaintHorizontalBorder(
-    gfx::Canvas* canvas,
-    DetachableToolbarView* view,
-    bool at_top,
-    SkColor color) {
+void DetachableToolbarView::PaintHorizontalBorder(gfx::Canvas* canvas,
+                                                  DetachableToolbarView* view,
+                                                  bool at_top,
+                                                  SkColor color) {
   int thickness = views::NonClientFrameView::kClientEdgeThickness;
   int y = at_top ? 0 : (view->height() - thickness);
   canvas->FillRect(gfx::Rect(0, y, view->width(), thickness), color);
@@ -91,8 +96,10 @@ void DetachableToolbarView::PaintContentAreaBackground(
 
 // static
 void DetachableToolbarView::PaintContentAreaBorder(
-    gfx::Canvas* canvas, ui::ThemeProvider* theme_provider,
-    const SkRect& rect, double roundness) {
+    gfx::Canvas* canvas,
+    ui::ThemeProvider* theme_provider,
+    const SkRect& rect,
+    double roundness) {
   SkPaint border_paint;
   border_paint.setColor(
       theme_provider->GetColor(ThemeProperties::COLOR_NTP_HEADER));

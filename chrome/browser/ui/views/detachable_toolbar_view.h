@@ -39,7 +39,7 @@ class DetachableToolbarView : public views::AccessiblePaneView {
       ui::ThemeProvider* theme_provider,
       const gfx::Rect& bounds,
       const gfx::Point& background_origin,
-     chrome::HostDesktopType host_desktop_type);
+      chrome::HostDesktopType host_desktop_type);
 
   // Calculate the rect for the content area of the bar/shelf. This is only
   // needed when the bar/shelf is detached from the Chrome frame (otherwise the
