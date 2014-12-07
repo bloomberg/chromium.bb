@@ -35,13 +35,20 @@ class CleanUpStage(generic_stages.BuilderStage):
   def _CleanChroot(self):
     commands.CleanupChromeKeywordsFile(self._boards,
                                        self._build_root)
-    chroot_tmpdir = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR,
-                                 'tmp')
+    chroot_dir = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
+    chroot_tmpdir = os.path.join(chroot_dir, 'tmp')
     if os.path.exists(chroot_tmpdir):
-      cros_build_lib.SudoRunCommand(['rm', '-rf', chroot_tmpdir],
-                                    print_cmd=False)
+      osutils.RmDir(chroot_tmpdir, ignore_missing=True, sudo=True)
       cros_build_lib.SudoRunCommand(['mkdir', '--mode', '1777', chroot_tmpdir],
                                     print_cmd=False)
+
+    # Clear out the incremental build cache between runs.
+    cache_dir = 'var/cache/portage'
+    d = os.path.join(chroot_dir, cache_dir)
+    osutils.RmDir(d, ignore_missing=True, sudo=True)
+    for board in self._boards:
+      d = os.path.join(chroot_dir, 'build', board, cache_dir)
+      osutils.RmDir(d, ignore_missing=True, sudo=True)
 
   def _DeleteChroot(self):
     chroot = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
