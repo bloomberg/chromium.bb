@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/fake_account_tracker_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/browser/sync/profile_sync_auth_provider.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -26,6 +30,10 @@ class ProfileSyncAuthProviderTest : public ::testing::Test {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               &BuildAutoIssuingFakeProfileOAuth2TokenService);
+    builder.AddTestingFactory(AccountTrackerServiceFactory::GetInstance(),
+                              FakeAccountTrackerService::Build);
+    builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
+                              signin::BuildTestSigninClient);
 
     profile_ = builder.Build();
 

@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -40,7 +41,8 @@ KeyedService* FakeSigninManagerBase::Build(content::BrowserContext* context) {
 FakeSigninManager::FakeSigninManager(Profile* profile)
     : SigninManager(
           ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile)) {}
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+          AccountTrackerServiceFactory::GetForProfile(profile)) {}
 
 FakeSigninManager::~FakeSigninManager() {
 }
@@ -60,7 +62,7 @@ void FakeSigninManager::StartSignInWithRefreshToken(
 void FakeSigninManager::CompletePendingSignin() {
   SetAuthenticatedUsername(GetUsernameForAuthInProgress());
   set_auth_in_progress(std::string());
-  FOR_EACH_OBSERVER(Observer,
+  FOR_EACH_OBSERVER(SigninManagerBase::Observer,
                     observer_list_,
                     GoogleSigninSucceeded(authenticated_username_,
                                           authenticated_username_,
@@ -75,7 +77,9 @@ void FakeSigninManager::SignIn(const std::string& username,
 }
 
 void FakeSigninManager::FailSignin(const GoogleServiceAuthError& error) {
-  FOR_EACH_OBSERVER(Observer, observer_list_, GoogleSigninFailed(error));
+  FOR_EACH_OBSERVER(SigninManagerBase::Observer,
+                    observer_list_,
+                    GoogleSigninFailed(error));
 }
 
 void FakeSigninManager::SignOut(

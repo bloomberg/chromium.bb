@@ -58,9 +58,12 @@ class ChromeSigninClient : public SigninClient,
       const GURL& url,
       const std::string& name,
       const net::CookieStore::CookieChangedCallback& callback) override;
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username,
-                             const std::string& password) override;
+  void OnSignedIn(const std::string& account_id,
+                  const std::string& username,
+                  const std::string& password) override;
+  void PostSignedIn(const std::string& account_id,
+                    const std::string& username,
+                    const std::string& password) override;
 
  private:
   Profile* profile_;

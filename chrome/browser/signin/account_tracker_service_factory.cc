@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -17,6 +18,7 @@ AccountTrackerServiceFactory::AccountTrackerServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "AccountTrackerServiceFactory",
         BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(ChromeSigninClientFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 
@@ -52,7 +54,6 @@ KeyedService* AccountTrackerServiceFactory::BuildServiceInstanceFor(
   AccountTrackerService* service = new AccountTrackerService();
   service->Initialize(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      profile->GetPrefs(),
-      profile->GetRequestContext());
+      ChromeSigninClientFactory::GetForProfile(profile));
   return service;
 }

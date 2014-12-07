@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
@@ -135,7 +136,9 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
       SigninManagerFactory::GetForProfile(profile_)->GetAuthenticatedUsername();
   if (gaia::AreEmailsSame(email_, primary_email) &&
       source == signin::SOURCE_REAUTH &&
-      switches::IsNewProfileManagement() && !password_.empty()) {
+      switches::IsNewProfileManagement() &&
+      !password_.empty() &&
+      profiles::IsLockAvailable(profile_)) {
     chrome::SetLocalAuthCredentials(profile_, password_);
   }
 

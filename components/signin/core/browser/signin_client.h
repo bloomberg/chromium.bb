@@ -80,10 +80,15 @@ class SigninClient : public KeyedService {
       const std::string& name,
       const net::CookieStore::CookieChangedCallback& callback) = 0;
 
-  // Called when Google signin has succeeded.
-  virtual void GoogleSigninSucceeded(const std::string& account_id,
-                                     const std::string& username,
-                                     const std::string& password) {}
+  // Called after Google signin has succeeded.
+  virtual void OnSignedIn(const std::string& account_id,
+                          const std::string& username,
+                          const std::string& password) {}
+
+  // Called after Google signin has succeeded and GetUserInfo has returned.
+  virtual void PostSignedIn(const std::string& account_id,
+                            const std::string& username,
+                            const std::string& password) {}
 
   virtual void SetSigninProcess(int host_id) = 0;
   virtual void ClearSigninProcess() = 0;

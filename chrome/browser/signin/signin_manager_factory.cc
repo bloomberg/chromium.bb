@@ -131,7 +131,9 @@ KeyedService* SigninManagerFactory::BuildServiceInstanceFor(
   service = new SigninManagerBase(client);
 #else
   service = new SigninManager(
-      client, ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
+      client,
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+      AccountTrackerServiceFactory::GetForProfile(profile));
 #endif
   service->Initialize(g_browser_process->local_state());
   FOR_EACH_OBSERVER(Observer, observer_list_, SigninManagerCreated(service));

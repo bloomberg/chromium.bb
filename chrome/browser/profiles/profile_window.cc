@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -27,6 +28,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/account_reconcilor.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
@@ -364,8 +366,22 @@ bool IsLockAvailable(Profile* profile) {
   if (!switches::IsNewProfileManagement())
     return false;
 
-  const std::string& hosted_domain = profile->GetPrefs()->
+  if (profile->IsGuestSession())
+    return false;
+
+  const ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  std::string hosted_domain = profile->GetPrefs()->
       GetString(prefs::kGoogleServicesHostedDomain);
+  // TODO(mlerman): After one release remove any hosted_domain reference to the
+  // pref, since all users will have this in the AccountTrackerService.
+  if (hosted_domain.empty()) {
+    AccountTrackerService* account_tracker =
+        AccountTrackerServiceFactory::GetForProfile(profile);
+    int profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+    hosted_domain = account_tracker->FindAccountInfoByEmail(base::UTF16ToUTF8(
+        cache.GetUserNameOfProfileAtIndex(profile_index))).hosted_domain;
+  }
   // TODO(mlerman): Prohibit only users who authenticate using SAML. Until then,
   // prohibited users who use hosted domains (aside from google.com).
   if (hosted_domain != Profile::kNoHostedDomainFound &&
@@ -373,8 +389,6 @@ bool IsLockAvailable(Profile* profile) {
     return false;
   }
 
-  const ProfileInfoCache& cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
   for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
     if (cache.ProfileIsSupervisedAtIndex(i))
       return true;

@@ -14,8 +14,8 @@ const char kAccountIdMigrationState[] = "account_id_migration_state";
 // Boolean identifying whether reverse auto-login is enabled.
 const char kAutologinEnabled[] = "autologin.enabled";
 
-// The profile's hosted domain; empty if unset; Profile::kNoHostedDomainFound
-// if there is none.
+// The profile's hosted domain; empty if unset;
+// AccountTrackerService::kNoHostedDomainFound if there is none.
 const char kGoogleServicesHostedDomain[] = "google.services.hosted_domain";
 
 // String the identifies the last user that logged into sync and other

@@ -47,6 +47,13 @@ class TestSigninClient : public SigninClient {
   // Does nothing.
   void OnSignedOut() override;
 
+  // Trace that this was called.
+  void PostSignedIn(const std::string& account_id,
+                    const std::string& username,
+                    const std::string& password) override;
+
+  std::string get_signed_in_password() { return signed_in_password_; }
+
   // Returns the empty string.
   std::string GetProductVersion() override;
 
@@ -93,6 +100,9 @@ class TestSigninClient : public SigninClient {
   scoped_refptr<TokenWebData> database_;
   int signin_host_id_;
   PrefService* pref_service_;
+
+  // Pointer to be filled by PostSignedIn.
+  std::string signed_in_password_;
 
 #if defined(OS_IOS)
   scoped_ptr<ios::FakeProfileOAuth2TokenServiceIOSProvider> iosProvider_;

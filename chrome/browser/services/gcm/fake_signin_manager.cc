@@ -7,6 +7,7 @@
 #include "base/observer_list.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
@@ -25,7 +26,8 @@ FakeSigninManager::FakeSigninManager(Profile* profile)
 #else
     : SigninManager(
         ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile)),
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+        AccountTrackerServiceFactory::GetForProfile(profile)),
 #endif
       profile_(profile) {
   Initialize(NULL);
@@ -36,7 +38,7 @@ FakeSigninManager::~FakeSigninManager() {
 
 void FakeSigninManager::SignIn(const std::string& username) {
   SetAuthenticatedUsername(username);
-  FOR_EACH_OBSERVER(Observer,
+  FOR_EACH_OBSERVER(SigninManagerBase::Observer,
                     observer_list_,
                     GoogleSigninSucceeded(username, username, std::string()));
 }
@@ -47,7 +49,7 @@ void FakeSigninManager::SignOut(
   const std::string username = GetAuthenticatedUsername();
   ClearAuthenticatedUsername();
   profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
-  FOR_EACH_OBSERVER(Observer,
+  FOR_EACH_OBSERVER(SigninManagerBase::Observer,
                     observer_list_,
                     GoogleSignedOut(account_id, username));
 }

@@ -45,7 +45,12 @@ std::string TestSigninClient::GetSigninScopedDeviceId() {
   return std::string();
 }
 
-void TestSigninClient::OnSignedOut() {
+void TestSigninClient::OnSignedOut() {}
+
+void TestSigninClient::PostSignedIn(const std::string& account_id,
+                  const std::string& username,
+                  const std::string& password) {
+  signed_in_password_ = password;
 }
 
 net::URLRequestContextGetter* TestSigninClient::GetURLRequestContext() {
