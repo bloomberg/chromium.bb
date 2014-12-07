@@ -19,7 +19,7 @@ from chromite.lib import osutils
 from chromite.lib.paygen import utils
 
 
-class TestUtils(cros_test_lib.MoxTestCase):
+class TestUtils(cros_test_lib.TestCase):
   """Test utils methods."""
 
   def testCreateTmpInvalidPath(self):

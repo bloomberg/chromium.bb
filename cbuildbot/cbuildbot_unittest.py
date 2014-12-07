@@ -268,7 +268,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     cbuildbot.SimpleBuilder(builder_run).RunStages()
 
 
-class LogTest(cros_test_lib.MoxTestCase):
+class LogTest(cros_test_lib.TestCase):
   """Test logging functionality."""
 
   def _generateLogs(self, num):

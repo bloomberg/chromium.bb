@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unittests for config.  Needs to be run inside of chroot for mox."""
+"""Unittests for config."""
 
 # pylint: disable=bad-continuation
 
@@ -81,7 +81,7 @@ class ConfigClassTest(cros_test_lib.TestCase):
     self.assertEqual(inherited_config_2, {'qzr': 'flp'})
 
 
-class CBuildBotTest(cros_test_lib.MoxTestCase):
+class CBuildBotTest(cros_test_lib.TestCase):
   """General tests of cbuildbot_config with respect to cbuildbot."""
 
   def testConfigsKeysMismatch(self):

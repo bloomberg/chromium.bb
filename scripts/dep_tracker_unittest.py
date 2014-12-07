@@ -21,7 +21,7 @@ from chromite.scripts import dep_tracker
 # pylint: disable=W0212
 
 
-class MainTest(cros_test_lib.MoxOutputTestCase):
+class MainTest(cros_test_lib.OutputTestCase):
   """Tests for the main() function."""
 
   def testHelp(self):
