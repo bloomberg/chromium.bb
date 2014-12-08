@@ -10,6 +10,7 @@
 namespace prefs {
 
 extern const char kRecoveryComponentVersion[];
+extern const char kRecoveryComponentUnpackPath[];
 
 #if defined(OS_WIN)
 // Local state prefs.

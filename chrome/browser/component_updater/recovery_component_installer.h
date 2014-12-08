@@ -22,16 +22,13 @@ void RegisterRecoveryComponent(ComponentUpdateService* cus, PrefService* prefs);
 // Registers user preferences related to the recovery component.
 void RegisterPrefsForRecoveryComponent(PrefRegistrySimple* registry);
 
-// Notifies recovery component that agreed elevated install, so that it
-// can launches an elevated install process. After that, clears
-// preference flag prefs::kRecoveryComponentNeedsElevation.
-// Note: the function is yet to be implemented.
+// Notifies the recovery component that the user has accepted the elevation
+// prompt. Clears the state of prefs::kRecoveryComponentNeedsElevation after the
+// notification.
 void AcceptedElevatedRecoveryInstall(PrefService* prefs);
 
-// Notifies recovery component that elevated install is declined, so that it can
-// removes the setup files. After that, clears preference flag
-// prefs::kRecoveryComponentNeedsElevation.
-// Note: the function is yet to be implemented.
+// Notifies recovery component that the elevated install has been declined.
+// Clears the flag prefs::kRecoveryComponentNeedsElevation.
 void DeclinedElevatedRecoveryInstall(PrefService* prefs);
 
 }  // namespace component_updater

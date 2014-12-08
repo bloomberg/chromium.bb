@@ -10,6 +10,9 @@ namespace prefs {
 // takes the usual 'a.b.c.d' notation.
 const char kRecoveryComponentVersion[] = "recovery_component.version";
 
+// Full path where last recovery component CRX was unpacked to.
+const char kRecoveryComponentUnpackPath[] = "recovery_component.unpack_path";
+
 #if defined(OS_WIN)
 // The last exit code integer value returned by the SwReporter. Saved in local
 // state.
