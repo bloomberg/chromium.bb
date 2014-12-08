@@ -82,7 +82,7 @@ function test()
             InspectorTest.timelinePresentationModel().reset();
             next();
         }
-        InspectorTest.evaluateWithTimeline(actions, callback)
+        InspectorTest.evaluateWithTimeline(actions, InspectorTest.safeWrap(callback));
     }
 }
 

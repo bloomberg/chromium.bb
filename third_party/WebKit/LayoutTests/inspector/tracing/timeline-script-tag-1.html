@@ -43,7 +43,7 @@ function test()
                 ]);
             }
         }
-        InspectorTest.printTimelineRecords(null, format);
+        InspectorTest.printTimelineRecords(null, InspectorTest.safeWrap(format));
         InspectorTest.completeTest();
     }
 }

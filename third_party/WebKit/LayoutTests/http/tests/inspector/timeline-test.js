@@ -207,7 +207,7 @@ InspectorTest.dumpTimelineRecord = function(record, detailsCallback, level, filt
         message = message + "> ";
     if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp
         || record.type() === WebInspector.TimelineModel.RecordType.ConsoleTime) {
-        message += WebInspector.TimelineUIUtils.titleForRecord(record);
+        message += WebInspector.TimelineUIUtils.eventTitle(record.traceEvent());
     } else  {
         message += record.type();
     }
@@ -257,7 +257,7 @@ InspectorTest.dumpPresentationRecord = function(presentationRecord, detailsCallb
         message += record.type() + " x " + presentationRecord.presentationChildren().length;
     } else if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp
         || record.type() === WebInspector.TimelineModel.RecordType.ConsoleTime) {
-        message += WebInspector.TimelineUIUtils.titleForRecord(record);
+        message += WebInspector.TimelineUIUtils.eventTitle(record.traceEvent());
     } else {
         message += record.type();
     }
