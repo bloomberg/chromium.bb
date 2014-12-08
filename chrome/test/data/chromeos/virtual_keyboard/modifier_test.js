@@ -10,20 +10,7 @@
 function testControlKeyStickyAsync(testDoneCallback) {
   var testCallback = function() {
     mockTap(findKeyById('ControlLeft'));
-    var send = chrome.virtualKeyboardPrivate.sendKeyEvent;
-    send.addExpectation({
-      type: 'keydown',
-      charValue: 0,
-      keyCode: 65,
-      modifiers: Modifier.CONTROL
-    });
-    send.addExpectation({
-      type: 'keyup',
-      charValue: 0,
-      keyCode: 65,
-      modifiers: Modifier.CONTROL
-    });
-    mockTap(findKey('a'));
+    mockTypeCharacter('a', 0x41, Modifier.CONTROL, 0);
 
     // Ensure that the control key is no longer sticking. i.e. Ensure that
     // typing 'a' on its own results in only 'a'.
