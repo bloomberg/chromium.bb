@@ -41,7 +41,7 @@ Platform specific build notes:
     Script can run on a normal Ubuntu box.
 
   linux mipsel:
-    Script can run on a normal Ubuntu box with MIPS cross-toolchain in $PATH.
+    Script must be run inside of ChromeOS chroot with BOARD=mipsel-o32-generic.
 
   linux arm/arm-neon:
     Script must be run inside of ChromeOS chroot with BOARD=arm-generic.
@@ -323,7 +323,7 @@ def main(argv):
     elif target_arch == 'mipsel':
       configure_flags['Common'].extend([
           '--enable-cross-compile',
-          '--cross-prefix=mips-linux-gnu-',
+          '--cross-prefix=/usr/bin/mipsel-cros-linux-gnu-',
           '--target-os=linux',
           '--arch=mips',
           '--extra-cflags=-mips32',
