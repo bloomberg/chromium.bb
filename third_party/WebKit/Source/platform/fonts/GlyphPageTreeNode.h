@@ -97,7 +97,8 @@ protected:
 
 class PLATFORM_EXPORT GlyphPageTreeNode : public GlyphPageTreeNodeBase {
 public:
-    static GlyphPageTreeNode* getRootChild(const FontData* fontData, unsigned pageNumber) { return getRoot(pageNumber)->getNormalChild(fontData, pageNumber); }
+    static GlyphPageTreeNodeBase* getRootChild(const FontData* fontData, unsigned pageNumber) { return getRoot(pageNumber)->getChild(fontData, pageNumber); }
+    static GlyphPageTreeNode* getNormalRootChild(const FontData* fontData, unsigned pageNumber) { return getRoot(pageNumber)->getNormalChild(fontData, pageNumber); }
 
     static void pruneTreeCustomFontData(const FontData*);
     static void pruneTreeFontData(const SimpleFontData*);

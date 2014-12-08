@@ -282,7 +282,7 @@ void GlyphPageTreeNode::initializeOverridePage(const FontData* fontData, unsigne
     // overrides). getRootChild will always create a page if one
     // doesn't exist, but the page doesn't necessarily have glyphs
     // (this pointer may be 0).
-    GlyphPage* fallbackPage = getRootChild(fontData, pageNumber)->page();
+    GlyphPage* fallbackPage = getNormalRootChild(fontData, pageNumber)->page();
     if (!parentPage) {
         // When the parent has no glyphs for this page, we can easily
         // override it just by supplying the glyphs from our font.

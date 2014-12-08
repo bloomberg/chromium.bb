@@ -386,7 +386,7 @@ static inline std::pair<GlyphData, GlyphPage*> glyphDataAndPageForNonCJKCharacte
 {
     if (orientation == NonCJKGlyphOrientationUpright || Character::shouldIgnoreRotation(character)) {
         RefPtr<SimpleFontData> uprightFontData = data.fontData->uprightOrientationFontData();
-        GlyphPageTreeNode* uprightNode = GlyphPageTreeNode::getRootChild(uprightFontData.get(), pageNumber);
+        GlyphPageTreeNode* uprightNode = GlyphPageTreeNode::getNormalRootChild(uprightFontData.get(), pageNumber);
         GlyphPage* uprightPage = uprightNode->page();
         if (uprightPage) {
             GlyphData uprightData = uprightPage->glyphDataForCharacter(character);
@@ -400,7 +400,7 @@ static inline std::pair<GlyphData, GlyphPage*> glyphDataAndPageForNonCJKCharacte
         }
     } else if (orientation == NonCJKGlyphOrientationVerticalRight) {
         RefPtr<SimpleFontData> verticalRightFontData = data.fontData->verticalRightOrientationFontData();
-        GlyphPageTreeNode* verticalRightNode = GlyphPageTreeNode::getRootChild(verticalRightFontData.get(), pageNumber);
+        GlyphPageTreeNode* verticalRightNode = GlyphPageTreeNode::getNormalRootChild(verticalRightFontData.get(), pageNumber);
         GlyphPage* verticalRightPage = verticalRightNode->page();
         if (verticalRightPage) {
             GlyphData verticalRightData = verticalRightPage->glyphDataForCharacter(character);
@@ -494,7 +494,7 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32& c, 
                     if (!variantFontData)
                         return std::make_pair(data, page);
 
-                    GlyphPageTreeNode* variantNode = GlyphPageTreeNode::getRootChild(variantFontData.get(), pageNumber);
+                    GlyphPageTreeNode* variantNode = GlyphPageTreeNode::getNormalRootChild(variantFontData.get(), pageNumber);
                     GlyphPage* variantPage = variantNode->page();
                     if (variantPage) {
                         GlyphData data = variantPage->glyphDataForCharacter(c);
