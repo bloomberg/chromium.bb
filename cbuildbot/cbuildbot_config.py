@@ -1830,6 +1830,13 @@ unittest_only_pre_cq = pre_cq.derive(
   compilecheck=True,
 )
 
+# Pre-CQ targets that don't run VMTests.
+no_vmtest_pre_cq = pre_cq.derive(
+  description='Verifies compilation, building an image, and unit tests '
+              'if supported.',
+  vm_tests=[],
+)
+
 # Pre-CQ targets that only check compilation.
 compile_only_pre_cq = unittest_only_pre_cq.derive(
   description='Verifies compilation only',
@@ -2134,6 +2141,7 @@ ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
 
 # Add a pre-cq config for every board.
 _CreateConfigsForBoards(pre_cq, _all_boards, 'pre-cq')
+_CreateConfigsForBoards(no_vmtest_pre_cq, _all_boards, 'no-vmtest-pre-cq')
 
 # The Pre-CQ tests 6 platforms. Because we test so many platforms in parallel,
 # it is important to delay the launch of some builds in order to conserve RAM.
