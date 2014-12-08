@@ -5,6 +5,7 @@
 #include "chrome/browser/task_manager/browser_process_resource_provider.h"
 
 #include "base/command_line.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -32,13 +33,29 @@ gfx::ImageSkia* BrowserProcessResource::default_icon_ = NULL;
 
 BrowserProcessResource::BrowserProcessResource()
     : title_() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "437890 BrowserProcessResource::BrowserProcessResource1"));
+
   int pid = base::GetCurrentProcId();
   bool success = base::OpenPrivilegedProcessHandle(pid, &process_);
   DCHECK(success);
 #if defined(OS_WIN)
   if (!default_icon_) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "437890 BrowserProcessResource::BrowserProcessResource2"));
+
     HICON icon = GetAppIcon();
     if (icon) {
+      // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is
+      // fixed.
+      tracked_objects::ScopedTracker tracking_profile3(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "437890 BrowserProcessResource::BrowserProcessResource3"));
+
       scoped_ptr<SkBitmap> bitmap(IconUtil::CreateSkBitmapFromHICON(icon));
       default_icon_ = new gfx::ImageSkia(gfx::ImageSkiaRep(*bitmap, 1.0f));
     }
@@ -52,6 +69,13 @@ BrowserProcessResource::BrowserProcessResource()
   // TODO(port): Port icon code.
   NOTIMPLEMENTED();
 #endif  // defined(OS_WIN)
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/437890 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "437890 BrowserProcessResource::BrowserProcessResource4"));
+
   default_icon_->MakeThreadSafe();
 }
 
