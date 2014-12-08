@@ -318,6 +318,11 @@ GLvoid StubGLGetShaderiv(GLuint shader, GLenum pname, GLint* params) {
   glGetShaderiv(shader, pname, params);
 }
 
+GLvoid StubGLGetShaderPrecisionFormat(GLenum shadertype, GLenum precisiontype,
+                                      GLint *range, GLint *precision) {
+  glGetShaderPrecisionFormat(shadertype, precisiontype, range, precision);
+}
+
 const GLubyte* StubGLGetString(GLenum name) {
   return glGetString(name);
 }
@@ -675,6 +680,7 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   functions->fGetProgramiv = StubGLGetProgramiv;
   functions->fGetShaderInfoLog = StubGLGetShaderInfoLog;
   functions->fGetShaderiv = StubGLGetShaderiv;
+  functions->fGetShaderPrecisionFormat = StubGLGetShaderPrecisionFormat;
   functions->fGetString = StubGLGetString;
   functions->fGetTexLevelParameteriv = StubGLGetTexLevelParameteriv;
   functions->fGetUniformLocation = StubGLGetUniformLocation;
