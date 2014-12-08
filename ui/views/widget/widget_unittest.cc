@@ -1991,6 +1991,31 @@ TEST_F(WidgetTest, CloseWidgetWhileAnimating) {
   EXPECT_EQ(widget_observer.bounds(), bounds);
 }
 
+// Tests that we do not crash when a Widget is destroyed by going out of
+// scope (as opposed to being explicitly deleted by its NativeWidget).
+TEST_F(WidgetTest, NoCrashOnWidgetDelete) {
+  scoped_ptr<Widget> widget(new Widget);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget->Init(params);
+}
+
+// Tests that we do not crash when a Widget is destroyed before it finishes
+// processing of pending input events in the message loop.
+TEST_F(WidgetTest, NoCrashOnWidgetDeleteWithPendingEvents) {
+  scoped_ptr<Widget> widget(new Widget);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget->Init(params);
+  widget->Show();
+
+  ui::test::EventGenerator generator(GetContext(), widget->GetNativeWindow());
+  generator.MoveMouseTo(10, 10);
+  generator.PressTouch();
+  widget.reset();
+}
+
 // A view that consumes mouse-pressed event and gesture-tap-down events.
 class RootViewTestView : public View {
  public:

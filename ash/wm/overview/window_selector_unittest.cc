@@ -360,6 +360,45 @@ TEST_F(WindowSelectorTest, NoCrashWithDesktopTap) {
   event_generator.ReleaseTouchId(kTouchId);
 }
 
+// Tests that we do not crash and a window is selected when appropriate when
+// we click on a window during touch.
+TEST_F(WindowSelectorTest, ClickOnWindowDuringTouch) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  wm::ActivateWindow(window2.get());
+  EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+
+  ToggleOverview();
+
+  gfx::Rect window1_bounds =
+      gfx::ToEnclosingRect(GetTransformedBoundsInRootWindow(window1.get()));
+  ui::test::EventGenerator event_generator(window1->GetRootWindow(),
+                                           window1_bounds.CenterPoint());
+
+  // Clicking on |window2| while touching on |window1| should not cause a
+  // crash, and overview mode should remain engaged because |window1|
+  // has capture.
+  const int kTouchId = 19;
+  event_generator.PressTouchId(kTouchId);
+  event_generator.MoveMouseToCenterOf(window2.get());
+  event_generator.ClickLeftButton();
+  EXPECT_TRUE(IsSelecting());
+  event_generator.ReleaseTouchId(kTouchId);
+
+  // Clicking on |window1| while touching on |window1| should not cause
+  // a crash, overview mode should be disengaged, and |window1| should
+  // be active.
+  event_generator.MoveMouseToCenterOf(window1.get());
+  event_generator.PressTouchId(kTouchId);
+  event_generator.ClickLeftButton();
+  EXPECT_FALSE(IsSelecting());
+  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
+  event_generator.ReleaseTouchId(kTouchId);
+}
+
 // Tests that a window does not receive located events when in overview mode.
 TEST_F(WindowSelectorTest, WindowDoesNotReceiveEvents) {
   gfx::Rect window_bounds(20, 10, 200, 300);

@@ -555,7 +555,6 @@ void WindowEventDispatcher::OnWindowDestroying(Window* window) {
   if (!host_->window()->Contains(window))
     return;
 
-  DispatchMouseExitToHidingWindow(window);
   SynthesizeMouseMoveAfterChangeToWindow(window);
 }
 

@@ -451,6 +451,14 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
       gfx::Screen::GetScreenFor(root)->GetCursorScreenPoint().ToString());
 }
 
+// Tests that we do not crash when a Window is destroyed by going out of
+// scope (as opposed to being explicitly deleted by its WindowDelegate).
+TEST_F(WindowTest, NoCrashOnWindowDelete) {
+  CaptureWindowDelegateImpl delegate;
+  scoped_ptr<Window> window(CreateTestWindowWithDelegate(
+      &delegate, 0, gfx::Rect(0, 0, 20, 20), root_window()));
+}
+
 TEST_F(WindowTest, GetEventHandlerForPoint) {
   scoped_ptr<Window> w1(
       CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500),
@@ -1075,6 +1083,8 @@ TEST_F(WindowTest, GetBoundsInRootWindow) {
   EXPECT_EQ("0,0 100x100", child->GetBoundsInRootWindow().ToString());
 }
 
+// TODO(tdanderson): Remove this class and use
+//                   test::EventCountDelegate in its place.
 class MouseEnterExitWindowDelegate : public TestWindowDelegate {
  public:
   MouseEnterExitWindowDelegate() : entered_(false), exited_(false) {}
@@ -1109,7 +1119,6 @@ class MouseEnterExitWindowDelegate : public TestWindowDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(MouseEnterExitWindowDelegate);
 };
-
 
 // Verifies that the WindowDelegate receives MouseExit and MouseEnter events for
 // mouse transitions from window to window.
@@ -1216,14 +1225,16 @@ TEST_F(WindowTest, MouseEnterExitWhenDeleteWithCapture) {
   EXPECT_FALSE(delegate.exited());
 }
 
-// Verifies that enter / exits are sent if windows appear and are deleted
-// under the current mouse position..
-TEST_F(WindowTest, MouseEnterExitWithDelete) {
+// Verifies that the correct enter / exits are sent if windows appear and are
+// deleted under the current mouse position.
+TEST_F(WindowTest, MouseEnterExitWithWindowAppearAndDelete) {
   MouseEnterExitWindowDelegate d1;
   scoped_ptr<Window> w1(
       CreateTestWindowWithDelegate(&d1, 1, gfx::Rect(10, 10, 50, 50),
                                    root_window()));
 
+  // The cursor is moved into the bounds of |w1|. We expect the delegate
+  // of |w1| to see an ET_MOUSE_ENTERED event.
   ui::test::EventGenerator generator(root_window());
   generator.MoveMouseToCenterOf(w1.get());
   EXPECT_TRUE(d1.entered());
@@ -1237,6 +1248,9 @@ TEST_F(WindowTest, MouseEnterExitWithDelete) {
                                      root_window()));
     // Enters / exits can be sent asynchronously.
     RunAllPendingInMessageLoop();
+
+    // |w2| appears over top of |w1|. We expect the delegate of |w1| to see
+    // an ET_MOUSE_EXITED and the delegate of |w2| to see an ET_MOUSE_ENTERED.
     EXPECT_FALSE(d1.entered());
     EXPECT_TRUE(d1.exited());
     EXPECT_TRUE(d2.entered());
@@ -1244,10 +1258,16 @@ TEST_F(WindowTest, MouseEnterExitWithDelete) {
     d1.ResetExpectations();
     d2.ResetExpectations();
   }
+
   // Enters / exits can be sent asynchronously.
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(d2.exited());
+
+  // |w2| has been destroyed, so its delegate should see no further events.
+  // The delegate of |w1| should see an ET_MOUSE_ENTERED event.
   EXPECT_TRUE(d1.entered());
+  EXPECT_FALSE(d1.exited());
+  EXPECT_FALSE(d2.entered());
+  EXPECT_FALSE(d2.exited());
 }
 
 // Verifies that enter / exits are sent if windows appear and are hidden
@@ -1325,8 +1345,13 @@ TEST_F(WindowTest, MouseEnterExitWithParentDelete) {
   d2.ResetExpectations();
   w1.reset();
   RunAllPendingInMessageLoop();
+
+  // Both windows are in the process of destroying, so their delegates should
+  // not see any mouse events.
+  EXPECT_FALSE(d1.entered());
+  EXPECT_FALSE(d1.exited());
   EXPECT_FALSE(d2.entered());
-  EXPECT_TRUE(d2.exited());
+  EXPECT_FALSE(d2.exited());
 }
 
 // Creates a window with a delegate (w111) that can handle events at a lower
@@ -2035,8 +2060,9 @@ TEST_F(WindowTest, VisibilityClientIsVisible) {
   EXPECT_TRUE(window->layer()->visible());
 }
 
-// Tests mouse events on window change.
-TEST_F(WindowTest, MouseEventsOnWindowChange) {
+// Tests the mouse events seen by WindowDelegates in a Window hierarchy when
+// changing the properties of a leaf Window.
+TEST_F(WindowTest, MouseEventsOnLeafWindowChange) {
   gfx::Size size = host()->GetBounds().size();
 
   ui::test::EventGenerator generator(root_window());
@@ -2046,10 +2072,10 @@ TEST_F(WindowTest, MouseEventsOnWindowChange) {
   scoped_ptr<Window> w1(CreateTestWindowWithDelegate(&d1, 1,
       gfx::Rect(0, 0, 100, 100), root_window()));
   RunAllPendingInMessageLoop();
-  // The format of result is "Enter/Mouse/Leave".
+  // The format of result is "Enter/Move/Leave".
   EXPECT_EQ("1 1 0", d1.GetMouseMotionCountsAndReset());
 
-  // Adding new window.
+  // Add new window |w11| on top of |w1| which contains the cursor.
   EventCountDelegate d11;
   scoped_ptr<Window> w11(CreateTestWindowWithDelegate(
       &d11, 1, gfx::Rect(0, 0, 100, 100), w1.get()));
@@ -2057,42 +2083,43 @@ TEST_F(WindowTest, MouseEventsOnWindowChange) {
   EXPECT_EQ("0 0 1", d1.GetMouseMotionCountsAndReset());
   EXPECT_EQ("1 1 0", d11.GetMouseMotionCountsAndReset());
 
-  // Move bounds.
+  // Resize |w11| so that it does not contain the cursor.
   w11->SetBounds(gfx::Rect(0, 0, 10, 10));
   RunAllPendingInMessageLoop();
   EXPECT_EQ("1 1 0", d1.GetMouseMotionCountsAndReset());
   EXPECT_EQ("0 0 1", d11.GetMouseMotionCountsAndReset());
 
+  // Resize |w11| so that it does contain the cursor.
   w11->SetBounds(gfx::Rect(0, 0, 60, 60));
   RunAllPendingInMessageLoop();
   EXPECT_EQ("0 0 1", d1.GetMouseMotionCountsAndReset());
   EXPECT_EQ("1 1 0", d11.GetMouseMotionCountsAndReset());
 
-  // Detach, then re-attach.
+  // Detach |w11| from |w1|.
   w1->RemoveChild(w11.get());
   RunAllPendingInMessageLoop();
   EXPECT_EQ("1 1 0", d1.GetMouseMotionCountsAndReset());
-  // Window is detached, so no event is set.
   EXPECT_EQ("0 0 1", d11.GetMouseMotionCountsAndReset());
 
+  // Re-attach |w11| to |w1|.
   w1->AddChild(w11.get());
   RunAllPendingInMessageLoop();
   EXPECT_EQ("0 0 1", d1.GetMouseMotionCountsAndReset());
-  // Window is detached, so no event is set.
   EXPECT_EQ("1 1 0", d11.GetMouseMotionCountsAndReset());
 
-  // Visibility Change
+  // Hide |w11|.
   w11->Hide();
   RunAllPendingInMessageLoop();
   EXPECT_EQ("1 1 0", d1.GetMouseMotionCountsAndReset());
   EXPECT_EQ("0 0 1", d11.GetMouseMotionCountsAndReset());
 
+  // Show |w11|.
   w11->Show();
   RunAllPendingInMessageLoop();
   EXPECT_EQ("0 0 1", d1.GetMouseMotionCountsAndReset());
   EXPECT_EQ("1 1 0", d11.GetMouseMotionCountsAndReset());
 
-  // Transform: move d11 by 100 100.
+  // Translate |w11| so that it does not contain the mouse cursor.
   gfx::Transform transform;
   transform.Translate(100, 100);
   w11->SetTransform(transform);
@@ -2100,33 +2127,80 @@ TEST_F(WindowTest, MouseEventsOnWindowChange) {
   EXPECT_EQ("1 1 0", d1.GetMouseMotionCountsAndReset());
   EXPECT_EQ("0 0 1", d11.GetMouseMotionCountsAndReset());
 
+  // Clear the transform on |w11| so that it does contain the cursor.
   w11->SetTransform(gfx::Transform());
   RunAllPendingInMessageLoop();
   EXPECT_EQ("0 0 1", d1.GetMouseMotionCountsAndReset());
   EXPECT_EQ("1 1 0", d11.GetMouseMotionCountsAndReset());
 
-  // Closing a window.
+  // Close |w11|. Note that since |w11| is being destroyed, its delegate should
+  // not see any further events.
   w11.reset();
   RunAllPendingInMessageLoop();
   EXPECT_EQ("1 1 0", d1.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 0", d11.GetMouseMotionCountsAndReset());
 
-  // Make sure we don't synthesize events if the mouse
-  // is outside of the root window.
+  // Move the mouse outside the bounds of the root window. Since the mouse
+  // cursor is no longer within their bounds, the delegates of the child
+  // windows should not see any mouse events.
   generator.MoveMouseTo(-10, -10);
   EXPECT_EQ("0 0 1", d1.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 0", d11.GetMouseMotionCountsAndReset());
 
-  // Adding new windows.
+  // Add |w11|.
   w11.reset(CreateTestWindowWithDelegate(
       &d11, 1, gfx::Rect(0, 0, 100, 100), w1.get()));
   RunAllPendingInMessageLoop();
   EXPECT_EQ("0 0 0", d1.GetMouseMotionCountsAndReset());
-  EXPECT_EQ("0 0 1", d11.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 0", d11.GetMouseMotionCountsAndReset());
 
-  // Closing windows
+  // Close |w11|.
   w11.reset();
   RunAllPendingInMessageLoop();
   EXPECT_EQ("0 0 0", d1.GetMouseMotionCountsAndReset());
   EXPECT_EQ("0 0 0", d11.GetMouseMotionCountsAndReset());
+}
+
+// Tests the mouse events seen by WindowDelegates in a Window hierarchy when
+// deleting a non-leaf Window.
+TEST_F(WindowTest, MouseEventsOnNonLeafWindowDelete) {
+  gfx::Size size = host()->GetBounds().size();
+
+  ui::test::EventGenerator generator(root_window());
+  generator.MoveMouseTo(50, 50);
+
+  EventCountDelegate d1;
+  scoped_ptr<Window> w1(CreateTestWindowWithDelegate(&d1, 1,
+      gfx::Rect(0, 0, 100, 100), root_window()));
+  RunAllPendingInMessageLoop();
+  // The format of result is "Enter/Move/Leave".
+  EXPECT_EQ("1 1 0", d1.GetMouseMotionCountsAndReset());
+
+  // Add new window |w2| on top of |w1| which contains the cursor.
+  EventCountDelegate d2;
+  scoped_ptr<Window> w2(CreateTestWindowWithDelegate(
+      &d2, 1, gfx::Rect(0, 0, 100, 100), w1.get()));
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("0 0 1", d1.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("1 1 0", d2.GetMouseMotionCountsAndReset());
+
+  // Add new window on top of |w2| which contains the cursor.
+  EventCountDelegate d3;
+  CreateTestWindowWithDelegate(
+      &d3, 1, gfx::Rect(0, 0, 100, 100), w2.get());
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("0 0 0", d1.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 1", d2.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("1 1 0", d3.GetMouseMotionCountsAndReset());
+
+  // Delete |w2|, which will also delete its owned child window. Since |w2| and
+  // its child are in the process of being destroyed, their delegates should
+  // not see any further events.
+  w2.reset();
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("1 1 0", d1.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 0", d2.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 0", d3.GetMouseMotionCountsAndReset());
 }
 
 class RootWindowAttachmentObserver : public WindowObserver {

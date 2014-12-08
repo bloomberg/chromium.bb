@@ -228,6 +228,11 @@ Window::~Window() {
     delegate_->OnWindowDestroying(this);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroying(this));
 
+  // While we are being destroyed, our target handler may also be in the
+  // process of destruction or already destroyed, so do not forward any
+  // input events at the ui::EP_TARGET phase.
+  set_target_handler(nullptr);
+
   // TODO(beng): See comment in window_event_dispatcher.h. This shouldn't be
   //             necessary but unfortunately is right now due to ordering
   //             peculiarities. WED must be notified _after_ other observers
