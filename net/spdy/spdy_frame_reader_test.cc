@@ -18,8 +18,8 @@ TEST(SpdyFrameReaderTest, ReadUInt16) {
     htons(1), htons(1<<15),
   };
 
-  SpdyFrameReader frame_reader(reinterpret_cast<const char *>(kFrameData),
-                               arraysize(kFrameData) * sizeof(uint16));
+  SpdyFrameReader frame_reader(reinterpret_cast<const char*>(kFrameData),
+                               sizeof(kFrameData));
   EXPECT_FALSE(frame_reader.IsDoneReading());
 
   uint16 uint16_val;
