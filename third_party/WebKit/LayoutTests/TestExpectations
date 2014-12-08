@@ -1408,6 +1408,8 @@ crbug.com/431643 [ Win ] http/tests/w3c/webperf/submission/Intel/resource-timing
 
 crbug.com/435525 [ Mac Debug ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ NeedsManualRebaseline ]
 
+crbug.com/440034 [ Mac ] compositing/direct-image-compositing.html [ NeedsRebaseline ]
+
 crbug.com/436436 fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Pass Failure ]
 
 crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Pass Slow Timeout ]
