@@ -399,8 +399,6 @@ def get_data(isolate_server):
   bundle.add_buffer(
       'run_isolated.zip',
       run_isolated.get_as_zip_package().zip_into_buffer(compress=False))
-  bundle.add_file(
-      os.path.join(TOOLS_PATH, 'swarm_cleanup.py'), 'swarm_cleanup.py')
 
   # TODO(maruel): Get rid of this.
   bundle_url = upload_zip_bundle(isolate_server, bundle)
@@ -427,7 +425,7 @@ def get_run_isolated_commands(
   if extra_args:
     run_cmd.append('--')
     run_cmd.extend(extra_args)
-  return [run_cmd, ['python', 'swarm_cleanup.py']]
+  return [run_cmd]
 
 
 def setup_googletest(env, shards, index):

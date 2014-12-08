@@ -99,7 +99,7 @@ def gen_request_data(isolated_hash=FILE_HASH, properties=None, **kwargs):
           '--some-arg',
           '123',
         ],
-        ['python', 'swarm_cleanup.py']],
+      ],
       'data': [('https://localhost:1/fetch_url', 'swarm_data.zip')],
       'dimensions': {
         'foo': 'bar',
