@@ -24,18 +24,21 @@ namespace autofill {
 // static
 void AutofillCCInfoBarDelegate::Create(
     InfoBarService* infobar_service,
+    const AutofillMetrics* metric_logger,
     const base::Closure& save_card_callback) {
-  infobar_service->AddInfoBar(
-      ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
-          new AutofillCCInfoBarDelegate(save_card_callback))));
+  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(new AutofillCCInfoBarDelegate(
+          metric_logger, save_card_callback))));
 }
 
 AutofillCCInfoBarDelegate::AutofillCCInfoBarDelegate(
+    const AutofillMetrics* metric_logger,
     const base::Closure& save_card_callback)
     : ConfirmInfoBarDelegate(),
+      metric_logger_(metric_logger),
       save_card_callback_(save_card_callback),
       had_user_interaction_(false) {
-  AutofillMetrics::LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN);
+  metric_logger->LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN);
 }
 
 AutofillCCInfoBarDelegate::~AutofillCCInfoBarDelegate() {
@@ -47,7 +50,7 @@ void AutofillCCInfoBarDelegate::LogUserAction(
     AutofillMetrics::InfoBarMetric user_action) {
   DCHECK(!had_user_interaction_);
 
-  AutofillMetrics::LogCreditCardInfoBarMetric(user_action);
+  metric_logger_->LogCreditCardInfoBarMetric(user_action);
   had_user_interaction_ = true;
 }
 

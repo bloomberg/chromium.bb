@@ -62,6 +62,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   virtual void HideRequestAutocompleteDialog() override;
   virtual void ShowAutofillSettings() override;
   virtual void ConfirmSaveCreditCard(
+      const autofill::AutofillMetrics& metric_logger,
       const base::Closure& save_card_callback) override;
   virtual bool HasCreditCardScanFeature() override;
   virtual void ScanCreditCard(const CreditCardScanCallback& callback) override;

@@ -707,6 +707,7 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   // save it.
   if (imported_credit_card) {
     client_->ConfirmSaveCreditCard(
+        *metric_logger_,
         base::Bind(
             base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
             base::Unretained(personal_data_),

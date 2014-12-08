@@ -79,6 +79,7 @@ class AutofillClient {
   // Run |save_card_callback| if the credit card should be imported as personal
   // data. |metric_logger| can be used to log user actions.
   virtual void ConfirmSaveCreditCard(
+      const AutofillMetrics& metric_logger,
       const base::Closure& save_card_callback) = 0;
 
   // Returns true if both the platform and the device support scanning credit
