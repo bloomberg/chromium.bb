@@ -11,6 +11,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/prefs/pref_service.h"
 #include "chromecast/browser/android/cast_window_android.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_main_parts.h"
