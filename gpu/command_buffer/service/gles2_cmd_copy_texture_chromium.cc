@@ -331,7 +331,8 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
   // format of internalformat.
   // https://www.khronos.org/opengles/sdk/docs/man/xhtml/glCopyTexImage2D.xml
   bool source_format_contain_superset_of_dest_format =
-      source_internal_format == dest_internal_format ||
+      (source_internal_format == dest_internal_format &&
+       source_internal_format != GL_BGRA_EXT) ||
       (source_internal_format == GL_RGBA && dest_internal_format == GL_RGB);
   // GL_TEXTURE_RECTANGLE_ARB on FBO is supported by OpenGL, not GLES2,
   // so restrict this to GL_TEXTURE_2D.
