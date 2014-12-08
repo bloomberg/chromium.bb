@@ -113,7 +113,7 @@ public:
     }
     void getAnimationOnCompositor(Timing& timing, AnimatableValueKeyframeEffectModel& effect, Vector<OwnPtr<WebCompositorAnimation> >& animations, double playerPlaybackRate)
     {
-        return CompositorAnimationsImpl::getAnimationOnCompositor(timing, std::numeric_limits<double>::quiet_NaN(), 0, effect, animations, playerPlaybackRate);
+        return CompositorAnimationsImpl::getAnimationOnCompositor(timing, 0, std::numeric_limits<double>::quiet_NaN(), 0, effect, animations, playerPlaybackRate);
     }
     bool getAnimationBounds(FloatBox& boundingBox, const AnimationEffect& effect, double minValue, double maxValue)
     {

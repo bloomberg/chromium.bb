@@ -253,19 +253,14 @@ bool Animation::isCandidateForAnimationOnCompositor(double playerPlaybackRate) c
     return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(specifiedTiming(), *effect(), playerPlaybackRate);
 }
 
-bool Animation::maybeStartAnimationOnCompositor(double startTime, double currentTime)
-{
-    return maybeStartAnimationOnCompositor(startTime, currentTime, 1);
-}
-
-bool Animation::maybeStartAnimationOnCompositor(double startTime, double currentTime, double playerPlaybackRate)
+bool Animation::maybeStartAnimationOnCompositor(int group, double startTime, double currentTime, double playerPlaybackRate)
 {
     ASSERT(!hasActiveAnimationsOnCompositor());
     if (!isCandidateForAnimationOnCompositor(playerPlaybackRate))
         return false;
     if (!CompositorAnimations::instance()->canStartAnimationOnCompositor(*m_target))
         return false;
-    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target, startTime, currentTime, specifiedTiming(), *effect(), m_compositorAnimationIds, playerPlaybackRate))
+    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target, group, startTime, currentTime, specifiedTiming(), *effect(), m_compositorAnimationIds, playerPlaybackRate))
         return false;
     ASSERT(!m_compositorAnimationIds.isEmpty());
     return true;

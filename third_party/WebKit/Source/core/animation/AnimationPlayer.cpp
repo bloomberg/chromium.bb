@@ -77,6 +77,7 @@ AnimationPlayer::AnimationPlayer(ExecutionContext* executionContext, AnimationTi
     , m_finished(true)
     , m_compositorState(nullptr)
     , m_compositorPending(true)
+    , m_compositorGroup(0)
     , m_currentTimePending(false)
 {
     if (m_content) {
@@ -203,7 +204,7 @@ double AnimationPlayer::currentTimeInternal() const
     return result;
 }
 
-void AnimationPlayer::preCommit(bool startOnCompositor)
+void AnimationPlayer::preCommit(int compositorGroup, bool startOnCompositor)
 {
     if (m_compositorState && m_compositorState->pendingAction == Start) {
         // Still waiting for a start time.
@@ -231,8 +232,11 @@ void AnimationPlayer::preCommit(bool startOnCompositor)
         m_currentTimePending = false;
     }
 
-    if (shouldStart && startOnCompositor && maybeStartAnimationOnCompositor()) {
-        m_compositorState = adoptPtr(new CompositorState(*this));
+    if (shouldStart) {
+        m_compositorGroup = compositorGroup;
+        if (startOnCompositor && maybeStartAnimationOnCompositor()) {
+            m_compositorState = adoptPtr(new CompositorState(*this));
+        }
     }
 }
 
@@ -623,7 +627,8 @@ bool AnimationPlayer::maybeStartAnimationOnCompositor()
         timeOffset = reversed ? sourceEnd() - currentTimeInternal() : currentTimeInternal();
         timeOffset = timeOffset / fabs(m_playbackRate);
     }
-    return toAnimation(m_content.get())->maybeStartAnimationOnCompositor(startTime, timeOffset, m_playbackRate);
+    ASSERT(m_compositorGroup != 0);
+    return toAnimation(m_content.get())->maybeStartAnimationOnCompositor(m_compositorGroup, startTime, timeOffset, m_playbackRate);
 }
 
 void AnimationPlayer::setCompositorPending(bool sourceChanged)

@@ -197,7 +197,7 @@ bool CompositorAnimations::canStartAnimationOnCompositor(const Element& element)
     return element.renderer() && element.renderer()->compositingState() == PaintsIntoOwnBacking;
 }
 
-bool CompositorAnimations::startAnimationOnCompositor(const Element& element, double startTime, double timeOffset, const Timing& timing, const AnimationEffect& effect, Vector<int>& startedAnimationIds, double playerPlaybackRate)
+bool CompositorAnimations::startAnimationOnCompositor(const Element& element, int group, double startTime, double timeOffset, const Timing& timing, const AnimationEffect& effect, Vector<int>& startedAnimationIds, double playerPlaybackRate)
 {
     ASSERT(startedAnimationIds.isEmpty());
     ASSERT(isCandidateForAnimationOnCompositor(timing, effect, playerPlaybackRate));
@@ -209,7 +209,7 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, do
     ASSERT(layer);
 
     Vector<OwnPtr<WebCompositorAnimation>> animations;
-    CompositorAnimationsImpl::getAnimationOnCompositor(timing, startTime, timeOffset, keyframeEffect, animations, playerPlaybackRate);
+    CompositorAnimationsImpl::getAnimationOnCompositor(timing, group, startTime, timeOffset, keyframeEffect, animations, playerPlaybackRate);
     ASSERT(!animations.isEmpty());
     for (auto& animation : animations) {
         int id = animation->id();
@@ -386,7 +386,7 @@ void CompositorAnimationsImpl::addKeyframesToCurve(WebCompositorAnimationCurve& 
     }
 }
 
-void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, double startTime, double timeOffset, const KeyframeEffectModelBase& effect, Vector<OwnPtr<WebCompositorAnimation> >& animations, double playerPlaybackRate)
+void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, int group, double startTime, double timeOffset, const KeyframeEffectModelBase& effect, Vector<OwnPtr<WebCompositorAnimation> >& animations, double playerPlaybackRate)
 {
     ASSERT(animations.isEmpty());
     CompositorTiming compositorTiming;
@@ -430,7 +430,7 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, do
         }
         ASSERT(curve.get());
 
-        OwnPtr<WebCompositorAnimation> animation = adoptPtr(Platform::current()->compositorSupport()->createAnimation(*curve, targetProperty));
+        OwnPtr<WebCompositorAnimation> animation = adoptPtr(Platform::current()->compositorSupport()->createAnimation(*curve, targetProperty, group, 0));
 
         if (!std::isnan(startTime))
             animation->setStartTime(startTime);

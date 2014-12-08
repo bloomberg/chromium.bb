@@ -49,14 +49,14 @@ public:
 
     CompositorPendingAnimations()
         : m_timer(this, &CompositorPendingAnimations::timerFired)
+        , m_compositorGroup(1)
     { }
 
     void add(AnimationPlayer*);
     // Returns whether we are waiting for an animation to start and should
     // service again on the next frame.
     bool update(bool startOnCompositor = true);
-    void notifyAnimationStarted(double monotonicAnimationStartTime, bool startedOnCompositor);
-    void notifyCompositorAnimationStarted(double monotonicAnimationStartTime);
+    void notifyCompositorAnimationStarted(double monotonicAnimationStartTime, int compositorGroup = 0);
 
     void trace(Visitor*);
 
@@ -66,6 +66,7 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > m_pending;
     WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > m_waitingForCompositorAnimationStart;
     Timer<CompositorPendingAnimations> m_timer;
+    int m_compositorGroup;
 };
 
 } // namespace blink

@@ -143,10 +143,11 @@ public:
     void notifyStartTime(double timelineTime);
 
 
-    void preCommit(bool startOnCompositor);
+    void preCommit(int compositorGroup, bool startOnCompositor);
     void postCommit(double timelineTime);
 
     unsigned sequenceNumber() const { return m_sequenceNumber; }
+    int compositorGroup() const { return m_compositorGroup; }
 
     static bool hasLowerPriority(AnimationPlayer* player1, AnimationPlayer* player2)
     {
@@ -247,6 +248,8 @@ private:
     // modifications are pushed to the compositor.
     OwnPtr<CompositorState> m_compositorState;
     bool m_compositorPending;
+    int m_compositorGroup;
+
     bool m_currentTimePending;
 };
 
