@@ -1515,6 +1515,8 @@
             'paint/SVGShapePainter.h',
             'paint/SVGTextPainter.cpp',
             'paint/SVGTextPainter.h',
+            'paint/ScrollableAreaPainter.cpp',
+            'paint/ScrollableAreaPainter.h',
             'paint/ScrollbarPainter.cpp',
             'paint/ScrollbarPainter.h',
             'paint/TableCellPainter.cpp',

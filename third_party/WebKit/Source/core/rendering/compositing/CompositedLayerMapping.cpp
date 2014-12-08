@@ -42,6 +42,7 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/LayerPainter.h"
+#include "core/paint/ScrollableAreaPainter.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/RenderEmbeddedObject.h"
@@ -2184,8 +2185,8 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         context.translate(-scrollCornerAndResizer.x(), -scrollCornerAndResizer.y());
         IntRect transformedClip = clip;
         transformedClip.moveBy(scrollCornerAndResizer.location());
-        m_owningLayer.scrollableArea()->paintScrollCorner(&context, IntPoint(), transformedClip);
-        m_owningLayer.scrollableArea()->paintResizer(&context, IntPoint(), transformedClip);
+        ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintScrollCorner(&context, IntPoint(), transformedClip);
+        ScrollableAreaPainter(*m_owningLayer.scrollableArea()).paintResizer(&context, IntPoint(), transformedClip);
         context.restore();
     }
     InspectorInstrumentation::didPaint(m_owningLayer.renderer(), graphicsLayer, &context, clip);

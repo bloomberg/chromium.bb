@@ -1470,7 +1470,7 @@ void RenderLayer::updateScrollableArea()
 
 bool RenderLayer::hasOverflowControls() const
 {
-    return m_scrollableArea && (m_scrollableArea->hasScrollbar() || m_scrollableArea->hasScrollCorner() || renderer()->style()->resize() != RESIZE_NONE);
+    return m_scrollableArea && (m_scrollableArea->hasScrollbar() || m_scrollableArea->scrollCorner() || renderer()->style()->resize() != RESIZE_NONE);
 }
 
 void RenderLayer::collectFragments(LayerFragments& fragments, const RenderLayer* rootLayer, const LayoutRect& dirtyRect,

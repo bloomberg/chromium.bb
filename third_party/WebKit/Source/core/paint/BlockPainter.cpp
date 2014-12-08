@@ -15,6 +15,7 @@
 #include "core/paint/InlinePainter.h"
 #include "core/paint/LineBoxListPainter.h"
 #include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/ScrollableAreaPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
@@ -87,7 +88,7 @@ void BlockPainter::paintOverflowControlsIfNeeded(const PaintInfo& paintInfo, con
     PaintPhase phase = paintInfo.phase;
     if (m_renderBlock.hasOverflowClip() && m_renderBlock.style()->visibility() == VISIBLE && (phase == PaintPhaseBlockBackground || phase == PaintPhaseChildBlockBackground) && paintInfo.shouldPaintWithinRoot(&m_renderBlock) && !paintInfo.paintRootBackgroundOnly()) {
         RenderDrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintInfo.phase, pixelSnappedIntRect(paintOffset, m_renderBlock.visualOverflowRect().size()));
-        m_renderBlock.layer()->scrollableArea()->paintOverflowControls(paintInfo.context, roundedIntPoint(paintOffset), paintInfo.rect, false /* paintingOverlayControls */);
+        ScrollableAreaPainter(*m_renderBlock.layer()->scrollableArea()).paintOverflowControls(paintInfo.context, roundedIntPoint(paintOffset), paintInfo.rect, false /* paintingOverlayControls */);
     }
 }
 

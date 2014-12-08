@@ -7,6 +7,7 @@
 
 #include "core/paint/BoxPainter.h"
 
+#include "core/paint/ScrollableAreaPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderLayer.h"
@@ -64,7 +65,7 @@ void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
     }
 
     if (m_renderPart.canResize())
-        m_renderPart.layer()->scrollableArea()->paintResizer(paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.rect);
+        ScrollableAreaPainter(*m_renderPart.layer()->scrollableArea()).paintResizer(paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.rect);
 }
 
 void PartPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

@@ -44,6 +44,10 @@
 #ifndef RenderLayerScrollableArea_h
 #define RenderLayerScrollableArea_h
 
+
+#include "core/rendering/LayerFragment.h"
+#include "core/rendering/RenderBox.h"
+
 #include "platform/scroll/ScrollableArea.h"
 
 namespace blink {
@@ -129,8 +133,7 @@ public:
 
     bool hasScrollbar() const { return m_hBar || m_vBar; }
 
-    // FIXME: This should be removed.
-    bool hasScrollCorner() const { return m_scrollCorner; }
+    RenderScrollbarPart* scrollCorner() const { return m_scrollCorner; }
 
     void resize(const PlatformEvent&, const LayoutSize&);
     IntSize offsetFromResizeCorner(const IntPoint& absolutePoint) const;
@@ -152,10 +155,6 @@ public:
     int horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const;
 
     DoubleSize adjustedScrollOffset() const { return DoubleSize(scrollXOffset(), scrollYOffset()); }
-
-    void paintResizer(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect);
-    void paintOverflowControls(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect, bool paintingOverlayControls);
-    void paintScrollCorner(GraphicsContext*, const IntPoint&, const IntRect& damageRect);
 
     void positionOverflowControls(const IntSize& offsetFromRoot);
 
@@ -184,6 +183,19 @@ public:
     void setTopmostScrollChild(RenderLayer*);
     RenderLayer* topmostScrollChild() const { ASSERT(!m_nextTopmostScrollChild); return m_topmostScrollChild; }
 
+    IntRect resizerCornerRect(const IntRect&, ResizerHitTestType) const;
+
+    RenderBox& box() const;
+    RenderLayer* layer() const;
+
+    RenderScrollbarPart* resizer() { return m_resizer; }
+
+    const IntPoint& cachedOverlayScrollbarOffset() { return m_cachedOverlayScrollbarOffset; }
+    void setCachedOverlayScrollbarOffset(const IntPoint& offset) { m_cachedOverlayScrollbarOffset = offset; }
+
+    IntRect rectForHorizontalScrollbar(const IntRect& borderBoxRect) const;
+    IntRect rectForVerticalScrollbar(const IntRect& borderBoxRect) const;
+
 private:
     bool hasHorizontalOverflow() const;
     bool hasVerticalOverflow() const;
@@ -194,8 +206,7 @@ private:
 
     DoubleSize clampScrollOffset(const DoubleSize&) const;
 
-    IntRect rectForHorizontalScrollbar(const IntRect& borderBoxRect) const;
-    IntRect rectForVerticalScrollbar(const IntRect& borderBoxRect) const;
+
     LayoutUnit verticalScrollbarStart(int minX, int maxX) const;
     LayoutUnit horizontalScrollbarStart(int minX) const;
     IntSize scrollbarOffset(const Scrollbar*) const;
@@ -209,14 +220,9 @@ private:
     void updateScrollCornerStyle();
 
     // See comments on isPointInResizeControl.
-    IntRect resizerCornerRect(const IntRect&, ResizerHitTestType) const;
-    bool overflowControlsIntersectRect(const IntRect& localRect) const;
     void updateResizerAreaSet();
     void updateResizerStyle();
-    void drawPlatformResizerImage(GraphicsContext*, IntRect resizerCornerRect);
 
-    RenderBox& box() const;
-    RenderLayer* layer() const;
 
     void updateScrollableAreaSet(bool hasOverflow);
 

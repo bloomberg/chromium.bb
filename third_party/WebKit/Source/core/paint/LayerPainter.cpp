@@ -9,6 +9,7 @@
 #include "core/page/Page.h"
 #include "core/paint/FilterPainter.h"
 #include "core/paint/LayerClipRecorder.h"
+#include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/TransparencyRecorder.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/FilterEffectRenderer.h"
@@ -477,7 +478,7 @@ void LayerPainter::paintOverflowControlsForFragments(const LayerFragments& layer
             clipRecorder = adoptPtr(new LayerClipRecorder(m_renderLayer.renderer(), context, DisplayItem::ClipLayerOverflowControls, fragment.backgroundRect, &localPaintingInfo, fragment.paginationOffset, paintFlags));
         }
         if (RenderLayerScrollableArea* scrollableArea = m_renderLayer.scrollableArea())
-            scrollableArea->paintOverflowControls(context, roundedIntPoint(toPoint(fragment.layerBounds.location() - m_renderLayer.renderBoxLocation() + subPixelAccumulationIfNeeded(localPaintingInfo.subPixelAccumulation, m_renderLayer.compositingState()))), pixelSnappedIntRect(fragment.backgroundRect.rect()), true);
+            ScrollableAreaPainter(*scrollableArea).paintOverflowControls(context, roundedIntPoint(toPoint(fragment.layerBounds.location() - m_renderLayer.renderBoxLocation() + subPixelAccumulationIfNeeded(localPaintingInfo.subPixelAccumulation, m_renderLayer.compositingState()))), pixelSnappedIntRect(fragment.backgroundRect.rect()), true);
     }
 }
 

@@ -58,7 +58,6 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/paint/ScrollbarPainter.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarPart.h"
@@ -1022,86 +1021,6 @@ void RenderLayerScrollableArea::updateScrollCornerStyle()
     }
 }
 
-void RenderLayerScrollableArea::paintOverflowControls(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect, bool paintingOverlayControls)
-{
-    // Don't do anything if we have no overflow.
-    if (!box().hasOverflowClip())
-        return;
-
-    IntPoint adjustedPaintOffset = paintOffset;
-    if (paintingOverlayControls)
-        adjustedPaintOffset = m_cachedOverlayScrollbarOffset;
-
-    // Move the scrollbar widgets if necessary. We normally move and resize widgets during layout,
-    // but sometimes widgets can move without layout occurring (most notably when you scroll a
-    // document that contains fixed positioned elements).
-    positionOverflowControls(toIntSize(adjustedPaintOffset));
-
-    // Overlay scrollbars paint in a second pass through the layer tree so that they will paint
-    // on top of everything else. If this is the normal painting pass, paintingOverlayControls
-    // will be false, and we should just tell the root layer that there are overlay scrollbars
-    // that need to be painted. That will cause the second pass through the layer tree to run,
-    // and we'll paint the scrollbars then. In the meantime, cache tx and ty so that the
-    // second pass doesn't need to re-enter the RenderTree to get it right.
-    if (hasOverlayScrollbars() && !paintingOverlayControls) {
-        m_cachedOverlayScrollbarOffset = paintOffset;
-        // It's not necessary to do the second pass if the scrollbars paint into layers.
-        if ((m_hBar && layerForHorizontalScrollbar()) || (m_vBar && layerForVerticalScrollbar()))
-            return;
-        IntRect localDamgeRect = damageRect;
-        localDamgeRect.moveBy(-paintOffset);
-        if (!overflowControlsIntersectRect(localDamgeRect))
-            return;
-
-        RenderView* renderView = box().view();
-
-        RenderLayer* paintingRoot = layer()->enclosingLayerWithCompositedLayerMapping(IncludeSelf);
-        if (!paintingRoot)
-            paintingRoot = renderView->layer();
-
-        paintingRoot->setContainsDirtyOverlayScrollbars(true);
-        return;
-    }
-
-    // This check is required to avoid painting custom CSS scrollbars twice.
-    if (paintingOverlayControls && !hasOverlayScrollbars())
-        return;
-
-    // Now that we're sure the scrollbars are in the right place, paint them.
-    if (m_hBar && !layerForHorizontalScrollbar())
-        m_hBar->paint(context, damageRect);
-    if (m_vBar && !layerForVerticalScrollbar())
-        m_vBar->paint(context, damageRect);
-
-    if (layerForScrollCorner())
-        return;
-
-    // We fill our scroll corner with white if we have a scrollbar that doesn't run all the way up to the
-    // edge of the box.
-    paintScrollCorner(context, adjustedPaintOffset, damageRect);
-
-    // Paint our resizer last, since it sits on top of the scroll corner.
-    paintResizer(context, adjustedPaintOffset, damageRect);
-}
-
-void RenderLayerScrollableArea::paintScrollCorner(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect)
-{
-    IntRect absRect = scrollCornerRect();
-    absRect.moveBy(paintOffset);
-    if (!absRect.intersects(damageRect))
-        return;
-
-    if (m_scrollCorner) {
-        ScrollbarPainter::paintIntoRect(m_scrollCorner, context, paintOffset, absRect);
-        return;
-    }
-
-    // We don't want to paint white if we have overlay scrollbars, since we need
-    // to see what is behind it.
-    if (!hasOverlayScrollbars())
-        context->fillRect(absRect, Color::white);
-}
-
 bool RenderLayerScrollableArea::hitTestOverflowControls(HitTestResult& result, const IntPoint& localPoint)
 {
     if (!hasScrollbar() && !box().canResize())
@@ -1170,56 +1089,6 @@ IntRect RenderLayerScrollableArea::scrollCornerAndResizerRect() const
     return scrollCornerAndResizer;
 }
 
-bool RenderLayerScrollableArea::overflowControlsIntersectRect(const IntRect& localRect) const
-{
-    const IntRect borderBox = box().pixelSnappedBorderBoxRect();
-
-    if (rectForHorizontalScrollbar(borderBox).intersects(localRect))
-        return true;
-
-    if (rectForVerticalScrollbar(borderBox).intersects(localRect))
-        return true;
-
-    if (scrollCornerRect().intersects(localRect))
-        return true;
-
-    if (resizerCornerRect(borderBox, ResizerForPointer).intersects(localRect))
-        return true;
-
-    return false;
-}
-
-void RenderLayerScrollableArea::paintResizer(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect)
-{
-    if (box().style()->resize() == RESIZE_NONE)
-        return;
-
-    IntRect absRect = resizerCornerRect(box().pixelSnappedBorderBoxRect(), ResizerForPointer);
-    absRect.moveBy(paintOffset);
-    if (!absRect.intersects(damageRect))
-        return;
-
-    if (m_resizer) {
-        ScrollbarPainter::paintIntoRect(m_resizer, context, paintOffset, absRect);
-        return;
-    }
-
-    drawPlatformResizerImage(context, absRect);
-
-    // Draw a frame around the resizer (1px grey line) if there are any scrollbars present.
-    // Clipping will exclude the right and bottom edges of this frame.
-    if (!hasOverlayScrollbars() && hasScrollbar()) {
-        GraphicsContextStateSaver stateSaver(*context);
-        context->clip(absRect);
-        IntRect largerCorner = absRect;
-        largerCorner.setSize(IntSize(largerCorner.width() + 1, largerCorner.height() + 1));
-        context->setStrokeColor(Color(217, 217, 217));
-        context->setStrokeThickness(1.0f);
-        context->setFillColor(Color::transparent);
-        context->drawRect(largerCorner);
-    }
-}
-
 bool RenderLayerScrollableArea::isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType resizerHitTestType) const
 {
     if (!box().canResize())
@@ -1278,35 +1147,6 @@ void RenderLayerScrollableArea::updateResizerStyle()
         m_resizer->destroy();
         m_resizer = nullptr;
     }
-}
-
-void RenderLayerScrollableArea::drawPlatformResizerImage(GraphicsContext* context, IntRect resizerCornerRect)
-{
-    float deviceScaleFactor = blink::deviceScaleFactor(box().frame());
-
-    RefPtr<Image> resizeCornerImage;
-    IntSize cornerResizerSize;
-    if (deviceScaleFactor >= 2) {
-        DEFINE_STATIC_REF(Image, resizeCornerImageHiRes, (Image::loadPlatformResource("textAreaResizeCorner@2x")));
-        resizeCornerImage = resizeCornerImageHiRes;
-        cornerResizerSize = resizeCornerImage->size();
-        cornerResizerSize.scale(0.5f);
-    } else {
-        DEFINE_STATIC_REF(Image, resizeCornerImageLoRes, (Image::loadPlatformResource("textAreaResizeCorner")));
-        resizeCornerImage = resizeCornerImageLoRes;
-        cornerResizerSize = resizeCornerImage->size();
-    }
-
-    if (box().style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
-        context->save();
-        context->translate(resizerCornerRect.x() + cornerResizerSize.width(), resizerCornerRect.y() + resizerCornerRect.height() - cornerResizerSize.height());
-        context->scale(-1.0, 1.0);
-        context->drawImage(resizeCornerImage.get(), IntRect(IntPoint(), cornerResizerSize));
-        context->restore();
-        return;
-    }
-    IntRect imageRect(resizerCornerRect.maxXMaxYCorner() - cornerResizerSize, cornerResizerSize);
-    context->drawImage(resizeCornerImage.get(), imageRect);
 }
 
 IntSize RenderLayerScrollableArea::offsetFromResizeCorner(const IntPoint& absolutePoint) const
