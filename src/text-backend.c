@@ -755,15 +755,19 @@ input_method_context_create(struct text_input *model,
 static void
 input_method_context_end_keyboard_grab(struct input_method_context *context)
 {
-	struct weston_keyboard_grab *grab =
-		&context->input_method->seat->keyboard->input_method_grab;
-	struct weston_keyboard *keyboard = grab->keyboard;
+	struct weston_keyboard_grab *grab;
+	struct weston_keyboard *keyboard;
 
-	if (!grab->keyboard)
+	if (!context->input_method->seat->keyboard)
 		return;
 
-	if (grab->keyboard->grab == grab)
-		weston_keyboard_end_grab(grab->keyboard);
+	grab = &context->input_method->seat->keyboard->input_method_grab;
+	keyboard = grab->keyboard;
+	if (!keyboard)
+		return;
+
+	if (keyboard->grab == grab)
+		weston_keyboard_end_grab(keyboard);
 
 	keyboard->input_method_resource = NULL;
 }
