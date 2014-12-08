@@ -101,5 +101,84 @@ TEST(ScopedPtrVectorTest, Partition) {
   EXPECT_EQ(2u, even_numbers.size());
 }
 
+class DataWithDestruction {
+ public:
+  static scoped_ptr<DataWithDestruction> Create(int i, int* destroy_count) {
+    return make_scoped_ptr(new DataWithDestruction(i, destroy_count));
+  }
+  int data() const { return data_; }
+  ~DataWithDestruction() { ++(*destroy_count_); }
+
+ private:
+  explicit DataWithDestruction(int i, int* destroy_count)
+      : data_(i), destroy_count_(destroy_count) {}
+  int data_;
+  int* destroy_count_;
+};
+
+TEST(ScopedPtrVectorTest, RemoveIf) {
+  ScopedPtrVector<DataWithDestruction> v;
+  int destroyed[6] = {0};
+  v.push_back(DataWithDestruction::Create(1, &destroyed[0]));
+  v.push_back(DataWithDestruction::Create(2, &destroyed[1]));
+  v.push_back(DataWithDestruction::Create(3, &destroyed[2]));
+  v.push_back(DataWithDestruction::Create(3, &destroyed[3]));
+  v.push_back(DataWithDestruction::Create(4, &destroyed[4]));
+  v.push_back(DataWithDestruction::Create(5, &destroyed[5]));
+
+  int expect_destroyed[6] = {0};
+
+  // Removing more than one thing that matches.
+  auto is_three = [](DataWithDestruction* d) { return d->data() == 3; };
+  v.erase(v.remove_if(is_three), v.end());
+  EXPECT_EQ(4u, v.size());
+  expect_destroyed[2]++;
+  expect_destroyed[3]++;
+  for (size_t i = 0; i < arraysize(destroyed); ++i)
+    EXPECT_EQ(expect_destroyed[i], destroyed[i]) << i;
+  {
+    int expect_data[4] = {1, 2, 4, 5};
+    for (size_t i = 0; i < arraysize(expect_data); ++i)
+      EXPECT_EQ(expect_data[i], v[i]->data()) << i;
+  }
+
+  // Removing from the back of the vector.
+  auto is_five = [](DataWithDestruction* d) { return d->data() == 5; };
+  v.erase(v.remove_if(is_five), v.end());
+  EXPECT_EQ(3u, v.size());
+  expect_destroyed[5]++;
+  for (size_t i = 0; i < arraysize(destroyed); ++i)
+    EXPECT_EQ(expect_destroyed[i], destroyed[i]) << i;
+  {
+    int expect_data[3] = {1, 2, 4};
+    for (size_t i = 0; i < arraysize(expect_data); ++i)
+      EXPECT_EQ(expect_data[i], v[i]->data()) << i;
+  }
+
+  // Removing from the front of the vector.
+  auto is_one = [](DataWithDestruction* d) { return d->data() == 1; };
+  v.erase(v.remove_if(is_one), v.end());
+  EXPECT_EQ(2u, v.size());
+  expect_destroyed[0]++;
+  for (size_t i = 0; i < arraysize(destroyed); ++i)
+    EXPECT_EQ(expect_destroyed[i], destroyed[i]) << i;
+  {
+    int expect_data[2] = {2, 4};
+    for (size_t i = 0; i < arraysize(expect_data); ++i)
+      EXPECT_EQ(expect_data[i], v[i]->data()) << i;
+  }
+
+  // Removing things that aren't in the vector does nothing.
+  v.erase(v.remove_if(is_one), v.end());
+  EXPECT_EQ(2u, v.size());
+  for (size_t i = 0; i < arraysize(destroyed); ++i)
+    EXPECT_EQ(expect_destroyed[i], destroyed[i]) << i;
+  {
+    int expect_data[2] = {2, 4};
+    for (size_t i = 0; i < arraysize(expect_data); ++i)
+      EXPECT_EQ(expect_data[i], v[i]->data()) << i;
+  }
+}
+
 }  // namespace
 }  // namespace cc

@@ -159,6 +159,30 @@ class ScopedPtrVector {
     std::swap(*writable_a, *writable_b);
   }
 
+  // This acts like std::remove_if but with one key difference. The values to be
+  // removed to will each appear exactly once at or after the returned iterator,
+  // so that erase(foo.remove_if(P), foo.end()) will not leak or double-free the
+  // pointers in the vector.
+  template <typename Predicate>
+  iterator remove_if(Predicate predicate) {
+    typename std::vector<T*>::iterator it =
+        std::find_if(data_.begin(), data_.end(), predicate);
+    typename std::vector<T*>::iterator end = data_.end();
+    if (it == end)
+      return it;
+    typename std::vector<T*>::iterator result = it;
+    ++it;
+    for (; it != end; ++it) {
+      if (!static_cast<bool>(predicate(*it))) {
+        // Swap here instead of just assign to |result| so that all the
+        // pointers are preserved to be deleted afterward.
+        std::swap(*result, *it);
+        ++result;
+      }
+    }
+    return result;
+  }
+
   template<class Compare>
   inline void sort(Compare comp) {
     std::sort(data_.begin(), data_.end(), comp);
