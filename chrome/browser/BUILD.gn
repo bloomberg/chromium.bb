@@ -394,7 +394,7 @@ static_library("browser") {
   }
   if (safe_browsing_mode != 0) {
     sources +=
-        rebase_path(gypi_values.chrome_browser_basic_safe_browsing_sources,
+        rebase_path(gypi_values.chrome_browser_safe_browsing_basic_sources,
                     ".",
                     "//chrome")
     deps += [
@@ -404,7 +404,7 @@ static_library("browser") {
     ]
     if (safe_browsing_mode == 1) {
       sources +=
-          rebase_path(gypi_values.chrome_browser_full_safe_browsing_sources,
+          rebase_path(gypi_values.chrome_browser_safe_browsing_full_sources,
                       ".",
                       "//chrome")
       defines += [ "FULL_SAFE_BROWSING" ]
@@ -500,7 +500,7 @@ static_library("browser") {
                            "//chrome")
     if (!is_android) {
       sources += rebase_path(
-              gypi_values.chrome_browser_non_android_notifications_sources,
+              gypi_values.chrome_browser_notifications_non_android_sources,
               ".",
               "//chrome")
     }
@@ -512,7 +512,7 @@ static_library("browser") {
 
   if (enable_basic_printing || enable_print_preview) {
     # Some form of printing support.
-    sources += rebase_path(gypi_values.chrome_browser_basic_printing_sources,
+    sources += rebase_path(gypi_values.chrome_browser_printing_basic_sources,
                            ".",
                            "//chrome")
     deps += [ "//printing" ]
@@ -523,13 +523,13 @@ static_library("browser") {
     }
     if (enable_print_preview) {
       # Full printing on top of the above.
-      sources += rebase_path(gypi_values.chrome_browser_full_printing_sources,
+      sources += rebase_path(gypi_values.chrome_browser_printing_full_sources,
                              ".",
                              "//chrome")
     } else {
       # Partial-only printing support.
       sources +=
-          rebase_path(gypi_values.chrome_browser_basic_only_printing_sources,
+          rebase_path(gypi_values.chrome_browser_printing_basic_only_sources,
                       ".",
                       "//chrome")
     }
@@ -733,7 +733,7 @@ static_library("browser") {
       # TODO(brettw) as of this writing wifi bootstrapping is set on Windows
       # and Mac, so this test is meaningless. Can we merge these lists?
       sources += rebase_path(
-              gypi_values.chrome_browser_win_mac_wifi_bootstrapping_sources,
+              gypi_values.chrome_browser_wifi_bootstrapping_win_mac_sources,
               ".",
               "//chrome")
     }

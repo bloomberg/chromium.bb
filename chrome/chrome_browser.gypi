@@ -1838,7 +1838,7 @@
       'browser/notifications/profile_notification.h',
     ],
     # Used on non-Android platforms when notifications are enabled.
-    'chrome_browser_non_android_notifications_sources': [
+    'chrome_browser_notifications_non_android_sources': [
       'browser/notifications/extension_welcome_notification.cc',
       'browser/notifications/extension_welcome_notification.h',
       'browser/notifications/extension_welcome_notification_factory.cc',
@@ -1883,7 +1883,7 @@
       'browser/themes/theme_syncable_service.h',
     ],
     # Used both when (enable_basic_printing==1 or enable_print_preview==1).
-    'chrome_browser_basic_printing_sources': [
+    'chrome_browser_printing_basic_sources': [
       'browser/printing/print_job.cc',
       'browser/printing/print_job.h',
       'browser/printing/print_job_manager.cc',
@@ -1902,7 +1902,7 @@
       'browser/printing/printing_message_filter.h',
     ],
     # Used on top of the "basic" sources when enable_print_preview==1.
-    'chrome_browser_full_printing_sources': [
+    'chrome_browser_printing_full_sources': [
       'browser/local_discovery/pwg_raster_converter.cc',
       'browser/local_discovery/pwg_raster_converter.h',
       'browser/printing/background_printing_manager.cc',
@@ -1937,7 +1937,7 @@
       'browser/task_manager/printing_information.h',
     ],
     # Used only in (enable_basic_printing==1 and enable_print_preview==0) mode.
-    'chrome_browser_basic_only_printing_sources': [
+    'chrome_browser_printing_basic_only_sources': [
       'browser/printing/print_view_manager_basic.cc',
       'browser/printing/print_view_manager_basic.h',
     ],
@@ -2539,7 +2539,7 @@
        'browser/local_discovery/wifi/wifi_manager.h',
     ],
     # Parts of wifi bootstrapping (above) used everywhere except chromeos.
-    'chrome_browser_win_mac_wifi_bootstrapping_sources': [
+    'chrome_browser_wifi_bootstrapping_win_mac_sources': [
        'browser/local_discovery/wifi/wifi_manager_nonchromeos.cc',
        'browser/local_discovery/wifi/wifi_manager_nonchromeos.h',
     ],
@@ -2625,7 +2625,7 @@
     ],
     # Used for safe browsing in basic mode (safe_browsing=2) as well as full
     # mode (safe_browsing=1).
-    'chrome_browser_basic_safe_browsing_sources': [
+    'chrome_browser_safe_browsing_basic_sources': [
       'browser/renderer_host/safe_browsing_resource_throttle_factory.cc',
       'browser/renderer_host/safe_browsing_resource_throttle_factory.h',
       'browser/safe_browsing/malware_details_cache.cc',
@@ -2648,7 +2648,7 @@
       'browser/safe_browsing/ui_manager.h',
     ],
     # Files in addition to the "basic" ones to use for full safe browsing.
-    'chrome_browser_full_safe_browsing_sources': [
+    'chrome_browser_safe_browsing_full_sources': [
       'browser/download/download_completion_blocker.cc',
       'browser/download/download_completion_blocker.h',
       'browser/renderer_host/safe_browsing_resource_throttle.cc',
@@ -3199,7 +3199,7 @@
           'sources': [ '<@(chrome_browser_plugins_sources)' ],
         }],
         ['safe_browsing != 0', {
-          'sources': [ '<@(chrome_browser_basic_safe_browsing_sources)' ],
+          'sources': [ '<@(chrome_browser_safe_browsing_basic_sources)' ],
           'dependencies': [
             'safe_browsing_chunk_proto',
             'safe_browsing_metadata_proto',
@@ -3207,7 +3207,7 @@
           ],
           'conditions': [
             ['safe_browsing == 1', {
-              'sources': [ '<@(chrome_browser_full_safe_browsing_sources)' ],
+              'sources': [ '<@(chrome_browser_safe_browsing_full_sources)' ],
               'defines': [
                 'FULL_SAFE_BROWSING',
               ],
@@ -3316,7 +3316,7 @@
           'conditions': [
             ['OS!="android"', {
               'sources': [
-                '<@(chrome_browser_non_android_notifications_sources)',
+                '<@(chrome_browser_notifications_non_android_sources)',
               ],
             }],
           ],
@@ -3329,7 +3329,7 @@
           'dependencies': [
             '../printing/printing.gyp:printing',
           ],
-          'sources': [ '<@(chrome_browser_basic_printing_sources)' ],
+          'sources': [ '<@(chrome_browser_printing_basic_sources)' ],
           'conditions': [
             ['OS=="win"', {
               'sources': [ '<@(chrome_browser_printing_emf_sources)' ],
@@ -3338,11 +3338,11 @@
         }],
         # Full printing on top of the above.
         ['enable_print_preview==1', {
-          'sources': [ '<@(chrome_browser_full_printing_sources)' ],
+          'sources': [ '<@(chrome_browser_printing_full_sources)' ],
         }],
         # Partial-only printing support.
         ['enable_basic_printing==1 and enable_print_preview==0', {
-          'sources': [ '<@(chrome_browser_basic_only_printing_sources)' ],
+          'sources': [ '<@(chrome_browser_printing_basic_only_sources)' ],
         }],
         ['enable_captive_portal_detection==1', {
           'sources': [ '<@(chrome_browser_captive_portal_sources)' ]
@@ -3522,7 +3522,7 @@
           'conditions' : [
             [ 'OS=="win" or OS=="mac"', {
               'sources': [
-                '<@(chrome_browser_win_mac_wifi_bootstrapping_sources)',
+                '<@(chrome_browser_wifi_bootstrapping_win_mac_sources)',
               ]
             }]
           ]
