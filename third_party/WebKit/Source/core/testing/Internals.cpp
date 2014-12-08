@@ -139,6 +139,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/filters/FilterOperation.h"
 #include "platform/graphics/filters/FilterOperations.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebConnectionType.h"
@@ -2345,6 +2346,11 @@ void Internals::forcePluginPlaceholder(HTMLElement* element, const PluginPlaceho
 Iterator* Internals::iterator(ScriptState* scriptState, ExceptionState& exceptionState)
 {
     return new InternalsIterator;
+}
+
+void Internals::forceBlinkGCWithoutV8GC()
+{
+    ThreadState::current()->scheduleGC(ThreadState::ForcedGC);
 }
 
 } // namespace blink

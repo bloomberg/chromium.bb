@@ -297,4 +297,6 @@
 
     DictionaryTest dictionaryTest();
     UnionTypesTest unionTypesTest();
+
+    void forceBlinkGCWithoutV8GC();
 };
