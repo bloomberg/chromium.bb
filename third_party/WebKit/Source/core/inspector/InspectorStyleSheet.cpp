@@ -1086,18 +1086,11 @@ bool InspectorStyleSheet::setRuleSelector(const InspectorCSSId& id, const String
 String InspectorStyleSheet::mediaRuleText(const InspectorCSSId& id, ExceptionState& exceptionState)
 {
     CSSMediaRule* rule = mediaRuleForId(id);
-    if (!rule || !ensureParsedDataReady()) {
+    if (!rule) {
         exceptionState.throwDOMException(NotFoundError, "No media rule was found for the given ID.");
         return "";
     }
-    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = ruleSourceDataAt(id.ordinal());
-    if (!sourceData || !sourceData->mediaSourceData) {
-        exceptionState.throwDOMException(NotFoundError, "No media rule was found for the given ID.");
-        return "";
-    }
-    String sheetText = m_parsedStyleSheet->text();
-    ASSERT(sourceData->ruleHeaderRange.start >= 0 && sourceData->ruleHeaderRange.end < sheetText.length());
-    return sheetText.substring(sourceData->ruleHeaderRange.start, sourceData->ruleHeaderRange.length());
+    return rule->media()->mediaText();
 }
 
 bool InspectorStyleSheet::setMediaRuleText(const InspectorCSSId& id, const String& text, ExceptionState& exceptionState)
@@ -1234,7 +1227,7 @@ bool InspectorStyleSheet::verifyMediaText(const String& mediaText)
     DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
     RuleSourceDataList sourceData;
     RefPtrWillBeRawPtr<StyleSheetContents> styleSheetContents = StyleSheetContents::create(strictCSSParserContext());
-    String text = mediaText + " { div { " + bogusPropertyName + ": none; } }";
+    String text = "@media " + mediaText + " { div { " + bogusPropertyName + ": none; } }";
     StyleSheetHandler handler(text, ownerDocument(), styleSheetContents.get(), &sourceData);
     CSSParser::parseSheet(parserContextForDocument(ownerDocument()), styleSheetContents.get(), text, TextPosition::minimumPosition(), &handler);
 

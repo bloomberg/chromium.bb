@@ -139,7 +139,7 @@ function test()
         function testAddingRuleInsideMedia1(next)
         {
             verifyProtocolError({
-                location: { startLine: 12, startColumn: 3, endLine: 12, endColumn: 3 },
+                location: { startLine: 12, startColumn: 9, endLine: 12, endColumn: 9 },
                 ruleText: "#test { content: 'EDITED'; }",
             }, next);
         },

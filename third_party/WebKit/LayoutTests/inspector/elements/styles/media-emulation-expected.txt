@@ -22,7 +22,7 @@ print media emulated:
 element.style  { ()
 
 [expanded] 
-@media print (media-emulation.html:7 -> media-emulation.html:7:1)
+@media print (media-emulation.html:7 -> media-emulation.html:7:8)
 #main  { (media-emulation.html:8 -> media-emulation.html:8:1)
 color: black;
 
@@ -42,7 +42,7 @@ tty media emulated:
 element.style  { ()
 
 [expanded] 
-@media tty (media-emulation.html:11 -> media-emulation.html:11:1)
+@media tty (media-emulation.html:11 -> media-emulation.html:11:8)
 #main  { (media-emulation.html:12 -> media-emulation.html:12:1)
 color: green;
 

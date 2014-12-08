@@ -728,7 +728,7 @@ at_rule_header_end_maybe_space:
     ;
 
 media_rule_start:
-    before_media_rule MEDIA_SYM maybe_space;
+    MEDIA_SYM maybe_space before_media_rule;
 
 media:
     media_rule_start maybe_media_list '{' at_rule_header_end at_rule_body_start maybe_space block_rule_body closing_brace {

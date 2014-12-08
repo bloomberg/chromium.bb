@@ -1,8 +1,8 @@
 mediaRule #0
     text: (max-width: 0px), (min-width: 1000em)
     source: mediaRule
-    range: {"startLine":12,"startColumn":0,"endLine":12,"endColumn":52}
-    computedText: @media all and (max-width: 0px), (min-width: 1000em)
+    range: {"startLine":12,"startColumn":7,"endLine":12,"endColumn":52}
+    computedText: all and (max-width: 0px), (min-width: 1000em)
     mediaQuery #0 active: false
         mediaExpression #0
             feature: max-width
@@ -21,8 +21,8 @@ mediaRule #0
 mediaRule #1
     text: (max-width: 100px), (max-width: 72em)
     source: mediaRule
-    range: {"startLine":21,"startColumn":0,"endLine":21,"endColumn":65}
-    computedText: @media (max-width: 100px), (max-width: /* comment inside */ 72em)
+    range: {"startLine":21,"startColumn":7,"endLine":21,"endColumn":65}
+    computedText: (max-width: 100px), (max-width: /* comment inside */ 72em)
     mediaQuery #0
         mediaExpression #0
             feature: max-width
@@ -42,8 +42,8 @@ mediaRule #1
 mediaRule #2
     text: (max-width: 10px) and (min-width: 20px)
     source: mediaRule
-    range: {"startLine":13,"startColumn":0,"endLine":13,"endColumn":46}
-    computedText: @media (min-width: 20px) and (max-width: 10px)
+    range: {"startLine":13,"startColumn":7,"endLine":13,"endColumn":46}
+    computedText: (min-width: 20px) and (max-width: 10px)
     mediaQuery #0 active: false
         mediaExpression #0
             feature: max-width
@@ -62,8 +62,8 @@ mediaRule #2
 mediaRule #3
     text: (max-width: 200px) and (min-width: 100px)
     source: mediaRule
-    range: {"startLine":6,"startColumn":4,"endLine":6,"endColumn":52}
-    computedText: @media (max-width: 200px) and (min-width: 100px)
+    range: {"startLine":6,"startColumn":11,"endLine":6,"endColumn":52}
+    computedText: (max-width: 200px) and (min-width: 100px)
     mediaQuery #0
         mediaExpression #0
             feature: max-width
@@ -82,8 +82,8 @@ mediaRule #3
 mediaRule #4
     text: (min-monochrome: 8)
     source: mediaRule
-    range: {"startLine":22,"startColumn":4,"endLine":22,"endColumn":38}
-    computedText: @media all and (min-monochrome: 8)
+    range: {"startLine":22,"startColumn":11,"endLine":22,"endColumn":38}
+    computedText: all and (min-monochrome: 8)
     mediaQuery #0
         mediaExpression #0
             feature: min-monochrome
@@ -94,8 +94,8 @@ mediaRule #4
 mediaRule #5
     text: (min-width: 100px)
     source: mediaRule
-    range: {"startLine":4,"startColumn":0,"endLine":4,"endColumn":25}
-    computedText: @media (min-width: 100px)
+    range: {"startLine":4,"startColumn":7,"endLine":4,"endColumn":25}
+    computedText: (min-width: 100px)
     mediaQuery #0
         mediaExpression #0
             feature: min-width
@@ -107,8 +107,8 @@ mediaRule #5
 mediaRule #6
     text: (min-width: 100px)
     source: mediaRule
-    range: {"startLine":4,"startColumn":0,"endLine":4,"endColumn":25}
-    computedText: @media (min-width: 100px)
+    range: {"startLine":4,"startColumn":7,"endLine":4,"endColumn":25}
+    computedText: (min-width: 100px)
     mediaQuery #0
         mediaExpression #0
             feature: min-width
@@ -120,8 +120,8 @@ mediaRule #6
 mediaRule #7
     text: (min-width: 100px)
     source: mediaRule
-    range: {"startLine":4,"startColumn":0,"endLine":4,"endColumn":25}
-    computedText: @media (min-width: 100px)
+    range: {"startLine":4,"startColumn":7,"endLine":4,"endColumn":25}
+    computedText: (min-width: 100px)
     mediaQuery #0
         mediaExpression #0
             feature: min-width
@@ -133,8 +133,8 @@ mediaRule #7
 mediaRule #8
     text: (min-width: 1px), (max-width: 1000em)
     source: mediaRule
-    range: {"startLine":1,"startColumn":0,"endLine":9,"endColumn":1}
-    computedText: @media all\n\nand (           min-width:\n    1px),\n\n    (max-width: 1000em\n\n\n)
+    range: {"startLine":1,"startColumn":7,"endLine":9,"endColumn":1}
+    computedText: all\n\nand (           min-width:\n    1px),\n\n    (max-width: 1000em\n\n\n)
     mediaQuery #0 active: true
         mediaExpression #0
             feature: min-width
@@ -166,14 +166,14 @@ mediaRule #9
 mediaRule #10
     text: (orientation: portrait)
     source: mediaRule
-    range: {"startLine":14,"startColumn":4,"endLine":14,"endColumn":42}
-    computedText: @media all and (orientation: portrait)
+    range: {"startLine":14,"startColumn":11,"endLine":14,"endColumn":42}
+    computedText: all and (orientation: portrait)
     mediaList is empty
 mediaRule #11
     text: handheld and (min-width: 20em), screen and (min-width: 20em)
     source: mediaRule
-    range: {"startLine":8,"startColumn":4,"endLine":8,"endColumn":71}
-    computedText: @media handheld and (min-width: 20em), screen and (min-width: 20em)
+    range: {"startLine":8,"startColumn":11,"endLine":8,"endColumn":71}
+    computedText: handheld and (min-width: 20em), screen and (min-width: 20em)
     mediaQuery #0
         mediaExpression #0
             feature: min-width
@@ -193,14 +193,14 @@ mediaRule #11
 mediaRule #12
     text: not all
     source: mediaRule
-    range: {"startLine":5,"startColumn":0,"endLine":5,"endColumn":43}
-    computedText: @media screen and (min-width: 10px) and and
+    range: {"startLine":5,"startColumn":7,"endLine":5,"endColumn":43}
+    computedText: screen and (min-width: 10px) and and
     mediaList is empty
 mediaRule #13
     text: not all
     source: mediaRule
-    range: {"startLine":29,"startColumn":0,"endLine":29,"endColumn":9}
-    computedText: @media ()
+    range: {"startLine":29,"startColumn":7,"endLine":29,"endColumn":9}
+    computedText: ()
     mediaList is empty
 mediaRule #14
     text: print and (min-width: 8.5in)
@@ -215,8 +215,8 @@ mediaRule #14
 mediaRule #15
     text: screen and (device-aspect-ratio: 16/9), screen and (device-aspect-ratio: 16/10)
     source: mediaRule
-    range: {"startLine":1,"startColumn":0,"endLine":1,"endColumn":86}
-    computedText: @media screen and (device-aspect-ratio: 16/9), screen and (device-aspect-ratio: 16/10)
+    range: {"startLine":1,"startColumn":7,"endLine":1,"endColumn":86}
+    computedText: screen and (device-aspect-ratio: 16/9), screen and (device-aspect-ratio: 16/10)
     mediaList is empty
 mediaRule #16
     text: screen and (max-height: 4000px) and (min-width: 10px)
@@ -241,8 +241,8 @@ mediaRule #16
 mediaRule #17
     text: screen and (min-resolution: 2dppx)
     source: mediaRule
-    range: {"startLine":7,"startColumn":0,"endLine":7,"endColumn":41}
-    computedText: @media screen and (min-resolution: 2dppx)
+    range: {"startLine":7,"startColumn":7,"endLine":7,"endColumn":41}
+    computedText: screen and (min-resolution: 2dppx)
     mediaQuery #0
         mediaExpression #0
             feature: min-resolution

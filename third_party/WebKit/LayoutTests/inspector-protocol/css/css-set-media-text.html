@@ -15,13 +15,13 @@ function test()
 
     var firstMediaRange = {
         startLine: 0,
-        startColumn: 0,
+        startColumn: 7,
         endLine: 0,
         endColumn: 67
     };
     var secondMediaRange = {
         startLine: 6,
-        startColumn: 1,
+        startColumn: 8,
         endLine: 8,
         endColumn: 23
     };
@@ -47,7 +47,7 @@ function test()
         {
             setMediaText({
                 range: firstMediaRange,
-                text: "@media all and (min-height: 20px)"
+                text: "all and (min-height: 20px)"
             }, InspectorTest.undoAndNext(next));
         },
 
@@ -55,7 +55,7 @@ function test()
         {
             setMediaText({
                 range: secondMediaRange,
-                text: "@media all"
+                text: "all"
             }, InspectorTest.undoAndNext(next));
         },
 
@@ -63,7 +63,7 @@ function test()
         {
             setMediaText({
                 range: firstMediaRange,
-                text: "@media all and (min-height: 20px), (max-width: 10px), handheld and (min-monochrome: 8)"
+                text: "all and (min-height: 20px), (max-width: 10px), handheld and (min-monochrome: 8)"
             }, InspectorTest.undoAndNext(next));
         },
 
@@ -85,7 +85,7 @@ function test()
 
         function testEditSequentially(next)
         {
-            var newText = "@media screen";
+            var newText = "screen";
             var oldLength = firstMediaRange.endColumn - firstMediaRange.startColumn;
             var lengthDelta = newText.length - oldLength;
             setMediaText({
@@ -103,11 +103,19 @@ function test()
                 };
                 setMediaText({
                     range: range,
-                    text: "@media all,\nhandheld and (min-height: 20px),\n(min-width: 100px) and (max-width: 200px)"
-                }, InspectorTest.undoAndNext(next));
+                    text: "all,\nhandheld and (min-height: 20px),\n(min-width: 100px) and (max-width: 200px)"
+                }, InspectorTest.undoAndNext(InspectorTest.undoAndNext(next)));
             }
+        },
+
+        function testSimpleAfterSequentially(next)
+        {
+            setMediaText({
+                range: firstMediaRange,
+                text: "all and (min-height: 20px)"
+            }, InspectorTest.undoAndNext(next));
         }
-   ];
+    ];
 }
 
 </script>

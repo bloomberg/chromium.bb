@@ -33,7 +33,7 @@ handheld and (max-width: 700px),
 
 Running test: testComplexToSimpleEdit
 ==== Style sheet text ====
-@media screen and (min-width: 700px) and (max-device-height: 200em) {
+@media screen and (max-device-height: 200em) and (min-width: 700px) {
     body {
         padding: 0;
     }
@@ -54,9 +54,7 @@ Running test: testSimpleToComplexEdit
     }
 }
 
- @media all and (orientation: portrait),
-handheld and (max-width: 700px),
-(max-resolution: 3dppx) {
+ @media (orientation: portrait), handheld and (max-width: 700px), (max-resolution: 3dppx) {
     body {
         padding: 10px;
     }
@@ -77,9 +75,7 @@ Running test: testEditSequentially
     }
 }
 
- @media all and (orientation: portrait),
-handheld and (max-width: 700px),
-(max-resolution: 3dppx) {
+ @media (orientation: portrait), handheld and (max-width: 700px), (max-resolution: 3dppx) {
     body {
         padding: 10px;
     }
@@ -94,9 +90,22 @@ handheld and (min-height: 20px),
     }
 }
 
- @media all and (orientation: portrait),
-handheld and (max-width: 700px),
-(max-resolution: 3dppx) {
+ @media (orientation: portrait), handheld and (max-width: 700px), (max-resolution: 3dppx) {
+    body {
+        padding: 10px;
+    }
+}
+
+
+Running test: testSimpleAfterSequentially
+==== Style sheet text ====
+@media all and (min-height: 20px) {
+    body {
+        padding: 0;
+    }
+}
+
+ @media (orientation: portrait), handheld and (max-width: 700px), (max-resolution: 3dppx) {
     body {
         padding: 10px;
     }
