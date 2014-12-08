@@ -26,66 +26,74 @@ from chromite.scripts import cros_mark_as_stable
 import mock
 
 
-# pylint: disable=W0212
+class RunGitMock(partial_mock.PartialCmdMock):
+  """Partial mock for git.RunMock."""
+  TARGET = 'chromite.lib.git'
+  ATTRS = ('RunGit',)
+  DEFAULT_ATTR = 'RunGit'
+
+  def RunGit(self, _git_repo, cmd, _retry=True, **kwargs):
+    return self._results['RunGit'].LookupResult(
+        (cmd,), hook_args=(cmd,), hook_kwargs=kwargs)
 
 
-class NonClassTests(cros_test_lib.MoxTestCase):
+class NonClassTests(cros_test_lib.MockTestCase):
   """Test the flow for pushing a change."""
+
   def setUp(self):
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self._branch = 'test_branch'
     self._target_manifest_branch = 'cros/master'
 
   def _TestPushChange(self, bad_cls):
+    side_effect = Exception('unittest says this should not be called')
+
     git_log = 'Marking test_one as stable\nMarking test_two as stable\n'
     fake_description = 'Marking set of ebuilds as stable\n\n%s' % git_log
-    self.mox.StubOutWithMock(cros_mark_as_stable, '_DoWeHaveLocalCommits')
-    self.mox.StubOutWithMock(cros_mark_as_stable.GitBranch, 'CreateBranch')
-    self.mox.StubOutWithMock(cros_mark_as_stable.GitBranch, 'Exists')
-    self.mox.StubOutWithMock(git, 'PushWithRetry')
-    self.mox.StubOutWithMock(git, 'GetTrackingBranch')
-    self.mox.StubOutWithMock(git, 'SyncPushBranch')
-    self.mox.StubOutWithMock(git, 'CreatePushBranch')
-    self.mox.StubOutWithMock(git, 'RunGit')
+    self.PatchObject(cros_mark_as_stable, '_DoWeHaveLocalCommits',
+                     return_value=True)
+    self.PatchObject(cros_mark_as_stable.GitBranch, 'CreateBranch',
+                     side_effect=side_effect)
+    self.PatchObject(cros_mark_as_stable.GitBranch, 'Exists',
+                     side_effect=side_effect)
 
-    # Run the flow.
-    cros_mark_as_stable._DoWeHaveLocalCommits(
-        self._branch, self._target_manifest_branch, '.').AndReturn(True)
-    git.GetTrackingBranch('.', for_push=True).AndReturn(
-        ['gerrit', 'refs/remotes/gerrit/master'])
-    git.SyncPushBranch('.', 'gerrit', 'refs/remotes/gerrit/master')
-    cros_mark_as_stable._DoWeHaveLocalCommits(
-        self._branch, 'refs/remotes/gerrit/master', '.').AndReturn(True)
+    push_mock = self.PatchObject(git, 'PushWithRetry')
+    self.PatchObject(git, 'GetTrackingBranch',
+                     return_value=['gerrit', 'refs/remotes/gerrit/master'])
+    sync_mock = self.PatchObject(git, 'SyncPushBranch')
+    create_mock = self.PatchObject(git, 'CreatePushBranch')
+    git_mock = self.StartPatcher(RunGitMock())
 
-    # Look for bad CLs.
     cmd = ['log', '--format=short', '--perl-regexp', '--author',
            '^(?!chrome-bot)', 'refs/remotes/gerrit/master..%s' % self._branch]
 
     if bad_cls:
-      result = cros_build_lib.CommandResult(output='Found bad stuff')
-      git.RunGit('.', cmd).AndReturn(result)
+      push_mock.side_effect = side_effect
+      create_mock.side_effect = side_effect
+      git_mock.AddCmdResult(cmd, output='Found bad stuff')
     else:
-      result = cros_build_lib.CommandResult(output='\n')
-      git.RunGit('.', cmd).AndReturn(result)
-      result = cros_build_lib.CommandResult(output=git_log)
+      git_mock.AddCmdResult(cmd, output='\n')
       cmd = ['log', '--format=format:%s%n%n%b',
              'refs/remotes/gerrit/master..%s' % self._branch]
-      git.RunGit('.', cmd).AndReturn(result)
-      git.CreatePushBranch('merge_branch', '.')
-      git.RunGit('.', ['merge', '--squash', self._branch])
-      git.RunGit('.', ['commit', '-m', fake_description])
-      git.RunGit('.', ['config', 'push.default', 'tracking'])
-      git.PushWithRetry('merge_branch', '.', dryrun=False)
+      git_mock.AddCmdResult(cmd, output=git_log)
+      git_mock.AddCmdResult(['merge', '--squash', self._branch])
+      git_mock.AddCmdResult(['commit', '-m', fake_description])
+      git_mock.AddCmdResult(['config', 'push.default', 'tracking'])
 
-    self.mox.ReplayAll()
-    cros_mark_as_stable.PushChange(self._branch, self._target_manifest_branch,
-                                   False, '.')
-    self.mox.VerifyAll()
+    try:
+      cros_mark_as_stable.PushChange(self._branch, self._target_manifest_branch,
+                                     False, '.')
+    finally:
+      sync_mock.assert_called_with('.', 'gerrit', 'refs/remotes/gerrit/master')
+      if not bad_cls:
+        push_mock.assert_called_with('merge_branch', '.', dryrun=False)
+        create_mock.assert_called_with('merge_branch', '.')
 
   def testPushChange(self):
+    """Verify pushing changes works."""
     self._TestPushChange(bad_cls=False)
 
   def testPushChangeBadCls(self):
+    """Verify we do not push bad CLs."""
     self.assertRaises(AssertionError, self._TestPushChange, bad_cls=True)
 
 

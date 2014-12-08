@@ -12,13 +12,13 @@ from __future__ import print_function
 import os
 import sys
 import types
-import mox
-
 
 sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.scripts import autotest_quickmerge
+
+import mock
 
 
 RSYNC_TEST_OUTPUT = """.d..t...... ./
@@ -141,30 +141,27 @@ class RsyncCommandTest(cros_build_lib_unittest.RunCommandTestCase):
     self.assertCommandContains(expected_command)
 
 
-class PortageManipulationsTest(mox.MoxTestBase):
+class PortageManipulationsTest(cros_test_lib.MockTestCase):
   """Test usage of autotest_quickmerge.portage."""
 
   def testUpdatePackageContents(self):
     """Test that UpdatePackageContents makes the correct calls to portage."""
-    autotest_quickmerge.portage = self.mox.CreateMockAnything('portage')
+    autotest_quickmerge.portage = mock.MagicMock()
     portage = autotest_quickmerge.portage
 
     portage.root = TEST_PORTAGE_ROOT
 
-    mock_vartree = self.mox.CreateMockAnything('vartree')
+    mock_vartree = mock.MagicMock()
     mock_vartree.settings = {'an arbitrary' : 'dictionary'}
     mock_tree = {TEST_PORTAGE_ROOT : {'vartree' : mock_vartree}}
-    portage.create_trees(TEST_PORTAGE_ROOT,
-        TEST_PORTAGE_ROOT).AndReturn(mock_tree)
+    portage.create_trees.return_value = mock_tree
 
-    mock_vartree.dbapi = self.mox.CreateMockAnything('dbapi')
-    mock_vartree.dbapi.cp_list(TEST_PACKAGE_CP).AndReturn([TEST_PACKAGE_CPV])
+    mock_vartree.dbapi = mock.MagicMock()
+    mock_vartree.dbapi.cp_list.return_value = [TEST_PACKAGE_CPV]
 
-    mock_package = self.mox.CreateMockAnything('dblink')
-    portage.dblink(TEST_PACKAGE_C, TEST_PACKAGE_PV, # pylint: disable=E1101
-        settings=mock_vartree.settings,
-        vartree=mock_vartree).AndReturn(mock_package)
-    mock_package.getcontents().AndReturn(TEST_PACKAGE_OLDCONTENTS)
+    mock_package = mock.MagicMock()
+    portage.dblink.return_value = mock_package  # pylint: disable=no-member
+    mock_package.getcontents.return_value = TEST_PACKAGE_OLDCONTENTS
 
     EXPECTED_NEW_ENTRIES = {
         '/foo/bar/new_empty_directory': (u'dir',),
@@ -178,14 +175,11 @@ class PortageManipulationsTest(mox.MoxTestBase):
     mock_vartree.dbapi.writeContentsToContentsFile(mock_package,
       RESULT_DICIONARY)
 
-    self.mox.ReplayAll()
-
     change_report = autotest_quickmerge.ItemizeChangesFromRsyncOutput(
       RSYNC_TEST_OUTPUT, RSYNC_TEST_DESTINATION_PATH)
     autotest_quickmerge.UpdatePackageContents(change_report, TEST_PACKAGE_CP,
         TEST_PORTAGE_ROOT)
 
-    self.mox.VerifyAll()
 
 class PortageAPITest(cros_test_lib.TestCase):
   """Ensures that required portage API exists."""
