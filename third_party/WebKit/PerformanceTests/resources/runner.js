@@ -167,6 +167,8 @@ if (window.testRunner) {
         // FIXME: We should be using multiple instances of test runner on Dromaeo as well but it's too slow now.
         // FIXME: Don't hard code the number of in-process iterations to use inside a test runner.
         iterationCount = test.dromaeoIterationCount || (window.testRunner ? 5 : 20);
+        if (test.warmUpCount && test.warmUpCount > 0)
+            completedIterations = -test.warmUpCount;
         logLines = window.testRunner ? [] : null;
         PerfTestRunner.log("Running " + iterationCount + " times");
         if (test.doNotIgnoreInitialRun)
