@@ -558,7 +558,6 @@ protected:
     GLenum m_unpackColorspaceConversion;
     RefPtrWillBeMember<WebGLContextAttributes> m_requestedAttributes;
 
-    bool m_layerCleared;
     GLfloat m_clearColor[4];
     bool m_scissorEnabled;
     GLfloat m_clearDepth;
@@ -720,8 +719,17 @@ protected:
 
     // Clear the backbuffer if it was composited since the last operation.
     // clearMask is set to the bitfield of any clear that would happen anyway at this time
-    // and the function returns true if that clear is now unnecessary.
-    bool clearIfComposited(GLbitfield clearMask = 0);
+    // and the function returns |CombinedClear| if that clear is now unnecessary.
+    enum HowToClear {
+        // Skip clearing the backbuffer.
+        Skipped,
+        // Clear the backbuffer.
+        JustClear,
+        // Combine webgl.clear() API with the backbuffer clear, so webgl.clear()
+        // doesn't have to call glClear() again.
+        CombinedClear
+    };
+    HowToClear clearIfComposited(GLbitfield clearMask = 0);
 
     // Helper to restore state that clearing the framebuffer may destroy.
     void restoreStateAfterClear();

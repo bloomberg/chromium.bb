@@ -147,7 +147,7 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,
     , m_multisampleColorBuffer(0)
     , m_contentsChanged(true)
     , m_contentsChangeCommitted(false)
-    , m_layerComposited(false)
+    , m_bufferClearNeeded(false)
     , m_multisampleMode(None)
     , m_internalColorFormat(0)
     , m_colorFormat(0)
@@ -181,17 +181,20 @@ void DrawingBuffer::markContentsChanged()
 {
     m_contentsChanged = true;
     m_contentsChangeCommitted = false;
-    m_layerComposited = false;
 }
 
-bool DrawingBuffer::layerComposited() const
+bool DrawingBuffer::bufferClearNeeded() const
 {
-    return m_layerComposited;
+    return m_bufferClearNeeded;
 }
 
-void DrawingBuffer::markLayerComposited()
+void DrawingBuffer::setBufferClearNeeded(bool flag)
 {
-    m_layerComposited = true;
+    if (m_preserveDrawingBuffer == Discard) {
+        m_bufferClearNeeded = flag;
+    } else {
+        ASSERT(!m_bufferClearNeeded);
+    }
 }
 
 WebGraphicsContext3D* DrawingBuffer::context()
@@ -295,7 +298,7 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
     m_context->flush();
     frontColorBufferMailbox->mailbox.syncPoint = m_context->insertSyncPoint();
     frontColorBufferMailbox->mailbox.allowOverlay = frontColorBufferMailbox->textureInfo.imageId != 0;
-    markLayerComposited();
+    setBufferClearNeeded(true);
 
     // set m_parentDrawingBuffer to make sure 'this' stays alive as long as it has live mailboxes
     ASSERT(!frontColorBufferMailbox->m_parentDrawingBuffer);

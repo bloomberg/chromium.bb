@@ -387,7 +387,7 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r)
             context->fillRect(FloatRect(r), Color(0, 0, 0));
     }
 
-    if (is3D())
+    if (is3D() && paintsIntoCanvasBuffer())
         toWebGLRenderingContext(m_context.get())->markLayerComposited();
 }
 

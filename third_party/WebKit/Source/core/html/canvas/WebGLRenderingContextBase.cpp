@@ -634,7 +634,6 @@ void WebGLRenderingContextBase::initializeNewContext()
     m_stencilFuncRefBack = 0;
     m_stencilFuncMask = 0xFFFFFFFF;
     m_stencilFuncMaskBack = 0xFFFFFFFF;
-    m_layerCleared = false;
     m_numGLErrorsToConsoleAllowed = maxGLErrorsAllowedToConsole;
 
     m_clearColor[0] = m_clearColor[1] = m_clearColor[2] = m_clearColor[3] = 0;
@@ -803,7 +802,6 @@ void WebGLRenderingContextBase::markContextChanged(ContentChangeType changeType)
 
     drawingBuffer()->markContentsChanged();
 
-    m_layerCleared = false;
     RenderBox* renderBox = canvas()->renderBox();
     if (renderBox && renderBox->hasAcceleratedCompositing()) {
         m_markedCanvasDirty = true;
@@ -817,14 +815,13 @@ void WebGLRenderingContextBase::markContextChanged(ContentChangeType changeType)
     }
 }
 
-bool WebGLRenderingContextBase::clearIfComposited(GLbitfield mask)
+WebGLRenderingContextBase::HowToClear WebGLRenderingContextBase::clearIfComposited(GLbitfield mask)
 {
     if (isContextLost())
-        return false;
+        return Skipped;
 
-    if (!drawingBuffer()->layerComposited() || m_layerCleared
-        || m_requestedAttributes->preserveDrawingBuffer() || (mask && m_framebufferBinding))
-        return false;
+    if (!drawingBuffer()->bufferClearNeeded() || (mask && m_framebufferBinding))
+        return Skipped;
 
     RefPtrWillBeRawPtr<WebGLContextAttributes> contextAttributes = getContextAttributes();
 
@@ -862,9 +859,9 @@ bool WebGLRenderingContextBase::clearIfComposited(GLbitfield mask)
     restoreStateAfterClear();
     if (m_framebufferBinding)
         webContext()->bindFramebuffer(GL_FRAMEBUFFER, objectOrZero(m_framebufferBinding.get()));
-    m_layerCleared = true;
+    drawingBuffer()->setBufferClearNeeded(false);
 
-    return combinedClear;
+    return combinedClear ? CombinedClear : JustClear;
 }
 
 void WebGLRenderingContextBase::restoreStateAfterClear()
@@ -888,7 +885,7 @@ void WebGLRenderingContextBase::restoreStateAfterClear()
 void WebGLRenderingContextBase::markLayerComposited()
 {
     if (!isContextLost())
-        drawingBuffer()->markLayerComposited();
+        drawingBuffer()->setBufferClearNeeded(true);
 }
 
 void WebGLRenderingContextBase::setIsHidden(bool hidden)
@@ -902,9 +899,8 @@ void WebGLRenderingContextBase::paintRenderingResultsToCanvas(SourceDrawingBuffe
     if (isContextLost())
         return;
 
-    clearIfComposited();
-
-    if (!m_markedCanvasDirty && !m_layerCleared)
+    bool mustClearNow = clearIfComposited() != Skipped;
+    if (!m_markedCanvasDirty && !mustClearNow)
         return;
 
     canvas()->clearCopiedImage();
@@ -1334,7 +1330,7 @@ void WebGLRenderingContextBase::clear(GLbitfield mask)
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "clear", reason);
         return;
     }
-    if (!clearIfComposited(mask))
+    if (clearIfComposited(mask) != CombinedClear)
         webContext()->clear(mask);
     markContextChanged(CanvasChanged);
 }

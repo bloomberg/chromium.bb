@@ -145,8 +145,8 @@ public:
     bool discardFramebufferSupported() const { return m_discardFramebufferSupported; }
 
     void markContentsChanged();
-    void markLayerComposited();
-    bool layerComposited() const;
+    void setBufferClearNeeded(bool);
+    bool bufferClearNeeded() const;
     void setIsHidden(bool);
 
     WebLayer* platformLayer();
@@ -273,7 +273,7 @@ private:
 
     // True if commit() has been called since the last time markContentsChanged() had been called.
     bool m_contentsChangeCommitted;
-    bool m_layerComposited;
+    bool m_bufferClearNeeded;
 
     enum MultisampleMode {
         None,
