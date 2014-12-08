@@ -392,6 +392,17 @@ void WebURLRequest::setCheckForBrowserSideNavigation(bool check)
     m_private->m_resourceRequest->setCheckForBrowserSideNavigation(check);
 }
 
+double WebURLRequest::uiStartTime() const
+{
+    return m_private->m_resourceRequest->uiStartTime();
+}
+
+WebURLRequest::InputToLoadPerfMetricReportPolicy WebURLRequest::inputPerfMetricReportPolicy() const
+{
+    return static_cast<WebURLRequest::InputToLoadPerfMetricReportPolicy>(
+        m_private->m_resourceRequest->inputPerfMetricReportPolicy());
+}
+
 const ResourceRequest& WebURLRequest::toResourceRequest() const
 {
     ASSERT(m_private);

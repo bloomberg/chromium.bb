@@ -3750,7 +3750,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
             RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(
                 touches.get(), touchesByTarget.get(touchEventTarget), changedTouches[state].m_touches.get(),
                 stateName, touchEventTarget->toNode()->document().domWindow(),
-                event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), event.cancelable());
+                event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), event.cancelable(), event.timestamp());
             touchEventTarget->toNode()->dispatchTouchEvent(touchEvent.get());
             swallowedEvent = swallowedEvent || touchEvent->defaultPrevented() || touchEvent->defaultHandled();
         }

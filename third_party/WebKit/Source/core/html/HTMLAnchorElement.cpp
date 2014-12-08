@@ -343,6 +343,8 @@ void HTMLAnchorElement::handleClick(Event* event)
     sendPings(completedURL);
 
     ResourceRequest request(completedURL);
+    request.setUIStartTime(event->uiCreateTime());
+    request.setInputPerfMetricReportPolicy(InputToLoadPerfMetricReportPolicy::ReportLink);
     if (hasAttribute(downloadAttr)) {
         request.setRequestContext(blink::WebURLRequest::RequestContextDownload);
         bool isSameOrigin = completedURL.protocolIsData() || document().securityOrigin()->canRequest(completedURL);

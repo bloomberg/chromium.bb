@@ -45,10 +45,11 @@ public:
     static PassRefPtrWillBeRawPtr<TouchEvent> create(TouchList* touches,
         TouchList* targetTouches, TouchList* changedTouches,
         const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool cancelable)
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool cancelable,
+        double uiCreateTime = 0)
     {
         return adoptRefWillBeNoop(new TouchEvent(touches, targetTouches, changedTouches, type, view,
-            ctrlKey, altKey, shiftKey, metaKey, cancelable));
+            ctrlKey, altKey, shiftKey, metaKey, cancelable, uiCreateTime));
     }
 
     void initTouchEvent(TouchList* touches, TouchList* targetTouches,
@@ -78,7 +79,8 @@ private:
     TouchEvent(TouchList* touches, TouchList* targetTouches,
             TouchList* changedTouches, const AtomicString& type,
             PassRefPtrWillBeRawPtr<AbstractView>,
-            bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool cancelable);
+            bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool cancelable,
+            double uiCreateTime = 0);
 
     RefPtrWillBeMember<TouchList> m_touches;
     RefPtrWillBeMember<TouchList> m_targetTouches;

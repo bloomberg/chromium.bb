@@ -42,13 +42,15 @@ TouchEvent::TouchEvent()
 TouchEvent::TouchEvent(TouchList* touches, TouchList* targetTouches,
         TouchList* changedTouches, const AtomicString& type,
         PassRefPtrWillBeRawPtr<AbstractView> view,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool cancelable)
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool cancelable,
+        double uiCreateTime)
     : UIEventWithKeyState(type, true, cancelable, view, 0,
                         ctrlKey, altKey, shiftKey, metaKey)
     , m_touches(touches)
     , m_targetTouches(targetTouches)
     , m_changedTouches(changedTouches)
 {
+    setUICreateTime(uiCreateTime);
 }
 
 TouchEvent::~TouchEvent()

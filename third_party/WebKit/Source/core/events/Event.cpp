@@ -49,6 +49,7 @@ Event::Event()
     , m_eventPhase(0)
     , m_currentTarget(nullptr)
     , m_createTime(convertSecondsToDOMTimeStamp(currentTime()))
+    , m_uiCreateTime(0)
 {
 }
 
@@ -64,6 +65,7 @@ Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableAr
     , m_eventPhase(0)
     , m_currentTarget(nullptr)
     , m_createTime(convertSecondsToDOMTimeStamp(currentTime()))
+    , m_uiCreateTime(0)
 {
 }
 
@@ -79,6 +81,7 @@ Event::Event(const AtomicString& eventType, const EventInit& initializer)
     , m_eventPhase(0)
     , m_currentTarget(nullptr)
     , m_createTime(convertSecondsToDOMTimeStamp(currentTime()))
+    , m_uiCreateTime(0)
 {
 }
 
@@ -94,6 +97,7 @@ Event::Event(const AtomicString& eventType, const EventInitDictionary& initializ
     , m_eventPhase(0)
     , m_currentTarget(nullptr)
     , m_createTime(convertSecondsToDOMTimeStamp(currentTime()))
+    , m_uiCreateTime(0)
 {
 }
 

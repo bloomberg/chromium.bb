@@ -183,6 +183,9 @@ public:
 
     bool isBeingDispatched() const { return eventPhase(); }
 
+    double uiCreateTime() const { return m_uiCreateTime; }
+    void setUICreateTime(double uiCreateTime) { m_uiCreateTime = uiCreateTime; }
+
     virtual void trace(Visitor*);
 
 protected:
@@ -211,6 +214,7 @@ private:
     DOMTimeStamp m_createTime;
     RefPtrWillBeMember<Event> m_underlyingEvent;
     OwnPtrWillBeMember<EventPath> m_eventPath;
+    double m_uiCreateTime; // For input events, the time the event was recorded by the UI.
 };
 
 #define DEFINE_EVENT_TYPE_CASTS(typeName) \

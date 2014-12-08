@@ -122,6 +122,14 @@ public:
         FetchCredentialsModeInclude
     };
 
+    // Used to report performance metrics timed from the UI action that
+    // triggered them (as opposed to navigation start time used in the
+    // Navigation Timing API).
+    enum InputToLoadPerfMetricReportPolicy {
+        NoReport, // Don't report metrics for this WebURLRequest.
+        ReportLink, // Report metrics with UI action link clicked.
+    };
+
     class ExtraData {
     public:
         virtual ~ExtraData() { }
@@ -261,6 +269,12 @@ public:
     // not be sent to the browser.
     BLINK_PLATFORM_EXPORT bool checkForBrowserSideNavigation() const;
     BLINK_PLATFORM_EXPORT void setCheckForBrowserSideNavigation(bool);
+
+    // This is used to report navigation metrics starting from the UI action
+    // that triggered the navigation (which can be different from the navigation
+    // start time used in the Navigation Timing API).
+    BLINK_PLATFORM_EXPORT double uiStartTime() const;
+    BLINK_PLATFORM_EXPORT WebURLRequest::InputToLoadPerfMetricReportPolicy inputPerfMetricReportPolicy() const;
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT ResourceRequest& toMutableResourceRequest();
