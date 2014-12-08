@@ -50,6 +50,27 @@ const MockTransaction kHostInfoTransaction2 = {
   0
 };
 
+class DeleteCacheCompletionCallback : public net::TestCompletionCallbackBase {
+ public:
+  explicit DeleteCacheCompletionCallback(QuicServerInfo* server_info)
+      : server_info_(server_info),
+        callback_(base::Bind(&DeleteCacheCompletionCallback::OnComplete,
+                             base::Unretained(this))) {}
+
+  const net::CompletionCallback& callback() const { return callback_; }
+
+ private:
+  void OnComplete(int result) {
+    delete server_info_;
+    SetResult(result);
+  }
+
+  QuicServerInfo* server_info_;
+  net::CompletionCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeleteCacheCompletionCallback);
+};
+
 }  // namespace
 
 // Tests that we can delete a DiskCacheBasedQuicServerInfo object in a
@@ -582,6 +603,26 @@ TEST(DiskCacheBasedQuicServerInfo, MultiplePersistsWithoutWaiting) {
   EXPECT_EQ(cert_a, state1.certs[0]);
 
   RemoveMockTransaction(&kHostInfoTransaction1);
+}
+
+// crbug.com/439209: test deletion of QuicServerInfo object in the callback
+// doesn't crash.
+TEST(DiskCacheBasedQuicServerInfo, DeleteServerInfoInCallback) {
+  // Use the blocking mock backend factory to force asynchronous completion
+  // of quic_server_info->WaitForDataReady(), so that the callback will run.
+  MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
+  MockHttpCache cache(factory);
+  QuicServerId server_id("www.verisign.com", 443, true, PRIVACY_MODE_DISABLED);
+  QuicServerInfo* quic_server_info =
+      new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache());
+  // |cb| takes owndership and deletes |quic_server_info| when it is called.
+  DeleteCacheCompletionCallback cb(quic_server_info);
+  quic_server_info->Start();
+  int rv = quic_server_info->WaitForDataReady(cb.callback());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  // Now complete the backend creation and let the callback run.
+  factory->FinishCreation();
+  EXPECT_EQ(OK, cb.GetResult(rv));
 }
 
 }  // namespace net
