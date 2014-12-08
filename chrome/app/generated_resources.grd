@@ -14132,6 +14132,13 @@ Do you accept?
           Enable IME extensions to supply custom views for user input such as  virtual keyboards.
         </message>
 
+        <message name="IDS_FLAGS_ENABLE_NEW_QP_INPUT_VIEW_NAME" desc="Name of about::flags option to enable QP style of input view virtual keyboard.">
+          Enable QP input view keyboard.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_NEW_QP_INPUT_VIEW_DESCRIPTION" desc="Description of about::flags option to enable the QP style of input view virtual keyboard.">
+          Enable input view keyboards in materia design style.
+        </message>
+
         <message name="IDS_FLAGS_ENABLE_NEW_KOREAN_IME_NAME" desc="Name of about::flags option to enable the new Korean IME">
           Enable new Korean IME.
         </message>

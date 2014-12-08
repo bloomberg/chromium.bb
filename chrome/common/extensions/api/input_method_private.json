@@ -24,7 +24,8 @@
                 "type": "object",
                 "description": "The input method config object.",
                 "properties": {
-                  "isPhysicalKeyboardAutocorrectEnabled": {"type": "boolean"}
+                  "isPhysicalKeyboardAutocorrectEnabled": {"type": "boolean"},
+                  "isNewQPInputViewEnabled": {"type": "boolean"}
                 }
               }
             ]

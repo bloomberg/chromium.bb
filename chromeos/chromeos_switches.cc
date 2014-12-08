@@ -93,6 +93,9 @@ const char kEnableEmbeddedSignin[] = "enable-embedded-signin";
 // chrome://settings/languages.
 const char kEnableNewKoreanIme[] = "enable-new-korean-ime";
 
+// If this switch is set, the input view keyboard will be in materia design.
+const char kEnableNewQPInputView[] = "enable-new-qp-input-view";
+
 // If this switch is set, the US keyboard input method will provide suggestions
 // as typing on physical keyboard.
 const char kEnablePhysicalKeyboardAutocorrect[] =
