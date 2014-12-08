@@ -233,7 +233,6 @@ const wchar_t kBrowserCrashDumpAttemptsRegistryPath[] =
 // This is used by browser exit code metrics reporting.
 const wchar_t kBrowserExitCodesRegistryPath[] =
     L"Software\\" PRODUCT_STRING_PATH L"\\BrowserExitCodes";
-const char kSafeModeEnvVar[] = "CHROME_SAFE_MODE";
 #endif
 
 #if defined(OS_CHROMEOS)

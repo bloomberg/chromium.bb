@@ -103,10 +103,6 @@ class TranslationDelegate : public installer::TranslationDelegate {
   virtual base::string16 GetLocalizedString(int installer_string_id) override;
 };
 
-bool IsSafeModeStart() {
-  return ::GetEnvironmentVariableA(chrome::kSafeModeEnvVar, NULL, 0) != 0;
-}
-
 void ExecuteFontCacheBuildTask(const base::FilePath& path) {
   base::WeakPtr<content::UtilityProcessHost> utility_process_host(
       content::UtilityProcessHost::Create(NULL, NULL)->AsWeakPtr());
@@ -223,11 +219,6 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
 int ChromeBrowserMainPartsWin::PreCreateThreads() {
   int rv = ChromeBrowserMainParts::PreCreateThreads();
 
-  if (IsSafeModeStart()) {
-    // TODO(cpu): disable other troublesome features for safe mode.
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableGpu);
-  }
   // TODO(viettrungluu): why don't we run this earlier?
   if (!parsed_command_line().HasSwitch(switches::kNoErrorDialogs) &&
       base::win::GetVersion() < base::win::VERSION_XP) {
