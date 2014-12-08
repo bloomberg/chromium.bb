@@ -5,9 +5,11 @@
 #include "content/child/notifications/notification_manager.h"
 
 #include "base/lazy_instance.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local.h"
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/notifications/notification_image_loader.h"
+#include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_task_runner.h"
 #include "content/common/platform_notification_messages.h"
@@ -69,35 +71,53 @@ void NotificationManager::show(
     const blink::WebNotificationData& notification_data,
     blink::WebNotificationDelegate* delegate) {
   if (notification_data.icon.isEmpty()) {
-    DisplayNotification(origin, notification_data, delegate, SkBitmap());
+    DisplayNotification(origin, notification_data, delegate,
+                        nullptr /* image_loader */);
     return;
   }
 
-  scoped_refptr<NotificationImageLoader> pending_notification(
-      new NotificationImageLoader(
-          delegate,
-          base::Bind(&NotificationManager::DisplayNotification,
-                     weak_factory_.GetWeakPtr(),
-                     origin,
-                     notification_data)));
-
-  // Image downloads have to be started on the main thread, but it's possible
-  // for a race to occur where a worker terminates whilst the image download
-  // has not been started yet. When this happens, the refcounting semantics
-  // will ensure that the loader gets cancelled immediately after starting.
-  main_thread_task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&NotificationImageLoader::StartOnMainThread,
-                 pending_notification,
-                 notification_data.icon,
-                 CurrentWorkerId()),
-      base::Bind(&NotificationManager::DidStartImageLoad,
+  pending_page_notifications_[delegate] = CreateImageLoader(
+      notification_data.icon,
+      base::Bind(&NotificationManager::DisplayNotification,
                  weak_factory_.GetWeakPtr(),
-                 pending_notification));
+                 origin,
+                 notification_data,
+                 delegate));
+}
+
+void NotificationManager::showPersistent(
+    const blink::WebSerializedOrigin& origin,
+    const blink::WebNotificationData& notification_data,
+    blink::WebServiceWorkerRegistration* service_worker_registration,
+    blink::WebNotificationShowCallbacks* callbacks) {
+  DCHECK(service_worker_registration);
+
+  int64 service_worker_registration_id =
+      static_cast<WebServiceWorkerRegistrationImpl*>(
+          service_worker_registration)->registration_id();
+
+  int request_id = persistent_notification_requests_.Add(callbacks);
+  if (notification_data.icon.isEmpty()) {
+    DisplayPersistentNotification(origin,
+                                  notification_data,
+                                  service_worker_registration_id,
+                                  request_id,
+                                  nullptr /* image_loader */);
+    return;
+  }
+
+  pending_persistent_notifications_.insert(CreateImageLoader(
+      notification_data.icon,
+      base::Bind(&NotificationManager::DisplayPersistentNotification,
+                 weak_factory_.GetWeakPtr(),
+                 origin,
+                 notification_data,
+                 service_worker_registration_id,
+                 request_id)));
 }
 
 void NotificationManager::close(blink::WebNotificationDelegate* delegate) {
-  if (RemovePendingNotification(delegate))
+  if (RemovePendingPageNotification(delegate))
     return;
 
   auto iter = active_notifications_.begin();
@@ -118,9 +138,15 @@ void NotificationManager::close(blink::WebNotificationDelegate* delegate) {
   NOTREACHED();
 }
 
+void NotificationManager::closePersistent(
+    const blink::WebString& persistent_notification_id) {
+  thread_safe_sender_->Send(new PlatformNotificationHostMsg_ClosePersistent(
+      base::UTF16ToUTF8(persistent_notification_id)));
+}
+
 void NotificationManager::notifyDelegateDestroyed(
     blink::WebNotificationDelegate* delegate) {
-  if (RemovePendingNotification(delegate))
+  if (RemovePendingPageNotification(delegate))
     return;
 
   auto iter = active_notifications_.begin();
@@ -146,25 +172,39 @@ WebNotificationPermission NotificationManager::checkPermission(
 bool NotificationManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NotificationManager, message)
-    IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidShow, OnShow);
-    IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidClose, OnClose);
-    IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidClick, OnClick);
+    IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidShowPersistent,
+                        OnDidShowPersistent)
+    IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidShow, OnDidShow);
+    IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidClose, OnDidClose);
+    IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidClick, OnDidClick);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
 }
 
-void NotificationManager::OnShow(int id) {
-  const auto& iter = active_notifications_.find(id);
+void NotificationManager::OnDidShowPersistent(int request_id) {
+  blink::WebNotificationShowCallbacks* callbacks =
+      persistent_notification_requests_.Lookup(request_id);
+  DCHECK(callbacks);
+
+  // There currently isn't a case in which the promise would be rejected per
+  // our implementation, so always resolve it here.
+  callbacks->onSuccess();
+
+  persistent_notification_requests_.Remove(request_id);
+}
+
+void NotificationManager::OnDidShow(int notification_id) {
+  const auto& iter = active_notifications_.find(notification_id);
   if (iter == active_notifications_.end())
     return;
 
   iter->second->dispatchShowEvent();
 }
 
-void NotificationManager::OnClose(int id) {
-  const auto& iter = active_notifications_.find(id);
+void NotificationManager::OnDidClose(int notification_id) {
+  const auto& iter = active_notifications_.find(notification_id);
   if (iter == active_notifications_.end())
     return;
 
@@ -172,24 +212,35 @@ void NotificationManager::OnClose(int id) {
   active_notifications_.erase(iter);
 }
 
-void NotificationManager::OnClick(int id) {
-  const auto& iter = active_notifications_.find(id);
+void NotificationManager::OnDidClick(int notification_id) {
+  const auto& iter = active_notifications_.find(notification_id);
   if (iter == active_notifications_.end())
     return;
 
   iter->second->dispatchClickEvent();
 }
 
-void NotificationManager::DidStartImageLoad(
-    const scoped_refptr<NotificationImageLoader>& pending_notification) {
-  pending_notifications_.insert(pending_notification);
+scoped_refptr<NotificationImageLoader> NotificationManager::CreateImageLoader(
+    const blink::WebURL& image_url,
+    const NotificationImageLoadedCallback& callback) const {
+  scoped_refptr<NotificationImageLoader> pending_notification(
+      new NotificationImageLoader(callback));
+
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&NotificationImageLoader::StartOnMainThread,
+                 pending_notification,
+                 image_url,
+                 CurrentWorkerId()));
+
+  return pending_notification;
 }
 
 void NotificationManager::DisplayNotification(
     const blink::WebSerializedOrigin& origin,
     const blink::WebNotificationData& notification_data,
     blink::WebNotificationDelegate* delegate,
-    const SkBitmap& icon) {
+    scoped_refptr<NotificationImageLoader> image_loader) {
   int notification_id =
       notification_dispatcher_->GenerateNotificationId(CurrentWorkerId());
 
@@ -197,9 +248,11 @@ void NotificationManager::DisplayNotification(
 
   ShowDesktopNotificationHostMsgParams params;
   params.origin = GURL(origin.string());
-  params.icon = icon;
   params.title = notification_data.title;
   params.body = notification_data.body;
+
+  if (image_loader)
+    params.icon = image_loader->GetDecodedImage();
 
   // TODO(peter): Remove the usage of the Blink WebTextDirection enumeration for
   // the text direction of notifications throughout Chrome.
@@ -210,19 +263,42 @@ void NotificationManager::DisplayNotification(
       notification_id, params));
 
   // If this Notification contained an icon, it can be safely deleted now.
-  RemovePendingNotification(delegate);
+  RemovePendingPageNotification(delegate);
 }
 
-bool NotificationManager::RemovePendingNotification(
-    blink::WebNotificationDelegate* delegate) {
-  for (auto& pending_notification : pending_notifications_) {
-    if (pending_notification->delegate() == delegate) {
-      pending_notifications_.erase(pending_notification);
-      return true;
-    }
+void NotificationManager::DisplayPersistentNotification(
+    const blink::WebSerializedOrigin& origin,
+    const blink::WebNotificationData& notification_data,
+    int64 service_worker_registration_id,
+    int request_id,
+    scoped_refptr<NotificationImageLoader> image_loader) {
+  ShowDesktopNotificationHostMsgParams params;
+  params.origin = GURL(origin.string());
+  params.title = notification_data.title;
+  params.body = notification_data.body;
+
+  // TODO(peter): Remove the usage of the Blink WebTextDirection enumeration for
+  // the text direction of notifications throughout Chrome.
+  params.direction = blink::WebTextDirectionLeftToRight;
+  params.replace_id = notification_data.tag;
+
+  if (image_loader) {
+    pending_persistent_notifications_.erase(image_loader);
+    params.icon = image_loader->GetDecodedImage();
   }
 
-  return false;
+  thread_safe_sender_->Send(new PlatformNotificationHostMsg_ShowPersistent(
+      request_id, service_worker_registration_id, params));
+}
+
+bool NotificationManager::RemovePendingPageNotification(
+    blink::WebNotificationDelegate* delegate) {
+  const auto& iter = pending_page_notifications_.find(delegate);
+  if (iter == pending_page_notifications_.end())
+    return false;
+
+  pending_page_notifications_.erase(iter);
+  return true;
 }
 
 }  // namespace content

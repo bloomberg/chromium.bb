@@ -43,7 +43,13 @@ class NotificationMessageFilter : public BrowserMessageFilter {
       const GURL& origin, blink::WebNotificationPermission* permission);
   void OnShowPlatformNotification(
       int notification_id, const ShowDesktopNotificationHostMsgParams& params);
+  void OnShowPersistentNotification(
+      int request_id,
+      int64 service_worker_registration_id,
+      const ShowDesktopNotificationHostMsgParams& params);
   void OnClosePlatformNotification(int notification_id);
+  void OnClosePersistentNotification(
+      const std::string& persistent_notification_id);
 
   int process_id_;
   ResourceContext* resource_context_;

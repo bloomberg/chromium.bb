@@ -37,8 +37,12 @@ bool NotificationMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnCheckNotificationPermission)
     IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_Show,
                         OnShowPlatformNotification)
+    IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_ShowPersistent,
+                        OnShowPersistentNotification)
     IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_Close,
                         OnClosePlatformNotification)
+    IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_ClosePersistent,
+                        OnClosePersistentNotification)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -48,7 +52,9 @@ bool NotificationMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void NotificationMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, content::BrowserThread::ID* thread) {
   if (message.type() == PlatformNotificationHostMsg_Show::ID ||
-      message.type() == PlatformNotificationHostMsg_Close::ID)
+      message.type() == PlatformNotificationHostMsg_ShowPersistent::ID ||
+      message.type() == PlatformNotificationHostMsg_Close::ID ||
+      message.type() == PlatformNotificationHostMsg_ClosePersistent::ID)
     *thread = BrowserThread::UI;
 }
 
@@ -77,6 +83,17 @@ void NotificationMessageFilter::OnShowPlatformNotification(
     close_closures_[notification_id] = close_closure;
 }
 
+void NotificationMessageFilter::OnShowPersistentNotification(
+    int request_id,
+    int64 service_worker_registration_id,
+    const ShowDesktopNotificationHostMsgParams& params) {
+  NOTIMPLEMENTED();
+
+  // Despite this being NOTIMPLEMENTED, inform the renderer that we did show the
+  // notification to avoid leaving the promise in an unsettled state.
+  Send(new PlatformNotificationMsg_DidShowPersistent(request_id));
+}
+
 void NotificationMessageFilter::OnClosePlatformNotification(
     int notification_id) {
   if (!close_closures_.count(notification_id))
@@ -84,6 +101,11 @@ void NotificationMessageFilter::OnClosePlatformNotification(
 
   close_closures_[notification_id].Run();
   close_closures_.erase(notification_id);
+}
+
+void NotificationMessageFilter::OnClosePersistentNotification(
+    const std::string& persistent_notification_id) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace content

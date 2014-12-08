@@ -25,6 +25,11 @@ IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.
 
+// Informs the renderer that the browser has displayed the persistent
+// notification.
+IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidShowPersistent,
+                     int /* request_id */)
+
 // Informs the renderer that the browser has displayed the notification.
 IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidShow,
                      int /* notification_id */)
@@ -43,8 +48,16 @@ IPC_MESSAGE_CONTROL2(PlatformNotificationHostMsg_Show,
                      int /* notification_id */,
                      content::ShowDesktopNotificationHostMsgParams /* params */)
 
+IPC_MESSAGE_CONTROL3(PlatformNotificationHostMsg_ShowPersistent,
+                     int /* request_id */,
+                     int64 /* service_worker_provider_id */,
+                     content::ShowDesktopNotificationHostMsgParams /* params */)
+
 IPC_MESSAGE_CONTROL1(PlatformNotificationHostMsg_Close,
                      int /* notification_id */)
+
+IPC_MESSAGE_CONTROL1(PlatformNotificationHostMsg_ClosePersistent,
+                     std::string /* persistent_notification_id */)
 
 IPC_SYNC_MESSAGE_CONTROL1_1(PlatformNotificationHostMsg_CheckPermission,
                             GURL /* origin */,

@@ -21,10 +21,8 @@ using blink::WebURLRequest;
 namespace content {
 
 NotificationImageLoader::NotificationImageLoader(
-    blink::WebNotificationDelegate* delegate,
-    const ImageAvailableCallback& callback)
-    : delegate_(delegate),
-      callback_(callback),
+    const NotificationImageLoadedCallback& callback)
+    : callback_(callback),
       completed_(false) {}
 
 NotificationImageLoader::~NotificationImageLoader() {}
@@ -43,11 +41,12 @@ void NotificationImageLoader::StartOnMainThread(const WebURL& image_url,
   url_loader_->loadAsynchronously(request, this);
 }
 
-void NotificationImageLoader::Cancel() {
-  DCHECK(url_loader_);
+SkBitmap NotificationImageLoader::GetDecodedImage() const {
+  if (buffer_.empty())
+    return SkBitmap();
 
-  completed_ = true;
-  url_loader_->cancel();
+  ImageDecoder decoder;
+  return decoder.Decode(&buffer_[0], buffer_.size());
 }
 
 void NotificationImageLoader::didReceiveData(
@@ -67,13 +66,7 @@ void NotificationImageLoader::didFinishLoading(
     int64_t total_encoded_data_length) {
   DCHECK(!completed_);
 
-  SkBitmap image;
-  if (!buffer_.empty()) {
-    ImageDecoder decoder;
-    image = decoder.Decode(&buffer_[0], buffer_.size());
-  }
-
-  RunCallbackOnWorkerThread(image);
+  RunCallbackOnWorkerThread();
 }
 
 void NotificationImageLoader::didFail(WebURLLoader* loader,
@@ -81,19 +74,19 @@ void NotificationImageLoader::didFail(WebURLLoader* loader,
   if (completed_)
     return;
 
-  RunCallbackOnWorkerThread(SkBitmap());
+  RunCallbackOnWorkerThread();
 }
 
-void NotificationImageLoader::RunCallbackOnWorkerThread(
-    const SkBitmap& image) const {
+void NotificationImageLoader::RunCallbackOnWorkerThread() {
+  scoped_refptr<NotificationImageLoader> loader = make_scoped_refptr(this);
   if (!worker_thread_id_) {
-    callback_.Run(delegate_, image);
+    callback_.Run(loader);
     return;
   }
 
   WorkerTaskRunner::Instance()->PostTask(
       worker_thread_id_,
-      base::Bind(callback_, delegate_, image));
+      base::Bind(callback_, loader));
 }
 
 }  // namespace content
