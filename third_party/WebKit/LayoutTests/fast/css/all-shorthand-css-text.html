@@ -93,7 +93,5 @@ shouldBeTrue('contains(cssRules[15].cssText, "marker-end: initial;")');
 shouldBe('cssRules[16].cssText', '"div { all: unset; }"');
 shouldBeFalse('contains(cssRules[17].cssText, "all: unset;")');
 shouldBeTrue('contains(cssRules[17].cssText, "color: red;")');
-<!-- FIXME: when using "all: unset", the all should be expanded to be -->
-<!-- "display: unset; ..." -->
 shouldBeTrue('contains(cssRules[17].cssText, "display: unset;")');
 </script>

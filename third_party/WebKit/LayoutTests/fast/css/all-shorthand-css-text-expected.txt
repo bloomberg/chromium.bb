@@ -53,7 +53,7 @@ PASS contains(cssRules[15].cssText, "marker-end: initial;") is true
 PASS cssRules[16].cssText is "div { all: unset; }"
 PASS contains(cssRules[17].cssText, "all: unset;") is false
 PASS contains(cssRules[17].cssText, "color: red;") is true
-FAIL contains(cssRules[17].cssText, "display: unset;") should be true. Was false.
+PASS contains(cssRules[17].cssText, "display: unset;") is true
 PASS successfullyParsed is true
 
 TEST COMPLETE
