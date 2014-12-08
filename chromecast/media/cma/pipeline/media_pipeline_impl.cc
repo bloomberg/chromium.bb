@@ -337,10 +337,16 @@ void MediaPipelineImpl::UpdateMediaTime() {
   if (buffering_controller_) {
     buffering_controller_->SetMediaTime(media_time);
 
+    // Receiving the same time twice in a row means playback isn't moving,
+    // so don't interpolate ahead.
     if (media_time != last_media_time_) {
       max_rendering_time = buffering_controller_->GetMaxRenderingTime();
       if (max_rendering_time == ::media::kNoTimestamp())
         max_rendering_time = media_time;
+
+      // Cap interpolation time to avoid interpolating too far ahead.
+      max_rendering_time =
+          std::min(max_rendering_time, media_time + 2 * kTimeUpdateInterval);
     }
   }
 

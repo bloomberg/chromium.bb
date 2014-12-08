@@ -282,6 +282,12 @@ void AvPipelineImpl::ProcessPendingBuffer() {
     }
   }
 
+  if (!pending_buffer_->end_of_stream() && buffering_state_.get()) {
+    base::TimeDelta timestamp = pending_buffer_->timestamp();
+    if (timestamp != ::media::kNoTimestamp())
+      buffering_state_->SetMaxRenderingTime(timestamp);
+  }
+
   MediaComponentDevice::FrameStatus status = media_component_device_->PushFrame(
       decrypt_context,
       pending_buffer_,
