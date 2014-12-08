@@ -5,6 +5,8 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
 import android.os.RemoteException;
 import android.util.Log;
@@ -43,14 +45,6 @@ public class ChildProcessLauncher {
     private static final String SWITCH_RENDERER_PROCESS = "renderer";
     private static final String SWITCH_GPU_PROCESS = "gpu-process";
 
-    // The upper limit on the number of simultaneous sandboxed and privileged child service process
-    // instances supported. Each limit must not exceed total number of SandboxedProcessServiceX
-    // classes and PrivilegedProcessServiceX classes declared in this package and defined as
-    // services in the embedding application's manifest file.
-    // (See {@link ChildProcessService} for more details on defining the services.)
-    /* package */ static final int MAX_REGISTERED_SANDBOXED_SERVICES = 20;
-    /* package */ static final int MAX_REGISTERED_PRIVILEGED_SERVICES = 3;
-
     private static class ChildConnectionAllocator {
         // Connections to services. Indices of the array correspond to the service numbers.
         private final ChildProcessConnection[] mChildProcessConnections;
@@ -69,9 +63,7 @@ public class ChildProcessLauncher {
         private Class<? extends ChildProcessService> mChildClass;
         private final boolean mInSandbox;
 
-        public ChildConnectionAllocator(boolean inSandbox) {
-            int numChildServices = inSandbox
-                    ? MAX_REGISTERED_SANDBOXED_SERVICES : MAX_REGISTERED_PRIVILEGED_SERVICES;
+        public ChildConnectionAllocator(boolean inSandbox, int numChildServices) {
             mChildProcessConnections = new ChildProcessConnectionImpl[numChildServices];
             mFreeConnectionIndices = new ArrayList<Integer>(numChildServices);
             for (int i = 0; i < numChildServices; i++) {
@@ -129,12 +121,42 @@ public class ChildProcessLauncher {
 
     // Service class for child process. As the default value it uses SandboxedProcessService0 and
     // PrivilegedProcessService0.
-    private static final ChildConnectionAllocator sSandboxedChildConnectionAllocator =
-            new ChildConnectionAllocator(true);
-    private static final ChildConnectionAllocator sPrivilegedChildConnectionAllocator =
-            new ChildConnectionAllocator(false);
+    private static ChildConnectionAllocator sSandboxedChildConnectionAllocator;
+    private static ChildConnectionAllocator sPrivilegedChildConnectionAllocator;
 
-    private static boolean sConnectionAllocated = false;
+    private static final String NUM_SANDBOXED_SERVICES_KEY =
+            "org.chromium.content.browser.NUM_SANDBOXED_SERVICES";
+    private static final String NUM_PRIVILEGED_SERVICES_KEY =
+            "org.chromium.content.browser.NUM_PRIVILEGED_SERVICES";
+
+    private static int getNumberOfServices(Context context, boolean inSandbox) {
+        try {
+            PackageManager packageManager = context.getPackageManager();
+            ApplicationInfo appInfo = packageManager.getApplicationInfo(context.getPackageName(),
+                    PackageManager.GET_META_DATA);
+            int numServices = appInfo.metaData.getInt(inSandbox ? NUM_SANDBOXED_SERVICES_KEY
+                    : NUM_PRIVILEGED_SERVICES_KEY);
+            if (numServices <= 0) {
+                throw new RuntimeException("Illegal meta data value for number of child services");
+            }
+            return numServices;
+        } catch (PackageManager.NameNotFoundException e) {
+            throw new RuntimeException("Could not get application info");
+        }
+    }
+
+    private static void initConnectionAllocatorsIfNecessary(Context context) {
+        synchronized (ChildProcessLauncher.class) {
+            if (sSandboxedChildConnectionAllocator == null) {
+                sSandboxedChildConnectionAllocator =
+                        new ChildConnectionAllocator(true, getNumberOfServices(context, true));
+            }
+            if (sPrivilegedChildConnectionAllocator == null) {
+                sPrivilegedChildConnectionAllocator =
+                        new ChildConnectionAllocator(false, getNumberOfServices(context, false));
+            }
+        }
+    }
 
     private static ChildConnectionAllocator getConnectionAllocator(boolean inSandbox) {
         return inSandbox
@@ -154,7 +176,7 @@ public class ChildProcessLauncher {
                         }
                     }
                 };
-        sConnectionAllocated = true;
+        initConnectionAllocatorsIfNecessary(context);
         return getConnectionAllocator(inSandbox).allocate(context, deathCallback,
                 chromiumLinkerParams);
     }
@@ -555,7 +577,8 @@ public class ChildProcessLauncher {
 
     /** @return the count of sandboxed connections managed by the allocator */
     @VisibleForTesting
-    static int allocatedConnectionsCountForTesting() {
+    static int allocatedConnectionsCountForTesting(Context context) {
+        initConnectionAllocatorsIfNecessary(context);
         return sSandboxedChildConnectionAllocator.allocatedConnectionsCountForTesting();
     }
 

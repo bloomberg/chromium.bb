@@ -24,7 +24,8 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
     @MediumTest
     @Feature({"ProcessManagement"})
     public void testServiceFailedToBind() throws InterruptedException, RemoteException {
-        assertEquals(0, ChildProcessLauncher.allocatedConnectionsCountForTesting());
+        Context appContext = getInstrumentation().getTargetContext();
+        assertEquals(0, ChildProcessLauncher.allocatedConnectionsCountForTesting(appContext));
         assertEquals(0, ChildProcessLauncher.connectedServicesCountForTesting());
 
         // Try to allocate a connection to service class in incorrect package. We can do that by
@@ -34,7 +35,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         ChildProcessLauncher.allocateBoundConnectionForTesting(context);
 
         // Verify that the connection is not considered as allocated.
-        assertEquals(0, ChildProcessLauncher.allocatedConnectionsCountForTesting());
+        assertEquals(0, ChildProcessLauncher.allocatedConnectionsCountForTesting(appContext));
         assertEquals(0, ChildProcessLauncher.connectedServicesCountForTesting());
     }
 
@@ -44,12 +45,13 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
     @MediumTest
     @Feature({"ProcessManagement"})
     public void testServiceCrashedBeforeSetup() throws InterruptedException, RemoteException {
-        assertEquals(0, ChildProcessLauncher.allocatedConnectionsCountForTesting());
+        final Context appContext = getInstrumentation().getTargetContext();
+        assertEquals(0, ChildProcessLauncher.allocatedConnectionsCountForTesting(appContext));
         assertEquals(0, ChildProcessLauncher.connectedServicesCountForTesting());
 
         // Start and connect to a new service.
         final ChildProcessConnectionImpl connection = startConnection();
-        assertEquals(1, ChildProcessLauncher.allocatedConnectionsCountForTesting());
+        assertEquals(1, ChildProcessLauncher.allocatedConnectionsCountForTesting(appContext));
 
         // Verify that the service is not yet set up.
         assertEquals(0, connection.getPid());
@@ -63,7 +65,8 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
                 CriteriaHelper.pollForCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
-                        return ChildProcessLauncher.allocatedConnectionsCountForTesting() == 0;
+                        return ChildProcessLauncher.allocatedConnectionsCountForTesting(
+                                appContext) == 0;
                     }
                 }));
 
@@ -82,11 +85,12 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
     @MediumTest
     @Feature({"ProcessManagement"})
     public void testServiceCrashedAfterSetup() throws InterruptedException, RemoteException {
-        assertEquals(0, ChildProcessLauncher.allocatedConnectionsCountForTesting());
+        final Context appContext = getInstrumentation().getTargetContext();
+        assertEquals(0, ChildProcessLauncher.allocatedConnectionsCountForTesting(appContext));
 
         // Start and connect to a new service.
         final ChildProcessConnectionImpl connection = startConnection();
-        assertEquals(1, ChildProcessLauncher.allocatedConnectionsCountForTesting());
+        assertEquals(1, ChildProcessLauncher.allocatedConnectionsCountForTesting(appContext));
 
         // Initiate the connection setup.
         ChildProcessLauncher.triggerConnectionSetup(connection, new String[0], 1,
@@ -117,7 +121,8 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
                 CriteriaHelper.pollForCriteria(new Criteria() {
                     @Override
                     public boolean isSatisfied() {
-                        return ChildProcessLauncher.allocatedConnectionsCountForTesting() == 0;
+                        return ChildProcessLauncher.allocatedConnectionsCountForTesting(
+                                appContext) == 0;
                     }
                 }));
 
