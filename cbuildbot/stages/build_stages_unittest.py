@@ -5,8 +5,6 @@
 
 """Unittests for build stages."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import contextlib
@@ -33,9 +31,13 @@ from chromite.cbuildbot.stages.generic_stages_unittest import patch
 from chromite.cbuildbot.stages.generic_stages_unittest import patches
 
 
-# pylint: disable=W0212,R0901
+# pylint: disable=too-many-ancestors
+
+
 class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTest):
   """Test building the SDK"""
+
+  # pylint: disable=protected-access
 
   def setUp(self):
     self.PatchObject(cros_build_lib, 'GetChrootVersion', return_value='12')
@@ -120,7 +122,8 @@ class SetupBoardTest(generic_stages_unittest.RunCommandAbstractStageTest):
     cmd = ['./setup_board', '--skip_chroot_upgrade']
     self.assertCommandContains(cmd, expected=run_setup_board)
     cmd = ['./setup_board', '--nousepkg'],
-    self.assertCommandContains(cmd,
+    self.assertCommandContains(
+        cmd,
         expected=run_setup_board and not self._run.config.usepkg_build_packages)
 
   def testBinBuildWithBoard(self):

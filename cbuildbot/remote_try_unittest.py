@@ -5,8 +5,6 @@
 
 """Unittests for remote_try.py."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import json
@@ -29,7 +27,6 @@ class RemoteTryJobMock(remote_try.RemoteTryJob):
   """Helper for Mocking out a RemoteTryJob."""
 
 
-# pylint: disable=W0212,R0904,E1101
 @cros_test_lib.NetworkTest()
 class RemoteTryTests(cros_test_lib.MockTempDirTestCase):
   """Test cases related to remote try jobs."""
@@ -38,6 +35,7 @@ class RemoteTryTests(cros_test_lib.MockTempDirTestCase):
   BOTS = ('x86-generic-paladin', 'arm-generic-paladin')
 
   def setUp(self):
+    # pylint: disable=protected-access
     self.parser = cbuildbot._CreateParser()
     args = ['-r', '/tmp/test_build1', '-g', '5555', '-g',
             '6666', '--remote']
@@ -152,8 +150,8 @@ class RemoteTryTests(cros_test_lib.MockTempDirTestCase):
 
     for patch in self.PATCHES:
       self.assertTrue(patch in values['extra_args'],
-                      msg="expected patch %s in args %s" %
-                          (patch, values['extra_args']))
+                      msg=("expected patch %s in args %s" %
+                           (patch, values['extra_args'])))
 
     self.assertTrue(set(self.BOTS).issubset(values['bot']))
 

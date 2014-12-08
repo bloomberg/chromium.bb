@@ -4,8 +4,6 @@
 
 """Code related to Remote tryjobs."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import constants
@@ -49,7 +47,7 @@ class ValidationError(Exception):
 class RemoteTryJob(object):
   """Remote Tryjob that is submitted through a Git repo."""
   EXTERNAL_URL = os.path.join(constants.EXTERNAL_GOB_URL,
-                            'chromiumos/tryjobs')
+                              'chromiumos/tryjobs')
   INTERNAL_URL = os.path.join(constants.INTERNAL_GOB_URL,
                               'chromeos/tryjobs')
 
@@ -211,11 +209,11 @@ class RemoteTryJob(object):
 
     git.RunGit(workdir, ['add', fullpath])
     extra_env = {
-      # The committer field makes sure the creds match what the remote
-      # gerrit instance expects while the author field allows lookup
-      # on the console to work.  http://crosbug.com/27939
-      'GIT_COMMITTER_EMAIL' : self.user_email,
-      'GIT_AUTHOR_EMAIL'    : self.user_email,
+        # The committer field makes sure the creds match what the remote
+        # gerrit instance expects while the author field allows lookup
+        # on the console to work.  http://crosbug.com/27939
+        'GIT_COMMITTER_EMAIL' : self.user_email,
+        'GIT_AUTHOR_EMAIL'    : self.user_email,
     }
     git.RunGit(workdir, ['commit', '-m', self.description],
                extra_env=extra_env)

@@ -5,8 +5,6 @@
 
 """Unittests for build stages."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import os
@@ -31,9 +29,13 @@ from chromite.lib.paygen import paygen_build_lib
 # Until then, this has to be after the chromite imports.
 import mock
 
-# pylint: disable=R0901, W0212
+
+# pylint: disable=protected-access
+
+
 class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
   """Test the PaygenStageStage."""
+
   BOT_ID = 'x86-mario-release'
   RELEASE_TAG = '0.0.1'
 
@@ -378,8 +380,9 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
       with patch(paygen_build_lib, 'ValidateBoardConfig'):
         # The stage is constructed differently for trybots, so don't use
         # ConstructStage.
-        stage = release_stages.PaygenStage(self._run, self._current_board,
-                                   archive_stage=None, channels=['foo', 'bar'])
+        stage = release_stages.PaygenStage(
+            self._run, self._current_board, archive_stage=None,
+            channels=['foo', 'bar'])
         with patch(stage, '_WaitForPushImage') as wait_push:
           with patch(stage, '_WaitForSigningResults') as wait_signing:
             stage.PerformStage()
@@ -449,6 +452,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
           run_on_builder=True,
           skip_delta_payloads=True,
           disable_tests=True)
+
 
 if __name__ == '__main__':
   cros_test_lib.main()

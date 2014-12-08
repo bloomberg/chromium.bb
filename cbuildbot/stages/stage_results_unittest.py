@@ -5,8 +5,6 @@
 
 """Unittests for the stage results."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import os
@@ -33,7 +31,6 @@ from chromite.scripts import cbuildbot
 import mock
 
 
-# pylint: disable=R0901,W0212
 class PassStage(generic_stages.BuilderStage):
   """PassStage always works"""
 
@@ -62,6 +59,7 @@ class SneakyFailStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     """Exit without reporting back."""
+    # pylint: disable=protected-access
     os._exit(1)
 
 
@@ -163,8 +161,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     PassStage(self._run).Run()
     Pass2Stage(self._run).Run()
     self.assertRaises(
-      failures_lib.StepFailure,
-      FailStage(self._run).Run)
+        failures_lib.StepFailure,
+        FailStage(self._run).Run)
 
   def _verifyRunResults(self, expectedResults, max_time=2.0):
     actualResults = results_lib.Results.Get()
@@ -223,6 +221,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
   def _TestParallelStages(self, stage_objs):
     builder = cbuildbot.SimpleBuilder(self._run)
     error = None
+    # pylint: disable=protected-access
     with mock.patch.multiple(parallel._BackgroundTask, PRINT_INTERVAL=0.01):
       try:
         builder._RunParallelStages(stage_objs)
@@ -388,7 +387,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
         "Failed in stage Archive:\n"
         "\n"
         "FailRunCommand msg\n"
-   )
+    )
 
     expectedLines = expectedResults.split('\n')
     actualLines = results.getvalue().split('\n')

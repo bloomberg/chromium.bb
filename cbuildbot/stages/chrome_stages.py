@@ -4,8 +4,6 @@
 
 """Module containing the Chrome stages."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import multiprocessing
@@ -249,12 +247,12 @@ class ChromeLKGMSyncStage(sync_stages.SyncStage):
     # Currently only the "manifest_manager" from ManifestVersionedSync (and
     # subclasses) is used later in the flow.
     manifest_manager = manifest_version.BuildSpecsManager(
-      source_repo=self.repo,
-      manifest_repo=self._GetManifestVersionsRepoUrl(read_only=False),
-      build_names=self._run.GetBuilderIds(),
-      incr_type='build',
-      force=False,
-      branch=self._run.manifest_branch)
+        source_repo=self.repo,
+        manifest_repo=self._GetManifestVersionsRepoUrl(read_only=False),
+        build_names=self._run.GetBuilderIds(),
+        incr_type='build',
+        force=False,
+        branch=self._run.manifest_branch)
 
     manifest_manager.BootstrapFromVersion(chrome_lkgm)
     return manifest_manager.GetLocalManifest(chrome_lkgm)

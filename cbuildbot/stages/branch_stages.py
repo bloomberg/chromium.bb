@@ -4,8 +4,6 @@
 
 """Module containing the branch stages."""
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import logging
@@ -454,7 +452,7 @@ class BranchUtilStage(generic_stages.BuilderStage):
         # increment.  We shouldn't quit the script because of this.  Instead, we
         # print a warning.
         self._FetchAndCheckoutTo(overlay_dir, push_to)
-        new_version =  manifest_version.VersionInfo.from_repo(self._build_root)
+        new_version = manifest_version.VersionInfo.from_repo(self._build_root)
         if new_version.VersionString() != tot_version_info.VersionString():
           logging.warning('Version number for branch %s was bumped by another '
                           'bot.', push_to.ref)

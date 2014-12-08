@@ -5,8 +5,6 @@
 
 """Module that contains unittests for triage_lib module."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import ConfigParser
@@ -225,18 +223,18 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     self.PatchObject(cros_patch.GitRepoPatch, 'GetCheckout', return_value=m)
     self.PatchObject(m, 'GetPath', return_value=overlay_dir)
     self.PatchObject(changes[0], 'GetDiffStatus',
-        return_value={'overlay-x86-generic/make.conf': 'M'})
+                     return_value={'overlay-x86-generic/make.conf': 'M'})
     self.PatchObject(changes[1], 'GetDiffStatus',
-        return_value={'make.conf': 'M'})
+                     return_value={'make.conf': 'M'})
     self.PatchObject(changes[2], 'GetDiffStatus',
-        return_value={'overlay-daisy/make.conf': 'M'})
+                     return_value={'overlay-daisy/make.conf': 'M'})
     self.PatchObject(changes[3], 'GetDiffStatus',
-        return_value={'overlay-daisy_spring/make.conf': 'M'})
+                     return_value={'overlay-daisy_spring/make.conf': 'M'})
 
     message = GetFailedMessage([Exception()])
-    candidates = \
+    candidates = (
         triage_lib.CalculateSuspects.FilterOutInnocentOverlayChanges(
-            constants.SOURCE_ROOT, changes, [message])
+            constants.SOURCE_ROOT, changes, [message]))
     self.assertEquals(candidates, changes[1:])
 
 
@@ -301,9 +299,9 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
         messages, self.build_root)
     self.assertEquals(verified, set(self.changes))
 
-  # pylint: disable=W0212
   def testCanIgnoreFailures(self):
     """Tests _CanIgnoreFailures()."""
+    # pylint: disable=protected-access
     change = self.changes[0]
     messages = [GetFailedMessage([Exception()], stage='HWTest'),
                 GetFailedMessage([Exception()], stage='VMTest'),]
@@ -325,8 +323,8 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
 class IgnoredStagesTest(patch_unittest.MockPatchBase):
   """Tests for functions that calculate what stages to ignore."""
 
-  # pylint: disable=W0212
   def GetOption(self, path, section='GENERAL', option='ignored-stages'):
+    # pylint: disable=protected-access
     return triage_lib._GetOptionFromConfigFile(path, section, option)
 
   def testBadConfigFile(self):

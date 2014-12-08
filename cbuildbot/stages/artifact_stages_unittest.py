@@ -5,8 +5,6 @@
 
 """Unittests for the artifact stages."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import argparse
@@ -42,9 +40,14 @@ import mock
 DEFAULT_CHROME_BRANCH = '27'
 
 
-# pylint: disable=R0901,W0212
+# pylint: disable=too-many-ancestors
+
+
 class ArchiveStageTest(generic_stages_unittest.AbstractStageTest):
   """Exercise ArchiveStage functionality."""
+
+  # pylint: disable=protected-access
+
   RELEASE_TAG = ''
   VERSION = '3333.1.0'
 
@@ -85,7 +88,7 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTest):
                   cmd_args=['--remote-trybot', '-r', self.build_root,
                             '--buildnumber=1234'])
     self.RunStage()
-    # pylint: disable=E1101
+    # pylint: disable=no-member
     self.assertEquals(commands.PushImages.call_count, 0)
 
   def ConstructStageForArchiveStep(self):
@@ -111,7 +114,7 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTest):
       rc.AddCmdResult(partial_mock.In('generate_delta_sysroot'), returncode=1,
                       error='generate_delta_sysroot: error')
       self.assertRaises2(cros_build_lib.RunCommandError,
-                        stage.BuildAndArchiveDeltaSysroot)
+                         stage.BuildAndArchiveDeltaSysroot)
     self.assertFalse(stage._upload_queue.put.called)
 
 
@@ -162,7 +165,8 @@ class UploadPrebuiltsStageTest(
       self.assertCommandContains([self.cmd, '--set-version',
                                   self._run.GetVersion()], )
       count -= 1
-    self.assertEqual(count, 0,
+    self.assertEqual(
+        count, 0,
         'Number of asserts performed does not match (%d remaining)' % count)
 
   def testFullPrebuiltsUpload(self):
@@ -347,6 +351,8 @@ class CPEExportStageTest(generic_stages_unittest.AbstractStageTest):
 
 class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTest):
   """Test DebugSymbolsStage"""
+
+  # pylint: disable=protected-access
 
   def setUp(self):
     self.StartPatcher(BuilderRunMock())
@@ -539,11 +545,11 @@ class UploadTestArtifactsStageTest(build_stages_unittest.AllConfigsTestCase):
 
     def _HookRunCommand(rc):
       rc.AddCmdResult(
-        partial_mock.ListRegex('cros_generate_update_payload'),
-        side_effect=_SimUpdatePayload)
+          partial_mock.ListRegex('cros_generate_update_payload'),
+          side_effect=_SimUpdatePayload)
       rc.AddCmdResult(
-        partial_mock.ListRegex('cros_generate_stateful_update_payload'),
-        side_effect=_SimUpdateStatefulPayload)
+          partial_mock.ListRegex('cros_generate_stateful_update_payload'),
+          side_effect=_SimUpdateStatefulPayload)
 
     with parallel_unittest.ParallelMock():
       with self.RunStageWithConfig(mock_configurator=_HookRunCommand) as rc:

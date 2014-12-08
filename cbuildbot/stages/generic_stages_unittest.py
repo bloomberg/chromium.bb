@@ -37,9 +37,12 @@ import mock
 DEFAULT_BUILD_NUMBER = 1234321
 DEFAULT_BUILD_ID = 31337
 
+
+# pylint: disable=protected-access
+
+
 # The inheritence order ensures the patchers are stopped before
 # cleaning up the temporary directories.
-# pylint: disable=E1111,E1120,W0212,R0901,R0904
 class StageTest(cros_test_lib.MockOutputTestCase,
                 cros_test_lib.TempDirTestCase):
   """Test running a single stage in isolation."""
@@ -397,10 +400,12 @@ class BoardSpecificBuilderStageTest(cros_test_lib.TestCase):
   #         self.fail(('cbuildbot_stages.%s.config_name "%s" is missing from '
   #                    'cbuildbot_config._settings') % (attr, obj.config_name))
 
-# pylint: disable=W0223
+
 class RunCommandAbstractStageTest(AbstractStageTest,
                                   cros_build_lib_unittest.RunCommandTestCase):
   """Base test class for testing a stage and mocking RunCommand."""
+
+  # pylint: disable=abstract-method
 
   FULL_BOT_ID = 'x86-generic-full'
   BIN_BOT_ID = 'x86-generic-paladin'
@@ -430,7 +435,6 @@ class ArchivingStageMixinMock(partial_mock.PartialMock):
     with patch(commands, 'ArchiveFile', return_value='foo.txt'):
       with patch(commands, 'UploadArchivedFile'):
         self.backup['UploadArtifact'](*args, **kwargs)
-
 
 
 if __name__ == '__main__':

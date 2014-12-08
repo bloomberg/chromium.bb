@@ -4,8 +4,6 @@
 
 """Module containing the sync stages."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import ConfigParser
@@ -240,7 +238,6 @@ class BootstrapStage(PatchChangesStage):
     else:
       PatchChangesStage.HandleApplyFailures(self, failures)
 
-  #pylint: disable=E1101
   @osutils.TempDirDecorator
   def PerformStage(self):
     # The plan for the builders is to use master branch to bootstrap other
@@ -272,7 +269,6 @@ class BootstrapStage(PatchChangesStage):
     cbuildbot_path = constants.PATH_TO_CBUILDBOT
     if not os.path.exists(os.path.join(self.tempdir, cbuildbot_path)):
       cbuildbot_path = 'chromite/cbuildbot/cbuildbot'
-    # pylint: disable=W0212
     cmd = self.FilterArgsForTargetCbuildbot(self.tempdir, cbuildbot_path,
                                             self._run.options)
 
@@ -721,13 +717,12 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     super(CommitQueueSyncStage, self).HandleSkip()
     filename = self._run.options.validation_pool
     if filename:
-      self.pool = validation_pool.ValidationPool.Load(filename,
-          builder_run=self._run)
+      self.pool = validation_pool.ValidationPool.Load(
+          filename, builder_run=self._run)
     else:
       self._SetPoolFromManifest(self.manifest_manager.GetLocalManifest())
 
-  # pylint: disable=W0613
-  def _ChangeFilter(self, pool, changes, non_manifest_changes):
+  def _ChangeFilter(self, _pool, changes, non_manifest_changes):
     # First, look for changes that were tested by the Pre-CQ.
     changes_to_test = []
 
@@ -799,8 +794,8 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
             self._run.buildnumber, self.builder_name,
             query,
             dryrun=self._run.options.debug,
-            check_tree_open=not self._run.options.debug or
-                            self._run.options.mock_tree_status,
+            check_tree_open=(not self._run.options.debug or
+                             self._run.options.mock_tree_status),
             change_filter=self._ChangeFilter, throttled_ok=True,
             builder_run=self._run)
 
@@ -868,8 +863,8 @@ class PreCQSyncStage(SyncStage):
     super(PreCQSyncStage, self).HandleSkip()
     filename = self._run.options.validation_pool
     if filename:
-      self.pool = validation_pool.ValidationPool.Load(filename,
-          builder_run=self._run)
+      self.pool = validation_pool.ValidationPool.Load(
+          filename, builder_run=self._run)
 
   def PerformStage(self):
     super(PreCQSyncStage, self).PerformStage()
@@ -1220,7 +1215,7 @@ class PreCQLauncherStage(SyncStage):
 
     # Changes that will be submitted.
     will_submit = set()
-    # Changes that will be passed
+    # Changes that will be passed.
     will_pass = set()
 
     for change in changes:
@@ -1247,7 +1242,7 @@ class PreCQLauncherStage(SyncStage):
     # ready or commit ready, before launching.
     launchable_progress_map = {
         k: v for k, v in progress_map.iteritems()
-            if k.HasReadyFlag() or status_map[k] != self.STATUS_FAILED}
+        if k.HasReadyFlag() or status_map[k] != self.STATUS_FAILED}
 
     for plan, config in self.GetDisjointTransactionsToTest(
         pool, launchable_progress_map):

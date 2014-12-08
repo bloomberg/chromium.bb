@@ -4,8 +4,6 @@
 
 """Module containing the completion stages."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import logging
@@ -197,9 +195,9 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         if sync_stages.MasterSlaveLKGMSyncStage.sub_manager:
           manager = sync_stages.MasterSlaveLKGMSyncStage.sub_manager
         return manager.GetBuildersStatus(
-          self._run.attrs.metadata.GetValue('build_id'),
-          builder_names,
-          timeout=timeout)
+            self._run.attrs.metadata.GetValue('build_id'),
+            builder_names,
+            timeout=timeout)
 
   def _HandleStageException(self, exc_info):
     """Decide whether an exception should be treated as fatal."""
@@ -208,7 +206,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     # exception here. For slave builders, marking this stage 'red' would be
     # redundant, since the build itself would already be red. In this case,
     # report a warning instead.
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     exc_type = exc_info[0]
     if (issubclass(exc_type, ImportantBuilderFailedException) and
         not self._run.config.master):
@@ -489,7 +487,7 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
     # failures. There is no need to mark this stage red. For slave
     # builders, the build itself would already be red. In this case,
     # report a warning instead.
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     exc_type = exc_info[0]
     if issubclass(exc_type, ImportantBuilderFailedException):
       return self._HandleExceptionAsWarning(exc_info)

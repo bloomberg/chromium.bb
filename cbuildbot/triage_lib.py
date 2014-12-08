@@ -4,8 +4,6 @@
 
 """Module that helps to triage Commit Queue failures."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import ConfigParser
@@ -37,7 +35,7 @@ def GetRelevantOverlaysForConfig(config, build_root):
   relevant_overlays = set()
   for board in config.boards:
     overlays = portage_util.FindOverlays(
-      constants.BOTH_OVERLAYS, board, build_root)
+        constants.BOTH_OVERLAYS, board, build_root)
     relevant_overlays.update(overlays)
 
   return relevant_overlays
@@ -363,7 +361,8 @@ class CategorizeChanges(object):
     if packages_under_test is not None:
       try:
         workon_changes, irrelevant_workon_changes = cls.ClassifyWorkOnChanges(
-          untriaged_changes, config, build_root, manifest, packages_under_test)
+            untriaged_changes, config, build_root, manifest,
+            packages_under_test)
       except Exception as e:
         # Ignore the exception if we cannot categorize workon
         # changes. We will conservatively assume the changes are

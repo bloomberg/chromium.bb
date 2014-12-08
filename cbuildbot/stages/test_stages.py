@@ -4,8 +4,6 @@
 
 """Module containing the test stages."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import collections
@@ -167,7 +165,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
       commands.RunCrosVMTest(self._current_board, self.GetImageDirSymlink())
     elif test_type == constants.DEV_MODE_TEST_TYPE:
       commands.RunDevModeTest(
-        self._build_root, self._current_board, self.GetImageDirSymlink())
+          self._build_root, self._current_board, self.GetImageDirSymlink())
     else:
       commands.RunTestSuite(self._build_root,
                             self._current_board,

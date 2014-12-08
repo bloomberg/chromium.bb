@@ -4,8 +4,6 @@
 
 """Module containing class for recording metadata about a run."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import collections
@@ -43,7 +41,8 @@ GerritChangeTuple = collections.namedtuple('GerritChangeTuple',
 CLActionTuple = collections.namedtuple('CLActionTuple',
                                        ['change', 'action', 'timestamp',
                                         'reason'])
-CLActionWithBuildTuple = collections.namedtuple('CLActionWithBuildTuple',
+CLActionWithBuildTuple = collections.namedtuple(
+    'CLActionWithBuildTuple',
     ['change', 'action', 'timestamp', 'reason', 'bot_type', 'build'])
 
 

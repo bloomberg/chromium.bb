@@ -7,8 +7,6 @@
 For a description of AFDO see gcc.gnu.org/wiki/AutoFDO.
 """
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import datetime
@@ -277,7 +275,7 @@ def UpdateChromeEbuildAFDOFile(board, arch_profiles):
   # chrome ebuild.
   if AFDO_BASE_URL == AFDO_TEST_URL:
     ebuild_gs_dir = {'AFDO_GS_DIRECTORY': AFDO_TEST_URL}
-  gen_manifest_cmd = [ebuild_prog,  ebuild_file, 'manifest', '--force']
+  gen_manifest_cmd = [ebuild_prog, ebuild_file, 'manifest', '--force']
   cros_build_lib.RunCommand(gen_manifest_cmd, enter_chroot=True,
                             extra_env=ebuild_gs_dir, print_cmd=True)
 
@@ -341,7 +339,7 @@ def VerifyLatestAFDOFile(afdo_release_spec, buildroot, gs_context):
     return None
 
   # Then get the name of the latest valid AFDO profile file.
-  local_dir = AFDO_BUILDROOT_LOCAL % {'build_root': buildroot }
+  local_dir = AFDO_BUILDROOT_LOCAL % {'build_root': buildroot}
   latest_afdo_file = LATEST_CHROME_AFDO_FILE % afdo_release_spec
   latest_afdo_path = os.path.join(local_dir, latest_afdo_file)
   gs_context.Copy(latest_afdo_url, latest_afdo_path)
@@ -414,15 +412,15 @@ def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
   afdo_spec = {'package': cpv.package,
                'arch': arch,
                'version': version_number}
-  chroot_root = AFDO_CHROOT_ROOT % {'build_root': buildroot }
-  local_dir = AFDO_LOCAL_DIR % {'root': chroot_root }
-  in_chroot_local_dir = AFDO_LOCAL_DIR % {'root': '' }
+  chroot_root = AFDO_CHROOT_ROOT % {'build_root': buildroot}
+  local_dir = AFDO_LOCAL_DIR % {'root': chroot_root}
+  in_chroot_local_dir = AFDO_LOCAL_DIR % {'root': ''}
 
   # Upload compressed chrome debug binary to GS for triaging purposes.
   # TODO(llozano): This simplifies things in case of need of triaging
   # problems but is it really necessary?
   debug_bin = CHROME_DEBUG_BIN % {'root': chroot_root,
-                                  'board': board }
+                                  'board': board}
   comp_debug_bin_path = CompressAFDOFile(debug_bin, buildroot)
   GSUploadIfNotPresent(gs_context, comp_debug_bin_path,
                        CHROME_DEBUG_BIN_URL % afdo_spec)
@@ -431,7 +429,7 @@ def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
   # the name of the unstripped binary or it is named 'chrome.unstripped'.
   # So create a symbolic link with the appropriate name.
   local_debug_sym = os.path.join(local_dir, CHROME_UNSTRIPPED_NAME)
-  in_chroot_debug_bin = CHROME_DEBUG_BIN % {'root': '', 'board': board }
+  in_chroot_debug_bin = CHROME_DEBUG_BIN % {'root': '', 'board': board}
   osutils.SafeUnlink(local_debug_sym)
   os.symlink(in_chroot_debug_bin, local_debug_sym)
 

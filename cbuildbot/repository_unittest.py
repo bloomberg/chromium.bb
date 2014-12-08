@@ -5,8 +5,6 @@
 
 """Unittests for repository.py."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import os
@@ -19,7 +17,6 @@ from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 
 
-# pylint: disable=W0212,R0904,E1101,W0613
 class RepositoryTests(cros_build_lib_unittest.RunCommandTestCase):
   """Test cases related to repository checkout methods."""
 
@@ -30,7 +27,7 @@ class RepositoryTests(cros_build_lib_unittest.RunCommandTestCase):
         'test@abcdef.bla.com:39291/bla/manifest.git',
         'test@abcdef.bla.com:39291/bla/manifest',
         'test@abcdef.bla.com:39291/bla/Manifest-internal',
-     ]
+    ]
 
     for test in tests:
       self.rc.SetDefaultCmdResult(output=test)

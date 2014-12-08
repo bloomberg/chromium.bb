@@ -5,9 +5,6 @@
 
 """Module that contains unittests for validation_pool module."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import collections
@@ -44,12 +41,10 @@ from chromite.lib import partial_mock
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
 
-
 import mock
 
 
 _GetNumber = iter(itertools.count()).next
-
 
 
 def GetTestJson(change_id=None):
@@ -104,7 +99,7 @@ class FakeBuilderRun(object):
     return (None, None)
 
 
-# pylint: disable=W0212,R0904
+# pylint: disable=protected-access
 class MoxBase(patch_unittest.MockPatchBase, cros_test_lib.MoxTestCase):
   """Base class for other test suites with numbers mocks patched in."""
 
@@ -200,7 +195,7 @@ class TestPatchSeries(MoxBase):
     manifest = MockManifest(self.build_root)
     result = series.Apply(changes, frozen=frozen, manifest=manifest)
 
-    _GetIds = lambda seq:[x.id for x in seq]
+    _GetIds = lambda seq: [x.id for x in seq]
     _GetFailedIds = lambda seq: _GetIds(x.patch for x in seq)
 
     applied_result = _GetIds(result[0])
@@ -987,10 +982,11 @@ class TestCoreLogic(MoxBase):
         patches + non_cros_patches, manifest)
 
     def compare(list1, list2):
-      mangle = lambda c:(c.id, c.project, c.tracking_branch)
-      self.assertEqual(list1, list2,
-        msg="Comparison failed:\n list1: %r\n list2: %r"
-            % (map(mangle, list1), map(mangle, list2)))
+      mangle = lambda c: (c.id, c.project, c.tracking_branch)
+      self.assertEqual(
+          list1, list2,
+          msg=('Comparison failed:\n list1: %r\n list2: %r'
+               % (map(mangle, list1), map(mangle, list2))))
 
     compare(results[0], allowed_patches)
     compare(results[1], filtered_patches)
@@ -1079,7 +1075,7 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
     _f(pool.changes, changes)
     _f(pool.non_manifest_changes, non_os)
     _f(pool.changes_that_failed_to_apply_earlier, conflicting,
-       getter=lambda s:getattr(s, 'patch', s))
+       getter=lambda s: getattr(s, 'patch', s))
     return ''
 
 
@@ -1108,8 +1104,8 @@ class TestCreateValidationFailureMessage(MoxBase):
       no_stat: List of builders that did not start.
     """
     msg = validation_pool.ValidationPool._CreateValidationFailureMessage(
-      False, change, set(suspects), [], sanity=sanity,
-      infra_fail=infra_fail, lab_fail=lab_fail, no_stat=no_stat)
+        False, change, set(suspects), [], sanity=sanity,
+        infra_fail=infra_fail, lab_fail=lab_fail, no_stat=no_stat)
     for x in messages:
       self.assertTrue(x in msg)
     return msg
@@ -1175,7 +1171,6 @@ class TestCreateValidationFailureMessage(MoxBase):
 
 class TestCreateDisjointTransactions(MoxBase):
   """Test the CreateDisjointTransactions function."""
-
 
   def setUp(self):
     self.patch_mock = self.StartPatcher(MockPatchSeries())

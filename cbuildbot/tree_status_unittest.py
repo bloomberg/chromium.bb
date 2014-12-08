@@ -5,9 +5,6 @@
 
 """Test suite for tree_status.py"""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import os
@@ -25,15 +22,13 @@ from chromite.lib import timeout_util
 import mock
 
 
-# pylint: disable=W0212,R0904
+# pylint: disable=protected-access
+
 
 class TestTreeStatus(cros_test_lib.MockTestCase):
   """Tests TreeStatus method in cros_build_lib."""
 
   status_url = 'https://chromiumos-status.appspot.com/current?format=json'
-
-  def setUp(self):
-    pass
 
   def _TreeStatusFile(self, message, general_state):
     """Returns a file-like object with the status message writtin in it."""
@@ -104,7 +99,7 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
         final_tree_status='Tree is throttled (flaky bug on flaky builder)',
         final_general_state=constants.TREE_THROTTLED)
     self.assertTrue(tree_status.IsTreeOpen(status_url=self.status_url,
-                    throttled_ok=True))
+                                           throttled_ok=True))
 
   def testTreeIsThrottledNotOk(self):
     """Tests that we respect throttled_ok"""
@@ -165,7 +160,7 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
 
   def testUpdateTreeStatusWithEpilogue(self):
     """Tests that epilogue is appended to the message."""
-    with mock.patch.object(tree_status,'_UpdateTreeStatus') as m:
+    with mock.patch.object(tree_status, '_UpdateTreeStatus') as m:
       tree_status.UpdateTreeStatus(
           constants.TREE_CLOSED, 'failure', announcer='foo',
           epilogue='bar')
@@ -173,14 +168,14 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
 
   def testUpdateTreeStatusWithoutEpilogue(self):
     """Tests that the tree status message is created as expected."""
-    with mock.patch.object(tree_status,'_UpdateTreeStatus') as m:
+    with mock.patch.object(tree_status, '_UpdateTreeStatus') as m:
       tree_status.UpdateTreeStatus(
           constants.TREE_CLOSED, 'failure', announcer='foo')
       m.assert_called_once_with(mock.ANY, 'Tree is closed (foo: failure)')
 
   def testUpdateTreeStatusUnknownStatus(self):
     """Tests that the exception is raised on unknown tree status."""
-    with mock.patch.object(tree_status,'_UpdateTreeStatus'):
+    with mock.patch.object(tree_status, '_UpdateTreeStatus'):
       self.assertRaises(tree_status.InvalidTreeStatus,
                         tree_status.UpdateTreeStatus, 'foostatus', 'failure')
 
@@ -208,7 +203,7 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
     """Tests that ThrottleOrCloseTheTree throttles the tree if tree is open."""
     self._SetupMockTreeStatusResponses(final_tree_status='Tree is open (taco)',
                                        final_general_state=constants.TREE_OPEN)
-    with mock.patch.object(tree_status,'_UpdateTreeStatus') as m:
+    with mock.patch.object(tree_status, '_UpdateTreeStatus') as m:
       tree_status.ThrottleOrCloseTheTree('foo', 'failure')
       m.assert_called_once_with(mock.ANY, 'Tree is throttled (foo: failure)')
 
@@ -217,7 +212,7 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
     self._SetupMockTreeStatusResponses(
         final_tree_status='Tree is throttled (taco)',
         final_general_state=constants.TREE_THROTTLED)
-    with mock.patch.object(tree_status,'_UpdateTreeStatus') as m:
+    with mock.patch.object(tree_status, '_UpdateTreeStatus') as m:
       tree_status.ThrottleOrCloseTheTree('foo', 'failure')
       # Also make sure that previous status message is included.
       m.assert_called_once_with(mock.ANY,
@@ -228,7 +223,7 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
     self._SetupMockTreeStatusResponses(
         final_tree_status='Tree is closed (taco)',
         final_general_state=constants.TREE_CLOSED)
-    with mock.patch.object(tree_status,'_UpdateTreeStatus') as m:
+    with mock.patch.object(tree_status, '_UpdateTreeStatus') as m:
       tree_status.ThrottleOrCloseTheTree('foo', 'failure')
       m.assert_called_once_with(mock.ANY,
                                 'Tree is closed (foo: failure | taco)')
@@ -238,7 +233,7 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
     self._SetupMockTreeStatusResponses(
         final_tree_status='Tree is under maintenance (taco)',
         final_general_state=constants.TREE_MAINTENANCE)
-    with mock.patch.object(tree_status,'_UpdateTreeStatus') as m:
+    with mock.patch.object(tree_status, '_UpdateTreeStatus') as m:
       tree_status.ThrottleOrCloseTheTree('foo', 'failure')
       m.assert_called_once_with(
           mock.ANY,
@@ -249,7 +244,7 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
     self._SetupMockTreeStatusResponses(
         final_tree_status='Tree is throttled (foo: failure | bar: taco)',
         final_general_state=constants.TREE_THROTTLED)
-    with mock.patch.object(tree_status,'_UpdateTreeStatus') as m:
+    with mock.patch.object(tree_status, '_UpdateTreeStatus') as m:
       tree_status.ThrottleOrCloseTheTree('foo', 'failure')
       # Also make sure that previous status message is included.
       m.assert_called_once_with(mock.ANY,

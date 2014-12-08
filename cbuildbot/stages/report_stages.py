@@ -4,7 +4,6 @@
 
 """Module containing the report stages."""
 
-# pylint: disable=bad-continuation
 
 from __future__ import print_function
 
@@ -103,6 +102,7 @@ class BuildStartStage(generic_stages.BuilderStage):
   This stage writes a few basic metadata values that are known at the start of
   build, and inserts the build into the database, if appropriate.
   """
+
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     WriteBasicMetadata(self._run)
@@ -127,12 +127,12 @@ class BuildStartStage(generic_stages.BuilderStage):
         waterfall = d['buildbot-master-name']
         assert waterfall in constants.CIDB_KNOWN_WATERFALLS
         build_id = db.InsertBuild(
-             builder_name=d['builder-name'],
-             waterfall=waterfall,
-             build_number=d['build-number'],
-             build_config=d['bot-config'],
-             bot_hostname=d['bot-hostname'],
-             master_build_id=d['master_build_id'])
+            builder_name=d['builder-name'],
+            waterfall=waterfall,
+            build_number=d['build-number'],
+            build_config=d['bot-config'],
+            bot_hostname=d['bot-hostname'],
+            master_build_id=d['master_build_id'])
         self._run.attrs.metadata.UpdateWithDict({'build_id': build_id,
                                                  'db_type': db_type})
         logging.info('Inserted build_id %s into cidb database type %s.',
@@ -172,6 +172,7 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
   Where possible, metadata that is already known at this time should be
   written at this time rather than in ReportStage.
   """
+
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     config = self._run.config
@@ -193,9 +194,9 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
       platform_tag = verinfo.VersionString()
 
     version = {
-            'full': self._run.GetVersion(),
-            'milestone': verinfo.chrome_branch,
-            'platform': platform_tag,
+        'full': self._run.GetVersion(),
+        'milestone': verinfo.chrome_branch,
+        'platform': platform_tag,
     }
 
     metadata = {
@@ -531,7 +532,7 @@ class ReportStage(generic_stages.BuilderStage,
 
     results_lib.Results.Report(
         sys.stdout, archive_urls=archive_urls,
-      current_version=(self._run.attrs.release_tag or ''))
+        current_version=(self._run.attrs.release_tag or ''))
 
     retry_stats.ReportStats(sys.stdout)
 
@@ -539,7 +540,7 @@ class ReportStage(generic_stages.BuilderStage,
     if db:
       # TODO(akeshet): Eliminate this status string translate once
       # these differing status strings are merged, crbug.com/318930
-      translateStatus = (lambda s: constants.BUILDER_STATUS_PASSED
+      translateStatus = lambda s: (constants.BUILDER_STATUS_PASSED
                                    if s == constants.FINAL_STATUS_PASSED
                                    else constants.BUILDER_STATUS_FAILED)
       status_for_db = translateStatus(final_status)
@@ -567,6 +568,7 @@ class ReportStage(generic_stages.BuilderStage,
 
 class RefreshPackageStatusStage(generic_stages.BuilderStage):
   """Stage for refreshing Portage package status in online spreadsheet."""
+
   def PerformStage(self):
     commands.RefreshPackageStatus(buildroot=self._build_root,
                                   boards=self._boards,

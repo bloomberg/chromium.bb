@@ -4,9 +4,6 @@
 
 """Module containing the various individual commands a builder can run."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import base64
@@ -312,8 +309,7 @@ def SyncPackageStatus(buildroot, debug):
     basecmd.extend(['--pretend', '--test-spreadsheet'])
 
   cmdargslist = [['--team=build'],
-                 ['--team=kernel', '--default-owner=arscott'],
-                 ]
+                 ['--team=kernel', '--default-owner=arscott']]
 
   for cmdargs in cmdargslist:
     cmd = basecmd + cmdargs
@@ -1216,8 +1212,8 @@ def ExtractDependencies(buildroot, packages, board=None, useflags=None,
 
   if raw_cmd_result:
     return RunBuildScript(
-      buildroot, cmd, enter_chroot=True, chromite_cmd=True,
-      capture_output=True, extra_env=env)
+        buildroot, cmd, enter_chroot=True, chromite_cmd=True,
+        capture_output=True, extra_env=env)
 
   # The stdout of cros_extract_deps may contain undesirable
   # output. Avoid that by instructing the script to explicitly dump
@@ -1787,7 +1783,7 @@ def BuildStandaloneArchive(archive_dir, image_dir, artifact_info):
     # Add the .compress extension if we don't have a fixed name.
     if 'output' not in artifact_info and compress:
       filename = "%s.%s" % (filename, compress)
-    extra_env = { 'XZ_OPT' : '-1' }
+    extra_env = {'XZ_OPT': '-1'}
     cros_build_lib.CreateTarball(
         os.path.join(archive_dir, filename), image_dir,
         inputs=inputs, compression=compress_type, extra_env=extra_env)
@@ -1850,10 +1846,11 @@ def BuildFactoryZip(buildroot, board, archive_dir, factory_shim_dir,
 
   # Rules for archive: { folder: pattern }
   rules = {
-    factory_shim_dir:
-      ['*factory_install*.bin', '*partition*', os.path.join('netboot', '*')],
-    factory_toolkit_dir:
-      ['*factory_image*.bin', '*partition*', 'install_factory_toolkit.run'],
+      factory_shim_dir:
+          ['*factory_install*.bin', '*partition*',
+           os.path.join('netboot', '*')],
+      factory_toolkit_dir:
+          ['*factory_image*.bin', '*partition*', 'install_factory_toolkit.run'],
   }
 
   for folder, patterns in rules.items():
@@ -1948,7 +1945,7 @@ def GeneratePayloads(build_root, target_image_path, archive_dir, full=False,
   chroot_target = git.ReinterpretPathForChroot(target_image_path)
 
   with osutils.TempDir(base_dir=chroot_tmp,
-      prefix='generate_payloads') as temp_dir:
+                       prefix='generate_payloads') as temp_dir:
     chroot_temp_dir = temp_dir.replace(chroot_dir, '', 1)
 
     cmd = [
@@ -2103,5 +2100,5 @@ class ChromeSDK(object):
     if targets is None:
       targets = self._GetDefaultTargets()
     flavor = 'Debug' if debug else 'Release'
-    cmd = ['ninja', '-C', 'out_%s/%s' % (self.board, flavor) , '-j', str(jobs)]
+    cmd = ['ninja', '-C', 'out_%s/%s' % (self.board, flavor), '-j', str(jobs)]
     self.Run(cmd + list(targets))

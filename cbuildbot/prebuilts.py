@@ -4,8 +4,6 @@
 
 """cbuildbot logic for uploading prebuilts and managing binhosts."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 from datetime import datetime
@@ -140,8 +138,8 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot, **kwargs):
 
   if category == constants.CHROME_PFQ_TYPE:
     extra_args += ['--packages=%s' % x
-                   for x in [constants.CHROME_PN] +
-                            constants.OTHER_CHROME_PACKAGES]
+                   for x in ([constants.CHROME_PN] +
+                             constants.OTHER_CHROME_PACKAGES)]
 
   kwargs.setdefault('extra_args', []).extend(extra_args)
   return _UploadPrebuilts(buildroot=buildroot, **kwargs)
@@ -149,7 +147,6 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot, **kwargs):
 
 class PackageFileMissing(Exception):
   """Raised when the dev installer package file is missing."""
-  pass
 
 
 def UploadDevInstallerPrebuilts(binhost_bucket, binhost_key, binhost_base_url,

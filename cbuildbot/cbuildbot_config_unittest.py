@@ -5,8 +5,6 @@
 
 """Unittests for config."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import mock
@@ -22,8 +20,11 @@ from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
 
-CHROMIUM_WATCHING_URL = ('http://src.chromium.org/chrome/trunk/tools/build/'
-    'masters/master.chromium.chromiumos/master_chromiumos_cros_cfg.py')
+
+CHROMIUM_WATCHING_URL = (
+    'http://src.chromium.org/chrome/trunk/tools/build/masters/'
+    'master.chromium.chromiumos/master_chromiumos_cros_cfg.py'
+)
 
 
 class ConfigDumpTest(cros_test_lib.TestCase):
@@ -116,8 +117,8 @@ class CBuildBotTest(cros_test_lib.TestCase):
       useflags = config.get('useflags')
       if not useflags is None:
         self.assertTrue(
-          isinstance(useflags, list),
-          'Config %s: useflags should be a list.' % build_name)
+            isinstance(useflags, list),
+            'Config %s: useflags should be a list.' % build_name)
 
   def testBoards(self):
     """Verify 'boards' is explicitly set for every config."""
@@ -152,8 +153,8 @@ class CBuildBotTest(cros_test_lib.TestCase):
 
       self.assertTrue(
           push_overlays in subset,
-          'Config %s: push_overlays should be a subset of overlays.' %
-              build_name)
+          ('Config %s: push_overlays should be a subset of overlays.' %
+           build_name))
 
   def testOverlayMaster(self):
     """Verify that only one master is pushing uprevs for each overlay."""
@@ -165,8 +166,8 @@ class CBuildBotTest(cros_test_lib.TestCase):
           and not config['branch']):
         other_master = masters.get(push_overlays)
         err_msg = 'Found two masters for push_overlays=%s: %s and %s'
-        self.assertFalse(other_master,
-            err_msg % (push_overlays, build_name, other_master))
+        self.assertFalse(
+            other_master, err_msg % (push_overlays, build_name, other_master))
         masters[push_overlays] = build_name
 
     if 'both' in masters:
@@ -182,8 +183,9 @@ class CBuildBotTest(cros_test_lib.TestCase):
           config['chrome_rev'] == constants.CHROME_REV_LOCAL,
           'Config %s: has unexpected chrome_rev_local value.' % build_name)
       if config['chrome_rev']:
-        self.assertTrue(cbuildbot_config.IsPFQType(config['build_type']),
-          'Config %s: has chrome_rev but is not a PFQ.' % build_name)
+        self.assertTrue(
+            cbuildbot_config.IsPFQType(config['build_type']),
+            'Config %s: has chrome_rev but is not a PFQ.' % build_name)
 
   def testValidVMTestType(self):
     """Verify vm_tests has an expected value"""
@@ -192,8 +194,8 @@ class CBuildBotTest(cros_test_lib.TestCase):
         continue
       for test_type in config['vm_tests']:
         self.assertTrue(
-          test_type in constants.VALID_VM_TEST_TYPES,
-          'Config %s: has unexpected vm test type value.' % build_name)
+            test_type in constants.VALID_VM_TEST_TYPES,
+            'Config %s: has unexpected vm test type value.' % build_name)
 
   def testImageTestMustHaveBaseImage(self):
     """Verify image_test build is only enabled with 'base' in images."""
@@ -314,7 +316,8 @@ class CBuildBotTest(cros_test_lib.TestCase):
     for build_name, config in cbuildbot_config.config.iteritems():
       if not config['build_tests']:
         for flag in ('factory_toolkit', 'vm_tests', 'hw_tests'):
-          self.assertFalse(config[flag],
+          self.assertFalse(
+              config[flag],
               'Config %s set %s without build_tests.' % (build_name, flag))
 
   def testAFDOInBackground(self):
@@ -340,17 +343,18 @@ class CBuildBotTest(cros_test_lib.TestCase):
         msg = 'Config %s should not build_packages_in_background'
         self.assertFalse(config.build_packages_in_background, msg % build_name)
 
-        self.assertTrue(config.child_configs,
+        self.assertTrue(
+            config.child_configs,
             'Config %s should have child configs' % build_name)
         first_config = config.child_configs[0]
         msg = 'Primary config for %s should not build_packages_in_background'
         self.assertFalse(first_config.build_packages_in_background,
-            msg % build_name)
+                         msg % build_name)
 
         msg = 'Child config %s for %s should build_packages_in_background'
         for child_config in config.child_configs[1:]:
           self.assertTrue(child_config.build_packages_in_background,
-              msg % (child_config.name, build_name))
+                          msg % (child_config.name, build_name))
 
   def testAFDOSameInChildConfigs(self):
     """Verify that 'afdo_use' is the same for all children in a group."""
@@ -360,13 +364,13 @@ class CBuildBotTest(cros_test_lib.TestCase):
       if build_name.endswith('-group'):
         prev_value = None
         self.assertTrue(config.child_configs,
-            'Config %s should have child configs' % build_name)
+                        'Config %s should have child configs' % build_name)
         for child_config in config.child_configs:
           if prev_value is None:
             prev_value = child_config.afdo_use
           else:
             self.assertEqual(child_config.afdo_use, prev_value,
-                msg % (child_config.name, build_name))
+                             msg % (child_config.name, build_name))
 
   def testReleaseAFDOConfigs(self):
     """Verify that <board>-release-afdo config have generate and use children.
@@ -381,7 +385,8 @@ class CBuildBotTest(cros_test_lib.TestCase):
     use_suffix = '%s-use' % parent_suffix
     for build_name, config in cbuildbot_config.config.iteritems():
       if build_name.endswith(parent_suffix):
-        self.assertEqual(len(config.child_configs), 2,
+        self.assertEqual(
+            len(config.child_configs), 2,
             'Config %s should have 2 child configs' % build_name)
         for child_config in config.child_configs:
           child_name = child_config.name
@@ -412,7 +417,8 @@ class CBuildBotTest(cros_test_lib.TestCase):
     """Currently use_chrome_lkgm refers only to internal manifests."""
     for build_name, config in cbuildbot_config.config.iteritems():
       if config['use_chrome_lkgm']:
-        self.assertTrue(config['internal'],
+        self.assertTrue(
+            config['internal'],
             'Chrome lkgm currently only works with an internal manifest: %s' % (
                 build_name,))
 

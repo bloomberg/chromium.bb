@@ -8,8 +8,6 @@ The validation pool is the set of commits that are ready to be validated i.e.
 ready for the commit queue to try.
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import contextlib
@@ -816,7 +814,7 @@ class PatchSeries(object):
       else:
         resolved.append((change, plan))
         logging.info("Transaction for %s is %s.",
-            change, ', '.join(map(str, resolved[-1][-1])))
+                     change, ', '.join(map(str, resolved[-1][-1])))
 
     if not resolved:
       # No work to do; either no changes were given to us, or all failed
@@ -1715,9 +1713,9 @@ class ValidationPool(object):
     assert not self.pre_cq, 'Trybot calling SubmitPool'
 
     if (check_tree_open and not self.dryrun and not
-       tree_status.IsTreeOpen(period=self.SLEEP_TIMEOUT,
-                              timeout=self.MAX_TIMEOUT,
-                              throttled_ok=throttled_ok)):
+        tree_status.IsTreeOpen(period=self.SLEEP_TIMEOUT,
+                               timeout=self.MAX_TIMEOUT,
+                               throttled_ok=throttled_ok)):
       raise TreeIsClosedException(closed_or_throttled=not throttled_ok)
 
     # Filter out changes that were modified during the CQ run.
@@ -2050,7 +2048,7 @@ class ValidationPool(object):
     # TODO(yjhong): Remove this counter once we have enough stats to
     # show that the board-specific submission logic is superior.
     self._run.attrs.metadata.UpdateWithDict(
-      {'bs_submission_diff_count': len(fully_verified) - len(should_submit)})
+        {'bs_submission_diff_count': len(fully_verified) - len(should_submit)})
 
     self.SubmitChanges(fully_verified)
 
@@ -2198,7 +2196,8 @@ class ValidationPool(object):
       change: GerritPatch instance to operate upon.
       error: The reason why the change could not be submitted.
     """
-    self.SendNotification(change,
+    self.SendNotification(
+        change,
         '%(queue)s failed to submit your change in %(build_log)s . '
         '%(error)s', error=error)
     self.RemoveReady(change)

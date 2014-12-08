@@ -4,8 +4,6 @@
 
 """Repository module to handle different types of repositories."""
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import constants
@@ -20,13 +18,13 @@ from chromite.lib import osutils
 from chromite.lib import rewrite_git_alternates
 from chromite.lib import retry_util
 
+
 # File that marks a buildroot as being used by a trybot
 _TRYBOT_MARKER = '.trybot'
 
 
 class SrcCheckOutException(Exception):
   """Exception gets thrown for failure to sync sources"""
-  pass
 
 
 def IsARepoRoot(directory):
@@ -111,6 +109,7 @@ def GetTrybotMarkerPath(buildroot):
 def CreateTrybotMarker(buildroot):
   """Create the file that identifies a buildroot as being used by a trybot."""
   osutils.WriteFile(GetTrybotMarkerPath(buildroot), '')
+
 
 def ClearBuildRoot(buildroot, preserve_paths=()):
   """Remove and recreate the buildroot while preserving the trybot marker."""
@@ -383,7 +382,7 @@ class RepoRepository(object):
     repo_path = os.path.join(self.directory, '.repo', 'projects')
     current = set(cros_build_lib.RunCommand(
         ['find', repo_path, '-type', 'd', '-name', '*.git', '-printf', '%P\n',
-         '-a', '!', '-wholename',  '*.git/*', '-prune'],
+         '-a', '!', '-wholename', '*.git/*', '-prune'],
         print_cmd=False, capture_output=True).output.splitlines())
     data = {}.fromkeys(current, 0)
 

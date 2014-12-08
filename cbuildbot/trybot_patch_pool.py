@@ -4,8 +4,6 @@
 
 """Module that contains trybot patch pool code."""
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import constants
@@ -73,7 +71,7 @@ class TrybotPatchPool(object):
     """
     f = filter_fn
     if negate:
-      f = lambda p : not filter_fn(p)
+      f = lambda p: not filter_fn(p)
 
     return self.__class__(
         gerrit_patches=filter(f, self.gerrit_patches),

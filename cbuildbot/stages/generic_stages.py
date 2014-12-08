@@ -18,7 +18,6 @@ import traceback
 # We import mox so that we can identify mox exceptions and pass them through
 # in our exception handling code.
 try:
-  # pylint: disable=F0401
   import mox
 except ImportError:
   mox = None

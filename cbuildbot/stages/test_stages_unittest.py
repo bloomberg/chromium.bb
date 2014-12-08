@@ -5,8 +5,6 @@
 
 """Unittests for test stages."""
 
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import os
@@ -36,7 +34,6 @@ from chromite.lib import timeout_util
 import mock
 
 
-# pylint: disable=R0901
 class VMTestStageTest(generic_stages_unittest.AbstractStageTest):
   """Tests for the VMTest stage."""
 
@@ -210,7 +207,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
 
     if cmd_fail_mode == 'timeout':
       to_raise = timeout_util.TimeoutError('Timed out')
-    elif cmd_fail_mode ==  'suite_timeout':
+    elif cmd_fail_mode == 'suite_timeout':
       to_raise = commands.SuiteTimedOut('Suite timed out')
     elif cmd_fail_mode == 'board_not_available':
       to_raise = commands.BoardNotAvailable('Board not available')

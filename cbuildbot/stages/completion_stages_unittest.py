@@ -25,17 +25,20 @@ from chromite.lib import clactions
 from chromite.lib import cros_test_lib
 from chromite.lib import patch_unittest
 
-
 # TODO(build): Finish test wrapper (http://crosbug.com/37517).
 # Until then, this has to be after the chromite imports.
 import mock
 
 
-# pylint: disable=R0901,W0212
+# pylint: disable=protected-access
+
+
 class ManifestVersionedSyncCompletionStageTest(
     sync_stages_unittest.ManifestVersionedSyncStageTest):
   """Tests the ManifestVersionedSyncCompletion stage."""
-  # pylint: disable=W0223
+
+  # pylint: disable=abstract-method
+
   BOT_ID = 'x86-mario-release'
 
   def testManifestVersionedSyncCompletedSuccess(self):
@@ -319,7 +322,6 @@ class CommitQueueCompletionStageTest(
 
   def ConstructStage(self):
     """Returns a CommitQueueCompletionStage object."""
-    # pylint: disable=W0201
     sync_stage = sync_stages.CommitQueueSyncStage(self._run)
     sync_stage.pool = mock.MagicMock()
     sync_stage.pool.changes = self.changes

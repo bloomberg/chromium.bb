@@ -5,9 +5,6 @@
 
 """Unittests for manifest_version. Needs to be run inside of chroot."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import mox
@@ -27,7 +24,7 @@ from chromite.lib import git
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
-# pylint: disable=W0212,R0904
+
 FAKE_VERSION = """
 CHROMEOS_BUILD=%(build_number)s
 CHROMEOS_BRANCH=%(branch_build_number)s
@@ -43,6 +40,10 @@ CHROME_BRANCH = '13'
 GIT_TEST_PATH = 'chromite'
 
 MOCK_BUILD_ID = 162345
+
+
+# pylint: disable=protected-access
+
 
 class HelperMethodsTest(cros_test_lib.TempDirTestCase):
   """Test methods associated with methods not in a class."""
@@ -169,10 +170,10 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
     self.incr_type = 'branch'
 
     repo = repository.RepoRepository(
-      self.source_repo, self.tempdir, self.branch)
+        self.source_repo, self.tempdir, self.branch)
     self.manager = manifest_version.BuildSpecsManager(
-      repo, self.manifest_repo, self.build_names, self.incr_type, False,
-      branch=self.branch, dry_run=True)
+        repo, self.manifest_repo, self.build_names, self.incr_type, False,
+        branch=self.branch, dry_run=True)
 
     # Change default to something we clean up.
     self.tmpmandir = os.path.join(self.tempdir, 'man')
@@ -245,7 +246,7 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
         FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='branch')
     mpath = os.path.join(self.manager.manifest_dir, 'buildspecs', CHROME_BRANCH)
     m1, m2, m3, m4 = [os.path.join(mpath, '1.2.%d.xml' % x)
-                      for x in [2,3,4,5]]
+                      for x in [2, 3, 4, 5]]
     for_build = os.path.join(self.manager.manifest_dir, 'build-name',
                              self.build_names[0])
 
@@ -355,9 +356,9 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
     empty_string_status = self.manager._UnpickleBuildStatus('')
 
     self.assertEqual(failed_input_status.AsFlatDict(),
-                failed_output_status.AsFlatDict())
+                     failed_output_status.AsFlatDict())
     self.assertEqual(passed_input_status.AsFlatDict(),
-                passed_output_status.AsFlatDict())
+                     passed_output_status.AsFlatDict())
     self.assertTrue(empty_string_status.Failed())
 
   def _GetBuildersStatus(self, builders, status_runs):

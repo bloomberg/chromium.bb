@@ -5,8 +5,6 @@
 
 """Unittests for commands."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import base64
@@ -34,7 +32,6 @@ from chromite.scripts import pushimage
 import mock
 
 
-# pylint: disable=W0212
 class RunBuildScriptTest(cros_test_lib.TempDirTestCase):
   """Test RunBuildScript in a variety of cases."""
 
@@ -197,6 +194,8 @@ class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
 class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
   """Test commands related to HWLab tests."""
 
+  # pylint: disable=protected-access
+
   def setUp(self):
     self._build = 'test-build'
     self._board = 'test-board'
@@ -293,14 +292,17 @@ class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
 
   def testVerifyBinpkgMissing(self):
     """Test case where binpkg is missing."""
-    self.rc.AddCmdResult(partial_mock.ListRegex(r'emerge'),
+    self.rc.AddCmdResult(
+        partial_mock.ListRegex(r'emerge'),
         output='\n[ebuild] %s' % constants.CHROME_CP)
-    self.assertRaises(commands.MissingBinpkg, commands.VerifyBinpkg,
+    self.assertRaises(
+        commands.MissingBinpkg, commands.VerifyBinpkg,
         self._buildroot, self._board, constants.CHROME_CP, packages=())
 
   def testVerifyBinpkgPresent(self):
     """Test case where binpkg is present."""
-    self.rc.AddCmdResult(partial_mock.ListRegex(r'emerge'),
+    self.rc.AddCmdResult(
+        partial_mock.ListRegex(r'emerge'),
         output='\n[binary] %s' % constants.CHROME_CP)
     commands.VerifyBinpkg(self._buildroot, self._board, constants.CHROME_CP,
                           packages=())
@@ -417,7 +419,8 @@ f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
   def testCompleteBuildImage(self):
     """Test Complete BuildImage Command."""
     images_to_build = ['bob', 'carol', 'ted', 'alice']
-    commands.BuildImage(self._buildroot, self._board, images_to_build,
+    commands.BuildImage(
+        self._buildroot, self._board, images_to_build,
         rootfs_verification=False, extra_env={'LOVE': 'free'},
         disk_layout='2+2', version='1969')
     self.assertCommandContains(['./build_image'])
@@ -589,15 +592,16 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     # Assorted set of file names, some of which are supposed to be included in
     # the archive.
     fw_files = (
-      'dts/emeraldlake2.dts',
-      'image-link.rw.bin',
-      'nv_image-link.bin',
-      'pci8086,0166.rom',
-      'seabios.cbfs',
-      'u-boot.elf',
-      'u-boot_netboot.bin',
-      'updater-link.rw.sh',
-      'x86-memtest')
+        'dts/emeraldlake2.dts',
+        'image-link.rw.bin',
+        'nv_image-link.bin',
+        'pci8086,0166.rom',
+        'seabios.cbfs',
+        'u-boot.elf',
+        'u-boot_netboot.bin',
+        'updater-link.rw.sh',
+        'x86-memtest',
+    )
     # Files which should be included in the archive.
     fw_archived_files = fw_files + ('dts/',)
     board = 'link'
@@ -718,12 +722,12 @@ class ImageTestCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
                           self._result_dir)
     self.assertCommandContains(
         [
-          'sudo', '--',
-          os.path.join(self._build, 'chromite', 'bin', 'test_image'),
-          '--board', self._board,
-          '--test_results_root',
-          cros_build_lib.ToChrootPath(self._result_dir),
-          cros_build_lib.ToChrootPath(self._image_dir),
+            'sudo', '--',
+            os.path.join(self._build, 'chromite', 'bin', 'test_image'),
+            '--board', self._board,
+            '--test_results_root',
+            cros_build_lib.ToChrootPath(self._result_dir),
+            cros_build_lib.ToChrootPath(self._image_dir),
         ],
         enter_chroot=True,
     )

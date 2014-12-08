@@ -21,9 +21,6 @@ from chromite.lib import osutils
 from chromite.lib import portage_util
 
 
-# pylint: disable=R0901
-
-
 class SDKBuildToolchainsStageTest(generic_stages_unittest.AbstractStageTest):
   """Tests SDK toolchain building."""
 

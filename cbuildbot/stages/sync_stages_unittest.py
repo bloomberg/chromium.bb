@@ -5,8 +5,6 @@
 
 """Unittests for sync stages."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import ConfigParser
@@ -42,17 +40,17 @@ from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
 
-
 # TODO(build): Finish test wrapper (http://crosbug.com/37517).
 # Until then, this has to be after the chromite imports.
 import mock
 
+
 MOCK_BUILD_ID = 69178
 
-# pylint: disable=R0901,W0212
+
 class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
   """Tests the ManifestVersionedSync stage."""
-  # pylint: disable=W0223
+  # pylint: disable=abstract-method
 
   def setUp(self):
     self.source_repo = 'ssh://source/repo'
@@ -83,7 +81,6 @@ class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
 
   def testManifestVersionedSyncOnePartBranch(self):
     """Tests basic ManifestVersionedSyncStage with branch ooga_booga"""
-    # pylint: disable=E1120
     self.PatchObject(sync_stages.ManifestVersionedSyncStage, 'Initialize')
     self.PatchObject(sync_stages.ManifestVersionedSyncStage,
                      '_SetChromeVersionIfApplicable')
@@ -105,11 +102,11 @@ class MockPatch(mock.MagicMock):
   status = 'NEW'
   internal = False
   current_patch_set = {
-    'number': patch_number,
-    'draft': False,
+      'number': patch_number,
+      'draft': False,
   }
   patch_dict = {
-    'currentPatchSet': current_patch_set,
+      'currentPatchSet': current_patch_set,
   }
   remote = 'cros'
 
@@ -118,9 +115,9 @@ class MockPatch(mock.MagicMock):
 
     # Flags can vary per-patch.
     self.flags = {
-      'CRVW': '2',
-      'VRIF': '1',
-      'COMR': '1',
+        'CRVW': '2',
+        'VRIF': '1',
+        'COMR': '1',
     }
 
   def HasApproval(self, field, allowed):
@@ -220,7 +217,8 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
     Returns:
       A list of MockPatch objects which were created and used in PerformSync.
     """
-    kwargs.setdefault('approval_timestamp',
+    kwargs.setdefault(
+        'approval_timestamp',
         time.time() - sync_stages.PreCQLauncherStage.LAUNCH_DELAY * 60)
     changes = changes or [MockPatch(**kwargs)] * num_patches
     if tree_throttled:
@@ -243,8 +241,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
                        return_value=committed, autospec=True)
       # Validation pool will mutate the return value it receives from
       # Query, therefore return a copy of the changes list.
-      # pylint: disable=W0613
-      def Query(*args, **kwargs):
+      def Query(*_args, **_kwargs):
         return list(changes)
       self.PatchObject(gerrit.GerritHelper, 'Query',
                        side_effect=Query, autospec=True)
@@ -509,9 +506,9 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
         'builder name', constants.WATERFALL_TRYBOT, 2, config_name,
         'bot hostname')
     self.fake_db.InsertCLActions(
-      build_id,
-      [clactions.CLAction.FromGerritPatchAndAction(
-          change, constants.CL_ACTION_VERIFIED)])
+        build_id,
+        [clactions.CLAction.FromGerritPatchAndAction(
+            change, constants.CL_ACTION_VERIFIED)])
     return change
 
   def testSubmitInPreCQ(self):
@@ -592,7 +589,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     self.fake_db.InsertCLActions(
         build_ids['orange'],
         [clactions.CLAction.FromGerritPatchAndAction(
-        changes[0], constants.CL_ACTION_VERIFIED)])
+            changes[0], constants.CL_ACTION_VERIFIED)])
     for change in changes[1:3]:
       self.fake_db.InsertCLActions(
           build_ids['banana'],

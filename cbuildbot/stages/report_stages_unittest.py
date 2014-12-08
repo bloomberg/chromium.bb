@@ -5,9 +5,6 @@
 
 """Unittests for report stages."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import os
@@ -36,7 +33,9 @@ from chromite.lib import retry_stats
 import mock
 
 
-# pylint: disable=R0901,W0212
+# pylint: disable=protected-access
+
+
 class BuildStartStageTest(generic_stages_unittest.AbstractStageTest):
   """Tests that BuildStartStage behaves as expected."""
 
@@ -45,7 +44,7 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTest):
     cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
     retry_stats.SetupStats()
     os.environ['BUILDBOT_MASTERNAME'] = 'chromiumos'
-    self._Prepare(build_id = None)
+    self._Prepare(build_id=None)
 
   def testUnknownWaterfall(self):
     """Test that an assertion is thrown is master name is not valid."""
@@ -127,7 +126,8 @@ class AbstractReportStageTest(generic_stages_unittest.AbstractStageTest):
 
   def _SetupCommitQueueSyncPool(self):
     self.sync_stage = sync_stages.CommitQueueSyncStage(self._run)
-    pool = validation_pool.ValidationPool(constants.BOTH_OVERLAYS,
+    pool = validation_pool.ValidationPool(
+        constants.BOTH_OVERLAYS,
         self.build_root, build_number=3, builder_name=self._bot_id,
         is_master=True, dryrun=True)
     pool.changes = [sync_stages_unittest.MockPatch()]
@@ -137,7 +137,6 @@ class AbstractReportStageTest(generic_stages_unittest.AbstractStageTest):
     return report_stages.ReportStage(self._run, self.sync_stage, None)
 
 
-# pylint: disable=R0901,W0212
 class ReportStageTest(AbstractReportStageTest):
   """Test the Report stage."""
 
@@ -157,7 +156,6 @@ class ReportStageTest(AbstractReportStageTest):
                        update_list=True, acl=mock.ANY)]
     calls += [mock.call(mock.ANY, mock.ANY, filename, False,
                         acl=mock.ANY) for filename in filenames]
-    # pylint: disable=E1101
     self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
 
   def testDoNotUpdateLATESTMarkersWhenBuildFailed(self):
@@ -171,7 +169,6 @@ class ReportStageTest(AbstractReportStageTest):
     stage.Run()
     calls = [mock.call(mock.ANY, mock.ANY, 'metadata.json', False,
                        update_list=True, acl=mock.ANY)]
-    # pylint: disable=E1101
     self.assertEquals(calls, commands.UploadArchivedFile.call_args_list)
 
   def testCommitQueueResults(self):
@@ -187,7 +184,8 @@ class ReportStageTest(AbstractReportStageTest):
     self._SetupUpdateStreakCounter(counter_value=-3)
     self._SetupCommitQueueSyncPool()
     self.RunStage()
-    # pylint: disable=E1101
+    # The mocking logic gets confused with SendEmail.
+    # pylint: disable=no-member
     self.assertGreater(alerts.SendEmail.call_count, 0,
                        'CQ health alerts emails were not sent.')
 
@@ -198,7 +196,8 @@ class ReportStageTest(AbstractReportStageTest):
     self._SetupUpdateStreakCounter(counter_value=-5)
     self._SetupCommitQueueSyncPool()
     self.RunStage()
-    # pylint: disable=E1101
+    # The mocking logic gets confused with SendEmail.
+    # pylint: disable=no-member
     self.assertGreater(alerts.SendEmail.call_count, 0,
                        'CQ health alerts emails were not sent.')
 
@@ -221,12 +220,11 @@ class ReportStageTest(AbstractReportStageTest):
                  'status': constants.FINAL_STATUS_PASSED},
                 {'name': 'config2', 'boards': ['board2'],
                  'status': constants.FINAL_STATUS_FAILED}]
-    child_config_list = report_stages.GetChildConfigListMetadata(child_configs,
-        config_status_map)
+    child_config_list = report_stages.GetChildConfigListMetadata(
+        child_configs, config_status_map)
     self.assertEqual(expected, child_config_list)
 
 
-# pylint: disable=R0901,W0212
 class ReportStageNoSyncTest(AbstractReportStageTest):
   """Test the Report stage if SyncStage didn't complete.
 

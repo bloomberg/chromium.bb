@@ -2,10 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A library to generate and store the manifests for cros builders to use.
-"""
-
-# pylint: disable=bad-continuation
+"""A library to generate and store the manifests for cros builders to use."""
 
 from __future__ import print_function
 
@@ -545,8 +542,8 @@ class BuildSpecsManager(object):
     """Returns the next version string that should be built."""
     version = version_info.VersionString()
     if self.latest == version:
-      message = ('Automatic: %s - Updating to a new version number from %s' % (
-                 self.build_names[0], version))
+      message = ('Automatic: %s - Updating to a new version number from %s' %
+                 (self.build_names[0], version))
       version = version_info.IncrementVersion()
       version_info.UpdateVersionFile(message, dry_run=self.dry_run)
       assert version != self.latest

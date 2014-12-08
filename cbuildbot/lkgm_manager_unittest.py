@@ -5,9 +5,6 @@
 
 """Unittests for lkgm_manager. Needs to be run inside of chroot for mox."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import contextlib
@@ -34,7 +31,6 @@ from chromite.lib import osutils
 import mock
 
 
-# pylint: disable=E1120,W0212,R0904
 FAKE_VERSION_STRING = '1.2.4-rc3'
 FAKE_VERSION_STRING_NEXT = '1.2.4-rc4'
 CHROME_BRANCH = '13'
@@ -48,6 +44,11 @@ CHROME_BRANCH=13
 
 FAKE_WHITELISTED_REMOTES = ('cros', 'chromium')
 FAKE_NON_WHITELISTED_REMOTE = 'hottubtimemachine'
+
+
+# pylint: disable=protected-access
+# TODO: Re-enable when converted from mox to mock.
+# pylint: disable=no-value-for-parameter
 
 
 class LKGMCandidateInfoTest(cros_test_lib.TestCase):
@@ -122,7 +123,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
       new_element.setAttribute('remote', default_remote)
       m_element.appendChild(new_element)
     remotes_to_use = list(FAKE_WHITELISTED_REMOTES) * (
-          num_external / len(FAKE_WHITELISTED_REMOTES))
+        num_external / len(FAKE_WHITELISTED_REMOTES))
 
     internal_remotes = [FAKE_NON_WHITELISTED_REMOTE] * num_internal
     remotes_to_use.extend(internal_remotes)
@@ -170,10 +171,10 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     osutils.SafeMakedirs(self.tmpmandir)
 
     repo = repository.RepoRepository(
-      self.source_repo, self.tmpdir, self.branch, depth=1)
+        self.source_repo, self.tmpdir, self.branch, depth=1)
     self.manager = lkgm_manager.LKGMManager(
-      repo, self.manifest_repo, self.build_name, constants.PFQ_TYPE, 'branch',
-      force=False, branch=self.branch, dry_run=True)
+        repo, self.manifest_repo, self.build_name, constants.PFQ_TYPE, 'branch',
+        force=False, branch=self.branch, dry_run=True)
     self.manager.manifest_dir = self.tmpmandir
     self.manager.lkgm_path = os.path.join(self.tmpmandir,
                                           self.manager.LKGM_PATH)
@@ -435,11 +436,12 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
 
     fake_revision = '1234567890'
     fake_project_handler = self.mox.CreateMock(git.Manifest)
-    project = { 'name': 'fake/repo',
-                'path': 'fake/path',
-                'revision': fake_revision,
-              }
-    fake_project_handler.checkouts_by_path = { project['path']: project }
+    project = {
+        'name': 'fake/repo',
+        'path': 'fake/path',
+        'revision': fake_revision,
+    }
+    fake_project_handler.checkouts_by_path = {project['path']: project}
     fake_result = self.mox.CreateMock(cros_build_lib.CommandResult)
     fake_result.output = fake_git_log
 

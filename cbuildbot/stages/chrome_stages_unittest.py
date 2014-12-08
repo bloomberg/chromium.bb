@@ -5,8 +5,6 @@
 
 """Unittests for chrome stages."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import os
@@ -30,12 +28,13 @@ from chromite.lib import parallel_unittest
 import mock
 
 
-# pylint: disable=R0901,W0212
 class ChromeSDKStageTest(generic_stages_unittest.AbstractStageTest,
                          cros_test_lib.LoggingTestCase):
   """Verify stage that creates the chrome-sdk and builds chrome with it."""
   BOT_ID = 'link-paladin'
   RELEASE_TAG = ''
+
+  # pylint: disable=protected-access
 
   def setUp(self):
     self.StartPatcher(BuilderRunMock())
@@ -53,7 +52,7 @@ class ChromeSDKStageTest(generic_stages_unittest.AbstractStageTest,
 
     self._run.options.chrome_root = '/tmp/non-existent'
     self._run.attrs.metadata.UpdateWithDict({'toolchain-tuple': ['target'],
-                                            'toolchain-url' : 'some-url'})
+                                             'toolchain-url' : 'some-url'})
 
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()

@@ -5,8 +5,6 @@
 
 """Test the failures_lib module."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import os
@@ -71,7 +69,7 @@ class CompoundFailureTest(cros_test_lib.TestCase):
     exc_infos = self._CreateExceptInfos(KeyError, message='bar1',
                                         traceback='foo1')
     exc_infos.extend(self._CreateExceptInfos(ValueError, message='bar2',
-                                        traceback='foo2'))
+                                             traceback='foo2'))
     exc = failures_lib.CompoundFailure(exc_infos=exc_infos)
     self.assertTrue('bar1' in str(exc))
     self.assertTrue('bar2' in str(exc))

@@ -4,9 +4,6 @@
 
 """Module containing SDK stages."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import glob
@@ -99,7 +96,7 @@ class SDKPackageStage(generic_stages.BuilderStage):
     # statically linked.
     extra_args = ['--exclude=%s/*' % path for path in self._EXCLUDED_PATHS]
     # Options for maximum compression.
-    extra_env = { 'XZ_OPT' : '-e9' }
+    extra_env = {'XZ_OPT': '-e9'}
     cros_build_lib.CreateTarball(
         dest_tarball, sdk_path, sudo=True, extra_args=extra_args,
         debug_level=logging.INFO, extra_env=extra_env)
@@ -137,7 +134,7 @@ class SDKTestStage(generic_stages.BuilderStage):
 
     # Build a new SDK using the provided tarball.
     chroot_args = new_chroot_args + ['--download', '--replace', '--nousepkg',
-        '--url', 'file://' + tarball_location]
+                                     '--url', 'file://' + tarball_location]
     cros_build_lib.RunCommand(
         [], cwd=self._build_root, enter_chroot=True, chroot_args=chroot_args,
         extra_env=self._portage_extra_env)

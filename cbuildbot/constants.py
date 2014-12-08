@@ -4,12 +4,10 @@
 
 """This module contains constants used by cbuildbot and related code."""
 
-# pylint: disable=bad-continuation
-# pylint: disable=bad-whitespace
-
 from __future__ import print_function
 
 import os
+
 
 def _FindSourceRoot():
   """Try and find the root check out of the chromiumos tree"""
@@ -639,26 +637,26 @@ ENV_PASSTHRU = ('CROS_SUDO_KEEP_ALIVE', SHARED_CACHE_ENVVAR)
 # chroot_version_hooks.d upgrade script that symlinks to 45_rewrite_sudoers.d
 # should be created.
 CHROOT_ENVIRONMENT_WHITELIST = (
-  'CHROMEOS_OFFICIAL',
-  'CHROMEOS_VERSION_AUSERVER',
-  'CHROMEOS_VERSION_DEVSERVER',
-  'CHROMEOS_VERSION_TRACK',
-  'GCC_GITHASH',
-  'GIT_AUTHOR_EMAIL',
-  'GIT_AUTHOR_NAME',
-  'GIT_COMMITTER_EMAIL',
-  'GIT_COMMITTER_NAME',
-  'GIT_PROXY_COMMAND',
-  'GIT_SSH',
-  'RSYNC_PROXY',
-  'SSH_AGENT_PID',
-  'SSH_AUTH_SOCK',
-  'USE',
-  'all_proxy',
-  'ftp_proxy',
-  'http_proxy',
-  'https_proxy',
-  'no_proxy',
+    'CHROMEOS_OFFICIAL',
+    'CHROMEOS_VERSION_AUSERVER',
+    'CHROMEOS_VERSION_DEVSERVER',
+    'CHROMEOS_VERSION_TRACK',
+    'GCC_GITHASH',
+    'GIT_AUTHOR_EMAIL',
+    'GIT_AUTHOR_NAME',
+    'GIT_COMMITTER_EMAIL',
+    'GIT_COMMITTER_NAME',
+    'GIT_PROXY_COMMAND',
+    'GIT_SSH',
+    'RSYNC_PROXY',
+    'SSH_AGENT_PID',
+    'SSH_AUTH_SOCK',
+    'USE',
+    'all_proxy',
+    'ftp_proxy',
+    'http_proxy',
+    'https_proxy',
+    'no_proxy',
 )
 
 # Paths for Chrome LKGM which are relative to the Chromium base url.
