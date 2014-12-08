@@ -167,7 +167,7 @@ cr.define('options', function() {
      */
     removeData_: function(guid, metricsAction) {
       chrome.send('removeData', [guid]);
-      if (action)
+      if (metricsAction)
         chrome.send('coreOptionsUserMetricsAction', [metricsAction]);
     },
 

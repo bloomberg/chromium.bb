@@ -9,12 +9,14 @@ cr.exportPath('options');
  *            hasError: (boolean|undefined),
  *            hasUnrecoverableError: (boolean|undefined),
  *            managed: (boolean|undefined),
+ *            regularSupervisedUser: (boolean|undefined),
  *            setupCompleted: (boolean|undefined),
  *            setupInProgress: (boolean|undefined),
  *            signedIn: (boolean|undefined),
  *            signinAllowed: (boolean|undefined),
  *            signoutAllowed: (boolean|undefined),
  *            statusText: (string|undefined),
+ *            supervisedUser: (boolean|undefined),
  *            syncSystemEnabled: (boolean|undefined)}}
  * @see chrome/browser/ui/webui/options/browser_options_handler.cc
  */
