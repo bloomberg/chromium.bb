@@ -52,6 +52,10 @@ bool ImeKeyboardOzone::SetAutoRepeatEnabled(bool enabled) {
   return true;
 }
 
+bool ImeKeyboardOzone::GetAutoRepeatEnabled() {
+  return true;
+}
+
 // static
 ImeKeyboard* ImeKeyboard::Create() {
   return new ImeKeyboardOzone();

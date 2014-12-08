@@ -121,12 +121,12 @@ TEST_F(ImeKeyboardTest, TestSetAutoRepeatEnabled) {
     DVLOG(1) << "X server is not available. Skip the test.";
     return;
   }
-  const bool state = ImeKeyboard::GetAutoRepeatEnabledForTesting();
+  const bool state = xkey_->GetAutoRepeatEnabled();
   xkey_->SetAutoRepeatEnabled(!state);
-  EXPECT_EQ(!state, ImeKeyboard::GetAutoRepeatEnabledForTesting());
+  EXPECT_EQ(!state, xkey_->GetAutoRepeatEnabled());
   // Restore the initial state.
   xkey_->SetAutoRepeatEnabled(state);
-  EXPECT_EQ(state, ImeKeyboard::GetAutoRepeatEnabledForTesting());
+  EXPECT_EQ(state, xkey_->GetAutoRepeatEnabled());
 }
 
 TEST_F(ImeKeyboardTest, TestSetAutoRepeatRate) {

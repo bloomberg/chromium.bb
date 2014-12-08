@@ -91,14 +91,13 @@ class UI_BASE_EXPORT ImeKeyboard {
   // Do not call the function from non-UI threads.
   virtual bool SetAutoRepeatEnabled(bool enabled) = 0;
 
+  // Returns true if auto-repeat is enabled.
+  virtual bool GetAutoRepeatEnabled() = 0;
+
   // Sets the auto-repeat rate of the keyboard, initial delay in ms, and repeat
   // interval in ms.  Returns true on success. Do not call the function from
   // non-UI threads.
   virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) = 0;
-
-  // Returns true if auto repeat is enabled. This function is protected: for
-  // testability.
-  static UI_BASE_EXPORT bool GetAutoRepeatEnabledForTesting();
 
   // On success, set current auto repeat rate on |out_rate| and returns true.
   // Returns false otherwise. This function is protected: for testability.

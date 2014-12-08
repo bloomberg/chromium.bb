@@ -224,6 +224,12 @@ bool ImeKeyboardX11::SetAutoRepeatEnabled(bool enabled) {
   return true;
 }
 
+bool ImeKeyboardX11::GetAutoRepeatEnabled() {
+  XKeyboardState state = {};
+  XGetKeyboardControl(gfx::GetXDisplay(), &state);
+  return state.global_auto_repeat != AutoRepeatModeOff;
+}
+
 bool ImeKeyboardX11::SetAutoRepeatRate(const AutoRepeatRate& rate) {
   DVLOG(1) << "Set auto-repeat rate to: "
            << rate.initial_delay_in_ms << " ms delay, "
@@ -275,13 +281,6 @@ void ImeKeyboardX11::OnSetLayoutFinish() {
   }
   execute_queue_.pop();
   MaybeExecuteSetLayoutCommand();
-}
-
-// static
-bool ImeKeyboard::GetAutoRepeatEnabledForTesting() {
-  XKeyboardState state = {};
-  XGetKeyboardControl(gfx::GetXDisplay(), &state);
-  return state.global_auto_repeat != AutoRepeatModeOff;
 }
 
 // static

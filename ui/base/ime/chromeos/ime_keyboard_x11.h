@@ -43,6 +43,7 @@ class UI_BASE_EXPORT ImeKeyboardX11 : public ImeKeyboard {
   virtual void SetCapsLockEnabled(bool enable_caps_lock) override;
   virtual bool CapsLockIsEnabled() override;
   virtual bool SetAutoRepeatEnabled(bool enabled) override;
+  virtual bool GetAutoRepeatEnabled() override;
   virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) override;
 
  private:

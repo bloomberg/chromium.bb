@@ -24,6 +24,7 @@ class UI_BASE_EXPORT ImeKeyboardOzone : public ImeKeyboard {
       override;
   virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) override;
   virtual bool SetAutoRepeatEnabled(bool enabled) override;
+  virtual bool GetAutoRepeatEnabled() override;
   virtual bool ReapplyCurrentKeyboardLayout() override;
   virtual void ReapplyCurrentModifierLockStatus() override;
   virtual void DisableNumLock() override;

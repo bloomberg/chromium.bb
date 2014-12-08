@@ -32,6 +32,10 @@ bool FakeImeKeyboard::SetAutoRepeatEnabled(bool enabled) {
   return true;
 }
 
+bool FakeImeKeyboard::GetAutoRepeatEnabled() {
+  return auto_repeat_is_enabled_;
+}
+
 bool FakeImeKeyboard::ReapplyCurrentKeyboardLayout() {
   return true;
 }
