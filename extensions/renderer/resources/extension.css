@@ -135,7 +135,6 @@ html[dir='rtl'] select {
 }
 
 input[type='checkbox'] {
-  bottom: 2px;
   height: 13px;
   position: relative;
   vertical-align: middle;
@@ -145,7 +144,6 @@ input[type='checkbox'] {
 input[type='radio'] {
   /* OVERRIDE */
   border-radius: 100%;
-  bottom: 3px;
   height: 15px;
   position: relative;
   vertical-align: middle;
@@ -329,6 +327,7 @@ input:disabled:-webkit-any([type='password'],
 
 :-webkit-any(.checkbox, .radio) label {
   /* Don't expand horizontally: <http://crbug.com/112091>. */
+  align-items: center;
   display: inline-flex;
   padding-bottom: 7px;
   padding-top: 7px;
