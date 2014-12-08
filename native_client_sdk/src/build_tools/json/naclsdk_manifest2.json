@@ -37,49 +37,6 @@
       "archives": [
         {
           "checksum": {
-            "sha1": "1cde8464f0c22d8016e7b5510d0842338b752bdc"
-          },
-          "host_os": "all",
-          "size": 73165335,
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/32.0.1700.107/naclports.tar.bz2"
-        },
-        {
-          "checksum": {
-            "sha1": "1b42e24e4406dc7ef7466461214de22b3c426e6e"
-          },
-          "host_os": "linux",
-          "size": 284112979,
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/32.0.1700.107/naclsdk_linux.tar.bz2"
-        },
-        {
-          "checksum": {
-            "sha1": "e8f22dcc253f4b5b1d3727dd4bdb435d5192202d"
-          },
-          "host_os": "mac",
-          "size": 250355709,
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/32.0.1700.107/naclsdk_mac.tar.bz2"
-        },
-        {
-          "checksum": {
-            "sha1": "4231ab60ced3db505ff6a5543e7965639ea5a15a"
-          },
-          "host_os": "win",
-          "size": 269032445,
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/32.0.1700.107/naclsdk_win.tar.bz2"
-        }
-      ],
-      "description": "Chrome 32 bundle. Chrome revision: 248368. NaCl revision: 12321",
-      "name": "pepper_32",
-      "recommended": "no",
-      "repath": "pepper_32",
-      "revision": 248368,
-      "stability": "post_stable",
-      "version": 32
-    },
-    {
-      "archives": [
-        {
-          "checksum": {
             "sha1": "8e3e394d7269bab454361cd2eccd44f719de7039"
           },
           "host_os": "all",
@@ -178,6 +135,16 @@
       "revision": 0,
       "stability": "post_stable",
       "version": 39
+    },
+    {
+      "archives": [],
+      "description": "Chrome 40 bundle, revision xxxxx",
+      "name": "pepper_40",
+      "recommended": "no",
+      "repath": "pepper_40",
+      "revision": 0,
+      "stability": "post_stable",
+      "version": 40
     },
     {
       "archives": [],
