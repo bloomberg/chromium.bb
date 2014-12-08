@@ -83,7 +83,7 @@ AppStateController.prototype.initialize = function(ui, directoryModel) {
   // Restore preferences.
   this.ui_.setCurrentListType(
       this.viewOptions_.listType || ListContainer.ListType.DETAIL);
-  this.directoryModel_.getFileList().sort(
+  this.ui_.listContainer.sort(
       this.viewOptions_.sortField || 'modificationTime',
       this.viewOptions_.sortDirection || 'desc');
   if (this.viewOptions_.columns) {
@@ -99,7 +99,7 @@ AppStateController.prototype.initialize = function(ui, directoryModel) {
  * Saves current view option.
  */
 AppStateController.prototype.saveViewOptions = function() {
-  var sortStatus = this.directoryModel_.getFileList().sortStatus;
+  var sortStatus = this.ui_.listContainer.getSortStatus();
   var prefs = {
     sortField: sortStatus.field,
     sortDirection: sortStatus.direction,
