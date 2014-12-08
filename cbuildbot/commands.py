@@ -257,7 +257,7 @@ def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None):
   if chrome_root:
     cmd.append('--chrome_root=%s' % chrome_root)
 
-  RunBuildScript(buildroot, cmd, extra_env=extra_env)
+  RunBuildScript(buildroot, cmd, chromite_cmd=True, extra_env=extra_env)
 
 
 def RunChrootUpgradeHooks(buildroot, chrome_root=None, extra_env=None):
