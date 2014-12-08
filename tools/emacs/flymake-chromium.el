@@ -113,6 +113,8 @@
       (kill-local-variable 'flymake-allowed-file-name-masks))))
 
 (defun cr-compile ()
+  "Run the interactive compile command with the working directory
+  set to src/."
   (interactive)
   (let ((default-directory (cr-flymake-chromium-src)))
     (call-interactively 'compile)))
