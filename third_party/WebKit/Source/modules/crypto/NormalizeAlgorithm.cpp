@@ -749,6 +749,21 @@ bool parseEcdhKeyDeriveParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmPa
     return true;
 }
 
+// Defined by the WebCrypto spec as:
+//
+//    dictionary AesDerivedKeyParams : Algorithm {
+//      [EnforceRange] required unsigned short length;
+//    };
+bool parseAesDerivedKeyParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
+{
+    uint16_t length;
+    if (!getUint16(raw, "length", length, context, error))
+        return false;
+
+    params = adoptPtr(new WebCryptoAesDerivedKeyParams(length));
+    return true;
+}
+
 bool parseAlgorithmParams(const Dictionary& raw, WebCryptoAlgorithmParamsType type, OwnPtr<WebCryptoAlgorithmParams>& params, ErrorContext& context, AlgorithmError* error)
 {
     switch (type) {
@@ -796,6 +811,9 @@ bool parseAlgorithmParams(const Dictionary& raw, WebCryptoAlgorithmParamsType ty
     case WebCryptoAlgorithmParamsTypeEcdhKeyDeriveParams:
         context.add("EcdhKeyDeriveParams");
         return parseEcdhKeyDeriveParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeAesDerivedKeyParams:
+        context.add("AesDerivedKeyParams");
+        return parseAesDerivedKeyParams(raw, params, context, error);
     }
     ASSERT_NOT_REACHED();
     return false;

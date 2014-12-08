@@ -322,6 +322,21 @@ private:
     const WebCryptoKey m_publicKey;
 };
 
+class WebCryptoAesDerivedKeyParams : public WebCryptoAlgorithmParams {
+public:
+    explicit WebCryptoAesDerivedKeyParams(unsigned short lengthBits)
+        : m_lengthBits(lengthBits)
+    {
+    }
+
+    virtual WebCryptoAlgorithmParamsType type() const override { return WebCryptoAlgorithmParamsTypeAesDerivedKeyParams; }
+
+    unsigned short lengthBits() const { return m_lengthBits; }
+
+private:
+    const unsigned short m_lengthBits;
+};
+
 } // namespace blink
 
 #endif

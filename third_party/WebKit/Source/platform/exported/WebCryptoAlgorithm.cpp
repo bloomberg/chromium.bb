@@ -429,6 +429,14 @@ const WebCryptoEcdhKeyDeriveParams* WebCryptoAlgorithm::ecdhKeyDeriveParams() co
     return 0;
 }
 
+const WebCryptoAesDerivedKeyParams* WebCryptoAlgorithm::aesDerivedKeyParams() const
+{
+    ASSERT(!isNull());
+    if (paramsType() == WebCryptoAlgorithmParamsTypeAesDerivedKeyParams)
+        return static_cast<WebCryptoAesDerivedKeyParams*>(m_private->params.get());
+    return 0;
+}
+
 bool WebCryptoAlgorithm::isHash(WebCryptoAlgorithmId id)
 {
     switch (id) {
