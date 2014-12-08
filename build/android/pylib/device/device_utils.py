@@ -864,11 +864,11 @@ class DeviceUtils(object):
       CommandFailedError on failure.
       CommandTimeoutError on timeout.
     """
-    try:
-      self.old_interface.PullFileFromDevice(device_path, host_path)
-    except AssertionError as e:
-      raise device_errors.CommandFailedError(
-          str(e), str(self)), None, sys.exc_info()[2]
+    # Create the base dir if it doesn't exist already
+    dirname = os.path.dirname(host_path)
+    if dirname and not os.path.exists(dirname):
+      os.makedirs(dirname)
+    self.adb.Pull(device_path, host_path)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def ReadFile(self, device_path, as_root=False, timeout=None, retries=None):

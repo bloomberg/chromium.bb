@@ -161,8 +161,13 @@ class AdbWrapper(object):
       timeout: (optional) Timeout per try in seconds.
       retries: (optional) Number of retries to attempt.
     """
-    self._RunDeviceAdbCmd(['pull', remote, local], timeout, retries)
-    _VerifyLocalFileExists(local)
+    cmd = ['pull', remote, local]
+    self._RunDeviceAdbCmd(cmd, timeout, retries)
+    try:
+      _VerifyLocalFileExists(local)
+    except IOError:
+      raise device_errors.AdbCommandFailedError(
+          cmd, 'File not found on host: %s' % local, device_serial=str(self))
 
   def Shell(self, command, expect_status=0, timeout=_DEFAULT_TIMEOUT,
             retries=_DEFAULT_RETRIES):

@@ -1119,26 +1119,22 @@ class DeviceUtilsFileExistsTest(DeviceUtilsNewImplTest):
       self.assertFalse(self.device.FileExists('/does/not/exist'))
 
 
-class DeviceUtilsPullFileTest(DeviceUtilsOldImplTest):
+class DeviceUtilsPullFileTest(DeviceUtilsNewImplTest):
 
   def testPullFile_existsOnDevice(self):
     with mock.patch('os.path.exists', return_value=True):
-      with self.assertCallsSequence([
-          ('adb -s 0123456789abcdef shell '
-              'ls /data/app/test.file.exists',
-           '/data/app/test.file.exists'),
-          ('adb -s 0123456789abcdef pull '
-              '/data/app/test.file.exists /test/file/host/path',
-           '100 B/s (100 bytes in 1.000s)\r\n')]):
+      with self.assertCall(
+          self.call.adb.Pull('/data/app/test.file.exists',
+                             '/test/file/host/path')):
         self.device.PullFile('/data/app/test.file.exists',
                              '/test/file/host/path')
 
   def testPullFile_doesntExistOnDevice(self):
     with mock.patch('os.path.exists', return_value=True):
-      with self.assertCalls(
-          'adb -s 0123456789abcdef shell '
-              'ls /data/app/test.file.does.not.exist',
-          '/data/app/test.file.does.not.exist: No such file or directory\r\n'):
+      with self.assertCall(
+          self.call.adb.Pull('/data/app/test.file.does.not.exist',
+                             '/test/file/host/path'),
+          self.CommandError('remote object does not exist')):
         with self.assertRaises(device_errors.CommandFailedError):
           self.device.PullFile('/data/app/test.file.does.not.exist',
                                '/test/file/host/path')
