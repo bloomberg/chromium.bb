@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <string>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -354,6 +355,8 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   // mechanism.
   std::deque<char> body_stream_buffer_;
   bool got_all_stream_body_data_;
+  enum DeferState {NOT_DEFERRING, SHOULD_DEFER, DEFERRED_DATA};
+  DeferState defers_loading_;
 };
 
 WebURLLoaderImpl::Context::Context(
@@ -365,7 +368,8 @@ WebURLLoaderImpl::Context::Context(
       resource_dispatcher_(resource_dispatcher),
       task_runner_(task_runner),
       referrer_policy_(blink::WebReferrerPolicyDefault),
-      got_all_stream_body_data_(false) {
+      got_all_stream_body_data_(false),
+      defers_loading_(NOT_DEFERRING)  {
 }
 
 void WebURLLoaderImpl::Context::Cancel() {
@@ -390,6 +394,15 @@ void WebURLLoaderImpl::Context::Cancel() {
 void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
   if (bridge_)
     bridge_->SetDefersLoading(value);
+  if (value && defers_loading_ == NOT_DEFERRING) {
+    defers_loading_ = SHOULD_DEFER;
+  } else if (!value && defers_loading_ != NOT_DEFERRING) {
+    if (defers_loading_ == DEFERRED_DATA) {
+      task_runner_->PostTask(FROM_HERE,
+                             base::Bind(&Context::HandleDataURL, this));
+    }
+    defers_loading_ = NOT_DEFERRING;
+  }
 }
 
 void WebURLLoaderImpl::Context::DidChangePriority(
@@ -838,6 +851,12 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally() const {
 }
 
 void WebURLLoaderImpl::Context::HandleDataURL() {
+  DCHECK_NE(defers_loading_, DEFERRED_DATA);
+  if (defers_loading_ == SHOULD_DEFER) {
+      defers_loading_ = DEFERRED_DATA;
+      return;
+  }
+
   ResourceResponseInfo info;
   std::string data;
 
