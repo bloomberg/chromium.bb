@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -22,7 +24,8 @@
 CocoaProfileTest::CocoaProfileTest()
     : profile_manager_(TestingBrowserProcess::GetGlobal()),
       profile_(NULL),
-      thread_bundle_(new content::TestBrowserThreadBundle) {}
+      thread_bundle_(new content::TestBrowserThreadBundle) {
+}
 
 CocoaProfileTest::~CocoaProfileTest() {
   // Delete the testing profile on the UI thread. But first release the
@@ -41,12 +44,22 @@ CocoaProfileTest::~CocoaProfileTest() {
   base::RunLoop().RunUntilIdle();
 }
 
+void CocoaProfileTest::AddTestingFactories(
+    const TestingProfile::TestingFactories& testing_factories) {
+  for (auto testing_factory : testing_factories) {
+    testing_factories_.push_back(testing_factory);
+  }
+}
+
 void CocoaProfileTest::SetUp() {
   CocoaTest::SetUp();
 
   ASSERT_TRUE(profile_manager_.SetUp());
 
-  profile_ = profile_manager_.CreateTestingProfile("Person 1");
+  profile_ = profile_manager_.CreateTestingProfile(
+      "Person 1", scoped_ptr<PrefServiceSyncable>(),
+      base::UTF8ToUTF16("Person 1"), 0, std::string(),
+      testing_factories_);
   ASSERT_TRUE(profile_);
 
   // TODO(shess): These are needed in case someone creates a browser

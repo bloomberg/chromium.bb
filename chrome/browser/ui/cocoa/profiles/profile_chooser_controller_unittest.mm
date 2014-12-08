@@ -37,17 +37,6 @@ const std::string kLoginToken = "oauth2_login_token";
 class ProfileChooserControllerTest : public CocoaProfileTest {
  public:
   ProfileChooserControllerTest() {
-  }
-
-  virtual void SetUp() override {
-    CocoaProfileTest::SetUp();
-    ASSERT_TRUE(browser()->profile());
-
-    AccountTrackerServiceFactory::GetInstance()->SetTestingFactory(
-        browser()->profile(), FakeAccountTrackerService::Build);
-    gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(
-        browser()->profile(), gcm::FakeGCMProfileService::Build);
-
     TestingProfile::TestingFactories factories;
     factories.push_back(
         std::make_pair(ProfileOAuth2TokenServiceFactory::GetInstance(),
@@ -55,10 +44,21 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
     factories.push_back(
         std::make_pair(AccountTrackerServiceFactory::GetInstance(),
                        FakeAccountTrackerService::Build));
+    AddTestingFactories(factories);
+  }
+
+  virtual void SetUp() override {
+    CocoaProfileTest::SetUp();
+
+    ASSERT_TRUE(browser()->profile());
+
+    gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(
+        browser()->profile(), gcm::FakeGCMProfileService::Build);
+
     testing_profile_manager()->
         CreateTestingProfile("test1", scoped_ptr<PrefServiceSyncable>(),
                              base::ASCIIToUTF16("Test 1"), 0, std::string(),
-                             factories);
+                             testing_factories());
     testing_profile_manager()->
         CreateTestingProfile("test2", scoped_ptr<PrefServiceSyncable>(),
                              base::ASCIIToUTF16("Test 2"), 1, std::string(),
