@@ -653,7 +653,8 @@ void ProfileManager::ScheduleProfileForDeletion(
     for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
       base::FilePath cur_path = cache.GetPathOfProfileAtIndex(i);
       // Make sure that this profile is not pending deletion.
-      if (cur_path != profile_dir && !cache.ProfileIsSupervisedAtIndex(i) &&
+      if (cur_path != profile_dir &&
+          !cache.ProfileIsLegacySupervisedAtIndex(i) &&
           !IsProfileMarkedForDeletion(cur_path)) {
         last_non_supervised_profile_path = cur_path;
         break;

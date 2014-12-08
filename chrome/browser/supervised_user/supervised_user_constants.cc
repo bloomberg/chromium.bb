@@ -19,6 +19,8 @@ const char kUserPasswordRecord[] = "UserPasswordRecord";
 
 const char kSupervisedUserPseudoEmail[] = "managed_user@localhost";
 
+const char kChildAccountSUID[] = "ChildAccountSUID";
+
 const char kChromeAvatarIndex[] = "chrome-avatar-index";
 const char kChromeOSAvatarIndex[] = "chromeos-avatar-index";
 

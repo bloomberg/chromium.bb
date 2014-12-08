@@ -23,6 +23,9 @@ extern const char kUserPasswordRecord[];
 // (like Sync), even though we're not signed in.
 extern const char kSupervisedUserPseudoEmail[];
 
+// A special supervised user ID used for child accounts.
+extern const char kChildAccountSUID[];
+
 // Keys for supervised user shared settings. These can be configured remotely or
 // locally, and are mapped to preferences by the
 // SupervisedUserPrefMappingService.

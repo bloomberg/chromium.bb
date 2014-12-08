@@ -33,6 +33,10 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_util.h"
 
+#if defined(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -397,6 +401,19 @@ bool ProfileInfoCache::IsUsingGAIAPictureOfProfileAtIndex(size_t index) const {
 
 bool ProfileInfoCache::ProfileIsSupervisedAtIndex(size_t index) const {
   return !GetSupervisedUserIdOfProfileAtIndex(index).empty();
+}
+
+bool ProfileInfoCache::ProfileIsChildAtIndex(size_t index) const {
+#if defined(ENABLE_SUPERVISED_USERS)
+  return GetSupervisedUserIdOfProfileAtIndex(index) ==
+      supervised_users::kChildAccountSUID;
+#else
+  return false;
+#endif
+}
+
+bool ProfileInfoCache::ProfileIsLegacySupervisedAtIndex(size_t index) const {
+  return ProfileIsSupervisedAtIndex(index) && !ProfileIsChildAtIndex(index);
 }
 
 bool ProfileInfoCache::IsOmittedProfileAtIndex(size_t index) const {

@@ -59,7 +59,13 @@ class ProfileInfoInterface {
   // Checks if the GAIA picture should be used as the profile's avatar icon.
   virtual bool IsUsingGAIAPictureOfProfileAtIndex(size_t index) const = 0;
 
+  // Returns whether the profile is supervised (either a legacy supervised
+  // user or a child account; see SupervisedUserService).
   virtual bool ProfileIsSupervisedAtIndex(size_t index) const = 0;
+  // Returns whether the profile is associated with a child account.
+  virtual bool ProfileIsChildAtIndex(size_t index) const = 0;
+  // Returns whether the profile is a legacy supervised user profile.
+  virtual bool ProfileIsLegacySupervisedAtIndex(size_t index) const = 0;
 
   // Returns true if the profile should be omitted from the desktop profile
   // list (see ProfileListDesktop), so it won't appear in the avatar menu.

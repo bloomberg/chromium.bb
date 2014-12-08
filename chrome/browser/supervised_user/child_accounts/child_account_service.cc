@@ -35,7 +35,6 @@
 #endif
 
 const char kIsChildAccountServiceFlagName[] = "uca";
-const char kChildAccountSUID[] = "ChildAccountSUID";
 
 ChildAccountService::ChildAccountService(Profile* profile)
     : profile_(profile), active_(false), weak_ptr_factory_(this) {}
@@ -68,7 +67,7 @@ void ChildAccountService::Shutdown() {
 
 bool ChildAccountService::IsChildAccount() const {
   return profile_->GetPrefs()->GetString(prefs::kSupervisedUserId) ==
-             kChildAccountSUID;
+             supervised_users::kChildAccountSUID;
 }
 
 bool ChildAccountService::SetActive(bool active) {
@@ -285,7 +284,7 @@ void ChildAccountService::SetIsChildAccount(bool is_child_account) {
 
   if (is_child_account) {
     profile_->GetPrefs()->SetString(prefs::kSupervisedUserId,
-                                    kChildAccountSUID);
+                                    supervised_users::kChildAccountSUID);
   } else {
     profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserId);
   }
