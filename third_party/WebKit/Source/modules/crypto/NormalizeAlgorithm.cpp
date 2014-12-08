@@ -482,17 +482,21 @@ bool parseHash(const Dictionary& raw, WebCryptoAlgorithm& hash, ErrorContext con
 //      [EnforceRange] unsigned long length;
 //    };
 //
-// FIXME: The current implementation differs from the spec in two ways:
-//   (1) The hash parameter is mandatory: https://www.w3.org/Bugs/Public/show_bug.cgi?id=27448
-//   (2) There is no optional length parameter: http://crbug.com/431085
-//
+// FIXME: http://crbug.com/438475: The current implementation differs from the
+// spec in that the "hash" parameter is required. This seems more sensible, and
+// is being proposed as a change to the spec. (https://www.w3.org/Bugs/Public/show_bug.cgi?id=27448).
 bool parseHmacImportParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
 {
     WebCryptoAlgorithm hash;
     if (!parseHash(raw, hash, context, error))
         return false;
 
-    params = adoptPtr(new WebCryptoHmacImportParams(hash));
+    bool hasLength;
+    uint32_t length = 0;
+    if (!getOptionalUint32(raw, "length", hasLength, length, context, error))
+        return false;
+
+    params = adoptPtr(new WebCryptoHmacImportParams(hash, hasLength, length));
     return true;
 }
 
