@@ -14,7 +14,7 @@ file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.3.2'
+__version__ = '0.3.3'
 
 import logging
 import optparse
@@ -134,7 +134,7 @@ def run_tha_test(isolated_hash, storage, cache, leak_temp_dir, extra_args):
   file.
 
   Arguments:
-    isolated_hash: the sha-1 of the .isolated file that must be retrieved to
+    isolated_hash: the SHA-1 of the .isolated file that must be retrieved to
                    recreate the tree of files to run the target executable.
     storage: an isolateserver.Storage object to retrieve remote objects. This
              object has a reference to an isolateserver.StorageApi, which does
@@ -250,10 +250,6 @@ def main(args):
 
   data_group = optparse.OptionGroup(parser, 'Data source')
   data_group.add_option(
-      '-s', '--isolated',
-      metavar='FILE',
-      help='File/url describing what to map or run')
-  data_group.add_option(
       '-H', '--hash',
       help='Hash of the .isolated to grab from the hash table')
   isolateserver.add_isolate_server_options(data_group, True)
@@ -275,9 +271,8 @@ def main(args):
   auth.process_auth_options(parser, options)
   isolateserver.process_isolate_server_options(parser, options)
 
-  if bool(options.isolated) == bool(options.hash):
-    logging.debug('One and only one of --isolated or --hash is required.')
-    parser.error('One and only one of --isolated or --hash is required.')
+  if not options.hash:
+    parser.error('--hash is required.')
 
   cache = isolateserver.process_cache_options(options)
 
@@ -289,8 +284,7 @@ def main(args):
     # Hashing schemes used by |storage| and |cache| MUST match.
     assert storage.hash_algo == cache.hash_algo
     return run_tha_test(
-        options.isolated or options.hash, storage, cache,
-        options.leak_temp_dir, args)
+        options.hash, storage, cache, options.leak_temp_dir, args)
 
 
 if __name__ == '__main__':

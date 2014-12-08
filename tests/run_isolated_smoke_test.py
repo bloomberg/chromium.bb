@@ -140,12 +140,7 @@ class RunIsolatedTest(unittest.TestCase):
 
     Returns a list of the required arguments.
     """
-    return [
-      '--isolated', isolated,
-      '--cache', self.cache,
-      '--indir', self.table,
-      '--namespace', 'default',
-    ]
+    return self._generate_args_with_hash(self._store(isolated))
 
   def _generate_args_with_hash(self, hash_value):
     """Generates the standard arguments used with |hash_value| as the hash.
@@ -178,7 +173,6 @@ class RunIsolatedTest(unittest.TestCase):
       index = 0
     expected_mangled = dict((k, oct(v[index])) for k, v in expected.iteritems())
     self.assertEqual(expected_mangled, actual)
-
 
   def test_result(self):
     # Loads an arbitrary .isolated on the file system.
