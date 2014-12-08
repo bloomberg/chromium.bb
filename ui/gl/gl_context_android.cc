@@ -120,7 +120,7 @@ bool GLContextEGL::GetTotalGpuMemory(size_t* bytes) {
   // Droid Razr M(1GB)  114MB (normally 57MB)
   // Galaxy Nexus(1GB)  100MB (normally 50MB)
   // Xoom(1GB)          100MB (normally 50MB)
-  // Nexus S(low-end)   12MB (normally 8MB)
+  // Nexus S(low-end)   8MB (normally 8MB)
   // Note that the compositor now uses only some of this memory for
   // pre-painting and uses the rest only for 'emergencies'.
   static size_t limit_bytes = 0;
@@ -140,9 +140,7 @@ bool GLContextEGL::GetTotalGpuMemory(size_t* bytes) {
       // Low-end devices have 512MB or less memory by definition
       // so we hard code the limit rather than relying on the heuristics
       // above. Low-end devices use 4444 textures so we can use a lower limit.
-      // NOTE: Low-end uses 2/3 (67%) of this memory in practice, so we have
-      // increased the limit to 12 (8MB, or 12MB in emergencies).
-      limit_bytes = 12;
+      limit_bytes = 8;
     }
     limit_bytes = limit_bytes * 1024 * 1024;
   }

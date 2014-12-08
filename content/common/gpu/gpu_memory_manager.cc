@@ -100,7 +100,7 @@ void GpuMemoryManager::UpdateAvailableGpuMemory() {
   client_hard_limit_bytes_ = bytes_min;
   // Clamp the observed value to a specific range on Android.
   client_hard_limit_bytes_ = std::max(client_hard_limit_bytes_,
-                                      static_cast<uint64>(16 * 1024 * 1024));
+                                      static_cast<uint64>(8 * 1024 * 1024));
   client_hard_limit_bytes_ = std::min(client_hard_limit_bytes_,
                                       static_cast<uint64>(256 * 1024 * 1024));
 #else
