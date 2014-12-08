@@ -29,6 +29,7 @@
 
 #include "core/animation/DocumentAnimations.h"
 #include "core/dom/Fullscreen.h"
+#include "core/editing/FrameSelection.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -207,6 +208,7 @@ void RenderLayerCompositor::updateIfNeededRecursive()
     enableCompositingModeIfNeeded();
 
     rootRenderLayer()->updateDescendantDependentFlagsForEntireSubtree();
+    m_renderView.commitPendingSelection();
 
     lifecycle().advanceTo(DocumentLifecycle::InCompositingUpdate);
     updateIfNeeded();

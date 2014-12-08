@@ -2025,12 +2025,7 @@ void FrameView::performPostLayoutTasks()
     m_postLayoutTasksTimer.stop();
 
     m_frame->selection().setCaretRectNeedsUpdate();
-
-    {
-        // Hits in compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html
-        DisableCompositingQueryAsserts disabler;
-        m_frame->selection().updateAppearance();
-    }
+    m_frame->selection().updateAppearance();
 
     ASSERT(m_frame->document());
     if (m_nestedLayoutCount <= 1) {
@@ -2554,6 +2549,8 @@ void FrameView::updateLayoutAndStyleForPainting()
         scrollContentsIfNeededRecursive();
 
         invalidateTreeIfNeededRecursive();
+
+        ASSERT(!view->hasPendingSelection());
     }
 
     ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);

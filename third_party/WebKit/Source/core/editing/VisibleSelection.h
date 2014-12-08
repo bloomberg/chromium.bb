@@ -84,6 +84,7 @@ public:
     bool isCaretOrRange() const { return selectionType() != NoSelection; }
     bool isNonOrphanedRange() const { return isRange() && !start().isOrphan() && !end().isOrphan(); }
     bool isNonOrphanedCaretOrRange() const { return isCaretOrRange() && !start().isOrphan() && !end().isOrphan(); }
+    static SelectionType selectionType(const Position& start, const Position& end);
 
     bool isBaseFirst() const { return m_baseIsFirst; }
     bool isDirectional() const { return m_isDirectional; }

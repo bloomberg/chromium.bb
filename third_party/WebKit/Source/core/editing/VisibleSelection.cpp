@@ -475,15 +475,20 @@ void VisibleSelection::setStartAndEndFromBaseAndExtentRespectingGranularity(Text
         m_end = m_start;
 }
 
+SelectionType VisibleSelection::selectionType(const Position& start, const Position& end)
+{
+    if (start.isNull()) {
+        ASSERT(end.isNull());
+        return NoSelection;
+    }
+    if (start == end || start.upstream() == end.upstream())
+        return CaretSelection;
+    return RangeSelection;
+}
+
 void VisibleSelection::updateSelectionType()
 {
-    if (m_start.isNull()) {
-        ASSERT(m_end.isNull());
-        m_selectionType = NoSelection;
-    } else if (m_start == m_end || m_start.upstream() == m_end.upstream()) {
-        m_selectionType = CaretSelection;
-    } else
-        m_selectionType = RangeSelection;
+    m_selectionType = selectionType(m_start, m_end);
 
     // Affinity only makes sense for a caret
     if (m_selectionType != CaretSelection)
