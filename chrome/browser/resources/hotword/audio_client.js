@@ -355,8 +355,18 @@
     this.port_.onMessage.addListener(
         this.handleCommandFromExtension_.bind(this));
 
-    if (this.speechActive_)
+    if (this.speechActive_) {
       this.sendCommandToExtension_(AudioClient.CommandFromPage.SPEECH_START);
+    } else {
+      // It's possible for this script to be injected into the page after it has
+      // completed loaded (i.e. when prerendering). In this case, this script
+      // won't receive a SPEECH_RESET from the page to forward onto the
+      // extension. To make up for this, always send a SPEECH_RESET. This means
+      // in most cases, the extension will receive SPEECH_RESET twice, one from
+      // this sendCommandToExtension_ and the one forwarded from the page. But
+      // that's OK and the extension can handle it.
+      this.sendCommandToExtension_(AudioClient.CommandFromPage.SPEECH_RESET);
+    }
   };
 
   // Initializes as soon as the code is ready, do not wait for the page.
