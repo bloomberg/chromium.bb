@@ -1412,5 +1412,4 @@ crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Pass
 crbug.com/439840 [ Win Linux Debug ] svg/custom/relative-sized-image.xhtml [ Pass ImageOnlyFailure ]
 
 crbug.com/418091 [ Mac ] fast/text/aat-morx.html [ Pass Failure ]
-crbug.com/418091 [ Mac ] fast/repaint/text-emphasis-h.html [ NeedsRebaseline ]
 crbug.com/381919 [ Mac XP ] fast/transforms/shadows.html [ NeedsRebaseline ]
