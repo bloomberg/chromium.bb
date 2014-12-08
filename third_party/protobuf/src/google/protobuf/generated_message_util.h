@@ -67,10 +67,7 @@ LIBPROTOBUF_EXPORT extern ProtobufOnceType empty_string_once_init_;
 
 LIBPROTOBUF_EXPORT void InitEmptyString();
 
-LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyString() {
-  GoogleOnceInit(&empty_string_once_init_, &InitEmptyString);
-  return *empty_string_;
-}
+LIBPROTOBUF_EXPORT const ::std::string& GetEmptyString();
 
 // Defined in generated_message_reflection.cc -- not actually part of the lite
 // library.

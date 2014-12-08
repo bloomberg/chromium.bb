@@ -35,3 +35,6 @@ Revision 573 was cherry-picked from upstream.
 The `&file->options() != NULL &&` was removed from descriptor.cc
 References to `vector` were changed to `std::vector` in extension_set.h
 and unknown_field_set.h
+
+GetEmptyString() and GoogleOnceInit() have been uninlined, for a large savings
+in binary size.

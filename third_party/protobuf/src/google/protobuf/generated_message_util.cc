@@ -54,6 +54,11 @@ void InitEmptyString() {
   empty_string_ = new std::string();
 }
 
+const ::std::string& GetEmptyString() {
+  GoogleOnceInit(&empty_string_once_init_, &InitEmptyString);
+  return *empty_string_;
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

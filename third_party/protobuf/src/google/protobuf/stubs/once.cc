@@ -93,6 +93,13 @@ void GoogleOnceInitImpl(ProtobufOnceType* once, Closure* closure) {
   }
 }
 
+void GoogleOnceInit(ProtobufOnceType* once, void (*init_func)()) {
+  if (internal::Acquire_Load(once) != ONCE_STATE_DONE) {
+    internal::FunctionClosure0 func(init_func, false);
+    GoogleOnceInitImpl(once, &func);
+  }
+}
+
 }  // namespace protobuf
 }  // namespace google
 
