@@ -41,6 +41,8 @@
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
+#include "core/fileapi/FileReaderLoader.h"
+#include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorOverlay.h"
@@ -58,6 +60,7 @@
 #include "core/page/Page.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "platform/JSONValues.h"
+#include "platform/blob/BlobData.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
@@ -68,7 +71,9 @@
 #include "public/platform/WebURLRequest.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/Base64.h"
 
+typedef blink::InspectorBackendDispatcher::NetworkCommandHandler::GetResponseBodyCallback GetResponseBodyCallback;
 typedef blink::InspectorBackendDispatcher::NetworkCommandHandler::LoadResourceForFrontendCallback LoadResourceForFrontendCallback;
 
 namespace blink {
@@ -94,6 +99,75 @@ static PassRefPtr<JSONObject> buildObjectForHeaders(const HTTPHeaderMap& headers
         headersObject->setString(it->key.string(), it->value);
     return headersObject;
 }
+
+class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
+    WTF_MAKE_NONCOPYABLE(InspectorFileReaderLoaderClient);
+public:
+    InspectorFileReaderLoaderClient(PassRefPtr<BlobDataHandle> blob, PassOwnPtr<TextResourceDecoder> decoder, PassRefPtrWillBeRawPtr<GetResponseBodyCallback> callback)
+        : m_blob(blob)
+        , m_decoder(decoder)
+        , m_callback(callback)
+    {
+        m_loader = adoptPtr(new FileReaderLoader(FileReaderLoader::ReadByClient, this));
+    }
+
+    virtual ~InspectorFileReaderLoaderClient() { }
+
+    void start(ExecutionContext* executionContext)
+    {
+        m_rawData = adoptPtr(new ArrayBufferBuilder());
+        if (!m_rawData || !m_rawData->isValid()) {
+            m_callback->sendFailure("Couldn't allocate buffer");
+            dispose();
+        }
+        m_loader->start(executionContext, m_blob);
+    }
+
+    virtual void didStartLoading() { }
+
+    virtual void didReceiveDataForClient(const char* data, unsigned dataLength)
+    {
+        if (!dataLength)
+            return;
+        if (!m_rawData->append(data, dataLength)) {
+            m_callback->sendFailure("Couldn't extend buffer");
+            dispose();
+        }
+    }
+
+    virtual void didFinishLoading()
+    {
+        const char* data = static_cast<const char*>(m_rawData->data());
+        unsigned dataLength = m_rawData->byteLength();
+        if (m_decoder) {
+            String text = m_decoder->decode(data, dataLength);
+            text = text + m_decoder->flush();
+            m_callback->sendSuccess(text, false);
+        } else {
+            m_callback->sendSuccess(base64Encode(data, dataLength), true);
+        }
+        dispose();
+    }
+
+    virtual void didFail(FileError::ErrorCode)
+    {
+        m_callback->sendFailure("Couldn't read BLOB");
+        dispose();
+    }
+
+private:
+    void dispose()
+    {
+        m_rawData.clear();
+        delete this;
+    }
+
+    RefPtr<BlobDataHandle> m_blob;
+    OwnPtr<TextResourceDecoder> m_decoder;
+    RefPtrWillBePersistent<GetResponseBodyCallback> m_callback;
+    OwnPtr<FileReaderLoader> m_loader;
+    OwnPtr<ArrayBufferBuilder> m_rawData;
+};
 
 class InspectorThreadableLoaderClient final : public ThreadableLoaderClient {
     WTF_MAKE_NONCOPYABLE(InspectorThreadableLoaderClient);
@@ -700,37 +774,52 @@ void InspectorResourceAgent::setExtraHTTPHeaders(ErrorString*, const RefPtr<JSON
     m_state->setObject(ResourceAgentState::extraRequestHeaders, headers);
 }
 
-void InspectorResourceAgent::getResponseBody(ErrorString* errorString, const String& requestId, String* content, bool* base64Encoded)
+void InspectorResourceAgent::getResponseBody(ErrorString* errorString, const String& requestId, PassRefPtrWillBeRawPtr<GetResponseBodyCallback> callback)
 {
     NetworkResourcesData::ResourceData const* resourceData = m_resourcesData->data(requestId);
     if (!resourceData) {
-        *errorString = "No resource with given identifier found";
+        callback->sendFailure("No resource with given identifier found");
         return;
     }
 
     if (resourceData->hasContent()) {
-        *base64Encoded = resourceData->base64Encoded();
-        *content = resourceData->content();
+        callback->sendSuccess(resourceData->content(), resourceData->base64Encoded());
         return;
     }
 
     if (resourceData->isContentEvicted()) {
-        *errorString = "Request content was evicted from inspector cache";
+        callback->sendFailure("Request content was evicted from inspector cache");
         return;
     }
 
     if (resourceData->buffer() && !resourceData->textEncodingName().isNull()) {
-        *base64Encoded = false;
-        if (InspectorPageAgent::sharedBufferContent(resourceData->buffer(), resourceData->textEncodingName(), *base64Encoded, content))
+        String content;
+        if (InspectorPageAgent::sharedBufferContent(resourceData->buffer(), resourceData->textEncodingName(), false, &content)) {
+            callback->sendSuccess(content, false);
             return;
+        }
     }
 
     if (resourceData->cachedResource()) {
-        if (InspectorPageAgent::cachedResourceContent(resourceData->cachedResource(), content, base64Encoded))
+        String content;
+        bool base64Encoded = false;
+        if (InspectorPageAgent::cachedResourceContent(resourceData->cachedResource(), &content, &base64Encoded)) {
+            callback->sendSuccess(content, base64Encoded);
             return;
+        }
     }
 
-    *errorString = "No data found for resource with given identifier";
+    if (BlobDataHandle* blob = resourceData->downloadedFileBlob()) {
+        if (LocalFrame* frame = m_pageAgent->frameForId(resourceData->frameId())) {
+            if (Document* document = frame->document()) {
+                InspectorFileReaderLoaderClient* client = new InspectorFileReaderLoaderClient(blob, InspectorPageAgent::createResourceTextDecoder(resourceData->mimeType(), resourceData->textEncodingName()), callback);
+                client->start(document);
+                return;
+            }
+        }
+    }
+
+    callback->sendFailure("No data found for resource with given identifier");
 }
 
 void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)

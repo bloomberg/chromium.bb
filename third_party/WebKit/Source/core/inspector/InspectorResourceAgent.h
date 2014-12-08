@@ -128,7 +128,7 @@ public:
     virtual void disable(ErrorString*) override;
     virtual void setUserAgentOverride(ErrorString*, const String& userAgent) override;
     virtual void setExtraHTTPHeaders(ErrorString*, const RefPtr<JSONObject>&) override;
-    virtual void getResponseBody(ErrorString*, const String& requestId, String* content, bool* base64Encoded) override;
+    virtual void getResponseBody(ErrorString*, const String& requestId, PassRefPtrWillBeRawPtr<GetResponseBodyCallback>) override;
 
     virtual void replayXHR(ErrorString*, const String& requestId) override;
 

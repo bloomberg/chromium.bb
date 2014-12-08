@@ -163,8 +163,25 @@ void NetworkResourcesData::responseReceived(const String& requestId, const Strin
         return;
     resourceData->setFrameId(frameId);
     resourceData->setUrl(response.url());
+    resourceData->setMimeType(response.mimeType());
+    resourceData->setTextEncodingName(response.textEncodingName());
     resourceData->setDecoder(InspectorPageAgent::createResourceTextDecoder(response.mimeType(), response.textEncodingName()));
     resourceData->setHTTPStatusCode(response.httpStatusCode());
+
+    String filePath = response.downloadedFilePath();
+    if (!filePath.isEmpty()) {
+        OwnPtr<BlobData> blobData = BlobData::create();
+        blobData->appendFile(filePath);
+        AtomicString mimeType;
+        if (response.isHTTP())
+            mimeType = extractMIMETypeFromMediaType(response.httpHeaderField("Content-Type"));
+        if (mimeType.isEmpty())
+            mimeType = response.mimeType();
+        if (mimeType.isEmpty())
+            mimeType = AtomicString("text/plain", AtomicString::ConstructFromLiteral);
+        blobData->setContentType(mimeType);
+        resourceData->setDownloadedFileBlob(BlobDataHandle::create(blobData.release(), -1));
+    }
 }
 
 void NetworkResourcesData::setResourceType(const String& requestId, InspectorPageAgent::ResourceType type)
