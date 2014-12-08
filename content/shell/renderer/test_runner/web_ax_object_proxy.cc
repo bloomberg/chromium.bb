@@ -296,6 +296,11 @@ std::string GetValueDescription(const blink::WebAXObject& object) {
   return value_description.insert(0, "AXValueDescription: ");
 }
 
+std::string GetLanguage(const blink::WebAXObject& object) {
+  std::string language = object.language().utf8();
+  return language.insert(0, "AXLanguage: ");
+}
+
 std::string GetAttributes(const blink::WebAXObject& object) {
   // FIXME: Concatenate all attributes of the AXObject.
   std::string attributes(GetTitle(object));
@@ -468,6 +473,7 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetProperty("description", &WebAXObjectProxy::Description)
       .SetProperty("helpText", &WebAXObjectProxy::HelpText)
       .SetProperty("stringValue", &WebAXObjectProxy::StringValue)
+      .SetProperty("language", &WebAXObjectProxy::Language)
       .SetProperty("x", &WebAXObjectProxy::X)
       .SetProperty("y", &WebAXObjectProxy::Y)
       .SetProperty("width", &WebAXObjectProxy::Width)
@@ -612,6 +618,11 @@ std::string WebAXObjectProxy::HelpText() {
 std::string WebAXObjectProxy::StringValue() {
   accessibility_object_.updateLayoutAndCheckValidity();
   return GetStringValue(accessibility_object_);
+}
+
+std::string WebAXObjectProxy::Language() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return GetLanguage(accessibility_object_);
 }
 
 int WebAXObjectProxy::X() {
