@@ -31,6 +31,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
@@ -122,7 +123,7 @@ public:
         return m_result;
     }
 
-    const DOMArrayPiece& data() const
+    const PassRefPtr<DOMArrayBuffer> data() const
     {
         ASSERT(m_type == GenerateRequest || m_type == Update);
         return m_data;
@@ -140,34 +141,36 @@ public:
         return m_stringData;
     }
 
-    static PendingAction* CreatePendingGenerateRequest(ContentDecryptionModuleResult* result, const String& initDataType, const DOMArrayPiece& initData)
+    static PendingAction* CreatePendingGenerateRequest(ContentDecryptionModuleResult* result, const String& initDataType, PassRefPtr<DOMArrayBuffer> initData)
     {
         ASSERT(result);
+        ASSERT(initData);
         return new PendingAction(GenerateRequest, result, initDataType, initData);
     }
 
     static PendingAction* CreatePendingLoadRequest(ContentDecryptionModuleResult* result, const String& sessionId)
     {
         ASSERT(result);
-        return new PendingAction(Load, result, sessionId, DOMArrayPiece());
+        return new PendingAction(Load, result, sessionId, PassRefPtr<DOMArrayBuffer>());
     }
 
-    static PendingAction* CreatePendingUpdate(ContentDecryptionModuleResult* result, const DOMArrayPiece& data)
+    static PendingAction* CreatePendingUpdate(ContentDecryptionModuleResult* result, PassRefPtr<DOMArrayBuffer> data)
     {
         ASSERT(result);
+        ASSERT(data);
         return new PendingAction(Update, result, String(), data);
     }
 
     static PendingAction* CreatePendingClose(ContentDecryptionModuleResult* result)
     {
         ASSERT(result);
-        return new PendingAction(Close, result, String(), DOMArrayPiece());
+        return new PendingAction(Close, result, String(), PassRefPtr<DOMArrayBuffer>());
     }
 
     static PendingAction* CreatePendingRemove(ContentDecryptionModuleResult* result)
     {
         ASSERT(result);
-        return new PendingAction(Remove, result, String(), DOMArrayPiece());
+        return new PendingAction(Remove, result, String(), PassRefPtr<DOMArrayBuffer>());
     }
 
     ~PendingAction()
@@ -180,7 +183,7 @@ public:
     }
 
 private:
-    PendingAction(Type type, ContentDecryptionModuleResult* result, const String& stringData, const DOMArrayPiece& data)
+    PendingAction(Type type, ContentDecryptionModuleResult* result, const String& stringData, PassRefPtr<DOMArrayBuffer> data)
         : m_type(type)
         , m_result(result)
         , m_stringData(stringData)
@@ -191,7 +194,7 @@ private:
     const Type m_type;
     const Member<ContentDecryptionModuleResult> m_result;
     const String m_stringData;
-    const DOMArrayPiece m_data;
+    const RefPtr<DOMArrayBuffer> m_data;
 };
 
 // This class wraps the promise resolver used when initializing a new session
@@ -365,7 +368,19 @@ ScriptPromise MediaKeySession::closed(ScriptState* scriptState)
     return m_closedPromise->promise(scriptState->world());
 }
 
-ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const String& initDataType, const DOMArrayPiece& initData)
+ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const String& initDataType, DOMArrayBuffer* initData)
+{
+    RefPtr<DOMArrayBuffer> initDataCopy = DOMArrayBuffer::create(initData->data(), initData->byteLength());
+    return generateRequestInternal(scriptState, initDataType, initDataCopy.release());
+}
+
+ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const String& initDataType, DOMArrayBufferView* initData)
+{
+    RefPtr<DOMArrayBuffer> initDataCopy = DOMArrayBuffer::create(initData->baseAddress(), initData->byteLength());
+    return generateRequestInternal(scriptState, initDataType, initDataCopy.release());
+}
+
+ScriptPromise MediaKeySession::generateRequestInternal(ScriptState* scriptState, const String& initDataType, PassRefPtr<DOMArrayBuffer> initData)
 {
     WTF_LOG(Media, "MediaKeySession(%p)::generateRequest %s", this, initDataType.ascii().data());
 
@@ -392,7 +407,7 @@ ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const S
 
     // 4. If initData is an empty array, return a promise rejected with a new
     //    DOMException whose name is"InvalidAccessError".
-    if (!initData.byteLength()) {
+    if (!initData->byteLength()) {
         return ScriptPromise::rejectWithDOMException(
             scriptState, DOMException::create(InvalidAccessError, "The initData parameter is empty."));
     }
@@ -485,7 +500,19 @@ ScriptPromise MediaKeySession::load(ScriptState* scriptState, const String& sess
     return promise;
 }
 
-ScriptPromise MediaKeySession::update(ScriptState* scriptState, const DOMArrayPiece& response)
+ScriptPromise MediaKeySession::update(ScriptState* scriptState, DOMArrayBuffer* response)
+{
+    RefPtr<DOMArrayBuffer> responseCopy = DOMArrayBuffer::create(response->data(), response->byteLength());
+    return updateInternal(scriptState, responseCopy.release());
+}
+
+ScriptPromise MediaKeySession::update(ScriptState* scriptState, DOMArrayBufferView* response)
+{
+    RefPtr<DOMArrayBuffer> responseCopy = DOMArrayBuffer::create(response->baseAddress(), response->byteLength());
+    return updateInternal(scriptState, responseCopy.release());
+}
+
+ScriptPromise MediaKeySession::updateInternal(ScriptState* scriptState, PassRefPtr<DOMArrayBuffer> response)
 {
     WTF_LOG(Media, "MediaKeySession(%p)::update", this);
     ASSERT(!m_isClosed);
@@ -497,7 +524,7 @@ ScriptPromise MediaKeySession::update(ScriptState* scriptState, const DOMArrayPi
     // 1. If response is an empty array, return a promise rejected with a new
     //    DOMException whose name is "InvalidAccessError" and that has the
     //    message "The response parameter is empty."
-    if (!response.byteLength()) {
+    if (!response->byteLength()) {
         return ScriptPromise::rejectWithDOMException(
             scriptState, DOMException::create(InvalidAccessError, "The response parameter is empty."));
     }
@@ -630,7 +657,7 @@ void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
             // 10.3.3 Let request be a request (e.g. a license request)
             //        generated based on the init data, which is interpreted
             //        per initDataType, and session type.
-            m_session->initializeNewSession(action->initDataType(), static_cast<unsigned char*>(action->data().data()), action->data().byteLength(), m_sessionType, action->result()->result());
+            m_session->initializeNewSession(action->initDataType(), static_cast<unsigned char*>(action->data()->data()), action->data()->byteLength(), m_sessionType, action->result()->result());
 
             // Remainder of steps executed in finishGenerateRequest(), called
             // when |result| is resolved.
@@ -698,7 +725,7 @@ void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
             // NOTE: Continued from step 4 of MediaKeySession::update().
             // Continue the update call by passing message to the cdm. Once
             // completed, it will resolve/reject the promise.
-            m_session->update(static_cast<unsigned char*>(action->data().data()), action->data().byteLength(), action->result()->result());
+            m_session->update(static_cast<unsigned char*>(action->data()->data()), action->data()->byteLength(), action->result()->result());
             break;
 
         case PendingAction::Close:

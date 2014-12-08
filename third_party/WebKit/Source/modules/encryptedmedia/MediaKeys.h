@@ -29,13 +29,14 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/DOMArrayPiece.h"
 #include "platform/Timer.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
+class DOMArrayBuffer;
+class DOMArrayBufferView;
 class ExecutionContext;
 class MediaKeySession;
 class ScriptState;
@@ -55,7 +56,8 @@ public:
 
     MediaKeySession* createSession(ScriptState*, const String& sessionType);
 
-    ScriptPromise setServerCertificate(ScriptState*, const DOMArrayPiece& serverCertificate);
+    ScriptPromise setServerCertificate(ScriptState*, DOMArrayBuffer* serverCertificate);
+    ScriptPromise setServerCertificate(ScriptState*, DOMArrayBufferView* serverCertificate);
 
     // FIXME: Remove this method since it's not in the spec anymore.
     static bool isTypeSupported(const String& keySystem, const String& contentType);
@@ -69,6 +71,8 @@ public:
 
 private:
     class PendingAction;
+
+    ScriptPromise setServerCertificateInternal(ScriptState*, PassRefPtr<DOMArrayBuffer> initData);
 
     void timerFired(Timer<MediaKeys>*);
 

@@ -28,8 +28,6 @@ enum SessionType {
     "persistent"
 };
 
-typedef (ArrayBuffer or ArrayBufferView) BufferSource;
-
 [
     RuntimeEnabled=EncryptedMedia,
     GarbageCollected,
@@ -37,7 +35,8 @@ typedef (ArrayBuffer or ArrayBufferView) BufferSource;
 ] interface MediaKeys {
     [CallWith=ScriptState] MediaKeySession createSession(optional SessionType sessionType = "temporary");
 
-    [CallWith=ScriptState] Promise<void> setServerCertificate(BufferSource serverCertificate);
+    [CallWith=ScriptState] Promise<void> setServerCertificate(ArrayBuffer serverCertificate);
+    [CallWith=ScriptState] Promise<void> setServerCertificate(ArrayBufferView serverCertificate);
 
     static boolean isTypeSupported(DOMString keySystem, optional DOMString contentType = null);
 };
