@@ -14,10 +14,12 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/page/FocusController.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebURL.h"
 #include "wtf/OwnPtr.h"
@@ -163,10 +165,21 @@ protected:
     void setPageURL(const String& url)
     {
         // For URL completion.
-        m_page->document().setBaseURLOverride(KURL(KURL(), url));
+        m_page->document().setURL(KURL(KURL(), url));
 
         // The basis for security checks.
         m_page->document().setSecurityOrigin(SecurityOrigin::createFromString(url));
+    }
+
+    void setVisibilityState(PageVisibilityState visibilityState)
+    {
+        m_page->page().setVisibilityState(visibilityState, true); // Set as initial state
+    }
+
+    void setFocused(bool focused)
+    {
+        m_page->page().focusController().setActive(focused);
+        m_page->page().focusController().setFocused(focused);
     }
 
     void testRegisterRejected(const String& scriptURL, const String& scope, const ScriptValueTest& valueTest)
@@ -356,6 +369,22 @@ TEST_F(ServiceWorkerContainerTest, GetRegistration_OmittedDocumentURLDefaultsToP
     }
 
     container->willBeDetachedFromFrame();
+}
+
+TEST_F(ServiceWorkerContainerTest, GetClientInfo)
+{
+    setVisibilityState(PageVisibilityStateVisible);
+    setFocused(true);
+    setPageURL("http://localhost/x/index.html");
+
+    ServiceWorkerContainer* container = ServiceWorkerContainer::create(executionContext());
+
+    WebServiceWorkerClientInfo info;
+    ASSERT_TRUE(container->getClientInfo(&info));
+    EXPECT_EQ(WebString("visible"), info.visibilityState);
+    EXPECT_TRUE(info.isFocused);
+    EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/index.html")), info.url);
+    EXPECT_EQ(WebURLRequest::FrameTypeTopLevel, info.frameType);
 }
 
 } // namespace

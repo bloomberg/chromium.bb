@@ -37,6 +37,7 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
@@ -49,6 +50,7 @@
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebServiceWorker.h"
+#include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebServiceWorkerRegistration.h"
 #include "public/platform/WebString.h"
@@ -278,6 +280,25 @@ void ServiceWorkerContainer::dispatchMessageEvent(const WebString& message, cons
 const AtomicString& ServiceWorkerContainer::interfaceName() const
 {
     return EventTargetNames::ServiceWorkerContainer;
+}
+
+bool ServiceWorkerContainer::getClientInfo(WebServiceWorkerClientInfo* info)
+{
+    ExecutionContext* context = executionContext();
+    // FIXME: Make this work for non-document context (e.g. shared workers).
+    if (!context || !context->isDocument())
+        return false;
+    Document* document = toDocument(context);
+    info->visibilityState = document->visibilityState();
+    info->isFocused = document->hasFocus();
+    info->url = document->url();
+    if (!document->frame())
+        info->frameType = WebURLRequest::FrameTypeNone;
+    else if (document->frame()->isMainFrame())
+        info->frameType = WebURLRequest::FrameTypeTopLevel;
+    else
+        info->frameType = WebURLRequest::FrameTypeNested;
+    return true;
 }
 
 ServiceWorkerContainer::ServiceWorkerContainer(ExecutionContext* executionContext)
