@@ -50,7 +50,7 @@ header > :-webkit-any(form, input[type='search']) {
   flex: none;
 }
 
-.summary :first-child {
+.summary > :first-child {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
