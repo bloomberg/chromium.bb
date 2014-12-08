@@ -331,6 +331,8 @@ def _GetStepAnnotationStringsDict(config):
         'build2': 'Building [%s]' % config['bad_revision'],
         'run1': 'Running [%s]' % config['good_revision'],
         'run2': 'Running [%s]' % config['bad_revision'],
+        'sync1': 'Syncing [%s]' % config['good_revision'],
+        'sync2': 'Syncing [%s]' % config['bad_revision'],
         'results_label1': config['good_revision'],
         'results_label2': config['bad_revision'],
     }
@@ -345,11 +347,14 @@ def _GetStepAnnotationStringsDict(config):
     }
 
 
-def _RunBuildStepForPerformanceTest(bisect_instance, build_string, revision):
+def _RunBuildStepForPerformanceTest(bisect_instance,
+                                    build_string,
+                                    sync_string,
+                                    revision):
   if revision:
-    bisect_utils.OutputAnnotationStepStart('Syncing [%s]' % revision)
+    bisect_utils.OutputAnnotationStepStart(sync_string)
     if not source_control.SyncToRevision(revision, 'gclient'):
-      raise RuntimeError('Failed to sync to [%s].' % revision)
+      raise RuntimeError('Failed [%s].' % sync_string)
     bisect_utils.OutputAnnotationStepClosed()
 
   bisect_utils.OutputAnnotationStepStart(build_string)
@@ -403,7 +408,10 @@ def _RunPerformanceTest(config):
   annotations_dict = _GetStepAnnotationStringsDict(config)
   b = bisect_perf_regression.BisectPerformanceMetrics(opts, os.getcwd())
 
-  _RunBuildStepForPerformanceTest(b, annotations_dict['build1'], revisions[0])
+  _RunBuildStepForPerformanceTest(b,
+                                  annotations_dict.get('build1'),
+                                  annotations_dict.get('sync1'),
+                                  revisions[0])
 
   results_with_patch = _RunCommandStepForPerformanceTest(
       b, opts, True, True, annotations_dict['results_label1'],
@@ -419,7 +427,10 @@ def _RunPerformanceTest(config):
                            os.path.join('third_party', 'WebKit'))
   bisect_utils.OutputAnnotationStepClosed()
 
-  _RunBuildStepForPerformanceTest(b, annotations_dict['build2'], revisions[1])
+  _RunBuildStepForPerformanceTest(b,
+                                  annotations_dict.get('build2'),
+                                  annotations_dict.get('sync2'),
+                                  revisions[1])
 
   results_without_patch = _RunCommandStepForPerformanceTest(
       b, opts, False, True, annotations_dict['results_label2'],
