@@ -352,7 +352,9 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
 }
 
 // Test that we can copy twice from an accelerated composited page.
-IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest, CopyTwice) {
+// Disabled because of flakiness/failures, see http://crbug.com/439834.
+IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
+                       DISABLED_CopyTwice) {
   SET_UP_SURFACE_OR_PASS_TEST(NULL);
   RenderWidgetHostViewBase* const view = GetRenderWidgetHostView();
   if (!view->CanCopyToVideoFrame()) {
