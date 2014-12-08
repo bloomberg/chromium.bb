@@ -245,8 +245,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       ResourceResponse* response,
       std::string* payload);
 
-  void ClearSSLClientAuthHandlerForRequest(net::URLRequest* request);
-
   ResourceScheduler* scheduler() { return scheduler_.get(); }
 
   // Called by a ResourceHandler when it's ready to start reading data and

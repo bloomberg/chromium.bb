@@ -31,9 +31,12 @@ class CONTENT_EXPORT SSLClientAuthHandler
     : public base::RefCountedThreadSafe<
           SSLClientAuthHandler, BrowserThread::DeleteOnIOThread> {
  public:
+  using CertificateCallback = base::Callback<void(net::X509Certificate*)>;
+
   SSLClientAuthHandler(scoped_ptr<net::ClientCertStore> client_cert_store,
                        net::URLRequest* request,
-                       net::SSLCertRequestInfo* cert_request_info);
+                       net::SSLCertRequestInfo* cert_request_info,
+                       const CertificateCallback& callback);
 
   // Selects a certificate and resumes the URL request with that certificate.
   // Should only be called on the IO thread.
@@ -75,6 +78,9 @@ class CONTENT_EXPORT SSLClientAuthHandler
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
 
   scoped_ptr<net::ClientCertStore> client_cert_store_;
+
+  // The callback to call when the certificate is selected.
+  CertificateCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientAuthHandler);
 };

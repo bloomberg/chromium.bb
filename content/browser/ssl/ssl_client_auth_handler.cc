@@ -5,10 +5,10 @@
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 
 #include "base/bind.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/loader/resource_request_info_impl.h"
+#include "base/callback_helpers.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/resource_request_info.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request.h"
 
@@ -17,10 +17,12 @@ namespace content {
 SSLClientAuthHandler::SSLClientAuthHandler(
     scoped_ptr<net::ClientCertStore> client_cert_store,
     net::URLRequest* request,
-    net::SSLCertRequestInfo* cert_request_info)
+    net::SSLCertRequestInfo* cert_request_info,
+    const SSLClientAuthHandler::CertificateCallback& callback)
     : request_(request),
       cert_request_info_(cert_request_info),
-      client_cert_store_(client_cert_store.Pass()) {
+      client_cert_store_(client_cert_store.Pass()),
+      callback_(callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
@@ -31,6 +33,7 @@ SSLClientAuthHandler::~SSLClientAuthHandler() {
 
 void SSLClientAuthHandler::OnRequestCancelled() {
   request_ = NULL;
+  callback_.Reset();
 }
 
 void SSLClientAuthHandler::SelectCertificate() {
@@ -99,11 +102,9 @@ void SSLClientAuthHandler::DoCertificateSelected(net::X509Certificate* cert) {
   // user was choosing a cert, or because we have already responded to the
   // certificate.
   if (request_) {
-    request_->ContinueWithCertificate(cert);
-
-    ResourceDispatcherHostImpl::Get()->
-        ClearSSLClientAuthHandlerForRequest(request_);
     request_ = NULL;
+    DCHECK(!callback_.is_null());
+    base::ResetAndReturn(&callback_).Run(cert);
   }
 }
 

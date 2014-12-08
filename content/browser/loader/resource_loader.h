@@ -15,6 +15,10 @@
 #include "content/public/common/signed_certificate_timestamp_id_and_status.h"
 #include "net/url_request/url_request.h"
 
+namespace net {
+class X509Certificate;
+}
+
 namespace content {
 class ResourceDispatcherHostLoginDelegate;
 class ResourceLoaderDelegate;
@@ -46,7 +50,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   ResourceRequestInfoImpl* GetRequestInfo();
 
   void ClearLoginDelegate();
-  void ClearSSLClientAuthHandler();
 
   // IPC message handlers:
   void OnUploadProgressACK();
@@ -99,6 +102,7 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   void ResponseCompleted();
   void CallDidFinishLoading();
   void RecordHistograms();
+  void ContinueWithCertificate(net::X509Certificate* cert);
 
   bool is_deferred() const { return deferred_stage_ != DEFERRED_NONE; }
 

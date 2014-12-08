@@ -211,10 +211,6 @@ void ResourceLoader::ClearLoginDelegate() {
   login_delegate_ = NULL;
 }
 
-void ResourceLoader::ClearSSLClientAuthHandler() {
-  ssl_client_auth_handler_ = NULL;
-}
-
 void ResourceLoader::OnUploadProgressACK() {
   waiting_for_upload_progress_ack_ = false;
 }
@@ -297,7 +293,9 @@ void ResourceLoader::OnCertificateRequested(
   ssl_client_auth_handler_ = new SSLClientAuthHandler(
       GetRequestInfo()->GetContext()->CreateClientCertStore(),
       request_.get(),
-      cert_info);
+      cert_info,
+      base::Bind(&ResourceLoader::ContinueWithCertificate,
+                 weak_ptr_factory_.GetWeakPtr()));
   ssl_client_auth_handler_->SelectCertificate();
 }
 
@@ -837,6 +835,11 @@ void ResourceLoader::RecordHistograms() {
 
     UMA_HISTOGRAM_ENUMERATION("Net.Prefetch.Pattern", status, STATUS_MAX);
   }
+}
+
+void ResourceLoader::ContinueWithCertificate(net::X509Certificate* cert) {
+  ssl_client_auth_handler_ = NULL;
+  request_->ContinueWithCertificate(cert);
 }
 
 }  // namespace content
