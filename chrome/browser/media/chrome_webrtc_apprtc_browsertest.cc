@@ -101,6 +101,7 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     command_line.AppendArg("--port=9999");
     command_line.AppendArg("--admin_port=9998");
     command_line.AppendArg("--skip_sdk_update_check");
+    command_line.AppendArg("--clear_datastore=yes");
 
     DVLOG(1) << "Running " << command_line.GetCommandLineString();
     return base::LaunchProcess(command_line, base::LaunchOptions(),
