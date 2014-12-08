@@ -177,7 +177,10 @@ Status WebViewImpl::TraverseHistory(int delta) {
     // using JavaScript to navigate back and forward. WebView reports its build
     // number as 0, so use the error status to detect if we can't use the
     // DevTools command.
-    return TraverseHistoryWithJavaScript(delta);
+    if (browser_info_->browser_name == "webview")
+      return TraverseHistoryWithJavaScript(delta);
+    else
+      return status;
   }
 
   int current_index;
