@@ -100,6 +100,12 @@ DEFINE_STATIC_LOCAL(CSSParserToken, whitespace, (WhitespaceToken));
 DEFINE_STATIC_LOCAL(CSSParserToken, colon, (ColonToken));
 DEFINE_STATIC_LOCAL(CSSParserToken, semicolon, (SemicolonToken));
 DEFINE_STATIC_LOCAL(CSSParserToken, comma, (CommaToken));
+DEFINE_STATIC_LOCAL(CSSParserToken, includeMatch, (IncludeMatchToken));
+DEFINE_STATIC_LOCAL(CSSParserToken, dashMatch, (DashMatchToken));
+DEFINE_STATIC_LOCAL(CSSParserToken, prefixMatch, (PrefixMatchToken));
+DEFINE_STATIC_LOCAL(CSSParserToken, suffixMatch, (SuffixMatchToken));
+DEFINE_STATIC_LOCAL(CSSParserToken, substringMatch, (SubstringMatchToken));
+DEFINE_STATIC_LOCAL(CSSParserToken, column, (ColumnToken));
 DEFINE_STATIC_LOCAL(CSSParserToken, leftParenthesis, (LeftParenthesisToken));
 DEFINE_STATIC_LOCAL(CSSParserToken, rightParenthesis, (RightParenthesisToken));
 DEFINE_STATIC_LOCAL(CSSParserToken, leftBracket, (LeftBracketToken));
@@ -132,14 +138,31 @@ TEST(CSSTokenizerTest, SingleCharacterTokens)
     TEST_TOKENS(",,", comma, comma);
 }
 
+TEST(CSSTokenizerTest, MultipleCharacterTokens)
+{
+    TEST_TOKENS("~=", includeMatch);
+    TEST_TOKENS("|=", dashMatch);
+    TEST_TOKENS("^=", prefixMatch);
+    TEST_TOKENS("$=", suffixMatch);
+    TEST_TOKENS("*=", substringMatch);
+    TEST_TOKENS("||", column);
+    TEST_TOKENS("|||", column, delim('|'));
+}
+
 TEST(CSSTokenizerTest, DelimiterToken)
 {
+    TEST_TOKENS("^", delim('^'));
     TEST_TOKENS("*", delim('*'));
     TEST_TOKENS("%", delim('%'));
     TEST_TOKENS("~", delim('~'));
     TEST_TOKENS("&", delim('&'));
+    TEST_TOKENS("|", delim('|'));
     TEST_TOKENS("\x7f", delim('\x7f'));
     TEST_TOKENS("\1", delim('\x1'));
+    TEST_TOKENS("~-", delim('~'), delim('-'));
+    TEST_TOKENS("^|", delim('^'), delim('|'));
+    TEST_TOKENS("$~", delim('$'), delim('~'));
+    TEST_TOKENS("*^", delim('*'), delim('^'));
 }
 
 TEST(CSSTokenizerTest, WhitespaceTokens)

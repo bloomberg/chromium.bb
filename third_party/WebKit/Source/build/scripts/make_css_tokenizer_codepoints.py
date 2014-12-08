@@ -42,6 +42,10 @@ def token_type(i):
                   ':': 'colon',
                   ';': 'semiColon',
                   '#': 'hash',
+                  '^': 'circumflexAccent',
+                  '$': 'dollarSign',
+                  '|': 'verticalLine',
+                  '~': 'tilde',
                   'u': 'letterU',
                   'U': 'letterU',
                   }

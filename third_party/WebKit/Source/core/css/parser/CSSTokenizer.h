@@ -74,6 +74,10 @@ private:
     CSSParserToken colon(UChar);
     CSSParserToken semiColon(UChar);
     CSSParserToken hash(UChar);
+    CSSParserToken circumflexAccent(UChar);
+    CSSParserToken dollarSign(UChar);
+    CSSParserToken verticalLine(UChar);
+    CSSParserToken tilde(UChar);
     CSSParserToken reverseSolidus(UChar);
     CSSParserToken asciiDigit(UChar);
     CSSParserToken letterU(UChar);
