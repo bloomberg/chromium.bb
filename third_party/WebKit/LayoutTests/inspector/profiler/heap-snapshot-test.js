@@ -688,7 +688,7 @@ InspectorTest.takeAndOpenSnapshot = function(generator, callback)
 {
     callback = InspectorTest.safeWrap(callback);
     var snapshot = generator();
-    var profileType =  WebInspector.ProfileTypeRegistry.instance.heapSnapshotProfileType;
+    var profileType = WebInspector.ProfileTypeRegistry.instance.heapSnapshotProfileType;
     function pushGeneratedSnapshot(reportProgress, callback2)
     {
         var profile = profileType.profileBeingRecorded();

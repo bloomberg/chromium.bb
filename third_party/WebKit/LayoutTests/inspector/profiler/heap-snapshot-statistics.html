@@ -13,6 +13,7 @@ function test()
         for (type in InspectorTest.HeapNode.Type) {
             if (!InspectorTest.HeapNode.Type.hasOwnProperty(type)) continue;
             if (type === InspectorTest.HeapNode.Type.synthetic) continue;
+            if (type === InspectorTest.HeapNode.Type.number) continue;
             ++index;
             var size = index * Math.pow(10, index - 1);
             var node = new InspectorTest.HeapNode(type, size, InspectorTest.HeapNode.Type[type]);
@@ -23,6 +24,12 @@ function test()
         builder.rootNode.linkNode(jsArrayNode, InspectorTest.HeapEdge.Type.internal, "JSArrayLink");
         var jsArrayContentsNode = new InspectorTest.HeapNode("", 12, InspectorTest.HeapNode.Type.array);
         jsArrayNode.linkNode(jsArrayContentsNode, InspectorTest.HeapEdge.Type.internal, "elements");
+        var gcRootsNode = new InspectorTest.HeapNode("(GC roots)", 0, InspectorTest.HeapNode.Type.synthetic);
+        builder.rootNode.linkNode(gcRootsNode, InspectorTest.HeapEdge.Type.internal, "0");
+        var strongRoots = new InspectorTest.HeapNode("(Strong roots)", 0, InspectorTest.HeapNode.Type.synthetic);
+        gcRootsNode.linkNode(strongRoots, InspectorTest.HeapEdge.Type.internal, "0");
+        var systemObj = new InspectorTest.HeapNode("SystemObject", 900000000, InspectorTest.HeapNode.Type.object);
+        strongRoots.linkNode(systemObj, InspectorTest.HeapEdge.Type.internal, "0");
         return builder.generateSnapshot();
     }
 
