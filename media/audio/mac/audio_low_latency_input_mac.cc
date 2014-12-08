@@ -496,6 +496,7 @@ OSStatus AUAudioInputStream::InputProc(void* user_data,
   if (result) {
     UMA_HISTOGRAM_SPARSE_SLOWLY("Media.AudioInputCbErrorMac", result);
     OSSTATUS_DLOG(ERROR, result) << "AudioUnitRender() failed ";
+    audio_input->HandleError(result);
     return result;
   }
 
