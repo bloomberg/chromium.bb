@@ -205,13 +205,6 @@ static String joinStrings(const Vector<String>& strings, const char* separator)
     return builder.toString();
 }
 
-static unsigned saturateAdd(unsigned a, unsigned long b)
-{
-    if (std::numeric_limits<unsigned>::max() - a < b)
-        return std::numeric_limits<unsigned>::max();
-    return a + b;
-}
-
 static void setInvalidStateErrorForSendMethod(ExceptionState& exceptionState)
 {
     exceptionState.throwDOMException(InvalidStateError, "Still in CONNECTING state.");
@@ -349,10 +342,9 @@ void DOMWebSocket::connect(const String& url, const Vector<String>& protocols, E
     }
 }
 
-void DOMWebSocket::updateBufferedAmountAfterClose(unsigned long payloadSize)
+void DOMWebSocket::updateBufferedAmountAfterClose(uint64_t payloadSize)
 {
-    m_bufferedAmountAfterClose = saturateAdd(m_bufferedAmountAfterClose, payloadSize);
-    m_bufferedAmountAfterClose = saturateAdd(m_bufferedAmountAfterClose, getFramingOverhead(payloadSize));
+    m_bufferedAmountAfterClose += payloadSize;
 
     logError("WebSocket is already in CLOSING or CLOSED state.");
 }
@@ -360,7 +352,9 @@ void DOMWebSocket::updateBufferedAmountAfterClose(unsigned long payloadSize)
 void DOMWebSocket::reflectBufferedAmountConsumption(Timer<DOMWebSocket>*)
 {
     ASSERT(m_bufferedAmount >= m_consumedBufferedAmount);
-    WTF_LOG(Network, "WebSocket %p reflectBufferedAmountConsumption() %u => %u", this, m_bufferedAmount, m_bufferedAmount - m_consumedBufferedAmount);
+    // Cast to unsigned long long is required since clang doesn't accept
+    // combination of %llu and uint64_t (known as unsigned long).
+    WTF_LOG(Network, "WebSocket %p reflectBufferedAmountConsumption() %llu => %llu", this, static_cast<unsigned long long>(m_bufferedAmount), static_cast<unsigned long long>(m_bufferedAmount - m_consumedBufferedAmount));
 
     m_bufferedAmount -= m_consumedBufferedAmount;
     m_consumedBufferedAmount = 0;
@@ -436,7 +430,7 @@ void DOMWebSocket::send(Blob* binaryData, ExceptionState& exceptionState)
         return;
     }
     if (m_state == CLOSING || m_state == CLOSED) {
-        updateBufferedAmountAfterClose(static_cast<unsigned long>(binaryData->size()));
+        updateBufferedAmountAfterClose(binaryData->size());
         return;
     }
     Platform::current()->histogramEnumeration("WebCore.WebSocket.SendType", WebSocketSendTypeBlob, WebSocketSendTypeMax);
@@ -501,7 +495,11 @@ DOMWebSocket::State DOMWebSocket::readyState() const
 
 unsigned DOMWebSocket::bufferedAmount() const
 {
-    return saturateAdd(m_bufferedAmount, m_bufferedAmountAfterClose);
+    uint64_t sum = m_bufferedAmountAfterClose + m_bufferedAmount;
+
+    if (sum > std::numeric_limits<unsigned>::max())
+        return std::numeric_limits<unsigned>::max();
+    return sum;
 }
 
 String DOMWebSocket::protocol() const
@@ -630,10 +628,12 @@ void DOMWebSocket::didError()
     m_eventQueue->dispatch(Event::create(EventTypeNames::error));
 }
 
-void DOMWebSocket::didConsumeBufferedAmount(unsigned consumed)
+void DOMWebSocket::didConsumeBufferedAmount(uint64_t consumed)
 {
-    ASSERT(m_bufferedAmount >= consumed);
-    WTF_LOG(Network, "WebSocket %p didConsumeBufferedAmount(%u)", this, consumed);
+    ASSERT(m_bufferedAmount >= consumed + m_consumedBufferedAmount);
+    // Cast to unsigned long long is required since clang doesn't accept
+    // combination of %llu and uint64_t (known as unsigned long).
+    WTF_LOG(Network, "WebSocket %p didConsumeBufferedAmount(%llu)", this, static_cast<unsigned long long>(consumed));
     if (m_state == CLOSED)
         return;
     m_consumedBufferedAmount += consumed;
@@ -652,26 +652,12 @@ void DOMWebSocket::didClose(ClosingHandshakeCompletionStatus closingHandshakeCom
     WTF_LOG(Network, "WebSocket %p didClose()", this);
     if (!m_channel)
         return;
-    bool hasAllDataConsumed = m_bufferedAmount == m_consumedBufferedAmount;
-    bool wasClean = m_state == CLOSING && hasAllDataConsumed && closingHandshakeCompletion == ClosingHandshakeComplete && code != WebSocketChannel::CloseEventCodeAbnormalClosure;
+    bool allDataHasBeenConsumed = m_bufferedAmount == m_consumedBufferedAmount;
+    bool wasClean = m_state == CLOSING && allDataHasBeenConsumed && closingHandshakeCompletion == ClosingHandshakeComplete && code != WebSocketChannel::CloseEventCodeAbnormalClosure;
     m_state = CLOSED;
 
     m_eventQueue->dispatch(CloseEvent::create(wasClean, code, reason));
     releaseChannel();
-}
-
-size_t DOMWebSocket::getFramingOverhead(size_t payloadSize)
-{
-    static const size_t hybiBaseFramingOverhead = 2; // Every frame has at least two-byte header.
-    static const size_t hybiMaskingKeyLength = 4; // Every frame from client must have masking key.
-    static const size_t minimumPayloadSizeWithTwoByteExtendedPayloadLength = 126;
-    static const size_t minimumPayloadSizeWithEightByteExtendedPayloadLength = 0x10000;
-    size_t overhead = hybiBaseFramingOverhead + hybiMaskingKeyLength;
-    if (payloadSize >= minimumPayloadSizeWithEightByteExtendedPayloadLength)
-        overhead += 8;
-    else if (payloadSize >= minimumPayloadSizeWithTwoByteExtendedPayloadLength)
-        overhead += 2;
-    return overhead;
 }
 
 void DOMWebSocket::trace(Visitor* visitor)

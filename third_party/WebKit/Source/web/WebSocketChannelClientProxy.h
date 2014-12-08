@@ -11,6 +11,7 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <stdint.h>
 
 namespace blink {
 
@@ -43,7 +44,7 @@ public:
     {
         m_impl->didError();
     }
-    virtual void didConsumeBufferedAmount(unsigned consumed) override
+    virtual void didConsumeBufferedAmount(uint64_t consumed) override
     {
         m_impl->didConsumeBufferedAmount(consumed);
     }

@@ -23,6 +23,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
+#include <stdint.h>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -59,7 +60,7 @@ public:
     }
     MOCK_METHOD1(didReceiveBinaryMessageMock, void(const Vector<char>&));
     MOCK_METHOD0(didError, void());
-    MOCK_METHOD1(didConsumeBufferedAmount, void(unsigned));
+    MOCK_METHOD1(didConsumeBufferedAmount, void(uint64_t));
     MOCK_METHOD0(didStartClosingHandshake, void());
     MOCK_METHOD3(didClose, void(ClosingHandshakeCompletionStatus, unsigned short, const String&));
 

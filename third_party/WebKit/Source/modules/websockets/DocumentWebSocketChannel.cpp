@@ -292,19 +292,26 @@ DocumentWebSocketChannel::Message::Message(unsigned short code, const String& re
 void DocumentWebSocketChannel::sendInternal()
 {
     ASSERT(m_handle);
-    unsigned consumedBufferedAmount = 0;
+    uint64_t consumedBufferedAmount = 0;
     while (!m_messages.isEmpty() && !m_blobLoader) {
         bool final = false;
         Message* message = m_messages.first().get();
-        if (m_sendingQuota <= 0 && message->type != MessageTypeClose)
+        if (m_sendingQuota == 0 && message->type != MessageTypeClose)
             break;
         switch (message->type) {
         case MessageTypeText: {
             WebSocketHandle::MessageType type =
                 m_sentSizeOfTopMessage ? WebSocketHandle::MessageTypeContinuation : WebSocketHandle::MessageTypeText;
-            size_t size = std::min(static_cast<size_t>(m_sendingQuota), message->text.length() - m_sentSizeOfTopMessage);
-            final = (m_sentSizeOfTopMessage + size == message->text.length());
+            size_t totalSize = message->text.length();
+            ASSERT(totalSize >= m_sentSizeOfTopMessage);
+            // The first cast is safe since the result of min() never exceeds
+            // the range of size_t. The second cast is necessary to compile
+            // min() on ILP32.
+            size_t size = static_cast<size_t>(std::min(m_sendingQuota, static_cast<uint64_t>(totalSize - m_sentSizeOfTopMessage)));
+            final = (m_sentSizeOfTopMessage + size == totalSize);
+
             m_handle->send(final, type, message->text.data() + m_sentSizeOfTopMessage, size);
+
             m_sentSizeOfTopMessage += size;
             m_sendingQuota -= size;
             consumedBufferedAmount += size;
@@ -317,9 +324,13 @@ void DocumentWebSocketChannel::sendInternal()
         case MessageTypeArrayBuffer: {
             WebSocketHandle::MessageType type =
                 m_sentSizeOfTopMessage ? WebSocketHandle::MessageTypeContinuation : WebSocketHandle::MessageTypeBinary;
-            size_t size = std::min(static_cast<size_t>(m_sendingQuota), static_cast<size_t>(message->arrayBuffer->byteLength() - m_sentSizeOfTopMessage));
-            final = (m_sentSizeOfTopMessage + size == message->arrayBuffer->byteLength());
+            unsigned totalSize = message->arrayBuffer->byteLength();
+            ASSERT(totalSize >= m_sentSizeOfTopMessage);
+            size_t size = static_cast<size_t>(std::min(m_sendingQuota, static_cast<uint64_t>(totalSize - m_sentSizeOfTopMessage)));
+            final = (m_sentSizeOfTopMessage + size == totalSize);
+
             m_handle->send(final, type, static_cast<const char*>(message->arrayBuffer->data()) + m_sentSizeOfTopMessage, size);
+
             m_sentSizeOfTopMessage += size;
             m_sendingQuota -= size;
             consumedBufferedAmount += size;
@@ -328,9 +339,13 @@ void DocumentWebSocketChannel::sendInternal()
         case MessageTypeVector: {
             WebSocketHandle::MessageType type =
                 m_sentSizeOfTopMessage ? WebSocketHandle::MessageTypeContinuation : WebSocketHandle::MessageTypeBinary;
-            size_t size = std::min(static_cast<size_t>(m_sendingQuota), message->vectorData->size() - m_sentSizeOfTopMessage);
-            final = (m_sentSizeOfTopMessage + size == message->vectorData->size());
+            size_t totalSize = message->vectorData->size();
+            ASSERT(totalSize >= m_sentSizeOfTopMessage);
+            size_t size = static_cast<size_t>(std::min(m_sendingQuota, static_cast<uint64_t>(totalSize - m_sentSizeOfTopMessage)));
+            final = (m_sentSizeOfTopMessage + size == totalSize);
+
             m_handle->send(final, type, message->vectorData->data() + m_sentSizeOfTopMessage, size);
+
             m_sentSizeOfTopMessage += size;
             m_sendingQuota -= size;
             consumedBufferedAmount += size;
@@ -532,6 +547,7 @@ void DocumentWebSocketChannel::didReceiveFlowControl(WebSocketHandle* handle, in
 
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
+    ASSERT(quota >= 0);
 
     m_sendingQuota += quota;
     sendInternal();

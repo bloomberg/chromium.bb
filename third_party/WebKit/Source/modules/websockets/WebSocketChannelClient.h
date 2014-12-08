@@ -35,6 +35,7 @@
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
+#include <stdint.h>
 
 namespace blink {
 
@@ -45,7 +46,7 @@ public:
     virtual void didReceiveTextMessage(const String&) { }
     virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> >) { }
     virtual void didError() { }
-    virtual void didConsumeBufferedAmount(unsigned consumed) { }
+    virtual void didConsumeBufferedAmount(uint64_t consumed) { }
     virtual void didStartClosingHandshake() { }
     enum ClosingHandshakeCompletionStatus {
         ClosingHandshakeIncomplete,

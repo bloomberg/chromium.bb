@@ -42,6 +42,7 @@
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
 #include "wtf/text/AtomicStringHash.h"
+#include <stdint.h>
 
 namespace blink {
 
@@ -120,7 +121,7 @@ public:
     virtual void didReceiveTextMessage(const String& message) override;
     virtual void didReceiveBinaryMessage(PassOwnPtr<Vector<char> >) override;
     virtual void didError() override;
-    virtual void didConsumeBufferedAmount(unsigned) override;
+    virtual void didConsumeBufferedAmount(uint64_t) override;
     virtual void didStartClosingHandshake() override;
     virtual void didClose(ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) override;
 
@@ -197,11 +198,9 @@ private:
     // not.
     void closeInternal(int, const String&, ExceptionState&);
 
-    size_t getFramingOverhead(size_t payloadSize);
-
     // Updates m_bufferedAmountAfterClose given the amount of data passed to
     // send() method after the state changed to CLOSING or CLOSED.
-    void updateBufferedAmountAfterClose(unsigned long);
+    void updateBufferedAmountAfterClose(uint64_t);
     void reflectBufferedAmountConsumption(Timer<DOMWebSocket>*);
 
     void releaseChannel();
@@ -215,11 +214,11 @@ private:
 
     State m_state;
     KURL m_url;
-    unsigned m_bufferedAmount;
+    uint64_t m_bufferedAmount;
     // The consumed buffered amount that will be reflected to m_bufferedAmount
     // later. It will be cleared once reflected.
-    unsigned m_consumedBufferedAmount;
-    unsigned m_bufferedAmountAfterClose;
+    uint64_t m_consumedBufferedAmount;
+    uint64_t m_bufferedAmountAfterClose;
     BinaryType m_binaryType;
     // The subprotocol the server selected.
     String m_subprotocol;

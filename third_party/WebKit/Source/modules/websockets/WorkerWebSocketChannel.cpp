@@ -306,14 +306,14 @@ void Peer::didReceiveBinaryMessage(PassOwnPtr<Vector<char> > payload)
     m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidReceiveBinaryMessage, m_bridge, payload));
 }
 
-static void workerGlobalScopeDidConsumeBufferedAmount(ExecutionContext* context, Bridge* bridge, unsigned consumed)
+static void workerGlobalScopeDidConsumeBufferedAmount(ExecutionContext* context, Bridge* bridge, uint64_t consumed)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());
     if (bridge->client())
         bridge->client()->didConsumeBufferedAmount(consumed);
 }
 
-void Peer::didConsumeBufferedAmount(unsigned consumed)
+void Peer::didConsumeBufferedAmount(uint64_t consumed)
 {
     ASSERT(isMainThread());
     m_loaderProxy.postTaskToWorkerGlobalScope(createCrossThreadTask(&workerGlobalScopeDidConsumeBufferedAmount, m_bridge, consumed));

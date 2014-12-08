@@ -28,45 +28,45 @@ PASS ws.readyState is 3
 PASS ws.bufferedAmount <= bufferedAmountAfterClose is true
 Testing send(string)...
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 27
+PASS bufferedAmountDifference is 21
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 6
+PASS bufferedAmountDifference is 0
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 7
+PASS bufferedAmountDifference is 1
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 131
+PASS bufferedAmountDifference is 125
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 134
+PASS bufferedAmountDifference is 126
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 65543
+PASS bufferedAmountDifference is 65535
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 65550
+PASS bufferedAmountDifference is 65536
 Testing send(ArrayBuffer)...
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 6
+PASS bufferedAmountDifference is 0
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 7
+PASS bufferedAmountDifference is 1
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 131
+PASS bufferedAmountDifference is 125
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 134
+PASS bufferedAmountDifference is 126
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 65543
+PASS bufferedAmountDifference is 65535
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 65550
+PASS bufferedAmountDifference is 65536
 Testing send(Blob)...
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 6
+PASS bufferedAmountDifference is 0
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 7
+PASS bufferedAmountDifference is 1
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 131
+PASS bufferedAmountDifference is 125
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 134
+PASS bufferedAmountDifference is 126
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 65543
+PASS bufferedAmountDifference is 65535
 PASS ws.send(messageToSend) is undefined.
-PASS bufferedAmountDifference is 65550
+PASS bufferedAmountDifference is 65536
 PASS successfullyParsed is true
 
 TEST COMPLETE
