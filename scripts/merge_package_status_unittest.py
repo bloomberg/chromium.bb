@@ -5,8 +5,6 @@
 
 """Unit tests for cros_portage_upgrade.py."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import exceptions
@@ -21,7 +19,7 @@ from chromite.lib import table
 from chromite.scripts import merge_package_status as mps
 
 
-# pylint: disable=W0212,R0904
+# pylint: disable=protected-access
 
 
 class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
@@ -40,8 +38,7 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
              mps.COL_OVERLAY,
              COL_VER_x86,
              COL_VER_arm,
-             mps.COL_TARGET,
-             ]
+             mps.COL_TARGET]
 
   ROW0 = {mps.COL_PACKAGE: 'lib/foo',
           mps.COL_SLOT: '0',
@@ -125,17 +122,17 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
          'virtual/target-os-test'],
         ['world', 'virtual/target-sdk', 'virtual/target-os-dev',
          'virtual/target-os-test'],
-        ]
+    ]
     test_out = [
         ['virtual/target-os-dev'],
         ['virtual/target-os-test', 'world'],
         ['virtual/target-os-test', 'virtual/target-sdk', 'world'],
-        ]
+    ]
     test_rev_out = [
         ['virtual/target-os'],
         ['virtual/target-os', 'world'],
         ['virtual/target-os-dev', 'virtual/target-sdk', 'world'],
-        ]
+    ]
 
     for targets, good_out, rev_out in zip(test_in, test_out, test_rev_out):
       output = mps.ProcessTargets(targets)

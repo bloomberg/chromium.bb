@@ -17,8 +17,6 @@ libraries loaded at runtime with dlopen(). It also computes size and file type
 in several cases to help understand the contents of the built image.
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import itertools
@@ -122,7 +120,7 @@ class DepTracker(object):
               lddtree.normpath(os.path.join(os.path.dirname(rel_path),
                                             link_path)))
           file_data['deps'] = {
-            'symlink': [self._symlinks[rel_path]]
+              'symlink': [self._symlinks[rel_path]]
           }
 
         # Track hardlinks.
@@ -142,7 +140,6 @@ class DepTracker(object):
         'ebuilds': self._ebuilds,
     }
     json.dump(data, open(filename, 'w'))
-
 
   def ComputeEbuildDeps(self, sysroot):
     """Compute the dependencies between ebuilds and files.

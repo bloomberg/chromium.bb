@@ -11,8 +11,6 @@ It doesn't commit or push any changes, just updates files in a working
 directory.
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import collections
@@ -27,12 +25,12 @@ from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 
-GOB_EXTERNAL = "https://chromium.googlesource.com"
-GOB_INTERNAL = "https://chrome-internal.googlesource.com"
+GOB_EXTERNAL = 'https://chromium.googlesource.com'
+GOB_INTERNAL = 'https://chrome-internal.googlesource.com'
 
 
-GERRIT_EXTERNAL = "https://chromium-review.googlesource.com"
-GERRIT_INTERNAL = "https://chrome-internal-review.googlesource.com"
+GERRIT_EXTERNAL = 'https://chromium-review.googlesource.com'
+GERRIT_INTERNAL = 'https://chrome-internal-review.googlesource.com'
 
 
 # Old fetch URL -> new fetch URL.
@@ -113,18 +111,23 @@ def GetRemotes(manifest):
   """
   doc = ElementTree.parse(manifest)
   root = doc.getroot()
-  return [Remote(remote.attrib['name'], remote.attrib['fetch'],
-      remote.attrib.get('review')) for remote in root.findall('remote')]
+  return [Remote(
+      remote.attrib['name'], remote.attrib['fetch'],
+      remote.attrib.get('review'))
+          for remote in root.findall('remote')]
 
 
 def GetParser():
   """Creates the argparse parser."""
   parser = commandline.ArgumentParser(description=__doc__)
-  parser.add_argument('--skip-update', action='store_true', default=False,
+  parser.add_argument(
+      '--skip-update', action='store_true', default=False,
       help='Do not revert versions manifest checkout to original state')
-  parser.add_argument('--remotes-summary', action='store_true', default=False,
+  parser.add_argument(
+      '--remotes-summary', action='store_true', default=False,
       help='Scan all manifests and print all various remotes found in them')
-  parser.add_argument('manifest_versions_dir', type='path',
+  parser.add_argument(
+      'manifest_versions_dir', type='path',
       help='Directory to checkout manifest versions repository into')
   return parser
 

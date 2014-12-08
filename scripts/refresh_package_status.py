@@ -4,8 +4,6 @@
 
 """Refresh online Portage package status spreadsheet."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import optparse
@@ -18,7 +16,7 @@ from chromite.lib import osutils
 
 
 oper = operation.Operation('refresh_package_status')
-oper.verbose = True # Without verbose Info messages don't show up.
+oper.verbose = True  # Without verbose Info messages don't show up.
 
 TMP_ROOT = '/tmp'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -30,10 +28,9 @@ PRTG_GIT_URL = '%s/chromiumos/overlays/portage.git' % constants.EXTERNAL_GOB_URL
 FUNTOO_GIT_URL = 'git://github.com/funtoo/portage.git'
 
 
-def RunGit(cwd, cmd, args=[]):
-  # pylint: disable=W0102
+def RunGit(cwd, cmd, args=()):
   """Run the git |cmd| with |args| in the |cwd| directory."""
-  cmdline = ['git', cmd] + args
+  cmdline = ['git', cmd] + list(args)
   cros_build_lib.RunCommand(cmdline, cwd=cwd)
 
 
@@ -141,12 +138,11 @@ def main(argv):
             'This script encapsulates the steps involved in updating the '
             'online Portage package status spreadsheet.\n'
             'It was created for use by a buildbot, but can be run manually.\n'
-            '\n'
-            )
+            '\n')
 
-  # pylint: disable=R0904
   class MyOptParser(optparse.OptionParser):
     """Override default epilog formatter, which strips newlines."""
+
     def format_epilog(self, formatter):
       return self.epilog
 

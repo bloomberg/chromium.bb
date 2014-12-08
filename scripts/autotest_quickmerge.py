@@ -8,8 +8,6 @@ Simple script to be run inside the chroot. Used as a fast approximation of
 emerge-$board autotest-all, by simply rsync'ing changes from trunk to sysroot.
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import argparse
@@ -26,11 +24,10 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import portage_util
 
-
 if cros_build_lib.IsInsideChroot():
-  # pylint: disable=F0401
   # Only import portage after we've checked that we're inside the chroot.
   import portage
+
 
 INCLUDE_PATTERNS_FILENAME = 'autotest-quickmerge-includepatterns'
 AUTOTEST_PROJECT_NAME = 'chromiumos/third_party/autotest'
@@ -50,7 +47,6 @@ IGNORE_SUBDIRS = ['ExternalSource',
 ItemizedChange = namedtuple('ItemizedChange', ['change_description',
                                                'absolute_path'])
 
-
 # Data structure describing the rsync new/modified files or directories.
 #
 # new_files: A list of ItemizedChange objects for new files.
@@ -60,13 +56,13 @@ ItemizedChangeReport = namedtuple('ItemizedChangeReport',
                                   ['new_files', 'modified_files',
                                    'new_directories'])
 
+
 class PortagePackageAPIError(Exception):
   """Exception thrown when unable to retrieve a portage package API."""
 
 
-
 def GetNewestFileTime(path, ignore_subdirs=[]):
-  # pylint: disable=W0102
+  # pylint: disable=dangerous-default-value
   """Recursively determine the newest file modification time.
 
   Args:
@@ -89,8 +85,8 @@ def GetNewestFileTime(path, ignore_subdirs=[]):
   command_result = cros_build_lib.RunCommand(command, error_code_ok=True,
                                              capture_output=True)
   float_times = [float(str_time) for str_time in
-                command_result.output.split('\n')
-                if str_time != '']
+                 command_result.output.split('\n')
+                 if str_time != '']
 
   return max(float_times)
 
@@ -165,7 +161,7 @@ def GetPackageAPI(portage_root, package_cp):
       vartree is of type portage.dbapi.vartree.vartree
   """
   if portage_root is None:
-    # pylint: disable=E1101
+    # pylint: disable=no-member
     portage_root = portage.root
   # Ensure that portage_root ends with trailing slash.
   portage_root = os.path.join(portage_root, '')
@@ -189,7 +185,7 @@ def GetPackageAPI(portage_root, package_cp):
   # Convert string match to package dblink.
   package_cpv = matching_packages[0]
   package_split = portage_util.SplitCPV(package_cpv)
-  # pylint: disable=E1101
+  # pylint: disable=no-member
   package = portage.dblink(package_split.category,
                            package_split.pv, settings=vartree.settings,
                            vartree=vartree)
@@ -264,7 +260,7 @@ def RemoveBzipPackages(autotest_sysroot):
                       e.g. '/build/lumpy/usr/local/build/autotest'
   """
   osutils.RmDir(os.path.join(autotest_sysroot, 'packages'),
-                             ignore_missing=True)
+                ignore_missing=True)
   osutils.SafeUnlink(os.path.join(autotest_sysroot, 'packages.checksum'))
 
 
@@ -333,7 +329,6 @@ def ParseArguments(argv):
   parser = argparse.ArgumentParser(description='Perform a fast approximation '
                                    'to emerge-$board autotest-all, by '
                                    'rsyncing source tree to sysroot.')
-
 
   default_board = cros_build_lib.GetDefaultBoard()
   parser.add_argument('--board', metavar='BOARD', default=default_board,
@@ -431,7 +426,6 @@ def main(argv):
     sentinel_filename = os.path.join(sysroot_autotest_path,
                                      '.quickmerge_sentinel')
     cros_build_lib.RunCommand(['touch', sentinel_filename])
-
 
   if args.pretend:
     logging.info('The following message is pretend only. No filesystem '

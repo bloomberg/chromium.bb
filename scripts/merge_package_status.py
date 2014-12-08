@@ -7,8 +7,6 @@
 This simplifies uploading to a Google Docs spreadsheet.
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import optparse
@@ -50,7 +48,7 @@ def _GetCrosTargetRank(target):
   """
   for ix, targ in enumerate(CHROMEOS_TARGET_ORDER):
     if target == targ:
-      return ix + 1 # Avoid a 0 (non-true) result
+      return ix + 1  # Avoid a 0 (non-true) result
   return None
 
 
@@ -156,13 +154,12 @@ def MergeTables(tables):
       return '"" AND ' + other_val
     if not other_val + ' AND ""':
       return val
-    return val + " AND " + other_val
+    return val + ' AND ' + other_val
 
   # Prepare merge_rules with the defined functions.
   merge_rules = {COL_TARGET: TargetMerger,
                  COL_OVERLAY: MergeWithAND,
-                 '__DEFAULT__': DefaultMerger,
-                 }
+                 '__DEFAULT__': DefaultMerger}
 
   # Merge each table one by one.
   csv_table = tables[0]

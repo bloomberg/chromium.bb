@@ -5,8 +5,6 @@
 
 """Unit tests for cros_portage_upgrade.py."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import filecmp
@@ -29,7 +27,7 @@ from chromite.lib import gdata_lib
 from chromite.scripts import check_gdata_token as cgt
 
 
-# pylint: disable=W0212,E1101
+# pylint: disable=protected-access
 
 
 class MainTest(cros_test_lib.MoxOutputTestCase):
@@ -57,8 +55,8 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
     self.mox.StubOutWithMock(cgt.OutsideChroot, '__new__')
 
     build_lib.IsInsideChroot().AndReturn(False)
-    cgt.OutsideChroot.__new__(cgt.OutsideChroot, argv,
-                              ).AndReturn(mocked_outsidechroot)
+    cgt.OutsideChroot.__new__(cgt.OutsideChroot, argv).AndReturn(
+        mocked_outsidechroot)
     mocked_outsidechroot.Run()
     self.mox.ReplayAll()
 
@@ -77,8 +75,7 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
     self.mox.StubOutWithMock(cgt.InsideChroot, '__new__')
 
     build_lib.IsInsideChroot().AndReturn(True)
-    cgt.InsideChroot.__new__(cgt.InsideChroot
-                             ).AndReturn(mocked_insidechroot)
+    cgt.InsideChroot.__new__(cgt.InsideChroot).AndReturn(mocked_insidechroot)
     mocked_insidechroot.Run()
     self.mox.ReplayAll()
 
@@ -225,6 +222,7 @@ class OutsideChrootTest(cros_test_lib.MoxOutputTestCase):
     with self.OutputCapturer():
       cgt.OutsideChroot.Run(mocked_outsidechroot)
     self.mox.VerifyAll()
+
 
 class InsideChrootTest(cros_test_lib.MoxOutputTestCase):
   """Test flow when run inside chroot."""
@@ -402,8 +400,8 @@ class InsideChrootTest(cros_test_lib.MoxOutputTestCase):
     mocked_creds.LoadCreds(cgt.CRED_FILE)
     mocked_itclient.ClientLogin(mocked_creds.user, mocked_creds.password,
                                 source='Package Status', service='code',
-                                account_type='GOOGLE'
-                                ).AndRaise(gdata.client.BadAuthentication())
+                                account_type='GOOGLE').AndRaise(
+                                    gdata.client.BadAuthentication())
     self.mox.ReplayAll()
 
     # Run test verification.
@@ -447,8 +445,8 @@ class InsideChrootTest(cros_test_lib.MoxOutputTestCase):
 
     gdata.gauth.ClientLoginToken.__new__(gdata.gauth.ClientLoginToken,
                                          auth_token).AndReturn('TokenObj')
-    mocked_itclient.get_issues('chromium-os', query=mox.IgnoreArg()
-                               ).AndRaise(gdata.client.Error())
+    mocked_itclient.get_issues('chromium-os', query=mox.IgnoreArg()).AndRaise(
+        gdata.client.Error())
     self.mox.ReplayAll()
 
     # Run test verification.
@@ -489,8 +487,8 @@ class InsideChrootTest(cros_test_lib.MoxOutputTestCase):
     mocked_creds.password = 'shhh'
 
     mocked_creds.LoadCreds(cgt.CRED_FILE)
-    mocked_gdclient.ProgrammaticLogin(
-      ).AndRaise(gdata.service.BadAuthentication())
+    mocked_gdclient.ProgrammaticLogin().AndRaise(
+        gdata.service.BadAuthentication())
     self.mox.ReplayAll()
 
     # Run test verification.
@@ -535,6 +533,7 @@ class InsideChrootTest(cros_test_lib.MoxOutputTestCase):
       result = cgt.InsideChroot._ValidateDocsToken(mocked_insidechroot)
       self.assertFalse(result, '_ValidateDocsToken should have failed')
     self.mox.VerifyAll()
+
 
 if __name__ == '__main__':
   cros_test_lib.main()

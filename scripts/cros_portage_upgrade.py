@@ -4,15 +4,13 @@
 
 """Perform various tasks related to updating Portage packages."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import filecmp
 import fnmatch
 import os
 import parallel_emerge
-import portage # pylint: disable=F0401
+import portage  # pylint: disable=import-error
 import re
 import shutil
 import tempfile
@@ -25,7 +23,6 @@ from chromite.lib import operation
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import merge_package_status as mps
 
-# pylint: disable=E1101,W0201
 
 oper = operation.Operation('cros_portage_upgrade')
 
@@ -38,6 +35,10 @@ STANDARD_BOARD_ARCHS = set(('amd64', 'arm', 'x86'))
 
 # Files we do not include in our upgrades by convention.
 BLACKLISTED_FILES = set(['Manifest', 'ChangeLog*'])
+
+
+# pylint: disable=attribute-defined-outside-init
+
 
 class PInfo(object):
   """Class to accumulate package info during upgrade process.
@@ -63,7 +64,7 @@ class PInfo(object):
       'upstream_cpv',        # latest/stable upstream cpv according to request
       'user_arg',            # Original user arg for this pkg, if applicable
       'version_rev',         # Just revision (e.g. 'r1').  '' if no revision
-      )
+  )
 
   # Any deriving classes must maintain this cumulative attribute list.
   __attrlist__ = __slots__
@@ -89,6 +90,7 @@ class PInfo(object):
   def __ne__(self, other):
     """Inequality support for completeness."""
     return not self == other
+
 
 class Upgrader(object):
   """A class to perform various tasks related to updating Portage packages."""
@@ -118,37 +120,38 @@ class Upgrader(object):
   PORTAGEQ_CMD = 'portageq'
   BOARD_CMDS = set([EQUERY_CMD, EMERGE_CMD, PORTAGEQ_CMD])
 
-  __slots__ = ['_amend',        # Boolean to use --amend with upgrade commit
-               '_args',         # Commandline arguments (all portage targets)
-               '_curr_arch',    # Architecture for current board run
-               '_curr_board',   # Board for current board run
-               '_curr_table',   # Package status for current board run
-               '_cros_overlay', # Path to chromiumos-overlay repo
-               '_csv_file',     # File path for writing csv output
-               '_deps_graph',   # Dependency graph from portage
-               '_force',        # Force upgrade even when version already exists
-               '_local_only',   # Skip network traffic
-               '_missing_eclass_re',# Regexp for missing eclass in equery
-               '_outdated_eclass_re',# Regexp for outdated eclass in equery
-               '_emptydir',     # Path to temporary empty directory
-               '_master_archs', # Set. Archs of tables merged into master_table
-               '_master_cnt',   # Number of tables merged into master_table
-               '_master_table', # Merged table from all board runs
-               '_no_upstream_cache', # Boolean.  Delete upstream cache when done
-               '_porttree',     # Reference to portage porttree object
-               '_rdeps',        # Boolean, if True pass --root-deps=rdeps
-               '_stable_repo',  # Path to portage-stable
-               '_stable_repo_categories', # Categories from profiles/categories
-               '_stable_repo_stashed', # True if portage-stable has a git stash
-               '_stable_repo_status', # git status report at start of run
-               '_targets',      # Processed list of portage targets
-               '_upgrade',      # Boolean indicating upgrade requested
-               '_upgrade_cnt',  # Num pkg upgrades in this run (all boards)
-               '_upgrade_deep', # Boolean indicating upgrade_deep requested
-               '_upstream',     # Path to upstream portage repo
-               '_unstable_ok',  # Boolean to allow unstable upstream also
-               '_verbose',      # Boolean
-               ]
+  __slots__ = (
+      '_amend',        # Boolean to use --amend with upgrade commit
+      '_args',         # Commandline arguments (all portage targets)
+      '_curr_arch',    # Architecture for current board run
+      '_curr_board',   # Board for current board run
+      '_curr_table',   # Package status for current board run
+      '_cros_overlay', # Path to chromiumos-overlay repo
+      '_csv_file',     # File path for writing csv output
+      '_deps_graph',   # Dependency graph from portage
+      '_force',        # Force upgrade even when version already exists
+      '_local_only',   # Skip network traffic
+      '_missing_eclass_re',# Regexp for missing eclass in equery
+      '_outdated_eclass_re',# Regexp for outdated eclass in equery
+      '_emptydir',     # Path to temporary empty directory
+      '_master_archs', # Set. Archs of tables merged into master_table
+      '_master_cnt',   # Number of tables merged into master_table
+      '_master_table', # Merged table from all board runs
+      '_no_upstream_cache', # Boolean.  Delete upstream cache when done
+      '_porttree',     # Reference to portage porttree object
+      '_rdeps',        # Boolean, if True pass --root-deps=rdeps
+      '_stable_repo',  # Path to portage-stable
+      '_stable_repo_categories', # Categories from profiles/categories
+      '_stable_repo_stashed', # True if portage-stable has a git stash
+      '_stable_repo_status', # git status report at start of run
+      '_targets',      # Processed list of portage targets
+      '_upgrade',      # Boolean indicating upgrade requested
+      '_upgrade_cnt',  # Num pkg upgrades in this run (all boards)
+      '_upgrade_deep', # Boolean indicating upgrade_deep requested
+      '_upstream',     # Path to upstream portage repo
+      '_unstable_ok',  # Boolean to allow unstable upstream also
+      '_verbose',      # Boolean
+  )
 
   def __init__(self, options):
     self._args = options.packages
@@ -826,7 +829,6 @@ class Upgrader(object):
                          'Output of %r:\n%s' %
                          (' '.join(manifest_cmd), manifest_result.output))
 
-
   def _CopyUpstreamEclass(self, eclass):
     """Upgrades eclass in |eclass| to upstream copy.
 
@@ -907,17 +909,18 @@ class Upgrader(object):
     else:
       action_stat = ''
 
-    up_stat = {utable.UpgradeTable.STATE_UNKNOWN: ' no package found upstream!',
-               utable.UpgradeTable.STATE_LOCAL_ONLY: ' (exists locally only)',
-               utable.UpgradeTable.STATE_NEEDS_UPGRADE: ' -> %s' % upstream_cpv,
-               utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_PATCHED:
-               ' <-> %s' % upstream_cpv,
-               utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_DUPLICATED:
-               ' (locally duplicated) <-> %s' % upstream_cpv,
-               utable.UpgradeTable.STATE_PATCHED: ' <- %s' % upstream_cpv,
-               utable.UpgradeTable.STATE_DUPLICATED: ' (locally duplicated)',
-               utable.UpgradeTable.STATE_CURRENT: ' (current)',
-               }[pinfo.state]
+    up_stat = {
+        utable.UpgradeTable.STATE_UNKNOWN: ' no package found upstream!',
+        utable.UpgradeTable.STATE_LOCAL_ONLY: ' (exists locally only)',
+        utable.UpgradeTable.STATE_NEEDS_UPGRADE: ' -> %s' % upstream_cpv,
+        utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_PATCHED:
+            ' <-> %s' % upstream_cpv,
+        utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_DUPLICATED:
+            ' (locally duplicated) <-> %s' % upstream_cpv,
+        utable.UpgradeTable.STATE_PATCHED: ' <- %s' % upstream_cpv,
+        utable.UpgradeTable.STATE_DUPLICATED: ' (locally duplicated)',
+        utable.UpgradeTable.STATE_CURRENT: ' (current)',
+    }[pinfo.state]
 
     oper.Info('[%s] %s%s%s' % (pinfo.overlay, pinfo.cpv,
                                up_stat, action_stat))
@@ -936,9 +939,9 @@ class Upgrader(object):
     usedstr = NOT_APPLICABLE
     if cpv and self._deps_graph:
       deps_entry = self._deps_graph[cpv]
-      depslist = sorted(deps_entry['needs'].keys()) # dependencies
+      depslist = sorted(deps_entry['needs'].keys())  # dependencies
       depsstr = ' '.join(depslist)
-      usedset = deps_entry['provides'] # used by
+      usedset = deps_entry['provides']  # used by
       usedlist = sorted([p for p in usedset])
       usedstr = ' '.join(usedlist)
 
@@ -949,17 +952,18 @@ class Upgrader(object):
     if not latest_up_ver:
       latest_up_ver = NOT_APPLICABLE
 
-    row = {self._curr_table.COL_PACKAGE: pinfo.package,
-           self._curr_table.COL_SLOT: pinfo.slot,
-           self._curr_table.COL_OVERLAY: pinfo.overlay,
-           self._curr_table.COL_CURRENT_VER: pinfo.version_rev,
-           self._curr_table.COL_STABLE_UPSTREAM_VER: stable_up_ver,
-           self._curr_table.COL_LATEST_UPSTREAM_VER: latest_up_ver,
-           self._curr_table.COL_STATE: pinfo.state,
-           self._curr_table.COL_DEPENDS_ON: depsstr,
-           self._curr_table.COL_USED_BY: usedstr,
-           self._curr_table.COL_TARGET: ' '.join(self._targets),
-           }
+    row = {
+        self._curr_table.COL_PACKAGE: pinfo.package,
+        self._curr_table.COL_SLOT: pinfo.slot,
+        self._curr_table.COL_OVERLAY: pinfo.overlay,
+        self._curr_table.COL_CURRENT_VER: pinfo.version_rev,
+        self._curr_table.COL_STABLE_UPSTREAM_VER: stable_up_ver,
+        self._curr_table.COL_LATEST_UPSTREAM_VER: latest_up_ver,
+        self._curr_table.COL_STATE: pinfo.state,
+        self._curr_table.COL_DEPENDS_ON: depsstr,
+        self._curr_table.COL_USED_BY: usedstr,
+        self._curr_table.COL_TARGET: ' '.join(self._targets),
+    }
 
     # Only include if upgrade was involved.  Table may not have this column
     # if upgrade was not requested.
@@ -1586,8 +1590,8 @@ class Upgrader(object):
     # Upgraded foo/bar-1.2.3 to version 1.2.4 on x86
     # Upgraded foo/baz to version 2 on arm AND version 3 on amd64, x86
 
-    commit_lines = [] # Lines for the body of the commit message
-    pkg_overlays = {} # Overlays for upgraded packages in non-portage overlays.
+    commit_lines = []  # Lines for the body of the commit message
+    pkg_overlays = {}  # Overlays for upgraded packages in non-portage overlays.
 
     # Assemble hash of COL_UPGRADED column names by arch.
     upgraded_cols = {}
@@ -1690,7 +1694,7 @@ class Upgrader(object):
                      'boards.  Continue only if you have a reason to limit'
                      ' this upgrade to these specific architectures.\n')
         if not cros_build_lib.BooleanPrompt(
-            prompt="Do you want to continue anyway?", default=False):
+            prompt='Do you want to continue anyway?', default=False):
           raise RuntimeError('Missing one or more of the standard archs')
 
   def RunBoard(self, board):
@@ -1794,60 +1798,63 @@ class Upgrader(object):
       oper.Warning('Completed status report run.  To run in "upgrade"'
                    ' mode include the --upgrade option.')
 
+
 def _BoardIsSetUp(board):
   """Return true if |board| has been setup."""
   return os.path.isdir(cros_build_lib.GetSysroot(board=board))
 
+
 def _CreateParser():
   """Create the optparser.parser object for command-line args."""
-  epilog = ('\n'
-            'There are essentially two "modes": status report mode and '
-            'upgrade mode.\nStatus report mode is the default; upgrade '
-            'mode is enabled by either --upgrade or --upgrade-deep.\n'
-            '\n'
-            'In either mode, packages can be specified in any manner '
-            'commonly accepted by Portage tools.  For example:\n'
-            ' category/package_name\n'
-            ' package_name\n'
-            ' category/package_name-version (upgrade mode only)\n'
-            '\n'
-            'Status report mode will report on the status of the specified '
-            'packages relative to upstream,\nwithout making any changes. '
-            'In this mode, the specified packages are often high-level\n'
-            'targets such as "virtual/target-os". '
-            'The --to-csv option is often used in this mode.\n'
-            'The --unstable-ok option in this mode will make '
-            'the upstream comparison (e.g. "needs update") be\n'
-            'relative to the latest upstream version, stable or not.\n'
-            '\n'
-            'Upgrade mode will attempt to upgrade the specified '
-            'packages to one of the following versions:\n'
-            '1) The version specified in argument (e.g. foo/bar-1.2.3)\n'
-            '2) The latest stable version upstream (the default)\n'
-            '3) The latest overall version upstream (with --unstable-ok)\n'
-            '\n'
-            'Unlike with --upgrade, if --upgrade-deep is specified, '
-            'then the package dependencies will also be upgraded.\n'
-            'In upgrade mode, it is ok if the specified packages only '
-            'exist upstream.\n'
-            'The --force option can be used to do a package upgrade '
-            'even if the local version matches the upstream version.\n'
-            '\n'
-            'Status report mode examples:\n'
-            '> cros_portage_upgrade --board=arm-generic:x86-generic '
-            '--to-csv=cros-aebl.csv virtual/target-os\n'
-            '> cros_portage_upgrade --unstable-ok --board=x86-mario '
-            '--to-csv=cros_test-mario virtual/target-os virtual/target-os-dev '
-            'virtual/target-os-test\n'
-            'Upgrade mode examples:\n'
-            '> cros_portage_upgrade --board=arm-generic:x86-generic '
-            '--upgrade sys-devel/gdb virtual/yacc\n'
-            '> cros_portage_upgrade --unstable-ok --board=x86-mario '
-            '--upgrade-deep gdata\n'
-            '> cros_portage_upgrade --board=x86-generic --upgrade '
-            'media-libs/libpng-1.2.45\n'
-            '\n'
-            )
+  epilog = (
+      '\n'
+      'There are essentially two "modes": status report mode and '
+      'upgrade mode.\nStatus report mode is the default; upgrade '
+      'mode is enabled by either --upgrade or --upgrade-deep.\n'
+      '\n'
+      'In either mode, packages can be specified in any manner '
+      'commonly accepted by Portage tools.  For example:\n'
+      ' category/package_name\n'
+      ' package_name\n'
+      ' category/package_name-version (upgrade mode only)\n'
+      '\n'
+      'Status report mode will report on the status of the specified '
+      'packages relative to upstream,\nwithout making any changes. '
+      'In this mode, the specified packages are often high-level\n'
+      'targets such as "virtual/target-os". '
+      'The --to-csv option is often used in this mode.\n'
+      'The --unstable-ok option in this mode will make '
+      'the upstream comparison (e.g. "needs update") be\n'
+      'relative to the latest upstream version, stable or not.\n'
+      '\n'
+      'Upgrade mode will attempt to upgrade the specified '
+      'packages to one of the following versions:\n'
+      '1) The version specified in argument (e.g. foo/bar-1.2.3)\n'
+      '2) The latest stable version upstream (the default)\n'
+      '3) The latest overall version upstream (with --unstable-ok)\n'
+      '\n'
+      'Unlike with --upgrade, if --upgrade-deep is specified, '
+      'then the package dependencies will also be upgraded.\n'
+      'In upgrade mode, it is ok if the specified packages only '
+      'exist upstream.\n'
+      'The --force option can be used to do a package upgrade '
+      'even if the local version matches the upstream version.\n'
+      '\n'
+      'Status report mode examples:\n'
+      '> cros_portage_upgrade --board=arm-generic:x86-generic '
+      '--to-csv=cros-aebl.csv virtual/target-os\n'
+      '> cros_portage_upgrade --unstable-ok --board=x86-mario '
+      '--to-csv=cros_test-mario virtual/target-os virtual/target-os-dev '
+      'virtual/target-os-test\n'
+      'Upgrade mode examples:\n'
+      '> cros_portage_upgrade --board=arm-generic:x86-generic '
+      '--upgrade sys-devel/gdb virtual/yacc\n'
+      '> cros_portage_upgrade --unstable-ok --board=x86-mario '
+      '--upgrade-deep gdata\n'
+      '> cros_portage_upgrade --board=x86-generic --upgrade '
+      'media-libs/libpng-1.2.45\n'
+      '\n'
+  )
 
   parser = commandline.ArgumentParser(epilog=epilog)
   parser.add_argument('packages', nargs='*', default=None,

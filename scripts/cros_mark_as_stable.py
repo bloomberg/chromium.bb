@@ -4,8 +4,6 @@
 
 """This module uprevs a given package's ebuild to the next revision."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import optparse
@@ -163,9 +161,10 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
                          ' than chrome-bot:\n\n%s', bad_cls)
     raise AssertionError('Unexpected CLs found during uprev stage.')
 
-  description = git.RunGit(cwd,
-      ['log', '--format=format:%s%n%n%b', '%s..%s' % (
-       push_branch, stable_branch)]).output
+  description = git.RunGit(
+      cwd,
+      ['log', '--format=format:%s%n%n%b',
+       '%s..%s' % (push_branch, stable_branch)]).output
   description = '%s\n\n%s' % (GIT_COMMIT_SUBJECT, description)
   cros_build_lib.Info('For %s, using description %s', cwd, description)
   git.CreatePushBranch(constants.MERGE_BRANCH, cwd)
@@ -253,8 +252,8 @@ def main(_argv):
   else:
     cros_build_lib.Warning('Missing --overlays argument')
     overlays = {
-      '%s/private-overlays/chromeos-overlay' % options.srcroot: [],
-      '%s/third_party/chromiumos-overlay' % options.srcroot: []
+        '%s/private-overlays/chromeos-overlay' % options.srcroot: [],
+        '%s/third_party/chromiumos-overlay' % options.srcroot: [],
     }
 
   manifest = git.ManifestCheckout.Cached(options.srcroot)

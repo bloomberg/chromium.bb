@@ -4,8 +4,6 @@
 
 """Upload a single build command stats file to appengine."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import logging
@@ -49,8 +47,8 @@ class StatsLoader(object):
   @classmethod
   def _GetLinesLoader(cls, version):
     LOADERS = (
-      None,
-      cls._LoadLinesV1,  # Version 1 loader (at index 1)
+        None,
+        cls._LoadLinesV1,  # Version 1 loader (at index 1)
     )
 
     if version < len(LOADERS) and version >= 0:
@@ -80,9 +78,9 @@ def main(argv):
   # This is not meant to be a user-friendly script.  It takes one and
   # only one argument, which is a build stats file to be uploaded
   epilog = (
-    'This script is not intended to be run manually.  It is used as'
-    ' part of the build command statistics project.'
-    )
+      'This script is not intended to be run manually.  It is used as'
+      ' part of the build command statistics project.'
+  )
   in_golo = cros_build_lib.GetHostDomain().endswith(constants.GOLO_DOMAIN)
   debug_level = commandline.ArgumentParser.DEFAULT_LOG_LEVEL
   if in_golo:

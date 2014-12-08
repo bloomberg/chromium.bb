@@ -4,8 +4,6 @@
 
 """Script for listing top buildbot crashes."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import collections
@@ -246,7 +244,8 @@ def _CreateParser():
 
 def main(argv):
   # Setup boto config for gsutil.
-  boto_config = os.path.abspath(os.path.join(constants.SOURCE_ROOT,
+  boto_config = os.path.abspath(os.path.join(
+      constants.SOURCE_ROOT,
       'src/private-overlays/chromeos-overlay/googlestorage_account.boto'))
   if os.path.isfile(boto_config):
     os.environ['BOTO_CONFIG'] = boto_config

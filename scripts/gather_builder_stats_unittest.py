@@ -5,8 +5,6 @@
 
 """Unit tests for gather_builder_stats."""
 
-# pylint: disable=bad-continuation,protected-access
-
 from __future__ import print_function
 
 import datetime
@@ -36,6 +34,7 @@ class TestHelperMethods(cros_test_lib.TestCase):
   """Test helper methods not in a class."""
 
   def testRemoveBuildsWithNoBuildId(self):
+    # pylint: disable=protected-access
     good_build1 = metadata_lib.BuildData('url', {'build_id': 1})
     good_build2 = metadata_lib.BuildData('url', {'build_id': 2})
     bad_build = metadata_lib.BuildData('url', {})
@@ -82,14 +81,14 @@ class TestCLActionLogic(cros_test_lib.TestCase):
     c4p2 = metadata_lib.GerritPatchTuple(4, 2, True)
 
     # Mock builder status dictionaries
-    passed_status = {'status' : constants.FINAL_STATUS_PASSED}
-    failed_status = {'status' : constants.FINAL_STATUS_FAILED}
+    passed_status = {'status': constants.FINAL_STATUS_PASSED}
+    failed_status = {'status': constants.FINAL_STATUS_FAILED}
 
     t = itertools.count()
     bot_config = (constants.CQ_MASTER if cq
                   else constants.PRE_CQ_GROUP_CONFIG)
 
-    # pylint: disable=W0212
+    # pylint: disable=bad-continuation
     TEST_METADATA = [
       # Build 1 picks up no patches.
       metadata_lib.CBuildbotMetadata(
@@ -171,7 +170,7 @@ class TestCLActionLogic(cros_test_lib.TestCase):
             ).RecordCLAction(c1p1, constants.CL_ACTION_PICKED_UP, t.next()
             ).RecordCLAction(c1p1, constants.CL_ACTION_KICKED_OUT, t.next())
       ]
-    # pylint: enable=W0212
+    # pylint: enable=bad-continuation
 
     # TEST_METADATA should not be guaranteed to be ordered by build number
     # so shuffle it, but use the same seed each time so that unit test is
@@ -180,9 +179,10 @@ class TestCLActionLogic(cros_test_lib.TestCase):
     random.shuffle(TEST_METADATA)
 
     for m in TEST_METADATA:
-      build_id = self.fake_db.InsertBuild(m.GetValue('bot-config'),
-          constants.WATERFALL_INTERNAL, m.GetValue('build-number'),
-          m.GetValue('bot-config'), 'bot-hostname')
+      build_id = self.fake_db.InsertBuild(
+          m.GetValue('bot-config'), constants.WATERFALL_INTERNAL,
+          m.GetValue('build-number'), m.GetValue('bot-config'),
+          'bot-hostname')
       m.UpdateWithDict({'build_id': build_id})
       actions = []
       for action_metadata in m.GetDict()['cl_actions']:
@@ -220,11 +220,11 @@ class TestCLActionLogic(cros_test_lib.TestCase):
           'good_patch_rejection_breakdown': [(0, 3), (1, 0), (2, 1)],
           'good_patch_rejection_count': {CQ: 1, PRE_CQ: 1},
           'good_patch_rejections': 2,
-          'false_rejection_rate': {CQ: 20., PRE_CQ: 20., 'combined': 100./3,},
+          'false_rejection_rate': {CQ: 20., PRE_CQ: 20., 'combined': 100. / 3},
           'submitted_patches': 4,
           'submit_fails': 0,
           'unique_cls': 4,
-          'median_handling_time': -1, # This will be ignored in comparison
+          'median_handling_time': -1,  # This will be ignored in comparison
           'patch_handling_time': -1,  # This will be ignored in comparison
           'bad_cl_candidates': {
               CQ: [metadata_lib.GerritChangeTuple(gerrit_number=2,

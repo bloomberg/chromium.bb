@@ -4,8 +4,6 @@
 
 """Support uploading a csv file to a Google Docs spreadsheet."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import optparse
@@ -32,7 +30,7 @@ class Uploader(object):
                '_scomm',          # gdata_lib.SpreadsheetComm object
                '_ss_row_cache',   # dict with key=pkg, val=SpreadsheetRow obj
                '_csv_table',      # table.Table of csv rows
-               )
+              )
 
   ID_COL = utable.UpgradeTable.COL_PACKAGE
   SS_ID_COL = gdata_lib.PrepColNameForSS(ID_COL)
@@ -107,7 +105,7 @@ class Uploader(object):
       ss_row = self._GetSSRowForPackage(csv_package)
 
       if ss_row:
-        changed = [] # Gather changes for log message.
+        changed = []  # Gather changes for log message.
 
         # Check each key/value in new_row to see if it is different from what
         # is already in spreadsheet (ss_row).  Keep only differences to get
@@ -283,7 +281,7 @@ def main(argv):
   ws_names = [PKGS_WS_NAME, DEPS_WS_NAME]
   if not ss_key:
     if options.test_ss:
-      ss_key = TEST_SS_KEY # For testing with backup spreadsheet
+      ss_key = TEST_SS_KEY  # For testing with backup spreadsheet
     else:
       ss_key = REAL_SS_KEY
 

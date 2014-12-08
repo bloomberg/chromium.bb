@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 """Script that deploys a Chrome build to a device.
 
 The script supports deploying Chrome from these sources:
@@ -15,8 +14,6 @@ The script copies the necessary contents of the source location (tarball or
 build directory) and rsyncs the contents of the staging directory onto your
 device's rootfs.
 """
-
-# pylint: disable=bad-continuation
 
 from __future__ import print_function
 
@@ -31,7 +28,6 @@ import optparse
 import shlex
 import shutil
 import time
-
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
@@ -48,7 +44,7 @@ from chromite.lib import timeout_util
 from chromite.scripts import lddtree
 
 
-_USAGE = "deploy_chrome [--]\n\n %s" % __doc__
+_USAGE = 'deploy_chrome [--]\n\n %s' % __doc__
 
 KERNEL_A_PARTITION = 2
 KERNEL_B_PARTITION = 4
@@ -72,6 +68,7 @@ _SET_MOUNT_FLAGS_CMD = 'mount -o remount,exec,suid %s'
 
 DF_COMMAND = 'df -k %s'
 
+
 def _UrlBaseName(url):
   """Return the last component of the URL."""
   return url.rstrip('/').rpartition('/')[-1]
@@ -87,6 +84,7 @@ DeviceInfo = collections.namedtuple(
 
 class DeployChrome(object):
   """Wraps the core deployment functionality."""
+
   def __init__(self, options, tempdir, staging_dir):
     """Initialize the class.
 
@@ -196,7 +194,7 @@ class DeployChrome(object):
           logging.warning('Killing chrome and session_manager processes...\n')
 
           self.device.RunCommand("pkill 'chrome|session_manager'",
-                             error_code_ok=True)
+                                 error_code_ok=True)
           # Wait for processes to actually terminate
           time.sleep(POST_KILL_WAIT)
           logging.info('Rechecking the chrome binary...')
@@ -261,7 +259,6 @@ class DeployChrome(object):
         self.device.RunCommand('chmod %o %s/%s' % (
             p.mode, dest_path, p.src if not p.dest else p.dest))
 
-
     if self.options.startui:
       logging.info('Starting UI...')
       self.device.RunCommand('start ui')
@@ -300,7 +297,7 @@ class DeployChrome(object):
 
     # Create directory if does not exist
     self.device.RunCommand('mkdir -p --mode 0775 %s' % (
-                               self.options.mount_dir,))
+        self.options.mount_dir,))
     # Umount the existing mount on mount_dir if present first
     self.device.RunCommand(_UMOUNT_DIR_IF_MOUNTPOINT_CMD %
                            {'dir': self.options.mount_dir})
@@ -411,8 +408,8 @@ def _CreateParser():
   group.add_option('--sloppy', action='store_true', default=False,
                    help='Ignore when mandatory artifacts are missing.')
   group.add_option('--staging-flags', default=None, type='gyp_defines',
-                   help='Extra flags to control staging.  Valid flags are - %s'
-                        % ', '.join(chrome_util.STAGING_FLAGS))
+                   help=('Extra flags to control staging.  Valid flags are - %s'
+                         % ', '.join(chrome_util.STAGING_FLAGS)))
   group.add_option('--strict', action='store_true', default=False,
                    help='Stage artifacts based on the GYP_DEFINES environment '
                         'variable and --staging-flags, if set. Enforce that '
@@ -435,7 +432,6 @@ def _CreateParser():
                    help='Override toolchain url format pattern, e.g. '
                    '2014/04/%%(target)s-2014.04.23.220740.tar.xz')
   parser.add_option_group(group)
-
 
   # GYP_DEFINES that Chrome was built with.  Influences which files are staged
   # when --build-dir is set.  Defaults to reading from the GYP_DEFINES
@@ -510,11 +506,11 @@ def _PostParseCheck(options, _args):
     if gyp_env is not None:
       options.gyp_defines = chrome_util.ProcessGypDefines(gyp_env)
       logging.debug('GYP_DEFINES taken from environment: %s',
-                   options.gyp_defines)
+                    options.gyp_defines)
 
   if options.strict and not options.gyp_defines:
     cros_build_lib.Die('When --strict is set, the GYP_DEFINES environment '
-                         'variable must be set.')
+                       'variable must be set.')
 
   if options.build_dir:
     chrome_path = os.path.join(options.build_dir, 'chrome')

@@ -4,8 +4,6 @@
 
 """Validate or replace the standard gdata authorization token."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import filecmp
@@ -16,6 +14,7 @@ import shutil
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib as build_lib
 from chromite.lib import operation
+
 
 MODULE = os.path.splitext(os.path.basename(__file__))[0]
 oper = operation.Operation(MODULE)
@@ -76,8 +75,8 @@ class InsideChroot(object):
 
   def __init__(self):
     self.creds = None     # gdata_lib.Creds object.
-    self.gd_client = None # For interacting with Google Docs.
-    self.it_client = None # For interacting with Issue Tracker.
+    self.gd_client = None  # For interacting with Google Docs.
+    self.it_client = None  # For interacting with Issue Tracker.
 
   def _LoadTokenFile(self):
     """Load existing auth token file."""
@@ -95,7 +94,6 @@ class InsideChroot(object):
 
   def _ValidateDocsToken(self):
     """Validate the existing Docs token."""
-    # pylint: disable=W0404
     import gdata.service
 
     if not self.creds.docs_auth_token:
@@ -121,7 +119,6 @@ class InsideChroot(object):
 
   def _GenerateDocsToken(self):
     """Generate a new Docs token from credentials."""
-    # pylint: disable=W0404
     import gdata.service
 
     oper.Warning('Docs token not valid.  Will try to generate a new one.')
@@ -142,7 +139,6 @@ class InsideChroot(object):
 
   def _ValidateTrackerToken(self):
     """Validate the existing Tracker token."""
-    # pylint: disable=W0404
     import gdata.gauth
     import gdata.projecthosting.client
 
@@ -152,7 +148,7 @@ class InsideChroot(object):
     oper.Notice('Attempting to log into Tracker using auth token.')
     self.it_client.source = 'Package Status'
     self.it_client.auth_token = gdata.gauth.ClientLoginToken(
-      self.creds.tracker_auth_token)
+        self.creds.tracker_auth_token)
 
     try:
       # Try to access Tracker Issue #1, which will check access.
@@ -172,7 +168,6 @@ class InsideChroot(object):
 
   def _GenerateTrackerToken(self):
     """Generate a new Tracker token from credentials."""
-    # pylint: disable=W0404
     import gdata.client
 
     oper.Warning('Tracker token not valid.  Will try to generate a new one.')
@@ -193,7 +188,6 @@ class InsideChroot(object):
 
   def Run(self):
     """Validate existing auth token or generate new one from credentials."""
-    # pylint: disable=W0404
     import chromite.lib.gdata_lib as gdata_lib
     import gdata.spreadsheet.service
 

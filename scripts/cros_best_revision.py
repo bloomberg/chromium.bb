@@ -7,8 +7,6 @@
 Used to check in a LKGM version for Chrome OS for other consumers.
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import distutils.version
@@ -151,7 +149,8 @@ class ChromeCommitter(object):
           'Could not create git commit with new LKGM: %r' % e)
 
     if not tree_status.IsTreeOpen(status_url=gclient.STATUS_URL,
-        period=self._SLEEP_TIMEOUT, timeout=self._TREE_TIMEOUT):
+                                  period=self._SLEEP_TIMEOUT,
+                                  timeout=self._TREE_TIMEOUT):
       raise LKGMNotCommitted('Chromium Tree is closed')
 
     if not self._dryrun:
@@ -206,8 +205,8 @@ def _GetParser():
   parser.add_argument('--dryrun', action='store_true', default=False,
                       help="Find the next LKGM but don't commit it.")
   parser.add_argument('--workdir', default=os.path.join(os.getcwd(), 'src'),
-                      help=("Path to a checkout of chromium/src. "
-                            "Defaults to PWD/src"))
+                      help=('Path to a checkout of chromium/src. '
+                            'Defaults to PWD/src'))
 
   return parser
 

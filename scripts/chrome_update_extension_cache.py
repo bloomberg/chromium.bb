@@ -20,8 +20,6 @@ Run inside the chroot:
 $ ebuild chromeos-default-apps-1.0.0.ebuild manifest --force
 """
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import json
@@ -43,7 +41,7 @@ def DownloadCrx(ext, extension, crxdir):
   cros_build_lib.Info('Extension "%s"(%s)...', extension['name'], ext)
 
   update_url = ('%s?x=prodversion%%3D35.1.1.1%%26id%%3D%s%%26uc' %
-      (extension['external_update_url'], ext))
+                (extension['external_update_url'], ext))
   response = urllib.urlopen(update_url)
   if response.getcode() != 200:
     cros_build_lib.Error('Cannot get update response, URL: %s, error: %d',
@@ -86,7 +84,7 @@ def CreateValidationFiles(validationdir, crxdir, identifier):
 
     # Make directory relative to output dir by removing crxdir and /.
     for filename in filenames:
-      verified_files.append(os.path.join(directory[len(crxdir)+1:],
+      verified_files.append(os.path.join(directory[len(crxdir) + 1:],
                                          filename))
 
   validation_file = os.path.join(validationdir, '%s.validation' % identifier)
@@ -127,7 +125,7 @@ def CreateCacheTarball(extensions, outputdir, identifier, tarball):
 
     if managed_users == 'yes':
       json_file = os.path.join(jsondir,
-          'extensions/managed_users/%s.json' % ext)
+                               'extensions/managed_users/%s.json' % ext)
       json.dump(extensions[ext],
                 open(json_file, 'w'),
                 sort_keys=True,

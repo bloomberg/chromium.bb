@@ -4,15 +4,13 @@
 
 """Command to list patches applies to a repository."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import functools
 import json
 import os
 import parallel_emerge
-import portage  # pylint: disable=F0401
+import portage  # pylint: disable=import-error
 import re
 import shutil
 import sys
@@ -103,7 +101,7 @@ class PatchReporter(object):
   def _ObservePatches(self, temp_space, deps_map):
     for cpv in deps_map:
       cat, name, _, _ = portage.versions.catpkgsplit(cpv)
-      if self.Ignored("%s/%s" % (cat, name)):
+      if self.Ignored('%s/%s' % (cat, name)):
         continue
       cmd = self.equery_cmd[:]
       cmd.extend(['which', cpv])
@@ -113,7 +111,7 @@ class PatchReporter(object):
       # only interested in extracting the patches from one particular
       # overlay, we skip ebuilds not from that overlay.
       if self.overlay_dir != os.path.commonprefix([self.overlay_dir,
-                                                  ebuild_path]):
+                                                   ebuild_path]):
         continue
 
       # By running 'ebuild blah.ebuild prepare', we get logs in PORT_LOGDIR
@@ -142,7 +140,7 @@ class PatchReporter(object):
       cat = os.path.basename(cat)
       _, pkg, _, _ = portage.versions.catpkgsplit('x-x/%s' % pkg)
       patch_name = re.sub(patch_regex, r'\1', patchmsg)
-      patches.append("%s/%s %s" % (cat, pkg, patch_name))
+      patches.append('%s/%s %s' % (cat, pkg, patch_name))
 
     return patches
 

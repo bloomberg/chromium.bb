@@ -4,8 +4,6 @@
 
 """Synchronize issues in Package Status spreadsheet with Issue Tracker."""
 
-# pylint: disable=bad-continuation
-
 from __future__ import print_function
 
 import optparse
@@ -18,7 +16,6 @@ from chromite.lib import operation
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import upload_package_status as ups
 
-# pylint: disable=W0201,R0904
 
 TRACKER_PROJECT_NAME = 'chromium'
 
@@ -61,23 +58,22 @@ class Syncer(object):
                  'kernel': 'Cr-OS-Kernel',
                  'security': 'Security',
                  'system': 'Cr-OS-Systems',
-                 'ui': 'Cr-UI',
-                 }
-  UPGRADE_STATES = set([utable.UpgradeTable.STATE_NEEDS_UPGRADE,
-                        utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_PATCHED,
-                        utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_DUPLICATED,
-                        ])
+                 'ui': 'Cr-UI'}
+  UPGRADE_STATES = set(
+      [utable.UpgradeTable.STATE_NEEDS_UPGRADE,
+       utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_PATCHED,
+       utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_DUPLICATED])
 
   __slots__ = (
-    'default_owner',  # Default owner to use when creating issues
-    'owners',         # Set of owners to select (None means no filter)
-    'pretend',        # If True, make no real changes
-    'scomm',          # SpreadsheetComm
-    'tcomm',          # TrackerComm
-    'teams',          # Set of teams to select (None means no filter)
-    'tracker_col_ix', # Index of Tracker column in spreadsheet
-    'verbose',        # Verbose boolean
-    )
+      'default_owner',  # Default owner to use when creating issues
+      'owners',         # Set of owners to select (None means no filter)
+      'pretend',        # If True, make no real changes
+      'scomm',          # SpreadsheetComm
+      'tcomm',          # TrackerComm
+      'teams',          # Set of teams to select (None means no filter)
+      'tracker_col_ix',  # Index of Tracker column in spreadsheet
+      'verbose',        # Verbose boolean
+  )
 
   def __init__(self, tcomm, scomm, pretend=False, verbose=False):
     self.tcomm = tcomm
@@ -236,8 +232,7 @@ class Syncer(object):
               'OS-Chrome',
               'Cr-OS-Packages',
               'Pri-2',
-              self.VALID_TEAMS[team],
-              ]
+              self.VALID_TEAMS[team]]
 
     owner = self._ReduceOwnerName(row[COL_OWNER])
     status = 'Untriaged'
@@ -247,14 +242,13 @@ class Syncer(object):
     elif self.default_owner:
       owner = self.default_owner + '@chromium.org.'
     else:
-      owner = None # Rather than ''
+      owner = None  # Rather than ''
 
     title = '%s package needs upgrade from upstream Portage' % pkg
 
     lines = ['The %s package can be upgraded from upstream Portage' % pkg,
              '',
-             'At this moment the status on each arch is as follows:',
-             ]
+             'At this moment the status on each arch is as follows:']
 
     for arch in sorted(statuses):
       arch_status = statuses[arch]
@@ -287,8 +281,7 @@ class Syncer(object):
                             summary=summary,
                             status=status,
                             owner=owner,
-                            labels=labels,
-                            )
+                            labels=labels,)
     return issue
 
   def _GetRowTrackerId(self, row):
@@ -441,11 +434,11 @@ only useful if your username matches your chromium account name.
 
 """ %
             {'ss_key': ups.REAL_SS_KEY, 'ws_name': PKGS_WS_NAME,
-             'test_ss_key': ups.TEST_SS_KEY}
-            )
+             'test_ss_key': ups.TEST_SS_KEY})
 
   class MyOptParser(optparse.OptionParser):
     """Override default epilog formatter, which strips newlines."""
+
     def format_epilog(self, formatter):
       return self.epilog
 
@@ -461,7 +454,7 @@ only useful if your username matches your chromium account name.
                     help='Path to gdata credentials file [default: "%default"]')
   parser.add_option('--email', dest='email', type='string',
                     action='store', default=None,
-                    help="Email for Google Doc/Tracker user")
+                    help='Email for Google Doc/Tracker user')
   parser.add_option('--pretend', dest='pretend', action='store_true',
                     default=False,
                     help='Do not make any actual changes.')
