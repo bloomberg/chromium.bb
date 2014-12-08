@@ -1,4 +1,4 @@
-layer at (0,0) size 800x640
+layer at (0,0) size 800x600 scrollHeight 640
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x155
   RenderBlock {HTML} at (0,0) size 800x154.88
@@ -88,22 +88,22 @@ layer at (210,440) size 80x80
   RenderBlock (positioned) {DIV} at (200,0) size 80x80
     RenderText {#text} at (0,0) size 16x16
       text run at (0,0) width 16: "p5"
-layer at (10,540) size 300x100
+layer at (10,540) size 300x100 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (positioned) {DIV} at (10,540) size 300x100
-layer at (10,540) size 80x80
+layer at (10,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (positioned) {DIV} at (0,0) size 80x80
-layer at (10,540) size 80x80
+layer at (10,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (positioned) {DIV} at (0,0) size 80x80
-layer at (10,540) size 80x80
+layer at (10,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (positioned) {P} at (0,0) size 80x80 [bgcolor=#808080]
     RenderText {#text} at (0,0) size 65x32
       text run at (0,0) width 51: "nested -"
       text run at (0,16) width 65: "auto outer"
-layer at (110,540) size 80x80
+layer at (110,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (positioned) {DIV} at (100,0) size 80x80
     RenderText {#text} at (0,0) size 16x16
       text run at (0,0) width 16: "p7"
-layer at (210,540) size 80x80
+layer at (210,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (positioned) {DIV} at (200,0) size 80x80
     RenderText {#text} at (0,0) size 16x16
       text run at (0,0) width 16: "p7"
@@ -175,11 +175,11 @@ layer at (540,440) size 80x80
   RenderBlock (positioned) {DIV} at (200,0) size 80x80
     RenderText {#text} at (0,0) size 24x16
       text run at (0,0) width 24: "p14"
-layer at (340,540) size 300x100
+layer at (340,540) size 300x100 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (positioned) {DIV} at (340,540) size 300x100
-layer at (340,540) size 80x80
+layer at (340,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (positioned) {DIV} at (0,0) size 80x80
-layer at (340,540) size 80x80
+layer at (340,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (positioned) {P} at (0,0) size 80x80 [bgcolor=#808080]
     RenderInline {SPAN} at (0,0) size 37x16 [bgcolor=#FFFF00]
       RenderText {#text} at (0,0) size 37x16
@@ -188,11 +188,11 @@ layer at (340,540) size 80x80
       text run at (36,0) width 26: " has"
       text run at (0,16) width 80: "none, parent"
       text run at (0,32) width 28: "auto"
-layer at (440,540) size 80x80
+layer at (440,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (positioned) {DIV} at (100,0) size 80x80
     RenderText {#text} at (0,0) size 24x16
       text run at (0,0) width 24: "p15"
-layer at (540,540) size 80x80
+layer at (540,540) size 80x80 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (positioned) {DIV} at (200,0) size 80x80
     RenderText {#text} at (0,0) size 24x16
       text run at (0,0) width 24: "p15"

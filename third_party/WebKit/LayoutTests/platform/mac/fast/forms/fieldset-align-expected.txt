@@ -1,6 +1,6 @@
-layer at (0,0) size 785x1283
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x1283
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1283
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 785x1283 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x1282.75
     RenderBody {BODY} at (8,8) size 769x1259.75
       RenderBlock {P} at (0,0) size 769x16
@@ -160,19 +160,19 @@ layer at (641,438) size 117x13
   RenderBlock {DIV} at (3,3) size 117x13
 layer at (641,491) size 117x13
   RenderBlock {DIV} at (3,3) size 117x13
-layer at (43,611) size 117x13
+layer at (43,611) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
   RenderBlock {DIV} at (3,3) size 117x13
-layer at (43,693) size 117x13
+layer at (43,693) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
   RenderBlock {DIV} at (3,3) size 117x13
-layer at (43,775) size 117x13
+layer at (43,775) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
   RenderBlock {DIV} at (3,3) size 117x13
-layer at (43,857) size 117x13
+layer at (43,857) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
   RenderBlock {DIV} at (3,3) size 117x13
-layer at (625,989) size 117x13
+layer at (625,989) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
   RenderBlock {DIV} at (3,3) size 117x13
-layer at (625,1071) size 117x13
+layer at (625,1071) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
   RenderBlock {DIV} at (3,3) size 117x13
-layer at (625,1153) size 117x13
+layer at (625,1153) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
   RenderBlock {DIV} at (3,3) size 117x13
-layer at (625,1235) size 117x13
+layer at (625,1235) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
   RenderBlock {DIV} at (3,3) size 117x13

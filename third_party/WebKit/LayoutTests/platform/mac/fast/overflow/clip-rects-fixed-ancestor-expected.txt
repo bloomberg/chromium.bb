@@ -1,6 +1,6 @@
-layer at (0,0) size 785x1029
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x1029
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollY 64.00 scrollHeight 1029
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 785x1029 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x1029.27
     RenderBody {BODY} at (8,21.27) size 769x1000
       RenderBlock {H4} at (0,0) size 769x16
@@ -172,12 +172,12 @@ layer at (527,340) size 118x28
   RenderBlock (relative positioned) {DIV} at (11,27) size 118x28 [border: (1px solid #999999)]
     RenderText {#text} at (6,6) size 52x16
       text run at (6,6) width 52: ".relative"
-layer at (705,149) size 162x350 backgroundClip at (0,0) size 785x1029 clip at (0,0) size 785x1029 outlineClip at (0,0) size 785x1029
+layer at (705,149) size 162x350 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (positioned) {DIV} at (705,85) size 162x350 [border: (1px solid #999999)]
     RenderBlock (anonymous) at (6,6) size 150x16
       RenderText {#text} at (0,0) size 49x16
         text run at (0,0) width 49: "#fixed3"
-layer at (716,176) size 140x312 backgroundClip at (716,176) size 69x312 clip at (717,177) size 68x310 outlineClip at (0,0) size 785x1029
+layer at (716,176) size 140x312 backgroundClip at (716,176) size 69x312 clip at (717,177) size 68x310 outlineClip at (0,0) size 785x600
   RenderBlock {DIV} at (11,27) size 140x312 [border: (1px solid #999999)]
     RenderBlock (anonymous) at (6,6) size 128x16
       RenderText {#text} at (0,0) size 109x16
@@ -211,7 +211,7 @@ layer at (727,236) size 118x28 backgroundClip at (717,177) size 68x310 clip at (
   RenderBlock (relative positioned) {DIV} at (11,60) size 118x28 [border: (1px solid #999999)]
     RenderText {#text} at (6,6) size 52x16
       text run at (6,6) width 52: ".relative"
-layer at (792,155) size 69x28 backgroundClip at (0,0) size 785x1029 clip at (0,0) size 785x1029 outlineClip at (0,0) size 785x1029
+layer at (792,155) size 69x28 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (positioned) {DIV} at (86.67,6) size 69.33x28 [border: (1px solid #999999)]
     RenderText {#text} at (6,6) size 58x16
       text run at (6,6) width 58: ".absolute"

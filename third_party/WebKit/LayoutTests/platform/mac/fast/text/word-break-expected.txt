@@ -1,6 +1,6 @@
-layer at (0,0) size 785x932
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x932
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 932
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 785x932 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x932
     RenderBody {BODY} at (8,8) size 769x916
       RenderBlock (anonymous) at (0,0) size 769x16
@@ -93,17 +93,17 @@ layer at (0,0) size 785x932
         RenderBR {BR} at (302,2) size 0x13
       RenderBlock (anonymous) at (0,796) size 769x16
         RenderBR {BR} at (0,0) size 0x16
-layer at (8,593) size 304x104
+layer at (8,593) size 304x104 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (relative positioned) {DIV} at (0,585) size 304x104 [border: (2px solid #000000)]
-layer at (10,595) size 300x39
+layer at (10,595) size 300x39 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (positioned) {DIV} at (2,2) size 300x39
     RenderText {#text} at (0,0) size 297x39
       text run at (0,0) width 297: "Eventhoughthishasareallylongword itsho"
       text run at (0,13) width 297: "uldnotstick out oftheenclosing300pxblo"
       text run at (0,26) width 24: "ck."
-layer at (8,820) size 304x104
+layer at (8,820) size 304x104 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (relative positioned) {DIV} at (0,812) size 304x104 [border: (2px solid #000000)]
-layer at (10,822) size 300x39
+layer at (10,822) size 300x39 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (positioned) {DIV} at (2,2) size 300x39
     RenderText {#text} at (0,0) size 250x39
       text run at (0,0) width 250: "Eventhoughthishasareallylongword"

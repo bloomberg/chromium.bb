@@ -1,6 +1,6 @@
-layer at (0,0) size 785x1048
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x1048
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1048
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 785x1048 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x1048
     RenderBody {BODY} at (8,8) size 769x584
       RenderBlock (floating) {DIV} at (0,0) size 352x801 [border: (1px solid #FF0000)]
@@ -354,7 +354,7 @@ layer at (24,537) size 91x32 clip at (25,538) size 74x30 scrollHeight 95
         text run at (0,65) width 66: "abcdefghijkl"
         text run at (0,78) width 65: "mnopqrstuv"
         text run at (64,78) width 4: " "
-layer at (24,589) size 161x136 clip at (25,590) size 159x134
+layer at (24,589) size 161x136 backgroundClip at (24,589) size 161x11 clip at (25,590) size 159x10 outlineClip at (0,0) size 785x600
   RenderTextControl {TEXTAREA} at (14.61,1) size 161x136 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 155x52
       RenderText {#text} at (0,0) size 153x52
@@ -365,7 +365,7 @@ layer at (24,589) size 161x136 clip at (25,590) size 159x134
         text run at (29,26) width 5: " "
         text run at (0,39) width 130: "abcdefghijklmnopqrstuv"
         text run at (129,39) width 5: " "
-layer at (24,745) size 56x58 clip at (25,746) size 39x56 scrollHeight 186
+layer at (24,745) size 56x58 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 186
   RenderTextControl {TEXTAREA} at (14.61,1) size 56x58 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 35x182
       RenderText {#text} at (0,0) size 35x182
@@ -574,7 +574,7 @@ layer at (376,491) size 60x60 clip at (377,492) size 58x58 scrollHeight 134
         text run at (0,104) width 51: "jklmnopq"
         text run at (0,117) width 27: "rstuv"
         text run at (26,117) width 5: " "
-layer at (376,571) size 60x60 clip at (377,572) size 43x43 scrollHeight 160
+layer at (376,571) size 60x60 backgroundClip at (376,571) size 60x29 clip at (377,572) size 43x28 outlineClip at (0,0) size 785x600 scrollHeight 160
   RenderTextControl {TEXTAREA} at (14.61,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 39x156
       RenderText {#text} at (0,0) size 39x156
@@ -595,7 +595,7 @@ layer at (376,571) size 60x60 clip at (377,572) size 43x43 scrollHeight 160
         text run at (0,130) width 38: "mnopq"
         text run at (0,143) width 27: "rstuv"
         text run at (26,143) width 5: " "
-layer at (376,651) size 60x60 clip at (377,652) size 43x58 scrollHeight 160
+layer at (376,651) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 160
   RenderTextControl {TEXTAREA} at (14.61,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 39x156
       RenderText {#text} at (0,0) size 39x156
@@ -616,7 +616,7 @@ layer at (376,651) size 60x60 clip at (377,652) size 43x58 scrollHeight 160
         text run at (0,130) width 38: "mnopq"
         text run at (0,143) width 27: "rstuv"
         text run at (26,143) width 5: " "
-layer at (376,731) size 60x60 clip at (377,732) size 43x58 scrollHeight 160
+layer at (376,731) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 160
   RenderTextControl {TEXTAREA} at (14.61,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 39x156
       RenderText {#text} at (0,0) size 39x156
@@ -637,7 +637,7 @@ layer at (376,731) size 60x60 clip at (377,732) size 43x58 scrollHeight 160
         text run at (0,130) width 38: "mnopq"
         text run at (0,143) width 27: "rstuv"
         text run at (26,143) width 5: " "
-layer at (376,811) size 60x60 clip at (377,812) size 43x58 scrollHeight 160
+layer at (376,811) size 60x60 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 160
   RenderTextControl {TEXTAREA} at (14.61,1) size 60x60 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 39x156
       RenderText {#text} at (0,0) size 39x156
@@ -658,7 +658,7 @@ layer at (376,811) size 60x60 clip at (377,812) size 43x58 scrollHeight 160
         text run at (0,130) width 38: "mnopq"
         text run at (0,143) width 27: "rstuv"
         text run at (26,143) width 5: " "
-layer at (376,891) size 161x47 clip at (377,892) size 144x30 scrollWidth 190 scrollHeight 212
+layer at (376,891) size 161x47 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollWidth 190 scrollHeight 212
   RenderTextControl {TEXTAREA} at (14.61,1) size 161x47 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 140x208
       RenderText {#text} at (0,0) size 4x13
@@ -707,7 +707,7 @@ layer at (376,891) size 161x47 clip at (377,892) size 144x30 scrollWidth 190 scr
         text run at (0,182) width 189: "This is a text area with wrap=\"soft\""
       RenderBR {BR} at (0,0) size 0x0
       RenderBR {BR} at (0,195) size 0x13
-layer at (376,958) size 161x32 clip at (377,959) size 144x30 scrollHeight 394
+layer at (376,958) size 161x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 394
   RenderTextControl {TEXTAREA} at (14.61,1) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 140x390
       RenderText {#text} at (0,0) size 4x13
@@ -784,7 +784,7 @@ layer at (376,958) size 161x32 clip at (377,959) size 144x30 scrollHeight 394
         text run at (0,364) width 64: "wrap=\"soft\""
       RenderBR {BR} at (63,375) size 1x0
       RenderBR {BR} at (0,377) size 0x13
-layer at (376,1010) size 161x32 clip at (377,1011) size 144x30 scrollHeight 394
+layer at (376,1010) size 161x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 394
   RenderTextControl {TEXTAREA} at (14.61,1) size 161x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     RenderBlock {DIV} at (3,3) size 140x390
       RenderText {#text} at (0,0) size 4x13

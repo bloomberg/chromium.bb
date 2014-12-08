@@ -1,6 +1,6 @@
-layer at (0,0) size 2041x2157
+layer at (0,0) size 800x600 scrollWidth 2041 scrollHeight 2157
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x2157
+layer at (0,0) size 800x2157 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x2157.28
     RenderBody {BODY} at (8,8) size 784x2141.28
       RenderBlock {H2} at (0,0) size 784x24

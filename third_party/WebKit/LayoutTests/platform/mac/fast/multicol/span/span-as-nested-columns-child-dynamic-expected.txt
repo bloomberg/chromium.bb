@@ -1,6 +1,6 @@
-layer at (0,0) size 785x1237
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x1237
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1237
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 785x1237 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x1237.44
     RenderBody {BODY} at (8,16) size 769x1205.44
 layer at (8,16) size 760x386
@@ -59,13 +59,13 @@ layer at (13,93) size 750x304
         text run at (278,336) width 86: "Lorem ipsum"
         text run at (0,352) width 357: "dolor sit amet, consectetuer adipiscing elit. Nulla varius"
         text run at (0,368) width 76: "enim ac mi."
-layer at (8,418) size 760x386
+layer at (8,418) size 760x386 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {DIV} at (0,401.81) size 760x385.81 [border: (5px solid #800000)]
     RenderBlock (anonymous multi-column span) at (5,309) size 750x63.81 [color=#FFFFFF]
       RenderBlock {H2} at (0,19.91) size 750x24 [color=#000000] [bgcolor=#EEEEEE]
         RenderText {#text} at (0,0) size 277x24
           text run at (0,0) width 277: "This is a spanning element."
-layer at (13,423) size 750x304
+layer at (13,423) size 750x304 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (anonymous multi-column) at (5,5) size 750x304
     RenderBlock (anonymous) at (0,0) size 367x528
       RenderText {#text} at (0,0) size 367x528
@@ -108,16 +108,16 @@ layer at (13,423) size 750x304
       RenderText {#text} at (0,0) size 364x32
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
         text run at (0,16) width 158: "Nulla varius enim ac mi."
-layer at (13,791) size 750x8
+layer at (13,791) size 750x8 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (anonymous multi-column) at (5,372.81) size 750x8
     RenderBlock {SPAN} at (0,8) size 367x0 [color=#FFFFFF] [bgcolor=#000000]
-layer at (8,820) size 760x401
+layer at (8,820) size 760x401 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {DIV} at (0,803.63) size 760x401.81 [border: (5px solid #800000)]
     RenderBlock (anonymous multi-column span) at (5,133) size 750x63.81 [color=#FFFFFF]
       RenderBlock {H2} at (0,19.91) size 750x24 [color=#000000] [bgcolor=#EEEEEE]
         RenderText {#text} at (0,0) size 277x24
           text run at (0,0) width 277: "This is a spanning element."
-layer at (13,825) size 750x128
+layer at (13,825) size 750x128 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (anonymous multi-column) at (5,5) size 750x128
     RenderBlock {P} at (0,16) size 367x176
       RenderText {#text} at (0,0) size 367x176
@@ -136,7 +136,7 @@ layer at (13,825) size 750x128
       RenderText {#text} at (0,0) size 364x32
         text run at (0,0) width 364: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
         text run at (0,16) width 158: "Nulla varius enim ac mi."
-layer at (13,1016) size 750x200
+layer at (13,1016) size 750x200 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (anonymous multi-column) at (5,196.81) size 750x200
     RenderBlock {SPAN} at (0,16) size 367x168 [color=#FFFFFF] [bgcolor=#000000]
       RenderBlock {P} at (0,0) size 367x176

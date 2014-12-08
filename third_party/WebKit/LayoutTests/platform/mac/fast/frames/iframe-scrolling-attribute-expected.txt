@@ -1,6 +1,6 @@
-layer at (0,0) size 785x688
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x688
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 688
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 785x688 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x688
     RenderBody {BODY} at (8,8) size 769x672
       RenderBlock {P} at (0,0) size 769x32
@@ -35,9 +35,9 @@ layer at (0,0) size 785x688
         RenderText {#text} at (0,0) size 0x0
 layer at (8,56) size 204x204
   RenderPartObject {IFRAME} at (0,0) size 204x204 [border: (2px inset #EEEEEE)]
-    layer at (0,0) size 408x480
-      RenderView at (0,0) size 185x185
-    layer at (0,0) size 185x480
+    layer at (0,0) size 200x200 clip at (0,0) size 185x185 scrollWidth 408 scrollHeight 480
+      RenderView at (0,0) size 200x200
+    layer at (0,0) size 185x480 backgroundClip at (0,0) size 185x185 clip at (0,0) size 185x185 outlineClip at (0,0) size 185x185
       RenderBlock {HTML} at (0,0) size 185x480
         RenderBody {BODY} at (8,8) size 169x464
           RenderBlock {P} at (0,0) size 169x48
@@ -48,9 +48,9 @@ layer at (8,56) size 204x204
           RenderBlock {DIV} at (0,64) size 400x400 [bgcolor=#0000FF]
 layer at (216,56) size 204x204
   RenderPartObject {IFRAME} at (208,0) size 204x204 [border: (2px inset #EEEEEE)]
-    layer at (0,0) size 408x480
-      RenderView at (0,0) size 185x185
-    layer at (0,0) size 185x480
+    layer at (0,0) size 200x200 clip at (0,0) size 185x185 scrollWidth 408 scrollHeight 480
+      RenderView at (0,0) size 200x200
+    layer at (0,0) size 185x480 backgroundClip at (0,0) size 185x185 clip at (0,0) size 185x185 outlineClip at (0,0) size 185x185
       RenderBlock {HTML} at (0,0) size 185x480
         RenderBody {BODY} at (8,8) size 169x464
           RenderBlock {P} at (0,0) size 169x48
@@ -61,9 +61,9 @@ layer at (216,56) size 204x204
           RenderBlock {DIV} at (0,64) size 400x400 [bgcolor=#0000FF]
 layer at (424,56) size 204x204
   RenderPartObject {IFRAME} at (416,0) size 204x204 [border: (2px inset #EEEEEE)]
-    layer at (0,0) size 408x480
-      RenderView at (0,0) size 185x185
-    layer at (0,0) size 185x480
+    layer at (0,0) size 200x200 clip at (0,0) size 185x185 scrollWidth 408 scrollHeight 480
+      RenderView at (0,0) size 200x200
+    layer at (0,0) size 185x480 backgroundClip at (0,0) size 185x185 clip at (0,0) size 185x185 outlineClip at (0,0) size 185x185
       RenderBlock {HTML} at (0,0) size 185x480
         RenderBody {BODY} at (8,8) size 169x464
           RenderBlock {P} at (0,0) size 169x48
@@ -74,9 +74,9 @@ layer at (424,56) size 204x204
           RenderBlock {DIV} at (0,64) size 400x400 [bgcolor=#0000FF]
 layer at (8,264) size 204x204
   RenderPartObject {IFRAME} at (0,208) size 204x204 [border: (2px inset #EEEEEE)]
-    layer at (0,0) size 408x480
-      RenderView at (0,0) size 185x185
-    layer at (0,0) size 185x480
+    layer at (0,0) size 200x200 clip at (0,0) size 185x185 scrollWidth 408 scrollHeight 480
+      RenderView at (0,0) size 200x200
+    layer at (0,0) size 185x480 backgroundClip at (0,0) size 185x185 clip at (0,0) size 185x185 outlineClip at (0,0) size 185x185
       RenderBlock {HTML} at (0,0) size 185x480
         RenderBody {BODY} at (8,8) size 169x464
           RenderBlock {P} at (0,0) size 169x48
@@ -87,9 +87,9 @@ layer at (8,264) size 204x204
           RenderBlock {DIV} at (0,64) size 400x400 [bgcolor=#0000FF]
 layer at (216,264) size 204x204
   RenderPartObject {IFRAME} at (208,208) size 204x204 [border: (2px inset #EEEEEE)]
-    layer at (0,0) size 408x480
-      RenderView at (0,0) size 185x185
-    layer at (0,0) size 185x480
+    layer at (0,0) size 200x200 clip at (0,0) size 185x185 scrollWidth 408 scrollHeight 480
+      RenderView at (0,0) size 200x200
+    layer at (0,0) size 185x480 backgroundClip at (0,0) size 185x185 clip at (0,0) size 185x185 outlineClip at (0,0) size 185x185
       RenderBlock {HTML} at (0,0) size 185x480
         RenderBody {BODY} at (8,8) size 169x464
           RenderBlock {P} at (0,0) size 169x48
@@ -100,9 +100,9 @@ layer at (216,264) size 204x204
           RenderBlock {DIV} at (0,64) size 400x400 [bgcolor=#0000FF]
 layer at (424,264) size 204x204
   RenderPartObject {IFRAME} at (416,208) size 204x204 [border: (2px inset #EEEEEE)]
-    layer at (0,0) size 408x480
+    layer at (0,0) size 200x200 scrollWidth 408 scrollHeight 480
       RenderView at (0,0) size 200x200
-    layer at (0,0) size 200x480
+    layer at (0,0) size 200x480 backgroundClip at (0,0) size 200x200 clip at (0,0) size 200x200 outlineClip at (0,0) size 200x200
       RenderBlock {HTML} at (0,0) size 200x480
         RenderBody {BODY} at (8,8) size 184x464
           RenderBlock {P} at (0,0) size 184x48
@@ -111,11 +111,11 @@ layer at (424,264) size 204x204
               text run at (0,16) width 148: "need to be scrolled in a"
               text run at (0,32) width 102: "200x200 frame."
           RenderBlock {DIV} at (0,64) size 400x400 [bgcolor=#0000FF]
-layer at (8,472) size 204x204
+layer at (8,472) size 204x204 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderPartObject {IFRAME} at (0,416) size 204x204 [border: (2px inset #EEEEEE)]
-    layer at (0,0) size 408x480
-      RenderView at (0,0) size 185x185
-    layer at (0,0) size 185x480
+    layer at (0,0) size 200x200 clip at (0,0) size 185x185 scrollWidth 408 scrollHeight 480
+      RenderView at (0,0) size 200x200
+    layer at (0,0) size 185x480 backgroundClip at (0,0) size 185x185 clip at (0,0) size 185x185 outlineClip at (0,0) size 185x185
       RenderBlock {HTML} at (0,0) size 185x480
         RenderBody {BODY} at (8,8) size 169x464
           RenderBlock {P} at (0,0) size 169x48
@@ -124,11 +124,11 @@ layer at (8,472) size 204x204
               text run at (0,16) width 165: "to need to be scrolled in a"
               text run at (0,32) width 102: "200x200 frame."
           RenderBlock {DIV} at (0,64) size 400x400 [bgcolor=#0000FF]
-layer at (216,472) size 204x204
+layer at (216,472) size 204x204 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderPartObject {IFRAME} at (208,416) size 204x204 [border: (2px inset #EEEEEE)]
-    layer at (0,0) size 408x480
-      RenderView at (0,0) size 185x185
-    layer at (0,0) size 185x480
+    layer at (0,0) size 200x200 clip at (0,0) size 185x185 scrollWidth 408 scrollHeight 480
+      RenderView at (0,0) size 200x200
+    layer at (0,0) size 185x480 backgroundClip at (0,0) size 185x185 clip at (0,0) size 185x185 outlineClip at (0,0) size 185x185
       RenderBlock {HTML} at (0,0) size 185x480
         RenderBody {BODY} at (8,8) size 169x464
           RenderBlock {P} at (0,0) size 169x48

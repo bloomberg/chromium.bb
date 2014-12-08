@@ -1,6 +1,6 @@
-layer at (0,0) size 785x1623
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x1623
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1623
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 785x1623 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x1622.88
     RenderBody {BODY} at (8,16) size 769x1590.88
 layer at (8,16) size 760x504
@@ -58,7 +58,7 @@ layer at (13,395) size 750x120
       text run at (0,200) width 25: "elit. "
       text run at (25,200) width 337: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
       text run at (0,220) width 143: "Nulla varius enim ac mi."
-layer at (8,536) size 760x535
+layer at (8,536) size 760x535 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {DIV} at (0,519.63) size 760x535.63 [border: (5px solid #800000)]
     RenderBlock (anonymous multi-column span) at (5,141) size 750x66.81
       RenderBlock {H2} at (0,19.91) size 750x27 [bgcolor=#EEEEEE]
@@ -68,7 +68,7 @@ layer at (8,536) size 760x535
       RenderBlock {H2} at (0,19.91) size 750x27 [bgcolor=#EEEEEE]
         RenderText {#text} at (0,0) size 218x26
           text run at (0,0) width 218: "This is a second span."
-layer at (13,541) size 750x136
+layer at (13,541) size 750x136 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (anonymous multi-column) at (5,5) size 750x136
     RenderBlock {P} at (0,16) size 367x220
       RenderText {#text} at (0,0) size 367x219
@@ -83,7 +83,7 @@ layer at (13,541) size 750x136
         text run at (0,160) width 360: "Suspendisse hendrerit quam nec felis. Sed varius turpis vitae"
         text run at (0,180) width 350: "pede. Lorem ipsum dolor sit amet, consectetuer adipiscing"
         text run at (0,200) width 21: "elit."
-layer at (13,743) size 750x136
+layer at (13,743) size 750x136 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (anonymous multi-column) at (5,207.81) size 750x136
     RenderBlock {P} at (0,16) size 367x220
       RenderText {#text} at (0,0) size 367x219
@@ -98,7 +98,7 @@ layer at (13,743) size 750x136
         text run at (0,160) width 360: "Suspendisse hendrerit quam nec felis. Sed varius turpis vitae"
         text run at (0,180) width 350: "pede. Lorem ipsum dolor sit amet, consectetuer adipiscing"
         text run at (0,200) width 21: "elit."
-layer at (13,946) size 750x120
+layer at (13,946) size 750x120 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (anonymous multi-column) at (5,410.63) size 750x120
     RenderText {#text} at (0,0) size 367x239
       text run at (0,0) width 337: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
@@ -114,7 +114,7 @@ layer at (13,946) size 750x120
       text run at (0,200) width 25: "elit. "
       text run at (25,200) width 337: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
       text run at (0,220) width 143: "Nulla varius enim ac mi."
-layer at (8,1087) size 760x520
+layer at (8,1087) size 760x520 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {DIV} at (0,1071.25) size 760x519.63 [border: (5px solid #800000)]
     RenderBlock (anonymous multi-column span) at (5,125) size 750x66.81
       RenderBlock {H2} at (0,19.91) size 750x27 [bgcolor=#EEEEEE]
@@ -124,7 +124,7 @@ layer at (8,1087) size 760x520
       RenderBlock {H2} at (0,19.91) size 750x27 [bgcolor=#EEEEEE]
         RenderText {#text} at (0,0) size 218x26
           text run at (0,0) width 218: "This is a second span."
-layer at (13,1092) size 750x120
+layer at (13,1092) size 750x120 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (anonymous multi-column) at (5,5) size 750x120
     RenderBlock (anonymous) at (0,0) size 367x0
       RenderInline {SPAN} at (0,0) size 0x0
@@ -146,7 +146,7 @@ layer at (13,1092) size 750x120
     RenderBlock (anonymous) at (0,220) size 367x0
       RenderInline {SPAN} at (0,0) size 0x0
       RenderText {#text} at (0,0) size 0x0
-layer at (13,1279) size 750x136
+layer at (13,1279) size 750x136 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (anonymous multi-column) at (5,191.81) size 750x136
     RenderBlock {P} at (0,16) size 367x220
       RenderText {#text} at (0,0) size 367x219
@@ -161,7 +161,7 @@ layer at (13,1279) size 750x136
         text run at (0,160) width 360: "Suspendisse hendrerit quam nec felis. Sed varius turpis vitae"
         text run at (0,180) width 350: "pede. Lorem ipsum dolor sit amet, consectetuer adipiscing"
         text run at (0,200) width 21: "elit."
-layer at (13,1482) size 750x120
+layer at (13,1482) size 750x120 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (anonymous multi-column) at (5,394.63) size 750x120
     RenderText {#text} at (0,0) size 367x239
       text run at (0,0) width 337: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."

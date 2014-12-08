@@ -1,8 +1,8 @@
-layer at (0,0) size 785x1141
-  RenderView at (0,0) size 785x600
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1141
+  RenderView at (0,0) size 800x600
 layer at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x600
-layer at (8,8) size 500x750
+layer at (8,8) size 500x750 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBody {BODY} at (8,8) size 500x750
     RenderBlock {H1} at (0,0) size 37x367
       RenderText {#text} at (0,0) size 36x166
@@ -46,7 +46,7 @@ layer at (8,8) size 500x750
       RenderText {#text} at (0,0) size 40x337
         text run at (0,0) width 337: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."
         text run at (20,0) width 144: "Nulla varius enim ac mi."
-layer at (668,8) size 240x367 backgroundClip at (0,0) size 785x1141 clip at (0,0) size 785x1141 outlineClip at (0,0) size 785x1141
+layer at (668,8) size 240x367 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {DIV} at (659.88,0) size 240x367
     RenderText {#text} at (0,0) size 419x175
       text run at (0,0) width 169: "Lorem ipsum dolor sit amet,"

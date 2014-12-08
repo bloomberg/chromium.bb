@@ -1,4 +1,4 @@
-layer at (0,0) size 1013x600
+layer at (0,0) size 800x600 scrollWidth 1013
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
@@ -82,7 +82,7 @@ layer at (8,124) size 293x20
         RenderTableCell {TD} at (252,10) size 10x0 [bgcolor=#000000] [r=0 c=17 rs=1 cs=1]
         RenderTableCell {TD} at (262,10) size 31x0 [bgcolor=#00FF00] [r=0 c=18 rs=1 cs=1]
         RenderTableCell {TD} at (293,10) size 0x0 [r=0 c=19 rs=1 cs=1]
-layer at (8,124) size 1000x20
+layer at (8,124) size 1000x20 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderTable {TABLE} at (0,0) size 1000x20
     RenderTableSection {TBODY} at (0,0) size 1000x20
       RenderTableRow {TR} at (0,0) size 1000x20

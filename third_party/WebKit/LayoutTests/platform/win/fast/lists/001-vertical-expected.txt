@@ -1,4 +1,4 @@
-layer at (0,0) size 800x619
+layer at (0,0) size 800x600 scrollHeight 619
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600

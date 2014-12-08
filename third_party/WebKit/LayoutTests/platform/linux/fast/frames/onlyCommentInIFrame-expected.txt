@@ -21,9 +21,9 @@ layer at (8,68) size 788x14
         RenderBody {BODY} at (8,8) size 768x0
 layer at (8,102) size 788x14
   RenderPartObject {IFRAME} at (0,94) size 788x14 [border: (2px inset #EEEEEE)]
-    layer at (0,0) size 769x172
-      RenderView at (0,0) size 769x10
-    layer at (0,0) size 769x172
+    layer at (0,0) size 784x10 clip at (0,0) size 769x10 scrollHeight 172
+      RenderView at (0,0) size 784x10
+    layer at (0,0) size 769x172 backgroundClip at (0,0) size 769x10 clip at (0,0) size 769x10 outlineClip at (0,0) size 769x10
       RenderBlock {html} at (0,0) size 769x171.88
         RenderBody {body} at (8,16) size 753x139.88
           RenderBlock {parsererror} at (16,0) size 721x139.88 [bgcolor=#FFDDDD] [border: (2px solid #CC7777)]

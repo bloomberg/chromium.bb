@@ -1,10 +1,10 @@
-layer at (0,0) size 785x1341
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x1341
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1341
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 785x1341 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x1341
     RenderBody {BODY} at (0,0) size 785x1341
       RenderText {#text} at (0,0) size 0x0
-layer at (0,0) size 785x698
+layer at (0,0) size 785x698 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderPartObject {IFRAME} at (0,0) size 785x698
     layer at (0,0) size 785x698
       RenderView at (0,0) size 785x698
@@ -653,7 +653,7 @@ layer at (0,0) size 785x698
             text run at (104,0) width 5: " "
             text run at (0,13) width 183: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             text run at (0,26) width 134: " abcdefghijklmnopqrstuv"
-layer at (0,698) size 785x643
+layer at (0,698) size 785x643 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderPartObject {IFRAME} at (0,698) size 785x643
     layer at (0,0) size 785x643
       RenderView at (0,0) size 785x643

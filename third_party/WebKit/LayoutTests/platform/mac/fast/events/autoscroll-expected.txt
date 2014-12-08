@@ -1,6 +1,6 @@
-layer at (0,0) size 785x3155
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x3155
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollY 2555.00 scrollHeight 3155
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 785x3155 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x3155
     RenderBody {BODY} at (8,8) size 769x3131
       RenderBlock {P} at (0,0) size 769x16
@@ -22,7 +22,7 @@ layer at (0,0) size 785x3155
       RenderBlock {P} at (0,3115) size 769x16
         RenderText {#text} at (0,0) size 412x16
           text run at (0,0) width 412: "If the bug does not occur, you'll be left down here at the bottom."
-layer at (11,3091) size 117x13 scrollWidth 126
+layer at (11,3091) size 117x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollWidth 126
   RenderBlock {DIV} at (3,3) size 117x13
     RenderText {#text} at (0,0) size 126x13
       text run at (0,0) width 126: "select some of this text"

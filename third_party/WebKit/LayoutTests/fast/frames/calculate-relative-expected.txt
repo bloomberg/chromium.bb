@@ -107,16 +107,16 @@ layer at (640,0) size 74x488
         RenderBody {BODY} at (8,8) size 58x472
 layer at (640,494) size 74x0
   RenderFrame {FRAME} at (0,494) size 74x0
-    layer at (0,0) size 59x8
-      RenderView at (0,0) size 59x0
-    layer at (0,0) size 59x8
+    layer at (0,0) size 74x0 scrollHeight 8
+      RenderView at (0,0) size 74x0
+    layer at (0,0) size 59x8 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 0x0
       RenderBlock {HTML} at (0,0) size 59x8
         RenderBody {BODY} at (8,8) size 43x0
 layer at (640,500) size 74x0
   RenderFrame {FRAME} at (0,500) size 74x0
-    layer at (0,0) size 59x8
-      RenderView at (0,0) size 59x0
-    layer at (0,0) size 59x8
+    layer at (0,0) size 74x0 scrollHeight 8
+      RenderView at (0,0) size 74x0
+    layer at (0,0) size 59x8 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 0x0
       RenderBlock {HTML} at (0,0) size 59x8
         RenderBody {BODY} at (8,8) size 43x0
 layer at (720,0) size 80x244

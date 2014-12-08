@@ -21,19 +21,19 @@ layer at (8,68) size 788x14
         RenderBody {BODY} at (8,8) size 768x0
 layer at (8,102) size 788x14
   RenderPartObject {IFRAME} at (0,94) size 788x14 [border: (2px inset #EEEEEE)]
-    layer at (0,0) size 769x172
-      RenderView at (0,0) size 769x10
-    layer at (0,0) size 769x172
-      RenderBlock {html} at (0,0) size 769x171.88
-        RenderBody {body} at (8,16) size 753x139.88
-          RenderBlock {parsererror} at (16,0) size 721x139.88 [bgcolor=#FFDDDD] [border: (2px solid #CC7777)]
-            RenderBlock {h3} at (18,20.72) size 685x23
-              RenderText {#text} at (0,0) size 324x22
-                text run at (0,0) width 324: "This page contains the following errors:"
-            RenderBlock {div} at (18,62.44) size 685x15
+    layer at (0,0) size 784x10 clip at (0,0) size 769x10 scrollHeight 168
+      RenderView at (0,0) size 784x10
+    layer at (0,0) size 769x168 backgroundClip at (0,0) size 769x10 clip at (0,0) size 769x10 outlineClip at (0,0) size 769x10
+      RenderBlock {html} at (0,0) size 769x167.88
+        RenderBody {body} at (8,16) size 753x135.88
+          RenderBlock {parsererror} at (16,0) size 721x135.88 [bgcolor=#FFDDDD] [border: (2px solid #CC7777)]
+            RenderBlock {h3} at (18,20.72) size 685x21
+              RenderText {#text} at (0,0) size 306x20
+                text run at (0,0) width 306: "This page contains the following errors:"
+            RenderBlock {div} at (18,60.44) size 685x15
               RenderText {#text} at (0,0) size 490x15
                 text run at (0,0) width 490: "error on line 1 at column 15: Extra content at the end of the document"
                 text run at (490,0) width 0: " "
-            RenderBlock {h3} at (18,96.16) size 685x23
-              RenderText {#text} at (0,0) size 430x22
-                text run at (0,0) width 430: "Below is a rendering of the page up to the first error."
+            RenderBlock {h3} at (18,94.16) size 685x21
+              RenderText {#text} at (0,0) size 408x20
+                text run at (0,0) width 408: "Below is a rendering of the page up to the first error."

@@ -1,6 +1,6 @@
-layer at (0,0) size 4023x600
+layer at (0,0) size 800x600 scrollX 3223.00 scrollWidth 4023
   RenderView at (0,0) size 800x600
-layer at (-3223,0) size 4023x600 backgroundClip at (0,0) size 4023x600 clip at (0,0) size 4023x600 outlineClip at (0,0) size 4023x600
+layer at (-3223,0) size 4023x600 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 4023.34x600
     RenderBody {BODY} at (60,48) size 3903.34x504
       RenderBlock {H1} at (0,0) size 48x504

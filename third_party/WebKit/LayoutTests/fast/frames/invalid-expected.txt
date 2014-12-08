@@ -86,9 +86,9 @@ layer at (219,412) size 67x188
         RenderBody {BODY} at (8,8) size 51x172
 layer at (292,0) size 67x4
   RenderFrame {FRAME} at (0,0) size 67x4
-    layer at (0,0) size 52x8
-      RenderView at (0,0) size 52x4
-    layer at (0,0) size 52x8
+    layer at (0,0) size 67x4 clip at (0,0) size 52x4 scrollHeight 8
+      RenderView at (0,0) size 67x4
+    layer at (0,0) size 52x8 backgroundClip at (0,0) size 52x4 clip at (0,0) size 52x4 outlineClip at (0,0) size 52x4
       RenderBlock {HTML} at (0,0) size 52x8
         RenderBody {BODY} at (8,8) size 36x0
 layer at (292,10) size 67x52

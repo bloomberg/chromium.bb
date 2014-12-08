@@ -1,6 +1,6 @@
-layer at (0,0) size 785x652
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x652
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 652
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 785x652 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x652
     RenderBody {BODY} at (8,8) size 769x624
       RenderBlock {P} at (0,0) size 769x32
@@ -54,7 +54,7 @@ layer at (28,512) size 160x50 clip at (28,512) size 150x35 scrollWidth 200
     RenderBlock {DIV} at (0,0) size 200x16
       RenderText {#text} at (0,0) size 12x16
         text run at (0,0) width 12: "A"
-layer at (28,582) size 150x50 clip at (28,582) size 135x35 scrollWidth 200
+layer at (28,582) size 150x50 backgroundClip at (28,582) size 150x18 clip at (28,582) size 135x18 outlineClip at (0,0) size 785x600 scrollWidth 200
   RenderBlock {DIV} at (20,574) size 150x50
     RenderBlock {DIV} at (0,0) size 200x16
       RenderText {#text} at (0,0) size 12x16

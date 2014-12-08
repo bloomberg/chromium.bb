@@ -1,15 +1,15 @@
-layer at (0,0) size 843x600
+layer at (0,0) size 800x600 scrollWidth 843
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x423
   RenderBlock {HTML} at (0,0) size 800x423
     RenderBody {BODY} at (8,17.59) size 784x387.81
-layer at (8,18) size 835x388
+layer at (8,18) size 835x388 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock {DIV} at (0,0) size 835x387.81 [border: (5px solid #800000)]
     RenderBlock (anonymous multi-column span) at (5,5) size 825x70.81
       RenderBlock {H2} at (0,21.91) size 825x27 [bgcolor=#EEEEEE]
         RenderText {#text} at (0,0) size 732x27
           text run at (0,0) width 732: "This is a spanning element at the beginning of the columns block."
-layer at (13,93) size 825x307
+layer at (13,93) size 825x307 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (anonymous multi-column) at (5,75.81) size 825x307
     RenderText {#text} at (0,0) size 403x596
       text run at (0,0) width 401: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."

@@ -1,6 +1,6 @@
-layer at (0,0) size 785x966
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x966
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 966
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 785x966 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x966.13
     RenderBody {BODY} at (8,8) size 769x950.13
       RenderBlock (anonymous) at (0,0) size 769x40
@@ -81,11 +81,11 @@ layer at (103,479) size 20x20
     RenderBR {BR} at (6,6) size 0x19
     RenderBR {BR} at (6,26) size 0x19
     RenderBR {BR} at (6,46) size 0x19
-layer at (13,818) size 20x20
+layer at (13,818) size 20x20 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderImage {IMG} at (13,818.25) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
-layer at (43,818) size 20x20
+layer at (43,818) size 20x20 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderImage {IMG} at (43,818.25) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
-layer at (73,818) size 20x20
+layer at (73,818) size 20x20 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderImage {IMG} at (73,818.25) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]
-layer at (103,818) size 20x20
+layer at (103,818) size 20x20 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderImage {IMG} at (103,818.25) size 20x20 [color=#FFFFFF] [bgcolor=#FFA500] [border: (2px solid #000000)]

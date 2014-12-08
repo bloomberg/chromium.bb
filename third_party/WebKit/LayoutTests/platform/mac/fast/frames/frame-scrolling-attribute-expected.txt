@@ -5,9 +5,9 @@ layer at (0,0) size 800x600
     RenderFrameSet {FRAMESET} at (0,0) size 800x600
 layer at (0,0) size 195x145
   RenderFrame {FRAME} at (0,0) size 195x145
-    layer at (0,0) size 408x496
-      RenderView at (0,0) size 180x130
-    layer at (0,0) size 180x496
+    layer at (0,0) size 195x145 clip at (0,0) size 180x130 scrollWidth 408 scrollHeight 496
+      RenderView at (0,0) size 195x145
+    layer at (0,0) size 180x496 backgroundClip at (0,0) size 180x130 clip at (0,0) size 180x130 outlineClip at (0,0) size 180x130
       RenderBlock {HTML} at (0,0) size 180x496
         RenderBody {BODY} at (8,8) size 164x480
           RenderBlock {P} at (0,0) size 164x64
@@ -19,9 +19,9 @@ layer at (0,0) size 195x145
           RenderBlock {DIV} at (0,80) size 400x400 [bgcolor=#0000FF]
 layer at (201,0) size 195x145
   RenderFrame {FRAME} at (201,0) size 195x145
-    layer at (0,0) size 408x496
-      RenderView at (0,0) size 180x130
-    layer at (0,0) size 180x496
+    layer at (0,0) size 195x145 clip at (0,0) size 180x130 scrollWidth 408 scrollHeight 496
+      RenderView at (0,0) size 195x145
+    layer at (0,0) size 180x496 backgroundClip at (0,0) size 180x130 clip at (0,0) size 180x130 outlineClip at (0,0) size 180x130
       RenderBlock {HTML} at (0,0) size 180x496
         RenderBody {BODY} at (8,8) size 164x480
           RenderBlock {P} at (0,0) size 164x64
@@ -33,9 +33,9 @@ layer at (201,0) size 195x145
           RenderBlock {DIV} at (0,80) size 400x400 [bgcolor=#0000FF]
 layer at (402,0) size 195x145
   RenderFrame {FRAME} at (402,0) size 195x145
-    layer at (0,0) size 408x496
-      RenderView at (0,0) size 180x130
-    layer at (0,0) size 180x496
+    layer at (0,0) size 195x145 clip at (0,0) size 180x130 scrollWidth 408 scrollHeight 496
+      RenderView at (0,0) size 195x145
+    layer at (0,0) size 180x496 backgroundClip at (0,0) size 180x130 clip at (0,0) size 180x130 outlineClip at (0,0) size 180x130
       RenderBlock {HTML} at (0,0) size 180x496
         RenderBody {BODY} at (8,8) size 164x480
           RenderBlock {P} at (0,0) size 164x64
@@ -47,9 +47,9 @@ layer at (402,0) size 195x145
           RenderBlock {DIV} at (0,80) size 400x400 [bgcolor=#0000FF]
 layer at (603,0) size 197x145
   RenderFrame {FRAME} at (603,0) size 197x145
-    layer at (0,0) size 408x480
-      RenderView at (0,0) size 182x130
-    layer at (0,0) size 182x480
+    layer at (0,0) size 197x145 clip at (0,0) size 182x130 scrollWidth 408 scrollHeight 480
+      RenderView at (0,0) size 197x145
+    layer at (0,0) size 182x480 backgroundClip at (0,0) size 182x130 clip at (0,0) size 182x130 outlineClip at (0,0) size 182x130
       RenderBlock {HTML} at (0,0) size 182x480
         RenderBody {BODY} at (8,8) size 166x464
           RenderBlock {P} at (0,0) size 166x48
@@ -60,9 +60,9 @@ layer at (603,0) size 197x145
           RenderBlock {DIV} at (0,64) size 400x400 [bgcolor=#0000FF]
 layer at (0,151) size 195x145
   RenderFrame {FRAME} at (0,151) size 195x145
-    layer at (0,0) size 408x496
-      RenderView at (0,0) size 180x130
-    layer at (0,0) size 180x496
+    layer at (0,0) size 195x145 clip at (0,0) size 180x130 scrollWidth 408 scrollHeight 496
+      RenderView at (0,0) size 195x145
+    layer at (0,0) size 180x496 backgroundClip at (0,0) size 180x130 clip at (0,0) size 180x130 outlineClip at (0,0) size 180x130
       RenderBlock {HTML} at (0,0) size 180x496
         RenderBody {BODY} at (8,8) size 164x480
           RenderBlock {P} at (0,0) size 164x64
@@ -74,9 +74,9 @@ layer at (0,151) size 195x145
           RenderBlock {DIV} at (0,80) size 400x400 [bgcolor=#0000FF]
 layer at (201,151) size 195x145
   RenderFrame {FRAME} at (201,151) size 195x145
-    layer at (0,0) size 408x480
+    layer at (0,0) size 195x145 scrollWidth 408 scrollHeight 480
       RenderView at (0,0) size 195x145
-    layer at (0,0) size 195x480
+    layer at (0,0) size 195x480 backgroundClip at (0,0) size 195x145 clip at (0,0) size 195x145 outlineClip at (0,0) size 195x145
       RenderBlock {HTML} at (0,0) size 195x480
         RenderBody {BODY} at (8,8) size 179x464
           RenderBlock {P} at (0,0) size 179x48
@@ -87,9 +87,9 @@ layer at (201,151) size 195x145
           RenderBlock {DIV} at (0,64) size 400x400 [bgcolor=#0000FF]
 layer at (402,151) size 195x145
   RenderFrame {FRAME} at (402,151) size 195x145
-    layer at (0,0) size 408x496
-      RenderView at (0,0) size 180x130
-    layer at (0,0) size 180x496
+    layer at (0,0) size 195x145 clip at (0,0) size 180x130 scrollWidth 408 scrollHeight 496
+      RenderView at (0,0) size 195x145
+    layer at (0,0) size 180x496 backgroundClip at (0,0) size 180x130 clip at (0,0) size 180x130 outlineClip at (0,0) size 180x130
       RenderBlock {HTML} at (0,0) size 180x496
         RenderBody {BODY} at (8,8) size 164x480
           RenderBlock {P} at (0,0) size 164x64
@@ -101,9 +101,9 @@ layer at (402,151) size 195x145
           RenderBlock {DIV} at (0,80) size 400x400 [bgcolor=#0000FF]
 layer at (603,151) size 197x145
   RenderFrame {FRAME} at (603,151) size 197x145
-    layer at (0,0) size 408x480
-      RenderView at (0,0) size 182x130
-    layer at (0,0) size 182x480
+    layer at (0,0) size 197x145 clip at (0,0) size 182x130 scrollWidth 408 scrollHeight 480
+      RenderView at (0,0) size 197x145
+    layer at (0,0) size 182x480 backgroundClip at (0,0) size 182x130 clip at (0,0) size 182x130 outlineClip at (0,0) size 182x130
       RenderBlock {HTML} at (0,0) size 182x480
         RenderBody {BODY} at (8,8) size 166x464
           RenderBlock {P} at (0,0) size 166x48

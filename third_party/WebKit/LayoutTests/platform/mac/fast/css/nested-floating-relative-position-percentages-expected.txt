@@ -1,4 +1,4 @@
-layer at (0,0) size 1030x600
+layer at (0,0) size 800x600 scrollWidth 1030
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       RenderBlock {DIV} at (0,0) size 784x16
         RenderText {#text} at (0,0) size 393x16
           text run at (0,0) width 393: "The six boxes below should be centered in two rows of three."
-layer at (400,24) size 630x420
+layer at (400,24) size 630x420 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (floating) {DIV} at (0,16) size 630x420
     RenderBR {BR} at (630,0) size 0x16
     RenderText {#text} at (0,0) size 0x0

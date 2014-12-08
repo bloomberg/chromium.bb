@@ -1,4 +1,4 @@
-layer at (0,0) size 7430x600
+layer at (0,0) size 800x600 scrollWidth 7430
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x150
   RenderBlock {HTML} at (0,0) size 800x150
@@ -12,7 +12,7 @@ layer at (0,0) size 800x150
         RenderTableSection {TBODY} at (1,1) size 7420x60
           RenderTableRow {TR} at (0,2) size 7420x56
             RenderTableCell {TD} at (2,2) size 7416x56 [r=0 c=0 rs=1 cs=1]
-layer at (12,97) size 7414x28 clip at (13,98) size 7412x26
+layer at (12,97) size 7414x28 backgroundClip at (12,97) size 788x28 clip at (13,98) size 787x26 outlineClip at (0,0) size 800x600
   RenderBlock {PRE} at (1,14) size 7414x28 [border: (1px solid #0000FF)]
     RenderText {#text} at (1,1) size 7412x26
       text run at (1,1) width 3121: "this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line this is a very long line "
