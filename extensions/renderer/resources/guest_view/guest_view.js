@@ -69,18 +69,24 @@ GuestViewImpl.prototype.performNextAction = function() {
 GuestViewImpl.prototype.attachImpl = function(
     internalInstanceId, attachParams, callback) {
   // Check the current state.
+  var error;
   switch (this.state) {
     case GUEST_STATE_START:
-      window.console.error(ERROR_MSG_ATTACH + ERROR_MSG_NOT_CREATED);
-      return;
+      error = ERROR_MSG_ATTACH + ERROR_MSG_NOT_CREATED;
+      break;
     case GUEST_STATE_ATTACHED:
-      window.console.error(ERROR_MSG_ATTACH + ERROR_MSG_ALREADY_ATTACHED);
-      return;
+      error = ERROR_MSG_ATTACH + ERROR_MSG_ALREADY_ATTACHED;
+      break;
     case GUEST_STATE_CREATED:
+      // No error.
       break;
     default:
-      window.console.error(ERROR_MSG_ATTACH + ERROR_MSG_INVALID_STATE);
-      return;
+      error = ERROR_MSG_ATTACH + ERROR_MSG_INVALID_STATE;
+  }
+  if (error) {
+    window.console.error(error);
+    this.handleCallback(callback);
+    return;
   }
 
   // Callback wrapper function to store the contentWindow from the attachGuest()
@@ -119,16 +125,22 @@ GuestViewImpl.prototype.attachImpl = function(
 // Internal implementation of create().
 GuestViewImpl.prototype.createImpl = function(createParams, callback) {
   // Check the current state.
+  var error;
   switch (this.state) {
     case GUEST_STATE_ATTACHED:
     case GUEST_STATE_CREATED:
-      window.console.error(ERROR_MSG_CREATE + ERROR_MSG_ALREADY_CREATED);
-      return;
+      error = ERROR_MSG_CREATE + ERROR_MSG_ALREADY_CREATED;
+      break;
     case GUEST_STATE_START:
+      // No error.
       break;
     default:
-      window.console.error(ERROR_MSG_CREATE + ERROR_MSG_INVALID_STATE);
-      return;
+      error = ERROR_MSG_CREATE + ERROR_MSG_INVALID_STATE;
+  }
+  if (error) {
+    window.console.error(error);
+    this.handleCallback(callback);
+    return;
   }
 
   // Callback wrapper function to store the guestInstanceId from the
@@ -155,15 +167,23 @@ GuestViewImpl.prototype.createImpl = function(createParams, callback) {
 // Internal implementation of destroy().
 GuestViewImpl.prototype.destroyImpl = function(callback) {
   // Check the current state.
+  var error;
   switch (this.state) {
     case GUEST_STATE_ATTACHED:
     case GUEST_STATE_CREATED:
+      // No error.
       break;
     case GUEST_STATE_START:
+      // This is a valid state, but destroy() will do nothing in this case.
+      this.handleCallback(callback);
       return;
     default:
-      window.console.error(ERROR_MSG_DESTROY + ERROR_MSG_INVALID_STATE);
-      return;
+      error = ERROR_MSG_DESTROY + ERROR_MSG_INVALID_STATE;
+  }
+  if (error) {
+    window.console.error(error);
+    this.handleCallback(callback);
+    return;
   }
 
   GuestViewInternal.destroyGuest(this.id,
@@ -178,16 +198,22 @@ GuestViewImpl.prototype.destroyImpl = function(callback) {
 // Internal implementation of detach().
 GuestViewImpl.prototype.detachImpl = function(callback) {
   // Check the current state.
+  var error;
   switch (this.state) {
     case GUEST_STATE_ATTACHED:
+      // No error.
       break;
     case GUEST_STATE_CREATED:
     case GUEST_STATE_START:
-      window.console.error(ERROR_MSG_DETACH + ERROR_MSG_NOT_ATTACHED);
-      return;
+      error = ERROR_MSG_DETACH + ERROR_MSG_NOT_ATTACHED;
+      break;
     default:
-      window.console.error(ERROR_MSG_DETACH + ERROR_MSG_INVALID_STATE);
-      return;
+      error = ERROR_MSG_DETACH + ERROR_MSG_INVALID_STATE;
+  }
+  if (error) {
+    window.console.error(error);
+    this.handleCallback(callback);
+    return;
   }
 
   GuestViewInternalNatives.DetachGuest(
@@ -202,16 +228,22 @@ GuestViewImpl.prototype.detachImpl = function(callback) {
 // Internal implementation of setAutoSize().
 GuestViewImpl.prototype.setAutoSizeImpl = function(autoSizeParams, callback) {
   // Check the current state.
+  var error;
   switch (this.state) {
     case GUEST_STATE_ATTACHED:
     case GUEST_STATE_CREATED:
+      // No error.
       break;
     case GUEST_STATE_START:
-      window.console.error(ERROR_MSG_SETAUTOSIZE + ERROR_MSG_NOT_CREATED);
-      return;
+      error = ERROR_MSG_SETAUTOSIZE + ERROR_MSG_NOT_CREATED;
+      break;
     default:
-      window.console.error(ERROR_MSG_SETAUTOSIZE + ERROR_MSG_INVALID_STATE);
-      return;
+      error = ERROR_MSG_SETAUTOSIZE + ERROR_MSG_INVALID_STATE;
+  }
+  if (error) {
+    window.console.error(error);
+    this.handleCallback(callback);
+    return;
   }
 
   GuestViewInternal.setAutoSize(this.id, autoSizeParams,
