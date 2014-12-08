@@ -32,12 +32,18 @@ bool EasyUnlockUserLoginFlow::HandleLoginFailure(
   if (!service)
     return false;
   service->HandleAuthFailure(user_id());
+  service->RecordEasySignInOutcome(user_id(), false);
   UnregisterFlowSoon();
   return true;
 }
 
 void EasyUnlockUserLoginFlow::HandleLoginSuccess(
     const chromeos::UserContext& context) {
+  Profile* profile = chromeos::ProfileHelper::GetSigninProfile();
+  EasyUnlockService* service = EasyUnlockService::Get(profile);
+  if (!service)
+    return;
+  service->RecordEasySignInOutcome(user_id(), true);
 }
 
 bool EasyUnlockUserLoginFlow::HandlePasswordChangeDetected() {

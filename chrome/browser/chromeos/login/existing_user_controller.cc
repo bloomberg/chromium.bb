@@ -120,15 +120,6 @@ void TransferContextAuthenticationsOnIOThread(
                                    base::Bind(&RefreshPoliciesOnUIThread));
 }
 
-// Record UMA for Easy sign-in outcome.
-void RecordEasySignInOutcome(const std::string& user_id, bool success) {
-  EasyUnlockService* easy_unlock_service =
-      EasyUnlockService::Get(ProfileHelper::GetSigninProfile());
-  if (!easy_unlock_service)
-    return;
-  easy_unlock_service->RecordEasySignInOutcome(user_id, success);
-}
-
 // Record UMA for password login of regular user when Easy sign-in is enabled.
 void RecordPasswordLoginEvent(const UserContext& user_context) {
   EasyUnlockService* easy_unlock_service =
@@ -159,7 +150,6 @@ ExistingUserController* ExistingUserController::current_controller_ = NULL;
 
 ExistingUserController::ExistingUserController(LoginDisplayHost* host)
     : auth_status_consumer_(NULL),
-      last_login_attempt_auth_flow_(UserContext::AUTH_FLOW_OFFLINE),
       host_(host),
       login_display_(host_->CreateLoginDisplay(this)),
       num_login_attempts_(0),
@@ -482,8 +472,6 @@ void ExistingUserController::PerformLogin(
 
   BootTimesLoader::Get()->RecordLoginAttempted();
 
-  last_login_attempt_auth_flow_ = user_context.GetAuthFlow();
-
   // Use the same LoginPerformer for subsequent login as it has state
   // such as Authenticator instance.
   if (!login_performer_.get() || num_login_attempts_ <= 1) {
@@ -625,10 +613,6 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
 
   PerformLoginFinishedActions(false /* don't start public session timer */);
 
-  // TODO(xiyuan): Move into EasyUnlockUserLoginFlow.
-  if (last_login_attempt_auth_flow_ == UserContext::AUTH_FLOW_EASY_UNLOCK)
-    RecordEasySignInOutcome(last_login_attempt_username_, false);
-
   if (ChromeUserManager::Get()
           ->GetUserFlow(last_login_attempt_username_)
           ->HandleLoginFailure(failure)) {
@@ -698,13 +682,6 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   ChromeUserManager::Get()
       ->GetUserFlow(user_context.GetUserID())
       ->HandleLoginSuccess(user_context);
-
-  // TODO(xiyuan): Move into EasyUnlockUserLoginFlow.
-  if (last_login_attempt_auth_flow_ == UserContext::AUTH_FLOW_EASY_UNLOCK) {
-    DCHECK_EQ(last_login_attempt_username_, user_context.GetUserID());
-    DCHECK_EQ(last_login_attempt_auth_flow_, user_context.GetAuthFlow());
-    RecordEasySignInOutcome(last_login_attempt_username_, true);
-  }
 
   StopPublicSessionAutoLoginTimer();
 

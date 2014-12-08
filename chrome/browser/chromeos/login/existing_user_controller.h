@@ -242,9 +242,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Username of the last login attempt.
   std::string last_login_attempt_username_;
 
-  // Auth flow of the last login attempt.
-  UserContext::AuthFlow last_login_attempt_auth_flow_;
-
   // OOBE/login display host.
   LoginDisplayHost* host_;
 
