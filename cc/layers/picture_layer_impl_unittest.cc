@@ -2775,7 +2775,7 @@ TEST_F(PictureLayerImplTest, HighResTilingDuringAnimationForGpuRasterization) {
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 4.f);
 }
 
-TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
+TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
   base::TimeTicks time_ticks;
   time_ticks += base::TimeDelta::FromMilliseconds(1);
   host_impl_.SetCurrentBeginFrameArgs(
@@ -2793,13 +2793,10 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
 
-  // Empty iterator
-  PictureLayerImpl::LayerRasterTileIterator it;
-  EXPECT_FALSE(it);
-
   // No tilings.
-  it = PictureLayerImpl::LayerRasterTileIterator(pending_layer_, false);
-  EXPECT_FALSE(it);
+  scoped_ptr<TilingSetRasterQueue> queue =
+      pending_layer_->CreateRasterQueue(false);
+  EXPECT_TRUE(queue->IsEmpty());
 
   pending_layer_->AddTiling(low_res_factor);
   pending_layer_->AddTiling(0.3f);
@@ -2815,10 +2812,9 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
   size_t non_ideal_tile_count = 0u;
   size_t low_res_tile_count = 0u;
   size_t high_res_tile_count = 0u;
-  for (it = PictureLayerImpl::LayerRasterTileIterator(pending_layer_, false);
-       it;
-       ++it) {
-    Tile* tile = *it;
+  queue = pending_layer_->CreateRasterQueue(false);
+  while (!queue->IsEmpty()) {
+    Tile* tile = queue->Top();
     TilePriority priority = tile->priority(PENDING_TREE);
 
     EXPECT_TRUE(tile);
@@ -2837,6 +2833,7 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
     high_res_tile_count += priority.resolution == HIGH_RESOLUTION;
 
     unique_tiles.insert(tile);
+    queue->Pop();
   }
 
   EXPECT_TRUE(reached_prepaint);
@@ -2858,10 +2855,9 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
 
   unique_tiles.clear();
   high_res_tile_count = 0u;
-  for (it = PictureLayerImpl::LayerRasterTileIterator(pending_layer_, false);
-       it;
-       ++it) {
-    Tile* tile = *it;
+  queue = pending_layer_->CreateRasterQueue(false);
+  while (!queue->IsEmpty()) {
+    Tile* tile = queue->Top();
     TilePriority priority = tile->priority(PENDING_TREE);
 
     EXPECT_TRUE(tile);
@@ -2873,6 +2869,7 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
     high_res_tile_count += priority.resolution == HIGH_RESOLUTION;
 
     unique_tiles.insert(tile);
+    queue->Pop();
   }
 
   EXPECT_EQ(16u, high_res_tile_count);
@@ -2898,9 +2895,9 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
   non_ideal_tile_count = 0;
   low_res_tile_count = 0;
   high_res_tile_count = 0;
-  for (it = PictureLayerImpl::LayerRasterTileIterator(pending_layer_, true); it;
-       ++it) {
-    Tile* tile = *it;
+  queue = pending_layer_->CreateRasterQueue(true);
+  while (!queue->IsEmpty()) {
+    Tile* tile = queue->Top();
     TilePriority priority = tile->priority(PENDING_TREE);
 
     EXPECT_TRUE(tile);
@@ -2908,6 +2905,7 @@ TEST_F(PictureLayerImplTest, LayerRasterTileIterator) {
     non_ideal_tile_count += priority.resolution == NON_IDEAL_RESOLUTION;
     low_res_tile_count += priority.resolution == LOW_RESOLUTION;
     high_res_tile_count += priority.resolution == HIGH_RESOLUTION;
+    queue->Pop();
   }
 
   EXPECT_EQ(0u, non_ideal_tile_count);
@@ -3923,11 +3921,10 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   // No occlusion.
   int unoccluded_tile_count = 0;
-  for (PictureLayerImpl::LayerRasterTileIterator it =
-           PictureLayerImpl::LayerRasterTileIterator(pending_layer_, false);
-       it;
-       ++it) {
-    Tile* tile = *it;
+  scoped_ptr<TilingSetRasterQueue> queue =
+      pending_layer_->CreateRasterQueue(false);
+  while (!queue->IsEmpty()) {
+    Tile* tile = queue->Top();
 
     // Occluded tiles should not be iterated over.
     EXPECT_FALSE(tile->is_occluded(PENDING_TREE));
@@ -3938,6 +3935,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
         tile->content_rect().Intersects(pending_layer_->visible_content_rect());
     if (tile_is_visible)
       unoccluded_tile_count++;
+    queue->Pop();
   }
   EXPECT_EQ(unoccluded_tile_count, 25);
 
@@ -3956,11 +3954,9 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   host_impl_.pending_tree()->UpdateDrawProperties();
 
   unoccluded_tile_count = 0;
-  for (PictureLayerImpl::LayerRasterTileIterator it =
-           PictureLayerImpl::LayerRasterTileIterator(pending_layer_, false);
-       it;
-       ++it) {
-    Tile* tile = *it;
+  queue = pending_layer_->CreateRasterQueue(false);
+  while (!queue->IsEmpty()) {
+    Tile* tile = queue->Top();
 
     EXPECT_FALSE(tile->is_occluded(PENDING_TREE));
 
@@ -3968,6 +3964,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
         tile->content_rect().Intersects(pending_layer_->visible_content_rect());
     if (tile_is_visible)
       unoccluded_tile_count++;
+    queue->Pop();
   }
   EXPECT_EQ(20, unoccluded_tile_count);
 
@@ -3980,11 +3977,9 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   host_impl_.pending_tree()->UpdateDrawProperties();
 
   unoccluded_tile_count = 0;
-  for (PictureLayerImpl::LayerRasterTileIterator it =
-           PictureLayerImpl::LayerRasterTileIterator(pending_layer_, false);
-       it;
-       ++it) {
-    Tile* tile = *it;
+  queue = pending_layer_->CreateRasterQueue(false);
+  while (!queue->IsEmpty()) {
+    Tile* tile = queue->Top();
 
     EXPECT_FALSE(tile->is_occluded(PENDING_TREE));
 
@@ -3992,6 +3987,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
         tile->content_rect().Intersects(pending_layer_->visible_content_rect());
     if (tile_is_visible)
       unoccluded_tile_count++;
+    queue->Pop();
   }
   EXPECT_EQ(unoccluded_tile_count, 0);
 }

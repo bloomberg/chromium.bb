@@ -14,8 +14,8 @@ class RasterOrderComparator {
       : tree_priority_(tree_priority) {}
 
   bool operator()(
-      const RasterTilePriorityQueue::PairedPictureLayerQueue* a,
-      const RasterTilePriorityQueue::PairedPictureLayerQueue* b) const {
+      const RasterTilePriorityQueue::PairedTilingSetQueue* a,
+      const RasterTilePriorityQueue::PairedTilingSetQueue* b) const {
     // Note that in this function, we have to return true if and only if
     // a is strictly lower priority than b. Note that for the sake of
     // completeness, empty queue is considered to have lowest priority.
@@ -23,15 +23,15 @@ class RasterOrderComparator {
       return b->IsEmpty() < a->IsEmpty();
 
     WhichTree a_tree = a->NextTileIteratorTree(tree_priority_);
-    const PictureLayerImpl::LayerRasterTileIterator* a_iterator =
-        a_tree == ACTIVE_TREE ? &a->active_iterator : &a->pending_iterator;
+    const auto* a_queue =
+        a_tree == ACTIVE_TREE ? a->active_queue.get() : a->pending_queue.get();
 
     WhichTree b_tree = b->NextTileIteratorTree(tree_priority_);
-    const PictureLayerImpl::LayerRasterTileIterator* b_iterator =
-        b_tree == ACTIVE_TREE ? &b->active_iterator : &b->pending_iterator;
+    const auto* b_queue =
+        b_tree == ACTIVE_TREE ? b->active_queue.get() : b->pending_queue.get();
 
-    const Tile* a_tile = **a_iterator;
-    const Tile* b_tile = **b_iterator;
+    const Tile* a_tile = a_queue->Top();
+    const Tile* b_tile = b_queue->Top();
 
     const TilePriority& a_priority =
         a_tile->priority_for_tree_priority(tree_priority_);
@@ -80,15 +80,15 @@ class RasterOrderComparator {
   TreePriority tree_priority_;
 };
 
-WhichTree HigherPriorityTree(
-    TreePriority tree_priority,
-    const PictureLayerImpl::LayerRasterTileIterator* active_iterator,
-    const PictureLayerImpl::LayerRasterTileIterator* pending_iterator,
-    const Tile* shared_tile) {
+WhichTree HigherPriorityTree(TreePriority tree_priority,
+                             const TilingSetRasterQueue* active_queue,
+                             const TilingSetRasterQueue* pending_queue,
+                             const Tile* shared_tile) {
   switch (tree_priority) {
     case SMOOTHNESS_TAKES_PRIORITY: {
-      const Tile* active_tile = shared_tile ? shared_tile : **active_iterator;
-      const Tile* pending_tile = shared_tile ? shared_tile : **pending_iterator;
+      const Tile* active_tile = shared_tile ? shared_tile : active_queue->Top();
+      const Tile* pending_tile =
+          shared_tile ? shared_tile : pending_queue->Top();
 
       const TilePriority& active_priority = active_tile->priority(ACTIVE_TREE);
       const TilePriority& pending_priority =
@@ -106,8 +106,9 @@ WhichTree HigherPriorityTree(
     case NEW_CONTENT_TAKES_PRIORITY:
       return PENDING_TREE;
     case SAME_PRIORITY_FOR_BOTH_TREES: {
-      const Tile* active_tile = shared_tile ? shared_tile : **active_iterator;
-      const Tile* pending_tile = shared_tile ? shared_tile : **pending_iterator;
+      const Tile* active_tile = shared_tile ? shared_tile : active_queue->Top();
+      const Tile* pending_tile =
+          shared_tile ? shared_tile : pending_queue->Top();
 
       const TilePriority& active_priority = active_tile->priority(ACTIVE_TREE);
       const TilePriority& pending_priority =
@@ -140,7 +141,7 @@ void RasterTilePriorityQueue::Build(
        it != paired_layers.end();
        ++it) {
     paired_queues_.push_back(
-        make_scoped_ptr(new PairedPictureLayerQueue(*it, tree_priority_)));
+        make_scoped_ptr(new PairedTilingSetQueue(*it, tree_priority_)));
   }
   paired_queues_.make_heap(RasterOrderComparator(tree_priority_));
 }
@@ -162,72 +163,70 @@ void RasterTilePriorityQueue::Pop() {
   DCHECK(!IsEmpty());
 
   paired_queues_.pop_heap(RasterOrderComparator(tree_priority_));
-  PairedPictureLayerQueue* paired_queue = paired_queues_.back();
+  PairedTilingSetQueue* paired_queue = paired_queues_.back();
   paired_queue->Pop(tree_priority_);
   paired_queues_.push_heap(RasterOrderComparator(tree_priority_));
 }
 
-RasterTilePriorityQueue::PairedPictureLayerQueue::PairedPictureLayerQueue() {
+RasterTilePriorityQueue::PairedTilingSetQueue::PairedTilingSetQueue() {
 }
 
-RasterTilePriorityQueue::PairedPictureLayerQueue::PairedPictureLayerQueue(
+RasterTilePriorityQueue::PairedTilingSetQueue::PairedTilingSetQueue(
     const PictureLayerImpl::Pair& layer_pair,
     TreePriority tree_priority)
-    : active_iterator(layer_pair.active
-                          ? PictureLayerImpl::LayerRasterTileIterator(
-                                layer_pair.active,
-                                tree_priority == SMOOTHNESS_TAKES_PRIORITY)
-                          : PictureLayerImpl::LayerRasterTileIterator()),
-      pending_iterator(layer_pair.pending
-                           ? PictureLayerImpl::LayerRasterTileIterator(
-                                 layer_pair.pending,
-                                 tree_priority == SMOOTHNESS_TAKES_PRIORITY)
-                           : PictureLayerImpl::LayerRasterTileIterator()),
-      has_both_layers(layer_pair.active && layer_pair.pending) {
+    : has_both_layers(layer_pair.active && layer_pair.pending) {
+  if (layer_pair.active) {
+    active_queue = layer_pair.active->CreateRasterQueue(
+        tree_priority == SMOOTHNESS_TAKES_PRIORITY);
+  }
+
+  if (layer_pair.pending) {
+    pending_queue = layer_pair.pending->CreateRasterQueue(
+        tree_priority == SMOOTHNESS_TAKES_PRIORITY);
+  }
+
   if (has_both_layers)
     SkipTilesReturnedByTwin(tree_priority);
+
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-                       "PairedPictureLayerQueue::PairedPictureLayerQueue",
-                       TRACE_EVENT_SCOPE_THREAD,
-                       "state",
-                       StateAsValue());
+                       "PairedTilingSetQueue::PairedTilingSetQueue",
+                       TRACE_EVENT_SCOPE_THREAD, "state", StateAsValue());
 }
 
-RasterTilePriorityQueue::PairedPictureLayerQueue::~PairedPictureLayerQueue() {
+RasterTilePriorityQueue::PairedTilingSetQueue::~PairedTilingSetQueue() {
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-                       "PairedPictureLayerQueue::~PairedPictureLayerQueue",
-                       TRACE_EVENT_SCOPE_THREAD,
-                       "state",
-                       StateAsValue());
+                       "PairedTilingSetQueue::~PairedTilingSetQueue",
+                       TRACE_EVENT_SCOPE_THREAD, "state", StateAsValue());
 }
 
-bool RasterTilePriorityQueue::PairedPictureLayerQueue::IsEmpty() const {
-  return !active_iterator && !pending_iterator;
+bool RasterTilePriorityQueue::PairedTilingSetQueue::IsEmpty() const {
+  return (!active_queue || active_queue->IsEmpty()) &&
+         (!pending_queue || pending_queue->IsEmpty());
 }
 
-Tile* RasterTilePriorityQueue::PairedPictureLayerQueue::Top(
+Tile* RasterTilePriorityQueue::PairedTilingSetQueue::Top(
     TreePriority tree_priority) {
   DCHECK(!IsEmpty());
 
   WhichTree next_tree = NextTileIteratorTree(tree_priority);
-  PictureLayerImpl::LayerRasterTileIterator* next_iterator =
-      next_tree == ACTIVE_TREE ? &active_iterator : &pending_iterator;
-  DCHECK(*next_iterator);
-  Tile* tile = **next_iterator;
+  TilingSetRasterQueue* next_queue =
+      next_tree == ACTIVE_TREE ? active_queue.get() : pending_queue.get();
+  DCHECK(next_queue && !next_queue->IsEmpty());
+  Tile* tile = next_queue->Top();
   DCHECK(returned_tiles_for_debug.find(tile) == returned_tiles_for_debug.end());
   return tile;
 }
 
-void RasterTilePriorityQueue::PairedPictureLayerQueue::Pop(
+void RasterTilePriorityQueue::PairedTilingSetQueue::Pop(
     TreePriority tree_priority) {
   DCHECK(!IsEmpty());
 
   WhichTree next_tree = NextTileIteratorTree(tree_priority);
-  PictureLayerImpl::LayerRasterTileIterator* next_iterator =
-      next_tree == ACTIVE_TREE ? &active_iterator : &pending_iterator;
-  DCHECK(*next_iterator);
-  DCHECK(returned_tiles_for_debug.insert(**next_iterator).second);
-  ++(*next_iterator);
+  TilingSetRasterQueue* next_queue =
+      next_tree == ACTIVE_TREE ? active_queue.get() : pending_queue.get();
+  DCHECK(next_queue && !next_queue->IsEmpty());
+  DCHECK(returned_tiles_for_debug.insert(next_queue->Top()).second);
+  next_queue->Pop();
 
   if (has_both_layers)
     SkipTilesReturnedByTwin(tree_priority);
@@ -236,17 +235,18 @@ void RasterTilePriorityQueue::PairedPictureLayerQueue::Pop(
   DCHECK(IsEmpty() || Top(tree_priority));
 }
 
-void RasterTilePriorityQueue::PairedPictureLayerQueue::SkipTilesReturnedByTwin(
+void RasterTilePriorityQueue::PairedTilingSetQueue::SkipTilesReturnedByTwin(
     TreePriority tree_priority) {
   // We have both layers (active and pending) thus we can encounter shared
   // tiles twice (from the active iterator and from the pending iterator).
   while (!IsEmpty()) {
     WhichTree next_tree = NextTileIteratorTree(tree_priority);
-    PictureLayerImpl::LayerRasterTileIterator* next_iterator =
-        next_tree == ACTIVE_TREE ? &active_iterator : &pending_iterator;
+    TilingSetRasterQueue* next_queue =
+        next_tree == ACTIVE_TREE ? active_queue.get() : pending_queue.get();
+    DCHECK(next_queue && !next_queue->IsEmpty());
 
     // Accept all non-shared tiles.
-    const Tile* tile = **next_iterator;
+    const Tile* tile = next_queue->Top();
     if (!tile->is_shared())
       break;
 
@@ -256,51 +256,58 @@ void RasterTilePriorityQueue::PairedPictureLayerQueue::SkipTilesReturnedByTwin(
     if (next_tree == HigherPriorityTree(tree_priority, nullptr, nullptr, tile))
       break;
 
-    ++(*next_iterator);
+    next_queue->Pop();
   }
 }
 
-WhichTree
-RasterTilePriorityQueue::PairedPictureLayerQueue::NextTileIteratorTree(
+WhichTree RasterTilePriorityQueue::PairedTilingSetQueue::NextTileIteratorTree(
     TreePriority tree_priority) const {
   DCHECK(!IsEmpty());
 
-  // If we only have one iterator with tiles, return it.
-  if (!active_iterator)
+  // If we only have one queue with tiles, return it.
+  if (!active_queue || active_queue->IsEmpty())
     return PENDING_TREE;
-  if (!pending_iterator)
+  if (!pending_queue || pending_queue->IsEmpty())
     return ACTIVE_TREE;
 
   // Now both iterators have tiles, so we have to decide based on tree priority.
-  return HigherPriorityTree(
-      tree_priority, &active_iterator, &pending_iterator, nullptr);
+  return HigherPriorityTree(tree_priority, active_queue.get(),
+                            pending_queue.get(), nullptr);
 }
 
 scoped_refptr<base::debug::ConvertableToTraceFormat>
-RasterTilePriorityQueue::PairedPictureLayerQueue::StateAsValue() const {
+RasterTilePriorityQueue::PairedTilingSetQueue::StateAsValue() const {
   scoped_refptr<base::debug::TracedValue> state =
       new base::debug::TracedValue();
-  state->BeginDictionary("active_iterator");
-  TilePriority::PriorityBin active_priority_bin =
-      active_iterator ? (*active_iterator)->priority(ACTIVE_TREE).priority_bin
-                      : TilePriority::EVENTUALLY;
-  TilePriority::PriorityBin pending_priority_bin =
-      active_iterator ? (*active_iterator)->priority(PENDING_TREE).priority_bin
-                      : TilePriority::EVENTUALLY;
-  state->SetBoolean("has_tile", !!active_iterator);
+
+  bool active_queue_has_tile = active_queue && !active_queue->IsEmpty();
+  TilePriority::PriorityBin active_priority_bin = TilePriority::EVENTUALLY;
+  TilePriority::PriorityBin pending_priority_bin = TilePriority::EVENTUALLY;
+  if (active_queue_has_tile) {
+    active_priority_bin =
+        active_queue->Top()->priority(ACTIVE_TREE).priority_bin;
+    pending_priority_bin =
+        active_queue->Top()->priority(PENDING_TREE).priority_bin;
+  }
+
+  state->BeginDictionary("active_queue");
+  state->SetBoolean("has_tile", active_queue_has_tile);
   state->SetInteger("active_priority_bin", active_priority_bin);
   state->SetInteger("pending_priority_bin", pending_priority_bin);
   state->EndDictionary();
 
-  state->BeginDictionary("pending_iterator");
-  active_priority_bin =
-      pending_iterator ? (*pending_iterator)->priority(ACTIVE_TREE).priority_bin
-                       : TilePriority::EVENTUALLY;
-  pending_priority_bin =
-      pending_iterator
-          ? (*pending_iterator)->priority(PENDING_TREE).priority_bin
-          : TilePriority::EVENTUALLY;
-  state->SetBoolean("has_tile", !!pending_iterator);
+  bool pending_queue_has_tile = pending_queue && !pending_queue->IsEmpty();
+  active_priority_bin = TilePriority::EVENTUALLY;
+  pending_priority_bin = TilePriority::EVENTUALLY;
+  if (pending_queue_has_tile) {
+    active_priority_bin =
+        pending_queue->Top()->priority(ACTIVE_TREE).priority_bin;
+    pending_priority_bin =
+        pending_queue->Top()->priority(PENDING_TREE).priority_bin;
+  }
+
+  state->BeginDictionary("pending_queue");
+  state->SetBoolean("has_tile", active_queue_has_tile);
   state->SetInteger("active_priority_bin", active_priority_bin);
   state->SetInteger("pending_priority_bin", pending_priority_bin);
   state->EndDictionary();

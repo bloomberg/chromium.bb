@@ -16,6 +16,7 @@
 #include "cc/resources/picture_layer_tiling_set.h"
 #include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/tiling_set_eviction_queue.h"
+#include "cc/resources/tiling_set_raster_queue.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
@@ -38,36 +39,6 @@ class CC_EXPORT PictureLayerImpl
     PictureLayerImpl* pending;
   };
 
-  class CC_EXPORT LayerRasterTileIterator {
-   public:
-    LayerRasterTileIterator();
-    LayerRasterTileIterator(PictureLayerImpl* layer, bool prioritize_low_res);
-    ~LayerRasterTileIterator();
-
-    Tile* operator*();
-    const Tile* operator*() const;
-    LayerRasterTileIterator& operator++();
-    operator bool() const;
-
-   private:
-    enum IteratorType { LOW_RES, HIGH_RES, NUM_ITERATORS };
-
-    void AdvanceToNextStage();
-
-    PictureLayerImpl* layer_;
-
-    struct IterationStage {
-      IteratorType iterator_type;
-      TilePriority::PriorityBin tile_type;
-    };
-
-    size_t current_stage_;
-
-    // One low res stage, and three high res stages.
-    IterationStage stages_[4];
-    PictureLayerTiling::TilingRasterTileIterator iterators_[NUM_ITERATORS];
-  };
-
   static scoped_ptr<PictureLayerImpl> Create(LayerTreeImpl* tree_impl, int id) {
     return make_scoped_ptr(new PictureLayerImpl(tree_impl, id));
   }
@@ -75,6 +46,7 @@ class CC_EXPORT PictureLayerImpl
 
   scoped_ptr<TilingSetEvictionQueue> CreateEvictionQueue(
       TreePriority tree_priority);
+  scoped_ptr<TilingSetRasterQueue> CreateRasterQueue(bool prioritize_low_res);
 
   // LayerImpl overrides.
   const char* LayerTypeAsString() const override;

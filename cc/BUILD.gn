@@ -443,6 +443,8 @@ component("cc") {
     "resources/tile_priority.h",
     "resources/tiling_set_eviction_queue.cc",
     "resources/tiling_set_eviction_queue.h",
+    "resources/tiling_set_raster_queue.cc",
+    "resources/tiling_set_raster_queue.h",
     "resources/transferable_resource.cc",
     "resources/transferable_resource.h",
     "resources/transform_display_item.cc",
