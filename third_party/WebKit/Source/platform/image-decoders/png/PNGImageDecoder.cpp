@@ -58,11 +58,6 @@
 
 namespace {
 
-// Gamma constants.
-const double cMaxGamma = 21474.83;
-const double cDefaultGamma = 2.2;
-const double cInverseGamma = 0.45455;
-
 inline blink::PNGImageDecoder* imageDecoder(png_structp png)
 {
     return static_cast<blink::PNGImageDecoder*>(png_get_progressive_ptr(png));
@@ -372,8 +367,11 @@ void PNGImageDecoder::headerAvailable()
 
     if (!m_hasColorProfile) {
         // Deal with gamma and keep it under our control.
+        const double cInverseGamma = 0.45455;
+        const double cDefaultGamma = 2.2;
         double gamma;
         if (!m_ignoreGammaAndColorProfile && png_get_gAMA(png, info, &gamma)) {
+            const double cMaxGamma = 21474.83;
             if ((gamma <= 0.0) || (gamma > cMaxGamma)) {
                 gamma = cInverseGamma;
                 png_set_gAMA(png, info, gamma);
