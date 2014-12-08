@@ -112,6 +112,11 @@
         (cancel-timer flymake-timer)
       (kill-local-variable 'flymake-allowed-file-name-masks))))
 
+(defun cr-compile ()
+  (interactive)
+  (let ((default-directory (cr-flymake-chromium-src)))
+    (call-interactively 'compile)))
+
 (add-hook 'find-file-hook 'cr-flymake-find-file 'append)
 (add-hook 'after-save-hook 'cr-flymake-kick-off-check-after-save)
 
