@@ -4,8 +4,6 @@
 
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 
-#include "ios/public/provider/web/web_state.h"
-
 namespace ios {
 
 // static

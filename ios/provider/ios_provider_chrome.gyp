@@ -15,7 +15,6 @@
       ],
       'dependencies': [
         '../../base/base.gyp:base',
-        'ios_provider_web.gyp:ios_provider_web',
       ],
     },
   ],

@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_PUBLIC_PROVIDER_WEB_WEB_STATE_USER_DATA_H_
-#define IOS_PUBLIC_PROVIDER_WEB_WEB_STATE_USER_DATA_H_
+#ifndef IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_USER_DATA_H_
+#define IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_USER_DATA_H_
 
 #include "base/supports_user_data.h"
-#include "ios/public/provider/web/web_state.h"
+#include "ios/web/public/web_state/web_state.h"
 
-namespace ios {
+namespace web {
 
 // A base class for classes attached to, and scoped to, the lifetime of a
 // WebState. For example:
 //
 // --- in foo.h ---
-// class Foo : public ios::WebStateUserData<Foo> {
+// class Foo : public web::WebStateUserData<Foo> {
 //  public:
 //   virtual ~Foo();
 //   // ... more public stuff here ...
 //  private:
-//   explicit Foo(ios::WebState* web_state);
-//   friend class ios::WebStateUserData<Foo>;
+//   explicit Foo(web::WebState* web_state);
+//   friend class web::WebStateUserData<Foo>;
 //   // ... more private stuff here ...
 // }
 // --- in foo.cc ---
@@ -45,11 +45,13 @@ class WebStateUserData : public base::SupportsUserData::Data {
   static const T* FromWebState(const WebState* web_state) {
     return static_cast<const T*>(web_state->GetUserData(UserDataKey()));
   }
+  // Removes the instance attached to the specified WebState.
+  static void RemoveFromWebState(WebState* web_state) {
+    web_state->RemoveUserData(UserDataKey());
+  }
 
  protected:
-  static inline void* UserDataKey() {
-    return &kLocatorKey;
-  }
+  static inline void* UserDataKey() { return &kLocatorKey; }
 
  private:
   // The user data key.
@@ -64,9 +66,9 @@ class WebStateUserData : public base::SupportsUserData::Data {
 // specialization. (C++98: 14.7.3.15; C++11: 14.7.3.13)
 //
 #define DEFINE_WEB_STATE_USER_DATA_KEY(TYPE) \
-template<>                                      \
-int ios::WebStateUserData<TYPE>::kLocatorKey = 0
+  template <>                                \
+  int web::WebStateUserData<TYPE>::kLocatorKey = 0
 
-}  // namespace ios
+}  // namespace web
 
-#endif  // IOS_PUBLIC_PROVIDER_WEB_WEB_STATE_USER_DATA_H_
+#endif  // IOS_WEB_PUBLIC_WEB_STATE_WEB_STATE_USER_DATA_H_
