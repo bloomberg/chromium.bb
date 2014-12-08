@@ -508,6 +508,11 @@
               '<(PRODUCT_DIR)/lib/libpeerconnection.so',
             ],
           }],
+          ['asan==1', {
+            'packaging_files_binaries': [
+              '<(PRODUCT_DIR)/lib/libc++.so',
+            ],
+          }],
         ],
       },
       'targets': [

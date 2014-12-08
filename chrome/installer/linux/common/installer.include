@@ -182,6 +182,14 @@ stage_install_common() {
     install -m 644 -s "${BUILDDIR}/lib/libpeerconnection.so" "${STAGEDIR}/${INSTALLDIR}/lib/"
   fi
 
+  # libc++
+  if [ -f "${BUILDDIR}/lib/libc++.so" ]; then
+    install -m 755 -d "${STAGEDIR}/${INSTALLDIR}/lib/"
+
+    install -m 644 -s "${BUILDDIR}/lib/libc++.so" "${STAGEDIR}/${INSTALLDIR}/lib/"
+  fi
+
+
   # nacl_helper and nacl_helper_bootstrap
   # Don't use "-s" (strip) because this runs binutils "strip", which
   # mangles the special ELF program headers of nacl_helper_bootstrap.
