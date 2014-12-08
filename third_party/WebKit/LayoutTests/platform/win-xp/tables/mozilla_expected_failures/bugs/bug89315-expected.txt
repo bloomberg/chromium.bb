@@ -1,6 +1,6 @@
-layer at (0,0) size 785x4625
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x4625
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 4625
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 785x4625 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x4625
     RenderBody {BODY} at (8,8) size 769x4609
       RenderBlock {DIV} at (0,0) size 769x4593
@@ -28,44 +28,44 @@ layer at (0,0) size 785x4625
                       RenderInline {O:P} at (0,0) size 0x0
             RenderTableRow {TR} at (0,21) size 473x36
               RenderTableCell {TD} at (0,21) size 98x36 [r=1 c=0 rs=1 cs=1]
-                RenderInline {B} at (0,0) size 54x37
-                  RenderInline {SPAN} at (0,0) size 54x35
-                    RenderText {#text} at (22,0) size 54x35
-                      text run at (22,0) width 54: "Channel"
-                      text run at (24,18) width 50: "number"
+                RenderInline {B} at (0,0) size 52x37
+                  RenderInline {SPAN} at (0,0) size 52x35
+                    RenderText {#text} at (23,0) size 52x35
+                      text run at (23,0) width 52: "Channel"
+                      text run at (25,18) width 48: "number"
                 RenderText {#text} at (0,0) size 0x0
               RenderTableCell {TD} at (98,21) size 170x18 [r=1 c=1 rs=1 cs=1]
-                RenderInline {B} at (0,0) size 96x19
-                  RenderInline {SPAN} at (0,0) size 96x17
-                    RenderText {#text} at (37,0) size 96x17
-                      text run at (37,0) width 96: "Member name"
+                RenderInline {B} at (0,0) size 90x19
+                  RenderInline {SPAN} at (0,0) size 90x17
+                    RenderText {#text} at (40,0) size 90x17
+                      text run at (40,0) width 90: "Member name"
                 RenderText {#text} at (0,0) size 0x0
               RenderTableCell {TD} at (268,21) size 99x36 [r=1 c=2 rs=1 cs=1]
                 RenderBlock {P} at (7.19,0) size 85x18
-                  RenderInline {B} at (0,0) size 45x15
-                    RenderInline {SPAN} at (0,0) size 45x17
-                      RenderText {#text} at (20,0) size 45x17
-                        text run at (20,0) width 45: "Proper"
+                  RenderInline {B} at (0,0) size 41x15
+                    RenderInline {SPAN} at (0,0) size 41x17
+                      RenderText {#text} at (22,0) size 41x17
+                        text run at (22,0) width 41: "Proper"
                       RenderInline {SPAN} at (0,0) size 0x17
                         RenderInline {O:P} at (0,0) size 0x17
                 RenderBlock {P} at (7.19,18) size 85x18
-                  RenderInline {B} at (0,0) size 37x15
-                    RenderInline {SPAN} at (0,0) size 37x17
-                      RenderText {#text} at (24,0) size 37x17
-                        text run at (24,0) width 37: "Plane"
+                  RenderInline {B} at (0,0) size 35x15
+                    RenderInline {SPAN} at (0,0) size 35x17
+                      RenderText {#text} at (25,0) size 35x17
+                        text run at (25,0) width 35: "Plane"
               RenderTableCell {TD} at (367,21) size 106x36 [r=1 c=3 rs=1 cs=1]
                 RenderBlock {P} at (7.19,0) size 92x18
-                  RenderInline {B} at (0,0) size 70x15
-                    RenderInline {SPAN} at (0,0) size 70x17
-                      RenderText {#text} at (11,0) size 70x17
-                        text run at (11,0) width 70: "Helicopter"
-                      RenderInline {SPAN} at (0,0) size 0x17
-                        RenderInline {O:P} at (0,0) size 0x17
+                  RenderInline {B} at (0,0) size 64x15
+                    RenderInline {SPAN} at (0,0) size 64x17
+                      RenderText {#text} at (14,0) size 64x17
+                        text run at (14,0) width 64: "Helicopter"
+                      RenderInline {SPAN} at (0,0) size 1x17
+                        RenderInline {O:P} at (0,0) size 1x17
                 RenderBlock {P} at (7.19,18) size 92x18
-                  RenderInline {B} at (0,0) size 50x15
-                    RenderInline {SPAN} at (0,0) size 50x17
-                      RenderText {#text} at (21,0) size 50x17
-                        text run at (21,0) width 50: "thingy.-"
+                  RenderInline {B} at (0,0) size 48x15
+                    RenderInline {SPAN} at (0,0) size 48x17
+                      RenderText {#text} at (22,0) size 48x17
+                        text run at (22,0) width 48: "thingy.-"
             RenderTableRow {TR} at (0,57) size 473x32
               RenderTableCell {TD} at (0,57) size 98x16 [r=2 c=0 rs=1 cs=1]
                 RenderBlock {P} at (7.19,0) size 84x16

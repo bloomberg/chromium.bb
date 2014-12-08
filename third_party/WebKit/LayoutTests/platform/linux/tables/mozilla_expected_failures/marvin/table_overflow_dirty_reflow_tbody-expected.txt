@@ -1,5 +1,5 @@
-layer at (0,0) size 785x734
-  RenderView at (0,0) size 785x600
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 734
+  RenderView at (0,0) size 800x600
 layer at (0,0) size 785x538
   RenderBlock {HTML} at (0,0) size 785x538
     RenderBody {BODY} at (8,8) size 769x522

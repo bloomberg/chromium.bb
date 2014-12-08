@@ -1,6 +1,6 @@
-layer at (0,0) size 933x1037
-  RenderView at (0,0) size 785x585
-layer at (0,0) size 933x1037
+layer at (0,0) size 800x600 clip at (0,0) size 785x585 scrollWidth 933 scrollHeight 1037
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 933x1037 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585 outlineClip at (0,0) size 785x585
   RenderSVGRoot {svg} at (186,78) size 551x760
     RenderSVGContainer {g} at (186,78) size 551x760
       RenderSVGText {text} at (179,37) size 92x17 contains 1 chunk(s)

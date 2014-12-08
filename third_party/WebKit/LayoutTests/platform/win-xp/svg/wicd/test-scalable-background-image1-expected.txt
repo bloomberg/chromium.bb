@@ -1,11 +1,11 @@
-layer at (0,0) size 820x585
-  RenderView at (0,0) size 800x585
+layer at (0,0) size 800x600 clip at (0,0) size 800x585 scrollWidth 820
+  RenderView at (0,0) size 800x600
 layer at (0,0) size 800x321
   RenderBlock {html} at (0,0) size 800x320.86
     RenderBody {body} at (48,8) size 772x304.86
       RenderBlock {h1} at (10,40.72) size 691.83x31
-        RenderText {#text} at (0,0) size 317x30
-          text run at (0,0) width 317: "scalable CSS background"
+        RenderText {#text} at (0,0) size 307x30
+          text run at (0,0) width 307: "scalable CSS background"
       RenderBlock {h4} at (10,71.72) size 752x16
         RenderText {#text} at (0,0) size 125x16
           text run at (0,0) width 125: "WICD Core 1.0 #11"

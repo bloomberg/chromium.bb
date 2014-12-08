@@ -1,4 +1,4 @@
-layer at (0,0) size 808x600
+layer at (0,0) size 800x600 scrollWidth 808
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
@@ -11,11 +11,11 @@ layer at (0,0) size 800x600
                 RenderTableSection {TBODY} at (1,1) size 788x572
                   RenderTableRow {TR} at (0,2) size 788x568
                     RenderTableCell {TD} at (2,2) size 784x568 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-layer at (18,18) size 790x564
+layer at (18,18) size 790x564 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderPartObject {IFRAME} at (2,2) size 790x564 [border: (5px solid #0000FF)]
-    layer at (0,0) size 765x1858
-      RenderView at (0,0) size 765x554
-    layer at (0,0) size 765x1858
+    layer at (0,0) size 780x554 clip at (0,0) size 765x554 scrollHeight 1858
+      RenderView at (0,0) size 780x554
+    layer at (0,0) size 765x1858 backgroundClip at (0,0) size 765x554 clip at (0,0) size 765x554 outlineClip at (0,0) size 765x554
       RenderBlock {HTML} at (0,0) size 765x1858
         RenderBody {BODY} at (0,0) size 765x1858 [bgcolor=#53799F]
           RenderBlock {CENTER} at (0,0) size 765x1858
