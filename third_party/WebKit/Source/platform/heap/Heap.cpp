@@ -498,14 +498,6 @@ void HeapObjectHeader::zapMagic()
 }
 #endif
 
-HeapObjectHeader* HeapObjectHeader::fromPayload(const void* payload)
-{
-    Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
-    HeapObjectHeader* header =
-        reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
-    return header;
-}
-
 void HeapObjectHeader::finalize(const GCInfo* gcInfo, Address object, size_t objectSize)
 {
     ASSERT(gcInfo);
@@ -624,14 +616,6 @@ void LargeObject<HeapObjectHeader>::finalize()
 {
     ASSERT(gcInfo());
     HeapObjectHeader::finalize(gcInfo(), payload(), payloadSize());
-}
-
-GeneralHeapObjectHeader* GeneralHeapObjectHeader::fromPayload(const void* payload)
-{
-    Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
-    GeneralHeapObjectHeader* header =
-        reinterpret_cast<GeneralHeapObjectHeader*>(addr - sizeof(GeneralHeapObjectHeader));
-    return header;
 }
 
 template<typename Header>

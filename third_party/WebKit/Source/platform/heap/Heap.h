@@ -363,6 +363,15 @@ private:
 #endif
 };
 
+inline
+HeapObjectHeader* HeapObjectHeader::fromPayload(const void* payload)
+{
+    Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
+    HeapObjectHeader* header =
+        reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
+    return header;
+}
+
 // Each object on the GeneralHeap needs to carry a pointer to its
 // own GCInfo structure for tracing and potential finalization.
 class PLATFORM_EXPORT GeneralHeapObjectHeader final : public HeapObjectHeader {
@@ -396,6 +405,15 @@ public:
 private:
     const GCInfo* m_gcInfo;
 };
+
+inline
+GeneralHeapObjectHeader* GeneralHeapObjectHeader::fromPayload(const void* payload)
+{
+    Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
+    GeneralHeapObjectHeader* header =
+        reinterpret_cast<GeneralHeapObjectHeader*>(addr - sizeof(GeneralHeapObjectHeader));
+    return header;
+}
 
 class FreeListEntry final : public HeapObjectHeader {
 public:
