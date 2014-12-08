@@ -129,6 +129,9 @@ class ExtensionToolbarModel : public content::NotificationObserver,
 
   void OnExtensionToolbarPrefChange();
 
+  // Returns the index of the given |id|, or -1 if the id wasn't found.
+  int GetIndexForId(const std::string& id) const;
+
   // Finds the Observer associated with |browser| and tells it to display a
   // popup for the given |extension|. If |grant_active_tab| is true, this
   // grants active tab permissions to the |extension|; only do this because of

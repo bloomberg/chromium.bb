@@ -586,6 +586,14 @@ void ExtensionToolbarModel::OnExtensionToolbarPrefChange() {
   }
 }
 
+int ExtensionToolbarModel::GetIndexForId(const std::string& id) const {
+  for (size_t i = 0; i < toolbar_items().size(); ++i) {
+    if (toolbar_items()[i]->id() == id)
+      return i;
+  }
+  return -1;
+}
+
 bool ExtensionToolbarModel::ShowExtensionActionPopup(
     const Extension* extension,
     Browser* browser,

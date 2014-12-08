@@ -181,7 +181,7 @@ testing::AssertionResult ToolbarActionsBarUnitTest::VerifyToolbarOrder(
   size_t icon_count = toolbar_actions_bar()->GetIconCount();
   if (visible_count != icon_count)
     error += base::StringPrintf(
-        "Incorrect visible count: expected %d, found %d",
+        "Incorrect visible count: expected %d, found %d.\n",
         static_cast<int>(visible_count), static_cast<int>(icon_count));
 
   // Test that the (platform-specific) toolbar view matches the expected state.
@@ -198,7 +198,7 @@ testing::AssertionResult ToolbarActionsBarUnitTest::VerifyToolbarOrder(
   size_t view_icon_count = browser_action_test_util()->VisibleBrowserActions();
   if (visible_count != view_icon_count)
     error += base::StringPrintf(
-        "Incorrect visible count in view: expected %d, found %d",
+        "Incorrect visible count in view: expected %d, found %d.\n",
         static_cast<int>(visible_count), static_cast<int>(view_icon_count));
 
   return error.empty() ? testing::AssertionSuccess() :
@@ -346,20 +346,20 @@ TEST_F(ToolbarActionsBarUnitTestWithSwitch, ActionsPopOutToAct) {
   // toolbar actions.
   const char kBrowserAction[] = "browser action";
   const char kPageAction[] = "page action";
-  const char kNoAction[] = "no action";
+  const char kSynthetic[] = "synthetic";  // This has a generated action icon.
 
   CreateAndAddExtension(kBrowserAction,
                         extensions::extension_action_test_util::BROWSER_ACTION);
   scoped_refptr<const extensions::Extension> page_action =
       CreateAndAddExtension(
           kPageAction, extensions::extension_action_test_util::PAGE_ACTION);
-  CreateAndAddExtension(kNoAction,
+  CreateAndAddExtension(kSynthetic,
                         extensions::extension_action_test_util::NO_ACTION);
 
   {
     // We should start in the order of "browser action", "page action",
-    // "no action" and have all actions visible.
-    const char* expected_names[] = { kBrowserAction, kPageAction, kNoAction };
+    // "synthetic" and have all actions visible.
+    const char* expected_names[] = { kBrowserAction, kPageAction, kSynthetic };
     EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 3u));
   }
 
@@ -370,7 +370,7 @@ TEST_F(ToolbarActionsBarUnitTestWithSwitch, ActionsPopOutToAct) {
 
   {
     // Quickly verify that the move/visible count worked.
-    const char* expected_names[] = { kBrowserAction, kNoAction, kPageAction };
+    const char* expected_names[] = { kBrowserAction, kSynthetic, kPageAction };
     EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 1u));
   }
 
@@ -383,10 +383,10 @@ TEST_F(ToolbarActionsBarUnitTestWithSwitch, ActionsPopOutToAct) {
   {
     // First, check the order for the first tab. Since we haven't changed
     // anything (i.e., no extensions want to act), this should be the same as we
-    // left it: "browser action", "no action", "page action", with only one
+    // left it: "browser action", "synthetic", "page action", with only one
     // visible.
     ActivateTab(0);
-    const char* expected_names[] = { kBrowserAction, kNoAction, kPageAction };
+    const char* expected_names[] = { kBrowserAction, kSynthetic, kPageAction };
     EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 1u));
   }
 
@@ -403,7 +403,7 @@ TEST_F(ToolbarActionsBarUnitTestWithSwitch, ActionsPopOutToAct) {
     // This has two visible effects:
     // - page action should moved to the zero-index (left-most side of the bar).
     // - The visible count should increase by one (so page action is visible).
-    const char* expected_names[] = { kPageAction, kBrowserAction, kNoAction };
+    const char* expected_names[] = { kPageAction, kBrowserAction, kSynthetic };
     EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 2u));
   }
 
@@ -411,7 +411,7 @@ TEST_F(ToolbarActionsBarUnitTestWithSwitch, ActionsPopOutToAct) {
     // This should not have any effect on the second tab, which should still
     // have the original order and visible count.
     ActivateTab(1);
-    const char* expected_names[] = { kBrowserAction, kNoAction, kPageAction };
+    const char* expected_names[] = { kBrowserAction, kSynthetic, kPageAction };
     EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 1u));
   }
 
@@ -419,7 +419,7 @@ TEST_F(ToolbarActionsBarUnitTestWithSwitch, ActionsPopOutToAct) {
     // Switching back to the first tab should mean that actions that want to run
     // are re-popped out.
     ActivateTab(0);
-    const char* expected_names[] = { kPageAction, kBrowserAction, kNoAction };
+    const char* expected_names[] = { kPageAction, kBrowserAction, kSynthetic };
     EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 2u));
   }
 
@@ -428,7 +428,7 @@ TEST_F(ToolbarActionsBarUnitTestWithSwitch, ActionsPopOutToAct) {
     SetActionWantsToRunOnTab(action, web_contents, false);
     // The order and visible count should return to normal (the page action
     // should move back to its original index in overflow).
-    const char* expected_names[] = { kBrowserAction, kNoAction, kPageAction };
+    const char* expected_names[] = { kBrowserAction, kSynthetic, kPageAction };
     EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 1u));
   }
 
@@ -437,7 +437,7 @@ TEST_F(ToolbarActionsBarUnitTestWithSwitch, ActionsPopOutToAct) {
     // it's naturally visible).
     toolbar_model()->MoveExtensionIcon(page_action->id(), 1u);
     toolbar_model()->SetVisibleIconCount(2u);
-    const char* expected_names[] = { kBrowserAction, kPageAction, kNoAction };
+    const char* expected_names[] = { kBrowserAction, kPageAction, kSynthetic };
     EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 2u));
     // Make the now-visible page action want to act.
     // Since the action is already visible, this should have no effect - the
@@ -451,7 +451,7 @@ TEST_F(ToolbarActionsBarUnitTestWithSwitch, ActionsPopOutToAct) {
     // the page action.
     toolbar_model()->SetVisibleIconCount(3);
     toolbar_model()->MoveExtensionIcon(page_action->id(), 0u);
-    const char* expected_names[] = { kPageAction, kBrowserAction, kNoAction };
+    const char* expected_names[] = { kPageAction, kBrowserAction, kSynthetic };
     EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 3u));
     // If we moved the page action, the move should remain in effect even after
     // the action no longer wants to act.
@@ -462,7 +462,7 @@ TEST_F(ToolbarActionsBarUnitTestWithSwitch, ActionsPopOutToAct) {
   {
     // Test the edge case of having no icons visible.
     toolbar_model()->SetVisibleIconCount(0);
-    const char* expected_names[] = { kPageAction, kBrowserAction, kNoAction };
+    const char* expected_names[] = { kPageAction, kBrowserAction, kSynthetic };
     EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 0u));
     SetActionWantsToRunOnTab(action, web_contents, true);
     EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 1u));
@@ -479,7 +479,7 @@ TEST_F(ToolbarActionsBarUnitTestWithSwitch, ActionsPopOutToAct) {
     // The second page action should be added to the end, and no icons should
     // be visible.
     const char* expected_names[] =
-        { kPageAction, kBrowserAction, kNoAction, kPageAction2 };
+        { kPageAction, kBrowserAction, kSynthetic, kPageAction2 };
     EXPECT_TRUE(VerifyToolbarOrder(expected_names, 4u, 0u));
   }
 
@@ -492,7 +492,130 @@ TEST_F(ToolbarActionsBarUnitTestWithSwitch, ActionsPopOutToAct) {
     // Even though the second page action triggered first, the order of actions
     // wanting to run should respect the normal order of actions.
     const char* expected_names[] =
-        { kPageAction, kPageAction2, kBrowserAction, kNoAction };
+        { kPageAction, kPageAction2, kBrowserAction, kSynthetic };
     EXPECT_TRUE(VerifyToolbarOrder(expected_names, 4u, 2u));
+  }
+}
+
+TEST_F(ToolbarActionsBarUnitTestWithSwitch, AdjustingActionsThatWantToAct) {
+  // Add three extensions to the profile; this is the easiest way to have
+  // toolbar actions.
+  const char kBrowserAction[] = "browser action";
+  const char kPageAction[] = "page action";
+  const char kSynthetic[] = "synthetic";  // This has a generated action icon.
+
+  CreateAndAddExtension(kBrowserAction,
+                        extensions::extension_action_test_util::BROWSER_ACTION);
+  scoped_refptr<const extensions::Extension> page_action =
+      CreateAndAddExtension(
+          kPageAction, extensions::extension_action_test_util::PAGE_ACTION);
+  CreateAndAddExtension(kSynthetic,
+                        extensions::extension_action_test_util::NO_ACTION);
+
+  // Move the page action to the second index and reduce the visible count to 1
+  // so that the page action is hidden (and can pop out when it needs to act).
+  toolbar_model()->SetVisibleIconCount(1);
+  toolbar_model()->MoveExtensionIcon(page_action->id(), 1u);
+
+  // Create a tab.
+  AddTab(browser(), GURL("http://www.google.com/"));
+  AddTab(browser(), GURL("http://www.youtube.com/"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+
+  extensions::ExtensionActionManager* action_manager =
+      extensions::ExtensionActionManager::Get(profile());
+  ExtensionAction* action = action_manager->GetExtensionAction(*page_action);
+  ASSERT_TRUE(action);
+
+  {
+    // Make the page action pop out, which causes the visible count for tab to
+    // become 2, with the page action at the front.
+    SetActionWantsToRunOnTab(action, web_contents, true);
+    const char* expected_names[] = { kPageAction, kBrowserAction, kSynthetic };
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 2u));
+  }
+
+  {
+    // Shrink the toolbar count. To the user, this is hiding "browser action",
+    // so that's the effect it should have (browser action should be hidden from
+    // all windows).
+    toolbar_actions_bar()->OnResizeComplete(
+        toolbar_actions_bar()->IconCountToWidth(1u));
+    const char* expected_names[] = { kPageAction, kBrowserAction, kSynthetic };
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 1u));
+    // Once the action no longer wants to run, "page action" should go back to
+    // its normal spot, and visible count goes to zero.
+    SetActionWantsToRunOnTab(action, web_contents, false);
+    const char* expected_names2[] = { kBrowserAction, kPageAction, kSynthetic };
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names2, 3u, 0u));
+  }
+
+  {
+    // Make the action want to run again - it should pop out, and be the only
+    // action visible on the tab.
+    SetActionWantsToRunOnTab(action, web_contents, true);
+    const char* expected_names[] = { kPageAction, kBrowserAction, kSynthetic };
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 1u));
+    // Set the visible icon count for that tab to 2. This uncovers one action,
+    // so the base visible count should be 1, and the order should still be
+    // "page action", "browser action", "synthetic".
+    toolbar_actions_bar()->OnResizeComplete(
+        toolbar_actions_bar()->IconCountToWidth(2u));
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 2u));
+    // Next, grow the item order to 3 for the tab. This uncovers the "synthetic"
+    // extension. This is interesting, because for the same action to be
+    // uncovered on other tabs, the underlying order (which was previously
+    // "browser action", "page action", "synthetic") has to chage (to be
+    // "browser action", "synthetic", "page action"). If we don't make this
+    // change, we uncover "synthetic" here, but in other windows, "page action"
+    // is uncovered (which is weird). Ensure that the change that was visible
+    // to the user (uncovering "synthetic") is the one that happens to the
+    // underlying model.
+    toolbar_actions_bar()->OnResizeComplete(
+        toolbar_actions_bar()->IconCountToWidth(3u));
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 3u));
+    // So when "page action" finishes, it should go back to overflow, leaving
+    // the other two visible.
+    SetActionWantsToRunOnTab(action, web_contents, false);
+    const char* expected_names2[] = { kBrowserAction, kSynthetic, kPageAction };
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names2, 3u, 2u));
+  }
+
+  {
+    // Next, test that moving an action that was popped out for overflow pins
+    // the action to the new spot. Since the action originated in overflow, this
+    // also causes the base visible count to increase.
+    // Set the action to be visible.
+    SetActionWantsToRunOnTab(action, web_contents, true);
+    const char* expected_names[] = { kPageAction, kBrowserAction, kSynthetic };
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 3u));
+    // Move the popped out "page action" extension to the first index.
+    toolbar_actions_bar()->OnDragDrop(0, 1, ToolbarActionsBar::DRAG_TO_SAME);
+    const char* expected_names2[] = { kBrowserAction, kPageAction, kSynthetic };
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names2, 3u, 3u));
+    // Since this pinned "page action", the order stays the same after the run.
+    SetActionWantsToRunOnTab(action, web_contents, false);
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names2, 3u, 3u));
+  }
+
+  {
+    // Move "page action" back to overflow.
+    toolbar_actions_bar()->OnDragDrop(1, 2, ToolbarActionsBar::DRAG_TO_SAME);
+    toolbar_actions_bar()->OnResizeComplete(
+        toolbar_actions_bar()->IconCountToWidth(2u));
+
+    // Test moving a popped out extension to the overflow menu; this should have
+    // no effect on the base visible count.
+    SetActionWantsToRunOnTab(action, web_contents, true);
+    const char* expected_names[] = { kPageAction, kBrowserAction, kSynthetic };
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 3u));
+    // Move "page action" to the overflow menu.
+    toolbar_actions_bar()->OnDragDrop(
+        0, 2, ToolbarActionsBar::DRAG_TO_OVERFLOW);
+    const char* expected_names2[] = { kBrowserAction, kSynthetic, kPageAction };
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names2, 3u, 2u));
+    SetActionWantsToRunOnTab(action, web_contents, false);
+    EXPECT_TRUE(VerifyToolbarOrder(expected_names2, 3u, 2u));
   }
 }
