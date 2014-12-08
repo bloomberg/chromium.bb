@@ -21,11 +21,13 @@
       }],
     ],
   },
+  'includes': [
+    'content_common_mojo_bindings.gypi',
+  ],
   'conditions': [
     ['OS != "ios"', {
       'includes': [
         '../build/win_precompile.gypi',
-        'content_common_mojo_bindings.gypi',
         'content_resources.gypi',
       ],
     }],
@@ -67,15 +69,16 @@
           'dependencies': [
             'content_browser',
             'content_common',
+            'content_common_mojo_bindings',
           ],
           'export_dependent_settings': [
             'content_common',
+            'content_common_mojo_bindings',
           ],
           'conditions': [
             ['OS != "ios"', {
               'dependencies': [
                 'content_child',
-                'content_common_mojo_bindings',
                 'content_gpu',
                 'content_plugin',
                 'content_ppapi_plugin',
@@ -139,9 +142,11 @@
           ],
           'dependencies': [
             'content_common',
+            'content_common_mojo_bindings',
           ],
           'export_dependent_settings': [
             'content_common',
+            'content_common_mojo_bindings',
           ],
         },
         {
@@ -157,9 +162,11 @@
           ],
           'dependencies': [
             'content_common',
+            'content_common_mojo_bindings',
           ],
           'export_dependent_settings': [
             'content_common',
+            'content_common_mojo_bindings',
           ],
           'conditions': [
             ['java_bridge==1', {
@@ -175,7 +182,6 @@
             }],
             ['OS != "ios"', {
               'dependencies': [
-                'content_common_mojo_bindings',
                 'content_resources',
               ],
             }],
@@ -189,10 +195,12 @@
           'includes': [
             'content_common.gypi',
           ],
+          'dependencies': [
+            'content_common_mojo_bindings',
+          ],
           'conditions': [
             ['OS != "ios"', {
               'dependencies': [
-                'content_common_mojo_bindings',
                 'content_resources',
               ],
             }],
@@ -304,7 +312,11 @@
           'type': 'shared_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
+            'content_common_mojo_bindings',
             'content_resources',
+          ],
+          'export_dependent_settings': [
+            'content_common_mojo_bindings',
           ],
           'conditions': [
             ['chromium_enable_vtune_jit_for_v8==1', {
@@ -312,11 +324,6 @@
                 '../v8/src/third_party/vtune/v8vtune.gyp:v8_vtune',
               ],
             }],
-            ['OS != "ios"', {
-              'dependencies': [
-                'content_common_mojo_bindings',
-              ]
-            }]
           ],
           'includes': [
             'content_app.gypi',
