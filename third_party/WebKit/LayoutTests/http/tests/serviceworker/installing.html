@@ -11,7 +11,6 @@ async_test(function(t) {
     var url = 'resources/empty-worker.js';
     var scope = 'resources/blank.html';
     var frame;
-    var registration;
 
     service_worker_unregister(t, scope)
     .then(step(function() { return with_iframe(scope); }))
@@ -19,11 +18,7 @@ async_test(function(t) {
         frame = f;
         return navigator.serviceWorker.register(url, {scope: scope});
     }))
-    .then(step(function(r) {
-        registration = r;
-        return wait_for_update(t, registration);
-    }))
-    .then(step(function() {
+    .then(step(function(registration) {
         var container = frame.contentWindow.navigator.serviceWorker;
         assert_equals(container.controller, null);
         assert_equals(registration.active, null);

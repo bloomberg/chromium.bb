@@ -12,9 +12,7 @@
     service_worker_unregister_and_register(
         t, 'resources/empty-worker.js', scope)
       .then(t.step_func(function(registration) {
-          return wait_for_update(t, registration);
-        }))
-      .then(t.step_func(function(sw) {
+          var sw = registration.installing;
           sw.addEventListener('statechange', t.step_func(onStateChange(sw)));
           assert_equals(sw.state, 'installing',
                         'the service worker should be in "installing" state.');

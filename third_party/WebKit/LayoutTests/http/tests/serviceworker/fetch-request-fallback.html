@@ -46,11 +46,8 @@ async_test(function(t) {
     var worker;
     service_worker_unregister_and_register(t, SCRIPT, SCOPE)
       .then(function(registration) {
-          return wait_for_update(t, registration);
-        })
-      .then(function(sw) {
-          worker = sw;
-          return wait_for_state(t, sw, 'activated');
+          worker = registration.installing;
+          return wait_for_state(t, worker, 'activated');
         })
       .then(function() { return with_iframe(SCOPE); })
       .then(function(f) {

@@ -8,16 +8,9 @@ window.addEventListener('message', function(evt) {
     start();
   }, false);
 
-function wait_for_update(registration) {
+function wait_for_activated(registration) {
   return new Promise(function(resolve) {
-      registration.addEventListener('updatefound', function() {
-          resolve(registration.installing);
-        });
-    });
-}
-
-function wait_for_activated(worker) {
-  return new Promise(function(resolve) {
+      var worker = registration.installing;
       worker.addEventListener('statechange', function() {
           if (worker.state == 'activated') {
             resolve(worker);
@@ -35,7 +28,6 @@ function start() {
       .then(function() {
           return navigator.serviceWorker.register(script, {scope: scope});
         })
-      .then(wait_for_update)
       .then(wait_for_activated)
       .then(function(worker) {
           port.postMessage({msg: 'registered'});

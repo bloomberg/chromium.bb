@@ -27,10 +27,7 @@ t.step(function() {
         w.navigator.serviceWorker.register('empty-worker.js',
                                            {scope: 'blank.html'})
         .then(function(registration) {
-            return wait_for_update(t, registration);
-          })
-        .then(function(worker) {
-            return wait_for_state(t, worker, 'activated');
+            return wait_for_state(t, registration.installing, 'activated');
           })
         .then(function() {
             assert_equals(w.navigator.serviceWorker.controller, null,

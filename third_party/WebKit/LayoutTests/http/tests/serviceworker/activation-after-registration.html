@@ -14,14 +14,11 @@ t.step(function() {
         t, 'resources/empty-worker.js', scope)
       .then(function(r) {
           registration = r;
-          return wait_for_update(t, registration);
-        })
-      .then(function(worker) {
           assert_equals(
-              worker.state,
+              r.installing.state,
               'installing',
               'worker should be in the "installing" state upon registration');
-          return wait_for_state(t, worker, 'activated');
+          return wait_for_state(t, r.installing, 'activated');
         })
       .then(function() {
           service_worker_unregister_and_done(t, scope);

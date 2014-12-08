@@ -27,10 +27,7 @@ promise_test(function(test) {
     var sw;
     return service_worker_unregister_and_register(test, worker, scope)
       .then(function(registration) {
-          return wait_for_update(test, registration);
-        })
-      .then(function(worker) {
-          sw = worker;
+          sw = registration.installing;
           return send_ping(sw);
         })
       .then(function(reply) {

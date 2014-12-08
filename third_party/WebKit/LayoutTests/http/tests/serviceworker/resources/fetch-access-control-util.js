@@ -135,15 +135,12 @@ function executeTests(test, test_targets) {
                                                           SCOPE);
           })
         .then(function(registration) {
-            return wait_for_update(test, registration);
-          })
-        .then(function(sw) {
-            worker = sw;
+            worker = registration.installing;
             var messageChannel = new MessageChannel();
             messageChannel.port1.onmessage = test.step_func(onWorkerMessage);
-            sw.postMessage(
+            worker.postMessage(
               {port: messageChannel.port2}, [messageChannel.port2]);
-            return wait_for_state(test, sw, 'activated');
+            return wait_for_state(test, worker, 'activated');
           })
         .then(function() {
             return with_iframe(SCOPE);

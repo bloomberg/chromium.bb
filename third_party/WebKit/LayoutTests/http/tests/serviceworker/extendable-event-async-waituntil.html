@@ -11,11 +11,8 @@ promise_test(function(t) {
 
     return service_worker_unregister_and_register(t, script, scope)
       .then(function(registration) {
-          return wait_for_update(t, registration);
-        })
-      .then(function(sw) {
-          worker = sw; 
-          return wait_for_state(t, sw, 'activated');
+          worker = registration.installing; 
+          return wait_for_state(t, worker, 'activated');
         })
       .then(function() {
           var channel = new MessageChannel();

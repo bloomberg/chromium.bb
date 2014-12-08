@@ -14,9 +14,7 @@ function scope_test(t, worker_url, scope) {
       })
     .then(function(r) {
         registration = r;
-        return wait_for_update(t, registration);
-      })
-    .then(function(worker) {
+        var worker = r.installing;
         return new Promise(function(resolve) {
             var messageChannel = new MessageChannel();
             messageChannel.port1.onmessage = resolve;

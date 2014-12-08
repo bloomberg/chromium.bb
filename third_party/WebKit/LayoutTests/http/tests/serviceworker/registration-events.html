@@ -10,9 +10,8 @@ t.step(function() {
     service_worker_unregister_and_register(
         t, 'resources/events-worker.js', scope)
       .then(t.step_func(function(registration) {
-          return wait_for_update(t, registration);
+          onRegister(registration.installing);
         }))
-      .then(t.step_func(onRegister))
       .catch(unreached_rejection(t));
 
     function sendMessagePort(worker, from) {

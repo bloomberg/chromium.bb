@@ -15,10 +15,7 @@ async_test(function(t) {
     service_worker_unregister_and_register(t, worker_url, scope)
       .then(function(r) {
           registration = r;
-          return wait_for_update(t, registration);
-        })
-      .then(function(worker) {
-          return wait_for_state(t, worker, 'activated');
+          return wait_for_state(t, r.installing, 'activated');
         })
       .then(function() {
           return with_iframe(scope);
@@ -60,10 +57,7 @@ async_test(function(t) {
     service_worker_unregister_and_register(t, worker_url, scope)
       .then(function(r) {
           registration = r;
-          return wait_for_update(t, registration);
-        })
-      .then(function(worker) {
-          return wait_for_state(t, worker, 'activated');
+          return wait_for_state(t, r.installing, 'activated');
         })
       .then(function() {
           return with_iframe(scope);
@@ -125,10 +119,7 @@ async_test(function(t) {
     service_worker_unregister_and_register(t, worker_url, scope)
       .then(function(r) {
           registration = r;
-          return wait_for_update(t, registration);
-        })
-      .then(function(worker) {
-          return wait_for_state(t, worker, 'activated');
+          return wait_for_state(t, r.installing, 'activated');
         })
       .then(function() {
           return with_iframe(scope);
@@ -169,10 +160,7 @@ async_test(function(t) {
     service_worker_unregister_and_register(t, worker_url, scope)
       .then(function(r) {
           registration = r;
-          return wait_for_update(t, registration);
-        })
-      .then(function(worker) {
-          return wait_for_state(t, worker, 'activated');
+          return wait_for_state(t, r.installing, 'activated');
         })
       .then(function() {
           return with_iframe(scope);
@@ -189,10 +177,7 @@ async_test(function(t) {
         })
       .then(function(r) {
           registration = r;
-          return wait_for_update(t, registration);
-        })
-      .then(function(worker) {
-          return wait_for_state(t, worker, 'redundant');
+          return wait_for_state(t, r.installing, 'redundant');
         })
       .then(function() {
           return with_iframe(scope);
