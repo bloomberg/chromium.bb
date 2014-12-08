@@ -16,7 +16,7 @@
 
 namespace rlz_lib {
 
-bool RegKeyReadValue(base::win::RegKey& key, const wchar_t* name,
+bool RegKeyReadValue(const base::win::RegKey& key, const wchar_t* name,
                      char* value, size_t* value_size) {
   value[0] = 0;
 
@@ -36,10 +36,10 @@ bool RegKeyReadValue(base::win::RegKey& key, const wchar_t* name,
   return true;
 }
 
-bool RegKeyWriteValue(base::win::RegKey& key, const wchar_t* name,
+bool RegKeyWriteValue(base::win::RegKey* key, const wchar_t* name,
                       const char* value) {
-  std::wstring value_string(base::ASCIIToWide(value));
-  return key.WriteValue(name, value_string.c_str()) == ERROR_SUCCESS;
+  base::string16 value_string(base::ASCIIToUTF16(value));
+  return key->WriteValue(name, value_string.c_str()) == ERROR_SUCCESS;
 }
 
 bool HasUserKeyAccess(bool write_access) {

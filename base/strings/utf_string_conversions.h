@@ -39,9 +39,8 @@ BASE_EXPORT bool UTF16ToUTF8(const char16* src, size_t src_len,
                              std::string* output);
 BASE_EXPORT std::string UTF16ToUTF8(const string16& utf16);
 
-// These convert an ASCII string, typically a hardcoded constant, to a
-// UTF16/Wide string.
-BASE_EXPORT std::wstring ASCIIToWide(const StringPiece& ascii);
+// This converts an ASCII string, typically a hardcoded constant, to a UTF16
+// string.
 BASE_EXPORT string16 ASCIIToUTF16(const StringPiece& ascii);
 
 // Converts to 7-bit ASCII by truncating. The result must be known to be ASCII

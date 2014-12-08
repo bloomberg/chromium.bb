@@ -21,9 +21,9 @@
 #include "rlz/win/lib/registry_util.h"
 #include "rlz/win/lib/rlz_value_store_registry.h"
 
-const wchar_t kDccValueName[]             = L"DCC";
-
 namespace {
+
+const wchar_t kDccValueName[]             = L"DCC";
 
 // Current DCC can only uses [a-zA-Z0-9_-!@$*();.<>,:]
 // We will be more liberal and allow some additional chars, but not url meta
@@ -117,7 +117,7 @@ bool GetResponseValue(const std::string& response_line,
   return true;
 }
 
-}  // namespace anonymous
+}  // namespace
 
 namespace rlz_lib {
 
@@ -150,7 +150,7 @@ bool MachineDealCode::Set(const char* dcc) {
 
   // Write the DCC to HKLM.  Note that we need to include the null character
   // when writing the string.
-  if (!RegKeyWriteValue(hklm_key, kDccValueName, normalized_dcc)) {
+  if (!RegKeyWriteValue(&hklm_key, kDccValueName, normalized_dcc)) {
     ASSERT_STRING("MachineDealCode::Set: Could not write the DCC value");
     return false;
   }

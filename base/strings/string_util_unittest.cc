@@ -494,10 +494,10 @@ TEST(StringUtilTest, ConvertASCII) {
   const char chars_with_nul[] = "test\0string";
   const int length_with_nul = arraysize(chars_with_nul) - 1;
   std::string string_with_nul(chars_with_nul, length_with_nul);
-  std::wstring wide_with_nul = ASCIIToWide(string_with_nul);
-  EXPECT_EQ(static_cast<std::wstring::size_type>(length_with_nul),
-            wide_with_nul.length());
-  std::string narrow_with_nul = UTF16ToASCII(WideToUTF16(wide_with_nul));
+  base::string16 string16_with_nul = ASCIIToUTF16(string_with_nul);
+  EXPECT_EQ(static_cast<base::string16::size_type>(length_with_nul),
+            string16_with_nul.length());
+  std::string narrow_with_nul = UTF16ToASCII(string16_with_nul);
   EXPECT_EQ(static_cast<std::string::size_type>(length_with_nul),
             narrow_with_nul.length());
   EXPECT_EQ(0, string_with_nul.compare(narrow_with_nul));
