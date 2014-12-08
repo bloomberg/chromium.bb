@@ -14,7 +14,6 @@ import itertools
 import os
 import random
 import sys
-import unittest
 
 sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
 from chromite.lib import clactions
@@ -33,7 +32,7 @@ CQ = constants.CQ
 PRE_CQ = constants.PRE_CQ
 
 
-class TestCLActionLogic(unittest.TestCase):
+class TestCLActionLogic(cros_test_lib.TestCase):
   """Ensures that CL action analysis logic is correct."""
 
   def setUp(self):

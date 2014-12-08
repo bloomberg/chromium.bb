@@ -12,7 +12,6 @@ from __future__ import print_function
 import os
 import sys
 import types
-import unittest
 import mox
 
 
@@ -74,7 +73,7 @@ TEST_PACKAGE_OLDCONTENTS = {
   u'/something/wicked/this/way/comes' : (u'dir',)
 }
 
-class ItemizeChangesFromRsyncOutput(unittest.TestCase):
+class ItemizeChangesFromRsyncOutput(cros_test_lib.TestCase):
   """Test autotest_quickmerge.ItemizeChangesFromRsyncOutput."""
 
   def testItemizeChangesFromRsyncOutput(self):
@@ -102,7 +101,7 @@ class ItemizeChangesFromRsyncOutput(unittest.TestCase):
     self.assertEqual(expected_dir, set(report.new_directories))
 
 
-class PackageNameParsingTest(unittest.TestCase):
+class PackageNameParsingTest(cros_test_lib.TestCase):
   """Test autotest_quickmerge.GetStalePackageNames."""
 
   def testGetStalePackageNames(self):
@@ -188,7 +187,7 @@ class PortageManipulationsTest(mox.MoxTestBase):
 
     self.mox.VerifyAll()
 
-class PortageAPITest(unittest.TestCase):
+class PortageAPITest(cros_test_lib.TestCase):
   """Ensures that required portage API exists."""
   def runTest(self):
     try:
