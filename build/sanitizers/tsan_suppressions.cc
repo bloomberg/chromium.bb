@@ -149,10 +149,6 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/285242
 "race:media::PulseAudioOutputStream::SetVolume\n"
 
-// http://crbug.com/290964
-"race:PostponeInterruptsScope\n"
-"race:v8::internal::StackGuard::RequestInstallCode\n"
-
 // http://crbug.com/296883
 "race:net::URLFetcherCore::Stop\n"
 
