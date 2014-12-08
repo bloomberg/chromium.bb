@@ -681,7 +681,7 @@ static_library("browser") {
   }
 
   if (is_desktop_linux) {
-    sources += rebase_path(gypi_values.chrome_browser_desktop_linux_sources,
+    sources += rebase_path(gypi_values.chrome_browser_linux_desktop_sources,
                            ".",
                            "//chrome")
   }

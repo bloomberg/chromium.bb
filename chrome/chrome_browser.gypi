@@ -1007,7 +1007,7 @@
       'browser/renderer_context_menu/spellchecker_submenu_observer_hunspell.cc',
     ],
     # Desktop linux, doesn't count ChromeOS.
-    'chrome_browser_desktop_linux_sources': [
+    'chrome_browser_linux_desktop_sources': [
       'browser/first_run/upgrade_util.cc',
       'browser/first_run/upgrade_util_linux.cc',
       'browser/first_run/upgrade_util_linux.h',
@@ -3495,7 +3495,7 @@
           ],
         }],
         ['desktop_linux==1', {
-          'sources': [ '<@(chrome_browser_desktop_linux_sources)' ],
+          'sources': [ '<@(chrome_browser_linux_desktop_sources)' ],
         }],
         ['enable_plugin_installation==1', {
           'sources': [ '<@(chrome_browser_plugin_installation_sources)' ],
