@@ -248,7 +248,7 @@ static bool areRectsMoreThanFullScreenApart(FocusType type, const LayoutRect& cu
 static inline bool below(const LayoutRect& a, const LayoutRect& b)
 {
     return a.y() >= b.maxY()
-        || (a.y() >= b.y() && a.maxY() > b.maxY());
+        || (a.y() >= b.y() && a.maxY() > b.maxY() && a.x() < b.maxX() && a.maxX() > b.x());
 }
 
 // Return true if rect |a| is on the right of |b|. False otherwise.
@@ -257,7 +257,7 @@ static inline bool below(const LayoutRect& a, const LayoutRect& b)
 static inline bool rightOf(const LayoutRect& a, const LayoutRect& b)
 {
     return a.x() >= b.maxX()
-        || (a.x() >= b.x() && a.maxX() > b.maxX());
+        || (a.x() >= b.x() && a.maxX() > b.maxX() && a.y() < b.maxY() && a.maxY() > b.y());
 }
 
 static bool isRectInDirection(FocusType type, const LayoutRect& curRect, const LayoutRect& targetRect)
