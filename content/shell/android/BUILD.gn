@@ -57,7 +57,8 @@ android_library("content_shell_java") {
   DEPRECATED_java_in_dir = "java/src"
 }
 
-content_shell_manifest = "$target_gen_dir/content_shell_manifest/AndroidManifest.xml"
+content_shell_manifest =
+    "$target_gen_dir/content_shell_manifest/AndroidManifest.xml"
 
 jinja_template("content_shell_manifest") {
   testonly = true
@@ -169,8 +170,8 @@ android_apk("content_shell_test_apk") {
 }
 
 if (cpu_arch != "x64" && cpu_arch != "arm64") {
-
-  chromium_linker_test_manifest = "$target_gen_dir/linker_test_apk/AndroidManifest.xml"
+  chromium_linker_test_manifest =
+      "$target_gen_dir/linker_test_apk/AndroidManifest.xml"
 
   jinja_template("chromium_linker_test_manifest") {
     testonly = true

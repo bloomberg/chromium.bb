@@ -130,7 +130,7 @@ static_library("test_support") {
     if (is_android) {
       deps += [
         "//ui/android",
-        "//ui/shell_dialogs"
+        "//ui/shell_dialogs",
       ]
     }
 

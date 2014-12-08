@@ -381,7 +381,7 @@ template("grit") {
               ".",
               "--depfile",
               rebase_path(depfile, root_build_dir),
-              "--write-only-new=1"
+              "--write-only-new=1",
             ] + grit_defines
 
     # Add extra defines with -D flags.

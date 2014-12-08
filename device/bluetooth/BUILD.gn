@@ -93,9 +93,7 @@ component("bluetooth") {
     "bluetooth_uuid.h",
   ]
 
-  defines = [
-    "DEVICE_BLUETOOTH_IMPLEMENTATION",
-  ]
+  defines = [ "DEVICE_BLUETOOTH_IMPLEMENTATION" ]
 
   all_dependent_configs = [ ":bluetooth_config" ]
 

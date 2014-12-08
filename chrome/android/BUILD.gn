@@ -359,7 +359,8 @@ android_apk("chrome_shell_apk") {
   #},
 }
 
-chrome_sync_shell_manifest = "$target_gen_dir/chrome_sync_shell_manifest/AndroidManifest.xml"
+chrome_sync_shell_manifest =
+    "$target_gen_dir/chrome_sync_shell_manifest/AndroidManifest.xml"
 
 # GYP: //chrome/chrome_shell.gypi:chrome_sync_shell_manifest
 jinja_template("chrome_sync_shell_manifest") {

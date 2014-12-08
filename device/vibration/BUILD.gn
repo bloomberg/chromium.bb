@@ -16,9 +16,7 @@ component("vibration") {
     "vibration_manager_impl_default.cc",
   ]
 
-  defines = [
-    "DEVICE_VIBRATION_IMPLEMENTATION",
-  ]
+  defines = [ "DEVICE_VIBRATION_IMPLEMENTATION" ]
 
   deps = [
     ":mojo_bindings",
@@ -30,9 +28,7 @@ component("vibration") {
   ]
 
   if (is_android) {
-    sources -= [
-      "vibration_manager_impl_default.cc",
-    ]
+    sources -= [ "vibration_manager_impl_default.cc" ]
     deps += [
       "//device/vibration/android",
       "//device/vibration/android:vibration_jni_headers",
