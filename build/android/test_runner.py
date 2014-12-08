@@ -864,8 +864,8 @@ def RunTestsInPlatformMode(args, parser):
             results=results,
             test_type=test.TestType(),
             test_package=test_run.TestPackage(),
-            annotation=args.annotations,
-            flakiness_server=args.flakiness_dashboard_server)
+            annotation=getattr(args, 'annotations', None),
+            flakiness_server=getattr(args, 'flakiness_dashboard_server', None))
 
         if args.json_results_file:
           json_results.GenerateJsonResultsFile(
