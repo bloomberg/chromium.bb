@@ -7,7 +7,6 @@
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 
 namespace content {
@@ -15,15 +14,7 @@ namespace content {
 PermissionServiceContext::PermissionServiceContext(
     RenderFrameHost* render_frame_host)
     : WebContentsObserver(WebContents::FromRenderFrameHost(render_frame_host)),
-      render_frame_host_(render_frame_host),
-      render_process_host_(nullptr) {
-}
-
-PermissionServiceContext::PermissionServiceContext(
-    RenderProcessHost* render_process_host)
-    : WebContentsObserver(nullptr),
-      render_frame_host_(nullptr),
-      render_process_host_(render_process_host) {
+      render_frame_host_(render_frame_host) {
 }
 
 PermissionServiceContext::~PermissionServiceContext() {
@@ -67,19 +58,6 @@ void PermissionServiceContext::CancelPendingRequests(
 
   for (auto* service : services_)
     service->CancelPendingRequests();
-}
-
-BrowserContext* PermissionServiceContext::GetBrowserContext() const {
-  if (!web_contents()) {
-    DCHECK(render_process_host_);
-    return render_process_host_->GetBrowserContext();
-  }
-  return web_contents()->GetBrowserContext();
-}
-
-GURL PermissionServiceContext::GetEmbeddingOrigin() const {
-  return web_contents() ? web_contents()->GetLastCommittedURL().GetOrigin()
-                        : GURL();
 }
 
 } // namespace content

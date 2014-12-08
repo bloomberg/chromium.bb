@@ -4,7 +4,11 @@
 
 module content;
 
-import "content/public/common/permission_status.mojom";
+enum PermissionStatus {
+  GRANTED,
+  DENIED,
+  ASK
+};
 
 enum PermissionName {
   GEOLOCATION,

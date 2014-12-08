@@ -199,8 +199,6 @@
       'target_name': 'test_support_content',
       'type': 'static_library',
       'dependencies': [
-        '../mojo/edk/mojo_edk.gyp:mojo_system_impl',
-        '../mojo/mojo_base.gyp:mojo_environment_chromium',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
         '../storage/storage_common.gyp:storage_common',
