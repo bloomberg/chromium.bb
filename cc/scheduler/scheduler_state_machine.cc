@@ -820,7 +820,25 @@ void SchedulerStateMachine::OnBeginImplFrameIdle() {
   begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_IDLE;
 }
 
-bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineEarly() const {
+SchedulerStateMachine::BeginImplFrameDeadlineMode
+SchedulerStateMachine::CurrentBeginImplFrameDeadlineMode() const {
+  if (ShouldTriggerBeginImplFrameDeadlineImmediately()) {
+    return BEGIN_IMPL_FRAME_DEADLINE_MODE_IMMEDIATE;
+  } else if (needs_redraw_ && pending_swaps_ < max_pending_swaps_) {
+    // We have an animation or fast input path on the impl thread that wants
+    // to draw, so don't wait too long for a new active tree.
+    // If we are swap throttled we should wait until we are unblocked.
+    return BEGIN_IMPL_FRAME_DEADLINE_MODE_REGULAR;
+  } else {
+    // The impl thread doesn't have anything it wants to draw and we are just
+    // waiting for a new active tree or we are swap throttled. In short we are
+    // blocked.
+    return BEGIN_IMPL_FRAME_DEADLINE_MODE_LATE;
+  }
+}
+
+bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
+    const {
   // TODO(brianderson): This should take into account multiple commit sources.
 
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME)

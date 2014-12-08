@@ -543,9 +543,8 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
 
   advance_commit_state_task_.Cancel();
 
-  base::TimeDelta draw_duration_estimate = client_->DrawDurationEstimate();
   begin_impl_frame_args_ = args;
-  begin_impl_frame_args_.deadline -= draw_duration_estimate;
+  begin_impl_frame_args_.deadline -= client_->DrawDurationEstimate();
 
   if (!state_machine_.impl_latency_takes_priority() &&
       main_thread_is_in_high_latency_mode &&
@@ -569,53 +568,61 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
     // up the BeginImplFrame and deadline as well.
     OnBeginImplFrameDeadline();
   } else {
-    ScheduleBeginImplFrameDeadline(
-        AdjustedBeginImplFrameDeadline(args, draw_duration_estimate));
+    ScheduleBeginImplFrameDeadline();
   }
 }
 
-base::TimeTicks Scheduler::AdjustedBeginImplFrameDeadline(
-    const BeginFrameArgs& args,
-    base::TimeDelta draw_duration_estimate) const {
+void Scheduler::ScheduleBeginImplFrameDeadline() {
   // The synchronous compositor does not post a deadline task.
   DCHECK(!settings_.using_synchronous_renderer_compositor);
-  if (state_machine_.ShouldTriggerBeginImplFrameDeadlineEarly()) {
-    // We are ready to draw a new active tree immediately.
-    // We don't use Now() here because it's somewhat expensive to call.
-    return base::TimeTicks();
-  } else if (settings_.main_thread_should_always_be_low_latency) {
-    // Post long deadline to keep advancing during idle period. After activation
-    // we will be able to trigger deadline early.
-    // TODO(weiliangc): Don't post deadline once input is deferred with
-    // BeginRetroFrames.
-    return args.frame_time + args.interval;
-  } else if (state_machine_.needs_redraw()) {
-    // We have an animation or fast input path on the impl thread that wants
-    // to draw, so don't wait too long for a new active tree.
-    return args.deadline - draw_duration_estimate;
-  } else {
-    // The impl thread doesn't have anything it wants to draw and we are just
-    // waiting for a new active tree, so post the deadline for the next
-    // expected BeginImplFrame start. This allows us to draw immediately when
-    // there is a new active tree, instead of waiting for the next
-    // BeginImplFrame.
-    // TODO(brianderson): Handle long deadlines (that are past the next frame's
-    // frame time) properly instead of using this hack.
-    return args.frame_time + args.interval;
-  }
-}
 
-void Scheduler::ScheduleBeginImplFrameDeadline(base::TimeTicks deadline) {
-  TRACE_EVENT1(
-      "cc", "Scheduler::ScheduleBeginImplFrameDeadline", "deadline", deadline);
   begin_impl_frame_deadline_task_.Cancel();
   begin_impl_frame_deadline_task_.Reset(begin_impl_frame_deadline_closure_);
+
+  begin_impl_frame_deadline_mode_ =
+      state_machine_.CurrentBeginImplFrameDeadlineMode();
+
+  base::TimeTicks deadline;
+  switch (begin_impl_frame_deadline_mode_) {
+    case SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_IMMEDIATE:
+      // We are ready to draw a new active tree immediately.
+      // We don't use Now() here because it's somewhat expensive to call.
+      deadline = base::TimeTicks();
+      break;
+    case SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_REGULAR:
+      // We are animating on the impl thread but we can wait for some time.
+      deadline = begin_impl_frame_args_.deadline;
+      break;
+    case SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_LATE:
+      // We are blocked for one reason or another and we should wait.
+      // TODO(brianderson): Handle long deadlines (that are past the next
+      // frame's frame time) properly instead of using this hack.
+      deadline =
+          begin_impl_frame_args_.frame_time + begin_impl_frame_args_.interval;
+      break;
+  }
+
+  TRACE_EVENT1(
+      "cc", "Scheduler::ScheduleBeginImplFrameDeadline", "deadline", deadline);
 
   base::TimeDelta delta = deadline - Now();
   if (delta <= base::TimeDelta())
     delta = base::TimeDelta();
   task_runner_->PostDelayedTask(
       FROM_HERE, begin_impl_frame_deadline_task_.callback(), delta);
+}
+
+void Scheduler::RescheduleBeginImplFrameDeadlineIfNeeded() {
+  if (settings_.using_synchronous_renderer_compositor)
+    return;
+
+  if (state_machine_.begin_impl_frame_state() !=
+      SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME)
+    return;
+
+  if (begin_impl_frame_deadline_mode_ !=
+      state_machine_.CurrentBeginImplFrameDeadlineMode())
+    ScheduleBeginImplFrameDeadline();
 }
 
 void Scheduler::OnBeginImplFrameDeadline() {
@@ -713,10 +720,7 @@ void Scheduler::ProcessScheduledActions() {
   SetupNextBeginFrameIfNeeded();
   client_->DidAnticipatedDrawTimeChange(AnticipatedDrawTime());
 
-  if (state_machine_.ShouldTriggerBeginImplFrameDeadlineEarly()) {
-    DCHECK(!settings_.using_synchronous_renderer_compositor);
-    ScheduleBeginImplFrameDeadline(base::TimeTicks());
-  }
+  RescheduleBeginImplFrameDeadlineIfNeeded();
 }
 
 bool Scheduler::WillDrawIfNeeded() const {

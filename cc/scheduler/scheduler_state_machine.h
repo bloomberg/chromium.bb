@@ -62,6 +62,14 @@ class CC_EXPORT SchedulerStateMachine {
   };
   static const char* BeginImplFrameStateToString(BeginImplFrameState state);
 
+  enum BeginImplFrameDeadlineMode {
+    BEGIN_IMPL_FRAME_DEADLINE_MODE_IMMEDIATE,
+    BEGIN_IMPL_FRAME_DEADLINE_MODE_REGULAR,
+    BEGIN_IMPL_FRAME_DEADLINE_MODE_LATE,
+  };
+  static const char* BeginImplFrameDeadlineModeToString(
+      BeginImplFrameDeadlineMode mode);
+
   enum CommitState {
     COMMIT_STATE_IDLE,
     COMMIT_STATE_BEGIN_MAIN_FRAME_SENT,
@@ -128,10 +136,10 @@ class CC_EXPORT SchedulerStateMachine {
   void OnBeginImplFrameDeadlinePending();
   void OnBeginImplFrameDeadline();
   void OnBeginImplFrameIdle();
-  bool ShouldTriggerBeginImplFrameDeadlineEarly() const;
   BeginImplFrameState begin_impl_frame_state() const {
     return begin_impl_frame_state_;
   }
+  BeginImplFrameDeadlineMode CurrentBeginImplFrameDeadlineMode() const;
 
   // If the main thread didn't manage to produce a new frame in time for the
   // impl thread to draw, it is in a high latency mode.
@@ -257,6 +265,8 @@ class CC_EXPORT SchedulerStateMachine {
   bool BeginFrameNeededToAnimateOrDraw() const;
   bool BeginFrameNeededForChildren() const;
   bool ProactiveBeginFrameWanted() const;
+
+  bool ShouldTriggerBeginImplFrameDeadlineImmediately() const;
 
   // True if we need to force activations to make forward progress.
   bool PendingActivationsShouldBeForced() const;

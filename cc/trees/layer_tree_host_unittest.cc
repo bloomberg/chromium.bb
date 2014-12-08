@@ -4859,17 +4859,9 @@ class LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit
 
   void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
                                      bool did_handle) override {
+    // This is needed so that the impl-thread state matches main-thread state.
+    host_impl->DidLoseOutputSurface();
     EndTest();
-    // This lets the test finally commit and exit.
-    MainThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&LayerTreeHostTestBreakSwapPromiseForContextAbortedCommit::
-                       FindOutputSurface,
-                   base::Unretained(this)));
-  }
-
-  void FindOutputSurface() {
-    layer_tree_host()->OnCreateAndInitializeOutputSurfaceAttempted(true);
   }
 
   void AfterTest() override {

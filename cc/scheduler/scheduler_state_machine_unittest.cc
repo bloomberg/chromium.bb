@@ -103,6 +103,8 @@ class StateMachine : public SchedulerStateMachine {
   void SetHasPendingTree(bool has_pending_tree) {
     has_pending_tree_ = has_pending_tree;
   }
+
+  using SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately;
 };
 
 TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
@@ -232,7 +234,7 @@ TEST(SchedulerStateMachineTest, MainFrameBeforeActivationEnabled) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
-  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
+  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(
@@ -1731,7 +1733,8 @@ TEST(SchedulerStateMachineTest, ReportIfNotDrawing) {
   EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
 }
 
-TEST(SchedulerStateMachineTest, TestTriggerDeadlineEarlyAfterAbortedCommit) {
+TEST(SchedulerStateMachineTest,
+     TestTriggerDeadlineImmediatelyAfterAbortedCommit) {
   SchedulerSettings settings;
   settings.impl_side_painting = true;
   StateMachine state(settings);
@@ -1762,7 +1765,7 @@ TEST(SchedulerStateMachineTest, TestTriggerDeadlineEarlyAfterAbortedCommit) {
 
   // Since the commit was aborted, we should draw right away instead of waiting
   // for the deadline.
-  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
+  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 }
 
 void FinishPreviousCommitAndDrawWithoutExitingDeadline(
@@ -1782,7 +1785,7 @@ void FinishPreviousCommitAndDrawWithoutExitingDeadline(
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
-  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
+  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
@@ -1811,9 +1814,9 @@ TEST(SchedulerStateMachineTest, TestImplLatencyTakesPriority) {
 
   // Verify the deadline is not triggered early until we enter
   // prefer impl latency mode.
-  EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
+  EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
   state.SetImplLatencyTakesPriority(true);
-  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
+  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 
   // Trigger the deadline.
   state.OnBeginImplFrameDeadline();
@@ -1842,12 +1845,13 @@ TEST(SchedulerStateMachineTest, TestImplLatencyTakesPriority) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrame(CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
+  EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
-TEST(SchedulerStateMachineTest, TestTriggerDeadlineEarlyOnLostOutputSurface) {
+TEST(SchedulerStateMachineTest,
+     TestTriggerDeadlineImmediatelyOnLostOutputSurface) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
@@ -1862,12 +1866,12 @@ TEST(SchedulerStateMachineTest, TestTriggerDeadlineEarlyOnLostOutputSurface) {
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
-  EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
+  EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 
   state.DidLoseOutputSurface();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   // The deadline should be triggered immediately when output surface is lost.
-  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineEarly());
+  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 }
 
 TEST(SchedulerStateMachineTest, TestSetNeedsAnimate) {

@@ -205,6 +205,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
   bool begin_retro_frame_posted_;
   std::deque<BeginFrameArgs> begin_retro_frame_args_;
   BeginFrameArgs begin_impl_frame_args_;
+  SchedulerStateMachine::BeginImplFrameDeadlineMode
+      begin_impl_frame_deadline_mode_;
 
   base::Closure begin_retro_frame_closure_;
   base::Closure begin_unthrottled_frame_closure_;
@@ -221,10 +223,8 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
   SchedulerStateMachine::Action inside_action_;
 
  private:
-  base::TimeTicks AdjustedBeginImplFrameDeadline(
-      const BeginFrameArgs& args,
-      base::TimeDelta draw_duration_estimate) const;
-  void ScheduleBeginImplFrameDeadline(base::TimeTicks deadline);
+  void ScheduleBeginImplFrameDeadline();
+  void RescheduleBeginImplFrameDeadlineIfNeeded();
   void SetupNextBeginFrameIfNeeded();
   void PostBeginRetroFrameIfNeeded();
   void SetupPollingMechanisms(bool needs_begin_frame);
