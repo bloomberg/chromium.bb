@@ -58,7 +58,6 @@ public:
     CSSGradientColorStop() : m_colorIsDerivedFromElement(false) { };
     RefPtrWillBeMember<CSSPrimitiveValue> m_position; // percentage or length
     RefPtrWillBeMember<CSSPrimitiveValue> m_color;
-    Color m_resolvedColor;
     bool m_colorIsDerivedFromElement;
     bool operator==(const CSSGradientColorStop& other) const
     {
@@ -109,7 +108,6 @@ public:
     bool knownToBeOpaque(const RenderObject*) const;
 
     void loadSubimages(ResourceFetcher*) { }
-    PassRefPtrWillBeRawPtr<CSSGradientValue> gradientWithStylesResolved(const TextLinkColors&, Color currentColor);
 
     void traceAfterDispatch(Visitor*);
 

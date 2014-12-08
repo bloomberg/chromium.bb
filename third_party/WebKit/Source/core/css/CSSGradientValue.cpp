@@ -114,38 +114,7 @@ public:
     { }
 };
 
-PassRefPtrWillBeRawPtr<CSSGradientValue> CSSGradientValue::gradientWithStylesResolved(const TextLinkColors& textLinkColors, Color currentColor)
-{
-    bool derived = false;
-    for (auto& stop : m_stops) {
-        if (!stop.isHint() && stop.m_color->colorIsDerivedFromElement()) {
-            stop.m_colorIsDerivedFromElement = true;
-            derived = true;
-            break;
-        }
-    }
-
-    RefPtrWillBeRawPtr<CSSGradientValue> result = nullptr;
-    if (!derived)
-        result = this;
-    else if (isLinearGradientValue())
-        result = toCSSLinearGradientValue(this)->clone();
-    else if (isRadialGradientValue())
-        result = toCSSRadialGradientValue(this)->clone();
-    else {
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
-
-    for (auto& stop : result->m_stops) {
-        if (!stop.isHint())
-            stop.m_resolvedColor = textLinkColors.colorFromPrimitiveValue(stop.m_color.get(), currentColor);
-    }
-
-    return result.release();
-}
-
-static void replaceColorHintsWithColorStops(WillBeHeapVector<GradientStop>& stops, const WillBeHeapVector<CSSGradientColorStop, 2>& cssGradientStops)
+void replaceColorHintsWithColorStops(WillBeHeapVector<GradientStop>& stops, const WillBeHeapVector<CSSGradientColorStop, 2>& cssGradientStops)
 {
     // This algorithm will replace each color interpolation hint with 9 regular
     // color stops. The color values for the new color stops will be calculated
@@ -233,6 +202,11 @@ static void replaceColorHintsWithColorStops(WillBeHeapVector<GradientStop>& stop
     }
 }
 
+static Color resolveStopColor(CSSPrimitiveValue* stopColor, const RenderObject& object)
+{
+    return object.document().textLinkColors().colorFromPrimitiveValue(stopColor, object.resolveColor(CSSPropertyColor));
+}
+
 void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionData& conversionData, float maxLengthForRepeat, const RenderObject& object)
 {
     if (m_gradientType == CSSDeprecatedLinearGradient || m_gradientType == CSSDeprecatedRadialGradient) {
@@ -247,7 +221,7 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
             else
                 offset = stop.m_position->getFloatValue(CSSPrimitiveValue::CSS_NUMBER);
 
-            gradient->addColorStop(offset, stop.m_resolvedColor);
+            gradient->addColorStop(offset, resolveStopColor(stop.m_color.get(), object));
         }
 
         return;
@@ -275,7 +249,7 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
         if (stop.isHint())
             hasHints = true;
         else
-            stops[i].color = object.document().textLinkColors().colorFromPrimitiveValue(stop.m_color.get(), object.style()->visitedDependentColor(CSSPropertyColor));
+            stops[i].color = resolveStopColor(stop.m_color.get(), object);
 
         if (stop.m_position) {
             if (stop.m_position->isPercentage())
@@ -559,7 +533,7 @@ bool CSSGradientValue::isCacheable() const
     for (size_t i = 0; i < m_stops.size(); ++i) {
         const CSSGradientColorStop& stop = m_stops[i];
 
-        if (stop.m_colorIsDerivedFromElement)
+        if (!stop.isHint() && stop.m_color->colorIsDerivedFromElement())
             return false;
 
         if (!stop.m_position)
@@ -572,10 +546,11 @@ bool CSSGradientValue::isCacheable() const
     return true;
 }
 
-bool CSSGradientValue::knownToBeOpaque(const RenderObject*) const
+bool CSSGradientValue::knownToBeOpaque(const RenderObject* object) const
 {
+    ASSERT(object);
     for (auto& stop : m_stops) {
-        if (!stop.isHint() && stop.m_resolvedColor.hasAlpha())
+        if (!stop.isHint() && resolveStopColor(stop.m_color.get(), *object).hasAlpha())
             return false;
     }
     return true;

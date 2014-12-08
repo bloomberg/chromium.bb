@@ -766,10 +766,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
     for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
         CSSValue* item = i.value();
         if (item->isImageGeneratorValue()) {
-            if (item->isGradientValue())
-                state.style()->setContent(StyleGeneratedImage::create(toCSSGradientValue(item)->gradientWithStylesResolved(state.document().textLinkColors(), state.style()->color()).get()), didSet);
-            else
-                state.style()->setContent(StyleGeneratedImage::create(toCSSImageGeneratorValue(item)), didSet);
+            state.style()->setContent(StyleGeneratedImage::create(toCSSImageGeneratorValue(item)), didSet);
             didSet = true;
         } else if (item->isImageSetValue()) {
             state.style()->setContent(state.elementStyleResources().setOrPendingFromValue(CSSPropertyContent, toCSSImageSetValue(item)), didSet);

@@ -42,11 +42,8 @@ PassRefPtr<StyleImage> ElementStyleResources::styleImage(Document& document, con
     if (value->isImageValue())
         return cachedOrPendingFromValue(document, property, toCSSImageValue(value));
 
-    if (value->isImageGeneratorValue()) {
-        if (value->isGradientValue())
-            return generatedOrPendingFromValue(property, toCSSGradientValue(value)->gradientWithStylesResolved(textLinkColors, currentColor).get());
+    if (value->isImageGeneratorValue())
         return generatedOrPendingFromValue(property, toCSSImageGeneratorValue(value));
-    }
 
     if (value->isImageSetValue())
         return setOrPendingFromValue(property, toCSSImageSetValue(value));
