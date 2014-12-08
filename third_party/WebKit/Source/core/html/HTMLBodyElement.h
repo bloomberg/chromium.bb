@@ -69,6 +69,9 @@ private:
 
     virtual int scrollHeight() override;
     virtual int scrollWidth() override;
+
+    virtual void scrollBy(const ScrollToOptions&) override;
+    virtual void scrollTo(const ScrollToOptions&) override;
 };
 
 } // namespace blink

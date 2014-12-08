@@ -101,7 +101,7 @@ public:
     HTMLOptionElement* item(unsigned index);
 
     void scrollToSelection();
-    void scrollTo(int listIndex);
+    void scrollToIndex(int listIndex);
 
     void listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow = true);
 

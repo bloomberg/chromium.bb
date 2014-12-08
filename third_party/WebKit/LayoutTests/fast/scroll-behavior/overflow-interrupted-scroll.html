@@ -19,7 +19,7 @@
   <script src="resources/scroll-interruption-test.js"></script>
   <script type="text/javascript">
     function jsScroll(y) {
-      document.getElementById('container').scrollTop = {y: y, behavior: 'smooth'};
+      document.getElementById('container').scrollTo({top: y, behavior: 'smooth'});
     }
 
     function doTest() {

@@ -85,6 +85,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PinchViewport.h"
+#include "core/frame/ScrollToOptions.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -689,29 +690,8 @@ void Element::setScrollLeft(double newLeft)
         if (!view)
             return;
 
-        view->setScrollPosition(DoublePoint(newLeft * frame->pageZoomFactor(), view->scrollY()));
+        view->setScrollPosition(DoublePoint(newLeft * frame->pageZoomFactor(), view->scrollY()), ScrollBehaviorAuto);
     }
-}
-
-void Element::setScrollLeft(const Dictionary& scrollOptionsHorizontal, ExceptionState& exceptionState)
-{
-    String scrollBehaviorString;
-    ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
-    if (DictionaryHelper::get(scrollOptionsHorizontal, "behavior", scrollBehaviorString)) {
-        if (!ScrollableArea::scrollBehaviorFromString(scrollBehaviorString, scrollBehavior)) {
-            exceptionState.throwTypeError("The ScrollBehavior provided is invalid.");
-            return;
-        }
-    }
-
-    double position;
-    if (!DictionaryHelper::get(scrollOptionsHorizontal, "x", position)) {
-        exceptionState.throwTypeError("ScrollOptionsHorizontal must include an 'x' member.");
-        return;
-    }
-
-    // FIXME: Use scrollBehavior to decide whether to scroll smoothly or instantly.
-    setScrollLeft(position);
 }
 
 void Element::setScrollTop(double newTop)
@@ -739,29 +719,8 @@ void Element::setScrollTop(double newTop)
         if (!view)
             return;
 
-        view->setScrollPosition(DoublePoint(view->scrollX(), newTop * frame->pageZoomFactor()));
+        view->setScrollPosition(DoublePoint(view->scrollX(), newTop * frame->pageZoomFactor()), ScrollBehaviorAuto);
     }
-}
-
-void Element::setScrollTop(const Dictionary& scrollOptionsVertical, ExceptionState& exceptionState)
-{
-    String scrollBehaviorString;
-    ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
-    if (DictionaryHelper::get(scrollOptionsVertical, "behavior", scrollBehaviorString)) {
-        if (!ScrollableArea::scrollBehaviorFromString(scrollBehaviorString, scrollBehavior)) {
-            exceptionState.throwTypeError("The ScrollBehavior provided is invalid.");
-            return;
-        }
-    }
-
-    double position;
-    if (!DictionaryHelper::get(scrollOptionsVertical, "y", position)) {
-        exceptionState.throwTypeError("ScrollOptionsVertical must include a 'y' member.");
-        return;
-    }
-
-    // FIXME: Use scrollBehavior to decide whether to scroll smoothly or instantly.
-    setScrollTop(position);
 }
 
 int Element::scrollWidth()
@@ -778,6 +737,146 @@ int Element::scrollHeight()
     if (RenderBox* rend = renderBox())
         return adjustLayoutUnitForAbsoluteZoom(rend->scrollHeight(), *rend).toDouble();
     return 0;
+}
+
+void Element::scrollBy(double x, double y)
+{
+    ScrollToOptions scrollToOptions;
+    scrollToOptions.setLeft(x);
+    scrollToOptions.setTop(y);
+    scrollBy(scrollToOptions);
+}
+
+void Element::scrollBy(const ScrollToOptions& scrollToOptions)
+{
+    // FIXME: This should be removed once scroll updates are processed only after
+    // the compositing update. See http://crbug.com/420741.
+    document().updateLayoutIgnorePendingStylesheets();
+
+    if (document().documentElement() != this) {
+        scrollRenderBoxBy(scrollToOptions);
+        return;
+    }
+
+    if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
+        if (document().inQuirksMode())
+            return;
+        scrollFrameBy(scrollToOptions);
+    }
+}
+
+void Element::scrollTo(double x, double y)
+{
+    ScrollToOptions scrollToOptions;
+    scrollToOptions.setLeft(x);
+    scrollToOptions.setTop(y);
+    scrollTo(scrollToOptions);
+}
+
+void Element::scrollTo(const ScrollToOptions& scrollToOptions)
+{
+    // FIXME: This should be removed once scroll updates are processed only after
+    // the compositing update. See http://crbug.com/420741.
+    document().updateLayoutIgnorePendingStylesheets();
+
+    if (document().documentElement() != this) {
+        scrollRenderBoxTo(scrollToOptions);
+        return;
+    }
+
+    if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
+        if (document().inQuirksMode())
+            return;
+        scrollFrameTo(scrollToOptions);
+    }
+}
+
+void Element::scrollRenderBoxBy(const ScrollToOptions& scrollToOptions)
+{
+    double left = scrollToOptions.hasLeft() ? scrollToOptions.left() : 0.0;
+    double top = scrollToOptions.hasTop() ? scrollToOptions.top() : 0.0;
+    if (std::isnan(left) || std::isnan(top))
+        return;
+
+    ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
+    ScrollableArea::scrollBehaviorFromString(scrollToOptions.behavior(), scrollBehavior);
+    RenderBox* rend = renderBox();
+    if (rend) {
+        double currentScaledLeft = rend->scrollLeft();
+        double currentScaledTop = rend->scrollTop();
+        double newScaledLeft = left * rend->style()->effectiveZoom() + currentScaledLeft;
+        double newScaledTop = top * rend->style()->effectiveZoom() + currentScaledTop;
+        // FIXME: Use scrollBehavior to decide whether to scroll smoothly or instantly.
+        rend->scrollToOffset(DoubleSize(newScaledLeft, newScaledTop));
+    }
+}
+
+void Element::scrollRenderBoxTo(const ScrollToOptions& scrollToOptions)
+{
+    if ((scrollToOptions.hasLeft() && std::isnan(scrollToOptions.left()))
+        || (scrollToOptions.hasTop() && std::isnan(scrollToOptions.top())))
+        return;
+
+    ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
+    ScrollableArea::scrollBehaviorFromString(scrollToOptions.behavior(), scrollBehavior);
+
+    RenderBox* rend = renderBox();
+    if (rend) {
+        double scaledLeft = rend->scrollLeft();
+        double scaledTop = rend->scrollTop();
+        if (scrollToOptions.hasLeft())
+            scaledLeft = scrollToOptions.left() * rend->style()->effectiveZoom();
+        if (scrollToOptions.hasTop())
+            scaledTop = scrollToOptions.top() * rend->style()->effectiveZoom();
+        // FIXME: Use scrollBehavior to decide whether to scroll smoothly or instantly.
+        rend->scrollToOffset(DoubleSize(scaledLeft, scaledTop));
+    }
+}
+
+void Element::scrollFrameBy(const ScrollToOptions& scrollToOptions)
+{
+    double left = scrollToOptions.hasLeft() ? scrollToOptions.left() : 0.0;
+    double top = scrollToOptions.hasTop() ? scrollToOptions.top() : 0.0;
+    if (std::isnan(left) || std::isnan(top))
+        return;
+
+    ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
+    ScrollableArea::scrollBehaviorFromString(scrollToOptions.behavior(), scrollBehavior);
+    LocalFrame* frame = document().frame();
+    if (!frame)
+        return;
+    FrameView* view = frame->view();
+    if (!view)
+        return;
+
+    double newScaledLeft = left * frame->pageZoomFactor() + view->scrollX();
+    double newScaledTop = top * frame->pageZoomFactor() + view->scrollY();
+    view->setScrollPosition(DoublePoint(newScaledLeft, newScaledTop), scrollBehavior);
+}
+
+void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions)
+{
+    double left = scrollToOptions.hasLeft() ? scrollToOptions.left() : 0.0;
+    double top = scrollToOptions.hasTop() ? scrollToOptions.top() : 0.0;
+    if (std::isnan(left) || std::isnan(top))
+        return;
+
+    ScrollBehavior scrollBehavior = ScrollBehaviorAuto;
+    ScrollableArea::scrollBehaviorFromString(scrollToOptions.behavior(), scrollBehavior);
+    LocalFrame* frame = document().frame();
+    if (!frame)
+        return;
+    FrameView* view = frame->view();
+    if (!view)
+        return;
+
+    double scaledLeft = view->scrollX();
+    double scaledTop = view->scrollY();
+    if (scrollToOptions.hasLeft())
+        scaledLeft = scrollToOptions.left() * frame->pageZoomFactor();
+    if (scrollToOptions.hasTop())
+        scaledTop = scrollToOptions.top() * frame->pageZoomFactor();
+    view->setScrollPosition(DoublePoint(scaledLeft, scaledTop), scrollBehavior);
 }
 
 IntRect Element::boundsInRootViewSpace()

@@ -736,7 +736,7 @@ void HTMLSelectElement::scrollToSelection()
         return;
     if (usesMenuList())
         return;
-    scrollTo(activeSelectionEndListIndex());
+    scrollToIndex(activeSelectionEndListIndex());
     if (AXObjectCache* cache = document().existingAXObjectCache())
         cache->selectedChildrenChanged(this);
 }
@@ -887,11 +887,11 @@ void HTMLSelectElement::setSuggestedIndex(int suggestedIndex)
 
     if (RenderObject* renderer = this->renderer())  {
         renderer->updateFromElement();
-        scrollTo(suggestedIndex);
+        scrollToIndex(suggestedIndex);
     }
 }
 
-void HTMLSelectElement::scrollTo(int listIndex)
+void HTMLSelectElement::scrollToIndex(int listIndex)
 {
     if (listIndex < 0)
         return;
@@ -1572,7 +1572,7 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
                 setActiveSelectionAnchorIndex(m_activeSelectionEndIndex);
             }
 
-            scrollTo(endIndex);
+            scrollToIndex(endIndex);
             if (selectNewItem) {
                 updateListBoxSelection(deselectOthers);
                 listBoxOnChange();

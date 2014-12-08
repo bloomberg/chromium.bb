@@ -45,38 +45,6 @@
 
 namespace blink {
 
-void V8Element::scrollLeftAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
-{
-    ExceptionState exceptionState(ExceptionState::SetterContext, "scrollLeft", "Element", info.Holder(), info.GetIsolate());
-    Element* impl = V8Element::toImpl(info.Holder());
-
-    if (RuntimeEnabledFeatures::cssomSmoothScrollEnabled() && value->IsObject()) {
-        TONATIVE_VOID(Dictionary, scrollOptionsHorizontal, Dictionary(value, info.GetIsolate(), exceptionState));
-        impl->setScrollLeft(scrollOptionsHorizontal, exceptionState);
-        exceptionState.throwIfNeeded();
-        return;
-    }
-
-    TONATIVE_VOID_EXCEPTIONSTATE(float, position, toFloat(value, exceptionState), exceptionState);
-    impl->setScrollLeft(position);
-}
-
-void V8Element::scrollTopAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
-{
-    ExceptionState exceptionState(ExceptionState::SetterContext, "scrollTop", "Element", info.Holder(), info.GetIsolate());
-    Element* impl = V8Element::toImpl(info.Holder());
-
-    if (RuntimeEnabledFeatures::cssomSmoothScrollEnabled() && value->IsObject()) {
-        TONATIVE_VOID(Dictionary, scrollOptionsVertical, Dictionary(value, info.GetIsolate(), exceptionState));
-        impl->setScrollTop(scrollOptionsVertical, exceptionState);
-        exceptionState.throwIfNeeded();
-        return;
-    }
-
-    TONATIVE_VOID_EXCEPTIONSTATE(float, position, toFloat(value, exceptionState), exceptionState);
-    impl->setScrollTop(position);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Overload resolution for animate()
 // FIXME: needs support for union types http://crbug.com/240176

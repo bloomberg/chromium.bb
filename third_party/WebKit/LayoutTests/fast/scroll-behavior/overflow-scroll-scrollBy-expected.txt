@@ -1,0 +1,22 @@
+Test that calling scrollBy on an overflow:scroll element works with both scroll behaviors
+
+This is a testharness.js-based test.
+PASS Scroll x:1, y:2, smooth:false 
+PASS Scroll x:2, y:3, smooth:false 
+PASS Scroll x:3, y:4, smooth:false 
+PASS Scroll x:4, y:5, smooth:false 
+PASS Scroll x:3, y:undefined, smooth:false 
+PASS Scroll x:undefined, y:4, smooth:false 
+PASS Scroll x:undefined, y:undefined, smooth:false 
+FAIL Scroll x:10, y:15, smooth:true assert_equals: expected "13, 18" but got "23, 33"
+FAIL Scroll x:20, y:25, smooth:true assert_equals: expected "23, 33" but got "43, 58"
+FAIL Scroll x:30, y:35, smooth:true assert_equals: expected "43, 58" but got "73, 93"
+FAIL Scroll x:40, y:45, smooth:true assert_equals: expected "73, 93" but got "113, 138"
+FAIL Scroll x:-30, y:undefined, smooth:true assert_equals: expected "113, 138" but got "83, 138"
+FAIL Scroll x:undefined, y:-35, smooth:true assert_equals: expected "83, 138" but got "83, 103"
+FAIL Scroll x:4000, y:4100, smooth:true assert_equals: expected "83, 103" but got "4083, 4203"
+FAIL Scroll x:-3900, y:-3850, smooth:true assert_equals: expected "4083, 4203" but got "183, 353"
+FAIL Scroll x:4050, y:4000, smooth:true assert_equals: expected "183, 353" but got "4233, 4353"
+FAIL Scroll x:-4000, y:-4100, smooth:true assert_equals: expected "4233, 4353" but got "233, 253"
+Harness: the test ran to completion.
+

@@ -33,6 +33,7 @@
 #include "core/dom/Attribute.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/ScrollToOptions.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -265,7 +266,7 @@ void HTMLBodyElement::setScrollLeft(double scrollLeft)
     FrameView* view = frame->view();
     if (!view)
         return;
-    view->setScrollPosition(DoublePoint(scrollLeft * frame->pageZoomFactor(), view->scrollY()));
+    view->setScrollPosition(DoublePoint(scrollLeft * frame->pageZoomFactor(), view->scrollY()), ScrollBehaviorAuto);
 }
 
 double HTMLBodyElement::scrollTop()
@@ -315,7 +316,7 @@ void HTMLBodyElement::setScrollTop(double scrollTop)
     FrameView* view = frame->view();
     if (!view)
         return;
-    view->setScrollPosition(DoublePoint(view->scrollX(), scrollTop * frame->pageZoomFactor()));
+    view->setScrollPosition(DoublePoint(view->scrollX(), scrollTop * frame->pageZoomFactor()), ScrollBehaviorAuto);
 }
 
 int HTMLBodyElement::scrollHeight()
@@ -334,6 +335,52 @@ int HTMLBodyElement::scrollWidth()
     document.updateLayoutIgnorePendingStylesheets();
     FrameView* view = document.view();
     return view ? adjustForZoom(view->contentsWidth(), &document) : 0;
+}
+
+void HTMLBodyElement::scrollBy(const ScrollToOptions& scrollToOptions)
+{
+    Document& document = this->document();
+
+    // FIXME: This should be removed once scroll updates are processed only after
+    // the compositing update. See http://crbug.com/420741.
+    document.updateLayoutIgnorePendingStylesheets();
+
+    if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
+        RenderBox* render = renderBox();
+        if (!render)
+            return;
+        if (render->hasOverflowClip()) {
+            scrollRenderBoxBy(scrollToOptions);
+            return;
+        }
+        if (!document.inQuirksMode())
+            return;
+    }
+
+    scrollFrameBy(scrollToOptions);
+}
+
+void HTMLBodyElement::scrollTo(const ScrollToOptions& scrollToOptions)
+{
+    Document& document = this->document();
+
+    // FIXME: This should be removed once scroll updates are processed only after
+    // the compositing update. See http://crbug.com/420741.
+    document.updateLayoutIgnorePendingStylesheets();
+
+    if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
+        RenderBox* render = renderBox();
+        if (!render)
+            return;
+        if (render->hasOverflowClip()) {
+            scrollRenderBoxTo(scrollToOptions);
+            return;
+        }
+        if (!document.inQuirksMode())
+            return;
+    }
+
+    scrollFrameTo(scrollToOptions);
 }
 
 } // namespace blink

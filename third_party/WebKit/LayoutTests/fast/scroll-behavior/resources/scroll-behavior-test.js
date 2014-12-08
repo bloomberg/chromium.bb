@@ -36,8 +36,7 @@ ScrollBehaviorTest.prototype.scrollListener = function(testCase) {
     // Wait for an intermediate frame, then instant-scroll to the end state.
     if ((this.scrollElement.scrollLeft != testCase.startX || this.scrollElement.scrollTop != testCase.startY) &&
         (this.scrollElement.scrollLeft != testCase.endX || this.scrollElement.scrollTop != testCase.endY)) {
-        this.scrollElement.scrollLeft = {x: testCase.endX, behavior: "instant"};
-        this.scrollElement.scrollTop = {y: testCase.endY, behavior: "instant"};
+        this.scrollElement.scrollTo({left: testCase.endX, top: testCase.endY, behavior: "instant"});
         this.testCaseComplete();
     }
 };

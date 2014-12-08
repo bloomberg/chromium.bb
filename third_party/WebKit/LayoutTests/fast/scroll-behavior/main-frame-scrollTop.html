@@ -20,26 +20,16 @@
     }
 
     function jsScroll(testCase) {
-      if (testCase.js) {
-        document.documentElement.scrollTop = {y: testCase.y, behavior: testCase.js};
-      } else {
-        document.documentElement.scrollTop = testCase.y;
-      }
+      document.documentElement.scrollTop = testCase.y;
     }
 
     const testScrolls = [
-      {js: "instant", css: "auto", x: 0, y: 2},
-      {js: "instant", css: "smooth", x: 0, y: 3},
-      {js: "auto", css: "auto", x: 0, y: 4},
-      {js: "", css: "auto", x: 0, y: 5},
-      {js: "smooth", css: "auto", waitForEnd: true, x: 0, y: 15},
-      {js: "smooth", css: "smooth", waitForEnd: true, x: 0, y: 25},
-      {js: "auto", css: "smooth", waitForEnd: true, x: 0, y: 35},
-      {js: "", css: "smooth", waitForEnd: true, x: 0, y: 45},
-      {js: "smooth", css: "auto", waitForEnd: false, x: 0, y: 4100},
-      {js: "smooth", css: "smooth", waitForEnd: false, x: 0, y: 20},
-      {js: "auto", css: "smooth", waitForEnd: false, x: 0, y: 4000},
-      {js: "", css: "smooth", waitForEnd: false, x: 0, y: 5},
+      {css: "auto", x: 0, y: 2},
+      {css: "auto", x: 0, y: 4},
+      {css: "smooth", waitForEnd: true, x: 0, y: 25},
+      {css: "smooth", waitForEnd: true, x: 0, y: 45},
+      {css: "smooth", waitForEnd: false, x: 0, y: 4100},
+      {css: "smooth", waitForEnd: false, x: 0, y: 20},
     ];
 
     function doTest()

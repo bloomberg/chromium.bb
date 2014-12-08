@@ -60,6 +60,7 @@ class Locale;
 class MutableStylePropertySet;
 class PropertySetCSSStyleDeclaration;
 class PseudoElement;
+class ScrollToOptions;
 class ShadowRoot;
 class StylePropertySet;
 
@@ -182,11 +183,16 @@ public:
     virtual double scrollLeft();
     virtual double scrollTop();
     virtual void setScrollLeft(double);
-    virtual void setScrollLeft(const Dictionary& scrollOptionsHorizontal, ExceptionState&);
     virtual void setScrollTop(double);
-    virtual void setScrollTop(const Dictionary& scrollOptionsVertical, ExceptionState&);
     virtual int scrollWidth();
     virtual int scrollHeight();
+
+    virtual void scrollBy(double x, double y);
+    virtual void scrollBy(const ScrollToOptions&);
+    virtual void scrollTo(double x, double y);
+    virtual void scrollTo(const ScrollToOptions&);
+    void scroll(double x, double y) { scrollTo(x, y); }
+    void scroll(const ScrollToOptions& scrollToOptions) { scrollTo(scrollToOptions); }
 
     IntRect boundsInRootViewSpace();
 
@@ -533,6 +539,11 @@ protected:
     Node* insertAdjacent(const String& where, Node* newChild, ExceptionState&);
 
     virtual void parserDidSetAttributes() { };
+
+    void scrollRenderBoxBy(const ScrollToOptions&);
+    void scrollRenderBoxTo(const ScrollToOptions&);
+    void scrollFrameBy(const ScrollToOptions&);
+    void scrollFrameTo(const ScrollToOptions&);
 
 private:
     bool hasElementFlag(ElementFlags mask) const { return hasRareData() && hasElementFlagInternal(mask); }
