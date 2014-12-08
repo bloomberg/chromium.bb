@@ -211,7 +211,7 @@ static void FollowDeferredRedirect(JNIEnv* env,
 static void PopulateResponseHeaders(JNIEnv* env,
                                     jobject jurl_request,
                                     jlong jurl_request_adapter,
-                                    jobject jheaders_map) {
+                                    jobject jheaders_list) {
   DCHECK(jurl_request_adapter);
   CronetURLRequestAdapter* request_adapter =
       reinterpret_cast<CronetURLRequestAdapter*>(jurl_request_adapter);
@@ -231,7 +231,7 @@ static void PopulateResponseHeaders(JNIEnv* env,
     ScopedJavaLocalRef<jstring> value =
         ConvertUTF8ToJavaString(env, header_value);
     Java_CronetUrlRequest_onAppendResponseHeader(
-        env, jurl_request, jheaders_map, name.obj(), value.obj());
+        env, jurl_request, jheaders_list, name.obj(), value.obj());
   }
 }
 

@@ -4,6 +4,8 @@
 
 package org.chromium.net;
 
+import android.util.Pair;
+
 import java.util.List;
 import java.util.Map;
 
@@ -37,9 +39,15 @@ public interface ResponseInfo {
     String getHttpStatusText();
 
     /**
+     * @return an unmodifiable list of response header field and value pairs.
+     * The headers are in the same order they are received over the wire.
+     */
+    List<Pair<String, String>> getAllHeadersAsList();
+
+    /**
      * @return an unmodifiable map of the response-header fields and values.
-     * The null key is mapped to the HTTP status line for compatibility with
-     * HttpUrlConnection.
+     * Each list of values for a single header field is in the same order they
+     * were received over the wire.
      */
     Map<String, List<String>> getAllHeaders();
 

@@ -5,13 +5,14 @@
 package org.chromium.net;
 
 import android.util.Log;
+import android.util.Pair;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
 import java.nio.ByteBuffer;
-import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,14 +64,7 @@ final class CronetUrlRequest implements UrlRequest {
      */
     private OnDataReceivedRunnable mOnDataReceivedTask;
 
-    static final class HeaderEntry extends
-            AbstractMap.SimpleEntry<String, String> {
-        public HeaderEntry(String name, String value) {
-            super(name, value);
-        }
-    }
-
-    static final class HeadersList extends ArrayList<HeaderEntry> {
+    static final class HeadersList extends ArrayList<Pair<String, String>> {
     }
 
     final class OnDataReceivedRunnable implements Runnable {
@@ -120,7 +114,7 @@ final class CronetUrlRequest implements UrlRequest {
         private final String[] mResponseInfoUrlChain;
         private final int mHttpStatusCode;
         private final String mHttpStatusText;
-        private final HeadersMap mAllHeaders = new HeadersMap();
+        private final HeadersList mAllHeaders = new HeadersList();
         private final boolean mWasCached;
         private final String mNegotiatedProtocol;
 
@@ -155,8 +149,23 @@ final class CronetUrlRequest implements UrlRequest {
         }
 
         @Override
+        public List<Pair<String, String>> getAllHeadersAsList() {
+            return Collections.unmodifiableList(mAllHeaders);
+        }
+
+        @Override
         public Map<String, List<String>> getAllHeaders() {
-            return mAllHeaders;
+            Map<String, List<String>> map = new HashMap<String, List<String>>();
+            for (Pair<String, String> entry : mAllHeaders) {
+                if (map.containsKey(entry.first)) {
+                    map.get(entry.first).add(entry.second);
+                } else {
+                    List<String> values = new ArrayList<String>();
+                    values.add(entry.second);
+                    map.put(entry.first, values);
+                }
+            }
+            return Collections.unmodifiableMap(map);
         }
 
         @Override
@@ -234,7 +243,7 @@ final class CronetUrlRequest implements UrlRequest {
         if (value == null) {
             throw new NullPointerException("Invalid header value.");
         }
-        mRequestHeaders.add(new HeaderEntry(header, value));
+        mRequestHeaders.add(Pair.create(header, value));
     }
 
     @Override
@@ -253,12 +262,12 @@ final class CronetUrlRequest implements UrlRequest {
                             + mInitialMethod);
                 }
             }
-            for (HeaderEntry header : mRequestHeaders) {
-                if (!nativeAddHeader(mUrlRequestAdapter, header.getKey(),
-                        header.getValue())) {
+            for (Pair<String, String> header : mRequestHeaders) {
+                if (!nativeAddHeader(mUrlRequestAdapter, header.first,
+                        header.second)) {
                     destroyRequestAdapter();
                     throw new IllegalArgumentException("Invalid header "
-                            + header.getKey() + "=" + header.getValue());
+                            + header.first + "=" + header.second);
                 }
             }
             mStarted = true;
@@ -563,21 +572,13 @@ final class CronetUrlRequest implements UrlRequest {
     }
 
     /**
-     * Appends header |name| with value |value| to |headersMap|.
+     * Appends header |name| with value |value| to |headersList|.
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onAppendResponseHeader(HeadersMap headersMap,
+    private void onAppendResponseHeader(HeadersList headersList,
             String name, String value) {
-        try {
-            if (!headersMap.containsKey(name)) {
-                headersMap.put(name, new ArrayList<String>());
-            }
-            headersMap.get(name).add(value);
-        } catch (final Exception e) {
-            Log.e(CronetUrlRequestContext.LOG_TAG,
-                    "Exception in onAppendResponseHeader method", e);
-        }
+        headersList.add(Pair.create(name, value));
     }
 
     // Native methods are implemented in cronet_url_request.cc.
@@ -600,7 +601,7 @@ final class CronetUrlRequest implements UrlRequest {
     private native void nativeReceiveData(long urlRequestAdapter);
 
     private native void nativePopulateResponseHeaders(long urlRequestAdapter,
-            HeadersMap headers);
+            HeadersList headers);
 
     private native String nativeGetNegotiatedProtocol(long urlRequestAdapter);
 
@@ -609,8 +610,4 @@ final class CronetUrlRequest implements UrlRequest {
     private native boolean nativeGetWasCached(long urlRequestAdapter);
 
     private native long nativeGetTotalReceivedBytes(long urlRequestAdapter);
-
-    // Explicit class to work around JNI-generator generics confusion.
-    private static class HeadersMap extends HashMap<String, List<String>> {
-    }
 }

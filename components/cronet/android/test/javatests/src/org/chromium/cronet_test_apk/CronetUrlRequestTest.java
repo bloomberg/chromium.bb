@@ -5,6 +5,7 @@
 package org.chromium.cronet_test_apk;
 
 import android.test.suitebuilder.annotation.SmallTest;
+import android.util.Pair;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.cronet_test_apk.TestUrlRequestListener.FailureType;
@@ -288,6 +289,28 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals(2, multiHeader.size());
         assertEquals("header-value1", multiHeader.get(0));
         assertEquals("header-value2", multiHeader.get(1));
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testResponseHeadersList() throws Exception {
+        TestUrlRequestListener listener = startAndWaitForComplete(
+                MockUrlRequestJobFactory.SUCCESS_URL);
+        assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
+        List<Pair<String, String>> responseHeaders =
+                listener.mResponseInfo.getAllHeadersAsList();
+        assertEquals(5, responseHeaders.size());
+        assertEquals("Content-Type", responseHeaders.get(0).first);
+        assertEquals("text/plain", responseHeaders.get(0).second);
+        assertEquals("Access-Control-Allow-Origin",
+                responseHeaders.get(1).first);
+        assertEquals("*", responseHeaders.get(1).second);
+        assertEquals("header-name", responseHeaders.get(2).first);
+        assertEquals("header-value", responseHeaders.get(2).second);
+        assertEquals("multi-header-name", responseHeaders.get(3).first);
+        assertEquals("header-value1", responseHeaders.get(3).second);
+        assertEquals("multi-header-name", responseHeaders.get(4).first);
+        assertEquals("header-value2", responseHeaders.get(4).second);
     }
 
     @SmallTest
