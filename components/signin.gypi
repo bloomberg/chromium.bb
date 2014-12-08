@@ -56,6 +56,8 @@
         'signin/core/browser/mutable_profile_oauth2_token_service.h',
         'signin/core/browser/profile_oauth2_token_service.cc',
         'signin/core/browser/profile_oauth2_token_service.h',
+        'signin/core/browser/refresh_token_annotation_request.cc',
+        'signin/core/browser/refresh_token_annotation_request.h',
         'signin/core/browser/signin_account_id_helper.cc',
         'signin/core/browser/signin_account_id_helper.h',
         'signin/core/browser/signin_client.h',

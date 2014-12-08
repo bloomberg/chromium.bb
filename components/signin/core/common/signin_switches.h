@@ -21,6 +21,7 @@ extern const char kDisableSigninScopedDeviceId[];
 extern const char kEnableAccountConsistency[];
 extern const char kEnableNewAvatarMenu[];
 extern const char kEnableNewProfileManagement[];
+extern const char kEnableRefreshTokenAnnotationRequest[];
 extern const char kEnableWebBasedSignin[];
 extern const char kEnableWebviewBasedSignin[];
 extern const char kExtensionsMultiAccount[];

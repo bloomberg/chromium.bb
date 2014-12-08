@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -16,6 +17,7 @@
 class AccountInfoFetcher;
 class OAuth2TokenService;
 class PrefService;
+class RefreshTokenAnnotationRequest;
 class SigninClient;
 
 namespace base {
@@ -148,12 +150,20 @@ class AccountTrackerService : public KeyedService,
 
   void LoadFromTokenService();
 
+  // Virtual so that tests can override the network fetching behaviour.
+  virtual void SendRefreshTokenAnnotationRequest(const std::string& account_id);
+  void RefreshTokenAnnotationRequestDone(const std::string& account_id);
+
   OAuth2TokenService* token_service_;  // Not owned.
   SigninClient* signin_client_;  // Not owned.
   std::map<std::string, AccountInfoFetcher*> user_info_requests_;
   std::map<std::string, AccountState> accounts_;
   ObserverList<Observer> observer_list_;
   bool shutdown_called_;
+
+  // Holds references to refresh token annotation requests keyed by account_id.
+  base::ScopedPtrHashMap<std::string, RefreshTokenAnnotationRequest>
+      refresh_token_annotation_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountTrackerService);
 };

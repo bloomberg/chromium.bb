@@ -31,6 +31,10 @@ const char kEnableNewAvatarMenu[] = "enable-new-avatar-menu";
 // Enables new profile management system, including lock mode.
 const char kEnableNewProfileManagement[] = "new-profile-management";
 
+// Enable sending EnableRefreshTokenAnnotationRequest.
+extern const char kEnableRefreshTokenAnnotationRequest[] =
+    "enable-refresh-token-annotation-request";
+
 // Enables the pure web-based flow for sign in on first run/NTP/wrench menu/
 // settings page.
 const char kEnableWebBasedSignin[] = "enable-web-based-signin";

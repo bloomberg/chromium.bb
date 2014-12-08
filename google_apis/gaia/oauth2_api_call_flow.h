@@ -9,8 +9,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "google_apis/gaia/oauth2_access_token_consumer.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -26,9 +24,7 @@ class URLRequestContextGetter;
 // given an access token to the service.  This class abstracts the basic steps
 // and exposes template methods for sub-classes to implement for API specific
 // details.
-class OAuth2ApiCallFlow
-    : public net::URLFetcherDelegate,
-      public OAuth2AccessTokenConsumer {
+class OAuth2ApiCallFlow : public net::URLFetcherDelegate {
  public:
   OAuth2ApiCallFlow();
 

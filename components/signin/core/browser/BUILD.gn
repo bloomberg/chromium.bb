@@ -16,6 +16,8 @@ static_library("browser") {
     "mutable_profile_oauth2_token_service.h",
     "profile_oauth2_token_service.cc",
     "profile_oauth2_token_service.h",
+    "refresh_token_annotation_request.cc",
+    "refresh_token_annotation_request.h",
     "signin_account_id_helper.cc",
     "signin_account_id_helper.h",
     "signin_client.h",

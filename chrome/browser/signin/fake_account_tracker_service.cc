@@ -41,3 +41,8 @@ void FakeAccountTrackerService::FakeUserInfoFetchSuccess(
   user_info.SetString("hd", hosted_domain);
   SetAccountStateFromUserInfo(account_id, &user_info);
 }
+
+void FakeAccountTrackerService::SendRefreshTokenAnnotationRequest(
+    const std::string& account_id) {
+  // In tests, don't do actual network fetch.
+}

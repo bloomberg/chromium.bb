@@ -24,6 +24,17 @@ const char kGoogleServicesHostedDomain[] = "google.services.hosted_domain";
 // be the same.
 const char kGoogleServicesLastUsername[] = "google.services.last_username";
 
+// Int64 as time from epoch of when next RefreshTokenAnnotationRequest should be
+// sent.
+const char kGoogleServicesRefreshTokenAnnotateScheduledTime[] =
+    "google.services.refresh_token_annotate_scheduled_time";
+
+// Device id scoped to single signin. This device id will be regenerated if user
+// signs out and signs back in. When refresh token is requested for this user it
+// will be annotated with this device id.
+const char kGoogleServicesSigninScopedDeviceId[] =
+    "google.services.signin_scoped_device_id";
+
 // Obfuscated account ID that identifies the current user logged into sync and
 // other google services.
 const char kGoogleServicesUserAccountId[] = "google.services.user_account_id";
@@ -31,12 +42,6 @@ const char kGoogleServicesUserAccountId[] = "google.services.user_account_id";
 // String that identifies the current user logged into sync and other google
 // services.
 const char kGoogleServicesUsername[] = "google.services.username";
-
-// Device id scoped to single signin. This device id will be regenerated if user
-// signs out and signs back in. When refresh token is requested for this user it
-// will be annotated with this device id.
-const char kGoogleServicesSigninScopedDeviceId[] =
-    "google.services.signin_scoped_device_id";
 
 // Local state pref containing a string regex that restricts which accounts
 // can be used to log in to chrome (e.g. "*@google.com"). If missing or blank,

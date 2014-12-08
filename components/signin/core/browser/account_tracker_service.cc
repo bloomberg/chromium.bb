@@ -4,14 +4,18 @@
 
 #include "components/signin/core/browser/account_tracker_service.h"
 
+#include "base/callback.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/signin/core/browser/refresh_token_annotation_request.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/signin/core/common/signin_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -282,8 +286,17 @@ void AccountTrackerService::OnRefreshTokenAvailable(
   StartTrackingAccount(account_id);
   AccountState& state = accounts_[account_id];
 
+  // Don't bother fetching for supervised users since this causes the token
+  // service to raise spurious auth errors.
+  // TODO(treib): this string is also used in supervised_user_constants.cc.
+  // Should put in a common place.
+  if (account_id == "managed_user@localhost")
+    return;
+
   if (state.info.IsValid())
     StartFetchingUserInfo(account_id);
+
+  SendRefreshTokenAnnotationRequest(account_id);
 }
 
 void AccountTrackerService::OnRefreshTokenRevoked(
@@ -342,12 +355,6 @@ void AccountTrackerService::StopTrackingAccount(const std::string& account_id) {
 
 void AccountTrackerService::StartFetchingUserInfo(
     const std::string& account_id) {
-  // Don't bother fetching for supervised users since this causes the token
-  // service to raise spurious auth errors.
-  // TODO(treib): this string is also used in supervised_user_constants.cc.
-  // Should put in a common place.
-  if (account_id == "managed_user@localhost")
-    return;
 
   if (ContainsKey(user_info_requests_, account_id))
     DeleteFetcher(user_info_requests_[account_id]);
@@ -488,6 +495,32 @@ void AccountTrackerService::LoadFromTokenService() {
        it != accounts.end(); ++it) {
     OnRefreshTokenAvailable(*it);
   }
+}
+
+void AccountTrackerService::SendRefreshTokenAnnotationRequest(
+    const std::string& account_id) {
+// We only need to send RefreshTokenAnnotationRequest from desktop platforms.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableRefreshTokenAnnotationRequest)) {
+    scoped_ptr<RefreshTokenAnnotationRequest> request =
+        RefreshTokenAnnotationRequest::SendIfNeeded(
+            signin_client_->GetPrefs(), token_service_, signin_client_,
+            signin_client_->GetURLRequestContext(), account_id,
+            base::Bind(
+                &AccountTrackerService::RefreshTokenAnnotationRequestDone,
+                base::Unretained(this), account_id));
+    // If request was sent AccountTrackerService needs to own request till it
+    // finishes.
+    if (request)
+      refresh_token_annotation_requests_.set(account_id, request.Pass());
+  }
+#endif
+}
+
+void AccountTrackerService::RefreshTokenAnnotationRequestDone(
+    const std::string& account_id) {
+  refresh_token_annotation_requests_.erase(account_id);
 }
 
 std::string AccountTrackerService::PickAccountIdForAccount(
