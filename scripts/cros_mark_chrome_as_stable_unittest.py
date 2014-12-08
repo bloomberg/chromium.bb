@@ -20,6 +20,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import gob_util
+from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.scripts import cros_mark_chrome_as_stable
 
@@ -35,15 +36,6 @@ unstable_data = 'KEYWORDS=~x86 ~arm'
 stable_data = 'KEYWORDS=x86 arm'
 fake_svn_rev = '12345'
 new_fake_svn_rev = '23456'
-
-
-def _TouchAndWrite(path, data=None):
-  """Writes data (if it exists) to the file specified by the path."""
-  fh = open(path, 'w')
-  if data:
-    fh.write(data)
-
-  fh.close()
 
 
 class _StubCommandResult(object):
@@ -81,15 +73,15 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
     self.tot_new_version = '9.0.306.0'
     self.tot_new = ebuild % (self.tot_new_version + '_alpha-r1')
 
-    _TouchAndWrite(self.unstable, unstable_data)
-    _TouchAndWrite(self.sticky, stable_data)
-    _TouchAndWrite(self.sticky_rc, stable_data)
-    _TouchAndWrite(self.latest_stable, stable_data)
-    _TouchAndWrite(self.tot_stable,
-                   '\n'.join(
-                       (stable_data,
-                        '%s=%s' % (cros_mark_chrome_as_stable._CHROME_SVN_TAG,
-                                   fake_svn_rev))))
+    osutils.WriteFile(self.unstable, unstable_data)
+    osutils.WriteFile(self.sticky, stable_data)
+    osutils.WriteFile(self.sticky_rc, stable_data)
+    osutils.WriteFile(self.latest_stable, stable_data)
+    osutils.WriteFile(
+        self.tot_stable,
+        '\n'.join((stable_data,
+                   '%s=%s' % (cros_mark_chrome_as_stable._CHROME_SVN_TAG,
+                              fake_svn_rev))))
 
   def testFindChromeCandidates(self):
     """Test creation of stable ebuilds from mock dir."""
@@ -220,7 +212,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
     Verifies that we can generate a link to the revision list between the
     latest Chromium release and the last one we successfully built.
     """
-    _TouchAndWrite(self.latest_new, stable_data)
+    osutils.WriteFile(self.latest_new, stable_data)
     expected = cros_mark_chrome_as_stable.GetChromeRevisionLinkFromVersions(
         self.latest_stable_version, self.latest_new_version)
     made = cros_mark_chrome_as_stable.GetChromeRevisionListLink(
