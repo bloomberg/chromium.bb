@@ -10,12 +10,16 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/passwords/password_bubble_experiment.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/feedback/feedback_data.h"
+#include "components/feedback/feedback_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using autofill::PasswordFormMap;
+using feedback::FeedbackData;
 using content::WebContents;
 namespace metrics_util = password_manager::metrics_util;
 
@@ -48,6 +52,43 @@ base::string16 PendingStateTitleBasedOnSavePasswordPref(
   return l10n_util::GetStringUTF16(
       never_save_passwords ? IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TITLE
                            : IDS_SAVE_PASSWORD);
+}
+
+class URLCollectionFeedbackSender {
+ public:
+  URLCollectionFeedbackSender(content::BrowserContext* context,
+                              const std::string& url);
+  void SendFeedback();
+
+ private:
+  static const char kPasswordManagerURLCollectionBucket[];
+  content::BrowserContext* context_;
+  std::string url_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLCollectionFeedbackSender);
+};
+
+const char URLCollectionFeedbackSender::kPasswordManagerURLCollectionBucket[] =
+    "ChromePasswordManagerFailure";
+
+URLCollectionFeedbackSender::URLCollectionFeedbackSender(
+    content::BrowserContext* context,
+    const std::string& url)
+    : context_(context), url_(url) {
+}
+
+void URLCollectionFeedbackSender::SendFeedback() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  scoped_refptr<FeedbackData> feedback_data = new FeedbackData();
+  feedback_data->set_category_tag(kPasswordManagerURLCollectionBucket);
+  feedback_data->set_description("");
+
+  feedback_data->set_image(make_scoped_ptr(new std::string));
+
+  feedback_data->set_page_url(url_);
+  feedback_data->set_user_email("");
+  feedback_data->set_context(context_);
+  feedback_util::SendReport(feedback_data);
 }
 
 }  // namespace
@@ -155,12 +196,17 @@ void ManagePasswordsBubbleModel::OnBubbleHidden() {
     RecordExperimentStatistics(web_contents(), dismissal_reason_);
 }
 
-void ManagePasswordsBubbleModel::OnCollectURLClicked() {
+void ManagePasswordsBubbleModel::OnCollectURLClicked(const std::string& url) {
   dismissal_reason_ = metrics_util::CLICKED_COLLECT_URL;
   RecordExperimentStatistics(web_contents(), dismissal_reason_);
   // User interaction with bubble has happened, do not need to show bubble
   // in case it was before transition to another page.
   state_ = password_manager::ui::ASK_USER_REPORT_URL_BUBBLE_SHOWN_STATE;
+#if !defined(OS_ANDROID)
+  URLCollectionFeedbackSender feedback_sender(
+      web_contents()->GetBrowserContext(), url);
+  feedback_sender.SendFeedback();
+#endif
 }
 
 void ManagePasswordsBubbleModel::OnDoNotCollectURLClicked() {

@@ -21,7 +21,8 @@ const char kUIDismissalReasonMetric[] = "PasswordManager.UIDismissalReason";
 class ManagePasswordsBubbleModelTest : public testing::Test {
  public:
   ManagePasswordsBubbleModelTest()
-      : test_web_contents_(
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        test_web_contents_(
             content::WebContentsTester::CreateTestWebContents(&profile_,
                                                               NULL)) {}
 
@@ -281,7 +282,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickCancelCredential) {
 TEST_F(ManagePasswordsBubbleModelTest, ClickCollectURL) {
   base::HistogramTester histogram_tester;
   PretendNeedToAskUserToSubmitURL();
-  model_->OnCollectURLClicked();
+  model_->OnCollectURLClicked("http://example.com");
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_COLLECT_URL);
@@ -327,7 +328,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickCollectURLBeforeNavigation) {
   // "Ask to collect URL?" doesn't appear before navigation is implemented.
   base::HistogramTester histogram_tester;
   PretendUserInteractedWithAllowToSubmitBubbleBeforeNavigation();
-  model_->OnCollectURLClicked();
+  model_->OnCollectURLClicked("http://example.com");
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_COLLECT_URL);

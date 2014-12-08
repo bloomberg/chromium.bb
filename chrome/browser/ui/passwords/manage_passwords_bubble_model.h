@@ -43,8 +43,8 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // Called by the view code when the "Never for this site." button in clicked
   // by the user and user gets confirmation bubble.
   void OnConfirmationForNeverForThisSite();
-  // Call by the view code when user agreed to URL collection.
-  void OnCollectURLClicked();
+  // Call by the view code when user agreed to |url| collection.
+  void OnCollectURLClicked(const std::string& url);
 
   // Called by the view code when user didn't allow to collect URL.
   void OnDoNotCollectURLClicked();

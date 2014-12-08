@@ -161,6 +161,12 @@ void AddTextRow(views::GridLayout* layout, const base::string16& text) {
   layout->AddView(text_label);
 }
 
+// Returns the string representing the reported URL. This string will be shown
+// to the user and reported through Feedback.
+std::string PresentURL(const GURL& url) {
+  return url.host();
+}
+
 }  // namespace
 
 
@@ -324,7 +330,7 @@ ManagePasswordsBubbleView::AskUserToSubmitURLView::AskUserToSubmitURLView(
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   // URL row.
   // TODO(melandory) Use full URL instead of host.
-  AddTextRow(layout, base::UTF8ToUTF16(parent->model()->origin().host()));
+  AddTextRow(layout, base::UTF8ToUTF16(PresentURL(parent->model()->origin())));
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
   // Border row.
   AddBorderRow(layout, color);
@@ -350,7 +356,8 @@ void ManagePasswordsBubbleView::AskUserToSubmitURLView::ButtonPressed(
   DCHECK(sender == send_button_ || sender == no_button_);
   // TODO(melandory): Add actions on button clicks: url reporting, pref saving.
   if (sender == send_button_)
-    parent_->model()->OnCollectURLClicked();
+    parent_->model()->OnCollectURLClicked(
+        PresentURL(parent_->model()->origin()));
   else if (sender == no_button_)
     parent_->model()->OnDoNotCollectURLClicked();
   parent_->Close();
