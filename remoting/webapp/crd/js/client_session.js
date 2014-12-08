@@ -65,6 +65,8 @@ remoting.enableMouseLock = false;
  *     pairing id for this client, as issued by the host.
  * @param {string} clientPairedSecret For paired Me2Me connections, the
  *     paired secret for this client, as issued by the host.
+ * @param {string} defaultRemapKeys The default set of remap keys, to use
+ *     when the client doesn't define any.
  * @constructor
  * @extends {base.EventSource}
  */
@@ -72,7 +74,7 @@ remoting.ClientSession = function(signalStrategy, container, hostDisplayName,
                                   accessCode, fetchPin, fetchThirdPartyToken,
                                   authenticationMethods, hostId, hostJid,
                                   hostPublicKey, mode, clientPairingId,
-                                  clientPairedSecret) {
+                                  clientPairedSecret, defaultRemapKeys) {
   /** @private */
   this.state_ = remoting.ClientSession.State.CREATED;
 
@@ -105,6 +107,9 @@ remoting.ClientSession = function(signalStrategy, container, hostDisplayName,
   this.clientPairingId_ = clientPairingId;
   /** @private */
   this.clientPairedSecret_ = clientPairedSecret;
+  /** @private */
+  this.defaultRemapKeys_ = defaultRemapKeys;
+
   /** @private */
   this.sessionId_ = '';
   /** @type {remoting.ClientPlugin}
@@ -370,8 +375,16 @@ remoting.ClientSession.Capability = {
   // resolution to the host once connection has been established. See
   // this.plugin_.notifyClientResolution().
   SEND_INITIAL_RESOLUTION: 'sendInitialResolution',
+
+  // Let the host know that we're interested in knowing whether or not it
+  // rate limits desktop-resize requests.
   RATE_LIMIT_RESIZE_REQUESTS: 'rateLimitResizeRequests',
+
+  // Indicates that the client supports the video frame-recording extension.
   VIDEO_RECORDER: 'videoRecorder',
+
+  // Indicates that the client supports 'cast'ing the video stream to a
+  // cast-enabled device.
   CAST: 'casting'
 };
 
@@ -426,12 +439,14 @@ remoting.ClientSession.prototype.pluginLostFocus_ = function() {
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
+ * @param {Array.<string>} requiredCapabilities A list of capabilities
+ *     required by this application.
  */
 remoting.ClientSession.prototype.createPluginAndConnect =
-    function(onExtensionMessage) {
+    function(onExtensionMessage, requiredCapabilities) {
   this.plugin_ = remoting.ClientPlugin.factory.createPlugin(
       this.container_.querySelector('.client-plugin-container'),
-      onExtensionMessage);
+      onExtensionMessage, requiredCapabilities);
   remoting.HostSettings.load(this.hostId_,
                              this.onHostSettingsLoaded_.bind(this));
 };
@@ -749,15 +764,12 @@ remoting.ClientSession.prototype.setRemapKeys = function(remappings) {
  * @param {boolean} apply True to apply remappings, false to cancel them.
  */
 remoting.ClientSession.prototype.applyRemapKeys_ = function(apply) {
-  // By default, under ChromeOS, remap the right Control key to the right
-  // Win / Cmd key.
   var remapKeys = this.remapKeys_;
-  if (remapKeys == '' && remoting.platformIsChromeOS()) {
-    remapKeys = '0x0700e4>0x0700e7';
-  }
-
   if (remapKeys == '') {
-    return;
+    remapKeys = this.defaultRemapKeys_;
+    if (remapKeys == '') {
+      return;
+    }
   }
 
   var remappings = remapKeys.split(',');

@@ -101,13 +101,18 @@ remoting.SessionConnectorFactory = function() {};
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
+ * @param {Array.<string>} requiredCapabilities Connector capabilities
+ *     required by this application.
+ * @param {string} defaultRemapKeys The default set of key mappings to use
+ *     in the client session.
  * @return {remoting.SessionConnector}
  */
 remoting.SessionConnectorFactory.prototype.createConnector =
     // TODO(garykac): Can onExtensionMessage be removed from here? It's only
     // needed to pass to the ClientSession. Investigate why ClientSession
     // needs this.
-    function(clientContainer, onConnected, onError, onExtensionMessage) {};
+    function(clientContainer, onConnected, onError, onExtensionMessage,
+             requiredCapabilities, defaultRemapKeys) {};
 
 /**
  * @type {remoting.SessionConnectorFactory}

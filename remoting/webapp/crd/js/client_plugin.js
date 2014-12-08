@@ -318,10 +318,11 @@ remoting.ClientPluginFactory = function() {};
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
+ * @param {Array.<string>} requiredCapabilities
  * @return {remoting.ClientPlugin} A new client plugin instance.
  */
 remoting.ClientPluginFactory.prototype.createPlugin =
-    function(container, onExtensionMessage) {};
+    function(container, onExtensionMessage, requiredCapabilities) {};
 
 /**
  * Preload the plugin to make instantiation faster when the user tries

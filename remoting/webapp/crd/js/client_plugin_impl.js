@@ -21,15 +21,23 @@ var remoting = remoting || {};
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
+ * @param {Array.<string>} requiredCapabilities The set of capabilties that the
+ *     session must support for this application.
  * @constructor
  * @implements {remoting.ClientPlugin}
  */
-remoting.ClientPluginImpl = function(container, onExtensionMessage) {
+remoting.ClientPluginImpl = function(container, onExtensionMessage,
+                                     requiredCapabilities) {
   this.plugin_ = remoting.ClientPluginImpl.createPluginElement_();
   this.plugin_.id = 'session-client-plugin';
   container.appendChild(this.plugin_);
 
   this.onExtensionMessage_ = onExtensionMessage;
+  /**
+   * @type {Array.<string>}
+   * @private
+   */
+  this.requiredCapabilities_ = requiredCapabilities;
 
   /** @private */
   this.desktopWidth_ = 0;
@@ -376,33 +384,13 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
         supportedCapabilities =
             tokenize(getStringAttr(message.data, 'supportedCapabilities'));
       }
-
       // At the moment the webapp does not recognize any of
       // 'requestedCapabilities' capabilities (so they all should be disabled)
       // and do not care about any of 'supportedCapabilities' capabilities (so
       // they all can be enabled).
-      this.capabilities_ = supportedCapabilities;
-
-      // Let the host know that the webapp can be requested to always send
-      // the client's dimensions.
-      this.capabilities_.push(
-          remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION);
-
-      // Let the host know that we're interested in knowing whether or not
-      // it rate-limits desktop-resize requests.
-      this.capabilities_.push(
-          remoting.ClientSession.Capability.RATE_LIMIT_RESIZE_REQUESTS);
-
-      // Let the host know that we can use the video framerecording extension.
-      this.capabilities_.push(
-          remoting.ClientSession.Capability.VIDEO_RECORDER);
-
-      // Let the host know that we can support casting of the screen.
-      // TODO(aiguha): Add this capability based on a gyp/command-line flag,
-      // rather than by default.
-      this.capabilities_.push(
-          remoting.ClientSession.Capability.CAST);
-
+      // All the required capabilities (specified by the app) are added to this.
+      this.capabilities_ = supportedCapabilities.concat(
+          this.requiredCapabilities_);
     } else if (this.pluginApiVersion_ >= 6) {
       this.pluginApiFeatures_ = ['highQualityScaling', 'injectKeyEvent'];
     } else {
@@ -1003,11 +991,13 @@ remoting.DefaultClientPluginFactory = function() {};
 /**
  * @param {Element} container
  * @param {function(string, string):boolean} onExtensionMessage
+ * @param {Array.<string>} requiredCapabilities
  * @return {remoting.ClientPlugin}
  */
 remoting.DefaultClientPluginFactory.prototype.createPlugin =
-    function(container, onExtensionMessage) {
-  return new remoting.ClientPluginImpl(container, onExtensionMessage);
+    function(container, onExtensionMessage, requiredCapabilities) {
+  return new remoting.ClientPluginImpl(container, onExtensionMessage,
+                                       requiredCapabilities);
 };
 
 remoting.DefaultClientPluginFactory.prototype.preloadPlugin = function() {

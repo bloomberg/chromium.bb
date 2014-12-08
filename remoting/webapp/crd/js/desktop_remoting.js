@@ -86,6 +86,34 @@ remoting.DesktopRemoting.prototype.init = function() {
 }
 
 /**
+ * @return {string} The default remap keys for the current platform.
+ */
+remoting.DesktopRemoting.prototype.getDefaultRemapKeys = function() {
+  var remapKeys = '';
+  // By default, under ChromeOS, remap the right Control key to the right
+  // Win / Cmd key.
+  if (remoting.platformIsChromeOS()) {
+    remapKeys = '0x0700e4>0x0700e7';
+  }
+  return remapKeys;
+};
+
+/**
+ * @return {Array.<string>} A list of |ClientSession.Capability|s required
+ *     by this application.
+ */
+remoting.DesktopRemoting.prototype.getRequiredCapabilities = function() {
+  return [
+    remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION,
+    remoting.ClientSession.Capability.RATE_LIMIT_RESIZE_REQUESTS,
+    remoting.ClientSession.Capability.VIDEO_RECORDER,
+    // TODO(aiguha): Add this capability based on a gyp/command-line flag,
+    // rather than by default.
+    remoting.ClientSession.Capability.CAST
+  ];
+};
+
+/**
  * @param {remoting.ClientSession} clientSession
  */
 remoting.DesktopRemoting.prototype.onConnected = function(clientSession) {

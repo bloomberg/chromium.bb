@@ -20,11 +20,17 @@ var remoting = remoting || {};
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
+ * @param {Array.<string>} requiredCapabilities Connector capabilities
+ *     required by this application.
+ * @param {string} defaultRemapKeys The default set of key mappings for the
+ *     client session to use.
  * @constructor
  * @implements {remoting.SessionConnector}
  */
 remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
-                                         onExtensionMessage) {
+                                         onExtensionMessage,
+                                         requiredCapabilities,
+                                         defaultRemapKeys) {
   /**
    * @type {HTMLElement}
    * @private
@@ -48,6 +54,18 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
    * @private
    */
   this.onExtensionMessage_ = onExtensionMessage;
+
+  /**
+   * @type {Array.<string>}
+   * @private
+   */
+  this.requiredCapabilities_ = requiredCapabilities;
+
+  /**
+   * @type {string}
+   * @private
+   */
+  this.defaultRemapKeys_ = defaultRemapKeys;
 
   /**
    * @type {string}
@@ -448,12 +466,14 @@ remoting.SessionConnectorImpl.prototype.createSession_ = function() {
       this.signalStrategy_, this.clientContainer_, this.hostDisplayName_,
       this.passPhrase_, this.fetchPin_, this.fetchThirdPartyToken_,
       authenticationMethods, this.hostId_, this.hostJid_, this.hostPublicKey_,
-      this.connectionMode_, this.clientPairingId_, this.clientPairedSecret_);
+      this.connectionMode_, this.clientPairingId_, this.clientPairedSecret_,
+      this.defaultRemapKeys_);
   this.clientSession_.logHostOfflineErrors(!this.refreshHostJidIfOffline_);
   this.clientSession_.addEventListener(
       remoting.ClientSession.Events.stateChanged,
       this.bound_.onStateChange);
-  this.clientSession_.createPluginAndConnect(this.onExtensionMessage_);
+  this.clientSession_.createPluginAndConnect(this.onExtensionMessage_,
+                                             this.requiredCapabilities_);
 };
 
 /**
@@ -596,9 +616,16 @@ remoting.DefaultSessionConnectorFactory = function() {
  * @param {function(string, string):boolean} onExtensionMessage The handler for
  *     protocol extension messages. Returns true if a message is recognized;
  *     false otherwise.
+ * @param {Array.<string>} requiredCapabilities Connector capabilities
+ *     required by this application.
+ * @param {string} defaultRemapKeys The default set of key mappings to use
+ *     in the client session.
  */
 remoting.DefaultSessionConnectorFactory.prototype.createConnector =
-    function(clientContainer, onConnected, onError, onExtensionMessage) {
+    function(clientContainer, onConnected, onError, onExtensionMessage,
+             requiredCapabilities, defaultRemapKeys) {
   return new remoting.SessionConnectorImpl(clientContainer, onConnected,
-                                           onError, onExtensionMessage);
+                                           onError, onExtensionMessage,
+                                           requiredCapabilities,
+                                           defaultRemapKeys);
 };
