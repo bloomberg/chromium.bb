@@ -2173,3 +2173,4 @@ crbug.com/439840 [ Win Linux Debug ] svg/custom/relative-sized-image.xhtml [ Pas
 
 crbug.com/418091 [ Mac ] fast/text/aat-morx.html [ Pass Failure ]
 crbug.com/418091 [ Mac ] fast/repaint/text-emphasis-h.html [ NeedsRebaseline ]
+crbug.com/381919 [ Mac XP ] fast/transforms/shadows.html [ NeedsRebaseline ]
