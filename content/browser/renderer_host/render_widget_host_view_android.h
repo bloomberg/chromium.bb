@@ -20,7 +20,6 @@
 #include "content/browser/renderer_host/delegated_frame_evictor.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/input/stylus_text_selector.h"
-#include "content/browser/renderer_host/input/touch_selection_controller.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/readback_types.h"
@@ -31,6 +30,7 @@
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/touch_selection/touch_selection_controller.h"
 
 struct ViewHostMsg_TextInputState_Params;
 
@@ -85,7 +85,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       public ui::WindowAndroidObserver,
       public DelegatedFrameEvictorClient,
       public StylusTextSelectorClient,
-      public TouchSelectionControllerClient {
+      public ui::TouchSelectionControllerClient {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               ContentViewCoreImpl* content_view_core);
@@ -207,16 +207,16 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnStylusSelectEnd() override;
   void OnStylusSelectTap(base::TimeTicks time, float x, float y) override;
 
-  // TouchSelectionControllerClient implementation.
+  // ui::TouchSelectionControllerClient implementation.
   virtual bool SupportsAnimation() const override;
   virtual void SetNeedsAnimate() override;
   virtual void MoveCaret(const gfx::PointF& position) override;
   virtual void MoveRangeSelectionExtent(const gfx::PointF& extent) override;
   virtual void SelectBetweenCoordinates(const gfx::PointF& base,
                                         const gfx::PointF& extent) override;
-  virtual void OnSelectionEvent(SelectionEventType event,
+  virtual void OnSelectionEvent(ui::SelectionEventType event,
                                 const gfx::PointF& anchor_position) override;
-  virtual scoped_ptr<TouchHandleDrawable> CreateDrawable() override;
+  virtual scoped_ptr<ui::TouchHandleDrawable> CreateDrawable() override;
 
   // Non-virtual methods
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
@@ -382,7 +382,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // Manages selection handle rendering and manipulation.
   // This will always be NULL if |content_view_core_| is NULL.
-  scoped_ptr<TouchSelectionController> selection_controller_;
+  scoped_ptr<ui::TouchSelectionController> selection_controller_;
 
   int accelerated_surface_route_id_;
 

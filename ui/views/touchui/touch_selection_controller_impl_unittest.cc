@@ -46,12 +46,13 @@ const int kMenuCommandCount = 3;
 // the same location.
 int CompareTextSelectionBounds(const ui::SelectionBound& b1,
                                const ui::SelectionBound& b2) {
-  if ((b1.edge_top.y() < b2.edge_top.y()) || b1.edge_top.x() < b2.edge_top.x())
+  if (b1.edge_top().y() < b2.edge_top().y() ||
+      b1.edge_top().x() < b2.edge_top().x()) {
     return -1;
-  else if (b1 == b2)
+  }
+  if (b1 == b2)
     return 0;
-  else
-    return 1;
+  return 1;
 }
 
 }  // namespace
@@ -258,14 +259,14 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     }
     if (check_direction)  {
       if (CompareTextSelectionBounds(anchor, focus) < 0) {
-        EXPECT_EQ(ui::SelectionBound::LEFT, anchor.type) << from_str;
-        EXPECT_EQ(ui::SelectionBound::RIGHT, focus.type)  << from_str;
+        EXPECT_EQ(ui::SelectionBound::LEFT, anchor.type()) << from_str;
+        EXPECT_EQ(ui::SelectionBound::RIGHT, focus.type())  << from_str;
       } else if (CompareTextSelectionBounds(anchor, focus) > 0) {
-        EXPECT_EQ(ui::SelectionBound::LEFT, focus.type)  << from_str;
-        EXPECT_EQ(ui::SelectionBound::RIGHT, anchor.type)  << from_str;
+        EXPECT_EQ(ui::SelectionBound::LEFT, focus.type())  << from_str;
+        EXPECT_EQ(ui::SelectionBound::RIGHT, anchor.type())  << from_str;
       } else {
-        EXPECT_EQ(ui::SelectionBound::CENTER, focus.type) << from_str;
-        EXPECT_EQ(ui::SelectionBound::CENTER, anchor.type) << from_str;
+        EXPECT_EQ(ui::SelectionBound::CENTER, focus.type()) << from_str;
+        EXPECT_EQ(ui::SelectionBound::CENTER, anchor.type()) << from_str;
       }
     }
   }
@@ -613,9 +614,8 @@ class TestTouchEditable : public ui::TouchEditable {
   }
 
   void set_cursor_rect(const gfx::Rect& cursor_rect) {
-    cursor_bound_.edge_top = cursor_rect.origin();
-    cursor_bound_.edge_bottom = cursor_rect.bottom_left();
-    cursor_bound_.type = ui::SelectionBound::Type::CENTER;
+    cursor_bound_.SetEdge(cursor_rect.origin(), cursor_rect.bottom_left());
+    cursor_bound_.set_type(ui::SelectionBound::Type::CENTER);
   }
 
   ~TestTouchEditable() override {}

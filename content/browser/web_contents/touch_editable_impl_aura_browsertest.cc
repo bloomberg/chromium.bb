@@ -204,8 +204,8 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   touch_editable->Reset();
   ui::SelectionBound anchor, focus;
   touch_editable->GetSelectionEndPoints(&anchor, &focus);
-  int handle_grab_x = bounds.x() + anchor.edge_bottom.x();
-  int handle_grab_y = bounds.y() + anchor.edge_bottom.y() + 1;
+  int handle_grab_x = bounds.x() + anchor.edge_bottom_rounded().x();
+  int handle_grab_y = bounds.y() + anchor.edge_bottom_rounded().y() + 1;
   generator.GestureScrollSequence(
       gfx::Point(handle_grab_x, handle_grab_y),
       gfx::Point(handle_grab_x + 20, handle_grab_y),

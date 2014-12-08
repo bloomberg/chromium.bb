@@ -346,6 +346,8 @@
         'text/bytes_formatting.h',
         'theme_provider.cc',
         'theme_provider.h',
+        'touch/selection_bound.cc',
+        'touch/selection_bound.h',
         'touch/touch_device.cc',
         'touch/touch_device.h',
         'touch/touch_device_android.cc',

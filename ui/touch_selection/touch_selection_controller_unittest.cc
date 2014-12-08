@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/touch_selection_controller.h"
+#include "ui/touch_selection/touch_selection_controller.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/motion_event_test_utils.h"
 
 using ui::test::MockMotionEvent;
 
-namespace content {
+namespace ui {
 namespace {
 
 const int kDefaultTapTimeoutMs = 200;
@@ -98,18 +98,17 @@ class TouchSelectionControllerTest : public testing::Test,
   void SetDraggingEnabled(bool enabled) { dragging_enabled_ = enabled; }
 
   void ClearSelection() {
-    controller_->OnSelectionBoundsChanged(cc::ViewportSelectionBound(),
-                                          cc::ViewportSelectionBound());
+    controller_->OnSelectionBoundsChanged(SelectionBound(),
+                                          SelectionBound());
   }
 
   void ClearInsertion() { ClearSelection(); }
 
   void ChangeInsertion(const gfx::RectF& rect, bool visible) {
-    cc::ViewportSelectionBound bound;
-    bound.type = cc::SELECTION_BOUND_CENTER;
-    bound.edge_top = rect.origin();
-    bound.edge_bottom = rect.bottom_left();
-    bound.visible = visible;
+    SelectionBound bound;
+    bound.set_type(SelectionBound::CENTER);
+    bound.SetEdge(rect.origin(), rect.bottom_left());
+    bound.set_visible(visible);
     controller_->OnSelectionBoundsChanged(bound, bound);
   }
 
@@ -117,15 +116,13 @@ class TouchSelectionControllerTest : public testing::Test,
                        bool start_visible,
                        const gfx::RectF& end_rect,
                        bool end_visible) {
-    cc::ViewportSelectionBound start_bound, end_bound;
-    start_bound.type = cc::SELECTION_BOUND_LEFT;
-    end_bound.type = cc::SELECTION_BOUND_RIGHT;
-    start_bound.edge_top = start_rect.origin();
-    start_bound.edge_bottom = start_rect.bottom_left();
-    end_bound.edge_top = end_rect.origin();
-    end_bound.edge_bottom = end_rect.bottom_left();
-    start_bound.visible = start_visible;
-    end_bound.visible = end_visible;
+    SelectionBound start_bound, end_bound;
+    start_bound.set_type(SelectionBound::LEFT);
+    end_bound.set_type(SelectionBound::RIGHT);
+    start_bound.SetEdge(start_rect.origin(), start_rect.bottom_left());
+    end_bound.SetEdge(end_rect.origin(), end_rect.bottom_left());
+    start_bound.set_visible(start_visible);
+    end_bound.set_visible(end_visible);
     controller_->OnSelectionBoundsChanged(start_bound, end_bound);
   }
 
@@ -842,4 +839,4 @@ TEST_F(TouchSelectionControllerTest, AllowShowingFromCurrentSelection) {
   EXPECT_EQ(insertion_rect.bottom_left(), GetLastEventAnchor());
 }
 
-}  // namespace content
+}  // namespace ui
