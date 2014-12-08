@@ -173,6 +173,38 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
     return !error;
   }
 
+  bool StorageMatch(const GURL& origin,
+                    const std::string& cache_name,
+                    const GURL& url) {
+    scoped_ptr<ServiceWorkerFetchRequest> request(
+        new ServiceWorkerFetchRequest());
+    request->url = url;
+    scoped_ptr<base::RunLoop> loop(new base::RunLoop());
+    cache_manager_->MatchCache(
+        origin, cache_name, request.Pass(),
+        base::Bind(&ServiceWorkerCacheStorageManagerTest::CacheMatchCallback,
+                   base::Unretained(this), base::Unretained(loop.get())));
+    loop->Run();
+
+    bool error = callback_cache_error_ != ServiceWorkerCache::ErrorTypeOK;
+    return !error;
+  }
+
+  bool StorageMatchAll(const GURL& origin, const GURL& url) {
+    scoped_ptr<ServiceWorkerFetchRequest> request(
+        new ServiceWorkerFetchRequest());
+    request->url = url;
+    scoped_ptr<base::RunLoop> loop(new base::RunLoop());
+    cache_manager_->MatchAllCaches(
+        origin, request.Pass(),
+        base::Bind(&ServiceWorkerCacheStorageManagerTest::CacheMatchCallback,
+                   base::Unretained(this), base::Unretained(loop.get())));
+    loop->Run();
+
+    bool error = callback_cache_error_ != ServiceWorkerCache::ErrorTypeOK;
+    return !error;
+  }
+
   bool CachePut(const scoped_refptr<ServiceWorkerCache>& cache,
                 const GURL& url) {
     scoped_ptr<ServiceWorkerFetchRequest> request(
@@ -194,7 +226,7 @@ class ServiceWorkerCacheStorageManagerTest : public testing::Test {
   }
 
   bool CacheMatch(const scoped_refptr<ServiceWorkerCache>& cache,
-                  const GURL& url) {
+                               const GURL& url) {
     scoped_ptr<ServiceWorkerFetchRequest> request(
         new ServiceWorkerFetchRequest());
     request->url = url;
@@ -335,6 +367,77 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, DeletedKeysGone) {
   EXPECT_STREQ("foo", callback_strings_[0].c_str());
 }
 
+TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchEntryExists) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
+  EXPECT_TRUE(StorageMatch(origin1_, "foo", GURL("http://example.com/foo")));
+}
+
+TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchNoEntry) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
+  EXPECT_FALSE(StorageMatch(origin1_, "foo", GURL("http://example.com/bar")));
+  EXPECT_EQ(ServiceWorkerCache::ErrorTypeNotFound, callback_cache_error_);
+}
+
+TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchNoCache) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
+  EXPECT_FALSE(StorageMatch(origin1_, "bar", GURL("http://example.com/foo")));
+  EXPECT_EQ(ServiceWorkerCache::ErrorTypeNotFound, callback_cache_error_);
+}
+
+TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchCacheNotReferenced) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
+  callback_cache_ = nullptr;
+  EXPECT_TRUE(StorageMatch(origin1_, "foo", GURL("http://example.com/foo")));
+}
+
+TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchAllEntryExists) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
+  EXPECT_TRUE(StorageMatchAll(origin1_, GURL("http://example.com/foo")));
+}
+
+TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchAllNoEntry) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
+  EXPECT_FALSE(StorageMatchAll(origin1_, GURL("http://example.com/bar")));
+  EXPECT_EQ(ServiceWorkerCache::ErrorTypeNotFound, callback_cache_error_);
+}
+
+TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchAllNoCaches) {
+  EXPECT_FALSE(StorageMatchAll(origin1_, GURL("http://example.com/foo")));
+  EXPECT_EQ(ServiceWorkerCache::ErrorTypeNotFound, callback_cache_error_);
+}
+
+TEST_P(ServiceWorkerCacheStorageManagerTestP,
+       StorageMatchAllCacheNotReferenced) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
+  callback_cache_ = nullptr;
+  EXPECT_TRUE(StorageMatchAll(origin1_, GURL("http://example.com/foo")));
+}
+
+TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchAllEntryExistsTwice) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
+  EXPECT_TRUE(Open(origin1_, "bar"));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
+
+  EXPECT_TRUE(StorageMatchAll(origin1_, GURL("http://example.com/foo")));
+}
+
+TEST_P(ServiceWorkerCacheStorageManagerTestP, StorageMatchInOneOfMany) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(Open(origin1_, "bar"));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
+  EXPECT_TRUE(Open(origin1_, "baz"));
+
+  EXPECT_TRUE(StorageMatchAll(origin1_, GURL("http://example.com/foo")));
+}
+
 TEST_P(ServiceWorkerCacheStorageManagerTestP, Chinese) {
   EXPECT_TRUE(Open(origin1_, "你好"));
   scoped_refptr<ServiceWorkerCache> cache = callback_cache_;
@@ -433,7 +536,8 @@ TEST_P(ServiceWorkerCacheStorageManagerTestP, RecreateCacheOnDemand) {
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   callback_cache_ = NULL;
   EXPECT_TRUE(Open(origin1_, "foo"));
-  EXPECT_TRUE(CacheMatch(callback_cache_, GURL("http://example.com/foo")));
+  EXPECT_TRUE(
+      CacheMatch(callback_cache_, GURL("http://example.com/foo")));
 }
 
 TEST_P(ServiceWorkerCacheStorageManagerTestP, DeleteBeforeRelease) {

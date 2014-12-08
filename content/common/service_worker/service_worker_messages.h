@@ -69,6 +69,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerCacheQueryParams)
   IPC_STRUCT_TRAITS_MEMBER(ignore_method)
   IPC_STRUCT_TRAITS_MEMBER(ignore_vary)
   IPC_STRUCT_TRAITS_MEMBER(prefix_match)
+  IPC_STRUCT_TRAITS_MEMBER(cache_name)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerCacheOperationType,
@@ -229,6 +230,11 @@ IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CacheStorageDelete,
 
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_CacheStorageKeys,
                     int /* request_id */)
+
+IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_CacheStorageMatch,
+                    int /* request_id */,
+                    content::ServiceWorkerFetchRequest,
+                    content::ServiceWorkerCacheQueryParams)
 
 // Cache operations in the browser.
 IPC_MESSAGE_ROUTED4(ServiceWorkerHostMsg_CacheMatch,
@@ -406,6 +412,9 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_CacheStorageDeleteSuccess,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageKeysSuccess,
                      int /* request_id */,
                      std::vector<base::string16> /* keys */)
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageMatchSuccess,
+                     int /* request_id */,
+                     content::ServiceWorkerResponse)
 
 // Sent via EmbeddedWorker at erroneous completion of CacheStorage operations.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageHasError,
@@ -420,6 +429,9 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageDeleteError,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageKeysError,
                      int /* request_id */,
                      blink::WebServiceWorkerCacheError /* reason */)
+IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageMatchError,
+                     int /* request_id */,
+                     blink::WebServiceWorkerCacheError)
 
 // Sent via EmbeddedWorker at successful completion of Cache operations.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheMatchSuccess,

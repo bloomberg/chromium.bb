@@ -103,7 +103,7 @@ ServiceWorkerCacheQueryParams QueryParamsFromWebQueryParams(
   query_params.ignore_method = web_query_params.ignoreMethod;
   query_params.ignore_vary = web_query_params.ignoreVary;
   query_params.prefix_match = web_query_params.prefixMatch;
-
+  query_params.cache_name = web_query_params.cacheName;
   return query_params;
 }
 
@@ -210,6 +210,7 @@ ServiceWorkerCacheStorageDispatcher::~ServiceWorkerCacheStorageDispatcher() {
   ClearCallbacksMapWithErrors(&open_callbacks_);
   ClearCallbacksMapWithErrors(&delete_callbacks_);
   ClearCallbacksMapWithErrors(&keys_callbacks_);
+  ClearCallbacksMapWithErrors(&match_callbacks_);
 
   ClearCallbacksMapWithErrors(&cache_match_callbacks_);
   ClearCallbacksMapWithErrors(&cache_match_all_callbacks_);
@@ -229,6 +230,8 @@ bool ServiceWorkerCacheStorageDispatcher::OnMessageReceived(
                           OnCacheStorageDeleteSuccess)
       IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CacheStorageKeysSuccess,
                           OnCacheStorageKeysSuccess)
+      IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CacheStorageMatchSuccess,
+                          OnCacheStorageMatchSuccess)
       IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CacheStorageHasError,
                           OnCacheStorageHasError)
       IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CacheStorageOpenError,
@@ -237,6 +240,8 @@ bool ServiceWorkerCacheStorageDispatcher::OnMessageReceived(
                           OnCacheStorageDeleteError)
       IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CacheStorageKeysError,
                           OnCacheStorageKeysError)
+      IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CacheStorageMatchError,
+                          OnCacheStorageMatchError)
       IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CacheMatchSuccess,
                           OnCacheMatchSuccess)
       IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CacheMatchAllSuccess,
@@ -296,6 +301,17 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheStorageKeysSuccess(
   keys_callbacks_.Remove(request_id);
 }
 
+void ServiceWorkerCacheStorageDispatcher::OnCacheStorageMatchSuccess(
+    int request_id,
+    const ServiceWorkerResponse& response) {
+  CacheStorageMatchCallbacks* callbacks = match_callbacks_.Lookup(request_id);
+
+  blink::WebServiceWorkerResponse web_response;
+  PopulateWebResponseFromResponse(response, &web_response);
+  callbacks->onSuccess(&web_response);
+  match_callbacks_.Remove(request_id);
+}
+
 void ServiceWorkerCacheStorageDispatcher::OnCacheStorageHasError(
       int request_id,
       blink::WebServiceWorkerCacheError reason) {
@@ -327,6 +343,14 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheStorageKeysError(
   CacheStorageKeysCallbacks* callbacks = keys_callbacks_.Lookup(request_id);
   callbacks->onError(&reason);
   keys_callbacks_.Remove(request_id);
+}
+
+void ServiceWorkerCacheStorageDispatcher::OnCacheStorageMatchError(
+    int request_id,
+    blink::WebServiceWorkerCacheError reason) {
+  CacheStorageMatchCallbacks* callbacks = match_callbacks_.Lookup(request_id);
+  callbacks->onError(&reason);
+  match_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheMatchSuccess(
@@ -443,6 +467,17 @@ void ServiceWorkerCacheStorageDispatcher::dispatchKeys(
   int request_id = keys_callbacks_.Add(callbacks);
   script_context_->Send(new ServiceWorkerHostMsg_CacheStorageKeys(
       script_context_->GetRoutingID(), request_id));
+}
+
+void ServiceWorkerCacheStorageDispatcher::dispatchMatch(
+    CacheStorageMatchCallbacks* callbacks,
+    const blink::WebServiceWorkerRequest& request,
+    const blink::WebServiceWorkerCache::QueryParams& query_params) {
+  int request_id = match_callbacks_.Add(callbacks);
+  script_context_->Send(new ServiceWorkerHostMsg_CacheStorageMatch(
+      script_context_->GetRoutingID(), request_id,
+      FetchRequestFromWebRequest(request),
+      QueryParamsFromWebQueryParams(query_params)));
 }
 
 void ServiceWorkerCacheStorageDispatcher::dispatchMatchForCache(

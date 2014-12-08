@@ -66,7 +66,13 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
   void EnumerateCaches(
       const GURL& origin,
       const ServiceWorkerCacheStorage::StringsAndErrorCallback& callback);
-  // TODO(jkarlin): Add match() function.
+  void MatchCache(const GURL& origin,
+                  const std::string& cache_name,
+                  scoped_ptr<ServiceWorkerFetchRequest> request,
+                  const ServiceWorkerCache::ResponseCallback& callback);
+  void MatchAllCaches(const GURL& origin,
+                      scoped_ptr<ServiceWorkerFetchRequest> request,
+                      const ServiceWorkerCache::ResponseCallback& callback);
 
   // This must be called before creating any of the public *Cache functions
   // above.

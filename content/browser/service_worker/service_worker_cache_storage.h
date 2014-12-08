@@ -81,7 +81,18 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
   // Calls the callback with a vector of cache names (keys) available.
   void EnumerateCaches(const StringsAndErrorCallback& callback);
 
-  // TODO(jkarlin): Add match() function.
+  // Calls match on the cache with the given |cache_name|.
+  void MatchCache(const std::string& cache_name,
+                  scoped_ptr<ServiceWorkerFetchRequest> request,
+                  const ServiceWorkerCache::ResponseCallback& callback);
+
+  // Calls match on all of the caches in parallel, calling |callback| with the
+  // first response found. Note that if multiple caches have the same
+  // request/response then it is not defined which cache's response will be
+  // returned. If no response is found then |callback| is called with
+  // ServiceWorkerCache::ErrorTypeNotFound.
+  void MatchAllCaches(scoped_ptr<ServiceWorkerFetchRequest> request,
+                      const ServiceWorkerCache::ResponseCallback& callback);
 
   void CloseAllCaches(const base::Closure& callback);
 
@@ -130,6 +141,23 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
                                 bool success);
   void DeleteCacheDidCleanUp(const BoolAndErrorCallback& callback,
                              bool success);
+
+  // The MatchCache callbacks are below.
+  void MatchCacheDidMatch(const scoped_refptr<ServiceWorkerCache>& cache,
+                          const ServiceWorkerCache::ResponseCallback& callback,
+                          ServiceWorkerCache::ErrorType error,
+                          scoped_ptr<ServiceWorkerResponse> response,
+                          scoped_ptr<storage::BlobDataHandle> handle);
+
+  // The MatchAllCaches callbacks are below.
+  void MatchAllCachesDidMatch(scoped_refptr<ServiceWorkerCache> cache,
+                              const base::Closure& barrier_closure,
+                              ServiceWorkerCache::ResponseCallback* callback,
+                              ServiceWorkerCache::ErrorType error,
+                              scoped_ptr<ServiceWorkerResponse> response,
+                              scoped_ptr<storage::BlobDataHandle> handle);
+  void MatchAllCachesDidMatchAll(
+      scoped_ptr<ServiceWorkerCache::ResponseCallback> callback);
 
   // Whether or not we've loaded the list of cache names into memory.
   bool initialized_;

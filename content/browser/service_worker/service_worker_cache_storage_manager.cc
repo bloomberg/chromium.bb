@@ -169,6 +169,27 @@ void ServiceWorkerCacheStorageManager::EnumerateCaches(
   cache_storage->EnumerateCaches(callback);
 }
 
+void ServiceWorkerCacheStorageManager::MatchCache(
+    const GURL& origin,
+    const std::string& cache_name,
+    scoped_ptr<ServiceWorkerFetchRequest> request,
+    const ServiceWorkerCache::ResponseCallback& callback) {
+  ServiceWorkerCacheStorage* cache_storage =
+      FindOrCreateServiceWorkerCacheManager(origin);
+
+  cache_storage->MatchCache(cache_name, request.Pass(), callback);
+}
+
+void ServiceWorkerCacheStorageManager::MatchAllCaches(
+    const GURL& origin,
+    scoped_ptr<ServiceWorkerFetchRequest> request,
+    const ServiceWorkerCache::ResponseCallback& callback) {
+  ServiceWorkerCacheStorage* cache_storage =
+      FindOrCreateServiceWorkerCacheManager(origin);
+
+  cache_storage->MatchAllCaches(request.Pass(), callback);
+}
+
 void ServiceWorkerCacheStorageManager::SetBlobParametersForCache(
     net::URLRequestContext* request_context,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context) {

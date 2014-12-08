@@ -498,6 +498,68 @@ void ServiceWorkerCacheStorage::EnumerateCaches(
   callback.Run(ordered_cache_names_, CACHE_STORAGE_ERROR_NO_ERROR);
 }
 
+void ServiceWorkerCacheStorage::MatchCache(
+    const std::string& cache_name,
+    scoped_ptr<ServiceWorkerFetchRequest> request,
+    const ServiceWorkerCache::ResponseCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!initialized_) {
+    LazyInit(base::Bind(&ServiceWorkerCacheStorage::MatchCache,
+                        weak_factory_.GetWeakPtr(), cache_name,
+                        base::Passed(request.Pass()), callback));
+    return;
+  }
+
+  scoped_refptr<ServiceWorkerCache> cache = GetLoadedCache(cache_name);
+
+  if (!cache.get()) {
+    callback.Run(ServiceWorkerCache::ErrorTypeNotFound,
+                 scoped_ptr<ServiceWorkerResponse>(),
+                 scoped_ptr<storage::BlobDataHandle>());
+    return;
+  }
+
+  // Pass the cache along to the callback to keep the cache open until match is
+  // done.
+  cache->Match(request.Pass(),
+               base::Bind(&ServiceWorkerCacheStorage::MatchCacheDidMatch,
+                          weak_factory_.GetWeakPtr(), cache, callback));
+}
+
+void ServiceWorkerCacheStorage::MatchAllCaches(
+    scoped_ptr<ServiceWorkerFetchRequest> request,
+    const ServiceWorkerCache::ResponseCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!initialized_) {
+    LazyInit(base::Bind(&ServiceWorkerCacheStorage::MatchAllCaches,
+                        weak_factory_.GetWeakPtr(),
+                        base::Passed(request.Pass()), callback));
+    return;
+  }
+
+  scoped_ptr<ServiceWorkerCache::ResponseCallback> callback_copy(
+      new ServiceWorkerCache::ResponseCallback(callback));
+
+  ServiceWorkerCache::ResponseCallback* callback_ptr = callback_copy.get();
+  base::Closure barrier_closure = base::BarrierClosure(
+      ordered_cache_names_.size(),
+      base::Bind(&ServiceWorkerCacheStorage::MatchAllCachesDidMatchAll,
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(callback_copy.Pass())));
+
+  for (const std::string& cache_name : ordered_cache_names_) {
+    scoped_refptr<ServiceWorkerCache> cache = GetLoadedCache(cache_name);
+    DCHECK(cache.get());
+
+    cache->Match(make_scoped_ptr(new ServiceWorkerFetchRequest(*request)),
+                 base::Bind(&ServiceWorkerCacheStorage::MatchAllCachesDidMatch,
+                            weak_factory_.GetWeakPtr(), cache, barrier_closure,
+                            callback_ptr));
+  }
+}
+
 void ServiceWorkerCacheStorage::CloseAllCaches(const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -657,6 +719,41 @@ void ServiceWorkerCacheStorage::DeleteCacheDidCleanUp(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   callback.Run(true, CACHE_STORAGE_ERROR_NO_ERROR);
+}
+
+void ServiceWorkerCacheStorage::MatchCacheDidMatch(
+    const scoped_refptr<ServiceWorkerCache>& cache,
+    const ServiceWorkerCache::ResponseCallback& callback,
+    ServiceWorkerCache::ErrorType error,
+    scoped_ptr<ServiceWorkerResponse> response,
+    scoped_ptr<storage::BlobDataHandle> handle) {
+  callback.Run(error, response.Pass(), handle.Pass());
+}
+
+void ServiceWorkerCacheStorage::MatchAllCachesDidMatch(
+    scoped_refptr<ServiceWorkerCache> cache,
+    const base::Closure& barrier_closure,
+    ServiceWorkerCache::ResponseCallback* callback,
+    ServiceWorkerCache::ErrorType error,
+    scoped_ptr<ServiceWorkerResponse> response,
+    scoped_ptr<storage::BlobDataHandle> handle) {
+  if (callback->is_null() || error == ServiceWorkerCache::ErrorTypeNotFound) {
+    barrier_closure.Run();
+    return;
+  }
+  callback->Run(error, response.Pass(), handle.Pass());
+  callback->Reset();  // Only call the callback once.
+
+  barrier_closure.Run();
+}
+
+void ServiceWorkerCacheStorage::MatchAllCachesDidMatchAll(
+    scoped_ptr<ServiceWorkerCache::ResponseCallback> callback) {
+  if (!callback->is_null()) {
+    callback->Run(ServiceWorkerCache::ErrorTypeNotFound,
+                  scoped_ptr<ServiceWorkerResponse>(),
+                  scoped_ptr<storage::BlobDataHandle>());
+  }
 }
 
 scoped_refptr<ServiceWorkerCache> ServiceWorkerCacheStorage::GetLoadedCache(

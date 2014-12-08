@@ -43,6 +43,8 @@ class ServiceWorkerCacheStorageDispatcher
   void OnCacheStorageDeleteSuccess(int request_id);
   void OnCacheStorageKeysSuccess(int request_id,
                                  const std::vector<base::string16>& keys);
+  void OnCacheStorageMatchSuccess(int request_id,
+                                  const ServiceWorkerResponse& response);
 
   void OnCacheStorageHasError(int request_id,
                               blink::WebServiceWorkerCacheError reason);
@@ -52,6 +54,8 @@ class ServiceWorkerCacheStorageDispatcher
                                  blink::WebServiceWorkerCacheError reason);
   void OnCacheStorageKeysError(int request_id,
                                blink::WebServiceWorkerCacheError reason);
+  void OnCacheStorageMatchError(int request_id,
+                                blink::WebServiceWorkerCacheError reason);
 
   // Message handlers for Cache messages from the browser process.
   void OnCacheMatchSuccess(int request_id,
@@ -82,6 +86,10 @@ class ServiceWorkerCacheStorageDispatcher
   virtual void dispatchDelete(CacheStorageCallbacks* callbacks,
                               const blink::WebString& cacheName);
   virtual void dispatchKeys(CacheStorageKeysCallbacks* callbacks);
+  virtual void dispatchMatch(
+      CacheStorageMatchCallbacks* callbacks,
+      const blink::WebServiceWorkerRequest& request,
+      const blink::WebServiceWorkerCache::QueryParams& query_params);
 
   // These methods are used by WebCache to forward events to the browser
   // process.
@@ -116,6 +124,8 @@ class ServiceWorkerCacheStorageDispatcher
       WithCacheCallbacksMap;
   typedef IDMap<CacheStorageKeysCallbacks, IDMapOwnPointer>
       KeysCallbacksMap;
+  typedef IDMap<CacheStorageMatchCallbacks, IDMapOwnPointer>
+      StorageMatchCallbacksMap;
 
   typedef IDMap<blink::WebServiceWorkerCache::CacheMatchCallbacks,
                 IDMapOwnPointer> MatchCallbacksMap;
@@ -138,6 +148,7 @@ class ServiceWorkerCacheStorageDispatcher
   WithCacheCallbacksMap open_callbacks_;
   CallbacksMap delete_callbacks_;
   KeysCallbacksMap keys_callbacks_;
+  StorageMatchCallbacksMap match_callbacks_;
 
   // The individual caches created under this CacheStorage object.
   IDMap<WebCache, IDMapExternalPointer> web_caches_;

@@ -124,6 +124,7 @@ struct CONTENT_EXPORT ServiceWorkerCacheQueryParams {
   bool ignore_method;
   bool ignore_vary;
   bool prefix_match;
+  base::string16 cache_name;
 };
 
 // The type of a single batch operation in the Cache API.

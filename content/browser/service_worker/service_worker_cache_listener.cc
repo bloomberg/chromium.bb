@@ -95,6 +95,8 @@ bool ServiceWorkerCacheListener::OnMessageReceived(
                         OnCacheStorageDelete)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheStorageKeys,
                         OnCacheStorageKeys)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheStorageMatch,
+                        OnCacheStorageMatch)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheMatch,
                         OnCacheMatch)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_CacheMatchAll,
@@ -159,6 +161,32 @@ void ServiceWorkerCacheListener::OnCacheStorageKeys(int request_id) {
       base::Bind(&ServiceWorkerCacheListener::OnCacheStorageKeysCallback,
                  weak_factory_.GetWeakPtr(),
                  request_id));
+}
+
+void ServiceWorkerCacheListener::OnCacheStorageMatch(
+    int request_id,
+    const ServiceWorkerFetchRequest& request,
+    const ServiceWorkerCacheQueryParams& match_params) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerCacheListener::OnCacheStorageMatch");
+
+  scoped_ptr<ServiceWorkerFetchRequest> scoped_request(
+      new ServiceWorkerFetchRequest(request.url, request.method,
+                                    request.headers, request.referrer,
+                                    request.is_reload));
+
+  if (match_params.cache_name.empty()) {
+    context_->cache_manager()->MatchAllCaches(
+        version_->scope().GetOrigin(), scoped_request.Pass(),
+        base::Bind(&ServiceWorkerCacheListener::OnCacheStorageMatchCallback,
+                   weak_factory_.GetWeakPtr(), request_id));
+    return;
+  }
+  context_->cache_manager()->MatchCache(
+      version_->scope().GetOrigin(), base::UTF16ToUTF8(match_params.cache_name),
+      scoped_request.Pass(),
+      base::Bind(&ServiceWorkerCacheListener::OnCacheStorageMatchCallback,
+                 weak_factory_.GetWeakPtr(), request_id));
 }
 
 void ServiceWorkerCacheListener::OnCacheMatch(
@@ -350,6 +378,23 @@ void ServiceWorkerCacheListener::OnCacheStorageKeysCallback(
     string16s.push_back(base::UTF8ToUTF16(strings[i]));
   }
   Send(ServiceWorkerMsg_CacheStorageKeysSuccess(request_id, string16s));
+}
+
+void ServiceWorkerCacheListener::OnCacheStorageMatchCallback(
+    int request_id,
+    ServiceWorkerCache::ErrorType error,
+    scoped_ptr<ServiceWorkerResponse> response,
+    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+  if (error != ServiceWorkerCache::ErrorTypeOK) {
+    Send(ServiceWorkerMsg_CacheStorageMatchError(
+        request_id, CacheErrorToWebServiceWorkerCacheError(error)));
+    return;
+  }
+
+  if (blob_data_handle)
+    StoreBlobDataHandle(blob_data_handle.Pass());
+
+  Send(ServiceWorkerMsg_CacheStorageMatchSuccess(request_id, *response));
 }
 
 void ServiceWorkerCacheListener::OnCacheMatchCallback(

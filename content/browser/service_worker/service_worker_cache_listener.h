@@ -37,12 +37,14 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
   // The message receiver functions for the CacheStorage API:
   void OnCacheStorageGet(int request_id, const base::string16& cache_name);
   void OnCacheStorageHas(int request_id, const base::string16& cache_name);
-  void OnCacheStorageCreate(int request_id,
-                          const base::string16& cache_name);
+  void OnCacheStorageCreate(int request_id, const base::string16& cache_name);
   void OnCacheStorageOpen(int request_id, const base::string16& cache_name);
   void OnCacheStorageDelete(int request_id,
                            const base::string16& cache_name);
   void OnCacheStorageKeys(int request_id);
+  void OnCacheStorageMatch(int request_id,
+                           const ServiceWorkerFetchRequest& request,
+                           const ServiceWorkerCacheQueryParams& match_params);
 
   // The message receiver functions for the Cache API:
   void OnCacheMatch(int request_id,
@@ -96,6 +98,11 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
       int request_id,
       const std::vector<std::string>& strings,
       ServiceWorkerCacheStorage::CacheStorageError error);
+  void OnCacheStorageMatchCallback(
+      int request_id,
+      ServiceWorkerCache::ErrorType error,
+      scoped_ptr<ServiceWorkerResponse> response,
+      scoped_ptr<storage::BlobDataHandle> blob_data_handle);
 
   // Cache callbacks
   void OnCacheMatchCallback(
