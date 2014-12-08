@@ -18,6 +18,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/common/fileapi/file_system_mount_option.h"
 
 namespace chromeos {
 namespace file_system_provider {
@@ -131,7 +132,8 @@ base::File::Error Service::MountFileSystem(const std::string& extension_id,
 
   if (!mount_points->RegisterFileSystem(mount_point_name,
                                         storage::kFileSystemTypeProvided,
-                                        storage::FileSystemMountOption(),
+                                        storage::FileSystemMountOption(
+                                            storage::COPY_SYNC_OPTION_SYNC),
                                         mount_path)) {
     FOR_EACH_OBSERVER(
         Observer,

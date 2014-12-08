@@ -9,7 +9,14 @@ namespace storage {
 
 // Option for specifying if disk sync operation is wanted after copying.
 enum CopySyncOption {
+  // No syncing is required after an operation is completed.
   COPY_SYNC_OPTION_NO_SYNC,
+
+  // Syncing is required in order to commit written data. Note, that syncing
+  // is only invoked via FileStreamWriter::Flush() and via base::File::Flush()
+  // for native files. Hence, syncing will not be performed for copying within
+  // non-native file systems as well as for non-native copies performed with
+  // snapshots.
   COPY_SYNC_OPTION_SYNC,
 };
 
