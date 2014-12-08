@@ -238,4 +238,12 @@ void KeyboardEvdev::DispatchKey(unsigned int key, bool down) {
       flags)));
 }
 
+// static
+int KeyboardEvdev::NativeCodeToEvdevCode(int native_code) {
+  if (native_code == KeycodeConverter::InvalidNativeKeycode()) {
+    return KEY_RESERVED;
+  }
+  return native_code - kXkbKeycodeOffset;
+}
+
 }  // namespace ui

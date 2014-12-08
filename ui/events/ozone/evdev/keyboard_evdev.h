@@ -30,6 +30,8 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
                 const EventDispatchCallback& callback);
   ~KeyboardEvdev();
 
+  static int NativeCodeToEvdevCode(int native_code);
+
   // Handlers for raw key presses & releases.
   void OnKeyChange(unsigned int code, bool down);
 

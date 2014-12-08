@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom3/dom_code.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/evdev/input_injector_evdev.h"
@@ -76,7 +77,13 @@ void InputInjectorEvdev::MoveCursorTo(const gfx::PointF& location) {
 }
 
 void InputInjectorEvdev::InjectKeyPress(DomCode physical_key, bool down) {
-  NOTIMPLEMENTED();
+  if (physical_key == DomCode::NONE) {
+    return;
+  }
+
+  int native_keycode = KeycodeConverter::DomCodeToNativeKeycode(physical_key);
+  int evdev_code = KeyboardEvdev::NativeCodeToEvdevCode(native_keycode);
+  keyboard_->OnKeyChange(evdev_code, down);
 }
 
 }  // namespace ui
