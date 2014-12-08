@@ -657,14 +657,28 @@ void GpuProcessHost::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage,
     int client_id,
+    int32 surface_id,
     const CreateGpuMemoryBufferCallback& callback) {
   TRACE_EVENT0("gpu", "GpuProcessHost::CreateGpuMemoryBuffer");
 
   DCHECK(CalledOnValidThread());
 
-  if (Send(new GpuMsg_CreateGpuMemoryBuffer(
-               id, size, format, usage, client_id))) {
+  GpuMsg_CreateGpuMemoryBuffer_Params params;
+  params.id = id;
+  params.size = size;
+  params.format = format;
+  params.usage = usage;
+  params.client_id = client_id;
+  params.surface_handle =
+      GpuSurfaceTracker::GetInstance()->GetSurfaceHandle(surface_id).handle;
+  if (Send(new GpuMsg_CreateGpuMemoryBuffer(params))) {
     create_gpu_memory_buffer_requests_.push(callback);
+    create_gpu_memory_buffer_surface_refs_.push(surface_id);
+    if (surface_id) {
+      surface_refs_.insert(std::make_pair(
+          surface_id, GpuSurfaceTracker::GetInstance()->GetSurfaceRefForSurface(
+                          surface_id)));
+    }
   } else {
     callback.Run(gfx::GpuMemoryBufferHandle());
   }
@@ -753,6 +767,13 @@ void GpuProcessHost::OnGpuMemoryBufferCreated(
       create_gpu_memory_buffer_requests_.front();
   create_gpu_memory_buffer_requests_.pop();
   callback.Run(handle);
+
+  int32 surface_id = create_gpu_memory_buffer_surface_refs_.front();
+  create_gpu_memory_buffer_surface_refs_.pop();
+  SurfaceRefMap::iterator it = surface_refs_.find(surface_id);
+  if (it != surface_refs_.end()) {
+    surface_refs_.erase(it);
+  }
 }
 
 void GpuProcessHost::OnDidCreateOffscreenContext(const GURL& url) {

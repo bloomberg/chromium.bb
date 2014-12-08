@@ -50,6 +50,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       gfx::GpuMemoryBuffer::Format format,
       gfx::GpuMemoryBuffer::Usage usage,
       int client_id,
+      int32 surface_id,
       const CreateGpuMemoryBufferCallback& callback) override;
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,

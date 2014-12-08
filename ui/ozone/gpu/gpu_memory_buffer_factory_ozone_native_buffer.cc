@@ -121,10 +121,11 @@ bool GpuMemoryBufferFactoryOzoneNativeBuffer::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage,
-    int client_id) {
+    int client_id,
+    gfx::PluginWindowHandle surface_handle) {
   scoped_refptr<NativePixmap> pixmap =
       SurfaceFactoryOzone::GetInstance()->CreateNativePixmap(
-          gfx::kNullAcceleratedWidget, size, GetOzoneFormatFor(format),
+          surface_handle, size, GetOzoneFormatFor(format),
           GetOzoneUsageFor(usage));
   if (!pixmap.get()) {
     LOG(ERROR) << "Failed to create pixmap " << size.width() << "x"

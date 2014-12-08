@@ -92,7 +92,8 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage,
-    int client_id) {
+    int client_id,
+    gfx::PluginWindowHandle surface_handle) {
   base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
   properties.reset(CFDictionaryCreateMutable(kCFAllocatorDefault,
                                              0,

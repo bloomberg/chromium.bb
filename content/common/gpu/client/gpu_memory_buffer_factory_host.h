@@ -29,6 +29,7 @@ class CONTENT_EXPORT GpuMemoryBufferFactoryHost {
       gfx::GpuMemoryBuffer::Format format,
       gfx::GpuMemoryBuffer::Usage usage,
       int client_id,
+      int32 surface_id,
       const CreateGpuMemoryBufferCallback& callback) = 0;
   virtual void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                       int client_id,

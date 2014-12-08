@@ -20,6 +20,7 @@ class ContextProvider;
 
 namespace content {
 
+class BrowserGpuMemoryBufferManager;
 class GLHelper;
 
 // Provides a surface that manages its own buffers, backed by GpuMemoryBuffers
@@ -30,7 +31,9 @@ class CONTENT_EXPORT BufferQueue {
  public:
   BufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
               unsigned int internalformat,
-              GLHelper* gl_helper);
+              GLHelper* gl_helper,
+              BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager,
+              int surface_id);
   virtual ~BufferQueue();
 
   bool Initialize();
@@ -81,6 +84,8 @@ class CONTENT_EXPORT BufferQueue {
   std::vector<AllocatedSurface> available_surfaces_;  // These are free for use.
   std::deque<AllocatedSurface> in_flight_surfaces_;
   GLHelper* gl_helper_;
+  BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  int surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferQueue);
 };

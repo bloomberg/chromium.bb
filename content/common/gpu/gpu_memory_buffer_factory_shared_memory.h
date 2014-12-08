@@ -31,7 +31,8 @@ class GpuMemoryBufferFactorySharedMemory : public GpuMemoryBufferFactory,
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
       gfx::GpuMemoryBuffer::Usage usage,
-      int client_id) override;
+      int client_id,
+      gfx::PluginWindowHandle surface_handle) override;
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id) override;
   gpu::ImageFactory* AsImageFactory() override;

@@ -35,7 +35,8 @@ GpuMemoryBufferFactorySharedMemory::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage,
-    int client_id) {
+    int client_id,
+    gfx::PluginWindowHandle surface_handle) {
   base::SharedMemory shared_memory;
   if (!shared_memory.CreateAnonymous(
           size.GetArea() * GpuMemoryBufferImpl::BytesPerPixel(format)))

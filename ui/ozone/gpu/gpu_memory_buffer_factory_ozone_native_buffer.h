@@ -11,6 +11,7 @@
 #include "base/synchronization/lock.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/gpu/ozone_gpu_export.h"
 
 namespace gfx {
@@ -33,7 +34,8 @@ class OZONE_GPU_EXPORT GpuMemoryBufferFactoryOzoneNativeBuffer {
                              const gfx::Size& size,
                              gfx::GpuMemoryBuffer::Format format,
                              gfx::GpuMemoryBuffer::Usage usage,
-                             int client_id);
+                             int client_id,
+                             gfx::PluginWindowHandle surface_handle);
 
   // Destroys GPU memory buffer identified by |id|.
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);

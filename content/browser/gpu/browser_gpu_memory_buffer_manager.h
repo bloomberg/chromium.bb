@@ -37,6 +37,11 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   void SetDestructionSyncPoint(gfx::GpuMemoryBuffer* buffer,
                                uint32 sync_point) override;
 
+  // Virtual for testing.
+  virtual scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBufferForScanout(
+      const gfx::Size& size,
+      gfx::GpuMemoryBuffer::Format format,
+      int32 surface_id);
   void AllocateGpuMemoryBufferForChildProcess(
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
@@ -54,6 +59,11 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
  private:
   struct AllocateGpuMemoryBufferRequest;
 
+  scoped_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBufferCommon(
+      const gfx::Size& size,
+      gfx::GpuMemoryBuffer::Format format,
+      gfx::GpuMemoryBuffer::Usage usage,
+      int32 surface_id);
   void AllocateGpuMemoryBufferOnIO(AllocateGpuMemoryBufferRequest* request);
   void GpuMemoryBufferAllocatedOnIO(AllocateGpuMemoryBufferRequest* request,
                                     const gfx::GpuMemoryBufferHandle& handle);

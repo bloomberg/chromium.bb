@@ -265,13 +265,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 #if defined(USE_OZONE)
   if (ui::SurfaceFactoryOzone::GetInstance()->CanShowPrimaryPlaneAsOverlay()) {
     surface.reset(new GpuSurfacelessBrowserCompositorOutputSurface(
-        context_provider,
-        data->surface_id,
-        &output_surface_map_,
+        context_provider, data->surface_id, &output_surface_map_,
         compositor->vsync_manager(),
-        CreateOverlayCandidateValidator(compositor->widget()),
-        GL_RGB,
-        compositor_thread_ != nullptr));
+        CreateOverlayCandidateValidator(compositor->widget()), GL_RGB,
+        compositor_thread_ != nullptr,
+        BrowserGpuMemoryBufferManager::current()));
   }
 #endif
   if (!surface)

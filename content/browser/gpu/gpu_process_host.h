@@ -124,6 +124,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                              gfx::GpuMemoryBuffer::Format format,
                              gfx::GpuMemoryBuffer::Usage usage,
                              int client_id,
+                             int32 surface_id,
                              const CreateGpuMemoryBufferCallback& callback);
 
   // Tells the GPU process to destroy GPU memory buffer.
@@ -203,6 +204,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // The pending create gpu memory buffer requests we need to reply to.
   std::queue<CreateGpuMemoryBufferCallback> create_gpu_memory_buffer_requests_;
+
+  // Surface ids for pending gpu memory buffer request refs.
+  std::queue<int32> create_gpu_memory_buffer_surface_refs_;
 
   // Qeueud messages to send when the process launches.
   std::queue<IPC::Message*> queued_messages_;

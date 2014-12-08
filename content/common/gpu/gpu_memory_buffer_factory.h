@@ -12,6 +12,7 @@
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class GLImage;
@@ -52,7 +53,8 @@ class CONTENT_EXPORT GpuMemoryBufferFactory {
       const gfx::Size& size,
       gfx::GpuMemoryBuffer::Format format,
       gfx::GpuMemoryBuffer::Usage usage,
-      int client_id) = 0;
+      int client_id,
+      gfx::PluginWindowHandle surface_handle) = 0;
 
   // Destroys GPU memory buffer identified by |id|.
   virtual void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,

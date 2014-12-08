@@ -486,6 +486,7 @@ void BrowserGpuChannelHostFactory::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage,
     int client_id,
+    int32 surface_id,
     const CreateGpuMemoryBufferCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -499,14 +500,9 @@ void BrowserGpuChannelHostFactory::CreateGpuMemoryBuffer(
   create_gpu_memory_buffer_requests_[request_id] = callback;
 
   host->CreateGpuMemoryBuffer(
-      id,
-      size,
-      format,
-      usage,
-      client_id,
+      id, size, format, usage, client_id, surface_id,
       base::Bind(&BrowserGpuChannelHostFactory::OnGpuMemoryBufferCreated,
-                 base::Unretained(this),
-                 request_id));
+                 base::Unretained(this), request_id));
 }
 
 void BrowserGpuChannelHostFactory::DestroyGpuMemoryBuffer(

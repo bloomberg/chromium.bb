@@ -59,23 +59,15 @@ class GpuChannelManagerMessageFilter : public IPC::MessageFilter {
  protected:
   ~GpuChannelManagerMessageFilter() override {}
 
-  void OnCreateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                               const gfx::Size& size,
-                               gfx::GpuMemoryBuffer::Format format,
-                               gfx::GpuMemoryBuffer::Usage usage,
-                               int client_id) {
+  void OnCreateGpuMemoryBuffer(
+      const GpuMsg_CreateGpuMemoryBuffer_Params& params) {
     TRACE_EVENT2("gpu",
                  "GpuChannelManagerMessageFilter::OnCreateGpuMemoryBuffer",
-                 "id",
-                 id,
-                 "client_id",
-                 client_id);
+                 "id", params.id, "client_id", params.client_id);
     sender_->Send(new GpuHostMsg_GpuMemoryBufferCreated(
-        gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(id,
-                                                          size,
-                                                          format,
-                                                          usage,
-                                                          client_id)));
+        gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
+            params.id, params.size, params.format, params.usage,
+            params.client_id, params.surface_handle)));
   }
 
   IPC::Sender* sender_;

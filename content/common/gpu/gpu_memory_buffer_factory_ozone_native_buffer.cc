@@ -56,9 +56,10 @@ GpuMemoryBufferFactoryOzoneNativeBuffer::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage,
-    int client_id) {
+    int client_id,
+    gfx::PluginWindowHandle surface_handle) {
   if (!ozone_native_buffer_factory_.CreateGpuMemoryBuffer(
-          id, size, format, usage, client_id)) {
+          id, size, format, usage, client_id, surface_handle)) {
     return gfx::GpuMemoryBufferHandle();
   }
   gfx::GpuMemoryBufferHandle handle;

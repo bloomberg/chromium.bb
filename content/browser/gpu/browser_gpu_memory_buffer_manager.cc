@@ -29,18 +29,21 @@ struct BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferRequest {
   AllocateGpuMemoryBufferRequest(const gfx::Size& size,
                                  gfx::GpuMemoryBuffer::Format format,
                                  gfx::GpuMemoryBuffer::Usage usage,
-                                 int client_id)
+                                 int client_id,
+                                 int surface_id)
       : event(true, false),
         size(size),
         format(format),
         usage(usage),
-        client_id(client_id) {}
+        client_id(client_id),
+        surface_id(surface_id) {}
   ~AllocateGpuMemoryBufferRequest() {}
   base::WaitableEvent event;
   gfx::Size size;
   gfx::GpuMemoryBuffer::Format format;
   gfx::GpuMemoryBuffer::Usage usage;
   int client_id;
+  int surface_id;
   scoped_ptr<gfx::GpuMemoryBuffer> result;
 };
 
@@ -68,6 +71,25 @@ BrowserGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage) {
+  return AllocateGpuMemoryBufferCommon(size, format, usage, 0);
+}
+
+scoped_ptr<gfx::GpuMemoryBuffer>
+BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForScanout(
+    const gfx::Size& size,
+    gfx::GpuMemoryBuffer::Format format,
+    int32 surface_id) {
+  DCHECK_GT(surface_id, 0);
+  return AllocateGpuMemoryBufferCommon(
+      size, format, gfx::GpuMemoryBuffer::SCANOUT, surface_id);
+}
+
+scoped_ptr<gfx::GpuMemoryBuffer>
+BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferCommon(
+    const gfx::Size& size,
+    gfx::GpuMemoryBuffer::Format format,
+    gfx::GpuMemoryBuffer::Usage usage,
+    int32 surface_id) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Fallback to shared memory buffer if |format| and |usage| are not supported
@@ -80,7 +102,8 @@ BrowserGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
         g_next_gpu_memory_buffer_id.GetNext(), size, format);
   }
 
-  AllocateGpuMemoryBufferRequest request(size, format, usage, gpu_client_id_);
+  AllocateGpuMemoryBufferRequest request(size, format, usage, gpu_client_id_,
+                                         surface_id);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -134,16 +157,10 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
   buffers[new_id] = gfx::EMPTY_BUFFER;
 
   gpu_memory_buffer_factory_host_->CreateGpuMemoryBuffer(
-      new_id,
-      size,
-      format,
-      usage,
-      child_client_id,
+      new_id, size, format, usage, child_client_id, 0,
       base::Bind(&BrowserGpuMemoryBufferManager::
                      GpuMemoryBufferAllocatedForChildProcess,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 child_client_id,
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), child_client_id, callback));
 }
 
 gfx::GpuMemoryBuffer*
@@ -226,14 +243,10 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferOnIO(
   // Note: Unretained is safe as this is only used for synchronous allocation
   // from a non-IO thread.
   gpu_memory_buffer_factory_host_->CreateGpuMemoryBuffer(
-      g_next_gpu_memory_buffer_id.GetNext(),
-      request->size,
-      request->format,
-      request->usage,
-      request->client_id,
+      g_next_gpu_memory_buffer_id.GetNext(), request->size, request->format,
+      request->usage, request->client_id, request->surface_id,
       base::Bind(&BrowserGpuMemoryBufferManager::GpuMemoryBufferAllocatedOnIO,
-                 base::Unretained(this),
-                 base::Unretained(request)));
+                 base::Unretained(this), base::Unretained(request)));
 }
 
 void BrowserGpuMemoryBufferManager::GpuMemoryBufferAllocatedOnIO(

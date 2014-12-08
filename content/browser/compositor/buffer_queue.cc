@@ -5,23 +5,31 @@
 #include "content/browser/compositor/buffer_queue.h"
 
 #include "content/browser/compositor/image_transport_factory.h"
+#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/service/image_factory.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace content {
 
-BufferQueue::BufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
-                         unsigned int internalformat,
-                         GLHelper* gl_helper)
+BufferQueue::BufferQueue(
+    scoped_refptr<cc::ContextProvider> context_provider,
+    unsigned int internalformat,
+    GLHelper* gl_helper,
+    BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager,
+    int surface_id)
     : context_provider_(context_provider),
       fbo_(0),
       allocated_count_(0),
       internalformat_(internalformat),
-      gl_helper_(gl_helper) {
+      gl_helper_(gl_helper),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+      surface_id_(surface_id) {
 }
 
 BufferQueue::~BufferQueue() {
@@ -157,11 +165,15 @@ BufferQueue::AllocatedSurface BufferQueue::GetNextSurface() {
   // We don't want to allow anything more than triple buffering.
   DCHECK_LT(allocated_count_, 4U);
 
-  unsigned int id =
-      gl->CreateGpuMemoryBufferImageCHROMIUM(size_.width(),
-                                             size_.height(),
-                                             internalformat_,
-                                             GL_SCANOUT_CHROMIUM);
+  scoped_ptr<gfx::GpuMemoryBuffer> buffer(
+      gpu_memory_buffer_manager_->AllocateGpuMemoryBufferForScanout(
+          size_, gpu::ImageFactory::ImageFormatToGpuMemoryBufferFormat(
+                     internalformat_),
+          surface_id_));
+
+  unsigned int id = gl->CreateImageCHROMIUM(
+      buffer->AsClientBuffer(), size_.width(), size_.height(), internalformat_);
+
   if (!id) {
     LOG(ERROR) << "Failed to allocate backing image surface";
     gl->DeleteTextures(1, &texture);
