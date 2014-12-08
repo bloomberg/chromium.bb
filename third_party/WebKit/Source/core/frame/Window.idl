@@ -133,7 +133,7 @@
     MediaQueryList matchMedia(DOMString query);
 
     // styleMedia has been removed from the CSSOM View specification.
-    readonly attribute StyleMedia styleMedia;
+    [MeasureAs=StyleMedia] readonly attribute StyleMedia styleMedia;
 
     // DOM Level 2 Style Interface
     [TypeChecking=Interface] CSSStyleDeclaration getComputedStyle(Element element, optional DOMString? pseudoElt = null);
