@@ -120,6 +120,10 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
   // Must be called on |dbus_thread_|.
   void ConnectToNetwork(const std::string& guid, std::string* error);
 
+  // Initiates disconnection from the specified network.
+  // Must be called on |dbus_thread_|
+  void DisconnectFromNetwork(const std::string& guid, std::string* error);
+
   // Checks whether the current thread is the DBus thread. If not, DCHECK will
   // fail.
   void AssertOnDBusThread();

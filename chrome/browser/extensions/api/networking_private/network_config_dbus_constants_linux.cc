@@ -24,6 +24,7 @@ const char kNetworkManagerSpecificObject[] = "SpecificObject";
 const char kNetworkManagerDeviceType[] = "DeviceType";
 const char kNetworkManagerGetDevicesMethod[] = "GetDevices";
 const char kNetworkManagerGetAccessPointsMethod[] = "GetAccessPoints";
+const char kNetworkManagerDisconnectMethod[] = "Disconnect";
 const char kNetworkManagerAddAndActivateConnectionMethod[] =
     "AddAndActivateConnection";
 const char kNetworkManagerGetMethod[] = "Get";

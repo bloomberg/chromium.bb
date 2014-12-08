@@ -21,6 +21,7 @@ extern const char kNetworkManagerSpecificObject[];
 extern const char kNetworkManagerDeviceType[];
 extern const char kNetworkManagerGetDevicesMethod[];
 extern const char kNetworkManagerGetAccessPointsMethod[];
+extern const char kNetworkManagerDisconnectMethod[];
 extern const char kNetworkManagerAddAndActivateConnectionMethod[];
 extern const char kNetworkManagerGetMethod[];
 extern const char kNetworkManagerSsidProperty[];
