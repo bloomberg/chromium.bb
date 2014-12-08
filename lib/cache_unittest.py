@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright 2015 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,20 +6,14 @@
 
 from __future__ import print_function
 
+import mock
 import os
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
 
 from chromite.lib import gs
 from chromite.lib import cros_test_lib
 from chromite.lib import cache
 from chromite.lib import osutils
 from chromite.lib import retry_util
-
-# TODO(build): Finish test wrapper (http://crosbug.com/37517).
-# Until then, this has to be after the chromite imports.
-import mock
 
 
 class CacheReferenceTest(cros_test_lib.TestCase):
@@ -256,7 +249,3 @@ class TarballCacheTest(CacheTestCase):
   testAssign = CacheTestCase._testAssign
   testAssignData = CacheTestCase._testAssignData
   testRemove = CacheTestCase._testRemove
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

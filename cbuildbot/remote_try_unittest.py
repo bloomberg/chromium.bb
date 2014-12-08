@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,12 +8,10 @@ from __future__ import print_function
 
 import json
 import os
-import sys
 import shutil
 import time
 
-import constants
-sys.path.insert(0, constants.SOURCE_ROOT)
+from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
@@ -187,7 +184,3 @@ class RemoteTryTests(cros_test_lib.MockTempDirTestCase):
 
     job = self._CreateJob(mirror=False)
     self.assertEqual(job.repo_url, remote_try.RemoteTryJob.EXTERNAL_URL)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

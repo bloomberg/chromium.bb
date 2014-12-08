@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,10 +7,10 @@
 from __future__ import print_function
 
 import argparse
+import mock
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
@@ -22,7 +21,6 @@ from chromite.cbuildbot.stages import build_stages_unittest
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
-from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -31,10 +29,6 @@ from chromite.lib import partial_mock
 
 from chromite.cbuildbot.stages.generic_stages_unittest import patch
 from chromite.cbuildbot.stages.generic_stages_unittest import patches
-
-# TODO(build): Finish test wrapper (http://crosbug.com/37517).
-# Until then, this has to be after the chromite imports.
-import mock
 
 
 DEFAULT_CHROME_BRANCH = '27'
@@ -593,7 +587,3 @@ class ArchivingStageTest(generic_stages_unittest.AbstractStageTest):
         self._run, self._current_board)
     return artifact_stages.ArchivingStage(
         self._run, self._current_board, archive_stage)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

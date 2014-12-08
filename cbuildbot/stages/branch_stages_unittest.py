@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,9 +7,7 @@
 from __future__ import print_function
 
 import os
-import sys
 
-sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import manifest_version_unittest
@@ -338,7 +335,3 @@ class BranchUtilStageTest(generic_stages_unittest.AbstractStageTest,
                      side_effect=FetchAndCheckoutTo, autospec=True)
     self.assertRaises(cros_build_lib.RunCommandError,
                       self._SimulateIncrementFailure)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

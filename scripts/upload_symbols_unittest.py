@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -11,6 +10,7 @@ import BaseHTTPServer
 import ctypes
 import errno
 import logging
+import mock
 import multiprocessing
 import os
 import signal
@@ -27,8 +27,6 @@ import urllib2
 # on the fly :(.
 os.environ.pop('http_proxy', None)
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                '..', '..'))
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -38,10 +36,7 @@ from chromite.lib import remote_access
 from chromite.scripts import cros_generate_breakpad_symbols
 from chromite.scripts import upload_symbols
 
-# TODO(build): Finish test wrapper (http://crosbug.com/37517).
-# Until then, this has to be after the chromite imports.
 import isolateserver
-import mock
 
 
 class SymbolServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -527,7 +522,7 @@ class UtilTest(cros_test_lib.TempDirTestCase):
     self.assertEquals(exp_list, got_list)
 
 
-if __name__ == '__main__':
+def main(_argv):
   # pylint: disable=W0212
   # Set timeouts small so that if the unit test hangs, it won't hang for long.
   parallel._BackgroundTask.STARTUP_TIMEOUT = 5
@@ -537,4 +532,4 @@ if __name__ == '__main__':
   upload_symbols.INITIAL_RETRY_DELAY = 0
 
   # Run the tests.
-  cros_test_lib.main(level=logging.INFO)
+  cros_test_lib.main(level=logging.INFO, module=__name__)

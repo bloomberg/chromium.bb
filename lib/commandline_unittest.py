@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -11,8 +10,6 @@ import cPickle
 import signal
 import os
 import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib_unittest
@@ -360,7 +357,3 @@ class ScriptWrapperMainTest(cros_test_lib.MockTestCase):
     ret = lambda x: ScriptWrapperMainTest._DummyChrootTargetArgs
     commandline.ScriptWrapperMain(ret)
     rc.assertCommandContains(self.DUMMY_CHROOT_TARGET_ARGS, enter_chroot=True)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

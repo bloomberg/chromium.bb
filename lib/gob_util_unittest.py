@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,16 +7,11 @@
 from __future__ import print_function
 
 import httplib
-import os
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
+import mock
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import gob_util
-
-import mock
 
 
 class FakeHTTPResponse(object):
@@ -97,6 +91,6 @@ class NetworkGobTest(cros_test_lib.TestCase):
     self.assertEqual(ex.exception.http_status, 404)
 
 
-if __name__ == '__main__':
+def main(_argv):
   gob_util.TRY_LIMIT = 1
-  cros_test_lib.main()
+  cros_test_lib.main(module=__name__)

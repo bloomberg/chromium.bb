@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,12 +8,10 @@ from __future__ import print_function
 
 import ctypes
 import logging
+import mock
 import os
 import StringIO
-import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                '..', '..'))
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -22,10 +19,6 @@ from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.scripts import cros_generate_breakpad_symbols
-
-# TODO(build): Finish test wrapper (http://crosbug.com/37517).
-# Until then, this has to be after the chromite imports.
-import mock
 
 
 class FindDebugDirMock(partial_mock.PartialMock):
@@ -381,11 +374,11 @@ class UtilsTest(cros_test_lib.TestCase):
     self.assertEquals(expected, result)
 
 
-if __name__ == '__main__':
+def main(_argv):
   # pylint: disable=W0212
   # Set timeouts small so that if the unit test hangs, it won't hang for long.
   parallel._BackgroundTask.STARTUP_TIMEOUT = 5
   parallel._BackgroundTask.EXIT_TIMEOUT = 5
 
   # Run the tests.
-  cros_test_lib.main(level=logging.INFO)
+  cros_test_lib.main(level=logging.INFO, module=__name__)

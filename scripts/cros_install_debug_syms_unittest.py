@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,10 +8,6 @@ from __future__ import print_function
 
 from collections import namedtuple
 import os
-import sys
-
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                '..', '..'))
 
 from chromite.lib import cros_test_lib
 from chromite.scripts import cros_install_debug_syms
@@ -82,7 +77,3 @@ class InstallDebugSymsTest(cros_test_lib.MockTestCase):
                          '/paladin1234/shill-0-r1.debug.tbz2')
     self.assertEquals(cros_install_debug_syms.ListBinhost(binhost),
                       {'chromeos-base/shill-0-r1': debug_symbols_url})
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

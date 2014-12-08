@@ -10,11 +10,7 @@ import constants
 import getpass
 import json
 import os
-import sys
 import time
-
-if __name__ == '__main__':
-  sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import manifest_version

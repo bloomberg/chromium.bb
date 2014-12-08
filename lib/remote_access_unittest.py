@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,17 +6,14 @@
 
 from __future__ import print_function
 
-import os
 import re
-import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                '..', '..'))
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import partial_mock
 from chromite.lib import remote_access
+
 
 # pylint: disable=W0212
 
@@ -153,7 +149,3 @@ class CheckIfRebootedTest(RemoteAccessTest):
     """Test case of bad error code returned."""
     self.MockCheckReboot(2)
     self.assertRaises(Exception, self.host._CheckIfRebooted)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

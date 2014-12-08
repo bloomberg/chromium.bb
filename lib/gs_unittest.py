@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -10,11 +9,9 @@ from __future__ import print_function
 import contextlib
 import functools
 import datetime
+import mock
 import os
 import string
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
@@ -24,10 +21,6 @@ from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import retry_stats
-
-# TODO(build): Finish test wrapper (http://crosbug.com/37517).
-# Until then, this has to be after the chromite imports.
-import mock
 
 
 def PatchGS(*args, **kwargs):
@@ -1551,7 +1544,3 @@ class UnmockedGSCounterTest(cros_test_lib.TestCase):
     with self._Counter() as counter:
       self._SetCounter(counter, 100)
       self.assertEqual(counter.StreakDecrement(), -1)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

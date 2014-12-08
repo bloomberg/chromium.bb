@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -10,6 +9,7 @@ from __future__ import print_function
 import contextlib
 import cPickle
 import logging
+import mock
 import multiprocessing
 import os
 import signal
@@ -25,7 +25,6 @@ except ImportError:
   # pylint: disable=F0401
   import queue as Queue
 
-sys.path.insert(0, os.path.abspath('%s/../../..' % __file__))
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -33,9 +32,6 @@ from chromite.lib import parallel
 from chromite.lib import partial_mock
 from chromite.lib import timeout_util
 
-# TODO(build): Finish test wrapper (http://crosbug.com/37517).
-# Until then, this has to be after the chromite imports.
-import mock
 
 
 # pylint: disable=protected-access
@@ -493,6 +489,5 @@ class TestConstants(cros_test_lib.TestCase):
         'program has not hung.')
 
 
-if __name__ == '__main__':
-  # Run the tests.
-  cros_test_lib.main(level=logging.INFO)
+def main(_argv):
+  cros_test_lib.main(level=logging.INFO, module=__name__)

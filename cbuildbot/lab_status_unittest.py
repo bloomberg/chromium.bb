@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,13 +6,10 @@
 
 from __future__ import print_function
 
-import constants
-from mock import Mock
-import sys
+import mock
 import time
 import urllib
 
-sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.cbuildbot import lab_status
 from chromite.lib import cros_test_lib
 
@@ -27,7 +23,7 @@ class TestLabStatus(cros_test_lib.MockTestCase):
 
   def _LabStatusFile(self, message, general_state):
     """Returns a file-like object with the status message written in it."""
-    my_response = Mock()
+    my_response = mock.Mock()
     my_response.json = '{"message": "%s", "general_state": "%s"}' % (
         message, general_state)
     return my_response
@@ -116,7 +112,3 @@ class TestLabStatus(cros_test_lib.MockTestCase):
     self.assertRaises(lab_status.BoardIsDisabledException,
                       lab_status.CheckLabStatus,
                       'stumpy')
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

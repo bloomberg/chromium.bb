@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,18 +6,14 @@
 
 from __future__ import print_function
 
-import logging
-import os
-import sys
+import mock
 
-sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import archive_lib
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import cbuildbot_run
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel_unittest
 
-import mock
 
 DEFAULT_ARCHIVE_PREFIX = 'bogus_bucket/TheArchiveBase'
 DEFAULT_ARCHIVE_BASE = 'gs://%s' % DEFAULT_ARCHIVE_PREFIX
@@ -220,9 +215,3 @@ class ArchiveTest(cros_test_lib.TestCase):
                        DEFAULT_BOT_NAME,
                        self._VERSION))
     self.assertEqual(expected_value, value)
-
-
-
-
-if __name__ == '__main__':
-  cros_test_lib.main(level=logging.DEBUG)

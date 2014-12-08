@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,11 +8,11 @@ from __future__ import print_function
 
 import contextlib
 import copy
+import mock
 import os
 import sys
 import unittest
 
-sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import cbuildbot_config as config
@@ -30,10 +29,6 @@ from chromite.lib import parallel
 from chromite.lib import partial_mock
 from chromite.lib import portage_util
 from chromite.scripts import cbuildbot
-
-# TODO(build): Finish test wrapper (http://crosbug.com/37517).
-# Until then, this has to be after the chromite imports.
-import mock
 
 
 DEFAULT_BUILD_NUMBER = 1234321
@@ -495,7 +490,3 @@ class ArchivingStageMixinMock(partial_mock.PartialMock):
     with patch(commands, 'ArchiveFile', return_value='foo.txt'):
       with patch(commands, 'UploadArchivedFile'):
         self.backup['UploadArtifact'](*args, **kwargs)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

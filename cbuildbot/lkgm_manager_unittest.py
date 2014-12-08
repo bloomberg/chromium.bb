@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,27 +7,20 @@
 from __future__ import print_function
 
 import contextlib
+import mock
 import mox
 import os
 import random
-import sys
 import tempfile
 from xml.dom import minidom
 
-if __name__ == '__main__':
-  import constants
-  sys.path.insert(0, constants.SOURCE_ROOT)
-
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
-
-# TODO(build): Finish test wrapper (http://crosbug.com/37517).
-# Until then, this has to be after the chromite imports.
-import mock
 
 
 FAKE_VERSION_STRING = '1.2.4-rc3'
@@ -675,7 +667,3 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
         os.remove(fake_manifest)
       if fake_new_manifest:
         os.remove(fake_new_manifest)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

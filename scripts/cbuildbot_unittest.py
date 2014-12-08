@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -6,12 +5,6 @@
 """Unit tests for the cbuildbot program"""
 
 from __future__ import print_function
-
-import os
-import sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_test_lib
@@ -63,7 +56,3 @@ class IsDistributedBuilderTest(cros_test_lib.TestCase):
                        constants.CHROME_REV_LOCAL,
                        constants.CHROME_REV_SPEC):
       _TestConfig(False)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

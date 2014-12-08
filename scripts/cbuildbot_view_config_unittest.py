@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,10 +8,6 @@ from __future__ import print_function
 
 import json
 import os
-import sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_test_lib
@@ -103,7 +98,3 @@ class JsonCompareTest(cros_test_lib.TempDirTestCase,
 
     finally:
       config[self.TARGET]['name'] = orig_name
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,11 +8,9 @@ from __future__ import print_function
 
 import datetime
 import itertools
-import os
+import mock
 import random
-import sys
 
-sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
 from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -21,8 +18,6 @@ from chromite.lib import fake_cidb
 from chromite.scripts import gather_builder_stats
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import constants
-
-import mock
 
 
 REASON_BAD_CL = gather_builder_stats.CLStats.REASON_BAD_CL
@@ -265,7 +260,3 @@ class TestCLActionLogic(cros_test_lib.TestCase):
                 't/4321']
     self.assertEqual(gather_builder_stats.CLStats.ProcessBlameString(blame),
                      expected)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

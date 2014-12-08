@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -13,12 +12,9 @@ import mox
 import os
 import re
 import shutil
-import sys
 import tempfile
 import unittest
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                '..', '..'))
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -3631,7 +3627,3 @@ class MainTest(CpuTestBase):
                            '--to-csv=/dev/null', 'any-package'],
                           expect_zero=True)
     self.mox.VerifyAll()
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

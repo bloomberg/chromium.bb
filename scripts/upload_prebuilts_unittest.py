@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,22 +7,18 @@
 from __future__ import print_function
 
 import copy
+import mock
 import mox
 import os
 import multiprocessing
-import sys
 import tempfile
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                '..', '..'))
 from chromite.scripts import upload_prebuilts as prebuilt
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import binpkg
 from chromite.lib import osutils
 from chromite.lib import portage_util
-
-import mock
 
 
 # pylint: disable=E1120,W0212,R0904
@@ -526,7 +521,3 @@ class TestSdk(cros_test_lib.MockTestCase):
     )
     tc_upload_path = '1994/04/%(target)s-1994.04.02.tar.xz'
     self.testSdkUpload(tc_tarballs, tc_upload_path)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

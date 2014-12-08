@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,10 +7,6 @@
 from __future__ import print_function
 
 import collections
-import os
-import sys
-
-sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 
 from chromite.lib import cros_test_lib
 import lint
@@ -336,7 +331,3 @@ class DocStringCheckerTest(cros_test_lib.TestCase):
       node = TestNode(doc=dc, args=args)
       self.checker._check_all_args_in_doc(node, node.lines)
       self.assertEqual(len(self.results), 1)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

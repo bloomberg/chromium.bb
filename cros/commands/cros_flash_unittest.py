@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,9 +8,7 @@ from __future__ import print_function
 
 import mock
 import os
-import sys
 
-sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cros.commands import cros_flash
 from chromite.cros.commands import init_unittest
 from chromite.lib import cros_build_lib
@@ -282,7 +279,3 @@ class ImagingRunThroughTest(cros_test_lib.MockTempDirTestCase,
     self.SetupCommandMock(['usb://', self.IMAGE])
     self.cmd_mock.inst.Run()
     self.assertTrue(self.imager_mock.patched['ChooseRemovableDevice'].called)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

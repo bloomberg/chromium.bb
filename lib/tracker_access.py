@@ -164,6 +164,3 @@ def main():
   else:
     command_name = sys.argv[1]
     commands[command_name](*sys.argv[2:])
-
-if __name__ == "__main__":
-  main()

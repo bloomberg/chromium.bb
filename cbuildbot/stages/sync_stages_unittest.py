@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -11,12 +10,11 @@ import ConfigParser
 import cPickle
 import datetime
 import itertools
+import mock
 import os
-import sys
 import time
 import tempfile
 
-sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import lkgm_manager
@@ -29,7 +27,6 @@ from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib_unittest
-from chromite.lib import cros_test_lib
 from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import fake_cidb
@@ -39,10 +36,6 @@ from chromite.lib import gob_util
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
-
-# TODO(build): Finish test wrapper (http://crosbug.com/37517).
-# Until then, this has to be after the chromite imports.
-import mock
 
 
 class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
@@ -843,7 +836,3 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     requeued_actions = [a for a in actions_for_patch
                         if a.action == constants.CL_ACTION_REQUEUED]
     self.assertEqual(1, len(requeued_actions))
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

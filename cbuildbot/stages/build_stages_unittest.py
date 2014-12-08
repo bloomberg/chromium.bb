@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,9 +8,7 @@ from __future__ import print_function
 
 import contextlib
 import os
-import sys
 
-sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import cbuildbot_config as config
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
@@ -337,7 +334,3 @@ class BuildImageStageTest(BuildPackagesStageTest):
     # TODO: This test is broken atm with tag=None.
     steps = [lambda tag=x: task(tag) for x in (release_tag,)]
     parallel.RunParallelSteps(steps)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

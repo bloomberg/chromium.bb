@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,19 +6,13 @@
 
 from __future__ import print_function
 
+import mock
 import os
-import sys
 
-import constants
-sys.path.insert(0, constants.SOURCE_ROOT)
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import prebuilts
 from chromite.lib import cros_build_lib_unittest
-from chromite.lib import cros_test_lib
 from chromite.lib import osutils
-
-# TODO(build): Finish test wrapper (http://crosbug.com/37517).
-# Until then, this has to be after the chromite imports.
-import mock
 
 
 # pylint: disable=W0212
@@ -111,7 +104,3 @@ ca-t3/pk-g4-4.0.1-r333
     """Test that we raise an exception when the installer file is missing."""
     self.assertRaises(prebuilts.PackageFileMissing,
                       self.testDevInstallerPrebuilts, packages=())
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

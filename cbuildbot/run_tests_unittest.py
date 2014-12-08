@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,16 +6,12 @@
 
 from __future__ import print_function
 
+import mock
 import os
-import sys
-
-sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
 
 from chromite.cbuildbot import run_tests
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
-
-import mock
 
 
 class RunTestsTest(cros_test_lib.MockTestCase):
@@ -33,27 +28,27 @@ class FindTestsTest(cros_test_lib.TempDirTestCase):
   """Tests for the FindTests() func"""
 
   def testNames(self):
-    """We only look for *_unittest.py."""
-    for f in ('foo', 'foo_unittests.py', 'bar_unittest.py', 'cow_unittest.py'):
+    """We only look for *_unittest."""
+    for f in ('foo', 'foo_unittests', 'bar_unittest', 'cow_unittest'):
       osutils.Touch(os.path.join(self.tempdir, f))
     found = run_tests.FindTests(search_paths=(self.tempdir,))
-    self.assertEqual(sorted(found), ['./bar_unittest.py', './cow_unittest.py'])
+    self.assertEqual(sorted(found), ['./bar_unittest', './cow_unittest'])
 
   def testSubdirs(self):
     """We should recurse into subdirs."""
-    for f in ('bar_unittest.py', 'somw/dir/a/cow_unittest.py'):
+    for f in ('bar_unittest', 'somw/dir/a/cow_unittest'):
       osutils.Touch(os.path.join(self.tempdir, f), makedirs=True)
     found = run_tests.FindTests(search_paths=(self.tempdir,))
     self.assertEqual(sorted(found),
-                     ['./bar_unittest.py', 'somw/dir/a/cow_unittest.py'])
+                     ['./bar_unittest', 'somw/dir/a/cow_unittest'])
 
   def testIgnores(self):
     """Verify we skip ignored dirs."""
-    for f in ('foo', 'bar_unittest.py'):
+    for f in ('foo', 'bar_unittest'):
       osutils.Touch(os.path.join(self.tempdir, f))
     # Make sure it works first.
     found = run_tests.FindTests(search_paths=(self.tempdir,))
-    self.assertEqual(sorted(found), ['./bar_unittest.py'])
+    self.assertEqual(sorted(found), ['./bar_unittest'])
     # Mark the dir ignored.
     osutils.Touch(os.path.join(self.tempdir, '.testignore'))
     # Make sure we ignore it.
@@ -108,7 +103,7 @@ class MainTest(cros_test_lib.MockOutputTestCase):
     """Verify --quick filters out slow tests"""
     self.PatchObject(run_tests, 'RunTests', return_value=True)
     # Pick a test that is in SLOW_TESTS but not in SPECIAL_TESTS.
-    slow_test = 'lib/patch_unittest.py'
+    slow_test = 'lib/patch_unittest'
     self.assertIn(slow_test, run_tests.SLOW_TESTS)
     self.assertNotIn(slow_test, run_tests.SPECIAL_TESTS)
     run_tests.main(['--quick'])
@@ -117,12 +112,7 @@ class MainTest(cros_test_lib.MockOutputTestCase):
   def testSpecificTests(self):
     """Verify user specified tests are run."""
     m = self.PatchObject(run_tests, 'RunTests', return_value=True)
-    tests = ['./some/foo_unittest.py', './bar_unittest.py']
+    tests = ['./some/foo_unittest', './bar_unittest']
     run_tests.main(tests)
     m.assert_called_with(tests, jobs=mock.ANY, chroot_available=mock.ANY,
                          network=mock.ANY, dryrun=mock.ANY)
-
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

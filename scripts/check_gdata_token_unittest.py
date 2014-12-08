@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -19,8 +18,6 @@ import gdata.service
 from gdata.projecthosting import client as gdata_ph_client
 from gdata.spreadsheet import service as gdata_ss_service
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
 from chromite.lib import cros_build_lib as build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gdata_lib
@@ -533,7 +530,3 @@ class InsideChrootTest(cros_test_lib.MoxOutputTestCase):
       result = cgt.InsideChroot._ValidateDocsToken(mocked_insidechroot)
       self.assertFalse(result, '_ValidateDocsToken should have failed')
     self.mox.VerifyAll()
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2011-2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -13,17 +12,15 @@ import copy
 import functools
 import httplib
 import itertools
+import mock
 import mox
 import os
 import pickle
 import random
-import sys
 import tempfile
 import time
 
-import constants
-sys.path.insert(0, constants.SOURCE_ROOT)
-
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import tree_status
@@ -41,8 +38,6 @@ from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
-
-import mock
 
 
 _GetNumber = iter(itertools.count()).next
@@ -1810,7 +1805,3 @@ class LoadManifestTest(cros_test_lib.TempDirTestCase):
     self.assertEqual(self.pool.changes[0].fail_count, 2)
     self.assertEqual(self.pool.changes[0].pass_count, 0)
     self.assertEqual(self.pool.changes[0].total_fail_count, 3)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

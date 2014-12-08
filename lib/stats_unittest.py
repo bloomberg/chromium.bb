@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,12 +7,9 @@
 from __future__ import print_function
 
 import logging
-import os
-import sys
 import time
 import urllib2
 
-sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
@@ -230,5 +226,5 @@ class UploadContextTest(cros_test_lib.MockLoggingTestCase):
       self.assertRaises(e, RaiseContext, e)
 
 
-if __name__ == '__main__':
-  cros_test_lib.main(level=logging.DEBUG)
+def main(_argv):
+  cros_test_lib.main(level=logging.DEBUG, module=__name__)

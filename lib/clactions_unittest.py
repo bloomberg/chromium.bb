@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,11 +8,6 @@ from __future__ import print_function
 
 import datetime
 import itertools
-import os
-import sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import metadata_lib
@@ -451,7 +445,3 @@ class TestCLStatusCounter(cros_test_lib.TestCase):
             c1p2, validation_pool.CQ_PIPELINE_CONFIGS,
             constants.CL_ACTION_KICKED_OUT, action_history,
             latest_patchset_only=False))
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

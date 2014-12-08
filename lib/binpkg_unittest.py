@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,10 +7,6 @@
 from __future__ import print_function
 
 import os
-import sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
 
 from chromite.lib import binpkg
 from chromite.lib import cros_test_lib
@@ -67,7 +62,3 @@ class DebugSymbolsTest(cros_test_lib.TempDirTestCase):
     self.assertEquals(index.packages[0]['CPV'], 'chromeos-base/shill-0.0.1-r1')
     self.assertEquals(index.packages[0].get('DEBUG_SYMBOLS'), 'yes')
     self.assertFalse('DEBUG_SYMBOLS' in index.packages[1])
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

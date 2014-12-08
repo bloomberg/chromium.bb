@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,18 +8,12 @@ from __future__ import print_function
 
 import getpass
 import mox
-import os
 import re
-import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__))), 'third_party', 'gdata', 'src'))
 import atom.service
 import gdata.projecthosting.client as gd_ph_client
 import gdata.spreadsheet.service
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
 from chromite.lib import cros_test_lib
 from chromite.lib import gdata_lib
 from chromite.lib import osutils
@@ -1113,7 +1106,3 @@ class RetrySpreadsheetsServiceTest(cros_test_lib.MoxOutputTestCase):
   def testRetryRequest403x5(self):
     # This one should exhaust the retries.
     self._TestRetryRequest([403, 403, 403, 403, 403])
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

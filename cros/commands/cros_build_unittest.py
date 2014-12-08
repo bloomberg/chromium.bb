@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,20 +6,14 @@
 
 from __future__ import print_function
 
-import os
-import sys
+import mock
 
-sys.path.insert(0, os.path.abspath('%s/../../../..' % __file__))
 from chromite.cros.commands import cros_build
 from chromite.cros.commands import init_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
-
-# TODO(build): Finish test wrapper (http://crosbug.com/37517).
-# Until then, this has to be after the chromite imports.
-import mock
 
 
 class MockBuildCommand(init_unittest.MockCommand):
@@ -66,7 +59,3 @@ class BuildCommandTest(cros_test_lib.TestCase):
     """Test GetToolchainPackages function without mocking."""
     packages = cros_build.GetToolchainPackages()
     self.assertTrue(packages)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,13 +8,10 @@ from __future__ import print_function
 
 import copy
 import itertools
+import mock
 import os
 import shutil
-import sys
 import time
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
@@ -26,7 +22,6 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 
-import mock
 
 _GetNumber = iter(itertools.count()).next
 
@@ -926,7 +921,3 @@ class MockPatchBase(cros_test_lib.MockTestCase):
     if how_many == 1 and not always_use_list:
       return patches[0]
     return patches
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

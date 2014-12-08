@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -18,10 +17,7 @@ import datetime
 import glob
 import logging
 import os
-import sys
 import time
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import metadata_lib
@@ -636,9 +632,7 @@ def _SimulateCQBuildFinish(db, metadata, build_id):
   db.FinishBuild(build_id, status, summary)
 
 
-# TODO(akeshet): Allow command line args to specify alternate CIDB instance
-# for testing.
-if __name__ == '__main__':
-  logging.root.setLevel(logging.DEBUG)
-  logging.root.addHandler(logging.StreamHandler())
-  cros_test_lib.main()
+def main(_argv):
+  # TODO(akeshet): Allow command line args to specify alternate CIDB instance
+  # for testing.
+  cros_test_lib.main(module=__name__)

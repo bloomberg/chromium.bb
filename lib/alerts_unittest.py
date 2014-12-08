@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,13 +7,8 @@
 from __future__ import print_function
 
 from email.mime.text import MIMEText
-import os
 import smtplib
 import socket
-import sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
 
 from chromite.lib import alerts
 from chromite.lib import cros_test_lib
@@ -68,8 +62,8 @@ class SendEmailLogTest(cros_test_lib.MockTestCase):
     self.assertEqual(self.send_mock.call_count, 1)
 
 
-if __name__ == '__main__':
+def main(_argv):
   # No need to make unittests sleep.
   alerts.SMTP_RETRY_DELAY = 0
 
-  cros_test_lib.main()
+  cros_test_lib.main(module=__name__)

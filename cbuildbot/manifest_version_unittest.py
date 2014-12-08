@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,13 +8,9 @@ from __future__ import print_function
 
 import mox
 import os
-import sys
 import tempfile
 
-import constants
-if __name__ == '__main__':
-  sys.path.insert(0, constants.SOURCE_ROOT)
-
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
@@ -407,7 +402,3 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase,
     statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
     self.assertTrue(statuses['build1'].Failed())
     self.assertTrue(statuses['build2'].Passed())
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

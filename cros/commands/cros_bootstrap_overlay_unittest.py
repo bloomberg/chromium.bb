@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,14 +8,12 @@ from __future__ import print_function
 
 import os
 import re
-import sys
-
-sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 
 from chromite.cros.commands import cros_bootstrap_overlay
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+
 
 class BootstrapOverlayCommandTest(cros_test_lib.TempDirTestCase):
   """Test class for the bootstrap-overlay command."""
@@ -123,7 +120,3 @@ DEPEND="chromeos-base/otherthing"
                                                        'metadata',
                                                        'layout.conf'))
     self.assertEquals(dic['repo-name'], 'hello')
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -14,11 +13,10 @@ import optparse
 import os
 import sys
 
-import constants
-sys.path.insert(0, constants.SOURCE_ROOT)
-from chromite.cbuildbot import commands
 from chromite.cbuildbot import cbuildbot_config as config
 from chromite.cbuildbot import cbuildbot_run
+from chromite.cbuildbot import commands
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
@@ -675,7 +673,3 @@ class FullInterfaceTest(cros_test_lib.MoxTempDirTestCase):
     self.mox.ReplayAll()
     self.assertRaises(cros_build_lib.DieSystemExit, self.assertMain,
                       ['--local', '-r', self.buildroot, 'x86-generic-paladin'])
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

@@ -55,41 +55,41 @@ SKIP = 'skip'
 # List all exceptions, with a token describing what's odd here.
 SPECIAL_TESTS = {
     # Tests that need to run inside the chroot.
-    'cbuildbot/stages/test_stages_unittest.py': INSIDE,
-    'cros/commands/cros_build_unittest.py': INSIDE,
-    'cros/commands/lint_unittest.py': INSIDE,
-    'lib/filetype_unittest.py': INSIDE,
-    'lib/upgrade_table_unittest.py': INSIDE,
-    'scripts/cros_install_debug_syms_unittest.py': INSIDE,
-    'scripts/cros_list_modified_packages_unittest.py': INSIDE,
-    'scripts/cros_mark_as_stable_unittest.py': INSIDE,
-    'scripts/cros_mark_chrome_as_stable_unittest.py': INSIDE,
-    'scripts/cros_mark_mojo_as_stable_unittest.py': INSIDE,
-    'scripts/sync_package_status_unittest.py': INSIDE,
-    'scripts/cros_portage_upgrade_unittest.py': INSIDE,
-    'scripts/dep_tracker_unittest.py': INSIDE,
-    'scripts/test_image_unittest.py': INSIDE,
-    'scripts/upload_package_status_unittest.py': INSIDE,
+    'cbuildbot/stages/test_stages_unittest': INSIDE,
+    'cros/commands/cros_build_unittest': INSIDE,
+    'cros/commands/lint_unittest': INSIDE,
+    'lib/filetype_unittest': INSIDE,
+    'lib/upgrade_table_unittest': INSIDE,
+    'scripts/cros_install_debug_syms_unittest': INSIDE,
+    'scripts/cros_list_modified_packages_unittest': INSIDE,
+    'scripts/cros_mark_as_stable_unittest': INSIDE,
+    'scripts/cros_mark_chrome_as_stable_unittest': INSIDE,
+    'scripts/cros_mark_mojo_as_stable_unittest': INSIDE,
+    'scripts/sync_package_status_unittest': INSIDE,
+    'scripts/cros_portage_upgrade_unittest': INSIDE,
+    'scripts/dep_tracker_unittest': INSIDE,
+    'scripts/test_image_unittest': INSIDE,
+    'scripts/upload_package_status_unittest': INSIDE,
 
     # Tests that need to run outside the chroot.
-    'lib/cgroups_unittest.py': OUTSIDE,
+    'lib/cgroups_unittest': OUTSIDE,
 
     # Tests that take >2 minutes to run.  All the slow tests are
     # disabled atm though ...
-    #'scripts/cros_portage_upgrade_unittest.py': SKIP,
+    #'scripts/cros_portage_upgrade_unittest': SKIP,
 }
 
 SLOW_TESTS = {
     # Tests that require network can be really slow.
-    'buildbot/manifest_version_unittest.py': SKIP,
-    'buildbot/repository_unittest.py': SKIP,
-    'buildbot/remote_try_unittest.py': SKIP,
-    'lib/cros_build_lib_unittest.py': SKIP,
-    'lib/gerrit_unittest.py': SKIP,
-    'lib/patch_unittest.py': SKIP,
+    'buildbot/manifest_version_unittest': SKIP,
+    'buildbot/repository_unittest': SKIP,
+    'buildbot/remote_try_unittest': SKIP,
+    'lib/cros_build_lib_unittest': SKIP,
+    'lib/gerrit_unittest': SKIP,
+    'lib/patch_unittest': SKIP,
 
     # cgroups_unittest runs cros_sdk a lot, so is slow.
-    'lib/cgroups_unittest.py': SKIP,
+    'lib/cgroups_unittest': SKIP,
 }
 
 
@@ -336,7 +336,7 @@ def FindTests(search_paths=('.',)):
 
       for path in files:
         test = os.path.join(os.path.relpath(root, search_path), path)
-        if test.endswith('_unittest.py'):
+        if test.endswith('_unittest'):
           yield test
 
 

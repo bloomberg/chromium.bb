@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,10 +8,6 @@ from __future__ import print_function
 
 import os
 import signal
-import sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
 
 from chromite.lib import cros_test_lib
 from chromite.lib import process_util
@@ -121,7 +116,3 @@ class ExitAsStatusTests(cros_test_lib.TestCase):
   def testSIGKILL(self):
     """Verify harsh signals get decoded."""
     self._Tester(kill_signal=signal.SIGKILL)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

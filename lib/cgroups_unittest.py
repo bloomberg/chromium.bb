@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -6,11 +5,6 @@
 """Unittests for cgroups.py."""
 
 from __future__ import print_function
-
-import os
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
 
 from chromite.lib import cgroups
 from chromite.lib import cros_build_lib
@@ -32,7 +26,3 @@ class TestCreateGroups(cros_test_lib.TestCase):
       with cgroups.SimpleContainChildren('example', sigterm_timeout=5):
         parallel.RunTasksInProcessPool(self._CrosSdk, [[]] * 20,
                                        processes=10)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,13 +7,11 @@
 from __future__ import print_function
 
 import ConfigParser
+import mock
 import os
-import sys
 import unittest
 
-import constants
-sys.path.insert(0, constants.SOURCE_ROOT)
-
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import triage_lib
@@ -25,8 +22,6 @@ from chromite.lib import gerrit
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
-
-import mock
 
 
 # Some tests require the kernel, and fail with buildtools only repo.
@@ -388,7 +383,3 @@ class ConfigFileTest(cros_test_lib.MockTestCase):
                      '/a/b/COMMIT-QUEUE.ini')
     self.assertEqual(triage_lib._GetConfigFileForChange(p, '/a/b/'),
                      '/a/b/COMMIT-QUEUE.ini')
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

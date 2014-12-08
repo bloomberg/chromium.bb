@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,10 +7,7 @@
 from __future__ import print_function
 
 import os
-import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                '..', '..'))
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import unittest_lib
@@ -72,7 +68,3 @@ class DepTrackerTest(cros_test_lib.TempDirTestCase):
     dt.ComputeFileTypes()
     self.assertTrue('ftype' in dt._files['libabc.so'])
     self.assertTrue('ftype' in dt._files['pyscript'])
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

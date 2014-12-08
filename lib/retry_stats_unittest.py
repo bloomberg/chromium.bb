@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,12 +6,7 @@
 
 from __future__ import print_function
 
-import os
 import StringIO
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
-
 
 from chromite.lib import cros_test_lib
 from chromite.lib import retry_stats
@@ -230,7 +224,3 @@ class TestRetryStats(cros_test_lib.TestCase):
                       retry_stats.RetryWithStats,
                       self.CAT, self.handlerRetry, 3, self.callFailure)
     self._verifyStats(self.CAT, failure=2, retry=6)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

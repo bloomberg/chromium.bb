@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,9 +7,7 @@
 from __future__ import print_function
 
 import os
-import sys
 
-sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -85,7 +82,3 @@ class RunScriptTest(cros_test_lib.MockTempDirTestCase,
     stats.StatsUploader._Upload.side_effect = Exception()
     # Logging level for the error is logging.ERROR.
     self.LogContainsOnError(upload_command_stats.UNCAUGHT_ERROR)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -10,10 +9,7 @@ from __future__ import print_function
 import logging
 import mock
 import os
-import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                '..', '..'))
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
@@ -232,10 +228,10 @@ class MainTests(cros_test_lib.MockTestCase):
     pushimage.main(['--board', 'test.board', '/src', '--yes'])
 
 
-if __name__ == '__main__':
+def main(_argv):
   # Use our local copy of insns for testing as the main one is not
   # available in the public manifest.
   signing.INPUT_INSN_DIR = signing.TEST_INPUT_INSN_DIR
 
   # Run the tests.
-  cros_test_lib.main(level=logging.INFO)
+  cros_test_lib.main(level=logging.INFO, module=__name__)

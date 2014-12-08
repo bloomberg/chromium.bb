@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,19 +6,16 @@
 
 from __future__ import print_function
 
-import logging
-import os
 import cPickle
-import sys
+import os
+import mock
 import time
 
-sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import cbuildbot_run
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel
 
-import mock
 
 DEFAULT_ARCHIVE_GS_PATH = 'bogus_bucket/TheArchiveBase'
 DEFAULT_ARCHIVE_BASE = 'gs://%s' % DEFAULT_ARCHIVE_GS_PATH
@@ -349,8 +345,9 @@ class GetVersionTest(_BuilderRunTestCase):
   def testGetVersionInfo(self):
     verinfo = object()
 
-    with mock.patch('cbuildbot_run.manifest_version.VersionInfo.from_repo',
-                    return_value=verinfo) as m:
+    target = ('chromite.cbuildbot.cbuildbot_run.manifest_version.'
+              'VersionInfo.from_repo')
+    with mock.patch(target, return_value=verinfo) as m:
       result = cbuildbot_run._BuilderRunBase.GetVersionInfo(DEFAULT_BUILDROOT)
       self.assertEquals(result, verinfo)
 
@@ -644,7 +641,3 @@ class BoardRunAttributesTest(_BuilderRunTestCase):
     """Test that regular attributes are not known to BoardRunAttributes."""
     self.assertRaises(AttributeError, getattr, self.bra, 'release_tag')
     self.assertRaises(AttributeError, setattr, self.bra, 'release_tag', 'foo')
-
-
-if __name__ == '__main__':
-  cros_test_lib.main(level=logging.DEBUG)

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,27 +6,20 @@
 
 from __future__ import print_function
 
-import os
-import sys
+import mock
 
-sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.cbuildbot.cbuildbot_unittest import BuilderRunMock
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import release_stages
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
-from chromite.lib import cros_test_lib
 from chromite.lib import timeout_util
 
 from chromite.cbuildbot.stages.generic_stages_unittest import patch
 
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_build_lib
-
-# TODO(build): Finish test wrapper (http://crosbug.com/37517).
-# Until then, this has to be after the chromite imports.
-import mock
 
 
 # pylint: disable=protected-access
@@ -452,7 +444,3 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTest):
           run_on_builder=True,
           skip_delta_payloads=True,
           disable_tests=True)
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -6,12 +5,6 @@
 """Unit tests for the upgrade_table module."""
 
 from __future__ import print_function
-
-import os
-import sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__)))))
 
 from chromite.lib import cros_test_lib
 from chromite.lib import upgrade_table as utable
@@ -88,6 +81,3 @@ class UpgradeTableTest(cros_test_lib.TestCase):
     col = t1.COL_UPGRADED
     self.assertFalse(t1.HasColumn(col))
     self.assertTrue(t2.HasColumn(col))
-
-if __name__ == '__main__':
-  cros_test_lib.main()

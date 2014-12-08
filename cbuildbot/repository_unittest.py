@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,10 +7,8 @@
 from __future__ import print_function
 
 import os
-import sys
 
-import constants
-sys.path.insert(0, constants.SOURCE_ROOT)
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
@@ -76,7 +73,3 @@ class RepoInitChromeBotTests(RepoInitTests):
   def setUp(self):
     os.putenv('GIT_COMMITTER_EMAIL', 'chrome-bot@chromium.org')
     os.putenv('GIT_AUTHOR_EMAIL', 'chrome-bot@chromium.org')
-
-
-if __name__ == '__main__':
-  cros_test_lib.main()
