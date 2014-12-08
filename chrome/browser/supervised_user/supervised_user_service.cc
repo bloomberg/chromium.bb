@@ -66,6 +66,10 @@ using base::DictionaryValue;
 using base::UserMetricsAction;
 using content::BrowserThread;
 
+bool SupervisedUserService::Delegate::IsChildAccount() const {
+  return false;
+}
+
 base::FilePath SupervisedUserService::Delegate::GetBlacklistPath() const {
   return base::FilePath();
 }
@@ -622,9 +626,7 @@ void SupervisedUserService::OnPermissionRequestIssued(
 }
 
 void SupervisedUserService::OnSupervisedUserIdChanged() {
-  std::string supervised_user_id =
-      profile_->GetPrefs()->GetString(prefs::kSupervisedUserId);
-  SetActive(!supervised_user_id.empty());
+  SetActive(ProfileIsSupervised());
 }
 
 void SupervisedUserService::OnDefaultFilteringBehaviorChanged() {
@@ -690,6 +692,10 @@ void SupervisedUserService::AddAccessRequest(const GURL& url,
                                              const SuccessCallback& callback) {
   AddAccessRequestInternal(SupervisedUserURLFilter::Normalize(url), callback,
                            0);
+}
+
+bool SupervisedUserService::IsChildAccount() const {
+  return delegate_ && delegate_->IsChildAccount();
 }
 
 void SupervisedUserService::InitSync(const std::string& refresh_token) {

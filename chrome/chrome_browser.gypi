@@ -2336,6 +2336,12 @@
       'browser/profiles/profile_list_desktop.h',
     ],
     'chrome_browser_supervised_user_sources': [
+      'browser/supervised_user/child_accounts/child_account_service.cc',
+      'browser/supervised_user/child_accounts/child_account_service.h',
+      'browser/supervised_user/child_accounts/child_account_service_factory.cc',
+      'browser/supervised_user/child_accounts/child_account_service_factory.h',
+      'browser/supervised_user/child_accounts/family_info_fetcher.cc',
+      'browser/supervised_user/child_accounts/family_info_fetcher.h',
       'browser/supervised_user/custodian_profile_downloader_service.cc',
       'browser/supervised_user/custodian_profile_downloader_service.h',
       'browser/supervised_user/custodian_profile_downloader_service_factory.cc',

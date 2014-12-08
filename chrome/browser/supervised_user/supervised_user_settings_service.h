@@ -101,8 +101,7 @@ class SupervisedUserSettingsService : public KeyedService,
   void UploadItem(const std::string& key, scoped_ptr<base::Value> value);
 
   // Sets the setting with the given |key| to a copy of the given |value|.
-  void SetLocalSetting(const std::string& key,
-                       scoped_ptr<base::Value> value);
+  void SetLocalSetting(const std::string& key, scoped_ptr<base::Value> value);
 
   // Public for testing.
   static syncer::SyncData CreateSyncDataForSetting(const std::string& name,

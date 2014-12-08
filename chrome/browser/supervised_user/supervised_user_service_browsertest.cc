@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, ProfileName) {
 
   // Remove the setting.
   settings->SetLocalSetting(supervised_users::kUserName,
-                                      scoped_ptr<base::Value>());
+                            scoped_ptr<base::Value>());
   EXPECT_EQ(original_name, prefs->GetString(prefs::kProfileName));
   profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
   EXPECT_EQ(original_name,
