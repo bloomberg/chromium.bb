@@ -353,7 +353,9 @@ TEST_F(UDPSocketTest, ConnectFail) {
                     base::Bind(&PrivilegedRand),
                     NULL,
                     NetLog::Source()));
-  int rv = socket->Connect(peer_address);
+  int rv = socket->Open(peer_address.GetFamily());
+  EXPECT_EQ(OK, rv);
+  rv = socket->Connect(peer_address);
   // Connect should have failed since we couldn't bind to that port,
   EXPECT_NE(OK, rv);
   // Make sure that UDPSocket actually closed the socket.
@@ -550,6 +552,7 @@ TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
                    RandIntCallback(),
                    NULL,
                    NetLog::Source());
+  EXPECT_EQ(OK, socket.Open(bind_address.GetFamily()));
   EXPECT_EQ(OK, socket.Bind(bind_address));
   EXPECT_EQ(OK, socket.JoinGroup(group_ip));
   // Joining group multiple times.
@@ -578,6 +581,7 @@ TEST_F(UDPSocketTest, MulticastOptions) {
   EXPECT_NE(OK, socket.SetMulticastTimeToLive(-1));
   EXPECT_EQ(OK, socket.SetMulticastInterface(0));
 
+  EXPECT_EQ(OK, socket.Open(bind_address.GetFamily()));
   EXPECT_EQ(OK, socket.Bind(bind_address));
 
   EXPECT_NE(OK, socket.SetMulticastLoopbackMode(false));
@@ -598,7 +602,10 @@ TEST_F(UDPSocketTest, SetDSCP) {
                    NetLog::Source());
   // We need a real IP, but we won't actually send anything to it.
   CreateUDPAddress("8.8.8.8", 9999, &bind_address);
-  int rv = client.Connect(bind_address);
+  int rv = client.Open(bind_address.GetFamily());
+  EXPECT_EQ(OK, rv);
+
+  rv = client.Connect(bind_address);
   if (rv != OK) {
     // Let's try localhost then..
     CreateUDPAddress("127.0.0.1", 9999, &bind_address);
@@ -705,6 +712,10 @@ TEST_F(UDPSocketTest, SetDSCPFake) {
                    NetLog::Source());
   int rv = client.SetDiffServCodePoint(DSCP_AF41);
   EXPECT_EQ(ERR_SOCKET_NOT_CONNECTED, rv);
+
+  rv = client.Open(bind_address.GetFamily());
+  EXPECT_EQ(OK, rv);
+
   rv = client.Connect(bind_address);
   EXPECT_EQ(OK, rv);
 

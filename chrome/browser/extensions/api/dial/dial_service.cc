@@ -172,13 +172,16 @@ bool DialServiceImpl::DialSocket::CreateAndBindSocket(
                               rand_cb,
                               net_log,
                               net_log_source));
-  socket_->AllowBroadcast();
 
   // 0 means bind a random port
   net::IPEndPoint address(bind_ip_address, 0);
 
-  if (!CheckResult("Bind", socket_->Bind(address)))
+  if (socket_->Open(address.GetFamily()) != net::OK ||
+      socket_->SetBroadcast(true) != net::OK ||
+      !CheckResult("Bind", socket_->Bind(address))) {
+    socket_.reset();
     return false;
+  }
 
   DCHECK(socket_.get());
 

@@ -123,9 +123,7 @@ bool DnsSdServer::CreateSocket() {
   DCHECK(success);
 
 
-  socket_.reset(new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
-                                   net::RandIntCallback(), NULL,
-                                   net::NetLog::Source()));
+  socket_.reset(new net::UDPServerSocket(NULL, net::NetLog::Source()));
 
   net::IPEndPoint local_address = net::IPEndPoint(local_ip_any,
                                                   kDefaultPortMulticast);
@@ -134,7 +132,7 @@ bool DnsSdServer::CreateSocket() {
 
   socket_->AllowAddressReuse();
 
-  int status = socket_->Bind(local_address);
+  int status = socket_->Listen(local_address);
   if (status < 0)
     return false;
 
@@ -143,9 +141,6 @@ bool DnsSdServer::CreateSocket() {
 
   if (status < 0)
     return false;
-
-  DCHECK(socket_->is_connected());
-
   return true;
 }
 

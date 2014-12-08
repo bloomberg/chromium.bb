@@ -69,16 +69,21 @@ void UdpTransport::StartReceiving(
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
 
   packet_receiver_ = packet_receiver;
-  udp_socket_->AllowAddressReuse();
   udp_socket_->SetMulticastLoopbackMode(true);
   if (!IsEmpty(local_addr_)) {
-    if (udp_socket_->Bind(local_addr_) < 0) {
+    if (udp_socket_->Open(local_addr_.GetFamily()) < 0 ||
+        udp_socket_->AllowAddressReuse() < 0 ||
+        udp_socket_->Bind(local_addr_) < 0) {
+      udp_socket_->Close();
       status_callback_.Run(TRANSPORT_SOCKET_ERROR);
       LOG(ERROR) << "Failed to bind local address.";
       return;
     }
   } else if (!IsEmpty(remote_addr_)) {
-    if (udp_socket_->Connect(remote_addr_) < 0) {
+    if (udp_socket_->Open(remote_addr_.GetFamily()) < 0 ||
+        udp_socket_->AllowAddressReuse() < 0 ||
+        udp_socket_->Connect(remote_addr_) < 0) {
+      udp_socket_->Close();
       status_callback_.Run(TRANSPORT_SOCKET_ERROR);
       LOG(ERROR) << "Failed to connect to remote address.";
       return;

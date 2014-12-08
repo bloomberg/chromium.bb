@@ -255,6 +255,7 @@ UDPSocketWin::UDPSocketWin(DatagramSocket::BindType bind_type,
                            const net::NetLog::Source& source)
     : socket_(INVALID_SOCKET),
       addr_family_(0),
+      is_connected_(false),
       socket_options_(SOCKET_OPTION_MULTICAST_LOOP),
       multicast_interface_(0),
       multicast_time_to_live_(1),
@@ -276,10 +277,22 @@ UDPSocketWin::~UDPSocketWin() {
   net_log_.EndEvent(NetLog::TYPE_SOCKET_ALIVE);
 }
 
+int UDPSocketWin::Open(AddressFamily address_family) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(socket_, INVALID_SOCKET);
+
+  addr_family_ = ConvertAddressFamily(address_family);
+  socket_ = CreatePlatformSocket(addr_family_, SOCK_DGRAM, IPPROTO_UDP);
+  if (socket_ == INVALID_SOCKET)
+    return MapSystemError(WSAGetLastError());
+  core_ = new Core(this);
+  return OK;
+}
+
 void UDPSocketWin::Close() {
   DCHECK(CalledOnValidThread());
 
-  if (!is_connected())
+  if (socket_ == INVALID_SOCKET)
     return;
 
   if (qos_handle_) {
@@ -297,6 +310,7 @@ void UDPSocketWin::Close() {
                       base::TimeTicks::Now() - start_time);
   socket_ = INVALID_SOCKET;
   addr_family_ = 0;
+  is_connected_ = false;
 
   core_->Detach();
   core_ = NULL;
@@ -407,28 +421,25 @@ int UDPSocketWin::SendToOrWrite(IOBuffer* buf,
 }
 
 int UDPSocketWin::Connect(const IPEndPoint& address) {
+  DCHECK_NE(socket_, INVALID_SOCKET);
   net_log_.BeginEvent(NetLog::TYPE_UDP_CONNECT,
                       CreateNetLogUDPConnectCallback(&address));
   int rv = InternalConnect(address);
-  if (rv != OK)
-    Close();
   net_log_.EndEventWithNetErrorCode(NetLog::TYPE_UDP_CONNECT, rv);
+  is_connected_ = (rv == OK);
   return rv;
 }
 
 int UDPSocketWin::InternalConnect(const IPEndPoint& address) {
   DCHECK(!is_connected());
   DCHECK(!remote_address_.get());
-  int addr_family = address.GetSockAddrFamily();
-  int rv = CreateSocket(addr_family);
-  if (rv < 0)
-    return rv;
 
+  int rv = 0;
   if (bind_type_ == DatagramSocket::RANDOM_BIND) {
     // Construct IPAddressNumber of appropriate size (IPv4 or IPv6) of 0s,
     // representing INADDR_ANY or in6addr_any.
-    size_t addr_size =
-        addr_family == AF_INET ? kIPv4AddressSize : kIPv6AddressSize;
+    size_t addr_size = (address.GetSockAddrFamily() == AF_INET) ?
+        kIPv4AddressSize : kIPv6AddressSize;
     IPAddressNumber addr_any(addr_size);
     rv = RandomBind(addr_any);
   }
@@ -436,7 +447,6 @@ int UDPSocketWin::InternalConnect(const IPEndPoint& address) {
 
   if (rv < 0) {
     UMA_HISTOGRAM_SPARSE_SLOWLY("Net.UdpSocketRandomBindErrorCode", -rv);
-    Close();
     return rv;
   }
 
@@ -445,46 +455,32 @@ int UDPSocketWin::InternalConnect(const IPEndPoint& address) {
     return ERR_ADDRESS_INVALID;
 
   rv = connect(socket_, storage.addr, storage.addr_len);
-  if (rv < 0) {
-    // Close() may change the last error. Map it beforehand.
-    int result = MapSystemError(WSAGetLastError());
-    Close();
-    return result;
-  }
+  if (rv < 0)
+    return MapSystemError(WSAGetLastError());
 
   remote_address_.reset(new IPEndPoint(address));
   return rv;
 }
 
 int UDPSocketWin::Bind(const IPEndPoint& address) {
+  DCHECK_NE(socket_, INVALID_SOCKET);
   DCHECK(!is_connected());
-  int rv = CreateSocket(address.GetSockAddrFamily());
+
+  int rv = SetMulticastOptions();
   if (rv < 0)
     return rv;
-  rv = SetSocketOptions();
-  if (rv < 0) {
-    Close();
-    return rv;
-  }
+
   rv = DoBind(address);
-  if (rv < 0) {
-    Close();
+  if (rv < 0)
     return rv;
-  }
+
   local_address_.reset();
+  is_connected_ = true;
   return rv;
 }
 
-int UDPSocketWin::CreateSocket(int addr_family) {
-  addr_family_ = addr_family;
-  socket_ = CreatePlatformSocket(addr_family_, SOCK_DGRAM, IPPROTO_UDP);
-  if (socket_ == INVALID_SOCKET)
-    return MapSystemError(WSAGetLastError());
-  core_ = new Core(this);
-  return OK;
-}
-
 int UDPSocketWin::SetReceiveBufferSize(int32 size) {
+  DCHECK_NE(socket_, INVALID_SOCKET);
   DCHECK(CalledOnValidThread());
   int rv = setsockopt(socket_, SOL_SOCKET, SO_RCVBUF,
                       reinterpret_cast<const char*>(&size), sizeof(size));
@@ -507,6 +503,7 @@ int UDPSocketWin::SetReceiveBufferSize(int32 size) {
 }
 
 int UDPSocketWin::SetSendBufferSize(int32 size) {
+  DCHECK_NE(socket_, INVALID_SOCKET);
   DCHECK(CalledOnValidThread());
   int rv = setsockopt(socket_, SOL_SOCKET, SO_SNDBUF,
                       reinterpret_cast<const char*>(&size), sizeof(size));
@@ -527,18 +524,26 @@ int UDPSocketWin::SetSendBufferSize(int32 size) {
   return ERR_SOCKET_SEND_BUFFER_SIZE_UNCHANGEABLE;
 }
 
-void UDPSocketWin::AllowAddressReuse() {
+int UDPSocketWin::AllowAddressReuse() {
+  DCHECK_NE(socket_, INVALID_SOCKET);
   DCHECK(CalledOnValidThread());
   DCHECK(!is_connected());
 
-  socket_options_ |= SOCKET_OPTION_REUSE_ADDRESS;
+  BOOL true_value = TRUE;
+  int rv = setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR,
+                      reinterpret_cast<const char*>(&true_value),
+                      sizeof(true_value));
+  return rv == 0 ? OK : MapSystemError(WSAGetLastError());
 }
 
-void UDPSocketWin::AllowBroadcast() {
+int UDPSocketWin::SetBroadcast(bool broadcast) {
+  DCHECK_NE(socket_, INVALID_SOCKET);
   DCHECK(CalledOnValidThread());
-  DCHECK(!is_connected());
 
-  socket_options_ |= SOCKET_OPTION_BROADCAST;
+  BOOL value = broadcast ? TRUE : FALSE;
+  int rv = setsockopt(socket_, SOL_SOCKET, SO_BROADCAST,
+                      reinterpret_cast<const char*>(&value), sizeof(value));
+  return rv == 0 ? OK : MapSystemError(WSAGetLastError());
 }
 
 void UDPSocketWin::DoReadCallback(int rv) {
@@ -718,22 +723,7 @@ int UDPSocketWin::InternalSendTo(IOBuffer* buf, int buf_len,
   return ERR_IO_PENDING;
 }
 
-int UDPSocketWin::SetSocketOptions() {
-  BOOL true_value = 1;
-  if (socket_options_ & SOCKET_OPTION_REUSE_ADDRESS) {
-    int rv = setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR,
-                        reinterpret_cast<const char*>(&true_value),
-                        sizeof(true_value));
-    if (rv < 0)
-      return MapSystemError(WSAGetLastError());
-  }
-  if (socket_options_ & SOCKET_OPTION_BROADCAST) {
-    int rv = setsockopt(socket_, SOL_SOCKET, SO_BROADCAST,
-                        reinterpret_cast<const char*>(&true_value),
-                        sizeof(true_value));
-    if (rv < 0)
-      return MapSystemError(WSAGetLastError());
-  }
+int UDPSocketWin::SetMulticastOptions() {
   if (!(socket_options_ & SOCKET_OPTION_MULTICAST_LOOP)) {
     DWORD loop = 0;
     int protocol_level =

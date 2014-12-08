@@ -49,8 +49,16 @@ void UDPSocket::Connect(const std::string& address,
       break;
     }
 
+    result = socket_.Open(ip_end_point.GetFamily());
+    if (result != net::OK)
+      break;
+
     result = socket_.Connect(ip_end_point);
-    is_connected_ = (result == net::OK);
+    if (result != net::OK) {
+      socket_.Close();
+      break;
+    }
+    is_connected_ = true;
   } while (false);
 
   callback.Run(result);
@@ -64,7 +72,14 @@ int UDPSocket::Bind(const std::string& address, uint16 port) {
   if (!StringAndPortToIPEndPoint(address, port, &ip_end_point))
     return net::ERR_INVALID_ARGUMENT;
 
-  return socket_.Bind(ip_end_point);
+  int result = socket_.Open(ip_end_point.GetFamily());
+  if (result != net::OK)
+    return result;
+
+  result = socket_.Bind(ip_end_point);
+  if (result != net::OK)
+    socket_.Close();
+  return result;
 }
 
 void UDPSocket::Disconnect() {

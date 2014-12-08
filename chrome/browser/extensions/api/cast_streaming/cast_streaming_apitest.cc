@@ -28,7 +28,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/rand_callback.h"
-#include "net/udp/udp_socket.h"
+#include "net/udp/udp_server_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using media::cast::test::GetFreeLocalPort;
@@ -341,13 +341,10 @@ class CastStreamingApiTestWithPixelOutput : public CastStreamingApiTest {
 #define MAYBE_EndToEnd DISABLED_EndToEnd
 #endif
 IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, MAYBE_EndToEnd) {
-  scoped_ptr<net::UDPSocket> receive_socket(
-      new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
-                         net::RandIntCallback(),
-                         NULL,
-                         net::NetLog::Source()));
+  scoped_ptr<net::UDPServerSocket> receive_socket(
+      new net::UDPServerSocket(NULL, net::NetLog::Source()));
   receive_socket->AllowAddressReuse();
-  ASSERT_EQ(net::OK, receive_socket->Bind(GetFreeLocalPort()));
+  ASSERT_EQ(net::OK, receive_socket->Listen(GetFreeLocalPort()));
   net::IPEndPoint receiver_end_point;
   ASSERT_EQ(net::OK, receive_socket->GetLocalAddress(&receiver_end_point));
   receive_socket.reset();

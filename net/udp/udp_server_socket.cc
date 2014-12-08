@@ -4,6 +4,7 @@
 
 #include "net/udp/udp_server_socket.h"
 
+#include "net/base/net_errors.h"
 #include "net/base/rand_callback.h"
 
 namespace net {
@@ -13,13 +14,35 @@ UDPServerSocket::UDPServerSocket(net::NetLog* net_log,
     : socket_(DatagramSocket::DEFAULT_BIND,
               RandIntCallback(),
               net_log,
-              source) {
+              source),
+      allow_address_reuse_(false),
+      allow_broadcast_(false) {
 }
 
 UDPServerSocket::~UDPServerSocket() {
 }
 
 int UDPServerSocket::Listen(const IPEndPoint& address) {
+  int rv = socket_.Open(address.GetFamily());
+  if (rv != OK)
+    return rv;
+
+  if (allow_address_reuse_) {
+    rv = socket_.AllowAddressReuse();
+    if (rv != OK) {
+      socket_.Close();
+      return rv;
+    }
+  }
+
+  if (allow_broadcast_) {
+    rv = socket_.SetBroadcast(true);
+    if (rv != OK) {
+      socket_.Close();
+      return rv;
+    }
+  }
+
   return socket_.Bind(address);
 }
 
@@ -62,11 +85,11 @@ const BoundNetLog& UDPServerSocket::NetLog() const {
 }
 
 void UDPServerSocket::AllowAddressReuse() {
-  socket_.AllowAddressReuse();
+  allow_address_reuse_ = true;
 }
 
 void UDPServerSocket::AllowBroadcast() {
-  socket_.AllowBroadcast();
+  allow_broadcast_ = true;
 }
 
 int UDPServerSocket::JoinGroup(const IPAddressNumber& group_address) const {

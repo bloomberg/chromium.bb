@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "cloud_print/gcp20/prototype/service_parameters.h"
 #include "net/base/ip_endpoint.h"
-#include "net/udp/udp_socket.h"
+#include "net/udp/udp_server_socket.h"
 
 namespace net {
 
@@ -79,7 +79,7 @@ class DnsSdServer : public base::SupportsWeakPtr<DnsSdServer> {
   uint32 GetCurrentTLL() const;
 
   // Stores socket to multicast address.
-  scoped_ptr<net::UDPSocket> socket_;
+  scoped_ptr<net::UDPServerSocket> socket_;
 
   // Stores multicast address end point.
   net::IPEndPoint multicast_address_;
@@ -106,4 +106,3 @@ class DnsSdServer : public base::SupportsWeakPtr<DnsSdServer> {
 };
 
 #endif  // CLOUD_PRINT_GCP20_PROTOTYPE_DNS_SD_SERVER_H_
-

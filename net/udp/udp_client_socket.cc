@@ -4,6 +4,7 @@
 
 #include "net/udp/udp_client_socket.h"
 
+#include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 
 namespace net {
@@ -19,6 +20,9 @@ UDPClientSocket::~UDPClientSocket() {
 }
 
 int UDPClientSocket::Connect(const IPEndPoint& address) {
+  int rv = socket_.Open(address.GetFamily());
+  if (rv != OK)
+    return rv;
   return socket_.Connect(address);
 }
 

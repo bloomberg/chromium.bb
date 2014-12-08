@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "net/base/net_errors.h"
-#include "net/udp/udp_socket.h"
+#include "net/udp/udp_server_socket.h"
 
 namespace media {
 namespace cast {
@@ -19,13 +19,10 @@ net::IPEndPoint GetFreeLocalPort() {
   localhost.push_back(0);
   localhost.push_back(0);
   localhost.push_back(1);
-  scoped_ptr<net::UDPSocket> receive_socket(
-      new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
-                         net::RandIntCallback(),
-                         NULL,
-                         net::NetLog::Source()));
+  scoped_ptr<net::UDPServerSocket> receive_socket(
+      new net::UDPServerSocket(NULL, net::NetLog::Source()));
   receive_socket->AllowAddressReuse();
-  CHECK_EQ(net::OK, receive_socket->Bind(net::IPEndPoint(localhost, 0)));
+  CHECK_EQ(net::OK, receive_socket->Listen(net::IPEndPoint(localhost, 0)));
   net::IPEndPoint endpoint;
   CHECK_EQ(net::OK, receive_socket->GetLocalAddress(&endpoint));
   return endpoint;

@@ -49,6 +49,8 @@ class NET_EXPORT UDPServerSocket : public DatagramServerSocket {
 
  private:
   UDPSocket socket_;
+  bool allow_address_reuse_;
+  bool allow_broadcast_;
   DISALLOW_COPY_AND_ASSIGN(UDPServerSocket);
 };
 

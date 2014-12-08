@@ -15,7 +15,7 @@
 #include "base/time/default_tick_clock.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/udp/udp_socket.h"
+#include "net/udp/udp_server_socket.h"
 
 namespace media {
 namespace cast {
@@ -738,10 +738,7 @@ class UDPProxyImpl : public UDPProxy {
  private:
   void Start(base::WaitableEvent* start_event,
              net::NetLog* net_log) {
-    socket_.reset(new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
-                                     net::RandIntCallback(),
-                                     net_log,
-                                     net::NetLog::Source()));
+    socket_.reset(new net::UDPServerSocket(net_log, net::NetLog::Source()));
     BuildPipe(&to_dest_pipe_, new PacketSender(this, &destination_));
     BuildPipe(&from_dest_pipe_, new PacketSender(this, &return_address_));
     to_dest_pipe_->InitOnIOThread(base::MessageLoopProxy::current(),
@@ -753,7 +750,7 @@ class UDPProxyImpl : public UDPProxy {
     if (!destination_is_mutable_)
       VLOG(0) << "To:" << destination_.ToString();
 
-    CHECK_GE(socket_->Bind(local_port_), 0);
+    CHECK_GE(socket_->Listen(local_port_), 0);
 
     start_event->Signal();
     PollRead();
@@ -830,7 +827,7 @@ class UDPProxyImpl : public UDPProxy {
 
   base::DefaultTickClock tick_clock_;
   base::Thread proxy_thread_;
-  scoped_ptr<net::UDPSocket> socket_;
+  scoped_ptr<net::UDPServerSocket> socket_;
   scoped_ptr<PacketPipe> to_dest_pipe_;
   scoped_ptr<PacketPipe> from_dest_pipe_;
 
