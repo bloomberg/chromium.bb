@@ -51,7 +51,6 @@ class GatherPixelRefDevice : public SkBitmapDevice {
                        DiscardablePixelRefSet* pixel_ref_set)
       : SkBitmapDevice(bm), pixel_ref_set_(pixel_ref_set) {}
 
-  void clear(SkColor color) override {}
   void drawPaint(const SkDraw& draw, const SkPaint& paint) override {
     SkBitmap bitmap;
     if (GetBitmapFromPaint(paint, &bitmap)) {
