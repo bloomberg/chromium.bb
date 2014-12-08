@@ -507,7 +507,7 @@ HRESULT ExecuteCommands() {
       *base::CommandLine::ForCurrentProcess();
 
   base::FilePath exe_path;
-  if (FAILED(PathService::Get(base::DIR_EXE, &exe_path)) ||
+  if (!PathService::Get(base::DIR_EXE, &exe_path) ||
       !base::DirectoryExists(exe_path)) {
     return HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND);
   }
