@@ -72,6 +72,12 @@ class ChildAccountService : public KeyedService,
 
   void PropagateChildStatusToUser(bool is_child);
 
+  void SetFirstCustodianPrefs(const FamilyInfoFetcher::FamilyMember& custodian);
+  void SetSecondCustodianPrefs(
+      const FamilyInfoFetcher::FamilyMember& custodian);
+  void ClearFirstCustodianPrefs();
+  void ClearSecondCustodianPrefs();
+
   void EnableExperimentalFiltering();
 
   // Owns us via the KeyedService mechanism.

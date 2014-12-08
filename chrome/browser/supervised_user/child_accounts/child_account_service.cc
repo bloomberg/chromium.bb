@@ -127,8 +127,8 @@ bool ChildAccountService::SetActive(bool active) {
     SigninManagerFactory::GetForProfile(profile_)->ProhibitSignout(false);
 #endif
 
-    profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserCustodianName);
-    profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserCustodianEmail);
+    ClearFirstCustodianPrefs();
+    ClearSecondCustodianPrefs();
   }
 
   // Trigger a sync reconfig to enable/disable the right SU data types.
@@ -184,48 +184,20 @@ void ChildAccountService::OnGetFamilyMembersSuccess(
   for (const FamilyInfoFetcher::FamilyMember& member : members) {
     if (member.role == FamilyInfoFetcher::HEAD_OF_HOUSEHOLD) {
       hoh_found = true;
-      profile_->GetPrefs()->SetString(prefs::kSupervisedUserCustodianName,
-                                      member.display_name);
-      profile_->GetPrefs()->SetString(prefs::kSupervisedUserCustodianEmail,
-                                      member.email);
-      profile_->GetPrefs()->SetString(prefs::kSupervisedUserCustodianProfileURL,
-                                      member.profile_url);
-      profile_->GetPrefs()->SetString(
-          prefs::kSupervisedUserCustodianProfileImageURL,
-          member.profile_image_url);
+      SetFirstCustodianPrefs(member);
     } else if (member.role == FamilyInfoFetcher::PARENT) {
       parent_found = true;
-      profile_->GetPrefs()->SetString(prefs::kSupervisedUserSecondCustodianName,
-                                      member.display_name);
-      profile_->GetPrefs()->SetString(
-          prefs::kSupervisedUserSecondCustodianEmail,
-          member.email);
-      profile_->GetPrefs()->SetString(
-          prefs::kSupervisedUserSecondCustodianProfileURL,
-          member.profile_url);
-      profile_->GetPrefs()->SetString(
-          prefs::kSupervisedUserSecondCustodianProfileImageURL,
-          member.profile_image_url);
+      SetSecondCustodianPrefs(member);
     }
     if (hoh_found && parent_found)
       break;
   }
   if (!hoh_found) {
     DLOG(WARNING) << "GetFamilyMembers didn't return a HOH?!";
-    profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserCustodianName);
-    profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserCustodianEmail);
-    profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserCustodianProfileURL);
-    profile_->GetPrefs()->ClearPref(
-        prefs::kSupervisedUserCustodianProfileImageURL);
+    ClearFirstCustodianPrefs();
   }
-  if (!parent_found) {
-    profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserSecondCustodianName);
-    profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserSecondCustodianEmail);
-    profile_->GetPrefs()->ClearPref(
-        prefs::kSupervisedUserSecondCustodianProfileURL);
-    profile_->GetPrefs()->ClearPref(
-        prefs::kSupervisedUserSecondCustodianProfileImageURL);
-  }
+  if (!parent_found)
+    ClearSecondCustodianPrefs();
 }
 
 void ChildAccountService::OnFailure(FamilyInfoFetcher::ErrorCode error) {
@@ -306,6 +278,50 @@ void ChildAccountService::PropagateChildStatusToUser(bool is_child) {
 //        "User instance wasn't found while setting child account flag.";
 //  }
 #endif
+}
+
+void ChildAccountService::SetFirstCustodianPrefs(
+    const FamilyInfoFetcher::FamilyMember& custodian) {
+  profile_->GetPrefs()->SetString(prefs::kSupervisedUserCustodianName,
+                                  custodian.display_name);
+  profile_->GetPrefs()->SetString(prefs::kSupervisedUserCustodianEmail,
+                                  custodian.email);
+  profile_->GetPrefs()->SetString(prefs::kSupervisedUserCustodianProfileURL,
+                                  custodian.profile_url);
+  profile_->GetPrefs()->SetString(
+      prefs::kSupervisedUserCustodianProfileImageURL,
+      custodian.profile_image_url);
+}
+
+void ChildAccountService::SetSecondCustodianPrefs(
+    const FamilyInfoFetcher::FamilyMember& custodian) {
+  profile_->GetPrefs()->SetString(prefs::kSupervisedUserSecondCustodianName,
+                                  custodian.display_name);
+  profile_->GetPrefs()->SetString(prefs::kSupervisedUserSecondCustodianEmail,
+                                  custodian.email);
+  profile_->GetPrefs()->SetString(
+      prefs::kSupervisedUserSecondCustodianProfileURL,
+      custodian.profile_url);
+  profile_->GetPrefs()->SetString(
+      prefs::kSupervisedUserSecondCustodianProfileImageURL,
+      custodian.profile_image_url);
+}
+
+void ChildAccountService::ClearFirstCustodianPrefs() {
+  profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserCustodianName);
+  profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserCustodianEmail);
+  profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserCustodianProfileURL);
+  profile_->GetPrefs()->ClearPref(
+      prefs::kSupervisedUserCustodianProfileImageURL);
+}
+
+void ChildAccountService::ClearSecondCustodianPrefs() {
+  profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserSecondCustodianName);
+  profile_->GetPrefs()->ClearPref(prefs::kSupervisedUserSecondCustodianEmail);
+  profile_->GetPrefs()->ClearPref(
+      prefs::kSupervisedUserSecondCustodianProfileURL);
+  profile_->GetPrefs()->ClearPref(
+      prefs::kSupervisedUserSecondCustodianProfileImageURL);
 }
 
 void ChildAccountService::EnableExperimentalFiltering() {
