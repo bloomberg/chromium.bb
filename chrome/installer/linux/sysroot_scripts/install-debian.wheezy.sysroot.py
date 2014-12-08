@@ -54,7 +54,7 @@ def get_sha1(filename):
   return sha1.hexdigest()
 
 
-def main(args):
+def main():
   if options.arch not in ['amd64', 'i386', 'arm']:
     print 'Unknown architecture: %s' % options.arch
     return 1
@@ -128,7 +128,7 @@ def main(args):
     tarball_sha1sum = TARBALL_I386_SHA1SUM
     revision = REVISION_I386
   else:
-    assert(false)
+    assert(False)
 
 
   url = '%s/%s/%s/%s' % (URL_PREFIX, URL_PATH, revision, tarball_filename)
@@ -170,4 +170,4 @@ if __name__ == '__main__':
                                         'Linux builds')
   parser.add_option('--arch', help='Sysroot architecture: i386, amd64 or arm')
   options, args = parser.parse_args()
-  sys.exit(main(args))
+  sys.exit(main())
