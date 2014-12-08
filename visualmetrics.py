@@ -44,7 +44,7 @@ import tempfile
 ########################################################################################################################
 
 
-def video_to_frames(video, directory, force, orange_file, find_viewport, full_resolution):
+def video_to_frames(video, directory, force, orange_file, find_viewport, full_resolution, timeline_file):
     viewport = None
     first_frame = os.path.join(directory, 'image-000000')
     if (not os.path.isfile(first_frame + '.png') and not os.path.isfile(first_frame + '.jpg')) or force:
@@ -62,6 +62,8 @@ def video_to_frames(video, directory, force, orange_file, find_viewport, full_re
                     if find_viewport:
                         viewport = find_video_viewport(directory)
                     adjust_frame_times(directory)
+                    if timeline_file is not None:
+                        synchronize_to_timeline(directory, timeline_file)
                     eliminate_duplicate_frames(directory, viewport)
                 else:
                     logging.critical("Error extracting the video frames from " + video)
@@ -252,6 +254,21 @@ def eliminate_duplicate_frames(directory, viewport):
             logging.debug('Removing duplicate frame {0} from the end'.format(duplicate))
             os.remove(duplicate)
 
+        # Do a third pass that eliminates frames with duplicate content.
+        # ffmpeg will remove pure duplicates but we need to do an additional pass here to process resized images
+        # which may have removed detail
+        previous_file = None
+        files = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
+        for file in files:
+            duplicate = False
+            if previous_file is not None:
+                duplicate = frames_match(previous_file, file, 0, crop)
+            if duplicate:
+                logging.debug('Removing duplicate frame {0}'.format(duplicate))
+                os.remove(file)
+            else:
+                previous_file = file
+
     except:
         logging.critical('Error processing frames for duplicates')
 
@@ -337,6 +354,104 @@ def generate_orange_png(orange_file):
         im.save(orange_file, 'PNG')
     except:
         logging.debug('Error generating orange png ' + orange_file)
+
+
+def synchronize_to_timeline(directory, timeline_file):
+    offset = get_timeline_offset(directory, timeline_file)
+    if offset > 0:
+        frames = sorted(glob.glob(os.path.join(directory, 'image-*.png')))
+        match = re.compile('image-(?P<ms>[0-9]+)\.png')
+        for frame in frames:
+            m = re.search(match, frame)
+            if m is not None:
+                frame_time = int(m.groupdict().get('ms'))
+                new_time = max(frame_time - offset, 0)
+                dest = os.path.join(directory, 'image-{0:06d}.png'.format(new_time))
+                if frame != dest:
+                    if os.path.isfile(dest):
+                        os.remove(dest)
+                    os.rename(frame, dest)
+
+
+def get_timeline_offset(directory, timeline_file):
+    offset = 0
+    try:
+        file_name, ext = os.path.splitext(timeline_file)
+        if ext.lower() is '.gz':
+            f = gzip.open(timeline_file, 'rb')
+        else:
+            f = open(timeline_file, 'r')
+        timeline = json.load(f)
+        f.close()
+        last_paint = None
+        first_navigate = None
+
+        for timeline_event in timeline:
+            paint_time = get_timeline_event_paint_time(timeline_event)
+            if paint_time is not None:
+                last_paint = paint_time
+            first_navigate = get_timeline_event_navigate_time(timeline_event)
+            if first_navigate is not None:
+                break
+
+        if last_paint is not None and first_navigate is not None and first_navigate > last_paint:
+            offset = int(round(first_navigate - last_paint))
+            logging.info(
+                "Trimming {0:d}ms from the start of the video based on timeline synchronization".format(offset))
+    except:
+        logging.debug("Error processing timeline file " + timeline_file)
+
+    return offset
+
+
+def get_timeline_event_paint_time(timeline_event):
+    paint_time = None
+    if 'method' in timeline_event:
+        if (timeline_event['method'] == 'Timeline.eventRecorded' and
+                    'params' in timeline_event and 'record' in timeline_event['params']):
+            paint_time = get_timeline_event_paint_time(timeline_event['params']['record'])
+    else:
+        if ('type' in timeline_event and
+              (timeline_event['type'] == 'Rasterize' or
+                       timeline_event['type'] == 'CompositeLayers' or
+                       timeline_event['type'] == 'Paint')):
+            if 'endTime' in timeline_event:
+                paint_time = timeline_event['endTime']
+            elif 'startTime' in timeline_event:
+                paint_time = timeline_event['startTime']
+
+        # Check for any child paint events
+        if 'children' in timeline_event:
+            for child in timeline_event['children']:
+                child_paint_time = get_timeline_event_paint_time(child)
+                if child_paint_time is not None and (paint_time is None or child_paint_time > paint_time):
+                    paint_time = child_paint_time
+
+    return paint_time
+
+
+def get_timeline_event_navigate_time(timeline_event):
+    navigate_time = None
+    if 'method' in timeline_event:
+        if (timeline_event['method'] == 'Timeline.eventRecorded' and
+                    'params' in timeline_event and 'record' in timeline_event['params']):
+            navigate_time = get_timeline_event_navigate_time(timeline_event['params']['record'])
+    else:
+        if ('type' in timeline_event and
+                    timeline_event['type'] == 'ResourceSendRequest' and
+                    'startTime' in timeline_event):
+            navigate_time = timeline_event['startTime']
+
+        # Check for any child paint events
+        if 'children' in timeline_event:
+            for child in timeline_event['children']:
+                child_navigate_time = get_timeline_event_navigate_time(child)
+                if child_navigate_time is not None and (navigate_time is None or child_navigate_time < navigate_time):
+                    navigate_time = child_navigate_time
+
+    return navigate_time
+
+
 ########################################################################################################################
 #   Histogram calculations
 ########################################################################################################################
@@ -613,6 +728,9 @@ if '__main__' == __name__:
                                             "(as input if exists or as output if a video file is specified).")
     parser.add_argument('-g', '--histogram', help="Histogram file (as input if exists or as output if "
                                                   "histograms need to be calculated).")
+    parser.add_argument('-m', '--timeline', help="Timeline capture from Chrome dev tools. Used to synchronize the video"
+                                                 " start time and only applies when orange frames are removed "
+                                                 "(see --orange). The timeline file can be gzipped if it ends in .gz")
     parser.add_argument('-q', '--quality', type=int, help="JPEG Quality "
                                                           "(if specified, frames will be converted to JPEG).")
     parser.add_argument('-l', '--full', action='store_true', default=False,
@@ -667,7 +785,7 @@ if '__main__' == __name__:
                     orange_file = os.path.join(temp_dir, 'orange.png')
                     generate_orange_png(orange_file)
                 viewport = video_to_frames(options.video, directory, options.force, orange_file, options.viewport,
-                                           options.full)
+                                           options.full, options.timeline)
             calculate_histograms(directory, histogram_file, options.force, viewport)
             if options.dir is not None and options.quality is not None:
                 convert_to_jpeg(directory, options.quality)
