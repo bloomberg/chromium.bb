@@ -19,6 +19,9 @@ namespace content {
 
 namespace {
 
+// Set when no browser compositors should remain alive.
+bool g_has_shut_down = false;
+
 // The number of placeholder objects allocated. If this reaches zero, then
 // the BrowserCompositorMac being held on to for recycling,
 // |g_recyclable_browser_compositor|, will be freed.
@@ -36,13 +39,16 @@ bool WidgetNeedsGLFinishWorkaround() {
 }  // namespace
 
 BrowserCompositorMac::BrowserCompositorMac()
-    : accelerated_widget_mac_(WidgetNeedsGLFinishWorkaround()),
+    : accelerated_widget_mac_(
+          new ui::AcceleratedWidgetMac(WidgetNeedsGLFinishWorkaround())),
       compositor_(
-          accelerated_widget_mac_.accelerated_widget(),
+          accelerated_widget_mac_->accelerated_widget(),
           content::GetContextFactory(),
           RenderWidgetResizeHelper::Get()->task_runner()) {
   compositor_.SetVisible(false);
 }
+
+BrowserCompositorMac::~BrowserCompositorMac() {}
 
 // static
 scoped_ptr<BrowserCompositorMac> BrowserCompositorMac::Create() {
@@ -56,6 +62,10 @@ void BrowserCompositorMac::Recycle(
     scoped_ptr<BrowserCompositorMac> compositor) {
   DCHECK(compositor);
 
+  // It is an error to have a browser compositor continue to exist after
+  // shutdown.
+  CHECK(!g_has_shut_down);
+
   // Make this BrowserCompositorMac recyclable for future instances.
   g_recyclable_browser_compositor.Get().swap(compositor);
 
@@ -63,6 +73,12 @@ void BrowserCompositorMac::Recycle(
   // BrowserCompositorMac that we just populated.
   if (!g_placeholder_count)
     g_recyclable_browser_compositor.Get().reset();
+}
+
+// static
+void BrowserCompositorMac::DisableRecyclingForShutdown() {
+  g_has_shut_down = true;
+  g_recyclable_browser_compositor.Get().reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

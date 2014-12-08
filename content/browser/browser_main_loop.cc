@@ -85,6 +85,7 @@
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "content/browser/bootstrap_sandbox_mac.h"
 #include "content/browser/cocoa/system_hotkey_helper_mac.h"
+#include "content/browser/compositor/browser_compositor_view_mac.h"
 #include "content/browser/theme_helper_mac.h"
 #endif
 
@@ -821,6 +822,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
                  "BrowserMainLoop::Subsystem:ResourceDispatcherHost");
     resource_dispatcher_host_.get()->Shutdown();
   }
+
+#if defined(OS_MACOSX)
+  BrowserCompositorMac::DisableRecyclingForShutdown();
+#endif
 
 #if defined(USE_AURA) || defined(OS_MACOSX)
   {

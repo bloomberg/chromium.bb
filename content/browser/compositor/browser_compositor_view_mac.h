@@ -16,21 +16,27 @@ namespace content {
 // in terms of time and resources).
 class BrowserCompositorMac {
  public:
+  ~BrowserCompositorMac();
+
   // Create a compositor, or recycle a preexisting one.
   static scoped_ptr<BrowserCompositorMac> Create();
 
   // Delete a compositor, or allow it to be recycled.
   static void Recycle(scoped_ptr<BrowserCompositorMac> compositor);
 
+  // Indicate that the recyclable compositor should be destroyed, and no future
+  // compositors should be recycled.
+  static void DisableRecyclingForShutdown();
+
   ui::Compositor* compositor() { return &compositor_; }
   ui::AcceleratedWidgetMac* accelerated_widget_mac() {
-    return &accelerated_widget_mac_;
+    return accelerated_widget_mac_.get();
   }
 
  private:
   BrowserCompositorMac();
 
-  ui::AcceleratedWidgetMac accelerated_widget_mac_;
+  scoped_ptr<ui::AcceleratedWidgetMac> accelerated_widget_mac_;
   ui::Compositor compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCompositorMac);
