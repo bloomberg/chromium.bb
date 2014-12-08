@@ -63,7 +63,6 @@ public:
     // AudioNode
     virtual void dispose() override;
     virtual void process(size_t framesToProcess) override;
-    virtual void pullInputs(size_t framesToProcess) override;
     virtual void initialize() override;
     virtual void uninitialize() override;
 
@@ -132,10 +131,6 @@ private:
     bool isDistanceConeGainDirty() const { return m_isDistanceConeGainDirty; }
     bool isDopplerRateDirty() const { return m_isDopplerRateDirty; }
 
-    // Notifies any AudioBufferSourceNodes connected to us either directly or indirectly about our existence.
-    // This is in order to handle the pitch change necessary for the doppler shift.
-    void notifyAudioSourcesConnectedToNode(AudioNode*, HashMap<AudioNode*, bool> &visitedNodes);
-
     Member<Panner> m_panner;
     unsigned m_panningModel;
     unsigned m_distanceModel;
@@ -159,9 +154,6 @@ private:
     double m_cachedElevation;
     float m_cachedDistanceConeGain;
     double m_cachedDopplerRate;
-
-    // AudioContext's connection count
-    unsigned m_connectionCount;
 
     // Synchronize process() with setting of the panning model, source's location information, listener, distance parameters and sound cones.
     mutable Mutex m_processLock;

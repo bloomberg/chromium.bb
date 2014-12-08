@@ -62,7 +62,6 @@ PannerNode::PannerNode(AudioContext* context, float sampleRate)
     , m_cachedElevation(0)
     , m_cachedDistanceConeGain(1.0f)
     , m_cachedDopplerRate(1)
-    , m_connectionCount(0)
 {
     // Load the HRTF database asynchronously so we don't block the Javascript thread while creating the HRTF database.
     // The HRTF panner will return zeroes until the database is loaded.
@@ -88,24 +87,6 @@ void PannerNode::dispose()
 {
     uninitialize();
     AudioNode::dispose();
-}
-
-void PannerNode::pullInputs(size_t framesToProcess)
-{
-    // We override pullInputs(), so we can detect new AudioSourceNodes which have connected to us when new connections are made.
-    // These AudioSourceNodes need to be made aware of our existence in order to handle doppler shift pitch changes.
-    if (m_connectionCount != context()->connectionCount()) {
-        m_connectionCount = context()->connectionCount();
-
-        // A map for keeping track if we have visited a node or not. This prevents feedback loops
-        // from recursing infinitely. See crbug.com/331446.
-        HashMap<AudioNode*, bool> visitedNodes;
-
-        // Recursively go through all nodes connected to us
-        notifyAudioSourcesConnectedToNode(this, visitedNodes);
-    }
-
-    AudioNode::pullInputs(framesToProcess);
 }
 
 void PannerNode::process(size_t framesToProcess)
@@ -546,38 +527,6 @@ void PannerNode::markPannerAsDirty(unsigned dirty)
 
     if (dirty & PannerNode::DopplerRateDirty)
         m_isDopplerRateDirty = true;
-}
-
-void PannerNode::notifyAudioSourcesConnectedToNode(AudioNode* node, HashMap<AudioNode*, bool>& visitedNodes)
-{
-    ASSERT(node);
-    if (!node)
-        return;
-
-    // First check if this node is an AudioBufferSourceNode. If so, let it know about us so that doppler shift pitch can be taken into account.
-    if (node->nodeType() == NodeTypeAudioBufferSource) {
-        AudioBufferSourceNode* bufferSourceNode = static_cast<AudioBufferSourceNode*>(node);
-        bufferSourceNode->setPannerNode(this);
-    } else {
-        // Go through all inputs to this node.
-        for (unsigned i = 0; i < node->numberOfInputs(); ++i) {
-            AudioNodeInput* input = node->input(i);
-
-            // For each input, go through all of its connections, looking for AudioBufferSourceNodes.
-            for (unsigned j = 0; j < input->numberOfRenderingConnections(); ++j) {
-                AudioNodeOutput* connectedOutput = input->renderingOutput(j);
-                AudioNode* connectedNode = connectedOutput->node();
-                HashMap<AudioNode*, bool>::iterator iterator = visitedNodes.find(connectedNode);
-
-                // If we've seen this node already, we don't need to process it again. Otherwise,
-                // mark it as visited and recurse through the node looking for sources.
-                if (iterator == visitedNodes.end()) {
-                    visitedNodes.set(connectedNode, true);
-                    notifyAudioSourcesConnectedToNode(connectedNode, visitedNodes); // recurse
-                }
-            }
-        }
-    }
 }
 
 void PannerNode::setChannelCount(unsigned long channelCount, ExceptionState& exceptionState)
