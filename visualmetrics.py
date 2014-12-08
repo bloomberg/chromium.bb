@@ -386,6 +386,10 @@ def get_timeline_offset(directory, timeline_file):
         last_paint = None
         first_navigate = None
 
+        # In the case of a trace instead of a timeline we want the list of events
+        if 'traceEvents' in timeline:
+            timeline = timeline['traceEvents']
+
         for timeline_event in timeline:
             paint_time = get_timeline_event_paint_time(timeline_event)
             if paint_time is not None:
@@ -398,7 +402,7 @@ def get_timeline_offset(directory, timeline_file):
             offset = int(round(first_navigate - last_paint))
             logging.info(
                 "Trimming {0:d}ms from the start of the video based on timeline synchronization".format(offset))
-    except:
+    except Exception as e:
         logging.debug("Error processing timeline file " + timeline_file)
 
     return offset
@@ -406,7 +410,15 @@ def get_timeline_offset(directory, timeline_file):
 
 def get_timeline_event_paint_time(timeline_event):
     paint_time = None
-    if 'method' in timeline_event:
+    if 'cat' in timeline_event:
+        if (timeline_event['cat'].find('devtools.timeline') >= 0 and
+                    'ts' in timeline_event and
+                    'name' in timeline_event and (timeline_event['name'].find('Paint') >= 0 or
+                                                  timeline_event['name'].find('CompositeLayers') >= 0)):
+            paint_time = float(timeline_event['ts']) / 1000.0
+            if 'dur' in timeline_event:
+                paint_time += float(timeline_event['dur']) / 1000.0
+    elif 'method' in timeline_event:
         if (timeline_event['method'] == 'Timeline.eventRecorded' and
                     'params' in timeline_event and 'record' in timeline_event['params']):
             paint_time = get_timeline_event_paint_time(timeline_event['params']['record'])
@@ -432,7 +444,12 @@ def get_timeline_event_paint_time(timeline_event):
 
 def get_timeline_event_navigate_time(timeline_event):
     navigate_time = None
-    if 'method' in timeline_event:
+    if 'cat' in timeline_event:
+        if (timeline_event['cat'].find('devtools.timeline') >= 0 and
+                    'ts' in timeline_event and
+                    'name' in timeline_event and timeline_event['name'] == 'ResourceSendRequest'):
+            navigate_time = float(timeline_event['ts']) / 1000.0
+    elif 'method' in timeline_event:
         if (timeline_event['method'] == 'Timeline.eventRecorded' and
                     'params' in timeline_event and 'record' in timeline_event['params']):
             navigate_time = get_timeline_event_navigate_time(timeline_event['params']['record'])
