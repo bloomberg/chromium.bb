@@ -7,8 +7,8 @@
 
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkColorShader.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkShader.h"
 #include <v8.h>
 
 namespace blink {
@@ -33,7 +33,7 @@ PassRefPtr<SkShader> StaticBitmapPattern::createShader()
 {
     // If we have no image, return null
     if (!m_tileImage) {
-        return adoptRef(new SkColorShader(SK_ColorTRANSPARENT));
+        return adoptRef(SkShader::CreateColorShader(SK_ColorTRANSPARENT));
     }
 
     SkMatrix localMatrix = affineTransformToSkMatrix(m_patternSpaceTransformation);

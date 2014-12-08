@@ -7,7 +7,7 @@
 
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkColorShader.h"
+#include "third_party/skia/include/core/SkShader.h"
 #include <v8.h>
 
 namespace blink {
@@ -27,7 +27,7 @@ BitmapPattern::BitmapPattern(PassRefPtr<Image> image, RepeatMode repeatMode)
 PassRefPtr<SkShader> BitmapPattern::createShader()
 {
     if (!m_tileImage) {
-        return adoptRef(new SkColorShader(SK_ColorTRANSPARENT));
+        return adoptRef(SkShader::CreateColorShader(SK_ColorTRANSPARENT));
     }
 
     SkMatrix localMatrix = affineTransformToSkMatrix(m_patternSpaceTransformation);
