@@ -456,11 +456,6 @@ public:
     virtual void setContinuousPaintingEnabled(bool) = 0;
     virtual void setShowScrollBottleneckRects(bool) = 0;
 
-    // Compute the bounds of the root element of the current selection and fills
-    // the out-parameter on success. |bounds| coordinates will be relative to
-    // the contents window and will take into account the current scale level.
-    virtual void getSelectionRootBounds(WebRect& bounds) const = 0;
-
     // Visibility -----------------------------------------------------------
 
     // Sets the visibility of the WebView.

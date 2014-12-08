@@ -918,35 +918,6 @@ void WebViewImpl::setShowScrollBottleneckRects(bool show)
     m_showScrollBottleneckRects = show;
 }
 
-void WebViewImpl::getSelectionRootBounds(WebRect& bounds) const
-{
-    const Frame* frame = focusedCoreFrame();
-    if (!frame || !frame->isLocalFrame())
-        return;
-
-    Element* root = toLocalFrame(frame)->selection().rootEditableElementOrDocumentElement();
-    if (!root)
-        return;
-
-    // If the selection is inside a form control, the root will be a <div> that
-    // behaves as the editor but we want to return the actual element's bounds.
-    // In practice, that means <textarea> and <input> controls that behave like
-    // a text field.
-    Element* shadowHost = root->shadowHost();
-    if (shadowHost
-        && (isHTMLTextAreaElement(*shadowHost)
-            || (isHTMLInputElement(*shadowHost) && toHTMLInputElement(*shadowHost).isTextField())))
-        root = shadowHost;
-
-    IntRect boundingBox = isHTMLHtmlElement(root)
-        ? IntRect(IntPoint(0, 0), root->document().frame()->view()->contentsSize())
-        : root->pixelSnappedBoundingBox();
-
-    boundingBox = root->document().frame()->view()->contentsToWindow(boundingBox);
-    boundingBox.scale(pageScaleFactor());
-    bounds = boundingBox;
-}
-
 void WebViewImpl::acceptLanguagesChanged()
 {
     if (!page())
