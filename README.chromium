@@ -21,9 +21,6 @@ the gyp files, are located under the chromium/ folder off the root.
     ffmpeg_generated.gypi: Pregenerated gyp listing of files necessary to build
       every platform.  See chromium/scripts/generate_gyp.py for more details.
 
-    chromium/binaries/c99conv.exe: Prebuilt binary for converting FFmpeg sources
-      from C99 to C89 for compilation with Visual C++.
-
     chromium/scripts: Utilities for building the gyp and config files.
 
     chromium/config/...: Pregenerated FFmpeg config options for each platform
@@ -47,64 +44,30 @@ Git repository.  Which means every change made must be upstreamed.  If you make
 a change, please add an entry to chromium/patches/README with a link to the
 tracking issue and code review for your change.
 
-Unfortunately the normal Chromium CL submission process through Rietveld does
-not work with Git DEPS like FFmpeg, so you must use Gerrit to upload your change
-for review:
+  1) See if you have access to gerrit:
 
-  git push ssh://gerrit.chromium.org:29418/chromium/third_party/ffmpeg \
-  HEAD:refs/for/master
+     ssh -p 29418 gerrit.chromium.org gerrit ls-projects
 
-This will create a gerrit change. Make sure to "git commit --amend" and
-add "Change-Id: XXX" as the last line so that future pushes do not create new
-changes. You can get the "XXX" from the gerrit web interface.
+     If you get permission denied, set up your gerrit access and SSH keys:
+     http://www.chromium.org/chromium-os/developer-guide/gerrit-guide/legacy
 
-Note: You'll need a Gerrit account, see:
+     Install commit hooks to generate Change-Id fields in commits:
+     scp -p -P 29418 gerrit.chromium.org:hooks/commit-msg .git/hooks/
 
-  http://www.chromium.org/chromium-os/developer-guide/gerrit-guide
+  2) Create a branch and make a local, single commit. Gerrit differs from
+     Rietveld in that you must have a single commit, so use git commit --amend
+     if you need to make changes. Inspect that your commit contains a
+     Change-Id field, which is how gerrit coalesces separate patch sets into the
+     same code review.
 
-You also need to add an ssh key at
-https://gerrit.chromium.org/gerrit/#/settings/ssh-keys . Generate a key
-following the GitHub guide linked from there, then copy the contents of your
-~/.ssh/id_rsa.pub file to that gerrit page.
+  3) Upload for review:
 
-If your change adds new files to the repository, you'll need to regenerate the
-GYP defines by following the directions in chromium/scripts/generate_gyp.py.
+     git push ssh://gerrit.chromium.org:29418/chromium/third_party/ffmpeg \
+     HEAD:refs/for/master
 
-After all that's done and your change has landed in the Git repository, you'll
-need to roll DEPS before the change will show up in Chrome.
+  4) Commit via gerrit once approved.
 
-
--- Performing an upstream merge.
-
-The upstream merge process follows the normal Git merge process:
-  # First, modify the origin url to enable push of merge result later.
-  # e.g., change remote.origin.url from:
-  #  https://chromium.googlesource.com/chromium/third_party/ffmpeg.git
-  # to:
-  #  ssh://gerrit.chromium.org:29418/chromium/third_party/ffmpeg.git
-  # One way is to use custom_deps in .gclient.  Another might be to run
-  # git config -e within this folder and edit the URLs if already synced,
-  # though this alternative could have danger.
-
-  git remote add upstream git://source.ffmpeg.org/ffmpeg.git
-  git fetch upstream
-  git merge upstream/master
-
-  # If conflicts:
-  git mergetool
-
-  <Except for a different push method, follow rest of "Submitting changes to
-  Chromium's FFmpeg git repository.">
-
-  # Use git push for submission so commit history is kept.  Might require merge
-  # approval on your Gerrit account.  Do not commit any other way.
-  git push origin master
-
-Once complete you'll need to regenerate the configuration files for every
-platform (see "Directions" in the "Building" section below).  You'll also
-need to regenerate the gyp files (see chromium/scripts/generate_gyp.py).  After
-all that is done, you can update Chromium's root DEPS file to point to the tip
-of tree commit.
+  5) If needed, submit a Chromium-side change to update DEPS.
 
 -- Upstreaming a patch.
 
@@ -132,168 +95,13 @@ will clear out all the patches which have been upstreamed.
 
   <Follow rest of "Submitting changes to Chromium's FFmpeg git repository.">
 
-Building:
-=========
 
--- FFmpeg headers in the 'chromium/include' directory.
+Performing An Upstream Merge
+============================
 
-The include directory contains FFmpeg's public header files from the output of
-a "make install" command.  The header files are from Chromium's copy of FFmpeg.
+Currently this is an extremely tedious process that requires access to a Linux,
+Mac, and Windows development machine and lot of blood, sweat, and tears.
 
-Steps to reproduce:
-  1) If on Windows, refer to our MinGW/MSYS environment setup:
-       http://src.chromium.org/viewvc/chrome/trunk/deps/third_party/mingw/
-  2) Chromium's copy of FFmpeg, should already have it if you're reading this.
-  3) Follow the instructions to build and install.
-  4) Go to your install location and copy the following into the Chromium tree:
-       /path/to/install/include/libavcodec
-       /path/to/install/include/libavformat
-       /path/to/install/include/libavutil
-
-On Windows, the libraries are linked in using /DELAYLOAD to avoid having the
-DLLs present at run-time.  On POSIX systems, dlopen() is used to achieve a
-similar effect.
-
-We don't use the import libraries generated from building FFmpeg because they
-export every method by ordinal, which makes binary compatibility with different
-builds of FFmpeg difficult if not impossible.  Furthermore, it is much easier
-to update a DEF file instead of rebuilding FFmpeg to generate new import
-libraries.
-
-
--- Recreating the ffmpeg.gyp file and populating the config directory.
-The ffmpeg.gyp file is meant to be used in place of FFmpeg's
-
-   ./configure && make
-
-steps.  The file was created by inspecting the build log from above.
-The FFmpeg build is relatively straightforward.  All files are built with
-the same CFLAGS.  The config.h and version.h files are the only files generated
-by ./configure that are included elsewhere.  They require a small bit of
-post-processing.
-
-Other than the configure step, FFmpeg just compiles its .c files, assembles a
-few more using yasm, and that's it.
-
-Here is a list of gotchas that have shown up.
-  1) FFmpeg requires special configure (--disable-optimizations) in order
-     to be built with -O0 successfully due to some of the hand-written
-     assembler using ebp.  -O0 implies -fno-omit-frame-pointer which breaks
-     this. This will produce compiler errors like:
-       libavcodec/cabac.h:527: error: can't find a register in class
-       'GENERAL_REGS' while reloading 'asm'
-       cabac.h:527: error: 'asm' operand has impossible constraints
-
-  2) Sometimes, with -O0, invalid code will be exposed because dead-branch
-     pruning is disabled in gcc.  This can manifest itself as strange link
-     issues or compile issues.  Be careful to read all warnings in this case.
-
-  3) Since config.h is generated via ./configure, the generated file will
-     be sensitive to the configuration of the machine it was produced on.
-     In particular, yasm does not seem to always be detected if
-     cross-compiling for 32-bit on a 64-bit machine. Since yasm is built in
-     tree, make sure to force things with --enable-yasm.
-
-  4) yasm needs to be installed on mac and windows if not already there.
-
-  5) Similar to issue #3, ./configure may detect the presence of SDL and
-     adjust config.h accordingly. This is harmless because all the SDL
-     related code has been disabled in our configuration.
-
-  6) On Mac ia32, we want to be able to compile WITHOUT -fomit-frame-pointer
-     (so breakpad can function).  To do this, we need to disable the use of the
-     EBP register, otherwise some of FFmpeg's inline assembly will cause
-     compilation errors similar to gotcha #1.  For more details, see the file
-     comment in the munge_config_optimizations.sh. This script will fix up
-     the generated config.h to be building without -fomit-frame-pointer.
-
-  7) On Windows, FFmpeg must first be run through a preprocessor to be compiled
-     via MSVC++ because it doesn't support the C99 syntax used by FFmpeg.  The
-     converter is open source and built on libclang.  The c99conv.exe in the
-     chromium/scripts directory is a statically linked version of the converter
-     from: https://github.com/rbultje/c99-to-c89 . Compiling the dynamic linked
-     library is relatively easy, generating a statically linked one is not.  To
-     build the dynamic version you first need libclang:
-
-       git clone http://llvm.org/git/llvm.git
-       cd tools; git clone http://llvm.org/git/clang.git
-
-     Now you need to run cmake, see http://llvm.org/docs/GettingStartedVS.html,
-     step #5.  From there you can start the Visual Studio IDE with the .vcproj
-     or .sln files generated by cmake.  Then select "Release" from the build
-     drop down menu.  You're ready to build.  Right click on the libclang target
-     and select build.  Once complete you should have a libclang.dll in
-     <llvm root>\out\bin\Release.  Now you can build the c99-to-c89 converter
-     using the packed makefile.  If you're building the dynamic version you'll
-     need to ensure c99conv.exe and libclang.dll remain in the same directory.
-
-     Note: Building the statically linked version is painful and requires
-     changes to both the llvm project and the converter.  Proceed at your own
-     risk.  First, you need to modify the libclang project and change every
-     target's "Project Defaults" from "Dynamic Library .DLL" to "Static Library
-     (.lib)" and under "Code Generation" change every targets "Runtime Library"
-     from "Multi-threaded DLL (/MD)" to "Multi-threaded (/MT)" then rebuild the
-     libclang project.  Afterward, you will have a lot of lib files in <llvm
-     root>\out\lib\Release and will need to specify all of them under LIBS in
-     the c99-to-c89 makefile as well as Advapi32.lib and Shell32.lib.  Before
-     compiling c99conv.exe you will need to modify libclang a bit, open
-     "tools\clang\include\clang-c\Platform.h" and remove the
-     "__declspec(dllimport)" entry.  You can now compile as normal and will only
-     need to package the c99conv.exe.
-
-     It's not necessary to build the statically linked version, but it's nice to
-     only have a single binary checked in.
-
-  8) On various platforms, ffmpeg configure may detect external iconv library
-     and include it by default.  FFmpeg used by chromium does not depend on this
-     library, and the lib may not exist on target despite existing in the build
-     environment.  Hence, we need to change CONFIG_ICONV to 0 in the config.h
-     (and config.asm where appropriate.)  build_ffmpeg.sh does this with
-     configure parameter --disable-iconv.  See http://crbug.com/223295
-
-
-Directions:
-===========
-  1) Create config.h and config.asm as needed. For each different environment
-     you need to have a copy of the merge-mxx branch available. More details
-     for this first step can be found in the comments in
-     chromium/scripts/generate_gyp.py.
-
-     On Linux, Chromium enlistment (with Chromium's yasm build output in $PATH)
-     run:
-       ./chromium/scripts/build_ffmpeg.py linux ia32
-       ./chromium/scripts/build_ffmpeg.py linux x64
-       ./chromium/scripts/build_ffmpeg.py linux-noasm x64
-     To build yasm, run:
-       ninja -C out/Release yasm
-       export PATH=`pwd`/out/Release:$PATH
-
-     On Linux with MIPS cross-toolchain in $PATH (optional)
-       ./chromium/scripts/build_ffmpeg.py linux mipsel
-
-     On Linux, ChromeOS enlistment (inside chroot) run
-       ./chromium/scripts/build_ffmpeg.py linux arm
-       ./chromium/scripts/build_ffmpeg.py linux arm-neon
-
-     On Mac, Chromium enlistment, run
-       ./chromium/scripts/build_ffmpeg.py mac ia32
-       ./chromium/scripts/build_ffmpeg.py mac x64
-
-     On Windows, Chromium enlistment, run
-       ./chromium/scripts/build_ffmpeg.py win ia32
-       ./chromium/scripts/build_ffmpeg.py win x64
-
-  2) Collect all these directories and copy all config files
-     into the source tree using
-
-       ./chromium/scripts/copy_config.sh
-
-     You should keep the build.* directories around in case you need to
-     regenerate this (or the gyp files in the next step) for one or more
-     environments.
-
-  3) Finally, rebuild the .gyp and .gn build files.
-
-       ./chromium/scripts/generate_gyp.py
-       ./chromium/scripts/generate_gyp.py --output_gn
-
+The instructions are also prone to going stale, so in the interest collaboration
+and sharing tips we've moved to a public document:
+https://docs.google.com/a/chromium.org/document/d/14bqZ9NISsyEO3948wehhJ7wc9deTIz-yHUhF1MQp7Po/edit#
