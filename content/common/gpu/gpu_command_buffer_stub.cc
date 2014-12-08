@@ -315,30 +315,26 @@ void GpuCommandBufferStub::PollWork() {
     return;
 
   if (scheduler_) {
-    bool fences_complete = scheduler_->PollUnscheduleFences();
-    // Perform idle work if all fences are complete.
-    if (fences_complete) {
-      uint64 current_messages_processed =
-          channel()->gpu_channel_manager()->MessagesProcessed();
-      // We're idle when no messages were processed or scheduled.
-      bool is_idle =
-          (previous_messages_processed_ == current_messages_processed) &&
-          !channel()->gpu_channel_manager()->HandleMessagesScheduled();
-      if (!is_idle && !last_idle_time_.is_null()) {
-        base::TimeDelta time_since_idle = base::TimeTicks::Now() -
-            last_idle_time_;
-        base::TimeDelta max_time_since_idle =
-            base::TimeDelta::FromMilliseconds(kMaxTimeSinceIdleMs);
+    uint64 current_messages_processed =
+        channel()->gpu_channel_manager()->MessagesProcessed();
+    // We're idle when no messages were processed or scheduled.
+    bool is_idle =
+        (previous_messages_processed_ == current_messages_processed) &&
+        !channel()->gpu_channel_manager()->HandleMessagesScheduled();
+    if (!is_idle && !last_idle_time_.is_null()) {
+      base::TimeDelta time_since_idle =
+          base::TimeTicks::Now() - last_idle_time_;
+      base::TimeDelta max_time_since_idle =
+          base::TimeDelta::FromMilliseconds(kMaxTimeSinceIdleMs);
 
-        // Force idle when it's been too long since last time we were idle.
-        if (time_since_idle > max_time_since_idle)
-          is_idle = true;
-      }
+      // Force idle when it's been too long since last time we were idle.
+      if (time_since_idle > max_time_since_idle)
+        is_idle = true;
+    }
 
-      if (is_idle) {
-        last_idle_time_ = base::TimeTicks::Now();
-        scheduler_->PerformIdleWork();
-      }
+    if (is_idle) {
+      last_idle_time_ = base::TimeTicks::Now();
+      scheduler_->PerformIdleWork();
     }
   }
   ScheduleDelayedWork(kHandleMoreWorkPeriodBusyMs);

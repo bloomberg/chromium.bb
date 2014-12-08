@@ -29,7 +29,6 @@ class GLSurface;
 }
 
 namespace gpu {
-class GpuScheduler;
 class PreemptionFlag;
 namespace gles2 {
 class GLES2Decoder;
@@ -129,11 +128,6 @@ class ImageTransportHelper
 
   void SwapBuffersCompleted(const std::vector<ui::LatencyInfo>& latency_info);
 
-  // Whether or not we should execute more commands.
-  void SetScheduled(bool is_scheduled);
-
-  void DeferToFence(base::Closure task);
-
   void SetPreemptByFlag(
       scoped_refptr<gpu::PreemptionFlag> preemption_flag);
 
@@ -147,7 +141,6 @@ class ImageTransportHelper
   GpuCommandBufferStub* stub() const { return stub_.get(); }
 
  private:
-  gpu::GpuScheduler* Scheduler();
   gpu::gles2::GLES2Decoder* Decoder();
 
   // IPC::Message handlers.

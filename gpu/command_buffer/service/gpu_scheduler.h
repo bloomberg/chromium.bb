@@ -91,12 +91,6 @@ class GPU_EXPORT GpuScheduler
 
   void SetCommandProcessedCallback(const base::Closure& callback);
 
-  void DeferToFence(base::Closure task);
-
-  // Polls the fences, invoking callbacks that were waiting to be triggered
-  // by them and returns whether all fences were complete.
-  bool PollUnscheduleFences();
-
   bool HasMoreIdleWork();
   void PerformIdleWork();
 
@@ -135,18 +129,6 @@ class GPU_EXPORT GpuScheduler
   // The number of times this scheduler has been artificially rescheduled on
   // account of a timeout.
   int rescheduled_count_;
-
-  // The GpuScheduler will unschedule itself in the event that further GL calls
-  // are issued to it before all these fences have been crossed by the GPU.
-  struct UnscheduleFence {
-    UnscheduleFence(gfx::GLFence* fence, base::Closure task);
-    ~UnscheduleFence();
-
-    scoped_ptr<gfx::GLFence> fence;
-    base::Time issue_time;
-    base::Closure task;
-  };
-  std::queue<linked_ptr<UnscheduleFence> > unschedule_fences_;
 
   SchedulingChangedCallback scheduling_changed_callback_;
   base::Closure descheduled_callback_;
