@@ -451,7 +451,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
 // Disabled because the test always fails the first time it runs on the Win Aura
 // bots, and usually but not always passes second-try (See crbug.com/179532).
-#if defined(OS_WIN)
+// On Linux, the test frequently times out. (See crbug.com/440043).
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_QuickOverscrollDirectionChange \
         DISABLED_QuickOverscrollDirectionChange
 #else
