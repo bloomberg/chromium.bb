@@ -81,6 +81,7 @@ void RenderView::trace(Visitor* visitor)
     visitor->trace(m_selectionStart);
     visitor->trace(m_selectionEnd);
     visitor->trace(m_renderQuoteHead);
+    visitor->trace(m_pendingSelection);
     RenderBlockFlow::trace(visitor);
 }
 

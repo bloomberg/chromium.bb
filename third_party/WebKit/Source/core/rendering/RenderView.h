@@ -204,10 +204,19 @@ private:
 
     unsigned m_hitTestCount;
 
-    struct PendingSelection {
+    class PendingSelection final {
+        DISALLOW_ALLOCATION();
+    public:
         PendingSelection();
         void setSelection(const FrameSelection&);
         void clear();
+
+        void trace(Visitor* visitor)
+        {
+            visitor->trace(m_start);
+            visitor->trace(m_end);
+            visitor->trace(m_extent);
+        }
 
         Position m_start;
         Position m_end;
