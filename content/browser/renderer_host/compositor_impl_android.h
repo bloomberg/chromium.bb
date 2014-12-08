@@ -132,6 +132,7 @@ class CONTENT_EXPORT CompositorImpl
     composite_on_vsync_trigger_ = DO_NOT_COMPOSITE;
     will_composite_immediately_ = false;
   }
+  void CreateLayerTreeHost();
   void OnGpuChannelEstablished();
 
   // root_layer_ is the persistent internal root layer, while subroot_layer_

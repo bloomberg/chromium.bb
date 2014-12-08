@@ -389,6 +389,44 @@ void CompositorImpl::SetSurface(jobject surface) {
   }
 }
 
+void CompositorImpl::CreateLayerTreeHost() {
+  DCHECK(!host_);
+  DCHECK(!WillCompositeThisFrame());
+  needs_composite_ = false;
+  defer_composite_for_gpu_channel_ = false;
+  pending_swapbuffers_ = 0;
+  cc::LayerTreeSettings settings;
+  settings.renderer_settings.refresh_rate = 60.0;
+  settings.renderer_settings.allow_antialiasing = false;
+  settings.renderer_settings.highp_threshold_min = 2048;
+  settings.impl_side_painting = false;
+  settings.calculate_top_controls_position = false;
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  settings.initial_debug_state.SetRecordRenderingStats(
+      command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
+  settings.initial_debug_state.show_fps_counter =
+      command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
+  // TODO(enne): Update this this compositor to use the scheduler.
+  settings.single_thread_proxy_scheduler = false;
+
+  host_ = cc::LayerTreeHost::CreateSingleThreaded(
+      this,
+      this,
+      HostSharedBitmapManager::current(),
+      BrowserGpuMemoryBufferManager::current(),
+      settings,
+      base::MessageLoopProxy::current(),
+      nullptr);
+  host_->SetRootLayer(root_layer_);
+
+  host_->SetVisible(true);
+  host_->SetLayerTreeHostClientReady();
+  host_->SetViewportSize(size_);
+  host_->set_has_transparent_background(has_transparent_background_);
+  host_->SetDeviceScaleFactor(device_scale_factor_);
+}
+
 void CompositorImpl::SetVisible(bool visible) {
   if (!visible) {
     DCHECK(host_);
@@ -416,40 +454,7 @@ void CompositorImpl::SetVisible(bool visible) {
       current_composite_task_.reset();
     }
   } else if (!host_) {
-    DCHECK(!WillCompositeThisFrame());
-    needs_composite_ = false;
-    defer_composite_for_gpu_channel_ = false;
-    pending_swapbuffers_ = 0;
-    cc::LayerTreeSettings settings;
-    settings.renderer_settings.refresh_rate = 60.0;
-    settings.renderer_settings.allow_antialiasing = false;
-    settings.renderer_settings.highp_threshold_min = 2048;
-    settings.impl_side_painting = false;
-    settings.calculate_top_controls_position = false;
-
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    settings.initial_debug_state.SetRecordRenderingStats(
-        command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
-    settings.initial_debug_state.show_fps_counter =
-        command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
-    // TODO(enne): Update this this compositor to use the scheduler.
-    settings.single_thread_proxy_scheduler = false;
-
-    host_ = cc::LayerTreeHost::CreateSingleThreaded(
-        this,
-        this,
-        HostSharedBitmapManager::current(),
-        BrowserGpuMemoryBufferManager::current(),
-        settings,
-        base::MessageLoopProxy::current(),
-        nullptr);
-    host_->SetRootLayer(root_layer_);
-
-    host_->SetVisible(true);
-    host_->SetLayerTreeHostClientReady();
-    host_->SetViewportSize(size_);
-    host_->set_has_transparent_background(has_transparent_background_);
-    host_->SetDeviceScaleFactor(device_scale_factor_);
+    CreateLayerTreeHost();
     ui_resource_provider_.SetLayerTreeHost(host_.get());
   }
 }
