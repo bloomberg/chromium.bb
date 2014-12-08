@@ -6,19 +6,24 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
-NavigationTracker::NavigationTracker(DevToolsClient* client)
+NavigationTracker::NavigationTracker(DevToolsClient* client,
+                                     const BrowserInfo* browser_info)
     : client_(client),
-      loading_state_(kUnknown) {
+      loading_state_(kUnknown),
+      browser_info_(browser_info) {
   client_->AddListener(this);
 }
 
 NavigationTracker::NavigationTracker(DevToolsClient* client,
-                                     LoadingState known_state)
+                                     LoadingState known_state,
+                                     const BrowserInfo* browser_info)
     : client_(client),
-      loading_state_(known_state) {
+      loading_state_(known_state),
+      browser_info_(browser_info) {
   client_->AddListener(this);
 }
 
@@ -105,13 +110,34 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     pending_frame_set_.insert(frame_id);
     loading_state_ = kLoading;
   } else if (method == "Page.frameStoppedLoading") {
+    // Versions of Blink before revision 170248 sent a single
+    // Page.frameStoppedLoading event per page, but 170248 and newer revisions
+    // only send one event for each frame on the page.
+    //
+    // This change was rolled into the Chromium tree in revision 260203.
+    // Versions of Chrome with build number 1916 and earlier do not contain this
+    // change.
+    bool expecting_single_stop_event = false;
+
+    if (browser_info_->browser_name == "chrome") {
+      // If we're talking to a version of Chrome with an old build number, we
+      // are using a branched version of Blink which does not contain 170248
+      // (even if blink_revision > 170248).
+      expecting_single_stop_event = browser_info_->build_no <= 1916;
+    } else {
+      // If we're talking to a non-Chrome embedder (e.g. Content Shell, Android
+      // WebView), assume that the browser does not use a branched version of
+      // Blink.
+      expecting_single_stop_event = browser_info_->blink_revision < 170248;
+    }
+
     std::string frame_id;
     if (!params.GetString("frameId", &frame_id))
       return Status(kUnknownError, "missing or invalid 'frameId'");
 
     pending_frame_set_.erase(frame_id);
 
-    if (pending_frame_set_.empty()) {
+    if (pending_frame_set_.empty() || expecting_single_stop_event) {
       pending_frame_set_.clear();
       loading_state_ = kNotLoading;
     }

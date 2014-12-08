@@ -151,8 +151,6 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         # https://code.google.com/p/chromedriver/issues/detail?id=913
         'ChromeDriverTest.testChromeDriverSendLargeData',
         'PerformanceLoggerTest.testPerformanceLogger',
-        # https://code.google.com/p/chromedriver/issues/detail?id=994
-        'ChromeDriverTest.testSwitchToParentFrame',
     ]
 )
 
