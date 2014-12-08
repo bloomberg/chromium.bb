@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,49 +15,45 @@ import java.util.Set;
  *
  * It implements the Android {@link Parcelable} interface so it is easy to pass around in intents.
  *
- * It maps the native enum syncer::PassphraseType, but has the additional values INVALID and NONE.
+ * It maps the native enum syncer::PassphraseType.
  */
-public enum SyncDecryptionPassphraseType implements Parcelable {
-    INVALID(-2),                   // Used as default value and is not a valid decryption type.
-    NONE(-1),                      // No encryption (deprecated).
+public enum PassphraseType implements Parcelable {
     IMPLICIT_PASSPHRASE(0),        // GAIA-based passphrase (deprecated).
     KEYSTORE_PASSPHRASE(1),        // Keystore passphrase.
     FROZEN_IMPLICIT_PASSPHRASE(2), // Frozen GAIA passphrase.
     CUSTOM_PASSPHRASE(3);          // User-provided passphrase.
 
     public static Parcelable.Creator CREATOR =
-            new Parcelable.Creator<SyncDecryptionPassphraseType>() {
+            new Parcelable.Creator<PassphraseType>() {
                 @Override
-                public SyncDecryptionPassphraseType createFromParcel(Parcel parcel) {
+                public PassphraseType createFromParcel(Parcel parcel) {
                     return fromInternalValue(parcel.readInt());
                 }
 
                 @Override
-                public SyncDecryptionPassphraseType[] newArray(int size) {
-                    return new SyncDecryptionPassphraseType[size];
+                public PassphraseType[] newArray(int size) {
+                    return new PassphraseType[size];
                 }
             };
 
-    public static SyncDecryptionPassphraseType fromInternalValue(int value) {
-        for (SyncDecryptionPassphraseType type : values()) {
+    public static PassphraseType fromInternalValue(int value) {
+        for (PassphraseType type : values()) {
             if (type.internalValue() == value) {
                 return type;
             }
         }
-        // Falling back to INVALID. Should not happen if |value| was retrieved from native.
-        return INVALID;
+        throw new IllegalArgumentException("No value for " + value + " found.");
     }
 
     private final int mNativeValue;
 
-    private SyncDecryptionPassphraseType(int nativeValue) {
+    private PassphraseType(int nativeValue) {
         mNativeValue = nativeValue;
     }
 
-    public Set<SyncDecryptionPassphraseType> getVisibleTypes() {
-        Set<SyncDecryptionPassphraseType> visibleTypes = new HashSet<>();
+    public Set<PassphraseType> getVisibleTypes() {
+        Set<PassphraseType> visibleTypes = new HashSet<>();
         switch (this) {
-            case NONE:  // Intentional fall through.
             case IMPLICIT_PASSPHRASE:  // Intentional fall through.
             case KEYSTORE_PASSPHRASE:
                 visibleTypes.add(this);
@@ -71,10 +67,6 @@ public enum SyncDecryptionPassphraseType implements Parcelable {
                 visibleTypes.add(KEYSTORE_PASSPHRASE);
                 visibleTypes.add(CUSTOM_PASSPHRASE);
                 break;
-            case INVALID:  // Intentional fall through.
-            default:
-                visibleTypes.add(this);
-                break;
         }
         return visibleTypes;
     }
@@ -84,10 +76,9 @@ public enum SyncDecryptionPassphraseType implements Parcelable {
      *
      * @param encryptEverythingAllowed Whether encrypting all data is allowed.
      */
-    public Set<SyncDecryptionPassphraseType> getAllowedTypes(boolean encryptEverythingAllowed) {
-        Set<SyncDecryptionPassphraseType> allowedTypes = new HashSet<>();
+    public Set<PassphraseType> getAllowedTypes(boolean encryptEverythingAllowed) {
+        Set<PassphraseType> allowedTypes = new HashSet<>();
         switch (this) {
-            case NONE:  // Intentional fall through.
             case IMPLICIT_PASSPHRASE:  // Intentional fall through.
             case KEYSTORE_PASSPHRASE:
                 allowedTypes.add(this);
@@ -97,7 +88,6 @@ public enum SyncDecryptionPassphraseType implements Parcelable {
                 break;
             case FROZEN_IMPLICIT_PASSPHRASE:  // Intentional fall through.
             case CUSTOM_PASSPHRASE:  // Intentional fall through.
-            case INVALID:  // Intentional fall through.
             default:
                 break;
         }

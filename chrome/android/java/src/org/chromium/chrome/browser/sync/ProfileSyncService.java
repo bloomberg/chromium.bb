@@ -17,6 +17,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.sync.internal_api.pub.PassphraseType;
 import org.chromium.sync.internal_api.pub.SyncDecryptionPassphraseType;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 
@@ -178,14 +179,14 @@ public class ProfileSyncService {
         ThreadUtils.assertOnUiThread();
         String uniqueTag = generator.getUniqueId(null);
         if (uniqueTag.isEmpty()) {
-            Log.e(TAG, "Unable to get unique tag for sync. " +
-                    "This may lead to unexpected tab sync behavior.");
+            Log.e(TAG, "Unable to get unique tag for sync. "
+                    + "This may lead to unexpected tab sync behavior.");
             return;
         }
         String sessionTag = SESSION_TAG_PREFIX + uniqueTag;
         if (!nativeSetSyncSessionsId(mNativeProfileSyncServiceAndroid, sessionTag)) {
-            Log.e(TAG, "Unable to write session sync tag. " +
-                    "This may lead to unexpected tab sync behavior.");
+            Log.e(TAG, "Unable to write session sync tag. "
+                    + "This may lead to unexpected tab sync behavior.");
         }
     }
 
@@ -221,6 +222,20 @@ public class ProfileSyncService {
         assert isSyncInitialized();
         int passphraseType = nativeGetPassphraseType(mNativeProfileSyncServiceAndroid);
         return SyncDecryptionPassphraseType.fromInternalValue(passphraseType);
+    }
+
+    /**
+     * Returns the actual passphrase type being used for encryption.
+     * The sync backend must be running (isSyncInitialized() returns true) before
+     * calling this function.
+     * <p/>
+     * This method should only be used if you want to know the raw value. For checking whether
+     * we should ask the user for a passphrase, use isPassphraseRequiredForDecryption().
+     */
+    public PassphraseType getPassphraseType() {
+        assert isSyncInitialized();
+        int passphraseType = nativeGetPassphraseType(mNativeProfileSyncServiceAndroid);
+        return PassphraseType.fromInternalValue(passphraseType);
     }
 
     public boolean isSyncKeystoreMigrationDone() {
