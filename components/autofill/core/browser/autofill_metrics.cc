@@ -265,7 +265,8 @@ AutofillMetrics::AutofillMetrics() {
 AutofillMetrics::~AutofillMetrics() {
 }
 
-void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) const {
+// static
+void AutofillMetrics::LogCreditCardInfoBarMetric(InfoBarMetric metric) {
   DCHECK_LT(metric, NUM_INFO_BAR_METRICS);
   UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardInfoBar", metric,
                             NUM_INFO_BAR_METRICS);

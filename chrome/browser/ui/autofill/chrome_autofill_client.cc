@@ -107,12 +107,10 @@ void ChromeAutofillClient::ShowAutofillSettings() {
 }
 
 void ChromeAutofillClient::ConfirmSaveCreditCard(
-    const AutofillMetrics& metric_logger,
     const base::Closure& save_card_callback) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents_);
-  AutofillCCInfoBarDelegate::Create(
-      infobar_service, &metric_logger, save_card_callback);
+  AutofillCCInfoBarDelegate::Create(infobar_service, save_card_callback);
 }
 
 bool ChromeAutofillClient::HasCreditCardScanFeature() {

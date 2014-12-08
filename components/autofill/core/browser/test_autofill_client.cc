@@ -32,7 +32,6 @@ void TestAutofillClient::ShowAutofillSettings() {
 }
 
 void TestAutofillClient::ConfirmSaveCreditCard(
-    const AutofillMetrics& metric_logger,
     const base::Closure& save_card_callback) {
 }
 
