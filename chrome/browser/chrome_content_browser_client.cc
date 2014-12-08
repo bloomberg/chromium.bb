@@ -1769,7 +1769,6 @@ void ChromeContentBrowserClient::AllowCertificateError(
 void ChromeContentBrowserClient::SelectClientCertificate(
     int render_process_id,
     int render_frame_id,
-    const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback) {
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
@@ -1822,8 +1821,7 @@ void ChromeContentBrowserClient::SelectClientCertificate(
     }
   }
 
-  chrome::ShowSSLClientCertificateSelector(tab, network_session,
-                                           cert_request_info, callback);
+  chrome::ShowSSLClientCertificateSelector(tab, cert_request_info, callback);
 }
 
 void ChromeContentBrowserClient::AddCertificate(

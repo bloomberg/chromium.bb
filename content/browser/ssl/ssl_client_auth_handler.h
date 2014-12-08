@@ -71,9 +71,6 @@ class CONTENT_EXPORT SSLClientAuthHandler
   // The net::URLRequest that triggered this client auth.
   net::URLRequest* request_;
 
-  // The HttpNetworkSession |request_| is associated with.
-  const net::HttpNetworkSession* http_network_session_;
-
   // The certs to choose from.
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
 

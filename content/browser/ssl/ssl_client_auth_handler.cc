@@ -9,11 +9,8 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "net/cert/x509_certificate.h"
-#include "net/http/http_transaction_factory.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 
 namespace content {
 
@@ -22,8 +19,6 @@ SSLClientAuthHandler::SSLClientAuthHandler(
     net::URLRequest* request,
     net::SSLCertRequestInfo* cert_request_info)
     : request_(request),
-      http_network_session_(
-          request_->context()->http_transaction_factory()->GetSession()),
       cert_request_info_(cert_request_info),
       client_cert_store_(client_cert_store.Pass()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -117,7 +112,6 @@ void SSLClientAuthHandler::DoSelectCertificate(
   GetContentClient()->browser()->SelectClientCertificate(
       render_process_host_id,
       render_frame_host_id,
-      http_network_session_,
       cert_request_info_.get(),
       base::Bind(&SSLClientAuthHandler::CertificateSelected, this));
 }
