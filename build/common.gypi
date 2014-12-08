@@ -4185,13 +4185,6 @@
                 ],
               }],
             ],
-            'conditions': [
-              ['OS=="mac"', {
-                'cflags': [
-                  '-mllvm -asan-globals=0',  # http://crbug.com/352073
-                ],
-              }],
-            ],
           }],
           ['ubsan==1', {
             'target_conditions': [
@@ -4907,7 +4900,6 @@
             'xcode_settings': {
               'OTHER_CFLAGS': [
                 '-fsanitize=address',
-                '-mllvm -asan-globals=0',  # http://crbug.com/352073
                 '-gline-tables-only',
               ],
             },
