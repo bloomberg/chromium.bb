@@ -1984,10 +1984,8 @@ void RenderBlockFlow::checkLinesForTextOverflow()
 
 bool RenderBlockFlow::positionNewFloatOnLine(FloatingObject* newFloat, FloatingObject* lastFloatFromPreviousLine, LineInfo& lineInfo, LineWidth& width)
 {
-    if (!positionNewFloats())
+    if (!positionNewFloats(&width))
         return false;
-
-    width.shrinkAvailableWidthForNewFloatIfNeeded(newFloat);
 
     // We only connect floats to lines for pagination purposes if the floats occur at the start of
     // the line and the previous line had a hard break (so this line is either the first in the block

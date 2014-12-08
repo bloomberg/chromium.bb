@@ -279,7 +279,7 @@ private:
 
     // Called from lineWidth, to position the floats added in the last line.
     // Returns true if and only if it has positioned any floats.
-    bool positionNewFloats();
+    bool positionNewFloats(LineWidth* = 0);
 
     LayoutUnit getClearDelta(RenderBox* child, LayoutUnit yPos);
 

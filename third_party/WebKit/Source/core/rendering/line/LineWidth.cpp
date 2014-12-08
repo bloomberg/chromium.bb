@@ -181,6 +181,7 @@ void LineWidth::fitBelowFloats(bool isFirstLine)
 {
     ASSERT(!m_committedWidth);
     ASSERT(!fitsOnLine());
+    m_block.positionNewFloats(this);
 
     LayoutUnit floatLogicalBottom;
     LayoutUnit lastFloatLogicalBottom = m_block.logicalHeight();

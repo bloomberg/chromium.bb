@@ -2359,7 +2359,7 @@ void RenderBlockFlow::removeFloatingObjectsBelow(FloatingObject* lastFloat, int 
     }
 }
 
-bool RenderBlockFlow::positionNewFloats()
+bool RenderBlockFlow::positionNewFloats(LineWidth* width)
 {
     if (!m_floatingObjects)
         return false;
@@ -2466,6 +2466,9 @@ bool RenderBlockFlow::positionNewFloats()
 
         if (ShapeOutsideInfo* shapeOutside = childBox->shapeOutsideInfo())
             shapeOutside->setReferenceBoxLogicalSize(logicalSizeForChild(*childBox));
+
+        if (width)
+            width->shrinkAvailableWidthForNewFloatIfNeeded(floatingObject);
     }
     return true;
 }
