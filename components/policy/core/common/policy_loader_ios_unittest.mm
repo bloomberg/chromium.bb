@@ -145,13 +145,7 @@ PolicyProviderTestHarness* TestHarness::Create() {
 
 // static
 PolicyProviderTestHarness* TestHarness::CreateWithEncodedKey() {
-  if (base::ios::IsRunningOnIOS7OrLater())
-    return new TestHarness(true);
-  // Earlier versions of iOS don't have the APIs to support this test.
-  // Unfortunately it's not possible to conditionally run this harness using
-  // gtest, so we just fallback to running the non-encoded version.
-  NSLog(@"Skipping test");
-  return new TestHarness(false);
+  return new TestHarness(true);
 }
 
 void TestHarness::AddPolicies(NSDictionary* policy) {
@@ -230,12 +224,6 @@ INSTANTIATE_TEST_CASE_P(
 TEST(PolicyProviderIOSTest, ChromePolicyOverEncodedChromePolicy) {
   // This test verifies that if the "ChromePolicy" key is present then the
   // "EncodedChromePolicy" key is ignored.
-
-  if (!base::ios::IsRunningOnIOS7OrLater()) {
-    // Skip this test if running on a version earlier than iOS 7.
-    NSLog(@"Skipping test");
-    return;
-  }
 
   NSDictionary* policy = @{
     @"shared": @"wrong",

@@ -20,10 +20,6 @@ const int32* OSVersionAsArray() {
 namespace base {
 namespace ios {
 
-bool IsRunningOnIOS7OrLater() {
-  return IsRunningOnOrLater(7, 0, 0);
-}
-
 bool IsRunningOnIOS8OrLater() {
   return IsRunningOnOrLater(8, 0, 0);
 }
