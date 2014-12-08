@@ -395,9 +395,6 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void GestureScrollBegin(gin::Arguments* args);
   void GestureScrollEnd(gin::Arguments* args);
   void GestureScrollUpdate(gin::Arguments* args);
-  //TODO: Remove GestureScrollUpdateWithoutPropagation once CL 732483003 has
-  // landed
-  void GestureScrollUpdateWithoutPropagation(gin::Arguments* args);
   void GestureTap(gin::Arguments* args);
   void GestureTapDown(gin::Arguments* args);
   void GestureShowPress(gin::Arguments* args);
@@ -528,8 +525,6 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("gestureScrollEnd", &EventSenderBindings::GestureScrollEnd)
       .SetMethod("gestureScrollUpdate",
                  &EventSenderBindings::GestureScrollUpdate)
-      .SetMethod("gestureScrollUpdateWithoutPropagation",
-                 &EventSenderBindings::GestureScrollUpdateWithoutPropagation)
       .SetMethod("gestureTap", &EventSenderBindings::GestureTap)
       .SetMethod("gestureTapDown", &EventSenderBindings::GestureTapDown)
       .SetMethod("gestureShowPress", &EventSenderBindings::GestureShowPress)
@@ -787,12 +782,6 @@ void EventSenderBindings::GestureScrollEnd(gin::Arguments* args) {
 void EventSenderBindings::GestureScrollUpdate(gin::Arguments* args) {
   if (sender_)
     sender_->GestureScrollUpdate(args);
-}
-
-void EventSenderBindings::GestureScrollUpdateWithoutPropagation(
-    gin::Arguments* args) {
-  if (sender_)
-    sender_->GestureScrollUpdateWithoutPropagation(args);
 }
 
 void EventSenderBindings::GestureTap(gin::Arguments* args) {
@@ -1756,10 +1745,6 @@ void EventSender::GestureScrollUpdate(gin::Arguments* args) {
   GestureEvent(WebInputEvent::GestureScrollUpdate, args);
 }
 
-void EventSender::GestureScrollUpdateWithoutPropagation(gin::Arguments* args) {
-  GestureEvent(WebInputEvent::GestureScrollUpdate, args, true);
-}
-
 void EventSender::GestureTap(gin::Arguments* args) {
   GestureEvent(WebInputEvent::GestureTap, args);
 }
@@ -1961,10 +1946,8 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type) {
   }
 }
 
-//TODO Remove preventPropagation from arguments once CL 732483003 has landed
 void EventSender::GestureEvent(WebInputEvent::Type type,
-                               gin::Arguments* args,
-                               bool preventPropagation) {
+                               gin::Arguments* args) {
   double x;
   double y;
   if (!args->GetNext(&x) || !args->GetNext(&y)) {
@@ -1978,7 +1961,8 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
   switch (type) {
     case WebInputEvent::GestureScrollUpdate:
     {
-      if (!preventPropagation && !args->PeekNext().IsEmpty()) {
+      bool preventPropagation = false;
+      if (!args->PeekNext().IsEmpty()) {
         if (!args->GetNext(&preventPropagation)) {
           args->ThrowError();
           return;

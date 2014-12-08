@@ -135,7 +135,6 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   void GestureScrollBegin(gin::Arguments* args);
   void GestureScrollEnd(gin::Arguments* args);
   void GestureScrollUpdate(gin::Arguments* args);
-  void GestureScrollUpdateWithoutPropagation(gin::Arguments* args);
   void GestureTap(gin::Arguments* args);
   void GestureTapDown(gin::Arguments* args);
   void GestureShowPress(gin::Arguments* args);
@@ -166,8 +165,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   void SendCurrentTouchEvent(blink::WebInputEvent::Type);
 
   void GestureEvent(blink::WebInputEvent::Type,
-                    gin::Arguments*,
-                    bool preventPropagation = false);
+                    gin::Arguments*);
 
   void UpdateClickCountForButton(blink::WebMouseEvent::Button);
 
