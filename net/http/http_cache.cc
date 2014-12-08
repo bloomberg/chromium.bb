@@ -603,7 +603,7 @@ void HttpCache::CloseIdleConnections() {
 
 void HttpCache::OnExternalCacheHit(const GURL& url,
                                    const std::string& http_method) {
-  if (!disk_cache_.get())
+  if (!disk_cache_.get() || mode_ == DISABLE)
     return;
 
   HttpRequestInfo request_info;
