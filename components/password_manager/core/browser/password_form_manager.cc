@@ -381,8 +381,6 @@ void PasswordFormManager::FetchMatchingLoginsFromPasswordStore(
     NOTREACHED();
     return;
   }
-  // This logging is only temporary, to investigate http://crbug.com/423327.
-  VLOG(4) << "Asking the store for logins for this form: " << observed_form_;
   password_store->GetLogins(observed_form_, prompt_policy, this);
 }
 
@@ -604,8 +602,6 @@ void PasswordFormManager::SaveAsNewLogin(bool reset_preferred_login) {
 
   pending_credentials_.date_created = Time::Now();
   SanitizePossibleUsernames(&pending_credentials_);
-  // This logging is only temporary, to investigate http://crbug.com/423327.
-  VLOG(4) << "Adding this login: " << pending_credentials_;
   password_store->AddLogin(pending_credentials_);
 
   if (reset_preferred_login) {
@@ -640,8 +636,6 @@ void PasswordFormManager::UpdatePreferredLoginState(
       iter->second->preferred = false;
       if (user_action_ == kUserActionNone)
         user_action_ = kUserActionChoose;
-      // This logging is only temporary, to investigate http://crbug.com/423327.
-      VLOG(4) << "Updating this login: " << *iter->second;
       password_store->UpdateLogin(*iter->second);
     }
   }
@@ -684,8 +678,6 @@ void PasswordFormManager::UpdateLogin() {
     // username, so we delete the old credentials and add a new one instead.
     password_store->RemoveLogin(pending_credentials_);
     pending_credentials_.username_value = selected_username_;
-    // This logging is only temporary, to investigate http://crbug.com/423327.
-    VLOG(4) << "Adding this login: " << pending_credentials_;
     password_store->AddLogin(pending_credentials_);
   } else if ((observed_form_.scheme == PasswordForm::SCHEME_HTML) &&
              (observed_form_.origin.spec().length() >
@@ -710,8 +702,6 @@ void PasswordFormManager::UpdateLogin() {
     PasswordForm copy(pending_credentials_);
     copy.origin = observed_form_.origin;
     copy.action = observed_form_.action;
-    // This logging is only temporary, to investigate http://crbug.com/423327.
-    VLOG(4) << "Adding this login: " << copy;
     password_store->AddLogin(copy);
   } else if (observed_form_.new_password_element.empty() &&
              (pending_credentials_.password_element.empty() ||
@@ -727,12 +717,8 @@ void PasswordFormManager::UpdateLogin() {
     pending_credentials_.password_element = observed_form_.password_element;
     pending_credentials_.username_element = observed_form_.username_element;
     pending_credentials_.submit_element = observed_form_.submit_element;
-    // This logging is only temporary, to investigate http://crbug.com/423327.
-    VLOG(4) << "Adding this login: " << pending_credentials_;
     password_store->AddLogin(pending_credentials_);
   } else {
-    // This logging is only temporary, to investigate http://crbug.com/423327.
-    VLOG(4) << "Updating this login: " << pending_credentials_;
     password_store->UpdateLogin(pending_credentials_);
   }
 }

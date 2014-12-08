@@ -428,9 +428,6 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
           ENCRYPTION_RESULT_SUCCESS)
     return list;
 
-  // This logging is only temporary, to investigate http://crbug.com/423327.
-  VLOG(4) << "AddLogin with signon_realm = " << form.signon_realm;
-
   // You *must* change LoginTableColumns if this query changes.
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO logins "
@@ -472,9 +469,6 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   if (EncryptedString(form.password_value, &encrypted_password) !=
           ENCRYPTION_RESULT_SUCCESS)
     return PasswordStoreChangeList();
-
-  // This logging is only temporary, to investigate http://crbug.com/423327.
-  VLOG(4) << "UpdateLogin with signon_realm = " << form.signon_realm;
 
   // Replacement is necessary to deal with updating imported credentials. See
   // crbug.com/349138 for details.
@@ -694,17 +688,12 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
   } else {
     psl_domain_match_metric = PSL_DOMAIN_MATCH_NOT_USED;
     s.Assign(db_.GetCachedStatement(SQL_FROM_HERE, sql_query.c_str()));
-    // This logging is only temporary, to investigate http://crbug.com/423327.
-    VLOG(4) << "Executing SQL query [" << sql_query << "] with realm ["
-            << form.signon_realm << "]";
     s.BindString(0, form.signon_realm);
   }
 
   while (s.Step()) {
     scoped_ptr<PasswordForm> new_form(new PasswordForm());
     EncryptionResult result = InitPasswordFormFromStatement(new_form.get(), s);
-    // This logging is only temporary, to investigate http://crbug.com/423327.
-    VLOG(4) << "Encryption result = " << result;
     if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)
       return false;
     if (result == ENCRYPTION_RESULT_ITEM_FAILURE)
@@ -734,8 +723,6 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
         new_form->action = form.action;
       }
     }
-    // This logging is only temporary, to investigate http://crbug.com/423327.
-    VLOG(4) << "Found form with username " << new_form->username_value;
     forms->push_back(new_form.release());
   }
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.PslDomainMatchTriggering",
