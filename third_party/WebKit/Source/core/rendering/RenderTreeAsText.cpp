@@ -33,6 +33,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
 #include "core/page/PrintContext.h"
 #include "core/rendering/InlineTextBox.h"
@@ -211,6 +212,11 @@ void RenderTreeAsText::writeRenderObject(TextStream& ts, const RenderObject& o, 
     // FIXME: Temporary in order to ensure compatibility with existing layout test results.
     if (adjustForTableCells)
         r.move(0, -toRenderTableCell(o.containingBlock())->intrinsicPaddingBefore());
+
+    if (o.isRenderView()) {
+        r.setWidth(toRenderView(o).viewWidth(IncludeScrollbars));
+        r.setHeight(toRenderView(o).viewHeight(IncludeScrollbars));
+    }
 
     ts << " " << r;
 
@@ -503,9 +509,20 @@ static void write(TextStream& ts, RenderLayer& l,
                   LayerPaintPhase paintPhase = LayerPaintPhaseAll, int indent = 0, RenderAsTextBehavior behavior = RenderAsTextBehaviorNormal)
 {
     IntRect adjustedLayoutBounds = pixelSnappedIntRect(layerBounds);
+    IntRect adjustedLayoutBoundsWithScrollbars = adjustedLayoutBounds;
     IntRect adjustedBackgroundClipRect = pixelSnappedIntRect(backgroundClipRect);
     IntRect adjustedClipRect = pixelSnappedIntRect(clipRect);
     IntRect adjustedOutlineClipRect = pixelSnappedIntRect(outlineClipRect);
+
+    Settings* settings = l.renderer()->document().settings();
+    bool reportFrameScrollInfo = l.renderer()->isRenderView() && settings && !settings->rootLayerScrolls();
+
+    if (reportFrameScrollInfo) {
+        RenderView* renderView = toRenderView(l.renderer());
+
+        adjustedLayoutBoundsWithScrollbars.setWidth(renderView->viewWidth(IncludeScrollbars));
+        adjustedLayoutBoundsWithScrollbars.setHeight(renderView->viewHeight(IncludeScrollbars));
+    }
 
     writeIndent(ts, indent);
 
@@ -517,12 +534,12 @@ static void write(TextStream& ts, RenderLayer& l,
     if (behavior & RenderAsTextShowAddresses)
         ts << static_cast<const void*>(&l) << " ";
 
-    ts << adjustedLayoutBounds;
+    ts << adjustedLayoutBoundsWithScrollbars;
 
     if (!adjustedLayoutBounds.isEmpty()) {
         if (!adjustedBackgroundClipRect.contains(adjustedLayoutBounds))
             ts << " backgroundClip " << adjustedBackgroundClipRect;
-        if (!adjustedClipRect.contains(adjustedLayoutBounds))
+        if (!adjustedClipRect.contains(adjustedLayoutBoundsWithScrollbars))
             ts << " clip " << adjustedClipRect;
         if (!adjustedOutlineClipRect.contains(adjustedLayoutBounds))
             ts << " outlineClip " << adjustedOutlineClipRect;
@@ -530,11 +547,18 @@ static void write(TextStream& ts, RenderLayer& l,
     if (l.isTransparent())
         ts << " transparent";
 
-    if (l.renderer()->hasOverflowClip()) {
-        if (l.scrollableArea()->scrollXOffset())
-            ts << " scrollX " << l.scrollableArea()->scrollXOffset();
-        if (l.scrollableArea()->scrollYOffset())
-            ts << " scrollY " << l.scrollableArea()->scrollYOffset();
+    if (l.renderer()->hasOverflowClip() || reportFrameScrollInfo) {
+        ScrollableArea* scrollableArea;
+        if (reportFrameScrollInfo)
+            scrollableArea = toRenderView(l.renderer())->frameView();
+        else
+            scrollableArea = l.scrollableArea();
+
+        DoublePoint adjustedScrollOffset = scrollableArea->scrollPositionDouble() + toDoubleSize(scrollableArea->scrollOrigin());
+        if (adjustedScrollOffset.x())
+            ts << " scrollX " << adjustedScrollOffset.x();
+        if (adjustedScrollOffset.y())
+            ts << " scrollY " << adjustedScrollOffset.y();
         if (l.renderBox() && l.renderBox()->pixelSnappedClientWidth() != l.renderBox()->pixelSnappedScrollWidth())
             ts << " scrollWidth " << l.renderBox()->pixelSnappedScrollWidth();
         if (l.renderBox() && l.renderBox()->pixelSnappedClientHeight() != l.renderBox()->pixelSnappedScrollHeight())
@@ -569,21 +593,10 @@ static void write(TextStream& ts, RenderLayer& l,
 void RenderTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer, RenderLayer* layer,
     const LayoutRect& paintRect, int indent, RenderAsTextBehavior behavior)
 {
-    // FIXME: Apply overflow to the root layer to not break every test. Complete hack. Sigh.
-    LayoutRect paintDirtyRect(paintRect);
-    if (rootLayer == layer) {
-        paintDirtyRect.setWidth(max<LayoutUnit>(paintDirtyRect.width(), rootLayer->renderBox()->layoutOverflowRect().maxX()));
-        paintDirtyRect.setHeight(max<LayoutUnit>(paintDirtyRect.height(), rootLayer->renderBox()->layoutOverflowRect().maxY()));
-    }
-
     // Calculate the clip rects we should use.
     LayoutRect layerBounds;
     ClipRect damageRect, clipRectToApply, outlineRect;
-    layer->clipper().calculateRects(ClipRectsContext(rootLayer, UncachedClipRects), paintDirtyRect, layerBounds, damageRect, clipRectToApply, outlineRect);
-
-    // FIXME: Apply overflow to the root layer to not break every test. Complete hack. Sigh.
-    if (rootLayer == layer)
-        layerBounds.setSize(LayoutSize(layer->size().expandedTo(pixelSnappedIntSize(layer->renderBox()->maxLayoutOverflow(), LayoutPoint(0, 0)))));
+    layer->clipper().calculateRects(ClipRectsContext(rootLayer, UncachedClipRects), paintRect, layerBounds, damageRect, clipRectToApply, outlineRect);
 
     // Ensure our lists are up-to-date.
     layer->stackingNode()->updateLayerListsIfNeeded();
@@ -603,7 +616,7 @@ void RenderTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer,
             ++currIndent;
         }
         for (unsigned i = 0; i != negList->size(); ++i)
-            writeLayers(ts, rootLayer, negList->at(i)->layer(), paintDirtyRect, currIndent, behavior);
+            writeLayers(ts, rootLayer, negList->at(i)->layer(), paintRect, currIndent, behavior);
     }
 
     if (shouldPaint)
@@ -617,7 +630,7 @@ void RenderTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer,
             ++currIndent;
         }
         for (unsigned i = 0; i != normalFlowList->size(); ++i)
-            writeLayers(ts, rootLayer, normalFlowList->at(i)->layer(), paintDirtyRect, currIndent, behavior);
+            writeLayers(ts, rootLayer, normalFlowList->at(i)->layer(), paintRect, currIndent, behavior);
     }
 
     if (Vector<RenderLayerStackingNode*>* posList = layer->stackingNode()->posZOrderList()) {
@@ -628,7 +641,7 @@ void RenderTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer,
             ++currIndent;
         }
         for (unsigned i = 0; i != posList->size(); ++i)
-            writeLayers(ts, rootLayer, posList->at(i)->layer(), paintDirtyRect, currIndent, behavior);
+            writeLayers(ts, rootLayer, posList->at(i)->layer(), paintRect, currIndent, behavior);
     }
 }
 
