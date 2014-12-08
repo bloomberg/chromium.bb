@@ -261,7 +261,7 @@ class DevToolsAndroidBridge : public KeyedService {
   void SendProtocolCommand(const BrowserId& browser_id,
                            const std::string& debug_url,
                            const std::string& method,
-                           base::DictionaryValue* params,
+                           scoped_ptr<base::DictionaryValue> params,
                            const base::Closure callback);
 
   scoped_refptr<AndroidDeviceManager::Device> FindDevice(

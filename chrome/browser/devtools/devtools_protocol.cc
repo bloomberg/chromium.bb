@@ -25,151 +25,109 @@ enum Error {
 
 }  // namespace
 
-DevToolsProtocol::Message::~Message() {
-}
-
-DevToolsProtocol::Message::Message(const std::string& method,
-                                   base::DictionaryValue* params)
-    : method_(method),
-      params_(params ? params->DeepCopy() : NULL) {
-}
-
-DevToolsProtocol::Command::Command(int id,
-                                   const std::string& method,
-                                   base::DictionaryValue* params)
-    : Message(method, params),
-      id_(id) {
-}
-
-DevToolsProtocol::Command::~Command() {
-}
-
-std::string DevToolsProtocol::Command::Serialize() {
+// static
+std::string DevToolsProtocol::SerializeCommand(
+    int command_id,
+    const std::string& method,
+    scoped_ptr<base::DictionaryValue> params) {
   base::DictionaryValue command;
-  command.SetInteger(kIdParam, id_);
-  command.SetString(kMethodParam, method_);
-  if (params_)
-    command.Set(kParamsParam, params_->DeepCopy());
+  command.SetInteger(kIdParam, command_id);
+  command.SetString(kMethodParam, method);
+  if (params)
+    command.Set(kParamsParam, params.release());
 
   std::string json_command;
   base::JSONWriter::Write(&command, &json_command);
   return json_command;
 }
 
-scoped_ptr<DevToolsProtocol::Response>
-DevToolsProtocol::Command::SuccessResponse(base::DictionaryValue* result) {
-  return scoped_ptr<DevToolsProtocol::Response>(
-      new DevToolsProtocol::Response(id_, result));
-}
+// static
+scoped_ptr<base::DictionaryValue>
+DevToolsProtocol::CreateInvalidParamsResponse(int command_id,
+                                              const std::string& param) {
+  scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+  base::DictionaryValue* error_object = new base::DictionaryValue();
+  response->Set(kErrorParam, error_object);
+  error_object->SetInteger(kErrorCodeParam, kErrorInvalidParams);
+  error_object->SetString(kErrorMessageParam,
+      base::StringPrintf("Missing or invalid '%s' parameter", param.c_str()));
 
-scoped_ptr<DevToolsProtocol::Response>
-DevToolsProtocol::Command::InvalidParamResponse(const std::string& param) {
-  std::string message =
-      base::StringPrintf("Missing or invalid '%s' parameter", param.c_str());
-  return scoped_ptr<DevToolsProtocol::Response>(
-      new DevToolsProtocol::Response(id_, kErrorInvalidParams, message));
-}
-
-DevToolsProtocol::Notification::~Notification() {
-}
-
-DevToolsProtocol::Notification::Notification(const std::string& method,
-                                             base::DictionaryValue* params)
-    : Message(method, params) {
-}
-
-DevToolsProtocol::Response::~Response() {
-}
-
-DevToolsProtocol::Response::Response(int id,
-                                     int error_code,
-                                     const std::string error_message)
-    : id_(id),
-      error_code_(error_code),
-      error_message_(error_message) {
-}
-
-DevToolsProtocol::Response::Response(int id, base::DictionaryValue* result)
-    : id_(id),
-      error_code_(0),
-      result_(result) {
-}
-
-base::DictionaryValue* DevToolsProtocol::Response::Serialize() {
-  base::DictionaryValue* response = new base::DictionaryValue();
-
-  response->SetInteger(kIdParam, id_);
-
-  if (error_code_) {
-    base::DictionaryValue* error_object = new base::DictionaryValue();
-    response->Set(kErrorParam, error_object);
-    error_object->SetInteger(kErrorCodeParam, error_code_);
-    if (!error_message_.empty())
-      error_object->SetString(kErrorMessageParam, error_message_);
-  } else {
-    if (result_)
-      response->Set(kResultParam, result_->DeepCopy());
-    else
-      response->Set(kResultParam, new base::DictionaryValue());
-  }
-
-  return response;
+  return response.Pass();
 }
 
 // static
-DevToolsProtocol::Command* DevToolsProtocol::ParseCommand(
-    base::DictionaryValue* command_dict) {
-  if (!command_dict)
-    return NULL;
+scoped_ptr<base::DictionaryValue>
+DevToolsProtocol::CreateSuccessResponse(
+    int command_id,
+    scoped_ptr<base::DictionaryValue> result) {
+  scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
+  response->SetInteger(kIdParam, command_id);
+  response->Set(kResultParam,
+                result ? result.release() : new base::DictionaryValue());
 
-  int id;
-  if (!command_dict->GetInteger(kIdParam, &id) || id < 0)
-    return NULL;
-
-  std::string method;
-  if (!command_dict->GetString(kMethodParam, &method))
-    return NULL;
-
-  base::DictionaryValue* params = NULL;
-  command_dict->GetDictionary(kParamsParam, &params);
-  return new Command(id, method, params);
+  return response.Pass();
 }
 
 // static
-DevToolsProtocol::Notification* DevToolsProtocol::ParseNotification(
-    const std::string& json) {
+bool DevToolsProtocol::ParseCommand(const base::DictionaryValue* command,
+                                    int* command_id,
+                                    std::string* method,
+                                    const base::DictionaryValue** params) {
+  if (!command)
+    return false;
+
+  if (!command->GetInteger(kIdParam, command_id) || *command_id < 0)
+    return false;
+
+  if (!command->GetString(kMethodParam, method))
+    return false;
+
+  if (!command->GetDictionary(kParamsParam, params))
+    *params = nullptr;
+
+  return true;
+}
+
+// static
+bool DevToolsProtocol::ParseNotification(
+    const std::string& json,
+    std::string* method,
+    scoped_ptr<base::DictionaryValue>* params) {
   scoped_ptr<base::Value> value(base::JSONReader::Read(json));
   if (!value || !value->IsType(base::Value::TYPE_DICTIONARY))
-    return NULL;
+    return false;
 
   scoped_ptr<base::DictionaryValue> dict(
       static_cast<base::DictionaryValue*>(value.release()));
 
-  std::string method;
-  if (!dict->GetString(kMethodParam, &method))
-    return NULL;
+  if (!dict->GetString(kMethodParam, method))
+    return false;
 
-  base::DictionaryValue* params = NULL;
-  dict->GetDictionary(kParamsParam, &params);
-  return new Notification(method, params);
+  scoped_ptr<base::Value> params_value;
+  dict->Remove(kParamsParam, &params_value);
+  if (params_value && params_value->IsType(base::Value::TYPE_DICTIONARY))
+    params->reset(static_cast<base::DictionaryValue*>(params_value.release()));
+
+  return true;
 }
 
-DevToolsProtocol::Response* DevToolsProtocol::ParseResponse(
-    const std::string& json) {
+// static
+bool DevToolsProtocol::ParseResponse(const std::string& json,
+                                     int* command_id,
+                                     int* error_code) {
   scoped_ptr<base::Value> value(base::JSONReader::Read(json));
   if (!value || !value->IsType(base::Value::TYPE_DICTIONARY))
-    return NULL;
+    return nullptr;
 
   scoped_ptr<base::DictionaryValue> dict(
       static_cast<base::DictionaryValue*>(value.release()));
 
-  int id;
-  if (!dict->GetInteger(kIdParam, &id))
-    return NULL;
+  if (!dict->GetInteger(kIdParam, command_id))
+    return nullptr;
 
-  int error_code = 0;
-  base::DictionaryValue* error_dict = NULL;
+  *error_code = 0;
+  base::DictionaryValue* error_dict = nullptr;
   if (dict->GetDictionary(kErrorParam, &error_dict))
-    error_dict->GetInteger(kErrorCodeParam, &error_code);
-  return new Response(id, error_code, std::string());
+    error_dict->GetInteger(kErrorCodeParam, error_code);
+  return true;
 }

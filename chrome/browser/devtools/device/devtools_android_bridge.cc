@@ -570,10 +570,10 @@ void DevToolsAndroidBridge::RemotePageTarget::Navigate(
   if (!bridge_)
     return;
 
-  base::DictionaryValue params;
-  params.SetString(kUrlParam, url);
+  scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue);
+  params->SetString(kUrlParam, url);
   bridge_->SendProtocolCommand(browser_id_, debug_url_, kPageNavigateCommand,
-                               &params, callback);
+                               params.Pass(), callback);
 }
 
 // DevToolsAndroidBridge::RemotePage ------------------------------------------
@@ -645,7 +645,7 @@ void DevToolsAndroidBridge::SendProtocolCommand(
     const BrowserId& browser_id,
     const std::string& debug_url,
     const std::string& method,
-    base::DictionaryValue* params,
+    scoped_ptr<base::DictionaryValue> params,
     const base::Closure callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (debug_url.empty())
@@ -656,9 +656,10 @@ void DevToolsAndroidBridge::SendProtocolCommand(
     callback.Run();
     return;
   }
-  DevToolsProtocol::Command command(1, method, params);
-  new ProtocolCommand(device, browser_id.second, debug_url,
-                      command.Serialize(), callback);
+  new ProtocolCommand(
+      device, browser_id.second, debug_url,
+      DevToolsProtocol::SerializeCommand(1, method, params.Pass()),
+      callback);
 }
 
 scoped_refptr<content::DevToolsAgentHost>

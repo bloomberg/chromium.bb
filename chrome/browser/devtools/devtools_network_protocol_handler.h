@@ -29,13 +29,15 @@ class DevToolsNetworkProtocolHandler {
       base::DictionaryValue* command_dict);
 
  private:
-  scoped_ptr<DevToolsProtocol::Response> CanEmulateNetworkConditions(
+  scoped_ptr<base::DictionaryValue> CanEmulateNetworkConditions(
       content::DevToolsAgentHost* agent_host,
-      DevToolsProtocol::Command* command);
+      int command_id,
+      const base::DictionaryValue* params);
 
-  scoped_ptr<DevToolsProtocol::Response> EmulateNetworkConditions(
+  scoped_ptr<base::DictionaryValue> EmulateNetworkConditions(
       content::DevToolsAgentHost* agent_host,
-      DevToolsProtocol::Command* command);
+      int command_id,
+      const base::DictionaryValue* params);
 
   void UpdateNetworkState(
       content::DevToolsAgentHost* agent_host,
