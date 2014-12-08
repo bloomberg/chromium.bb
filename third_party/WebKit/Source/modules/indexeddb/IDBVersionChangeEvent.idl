@@ -27,18 +27,15 @@
 
 // FIXME: This enum is non-standard, see
 // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22370
-enum IDBDataLossAmount {
-    "none",
-    "total"
-};
+enum IDBDataLossAmount { "none", "total" };
 [
-    EventConstructor
+    Constructor(DOMString type, optional IDBVersionChangeEventInit eventInitDict)
 ] interface IDBVersionChangeEvent : Event {
-    [InitializedByEventConstructor] readonly attribute unsigned long long oldVersion;
-    [InitializedByEventConstructor] readonly attribute unsigned long long? newVersion;
+    readonly attribute unsigned long long oldVersion;
+    readonly attribute unsigned long long? newVersion;
 
     // FIXME: These are non-standard, see
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22370
-    [InitializedByEventConstructor] readonly attribute IDBDataLossAmount dataLoss;
+    readonly attribute IDBDataLossAmount dataLoss;
     readonly attribute DOMString dataLossMessage;
 };

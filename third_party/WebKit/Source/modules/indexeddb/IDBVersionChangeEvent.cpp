@@ -30,11 +30,6 @@
 
 namespace blink {
 
-IDBVersionChangeEventInit::IDBVersionChangeEventInit()
-    : oldVersion(0)
-{
-}
-
 IDBVersionChangeEvent::IDBVersionChangeEvent()
     : m_dataLoss(WebIDBDataLossNone)
 {
@@ -51,13 +46,13 @@ IDBVersionChangeEvent::IDBVersionChangeEvent(const AtomicString& eventType, unsi
 
 IDBVersionChangeEvent::IDBVersionChangeEvent(const AtomicString& eventType, const IDBVersionChangeEventInit& initializer)
     : Event(eventType, false /*canBubble*/, false /*cancelable*/)
-    , m_oldVersion(initializer.oldVersion)
-    , m_newVersion(initializer.newVersion)
+    , m_oldVersion(initializer.oldVersion())
+    , m_newVersion(nullptr)
     , m_dataLoss(WebIDBDataLossNone)
 {
-    if (initializer.dataLoss.isEmpty() || initializer.dataLoss == "none")
-        m_dataLoss = WebIDBDataLossNone;
-    else if (initializer.dataLoss == "total")
+    if (initializer.hasNewVersion())
+        m_newVersion = initializer.newVersion();
+    if (initializer.dataLoss() == "total")
         m_dataLoss = WebIDBDataLossTotal;
 }
 

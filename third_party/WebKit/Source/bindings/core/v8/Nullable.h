@@ -18,6 +18,10 @@ public:
         : m_value()
         , m_isNull(true) { }
 
+    Nullable(std::nullptr_t)
+        : m_value()
+        , m_isNull(true) { }
+
     Nullable(const T& value)
         : m_value(value)
         , m_isNull(false) { }
@@ -33,11 +37,25 @@ public:
         return *this;
     }
 
+    Nullable& operator=(std::nullptr_t)
+    {
+        m_value = T();
+        m_isNull = true;
+        return *this;
+    }
+
     void set(const T& value)
     {
         m_value = value;
         m_isNull = false;
     }
+
+    void set(std::nullptr_t)
+    {
+        m_value = T();
+        m_isNull = true;
+    }
+
     const T& get() const { ASSERT(!m_isNull); return m_value; }
     T& get() { ASSERT(!m_isNull); return m_value; }
     bool isNull() const { return m_isNull; }
