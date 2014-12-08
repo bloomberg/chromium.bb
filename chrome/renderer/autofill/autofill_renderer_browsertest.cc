@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/core/common/form_data.h"
@@ -83,7 +85,7 @@ TEST_F(AutofillRendererTest, SendForms) {
   // Verify that "FormsSeen" sends the expected number of fields.
   const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_FormsSeen::ID);
-  ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
+  ASSERT_NE(nullptr, message);
   AutofillHostMsg_FormsSeen::Param params;
   AutofillHostMsg_FormsSeen::Read(message, &params);
   std::vector<FormData> forms = params.a;
@@ -147,7 +149,7 @@ TEST_F(AutofillRendererTest, SendForms) {
 
   message = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_FormsSeen::ID);
-  ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
+  ASSERT_NE(nullptr, message);
   AutofillHostMsg_FormsSeen::Read(message, &params);
   forms = params.a;
   ASSERT_EQ(1UL, forms.size());
@@ -178,7 +180,7 @@ TEST_F(AutofillRendererTest, EnsureNoFormSeenIfTooFewFields) {
   // Verify that "FormsSeen" isn't sent, as there are too few fields.
   const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_FormsSeen::ID);
-  ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
+  ASSERT_NE(nullptr, message);
   AutofillHostMsg_FormsSeen::Param params;
   AutofillHostMsg_FormsSeen::Read(message, &params);
   const std::vector<FormData>& forms = params.a;
@@ -196,7 +198,7 @@ TEST_F(AutofillRendererTest, ShowAutofillWarning) {
   // interaction.
   const IPC::Message* message0 = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_QueryFormFieldAutofill::ID);
-  EXPECT_EQ(static_cast<IPC::Message*>(NULL), message0);
+  EXPECT_EQ(nullptr, message0);
 
   WebFrame* web_frame = GetMainFrame();
   WebDocument document = web_frame->document();
@@ -212,7 +214,7 @@ TEST_F(AutofillRendererTest, ShowAutofillWarning) {
       ->FormControlElementClicked(firstname, true);
   const IPC::Message* message1 = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_QueryFormFieldAutofill::ID);
-  EXPECT_NE(static_cast<IPC::Message*>(NULL), message1);
+  EXPECT_NE(nullptr, message1);
 
   AutofillQueryParam query_param;
   AutofillHostMsg_QueryFormFieldAutofill::Read(message1, &query_param);
@@ -227,7 +229,7 @@ TEST_F(AutofillRendererTest, ShowAutofillWarning) {
       ->FormControlElementClicked(middlename, true);
   const IPC::Message* message2 = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_QueryFormFieldAutofill::ID);
-  ASSERT_NE(static_cast<IPC::Message*>(NULL), message2);
+  ASSERT_NE(nullptr, message2);
 
   AutofillHostMsg_QueryFormFieldAutofill::Read(message2, &query_param);
   EXPECT_TRUE(query_param.e);
@@ -246,6 +248,52 @@ TEST_F(AutofillRendererTest, DontCrashWhileAssociatingForms) {
            "</script>");
 
   // Shouldn't crash.
+}
+
+TEST_F(AutofillRendererTest, DynamicallyAddedUnownedFormElements) {
+  std::string html_data;
+  base::FilePath test_path = ui_test_utils::GetTestFilePath(
+      base::FilePath(FILE_PATH_LITERAL("autofill")),
+      base::FilePath(FILE_PATH_LITERAL("autofill_noform_dynamic.html")));
+  ASSERT_TRUE(base::ReadFileToString(test_path, &html_data));
+  LoadHTML(html_data.c_str());
+
+  // Verify that "FormsSeen" sends the expected number of fields.
+  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_FormsSeen::ID);
+  ASSERT_NE(nullptr, message);
+  AutofillHostMsg_FormsSeen::Param params;
+  AutofillHostMsg_FormsSeen::Read(message, &params);
+  std::vector<FormData> forms = params.a;
+  ASSERT_EQ(1UL, forms.size());
+  ASSERT_EQ(7UL, forms[0].fields.size());
+
+  render_thread_->sink().ClearMessages();
+
+  ExecuteJavaScript("AddFields()");
+  msg_loop_.RunUntilIdle();
+
+  message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_FormsSeen::ID);
+  ASSERT_NE(nullptr, message);
+  AutofillHostMsg_FormsSeen::Read(message, &params);
+  forms = params.a;
+  ASSERT_EQ(1UL, forms.size());
+  ASSERT_EQ(9UL, forms[0].fields.size());
+
+  FormFieldData expected;
+
+  expected.name = ASCIIToUTF16("EMAIL_ADDRESS");
+  expected.value.clear();
+  expected.form_control_type = "text";
+  expected.max_length = WebInputElement::defaultMaxLength();
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[7]);
+
+  expected.name = ASCIIToUTF16("PHONE_HOME_WHOLE_NUMBER");
+  expected.value.clear();
+  expected.form_control_type = "text";
+  expected.max_length = WebInputElement::defaultMaxLength();
+  EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[8]);
 }
 
 class RequestAutocompleteRendererTest : public AutofillRendererTest {
