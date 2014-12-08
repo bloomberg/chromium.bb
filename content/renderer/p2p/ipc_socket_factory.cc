@@ -399,9 +399,10 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
 
   net::IPEndPoint address_chrome;
   if (!jingle_glue::SocketAddressToIPEndPoint(address, &address_chrome)) {
-    DVLOG(1) << "Failed to convert remote address to IPEndPoint: address = "
-             << address.ToSensitiveString() << ", remote_address_ = "
-             << remote_address_.ToSensitiveString();
+    LOG(WARNING) << "Failed to convert remote address to IPEndPoint: address = "
+                 << address.ipaddr().ToSensitiveString()
+                 << ", remote_address_ = "
+                 << remote_address_.ipaddr().ToSensitiveString();
     NOTREACHED();
     error_ = EINVAL;
     return -1;
@@ -531,6 +532,8 @@ void IpcPacketSocket::OnOpen(const net::IPEndPoint& local_address,
       rtc::SocketAddress jingle_socket_address;
       if (!jingle_glue::IPEndPointToSocketAddress(
             remote_address, &jingle_socket_address)) {
+        LOG(WARNING) << "Failed to convert remote IPEndPoint to SocketAddress: "
+                     << remote_address.ToString();
         NOTREACHED();
       }
       // Set only the IP address.
