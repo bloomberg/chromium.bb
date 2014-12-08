@@ -233,7 +233,7 @@ void RenderLayer::setSubpixelAccumulation(const LayoutSize& size)
 
 void RenderLayer::updateLayerPositionsAfterLayout()
 {
-    TRACE_EVENT0("blink", "RenderLayer::updateLayerPositionsAfterLayout");
+    TRACE_EVENT0("blink,benchmark", "RenderLayer::updateLayerPositionsAfterLayout");
 
     m_clipper.clearClipRectsIncludingDescendants();
     updateLayerPositionRecursive();

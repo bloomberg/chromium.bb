@@ -782,7 +782,7 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
 
 void FrameView::performPreLayoutTasks()
 {
-    TRACE_EVENT0("blink", "FrameView::performPreLayoutTasks");
+    TRACE_EVENT0("blink,benchmark", "FrameView::performPreLayoutTasks");
     lifecycle().advanceTo(DocumentLifecycle::InPreLayout);
 
     // Don't schedule more layouts, we're in one.
@@ -817,7 +817,7 @@ void FrameView::performPreLayoutTasks()
 
 void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLayout)
 {
-    TRACE_EVENT0("blink", "FrameView::performLayout");
+    TRACE_EVENT0("blink,benchmark", "FrameView::performLayout");
 
     ScriptForbiddenScope forbidScript;
 
@@ -878,7 +878,7 @@ void FrameView::layout(bool allowSubtree)
     if (isInPerformLayout() || !m_frame->document()->isActive())
         return;
 
-    TRACE_EVENT0("blink", "FrameView::layout");
+    TRACE_EVENT0("blink,benchmark", "FrameView::layout");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "Layout");
 
     // Protect the view from being deleted during layout (in recalcStyle)
@@ -2019,7 +2019,7 @@ void FrameView::performPostLayoutTasks()
     // tests hit that case.
     // We should ASSERT(isActive()); or at least return early if we can!
     ASSERT(!isInPerformLayout()); // Always before or after performLayout(), part of the highest-level layout() call.
-    TRACE_EVENT0("blink", "FrameView::performPostLayoutTasks");
+    TRACE_EVENT0("blink,benchmark", "FrameView::performPostLayoutTasks");
     RefPtrWillBeRawPtr<FrameView> protect(this);
 
     m_postLayoutTasksTimer.stop();
