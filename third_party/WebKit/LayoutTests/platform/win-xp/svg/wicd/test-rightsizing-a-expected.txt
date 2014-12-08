@@ -5,8 +5,8 @@ layer at (0,0) size 800x550
     RenderBody {body} at (48,30.72) size 752x511.14
       RenderBlock {div} at (0,0) size 752x511.14
         RenderBlock {h1} at (0,0) size 691.83x31
-          RenderText {#text} at (0,0) size 219x30
-            text run at (0,0) width 219: "rightsizing to box"
+          RenderText {#text} at (0,0) size 207x30
+            text run at (0,0) width 207: "rightsizing to box"
         RenderBlock {h4} at (0,31) size 752x16
           RenderText {#text} at (0,0) size 138x16
             text run at (0,0) width 138: "WICD Core 1.0 #20-1"
