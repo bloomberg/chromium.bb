@@ -103,7 +103,6 @@ class ChromiumEnv : public leveldb::Env,
   typedef void(ScheduleFunc)(void*);
 
   static bool MakeBackup(const std::string& fname);
-  static bool HasTableExtension(const base::FilePath& path);
   virtual ~ChromiumEnv();
 
   virtual bool FileExists(const std::string& fname);

@@ -252,7 +252,7 @@ ChromiumWritableFile::ChromiumWritableFile(const std::string& fname,
   FilePath path = FilePath::FromUTF8Unsafe(fname);
   if (path.BaseName().AsUTF8Unsafe().find("MANIFEST") == 0)
     file_type_ = kManifest;
-  else if (ChromiumEnv::HasTableExtension(path))
+  else if (path.MatchesExtension(table_extension))
     file_type_ = kTable;
   if (file_type_ != kManifest)
     tracker_->DidCreateNewFile(filename_);
@@ -525,10 +525,6 @@ bool ChromiumEnv::MakeBackup(const std::string& fname) {
   FilePath backup_table_name =
       original_table_name.ReplaceExtension(backup_table_extension);
   return base::CopyFile(original_table_name, backup_table_name);
-}
-
-bool ChromiumEnv::HasTableExtension(const FilePath& path) {
-  return path.MatchesExtension(table_extension);
 }
 
 ChromiumEnv::ChromiumEnv()
