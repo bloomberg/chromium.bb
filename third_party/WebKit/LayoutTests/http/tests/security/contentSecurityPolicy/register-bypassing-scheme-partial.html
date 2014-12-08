@@ -36,7 +36,7 @@
             iframe.onload = function() {
                 var didLoad = iframe.contentDocument.styleSheets.length > 0;
                 (shouldLoad == didLoad) ? resolve() : reject(new Error());
-                iframe.remove();
+                setTimeout(function() { iframe.remove(); }, 0);
             };
             iframe.srcdoc = '<link rel="stylesheet" href="../resources/cssStyle.css">';
             document.body.appendChild(iframe);

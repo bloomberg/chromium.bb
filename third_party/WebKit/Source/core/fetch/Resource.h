@@ -164,14 +164,13 @@ public:
     ResourceLoader* loader() const { return m_loader.get(); }
 
     virtual bool isImage() const { return false; }
-    bool ignoreForRequestCount() const
+    bool shouldBlockLoadEvent() const
     {
-        return type() == MainResource
-            || type() == LinkPrefetch
-            || type() == LinkSubresource
-            || type() == Media
-            || type() == Raw
-            || type() == TextTrack;
+        return type() != LinkPrefetch
+            && type() != LinkSubresource
+            && type() != Media
+            && type() != Raw
+            && type() != TextTrack;
     }
 
     // Computes the status of an object after loading.

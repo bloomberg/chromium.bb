@@ -45,8 +45,6 @@ struct FetchInitiatorInfo;
 
 class ResourceLoaderHost : public WillBeGarbageCollectedMixin {
 public:
-    virtual void incrementRequestCount(const Resource*) = 0;
-    virtual void decrementRequestCount(const Resource*) = 0;
     virtual void didLoadResource() = 0;
     virtual void redirectReceived(Resource*, const ResourceResponse&) = 0;
 
@@ -61,7 +59,6 @@ public:
 
     virtual void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*) = 0;
     virtual void didInitializeResourceLoader(ResourceLoader*) = 0;
-    virtual void willTerminateResourceLoader(ResourceLoader*) = 0;
     virtual void willStartLoadingResource(Resource*, ResourceRequest&) = 0;
 
     virtual bool canAccessRedirect(Resource*, ResourceRequest&, const ResourceResponse&, ResourceLoaderOptions&) = 0;

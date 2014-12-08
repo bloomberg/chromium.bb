@@ -558,10 +558,10 @@ void DocumentLoader::dataReceived(Resource* resource, const char* data, unsigned
     m_applicationCacheHost->mainResourceDataReceived(data, length);
     m_timeOfLastDataReceived = monotonicallyIncreasingTime();
 
+    if (isArchiveMIMEType(response().mimeType()))
+        return;
     commitIfReady();
     if (!frameLoader())
-        return;
-    if (isArchiveMIMEType(response().mimeType()))
         return;
     commitData(data, length);
 

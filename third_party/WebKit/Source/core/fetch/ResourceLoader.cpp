@@ -49,25 +49,6 @@
 
 namespace blink {
 
-ResourceLoader::RequestCountTracker::RequestCountTracker(ResourceLoaderHost* host, Resource* resource)
-    : m_host(host)
-    , m_resource(resource)
-{
-    m_host->incrementRequestCount(m_resource);
-}
-
-ResourceLoader::RequestCountTracker::~RequestCountTracker()
-{
-    m_host->decrementRequestCount(m_resource);
-}
-
-ResourceLoader::RequestCountTracker::RequestCountTracker(const RequestCountTracker& other)
-{
-    m_host = other.m_host;
-    m_resource = other.m_resource;
-    m_host->incrementRequestCount(m_resource);
-}
-
 PassRefPtrWillBeRawPtr<ResourceLoader> ResourceLoader::create(ResourceLoaderHost* host, Resource* resource, const ResourceRequest& request, const ResourceLoaderOptions& options)
 {
     RefPtrWillBeRawPtr<ResourceLoader> loader(adoptRefWillBeNoop(new ResourceLoader(host, resource, options)));
@@ -83,7 +64,6 @@ ResourceLoader::ResourceLoader(ResourceLoaderHost* host, Resource* resource, con
     , m_resource(resource)
     , m_state(Initialized)
     , m_connectionState(ConnectionStateNew)
-    , m_requestCountTracker(adoptPtr(new RequestCountTracker(host, resource)))
 {
 }
 
@@ -102,14 +82,12 @@ void ResourceLoader::releaseResources()
 {
     ASSERT(m_state != Terminated);
     ASSERT(m_notifiedLoadComplete);
-    ASSERT(!m_requestCountTracker);
     m_host->didLoadResource();
     if (m_state == Terminated)
         return;
     m_resource->clearLoader();
     m_resource->deleteIfPossible();
     m_resource = nullptr;
-    m_host->willTerminateResourceLoader(this);
 
     ASSERT(m_state != Terminated);
 
@@ -225,7 +203,7 @@ void ResourceLoader::didFinishLoadingOnePart(double finishTime, int64_t encodedD
 
     if (m_notifiedLoadComplete)
         return;
-    didComplete();
+    m_notifiedLoadComplete = true;
     m_host->didFinishLoading(m_resource, finishTime, encodedDataLength);
 }
 
@@ -278,7 +256,7 @@ void ResourceLoader::cancel(const ResourceError& error)
     }
 
     if (!m_notifiedLoadComplete) {
-        didComplete();
+        m_notifiedLoadComplete = true;
         m_host->didFailLoading(m_resource, nonNullError);
     }
 
@@ -395,8 +373,6 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
         return;
 
     if (response.toResourceResponse().isMultipart()) {
-        // We don't count multiParts in a ResourceFetcher's request count
-        m_requestCountTracker.clear();
         if (!m_resource->isImage()) {
             cancel();
             return;
@@ -405,7 +381,6 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
         // Since a subresource loader does not load multipart sections progressively, data was delivered to the loader all at once.
         // After the first multipart section is complete, signal to delegates that this load is "finished"
         m_host->subresourceLoaderFinishedLoadingOnePart(this);
-        ASSERT(m_state != Terminated);
         didFinishLoadingOnePart(0, blink::WebURLLoaderClient::kUnknownEncodedDataLength);
     }
     if (m_state == Terminated)
@@ -416,7 +391,7 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
     m_state = Finishing;
 
     if (!m_notifiedLoadComplete) {
-        didComplete();
+        m_notifiedLoadComplete = true;
         m_host->didFailLoading(m_resource, ResourceError::cancelledError(m_request.url()));
     }
 
@@ -494,7 +469,7 @@ void ResourceLoader::didFail(blink::WebURLLoader*, const blink::WebURLError& err
     m_resource->setResourceError(error);
 
     if (!m_notifiedLoadComplete) {
-        didComplete();
+        m_notifiedLoadComplete = true;
         m_host->didFailLoading(m_resource, error);
     }
     if (m_state == Terminated)
@@ -546,12 +521,6 @@ void ResourceLoader::requestSynchronously()
     m_host->didReceiveData(m_resource, dataOut.data(), dataOut.size(), encodedDataLength);
     m_resource->setResourceBuffer(dataOut);
     didFinishLoading(0, monotonicallyIncreasingTime(), encodedDataLength);
-}
-
-void ResourceLoader::didComplete()
-{
-    m_notifiedLoadComplete = true;
-    m_requestCountTracker.clear();
 }
 
 ResourceRequest& ResourceLoader::applyOptions(ResourceRequest& request) const

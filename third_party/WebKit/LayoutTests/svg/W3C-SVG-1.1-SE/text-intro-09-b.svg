@@ -11,15 +11,6 @@
   <!--=  See http://www.w3.org/Consortium/Legal/.                          =-->
   <!--======================================================================-->
   <script xlink:href="../../resources/run-after-display.js"></script>
-  <script>
-    if (window.testRunner)
-      testRunner.waitUntilDone();
-
-    runAfterDisplay(function() {
-      if (window.testRunner)
-        testRunner.notifyDone();
-    });
-  </script>
   <d:SVGTestCase xmlns:d="http://www.w3.org/2000/02/svg/testsuite/description/"
     template-version="1.4" reviewer="SVGWG" author="Jon Ferraiolo" status="accepted"
     version="$Revision: 1.6 $" testname="$RCSfile: text-intro-09-b.svg,v $">
@@ -80,6 +71,9 @@
     <text id="revision" x="10" y="340" stroke="none" fill="black">$Revision: 1.6 $</text>
   </g>
   <rect id="test-frame" x="1" y="1" width="478" height="358" fill="none" stroke="#000000"/>
+  <script>
+    document.documentElement.offsetLeft;
+  </script>
   <!-- comment out this watermark once the test is approved -->
   <!--<g id="draft-watermark">
     <rect x="1" y="1" width="478" height="20" fill="red" stroke="black" stroke-width="1"/>

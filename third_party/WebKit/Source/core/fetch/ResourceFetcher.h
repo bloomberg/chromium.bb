@@ -122,7 +122,7 @@ public:
 
     void garbageCollectDocumentResources();
 
-    int requestCount() const { return m_requestCount; }
+    int requestCount() const;
 
     bool isPreloaded(const String& urlString) const;
     void clearPreloads();
@@ -134,8 +134,6 @@ public:
     bool isFetching() const;
 
     // ResourceLoaderHost
-    virtual void incrementRequestCount(const Resource*) override;
-    virtual void decrementRequestCount(const Resource*) override;
     virtual void didLoadResource() override;
     virtual void redirectReceived(Resource*, const ResourceResponse&) override;
     virtual void didFinishLoading(Resource*, double finishTime, int64_t encodedDataLength) override;
@@ -147,7 +145,6 @@ public:
     virtual void didDownloadData(const Resource*, int dataLength, int encodedDataLength) override;
     virtual void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*) override;
     virtual void didInitializeResourceLoader(ResourceLoader*) override;
-    virtual void willTerminateResourceLoader(ResourceLoader*) override;
     virtual void willStartLoadingResource(Resource*, ResourceRequest&) override;
     virtual bool defersLoading() const override;
     virtual bool isLoadedBy(ResourceLoaderHost*) const override;
@@ -205,6 +202,8 @@ private:
     bool clientDefersImage(const KURL&) const;
     void reloadImagesIfNotDeferred();
 
+    void willTerminateResourceLoader(ResourceLoader*);
+
     HashSet<String> m_validatedURLs;
     mutable DocumentResourceMap m_documentResources;
     // FIXME: Oilpan: Ideally this should just be a traced Member but that will
@@ -212,8 +211,6 @@ private:
     // See crbug.com/383860 for details.
     RawPtrWillBeWeakMember<Document> m_document;
     DocumentLoader* m_documentLoader;
-
-    int m_requestCount;
 
     OwnPtr<ListHashSet<Resource*>> m_preloads;
 
@@ -226,7 +223,7 @@ private:
     HashMap<RefPtr<ResourceTimingInfo>, bool> m_scheduledResourceTimingReports;
 
     OwnPtrWillBeMember<ResourceLoaderSet> m_loaders;
-    OwnPtrWillBeMember<ResourceLoaderSet> m_multipartLoaders;
+    OwnPtrWillBeMember<ResourceLoaderSet> m_nonBlockingLoaders;
 
     // Used in hit rate histograms.
     class DeadResourceStatsRecorder {

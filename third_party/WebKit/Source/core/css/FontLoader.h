@@ -41,7 +41,8 @@ private:
 
     Timer<FontLoader> m_beginLoadingTimer;
 
-    typedef Vector<std::pair<ResourcePtr<FontResource>, ResourceLoader::RequestCountTracker> > FontsToLoadVector;
+    struct FontToLoad;
+    typedef Vector<OwnPtr<FontToLoad>> FontsToLoadVector;
     FontsToLoadVector m_fontsToBeginLoading;
     RawPtrWillBeMember<CSSFontSelector> m_fontSelector;
     RawPtrWillBeWeakMember<ResourceFetcher> m_resourceFetcher;

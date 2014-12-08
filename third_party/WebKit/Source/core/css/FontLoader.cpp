@@ -6,10 +6,30 @@
 #include "core/css/FontLoader.h"
 
 #include "core/css/CSSFontSelector.h"
+#include "core/dom/Document.h"
+#include "core/dom/IncrementLoadEventDelayCount.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourceFetcher.h"
 
 namespace blink {
+
+struct FontLoader::FontToLoad {
+public:
+    static PassOwnPtr<FontToLoad> create(FontResource* fontResource, Document& document)
+    {
+        return adoptPtr(new FontToLoad(fontResource, document));
+    }
+
+    ResourcePtr<FontResource> fontResource;
+    OwnPtr<IncrementLoadEventDelayCount> delay;
+
+private:
+    FontToLoad(FontResource* resource, Document& document)
+        : fontResource(resource)
+        , delay(IncrementLoadEventDelayCount::create(document))
+    {
+    }
+};
 
 FontLoader::FontLoader(CSSFontSelector* fontSelector, ResourceFetcher* resourceFetcher)
     : m_beginLoadingTimer(this, &FontLoader::beginLoadTimerFired)
@@ -37,8 +57,7 @@ void FontLoader::addFontToBeginLoading(FontResource* fontResource)
     if (!m_resourceFetcher || !fontResource->stillNeedsLoad() || fontResource->loadScheduled())
         return;
 
-    m_fontsToBeginLoading.append(
-        std::make_pair(fontResource, ResourceLoader::RequestCountTracker(m_resourceFetcher, fontResource)));
+    m_fontsToBeginLoading.append(FontToLoad::create(fontResource, *m_resourceFetcher->document()));
     fontResource->didScheduleLoad();
     if (!m_beginLoadingTimer.isActive())
         m_beginLoadingTimer.startOneShot(0, FROM_HERE);
@@ -55,10 +74,8 @@ void FontLoader::loadPendingFonts()
 
     FontsToLoadVector fontsToBeginLoading;
     fontsToBeginLoading.swap(m_fontsToBeginLoading);
-    for (const auto& item : fontsToBeginLoading) {
-        FontResource* fontResource = item.first.get();
-        fontResource->beginLoadIfNeeded(m_resourceFetcher);
-    }
+    for (const auto& fontToLoad : fontsToBeginLoading)
+        fontToLoad->fontResource->beginLoadIfNeeded(m_resourceFetcher);
 
     // When the local fontsToBeginLoading vector goes out of scope it will
     // decrement the request counts on the ResourceFetcher for all the fonts
@@ -88,8 +105,8 @@ void FontLoader::clearResourceFetcherAndFontSelector()
 
 void FontLoader::clearPendingFonts()
 {
-    for (const auto& item : m_fontsToBeginLoading)
-        item.first->didUnscheduleLoad();
+    for (const auto& fontToLoad : m_fontsToBeginLoading)
+        fontToLoad->fontResource->didUnscheduleLoad();
     m_fontsToBeginLoading.clear();
 }
 

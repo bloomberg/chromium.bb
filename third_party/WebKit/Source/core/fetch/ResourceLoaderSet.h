@@ -49,6 +49,7 @@ public:
     bool contains(const RefPtrWillBeRawPtr<ResourceLoader>& loader) const { return m_set.contains(loader); }
     void cancelAll();
     void setAllDefersLoading(bool);
+    int size() const { return m_set.size(); }
 
 private:
     SetType m_set;

@@ -37,6 +37,6 @@ function finishTest()
 
 CallCommand("start-resource-request-log");
 var iframe = document.getElementById("iframe");
-iframe.addEventListener('load', finishTest);
+iframe.addEventListener('load', function() { setTimeout(finishTest, 0); });
 iframe.src = 'resources/subresource-fragment-identifier-iframe.html';
 </script>
