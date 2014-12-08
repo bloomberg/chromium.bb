@@ -245,7 +245,6 @@ crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip 
 
 crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 # crbug.com/331583 [ Mavericks ] fast/parser/fonts.html [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] fast/repaint/text-emphasis-h.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/repaint/text-emphasis-v.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/shapes/shape-outside-floats/shape-outside-boxes-001.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/shapes/shape-outside-floats/shape-outside-boxes-002.html [ Pass ImageOnlyFailure ]
@@ -2173,3 +2172,4 @@ crbug.com/438676 [ SnowLeopard Debug ] fast/dom/52776.html [ Crash ]
 crbug.com/439840 [ Win Linux Debug ] svg/custom/relative-sized-image.xhtml [ Pass ImageOnlyFailure ]
 
 crbug.com/418091 [ Mac ] fast/text/aat-morx.html [ Pass Failure ]
+crbug.com/418091 [ Mac ] fast/repaint/text-emphasis-h.html [ NeedsRebaseline ]
