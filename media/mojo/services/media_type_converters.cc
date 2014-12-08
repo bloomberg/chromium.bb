@@ -12,7 +12,6 @@
 #include "media/base/video_decoder_config.h"
 #include "media/mojo/interfaces/demuxer_stream.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace mojo {
 
@@ -251,7 +250,6 @@ MediaDecoderBufferPtr TypeConverter<MediaDecoderBufferPtr,
     scoped_refptr<media::DecoderBuffer> >::Convert(
         const scoped_refptr<media::DecoderBuffer>& input) {
   MediaDecoderBufferPtr mojo_buffer(MediaDecoderBuffer::New());
-  DCHECK(!mojo_buffer->data.is_valid());
 
   if (input->end_of_stream())
     return mojo_buffer.Pass();
@@ -268,7 +266,7 @@ MediaDecoderBufferPtr TypeConverter<MediaDecoderBufferPtr,
   mojo_buffer->splice_timestamp_usec =
       input->splice_timestamp().InMicroseconds();
 
-  // TODO(tim): Assuming this is small so allowing extra copies.
+  // Note: The side data is always small, so this copy is okay.
   std::vector<uint8> side_data(input->side_data(),
                                input->side_data() + input->side_data_size());
   mojo_buffer->side_data.Swap(&side_data);
@@ -276,23 +274,10 @@ MediaDecoderBufferPtr TypeConverter<MediaDecoderBufferPtr,
   if (input->decrypt_config())
     mojo_buffer->decrypt_config = DecryptConfig::From(*input->decrypt_config());
 
-  MojoCreateDataPipeOptions options;
-  options.struct_size = sizeof(MojoCreateDataPipeOptions);
-  options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
-  options.element_num_bytes = 1;
-  options.capacity_num_bytes = input->data_size();
-  DataPipe data_pipe(options);
-  mojo_buffer->data = data_pipe.consumer_handle.Pass();
+  // TODO(dalecurtis): We intentionally do not serialize the data section of
+  // the DecoderBuffer here; this must instead be done by clients via their
+  // own DataPipe.  See http://crbug.com/432960
 
-  uint32_t num_bytes = input->data_size();
-  // TODO(tim): ALL_OR_NONE isn't really appropriate. Check success?
-  // If fails, we'd still return the buffer, but we'd need to HandleWatch
-  // to fill the pipe at a later time, which means the de-marshalling code
-  // needs to wait for a readable pipe (which it currently doesn't).
-  WriteDataRaw(data_pipe.producer_handle.get(),
-               input->data(),
-               &num_bytes,
-               MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
   return mojo_buffer.Pass();
 }
 
@@ -300,33 +285,13 @@ MediaDecoderBufferPtr TypeConverter<MediaDecoderBufferPtr,
 scoped_refptr<media::DecoderBuffer>  TypeConverter<
     scoped_refptr<media::DecoderBuffer>, MediaDecoderBufferPtr>::Convert(
         const MediaDecoderBufferPtr& input) {
-  if (!input->data.is_valid())
+  if (!input->data_size)
     return media::DecoderBuffer::CreateEOSBuffer();
 
-  uint32_t num_bytes  = 0;
-  // TODO(tim): We're assuming that because we always write to the pipe above
-  // before sending the MediaDecoderBuffer that the pipe is readable when
-  // we get here.
-  ReadDataRaw(input->data.get(), NULL, &num_bytes, MOJO_READ_DATA_FLAG_QUERY);
-  CHECK_EQ(num_bytes, input->data_size) << "Pipe error converting buffer";
-
-  scoped_ptr<uint8[]> data(new uint8[num_bytes]);  // Uninitialized.
-  ReadDataRaw(input->data.get(), data.get(), &num_bytes,
-              MOJO_READ_DATA_FLAG_ALL_OR_NONE);
-  CHECK_EQ(num_bytes, input->data_size) << "Pipe error converting buffer";
-
-  // TODO(tim): We can't create a media::DecoderBuffer that has side_data
-  // without copying data because it wants to ensure alignment. Could we
-  // read directly into a pre-padded DecoderBuffer?
-  scoped_refptr<media::DecoderBuffer> buffer;
-  if (input->side_data_size) {
-    buffer = media::DecoderBuffer::CopyFrom(data.get(),
-                                            num_bytes,
-                                            &input->side_data.front(),
-                                            input->side_data_size);
-  } else {
-    buffer = media::DecoderBuffer::CopyFrom(data.get(), num_bytes);
-  }
+  scoped_refptr<media::DecoderBuffer> buffer(
+      new media::DecoderBuffer(input->data_size));
+  if (input->side_data_size)
+    buffer->CopySideDataFrom(&input->side_data.front(), input->side_data_size);
 
   buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(input->timestamp_usec));
@@ -347,6 +312,11 @@ scoped_refptr<media::DecoderBuffer>  TypeConverter<
   buffer->set_discard_padding(discard_padding);
   buffer->set_splice_timestamp(
       base::TimeDelta::FromMicroseconds(input->splice_timestamp_usec));
+
+  // TODO(dalecurtis): We intentionally do not deserialize the data section of
+  // the DecoderBuffer here; this must instead be done by clients via their
+  // own DataPipe.  See http://crbug.com/432960
+
   return buffer;
 }
 

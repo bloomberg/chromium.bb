@@ -10,6 +10,15 @@
 
 namespace media {
 
+// Allocates a block of memory which is padded for use with the SIMD
+// optimizations used by FFmpeg.
+static uint8* AllocateFFmpegSafeBlock(int size) {
+  uint8* const block = reinterpret_cast<uint8*>(base::AlignedAlloc(
+      size + DecoderBuffer::kPaddingSize, DecoderBuffer::kAlignmentSize));
+  memset(block + size, 0, DecoderBuffer::kPaddingSize);
+  return block;
+}
+
 DecoderBuffer::DecoderBuffer(int size)
     : size_(size),
       side_data_size_(0),
@@ -46,14 +55,9 @@ DecoderBuffer::~DecoderBuffer() {}
 
 void DecoderBuffer::Initialize() {
   CHECK_GE(size_, 0);
-  data_.reset(reinterpret_cast<uint8*>(
-      base::AlignedAlloc(size_ + kPaddingSize, kAlignmentSize)));
-  memset(data_.get() + size_, 0, kPaddingSize);
-  if (side_data_size_ > 0) {
-    side_data_.reset(reinterpret_cast<uint8*>(
-        base::AlignedAlloc(side_data_size_ + kPaddingSize, kAlignmentSize)));
-    memset(side_data_.get() + side_data_size_, 0, kPaddingSize);
-  }
+  data_.reset(AllocateFFmpegSafeBlock(size_));
+  if (side_data_size_ > 0)
+    side_data_.reset(AllocateFFmpegSafeBlock(side_data_size_));
   splice_timestamp_ = kNoTimestamp();
 }
 
@@ -102,6 +106,18 @@ std::string DecoderBuffer::AsHumanReadableString() {
 void DecoderBuffer::set_timestamp(base::TimeDelta timestamp) {
   DCHECK(!end_of_stream());
   timestamp_ = timestamp;
+}
+
+void DecoderBuffer::CopySideDataFrom(const uint8* side_data,
+                                     int side_data_size) {
+  if (side_data_size > 0) {
+    side_data_size_ = side_data_size;
+    side_data_.reset(AllocateFFmpegSafeBlock(side_data_size_));
+    memcpy(side_data_.get(), side_data, side_data_size_);
+  } else {
+    side_data_.reset();
+    side_data_size_ = 0;
+  }
 }
 
 }  // namespace media

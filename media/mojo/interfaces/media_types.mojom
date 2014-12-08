@@ -190,7 +190,8 @@ struct MediaDecoderBuffer {
   int64 timestamp_usec;
   int64 duration_usec;
 
-  // The number of bytes in |data|.
+  // The number of bytes present in this buffer.  The data is not serialized
+  // along with this structure and must be read from a separate DataPipe.
   uint32 data_size;
 
   // Indicates whether or not this buffer is a random access point.
@@ -210,10 +211,4 @@ struct MediaDecoderBuffer {
 
   // Indicates this buffer is part of a splice around |splice_timestamp_usec|.
   int64 splice_timestamp_usec;
-
-  // The payload. Invalid handle indicates an end-of-stream (EOS) buffer.
-  // TODO(tim): This currently results in allocating a new, largeish DataPipe
-  // for each buffer. Remove this once framed data pipes exist, but using this
-  // for now for prototyping audio.
-  handle<data_pipe_consumer>? data;
 };

@@ -169,6 +169,9 @@ class MEDIA_EXPORT DecoderBuffer
   // Returns a human-readable string describing |*this|.
   std::string AsHumanReadableString();
 
+  // Replaces any existing side data with data copied from |side_data|.
+  void CopySideDataFrom(const uint8* side_data, int side_data_size);
+
  protected:
   friend class base::RefCountedThreadSafe<DecoderBuffer>;
 

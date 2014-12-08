@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "media/base/decoder_buffer.h"
 #include "media/mojo/services/media_type_converters.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace media {
 
@@ -30,6 +31,8 @@ void MojoDemuxerStreamAdapter::Read(const DemuxerStream::ReadCB& read_cb) {
   DVLOG(3) << __FUNCTION__;
   // We shouldn't be holding on to a previous callback if a new Read() came in.
   DCHECK(read_cb_.is_null());
+
+  DCHECK(stream_pipe_.is_valid());
   read_cb_ = read_cb;
   demuxer_stream_->Read(base::Bind(&MojoDemuxerStreamAdapter::OnBufferReady,
                                    weak_factory_.GetWeakPtr()));
@@ -68,9 +71,9 @@ VideoRotation MojoDemuxerStreamAdapter::video_rotation() {
 void MojoDemuxerStreamAdapter::OnStreamReady(
     mojo::ScopedDataPipeConsumerHandle pipe) {
   DVLOG(1) << __FUNCTION__;
-  // TODO(tim): We don't support pipe streaming yet.
-  DCHECK(!pipe.is_valid());
+  DCHECK(pipe.is_valid());
   DCHECK_NE(type_, DemuxerStream::UNKNOWN);
+  stream_pipe_ = pipe.Pass();
   stream_ready_cb_.Run();
 }
 
@@ -108,6 +111,7 @@ void MojoDemuxerStreamAdapter::OnBufferReady(
   DVLOG(3) << __FUNCTION__;
   DCHECK(!read_cb_.is_null());
   DCHECK_NE(type_, DemuxerStream::UNKNOWN);
+  DCHECK(stream_pipe_.is_valid());
 
   DemuxerStream::Status media_status(
       static_cast<DemuxerStream::Status>(status));
@@ -129,6 +133,15 @@ void MojoDemuxerStreamAdapter::OnBufferReady(
       if (video_config_queue_.empty())
         return;
     }
+  } else if (status == mojo::DemuxerStream::STATUS_OK) {
+    DCHECK_GT(media_buffer->data_size(), 0);
+
+    // Read the inner data for the DecoderBuffer from our DataPipe.
+    uint32_t num_bytes = media_buffer->data_size();
+    CHECK_EQ(ReadDataRaw(stream_pipe_.get(), media_buffer->writable_data(),
+                         &num_bytes, MOJO_READ_DATA_FLAG_ALL_OR_NONE),
+             MOJO_RESULT_OK);
+    CHECK_EQ(num_bytes, static_cast<uint32_t>(media_buffer->data_size()));
   }
 
   read_cb_.Run(media_status, media_buffer);
