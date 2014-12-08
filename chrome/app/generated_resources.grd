@@ -7850,6 +7850,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BLOCK_INTERSTITIAL_MESSAGE" desc="A message for the supervised user when they attempt to visit a site that is not permitted by the manager.">
         Oops, looks like you need permission from <ph name="NAME">$1<ex>John Doe</ex></ph> to access this page.
       </message>
+      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_SINGLE_PARENT" desc="A message for the child user when they attempt to visit a site that is not permitted by their parent.">
+        Oops! You need to ask your parent if it's ok to visit this page.
+      </message>
+      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_MULTI_PARENT" desc="A message for the child user when they attempt to visit a site that is not permitted by their parents.">
+        Oops! You need to ask your parents if it's ok to visit this page.
+      </message>
       <message name="IDS_BLOCK_INTERSTITIAL_MESSAGE_ACCESS_REQUESTS_DISABLED" desc="A message for the supervised user when they attempt to visit a site that is not permitted by the manager (and they can't ask for permission).">
         Oops, looks like you don't have permission to access this page.
       </message>
@@ -7859,8 +7865,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BLOCK_INTERSTITIAL_REQUEST_ACCESS_BUTTON" desc="A button for requesting access to blocked sites.">
         Request permission
       </message>
+      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_ACCESS_BUTTON" desc="A button for requesting access to blocked sites.">
+        Ask permission
+      </message>
       <message name="IDS_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE" desc="The text that tells the supervised user that a request has been sent.">
         Your request to access this site has been sent to <ph name="NAME">$1<ex>John Doe</ex></ph>.
+      </message>
+      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_SINGLE_PARENT" desc="The text that tells the child user that a request has been sent to their parent.">
+        You asked your parent if it's ok to visit this page.
+      </message>
+      <message name="IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_MULTI_PARENT" desc="The text that tells the child user that a request has been sent to their parents.">
+        You asked your parents if it's ok to visit this page.
       </message>
 
       <!-- Content Settings dialog data -->

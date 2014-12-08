@@ -192,25 +192,47 @@ std::string SupervisedUserInterstitial::GetHTMLContents() {
   strings.SetString("secondAvatarURL2x", BuildAvatarImageUrl(profile_image_url2,
                                                              kAvatarSize2x));
 
+  bool is_child_account = supervised_user_service->IsChildAccount();
+
   base::string16 custodian =
       base::UTF8ToUTF16(supervised_user_service->GetCustodianName());
-  strings.SetString(
-      "blockPageMessage",
-      allow_access_requests
-          ? l10n_util::GetStringFUTF16(IDS_BLOCK_INTERSTITIAL_MESSAGE,
-                                       custodian)
-          : l10n_util::GetStringUTF16(
-                IDS_BLOCK_INTERSTITIAL_MESSAGE_ACCESS_REQUESTS_DISABLED));
+  base::string16 second_custodian =
+      base::UTF8ToUTF16(supervised_user_service->GetSecondCustodianName());
+
+  base::string16 block_message;
+  if (allow_access_requests) {
+    if (is_child_account) {
+      block_message = l10n_util::GetStringUTF16(
+          second_custodian.empty()
+              ? IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_SINGLE_PARENT
+              : IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_MULTI_PARENT);
+    } else {
+      block_message = l10n_util::GetStringFUTF16(
+          IDS_BLOCK_INTERSTITIAL_MESSAGE, custodian);
+    }
+  } else {
+    block_message = l10n_util::GetStringUTF16(
+        IDS_BLOCK_INTERSTITIAL_MESSAGE_ACCESS_REQUESTS_DISABLED);
+  }
+  strings.SetString("blockPageMessage", block_message);
 
   strings.SetString("backButton", l10n_util::GetStringUTF16(IDS_BACK_BUTTON));
-  strings.SetString(
-      "requestAccessButton",
-      l10n_util::GetStringUTF16(IDS_BLOCK_INTERSTITIAL_REQUEST_ACCESS_BUTTON));
+  strings.SetString("requestAccessButton", l10n_util::GetStringUTF16(
+      is_child_account
+          ? IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_ACCESS_BUTTON
+          : IDS_BLOCK_INTERSTITIAL_REQUEST_ACCESS_BUTTON));
 
-  strings.SetString(
-      "requestSentMessage",
-      l10n_util::GetStringFUTF16(IDS_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE,
-                                 custodian));
+  base::string16 request_sent_message;
+  if (is_child_account) {
+    request_sent_message = l10n_util::GetStringUTF16(
+        second_custodian.empty()
+            ? IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_SINGLE_PARENT
+            : IDS_CHILD_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE_MULTI_PARENT);
+  } else {
+    request_sent_message = l10n_util::GetStringFUTF16(
+        IDS_BLOCK_INTERSTITIAL_REQUEST_SENT_MESSAGE, custodian);
+  }
+  strings.SetString("requestSentMessage", request_sent_message);
 
   webui::SetFontAndTextDirection(&strings);
 
