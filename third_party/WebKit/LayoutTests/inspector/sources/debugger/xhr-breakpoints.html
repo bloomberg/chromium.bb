@@ -76,7 +76,7 @@ function test()
             {
                 function resumed()
                 {
-                    pane._breakpointElements[""]._checkboxElement.click();
+                    pane._breakpointElements.get("")._checkboxElement.click();
                     InspectorTest.waitUntilPaused(pausedAgain);
                     InspectorTest.evaluateInPage("sendRequest('/foo')", next);
                 }
