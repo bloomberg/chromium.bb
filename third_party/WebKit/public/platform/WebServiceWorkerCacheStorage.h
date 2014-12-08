@@ -23,6 +23,7 @@ public:
     typedef WebCallbacks<void, WebServiceWorkerCacheError> CacheStorageCallbacks;
     typedef WebCallbacks<WebServiceWorkerCache, WebServiceWorkerCacheError> CacheStorageWithCacheCallbacks;
     typedef WebCallbacks<WebVector<WebString>, WebServiceWorkerCacheError> CacheStorageKeysCallbacks;
+    typedef WebCallbacks<WebServiceWorkerResponse, WebServiceWorkerCacheError> CacheStorageMatchCallbacks;
 
     virtual ~WebServiceWorkerCacheStorage() { }
 
