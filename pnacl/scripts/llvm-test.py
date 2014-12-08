@@ -238,11 +238,11 @@ def SetupEnvironment(options):
 
   # The toolchain used may not be the one downloaded, but one that is freshly
   # built into a different directory,
-  # Overriding the default here will Not affect the sel_ldr
+  # Overriding the default here will not affect the sel_ldr
   # and IRT used to run the tests (they are controlled by run.py)
   env['PNACL_TOOLCHAIN_DIR'] = (
     os.environ.get('PNACL_TOOLCHAIN_DIR',
-                   '{BUILD_PLATFORM}_x86/pnacl_newlib_raw'.format(**env)))
+                   '{BUILD_PLATFORM}_x86/pnacl_newlib'.format(**env)))
   env['PNACL_BIN'] = (
     '{NACL_ROOT}/toolchain/{PNACL_TOOLCHAIN_DIR}/bin'.format(**env))
   env['PNACL_SDK_DIR'] = (
@@ -335,11 +335,12 @@ def EnsureSdkExists(env):
   Args:
     env: The result of SetupEnvironment().
   """
-  if not os.path.isfile(os.path.join(env['PNACL_SDK_DIR'], 'libnacl.a')):
+  libnacl_path = os.path.join(env['PNACL_SDK_DIR'], 'libnacl.a')
+  if not os.path.isfile(libnacl_path):
     Fatal("""
-ERROR: libnacl does not seem to exist
+ERROR: libnacl does not seem to exist in %s
 ERROR: have you run 'pnacl/build.sh sdk' ?
-""")
+    """ % libnacl_path)
 
 
 def TestsuitePrereq(env, options):
