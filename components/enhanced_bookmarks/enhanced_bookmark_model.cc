@@ -135,7 +135,10 @@ const BookmarkNode* EnhancedBookmarkModel::AddFolder(
     const BookmarkNode* parent,
     int index,
     const base::string16& title) {
-  return bookmark_model_->AddFolder(parent, index, title);
+  BookmarkNode::MetaInfoMap meta_info;
+  meta_info[kVersionKey] = GetVersionString();
+  return bookmark_model_->AddFolderWithMetaInfo(parent, index, title,
+                                                &meta_info);
 }
 
 // Adds a url at the specified position.
@@ -147,6 +150,7 @@ const BookmarkNode* EnhancedBookmarkModel::AddURL(
     const base::Time& creation_time) {
   BookmarkNode::MetaInfoMap meta_info;
   meta_info[kIdKey] = GenerateRemoteId();
+  meta_info[kVersionKey] = GetVersionString();
   return bookmark_model_->AddURLWithCreationTimeAndMetaInfo(
       parent, index, title, url, creation_time, &meta_info);
 }

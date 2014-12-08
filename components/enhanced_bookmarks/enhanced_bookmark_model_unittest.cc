@@ -433,7 +433,9 @@ TEST_F(EnhancedBookmarkModelTest, TestDescriptionFallback) {
 // Makes sure that the stars.version field is set every time
 // EnhancedBookmarkModel makes a change to a node.
 TEST_F(EnhancedBookmarkModelTest, TestVersionField) {
-  const BookmarkNode* node = AddBookmark();
+  const BookmarkNode* node =
+      bookmark_model_->AddURL(bookmark_model_->other_node(), 0,
+                              base::ASCIIToUTF16("Title"), GURL(BOOKMARK_URL));
   EXPECT_EQ("", GetVersion(node));
 
   model_->SetDescription(node, "foo");
