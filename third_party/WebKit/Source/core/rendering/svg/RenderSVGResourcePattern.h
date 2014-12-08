@@ -24,7 +24,7 @@
 
 #include "core/rendering/svg/RenderSVGResourcePaintServer.h"
 #include "core/svg/PatternAttributes.h"
-
+#include "platform/graphics/Picture.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
@@ -33,7 +33,6 @@
 namespace blink {
 
 class AffineTransform;
-class Picture;
 class FloatRect;
 class SVGPatternElement;
 struct PatternData;

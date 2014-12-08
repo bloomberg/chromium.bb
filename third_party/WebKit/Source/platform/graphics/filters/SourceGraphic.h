@@ -30,6 +30,7 @@ namespace blink {
 class PLATFORM_EXPORT SourceGraphic : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<SourceGraphic> create(Filter*);
+    virtual ~SourceGraphic();
 
     static const AtomicString& effectName();
 
@@ -43,11 +44,7 @@ public:
     void setPicture(PassRefPtr<Picture>);
 
 private:
-    SourceGraphic(Filter* filter)
-        : FilterEffect(filter)
-    {
-        setOperatingColorSpace(ColorSpaceDeviceRGB);
-    }
+    SourceGraphic(Filter*);
 
     RefPtr<Picture> m_picture;
 };

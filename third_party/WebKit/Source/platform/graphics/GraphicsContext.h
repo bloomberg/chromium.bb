@@ -38,6 +38,7 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/GraphicsContextAnnotation.h"
 #include "platform/graphics/GraphicsContextState.h"
+#include "platform/graphics/Picture.h"
 #include "platform/graphics/RegionTracker.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "wtf/FastAllocBase.h"
@@ -55,7 +56,6 @@ struct SkRect;
 namespace blink {
 
 class DisplayItemList;
-class Picture;
 class ImageBuffer;
 class KURL;
 
@@ -258,8 +258,7 @@ public:
         const IntRect&, const IntSize& innerTopLeft, const IntSize& innerTopRight, const IntSize& innerBottomLeft, const IntSize& innerBottomRight, const Color&);
     void fillBetweenRoundedRects(const RoundedRect&, const RoundedRect&, const Color&);
 
-    void drawPicture(Picture*);
-    void drawPicture(SkPicture*, const FloatPoint& location);
+    void drawPicture(const Picture*);
     void drawPicture(SkPicture*, const FloatRect& dest, const FloatRect& src, CompositeOperator, WebBlendMode);
 
     void drawImage(Image*, const IntPoint&, CompositeOperator = CompositeSourceOver, RespectImageOrientationEnum = DoNotRespectImageOrientation);
@@ -392,6 +391,9 @@ public:
         return focusRingOutset(offset) + (focusRingWidth(width) + 1) / 2;
     }
 
+    // public decl needed for OwnPtr wrapper.
+    class RecordingState;
+
 private:
     const GraphicsContextState* immutableState() const { return m_paintState; }
 
@@ -479,8 +481,7 @@ private:
 
     AnnotationModeFlags m_annotationMode;
 
-    struct RecordingState;
-    Vector<RecordingState> m_recordingStateStack;
+    Vector<OwnPtr<RecordingState> > m_recordingStateStack;
 
 #if ENABLE(ASSERT)
     unsigned m_annotationCount;

@@ -24,9 +24,20 @@
 
 #include "platform/graphics/filters/Filter.h"
 #include "platform/text/TextStream.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/effects/SkPictureImageFilter.h"
 
 namespace blink {
+
+SourceGraphic::SourceGraphic(Filter* filter)
+    : FilterEffect(filter)
+{
+    setOperatingColorSpace(ColorSpaceDeviceRGB);
+}
+
+SourceGraphic::~SourceGraphic()
+{
+}
 
 PassRefPtrWillBeRawPtr<SourceGraphic> SourceGraphic::create(Filter* filter)
 {
@@ -57,7 +68,7 @@ PassRefPtr<SkImageFilter> SourceGraphic::createImageFilter(SkiaImageFilterBuilde
     if (!m_picture)
         return nullptr;
 
-    return adoptRef(SkPictureImageFilter::Create(m_picture->skPicture().get(), m_picture->bounds()));
+    return adoptRef(SkPictureImageFilter::Create(m_picture.get(), m_picture->cullRect()));
 }
 
 TextStream& SourceGraphic::externalRepresentation(TextStream& ts, int indent) const

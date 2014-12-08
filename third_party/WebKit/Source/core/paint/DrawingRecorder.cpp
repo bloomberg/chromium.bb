@@ -24,7 +24,6 @@ DrawingRecorder::DrawingRecorder(GraphicsContext* context, const RenderObject* r
     : m_context(context)
     , m_renderer(renderer)
     , m_phase(phase)
-    , m_bounds(clip)
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
@@ -47,11 +46,10 @@ DrawingRecorder::~DrawingRecorder()
 #endif
 
     RefPtr<Picture> picture = m_context->endRecording();
-    if (!picture->skPicture() || !picture->skPicture()->approximateOpCount())
+    if (!picture || !picture->approximateOpCount())
         return;
-    ASSERT(picture->bounds() == m_bounds);
     OwnPtr<DrawingDisplayItem> drawingItem = adoptPtr(
-        new DrawingDisplayItem(m_renderer->displayItemClient(), (DisplayItem::Type)m_phase, picture->skPicture(), m_bounds.location()));
+        new DrawingDisplayItem(m_renderer->displayItemClient(), (DisplayItem::Type)m_phase, picture));
 #ifndef NDEBUG
     if (!m_renderer)
         drawingItem->setClientDebugString("nullptr");

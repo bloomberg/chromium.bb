@@ -35,6 +35,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/Picture.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {
@@ -230,7 +231,6 @@ void RenderSVGResourceClipper::drawClipMaskContent(GraphicsContext* context, con
         createPicture(context);
     }
 
-    ASSERT(m_clipContentPicture);
     context->drawPicture(m_clipContentPicture.get());
 }
 

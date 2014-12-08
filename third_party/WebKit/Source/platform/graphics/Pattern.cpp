@@ -33,6 +33,7 @@
 #include "platform/graphics/PicturePattern.h"
 #include "platform/graphics/StaticBitmapPattern.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include <v8.h>
 

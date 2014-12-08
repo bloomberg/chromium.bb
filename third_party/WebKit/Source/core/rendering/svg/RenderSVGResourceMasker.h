@@ -26,13 +26,13 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/Picture.h"
 
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
 
-class Picture;
 class GraphicsContext;
 
 class RenderSVGResourceMasker final : public RenderSVGResourceContainer {

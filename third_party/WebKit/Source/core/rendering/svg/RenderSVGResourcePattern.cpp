@@ -28,6 +28,7 @@
 #include "core/svg/SVGPatternElement.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/Picture.h"
+#include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
 
@@ -143,7 +144,7 @@ SVGPaintServer RenderSVGResourcePattern::preparePaintServer(const RenderObject& 
         return SVGPaintServer::invalid();
 
     PatternData* patternData = patternForRenderer(object);
-    if (!patternData)
+    if (!patternData || !patternData->pattern)
         return SVGPaintServer::invalid();
 
     patternData->pattern->setPatternSpaceTransform(patternData->transform);

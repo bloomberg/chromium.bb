@@ -1213,9 +1213,8 @@ TEST(GraphicsContextTest, RecordingCanvas)
 
     // endRecording finally makes the picture accessible
     RefPtr<Picture> picture = context.endRecording();
-    SkPicture* pic = picture->skPicture().get();
-    EXPECT_TRUE(pic);
-    EXPECT_TRUE(pic->unique());
+    EXPECT_TRUE(picture);
+    EXPECT_TRUE(picture->unique());
 
     context.endRecording();
 }

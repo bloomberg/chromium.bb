@@ -22,10 +22,9 @@
 
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGClipPathElement.h"
+#include "platform/graphics/Picture.h"
 
 namespace blink {
-
-class Picture;
 
 class RenderSVGResourceClipper final : public RenderSVGResourceContainer {
 public:

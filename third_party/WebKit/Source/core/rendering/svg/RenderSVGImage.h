@@ -25,10 +25,10 @@
 #define RenderSVGImage_h
 
 #include "core/rendering/svg/RenderSVGModelObject.h"
+#include "platform/graphics/Picture.h"
 
 namespace blink {
 
-class Picture;
 class RenderImageResource;
 class SVGImageElement;
 

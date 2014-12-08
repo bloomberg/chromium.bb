@@ -31,44 +31,11 @@
 #ifndef Picture_h
 #define Picture_h
 
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "third_party/skia/include/core/SkPicture.h"
-#include "wtf/FastAllocBase.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
+class SkPicture;
 
 namespace blink {
 
-class IntSize;
-
-class PLATFORM_EXPORT Picture final : public WTF::RefCounted<Picture> {
-    WTF_MAKE_FAST_ALLOCATED;
-    WTF_MAKE_NONCOPYABLE(Picture);
-public:
-    static PassRefPtr<Picture> create(const FloatRect& bounds)
-    {
-        return adoptRef(new Picture(bounds));
-    }
-
-    virtual ~Picture() { }
-
-    const FloatRect& bounds() const { return m_bounds; }
-
-    // This entry point will return 0 when the PictureRecorder is in the midst of
-    // recording (i.e., between a GraphicsContext beginRecording/endRecording pair)
-    // and if no recording has ever been completed. Otherwise it will return
-    // the picture created by the last endRecording call.
-    PassRefPtr<SkPicture> skPicture() const { return m_picture; }
-    void setSkPicture(SkPicture* skPicture) { m_picture = adoptRef(skPicture); }
-
-private:
-    Picture(const FloatRect& bounds) : m_bounds(bounds) { }
-
-    FloatRect m_bounds;
-    RefPtr<SkPicture> m_picture;
-};
+typedef SkPicture Picture;
 
 } // namespace blink
 

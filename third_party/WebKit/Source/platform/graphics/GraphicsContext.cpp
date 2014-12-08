@@ -27,6 +27,7 @@
 #include "config.h"
 #include "platform/graphics/GraphicsContext.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/RoundedRect.h"
@@ -72,22 +73,31 @@ const float cPictureScaleEpsilon = 0.000001;
 
 namespace blink {
 
-struct GraphicsContext::RecordingState {
-    RecordingState(SkPictureRecorder* recorder, SkCanvas* currentCanvas, const SkMatrix& currentMatrix,
-        PassRefPtr<Picture> picture, RegionTrackingMode trackingMode)
-        : m_picture(picture)
-        , m_recorder(recorder)
-        , m_savedCanvas(currentCanvas)
-        , m_savedMatrix(currentMatrix)
-        , m_regionTrackingMode(trackingMode) { }
+class GraphicsContext::RecordingState {
+    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(RecordingState);
+public:
+    static PassOwnPtr<RecordingState> Create(SkCanvas* canvas, const SkMatrix& matrix, unsigned trackingMode)
+    {
+        return adoptPtr(new RecordingState(canvas, matrix, static_cast<RegionTrackingMode>(trackingMode)));
+    }
 
-    ~RecordingState() { }
+    SkPictureRecorder& recorder() { return m_recorder; }
+    SkCanvas* canvas() const { return m_savedCanvas; }
+    const SkMatrix& matrix() const { return m_savedMatrix; }
+    GraphicsContext::RegionTrackingMode trackingMode() const { return m_savedRegionTrackingMode; }
 
-    RefPtr<Picture> m_picture;
-    SkPictureRecorder* m_recorder;
+private:
+    explicit RecordingState(SkCanvas* canvas, const SkMatrix& matrix, RegionTrackingMode trackingMode)
+        : m_savedCanvas(canvas)
+        , m_savedMatrix(matrix)
+        , m_savedRegionTrackingMode(trackingMode)
+    { }
+
+    SkPictureRecorder m_recorder;
     SkCanvas* m_savedCanvas;
     const SkMatrix m_savedMatrix;
-    RegionTrackingMode m_regionTrackingMode;
+    RegionTrackingMode m_savedRegionTrackingMode;
 };
 
 GraphicsContext::GraphicsContext(SkCanvas* canvas, DisplayItemList* displayItemList, DisabledMode disableContextOrPainting)
@@ -400,8 +410,7 @@ SkMatrix GraphicsContext::getTotalMatrix() const
     if (!isRecording())
         return m_canvas->getTotalMatrix();
 
-    const RecordingState& recordingState = m_recordingStateStack.last();
-    SkMatrix totalMatrix = recordingState.m_savedMatrix;
+    SkMatrix totalMatrix = m_recordingStateStack.last()->matrix();
     totalMatrix.preConcat(m_canvas->getTotalMatrix());
 
     return totalMatrix;
@@ -515,28 +524,12 @@ void GraphicsContext::endLayer()
 
 void GraphicsContext::beginRecording(const FloatRect& bounds, uint32_t recordFlags)
 {
-    RefPtr<Picture> picture = Picture::create(bounds);
+    if (contextDisabled())
+        return;
 
-    SkCanvas* savedCanvas = m_canvas;
-    SkMatrix savedMatrix = getTotalMatrix();
-    SkPictureRecorder* recorder = 0;
-
-    if (!contextDisabled()) {
-        FloatRect bounds = picture->bounds();
-        recorder = new SkPictureRecorder;
-        m_canvas = recorder->beginRecording(bounds.width(), bounds.height(), 0, recordFlags);
-
-        // We want the bounds offset mapped to (0, 0), such that the display list content
-        // is fully contained within the SkPictureRecord's bounds.
-        if (!toFloatSize(bounds.location()).isZero()) {
-            m_canvas->translate(-bounds.x(), -bounds.y());
-            // To avoid applying the offset repeatedly in getTotalMatrix(), we pre-apply it here.
-            savedMatrix.preTranslate(bounds.x(), bounds.y());
-        }
-    }
-
-    m_recordingStateStack.append(RecordingState(recorder, savedCanvas, savedMatrix, picture,
-        static_cast<RegionTrackingMode>(m_regionTrackingMode)));
+    m_recordingStateStack.append(
+        RecordingState::Create(m_canvas, getTotalMatrix(), m_regionTrackingMode));
+    m_canvas = m_recordingStateStack.last()->recorder().beginRecording(bounds, 0, recordFlags);
 
     // Disable region tracking during recording.
     setRegionTrackingMode(RegionTrackingDisabled);
@@ -544,18 +537,19 @@ void GraphicsContext::beginRecording(const FloatRect& bounds, uint32_t recordFla
 
 PassRefPtr<Picture> GraphicsContext::endRecording()
 {
+    if (contextDisabled())
+        return nullptr;
+
     ASSERT(!m_recordingStateStack.isEmpty());
+    RecordingState* recording = m_recordingStateStack.last().get();
+    RefPtr<Picture> picture = adoptRef(recording->recorder().endRecordingAsPicture());
+    m_canvas = recording->canvas();
+    setRegionTrackingMode(recording->trackingMode());
 
-    RecordingState recording = m_recordingStateStack.last();
-    if (!contextDisabled())
-        recording.m_picture->setSkPicture(recording.m_recorder->endRecording());
-
-    m_canvas = recording.m_savedCanvas;
-    setRegionTrackingMode(recording.m_regionTrackingMode);
-    delete recording.m_recorder;
     m_recordingStateStack.removeLast();
 
-    return recording.m_picture;
+    ASSERT(picture);
+    return picture.release();
 }
 
 bool GraphicsContext::isRecording() const
@@ -563,56 +557,25 @@ bool GraphicsContext::isRecording() const
     return !m_recordingStateStack.isEmpty();
 }
 
-void GraphicsContext::drawPicture(Picture* picture)
+void GraphicsContext::drawPicture(const Picture* picture)
 {
-    ASSERT(picture);
     ASSERT(m_canvas);
 
-    if (contextDisabled() || picture->bounds().isEmpty())
+    // FIXME: SP currently builds empty-bounds pictures in some cases. This is a temp
+    // workaround, but the problem should be fixed: empty-bounds pictures are going to be culled
+    // on playback anyway.
+    bool cullEmptyPictures = !RuntimeEnabledFeatures::slimmingPaintEnabled();
+    if (contextDisabled() || !picture || (picture->cullRect().isEmpty() && cullEmptyPictures))
         return;
 
-    const FloatPoint& location = picture->bounds().location();
-    if (location.x() || location.y()) {
-        SkMatrix m;
-        m.setTranslate(location.x(), location.y());
-        m_canvas->drawPicture(picture->skPicture().get(), &m, 0);
-    } else {
-        m_canvas->drawPicture(picture->skPicture().get());
-    }
+    m_canvas->drawPicture(picture);
 
     if (regionTrackingEnabled()) {
         // Since we don't track regions within display lists, conservatively
         // mark the bounds as non-opaque.
         SkPaint paint;
         paint.setXfermodeMode(SkXfermode::kClear_Mode);
-        m_trackedRegion.didDrawBounded(this, picture->bounds(), paint);
-    }
-}
-
-void GraphicsContext::drawPicture(SkPicture* picture, const FloatPoint& location)
-{
-    ASSERT(picture);
-    ASSERT(m_canvas);
-
-    if (contextDisabled())
-        return;
-
-    if (location.x() || location.y()) {
-        SkMatrix m;
-        m.setTranslate(location.x(), location.y());
-        m_canvas->drawPicture(picture, &m, 0);
-    } else {
-        m_canvas->drawPicture(picture);
-    }
-
-    if (regionTrackingEnabled()) {
-        // Since we don't track regions within pictures, conservatively
-        // mark the bounds as non-opaque.
-        SkPaint paint;
-        paint.setXfermodeMode(SkXfermode::kClear_Mode);
-        FloatRect bound = picture->cullRect();
-        bound.moveBy(location);
-        m_trackedRegion.didDrawBounded(this, bound, paint);
+        m_trackedRegion.didDrawBounded(this, picture->cullRect(), paint);
     }
 }
 

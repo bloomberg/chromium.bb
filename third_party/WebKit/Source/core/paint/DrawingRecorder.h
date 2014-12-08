@@ -22,7 +22,6 @@ private:
     GraphicsContext* m_context;
     const RenderObject* m_renderer;
     const PaintPhase m_phase;
-    const FloatRect m_bounds;
 };
 
 } // namespace blink

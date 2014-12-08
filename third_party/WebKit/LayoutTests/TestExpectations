@@ -181,6 +181,8 @@ crbug.com/330083 imported/web-platform-tests/custom-elements/instantiating-custo
 
 crbug.com/330083 imported/web-platform-tests/webrtc/simplecall.html [ Failure ]
 
+crbug.com/439492 svg/batik/masking/maskRegions.svg [ NeedsRebaseline ]
+
 crbug.com/377944 svg/animations/smil-leak-dynamically-added-element-instances.svg [ Failure Pass ]
 
 crbug.com/377950 svg/repaint/image-animation-with-zoom.html [ Failure Pass ]

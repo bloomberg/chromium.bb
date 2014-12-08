@@ -14,19 +14,17 @@ namespace blink {
 
 class PLATFORM_EXPORT DrawingDisplayItem : public DisplayItem {
 public:
-    DrawingDisplayItem(DisplayItemClient client, Type type, PassRefPtr<SkPicture> picture, const FloatPoint& location)
-        : DisplayItem(client, type), m_picture(picture), m_location(location) { ASSERT(m_picture.get()); }
+    DrawingDisplayItem(DisplayItemClient client, Type type, PassRefPtr<SkPicture> picture)
+        : DisplayItem(client, type), m_picture(picture) { ASSERT(m_picture); }
 
     virtual void replay(GraphicsContext*);
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
     PassRefPtr<SkPicture> picture() const { return m_picture; }
-    const FloatPoint& location() const { return m_location; }
 
 private:
 
     RefPtr<SkPicture> m_picture;
-    const FloatPoint m_location;
 #ifndef NDEBUG
     virtual WTF::String asDebugString() const override;
 #endif

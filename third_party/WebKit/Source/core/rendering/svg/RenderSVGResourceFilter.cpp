@@ -30,6 +30,7 @@
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/filters/SourceAlpha.h"
 #include "platform/graphics/filters/SourceGraphic.h"
+#include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
 
@@ -114,15 +115,6 @@ PassRefPtrWillBeRawPtr<SVGFilterBuilder> RenderSVGResourceFilter::buildPrimitive
 static void beginDeferredFilter(GraphicsContext* context, FilterData* filterData)
 {
     context->beginRecording(filterData->boundaries);
-    // We pass the boundaries to SkPictureImageFilter so it knows the
-    // world-space position of the filter primitives. It gets them
-    // from the DisplayList, which also applies the inverse translate
-    // to the origin. So we apply the forward translate here to avoid
-    // it being applied twice.
-    // FIXME: we should fix SkPicture to handle this offset itself, or
-    // make the translate optional on SkPictureImageFilter.
-    // See https://code.google.com/p/skia/issues/detail?id=2801
-    context->translate(filterData->boundaries.x(), filterData->boundaries.y());
 }
 
 static void endDeferredFilter(GraphicsContext* context, FilterData* filterData)

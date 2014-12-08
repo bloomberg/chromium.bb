@@ -9,15 +9,9 @@
 
 namespace blink {
 
-class Picture;
-
 class PLATFORM_EXPORT PicturePattern : public Pattern {
 public:
-    static PassRefPtr<PicturePattern> create(PassRefPtr<Picture> picture,
-        RepeatMode repeatMode)
-    {
-        return adoptRef(new PicturePattern(picture, repeatMode));
-    }
+    static PassRefPtr<PicturePattern> create(PassRefPtr<Picture>, RepeatMode);
 
     virtual ~PicturePattern();
 

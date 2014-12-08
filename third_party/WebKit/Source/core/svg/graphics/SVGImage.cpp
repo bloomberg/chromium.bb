@@ -53,6 +53,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/Picture.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -242,11 +243,13 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
         blink::WebBlendModeNormal);
     RefPtr<Picture> tilePicture = recordingContext.endRecording();
 
+    // FIXME: SkPictureShader ignores the picture offset - so we must compensate here.
+    SkRect tileRect = SkRect::MakeXYWH(-spacedTile.x(), -spacedTile.y(),
+        spacedTile.width(), spacedTile.height());
     SkMatrix patternTransform;
-    patternTransform.setTranslate(phase.x() + tile.x(), phase.y() + tile.y());
-    SkRect tileRect = SkRect::MakeWH(spacedTile.width(), spacedTile.height());
+    patternTransform.setTranslate(phase.x() + spacedTile.x(), phase.y() + spacedTile.y());
     RefPtr<SkShader> patternShader = adoptRef(SkShader::CreatePictureShader(
-        tilePicture->skPicture().get(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode,
+        tilePicture.get(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode,
         &patternTransform, &tileRect));
 
     SkPaint paint;

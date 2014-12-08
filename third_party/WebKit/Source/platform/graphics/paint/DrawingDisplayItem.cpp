@@ -12,12 +12,13 @@ namespace blink {
 
 void DrawingDisplayItem::replay(GraphicsContext* context)
 {
-    context->drawPicture(m_picture.get(), m_location);
+    context->drawPicture(m_picture.get());
 }
 
 void DrawingDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
-    list->appendDrawingItem(m_picture.get(), m_location);
+    // FIXME: the offset is no longer necessary and should be removed.
+    list->appendDrawingItem(m_picture.get(), FloatPoint());
 }
 
 #ifndef NDEBUG
@@ -25,7 +26,7 @@ WTF::String DrawingDisplayItem::asDebugString() const
 {
     return String::format("{%s, type: \"%s\", location: [%f,%f]}",
         clientDebugString().utf8().data(), typeAsDebugString(type()).utf8().data(),
-        m_location.x(), m_location.y());
+        m_picture->cullRect().x(), m_picture->cullRect().y());
 }
 #endif
 

@@ -6,5 +6,6 @@ include_rules = [
     "+platform",
     "+public/platform",
     "-public/web",
+    "+third_party/skia/include",
     "-web",
 ]

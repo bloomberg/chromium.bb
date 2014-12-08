@@ -31,6 +31,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/Image.h"
+#include "platform/graphics/Picture.h"
 #include "platform/transforms/AffineTransform.h"
 
 #include "wtf/PassRefPtr.h"
@@ -40,8 +41,6 @@
 class SkShader;
 
 namespace blink {
-
-class Picture;
 
 class PLATFORM_EXPORT Pattern : public RefCounted<Pattern> {
 public:
