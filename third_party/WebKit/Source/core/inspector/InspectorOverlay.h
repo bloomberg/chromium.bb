@@ -145,6 +145,7 @@ private:
     bool m_omitTooltip;
     Timer<InspectorOverlay> m_timer;
     int m_activeProfilerCount;
+    bool m_updating;
 };
 
 } // namespace blink

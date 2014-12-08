@@ -345,6 +345,7 @@ InspectorOverlay::InspectorOverlay(Page* page, InspectorClient* client)
     , m_omitTooltip(false)
     , m_timer(this, &InspectorOverlay::onTimer)
     , m_activeProfilerCount(0)
+    , m_updating(false)
 {
 }
 
@@ -365,6 +366,11 @@ void InspectorOverlay::paint(GraphicsContext& context)
 
 void InspectorOverlay::invalidate()
 {
+    // Don't invalidate during an update, because that will lead to Document::scheduleRenderTreeUpdate
+    // being called within Document::updateRenderTree which violates document lifecycle expectations.
+    if (m_updating)
+        return;
+
     m_client->highlight();
 }
 
@@ -477,6 +483,8 @@ bool InspectorOverlay::isEmpty()
 
 void InspectorOverlay::update()
 {
+    TemporaryChange<bool> scoped(m_updating, true);
+
     if (isEmpty()) {
         m_client->hideHighlight();
         return;
