@@ -18,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/wallpaper/wallpaper_layout.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -134,7 +135,7 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
       BrowserThread::GetBlockingPool()->
           GetSequencedTaskRunnerWithShutdownBehavior(sequence_token_,
               base::SequencedWorkerPool::BLOCK_SHUTDOWN);
-  ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
+  wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       set_wallpaper::Params::Details::ToString(params_->details.layout));
   bool update_wallpaper =
       user_id_ == user_manager::UserManager::Get()->GetActiveUser()->email();
@@ -183,12 +184,9 @@ void WallpaperSetWallpaperFunction::GenerateThumbnail(
 
   scoped_refptr<base::RefCountedBytes> data;
   chromeos::WallpaperManager::Get()->ResizeImage(
-      *image,
-      ash::WALLPAPER_LAYOUT_STRETCH,
-      chromeos::kWallpaperThumbnailWidth,
-      chromeos::kWallpaperThumbnailHeight,
-      &data,
-      NULL);
+      *image, wallpaper::WALLPAPER_LAYOUT_STRETCH,
+      chromeos::kWallpaperThumbnailWidth, chromeos::kWallpaperThumbnailHeight,
+      &data, NULL);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(

@@ -31,6 +31,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "components/wallpaper/wallpaper_layout.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
 #include "grit/components_strings.h"
@@ -41,6 +42,7 @@
 
 using base::BinaryValue;
 using content::BrowserThread;
+
 namespace wallpaper_private = extensions::api::wallpaper_private;
 namespace set_wallpaper_if_exists = wallpaper_private::SetWallpaperIfExists;
 namespace set_wallpaper = wallpaper_private::SetWallpaper;
@@ -385,7 +387,7 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
 
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
-  ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
+  wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_private::ToString(params->layout));
 
   bool update_wallpaper =
@@ -474,11 +476,8 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
     // Generates and saves small resolution wallpaper. Uses CENTER_CROPPED to
     // maintain the aspect ratio after resize.
     chromeos::WallpaperManager::Get()->ResizeAndSaveWallpaper(
-        wallpaper_,
-        file_path,
-        ash::WALLPAPER_LAYOUT_CENTER_CROPPED,
-        chromeos::kSmallWallpaperMaxWidth,
-        chromeos::kSmallWallpaperMaxHeight,
+        wallpaper_, file_path, wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
+        chromeos::kSmallWallpaperMaxWidth, chromeos::kSmallWallpaperMaxHeight,
         NULL);
   } else {
     std::string error = base::StringPrintf(
@@ -495,7 +494,7 @@ void WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper(
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
 
-  ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
+  wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_private::ToString(params->layout));
 
   bool update_wallpaper =
@@ -533,7 +532,7 @@ bool WallpaperPrivateResetWallpaperFunction::RunAsync() {
   wallpaper_manager->RemoveUserWallpaperInfo(user_id);
 
   chromeos::WallpaperInfo info = {std::string(),
-                                  ash::WALLPAPER_LAYOUT_CENTER,
+                                  wallpaper::WALLPAPER_LAYOUT_CENTER,
                                   user_manager::User::DEFAULT,
                                   base::Time::Now().LocalMidnight()};
   bool is_persistent =
@@ -584,7 +583,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
           GetSequencedTaskRunnerWithShutdownBehavior(sequence_token_,
               base::SequencedWorkerPool::BLOCK_SHUTDOWN);
 
-  ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
+  wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_private::ToString(params->layout));
 
   bool update_wallpaper =
@@ -628,12 +627,9 @@ void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
 
   scoped_refptr<base::RefCountedBytes> data;
   chromeos::WallpaperManager::Get()->ResizeImage(
-      *image,
-      ash::WALLPAPER_LAYOUT_STRETCH,
-      chromeos::kWallpaperThumbnailWidth,
-      chromeos::kWallpaperThumbnailHeight,
-      &data,
-      NULL);
+      *image, wallpaper::WALLPAPER_LAYOUT_STRETCH,
+      chromeos::kWallpaperThumbnailWidth, chromeos::kWallpaperThumbnailHeight,
+      &data, NULL);
   BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(

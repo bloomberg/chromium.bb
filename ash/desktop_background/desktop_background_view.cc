@@ -27,6 +27,12 @@
 #include "ui/gfx/transform.h"
 #include "ui/views/widget/widget.h"
 
+using wallpaper::WallpaperLayout;
+using wallpaper::WALLPAPER_LAYOUT_CENTER;
+using wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
+using wallpaper::WALLPAPER_LAYOUT_STRETCH;
+using wallpaper::WALLPAPER_LAYOUT_TILE;
+
 namespace ash {
 namespace {
 

@@ -6,12 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_FUNCTION_BASE_H_
 
 #include "ash/desktop_background/desktop_background_controller.h"
+#include "components/wallpaper/wallpaper_layout.h"
 #include "extensions/browser/extension_function.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace wallpaper_api_util {
 extern const char kCancelWallpaperMessage[];
-ash::WallpaperLayout GetLayoutEnum(const std::string& layout);
+wallpaper::WallpaperLayout GetLayoutEnum(const std::string& layout);
 }  // namespace wallpaper_api_util
 
 // Wallpaper manager function base. It contains a image decoder to decode

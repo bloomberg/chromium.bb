@@ -44,6 +44,7 @@ source_set("chromeos") {
     "//components/login",
     "//components/session_manager/core",
     "//components/user_manager",
+    "//components/wallpaper",
     "//chrome/browser/devtools",
     "//chrome/browser/extensions",
     "//chrome/browser/history:in_memory_url_index_cache_proto",

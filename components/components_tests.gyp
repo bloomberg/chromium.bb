@@ -274,6 +274,7 @@
             'variations/variations_seed_processor_unittest.cc',
             'variations/variations_seed_simulator_unittest.cc',
             'visitedlink/test/visitedlink_unittest.cc',
+            'wallpaper/wallpaper_resizer_unittest.cc',
             'web_cache/browser/web_cache_manager_unittest.cc',
             'web_modal/web_contents_modal_dialog_manager_unittest.cc',
             'web_resource/eula_accepted_notifier_unittest.cc',
@@ -467,6 +468,9 @@
             'components.gyp:translate_core_browser',
             'components.gyp:translate_core_common',
             'components.gyp:translate_core_language_detection',
+
+            # Dependencies of wallpaper
+            'components.gyp:wallpaper',
 
             # Dependencies of url_fixer
             'components.gyp:url_fixer',

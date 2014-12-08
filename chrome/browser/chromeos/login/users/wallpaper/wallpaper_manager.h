@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
+#include "components/wallpaper/wallpaper_layout.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
@@ -43,14 +44,14 @@ namespace chromeos {
 struct WallpaperInfo {
   WallpaperInfo();
   WallpaperInfo(const std::string& in_location,
-                ash::WallpaperLayout in_layout,
+                wallpaper::WallpaperLayout in_layout,
                 user_manager::User::WallpaperType in_type,
                 const base::Time& in_date);
   ~WallpaperInfo();
   // Either file name of migrated wallpaper including first directory level
   // (corresponding to user id hash) or online wallpaper URL.
   std::string location;
-  ash::WallpaperLayout layout;
+  wallpaper::WallpaperLayout layout;
   user_manager::User::WallpaperType type;
   base::Time date;
   bool operator==(const WallpaperInfo& other) {
@@ -214,7 +215,7 @@ class WallpaperManager: public content::NotificationObserver {
   // |preferred_height| while respecting the |layout| choice. |output_skia| is
   // optional (may be NULL). Returns true on success.
   static bool ResizeImage(const gfx::ImageSkia& image,
-                          ash::WallpaperLayout layout,
+                          wallpaper::WallpaperLayout layout,
                           int preferred_width,
                           int preferred_height,
                           scoped_refptr<base::RefCountedBytes>* output,
@@ -226,7 +227,7 @@ class WallpaperManager: public content::NotificationObserver {
   // NULL). Returns true on success.
   static bool ResizeAndSaveWallpaper(const gfx::ImageSkia& image,
                                      const base::FilePath& path,
-                                     ash::WallpaperLayout layout,
+                                     wallpaper::WallpaperLayout layout,
                                      int preferred_width,
                                      int preferred_height,
                                      gfx::ImageSkia* output_skia);
@@ -282,7 +283,7 @@ class WallpaperManager: public content::NotificationObserver {
   void SetCustomWallpaper(const std::string& user_id,
                           const std::string& user_id_hash,
                           const std::string& file,
-                          ash::WallpaperLayout layout,
+                          wallpaper::WallpaperLayout layout,
                           user_manager::User::WallpaperType type,
                           const gfx::ImageSkia& image,
                           bool update_wallpaper);
@@ -320,7 +321,7 @@ class WallpaperManager: public content::NotificationObserver {
   // |update_wallpaper| is false, skip change wallpaper but only update cache.
   void SetWallpaperFromImageSkia(const std::string& user_id,
                                  const gfx::ImageSkia& image,
-                                 ash::WallpaperLayout layout,
+                                 wallpaper::WallpaperLayout layout,
                                  bool update_wallpaper);
 
   // Updates current wallpaper. It may switch the size of wallpaper based on the
@@ -373,7 +374,7 @@ class WallpaperManager: public content::NotificationObserver {
   // and starts resizing operation of the custom wallpaper if necessary.
   static void SaveCustomWallpaper(const std::string& user_id_hash,
                                   const base::FilePath& path,
-                                  ash::WallpaperLayout layout,
+                                  wallpaper::WallpaperLayout layout,
                                   scoped_ptr<gfx::ImageSkia> image);
 
   // Moves custom wallpapers from |user_id| directory to |user_id_hash|
@@ -478,7 +479,7 @@ class WallpaperManager: public content::NotificationObserver {
   // Otherwise, cache wallpaper to memory if not logged in.  (Takes a UserImage
   // because that's the callback interface provided by UserImageLoader.)
   void OnWallpaperDecoded(const std::string& user_id,
-                          ash::WallpaperLayout layout,
+                          wallpaper::WallpaperLayout layout,
                           bool update_wallpaper,
                           MovableOnDestroyCallbackHolder on_finish,
                           const user_manager::UserImage& user_image);
@@ -547,7 +548,7 @@ class WallpaperManager: public content::NotificationObserver {
 
   // Sets wallpaper to decoded default.
   void OnDefaultWallpaperDecoded(const base::FilePath& path,
-                                 const ash::WallpaperLayout layout,
+                                 const wallpaper::WallpaperLayout layout,
                                  scoped_ptr<user_manager::UserImage>* result,
                                  MovableOnDestroyCallbackHolder on_finish,
                                  const user_manager::UserImage& user_image);
@@ -555,7 +556,7 @@ class WallpaperManager: public content::NotificationObserver {
   // Start decoding given default wallpaper.
   void StartLoadAndSetDefaultWallpaper(
       const base::FilePath& path,
-      const ash::WallpaperLayout layout,
+      const wallpaper::WallpaperLayout layout,
       MovableOnDestroyCallbackHolder on_finish,
       scoped_ptr<user_manager::UserImage>* result_out);
 

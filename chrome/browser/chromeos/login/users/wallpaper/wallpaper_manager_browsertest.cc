@@ -38,7 +38,11 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
-using namespace ash;
+using wallpaper::WallpaperLayout;
+using wallpaper::WALLPAPER_LAYOUT_CENTER;
+using wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
+using wallpaper::WALLPAPER_LAYOUT_STRETCH;
+using wallpaper::WALLPAPER_LAYOUT_TILE;
 
 namespace chromeos {
 
@@ -67,7 +71,7 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
   virtual void SetUpOnMainThread() override {
     controller_ = ash::Shell::GetInstance()->desktop_background_controller();
     local_state_ = g_browser_process->local_state();
-    DesktopBackgroundController::TestAPI(controller_)
+    ash::DesktopBackgroundController::TestAPI(controller_)
         .set_wallpaper_reload_delay_for_test(0);
     UpdateDisplay("800x600");
   }
@@ -135,7 +139,7 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
         *wallpaper_dir_, &wallpaper_manager_command_line_);
   }
 
-  DesktopBackgroundController* controller_;
+  ash::DesktopBackgroundController* controller_;
   PrefService* local_state_;
   scoped_ptr<base::CommandLine> wallpaper_manager_command_line_;
 

@@ -61,6 +61,7 @@
     'url_matcher.gypi',
     'user_prefs.gypi',
     'variations.gypi',
+    'wallpaper.gypi',
     'webdata.gypi',
     'web_resource.gypi',
   ],

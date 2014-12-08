@@ -9,7 +9,6 @@
 #include "ash/desktop_background/desktop_background_view.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
-#include "ash/desktop_background/wallpaper_resizer.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
@@ -23,6 +22,8 @@
 #include "base/logging.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/worker_pool.h"
+#include "components/wallpaper/wallpaper_resizer.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
@@ -30,6 +31,14 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget.h"
+
+using content::BrowserThread;
+using wallpaper::WallpaperResizer;
+using wallpaper::WallpaperLayout;
+using wallpaper::WALLPAPER_LAYOUT_CENTER;
+using wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
+using wallpaper::WALLPAPER_LAYOUT_STRETCH;
+using wallpaper::WALLPAPER_LAYOUT_TILE;
 
 namespace ash {
 namespace {
@@ -86,7 +95,8 @@ bool DesktopBackgroundController::SetWallpaperImage(const gfx::ImageSkia& image,
   }
 
   current_wallpaper_.reset(
-      new WallpaperResizer(image, GetMaxDisplaySizeInNative(), layout));
+      new WallpaperResizer(image, GetMaxDisplaySizeInNative(), layout,
+                           BrowserThread::GetBlockingPool()));
   current_wallpaper_->StartResize();
 
   FOR_EACH_OBSERVER(DesktopBackgroundControllerObserver,

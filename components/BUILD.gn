@@ -101,6 +101,7 @@ group("all_components") {
     "//components/visitedlink/browser",
     "//components/visitedlink/common",
     "//components/visitedlink/renderer",
+    "//components/wallpaper",
     "//components/web_cache/browser",
     "//components/web_cache/common",
     "//components/web_cache/renderer",

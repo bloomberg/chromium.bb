@@ -9,7 +9,6 @@
 
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
-#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -47,6 +46,7 @@
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
+#include "components/wallpaper/wallpaper_layout.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -214,12 +214,12 @@ int FindPublicSession(const user_manager::UserList& users) {
 }  // namespace
 
 WallpaperInfo::WallpaperInfo()
-    : layout(ash::WALLPAPER_LAYOUT_CENTER),
+    : layout(wallpaper::WALLPAPER_LAYOUT_CENTER),
       type(user_manager::User::WALLPAPER_TYPE_COUNT) {
 }
 
 WallpaperInfo::WallpaperInfo(const std::string& in_location,
-                             ash::WallpaperLayout in_layout,
+                             wallpaper::WallpaperLayout in_layout,
                              user_manager::User::WallpaperType in_type,
                              const base::Time& in_date)
     : location(in_location),
@@ -588,7 +588,7 @@ bool WallpaperManager::GetLoggedInUserWallpaperInfo(WallpaperInfo* info) {
   if (user_manager::UserManager::Get()->IsLoggedInAsStub()) {
     info->location = current_user_wallpaper_info_.location = "";
     info->layout = current_user_wallpaper_info_.layout =
-        ash::WALLPAPER_LAYOUT_CENTER_CROPPED;
+        wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
     info->type = current_user_wallpaper_info_.type =
         user_manager::User::DEFAULT;
     info->date = current_user_wallpaper_info_.date =
@@ -698,7 +698,7 @@ void WallpaperManager::RemoveUserWallpaperInfo(const std::string& user_id) {
 
 // static
 bool WallpaperManager::ResizeImage(const gfx::ImageSkia& image,
-                                   ash::WallpaperLayout layout,
+                                   wallpaper::WallpaperLayout layout,
                                    int preferred_width,
                                    int preferred_height,
                                    scoped_refptr<base::RefCountedBytes>* output,
@@ -710,7 +710,7 @@ bool WallpaperManager::ResizeImage(const gfx::ImageSkia& image,
   int resized_height;
   *output = new base::RefCountedBytes();
 
-  if (layout == ash::WALLPAPER_LAYOUT_CENTER_CROPPED) {
+  if (layout == wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED) {
     // Do not resize custom wallpaper if it is smaller than preferred size.
     if (!(width > preferred_width && height > preferred_height))
       return false;
@@ -726,7 +726,7 @@ bool WallpaperManager::ResizeImage(const gfx::ImageSkia& image,
       resized_height =
           RoundPositive(static_cast<double>(height) * horizontal_ratio);
     }
-  } else if (layout == ash::WALLPAPER_LAYOUT_STRETCH) {
+  } else if (layout == wallpaper::WALLPAPER_LAYOUT_STRETCH) {
     resized_width = preferred_width;
     resized_height = preferred_height;
   } else {
@@ -761,11 +761,11 @@ bool WallpaperManager::ResizeImage(const gfx::ImageSkia& image,
 // static
 bool WallpaperManager::ResizeAndSaveWallpaper(const gfx::ImageSkia& image,
                                               const base::FilePath& path,
-                                              ash::WallpaperLayout layout,
+                                              wallpaper::WallpaperLayout layout,
                                               int preferred_width,
                                               int preferred_height,
                                               gfx::ImageSkia* output_skia) {
-  if (layout == ash::WALLPAPER_LAYOUT_CENTER) {
+  if (layout == wallpaper::WALLPAPER_LAYOUT_CENTER) {
     // TODO(bshe): Generates cropped custom wallpaper for CENTER layout.
     if (base::PathExists(path))
       base::DeleteFile(path, false);
@@ -862,12 +862,9 @@ void WallpaperManager::SetPolicyControlledWallpaper(
                    user_image.image(),
                    true /* update wallpaper */));
   } else {
-    SetCustomWallpaper(user_id,
-                       user->username_hash(),
-                       "policy-controlled.jpeg",
-                       ash::WALLPAPER_LAYOUT_CENTER_CROPPED,
-                       user_manager::User::POLICY,
-                       user_image.image(),
+    SetCustomWallpaper(user_id, user->username_hash(), "policy-controlled.jpeg",
+                       wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
+                       user_manager::User::POLICY, user_image.image(),
                        true /* update wallpaper */);
   }
 }
@@ -880,20 +877,16 @@ void WallpaperManager::SetCustomWallpaperOnSanitizedUsername(
     const std::string& user_id_hash) {
   if (!cryptohome_success)
     return;
-  SetCustomWallpaper(user_id,
-                     user_id_hash,
-                     "policy-controlled.jpeg",
-                     ash::WALLPAPER_LAYOUT_CENTER_CROPPED,
-                     user_manager::User::POLICY,
-                     image,
-                     update_wallpaper);
+  SetCustomWallpaper(user_id, user_id_hash, "policy-controlled.jpeg",
+                     wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
+                     user_manager::User::POLICY, image, update_wallpaper);
 }
 
 void WallpaperManager::SetCustomWallpaper(
     const std::string& user_id,
     const std::string& user_id_hash,
     const std::string& file,
-    ash::WallpaperLayout layout,
+    wallpaper::WallpaperLayout layout,
     user_manager::User::WallpaperType type,
     const gfx::ImageSkia& image,
     bool update_wallpaper) {
@@ -1003,9 +996,9 @@ void WallpaperManager::DoSetDefaultWallpaper(
     file = use_small ? &default_small_wallpaper_file_
                      : &default_large_wallpaper_file_;
   }
-  ash::WallpaperLayout layout = use_small
-                                    ? ash::WALLPAPER_LAYOUT_CENTER
-                                    : ash::WALLPAPER_LAYOUT_CENTER_CROPPED;
+  wallpaper::WallpaperLayout layout =
+      use_small ? wallpaper::WALLPAPER_LAYOUT_CENTER
+                : wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
   DCHECK(file);
   if (!default_wallpaper_image_.get() ||
       default_wallpaper_image_->file_path() != file->value()) {
@@ -1022,7 +1015,7 @@ void WallpaperManager::DoSetDefaultWallpaper(
   // 1x1 wallpaper is actually solid color, so it should be stretched.
   if (default_wallpaper_image_->image().width() == 1 &&
       default_wallpaper_image_->image().height() == 1)
-    layout = ash::WALLPAPER_LAYOUT_STRETCH;
+    layout = wallpaper::WALLPAPER_LAYOUT_STRETCH;
 
   ash::Shell::GetInstance()->desktop_background_controller()->SetWallpaperImage(
       default_wallpaper_image_->image(), layout);
@@ -1031,7 +1024,7 @@ void WallpaperManager::DoSetDefaultWallpaper(
 // static
 void WallpaperManager::SaveCustomWallpaper(const std::string& user_id_hash,
                                            const base::FilePath& original_path,
-                                           ash::WallpaperLayout layout,
+                                           wallpaper::WallpaperLayout layout,
                                            scoped_ptr<gfx::ImageSkia> image) {
   base::DeleteFile(
       GetCustomWallpaperDir(kOriginalWallpaperSubDir).Append(user_id_hash),
@@ -1052,12 +1045,9 @@ void WallpaperManager::SaveCustomWallpaper(const std::string& user_id_hash,
   // Re-encode orginal file to jpeg format and saves the result in case that
   // resized wallpaper is not generated (i.e. chrome shutdown before resized
   // wallpaper is saved).
-  ResizeAndSaveWallpaper(*image,
-                         original_path,
-                         ash::WALLPAPER_LAYOUT_STRETCH,
-                         image->width(),
-                         image->height(),
-                         NULL);
+  ResizeAndSaveWallpaper(*image, original_path,
+                         wallpaper::WALLPAPER_LAYOUT_STRETCH, image->width(),
+                         image->height(), NULL);
   ResizeAndSaveWallpaper(*image,
                          small_wallpaper_path,
                          layout,
@@ -1147,7 +1137,8 @@ void WallpaperManager::GetCustomWallpaperInternal(
 void WallpaperManager::InitInitialUserWallpaper(const std::string& user_id,
                                                 bool is_persistent) {
   current_user_wallpaper_info_.location = "";
-  current_user_wallpaper_info_.layout = ash::WALLPAPER_LAYOUT_CENTER_CROPPED;
+  current_user_wallpaper_info_.layout =
+      wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
   current_user_wallpaper_info_.type = user_manager::User::DEFAULT;
   current_user_wallpaper_info_.date = base::Time::Now().LocalMidnight();
 
@@ -1235,10 +1226,11 @@ void WallpaperManager::ScheduleSetUserWallpaper(const std::string& user_id,
     if (info.type == user_manager::User::CUSTOMIZED ||
         info.type == user_manager::User::POLICY) {
       const char* sub_dir = GetCustomWallpaperSubdirForCurrentResolution();
-      // Wallpaper is not resized when layout is ash::WALLPAPER_LAYOUT_CENTER.
+      // Wallpaper is not resized when layout is
+      // wallpaper::WALLPAPER_LAYOUT_CENTER.
       // Original wallpaper should be used in this case.
       // TODO(bshe): Generates cropped custom wallpaper for CENTER layout.
-      if (info.layout == ash::WALLPAPER_LAYOUT_CENTER)
+      if (info.layout == wallpaper::WALLPAPER_LAYOUT_CENTER)
         sub_dir = kOriginalWallpaperSubDir;
       base::FilePath wallpaper_path = GetCustomWallpaperDir(sub_dir);
       wallpaper_path = wallpaper_path.Append(info.location);
@@ -1257,10 +1249,11 @@ void WallpaperManager::ScheduleSetUserWallpaper(const std::string& user_id,
   }
 }
 
-void WallpaperManager::SetWallpaperFromImageSkia(const std::string& user_id,
-                                                 const gfx::ImageSkia& image,
-                                                 ash::WallpaperLayout layout,
-                                                 bool update_wallpaper) {
+void WallpaperManager::SetWallpaperFromImageSkia(
+    const std::string& user_id,
+    const gfx::ImageSkia& image,
+    wallpaper::WallpaperLayout layout,
+    bool update_wallpaper) {
   DCHECK(user_manager::UserManager::Get()->IsUserLoggedIn());
 
   // There is no visible background in kiosk mode.
@@ -1484,7 +1477,7 @@ void WallpaperManager::LoadWallpaper(const std::string& user_id,
     WallpaperResolution resolution = GetAppropriateResolution();
     // Only solid color wallpapers have stretch layout and they have only one
     // resolution.
-    if (info.layout != ash::WALLPAPER_LAYOUT_STRETCH &&
+    if (info.layout != wallpaper::WALLPAPER_LAYOUT_STRETCH &&
         resolution == WALLPAPER_RESOLUTION_SMALL) {
       file_name = base::FilePath(file_name).InsertBeforeExtension(
           kSmallWallpaperSuffix).value();
@@ -1557,7 +1550,7 @@ bool WallpaperManager::GetUserWallpaperInfo(const std::string& user_id,
     return false;
 
   info->location = location;
-  info->layout = static_cast<ash::WallpaperLayout>(layout);
+  info->layout = static_cast<wallpaper::WallpaperLayout>(layout);
   info->type = static_cast<user_manager::User::WallpaperType>(type);
   info->date = base::Time::FromInternalValue(date_val);
   return true;
@@ -1594,7 +1587,7 @@ void WallpaperManager::MoveLoggedInUserCustomWallpaper() {
 
 void WallpaperManager::OnWallpaperDecoded(
     const std::string& user_id,
-    ash::WallpaperLayout layout,
+    wallpaper::WallpaperLayout layout,
     bool update_wallpaper,
     MovableOnDestroyCallbackHolder on_finish,
     const user_manager::UserImage& user_image) {
@@ -1605,7 +1598,8 @@ void WallpaperManager::OnWallpaperDecoded(
   // Use default wallpaper in this case.
   if (user_image.image().isNull()) {
     // Updates user pref to default wallpaper.
-    WallpaperInfo info = {"", ash::WALLPAPER_LAYOUT_CENTER_CROPPED,
+    WallpaperInfo info = {"",
+                          wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
                           user_manager::User::DEFAULT,
                           base::Time::Now().LocalMidnight()};
     SetUserWallpaperInfo(user_id, info, true);
@@ -1761,19 +1755,15 @@ void WallpaperManager::ResizeCustomizedDefaultWallpaper(
     gfx::ImageSkia* large_wallpaper_image) {
   *success = true;
 
-  *success &= ResizeAndSaveWallpaper(*image,
-                                     rescaled_files->path_rescaled_small(),
-                                     ash::WALLPAPER_LAYOUT_STRETCH,
-                                     kSmallWallpaperMaxWidth,
-                                     kSmallWallpaperMaxHeight,
-                                     small_wallpaper_image);
+  *success &= ResizeAndSaveWallpaper(
+      *image, rescaled_files->path_rescaled_small(),
+      wallpaper::WALLPAPER_LAYOUT_STRETCH, kSmallWallpaperMaxWidth,
+      kSmallWallpaperMaxHeight, small_wallpaper_image);
 
-  *success &= ResizeAndSaveWallpaper(*image,
-                                     rescaled_files->path_rescaled_large(),
-                                     ash::WALLPAPER_LAYOUT_STRETCH,
-                                     kLargeWallpaperMaxWidth,
-                                     kLargeWallpaperMaxHeight,
-                                     large_wallpaper_image);
+  *success &= ResizeAndSaveWallpaper(
+      *image, rescaled_files->path_rescaled_large(),
+      wallpaper::WALLPAPER_LAYOUT_STRETCH, kLargeWallpaperMaxWidth,
+      kLargeWallpaperMaxHeight, large_wallpaper_image);
 }
 
 void WallpaperManager::OnCustomizedDefaultWallpaperResized(
@@ -1882,7 +1872,7 @@ void WallpaperManager::SetDefaultWallpaperPathsFromCommandLine(
 
 void WallpaperManager::OnDefaultWallpaperDecoded(
     const base::FilePath& path,
-    const ash::WallpaperLayout layout,
+    const wallpaper::WallpaperLayout layout,
     scoped_ptr<user_manager::UserImage>* result_out,
     MovableOnDestroyCallbackHolder on_finish,
     const user_manager::UserImage& user_image) {
@@ -1893,7 +1883,7 @@ void WallpaperManager::OnDefaultWallpaperDecoded(
 
 void WallpaperManager::StartLoadAndSetDefaultWallpaper(
     const base::FilePath& path,
-    const ash::WallpaperLayout layout,
+    const wallpaper::WallpaperLayout layout,
     MovableOnDestroyCallbackHolder on_finish,
     scoped_ptr<user_manager::UserImage>* result_out) {
   wallpaper_loader_->Start(
@@ -1927,13 +1917,13 @@ void WallpaperManager::SetDefaultWallpaperPath(
   // |need_update_screen| is true if the previous default wallpaper is visible
   // now, so we need to update wallpaper on the screen.
   //
-  // Layout is ignored here, so ash::WALLPAPER_LAYOUT_CENTER is used
+  // Layout is ignored here, so wallpaper::WALLPAPER_LAYOUT_CENTER is used
   // as a placeholder only.
   const bool need_update_screen =
       default_wallpaper_image_.get() &&
       dbc->WallpaperIsAlreadyLoaded(default_wallpaper_image_->image(),
                                     false /* compare_layouts */,
-                                    ash::WALLPAPER_LAYOUT_CENTER);
+                                    wallpaper::WALLPAPER_LAYOUT_CENTER);
 
   default_wallpaper_image_.reset();
   if (GetAppropriateResolution() == WALLPAPER_RESOLUTION_SMALL) {

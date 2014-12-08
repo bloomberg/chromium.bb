@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
+#include "components/wallpaper/wallpaper_layout.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -24,26 +25,15 @@ namespace aura {
 class Window;
 }
 
-namespace ash {
+namespace wallpaper {
+class WallpaperResizer;
+}
 
-enum WallpaperLayout {
-  // Center the wallpaper on the desktop without scaling it. The wallpaper
-  // may be cropped.
-  WALLPAPER_LAYOUT_CENTER,
-  // Scale the wallpaper (while preserving its aspect ratio) to cover the
-  // desktop; the wallpaper may be cropped.
-  WALLPAPER_LAYOUT_CENTER_CROPPED,
-  // Scale the wallpaper (without preserving its aspect ratio) to match the
-  // desktop's size.
-  WALLPAPER_LAYOUT_STRETCH,
-  // Tile the wallpaper over the background without scaling it.
-  WALLPAPER_LAYOUT_TILE
-};
+namespace ash {
 
 const SkColor kLoginWallpaperColor = 0xFEFEFE;
 
 class DesktopBackgroundControllerObserver;
-class WallpaperResizer;
 
 // Updates background layer if necessary.
 class ASH_EXPORT DesktopBackgroundController
@@ -72,13 +62,14 @@ class ASH_EXPORT DesktopBackgroundController
   // is no image, e.g. background is none.
   gfx::ImageSkia GetWallpaper() const;
 
-  WallpaperLayout GetWallpaperLayout() const;
+  wallpaper::WallpaperLayout GetWallpaperLayout() const;
 
   // Sets wallpaper. This is mostly called by WallpaperManager to set
   // the default or user selected custom wallpaper.
   // Returns true if new image was actually set. And false when duplicate set
   // request detected.
-  bool SetWallpaperImage(const gfx::ImageSkia& image, WallpaperLayout layout);
+  bool SetWallpaperImage(const gfx::ImageSkia& image,
+                         wallpaper::WallpaperLayout layout);
 
   // Creates an empty wallpaper. Some tests require a wallpaper widget is ready
   // when running. However, the wallpaper widgets are now created
@@ -113,7 +104,7 @@ class ASH_EXPORT DesktopBackgroundController
   // If |compare_layouts| is false, layout is ignored.
   bool WallpaperIsAlreadyLoaded(const gfx::ImageSkia& image,
                                 bool compare_layouts,
-                                WallpaperLayout layout) const;
+                                wallpaper::WallpaperLayout layout) const;
 
  private:
   friend class DesktopBackgroundControllerTest;
@@ -159,7 +150,7 @@ class ASH_EXPORT DesktopBackgroundController
   ObserverList<DesktopBackgroundControllerObserver> observers_;
 
   // The current wallpaper.
-  scoped_ptr<WallpaperResizer> current_wallpaper_;
+  scoped_ptr<wallpaper::WallpaperResizer> current_wallpaper_;
 
   gfx::Size current_max_display_size_;
 

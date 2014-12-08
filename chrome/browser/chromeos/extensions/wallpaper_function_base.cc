@@ -8,6 +8,7 @@
 #include "chrome/browser/image_decoder.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/login_state.h"
+#include "components/wallpaper/wallpaper_layout.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
@@ -29,13 +30,13 @@ const int kWallpaperLayoutCount = arraysize(kWallpaperLayoutArrays);
 
 const char kCancelWallpaperMessage[] = "Set wallpaper was canceled.";
 
-ash::WallpaperLayout GetLayoutEnum(const std::string& layout) {
+wallpaper::WallpaperLayout GetLayoutEnum(const std::string& layout) {
   for (int i = 0; i < kWallpaperLayoutCount; i++) {
     if (layout.compare(kWallpaperLayoutArrays[i]) == 0)
-      return static_cast<ash::WallpaperLayout>(i);
+      return static_cast<wallpaper::WallpaperLayout>(i);
   }
   // Default to use CENTER layout.
-  return ash::WALLPAPER_LAYOUT_CENTER;
+  return wallpaper::WALLPAPER_LAYOUT_CENTER;
 }
 
 }  // namespace wallpaper_api_util
