@@ -1,6 +1,6 @@
-layer at (0,0) size 785x1342
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x1342
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1342
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 785x1342 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x1342
     RenderBody {BODY} at (8,8) size 769x1326 [bgcolor=#CCCCCC]
       RenderBlock {P} at (0,0) size 769x16

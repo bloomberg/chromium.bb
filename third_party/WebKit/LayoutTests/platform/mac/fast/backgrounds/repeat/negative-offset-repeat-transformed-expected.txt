@@ -1,6 +1,6 @@
-layer at (0,0) size 1133x994
+layer at (0,0) size 800x600 scrollWidth 1133 scrollHeight 994
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x994
+layer at (0,0) size 800x994 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x994
     RenderBody {BODY} at (8,16) size 784x970
       RenderBlock {P} at (0,0) size 784x32
@@ -54,7 +54,7 @@ layer at (0,0) size 800x994
       RenderBlock (floating) {DIV} at (93,476) size 24x24 [border: (1px dotted #008000)]
 layer at (8,502) size 0x5000
   RenderBlock (positioned) {P} at (8,502) size 0x5000
-layer at (8,532) size 475x454
+layer at (8,532) size 475x454 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderTable {TABLE} at (0,516) size 475x454 [border: (5px outset #808080)]
     RenderTableSection {TBODY} at (5,5) size 465x444
       RenderTableRow {TR} at (0,2) size 465x440

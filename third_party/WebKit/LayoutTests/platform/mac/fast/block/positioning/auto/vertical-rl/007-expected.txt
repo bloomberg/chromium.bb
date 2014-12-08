@@ -1,9 +1,9 @@
-layer at (0,0) size 1520x600
+layer at (0,0) size 800x600 scrollX 720.00 scrollWidth 1520
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
-layer at (-720,8) size 1512x202 backgroundClip at (0,0) size 1520x600 clip at (0,0) size 1520x600 outlineClip at (0,0) size 1520x600
+layer at (-720,8) size 1512x202 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   RenderBlock (positioned) {DIV} at (8,8) size 1512x202.02
     RenderBlock {P} at (72,0) size 72x202.02
       RenderInline {A} at (0,0) size 72x167 [color=#0000EE]

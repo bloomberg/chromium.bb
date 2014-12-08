@@ -1,6 +1,6 @@
-layer at (0,0) size 785x739
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x739
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 739
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 785x739 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x738.88
     RenderBody {BODY} at (8,21.44) size 769x101.44
       RenderBlock {H1} at (0,0) size 769x32
@@ -63,7 +63,7 @@ layer at (13,344) size 150x150
   RenderImage {IMG} at (5,5) size 150x150
 layer at (268,339) size 150x150
   RenderImage {IMG} at (0,0) size 150x150 [bgcolor=#808080]
-layer at (8,539) size 150x150
+layer at (8,539) size 150x150 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderImage {IMG} at (0,0) size 150x150 [bgcolor=#FFA500]
-layer at (268,539) size 150x150
+layer at (268,539) size 150x150 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderImage {IMG} at (0,0) size 150x150

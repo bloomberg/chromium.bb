@@ -198,9 +198,9 @@ layer at (0,0) size 800x600
             text run at (446,187) width 64: " the end ..."
 layer at (52,64) size 402x202
   RenderPartObject {IFRAME} at (44,0) size 402x202 [border: (1px solid #000000)]
-    layer at (0,0) size 385x214
-      RenderView at (0,0) size 385x200
-    layer at (0,0) size 385x214
+    layer at (0,0) size 400x200 clip at (0,0) size 385x200 scrollHeight 214
+      RenderView at (0,0) size 400x200
+    layer at (0,0) size 385x214 backgroundClip at (0,0) size 385x200 clip at (0,0) size 385x200 outlineClip at (0,0) size 385x200
       RenderBlock {HTML} at (0,0) size 385x214
         RenderBody {BODY} at (8,8) size 369x198
           RenderBlock {P} at (0,0) size 369x100

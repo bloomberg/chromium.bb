@@ -19,9 +19,9 @@ EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotificatio
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
 EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
 EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
-layer at (0,0) size 785x648
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x648
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 648
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 785x648 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x648
     RenderBody {BODY} at (8,8) size 769x616
       RenderBlock (anonymous) at (0,0) size 769x72

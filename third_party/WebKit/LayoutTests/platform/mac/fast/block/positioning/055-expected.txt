@@ -1,5 +1,5 @@
-layer at (0,0) size 785x1928
-  RenderView at (0,0) size 785x600
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1928
+  RenderView at (0,0) size 800x600
 layer at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x600
     RenderBody {BODY} at (8,8) size 769x584
@@ -8,7 +8,7 @@ layer at (0,0) size 785x600
           text run at (0,0) width 121: "Content at the end."
 layer at (8,8) size 769x0
   RenderBlock (relative positioned) {DIV} at (0,0) size 769x0
-layer at (8,8) size 16x1920
+layer at (8,8) size 16x1920 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock (positioned) {DIV} at (0,0) size 16x1920
     RenderText {#text} at (0,0) size 8x16
       text run at (0,0) width 8: "1"

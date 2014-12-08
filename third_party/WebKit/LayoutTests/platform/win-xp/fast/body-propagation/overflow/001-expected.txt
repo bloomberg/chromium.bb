@@ -1,5 +1,5 @@
-layer at (0,0) size 785x585
-  RenderView at (0,0) size 785x585
+layer at (0,0) size 800x600 clip at (0,0) size 785x585
+  RenderView at (0,0) size 800x600
 layer at (0,0) size 785x178
   RenderBlock {HTML} at (0,0) size 785x178
     RenderBody {BODY} at (8,8) size 162x162 [color=#000080] [border: (1px solid #000080)]

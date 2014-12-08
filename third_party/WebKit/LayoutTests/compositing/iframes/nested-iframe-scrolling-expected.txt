@@ -16,9 +16,9 @@ layer at (0,0) size 320x200
           RenderText {#text} at (0,0) size 0x0
     layer at (0,0) size 300x150
       RenderPartObject {IFRAME} at (0,0) size 300x150
-        layer at (0,0) size 300x1100
+        layer at (0,0) size 300x150 scrollY 100.00 scrollHeight 1100
           RenderView at (0,0) size 300x150
-        layer at (0,0) size 300x1100
+        layer at (0,0) size 300x1100 backgroundClip at (0,0) size 300x150 clip at (0,0) size 300x150 outlineClip at (0,0) size 300x150
           RenderBlock {HTML} at (0,0) size 300x1100
             RenderBody {BODY} at (0,100) size 300x1000
               RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#008000]
