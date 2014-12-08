@@ -303,11 +303,9 @@ const gfx::Image& BookmarkModel::GetFavicon(const BookmarkNode* node) {
   DCHECK(node);
   if (node->favicon_state() == BookmarkNode::INVALID_FAVICON) {
     BookmarkNode* mutable_node = AsMutable(node);
-    LoadFavicon(
-        mutable_node,
-        client_->PreferTouchIcon() ?
-            favicon_base::TOUCH_ICON :
-            favicon_base::FAVICON);
+    LoadFavicon(mutable_node,
+                client_->PreferTouchIcon() ? favicon_base::TOUCH_ICON
+                                           : favicon_base::FAVICON);
   }
   return node->favicon();
 }
@@ -966,9 +964,8 @@ void BookmarkModel::OnFaviconDataAvailable(
   }
 }
 
-void BookmarkModel::LoadFavicon(
-    BookmarkNode* node,
-    favicon_base::IconType icon_type) {
+void BookmarkModel::LoadFavicon(BookmarkNode* node,
+                                favicon_base::IconType icon_type) {
   if (node->is_folder())
     return;
 

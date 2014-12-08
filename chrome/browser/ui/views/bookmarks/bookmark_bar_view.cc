@@ -1260,13 +1260,13 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     if (sender == GetBookmarkButton(i)) {
       const BookmarkNode* node = model_->bookmark_bar_node()->GetChild(i);
-      const gfx::Image& image_from_model = model_->GetFavicon(node);
       const gfx::ImageSkia* icon = nullptr;
-      if (image_from_model.IsEmpty()) {
-        icon = GetImageSkiaNamed(node->is_folder() ? IDR_BOOKMARK_BAR_FOLDER
-                                                   : IDR_DEFAULT_FAVICON);
+      if (node->is_url()) {
+        const gfx::Image& image = model_->GetFavicon(node);
+        icon = image.IsEmpty() ? GetImageSkiaNamed(IDR_DEFAULT_FAVICON)
+                               : image.ToImageSkia();
       } else {
-        icon = image_from_model.ToImageSkia();
+        icon = GetImageSkiaNamed(IDR_BOOKMARK_BAR_FOLDER);
       }
 
       button_drag_utils::SetDragImage(node->url(),
