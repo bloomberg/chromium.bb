@@ -65,7 +65,7 @@ WebViewImpl.setupElement = function(proto) {
 
 // Initiates navigation once the <webview> element is attached to the DOM.
 WebViewImpl.prototype.onElementAttached = function() {
-  this.parseSrcAttribute();
+  this.attributes[WebViewConstants.ATTRIBUTE_SRC].parse();
 };
 
 // Resets some state upon detaching <webview> element from the DOM.
@@ -151,27 +151,6 @@ WebViewImpl.prototype.onSizeChanged = function(webViewEvent) {
     // changed.
     this.dispatchEvent(webViewEvent);
   }
-};
-
-WebViewImpl.prototype.parseSrcAttribute = function() {
-  if (!this.elementAttached ||
-      !this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].validPartitionId ||
-      !this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue()) {
-    return;
-  }
-
-  if (!this.guest.getId()) {
-    if (this.beforeFirstNavigation) {
-      this.beforeFirstNavigation = false;
-      this.createGuest();
-    }
-    return;
-  }
-
-  // Navigate to |this.src|.
-  WebViewInternal.navigate(
-      this.guest.getId(),
-      this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue());
 };
 
 WebViewImpl.prototype.createGuest = function() {

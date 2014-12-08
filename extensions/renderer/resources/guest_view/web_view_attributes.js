@@ -88,10 +88,8 @@ AllowTransparencyAttribute.prototype.handleMutation = function(oldValue,
     return;
   }
 
-  WebViewInternal.setAllowTransparency(
-      this.webViewImpl.guest.getId(),
-      this.webViewImpl.attributes[
-          WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY].getValue());
+  WebViewInternal.setAllowTransparency(this.webViewImpl.guest.getId(),
+                                       this.getValue());
 };
 
 // Attribute used to define the demension limits of autosizing.
@@ -211,7 +209,7 @@ SrcAttribute.prototype.handleMutation = function(oldValue, newValue) {
     this.setValueIgnoreMutation(oldValue);
     return;
   }
-  this.webViewImpl.parseSrcAttribute();
+  this.parse();
 };
 
 // The purpose of this mutation observer is to catch assignment to the src
@@ -236,6 +234,26 @@ SrcAttribute.prototype.setupMutationObserver =
     attributeFilter: [this.name]
   };
   this.observer.observe(this.webViewImpl.element, params);
+};
+
+SrcAttribute.prototype.parse = function() {
+  if (!this.webViewImpl.elementAttached ||
+      !this.webViewImpl.attributes[
+        WebViewConstants.ATTRIBUTE_PARTITION].validPartitionId ||
+      !this.getValue()) {
+    return;
+  }
+
+  if (!this.webViewImpl.guest.getId()) {
+    if (this.webViewImpl.beforeFirstNavigation) {
+      this.webViewImpl.beforeFirstNavigation = false;
+      this.webViewImpl.createGuest();
+    }
+    return;
+  }
+
+  // Navigate to |src|.
+  WebViewInternal.navigate(this.webViewImpl.guest.getId(), this.getValue());
 };
 
 // -----------------------------------------------------------------------------
