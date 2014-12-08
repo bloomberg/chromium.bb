@@ -31,16 +31,10 @@ class View;
 
   // A tracking area installed to enable mouseMoved events.
   ui::ScopedCrTrackingArea trackingArea_;
-
-  // Set to ignore window visibility in a subsequent call to drawRect:. Views
-  // does not expect hidden windows to paint. However, when showing a window,
-  // Cocoa first paints before updating visibility.
-  BOOL willShow_;
 }
 
 @property(readonly, nonatomic) views::View* hostedView;
 @property(assign, nonatomic) ui::TextInputClient* textInputClient;
-@property(assign, nonatomic) BOOL willShow;
 
 // Initialize the NSView -> views::View bridge. |viewToHost| must be non-NULL.
 - (id)initWithView:(views::View*)viewToHost;

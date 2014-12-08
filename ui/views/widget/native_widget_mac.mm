@@ -351,7 +351,7 @@ void NativeWidgetMac::ShowWithWindowState(ui::WindowShowState state) {
 }
 
 bool NativeWidgetMac::IsVisible() const {
-  return [GetNativeWindow() isVisible];
+  return bridge_ && bridge_->window_visible();
 }
 
 void NativeWidgetMac::Activate() {
@@ -409,7 +409,13 @@ void NativeWidgetMac::Maximize() {
 }
 
 void NativeWidgetMac::Minimize() {
-  NOTIMPLEMENTED();
+  NSWindow* window = GetNativeWindow();
+  // Calling performMiniaturize: will momentarily highlight the button, but
+  // AppKit will reject it if there is no miniaturize button.
+  if ([window styleMask] & NSMiniaturizableWindowMask)
+    [window performMiniaturize:nil];
+  else
+    [window miniaturize:nil];
 }
 
 bool NativeWidgetMac::IsMaximized() const {
@@ -419,12 +425,11 @@ bool NativeWidgetMac::IsMaximized() const {
 }
 
 bool NativeWidgetMac::IsMinimized() const {
-  NOTIMPLEMENTED();
-  return false;
+  return [GetNativeWindow() isMiniaturized];
 }
 
 void NativeWidgetMac::Restore() {
-  NOTIMPLEMENTED();
+  [GetNativeWindow() deminiaturize:nil];
 }
 
 void NativeWidgetMac::SetFullscreen(bool fullscreen) {

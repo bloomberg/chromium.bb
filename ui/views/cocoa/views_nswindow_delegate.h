@@ -37,6 +37,9 @@ class BridgedNativeWidget;
 // a notification such as NSApplicationDidHideNotification.
 - (void)onWindowOrderChanged:(NSNotification*)notification;
 
+// Notify when -[NSWindow display] is being called on the window.
+- (void)onWindowWillDisplay;
+
 @end
 
 #endif  // UI_VIEWS_COCOA_VIEWS_NSWINDOW_DELEGATE_H_

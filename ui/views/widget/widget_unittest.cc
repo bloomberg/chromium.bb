@@ -1183,9 +1183,10 @@ TEST_F(WidgetTest, BubbleControlsResetOnInit) {
   anchor->CloseNow();
 }
 
-// Desktop native widget Aura tests are for non Chrome OS platforms.
-#if !defined(OS_CHROMEOS)
-// Test to ensure that after minimize, view width is set to zero.
+#if defined(OS_WIN)
+// Test to ensure that after minimize, view width is set to zero. This is only
+// the case for desktop widgets on Windows. Other platforms retain the window
+// size while minimized.
 TEST_F(WidgetTest, TestViewWidthAfterMinimizingWidget) {
   // Create a widget.
   Widget widget;
@@ -1200,11 +1201,17 @@ TEST_F(WidgetTest, TestViewWidthAfterMinimizingWidget) {
   NonClientView* non_client_view = widget.non_client_view();
   NonClientFrameView* frame_view = new MinimumSizeFrameView(&widget);
   non_client_view->SetFrameView(frame_view);
+  // Setting the frame view doesn't do a layout, so force one.
+  non_client_view->Layout();
   widget.Show();
+  EXPECT_NE(0, frame_view->width());
   widget.Minimize();
   EXPECT_EQ(0, frame_view->width());
 }
+#endif
 
+// Desktop native widget Aura tests are for non Chrome OS platforms.
+#if !defined(OS_CHROMEOS)
 // This class validates whether paints are received for a visible Widget.
 // To achieve this it overrides the Show and Close methods on the Widget class
 // and sets state whether subsequent paints are expected.

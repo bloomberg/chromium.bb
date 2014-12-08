@@ -24,13 +24,15 @@
 }
 
 - (void)onWindowOrderWillChange:(NSWindowOrderingMode)orderingMode {
-  if (orderingMode != NSWindowOut)
-    [parent_->ns_view() setWillShow:YES];
+  parent_->OnVisibilityChangedTo(orderingMode != NSWindowOut);
 }
 
 - (void)onWindowOrderChanged:(NSNotification*)notification {
-  [parent_->ns_view() setWillShow:NO];
   parent_->OnVisibilityChanged();
+}
+
+- (void)onWindowWillDisplay {
+  parent_->OnVisibilityChangedTo(true);
 }
 
 // NSWindowDelegate implementation.
@@ -67,6 +69,14 @@
 - (void)windowWillClose:(NSNotification*)notification {
   DCHECK([parent_->ns_window() isEqual:[notification object]]);
   parent_->OnWindowWillClose();
+}
+
+- (void)windowDidMiniaturize:(NSNotification*)notification {
+  parent_->OnVisibilityChanged();
+}
+
+- (void)windowDidDeminiaturize:(NSNotification*)notification {
+  parent_->OnVisibilityChanged();
 }
 
 - (void)windowWillEnterFullScreen:(NSNotification*)notification {

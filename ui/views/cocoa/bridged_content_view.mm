@@ -30,7 +30,6 @@
 
 @synthesize hostedView = hostedView_;
 @synthesize textInputClient = textInputClient_;
-@synthesize willShow = willShow_;
 
 - (id)initWithView:(views::View*)viewToHost {
   DCHECK(viewToHost);
@@ -90,9 +89,9 @@
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-  // Note that on a Show, Cocoa calls drawRect: before changing
-  // -[NSWindow isVisible], hence the extra check.
-  if (!hostedView_ || (!willShow_ && ![[self window] isVisible]))
+  // Note that BridgedNativeWidget uses -[NSWindow setAutodisplay:NO] to
+  // suppress calls to this when the window is known to be hidden.
+  if (!hostedView_)
     return;
 
   gfx::CanvasSkiaPaint canvas(dirtyRect, false /* opaque */);

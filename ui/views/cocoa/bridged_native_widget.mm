@@ -234,17 +234,20 @@ void BridgedNativeWidget::ToggleDesiredFullscreenState() {
 }
 
 void BridgedNativeWidget::OnSizeChanged() {
-  NSSize new_size = [window_ frame].size;
-  native_widget_mac_->GetWidget()->OnNativeWidgetSizeChanged(
-      gfx::Size(new_size.width, new_size.height));
+  gfx::Size new_size = native_widget_mac_->GetClientAreaBoundsInScreen().size();
+  native_widget_mac_->GetWidget()->OnNativeWidgetSizeChanged(new_size);
   // TODO(tapted): If there's a layer, resize it here.
 }
 
 void BridgedNativeWidget::OnVisibilityChanged() {
-  if (window_visible_ == [window_ isVisible])
+  OnVisibilityChangedTo([window_ isVisible]);
+}
+
+void BridgedNativeWidget::OnVisibilityChangedTo(bool new_visibility) {
+  if (window_visible_ == new_visibility)
     return;
 
-  window_visible_ = [window_ isVisible];
+  window_visible_ = new_visibility;
 
   // If arriving via SetVisible(), |wants_to_be_visible_| should already be set.
   // If made visible externally (e.g. Cmd+H), just roll with it. Don't try (yet)
@@ -255,6 +258,12 @@ void BridgedNativeWidget::OnVisibilityChanged() {
 
   native_widget_mac_->GetWidget()->OnNativeWidgetVisibilityChanged(
       window_visible_);
+
+  // Toolkit-views suppresses redraws while not visible. To prevent Cocoa asking
+  // for an "empty" draw, disable auto-display while hidden. For example, this
+  // prevents Cocoa drawing just *after* a minimize, resulting in a blank window
+  // represented in the deminiaturize animation.
+  [window_ setAutodisplay:window_visible_];
 }
 
 InputMethod* BridgedNativeWidget::CreateInputMethod() {

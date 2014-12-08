@@ -89,6 +89,10 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
   // being reordered in (or out of) the screen list.
   void OnVisibilityChanged();
 
+  // Explicitly set the visibility. This is called when Cocoa requests a draw,
+  // but hasn't updated the value of -[NSWindow isVisible] yet.
+  void OnVisibilityChangedTo(bool new_visibility);
+
   // See widget.h for documentation.
   InputMethod* CreateInputMethod();
   ui::InputMethod* GetHostInputMethod();
@@ -110,6 +114,7 @@ class VIEWS_EXPORT BridgedNativeWidget : public internal::InputMethodDelegate,
   }
 
   bool target_fullscreen_state() const { return target_fullscreen_state_; }
+  bool window_visible() { return window_visible_; }
 
   // Overridden from internal::InputMethodDelegate:
   virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) override;
