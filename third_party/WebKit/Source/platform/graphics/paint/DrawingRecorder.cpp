@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
-#include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderObject.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -20,10 +18,11 @@ namespace blink {
 static bool s_inDrawingRecorder = false;
 #endif
 
-DrawingRecorder::DrawingRecorder(GraphicsContext* context, const RenderObject* renderer, PaintPhase phase, const FloatRect& clip)
+DrawingRecorder::DrawingRecorder(GraphicsContext* context, const DisplayItemClient displayItemClient, DisplayItem::Type displayItemType, const FloatRect& bounds)
     : m_context(context)
-    , m_renderer(renderer)
-    , m_phase(phase)
+    , m_displayItemClient(displayItemClient)
+    , m_displayItemType(displayItemType)
+    , m_bounds(bounds)
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
@@ -33,7 +32,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext* context, const RenderObject* r
     s_inDrawingRecorder = true;
 #endif
 
-    m_context->beginRecording(clip);
+    m_context->beginRecording(bounds);
 }
 
 DrawingRecorder::~DrawingRecorder()
@@ -49,16 +48,20 @@ DrawingRecorder::~DrawingRecorder()
     if (!picture || !picture->approximateOpCount())
         return;
     OwnPtr<DrawingDisplayItem> drawingItem = adoptPtr(
-        new DrawingDisplayItem(m_renderer->displayItemClient(), (DisplayItem::Type)m_phase, picture));
+        new DrawingDisplayItem(m_displayItemClient, m_displayItemType, picture));
 #ifndef NDEBUG
-    if (!m_renderer)
-        drawingItem->setClientDebugString("nullptr");
-    else
-        drawingItem->setClientDebugString(String::format("renderer: \"%p %s\"", m_renderer, m_renderer->debugName().utf8().data()));
+    drawingItem->setClientDebugString(m_clientDebugString);
 #endif
 
     ASSERT(m_context->displayItemList());
     m_context->displayItemList()->add(drawingItem.release());
 }
+
+#ifndef NDEBUG
+void DrawingRecorder::setClientDebugString(const WTF::String& clientDebugString)
+{
+    m_clientDebugString = clientDebugString;
+}
+#endif
 
 } // namespace blink

@@ -12,9 +12,9 @@
 #include "core/page/Page.h"
 #include "core/paint/BoxClipper.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/DrawingRecorder.h"
 #include "core/paint/InlinePainter.h"
 #include "core/paint/LineBoxListPainter.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
@@ -86,7 +86,7 @@ void BlockPainter::paintOverflowControlsIfNeeded(const PaintInfo& paintInfo, con
 {
     PaintPhase phase = paintInfo.phase;
     if (m_renderBlock.hasOverflowClip() && m_renderBlock.style()->visibility() == VISIBLE && (phase == PaintPhaseBlockBackground || phase == PaintPhaseChildBlockBackground) && paintInfo.shouldPaintWithinRoot(&m_renderBlock) && !paintInfo.paintRootBackgroundOnly()) {
-        DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintInfo.phase, pixelSnappedIntRect(paintOffset, m_renderBlock.visualOverflowRect().size()));
+        RenderDrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintInfo.phase, pixelSnappedIntRect(paintOffset, m_renderBlock.visualOverflowRect().size()));
         m_renderBlock.layer()->scrollableArea()->paintOverflowControls(paintInfo.context, roundedIntPoint(paintOffset), paintInfo.rect, false /* paintingOverlayControls */);
     }
 }
@@ -177,13 +177,13 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     }
 
     if (paintPhase == PaintPhaseMask && m_renderBlock.style()->visibility() == VISIBLE) {
-        DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
+        RenderDrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
         m_renderBlock.paintMask(paintInfo, paintOffset);
         return;
     }
 
     if (paintPhase == PaintPhaseClippingMask && m_renderBlock.style()->visibility() == VISIBLE) {
-        DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
+        RenderDrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
         m_renderBlock.paintClippingMask(paintInfo, paintOffset);
         return;
     }
@@ -224,7 +224,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     // If the caret's node's render object's containing block is this block, and the paint action is PaintPhaseForeground,
     // then paint the caret.
     if (paintPhase == PaintPhaseForeground) {
-        DrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
+        RenderDrawingRecorder recorder(paintInfo.context, &m_renderBlock, paintPhase, bounds);
         paintCarets(paintInfo, paintOffset);
     }
 }

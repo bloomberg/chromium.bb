@@ -7,8 +7,8 @@
 
 #include "core/paint/BoxClipper.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/DrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTable.h"
@@ -87,7 +87,7 @@ void TablePainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& pain
 
     LayoutRect rect(paintOffset, m_renderTable.size());
     m_renderTable.subtractCaptionRect(rect);
-    DrawingRecorder recorder(paintInfo.context, &m_renderTable, paintInfo.phase, pixelSnappedIntRect(rect));
+    RenderDrawingRecorder recorder(paintInfo.context, &m_renderTable, paintInfo.phase, pixelSnappedIntRect(rect));
     BoxPainter(m_renderTable).paintMaskImages(paintInfo, rect);
 }
 

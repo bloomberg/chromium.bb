@@ -7,7 +7,7 @@
 
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/DrawingRecorder.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTableCell.h"
 
@@ -131,7 +131,7 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     if (!m_renderTableCell.table()->currentBorderValue())
         return;
 
-    DrawingRecorder recorder(paintInfo.context, &m_renderTableCell, paintInfo.phase, paintRect);
+    RenderDrawingRecorder recorder(paintInfo.context, &m_renderTableCell, paintInfo.phase, paintRect);
 
     const RenderStyle* styleForCellFlow = m_renderTableCell.styleForCellFlow();
     CollapsedBorderValue leftVal = cachedCollapsedLeftBorder(styleForCellFlow);
@@ -223,7 +223,7 @@ void TableCellPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, 
         return;
 
     LayoutRect paintRect = paintBounds(paintOffset, DoNotAddOffsetFromParent);
-    DrawingRecorder recorder(paintInfo.context, &m_renderTableCell, paintInfo.phase, pixelSnappedIntRect(paintRect));
+    RenderDrawingRecorder recorder(paintInfo.context, &m_renderTableCell, paintInfo.phase, pixelSnappedIntRect(paintRect));
     BoxPainter::paintBoxShadow(paintInfo, paintRect, m_renderTableCell.style(), Normal);
 
     // Paint our cell background.

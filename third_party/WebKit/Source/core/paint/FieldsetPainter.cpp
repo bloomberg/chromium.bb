@@ -7,7 +7,7 @@
 
 #include "core/paint/BoxDecorationData.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/DrawingRecorder.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderFieldset.h"
 
@@ -37,7 +37,7 @@ void FieldsetPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, c
     }
 
     BoxDecorationData boxDecorationData(*m_renderFieldset.style(), m_renderFieldset.canRenderBorderImage(), m_renderFieldset.backgroundHasOpaqueTopLayer(), m_renderFieldset.backgroundShouldAlwaysBeClipped(), paintInfo.context);
-    DrawingRecorder recorder(paintInfo.context, &m_renderFieldset, paintInfo.phase, pixelSnappedIntRect(paintOffset, paintRect.size()));
+    RenderDrawingRecorder recorder(paintInfo.context, &m_renderFieldset, paintInfo.phase, pixelSnappedIntRect(paintOffset, paintRect.size()));
 
     if (boxDecorationData.bleedAvoidance() == BackgroundBleedNone)
         BoxPainter::paintBoxShadow(paintInfo, paintRect, m_renderFieldset.style(), Normal);

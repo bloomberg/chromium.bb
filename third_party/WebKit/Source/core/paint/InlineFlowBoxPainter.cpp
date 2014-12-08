@@ -6,7 +6,7 @@
 #include "core/paint/InlineFlowBoxPainter.h"
 
 #include "core/paint/BoxPainter.h"
-#include "core/paint/DrawingRecorder.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
@@ -61,7 +61,7 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
             }
         }
     } else if (paintInfo.phase == PaintPhaseMask) {
-        DrawingRecorder recorder(paintInfo.context, &m_inlineFlowBox.renderer(), paintInfo.phase, pixelSnappedIntRect(overflowRect));
+        RenderDrawingRecorder recorder(paintInfo.context, &m_inlineFlowBox.renderer(), paintInfo.phase, pixelSnappedIntRect(overflowRect));
         paintMask(paintInfo, paintOffset);
         return;
     } else if (paintInfo.phase == PaintPhaseForeground) {
@@ -212,7 +212,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
 
     LayoutRect paintRect = LayoutRect(adjustedPaintOffset, frameRect.size());
 
-    DrawingRecorder recorder(paintInfo.context, &m_inlineFlowBox.renderer(), paintInfo.phase, pixelSnappedIntRect(paintRect));
+    RenderDrawingRecorder recorder(paintInfo.context, &m_inlineFlowBox.renderer(), paintInfo.phase, pixelSnappedIntRect(paintRect));
 
     // Shadow comes first and is behind the background and border.
     if (!m_inlineFlowBox.boxModelObject()->boxShadowShouldBeAppliedToBackground(BackgroundBleedNone, &m_inlineFlowBox))

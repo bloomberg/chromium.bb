@@ -6,7 +6,7 @@
 #include "core/paint/ListMarkerPainter.h"
 
 #include "core/paint/BlockPainter.h"
-#include "core/paint/DrawingRecorder.h"
+#include "core/paint/RenderDrawingRecorder.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderListItem.h"
@@ -36,7 +36,7 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
     if (!paintInfo.rect.intersects(pixelSnappedOverflowRect))
         return;
 
-    DrawingRecorder recorder(paintInfo.context, &m_renderListMarker, paintInfo.phase, pixelSnappedOverflowRect);
+    RenderDrawingRecorder recorder(paintInfo.context, &m_renderListMarker, paintInfo.phase, pixelSnappedOverflowRect);
     LayoutRect box(boxOrigin, m_renderListMarker.size());
 
     IntRect marker = m_renderListMarker.getRelativeMarkerRect();

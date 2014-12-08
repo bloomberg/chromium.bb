@@ -640,6 +640,8 @@
       'graphics/paint/DisplayItemList.h',
       'graphics/paint/DrawingDisplayItem.cpp',
       'graphics/paint/DrawingDisplayItem.h',
+      'graphics/paint/DrawingRecorder.cpp',
+      'graphics/paint/DrawingRecorder.h',
       'graphics/paint/FilterDisplayItem.cpp',
       'graphics/paint/FilterDisplayItem.h',
       'graphics/paint/TransformDisplayItem.cpp',

@@ -27,7 +27,6 @@
 #include "platform/scroll/Scrollbar.h"
 
 #include <algorithm>
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/scroll/ScrollAnimator.h"

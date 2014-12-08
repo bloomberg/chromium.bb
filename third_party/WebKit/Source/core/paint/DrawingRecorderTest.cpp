@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/paint/DrawingRecorder.h"
+#include "core/paint/RenderDrawingRecorder.h"
 
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
@@ -41,12 +41,12 @@ private:
 
 void drawNothing(GraphicsContext* context, RenderView* renderer, PaintPhase phase, const FloatRect& bound)
 {
-    DrawingRecorder drawingRecorder(context, renderer, phase, bound);
+    RenderDrawingRecorder drawingRecorder(context, renderer, phase, bound);
 }
 
 void drawRect(GraphicsContext* context, RenderView* renderer, PaintPhase phase, const FloatRect& bound)
 {
-    DrawingRecorder drawingRecorder(context, renderer, phase, bound);
+    RenderDrawingRecorder drawingRecorder(context, renderer, phase, bound);
     IntRect rect(0, 0, 10, 10);
     context->drawRect(rect);
 }
