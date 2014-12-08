@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x388
   RenderBlock {HTML} at (0,0) size 800x388
     RenderBody {BODY} at (32,32) size 736x324 [bgcolor=#CCCCCC]
-layer at (143,32) size 514x146 clip at (144,33) size 497x144 scrollHeight 332
+layer at (143,32) size 514x146 clip at (144,33) size 497x144 scrollHeight 316
   RenderBlock {DIV} at (111,0) size 514x146 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {P} at (17,17) size 465x80
       RenderText {#text} at (0,0) size 210x19
@@ -30,25 +30,24 @@ layer at (143,32) size 514x146 clip at (144,33) size 497x144 scrollHeight 332
           text run at (320,43) width 136: "position:relative"
       RenderText {#text} at (0,60) size 88x19
         text run at (0,60) width 88: "(bottom case)."
-    RenderBlock {P} at (17,113) size 465x192 [color=#999999]
-      RenderText {#text} at (0,0) size 465x191
-        text run at (0,0) width 456: "Following extra content exists to ensure that the parent box overflows properly. Sed"
-        text run at (0,16) width 449: "ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque"
-        text run at (0,32) width 454: "laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi"
-        text run at (0,48) width 433: "architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia"
-        text run at (0,64) width 453: "voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos"
-        text run at (0,80) width 462: "qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum"
-        text run at (0,96) width 436: "quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi"
-        text run at (0,112) width 454: "tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim"
-        text run at (0,128) width 455: "ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam,"
-        text run at (0,144) width 449: "nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit"
-        text run at (0,160) width 465: "qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem"
-        text run at (0,176) width 219: "eum fugiat quo voluptas nulla pariatur?"
+    RenderBlock {P} at (17,113) size 465x176 [color=#999999]
+      RenderText {#text} at (0,0) size 465x175
+        text run at (0,0) width 409: "Following extra content exists to ensure that the parent box overflows properly. Sed ut"
+        text run at (0,16) width 443: "perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium,"
+        text run at (0,32) width 448: "totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae"
+        text run at (0,48) width 464: "dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit,"
+        text run at (0,64) width 447: "sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro"
+        text run at (0,80) width 445: "quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non"
+        text run at (0,96) width 458: "numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem."
+        text run at (0,112) width 465: "Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi"
+        text run at (0,128) width 419: "ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea"
+        text run at (0,144) width 436: "voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo"
+        text run at (0,160) width 117: "voluptas nulla pariatur?"
 layer at (0,0) size 38x36 transparent
   RenderBlock (positioned) {P} at (0,0) size 38x36 [bgcolor=#FF0000]
     RenderText {#text} at (8,8) size 22x19
       text run at (8,8) width 22: "hi 1"
-layer at (143,210) size 514x146 clip at (144,211) size 497x144 scrollHeight 368
+layer at (143,210) size 514x146 clip at (144,211) size 497x144 scrollHeight 352
   RenderBlock (relative positioned) {DIV} at (111,178) size 514x146 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     RenderBlock {P} at (17,17) size 465x40
       RenderText {#text} at (0,0) size 465x39
@@ -63,20 +62,19 @@ layer at (143,210) size 514x146 clip at (144,211) size 497x144 scrollHeight 368
       RenderText {#text} at (88,20) size 462x39
         text run at (88,20) width 365: ", despite the fact that this property is only applied to the child"
         text run at (0,40) width 462: "item. This problem fixes itself if you resize the window and then scroll the div."
-    RenderBlock {P} at (17,149) size 465x192 [color=#999999]
-      RenderText {#text} at (0,0) size 465x191
-        text run at (0,0) width 456: "Following extra content exists to ensure that the parent box overflows properly. Sed"
-        text run at (0,16) width 449: "ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque"
-        text run at (0,32) width 454: "laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi"
-        text run at (0,48) width 433: "architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia"
-        text run at (0,64) width 453: "voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos"
-        text run at (0,80) width 462: "qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum"
-        text run at (0,96) width 436: "quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi"
-        text run at (0,112) width 454: "tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim"
-        text run at (0,128) width 455: "ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam,"
-        text run at (0,144) width 449: "nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit"
-        text run at (0,160) width 465: "qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem"
-        text run at (0,176) width 219: "eum fugiat quo voluptas nulla pariatur?"
+    RenderBlock {P} at (17,149) size 465x176 [color=#999999]
+      RenderText {#text} at (0,0) size 465x175
+        text run at (0,0) width 409: "Following extra content exists to ensure that the parent box overflows properly. Sed ut"
+        text run at (0,16) width 443: "perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium,"
+        text run at (0,32) width 448: "totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae"
+        text run at (0,48) width 464: "dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit,"
+        text run at (0,64) width 447: "sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro"
+        text run at (0,80) width 445: "quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non"
+        text run at (0,96) width 458: "numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem."
+        text run at (0,112) width 465: "Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi"
+        text run at (0,128) width 419: "ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea"
+        text run at (0,144) width 436: "voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo"
+        text run at (0,160) width 117: "voluptas nulla pariatur?"
 layer at (144,211) size 38x36 transparent
   RenderBlock (positioned) {P} at (1,1) size 38x36 [bgcolor=#FF0000]
     RenderText {#text} at (8,8) size 22x19

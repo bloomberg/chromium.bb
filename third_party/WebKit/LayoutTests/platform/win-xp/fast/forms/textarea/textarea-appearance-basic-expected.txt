@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x453
-  RenderBlock {HTML} at (0,0) size 800x453
-    RenderBody {BODY} at (8,8) size 784x437
+layer at (0,0) size 800x451
+  RenderBlock {HTML} at (0,0) size 800x451
+    RenderBody {BODY} at (8,8) size 784x435
       RenderText {#text} at (189,31) size 4x19
         text run at (189,31) width 4: " "
       RenderBR {BR} at (193,31) size 0x19
@@ -24,11 +24,11 @@ layer at (0,0) size 800x453
       RenderText {#text} at (309,324) size 4x19
         text run at (309,324) width 4: " "
       RenderBR {BR} at (313,324) size 0x19
-      RenderText {#text} at (275,417) size 4x19
-        text run at (275,417) width 4: " "
-      RenderText {#text} at (642,417) size 4x19
-        text run at (642,417) width 4: " "
-      RenderBR {BR} at (646,417) size 0x19
+      RenderText {#text} at (275,415) size 4x19
+        text run at (275,415) width 4: " "
+      RenderText {#text} at (642,415) size 4x19
+        text run at (642,415) width 4: " "
+      RenderBR {BR} at (646,415) size 0x19
 layer at (12,12) size 181x38 clip at (13,13) size 179x36
   RenderTextControl {TEXTAREA} at (4,4) size 181x38 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (3,3) size 175x16
@@ -69,13 +69,13 @@ layer at (12,283) size 301x60 clip at (13,284) size 299x58
     RenderBlock {DIV} at (3,3) size 295x27
       RenderText {#text} at (0,0) size 42x27
         text run at (0,0) width 42: "foo"
-layer at (14,382) size 263x52 clip at (15,383) size 261x50
-  RenderTextControl {TEXTAREA} at (6,374) size 263x52 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+layer at (14,380) size 263x52 clip at (15,381) size 261x50
+  RenderTextControl {TEXTAREA} at (6,372) size 263x52 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     RenderBlock {DIV} at (4,4) size 255x22
       RenderText {#text} at (0,0) size 36x22
         text run at (0,0) width 36: "foo"
-layer at (295,360) size 347x72 clip at (297,362) size 343x68
-  RenderTextControl {TEXTAREA} at (287,352) size 347x72 [bgcolor=#FFFFFF] [border: (2px solid #A9A9A9)]
-    RenderBlock {DIV} at (6,6) size 335x30
-      RenderText {#text} at (0,0) size 48x30
+layer at (295,360) size 347x70 clip at (297,362) size 343x66
+  RenderTextControl {TEXTAREA} at (287,352) size 347x70 [bgcolor=#FFFFFF] [border: (2px solid #A9A9A9)]
+    RenderBlock {DIV} at (6,6) size 335x29
+      RenderText {#text} at (0,0) size 48x29
         text run at (0,0) width 48: "foo"

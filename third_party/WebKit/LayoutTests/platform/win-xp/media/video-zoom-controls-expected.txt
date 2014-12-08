@@ -22,8 +22,8 @@ layer at (65,213) size 225x45 scrollWidth 329
           RenderBlock {DIV} at (-10.50,0) size 48x36
     RenderFlexibleBox {DIV} at (132,0) size 40x45 [color=#FFFFFF]
       RenderBlock (anonymous) at (0,0) size 40x45
-        RenderText {#text} at (0,10) size 40x24
-          text run at (0,10) width 40: "0:00"
+        RenderText {#text} at (0,11) size 40x22
+          text run at (0,11) width 40: "0:00"
     RenderButton {INPUT} at (185.50,0) size 52.50x45
     RenderSlider {INPUT} at (247,16.50) size 22.50x12
       RenderFlexibleBox {DIV} at (0,0) size 22.50x12 [border: (1px solid #E6E6E659)]
@@ -46,8 +46,8 @@ layer at (65,438) size 225x45 scrollWidth 329
           RenderBlock {DIV} at (-10.50,0) size 48x36
     RenderFlexibleBox {DIV} at (132,0) size 40x45 [color=#FFFFFF]
       RenderBlock (anonymous) at (0,0) size 40x45
-        RenderText {#text} at (0,10) size 40x24
-          text run at (0,10) width 40: "0:00"
+        RenderText {#text} at (0,11) size 40x22
+          text run at (0,11) width 40: "0:00"
     RenderButton {INPUT} at (185.50,0) size 52.50x45
     RenderSlider {INPUT} at (247,16.50) size 22.50x12
       RenderFlexibleBox {DIV} at (0,0) size 22.50x12 [border: (1px solid #E6E6E659)]
