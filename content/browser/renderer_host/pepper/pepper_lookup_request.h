@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/profiler/scoped_tracker.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver.h"
@@ -47,6 +48,11 @@ class PepperLookupRequest {
 
  private:
   void OnLookupFinished(int result) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "436634 PepperLookupRequest::OnLookupFinished"));
+
     callback_.Run(result, addresses_, *bound_info_);
     delete this;
   }

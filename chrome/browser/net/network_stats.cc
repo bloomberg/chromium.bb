@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -197,6 +198,10 @@ void NetworkStats::ResetData() {
 }
 
 bool NetworkStats::DoConnect(int result) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("436634 NetworkStats::DoConnect"));
+
   if (result != net::OK) {
     TestPhaseComplete(RESOLVE_FAILED, result);
     return false;

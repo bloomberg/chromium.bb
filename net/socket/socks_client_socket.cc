@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/sys_byteorder.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_log.h"
@@ -230,6 +231,11 @@ void SOCKSClientSocket::DoCallback(int result) {
 }
 
 void SOCKSClientSocket::OnIOComplete(int result) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436634 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436634 SOCKSClientSocket::OnIOComplete"));
+
   DCHECK_NE(STATE_NONE, next_state_);
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING) {
