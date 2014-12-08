@@ -604,12 +604,27 @@ void ResourceLoader::StoreSignedCertificateTimestamps(
 }
 
 void ResourceLoader::CompleteResponseStarted() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 ResourceLoader::CompleteResponseStarted1"));
+
   ResourceRequestInfoImpl* info = GetRequestInfo();
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 ResourceLoader::CompleteResponseStarted2"));
 
   scoped_refptr<ResourceResponse> response(new ResourceResponse());
   PopulateResourceResponse(info, request_.get(), response.get());
 
   if (request_->ssl_info().cert.get()) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "423948 ResourceLoader::CompleteResponseStarted3"));
+
     int cert_id = CertStore::GetInstance()->StoreCert(
         request_->ssl_info().cert.get(), info->GetChildID());
 
@@ -631,6 +646,11 @@ void ResourceLoader::CompleteResponseStarted() {
            request_->ssl_info().security_bits == -1 &&
            !request_->ssl_info().connection_status);
   }
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile5(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "423948 ResourceLoader::CompleteResponseStarted5"));
 
   delegate_->DidReceiveResponse(this);
 

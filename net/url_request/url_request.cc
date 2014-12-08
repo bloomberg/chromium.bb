@@ -768,9 +768,18 @@ bool URLRequest::Read(IOBuffer* dest, int dest_size, int* bytes_read) {
     return true;
   }
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 URLRequest::Read1"));
+
   bool rv = job_->Read(dest, dest_size, bytes_read);
   // If rv is false, the status cannot be success.
   DCHECK(rv || status_.status() != URLRequestStatus::SUCCESS);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("423948 URLRequest::Read2"));
+
   if (rv && *bytes_read <= 0 && status_.is_success())
     NotifyRequestCompleted();
   return rv;
