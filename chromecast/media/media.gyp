@@ -216,6 +216,8 @@
         'cma_base',
       ],
       'sources': [
+        'cma/filters/cma_renderer.cc',
+        'cma/filters/cma_renderer.h',
         'cma/filters/demuxer_stream_adapter.cc',
         'cma/filters/demuxer_stream_adapter.h',
       ],
