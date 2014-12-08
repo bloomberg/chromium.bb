@@ -2229,7 +2229,7 @@ bool EventHandler::handleGestureScrollEvent(const PlatformGestureEvent& gestureE
 
 bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& targetedEvent)
 {
-    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
+    RefPtrWillBeRawPtr<FrameView> frameView(m_frame->view());
     const PlatformGestureEvent& gestureEvent = targetedEvent.event();
     HitTestRequest::HitTestRequestType hitType = getHitTypeForGestureType(gestureEvent.type());
 
@@ -2239,7 +2239,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
 
     // We use the adjusted position so the application isn't surprised to see a event with
     // co-ordinates outside the target's bounds.
-    IntPoint adjustedPoint = m_frame->view()->windowToContents(gestureEvent.position());
+    IntPoint adjustedPoint = frameView->windowToContents(gestureEvent.position());
 
     unsigned modifiers = gestureEvent.modifiers();
     PlatformMouseEvent fakeMouseMove(gestureEvent.position(), gestureEvent.globalPosition(),
@@ -2252,9 +2252,16 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
     // Note that if the original hit test wasn't over an element (eg. was over a scrollbar) we
     // don't want to re-hit-test because it may be in the wrong frame (and there's no way the page
     // could have seen the event anyway).
+    // Also note that the position of the frame may have changed, so we need to recompute the content
+    // co-ordinates (updating layout/style as hitTestResultAtPoint normally would).
     // FIXME: Use a hit-test cache to avoid unnecessary hit tests. http://crbug.com/398920
-    if (currentHitTest.innerNode())
+    if (currentHitTest.innerNode()) {
+        LocalFrame* mainFrame = m_frame->localFrameRoot();
+        if (mainFrame && mainFrame->view())
+            mainFrame->view()->updateLayoutAndStyleIfNeededRecursive();
+        adjustedPoint = frameView->windowToContents(gestureEvent.position());
         currentHitTest = hitTestResultInFrame(m_frame, adjustedPoint, hitType);
+    }
     m_clickNode = currentHitTest.innerNode();
     if (m_clickNode && m_clickNode->isTextNode())
         m_clickNode = NodeRenderingTraversal::parent(*m_clickNode);
@@ -2273,8 +2280,13 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
     }
 
     // FIXME: Use a hit-test cache to avoid unnecessary hit tests. http://crbug.com/398920
-    if (currentHitTest.innerNode())
+    if (currentHitTest.innerNode()) {
+        LocalFrame* mainFrame = m_frame->localFrameRoot();
+        if (mainFrame && mainFrame->view())
+            mainFrame->view()->updateLayoutAndStyleIfNeededRecursive();
+        adjustedPoint = frameView->windowToContents(gestureEvent.position());
         currentHitTest = hitTestResultInFrame(m_frame, adjustedPoint, hitType);
+    }
     PlatformMouseEvent fakeMouseUp(gestureEvent.position(), gestureEvent.globalPosition(),
         LeftButton, PlatformEvent::MouseReleased, gestureEvent.tapCount(),
         static_cast<PlatformEvent::Modifiers>(modifiers),

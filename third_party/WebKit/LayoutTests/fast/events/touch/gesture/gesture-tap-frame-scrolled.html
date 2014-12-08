@@ -70,7 +70,7 @@ if (window.eventSender) {
         shouldBeTrue("eventReceived.mousedown");
         shouldBeTrue("eventReceived.mouseup");
         shouldBeTrue("eventReceived.click");
-        setTimeout(finishJSTest, 100);
+        setTimeout(finishJSTest, 0);
     }
 } else {
     debug("This test requires eventSender");
