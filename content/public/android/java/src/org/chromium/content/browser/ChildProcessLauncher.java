@@ -385,50 +385,52 @@ public class ChildProcessLauncher {
             int[] fileFds,
             boolean[] fileAutoClose,
             long clientContext) {
-        TraceEvent.begin();
-        assert fileIds.length == fileFds.length && fileFds.length == fileAutoClose.length;
-        FileDescriptorInfo[] filesToBeMapped = new FileDescriptorInfo[fileFds.length];
-        for (int i = 0; i < fileFds.length; i++) {
-            filesToBeMapped[i] =
-                    new FileDescriptorInfo(fileIds[i], fileFds[i], fileAutoClose[i]);
-        }
-        assert clientContext != 0;
-
-        int callbackType = CALLBACK_FOR_UNKNOWN_PROCESS;
-        boolean inSandbox = true;
-        String processType = getSwitchValue(commandLine, SWITCH_PROCESS_TYPE);
-        if (SWITCH_RENDERER_PROCESS.equals(processType)) {
-            callbackType = CALLBACK_FOR_RENDERER_PROCESS;
-        } else if (SWITCH_GPU_PROCESS.equals(processType)) {
-            callbackType = CALLBACK_FOR_GPU_PROCESS;
-            inSandbox = false;
-        } else {
-            assert false;
-        }
-
-        ChildProcessConnection allocatedConnection = null;
-        synchronized (ChildProcessLauncher.class) {
-            if (inSandbox) {
-                allocatedConnection = sSpareSandboxedConnection;
-                sSpareSandboxedConnection = null;
+        try {
+            TraceEvent.begin("ChildProcessLauncher.start");
+            assert fileIds.length == fileFds.length && fileFds.length == fileAutoClose.length;
+            FileDescriptorInfo[] filesToBeMapped = new FileDescriptorInfo[fileFds.length];
+            for (int i = 0; i < fileFds.length; i++) {
+                filesToBeMapped[i] =
+                        new FileDescriptorInfo(fileIds[i], fileFds[i], fileAutoClose[i]);
             }
-        }
-        if (allocatedConnection == null) {
-            allocatedConnection = allocateBoundConnection(context, commandLine, inSandbox);
+            assert clientContext != 0;
+
+            int callbackType = CALLBACK_FOR_UNKNOWN_PROCESS;
+            boolean inSandbox = true;
+            String processType = getSwitchValue(commandLine, SWITCH_PROCESS_TYPE);
+            if (SWITCH_RENDERER_PROCESS.equals(processType)) {
+                callbackType = CALLBACK_FOR_RENDERER_PROCESS;
+            } else if (SWITCH_GPU_PROCESS.equals(processType)) {
+                callbackType = CALLBACK_FOR_GPU_PROCESS;
+                inSandbox = false;
+            } else {
+                assert false;
+            }
+
+            ChildProcessConnection allocatedConnection = null;
+            synchronized (ChildProcessLauncher.class) {
+                if (inSandbox) {
+                    allocatedConnection = sSpareSandboxedConnection;
+                    sSpareSandboxedConnection = null;
+                }
+            }
             if (allocatedConnection == null) {
-                // Notify the native code so it can free the heap allocated callback.
-                nativeOnChildProcessStarted(clientContext, 0);
-                Log.e(TAG, "Allocation of new service failed.");
-                TraceEvent.end();
-                return;
+                allocatedConnection = allocateBoundConnection(context, commandLine, inSandbox);
+                if (allocatedConnection == null) {
+                    // Notify the native code so it can free the heap allocated callback.
+                    nativeOnChildProcessStarted(clientContext, 0);
+                    Log.e(TAG, "Allocation of new service failed.");
+                    return;
+                }
             }
-        }
 
-        Log.d(TAG, "Setting up connection to process: slot="
-                + allocatedConnection.getServiceNumber());
-        triggerConnectionSetup(allocatedConnection, commandLine, childProcessId, filesToBeMapped,
-                callbackType, clientContext);
-        TraceEvent.end();
+            Log.d(TAG, "Setting up connection to process: slot="
+                    + allocatedConnection.getServiceNumber());
+            triggerConnectionSetup(allocatedConnection, commandLine, childProcessId,
+                    filesToBeMapped, callbackType, clientContext);
+        } finally {
+            TraceEvent.end("ChildProcessLauncher.start");
+        }
     }
 
     @VisibleForTesting

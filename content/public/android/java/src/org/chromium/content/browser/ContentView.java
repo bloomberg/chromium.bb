@@ -78,10 +78,13 @@ public class ContentView extends FrameLayout
 
     @Override
     protected void onSizeChanged(int w, int h, int ow, int oh) {
-        TraceEvent.begin();
-        super.onSizeChanged(w, h, ow, oh);
-        mContentViewCore.onSizeChanged(w, h, ow, oh);
-        TraceEvent.end();
+        try {
+            TraceEvent.begin("ContentView.onSizeChanged");
+            super.onSizeChanged(w, h, ow, oh);
+            mContentViewCore.onSizeChanged(w, h, ow, oh);
+        } finally {
+            TraceEvent.end("ContentView.onSizeChanged");
+        }
     }
 
     @Override
@@ -96,10 +99,13 @@ public class ContentView extends FrameLayout
 
     @Override
     protected void onFocusChanged(boolean gainFocus, int direction, Rect previouslyFocusedRect) {
-        TraceEvent.begin();
-        super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
-        mContentViewCore.onFocusChanged(gainFocus);
-        TraceEvent.end();
+        try {
+            TraceEvent.begin("ContentView.onFocusChanged");
+            super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
+            mContentViewCore.onFocusChanged(gainFocus);
+        } finally {
+            TraceEvent.end("ContentView.onFocusChanged");
+        }
     }
 
     @Override

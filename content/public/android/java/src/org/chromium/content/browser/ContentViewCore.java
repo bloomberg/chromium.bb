@@ -802,18 +802,21 @@ public class ContentViewCore
      * </ul>
      */
     public void setContainerView(ViewGroup containerView) {
-        TraceEvent.begin();
-        if (mContainerView != null) {
-            mPastePopupMenu = null;
-            mInputConnection = null;
-            hidePopupsAndClearSelection();
-        }
+        try {
+            TraceEvent.begin("ContentViewCore.setContainerView");
+            if (mContainerView != null) {
+                mPastePopupMenu = null;
+                mInputConnection = null;
+                hidePopupsAndClearSelection();
+            }
 
-        mContainerView = containerView;
-        mPositionObserver = new ViewPositionObserver(mContainerView);
-        mContainerView.setClickable(true);
-        mViewAndroidDelegate.updateCurrentContainerView();
-        TraceEvent.end();
+            mContainerView = containerView;
+            mPositionObserver = new ViewPositionObserver(mContainerView);
+            mContainerView.setClickable(true);
+            mViewAndroidDelegate.updateCurrentContainerView();
+        } finally {
+            TraceEvent.end("ContentViewCore.setContainerView");
+        }
     }
 
     @CalledByNative
@@ -1478,21 +1481,24 @@ public class ContentViewCore
      */
     @SuppressWarnings("javadoc")
     public void onConfigurationChanged(Configuration newConfig) {
-        TraceEvent.begin();
+        try {
+            TraceEvent.begin("ContentViewCore.onConfigurationChanged");
 
-        if (newConfig.keyboard != Configuration.KEYBOARD_NOKEYS) {
-            if (mNativeContentViewCore != 0) {
-                mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore),
-                        ImeAdapter.getTextInputTypeNone(), 0 /* no flags */);
+            if (newConfig.keyboard != Configuration.KEYBOARD_NOKEYS) {
+                if (mNativeContentViewCore != 0) {
+                    mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore),
+                            ImeAdapter.getTextInputTypeNone(), 0 /* no flags */);
+                }
+                mInputMethodManagerWrapper.restartInput(mContainerView);
             }
-            mInputMethodManagerWrapper.restartInput(mContainerView);
-        }
-        mContainerViewInternals.super_onConfigurationChanged(newConfig);
+            mContainerViewInternals.super_onConfigurationChanged(newConfig);
 
-        // To request layout has side effect, but it seems OK as it only happen in
-        // onConfigurationChange and layout has to be changed in most case.
-        mContainerView.requestLayout();
-        TraceEvent.end();
+            // To request layout has side effect, but it seems OK as it only happen in
+            // onConfigurationChange and layout has to be changed in most case.
+            mContainerView.requestLayout();
+        } finally {
+            TraceEvent.end("ContentViewCore.onConfigurationChanged");
+        }
     }
 
     /**
@@ -1594,10 +1600,10 @@ public class ContentViewCore
      */
     public boolean dispatchKeyEventPreIme(KeyEvent event) {
         try {
-            TraceEvent.begin();
+            TraceEvent.begin("ContentViewCore.dispatchKeyEventPreIme");
             return mContainerViewInternals.super_dispatchKeyEventPreIme(event);
         } finally {
-            TraceEvent.end();
+            TraceEvent.end("ContentViewCore.dispatchKeyEventPreIme");
         }
     }
 
@@ -2244,20 +2250,23 @@ public class ContentViewCore
             int textInputFlags, String text, int selectionStart, int selectionEnd,
             int compositionStart, int compositionEnd, boolean showImeIfNeeded,
             boolean isNonImeChange) {
-        TraceEvent.begin();
-        mFocusedNodeEditable = (textInputType != ImeAdapter.getTextInputTypeNone());
-        if (!mFocusedNodeEditable) hidePastePopup();
+        try {
+            TraceEvent.begin("ContentViewCore.updateImeAdapter");
+            mFocusedNodeEditable = (textInputType != ImeAdapter.getTextInputTypeNone());
+            if (!mFocusedNodeEditable) hidePastePopup();
 
-        mImeAdapter.updateKeyboardVisibility(
-                nativeImeAdapterAndroid, textInputType, textInputFlags, showImeIfNeeded);
+            mImeAdapter.updateKeyboardVisibility(
+                    nativeImeAdapterAndroid, textInputType, textInputFlags, showImeIfNeeded);
 
-        if (mInputConnection != null) {
-            mInputConnection.updateState(text, selectionStart, selectionEnd, compositionStart,
-                    compositionEnd, isNonImeChange);
+            if (mInputConnection != null) {
+                mInputConnection.updateState(text, selectionStart, selectionEnd, compositionStart,
+                        compositionEnd, isNonImeChange);
+            }
+
+            if (mActionMode != null) mActionMode.invalidate();
+        } finally {
+            TraceEvent.end("ContentViewCore.updateImeAdapter");
         }
-
-        if (mActionMode != null) mActionMode.invalidate();
-        TraceEvent.end();
     }
 
     @SuppressWarnings("unused")

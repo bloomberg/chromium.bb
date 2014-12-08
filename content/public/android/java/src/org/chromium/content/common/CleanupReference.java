@@ -84,31 +84,34 @@ public class CleanupReference extends WeakReference<Object> {
         static final Handler sHandler = new Handler(ThreadUtils.getUiThreadLooper()) {
             @Override
             public void handleMessage(Message msg) {
-                TraceEvent.begin();
-                CleanupReference ref = (CleanupReference) msg.obj;
-                switch (msg.what) {
-                    case ADD_REF:
-                        sRefs.add(ref);
-                        break;
-                    case REMOVE_REF:
-                        ref.runCleanupTaskInternal();
-                        break;
-                    default:
-                        Log.e(TAG, "Bad message=" + msg.what);
-                        break;
-                }
-
-                if (DEBUG) Log.d(TAG, "will try and cleanup; max = " + sRefs.size());
-
-                synchronized (sCleanupMonitor) {
-                    // Always run the cleanup loop here even when adding or removing refs, to avoid
-                    // falling behind on rapid garbage allocation inner loops.
-                    while ((ref = (CleanupReference) sGcQueue.poll()) != null) {
-                        ref.runCleanupTaskInternal();
+                try {
+                    TraceEvent.begin("CleanupReference.LazyHolder.handleMessage");
+                    CleanupReference ref = (CleanupReference) msg.obj;
+                    switch (msg.what) {
+                        case ADD_REF:
+                            sRefs.add(ref);
+                            break;
+                        case REMOVE_REF:
+                            ref.runCleanupTaskInternal();
+                            break;
+                        default:
+                            Log.e(TAG, "Bad message=" + msg.what);
+                            break;
                     }
-                    sCleanupMonitor.notifyAll();
+
+                    if (DEBUG) Log.d(TAG, "will try and cleanup; max = " + sRefs.size());
+
+                    synchronized (sCleanupMonitor) {
+                        // Always run the cleanup loop here even when adding or removing refs, to
+                        // avoid falling behind on rapid garbage allocation inner loops.
+                        while ((ref = (CleanupReference) sGcQueue.poll()) != null) {
+                            ref.runCleanupTaskInternal();
+                        }
+                        sCleanupMonitor.notifyAll();
+                    }
+                } finally {
+                    TraceEvent.end("CleanupReference.LazyHolder.handleMessage");
                 }
-                TraceEvent.end();
             }
         };
     }

@@ -86,49 +86,51 @@ public abstract class TabModelBase extends TabModelJniBridge {
      */
     @Override
     public void addTab(Tab tab, int index, TabLaunchType type) {
-        TraceEvent.begin();
+        try {
+            TraceEvent.begin("TabModelBase.addTab");
 
-        for (TabModelObserver obs : mObservers) obs.willAddTab(tab, type);
+            for (TabModelObserver obs : mObservers) obs.willAddTab(tab, type);
 
-        boolean selectTab = mOrderController.willOpenInForeground(type, isIncognito());
+            boolean selectTab = mOrderController.willOpenInForeground(type, isIncognito());
 
-        index = mOrderController.determineInsertionIndex(type, index, tab);
-        assert index <= mTabs.size();
+            index = mOrderController.determineInsertionIndex(type, index, tab);
+            assert index <= mTabs.size();
 
-        assert tab.isIncognito() == isIncognito();
+            assert tab.isIncognito() == isIncognito();
 
-        // TODO(dtrainor): Update the list of undoable tabs instead of committing it.
-        commitAllTabClosures();
+            // TODO(dtrainor): Update the list of undoable tabs instead of committing it.
+            commitAllTabClosures();
 
-        if (index < 0 || index > mTabs.size()) {
-            mTabs.add(tab);
-        } else {
-            mTabs.add(index, tab);
-            if (index <= mIndex) {
-                mIndex++;
+            if (index < 0 || index > mTabs.size()) {
+                mTabs.add(tab);
+            } else {
+                mTabs.add(index, tab);
+                if (index <= mIndex) {
+                    mIndex++;
+                }
             }
+
+            if (!isCurrentModel()) {
+                // When adding new tabs in the background, make sure we set a valid index when the
+                // first one is added.  When in the foreground, calls to setIndex will take care of
+                // this.
+                mIndex = Math.max(mIndex, 0);
+            }
+
+            mRewoundList.resetRewoundState();
+
+            int newIndex = indexOf(tab);
+            tabAddedToModel(tab);
+
+            for (TabModelObserver obs : mObservers) obs.didAddTab(tab, type);
+
+            if (selectTab) {
+                mModelDelegate.selectModel(isIncognito());
+                setIndex(newIndex, TabModel.TabSelectionType.FROM_NEW);
+            }
+        } finally {
+            TraceEvent.end("TabModelBase.addTab");
         }
-
-        if (!isCurrentModel()) {
-            // When adding new tabs in the background, make sure we set a valid index when the
-            // first one is added.  When in the foreground, calls to setIndex will take care of
-            // this.
-            mIndex = Math.max(mIndex, 0);
-        }
-
-        mRewoundList.resetRewoundState();
-
-        int newIndex = indexOf(tab);
-        tabAddedToModel(tab);
-
-        for (TabModelObserver obs : mObservers) obs.didAddTab(tab, type);
-
-        if (selectTab) {
-            mModelDelegate.selectModel(isIncognito());
-            setIndex(newIndex, TabModel.TabSelectionType.FROM_NEW);
-        }
-
-        TraceEvent.end();
     }
 
     @Override
@@ -386,28 +388,31 @@ public abstract class TabModelBase extends TabModelJniBridge {
     // This function is complex and its behavior depends on persisted state, including mIndex.
     @Override
     public void setIndex(int i, final TabSelectionType type) {
-        TraceEvent.begin();
-        int lastId = getLastId(type);
+        try {
+            TraceEvent.begin("TabModelBase.setIndex");
+            int lastId = getLastId(type);
 
-        if (!isCurrentModel()) {
-            mModelDelegate.selectModel(isIncognito());
+            if (!isCurrentModel()) {
+                mModelDelegate.selectModel(isIncognito());
+            }
+
+            if (mTabs.size() <= 0) {
+                mIndex = INVALID_TAB_INDEX;
+            } else {
+                mIndex = MathUtils.clamp(i, 0, mTabs.size() - 1);
+            }
+
+            Tab tab = TabModelUtils.getCurrentTab(this);
+
+            mModelDelegate.requestToShowTab(tab, type);
+
+            if (tab != null) {
+                for (TabModelObserver obs : mObservers) obs.didSelectTab(tab, type, lastId);
+            }
+
+        } finally {
+            TraceEvent.end("TabModelBase.setIndex");
         }
-
-        if (mTabs.size() <= 0) {
-            mIndex = INVALID_TAB_INDEX;
-        } else {
-            mIndex = MathUtils.clamp(i, 0, mTabs.size() - 1);
-        }
-
-        Tab tab = TabModelUtils.getCurrentTab(this);
-
-        mModelDelegate.requestToShowTab(tab, type);
-
-        if (tab != null) {
-            for (TabModelObserver obs : mObservers) obs.didSelectTab(tab, type, lastId);
-        }
-
-        TraceEvent.end();
     }
 
     /**
