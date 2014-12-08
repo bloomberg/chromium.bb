@@ -4,6 +4,7 @@
 
 #include "cc/trees/layer_tree_settings.h"
 
+#include <GLES2/gl2.h>
 #include <limits>
 
 #include "base/command_line.h"
@@ -60,7 +61,7 @@ LayerTreeSettings::LayerTreeSettings()
       strict_layer_property_change_checking(false),
       use_one_copy(false),
       use_zero_copy(false),
-      use_image_external(false),
+      use_image_texture_target(GL_TEXTURE_2D),
       ignore_root_layer_flings(false),
       scheduled_raster_task_limit(32),
       use_occlusion_for_tile_prioritization(false),

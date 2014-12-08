@@ -2010,16 +2010,13 @@ void LayerTreeHostImpl::CreateResourceAndRasterWorkerPool(
   }
 
   if (GetRendererCapabilities().using_image) {
-    unsigned image_target = GL_TEXTURE_2D;
-#if defined(OS_MACOSX)
-    // GL_TEXTURE_RECTANGLE_ARB target is required by IOSurface backed images.
-    DCHECK(context_provider->ContextCapabilities().gpu.texture_rectangle);
-    image_target = GL_TEXTURE_RECTANGLE_ARB;
-#endif
-    if (settings_.use_image_external) {
-      DCHECK(context_provider->ContextCapabilities().gpu.egl_image_external);
-      image_target = GL_TEXTURE_EXTERNAL_OES;
-    }
+    unsigned image_target = settings_.use_image_texture_target;
+    DCHECK_IMPLIES(
+        image_target == GL_TEXTURE_RECTANGLE_ARB,
+        context_provider->ContextCapabilities().gpu.texture_rectangle);
+    DCHECK_IMPLIES(
+        image_target == GL_TEXTURE_EXTERNAL_OES,
+        context_provider->ContextCapabilities().gpu.egl_image_external);
 
     if (settings_.use_zero_copy || IsSynchronousSingleThreaded()) {
       *resource_pool =

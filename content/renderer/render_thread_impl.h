@@ -248,7 +248,9 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   bool is_one_copy_enabled() const { return is_one_copy_enabled_; }
 
-  bool use_image_external() const { return use_image_external_; }
+  unsigned use_image_texture_target() const {
+    return use_image_texture_target_;
+  }
 
   AppCacheDispatcher* appcache_dispatcher() const {
     return appcache_dispatcher_.get();
@@ -586,7 +588,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   bool is_distance_field_text_enabled_;
   bool is_zero_copy_enabled_;
   bool is_one_copy_enabled_;
-  bool use_image_external_;
+  unsigned use_image_texture_target_;
 
   std::map<int, mojo::MessagePipeHandle> pending_render_frame_connects_;
 

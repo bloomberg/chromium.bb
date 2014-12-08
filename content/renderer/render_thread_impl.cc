@@ -103,6 +103,8 @@
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 #include "gin/public/debug.h"
+#include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
@@ -522,7 +524,19 @@ void RenderThreadImpl::Init() {
   is_one_copy_enabled_ = !command_line.HasSwitch(switches::kDisableOneCopy);
 #endif
 
-  use_image_external_ = command_line.HasSwitch(switches::kUseImageExternal);
+  use_image_texture_target_ = GL_TEXTURE_2D;
+  if (command_line.HasSwitch(switches::kUseImageTextureTarget)) {
+    std::string target_string =
+        command_line.GetSwitchValueASCII(switches::kUseImageTextureTarget);
+    const unsigned targets[] = {
+      GL_TEXTURE_RECTANGLE_ARB,
+      GL_TEXTURE_EXTERNAL_OES
+    };
+    for (auto target : targets) {
+      if (target_string == gpu::gles2::GLES2Util::GetStringEnum(target))
+        use_image_texture_target_ = target;
+    }
+  }
 
   if (command_line.HasSwitch(switches::kDisableLCDText)) {
     is_lcd_text_enabled_ = false;

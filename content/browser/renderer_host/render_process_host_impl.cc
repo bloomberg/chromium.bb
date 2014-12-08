@@ -132,7 +132,9 @@
 #include "content/public/common/url_constants.h"
 #include "device/battery/battery_monitor_impl.h"
 #include "device/vibration/vibration_manager_impl.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_logging.h"
@@ -1042,9 +1044,23 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
     // The GPU service will always use the preferred type.
     gfx::GpuMemoryBufferType type = supported_types[0];
 
-    // Surface texture backed GPU memory buffers require TEXTURE_EXTERNAL_OES.
-    if (type == gfx::SURFACE_TEXTURE_BUFFER)
-      command_line->AppendSwitch(switches::kUseImageExternal);
+    switch (type) {
+      case gfx::SURFACE_TEXTURE_BUFFER:
+        // Surface texture backed GPU memory buffers require
+        // TEXTURE_EXTERNAL_OES.
+        command_line->AppendSwitchASCII(
+            switches::kUseImageTextureTarget,
+            gpu::gles2::GLES2Util::GetStringEnum(GL_TEXTURE_EXTERNAL_OES));
+        break;
+      case gfx::IO_SURFACE_BUFFER:
+        // IOSurface backed images require GL_TEXTURE_RECTANGLE_ARB.
+        command_line->AppendSwitchASCII(
+            switches::kUseImageTextureTarget,
+            gpu::gles2::GLES2Util::GetStringEnum(GL_TEXTURE_RECTANGLE_ARB));
+        break;
+      default:
+        break;
+    }
   }
 
   // Appending disable-gpu-feature switches due to software rendering list.

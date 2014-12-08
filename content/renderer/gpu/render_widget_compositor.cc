@@ -236,7 +236,8 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
         render_thread->is_distance_field_text_enabled();
     settings.use_zero_copy = render_thread->is_zero_copy_enabled();
     settings.use_one_copy = render_thread->is_one_copy_enabled();
-    settings.use_image_external = render_thread->use_image_external();
+    settings.use_image_texture_target =
+        render_thread->use_image_texture_target();
   }
 
   settings.calculate_top_controls_position =
