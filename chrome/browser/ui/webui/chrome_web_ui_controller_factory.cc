@@ -157,7 +157,6 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_web_ui.h"
-#include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/voicesearch_ui.h"
 #include "chrome/common/extensions/extension_constants.h"
