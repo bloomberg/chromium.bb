@@ -6,7 +6,7 @@ layer at (0,0) size 800x600
       RenderBlock {xhtml:div} at (0,0) size 580x16
         RenderText {#text} at (0,0) size 81x16
           text run at (0,0) width 81: "This is a test"
-      RenderBlock (anonymous) at (0,16) size 580x38
+      RenderBlock (anonymous) at (0,16) size 580x35
         RenderInline {xhtml:a} at (0,0) size 68x16 [color=#0000EE]
           RenderText {#text} at (0,0) size 68x16
             text run at (0,0) width 68: "and a link."

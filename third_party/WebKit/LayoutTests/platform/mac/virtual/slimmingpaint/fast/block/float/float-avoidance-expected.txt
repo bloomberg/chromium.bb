@@ -1,6 +1,6 @@
-layer at (0,0) size 785x2180
-  RenderView at (0,0) size 785x600
-layer at (0,0) size 785x2180
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 2180
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 785x2180 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600 outlineClip at (0,0) size 785x600
   RenderBlock {HTML} at (0,0) size 785x2180
     RenderBody {BODY} at (8,8) size 769x2164
       RenderBlock (anonymous) at (0,0) size 769x32
@@ -302,7 +302,7 @@ layer at (0,0) size 785x2180
         RenderBlock {HR} at (110,34) size 100x2 [border: (1px inset #EEEEEE)]
         RenderBlock (anonymous) at (10,44) size 200x16
           RenderBR {BR} at (0,0) size 0x16
-layer at (118,1250) size 100x96
+layer at (118,1250) size 100x96 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
   RenderBlock (floating) {DIV} at (110,26) size 100x96
     RenderText {#text} at (0,0) size 100x96
       text run at (0,0) width 63: "This is an"
@@ -311,13 +311,13 @@ layer at (118,1250) size 100x96
       text run at (0,48) width 92: "enough text to"
       text run at (0,64) width 100: "have to wrap to"
       text run at (0,80) width 92: "multiple lines."
-layer at (18,1432) size 200x48
+layer at (18,1432) size 200x48 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
   RenderBlock (floating) {DIV} at (10,44) size 200x48
     RenderText {#text} at (0,0) size 175x48
       text run at (0,0) width 174: "This is an overflow section"
       text run at (0,16) width 175: "with enough text to have to"
       text run at (0,32) width 144: "wrap to multiple lines."
-layer at (118,1532) size 100x96
+layer at (118,1532) size 100x96 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
   RenderBlock {DIV} at (110,26) size 100x96
     RenderText {#text} at (0,0) size 100x96
       text run at (0,0) width 63: "This is an"
@@ -326,7 +326,7 @@ layer at (118,1532) size 100x96
       text run at (0,48) width 92: "enough text to"
       text run at (0,64) width 100: "have to wrap to"
       text run at (0,80) width 92: "multiple lines."
-layer at (118,1712) size 100x96
+layer at (118,1712) size 100x96 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600
   RenderBlock {DIV} at (110,26) size 100x96
     RenderText {#text} at (0,0) size 100x96
       text run at (0,0) width 63: "This is an"
