@@ -359,7 +359,10 @@ class GFX_EXPORT RenderText {
 
   // Returns the width of the content (which is the wrapped width in multiline
   // mode). Reserves room for the cursor if |cursor_enabled_| is true.
-  float GetContentWidth();
+  float GetContentWidthF();
+
+  // Same as GetContentWidthF with the width rounded up.
+  int GetContentWidth();
 
   // Returns the common baseline of the text. The return value is the vertical
   // offset from the top of |display_rect_| to the text baseline, in pixels.
