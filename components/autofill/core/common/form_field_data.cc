@@ -36,13 +36,13 @@ bool ReadStringVector(PickleIterator* iter,
   return true;
 }
 
-bool ReadTextDirection(PickleIterator* iter,
-                       base::i18n::TextDirection* direction) {
+template <typename T>
+bool ReadAsInt(PickleIterator* iter, T* direction) {
   int pickle_data;
   if (!iter->ReadInt(&pickle_data))
     return false;
 
-  *direction = static_cast<base::i18n::TextDirection>(pickle_data);
+  *direction = static_cast<T>(pickle_data);
   return true;
 }
 
@@ -57,6 +57,7 @@ FormFieldData::FormFieldData()
       is_checkable(false),
       is_focusable(false),
       should_autocomplete(true),
+      role(ROLE_ATTRIBUTE_OTHER),
       text_direction(base::i18n::UNKNOWN_DIRECTION) {
 }
 
@@ -66,8 +67,7 @@ FormFieldData::~FormFieldData() {
 bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
   // A FormFieldData stores a value, but the value is not part of the identity
   // of the field, so we don't want to compare the values.
-  return (label == field.label &&
-          name == field.name &&
+  return (label == field.label && name == field.name &&
           form_control_type == field.form_control_type &&
           autocomplete_attribute == field.autocomplete_attribute &&
           max_length == field.max_length &&
@@ -76,7 +76,7 @@ bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
           is_checkable == field.is_checkable &&
           is_focusable == field.is_focusable &&
           should_autocomplete == field.should_autocomplete &&
-          text_direction == field.text_direction);
+          role == field.role && text_direction == field.text_direction);
           // The option values/contents whith are the list of items in the list
           // of a drop-down are currently not considered part of the identity of
           // a form element. This is debatable, since one might base heuristics
@@ -105,6 +105,10 @@ bool FormFieldData::operator<(const FormFieldData& field) const {
   if (is_focusable > field.is_focusable) return false;
   if (should_autocomplete < field.should_autocomplete) return true;
   if (should_autocomplete > field.should_autocomplete) return false;
+  if (role < field.role)
+    return true;
+  if (role > field.role)
+    return false;
   if (text_direction < field.text_direction) return true;
   if (text_direction > field.text_direction) return false;
   // See operator== above for why we don't check option_values/contents.
@@ -125,6 +129,7 @@ void SerializeFormFieldData(const FormFieldData& field_data,
   pickle->WriteBool(field_data.is_checkable);
   pickle->WriteBool(field_data.is_focusable);
   pickle->WriteBool(field_data.should_autocomplete);
+  pickle->WriteInt(field_data.role);
   pickle->WriteInt(field_data.text_direction);
   AddVectorToPickle(field_data.option_values, pickle);
   AddVectorToPickle(field_data.option_contents, pickle);
@@ -151,7 +156,8 @@ bool DeserializeFormFieldData(PickleIterator* iter,
           !iter->ReadBool(&field_data->is_checkable) ||
           !iter->ReadBool(&field_data->is_focusable) ||
           !iter->ReadBool(&field_data->should_autocomplete) ||
-          !ReadTextDirection(iter, &field_data->text_direction) ||
+          !ReadAsInt(iter, &field_data->role) ||
+          !ReadAsInt(iter, &field_data->text_direction) ||
           !ReadStringVector(iter, &field_data->option_values) ||
           !ReadStringVector(iter, &field_data->option_contents)) {
         LOG(ERROR) << "Could not deserialize FormFieldData from pickle";
@@ -168,30 +174,16 @@ bool DeserializeFormFieldData(PickleIterator* iter,
 }
 
 std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
-  return os
-      << base::UTF16ToUTF8(field.label)
-      << " "
-      << base::UTF16ToUTF8(field.name)
-      << " "
-      << base::UTF16ToUTF8(field.value)
-      << " "
-      << field.form_control_type
-      << " "
-      << field.autocomplete_attribute
-      << " "
-      << field.max_length
-      << " "
-      << (field.is_autofilled ? "true" : "false")
-      << " "
-      << (field.is_checked ? "true" : "false")
-      << " "
-      << (field.is_checkable ? "true" : "false")
-      << " "
-      << (field.is_focusable ? "true" : "false")
-      << " "
-      << (field.should_autocomplete ? "true" : "false")
-      << " "
-      << field.text_direction;
+  return os << base::UTF16ToUTF8(field.label) << " "
+            << base::UTF16ToUTF8(field.name) << " "
+            << base::UTF16ToUTF8(field.value) << " " << field.form_control_type
+            << " " << field.autocomplete_attribute << " " << field.max_length
+            << " " << (field.is_autofilled ? "true" : "false") << " "
+            << (field.is_checked ? "true" : "false") << " "
+            << (field.is_checkable ? "true" : "false") << " "
+            << (field.is_focusable ? "true" : "false") << " "
+            << (field.should_autocomplete ? "true" : "false") << " "
+            << field.role << " " << field.text_direction;
 }
 
 }  // namespace autofill

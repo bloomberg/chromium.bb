@@ -17,6 +17,13 @@ namespace autofill {
 
 // Stores information about a field in a form.
 struct FormFieldData {
+  enum RoleAttribute {
+    // "presentation"
+    ROLE_ATTRIBUTE_PRESENTATION,
+    // Anything else.
+    ROLE_ATTRIBUTE_OTHER,
+  };
+
   FormFieldData();
   ~FormFieldData();
 
@@ -39,6 +46,7 @@ struct FormFieldData {
   bool is_checkable;
   bool is_focusable;
   bool should_autocomplete;
+  RoleAttribute role;
   base::i18n::TextDirection text_direction;
 
   // For the HTML snippet |<option value="US">United States</option>|, the

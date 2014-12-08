@@ -956,6 +956,7 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
   DCHECK(field);
   DCHECK(!element.isNull());
   CR_DEFINE_STATIC_LOCAL(WebString, kAutocomplete, ("autocomplete"));
+  CR_DEFINE_STATIC_LOCAL(WebString, kRole, ("role"));
 
   // The label is not officially part of a WebFormControlElement; however, the
   // labels for all form control elements are scraped from the DOM and set in
@@ -970,6 +971,8 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
     // attribute was present.
     field->autocomplete_attribute = "x-max-data-length-exceeded";
   }
+  if (LowerCaseEqualsASCII(element.getAttribute(kRole), "presentation"))
+    field->role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
 
   if (!IsAutofillableElement(element))
     return;

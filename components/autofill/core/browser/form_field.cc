@@ -27,8 +27,14 @@
 namespace autofill {
 namespace {
 
-bool IsCheckable(const AutofillField* field) {
-  return field->is_checkable;
+bool ShouldBeIgnored(const AutofillField* field) {
+  // Ignore checkable fields as they interfere with parsers assuming context.
+  // Eg., while parsing address, "Is PO box" checkbox after ADDRESS_LINE1
+  // interferes with correctly understanding ADDRESS_LINE2.
+  // Ignore fields marked as presentational. See
+  // http://www.w3.org/TR/wai-aria/roles#presentation
+  return field->is_checkable ||
+         field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
 }
 
 }  // namespace
@@ -40,12 +46,9 @@ void FormField::ParseFormFields(const std::vector<AutofillField*>& fields,
   std::vector<AutofillField*> remaining_fields(fields.size());
   std::copy(fields.begin(), fields.end(), remaining_fields.begin());
 
-  // Ignore checkable fields as they interfere with parsers assuming context.
-  // Eg., while parsing address, "Is PO box" checkbox after ADDRESS_LINE1
-  // interferes with correctly understanding ADDRESS_LINE2.
   remaining_fields.erase(
       std::remove_if(remaining_fields.begin(), remaining_fields.end(),
-                     IsCheckable),
+                     ShouldBeIgnored),
       remaining_fields.end());
 
   // Email pass.

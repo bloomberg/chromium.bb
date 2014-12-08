@@ -28,6 +28,9 @@
 
 #define IPC_MESSAGE_START AutofillMsgStart
 
+IPC_ENUM_TRAITS_MAX_VALUE(autofill::FormFieldData::RoleAttribute,
+                          autofill::FormFieldData::ROLE_ATTRIBUTE_OTHER)
+
 IPC_ENUM_TRAITS_MAX_VALUE(base::i18n::TextDirection,
                           base::i18n::TEXT_DIRECTION_NUM_DIRECTIONS - 1)
 
@@ -45,6 +48,7 @@ IPC_STRUCT_TRAITS_BEGIN(autofill::FormFieldData)
   IPC_STRUCT_TRAITS_MEMBER(value)
   IPC_STRUCT_TRAITS_MEMBER(form_control_type)
   IPC_STRUCT_TRAITS_MEMBER(autocomplete_attribute)
+  IPC_STRUCT_TRAITS_MEMBER(role)
   IPC_STRUCT_TRAITS_MEMBER(max_length)
   IPC_STRUCT_TRAITS_MEMBER(is_autofilled)
   IPC_STRUCT_TRAITS_MEMBER(is_checked)
