@@ -50,6 +50,12 @@ class StartupUtils {
   // Sets initial locale in local settings.
   static void SetInitialLocale(const std::string& locale);
 
+  // Returns true if it is allowed to activate the new version of OOBE.
+  static bool IsNewOobeAllowed();
+
+  // Returns true if the new version of OOBE has been activated.
+  static bool IsNewOobeActivated();
+
   // Registers OOBE preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 };

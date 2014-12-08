@@ -113,6 +113,9 @@ const char kLoginURL[] = "chrome://oobe/login";
 // URL which corresponds to the OOBE WebUI.
 const char kOobeURL[] = "chrome://oobe/oobe";
 
+// URL which corresponds to the new implementation of OOBE WebUI.
+const char kNewOobeURL[] = "chrome://oobe/new-oobe";
+
 // URL which corresponds to the user adding WebUI.
 const char kUserAddingURL[] = "chrome://oobe/user-adding";
 
@@ -526,8 +529,10 @@ void LoginDisplayHostImpl::StartWizard(const std::string& first_screen_name) {
   }
   VLOG(1) << "Login WebUI >> wizard";
 
-  if (!login_window_)
-    LoadURL(GURL(kOobeURL));
+  if (!login_window_) {
+    LoadURL(StartupUtils::IsNewOobeActivated() ? GURL(kNewOobeURL)
+                                               : GURL(kOobeURL));
+  }
 
   DVLOG(1) << "Starting wizard, first_screen_name: " << first_screen_name;
   // Create and show the wizard.

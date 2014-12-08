@@ -49,6 +49,7 @@
 /** @const */ var ACCELERATOR_APP_LAUNCH_NETWORK_CONFIG =
     'app_launch_network_config';
 /** @const */ var ACCELERATOR_EMBEDDED_SIGNIN = 'embedded_signin';
+/** @const */ var ACCELERATOR_NEW_OOBE = 'new_oobe';
 
 /* Signin UI state constants. Used to control header bar UI. */
 /** @const */ var SIGNIN_UI_STATE = {
@@ -399,6 +400,8 @@ cr.define('cr.ui.login', function() {
       } else if (name == ACCELERATOR_EMBEDDED_SIGNIN) {
         if (currentStepId == SCREEN_GAIA_SIGNIN)
           chrome.send('switchToEmbeddedSignin');
+      } else if (name == ACCELERATOR_NEW_OOBE) {
+        chrome.send('switchToNewOobe');
       }
 
       if (!this.forceKeyboardFlow_)

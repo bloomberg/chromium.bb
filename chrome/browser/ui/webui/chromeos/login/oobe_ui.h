@@ -62,6 +62,7 @@ class OobeUI : public OobeDisplay,
   static const char kLockDisplay[];
   static const char kUserAddingDisplay[];
   static const char kAppLaunchSplashDisplay[];
+  static const char kNewOobeDisplay[];
 
   // JS oobe/login screens names.
   static const char kScreenOobeHIDDetection[];
