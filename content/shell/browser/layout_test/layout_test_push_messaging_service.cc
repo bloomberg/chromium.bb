@@ -24,7 +24,7 @@ void LayoutTestPushMessagingService::ClearPermissions() {
   permission_map_.clear();
 }
 
-GURL LayoutTestPushMessagingService::PushEndpoint() {
+GURL LayoutTestPushMessagingService::GetPushEndpoint() {
   return GURL("https://example.com/LayoutTestEndpoint");
 }
 

@@ -260,7 +260,7 @@ void PushMessagingMessageFilter::SendRegisterError(
 
 void PushMessagingMessageFilter::SendRegisterSuccess(
     const RegisterData& data, const std::string& push_registration_id) {
-  GURL push_endpoint(service()->PushEndpoint());
+  GURL push_endpoint(service()->GetPushEndpoint());
   if (data.FromDocument()) {
     Send(new PushMessagingMsg_RegisterFromDocumentSuccess(
         data.render_frame_id,

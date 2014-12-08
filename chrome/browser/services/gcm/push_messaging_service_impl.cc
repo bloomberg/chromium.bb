@@ -219,7 +219,7 @@ void PushMessagingServiceImpl::OnSendAcknowledged(
   NOTREACHED() << "The Push API shouldn't have sent messages upstream";
 }
 
-GURL PushMessagingServiceImpl::PushEndpoint() {
+GURL PushMessagingServiceImpl::GetPushEndpoint() {
   return GURL(std::string(kPushMessagingEndpoint));
 }
 

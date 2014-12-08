@@ -28,7 +28,7 @@ class CONTENT_EXPORT PushMessagingService {
   // Returns the absolute URL exposed by the push server where the webapp server
   // can send push messages. This is currently assumed to be the same for all
   // origins and push registrations.
-  virtual GURL PushEndpoint() = 0;
+  virtual GURL GetPushEndpoint() = 0;
 
   // Register the given |sender_id| with the push messaging service in a
   // document context. The frame is known and a permission UI may be displayed

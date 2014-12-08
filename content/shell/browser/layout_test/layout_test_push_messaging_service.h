@@ -22,7 +22,7 @@ class LayoutTestPushMessagingService : public PushMessagingService {
   void ClearPermissions();
 
   // PushMessagingService implementation:
-  GURL PushEndpoint() override;
+  GURL GetPushEndpoint() override;
   void RegisterFromDocument(
       const GURL& requesting_origin,
       int64 service_worker_registration_id,
