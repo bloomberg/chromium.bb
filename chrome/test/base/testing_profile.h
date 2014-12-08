@@ -267,7 +267,8 @@ class TestingProfile : public Profile {
   bool HasOffTheRecordProfile() override;
   Profile* GetOriginalProfile() override;
   bool IsSupervised() override;
-  bool IsRegularSupervised() override;
+  bool IsChild() override;
+  bool IsLegacySupervised() override;
 #if defined(ENABLE_EXTENSIONS)
   void SetExtensionSpecialStoragePolicy(
       ExtensionSpecialStoragePolicy* extension_special_storage_policy);

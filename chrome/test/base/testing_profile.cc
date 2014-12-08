@@ -95,6 +95,7 @@
 #endif
 
 #if defined(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #endif
@@ -695,9 +696,16 @@ bool TestingProfile::IsSupervised() {
   return !supervised_user_id_.empty();
 }
 
-bool TestingProfile::IsRegularSupervised() {
-  // TODO(merkulova): add regular supervised check support. crbug.com/425067.
+bool TestingProfile::IsChild() {
+#if defined(ENABLE_SUPERVISED_USERS)
+  return supervised_user_id_ == supervised_users::kChildAccountSUID;
+#else
   return false;
+#endif
+}
+
+bool TestingProfile::IsLegacySupervised() {
+  return IsSupervised() && !IsChild();
 }
 
 #if defined(ENABLE_EXTENSIONS)

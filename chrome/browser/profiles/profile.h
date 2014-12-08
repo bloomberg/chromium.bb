@@ -206,11 +206,13 @@ class Profile : public content::BrowserContext {
   // profile is not incognito.
   virtual Profile* GetOriginalProfile() = 0;
 
-  // Returns whether the profile is supervised (see SupervisedUserService).
+  // Returns whether the profile is supervised (either a legacy supervised
+  // user or a child account; see SupervisedUserService).
   virtual bool IsSupervised() = 0;
-
-  // Returns whether the profile has is a regular supervised one.
-  virtual bool IsRegularSupervised() = 0;
+  // Returns whether the profile is associated with a child account.
+  virtual bool IsChild() = 0;
+  // Returns whether the profile is a legacy supervised user profile.
+  virtual bool IsLegacySupervised() = 0;
 
   // Returns a pointer to the TopSites (thumbnail manager) instance
   // for this profile.

@@ -276,8 +276,14 @@ bool OffTheRecordProfileImpl::IsSupervised() {
   return GetOriginalProfile()->IsSupervised();
 }
 
-bool OffTheRecordProfileImpl::IsRegularSupervised() {
-  return GetOriginalProfile()->IsRegularSupervised();
+bool OffTheRecordProfileImpl::IsChild() {
+  // TODO(treib): If we ever allow incognito for child accounts, evaluate
+  // whether we want to just return false here.
+  return GetOriginalProfile()->IsChild();
+}
+
+bool OffTheRecordProfileImpl::IsLegacySupervised() {
+  return GetOriginalProfile()->IsLegacySupervised();
 }
 
 PrefService* OffTheRecordProfileImpl::GetPrefs() {

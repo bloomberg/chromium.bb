@@ -151,6 +151,7 @@
 #endif
 
 #if defined(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #endif
@@ -901,13 +902,17 @@ bool ProfileImpl::IsSupervised() {
   return !GetPrefs()->GetString(prefs::kSupervisedUserId).empty();
 }
 
-bool ProfileImpl::IsRegularSupervised() {
-#if defined(ENABLE_MANAGED_USERS)
-  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(this);
-  return user->HasGaiaAccount() && user->IsSupervised();
+bool ProfileImpl::IsChild() {
+#if defined(ENABLE_SUPERVISED_USERS)
+  return GetPrefs()->GetString(prefs::kSupervisedUserId) ==
+      supervised_users::kChildAccountSUID;
 #else
   return false;
 #endif
+}
+
+bool ProfileImpl::IsLegacySupervised() {
+  return IsSupervised() && !IsChild();
 }
 
 ExtensionSpecialStoragePolicy*

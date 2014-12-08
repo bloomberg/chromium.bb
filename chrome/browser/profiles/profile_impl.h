@@ -107,7 +107,8 @@ class ProfileImpl : public Profile {
   bool HasOffTheRecordProfile() override;
   Profile* GetOriginalProfile() override;
   bool IsSupervised() override;
-  bool IsRegularSupervised() override;
+  bool IsChild() override;
+  bool IsLegacySupervised() override;
   history::TopSites* GetTopSites() override;
   history::TopSites* GetTopSitesWithoutCreating() override;
   ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;

@@ -104,7 +104,11 @@ bool FakeProfile::IsSupervised() {
   return false;
 }
 
-bool FakeProfile::IsRegularSupervised() {
+bool FakeProfile::IsChild() {
+  return false;
+}
+
+bool FakeProfile::IsLegacySupervised() {
   return false;
 }
 
