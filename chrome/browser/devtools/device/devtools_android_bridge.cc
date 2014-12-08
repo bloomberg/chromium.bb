@@ -9,6 +9,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
@@ -27,12 +28,18 @@
 #include "chrome/browser/devtools/device/port_forwarding_controller.h"
 #include "chrome/browser/devtools/device/self_device_provider.h"
 #include "chrome/browser/devtools/device/usb/usb_device_provider.h"
+#include "chrome/browser/devtools/device/webrtc/webrtc_device_provider.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
 #include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
@@ -59,6 +66,11 @@ const char kPageNavigateCommand[] = "Page.navigate";
 
 const int kMinVersionNewWithURL = 32;
 const int kNewPageNavigateDelayMs = 500;
+
+bool IsWebRTCDeviceProviderEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableDevToolsExperiments);
+}
 
 }  // namespace
 
@@ -252,13 +264,29 @@ DevToolsAndroidBridge* DevToolsAndroidBridge::Factory::GetForProfile(
 DevToolsAndroidBridge::Factory::Factory()
     : BrowserContextKeyedServiceFactory(
           "DevToolsAndroidBridge",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  if (IsWebRTCDeviceProviderEnabled()) {
+    DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+    DependsOn(SigninManagerFactory::GetInstance());
+  }
+}
 
 DevToolsAndroidBridge::Factory::~Factory() {}
 
 KeyedService* DevToolsAndroidBridge::Factory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new DevToolsAndroidBridge(Profile::FromBrowserContext(context));
+  Profile* profile = Profile::FromBrowserContext(context);
+
+  ProfileOAuth2TokenService* token_service = nullptr;
+  SigninManagerBase* signin_manager = nullptr;
+
+  if (IsWebRTCDeviceProviderEnabled()) {
+    token_service = ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+    signin_manager = SigninManagerFactory::GetForProfile(profile);
+  }
+
+  return new DevToolsAndroidBridge(
+      profile, signin_manager, token_service);
 }
 
 // AgentHostDelegate ----------------------------------------------------------
@@ -762,8 +790,13 @@ DevToolsAndroidBridge::RemoteDevice::~RemoteDevice() {
 
 // DevToolsAndroidBridge ------------------------------------------------------
 
-DevToolsAndroidBridge::DevToolsAndroidBridge(Profile* profile)
+DevToolsAndroidBridge::DevToolsAndroidBridge(
+    Profile* profile,
+    SigninManagerBase* signin_manager,
+    ProfileOAuth2TokenService* const token_service)
     : profile_(profile),
+      signin_manager_(signin_manager),
+      token_service_(token_service),
       device_manager_(AndroidDeviceManager::Create()),
       task_scheduler_(base::Bind(&DevToolsAndroidBridge::ScheduleTaskDefault)),
       port_forwarding_controller_(new PortForwardingController(profile, this)),
@@ -968,6 +1001,12 @@ void DevToolsAndroidBridge::CreateDeviceProviders() {
   if (pref_value->GetAsBoolean(&enabled) && enabled) {
     device_providers.push_back(new UsbDeviceProvider(profile_));
   }
+
+  if (IsWebRTCDeviceProviderEnabled()) {
+    device_providers.push_back(
+        new WebRTCDeviceProvider(profile_, signin_manager_, token_service_));
+  }
+
   device_manager_->SetDeviceProviders(device_providers);
   if (NeedsDeviceListPolling()) {
     StopDeviceListPolling();

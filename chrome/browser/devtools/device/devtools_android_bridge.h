@@ -36,6 +36,9 @@ class BrowserContext;
 class DevToolsTargetImpl;
 class PortForwardingController;
 class Profile;
+class WebRTCDeviceProvider;
+class SigninManagerBase;
+class ProfileOAuth2TokenService;
 
 class DevToolsAndroidBridge : public KeyedService {
  public:
@@ -158,7 +161,9 @@ class DevToolsAndroidBridge : public KeyedService {
     virtual ~DeviceListListener() {}
   };
 
-  explicit DevToolsAndroidBridge(Profile* profile);
+  DevToolsAndroidBridge(Profile* profile,
+                        SigninManagerBase* signin_manager,
+                        ProfileOAuth2TokenService* token_service);
   void AddDeviceListListener(DeviceListListener* listener);
   void RemoveDeviceListListener(DeviceListListener* listener);
 
@@ -214,6 +219,7 @@ class DevToolsAndroidBridge : public KeyedService {
 
   scoped_refptr<content::DevToolsAgentHost> GetBrowserAgentHost(
       scoped_refptr<RemoteBrowser> browser);
+
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
@@ -282,7 +288,9 @@ class DevToolsAndroidBridge : public KeyedService {
       return weak_factory_.GetWeakPtr();
   }
 
-  Profile* profile_;
+  Profile* const profile_;
+  SigninManagerBase* const signin_manager_;
+  ProfileOAuth2TokenService* const token_service_;
   const scoped_ptr<AndroidDeviceManager> device_manager_;
 
   typedef std::map<std::string, scoped_refptr<AndroidDeviceManager::Device>>

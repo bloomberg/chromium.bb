@@ -9,9 +9,13 @@
 #include "content/public/browser/web_ui_controller.h"
 
 namespace content {
-class BrowserContext;
 class WebUI;
 }
+
+class OAuth2TokenService;
+class Profile;
+class ProfileOAuth2TokenService;
+class SigninManagerBase;
 
 // Provides access to remote DevTools targets over WebRTC data channel and GCD.
 class WebRTCDeviceProvider final : public AndroidDeviceManager::DeviceProvider {
@@ -28,7 +32,9 @@ class WebRTCDeviceProvider final : public AndroidDeviceManager::DeviceProvider {
     ~WebUI() override;
   };
 
-  explicit WebRTCDeviceProvider(content::BrowserContext* context);
+  WebRTCDeviceProvider(Profile* profile,
+                       SigninManagerBase* signin_manager,
+                       ProfileOAuth2TokenService* token_service);
 
   // AndroidDeviceManager::DeviceProvider implementation.
   void QueryDevices(const SerialsCallback& callback) override;
@@ -41,9 +47,12 @@ class WebRTCDeviceProvider final : public AndroidDeviceManager::DeviceProvider {
                   const SocketCallback& callback) override;
 
  private:
+  class DevToolsBridgeClient;
+  class MessageHandler;
+
   ~WebRTCDeviceProvider() override;
 
-  scoped_ptr<content::WebContents> background_worker_;
+  const base::WeakPtr<DevToolsBridgeClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRTCDeviceProvider);
 };
