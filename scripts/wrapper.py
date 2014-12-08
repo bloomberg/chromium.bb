@@ -125,7 +125,15 @@ def FindTarget(target):
   for attr in target[1:]:
     module = getattr(module, attr)
 
-  return getattr(module, 'main', None)
+  # Run the module's main func if it has one.
+  main = getattr(module, 'main', None)
+  if main:
+    return main
+
+  # Is this a unittest?
+  if target[-1].rsplit('_', 1)[-1] in ('test', 'unittest'):
+    from chromite.lib import cros_test_lib
+    return lambda _argv: cros_test_lib.main(module=module)
 
 
 if __name__ == '__main__':

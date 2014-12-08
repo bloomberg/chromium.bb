@@ -1451,25 +1451,6 @@ def SetTimeZone(tz):
     time.tzset()
 
 
-def FindTests(directory, module_namespace=''):
-  """Find all *_unittest.py, and return their python namespaces.
-
-  Args:
-    directory: The directory to scan for tests.
-    module_namespace: What namespace to prefix all found tests with.
-
-  Returns:
-    A list of python unittests in python namespace form.
-  """
-  results = cros_build_lib.RunCommand(
-      ['find', '.', '-name', '*_unittest.py', '-printf', '%P\n'],
-      cwd=directory, print_cmd=False, capture_output=True).output.splitlines()
-  # Drop the trailing .py, inject in the name if one was given.
-  if module_namespace:
-    module_namespace += '.'
-  return [module_namespace + x[:-3].replace('/', '.') for x in results]
-
-
 class TestProgram(unittest.TestProgram):
   """Helper wrapper around unittest.TestProgram
 
@@ -1493,7 +1474,8 @@ Chromite Options:
       if flag in sys.argv:
         sys.argv.remove(flag)
         level = logging.DEBUG
-    cros_build_lib.SetupBasicLogging(level)
+    logger = logging.getLogger()
+    logger.setLevel(level)
 
     try:
       super(TestProgram, self).__init__(**kwargs)

@@ -1248,14 +1248,6 @@ class ContextManagerStack(object):
     raise exc_type, exc, traceback
 
 
-def SetupBasicLogging(level=logging.DEBUG):
-  """Sets up basic logging to use format from constants."""
-  logging_format = '%(asctime)s - %(filename)s - %(levelname)-8s: %(message)s'
-  date_format = constants.LOGGER_DATE_FMT
-  logging.basicConfig(level=level, format=logging_format,
-                      datefmt=date_format)
-
-
 class ApiMismatchError(Exception):
   """Raised by GetTargetChromiteApiVersion."""
 
