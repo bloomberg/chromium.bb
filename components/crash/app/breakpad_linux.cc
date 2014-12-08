@@ -666,7 +666,12 @@ void EnableCrashDumping(bool unattended) {
   }
   DCHECK(!g_breakpad);
   MinidumpDescriptor minidump_descriptor(dumps_path.value());
-  minidump_descriptor.set_size_limit(kMaxMinidumpFileSize);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kFullMemoryCrashReport)) {
+    minidump_descriptor.set_size_limit(-1);  // unlimited.
+  } else {
+    minidump_descriptor.set_size_limit(kMaxMinidumpFileSize);
+  }
 #if defined(OS_ANDROID)
   unattended = true;  // Android never uploads directly.
 #endif
