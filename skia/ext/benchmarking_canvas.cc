@@ -106,13 +106,6 @@ public:
     SkProxyCanvas::drawBitmapRectToRect(bitmap, src, dst, paint, flags);
   }
 
-  void drawBitmapMatrix(const SkBitmap& bitmap,
-                        const SkMatrix& m,
-                        const SkPaint* paint = NULL) override {
-    AutoStamper stamper(this);
-    SkProxyCanvas::drawBitmapMatrix(bitmap, m, paint);
-  }
-
   void drawSprite(const SkBitmap& bitmap,
                   int left,
                   int top,

@@ -203,14 +203,6 @@ void AnalysisCanvas::drawBitmapRectToRect(const SkBitmap&,
   ++draw_op_count_;
 }
 
-void AnalysisCanvas::drawBitmapMatrix(const SkBitmap& bitmap,
-                                      const SkMatrix& matrix,
-                                      const SkPaint* paint) {
-  is_solid_color_ = false;
-  is_transparent_ = false;
-  ++draw_op_count_;
-}
-
 void AnalysisCanvas::drawBitmapNine(const SkBitmap& bitmap,
                                     const SkIRect& center,
                                     const SkRect& dst,

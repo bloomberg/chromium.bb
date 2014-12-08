@@ -48,9 +48,6 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
                             const SkRect& dst,
                             const SkPaint* paint,
                             DrawBitmapRectFlags flags) override;
-  void drawBitmapMatrix(const SkBitmap&,
-                        const SkMatrix&,
-                        const SkPaint* paint = NULL) override;
   void drawBitmapNine(const SkBitmap& bitmap,
                       const SkIRect& center,
                       const SkRect& dst,
