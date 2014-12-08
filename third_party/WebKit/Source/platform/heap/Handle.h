@@ -1126,7 +1126,7 @@ template<typename T> struct HashTraits<blink::WeakMember<T> > : SimpleClassHashT
     static bool traceInCollection(blink::Visitor* visitor, blink::WeakMember<T>& weakMember, ShouldWeakPointersBeMarkedStrongly strongify)
     {
         if (strongify == WeakPointersActStrong) {
-            visitor->trace(reinterpret_cast<blink::Member<T>&>(weakMember)); // Strongified visit.
+            visitor->trace(weakMember.get()); // Strongified visit.
             return false;
         }
         return !visitor->isAlive(weakMember);
