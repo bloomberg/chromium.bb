@@ -12,6 +12,7 @@
 
 using base::StringPiece;
 using std::min;
+using std::string;
 
 namespace net {
 

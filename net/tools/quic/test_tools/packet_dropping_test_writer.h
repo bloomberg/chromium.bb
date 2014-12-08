@@ -6,6 +6,7 @@
 #define NET_TOOLS_QUIC_TEST_TOOLS_PACKET_DROPPING_TEST_WRITER_H_
 
 #include <list>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -123,7 +124,7 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
                  QuicTime send_time);
     ~DelayedWrite();
 
-    string buffer;
+    std::string buffer;
     const IPAddressNumber self_address;
     const IPEndPoint peer_address;
     QuicTime send_time;

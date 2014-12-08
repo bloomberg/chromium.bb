@@ -32,6 +32,7 @@
 #include "url/gurl.h"
 
 using content::BrowserThread;
+using std::string;
 
 using ::testing::_;
 using ::testing::AnyNumber;

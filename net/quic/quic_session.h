@@ -7,6 +7,8 @@
 #ifndef NET_QUIC_QUIC_SESSION_H_
 #define NET_QUIC_QUIC_SESSION_H_
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"

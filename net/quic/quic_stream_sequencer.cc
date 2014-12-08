@@ -14,6 +14,7 @@
 using std::make_pair;
 using std::min;
 using std::numeric_limits;
+using std::string;
 
 namespace net {
 

@@ -22,6 +22,8 @@
 #include "third_party/zlib/zlib.h"
 #include "url/gurl.h"
 
+using std::string;
+
 namespace content {
 namespace {
 const char kUploadContentType[] = "multipart/form-data";

@@ -13,6 +13,8 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using std::string;
+
 namespace component_updater {
 
 class ComponentUpdaterPingManagerTest : public testing::Test {

@@ -153,7 +153,7 @@ class DriveApiRequestsTest : public testing::Test {
   scoped_ptr<net::test_server::HttpResponse> HandleChildrenDeleteRequest(
       const net::test_server::HttpRequest& request) {
     if (request.method != net::test_server::METHOD_DELETE ||
-        request.relative_url.find("/children/") == string::npos) {
+        request.relative_url.find("/children/") == std::string::npos) {
       // The request is not the "Children: delete" request. Delegate the
       // processing to the next handler.
       return scoped_ptr<net::test_server::HttpResponse>();
@@ -191,7 +191,7 @@ class DriveApiRequestsTest : public testing::Test {
   scoped_ptr<net::test_server::HttpResponse> HandleDeleteRequest(
       const net::test_server::HttpRequest& request) {
     if (request.method != net::test_server::METHOD_DELETE ||
-        request.relative_url.find("/files/") == string::npos) {
+        request.relative_url.find("/files/") == std::string::npos) {
       // The file is not file deletion request. Delegate the processing to the
       // next handler.
       return scoped_ptr<net::test_server::HttpResponse>();

@@ -21,6 +21,7 @@
 
 using base::StringPiece;
 using std::min;
+using std::string;
 using testing::CreateFunctor;
 using testing::InSequence;
 using testing::Invoke;

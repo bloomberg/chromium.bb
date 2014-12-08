@@ -14,6 +14,8 @@
 #include "net/quic/quic_server_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using std::string;
+
 namespace net {
 namespace {
 

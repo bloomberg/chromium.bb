@@ -304,16 +304,17 @@ class MockConnection : public QuicConnection {
                                       const IPEndPoint& peer_address,
                                       const QuicEncryptedPacket& packet));
   MOCK_METHOD1(SendConnectionClose, void(QuicErrorCode error));
-  MOCK_METHOD2(SendConnectionCloseWithDetails, void(QuicErrorCode error,
-                                                    const string& details));
-  MOCK_METHOD2(SendConnectionClosePacket, void(QuicErrorCode error,
-                                               const string& details));
+  MOCK_METHOD2(SendConnectionCloseWithDetails,
+               void(QuicErrorCode error, const std::string& details));
+  MOCK_METHOD2(SendConnectionClosePacket,
+               void(QuicErrorCode error, const std::string& details));
   MOCK_METHOD3(SendRstStream, void(QuicStreamId id,
                                    QuicRstStreamErrorCode error,
                                    QuicStreamOffset bytes_written));
-  MOCK_METHOD3(SendGoAway, void(QuicErrorCode error,
-                                QuicStreamId last_good_stream_id,
-                                const string& reason));
+  MOCK_METHOD3(SendGoAway,
+               void(QuicErrorCode error,
+                    QuicStreamId last_good_stream_id,
+                    const std::string& reason));
   MOCK_METHOD1(SendBlocked, void(QuicStreamId id));
   MOCK_METHOD2(SendWindowUpdate, void(QuicStreamId id,
                                       QuicStreamOffset byte_offset));

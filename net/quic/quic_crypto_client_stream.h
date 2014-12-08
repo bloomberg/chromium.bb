@@ -81,7 +81,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
 
     // ProofVerifierCallback interface.
     void Run(bool ok,
-             const string& error_details,
+             const std::string& error_details,
              scoped_ptr<ProofVerifyDetails>* details) override;
 
     // Cancel causes any future callbacks to be ignored. It must be called on
@@ -208,7 +208,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // verification. These members must not be used after
   // STATE_VERIFY_PROOF_COMPLETE.
   bool verify_ok_;
-  string verify_error_details_;
+  std::string verify_error_details_;
   scoped_ptr<ProofVerifyDetails> verify_details_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientStream);

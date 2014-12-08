@@ -7,6 +7,7 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 
 using base::StringPiece;
+using std::string;
 
 namespace {
 

@@ -37,6 +37,7 @@ using net::test::kClientDataStreamId1;
 using net::test::kClientDataStreamId2;
 using net::test::kClientDataStreamId3;
 using net::test::kClientDataStreamId4;
+using std::string;
 using testing::StrictMock;
 using testing::_;
 

@@ -31,6 +31,7 @@
 
 using base::StringPiece;
 using std::map;
+using std::string;
 using std::vector;
 using testing::AnyNumber;
 using testing::AtLeast;

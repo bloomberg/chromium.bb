@@ -16,6 +16,7 @@
 
 using net::test::DefaultQuicConfig;
 using net::test::SupportedVersions;
+using std::string;
 using testing::StrictMock;
 using testing::TestWithParam;
 

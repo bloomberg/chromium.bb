@@ -29,6 +29,7 @@ using net::test::MockSession;
 using net::test::ValueRestore;
 using net::tools::test::MockConnection;
 using std::make_pair;
+using std::string;
 using testing::DoAll;
 using testing::InSequence;
 using testing::Invoke;

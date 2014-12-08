@@ -7,6 +7,8 @@
 #include "net/quic/quic_session.h"
 #include "net/quic/reliable_quic_stream.h"
 
+using std::map;
+
 namespace net {
 namespace test {
 

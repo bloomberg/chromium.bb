@@ -7,6 +7,7 @@
 #include "net/quic/quic_session.h"
 
 using base::StringPiece;
+using std::string;
 
 namespace net {
 

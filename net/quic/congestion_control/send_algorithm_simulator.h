@@ -80,7 +80,7 @@ class SendAlgorithmSimulator {
     Transfer(Sender* sender,
              QuicByteCount num_bytes,
              QuicTime start_time,
-             string name);
+             std::string name);
 
     Sender* sender;
     QuicByteCount num_bytes;
@@ -88,7 +88,7 @@ class SendAlgorithmSimulator {
     QuicByteCount bytes_lost;
     QuicByteCount bytes_in_flight;
     QuicTime start_time;
-    string name;
+    std::string name;
   };
 
   struct SentPacket {
@@ -157,8 +157,10 @@ class SendAlgorithmSimulator {
   void AddTransfer(Sender* sender, size_t num_bytes);
 
   // Adds a pending sending to start at the specified time.
-  void AddTransfer(
-      Sender* sender, size_t num_bytes, QuicTime start_time, string name);
+  void AddTransfer(Sender* sender,
+                   size_t num_bytes,
+                   QuicTime start_time,
+                   std::string name);
 
   // Convenience method to transfer all bytes.
   void TransferBytes();

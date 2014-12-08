@@ -6,7 +6,6 @@
 
 #include <map>
 #include <sstream>
-#include <string>
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
@@ -28,6 +27,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using std::string;
 using testing::DoAll;
 using ::testing::AnyNumber;
 using ::testing::Eq;

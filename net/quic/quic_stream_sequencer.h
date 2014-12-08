@@ -6,13 +6,11 @@
 #define NET_QUIC_QUIC_STREAM_SEQUENCER_H_
 
 #include <map>
+#include <string>
 
 #include "base/basictypes.h"
 #include "net/base/iovec.h"
 #include "net/quic/quic_protocol.h"
-
-using std::map;
-using std::string;
 
 namespace net {
 
@@ -103,7 +101,7 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // frames, in which case we will have to allow receipt of overlapping frames.
   // Maybe write new frames into a ring buffer, and keep track of consumed
   // bytes, and gaps.
-  typedef map<QuicStreamOffset, string> FrameMap;
+  typedef std::map<QuicStreamOffset, std::string> FrameMap;
 
   // Stores buffered frames (maps from sequence number -> frame data as string).
   FrameMap buffered_frames_;

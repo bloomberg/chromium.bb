@@ -21,6 +21,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using std::string;
+
 namespace component_updater {
 
 namespace {

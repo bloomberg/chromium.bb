@@ -5,6 +5,8 @@
 #ifndef NET_QUIC_TEST_TOOLS_QUIC_SESSION_PEER_H_
 #define NET_QUIC_TEST_TOOLS_QUIC_SESSION_PEER_H_
 
+#include <map>
+
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_write_blocked_list.h"
 

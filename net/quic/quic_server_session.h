@@ -8,6 +8,7 @@
 #define NET_QUIC_QUIC_SERVER_SESSION_H_
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -67,7 +68,7 @@ class QuicServerSession : public QuicSession {
   // Override base class to process FEC config received from client.
   void OnConfigNegotiated() override;
 
-  void set_serving_region(string serving_region) {
+  void set_serving_region(std::string serving_region) {
     serving_region_ = serving_region;
   }
 
@@ -96,7 +97,7 @@ class QuicServerSession : public QuicSession {
 
   // Text describing server location. Sent to the client as part of the bandwith
   // estimate in the source-address token. Optional, can be left empty.
-  string serving_region_;
+  std::string serving_region_;
 
   // Time at which we send the last SCUP to the client.
   QuicTime last_scup_time_;

@@ -5,7 +5,6 @@
 #include "net/quic/quic_session.h"
 
 #include <set>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
@@ -33,6 +32,7 @@
 
 using base::hash_map;
 using std::set;
+using std::string;
 using std::vector;
 using testing::CreateFunctor;
 using testing::InSequence;

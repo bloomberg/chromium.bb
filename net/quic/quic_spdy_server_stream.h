@@ -51,7 +51,7 @@ class QuicSpdyServerStream : public QuicDataStream {
                           base::StringPiece body);
 
   SpdyHeaderBlock headers_;
-  string body_;
+  std::string body_;
   GURL request_url_;
 
   // Buffer into which response header data is read.

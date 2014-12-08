@@ -52,7 +52,7 @@ class QuicSpdyServerStream : public QuicDataStream {
                           base::StringPiece body);
 
   BalsaHeaders headers_;
-  string body_;
+  std::string body_;
 
   // Buffer into which response header data is read.
   scoped_refptr<GrowableIOBuffer> read_buf_;

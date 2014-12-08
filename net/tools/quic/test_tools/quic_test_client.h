@@ -63,11 +63,11 @@ class QuicTestClient : public SimpleClient,
                        public QuicDataStream::Visitor {
  public:
   QuicTestClient(IPEndPoint server_address,
-                 const string& server_hostname,
+                 const std::string& server_hostname,
                  bool secure,
                  const QuicVersionVector& supported_versions);
   QuicTestClient(IPEndPoint server_address,
-                 const string& server_hostname,
+                 const std::string& server_hostname,
                  bool secure,
                  const QuicConfig& config,
                  const QuicVersionVector& supported_versions);
@@ -80,18 +80,18 @@ class QuicTestClient : public SimpleClient,
   void ExpectCertificates(bool on);
 
   // Sets the |user_agent_id| of the |client_|.
-  void SetUserAgentID(const string& user_agent_id);
+  void SetUserAgentID(const std::string& user_agent_id);
 
   // Wraps data in a quic packet and sends it.
-  ssize_t SendData(string data, bool last_data);
+  ssize_t SendData(std::string data, bool last_data);
 
   // From SimpleClient
   // Clears any outstanding state and sends a simple GET of 'uri' to the
   // server.  Returns 0 if the request failed and no bytes were written.
-  ssize_t SendRequest(const string& uri) override;
+  ssize_t SendRequest(const std::string& uri) override;
   ssize_t SendMessage(const HTTPMessage& message) override;
-  string SendCustomSynchronousRequest(const HTTPMessage& message) override;
-  string SendSynchronousRequest(const string& uri) override;
+  std::string SendCustomSynchronousRequest(const HTTPMessage& message) override;
+  std::string SendSynchronousRequest(const std::string& uri) override;
   void Connect() override;
   void ResetConnection() override;
   void Disconnect() override;
@@ -111,13 +111,13 @@ class QuicTestClient : public SimpleClient,
   bool buffer_body() const override;
   void set_buffer_body(bool buffer_body) override;
   bool ServerInLameDuckMode() const override;
-  const string& response_body() override;
+  const std::string& response_body() override;
   bool connected() const override;
   // These functions are all unimplemented functions from SimpleClient, and log
   // DFATAL if called by users of SimpleClient.
   ssize_t SendAndWaitForResponse(const void* buffer, size_t size) override;
   void Bind(IPEndPoint* local_address) override;
-  string SerializeMessage(const HTTPMessage& message) override;
+  std::string SerializeMessage(const HTTPMessage& message) override;
   IPAddressNumber bind_to_address() const override;
   void set_bind_to_address(IPAddressNumber address) override;
   const IPEndPoint& address() const override;
@@ -143,7 +143,7 @@ class QuicTestClient : public SimpleClient,
 
   // cert_common_name returns the common name value of the server's certificate,
   // or the empty string if no certificate was presented.
-  const string& cert_common_name() const;
+  const std::string& cert_common_name() const;
 
   // Get the server config map.
   QuicTagValueMap GetServerConfig() const;
@@ -178,7 +178,7 @@ class QuicTestClient : public SimpleClient,
   bool response_headers_complete_;
   BalsaHeaders headers_;
   QuicPriority priority_;
-  string response_;
+  std::string response_;
   uint64 bytes_read_;
   uint64 bytes_written_;
   // The number of uncompressed HTTP header bytes received.

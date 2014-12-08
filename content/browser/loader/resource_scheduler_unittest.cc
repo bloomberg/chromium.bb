@@ -32,6 +32,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/latency_info.h"
 
+using std::string;
+
 namespace content {
 
 namespace {

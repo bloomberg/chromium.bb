@@ -14,6 +14,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+using std::string;
+
 namespace chrome_browser_net {
 
 class NetworkStatsTest : public PlatformTest {

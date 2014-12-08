@@ -22,6 +22,7 @@ using base::StringPiece;
 using std::map;
 using std::min;
 using std::pair;
+using std::string;
 using std::vector;
 using testing::_;
 using testing::AnyNumber;

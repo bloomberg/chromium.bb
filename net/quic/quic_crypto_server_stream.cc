@@ -15,6 +15,8 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
 
+using std::string;
+
 namespace net {
 
 void ServerHelloNotifier::OnAckNotification(

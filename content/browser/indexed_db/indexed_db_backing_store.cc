@@ -43,6 +43,7 @@
 
 using base::FilePath;
 using base::StringPiece;
+using std::string;
 using storage::FileWriterDelegate;
 
 namespace content {

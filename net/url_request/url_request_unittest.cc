@@ -10,7 +10,6 @@
 #endif
 
 #include <algorithm>
-#include <string>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -99,6 +98,7 @@
 
 using base::ASCIIToUTF16;
 using base::Time;
+using std::string;
 
 namespace net {
 

@@ -32,6 +32,7 @@ class ReliableQuicStream;
 }  // namespace net
 
 using std::pair;
+using std::string;
 using testing::_;
 
 namespace net {

@@ -12,6 +12,7 @@
 #include <sys/types.h>
 
 #include <list>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/strings/string_piece.h"
@@ -133,7 +134,7 @@ class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
   QuicPriority priority_;
   // Contains a copy of the decompressed headers until they are consumed
   // via ProcessData or Readv.
-  string decompressed_headers_;
+  std::string decompressed_headers_;
   // True if an error was encountered during decompression.
   bool decompression_failed_;
   // True if the priority has been read, false otherwise.

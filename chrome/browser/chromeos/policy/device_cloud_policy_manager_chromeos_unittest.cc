@@ -202,7 +202,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   int url_fetcher_response_code_;
-  string url_fetcher_response_string_;
+  std::string url_fetcher_response_string_;
   TestingPrefServiceSimple local_state_;
   MockDeviceManagementService device_management_service_;
   MockDeviceManagementService consumer_device_management_service_;

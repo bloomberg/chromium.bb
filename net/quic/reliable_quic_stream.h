@@ -10,6 +10,7 @@
 #include <sys/types.h>
 
 #include <list>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -67,7 +68,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // Called to close the entire connection from this end.
   virtual void CloseConnection(QuicErrorCode error);
   virtual void CloseConnectionWithDetails(QuicErrorCode error,
-                                          const string& details);
+                                          const std::string& details);
 
   // Returns the effective priority for the stream.  This value may change
   // during the life of the stream.
@@ -181,11 +182,11 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   class ProxyAckNotifierDelegate;
 
   struct PendingData {
-    PendingData(string data_in,
+    PendingData(std::string data_in,
                 scoped_refptr<ProxyAckNotifierDelegate> delegate_in);
     ~PendingData();
 
-    string data;
+    std::string data;
     // Delegate that should be notified when the pending data is acked.
     // Can be nullptr.
     scoped_refptr<ProxyAckNotifierDelegate> delegate;

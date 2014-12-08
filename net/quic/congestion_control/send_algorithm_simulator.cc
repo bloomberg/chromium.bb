@@ -14,6 +14,7 @@ using std::list;
 using std::make_pair;
 using std::max;
 using std::min;
+using std::string;
 using std::vector;
 
 namespace net {

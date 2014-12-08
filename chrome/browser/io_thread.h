@@ -180,7 +180,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> enable_spdy_ping_based_connection_checking;
     Optional<net::NextProto> spdy_default_protocol;
     net::NextProtoVector next_protos;
-    Optional<string> trusted_spdy_proxy;
+    Optional<std::string> trusted_spdy_proxy;
     Optional<bool> force_spdy_over_ssl;
     Optional<bool> force_spdy_always;
     std::set<net::HostPortPair> forced_spdy_exclusions;

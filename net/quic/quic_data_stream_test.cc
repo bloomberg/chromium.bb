@@ -18,6 +18,7 @@
 
 using base::StringPiece;
 using std::min;
+using std::string;
 using testing::AnyNumber;
 using testing::InSequence;
 using testing::Return;
