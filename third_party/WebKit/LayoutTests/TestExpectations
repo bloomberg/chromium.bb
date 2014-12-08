@@ -1770,3 +1770,4 @@ crbug.com/439926 [ XP ] virtual/textblob/svg/text/text-viewbox-rescale.html [ Ne
 crbug.com/439926 [ XP ] virtual/textblob/svg/text/text-ws-01-t.svg [ NeedsRebaseline ]
 crbug.com/439926 [ XP ] virtual/textblob/svg/text/text-ws-02-t.svg [ NeedsRebaseline ]
 
+crbug.com/436445 fast/css-grid-layout/flex-and-minmax-content-resolution-rows.html [ Failure ]

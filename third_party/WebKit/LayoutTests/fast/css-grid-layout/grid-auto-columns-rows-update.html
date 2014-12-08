@@ -43,7 +43,7 @@ function updateGridAutoRowsColumns()
 
     updateAndCheck("unconstrainedGrid", { 'rows': 'minmax(20em, 15px)', 'columns': '50px' }, { 'width': '50', 'height': '200' });
     updateAndCheck("unconstrainedGrid", { 'rows': 'minmax(20em, 15px)', 'columns': 'minmax(10%, 100px)' }, { 'width': '100', 'height': '200' });
-    updateAndCheck("unconstrainedGrid", { 'rows': 'minmax(min-content, 15px)', 'columns': 'minmax(10%, 100px)' }, { 'width': '100', 'height': '15' });
+    updateAndCheck("unconstrainedGrid", { 'rows': 'minmax(min-content, 15px)', 'columns': 'minmax(10%, 100px)' }, { 'width': '100', 'height': '20' });
     updateAndCheck("unconstrainedGrid", { 'rows': 'minmax(min-content, 15px)', 'columns': 'minmax(10%, max-content)' }, { 'width': '120', 'height': '15' });
     updateAndCheck("unconstrainedGrid", { 'rows': 'minmax(min-content, 15px)', 'columns': 'minmax(10%, max-content)' }, { 'width': '120', 'height': '15' });
     updateAndCheck("unconstrainedGrid", { 'rows': 'auto', 'columns': 'minmax(10em, max-content)' }, { 'width': '120', 'height': '10' });
@@ -52,7 +52,7 @@ function updateGridAutoRowsColumns()
 
     updateAndCheck("constrainedGridUndefinedHeight", { 'rows': 'minmax(20em, 15px)', 'columns': '50px' }, { 'width': '50', 'height': '200' });
     updateAndCheck("constrainedGridUndefinedHeight", { 'rows': 'minmax(20em, 15px)', 'columns': 'minmax(10%, 100px)' }, { 'width': '1', 'height': '200' });
-    updateAndCheck("constrainedGridUndefinedHeight", { 'rows': 'minmax(min-content, 15px)', 'columns': 'minmax(10%, 100px)' }, { 'width': '1', 'height': '15' });
+    updateAndCheck("constrainedGridUndefinedHeight", { 'rows': 'minmax(min-content, 15px)', 'columns': 'minmax(10%, 100px)' }, { 'width': '1', 'height': '20' });
     updateAndCheck("constrainedGridUndefinedHeight", { 'rows': 'minmax(min-content, 15px)', 'columns': 'minmax(max-content, 100px)' }, { 'width': '120', 'height': '15' });
     updateAndCheck("constrainedGridUndefinedHeight", { 'rows': 'minmax(40em, 15px)', 'columns': 'minmax(max-content, 100px)' }, { 'width': '120', 'height': '400' });
     updateAndCheck("constrainedGridUndefinedHeight", { 'rows': 'minmax(40em, 15px)', 'columns': 'minmax(10%, 100px)' }, { 'width': '1', 'height': '400' });
