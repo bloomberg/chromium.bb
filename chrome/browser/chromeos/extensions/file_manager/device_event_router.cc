@@ -16,7 +16,7 @@ using content::BrowserThread;
 }  // namespace
 
 DeviceEventRouter::DeviceEventRouter()
-    : resume_time_delta_(base::TimeDelta::FromSeconds(5)),
+    : resume_time_delta_(base::TimeDelta::FromSeconds(10)),
       startup_time_delta_(base::TimeDelta::FromSeconds(10)),
       is_starting_up_(false),
       is_resuming_(false),
