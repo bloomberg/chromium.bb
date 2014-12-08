@@ -1568,6 +1568,8 @@ def CheckChangeOnUpload(input_api, output_api):
   results.extend(_CheckValidHostsInDEPS(input_api, output_api))
   results.extend(_CheckJavaStyle(input_api, output_api))
   results.extend(_CheckUmaHistogramChanges(input_api, output_api))
+  results.extend(
+      input_api.canned_checks.CheckGNFormatted(input_api, output_api))
   return results
 
 
