@@ -10,8 +10,6 @@
 #include "remoting/host/audio_capturer.h"
 #if defined(OS_CHROMEOS)
 #include "remoting/host/chromeos/aura_desktop_capturer.h"
-#endif
-#if defined(OS_CHROMEOS) && defined(USE_OZONE)
 #include "remoting/host/chromeos/mouse_cursor_monitor_aura.h"
 #endif
 #include "remoting/host/client_session_control.h"
@@ -48,9 +46,8 @@ scoped_ptr<ScreenControls> BasicDesktopEnvironment::CreateScreenControls() {
 
 scoped_ptr<webrtc::MouseCursorMonitor>
 BasicDesktopEnvironment::CreateMouseCursorMonitor() {
-#if defined(OS_CHROMEOS) && defined(USE_OZONE)
-  return make_scoped_ptr(
-      new MouseCursorMonitorAura(*desktop_capture_options_));
+#if defined(OS_CHROMEOS)
+  return make_scoped_ptr(new MouseCursorMonitorAura());
 #else
   return make_scoped_ptr(webrtc::MouseCursorMonitor::CreateForScreen(
       *desktop_capture_options_, webrtc::kFullDesktopScreenId));

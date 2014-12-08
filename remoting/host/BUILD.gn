@@ -73,8 +73,6 @@ static_library("host") {
       ]
     } else {
       sources -= [
-        "chromeos/mouse_cursor_monitor_aura.cc",
-        "chromeos/mouse_cursor_monitor_aura.h",
         "clipboard_x11.cc",
         "input_injector_chromeos.cc",
         "input_injector_chromeos.h",

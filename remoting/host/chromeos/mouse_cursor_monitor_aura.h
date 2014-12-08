@@ -5,24 +5,29 @@
 #ifndef REMOTING_HOST_CHROMEOS_MOUSE_CURSOR_MONITOR_AURA_H_
 #define REMOTING_HOST_CHROMEOS_MOUSE_CURSOR_MONITOR_AURA_H_
 
-#include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
+#include "ui/base/cursor/cursor.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace remoting {
 
-// A MouseCursorMonitor place holder implementation for Chrome OS with ozone.
-// TODO(kelvinp): Implement this (See crbug.com/431457).
+// Monitors changes in cursor shape and location.  It can be constructed on any
+// thread but all public methods must be called on the capturer thread.
 class MouseCursorMonitorAura : public webrtc::MouseCursorMonitor {
  public:
-  explicit MouseCursorMonitorAura(const webrtc::DesktopCaptureOptions& options);
-  ~MouseCursorMonitorAura() override;
+  MouseCursorMonitorAura();
 
+  // webrtc::MouseCursorMonitor implementation.
   void Init(Callback* callback, Mode mode) override;
   void Capture() override;
 
  private:
+  void NotifyCursorChanged(const ui::Cursor& cursor);
+
   Callback* callback_;
   Mode mode_;
+  ui::Cursor last_cursor_;
+  gfx::Point last_mouse_location_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseCursorMonitorAura);
 };

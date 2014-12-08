@@ -121,8 +121,6 @@
                     'host/input_injector_chromeos.cc',
                     'host/input_injector_chromeos.h',
                     'host/local_input_monitor_chromeos.cc',
-                    'host/chromeos/mouse_cursor_monitor_aura.cc',
-                    'host/chromeos/mouse_cursor_monitor_aura.h',
                   ],
                 }],
               ],

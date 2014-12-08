@@ -7,8 +7,7 @@
 #include "base/bind.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "remoting/host/chromeos/skia_bitmap_desktop_frame.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 
@@ -17,54 +16,6 @@
 #endif
 
 namespace remoting {
-
-namespace {
-
-// DesktopFrame implementation used by screen capture on ChromeOS.
-// Frame data is stored in a SkBitmap.
-class SkiaBitmapDesktopFrame : public webrtc::DesktopFrame {
- public:
-  static SkiaBitmapDesktopFrame* Create(scoped_ptr<SkBitmap> bitmap);
-  virtual ~SkiaBitmapDesktopFrame();
-
- private:
-  SkiaBitmapDesktopFrame(webrtc::DesktopSize size,
-                         int stride,
-                         uint8_t* data,
-                         scoped_ptr<SkBitmap> bitmap);
-
-  scoped_ptr<SkBitmap> bitmap_;
-
-  DISALLOW_COPY_AND_ASSIGN(SkiaBitmapDesktopFrame);
-};
-
-// static
-SkiaBitmapDesktopFrame* SkiaBitmapDesktopFrame::Create(
-    scoped_ptr<SkBitmap> bitmap) {
-
-  webrtc::DesktopSize size(bitmap->width(), bitmap->height());
-  DCHECK_EQ(kBGRA_8888_SkColorType, bitmap->info().colorType())
-      << "DesktopFrame objects always hold RGBA data.";
-
-  uint8_t* bitmap_data = reinterpret_cast<uint8_t*>(bitmap->getPixels());
-
-  SkiaBitmapDesktopFrame* result = new SkiaBitmapDesktopFrame(
-      size, bitmap->rowBytes(), bitmap_data, bitmap.Pass());
-
-  return result;
-}
-
-SkiaBitmapDesktopFrame::SkiaBitmapDesktopFrame(webrtc::DesktopSize size,
-                                               int stride,
-                                               uint8_t* data,
-                                               scoped_ptr<SkBitmap> bitmap)
-    : DesktopFrame(size, stride, data, NULL), bitmap_(bitmap.Pass()) {
-}
-
-SkiaBitmapDesktopFrame::~SkiaBitmapDesktopFrame() {
-}
-
-}  // namespace
 
 AuraDesktopCapturer::AuraDesktopCapturer()
     : callback_(NULL), desktop_window_(NULL), weak_factory_(this) {
