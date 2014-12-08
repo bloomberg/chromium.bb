@@ -104,10 +104,17 @@ html[dir=rtl] .pod .indicators {
   display: initial;
 }
 
-.pod.supervised-user .supervised-indicator {
+.pod.legacy-supervised .supervised-indicator {
   background-image: -webkit-image-set(
       url(chrome://theme/IDR_ICON_PROFILES_SUPERVISED) 1x,
       url(chrome://theme/IDR_ICON_PROFILES_SUPERVISED@2x) 2x);
+  display: initial;
+}
+
+.pod.child .child-indicator {
+  background-image: -webkit-image-set(
+      url(chrome://theme/IDR_ICON_PROFILES_CHILD) 1x,
+      url(chrome://theme/IDR_ICON_PROFILES_CHILD@2x) 2x);
   display: initial;
 }
 

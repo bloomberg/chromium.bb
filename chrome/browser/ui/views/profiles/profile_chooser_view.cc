@@ -881,7 +881,7 @@ bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
         active_item.profile_path);
     DCHECK(profile);
 
-    if (profile->IsSupervised())
+    if (profile->IsLegacySupervised())
       return true;
 
     profiles::UpdateProfileName(profile, new_profile_name);
@@ -1126,8 +1126,10 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   if (browser_->profile()->IsSupervised()) {
     views::ImageView* supervised_icon = new views::ImageView();
-    supervised_icon->SetImage(
-        rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_SUPERVISED));
+    int image_id = browser_->profile()->IsChild()
+        ? IDR_ICON_PROFILES_MENU_CHILD
+        : IDR_ICON_PROFILES_MENU_SUPERVISED;
+    supervised_icon->SetImage(rb->GetImageSkiaNamed(image_id));
     gfx::Size preferred_size = supervised_icon->GetPreferredSize();
     gfx::Rect parent_bounds = current_profile_photo_->bounds();
     supervised_icon->SetBounds(
@@ -1142,7 +1144,8 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   layout->AddView(profile_icon_container);
 
   // Profile name, centered.
-  bool editing_allowed = !is_guest && !browser_->profile()->IsSupervised();
+  bool editing_allowed = !is_guest &&
+                         !browser_->profile()->IsLegacySupervised();
   current_profile_name_ = new EditableProfileName(
       this,
       profiles::GetAvatarNameForProfile(browser_->profile()->GetPath()),

@@ -89,7 +89,7 @@ base::string16 GetAvatarButtonTextForProfile(Profile* profile) {
   name = gfx::TruncateString(name,
                              kMaxCharactersToDisplay,
                              gfx::CHARACTER_BREAK);
-  if (profile->IsSupervised()) {
+  if (profile->IsLegacySupervised()) {
     name = l10n_util::GetStringFUTF16(IDS_SUPERVISED_USER_NEW_AVATAR_LABEL,
                                       name);
   }

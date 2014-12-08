@@ -7836,6 +7836,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SUPERVISED_USER_INFO" desc="Text which explains that a supervised user is managed by a custodian.">
         Usage and history can be reviewed by the manager (<ph name="CUSTODIAN_EMAIL">$1<ex>Jane.Doe@gmail.com</ex></ph>) on chrome.com.
       </message>
+      <message name="IDS_CHILD_INFO_ONE_CUSTODIAN" desc="Text which explains that a child user is managed by a single parent.">
+        This is an account for kids managed by <ph name="CUSTODIAN_EMAIL">$1<ex>Jane.Doe@gmail.com</ex></ph>.
+      </message>
+      <message name="IDS_CHILD_INFO_TWO_CUSTODIANS" desc="Text which explains that a child user is managed by two parents.">
+        This is an account for kids managed by <ph name="CUSTODIAN_EMAIL">$1<ex>John.Doe@gmail.com</ex></ph> and <ph name="SECOND_CUSTODIAN_EMAIL">$2<ex>Jane.Doe@gmail.com</ex></ph>.
+      </message>
       <message name="IDS_SUPERVISED_USER_AVATAR_LABEL" desc="A label for the supervised user which is used in the avatar menu and as a label in the titlebar.">
         Supervised user
       </message>
@@ -13717,6 +13723,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
         <message name="IDS_PROFILES_LIST_SUPERVISED_USER_LABEL" desc="Text to display in the multi-profiles list next to the profile name when this profile is supervised.">
           (Supervised)
+        </message>
+        <message name="IDS_PROFILES_LIST_CHILD_LABEL" desc="Text to display in the multi-profiles list next to the profile name when this profile is associated with a child account.">
+          (Account for kids)
         </message>
         <message name="IDS_PROFILES_SINGLE_USER_MESSAGE" desc="Text to display in the multi-profiles section when there is only one user">
           You are currently the only <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> user.

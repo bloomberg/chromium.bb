@@ -231,6 +231,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT },
     { "changeHomePage", IDS_OPTIONS_CHANGE_HOME_PAGE },
     { "certificatesManageButton", IDS_OPTIONS_CERTIFICATES_MANAGE_BUTTON },
+    { "childLabel", IDS_PROFILES_LIST_CHILD_LABEL },
     { "customizeSync", IDS_OPTIONS_CUSTOMIZE_SYNC_BUTTON_LABEL },
     { "defaultFontSizeLabel", IDS_OPTIONS_DEFAULT_FONT_SIZE_LABEL },
     { "defaultSearchManageEngines", IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES },
@@ -1332,6 +1333,7 @@ scoped_ptr<base::ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
                               profile_path == current_profile_path);
     profile_value->SetBoolean("isSupervised",
                               cache.ProfileIsSupervisedAtIndex(i));
+    profile_value->SetBoolean("isChild", cache.ProfileIsChildAtIndex(i));
 
     bool is_gaia_picture =
         cache.IsUsingGAIAPictureOfProfileAtIndex(i) &&

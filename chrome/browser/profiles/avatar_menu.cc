@@ -208,7 +208,17 @@ base::string16 AvatarMenu::GetSupervisedUserInformation() const {
         SupervisedUserServiceFactory::GetForProfile(browser_->profile());
     base::string16 custodian =
         base::UTF8ToUTF16(service->GetCustodianEmailAddress());
-    return l10n_util::GetStringFUTF16(IDS_SUPERVISED_USER_INFO, custodian);
+    if (browser_->profile()->IsLegacySupervised())
+      return l10n_util::GetStringFUTF16(IDS_SUPERVISED_USER_INFO, custodian);
+    base::string16 second_custodian =
+        base::UTF8ToUTF16(service->GetSecondCustodianEmailAddress());
+    if (second_custodian.empty()) {
+      return l10n_util::GetStringFUTF16(IDS_CHILD_INFO_ONE_CUSTODIAN,
+                                        custodian);
+    } else {
+      return l10n_util::GetStringFUTF16(IDS_CHILD_INFO_TWO_CUSTODIANS,
+                                        custodian, second_custodian);
+    }
 #endif
   }
   return base::string16();

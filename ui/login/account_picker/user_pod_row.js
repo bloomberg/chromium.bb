@@ -1777,15 +1777,19 @@ cr.define('login', function() {
 
       var isLockedUser = this.user.needsSignin;
       var isSupervisedUser = this.user.supervisedUser;
+      var isChildUser = this.user.childUser;
+      var isLegacySupervisedUser = isSupervisedUser && !isChildUser;
       this.classList.toggle('locked', isLockedUser);
-      this.classList.toggle('supervised-user', isSupervisedUser);
+      this.classList.toggle('legacy-supervised', isLegacySupervisedUser);
+      this.classList.toggle('child', isChildUser);
 
       if (this.isAuthTypeUserClick)
         this.passwordLabelElement.textContent = this.authValue;
 
-      this.actionBoxRemoveUserWarningTextElement.hidden = isSupervisedUser;
+      this.actionBoxRemoveUserWarningTextElement.hidden =
+          isLegacySupervisedUser;
       this.actionBoxRemoveSupervisedUserWarningTextElement.hidden =
-          !isSupervisedUser;
+          !isLegacySupervisedUser;
 
       this.passwordElement.setAttribute('aria-label', loadTimeData.getStringF(
         'passwordFieldAccessibleName', this.user_.emailAddress));
