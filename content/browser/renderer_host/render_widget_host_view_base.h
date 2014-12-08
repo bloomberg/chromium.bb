@@ -336,12 +336,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
       const NativeWebKeyboardEvent& event) = 0;
 #endif
 
-#if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_ANDROID)
   // Updates the range of the marked text in an IME composition.
   virtual void ImeCompositionRangeChanged(
       const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) = 0;
-#endif
 
 #if defined(OS_WIN)
   virtual void SetParentNativeViewAccessible(

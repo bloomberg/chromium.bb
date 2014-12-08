@@ -475,10 +475,8 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_WindowlessPluginDummyWindowDestroyed,
                         OnWindowlessPluginDummyWindowDestroyed)
 #endif
-#if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(InputHostMsg_ImeCompositionRangeChanged,
                         OnImeCompositionRangeChanged)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -1627,14 +1625,12 @@ void RenderWidgetHostImpl::OnTextInputTypeChanged(
     view_->TextInputTypeChanged(type, input_mode, can_compose_inline, flags);
 }
 
-#if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_ANDROID)
 void RenderWidgetHostImpl::OnImeCompositionRangeChanged(
     const gfx::Range& range,
     const std::vector<gfx::Rect>& character_bounds) {
   if (view_)
     view_->ImeCompositionRangeChanged(range, character_bounds);
 }
-#endif
 
 void RenderWidgetHostImpl::OnImeCancelComposition() {
   if (view_)

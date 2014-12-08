@@ -604,11 +604,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                               bool can_compose_inline,
                               int flags);
 
-#if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_ANDROID)
   void OnImeCompositionRangeChanged(
       const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds);
-#endif
   void OnImeCancelComposition();
   void OnLockMouse(bool user_gesture,
                    bool last_unlocked_by_target,

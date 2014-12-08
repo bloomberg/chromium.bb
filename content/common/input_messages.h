@@ -254,15 +254,11 @@ IPC_MESSAGE_ROUTED0(InputHostMsg_SelectRange_ACK)
 // Required for cancelling an ongoing input method composition.
 IPC_MESSAGE_ROUTED0(InputHostMsg_ImeCancelComposition)
 
-#if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_ANDROID)
-// On Mac and Aura IME can request composition character bounds
-// synchronously (see crbug.com/120597). This IPC message sends the character
-// bounds after every composition change to always have correct bound info.
-// This IPC message is also used on Android 5.0 and above.
+// This IPC message sends the character bounds after every composition change
+// to always have correct bound info.
 IPC_MESSAGE_ROUTED2(InputHostMsg_ImeCompositionRangeChanged,
                     gfx::Range /* composition range */,
                     std::vector<gfx::Rect> /* character bounds */)
-#endif
 
 // Adding a new message? Stick to the sort order above: first platform
 // independent InputMsg, then ifdefs for platform specific InputMsg, then

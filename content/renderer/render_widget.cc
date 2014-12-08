@@ -1614,9 +1614,7 @@ void RenderWidget::OnImeSetComposition(
     // sure we are in a consistent state.
     Send(new InputHostMsg_ImeCancelComposition(routing_id()));
   }
-#if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_ANDROID)
   UpdateCompositionInfo(true);
-#endif
 }
 
 void RenderWidget::OnImeConfirmComposition(const base::string16& text,
@@ -1633,9 +1631,7 @@ void RenderWidget::OnImeConfirmComposition(const base::string16& text,
   else
     webwidget_->confirmComposition(WebWidget::DoNotKeepSelection);
   handling_input_event_ = false;
-#if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_ANDROID)
   UpdateCompositionInfo(true);
-#endif
 }
 
 void RenderWidget::OnRepaint(gfx::Size size_to_paint) {
@@ -1965,9 +1961,7 @@ void RenderWidget::UpdateSelectionBounds() {
     }
   }
 
-#if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_ANDROID)
   UpdateCompositionInfo(false);
-#endif
 }
 
 // Check blink::WebTextInputType and ui::TextInputType is kept in sync.
@@ -2020,7 +2014,6 @@ ui::TextInputType RenderWidget::GetTextInputType() {
   return ui::TEXT_INPUT_TYPE_NONE;
 }
 
-#if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_ANDROID)
 void RenderWidget::UpdateCompositionInfo(bool should_update_range) {
 #if defined(OS_ANDROID)
   // Sending composition info makes sense only in Lollipop (API level 21)
@@ -2078,7 +2071,6 @@ bool RenderWidget::ShouldUpdateCompositionInfo(
   }
   return false;
 }
-#endif
 
 #if defined(OS_ANDROID)
 void RenderWidget::DidChangeBodyBackgroundColor(SkColor bg_color) {
@@ -2133,9 +2125,7 @@ void RenderWidget::resetInputMethod() {
       Send(new InputHostMsg_ImeCancelComposition(routing_id()));
   }
 
-#if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_ANDROID)
   UpdateCompositionInfo(true);
-#endif
 }
 
 void RenderWidget::didHandleGestureEvent(

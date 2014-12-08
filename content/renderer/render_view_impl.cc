@@ -3740,7 +3740,6 @@ void RenderViewImpl::GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) {
   RenderWidget::GetSelectionBounds(start, end);
 }
 
-#if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_ANDROID)
 void RenderViewImpl::GetCompositionCharacterBounds(
     std::vector<gfx::Rect>* bounds) {
   DCHECK(bounds);
@@ -3785,7 +3784,6 @@ void RenderViewImpl::GetCompositionRange(gfx::Range* range) {
 #endif
   RenderWidget::GetCompositionRange(range);
 }
-#endif
 
 bool RenderViewImpl::CanComposeInline() {
 #if defined(ENABLE_PLUGINS)

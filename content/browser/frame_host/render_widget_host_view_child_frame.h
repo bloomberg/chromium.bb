@@ -70,11 +70,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
                             bool can_compose_inline,
                             int flags) override;
   void ImeCancelComposition() override;
-#if defined(OS_MACOSX) || defined(USE_AURA) || defined(OS_ANDROID)
   void ImeCompositionRangeChanged(
       const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) override;
-#endif
   void RenderProcessGone(base::TerminationStatus status,
                          int error_code) override;
   void Destroy() override;
