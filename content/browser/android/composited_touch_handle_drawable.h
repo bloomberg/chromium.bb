@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_ANDROID_COMPOSITED_TOUCH_HANDLE_DRAWABLE_H_
 #define CONTENT_BROWSER_ANDROID_COMPOSITED_TOUCH_HANDLE_DRAWABLE_H_
 
-#include "ui/touch_selection/touch_handle.h"
+#include "content/browser/renderer_host/input/touch_handle.h"
 
 #include "base/android/jni_android.h"
 #include "cc/layers/ui_resource_layer.h"
@@ -13,16 +13,16 @@
 namespace content {
 
 // Touch handle drawable implementation backed by a cc layer.
-class CompositedTouchHandleDrawable : public ui::TouchHandleDrawable {
+class CompositedTouchHandleDrawable : public TouchHandleDrawable {
  public:
   CompositedTouchHandleDrawable(cc::Layer* root_layer,
                                 float dpi_scale,
                                 jobject context);
   virtual ~CompositedTouchHandleDrawable();
 
-  // ui::TouchHandleDrawable implementation.
+  // TouchHandleDrawable implementation.
   virtual void SetEnabled(bool enabled) override;
-  virtual void SetOrientation(ui::TouchHandleOrientation orientation) override;
+  virtual void SetOrientation(TouchHandleOrientation orientation) override;
   virtual void SetAlpha(float alpha) override;
   virtual void SetFocus(const gfx::PointF& position) override;
   virtual bool IntersectsWith(const gfx::RectF& rect) const override;
@@ -34,7 +34,7 @@ class CompositedTouchHandleDrawable : public ui::TouchHandleDrawable {
   gfx::RectF BoundingRect() const;
 
   const float dpi_scale_;
-  ui::TouchHandleOrientation orientation_;
+  TouchHandleOrientation orientation_;
   gfx::PointF focal_position_;
   gfx::Vector2dF focal_offset_from_origin_;
   scoped_refptr<cc::UIResourceLayer> layer_;

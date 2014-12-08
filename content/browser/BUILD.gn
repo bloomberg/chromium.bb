@@ -113,7 +113,6 @@ source_set("browser") {
       "//third_party/libyuv",
       "//ui/resources",
       "//ui/surface",
-      "//ui/touch_selection",
     ]
   }
 

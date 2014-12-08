@@ -2,23 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/touch_selection/touch_selection_controller.h"
+#include "content/browser/renderer_host/input/touch_selection_controller.h"
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
-namespace ui {
+namespace content {
 namespace {
 
-TouchHandleOrientation ToTouchHandleOrientation(SelectionBound::Type type) {
+TouchHandleOrientation ToTouchHandleOrientation(cc::SelectionBoundType type) {
   switch (type) {
-    case SelectionBound::LEFT:
+    case cc::SELECTION_BOUND_LEFT:
       return TOUCH_HANDLE_LEFT;
-    case SelectionBound::RIGHT:
+    case cc::SELECTION_BOUND_RIGHT:
       return TOUCH_HANDLE_RIGHT;
-    case SelectionBound::CENTER:
+    case cc::SELECTION_BOUND_CENTER:
       return TOUCH_HANDLE_CENTER;
-    case SelectionBound::EMPTY:
+    case cc::SELECTION_BOUND_EMPTY:
       return TOUCH_HANDLE_ORIENTATION_UNDEFINED;
   }
   NOTREACHED() << "Invalid selection bound type: " << type;
@@ -52,15 +53,15 @@ TouchSelectionController::~TouchSelectionController() {
 }
 
 void TouchSelectionController::OnSelectionBoundsChanged(
-    const SelectionBound& start,
-    const SelectionBound& end) {
+    const cc::ViewportSelectionBound& start,
+    const cc::ViewportSelectionBound& end) {
   if (start == start_ && end_ == end)
     return;
 
   start_ = start;
   end_ = end;
-  start_orientation_ = ToTouchHandleOrientation(start_.type());
-  end_orientation_ = ToTouchHandleOrientation(end_.type());
+  start_orientation_ = ToTouchHandleOrientation(start_.type);
+  end_orientation_ = ToTouchHandleOrientation(end_.type);
 
   if (!activate_selection_automatically_ &&
       !activate_insertion_automatically_) {
@@ -109,7 +110,8 @@ void TouchSelectionController::OnSelectionBoundsChanged(
   HideAndDisallowShowingAutomatically();
 }
 
-bool TouchSelectionController::WillHandleTouchEvent(const MotionEvent& event) {
+bool TouchSelectionController::WillHandleTouchEvent(
+    const ui::MotionEvent& event) {
   if (is_insertion_active_) {
     DCHECK(insertion_handle_);
     return insertion_handle_->WillHandleTouchEvent(event);
@@ -393,34 +395,34 @@ void TouchSelectionController::DeactivateSelection() {
 void TouchSelectionController::ResetCachedValuesIfInactive() {
   if (is_selection_active_ || is_insertion_active_)
     return;
-  start_ = SelectionBound();
-  end_ = SelectionBound();
+  start_ = cc::ViewportSelectionBound();
+  end_ = cc::ViewportSelectionBound();
   start_orientation_ = TOUCH_HANDLE_ORIENTATION_UNDEFINED;
   end_orientation_ = TOUCH_HANDLE_ORIENTATION_UNDEFINED;
 }
 
 const gfx::PointF& TouchSelectionController::GetStartPosition() const {
-  return start_.edge_bottom();
+  return start_.edge_bottom;
 }
 
 const gfx::PointF& TouchSelectionController::GetEndPosition() const {
-  return end_.edge_bottom();
+  return end_.edge_bottom;
 }
 
 gfx::Vector2dF TouchSelectionController::GetStartLineOffset() const {
-  return gfx::ScaleVector2d(start_.edge_top() - start_.edge_bottom(), 0.5f);
+  return gfx::ScaleVector2d(start_.edge_top - start_.edge_bottom, 0.5f);
 }
 
 gfx::Vector2dF TouchSelectionController::GetEndLineOffset() const {
-  return gfx::ScaleVector2d(end_.edge_top() - end_.edge_bottom(), 0.5f);
+  return gfx::ScaleVector2d(end_.edge_top - end_.edge_bottom, 0.5f);
 }
 
 bool TouchSelectionController::GetStartVisible() const {
-  return start_.visible() && !temporarily_hidden_;
+  return start_.visible && !temporarily_hidden_;
 }
 
 bool TouchSelectionController::GetEndVisible() const {
-  return end_.visible() && !temporarily_hidden_;
+  return end_.visible && !temporarily_hidden_;
 }
 
 TouchHandle::AnimationStyle TouchSelectionController::GetAnimationStyle(
@@ -430,4 +432,4 @@ TouchHandle::AnimationStyle TouchSelectionController::GetAnimationStyle(
              : TouchHandle::ANIMATION_NONE;
 }
 
-}  // namespace ui
+}  // namespace content

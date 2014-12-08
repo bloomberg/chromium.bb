@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/touch_selection/touch_handle.h"
+#include "content/browser/renderer_host/input/touch_handle.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/motion_event_test_utils.h"
@@ -10,7 +10,7 @@
 
 using ui::test::MockMotionEvent;
 
-namespace ui {
+namespace content {
 namespace {
 
 const int kDefaultTapTimeoutMs = 200;
@@ -489,4 +489,4 @@ TEST_F(TouchHandleTest, Tap) {
   EXPECT_FALSE(GetAndResetHandleTapped());
 }
 
-}  // namespace ui
+}  // namespace content

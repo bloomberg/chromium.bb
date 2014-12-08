@@ -45,6 +45,7 @@
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
+#include "content/browser/renderer_host/input/touch_selection_controller.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_android.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -80,7 +81,6 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
-#include "ui/touch_selection/touch_selection_controller.h"
 
 namespace content {
 
@@ -257,14 +257,14 @@ ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& event) {
   return latency_info;
 }
 
-scoped_ptr<ui::TouchSelectionController> CreateSelectionController(
-    ui::TouchSelectionControllerClient* client,
+scoped_ptr<TouchSelectionController> CreateSelectionController(
+    TouchSelectionControllerClient* client,
     ContentViewCore* content_view_core) {
   DCHECK(client);
   DCHECK(content_view_core);
   int tap_timeout_ms = gfx::ViewConfiguration::GetTapTimeoutInMs();
   int touch_slop_pixels = gfx::ViewConfiguration::GetTouchSlopInPixels();
-  return make_scoped_ptr(new ui::TouchSelectionController(
+  return make_scoped_ptr(new TouchSelectionController(
       client,
       base::TimeDelta::FromMilliseconds(tap_timeout_ms),
       touch_slop_pixels / content_view_core->GetDpiScale()));
@@ -1245,25 +1245,24 @@ void RenderWidgetHostViewAndroid::SelectBetweenCoordinates(
 }
 
 void RenderWidgetHostViewAndroid::OnSelectionEvent(
-    ui::SelectionEventType event,
+    SelectionEventType event,
     const gfx::PointF& position) {
   DCHECK(content_view_core_);
   // Showing the selection action bar can alter the current View coordinates in
   // such a way that the current MotionEvent stream is suddenly shifted in
   // space. Avoid the associated scroll jump by pre-emptively cancelling gesture
   // detection; scrolling after the selection is activated is unnecessary.
-  if (event == ui::SelectionEventType::SELECTION_SHOWN)
+  if (event == SelectionEventType::SELECTION_SHOWN)
     ResetGestureDetection();
   content_view_core_->OnSelectionEvent(event, position);
 }
 
-scoped_ptr<ui::TouchHandleDrawable>
-RenderWidgetHostViewAndroid::CreateDrawable() {
+scoped_ptr<TouchHandleDrawable> RenderWidgetHostViewAndroid::CreateDrawable() {
   DCHECK(content_view_core_);
   if (!using_browser_compositor_)
     return content_view_core_->CreatePopupTouchHandleDrawable();
 
-  return scoped_ptr<ui::TouchHandleDrawable>(new CompositedTouchHandleDrawable(
+  return scoped_ptr<TouchHandleDrawable>(new CompositedTouchHandleDrawable(
       content_view_core_->GetLayer().get(),
       content_view_core_->GetDpiScale(),
       // Use the activity context (instead of the application context) to ensure
@@ -1317,8 +1316,7 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
 
   if (selection_controller_) {
     selection_controller_->OnSelectionBoundsChanged(
-        ui::SelectionBound(frame_metadata.selection_start),
-        ui::SelectionBound(frame_metadata.selection_end));
+        frame_metadata.selection_start, frame_metadata.selection_end);
   }
 
   // All offsets and sizes are in CSS pixels.
@@ -1629,10 +1627,11 @@ void RenderWidgetHostViewAndroid::OnShowingPastePopup(
   // of the region have been updated, explicitly set the properties now.
   // TODO(jdduke): Remove this workaround when auxiliary paste popup
   // notifications are no longer required, crbug.com/398170.
-  ui::SelectionBound insertion_bound;
-  insertion_bound.set_type(ui::SelectionBound::CENTER);
-  insertion_bound.set_visible(true);
-  insertion_bound.SetEdge(point, point);
+  cc::ViewportSelectionBound insertion_bound;
+  insertion_bound.type = cc::SELECTION_BOUND_CENTER;
+  insertion_bound.visible = true;
+  insertion_bound.edge_top = point;
+  insertion_bound.edge_bottom = point;
   selection_controller_->HideAndDisallowShowingAutomatically();
   selection_controller_->OnSelectionEditable(true);
   selection_controller_->OnSelectionEmpty(true);

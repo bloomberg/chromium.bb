@@ -133,7 +133,6 @@ group("root") {
     "//ui/snapshot",
     "//ui/strings",
     "//ui/surface",
-    "//ui/touch_selection",
     "//ui/views",
     "//ui/views/controls/webview",
     "//ui/web_dialogs",
@@ -295,12 +294,6 @@ group("root") {
       "//ui/views",
       "//ui/views/controls/webview",
       "//ui/web_dialogs",
-    ]
-  }
-
-  if (is_mac || is_ios) {
-    deps -= [
-      "//ui/touch_selection",
     ]
   }
 

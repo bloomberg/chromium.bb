@@ -36,11 +36,6 @@
         '../url/url.gyp:*',
       ],
       'conditions': [
-        ['OS!="ios" and OS!="mac"', {
-          'dependencies': [
-            '../ui/touch_selection/ui_touch_selection.gyp:*',
-          ],
-        }],
         ['OS=="ios"', {
           'dependencies': [
             '../ios/ios.gyp:*',
@@ -317,11 +312,6 @@
         '../url/url.gyp:url_unittests',
       ],
       'conditions': [
-        ['OS!="ios" and OS!="mac"', {
-          'dependencies': [
-            '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
-          ],
-        }],
         ['OS!="ios" and OS!="android"', {
           'dependencies': [
             '../cc/blink/cc_blink_tests.gyp:cc_blink_unittests',
@@ -844,7 +834,6 @@
             '../tools/android/findbugs_plugin/findbugs_plugin.gyp:findbugs_plugin_test',
             '../ui/base/ui_base_tests.gyp:ui_base_unittests',
             '../ui/events/events.gyp:events_unittests',
-            '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
             # Unit test bundles packaged as an apk.
             '../android_webview/android_webview.gyp:android_webview_test_apk',
             '../android_webview/android_webview.gyp:android_webview_unittests_apk',
@@ -873,7 +862,6 @@
             '../ui/base/ui_base_tests.gyp:ui_base_unittests_apk',
             '../ui/events/events.gyp:events_unittests_apk',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests_apk',
-            '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests_apk',
           ],
           'conditions': [
             ['enable_webrtc==1 and "<(libpeer_target_type)"=="static_library"', {
@@ -1087,7 +1075,6 @@
             '../ui/base/ui_base_tests.gyp:ui_base_unittests',
             '../ui/events/events.gyp:events_unittests',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests',
-            '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
             '../ui/views/views.gyp:views_unittests',
             '../url/url.gyp:url_unittests',
           ],
@@ -1192,7 +1179,6 @@
             '../ui/events/events.gyp:events_unittests',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests',
             '../ui/keyboard/keyboard.gyp:keyboard_unittests',
-            '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
             '../url/url.gyp:url_unittests',
           ],
         },
@@ -1233,7 +1219,6 @@
                 '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
                 '../ui/base/ui_base_tests.gyp:ui_base_unittests',
                 '../ui/gfx/gfx_tests.gyp:gfx_unittests',
-                '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
                 '../ui/views/views.gyp:views_unittests',
                 '../url/url.gyp:url_unittests',
               ],
@@ -1282,7 +1267,6 @@
             '../ui/keyboard/keyboard.gyp:*',
             '../ui/message_center/message_center.gyp:*',
             '../ui/snapshot/snapshot.gyp:snapshot_unittests',
-            '../ui/touch_selection/ui_touch_selection.gyp:ui_touch_selection_unittests',
             '../ui/views/examples/examples.gyp:views_examples_with_content_exe',
             '../ui/views/views.gyp:views',
             '../ui/views/views.gyp:views_unittests',

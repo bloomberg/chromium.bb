@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_TOUCH_SELECTION_TOUCH_HANDLE_H_
-#define UI_TOUCH_SELECTION_TOUCH_HANDLE_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_HANDLE_H_
+#define CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_HANDLE_H_
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
-#include "ui/touch_selection/ui_touch_selection_export.h"
 
-namespace ui {
+namespace content {
 
 class TouchHandle;
 
@@ -26,7 +26,7 @@ enum TouchHandleOrientation {
 };
 
 // Interface through which |TouchHandle| delegates rendering-specific duties.
-class UI_TOUCH_SELECTION_EXPORT TouchHandleDrawable {
+class CONTENT_EXPORT TouchHandleDrawable {
  public:
   virtual ~TouchHandleDrawable() {}
   virtual void SetEnabled(bool enabled) = 0;
@@ -38,7 +38,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandleDrawable {
 
 // Interface through which |TouchHandle| communicates handle manipulation and
 // requests concrete drawable instances.
-class UI_TOUCH_SELECTION_EXPORT TouchHandleClient {
+class CONTENT_EXPORT TouchHandleClient {
  public:
   virtual ~TouchHandleClient() {}
   virtual void OnHandleDragBegin(const TouchHandle& handle) = 0;
@@ -54,7 +54,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandleClient {
 
 // Responsible for displaying a selection or insertion handle for text
 // interaction.
-class UI_TOUCH_SELECTION_EXPORT TouchHandle {
+class CONTENT_EXPORT TouchHandle {
  public:
   // The drawable will be enabled but invisible until otherwise specified.
   TouchHandle(TouchHandleClient* client, TouchHandleOrientation orientation);
@@ -84,7 +84,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandle {
 
   // Allows touch-dragging of the handle. Returns true if the event was
   // consumed, in which case the caller should cease further handling.
-  bool WillHandleTouchEvent(const MotionEvent& event);
+  bool WillHandleTouchEvent(const ui::MotionEvent& event);
 
   // Ticks an active animation, as requested to the client by |SetNeedsAnimate|.
   // Returns true if an animation is active and requires further ticking.
@@ -129,6 +129,6 @@ class UI_TOUCH_SELECTION_EXPORT TouchHandle {
   DISALLOW_COPY_AND_ASSIGN(TouchHandle);
 };
 
-}  // namespace ui
+}  // namespace content
 
-#endif  // UI_TOUCH_SELECTION_TOUCH_HANDLE_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_HANDLE_H_

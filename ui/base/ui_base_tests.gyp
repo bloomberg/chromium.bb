@@ -78,7 +78,7 @@
         'test/test_clipboard_unittest.cc',
         'test/data/resource.h',
         'text/bytes_formatting_unittest.cc',
-        'touch/selection_bound_unittest.cc',
+        'touch/touch_editing_controller_unittest.cc',
         'view_prop_unittest.cc',
         'webui/web_ui_util_unittest.cc',
         'x/selection_requestor_unittest.cc',
@@ -142,7 +142,7 @@
             '../../testing/android/native_test.gyp:native_test_native_code',
           ],
           'sources!': [
-            'touch/selection_bound_unittest.cc',
+            'touch/touch_editing_controller_unittest.cc',
           ],
         }],
         ['use_pango == 1', {

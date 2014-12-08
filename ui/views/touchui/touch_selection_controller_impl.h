@@ -7,7 +7,6 @@
 
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/touch/selection_bound.h"
 #include "ui/base/touch/touch_editing_controller.h"
 #include "ui/gfx/point.h"
 #include "ui/views/touchui/touch_editing_menu.h"

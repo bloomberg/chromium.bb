@@ -12,7 +12,6 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_utils.h"
-#include "ui/base/touch/selection_bound.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event.h"
@@ -1111,8 +1110,10 @@ void Textfield::GetSelectionEndPoints(ui::SelectionBound* anchor,
   gfx::Rect r1 = render_text->GetCursorBounds(start_sel, true);
   gfx::Rect r2 = render_text->GetCursorBounds(sel, true);
 
-  anchor->SetEdge(r1.origin(), r1.bottom_left());
-  focus->SetEdge(r2.origin(), r2.bottom_left());
+  anchor->edge_top = r1.origin();
+  anchor->edge_bottom = r1.bottom_left();
+  focus->edge_top = r2.origin();
+  focus->edge_bottom = r2.bottom_left();
 
   // Determine the SelectionBound's type for focus and anchor.
   // TODO(mfomitchev): Ideally we should have different logical directions for
@@ -1122,15 +1123,14 @@ void Textfield::GetSelectionEndPoints(ui::SelectionBound* anchor,
   size_t focus_position_index = sel.selection().end();
 
   if (anchor_position_index == focus_position_index) {
-    anchor->set_type(ui::SelectionBound::CENTER);
-    focus->set_type(ui::SelectionBound::CENTER);
+    anchor->type = focus->type = ui::SelectionBound::CENTER;
   } else if ((ltr && anchor_position_index < focus_position_index) ||
              (!ltr && anchor_position_index > focus_position_index)) {
-    anchor->set_type(ui::SelectionBound::LEFT);
-    focus->set_type(ui::SelectionBound::RIGHT);
+    anchor->type = ui::SelectionBound::LEFT;
+    focus->type = ui::SelectionBound::RIGHT;
   } else {
-    anchor->set_type(ui::SelectionBound::RIGHT);
-    focus->set_type(ui::SelectionBound::LEFT);
+    anchor->type = ui::SelectionBound::RIGHT;
+    focus->type = ui::SelectionBound::LEFT;
   }
 }
 

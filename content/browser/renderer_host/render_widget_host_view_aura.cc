@@ -929,14 +929,13 @@ gfx::Size RenderWidgetHostViewAura::GetRequestedRendererSize() const {
 void RenderWidgetHostViewAura::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
   ui::SelectionBound anchor_bound, focus_bound;
-  anchor_bound.SetEdge(params.anchor_rect.origin(),
-                       params.anchor_rect.bottom_left());
-  focus_bound.SetEdge(params.focus_rect.origin(),
-                      params.focus_rect.bottom_left());
+  anchor_bound.edge_top = params.anchor_rect.origin();
+  anchor_bound.edge_bottom = params.anchor_rect.bottom_left();
+  focus_bound.edge_top = params.focus_rect.origin();
+  focus_bound.edge_bottom = params.focus_rect.bottom_left();
 
   if (params.anchor_rect == params.focus_rect) {
-    anchor_bound.set_type(ui::SelectionBound::CENTER);
-    focus_bound.set_type(ui::SelectionBound::CENTER);
+    anchor_bound.type = focus_bound.type = ui::SelectionBound::CENTER;
   } else {
     // Whether text is LTR at the anchor handle.
     bool anchor_LTR = params.anchor_dir == blink::WebTextDirectionLeftToRight;
@@ -945,15 +944,15 @@ void RenderWidgetHostViewAura::SelectionBoundsChanged(
 
     if ((params.is_anchor_first && anchor_LTR) ||
         (!params.is_anchor_first && !anchor_LTR)) {
-      anchor_bound.set_type(ui::SelectionBound::LEFT);
+      anchor_bound.type = ui::SelectionBound::LEFT;
     } else {
-      anchor_bound.set_type(ui::SelectionBound::RIGHT);
+      anchor_bound.type = ui::SelectionBound::RIGHT;
     }
     if ((params.is_anchor_first && focus_LTR) ||
         (!params.is_anchor_first && !focus_LTR)) {
-      focus_bound.set_type(ui::SelectionBound::RIGHT);
+      focus_bound.type = ui::SelectionBound::RIGHT;
     } else {
-      focus_bound.set_type(ui::SelectionBound::LEFT);
+      focus_bound.type = ui::SelectionBound::LEFT;
     }
   }
 

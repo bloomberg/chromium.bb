@@ -2,22 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_TOUCH_SELECTION_TOUCH_SELECTION_CONTROLLER_H_
-#define UI_TOUCH_SELECTION_TOUCH_SELECTION_CONTROLLER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_SELECTION_CONTROLLER_H_
+#define CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_SELECTION_CONTROLLER_H_
 
-#include "ui/base/touch/selection_bound.h"
+#include "cc/output/viewport_selection_bound.h"
+#include "content/browser/renderer_host/input/selection_event_type.h"
+#include "content/browser/renderer_host/input/touch_handle.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/touch_selection/selection_event_type.h"
-#include "ui/touch_selection/touch_handle.h"
-#include "ui/touch_selection/ui_touch_selection_export.h"
+
+namespace blink {
+class WebInputEvent;
+}
 
 namespace ui {
 class MotionEvent;
+}
+
+namespace content {
 
 // Interface through which |TouchSelectionController| issues selection-related
 // commands, notifications and requests.
-class UI_TOUCH_SELECTION_EXPORT TouchSelectionControllerClient {
+class CONTENT_EXPORT TouchSelectionControllerClient {
  public:
   virtual ~TouchSelectionControllerClient() {}
 
@@ -33,8 +40,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionControllerClient {
 };
 
 // Controller for manipulating text selection via touch input.
-class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
-    : public TouchHandleClient {
+class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
  public:
   TouchSelectionController(TouchSelectionControllerClient* client,
                            base::TimeDelta tap_timeout,
@@ -44,13 +50,13 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   // To be called when the selection bounds have changed.
   // Note that such updates will trigger handle updates only if preceded
   // by an appropriate call to allow automatic showing.
-  void OnSelectionBoundsChanged(const SelectionBound& start,
-                                const SelectionBound& end);
+  void OnSelectionBoundsChanged(const cc::ViewportSelectionBound& start,
+                                const cc::ViewportSelectionBound& end);
 
   // Allows touch-dragging of the handle.
   // Returns true iff the event was consumed, in which case the caller should
   // cease further handling of the event.
-  bool WillHandleTouchEvent(const MotionEvent& event);
+  bool WillHandleTouchEvent(const ui::MotionEvent& event);
 
   // To be called before forwarding a tap event. This allows automatically
   // showing the insertion handle from subsequent bounds changes.
@@ -121,8 +127,8 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
 
   InputEventType response_pending_input_event_;
 
-  SelectionBound start_;
-  SelectionBound end_;
+  cc::ViewportSelectionBound start_;
+  cc::ViewportSelectionBound end_;
   TouchHandleOrientation start_orientation_;
   TouchHandleOrientation end_orientation_;
 
@@ -143,6 +149,6 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
   DISALLOW_COPY_AND_ASSIGN(TouchSelectionController);
 };
 
-}  // namespace ui
+}  // namespace content
 
-#endif  // UI_TOUCH_SELECTION_TOUCH_SELECTION_CONTROLLER_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_SELECTION_CONTROLLER_H_

@@ -6,14 +6,40 @@
 #define UI_BASE_TOUCH_TOUCH_EDITING_CONTROLLER_H_
 
 #include "ui/base/models/simple_menu_model.h"
-
-namespace gfx {
-class Point;
-class Rect;
-}
+#include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 
 namespace ui {
-class SelectionBound;
+
+// Bound of a selected region.
+struct UI_BASE_EXPORT SelectionBound {
+ public:
+  enum Type {
+    LEFT,
+    RIGHT,
+    CENTER,
+    EMPTY,
+    LAST = EMPTY
+  };
+
+  SelectionBound();
+  ~SelectionBound();
+
+  int GetHeight() const;
+
+  Type type;
+
+  gfx::Point edge_top;
+  gfx::Point edge_bottom;
+};
+
+UI_BASE_EXPORT bool operator==(const SelectionBound& lhs,
+                               const SelectionBound& rhs);
+UI_BASE_EXPORT bool operator!=(const SelectionBound& lhs,
+                               const SelectionBound& rhs);
+
+UI_BASE_EXPORT gfx::Rect RectBetweenSelectionBounds(const SelectionBound& b1,
+                                                    const SelectionBound& b2);
 
 // An interface implemented by widget that has text that can be selected/edited
 // using touch.

@@ -50,16 +50,16 @@ class HandleResources {
     center_bitmap_.setImmutable();
   }
 
-  const SkBitmap& GetBitmap(ui::TouchHandleOrientation orientation) {
+  const SkBitmap& GetBitmap(TouchHandleOrientation orientation) {
     DCHECK(loaded_);
     switch (orientation) {
-      case ui::TOUCH_HANDLE_LEFT:
+      case TOUCH_HANDLE_LEFT:
         return left_bitmap_;
-      case ui::TOUCH_HANDLE_RIGHT:
+      case TOUCH_HANDLE_RIGHT:
         return right_bitmap_;
-      case ui::TOUCH_HANDLE_CENTER:
+      case TOUCH_HANDLE_CENTER:
         return center_bitmap_;
-      case ui::TOUCH_HANDLE_ORIENTATION_UNDEFINED:
+      case TOUCH_HANDLE_ORIENTATION_UNDEFINED:
         NOTREACHED() << "Invalid touch handle orientation.";
     };
     return center_bitmap_;
@@ -83,7 +83,7 @@ CompositedTouchHandleDrawable::CompositedTouchHandleDrawable(
     float dpi_scale,
     jobject context)
     : dpi_scale_(dpi_scale),
-      orientation_(ui::TOUCH_HANDLE_ORIENTATION_UNDEFINED),
+      orientation_(TOUCH_HANDLE_ORIENTATION_UNDEFINED),
       layer_(cc::UIResourceLayer::Create()) {
   g_selection_resources.Get().LoadIfNecessary(context);
   DCHECK(root_layer);
@@ -99,7 +99,7 @@ void CompositedTouchHandleDrawable::SetEnabled(bool enabled) {
 }
 
 void CompositedTouchHandleDrawable::SetOrientation(
-    ui::TouchHandleOrientation orientation) {
+    TouchHandleOrientation orientation) {
   DCHECK(layer_->parent());
   orientation_ = orientation;
 
@@ -108,16 +108,16 @@ void CompositedTouchHandleDrawable::SetOrientation(
   layer_->SetBounds(gfx::Size(bitmap.width(), bitmap.height()));
 
   switch (orientation_) {
-    case ui::TOUCH_HANDLE_LEFT:
+    case TOUCH_HANDLE_LEFT:
       focal_offset_from_origin_ = gfx::Vector2dF(bitmap.width() * 0.75f, 0);
       break;
-    case ui::TOUCH_HANDLE_RIGHT:
+    case TOUCH_HANDLE_RIGHT:
       focal_offset_from_origin_ = gfx::Vector2dF(bitmap.width() * 0.25f, 0);
       break;
-    case ui::TOUCH_HANDLE_CENTER:
+    case TOUCH_HANDLE_CENTER:
       focal_offset_from_origin_ = gfx::Vector2dF(bitmap.width() * 0.5f, 0);
       break;
-    case ui::TOUCH_HANDLE_ORIENTATION_UNDEFINED:
+    case TOUCH_HANDLE_ORIENTATION_UNDEFINED:
       NOTREACHED() << "Invalid touch handle orientation.";
       break;
   };

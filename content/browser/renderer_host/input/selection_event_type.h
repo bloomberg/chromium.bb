@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_TOUCH_SELECTION_SELECTION_EVENT_TYPE_
-#define UI_TOUCH_SELECTION_SELECTION_EVENT_TYPE_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_SELECTION_EVENT_TYPE_
+#define CONTENT_BROWSER_RENDERER_HOST_INPUT_SELECTION_EVENT_TYPE_
 
-namespace ui {
+namespace content {
 
 // This file contains a list of events relating to selection and insertion, used
 // for notifying Java when the renderer selection has changed.
-
+//
 // A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui.touch_selection
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content.browser.input
 enum SelectionEventType {
   SELECTION_SHOWN,
   SELECTION_CLEARED,
@@ -24,6 +24,6 @@ enum SelectionEventType {
   INSERTION_DRAG_STARTED,
 };
 
-}  // namespace ui
+}  // namespace content
 
-#endif  // UI_TOUCH_SELECTION_SELECTION_EVENT_TYPE_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_SELECTION_EVENT_TYPE_

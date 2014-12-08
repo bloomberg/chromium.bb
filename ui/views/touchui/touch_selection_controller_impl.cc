@@ -150,26 +150,26 @@ Alignment GetCursorAlignment(ui::SelectionBound::Type bound_type) {
 // Calculates the bounds of the widget containing the selection handle based
 // on the SelectionBound's type and location
 gfx::Rect GetSelectionWidgetBounds(const ui::SelectionBound& bound) {
-  Alignment cursor_alignment = GetCursorAlignment(bound.type());
-  gfx::Size image_size = GetHandleImage(bound.type())->Size();
+  Alignment cursor_alignment = GetCursorAlignment(bound.type);
+  gfx::Size image_size = GetHandleImage(bound.type)->Size();
   int widget_width =  image_size.width() + 2 * kSelectionHandleHorizPadding;
   int widget_height = bound.GetHeight() + image_size.height() +
       kSelectionHandleVertPadding;
   int widget_left = 0;
   switch (cursor_alignment) {
     case ALIGN_LEFT:
-      widget_left = bound.edge_top_rounded().x() - kSelectionHandleHorizPadding;
+      widget_left = bound.edge_top.x() - kSelectionHandleHorizPadding;
       break;
     case ALIGN_RIGHT:
-      widget_left = bound.edge_top_rounded().x() - image_size.width() -
+      widget_left = bound.edge_top.x() - image_size.width() -
           kSelectionHandleHorizPadding;
       break;
     case ALIGN_CENTER:
-      widget_left = bound.edge_top_rounded().x() - widget_width / 2;
+      widget_left = bound.edge_top.x() - widget_width / 2;
       break;
   };
   return gfx::Rect(
-      widget_left, bound.edge_top_rounded().y(), widget_width, widget_height);
+      widget_left, bound.edge_top.y(), widget_width, widget_height);
 }
 
 gfx::Size GetMaxHandleImageSize() {
@@ -190,28 +190,29 @@ gfx::Size GetMaxHandleImageSize() {
 ui::SelectionBound ConvertFromScreen(ui::TouchEditable* client,
                                      const ui::SelectionBound& bound) {
   ui::SelectionBound result = bound;
-  gfx::Point edge_bottom = bound.edge_bottom_rounded();
-  gfx::Point edge_top = bound.edge_top_rounded();
+  gfx::Point edge_bottom = bound.edge_bottom;
+  gfx::Point edge_top = bound.edge_top;
   client->ConvertPointFromScreen(&edge_bottom);
   client->ConvertPointFromScreen(&edge_top);
-  result.SetEdge(edge_top, edge_bottom);
+  result.edge_bottom = edge_bottom;
+  result.edge_top = edge_top;
   return result;
 }
 
 ui::SelectionBound ConvertToScreen(ui::TouchEditable* client,
                                    const ui::SelectionBound& bound) {
   ui::SelectionBound result = bound;
-  gfx::Point edge_bottom = bound.edge_bottom_rounded();
-  gfx::Point edge_top = bound.edge_top_rounded();
+  gfx::Point edge_bottom = bound.edge_bottom;
+  gfx::Point edge_top = bound.edge_top;
   client->ConvertPointToScreen(&edge_bottom);
   client->ConvertPointToScreen(&edge_top);
-  result.SetEdge(edge_top, edge_bottom);
+  result.edge_bottom = edge_bottom;
+  result.edge_top = edge_top;
   return result;
 }
 
 gfx::Rect BoundToRect(const ui::SelectionBound& bound) {
-  return gfx::BoundingRect(bound.edge_top_rounded(),
-                           bound.edge_bottom_rounded());
+  return gfx::BoundingRect(bound.edge_top, bound.edge_bottom);
 }
 
 }  // namespace
@@ -282,19 +283,19 @@ class TouchSelectionControllerImpl::EditingHandleView
     if (draw_invisible_)
       return;
 
-    Alignment cursor_alignment = GetCursorAlignment(selection_bound_.type());
+    Alignment cursor_alignment = GetCursorAlignment(selection_bound_.type);
     int cursor_x = 0;
     switch (cursor_alignment) {
       case ALIGN_RIGHT:
-        cursor_x = selection_bound_.edge_top_rounded().x() -
-                   kSelectionHandleLineWidth + 1;
+        cursor_x =
+            selection_bound_.edge_top.x() - kSelectionHandleLineWidth + 1;
         break;
       case ALIGN_LEFT:
-        cursor_x = selection_bound_.edge_top_rounded().x() - 1;
+        cursor_x = selection_bound_.edge_top.x() - 1;
         break;
       case ALIGN_CENTER:
-        cursor_x = selection_bound_.edge_top_rounded().x() -
-                   kSelectionHandleLineWidth / 2;
+        cursor_x =
+            selection_bound_.edge_top.x() - kSelectionHandleLineWidth / 2;
         break;
     };
     // Draw the cursor line.
@@ -317,7 +318,7 @@ class TouchSelectionControllerImpl::EditingHandleView
         // Distance from the point which is |kSelectionHandleVerticalDragOffset|
         // pixels above the bottom of the handle's cursor line to the event
         // location (aka the touch-drag point).
-        drag_offset_ = selection_bound_.edge_bottom_rounded() -
+        drag_offset_ = selection_bound_.edge_bottom -
                        gfx::Vector2d(0, kSelectionHandleVerticalDragOffset) -
                        event->location();
         break;
@@ -362,32 +363,31 @@ class TouchSelectionControllerImpl::EditingHandleView
   void SetBoundInScreen(const ui::SelectionBound& bound) {
     bool update_bound_type = false;
     // Cursor handle should always have the bound type CENTER
-    DCHECK(!is_cursor_handle_ || bound.type() == ui::SelectionBound::CENTER);
+    DCHECK(!is_cursor_handle_ || bound.type == ui::SelectionBound::CENTER);
 
-    if (bound.type() != selection_bound_.type()) {
+    if (bound.type != selection_bound_.type) {
       // Unless this is a cursor handle, do not set the type to CENTER -
       // selection handles corresponding to a selection should always use left
       // or right handle image. If selection handles are dragged to be located
       // at the same spot, the |bound|'s type here will be CENTER for both of
       // them. In this case do not update the type of the |selection_bound_|.
-      if (bound.type() != ui::SelectionBound::CENTER || is_cursor_handle_)
+      if (bound.type != ui::SelectionBound::CENTER || is_cursor_handle_)
         update_bound_type = true;
     }
     if (update_bound_type) {
-      selection_bound_.set_type(bound.type());
-      image_ = GetHandleImage(bound.type());
+      selection_bound_ = bound;
+      image_ = GetHandleImage(bound.type);
       SchedulePaint();
+    } else {
+      selection_bound_.edge_top = bound.edge_top;
+      selection_bound_.edge_bottom = bound.edge_bottom;
     }
-    selection_bound_.SetEdge(bound.edge_top(), bound.edge_bottom());
 
     widget_->SetBounds(GetSelectionWidgetBounds(selection_bound_));
 
     aura::Window* window = widget_->GetNativeView();
-    gfx::Point edge_top = selection_bound_.edge_top_rounded();
-    gfx::Point edge_bottom = selection_bound_.edge_bottom_rounded();
-    wm::ConvertPointFromScreen(window, &edge_top);
-    wm::ConvertPointFromScreen(window, &edge_bottom);
-    selection_bound_.SetEdge(edge_top, edge_bottom);
+    wm::ConvertPointFromScreen(window, &selection_bound_.edge_top);
+    wm::ConvertPointFromScreen(window, &selection_bound_.edge_bottom);
   }
 
   void SetDrawInvisible(bool draw_invisible) {
@@ -474,16 +474,10 @@ void TouchSelectionControllerImpl::SelectionChanged() {
       ConvertToScreen(client_view_, anchor);
   ui::SelectionBound screen_bound_focus = ConvertToScreen(client_view_, focus);
   gfx::Rect client_bounds = client_view_->GetBounds();
-  if (anchor.edge_top().y() < client_bounds.y()) {
-    gfx::Point anchor_edge_top = anchor.edge_top_rounded();
-    anchor_edge_top.set_y(client_bounds.y());
-    anchor.SetEdgeTop(anchor_edge_top);
-  }
-  if (focus.edge_top().y() < client_bounds.y()) {
-    gfx::Point focus_edge_top = focus.edge_top_rounded();
-    focus_edge_top.set_y(client_bounds.y());
-    focus.SetEdgeTop(focus_edge_top);
-  }
+  if (anchor.edge_top.y() < client_bounds.y())
+    anchor.edge_top.set_y(client_bounds.y());
+  if (focus.edge_top.y() < client_bounds.y())
+    focus.edge_top.set_y(client_bounds.y());
   ui::SelectionBound screen_bound_anchor_clipped =
       ConvertToScreen(client_view_, anchor);
   ui::SelectionBound screen_bound_focus_clipped =
@@ -537,8 +531,8 @@ void TouchSelectionControllerImpl::SelectionChanged() {
     UpdateContextMenu();
 
     // Check if there is any selection at all.
-    if (screen_bound_anchor.edge_top() == screen_bound_focus.edge_top() &&
-        screen_bound_anchor.edge_bottom() == screen_bound_focus.edge_bottom()) {
+    if (screen_bound_anchor.edge_top == screen_bound_focus.edge_top &&
+        screen_bound_anchor.edge_bottom == screen_bound_focus.edge_bottom) {
       selection_handle_1_->SetWidgetVisible(false, false);
       selection_handle_2_->SetWidgetVisible(false, false);
       SetHandleBound(cursor_handle_.get(), anchor, screen_bound_anchor_clipped);
@@ -589,7 +583,7 @@ void TouchSelectionControllerImpl::SelectionHandleDragged(
                                               : selection_bound_1_;
 
   // Find selection end points in client_view's coordinate system.
-  gfx::Point p2 = anchor_bound.edge_top_rounded();
+  gfx::Point p2 = anchor_bound.edge_top;
   p2.Offset(0, anchor_bound.GetHeight() / 2);
   client_view_->ConvertPointFromScreen(&p2);
 
