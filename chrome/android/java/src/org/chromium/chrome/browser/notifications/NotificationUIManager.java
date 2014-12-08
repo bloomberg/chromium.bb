@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 /**
@@ -166,7 +167,7 @@ public class NotificationUIManager {
                 .setContentText(body)
                 .setStyle(new Notification.BigTextStyle().bigText(body))
                 .setLargeIcon(icon)
-                .setSmallIcon(android.R.drawable.ic_menu_myplaces)
+                .setSmallIcon(R.drawable.notification_badge)
                 .setContentIntent(getPendingIntent(
                         notificationId, mLastNotificationId,
                         NotificationConstants.ACTION_CLICK_NOTIFICATION))
