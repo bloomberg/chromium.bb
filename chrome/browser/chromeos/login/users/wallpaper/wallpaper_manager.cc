@@ -213,6 +213,24 @@ int FindPublicSession(const user_manager::UserList& users) {
 
 }  // namespace
 
+WallpaperInfo::WallpaperInfo()
+    : layout(ash::WALLPAPER_LAYOUT_CENTER),
+      type(user_manager::User::WALLPAPER_TYPE_COUNT) {
+}
+
+WallpaperInfo::WallpaperInfo(const std::string& in_location,
+                             ash::WallpaperLayout in_layout,
+                             user_manager::User::WallpaperType in_type,
+                             const base::Time& in_date)
+    : location(in_location),
+      layout(in_layout),
+      type(in_type),
+      date(in_date) {
+}
+
+WallpaperInfo::~WallpaperInfo() {
+}
+
 const char kWallpaperSequenceTokenName[] = "wallpaper-sequence";
 
 const char kSmallWallpaperSuffix[] = "_small";
