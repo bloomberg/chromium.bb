@@ -87,11 +87,11 @@ void ContentAutofillDriverFactory::RenderFrameDeleted(
   frame_driver_map_.erase(render_frame_host);
 }
 
-void ContentAutofillDriverFactory::DidNavigateAnyFrame(
-    content::RenderFrameHost* render_frame_host,
+void ContentAutofillDriverFactory::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  frame_driver_map_[render_frame_host]->DidNavigateFrame(details, params);
+  frame_driver_map_[web_contents()->GetMainFrame()]->DidNavigateFrame(details,
+                                                                      params);
 }
 
 void ContentAutofillDriverFactory::NavigationEntryCommitted(

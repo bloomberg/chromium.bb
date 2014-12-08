@@ -49,9 +49,9 @@ class ContentAutofillDriverFactory : public content::WebContentsObserver,
                          content::RenderFrameHost* render_frame_host) override;
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
-  void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host,
-                           const content::LoadCommittedDetails& details,
-                           const content::FrameNavigateParams& params) override;
+  void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
   void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
   void WasHidden() override;
