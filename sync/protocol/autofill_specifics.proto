@@ -68,3 +68,96 @@ message AutofillSpecifics {
   // optional bytes deprecated_encrypted_credit_card = 5;
   // optional AutofillCreditCardSpecifics deprecated_credit_card = 6;
 }
+
+message WalletMaskedCreditCard {
+  enum WalletCardStatus {
+    VALID = 0;
+    EXPIRED = 1;
+  }
+
+  enum WalletCardType {
+    UNKNOWN = 0;
+    AMEX = 1;
+    DISCOVER = 2;
+    JCB = 3;
+    MAESTRO = 4;
+    MASTER_CARD = 5;
+    SOLO = 6;
+    SWITCH = 7;
+    VISA = 8;
+  }
+
+  // Server-generated unique ID string. This is opaque to the client.
+  optional string id = 1;
+
+  // What the server thinks of this card.
+  optional WalletCardStatus status = 2;
+
+  optional string name_on_card = 3;
+
+  optional WalletCardType type = 4;
+
+  // Last 4 digits of the credit card number.
+  optional string last_four = 5;
+
+  // Month number 1-12.
+  optional int32 exp_month = 6;
+
+  // Four-digit year (e.g. 2017).
+  optional int32 exp_year = 7;
+}
+
+// Different than an AutofillProfile because this represents some known address
+// on the server that is pulled down rather than synced between Chromes.
+message WalletPostalAddress {
+  // Server-generated unique ID string. This is opaque to the client.
+  optional string id = 1; 
+
+  optional string company_name = 2;
+
+  // This is the street address, of which there may be multiple lines. This
+  // corresponds to "address_home_line[1|2] in the AutofillProfileSpecifics
+  // message above. In some locales there may be more than two lines.
+  repeated string street_address = 3;
+
+  // Also known as "administrative area". This is normally the state or
+  // province in most countries.
+  optional string address_1 = 4;
+
+  // Also known as "locality". In the US this is the city.
+  optional string address_2 = 5;
+
+  // A sub-classification beneath the city, e.g. an inner-city district or
+  // suburb. Also known as "dependent_locality"
+  optional string address_3 = 6;
+
+  // Used in certain countries. Also known as "sub_dependent_locality".
+  optional string address_4 = 7;
+
+  optional string postal_code = 8;
+
+  // Similar to the zipcode column, but used for businesses or organizations
+  // that might not be geographically contiguous. The canonical example is
+  // CEDEX in France.
+  optional string sorting_code = 9;
+
+  optional string country_code = 10;
+  optional string language_code = 11;
+}
+
+message AutofillWalletSpecifics {
+  enum WalletInfoType {
+    UNKNOWN = 0;
+    MASKED_CREDIT_CARD = 1;
+    POSTAL_ADDRESS = 2;
+  }
+
+  optional WalletInfoType type = 1;
+
+  // This field exists if and only if the "type" field equals to
+  // MASKED_CREDIT_CARD.
+  optional WalletMaskedCreditCard masked_card = 2;
+
+  // This field exists if and only if the "type" field equals to ADDRESS.
+  optional WalletPostalAddress address = 3;
+}

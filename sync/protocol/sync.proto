@@ -131,6 +131,7 @@ message EntitySpecifics {
   optional ArticleSpecifics article = 223759;
   optional AppListSpecifics app_list = 229170;
   optional WifiCredentialSpecifics wifi_credential = 218175;
+  optional AutofillWalletSpecifics autofill_wallet = 306270;
 }
 
 message SyncEntity {
