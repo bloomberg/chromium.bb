@@ -443,7 +443,10 @@ bool BitmapImage::shouldAnimate()
 {
     bool animated = repetitionCount(false) != cAnimationNone && !m_animationFinished && imageObserver();
     if (imageObserver()) {
+        ImageAnimationPolicy oldPolicy = m_animationPolicy;
         imageObserver()->imageAnimationPolicy(this, m_animationPolicy);
+        if (oldPolicy != m_animationPolicy)
+            resetAnimation();
         if (animated && m_animationPolicy == ImageAnimationPolicyNoAnimation)
             animated = false;
     }
