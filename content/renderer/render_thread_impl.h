@@ -100,6 +100,7 @@ class RenderProcessObserver;
 class RendererBlinkPlatformImpl;
 class RendererDemuxerAndroid;
 class RendererScheduler;
+class V8SamplingProfiler;
 class VideoCaptureImplManager;
 class WebGraphicsContext3DCommandBufferImpl;
 class WebRTCIdentityService;
@@ -484,6 +485,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_refptr<RendererDemuxerAndroid> renderer_demuxer_;
 #endif
   scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
+  scoped_ptr<V8SamplingProfiler> v8_sampling_profiler_;
 
 #if defined(ENABLE_WEBRTC)
   scoped_ptr<PeerConnectionDependencyFactory> peer_connection_factory_;

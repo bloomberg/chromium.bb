@@ -126,6 +126,8 @@
       'renderer/devtools/devtools_agent_filter.h',
       'renderer/devtools/devtools_client.cc',
       'renderer/devtools/devtools_client.h',
+      'renderer/devtools/v8_sampling_profiler.cc',
+      'renderer/devtools/v8_sampling_profiler.h',
       'renderer/disambiguation_popup_helper.cc',
       'renderer/disambiguation_popup_helper.h',
       'renderer/dom_automation_controller.cc',

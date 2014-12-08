@@ -1275,6 +1275,7 @@
             'child/site_isolation_policy_browsertest.cc',
             'renderer/accessibility/renderer_accessibility_browsertest.cc',
             'renderer/browser_render_view_browsertest.cc',
+            'renderer/devtools/v8_sampling_profiler_browsertest.cc',
             'renderer/dom_serializer_browsertest.cc',
             'renderer/gin_browsertest.cc',
             'renderer/mouse_lock_dispatcher_browsertest.cc',
