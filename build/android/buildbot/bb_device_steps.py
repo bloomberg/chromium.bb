@@ -50,9 +50,10 @@ I_TEST = collections.namedtuple('InstrumentationTest', [
 def SrcPath(*path):
   return os.path.join(CHROME_SRC_DIR, *path)
 
-
-def I(name, apk, apk_package, test_apk, test_data, host_driven_root=None,
-      annotation=None, exclude_annotation=None, extra_flags=None):
+# pylint: disable=unused-argument
+def I(name, apk, apk_package, test_apk, test_data=None, isolate_file_path=None,
+      host_driven_root=None, annotation=None, exclude_annotation=None,
+      extra_flags=None):
   return I_TEST(name, apk, apk_package, test_apk, test_data, host_driven_root,
                 annotation, exclude_annotation, extra_flags)
 
@@ -60,24 +61,20 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
     I('ContentShell',
       'ContentShell.apk',
       'org.chromium.content_shell_apk',
-      'ContentShellTest',
-      'content:content/test/data/android/device_files'),
+      'ContentShellTest'),
     I('ChromeShell',
       'ChromeShell.apk',
       'org.chromium.chrome.shell',
       'ChromeShellTest',
-      'chrome:chrome/test/data/android/device_files',
-      constants.CHROME_SHELL_HOST_DRIVEN_DIR),
+      host_driven_root=constants.CHROME_SHELL_HOST_DRIVEN_DIR),
     I('AndroidWebView',
       'AndroidWebView.apk',
       'org.chromium.android_webview.shell',
-      'AndroidWebViewTest',
-      'webview:android_webview/test/data/device_files'),
+      'AndroidWebViewTest'),
     I('ChromeSyncShell',
       'ChromeSyncShell.apk',
       'org.chromium.chrome.browser.sync',
-      'ChromeSyncShellTest',
-      None),
+      'ChromeSyncShellTest'),
     ])
 
 InstallablePackage = collections.namedtuple('InstallablePackage', [
@@ -256,6 +253,8 @@ def RunInstrumentationSuite(options, test, flunk_on_failure=True,
   args = ['--test-apk', test.test_apk, '--verbose']
   if test.test_data:
     args.extend(['--test_data', test.test_data])
+  if test.isolate_file_path:
+    args.extend(['--isolate_file_path', test.isolate_file_path])
   if options.target == 'Release':
     args.append('--release')
   if options.asan:
