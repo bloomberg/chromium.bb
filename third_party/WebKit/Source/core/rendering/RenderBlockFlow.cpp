@@ -37,7 +37,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/paint/BlockFlowPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/DrawingRecorder.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderLayer.h"
@@ -2821,7 +2821,7 @@ LayoutRect RenderBlockFlow::blockSelectionGap(const RenderBlock* rootBlock, cons
     LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(logicalLeft, logicalTop, logicalWidth, logicalHeight));
     if (paintInfo) {
         IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
-        RenderDrawingRecorder recorder(paintInfo->context, this, paintInfo->phase, selectionGapRect);
+        DrawingRecorder recorder(paintInfo->context, this, paintInfo->phase, selectionGapRect);
         paintInfo->context->fillRect(selectionGapRect, selectionBackgroundColor());
     }
     return gapRect;
@@ -2904,7 +2904,7 @@ LayoutRect RenderBlockFlow::logicalLeftSelectionGap(const RenderBlock* rootBlock
     LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(rootBlockLogicalLeft, rootBlockLogicalTop, rootBlockLogicalWidth, logicalHeight));
     if (paintInfo) {
         IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
-        RenderDrawingRecorder recorder(paintInfo->context, this, paintInfo->phase, selectionGapRect);
+        DrawingRecorder recorder(paintInfo->context, this, paintInfo->phase, selectionGapRect);
         paintInfo->context->fillRect(selectionGapRect, selObj->selectionBackgroundColor());
     }
     return gapRect;
@@ -2923,7 +2923,7 @@ LayoutRect RenderBlockFlow::logicalRightSelectionGap(const RenderBlock* rootBloc
     LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(rootBlockLogicalLeft, rootBlockLogicalTop, rootBlockLogicalWidth, logicalHeight));
     if (paintInfo) {
         IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
-        RenderDrawingRecorder recorder(paintInfo->context, this, paintInfo->phase, selectionGapRect);
+        DrawingRecorder recorder(paintInfo->context, this, paintInfo->phase, selectionGapRect);
         paintInfo->context->fillRect(selectionGapRect, selObj->selectionBackgroundColor());
     }
     return gapRect;

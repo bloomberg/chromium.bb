@@ -6,8 +6,8 @@
 #include "core/paint/TableSectionPainter.h"
 
 #include "core/paint/BoxClipper.h"
+#include "core/paint/DrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
-#include "core/paint/RenderDrawingRecorder.h"
 #include "core/paint/TableCellPainter.h"
 #include "core/paint/TableRowPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
@@ -171,7 +171,7 @@ void TableSectionPainter::paintCell(RenderTableCell* cell, const PaintInfo& pain
 
         TableCellPainter tableCellPainter(*cell);
 
-        RenderDrawingRecorder recorder(paintInfo.context, &m_renderTableSection, paintPhase, tableCellPainter.paintBounds(paintOffset, TableCellPainter::AddOffsetFromParent));
+        DrawingRecorder recorder(paintInfo.context, &m_renderTableSection, paintPhase, tableCellPainter.paintBounds(paintOffset, TableCellPainter::AddOffsetFromParent));
 
         // Column groups and columns first.
         // FIXME: Columns and column groups do not currently support opacity, and they are being painted "too late" in

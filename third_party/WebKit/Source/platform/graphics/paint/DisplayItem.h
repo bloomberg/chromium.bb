@@ -66,12 +66,7 @@ public:
         ClipBoxTextClip,
         ClipBoxClippingMask,
         BeginTransform,
-        EndTransform,
-        ScrollbarCorner,
-        ScrollbarBefore,
-        Scrollbar,
-        ScrollbarAfter,
-        Resizer
+        EndTransform
     };
 
     virtual ~DisplayItem() { }

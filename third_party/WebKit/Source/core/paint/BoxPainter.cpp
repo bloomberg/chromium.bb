@@ -10,7 +10,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxDecorationData.h"
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/DrawingRecorder.h"
 #include "core/rendering/ImageQualityController.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
@@ -72,7 +72,7 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     RenderStyle* style = m_renderBox.style();
     BoxDecorationData boxDecorationData(*style, m_renderBox.canRenderBorderImage(), m_renderBox.backgroundHasOpaqueTopLayer(), m_renderBox.backgroundShouldAlwaysBeClipped(), paintInfo.context);
 
-    RenderDrawingRecorder recorder(paintInfo.context, &m_renderBox, paintInfo.phase, boundsForDrawingRecorder(paintOffset));
+    DrawingRecorder recorder(paintInfo.context, &m_renderBox, paintInfo.phase, boundsForDrawingRecorder(paintOffset));
 
     // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
     // custom shadows of their own.

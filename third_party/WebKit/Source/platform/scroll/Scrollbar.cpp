@@ -27,9 +27,9 @@
 #include "platform/scroll/Scrollbar.h"
 
 #include <algorithm>
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/scroll/ScrollbarTheme.h"
@@ -185,8 +185,6 @@ void Scrollbar::paint(GraphicsContext* context, const IntRect& damageRect)
 {
     if (!frameRect().intersects(damageRect))
         return;
-
-    DrawingRecorder recorder(context, displayItemClient(), DisplayItem::Scrollbar, damageRect);
 
     if (!theme()->paint(this, context, damageRect))
         Widget::paint(context, damageRect);

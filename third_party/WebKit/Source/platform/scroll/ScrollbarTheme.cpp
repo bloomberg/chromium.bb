@@ -30,10 +30,6 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/Picture.h"
-#include "platform/graphics/paint/DisplayItemList.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "platform/scroll/ScrollbarThemeMock.h"
 #include "platform/scroll/ScrollbarThemeOverlayMock.h"
@@ -206,23 +202,16 @@ void ScrollbarTheme::invalidatePart(ScrollbarThemeClient* scrollbar, ScrollbarPa
     scrollbar->invalidateRect(result);
 }
 
-void ScrollbarTheme::paintScrollCornerInternal(GraphicsContext* context, const IntRect& cornerRect)
-{
-#if OS(MACOSX)
-    context->fillRect(cornerRect, Color::white);
-#else
-    Platform::current()->themeEngine()->paint(context->canvas(), WebThemeEngine::PartScrollbarCorner, WebThemeEngine::StateNormal, WebRect(cornerRect), 0);
-#endif
-}
-
 void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, const IntRect& cornerRect)
 {
     if (cornerRect.isEmpty())
         return;
 
-    DrawingRecorder recorder(context, displayItemClient(), DisplayItem::Scrollbar, cornerRect);
-
-    paintScrollCornerInternal(context, cornerRect);
+#if OS(MACOSX)
+    context->fillRect(cornerRect, Color::white);
+#else
+    Platform::current()->themeEngine()->paint(context->canvas(), WebThemeEngine::PartScrollbarCorner, WebThemeEngine::StateNormal, WebRect(cornerRect), 0);
+#endif
 }
 
 void ScrollbarTheme::paintOverhangBackground(GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)

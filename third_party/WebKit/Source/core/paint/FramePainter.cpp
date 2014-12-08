@@ -160,18 +160,13 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
 
 void FramePainter::paintScrollbars(GraphicsContext* context, const IntRect& rect)
 {
-    if (m_frameView.horizontalScrollbar() && !m_frameView.layerForHorizontalScrollbar()) {
+    if (m_frameView.horizontalScrollbar() && !m_frameView.layerForHorizontalScrollbar())
         paintScrollbar(context, m_frameView.horizontalScrollbar(), rect);
-    }
-    if (m_frameView.verticalScrollbar() && !m_frameView.layerForVerticalScrollbar()) {
+    if (m_frameView.verticalScrollbar() && !m_frameView.layerForVerticalScrollbar())
         paintScrollbar(context, m_frameView.verticalScrollbar(), rect);
-    }
 
     if (m_frameView.layerForScrollCorner())
         return;
-    // FIXME: This is wrong. scroll corners are currently painted in the local space of the scroll corner,
-    // not the sapce of the frame. Either change scroll corners to paint in the frame's coordinate space,
-    // or adjust for the location of the scroll corner.
     paintScrollCorner(context, m_frameView.scrollCornerRect());
 }
 

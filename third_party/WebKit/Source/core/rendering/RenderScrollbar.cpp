@@ -78,15 +78,6 @@ RenderScrollbar::~RenderScrollbar()
 #endif
 }
 
-void RenderScrollbar::paint(GraphicsContext* context, const IntRect& damageRect)
-{
-    if (!frameRect().intersects(damageRect))
-        return;
-
-    if (!theme()->paint(this, context, damageRect))
-        Widget::paint(context, damageRect);
-}
-
 void RenderScrollbar::destroyParts()
 {
     if (m_parts.isEmpty())

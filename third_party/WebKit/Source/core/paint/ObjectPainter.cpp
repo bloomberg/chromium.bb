@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/paint/ObjectPainter.h"
 
-#include "core/paint/RenderDrawingRecorder.h"
+#include "core/paint/DrawingRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTheme.h"
@@ -32,7 +32,7 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutRect& p
     if (!styleToUse->hasOutline())
         return;
 
-    RenderDrawingRecorder recorder(paintInfo.context, &m_renderObject, paintInfo.phase, paintRect);
+    DrawingRecorder recorder(paintInfo.context, &m_renderObject, paintInfo.phase, paintRect);
 
     if (styleToUse->outlineStyleIsAuto()) {
         if (RenderTheme::theme().shouldDrawDefaultFocusRing(&m_renderObject)) {

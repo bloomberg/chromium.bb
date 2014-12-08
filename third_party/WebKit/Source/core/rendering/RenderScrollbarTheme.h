@@ -40,7 +40,7 @@ public:
 
     virtual ScrollbarButtonsPlacement buttonsPlacement() const override { return ScrollbarTheme::theme()->buttonsPlacement(); }
 
-    virtual void paintScrollCornerInternal(GraphicsContext*, const IntRect& cornerRect) override;
+    virtual void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect) override;
 
     virtual bool shouldCenterOnThumb(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& event) override { return ScrollbarTheme::theme()->shouldCenterOnThumb(scrollbar, event); }
     virtual bool shouldSnapBackToDragOrigin(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& event) override { return ScrollbarTheme::theme()->shouldSnapBackToDragOrigin(scrollbar, event); }

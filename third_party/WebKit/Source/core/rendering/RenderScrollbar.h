@@ -67,8 +67,6 @@ protected:
 private:
     friend class Scrollbar;
 
-    virtual void paint(GraphicsContext*, const IntRect& damageRect) override final;
-
     virtual void setParent(Widget*) override;
     virtual void setEnabled(bool) override;
 

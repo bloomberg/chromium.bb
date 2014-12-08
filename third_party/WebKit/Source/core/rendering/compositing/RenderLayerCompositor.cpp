@@ -59,7 +59,6 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -784,21 +783,13 @@ static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const
     if (!scrollbar)
         return;
 
-    // Frame scrollbars are painted in the space of the containing frame, not the local space of the scrollbar.
-    const IntPoint& paintOffset = scrollbar->frameRect().location();
+    context.save();
+    const IntRect& scrollbarRect = scrollbar->frameRect();
+    context.translate(-scrollbarRect.x(), -scrollbarRect.y());
     IntRect transformedClip = clip;
-    transformedClip.moveBy(paintOffset);
-
-    {
-        DrawingRecorder recorder(&context, scrollbar->displayItemClient(), DisplayItem::ScrollbarBefore, transformedClip);
-        context.save();
-        context.translate(-paintOffset.x(), -paintOffset.y());
-    }
+    transformedClip.moveBy(scrollbarRect.location());
     scrollbar->paint(&context, transformedClip);
-    {
-        DrawingRecorder recorder(&context, scrollbar->displayItemClient(), DisplayItem::ScrollbarAfter, transformedClip);
-        context.restore();
-    }
+    context.restore();
 }
 
 void RenderLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase, const IntRect& clip)
@@ -807,8 +798,15 @@ void RenderLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gr
         paintScrollbar(m_renderView.frameView()->horizontalScrollbar(), context, clip);
     else if (graphicsLayer == layerForVerticalScrollbar())
         paintScrollbar(m_renderView.frameView()->verticalScrollbar(), context, clip);
-    else if (graphicsLayer == layerForScrollCorner())
-        FramePainter(*m_renderView.frameView()).paintScrollCorner(&context, clip);
+    else if (graphicsLayer == layerForScrollCorner()) {
+        const IntRect& scrollCorner = m_renderView.frameView()->scrollCornerRect();
+        context.save();
+        context.translate(-scrollCorner.x(), -scrollCorner.y());
+        IntRect transformedClip = clip;
+        transformedClip.moveBy(scrollCorner.location());
+        FramePainter(*m_renderView.frameView()).paintScrollCorner(&context, transformedClip);
+        context.restore();
+    }
 }
 
 bool RenderLayerCompositor::supportsFixedRootBackgroundCompositing() const
