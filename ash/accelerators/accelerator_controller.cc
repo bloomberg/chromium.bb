@@ -1133,7 +1133,7 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
           actions_allowed_in_app_mode_.end()) {
     return RESTRICTION_PREVENT_PROCESSING;
   }
-  if (MruWindowTracker::BuildWindowList().empty() &&
+  if (MruWindowTracker::BuildWindowList(false).empty() &&
       actions_needing_window_.find(action) != actions_needing_window_.end()) {
     Shell::GetInstance()->accessibility_delegate()->TriggerAccessibilityAlert(
         ui::A11Y_ALERT_WINDOW_NEEDED);

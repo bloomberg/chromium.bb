@@ -679,7 +679,8 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
 
   // The windows should be in the reverse order of creation in the MRU list.
   {
-    MruWindowTracker::WindowList windows = MruWindowTracker::BuildWindowList();
+    MruWindowTracker::WindowList windows =
+        MruWindowTracker::BuildWindowList(false);
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);
     EXPECT_EQ(w3.get(), windows[2]);
@@ -692,7 +693,8 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   ASSERT_TRUE(manager);
   EXPECT_EQ(5, manager->GetNumberOfManagedWindows());
   {
-    MruWindowTracker::WindowList windows = MruWindowTracker::BuildWindowList();
+    MruWindowTracker::WindowList windows =
+        MruWindowTracker::BuildWindowList(false);
     // We do not test maximization here again since that was done already.
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);
@@ -704,7 +706,8 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   // Destroying should still keep the order.
   DestroyMaximizeModeWindowManager();
   {
-    MruWindowTracker::WindowList windows = MruWindowTracker::BuildWindowList();
+    MruWindowTracker::WindowList windows =
+        MruWindowTracker::BuildWindowList(false);
     // We do not test maximization here again since that was done already.
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);

@@ -182,7 +182,8 @@ MaximizeModeWindowManager::MaximizeModeWindowManager()
 }
 
 void MaximizeModeWindowManager::MaximizeAllWindows() {
-  MruWindowTracker::WindowList windows = MruWindowTracker::BuildWindowList();
+  MruWindowTracker::WindowList windows =
+      MruWindowTracker::BuildWindowList(false);
   // Add all existing Mru windows.
   for (MruWindowTracker::WindowList::iterator window = windows.begin();
       window != windows.end(); ++window) {
