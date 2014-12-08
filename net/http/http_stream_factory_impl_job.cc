@@ -623,15 +623,15 @@ int HttpStreamFactoryImpl::Job::DoStart() {
                                  &request_info_.url, &origin_url_,
                                  priority_));
 
+  // Don't connect to restricted ports.
+  bool is_port_allowed = IsPortAllowedByDefault(origin_.port());
   if (request_info_.url.SchemeIs("ftp")) {
     // Never share connection with other jobs for FTP requests.
     DCHECK(!waiting_job_);
-  }
 
-  // Don't connect to restricted ports.
-  // Note: origin_.port() == request_info_.url.EffectiveIntPort()
-  if (!IsEffectivePortAllowedByScheme(request_info_.url) &&
-      !IsPortAllowedByOverride(origin_.port())) {
+    is_port_allowed = IsPortAllowedByFtp(origin_.port());
+  }
+  if (!is_port_allowed && !IsPortAllowedByOverride(origin_.port())) {
     if (waiting_job_) {
       waiting_job_->Resume(this);
       waiting_job_ = NULL;

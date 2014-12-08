@@ -260,15 +260,6 @@ NET_EXPORT bool IsPortAllowedByDefault(int port);
 // protocol.  Returns true if |port| is allowed, false if it is restricted.
 NET_EXPORT_PRIVATE bool IsPortAllowedByFtp(int port);
 
-// Checks |port| against a list of ports which are restricted by the HTTPS/WSS
-// protocols.  Returns true if |port| is allowed, false if it is restricted.
-NET_EXPORT_PRIVATE bool IsPortAllowedByHttpsOrWss(int port);
-
-// Checks the effective port of the |url| against a list of ports which are
-// restricted by the scheme of the |url|. Returns true if the port is allowed,
-// false if it is restricted.
-NET_EXPORT_PRIVATE bool IsEffectivePortAllowedByScheme(const GURL& url);
-
 // Check if banned |port| has been overriden by an entry in
 // |explicitly_allowed_ports_|.
 NET_EXPORT_PRIVATE bool IsPortAllowedByOverride(int port);
