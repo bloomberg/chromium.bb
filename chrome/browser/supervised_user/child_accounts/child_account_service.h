@@ -72,6 +72,8 @@ class ChildAccountService : public KeyedService,
 
   void PropagateChildStatusToUser(bool is_child);
 
+  void EnableExperimentalFiltering();
+
   // Owns us via the KeyedService mechanism.
   Profile* profile_;
 
