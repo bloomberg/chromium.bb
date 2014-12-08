@@ -63,7 +63,7 @@ inline blink::PNGImageDecoder* imageDecoder(png_structp png)
     return static_cast<blink::PNGImageDecoder*>(png_get_progressive_ptr(png));
 }
 
-// Called if the decoding of the image fails.
+// Called when decoding fails.
 void PNGAPI decodingFailed(png_structp png, png_const_charp)
 {
     longjmp(JMPBUF(png), 1);
@@ -79,19 +79,19 @@ void PNGAPI decodingWarning(png_structp png, png_const_charp warning)
         png_error(png, warning);
 }
 
-// Called when we have obtained the header information (including the size).
+// Called when image header information is available (including the size).
 void PNGAPI headerAvailable(png_structp png, png_infop)
 {
     imageDecoder(png)->headerAvailable();
 }
 
-// Called when a row is ready.
+// Called when a decoded row is ready.
 void PNGAPI rowAvailable(png_structp png, png_bytep rowBuffer, png_uint_32 rowIndex, int interlacePass)
 {
     imageDecoder(png)->rowAvailable(rowBuffer, rowIndex, interlacePass);
 }
 
-// Called when we have completely finished decoding the image.
+// Called when decoding completes.
 void PNGAPI pngComplete(png_structp png, png_infop)
 {
     imageDecoder(png)->pngComplete();
