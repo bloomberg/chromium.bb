@@ -25,14 +25,7 @@ function test()
 
     InspectorTest.invokeAsyncWithTimeline("display", function() {
         var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Paint);
-        var invalidations = record._event.invalidationTrackingEvents;
-        InspectorTest.assertEquals(invalidations.length, 8);
-        for (var i = 0; i < 8; i++) {
-            InspectorTest.assertEquals(invalidations[i].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-            InspectorTest.assertEquals(invalidations[i].nodeName, "DIV class='testElement'");
-            InspectorTest.assertEquals(invalidations[i].cause.reason, "Inline CSS style declaration was mutated");
-            InspectorTest.assertEquals(invalidations[i].cause.stackTrace.length, 1);
-        }
+        InspectorTest.addArray(record._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "paint invalidations");
 
         var linkifier = new WebInspector.Linkifier();
         var target = InspectorTest.timelineModel().target();

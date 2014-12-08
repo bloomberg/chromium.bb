@@ -34,14 +34,7 @@ function test()
         {
             InspectorTest.invokeAsyncWithTimeline("display", function() {
                 var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Paint);
-                var invalidations = record._event.invalidationTrackingEvents;
-                InspectorTest.assertEquals(invalidations.length, 2);
-                InspectorTest.assertEquals(invalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(invalidations[0].nodeName, "BODY");
-                InspectorTest.assertEquals(invalidations[0].cause.reason, "Inline CSS style declaration was mutated");
-                InspectorTest.assertEquals(invalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(invalidations[1].nodeName, "DIV id='testElement'");
-                InspectorTest.assertEquals(invalidations[1].cause.reason, "Inline CSS style declaration was mutated");
+                InspectorTest.addArray(record._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first paint invalidations");
 
                 next();
             });
@@ -57,11 +50,7 @@ function test()
 
                 // The second paint corresponds to the subframe and should have our style invalidations.
                 var secondPaintRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.Paint, 1);
-                var secondInvalidations = secondPaintRecord._event.invalidationTrackingEvents;
-                InspectorTest.assertEquals(secondInvalidations.length, 1);
-                InspectorTest.assertEquals(secondInvalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(secondInvalidations[0].nodeName, "DIV");
-                InspectorTest.assertEquals(secondInvalidations[0].cause.reason, "Inline CSS style declaration was mutated");
+                InspectorTest.addArray(secondPaintRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "second paint invalidations");
 
                 next();
             });
