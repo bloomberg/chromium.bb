@@ -377,7 +377,7 @@ def InstallDocFiles(subdir, files):
   return commands
 
 
-def NewlibLibcScript(arch):
+def NewlibLibcScript(arch, elfclass_x86_64='elf32'):
   template = """/*
  * This is a linker script that gets installed as libc.a for the
  * newlib-based NaCl toolchain.  It brings in the constituent
@@ -395,7 +395,7 @@ GROUP ( libnacl.a libcrt_common.a )
   elif arch == 'i686':
     format_list = ['elf32-i386-nacl']
   elif arch == 'x86_64':
-    format_list = ['elf32-x86_64-nacl']
+    format_list = ['%s-x86-64-nacl' % elfclass_x86_64]
   else:
     raise Exception('TODO(mcgrathr): OUTPUT_FORMAT for %s' % arch)
   return template % ', '.join(['"' + fmt + '"' for fmt in format_list])

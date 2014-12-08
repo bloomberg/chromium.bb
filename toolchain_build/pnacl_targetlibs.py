@@ -16,6 +16,7 @@ import pynacl.platform
 import command
 import pnacl_commands
 
+from toolchain_build import NewlibLibcScript
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
@@ -260,6 +261,13 @@ def TargetLibsSrc(GitSyncCmds):
 
 def NewlibDirectoryCmds(bias_arch, newlib_triple):
   commands = []
+  def NewlibLib(name):
+    return os.path.join('%(output)s', newlib_triple, 'lib', name)
+  if not IsBCArch(bias_arch):
+    commands.extend([
+      command.Rename(NewlibLib('libc.a'), NewlibLib('libcrt_common.a')),
+      command.WriteData(NewlibLibcScript(bias_arch, 'elf64'),
+                        NewlibLib('libc.a'))])
   target_triple = TripleFromArch(bias_arch)
   if bias_arch != 'i686':
     commands.extend([
