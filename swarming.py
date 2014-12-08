@@ -666,7 +666,7 @@ def trigger(
   file_hash, is_file = isolated_to_hash(
       isolate_server, namespace, file_hash_or_isolated, hashlib.sha1, verbose)
   if not file_hash:
-    return 1, ''
+    return None, ''
   if not task_name:
     # If a file name was passed, use its base name of the isolated hash.
     # Otherwise, use user name as an approximation of a task name.
