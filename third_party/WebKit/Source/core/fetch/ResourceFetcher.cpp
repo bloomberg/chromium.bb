@@ -269,8 +269,12 @@ ResourceFetcher::~ResourceFetcher()
 
     clearPreloads();
 
+#if !ENABLE(OILPAN)
     // Make sure no requests still point to this ResourceFetcher
+    // Oilpan: no object reference can be keeping this alive,
+    // so property trivially holds.
     ASSERT(!m_loaders || m_loaders->isEmpty());
+#endif
 }
 
 Resource* ResourceFetcher::cachedResource(const KURL& resourceURL) const
