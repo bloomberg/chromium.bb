@@ -30,6 +30,9 @@ const char* PushRegistrationStatusToString(PushRegistrationStatus status) {
 
     case PUSH_REGISTRATION_STATUS_NO_SENDER_ID:
       return "Registration failed - no sender id provided";
+
+    case PUSH_REGISTRATION_STATUS_STORAGE_ERROR:
+      return "Registration failed - storage error";
   }
   NOTREACHED();
   return "";

@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/push_messaging_status.h"
 #include "url/gurl.h"
@@ -77,9 +78,20 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
                    const std::string& push_registration_id,
                    PushRegistrationStatus status);
 
+  void PersistRegistrationOnIO(const RegisterData& data,
+                               const GURL& push_endpoint,
+                               const std::string& push_registration_id);
+
+  void DidPersistRegistrationOnIO(
+    const RegisterData& data,
+    const GURL& push_endpoint,
+    const std::string& push_registration_id,
+    ServiceWorkerStatusCode service_worker_status);
+
   void SendRegisterError(const RegisterData& data,
                          PushRegistrationStatus status);
   void SendRegisterSuccess(const RegisterData& data,
+                           const GURL& push_endpoint,
                            const std::string& push_registration_id);
 
   // Returns a push messaging service. The embedder owns the service, and is
@@ -93,9 +105,12 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   // Owned by the content embedder's browsing context.
   PushMessagingService* service_;
 
-  // Should only be used for asynchronous calls to the PushMessagingService on
-  // the UI thread, which may have external dependencies that supersede the
-  // lifetime of this messaging filter.
+  // Should only be used for asynchronous calls on the IO thread with external
+  // dependencies that might outlive this class e.g. ServiceWorkerStorage.
+  base::WeakPtrFactory<PushMessagingMessageFilter> weak_factory_io_to_io_;
+
+  // TODO(johnme): Remove this, it seems unsafe since this class could be
+  // destroyed on the IO thread while the callback runs on the UI thread.
   base::WeakPtrFactory<PushMessagingMessageFilter> weak_factory_ui_to_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingMessageFilter);

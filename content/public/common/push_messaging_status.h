@@ -31,13 +31,16 @@ enum PushRegistrationStatus {
   // Registration failed because no sender id was provided by the page.
   PUSH_REGISTRATION_STATUS_NO_SENDER_ID = 6,
 
+  // Registration succeeded, but we failed to persist it.
+  PUSH_REGISTRATION_STATUS_STORAGE_ERROR = 7,
+
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
   // update PUSH_REGISTRATION_STATUS_LAST below.
 
   // Used for IPC message range checks.
-  PUSH_REGISTRATION_STATUS_LAST = PUSH_REGISTRATION_STATUS_NO_SENDER_ID
+  PUSH_REGISTRATION_STATUS_LAST = PUSH_REGISTRATION_STATUS_STORAGE_ERROR
 };
 
 // Push message delivery success / error codes for internal use.

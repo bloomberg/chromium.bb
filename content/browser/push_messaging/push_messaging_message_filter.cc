@@ -11,7 +11,9 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/push_messaging_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,10 +25,15 @@ namespace content {
 namespace {
 
 void RecordRegistrationStatus(PushRegistrationStatus status) {
+  // Called from both UI and IO threads. Slightly racy, but acceptable, see
+  // https://groups.google.com/a/chromium.org/d/msg/chromium-dev/FNzZRJtN2aw/Aw0CWAXJJ1kJ
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.RegistrationStatus",
                             status,
                             PUSH_REGISTRATION_STATUS_LAST + 1);
 }
+
+const char kPushRegistrationIdServiceWorkerKey[] =
+    "push_registration_id";
 
 }  // namespace
 
@@ -47,6 +54,7 @@ PushMessagingMessageFilter::PushMessagingMessageFilter(
       render_process_id_(render_process_id),
       service_worker_context_(service_worker_context),
       service_(NULL),
+      weak_factory_io_to_io_(this),
       weak_factory_ui_to_ui_(this) {
 }
 
@@ -240,14 +248,46 @@ void PushMessagingMessageFilter::DidRegister(
     PushRegistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (status == PUSH_REGISTRATION_STATUS_SUCCESS) {
-    SendRegisterSuccess(data, push_registration_id);
+    GURL push_endpoint(service()->GetPushEndpoint());
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&PushMessagingMessageFilter::PersistRegistrationOnIO,
+                   this, data, push_endpoint, push_registration_id));
   } else {
     SendRegisterError(data, status);
   }
 }
 
+void PushMessagingMessageFilter::PersistRegistrationOnIO(
+    const RegisterData& data,
+    const GURL& push_endpoint,
+    const std::string& push_registration_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  service_worker_context_->context()->storage()->StoreUserData(
+      data.service_worker_registration_id,
+      data.requesting_origin,
+      kPushRegistrationIdServiceWorkerKey,
+      push_registration_id,
+      base::Bind(&PushMessagingMessageFilter::DidPersistRegistrationOnIO,
+                 weak_factory_io_to_io_.GetWeakPtr(),
+                 data, push_endpoint, push_registration_id));
+}
+
+void PushMessagingMessageFilter::DidPersistRegistrationOnIO(
+    const RegisterData& data,
+    const GURL& push_endpoint,
+    const std::string& push_registration_id,
+    ServiceWorkerStatusCode service_worker_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (service_worker_status == SERVICE_WORKER_OK)
+    SendRegisterSuccess(data, push_endpoint, push_registration_id);
+  else
+    SendRegisterError(data, PUSH_REGISTRATION_STATUS_STORAGE_ERROR);
+}
+
 void PushMessagingMessageFilter::SendRegisterError(
     const RegisterData& data, PushRegistrationStatus status) {
+  // May be called from both IO and UI threads.
   if (data.FromDocument()) {
     Send(new PushMessagingMsg_RegisterFromDocumentError(
       data.render_frame_id, data.request_id, status));
@@ -259,8 +299,10 @@ void PushMessagingMessageFilter::SendRegisterError(
 }
 
 void PushMessagingMessageFilter::SendRegisterSuccess(
-    const RegisterData& data, const std::string& push_registration_id) {
-  GURL push_endpoint(service()->GetPushEndpoint());
+    const RegisterData& data,
+    const GURL& push_endpoint,
+    const std::string& push_registration_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (data.FromDocument()) {
     Send(new PushMessagingMsg_RegisterFromDocumentSuccess(
         data.render_frame_id,
