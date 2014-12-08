@@ -9,42 +9,34 @@
 import random
 import time
 
-from pylib import cmd_helper
-from pylib.device import device_errors
-
-
 class DeviceTempFile(object):
-  def __init__(self, adb, prefix='temp_file', suffix=''):
+  def __init__(self, device, prefix='temp_file', suffix=''):
     """Find an unused temporary file path in the devices external directory.
 
     When this object is closed, the file will be deleted on the device.
 
     Args:
-      adb: An instance of AdbWrapper
+      device: An instance of DeviceUtils
       prefix: The prefix of the name of the temp file.
       suffix: The suffix of the name of the temp file.
     """
-    self._adb = adb
-    external_storage = self._adb.Shell('echo $EXTERNAL_STORAGE').rstrip()
-    # make sure that external storage is readable
-    self._adb.Shell('test -d %s' % external_storage)
+    self._device = device
     while True:
-      self.name = '{path}/{prefix}-{time:d}-{nonce:d}{suffix}'.format(
-        path=external_storage, prefix=prefix, time=int(time.time()),
-        nonce=random.randint(0, 1000000), suffix=suffix)
-      self.name_quoted = cmd_helper.SingleQuote(self.name)
-      try:
-        self._adb.Shell('test -e %s' % self.name_quoted)
-      except device_errors.AdbCommandFailedError:
-        break # file does not exist
-
-    # Immediately touch the file, so other temp files can't get the same name.
-    self._adb.Shell('touch %s' % self.name_quoted)
+      i = random.randint(0, 1000000)
+      self.name = '%s/%s-%d-%010d%s' % (
+          self._device.GetExternalStoragePath(),
+          prefix, int(time.time()), i, suffix)
+      if not self._device.FileExists(self.name):
+        break
+    # Immediately create an empty file so that other temp files can't
+    # be given the same name.
+    # |as_root| must be set to False due to the implementation of |WriteFile|.
+    # Having |as_root| be True may cause infinite recursion.
+    self._device.WriteFile(self.name, '', as_root=False)
 
   def close(self):
     """Deletes the temporary file from the device."""
-    # we use -f to ignore errors if the file is already gone
-    self._adb.Shell('rm -f %s' % self.name_quoted)
+    self._device.RunShellCommand(['rm', self.name])
 
   def __enter__(self):
     return self
