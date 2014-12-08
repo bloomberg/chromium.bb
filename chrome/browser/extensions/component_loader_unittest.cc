@@ -250,7 +250,8 @@ TEST_F(ComponentLoaderTest, AddOrReplace) {
   base::FilePath known_extension = GetBasePath()
       .AppendASCII("override_component_extension");
   base::FilePath unknow_extension = extension_path_;
-  base::FilePath invalid_extension = GetBasePath().AppendASCII("bad");
+  base::FilePath invalid_extension = GetBasePath()
+      .AppendASCII("this_path_does_not_exist");
 
   // Replace a default component extension.
   component_loader_.AddOrReplace(known_extension);

@@ -25,6 +25,8 @@ const char kNoCodeOrFileToExecuteError[] = "No source code or file specified.";
 const char kMoreThanOneValuesError[] =
     "Code and file should not be specified "
     "at the same time in the second argument.";
+const char kBadFileEncodingError[] =
+    "Could not load file '*' for content script. It isn't UTF-8 encoded.";
 const char kLoadFileError[] = "Failed to load file: \"*\". ";
 
 }
@@ -107,7 +109,11 @@ void ExecuteCodeFunction::GetFileURLAndLocalizeCSS(
 void ExecuteCodeFunction::DidLoadAndLocalizeFile(bool success,
                                                  const std::string& data) {
   if (success) {
-    if (!Execute(data))
+    if (!base::IsStringUTF8(data)) {
+      error_ = ErrorUtils::FormatErrorMessage(
+          kBadFileEncodingError, resource_.relative_path().AsUTF8Unsafe());
+      SendResponse(false);
+    } else if (!Execute(data))
       SendResponse(false);
   } else {
     // TODO(viettrungluu): bug: there's no particular reason the path should be
