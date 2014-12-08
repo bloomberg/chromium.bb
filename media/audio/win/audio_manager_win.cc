@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
@@ -393,6 +394,7 @@ AudioInputStream* AudioManagerWin::MakeLowLatencyInputStream(
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
   DVLOG(1) << "MakeLowLatencyInputStream: " << device_id;
   AudioInputStream* stream = NULL;
+  UMA_HISTOGRAM_BOOLEAN("Media.WindowsCoreAudioInput", core_audio_supported());
   if (!core_audio_supported()) {
     // Fall back to Windows Wave implementation on Windows XP or lower.
     DVLOG(1) << "Using WaveIn since WASAPI requires at least Vista.";

@@ -12852,6 +12852,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.WindowsCoreAudioInput" enum="BooleanSuccess">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Whether Chrome is using Windows Core Audio for audio input or not. Updated
+    on Windows only when a low-latency audio input stream is created.
+  </summary>
+</histogram>
+
 <histogram name="Media.YouTube.DelayedAndDroppedFramesPer5Sec"
     units="frames/5s">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
