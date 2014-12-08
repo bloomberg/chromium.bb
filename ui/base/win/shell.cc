@@ -148,9 +148,9 @@ bool IsAeroGlassEnabled() {
       switches::kDisableDwmComposition))
     return false;
 
-  base::win::Version version = base::win::GetVersion();
-  base::debug::Alias(&version);  // TODO(scottmg): http://crbug.com/431549.
-  if (version < base::win::VERSION_VISTA)
+  // Technically Aero glass works in Vista but we want to put XP and Vista
+  // at the same feature level. See bug 426573.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return false;
   // If composition is not enabled, we behave like on XP.
   BOOL enabled = FALSE;
