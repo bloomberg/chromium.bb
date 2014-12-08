@@ -38,7 +38,6 @@ public:
     virtual FloatWillBeLayoutUnit virtualLogicalHeight() const override { return m_logicalHeight; }
     void setLogicalHeight(FloatWillBeLayoutUnit h) { m_logicalHeight = h; }
 
-    void paintSelectionBackground(const PaintInfo&);
     virtual void paint(const PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
 
     virtual FloatRectWillBeLayoutRect calculateBoundaries() const override;
