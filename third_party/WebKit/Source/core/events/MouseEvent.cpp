@@ -68,7 +68,7 @@ PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& eventT
 }
 
 PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,
-    int detail, int screenX, int screenY, int pageX, int pageY,
+    int detail, int screenX, int screenY, int windowX, int windowY,
     int movementX, int movementY,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
     unsigned short button, unsigned short buttons,
@@ -76,7 +76,7 @@ PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& type, 
     double uiCreateTime)
 {
     return adoptRefWillBeNoop(new MouseEvent(type, canBubble, cancelable, view,
-        detail, screenX, screenY, pageX, pageY,
+        detail, screenX, screenY, windowX, windowY,
         movementX, movementY,
         ctrlKey, altKey, shiftKey, metaKey, button, buttons, relatedTarget, dataTransfer, isSimulated, syntheticEventType, uiCreateTime));
 }
@@ -89,16 +89,16 @@ MouseEvent::MouseEvent()
 }
 
 MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,
-    int detail, int screenX, int screenY, int pageX, int pageY,
+    int detail, int screenX, int screenY, int windowX, int windowY,
     int movementX, int movementY,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
     unsigned short button, unsigned short buttons, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
     PassRefPtrWillBeRawPtr<DataTransfer> dataTransfer, bool isSimulated, PlatformMouseEvent::SyntheticEventType syntheticEventType,
     double uiCreateTime)
     : MouseRelatedEvent(eventType, canBubble, cancelable, view, detail, IntPoint(screenX, screenY),
-                        IntPoint(pageX, pageY),
-                        IntPoint(movementX, movementY),
-                        ctrlKey, altKey, shiftKey, metaKey, isSimulated)
+        IntPoint(windowX, windowY),
+        IntPoint(movementX, movementY),
+        ctrlKey, altKey, shiftKey, metaKey, isSimulated)
     , m_button(button == (unsigned short)-1 ? 0 : button)
     , m_buttons(buttons)
     , m_buttonDown(button != (unsigned short)-1)

@@ -58,7 +58,7 @@ public:
     }
 
     static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
-        int detail, int screenX, int screenY, int pageX, int pageY,
+        int detail, int screenX, int screenY, int windowX, int windowY,
         int movementX, int movementY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button, unsigned short buttons,
         PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<DataTransfer>,
@@ -103,7 +103,7 @@ public:
 
 protected:
     MouseEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
-        int detail, int screenX, int screenY, int pageX, int pageY,
+        int detail, int screenX, int screenY, int windowX, int windowY,
         int movementX, int movementY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button, unsigned short buttons,
         PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<DataTransfer>,
