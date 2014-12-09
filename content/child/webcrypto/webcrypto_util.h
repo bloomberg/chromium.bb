@@ -81,6 +81,13 @@ Status GetRsaKeyGenParameters(
     unsigned int* public_exponent,
     unsigned int* modulus_length_bits);
 
+// Verifies that |usages| is valid when importing a key of the given format.
+Status VerifyUsagesBeforeImportAsymmetricKey(
+    blink::WebCryptoKeyFormat format,
+    blink::WebCryptoKeyUsageMask all_public_key_usages,
+    blink::WebCryptoKeyUsageMask all_private_key_usages,
+    blink::WebCryptoKeyUsageMask usages);
+
 }  // namespace webcrypto
 
 }  // namespace content

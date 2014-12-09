@@ -262,6 +262,31 @@ Status GetRsaKeyGenParameters(
   return Status::Success();
 }
 
+Status VerifyUsagesBeforeImportAsymmetricKey(
+    blink::WebCryptoKeyFormat format,
+    blink::WebCryptoKeyUsageMask all_public_key_usages,
+    blink::WebCryptoKeyUsageMask all_private_key_usages,
+    blink::WebCryptoKeyUsageMask usages) {
+  switch (format) {
+    case blink::WebCryptoKeyFormatSpki:
+      return CheckKeyCreationUsages(all_public_key_usages, usages);
+    case blink::WebCryptoKeyFormatPkcs8:
+      return CheckKeyCreationUsages(all_private_key_usages, usages);
+    case blink::WebCryptoKeyFormatJwk: {
+      // The JWK could represent either a public key or private key. The usages
+      // must make sense for one of the two. The usages will be checked again by
+      // ImportKeyJwk() once the key type has been determined.
+      if (CheckKeyCreationUsages(all_public_key_usages, usages).IsError() &&
+          CheckKeyCreationUsages(all_private_key_usages, usages).IsError()) {
+        return Status::ErrorCreateKeyBadUsages();
+      }
+      return Status::Success();
+    }
+    default:
+      return Status::ErrorUnsupportedImportKeyFormat();
+  }
+}
+
 }  // namespace webcrypto
 
 }  // namespace content

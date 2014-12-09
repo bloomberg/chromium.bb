@@ -234,23 +234,8 @@ Status RsaHashedAlgorithm::GenerateKey(
 Status RsaHashedAlgorithm::VerifyKeyUsagesBeforeImportKey(
     blink::WebCryptoKeyFormat format,
     blink::WebCryptoKeyUsageMask usages) const {
-  switch (format) {
-    case blink::WebCryptoKeyFormatSpki:
-      return CheckKeyCreationUsages(all_public_key_usages_, usages);
-    case blink::WebCryptoKeyFormatPkcs8:
-      return CheckKeyCreationUsages(all_private_key_usages_, usages);
-    case blink::WebCryptoKeyFormatJwk:
-      // The JWK could represent either a public key or private key. The usages
-      // must make sense for one of the two. The usages will be checked again by
-      // ImportKeyJwk() once the key type has been determined.
-      if (CheckKeyCreationUsages(all_private_key_usages_, usages).IsSuccess() ||
-          CheckKeyCreationUsages(all_public_key_usages_, usages).IsSuccess()) {
-        return Status::Success();
-      }
-      return Status::ErrorCreateKeyBadUsages();
-    default:
-      return Status::ErrorUnsupportedImportKeyFormat();
-  }
+  return VerifyUsagesBeforeImportAsymmetricKey(format, all_public_key_usages_,
+                                               all_private_key_usages_, usages);
 }
 
 Status RsaHashedAlgorithm::ImportKeyPkcs8(
