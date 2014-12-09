@@ -782,8 +782,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 }
 
-// Ensure that A-embed-B-embed-C pages load properly.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteTwoLevelNesting) {
+// Verify that origin replication works for an A-embed-B-embed-C hierarchy.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -798,8 +798,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteTwoLevelNesting) {
   // NavigateFrameToURL can't be used here because it doesn't guarantee that
   // FrameTreeNodes will have been created for child frames when it returns.
   RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 3);
-  GURL url(embedded_test_server()->GetURL("foo.com", "/frame_tree/1-1.html"));
-  NavigationController::LoadURLParams params(url);
+  GURL foo_url(
+      embedded_test_server()->GetURL("foo.com", "/frame_tree/1-1.html"));
+  NavigationController::LoadURLParams params(foo_url);
   params.transition_type = ui::PAGE_TRANSITION_LINK;
   params.frame_tree_node_id = root->child_at(0)->frame_tree_node_id();
   root->child_at(0)->navigator()->GetController()->LoadURLWithParams(params);
@@ -807,7 +808,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteTwoLevelNesting) {
 
   // We can't use a SitePerProcessWebContentsObserver to verify the URL here,
   // since the frame has children that may have clobbered it in the observer.
-  EXPECT_EQ(url, root->child_at(0)->current_url());
+  EXPECT_EQ(foo_url, root->child_at(0)->current_url());
 
   // Ensure that a new process is created for the subframe.
   EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
@@ -815,10 +816,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteTwoLevelNesting) {
 
   // Load cross-site page into subframe's subframe.
   ASSERT_EQ(2U, root->child_at(0)->child_count());
-  url = embedded_test_server()->GetURL("bar.com", "/title1.html");
-  NavigateFrameToURL(root->child_at(0)->child_at(0), url);
+  GURL bar_url(embedded_test_server()->GetURL("bar.com", "/title1.html"));
+  NavigateFrameToURL(root->child_at(0)->child_at(0), bar_url);
   EXPECT_TRUE(observer.navigation_succeeded());
-  EXPECT_EQ(url, observer.navigation_url());
+  EXPECT_EQ(bar_url, observer.navigation_url());
 
   // Check that a new process is created and is different from the top one and
   // the middle one.
@@ -827,6 +828,44 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteTwoLevelNesting) {
             bottom_child->current_frame_host()->GetSiteInstance());
   EXPECT_NE(root->child_at(0)->current_frame_host()->GetSiteInstance(),
             bottom_child->current_frame_host()->GetSiteInstance());
+
+  // Check that foo.com frame's location.ancestorOrigins contains the correct
+  // origin for the parent.  The origin should have been replicated as part of
+  // the ViewMsg_New message that created the parent's RenderFrameProxy in
+  // foo.com's process.
+  int ancestor_origins_length = 0;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send(location.ancestorOrigins.length);",
+      &ancestor_origins_length));
+  EXPECT_EQ(1, ancestor_origins_length);
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root->child_at(0)->current_frame_host(),
+      "window.domAutomationController.send(location.ancestorOrigins[0]);",
+      &result));
+  EXPECT_EQ(result + "/", main_url.GetOrigin().spec());
+
+  // Check that bar.com frame's location.ancestorOrigins contains the correct
+  // origin for its two ancestors. The topmost parent origin should be
+  // replicated as part of ViewMsg_New, and the middle frame (foo.com's) origin
+  // should be replicated as part of FrameMsg_NewFrameProxy sent for foo.com's
+  // frame in bar.com's process.
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      bottom_child->current_frame_host(),
+      "window.domAutomationController.send(location.ancestorOrigins.length);",
+      &ancestor_origins_length));
+  EXPECT_EQ(2, ancestor_origins_length);
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      bottom_child->current_frame_host(),
+      "window.domAutomationController.send(location.ancestorOrigins[0]);",
+      &result));
+  EXPECT_EQ(result + "/", foo_url.GetOrigin().spec());
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      bottom_child->current_frame_host(),
+      "window.domAutomationController.send(location.ancestorOrigins[1]);",
+      &result));
+  EXPECT_EQ(result + "/", main_url.GetOrigin().spec());
 }
 
 }  // namespace content
