@@ -117,13 +117,13 @@ bool DevToolsProtocol::ParseResponse(const std::string& json,
                                      int* error_code) {
   scoped_ptr<base::Value> value(base::JSONReader::Read(json));
   if (!value || !value->IsType(base::Value::TYPE_DICTIONARY))
-    return nullptr;
+    return false;
 
   scoped_ptr<base::DictionaryValue> dict(
       static_cast<base::DictionaryValue*>(value.release()));
 
   if (!dict->GetInteger(kIdParam, command_id))
-    return nullptr;
+    return false;
 
   *error_code = 0;
   base::DictionaryValue* error_dict = nullptr;
