@@ -34,6 +34,9 @@ static const base::FilePath::CharType kReferenceFile[] =
     FILE_PATH_LITERAL("human-voice-linux.wav");
 #endif
 
+static const base::FilePath::CharType kAgcTestReferenceFile[] =
+    FILE_PATH_LITERAL("speech_44kHz_16bit_stereo.wav");
+
 // The javascript will load the reference file relative to its location,
 // which is in /webrtc on the web server. The files we are looking for are in
 // webrtc/resources in the chrome/test/data folder.
@@ -46,8 +49,15 @@ static const char kReferenceFileRelativeUrl[] =
     "resources/human-voice-linux.wav";
 #endif
 
-static const char kMainWebrtcTestHtmlPage[] =
+static const char kWebRtcAudioTestHtmlPage[] =
     "/webrtc/webrtc_audio_quality_test.html";
+
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_WebRtcAudioQualityBrowserTest WebRtcAudioQualityBrowserTest
+#else
+// Not implemented on Android, ChromeOS etc.
+#define MAYBE_WebRtcAudioQualityBrowserTest DISABLED_WebRtcAudioQualityBrowserTest
+#endif
 
 // Test we can set up a WebRTC call and play audio through it.
 //
@@ -105,29 +115,36 @@ static const char kMainWebrtcTestHtmlPage[] =
 //    50 / 100 in level. Also go into the playback tab, right-click Speakers,
 //    and set that level to 50 / 100. Otherwise you will get distortion in
 //    the recording.
-class WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
+class MAYBE_WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
  public:
-  WebRtcAudioQualityBrowserTest() {}
+  MAYBE_WebRtcAudioQualityBrowserTest() {}
   void SetUpInProcessBrowserTestFixture() override {
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
   void SetUpCommandLine(CommandLine* command_line) override {
-    // This test expects real device handling and requires a real webcam / audio
-    // device; it will not work with fake devices.
-    EXPECT_FALSE(command_line->HasSwitch(
-        switches::kUseFakeDeviceForMediaStream));
     EXPECT_FALSE(command_line->HasSwitch(
         switches::kUseFakeUIForMediaStream));
+
+    // The WebAudio-based tests don't care what devices are available to
+    // getUserMedia, and the getUserMedia-based tests will play back a file
+    // through the fake device using using --use-file-for-fake-audio-capture.
+    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   }
 
-  void AddAudioFile(const std::string& input_file_relative_url,
-                    content::WebContents* tab_contents) {
+  void ConfigureFakeDeviceToPlayFile(const base::FilePath& wav_file_path) {
+    CommandLine::ForCurrentProcess()->AppendSwitchPath(
+        switches::kUseFileForFakeAudioCapture, wav_file_path);
+  }
+
+  void AddAudioFileToWebAudio(const std::string& input_file_relative_url,
+                              content::WebContents* tab_contents) {
+    // This calls into webaudio.js.
     EXPECT_EQ("ok-added", ExecuteJavascript(
         "addAudioFile('" + input_file_relative_url + "')", tab_contents));
   }
 
-  void PlayAudioFile(content::WebContents* tab_contents) {
+  void PlayAudioFileThroughWebAudio(content::WebContents* tab_contents) {
     EXPECT_EQ("ok-playing", ExecuteJavascript("playAudioFile()", tab_contents));
   }
 
@@ -138,6 +155,20 @@ class WebRtcAudioQualityBrowserTest : public WebRtcTestBase {
         filename.AddExtension(FILE_PATH_LITERAL(".wav"));
     EXPECT_TRUE(base::Move(filename, wav_filename));
     return wav_filename;
+  }
+
+  content::WebContents* OpenPageWithoutGetUserMedia(const char* url) {
+    chrome::AddTabAt(browser(), GURL(), -1, true);
+    ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL(url));
+    content::WebContents* tab =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    // Prepare the peer connections manually in this test since we don't add
+    // getUserMedia-derived media streams in this test like the other tests.
+    EXPECT_EQ("ok-peerconnection-created",
+              ExecuteJavascript("preparePeerConnection()", tab));
+    return tab;
   }
 };
 
@@ -391,15 +422,8 @@ bool RunPesq(const base::FilePath& reference_file,
   return true;
 }
 
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_MANUAL_TestAudioQuality MANUAL_TestAudioQuality
-#else
-// Not implemented on Android, ChromeOS etc.
-#define MAYBE_MANUAL_TestAudioQuality DISABLED_MANUAL_TestAudioQuality
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebRtcAudioQualityBrowserTest,
-                       MAYBE_MANUAL_TestAudioQuality) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
+                       MANUAL_TestAudioQuality) {
   if (OnWinXp()) {
     LOG(ERROR) << "This test is not implemented for Windows XP.";
     return;
@@ -414,32 +438,18 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioQualityBrowserTest,
 
   ASSERT_TRUE(ForceMicrophoneVolumeTo100Percent());
 
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
   content::WebContents* left_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  chrome::AddTabAt(browser(), GURL(), -1, true);
+      OpenPageWithoutGetUserMedia(kWebRtcAudioTestHtmlPage);
   content::WebContents* right_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
+      OpenPageWithoutGetUserMedia(kWebRtcAudioTestHtmlPage);
 
-  // Prepare the peer connections manually in this test since we don't add
-  // getUserMedia-derived media streams in this test like the other tests.
-  EXPECT_EQ("ok-peerconnection-created",
-            ExecuteJavascript("preparePeerConnection()", left_tab));
-  EXPECT_EQ("ok-peerconnection-created",
-            ExecuteJavascript("preparePeerConnection()", right_tab));
-
-  AddAudioFile(kReferenceFileRelativeUrl, left_tab);
+  AddAudioFileToWebAudio(kReferenceFileRelativeUrl, left_tab);
 
   NegotiateCall(left_tab, right_tab);
 
   // Note: the media flow isn't necessarily established on the connection just
   // because the ready state is ok on both sides. We sleep a bit between call
-  // establishment and playing to avoid cutting of the beginning of the audio
-  // file.
+  // establishment and playing to avoid cutting off the beginning of the stream.
   test::SleepInJavascript(left_tab, 2000);
 
   base::FilePath recording = CreateTemporaryWaveFile();
@@ -450,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioQualityBrowserTest,
   static int kRecordingTimeSeconds = 15;
   ASSERT_TRUE(recorder.StartRecording(kRecordingTimeSeconds, recording, true));
 
-  PlayAudioFile(left_tab);
+  PlayAudioFileThroughWebAudio(left_tab);
 
   ASSERT_TRUE(recorder.WaitForRecordingToEnd());
   DVLOG(0) << "Done recording to " << recording.value() << std::endl;
@@ -471,6 +481,60 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioQualityBrowserTest,
 
   perf_test::PrintResult("audio_pesq", "", "raw_mos", raw_mos, "score", true);
   perf_test::PrintResult("audio_pesq", "", "mos_lqo", mos_lqo, "score", true);
+
+  EXPECT_TRUE(base::DeleteFile(recording, false));
+  EXPECT_TRUE(base::DeleteFile(trimmed_recording, false));
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
+                       MANUAL_TestAutoGainControlIncreasesEnergyForLowAudio) {
+  if (OnWinXp()) {
+    LOG(ERROR) << "This test is not implemented for Windows XP.";
+    return;
+  }
+  if (OnWin8()) {
+    // http://crbug.com/379798.
+    LOG(ERROR) << "Temporarily disabled for Win 8.";
+    return;
+  }
+  ASSERT_TRUE(test::HasReferenceFilesInCheckout());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  ASSERT_TRUE(ForceMicrophoneVolumeTo100Percent());
+
+  ConfigureFakeDeviceToPlayFile(
+      test::GetReferenceFilesDir().Append(kAgcTestReferenceFile));
+
+  // Create a one-way call.
+  GURL test_page = embedded_test_server()->GetURL(kWebRtcAudioTestHtmlPage);
+  content::WebContents* left_tab =
+      OpenPageAndGetUserMediaInNewTabWithConstraints(test_page,
+                                                     kAudioOnlyCallConstraints);
+  SetupPeerconnectionWithLocalStream(left_tab);
+
+  content::WebContents* right_tab =
+      OpenPageWithoutGetUserMedia(kWebRtcAudioTestHtmlPage);
+
+  NegotiateCall(left_tab, right_tab);
+
+  base::FilePath recording = CreateTemporaryWaveFile();
+
+  AudioRecorder recorder;
+  static int kRecordingTimeSeconds = 10;
+  ASSERT_TRUE(recorder.StartRecording(kRecordingTimeSeconds, recording, true));
+
+  ASSERT_TRUE(recorder.WaitForRecordingToEnd());
+  DVLOG(0) << "Done recording to " << recording.value() << std::endl;
+
+  HangUp(left_tab);
+
+  base::FilePath trimmed_recording = CreateTemporaryWaveFile();
+
+  ASSERT_TRUE(RemoveSilence(recording, trimmed_recording));
+  DVLOG(0) << "Trimmed silence: " << trimmed_recording.value() << std::endl;
+
+  // TODO(phoglund): invoke bjornv's audio energy analysis tool on the trimmed
+  // recording and log the result.
 
   EXPECT_TRUE(base::DeleteFile(recording, false));
   EXPECT_TRUE(base::DeleteFile(trimmed_recording, false));

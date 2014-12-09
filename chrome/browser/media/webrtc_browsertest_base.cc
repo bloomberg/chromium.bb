@@ -185,10 +185,6 @@ WebRtcTestBase::OpenPageAndGetUserMediaInNewTabWithConstraints(
     const std::string& constraints) const {
   chrome::AddTabAt(browser(), GURL(), -1, true);
   ui_test_utils::NavigateToURL(browser(), url);
-#if defined (OS_LINUX)
-  // Load the page again on Linux to work around crbug.com/281268.
-  ui_test_utils::NavigateToURL(browser(), url);
-#endif
   content::WebContents* new_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   GetUserMediaWithSpecificConstraintsAndAccept(new_tab, constraints);
