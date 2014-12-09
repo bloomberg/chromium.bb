@@ -6,7 +6,6 @@
 
 #include "remoting/host/desktop_session_proxy.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
-#include "third_party/webrtc/modules/desktop_capture/mouse_cursor_shape.h"
 
 namespace remoting {
 

@@ -11,7 +11,6 @@
 #include "remoting/host/screen_resolution.h"
 #include "remoting/protocol/transport.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
-#include "third_party/webrtc/modules/desktop_capture/mouse_cursor_shape.h"
 
 #endif  // REMOTING_HOST_CHROMOTING_MESSAGES_H_
 
