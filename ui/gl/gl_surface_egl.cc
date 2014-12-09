@@ -395,12 +395,12 @@ bool NativeViewGLSurfaceEGL::Initialize(
     return false;
   }
 
-  EGLint surfaceVal;
-  EGLBoolean retVal = eglQuerySurface(GetDisplay(),
-                                      surface_,
-                                      EGL_POST_SUB_BUFFER_SUPPORTED_NV,
-                                      &surfaceVal);
-  supports_post_sub_buffer_ = (surfaceVal && retVal) == EGL_TRUE;
+  if (gfx::g_driver_egl.ext.b_EGL_NV_post_sub_buffer) {
+    EGLint surfaceVal;
+    EGLBoolean retVal = eglQuerySurface(
+        GetDisplay(), surface_, EGL_POST_SUB_BUFFER_SUPPORTED_NV, &surfaceVal);
+    supports_post_sub_buffer_ = (surfaceVal && retVal) == EGL_TRUE;
+  }
 
   if (sync_provider)
     vsync_provider_.reset(sync_provider.release());
