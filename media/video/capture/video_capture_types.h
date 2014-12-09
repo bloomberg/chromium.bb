@@ -20,6 +20,7 @@ typedef int VideoCaptureSessionId;
 enum VideoPixelFormat {
   PIXEL_FORMAT_I420,
   PIXEL_FORMAT_YV12,
+  PIXEL_FORMAT_NV12,
   PIXEL_FORMAT_NV21,
   PIXEL_FORMAT_UYVY,
   PIXEL_FORMAT_YUY2,

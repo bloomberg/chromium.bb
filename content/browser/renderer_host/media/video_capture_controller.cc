@@ -422,6 +422,10 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
       DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_YV12;
       break;
+    case media::PIXEL_FORMAT_NV12:
+      DCHECK(!chopped_width && !chopped_height);
+      origin_colorspace = libyuv::FOURCC_NV12;
+      break;
     case media::PIXEL_FORMAT_NV21:
       DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_NV21;

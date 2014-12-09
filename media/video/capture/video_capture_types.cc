@@ -54,6 +54,8 @@ std::string VideoCaptureFormat::PixelFormatToString(VideoPixelFormat format) {
     return "ARGB";
   case PIXEL_FORMAT_MJPEG:
     return "MJPEG";
+  case PIXEL_FORMAT_NV12:
+    return "NV12";
   case PIXEL_FORMAT_NV21:
     return "NV21";
   case PIXEL_FORMAT_YV12:
