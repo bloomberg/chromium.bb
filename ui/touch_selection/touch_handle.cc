@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/touch_handle.h"
+#include "ui/touch_selection/touch_handle.h"
 
 #include <cmath>
 
-namespace content {
+namespace ui {
 
 namespace {
 
@@ -113,15 +113,15 @@ void TouchHandle::SetOrientation(TouchHandleOrientation orientation) {
   drawable_->SetOrientation(orientation);
 }
 
-bool TouchHandle::WillHandleTouchEvent(const ui::MotionEvent& event) {
+bool TouchHandle::WillHandleTouchEvent(const MotionEvent& event) {
   if (!enabled_)
     return false;
 
-  if (!is_dragging_ && event.GetAction() != ui::MotionEvent::ACTION_DOWN)
+  if (!is_dragging_ && event.GetAction() != MotionEvent::ACTION_DOWN)
     return false;
 
   switch (event.GetAction()) {
-    case ui::MotionEvent::ACTION_DOWN: {
+    case MotionEvent::ACTION_DOWN: {
       if (!is_visible_)
         return false;
       const float touch_size = std::max(
@@ -139,7 +139,7 @@ bool TouchHandle::WillHandleTouchEvent(const ui::MotionEvent& event) {
       BeginDrag();
     } break;
 
-    case ui::MotionEvent::ACTION_MOVE: {
+    case MotionEvent::ACTION_MOVE: {
       gfx::PointF touch_move_position(event.GetX(), event.GetY());
       if (is_drag_within_tap_region_) {
         const float tap_slop = client_->GetTapSlop();
@@ -154,7 +154,7 @@ bool TouchHandle::WillHandleTouchEvent(const ui::MotionEvent& event) {
                                   touch_move_position + touch_to_focus_offset_);
     } break;
 
-    case ui::MotionEvent::ACTION_UP: {
+    case MotionEvent::ACTION_UP: {
       if (is_drag_within_tap_region_ &&
           (event.GetEventTime() - touch_down_time_) <
               client_->GetTapTimeout()) {
@@ -164,7 +164,7 @@ bool TouchHandle::WillHandleTouchEvent(const ui::MotionEvent& event) {
       EndDrag();
     } break;
 
-    case ui::MotionEvent::ACTION_CANCEL:
+    case MotionEvent::ACTION_CANCEL:
       EndDrag();
       break;
 
@@ -261,4 +261,4 @@ void TouchHandle::SetAlpha(float alpha) {
   drawable_->SetAlpha(alpha);
 }
 
-}  // namespace content
+}  // namespace ui

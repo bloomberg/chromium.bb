@@ -133,6 +133,7 @@ group("root") {
     "//ui/snapshot",
     "//ui/strings",
     "//ui/surface",
+    "//ui/touch_selection",
     "//ui/views",
     "//ui/views/controls/webview",
     "//ui/web_dialogs",
@@ -297,6 +298,12 @@ group("root") {
     ]
   }
 
+  if (is_mac || is_ios) {
+    deps -= [
+      "//ui/touch_selection",
+    ]
+  }
+
   if (is_win) {
     deps -= [
       "//apps",
@@ -354,6 +361,7 @@ group("root") {
       "//ui/native_theme",
       "//ui/snapshot",
       "//ui/surface",
+      "//ui/touch_selection",
       "//ui/views",
       "//ui/views/controls/webview",
       "//ui/web_dialogs",

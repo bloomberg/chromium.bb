@@ -435,6 +435,7 @@
             '../mojo/public/mojo_public.gyp:mojo_bindings_java',
             '../net/net.gyp:net',
             '../ui/android/ui_android.gyp:ui_java',
+            '../ui/touch_selection/ui_touch_selection.gyp:selection_event_type_java',
             'common_aidl',
             'content_common',
             'content_strings_grd',
@@ -442,7 +443,6 @@
             'gesture_event_type_java',
             'popup_item_type_java',
             'result_codes_java',
-            'selection_event_type_java',
             'speech_recognition_error_java',
             'top_controls_state_java',
             'screen_orientation_values_java',
@@ -496,14 +496,6 @@
           'type': 'none',
           'variables': {
             'source_file': 'public/common/result_codes.h',
-          },
-          'includes': [ '../build/android/java_cpp_enum.gypi' ],
-        },
-        {
-          'target_name': 'selection_event_type_java',
-          'type': 'none',
-          'variables': {
-            'source_file': 'browser/renderer_host/input/selection_event_type.h',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },

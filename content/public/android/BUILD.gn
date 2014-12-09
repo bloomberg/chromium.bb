@@ -46,6 +46,7 @@ android_library("content_java") {
   srcjar_deps = [
     ":common_aidl",
     ":content_public_android_java_enums_srcjar",
+    "//ui/touch_selection:ui_touch_selection_enums_srcjar",
   ]
 
   DEPRECATED_java_in_dir = "java/src"
@@ -105,7 +106,6 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
   sources = [
     "//content/browser/android/content_view_core_impl.cc",
     "//content/browser/android/gesture_event_type.h",
-    "//content/browser/renderer_host/input/selection_event_type.h",
     "//content/browser/gamepad/gamepad_standard_mappings.h",
     "//content/public/common/result_codes.h",
     "//content/public/common/screen_orientation_values.h",
@@ -117,7 +117,6 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
     "org/chromium/content/browser/input/CanonicalAxisIndex.java",
     "org/chromium/content/browser/input/CanonicalButtonIndex.java",
     "org/chromium/content/browser/input/PopupItemType.java",
-    "org/chromium/content/browser/input/SelectionEventType.java",
     "org/chromium/content_public/common/ResultCode.java",
     "org/chromium/content_public/common/ScreenOrientationValues.java",
     "org/chromium/content_public/common/SpeechRecognitionErrorCode.java",

@@ -95,6 +95,7 @@ include_rules = [
   "+ui/snapshot",
   "+ui/strings/grit/ui_strings.h",
   "+ui/surface",
+  "+ui/touch_selection",
   "+ui/wm",
   # Content knows about grd files, but the specifics of how to get a resource
   # given its id is left to the embedder.

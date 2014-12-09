@@ -29,6 +29,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/touch/selection_bound.h"
 #include "ui/base/touch/touch_editing_controller.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/insets.h"

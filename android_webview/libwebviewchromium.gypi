@@ -21,7 +21,6 @@
         '../content/content.gyp:popup_item_type_java',
         '../content/content.gyp:result_codes_java',
         '../content/content.gyp:screen_orientation_values_java',
-        '../content/content.gyp:selection_event_type_java',
         '../content/content.gyp:speech_recognition_error_java',
         '../content/content.gyp:top_controls_state_java',
         '../media/media.gyp:media_android_imageformat',
@@ -37,6 +36,7 @@
         '../ui/android/ui_android.gyp:touch_device_types_java',
         '../ui/android/ui_android.gyp:window_open_disposition_java',
         '../ui/android/ui_android.gyp:text_input_type_java',
+        '../ui/touch_selection/ui_touch_selection.gyp:selection_event_type_java',
       ],
       # Enable feedback-directed optimisation for the library when building in
       # android.

@@ -30,23 +30,23 @@ void PopupTouchHandleDrawable::SetEnabled(bool enabled) {
 }
 
 void PopupTouchHandleDrawable::SetOrientation(
-    TouchHandleOrientation orientation) {
+    ui::TouchHandleOrientation orientation) {
   JNIEnv* env = base::android::AttachCurrentThread();
   jobject obj = drawable_.obj();
   switch (orientation) {
-    case TOUCH_HANDLE_LEFT:
+    case ui::TOUCH_HANDLE_LEFT:
       Java_PopupTouchHandleDrawable_setLeftOrientation(env, obj);
       break;
 
-    case TOUCH_HANDLE_RIGHT:
+    case ui::TOUCH_HANDLE_RIGHT:
       Java_PopupTouchHandleDrawable_setRightOrientation(env, obj);
       break;
 
-    case TOUCH_HANDLE_CENTER:
+    case ui::TOUCH_HANDLE_CENTER:
       Java_PopupTouchHandleDrawable_setCenterOrientation(env, obj);
       break;
 
-    case TOUCH_HANDLE_ORIENTATION_UNDEFINED:
+    case ui::TOUCH_HANDLE_ORIENTATION_UNDEFINED:
       NOTREACHED() << "Invalid touch handle orientation.";
   };
 }

@@ -5,22 +5,22 @@
 #ifndef CONTENT_BROWSER_ANDROID_POPUP_TOUCH_HANDLE_DRAWABLE_H_
 #define CONTENT_BROWSER_ANDROID_POPUP_TOUCH_HANDLE_DRAWABLE_H_
 
-#include "content/browser/renderer_host/input/touch_handle.h"
+#include "ui/touch_selection/touch_handle.h"
 
 #include "base/android/jni_android.h"
 
 namespace content {
 
 // Touch handle drawable backed by an Android PopupWindow.
-class PopupTouchHandleDrawable : public TouchHandleDrawable {
+class PopupTouchHandleDrawable : public ui::TouchHandleDrawable {
  public:
   PopupTouchHandleDrawable(base::android::ScopedJavaLocalRef<jobject> drawable,
                            float dpi_scale);
   virtual ~PopupTouchHandleDrawable();
 
-  // TouchHandleDrawable implementation.
+  // ui::TouchHandleDrawable implementation.
   virtual void SetEnabled(bool enabled) override;
-  virtual void SetOrientation(TouchHandleOrientation orientation) override;
+  virtual void SetOrientation(ui::TouchHandleOrientation orientation) override;
   virtual void SetAlpha(float alpha) override;
   virtual void SetFocus(const gfx::PointF& position) override;
   virtual bool IntersectsWith(const gfx::RectF& rect) const override;

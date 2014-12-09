@@ -589,7 +589,7 @@ void ContentViewCoreImpl::OnSelectionChanged(const std::string& text) {
   Java_ContentViewCore_onSelectionChanged(env, obj.obj(), jtext.obj());
 }
 
-void ContentViewCoreImpl::OnSelectionEvent(SelectionEventType event,
+void ContentViewCoreImpl::OnSelectionEvent(ui::SelectionEventType event,
                                            const gfx::PointF& position) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
@@ -599,15 +599,15 @@ void ContentViewCoreImpl::OnSelectionEvent(SelectionEventType event,
       env, j_obj.obj(), event, position.x(), position.y());
 }
 
-scoped_ptr<TouchHandleDrawable>
+scoped_ptr<ui::TouchHandleDrawable>
 ContentViewCoreImpl::CreatePopupTouchHandleDrawable() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null()) {
     NOTREACHED();
-    return scoped_ptr<TouchHandleDrawable>();
+    return scoped_ptr<ui::TouchHandleDrawable>();
   }
-  return scoped_ptr<TouchHandleDrawable>(new PopupTouchHandleDrawable(
+  return scoped_ptr<ui::TouchHandleDrawable>(new PopupTouchHandleDrawable(
       Java_ContentViewCore_createPopupTouchHandleDrawable(env, obj.obj()),
       dpi_scale_));
 }
