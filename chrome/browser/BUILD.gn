@@ -584,10 +584,6 @@ static_library("browser") {
       "//components/storage_monitor",
       "//components/web_modal",
     ]
-  } else {
-    sources += rebase_path(gypi_values.chrome_browser_non_android_sources,
-                           ".",
-                           "//chrome")
   }
 
   if (is_mac) {

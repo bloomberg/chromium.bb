@@ -679,8 +679,114 @@
       'browser/password_manager/generated_password_saved_infobar_delegate_android.cc',
       'browser/password_manager/generated_password_saved_infobar_delegate_android.h',
     ],
-    # Used everywhere but Android.
-    'chrome_browser_non_android_sources': [
+    # Cross-platform Ash sources.
+    'chrome_browser_ash_sources': [
+      'browser/media/desktop_media_list_ash.cc',
+      'browser/media/desktop_media_list_ash.h',
+      'browser/signin/signin_error_notifier_ash.cc',
+      'browser/signin/signin_error_notifier_ash.h',
+      'browser/signin/signin_error_notifier_factory_ash.cc',
+      'browser/signin/signin_error_notifier_factory_ash.h',
+      'browser/sync/sync_error_notifier_ash.cc',
+      'browser/sync/sync_error_notifier_ash.h',
+      'browser/sync/sync_error_notifier_factory_ash.cc',
+      'browser/sync/sync_error_notifier_factory_ash.h',
+    ],
+    # Cross-platform Aura files.
+    'chrome_browser_aura_sources': [
+      # This file is called _views but has aura calls in it.
+      'browser/download/drag_download_item_views.cc',
+      'browser/lifetime/application_lifetime_aura.cc',
+      'browser/platform_util_aura.cc',
+    ],
+    # ChromeOS-sources not ending in _chromeos (which would be included in
+    # other sections and filtered out for non-ChromeOS platforms.
+    'chrome_browser_chromeos_sources': [
+      'browser/metrics/chromeos_metrics_provider.cc',
+      'browser/metrics/chromeos_metrics_provider.h',
+      'browser/renderer_host/offline_resource_throttle.cc',
+      'browser/renderer_host/offline_resource_throttle.h',
+      # This is technically also dependent on enable_plugins but we don't
+      # support ChromeOS with enable_plugins==0.
+      'browser/renderer_host/pepper/pepper_platform_verification_message_filter.cc',
+      'browser/renderer_host/pepper/pepper_platform_verification_message_filter.h',
+    ],
+    # Used everywhere but ChromeOS.
+    'chrome_browser_non_chromeos_sources': [
+      'browser/signin/signin_global_error.cc',
+      'browser/signin/signin_global_error.h',
+      'browser/signin/signin_global_error_factory.cc',
+      'browser/signin/signin_global_error_factory.h',
+      'browser/sync/sync_global_error_factory.cc',
+      'browser/sync/sync_global_error_factory.h',
+    ],
+    # Everything but Android, iOS, and CrOS.
+    'chrome_browser_desktop_sources': [
+      'browser/profiles/avatar_menu_desktop.cc',
+      'browser/profiles/avatar_menu_observer.h',
+      'browser/profiles/avatar_menu_actions_desktop.cc',
+      'browser/profiles/avatar_menu_actions_desktop.h',
+      'browser/profiles/profile_list_desktop.cc',
+      'browser/profiles/profile_list_desktop.h',
+    ],
+    # Miscellaneous files that were brought up on iOS before the decision not
+    # to use chrome/ for iOS. These, plus a few of the directory-specific
+    # source lists below, are all that are built on iOS. These are built
+    # despite the change in direction in order to prevent iOS regressions while
+    # componentization is in progress.
+    # TODO(stuartmorgan): Remove this once enough has been componentized that
+    # there's no value in building any of chrome/ for iOS.
+    'chrome_browser_ios_sources': [
+      'browser/browser_process.cc',
+      'browser/browser_process.h',
+      'browser/browser_process_platform_part_base.cc',
+      'browser/browser_process_platform_part_base.h',
+    ],
+    # Desktop Linux and ChromeOS.
+    'chrome_browser_linux_sources': [
+      'browser/renderer_context_menu/spellchecker_submenu_observer_hunspell.cc',
+    ],
+    # Desktop linux, doesn't count ChromeOS.
+    'chrome_browser_linux_desktop_sources': [
+      'browser/first_run/upgrade_util.cc',
+      'browser/first_run/upgrade_util_linux.cc',
+      'browser/first_run/upgrade_util_linux.h',
+      'browser/fullscreen_aurax11.cc',
+      'browser/icon_loader_auralinux.cc',
+      'browser/idle_linux.cc',
+      'browser/idle_query_x11.cc',
+      'browser/idle_query_x11.h',
+      'browser/password_manager/native_backend_kwallet_x.cc',
+      'browser/password_manager/native_backend_kwallet_x.h',
+      'browser/platform_util_linux.cc',
+      'browser/screensaver_window_finder_x11.cc',
+      'browser/screensaver_window_finder_x11.h',
+      'browser/shell_integration_linux.cc',
+      'browser/shell_integration_linux.h',
+      'browser/speech/tts_linux.cc',
+      'browser/sxs_linux.cc',
+      'browser/sxs_linux.h',
+      'browser/themes/theme_service_aurax11.cc',
+      'browser/themes/theme_service_aurax11.h',
+      'browser/web_applications/web_app_linux.cc',
+    ],
+    'chrome_browser_mac_sources': [
+      'browser/media_galleries/fileapi/iphoto_data_provider.cc',
+      'browser/media_galleries/fileapi/iphoto_data_provider.h',
+      'browser/media_galleries/fileapi/iphoto_file_util.cc',
+      'browser/media_galleries/fileapi/iphoto_file_util.h',
+    ],
+    # Android and iOS, not CrOS.
+    'chrome_browser_mobile_sources': [
+      'browser/chrome_browser_field_trials_mobile.cc',
+      'browser/chrome_browser_field_trials_mobile.h',
+      'browser/metrics/variations/variations_request_scheduler_mobile.cc',
+      'browser/metrics/variations/variations_request_scheduler_mobile.h',
+      'browser/net/spdyproxy/proxy_advisor.cc',
+      'browser/net/spdyproxy/proxy_advisor.h',
+    ],
+    # Everything but Android and iOS.
+    'chrome_browser_non_mobile_sources': [
       'browser/accessibility/accessibility_events.cc',
       'browser/accessibility/accessibility_events.h',
       'browser/accessibility/accessibility_extension_api_constants.cc',
@@ -695,8 +801,16 @@
       'browser/bookmarks/bookmark_html_writer.h',
       'browser/certificate_viewer.cc',
       'browser/certificate_viewer.h',
+      'browser/chrome_browser_field_trials_desktop.cc',
+      'browser/chrome_browser_field_trials_desktop.h',
       'browser/chrome_browser_main_posix.cc',
       'browser/chrome_browser_main_posix.h',
+      'browser/chrome_device_client.cc',
+      'browser/chrome_device_client.h',
+      'browser/chrome_page_zoom.cc',
+      'browser/chrome_page_zoom.h',
+      'browser/chrome_page_zoom_constants.cc',
+      'browser/chrome_page_zoom_constants.h',
       'browser/chrome_process_singleton.cc',
       'browser/chrome_process_singleton.h',
       'browser/component_updater/widevine_cdm_component_installer.cc',
@@ -722,9 +836,9 @@
       'browser/download/download_danger_prompt.cc',
       'browser/download/download_danger_prompt.h',
       'browser/download/download_shelf.cc',
+      'browser/download/download_shelf.h',
       'browser/download/download_shelf_context_menu.cc',
       'browser/download/download_shelf_context_menu.h',
-      'browser/download/download_shelf.h',
       'browser/external_protocol/external_protocol_observer.cc',
       'browser/external_protocol/external_protocol_observer.h',
       'browser/feedback/feedback_profile_observer.cc',
@@ -741,8 +855,8 @@
       'browser/feedback/system_logs/system_logs_fetcher_base.cc',
       'browser/feedback/system_logs/system_logs_fetcher_base.h',
       'browser/first_run/first_run.cc',
-      'browser/first_run/first_run_dialog.h',
       'browser/first_run/first_run.h',
+      'browser/first_run/first_run_dialog.h',
       'browser/first_run/first_run_internal.h',
       'browser/first_run/first_run_internal_linux.cc',
       'browser/first_run/first_run_internal_mac.mm',
@@ -843,9 +957,9 @@
       'browser/media_galleries/media_galleries_permission_controller.cc',
       'browser/media_galleries/media_galleries_permission_controller.h',
       'browser/media_galleries/media_galleries_preferences.cc',
+      'browser/media_galleries/media_galleries_preferences.h',
       'browser/media_galleries/media_galleries_preferences_factory.cc',
       'browser/media_galleries/media_galleries_preferences_factory.h',
-      'browser/media_galleries/media_galleries_preferences.h',
       'browser/media_galleries/media_galleries_scan_result_controller.cc',
       'browser/media_galleries/media_galleries_scan_result_controller.h',
       'browser/media_galleries/media_gallery_context_menu.cc',
@@ -871,17 +985,19 @@
       'browser/net/firefox_proxy_settings.h',
       'browser/net/predictor_tab_helper.cc',
       'browser/net/predictor_tab_helper.h',
+      'browser/power/process_power_collector.cc',
+      'browser/power/process_power_collector.h',
       'browser/process_singleton_modal_dialog_lock.cc',
       'browser/process_singleton_modal_dialog_lock.h',
       'browser/process_singleton_posix.cc',
       'browser/process_singleton_startup_lock.cc',
       'browser/process_singleton_startup_lock.h',
       'browser/profile_resetter/automatic_profile_resetter.cc',
+      'browser/profile_resetter/automatic_profile_resetter.h',
       'browser/profile_resetter/automatic_profile_resetter_delegate.cc',
       'browser/profile_resetter/automatic_profile_resetter_delegate.h',
       'browser/profile_resetter/automatic_profile_resetter_factory.cc',
       'browser/profile_resetter/automatic_profile_resetter_factory.h',
-      'browser/profile_resetter/automatic_profile_resetter.h',
       'browser/profile_resetter/automatic_profile_resetter_mementos.cc',
       'browser/profile_resetter/automatic_profile_resetter_mementos.h',
       'browser/profile_resetter/brandcode_config_fetcher.cc',
@@ -899,8 +1015,12 @@
       'browser/profile_resetter/profile_resetter.h',
       'browser/profile_resetter/resettable_settings_snapshot.cc',
       'browser/profile_resetter/resettable_settings_snapshot.h',
+      'browser/profiles/avatar_menu.cc',
+      'browser/profiles/avatar_menu.h',
       'browser/profiles/profile_shortcut_manager.cc',
       'browser/profiles/profile_shortcut_manager.h',
+      'browser/profiles/profile_window.cc',
+      'browser/profiles/profile_window.h',
       'browser/renderer_context_menu/render_view_context_menu.cc',
       'browser/renderer_context_menu/render_view_context_menu.h',
       'browser/renderer_context_menu/spelling_bubble_model.cc',
@@ -909,10 +1029,14 @@
       'browser/renderer_context_menu/spelling_menu_observer.h',
       'browser/repost_form_warning_controller.cc',
       'browser/repost_form_warning_controller.h',
+      'browser/search/local_ntp_source.cc',
+      'browser/search/local_ntp_source.h',
       'browser/search/search_terms_tracker.cc',
       'browser/search/search_terms_tracker.h',
       'browser/services/gcm/gcm_desktop_utils.cc',
       'browser/services/gcm/gcm_desktop_utils.h',
+      'browser/signin/signin_promo.cc',
+      'browser/signin/signin_promo.h',
       'browser/signin/signin_ui_util.cc',
       'browser/signin/signin_ui_util.h',
       'browser/speech/extension_api/tts_extension_api_constants.cc',  # Should be moved to extensions section?
@@ -936,135 +1060,6 @@
       'browser/sync/sync_ui_util.h',
       'browser/tab_contents/background_contents.cc',
       'browser/tab_contents/background_contents.h',
-    ],
-    # Cross-platform Ash sources.
-    'chrome_browser_ash_sources': [
-      'browser/media/desktop_media_list_ash.cc',
-      'browser/media/desktop_media_list_ash.h',
-      'browser/signin/signin_error_notifier_ash.cc',
-      'browser/signin/signin_error_notifier_ash.h',
-      'browser/signin/signin_error_notifier_factory_ash.cc',
-      'browser/signin/signin_error_notifier_factory_ash.h',
-      'browser/sync/sync_error_notifier_ash.cc',
-      'browser/sync/sync_error_notifier_ash.h',
-      'browser/sync/sync_error_notifier_factory_ash.cc',
-      'browser/sync/sync_error_notifier_factory_ash.h',
-    ],
-    # Cross-platform Aura files.
-    'chrome_browser_aura_sources': [
-      # This file is called _views but has aura calls in it.
-      'browser/download/drag_download_item_views.cc',
-      'browser/lifetime/application_lifetime_aura.cc',
-      'browser/platform_util_aura.cc',
-    ],
-    # ChromeOS-sources not ending in _chromeos (which would be included in
-    # other sections and filtered out for non-ChromeOS platforms.
-    'chrome_browser_chromeos_sources': [
-      'browser/metrics/chromeos_metrics_provider.cc',
-      'browser/metrics/chromeos_metrics_provider.h',
-      'browser/renderer_host/offline_resource_throttle.cc',
-      'browser/renderer_host/offline_resource_throttle.h',
-      # This is technically also dependent on enable_plugins but we don't
-      # support ChromeOS with enable_plugins==0.
-      'browser/renderer_host/pepper/pepper_platform_verification_message_filter.cc',
-      'browser/renderer_host/pepper/pepper_platform_verification_message_filter.h',
-    ],
-    # Used everywhere but ChromeOS.
-    'chrome_browser_non_chromeos_sources': [
-      'browser/signin/signin_global_error.cc',
-      'browser/signin/signin_global_error.h',
-      'browser/signin/signin_global_error_factory.cc',
-      'browser/signin/signin_global_error_factory.h',
-      'browser/sync/sync_global_error_factory.cc',
-      'browser/sync/sync_global_error_factory.h',
-    ],
-    # Everything but Android, iOS, and CrOS.
-    'chrome_browser_desktop_sources': [
-      'browser/profiles/avatar_menu_desktop.cc',
-      'browser/profiles/avatar_menu_observer.h',
-      'browser/profiles/avatar_menu_actions_desktop.cc',
-      'browser/profiles/avatar_menu_actions_desktop.h',
-      'browser/profiles/profile_list_desktop.cc',
-      'browser/profiles/profile_list_desktop.h',
-    ],
-    # Miscellaneous files that were brought up on iOS before the decision not
-    # to use chrome/ for iOS. These, plus a few of the directory-specific
-    # source lists below, are all that are built on iOS. These are built
-    # despite the change in direction in order to prevent iOS regressions while
-    # componentization is in progress.
-    # TODO(stuartmorgan): Remove this once enough has been componentized that
-    # there's no value in building any of chrome/ for iOS.
-    'chrome_browser_ios_sources': [
-      'browser/browser_process.cc',
-      'browser/browser_process.h',
-      'browser/browser_process_platform_part_base.cc',
-      'browser/browser_process_platform_part_base.h',
-      'browser/net/spdyproxy/data_reduction_proxy_settings_ios.cc',
-      'browser/net/spdyproxy/data_reduction_proxy_settings_ios.h',
-    ],
-    # Desktop Linux and ChromeOS.
-    'chrome_browser_linux_sources': [
-      'browser/renderer_context_menu/spellchecker_submenu_observer_hunspell.cc',
-    ],
-    # Desktop linux, doesn't count ChromeOS.
-    'chrome_browser_linux_desktop_sources': [
-      'browser/first_run/upgrade_util.cc',
-      'browser/first_run/upgrade_util_linux.cc',
-      'browser/first_run/upgrade_util_linux.h',
-      'browser/fullscreen_aurax11.cc',
-      'browser/icon_loader_auralinux.cc',
-      'browser/idle_linux.cc',
-      'browser/idle_query_x11.cc',
-      'browser/idle_query_x11.h',
-      'browser/password_manager/native_backend_kwallet_x.cc',
-      'browser/password_manager/native_backend_kwallet_x.h',
-      'browser/platform_util_linux.cc',
-      'browser/screensaver_window_finder_x11.cc',
-      'browser/screensaver_window_finder_x11.h',
-      'browser/shell_integration_linux.cc',
-      'browser/shell_integration_linux.h',
-      'browser/speech/tts_linux.cc',
-      'browser/sxs_linux.cc',
-      'browser/sxs_linux.h',
-      'browser/themes/theme_service_aurax11.cc',
-      'browser/themes/theme_service_aurax11.h',
-      'browser/web_applications/web_app_linux.cc',
-    ],
-    'chrome_browser_mac_sources': [
-      'browser/media_galleries/fileapi/iphoto_data_provider.cc',
-      'browser/media_galleries/fileapi/iphoto_data_provider.h',
-      'browser/media_galleries/fileapi/iphoto_file_util.cc',
-      'browser/media_galleries/fileapi/iphoto_file_util.h',
-    ],
-    # Android and iOS, not CrOS.
-    'chrome_browser_mobile_sources': [
-      'browser/chrome_browser_field_trials_mobile.cc',
-      'browser/chrome_browser_field_trials_mobile.h',
-      'browser/metrics/variations/variations_request_scheduler_mobile.cc',
-      'browser/metrics/variations/variations_request_scheduler_mobile.h',
-      'browser/net/spdyproxy/proxy_advisor.cc',
-      'browser/net/spdyproxy/proxy_advisor.h',
-    ],
-    # Everything but Android and iOS.
-    'chrome_browser_non_mobile_sources': [
-      'browser/chrome_browser_field_trials_desktop.cc',
-      'browser/chrome_browser_field_trials_desktop.h',
-      'browser/chrome_device_client.cc',
-      'browser/chrome_device_client.h',
-      'browser/chrome_page_zoom.cc',
-      'browser/chrome_page_zoom.h',
-      'browser/chrome_page_zoom_constants.cc',
-      'browser/chrome_page_zoom_constants.h',
-      'browser/power/process_power_collector.cc',
-      'browser/power/process_power_collector.h',
-      'browser/profiles/avatar_menu.cc',
-      'browser/profiles/avatar_menu.h',
-      'browser/profiles/profile_window.cc',
-      'browser/profiles/profile_window.h',
-      'browser/search/local_ntp_source.cc',
-      'browser/search/local_ntp_source.h',
-      'browser/signin/signin_promo.cc',
-      'browser/signin/signin_promo.h',
     ],
     'chrome_browser_win_sources': [
       'browser/browser_process_platform_part_aurawin.cc',
@@ -3387,8 +3382,6 @@
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
           ],
           'sources': [ '<@(chrome_browser_android_sources)' ],
-        }, {  # Non-Android.
-          'sources': [ '<@(chrome_browser_non_android_sources)' ],
         }],
         ['OS=="mac"', {
           'dependencies': [

@@ -93,8 +93,8 @@ void SigninGlobalError::ExecuteMenuItem(Browser* browser) {
   }
 #endif
 
-  // Global errors don't show up in the wrench menu on android.
-#if !defined(OS_ANDROID)
+  // Global errors don't show up in the wrench menu on mobile.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   LoginUIService* login_ui = LoginUIServiceFactory::GetForProfile(profile_);
   if (login_ui->current_login_ui()) {
     login_ui->current_login_ui()->FocusUI();
