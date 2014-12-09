@@ -625,6 +625,8 @@ void RootWindowController::ActivateKeyboard(
   keyboard_controller->AddObserver(panel_layout_manager_);
   keyboard_controller->AddObserver(docked_layout_manager_);
   keyboard_controller->AddObserver(workspace_controller_->layout_manager());
+  keyboard_controller->AddObserver(
+      always_on_top_controller_->GetLayoutManager());
   Shell::GetInstance()->delegate()->VirtualKeyboardActivated(true);
   aura::Window* parent = GetContainer(kShellWindowId_ImeWindowParentContainer);
   DCHECK(parent);
@@ -658,6 +660,8 @@ void RootWindowController::DeactivateKeyboard(
     keyboard_controller->RemoveObserver(docked_layout_manager_);
     keyboard_controller->RemoveObserver(
         workspace_controller_->layout_manager());
+    keyboard_controller->RemoveObserver(
+        always_on_top_controller_->GetLayoutManager());
     Shell::GetInstance()->delegate()->VirtualKeyboardActivated(false);
   }
 }
@@ -743,10 +747,8 @@ void RootWindowController::InitLayoutManagers() {
 
   aura::Window* always_on_top_container =
       GetContainer(kShellWindowId_AlwaysOnTopContainer);
-  always_on_top_container->SetLayoutManager(
-      new WorkspaceLayoutManager(always_on_top_container));
-  always_on_top_controller_.reset(new AlwaysOnTopController);
-  always_on_top_controller_->SetAlwaysOnTopContainer(always_on_top_container);
+  always_on_top_controller_.reset(
+      new AlwaysOnTopController(always_on_top_container));
 
   DCHECK(!shelf_.get());
   aura::Window* shelf_container = GetContainer(kShellWindowId_ShelfContainer);
