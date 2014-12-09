@@ -261,7 +261,7 @@ OperationID FileSystemOperationRunner::Write(
   }
 
   FileWriterDelegate::FlushPolicy flush_policy =
-      file_system_context_->ShouldFlushOnWriteCompletion(url.type())
+      url.mount_option().copy_sync_option() == COPY_SYNC_OPTION_SYNC
           ? FileWriterDelegate::FLUSH_ON_COMPLETION
           : FileWriterDelegate::NO_FLUSH_ON_COMPLETION;
   scoped_ptr<FileWriterDelegate> writer_delegate(

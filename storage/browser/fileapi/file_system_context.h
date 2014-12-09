@@ -299,10 +299,6 @@ class STORAGE_EXPORT FileSystemContext
   // (E.g. this returns false if the context is created for incognito mode)
   bool CanServeURLRequest(const FileSystemURL& url) const;
 
-  // Returns true if a file in the file system should be flushed for each write
-  // completion.
-  bool ShouldFlushOnWriteCompletion(FileSystemType type) const;
-
   // This must be used to open 'plugin private' filesystem.
   // See "plugin_private_file_system_backend.h" for more details.
   void OpenPluginPrivateFileSystem(
