@@ -89,6 +89,12 @@ public:
         (*m_successCallback)();
     }
 
+    virtual void completeWithContentDecryptionModule(WebContentDecryptionModule*) override
+    {
+        ASSERT_NOT_REACHED();
+        (*m_failureCallback)(InvalidStateError, "Unexpected completion.");
+    }
+
     virtual void completeWithSession(blink::WebContentDecryptionModuleResult::SessionStatus status) override
     {
         ASSERT_NOT_REACHED();

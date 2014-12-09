@@ -62,6 +62,7 @@ class WebColorChooserClient;
 class WebContentDecryptionModule;
 class WebCookieJar;
 class WebDataSource;
+class WebEncryptedMediaClient;
 class WebExternalPopupMenu;
 class WebExternalPopupMenuClient;
 class WebFormElement;
@@ -107,6 +108,7 @@ public:
     virtual WebMediaPlayer* createMediaPlayer(WebLocalFrame*, const WebURL&, WebMediaPlayerClient*, WebContentDecryptionModule*) { return 0; }
 
     // May return null.
+    // FIXME: remove once encryptedMediaClient() is used.
     virtual WebContentDecryptionModule* createContentDecryptionModule(WebLocalFrame*, const WebSecurityOrigin&, const WebString& keySystem) { return 0; }
 
     // May return null.
@@ -510,6 +512,11 @@ public:
     virtual void willStartUsingPeerConnectionHandler(WebLocalFrame*, WebRTCPeerConnectionHandler*) { }
 
     virtual WebUserMediaClient* userMediaClient() { return 0; }
+
+
+    // Encrypted Media -------------------------------------------------
+
+    virtual WebEncryptedMediaClient* encryptedMediaClient(blink::WebLocalFrame*) { return 0; }
 
 
     // Web MIDI -------------------------------------------------------------

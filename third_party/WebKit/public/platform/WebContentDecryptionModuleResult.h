@@ -12,6 +12,7 @@
 namespace blink {
 
 class ContentDecryptionModuleResult;
+class WebContentDecryptionModule;
 class WebString;
 
 class WebContentDecryptionModuleResult {
@@ -47,6 +48,9 @@ public:
     // Called when the CDM completes an operation and has no additional data to
     // pass back.
     BLINK_PLATFORM_EXPORT void complete();
+
+    // Called when a CDM is created.
+    BLINK_PLATFORM_EXPORT void completeWithContentDecryptionModule(WebContentDecryptionModule*);
 
     // Called when the CDM completes a session operation.
     BLINK_PLATFORM_EXPORT void completeWithSession(SessionStatus);

@@ -141,6 +141,7 @@
       'WebElementCollection.cpp',
       'WebEmbeddedWorkerImpl.cpp',
       'WebEmbeddedWorkerImpl.h',
+      'WebEncryptedMediaRequest.cpp',
       'WebEntities.cpp',
       'WebEntities.h',
       'WebFileChooserCompletionImpl.cpp',

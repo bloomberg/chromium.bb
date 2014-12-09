@@ -25,4 +25,11 @@ PassOwnPtr<WebContentDecryptionModule> MediaKeysClientImpl::createContentDecrypt
     return adoptPtr(webFrame->client()->createContentDecryptionModule(webFrame, securityOrigin, keySystem));
 }
 
+WebEncryptedMediaClient* MediaKeysClientImpl::encryptedMediaClient(ExecutionContext* executionContext)
+{
+    Document* document = toDocument(executionContext);
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
+    return webFrame->client()->encryptedMediaClient(webFrame);
+}
+
 } // namespace blink
