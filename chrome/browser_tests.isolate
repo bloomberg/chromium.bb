@@ -208,6 +208,7 @@
         'files': [
           '../chromeos/test/data/',
           '../ui/file_manager/file_manager/',
+          '../ui/file_manager/gallery/',
           '../ui/webui/resources/js/',
           '../chrome/browser/resources/chromeos/wallpaper_manager/',
           '<(PRODUCT_DIR)/chromevox_test_data/',

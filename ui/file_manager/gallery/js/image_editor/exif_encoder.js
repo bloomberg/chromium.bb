@@ -48,7 +48,7 @@ ImageEncoder.registerMetadataEncoder(ExifEncoder, 'image/jpeg');
 
 /**
  * @param {HTMLCanvasElement|Object} canvas Canvas or anything with
- *                                          width and height properties.
+ *     width and height properties.
  */
 ExifEncoder.prototype.setImageData = function(canvas) {
   var image = this.ifd_.image;
