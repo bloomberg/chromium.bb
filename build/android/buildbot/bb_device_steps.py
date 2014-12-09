@@ -43,8 +43,8 @@ GS_AUTH_URL = 'https://storage.cloud.google.com'
 #   annotation: Annotation of the tests to include.
 #   exclude_annotation: The annotation of the tests to exclude.
 I_TEST = collections.namedtuple('InstrumentationTest', [
-    'name', 'apk', 'apk_package', 'test_apk', 'test_data', 'host_driven_root',
-    'annotation', 'exclude_annotation', 'extra_flags'])
+    'name', 'apk', 'apk_package', 'test_apk', 'test_data', 'isolate_file_path',
+    'host_driven_root', 'annotation', 'exclude_annotation', 'extra_flags'])
 
 
 def SrcPath(*path):
@@ -54,8 +54,8 @@ def SrcPath(*path):
 def I(name, apk, apk_package, test_apk, test_data=None, isolate_file_path=None,
       host_driven_root=None, annotation=None, exclude_annotation=None,
       extra_flags=None):
-  return I_TEST(name, apk, apk_package, test_apk, test_data, host_driven_root,
-                annotation, exclude_annotation, extra_flags)
+  return I_TEST(name, apk, apk_package, test_apk, test_data, isolate_file_path,
+      host_driven_root, annotation, exclude_annotation, extra_flags)
 
 INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
     I('ContentShell',
