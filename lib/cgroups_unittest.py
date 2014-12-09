@@ -30,7 +30,8 @@ class TestCreateGroups(cros_test_lib.TestCase):
     """Run many cros_sdk processes in parallel to test for race conditions."""
     with sudo.SudoKeepAlive():
       with cgroups.SimpleContainChildren('example', sigterm_timeout=5):
-        parallel.RunTasksInProcessPool(self._CrosSdk, [[]] * 20, 10)
+        parallel.RunTasksInProcessPool(self._CrosSdk, [[]] * 20,
+                                       processes=10)
 
 
 if __name__ == '__main__':

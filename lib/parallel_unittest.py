@@ -337,6 +337,7 @@ class TestParallelMock(TestBackgroundWrapper):
 
   def _Callback(self):
     self._calls += 1
+    return self._calls
 
   def testRunParallelSteps(self):
     """Make sure RunParallelSteps is mocked out."""
@@ -349,11 +350,15 @@ class TestParallelMock(TestBackgroundWrapper):
     with ParallelMock():
       parallel.RunTasksInProcessPool(self._Callback, [])
       self.assertEqual(0, self._calls)
-      parallel.RunTasksInProcessPool(self._Callback, [[]])
+      result = parallel.RunTasksInProcessPool(self._Callback, [[]])
       self.assertEqual(1, self._calls)
-      parallel.RunTasksInProcessPool(self._Callback, [], processes=9,
-                                     onexit=self._Callback)
+      self.assertEqual([1], result)
+      result = parallel.RunTasksInProcessPool(self._Callback, [], processes=9,
+                                              onexit=self._Callback)
       self.assertEqual(10, self._calls)
+      self.assertEqual([], result)
+      result = parallel.RunTasksInProcessPool(self._Callback, [[]] * 10)
+      self.assertEqual(range(11, 21), result)
 
 
 class TestExceptions(cros_test_lib.MockOutputTestCase):
@@ -377,13 +382,12 @@ class TestExceptions(cros_test_lib.MockOutputTestCase):
                  lambda: parallel.RunParallelSteps([fn])):
       output_str = ex_str = ex = None
       with self.OutputCapturer() as capture:
-        try:
+        with self.assertRaises(parallel.BackgroundFailure) as ex:
           task()
-        except parallel.BackgroundFailure as ex:
-          output_str = capture.GetStdout()
-          ex_str = str(ex)
+        output_str = capture.GetStdout()
+        ex_str = str(ex.exception)
 
-      self.assertTrue(exc_type in [x.type for x in ex.exc_infos])
+      self.assertTrue(exc_type in [x.type for x in ex.exception.exc_infos])
       self.assertEqual(output_str, _GREETING)
       self.assertTrue(str(exc_type) in ex_str)
 
@@ -396,7 +400,7 @@ class TestExceptions(cros_test_lib.MockOutputTestCase):
   def testFailedPickle(self):
     """PicklingError should be thrown when an argument fails to pickle."""
     with self.assertRaises(cPickle.PicklingError):
-      parallel.RunTasksInProcessPool(self._SystemExit, [self._SystemExit])
+      parallel.RunTasksInProcessPool(self._SystemExit, [[self._SystemExit]])
 
   def testFailedPickleOnReturn(self):
     """PicklingError should be thrown when a return value fails to pickle."""
