@@ -33,12 +33,11 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "modules/EventModules.h"
+#include "modules/serviceworkers/ExtendableEventInit.h"
 
 namespace blink {
 
 class WaitUntilObserver;
-
-using ExtendableEventInit = EventInit;
 
 class ExtendableEvent : public Event {
     DEFINE_WRAPPERTYPEINFO();

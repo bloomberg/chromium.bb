@@ -7,10 +7,6 @@
 
 namespace blink {
 
-PushEventInit::PushEventInit()
-{
-}
-
 PushEvent::PushEvent()
 {
 }
@@ -23,8 +19,9 @@ PushEvent::PushEvent(const AtomicString& type, PushMessageData* data, WaitUntilO
 
 PushEvent::PushEvent(const AtomicString& type, const PushEventInit& initializer)
     : ExtendableEvent(type, initializer)
-    , m_data(initializer.data)
 {
+    if (initializer.hasData())
+        m_data = initializer.data();
 }
 
 PushEvent::~PushEvent()

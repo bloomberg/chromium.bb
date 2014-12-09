@@ -33,11 +33,10 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
+#include "modules/serviceworkers/InstallEventInit.h"
 #include "wtf/Forward.h"
 
 namespace blink {
-
-using InstallEventInit = ExtendableEventInit;
 
 class InstallEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();

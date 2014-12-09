@@ -5,7 +5,7 @@
 // https://notifications.spec.whatwg.org/#service-worker-api
 
 [
-    EventConstructor,
+    Constructor(DOMString type, optional NotificationEventInit eventInitDict),
     Exposed=ServiceWorker,
     RuntimeEnabled=ServiceWorkerNotifications,
     TypeChecking=Interface,

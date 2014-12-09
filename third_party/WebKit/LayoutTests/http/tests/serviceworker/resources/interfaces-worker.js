@@ -67,4 +67,8 @@ test(function() {
     assert_equals(new ExtendableEvent('ExtendableEvent').type, 'ExtendableEvent');
     assert_equals(new InstallEvent('InstallEvent').type, 'InstallEvent');
 
+    assert_equals(new InstallEvent('InstallEvent').cancelable, false);
+    assert_equals(new InstallEvent('InstallEvent').bubbles, false);
+    assert_equals(new InstallEvent('InstallEvent', { cancelable : true }).cancelable, true);
+    assert_equals(new InstallEvent('InstallEvent', { bubbles : true }).bubbles, true);
   }, 'Event constructors');

@@ -4,10 +4,6 @@
 
 // https://w3c.github.io/push-api/#idl-def-PushEvent
 
-[
-    Constructor(DOMString type, optional PushEventInit eventInitDict),
-    Exposed=ServiceWorker,
-    RuntimeEnabled=PushMessaging,
-] interface PushEvent : ExtendableEvent {
-    readonly attribute PushMessageData data;
+dictionary PushEventInit : ExtendableEventInit {
+    PushMessageData data;
 };

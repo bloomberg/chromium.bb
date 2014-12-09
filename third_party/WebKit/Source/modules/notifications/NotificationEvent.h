@@ -7,16 +7,11 @@
 
 #include "modules/EventModules.h"
 #include "modules/notifications/Notification.h"
+#include "modules/notifications/NotificationEventInit.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
-
-struct NotificationEventInit : public ExtendableEventInit {
-    NotificationEventInit();
-
-    Member<Notification> notification;
-};
 
 class NotificationEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
