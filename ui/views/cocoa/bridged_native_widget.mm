@@ -180,6 +180,10 @@ void BridgedNativeWidget::OnWindowWillClose() {
 
 void BridgedNativeWidget::OnFullscreenTransitionStart(
     bool target_fullscreen_state) {
+  // Note: This can fail for fullscreen changes started externally, but a user
+  // shouldn't be able to do that if the window is invisible to begin with.
+  DCHECK(window_visible_);
+
   DCHECK_NE(target_fullscreen_state, target_fullscreen_state_);
   target_fullscreen_state_ = target_fullscreen_state;
   in_fullscreen_transition_ = true;
@@ -210,11 +214,6 @@ void BridgedNativeWidget::OnFullscreenTransitionComplete(
 }
 
 void BridgedNativeWidget::ToggleDesiredFullscreenState() {
-  if (base::mac::IsOSSnowLeopard()) {
-    NOTIMPLEMENTED();
-    return;  // TODO(tapted): Implement this for Snow Leopard.
-  }
-
   // If there is currently an animation into or out of fullscreen, then AppKit
   // emits the string "not in fullscreen state" to stdio and does nothing. For
   // this case, schedule a transition back into the desired state when the
@@ -222,6 +221,23 @@ void BridgedNativeWidget::ToggleDesiredFullscreenState() {
   if (in_fullscreen_transition_) {
     target_fullscreen_state_ = !target_fullscreen_state_;
     return;
+  }
+
+  // Going fullscreen implicitly makes the window visible. AppKit does this.
+  // That is, -[NSWindow isVisible] is always true after a call to -[NSWindow
+  // toggleFullScreen:]. Unfortunately, this change happens after AppKit calls
+  // -[NSWindowDelegate windowWillEnterFullScreen:], and AppKit doesn't send an
+  // orderWindow message. So intercepting the implicit change is hard.
+  // Luckily, to trigger externally, the window typically needs to be visible in
+  // the first place. So we can just ensure the window is visible here instead
+  // of relying on AppKit to do it, and not worry that OnVisibilityChanged()
+  // won't be called for externally triggered fullscreen requests.
+  if (!window_visible_)
+    SetVisibilityState(SHOW_INACTIVE);
+
+  if (base::mac::IsOSSnowLeopard()) {
+    NOTIMPLEMENTED();
+    return;  // TODO(tapted): Implement this for Snow Leopard.
   }
 
   // Since fullscreen requests are ignored if the collection behavior does not

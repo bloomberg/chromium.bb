@@ -880,6 +880,7 @@
             'views_test_support',
           ],
           'sources': [
+            'cocoa/bridged_native_widget_interactive_uitest.mm',
             'run_all_unittests.cc',
             'widget/native_widget_mac_interactive_uitest.mm',
           ],
