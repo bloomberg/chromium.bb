@@ -362,7 +362,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
             ShareHelper.share(item.getItemId() == R.id.direct_share_menu_id, this,
                     activeTab.getTitle(), activeTab.getUrl(), null);
             return true;
-        } else if (id == R.id.about_chrome) {
+        } else if (id == R.id.preferences) {
             PreferencesLauncher.launchSettingsPage(this, null);
             return true;
         } else {

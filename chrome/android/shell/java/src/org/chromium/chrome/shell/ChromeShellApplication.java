@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.PKCS11AuthenticationManager;
 import org.chromium.chrome.browser.UmaUtils;
 import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGenerator;
+import org.chromium.chrome.shell.preferences.ChromeShellPreferences;
 
 import java.util.ArrayList;
 
@@ -86,6 +87,11 @@ public class ChromeShellApplication extends ChromiumApplication {
         if (!CommandLine.isInitialized()) {
             CommandLine.initFromFile(COMMAND_LINE_FILE);
         }
+    }
+
+    @Override
+    public String getSettingsActivityName() {
+        return ChromeShellPreferences.class.getName();
     }
 
     @Override

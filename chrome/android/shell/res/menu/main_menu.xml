@@ -48,8 +48,8 @@
             </menu>
         </item>
         <item
-            android:id="@+id/about_chrome"
-            android:title="@string/prefs_about_chrome"/>
+            android:id="@+id/preferences"
+            android:title="@string/preferences"/>
     </group>
 
 </menu>

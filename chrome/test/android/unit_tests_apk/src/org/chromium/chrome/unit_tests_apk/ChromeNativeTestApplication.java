@@ -13,6 +13,11 @@ import org.chromium.chrome.browser.PKCS11AuthenticationManager;
 public class ChromeNativeTestApplication extends ChromiumApplication {
 
     @Override
+    public String getSettingsActivityName() {
+        return null;
+    }
+
+    @Override
     protected boolean areParentalControlsEnabled() {
         return false;
     }

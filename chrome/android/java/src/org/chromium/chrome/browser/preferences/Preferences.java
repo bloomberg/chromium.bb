@@ -24,7 +24,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
-import org.chromium.content.browser.BrowserStartupController;
 
 /**
  * The Chrome settings activity.
@@ -34,7 +33,7 @@ import org.chromium.content.browser.BrowserStartupController;
  * may freely modify its activity's action bar or title. This mimics the behavior of
  * android.preference.PreferenceActivity.
  */
-public class Preferences extends ActionBarActivity implements
+public abstract class Preferences extends ActionBarActivity implements
         OnPreferenceStartFragmentCallback {
 
     public static final String EXTRA_SHOW_FRAGMENT = "show_fragment";
@@ -54,25 +53,19 @@ public class Preferences extends ActionBarActivity implements
     /**
      * Starts the browser process, if it's not already started.
      */
-    protected void startBrowserProcessSync() throws ProcessInitException {
-        BrowserStartupController.get(this).startBrowserProcessesSync(false);
-    }
+    protected abstract void startBrowserProcessSync() throws ProcessInitException;
 
     /**
      * Returns the name of the fragment to show if the intent doesn't request a specific fragment.
      */
-    protected String getTopLevelFragmentName() {
-        return AboutChromePreferences.class.getName();
-    }
+    protected abstract String getTopLevelFragmentName();
 
     /**
      * Opens a URL in a new activity.
      * @param titleResId The resource ID of the title to show above the web page.
      * @param urlResId The resource ID of the URL to load.
      */
-    public void showUrl(int titleResId, int urlResId) {
-        // Not implemented.
-    }
+    public abstract void showUrl(int titleResId, int urlResId);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

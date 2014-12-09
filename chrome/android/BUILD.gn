@@ -248,6 +248,8 @@ android_library("chrome_shell_java") {
     "//printing:printing_java",
     "//net/android:net_java",
     "//sync/android:sync_java",
+    "//third_party/android_tools:android_support_v13_java",
+    "//third_party/android_tools:android_support_v7_appcompat_java",
     "//ui/android:ui_java",
   ]
   DEPRECATED_java_in_dir = "shell/java/src"
@@ -405,6 +407,8 @@ android_library("chrome_javatests") {
     "//printing:printing_java",
     "//sync/android:sync_java",
     "//sync:sync_java_test_support",
+    "//third_party/android_tools:android_support_v13_java",
+    "//third_party/android_tools:android_support_v7_appcompat_java",
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
     "//third_party/jsr-305:jsr_305_javalib",
