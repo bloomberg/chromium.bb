@@ -619,11 +619,12 @@ static_library("mesa") {
   configs = []
   configs = [ ":mesa_internal_config" ] + previous_configs
 
-  cflags = []
-
   if (is_clang) {
-    cflags += [ "-Wno-absolute-value" ]
+    # Mesa triggers some of these Clang warnings.
+    configs -= [ "//build/config/clang:extra_warnings" ]
   }
+
+  cflags = []
 
   if (is_android && !is_clang) {
     # Disable sincos() optimization to avoid a linker error
