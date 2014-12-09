@@ -563,8 +563,15 @@ v8::Handle<v8::String> ModuleSystem::WrapSource(v8::Handle<v8::String> source) {
 
 void ModuleSystem::Private(const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
-  CHECK(args[0]->IsObject());
-  CHECK(!args[0]->IsNull());
+  if (!args[0]->IsObject() || args[0]->IsNull()) {
+    GetIsolate()->ThrowException(
+        v8::Exception::TypeError(v8::String::NewFromUtf8(GetIsolate(),
+            args[0]->IsUndefined()
+                ? "Method called without a valid receiver (this). "
+                  "Did you forget to call .bind()?"
+                : "Invalid invocation: receiver is not an object!")));
+    return;
+  }
   v8::Local<v8::Object> obj = args[0].As<v8::Object>();
   v8::Local<v8::String> privates_key =
       v8::String::NewFromUtf8(GetIsolate(), "privates");
