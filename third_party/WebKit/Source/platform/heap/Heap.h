@@ -2191,13 +2191,24 @@ struct CollectionBackingTraceTrait<false, WTF::NoWeakHandlingInCollections, stro
     static bool trace(Visitor*, T&) { return false; }
 };
 
+template<typename T>
+static void verifyGarbageCollectedIfMember(T*)
+{
+}
+
+template<typename T>
+static void verifyGarbageCollectedIfMember(Member<T>* t)
+{
+    COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
+}
+
 // Specialization for things that either need marking or have weak pointers or
 // both.
 template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits>
 struct CollectionBackingTraceTrait {
     static bool trace(Visitor* visitor, T&t)
     {
-        Visitor::verifyGarbageCollectedIfMember(reinterpret_cast<T*>(0));
+        verifyGarbageCollectedIfMember(reinterpret_cast<T*>(0));
         return WTF::TraceInCollectionTrait<weakHandlingFlag, strongify, T, Traits>::trace(visitor, t);
     }
 };

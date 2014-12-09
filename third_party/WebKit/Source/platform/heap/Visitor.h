@@ -55,12 +55,18 @@
 
 namespace blink {
 
-class GeneralHeapObjectHeader;
+template<typename T> class GarbageCollected;
 template<typename T> class GarbageCollectedFinalized;
+class GarbageCollectedMixin;
+class GeneralHeapObjectHeader;
 class HeapObjectHeader;
 template<typename T> class Member;
 template<typename T> class WeakMember;
 class Visitor;
+
+template <typename T> struct IsGarbageCollectedType;
+#define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage) \
+    COMPILE_ASSERT(IsGarbageCollectedType<T>::value, ErrorMessage)
 
 template<bool needsTracing, WTF::WeakHandlingFlag weakHandlingFlag, WTF::ShouldWeakPointersBeMarkedStrongly strongify, typename T, typename Traits> struct CollectionBackingTraceTrait;
 
@@ -129,8 +135,6 @@ struct FinalizerTrait {
 // instances allocated in the Blink garbage-collected heap.
 template<typename T> struct GCInfoTrait;
 
-template<typename T> class GarbageCollected;
-class GarbageCollectedMixin;
 template<typename T, bool = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollected>::value> class NeedsAdjustAndMark;
 
 template<typename T>
@@ -277,17 +281,6 @@ class PLATFORM_EXPORT Visitor {
 public:
     virtual ~Visitor() { }
 
-    template<typename T>
-    static void verifyGarbageCollectedIfMember(T*)
-    {
-    }
-
-    template<typename T>
-    static void verifyGarbageCollectedIfMember(Member<T>* t)
-    {
-        t->verifyTypeIsGarbageCollected();
-    }
-
     // One-argument templated mark method. This uses the static type of
     // the argument to get the TraceTrait. By default, the mark method
     // of the TraceTrait just calls the virtual two-argument mark method on this
@@ -302,7 +295,7 @@ public:
 #endif
         TraceTrait<T>::mark(this, t);
 
-        reinterpret_cast<const Member<T>*>(0)->verifyTypeIsGarbageCollected();
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, AttemptedToMarkNonGarbageCollectedObject);
     }
 
     // Member version of the one-argument templated trace method.
@@ -338,7 +331,7 @@ public:
         // Check that we actually know the definition of T when tracing.
         COMPILE_ASSERT(sizeof(T), WeNeedToKnowTheDefinitionOfTheTypeWeAreTracing);
         registerWeakCell(const_cast<WeakMember<T>&>(t).cell());
-        reinterpret_cast<const Member<T>*>(0)->verifyTypeIsGarbageCollected();
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, AttemptedToWeakTraceNonGarbageCollectedObject);
     }
 
     template<typename T>
@@ -751,7 +744,6 @@ struct GCInfoAtBase {
     }
 };
 
-template<typename T> class GarbageCollected;
 template<typename T, bool = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollected>::value> struct GetGarbageCollectedBase;
 
 template<typename T>

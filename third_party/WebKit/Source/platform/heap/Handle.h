@@ -106,11 +106,6 @@ struct IsGarbageCollectedType {
         || isHeapAllocatedListHashSetNode;
 };
 
-#define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage) \
-    COMPILE_ASSERT(IsGarbageCollectedType<T>::value, ErrorMessage)
-
-template<typename T> class Member;
-
 class PersistentNode {
 public:
     explicit PersistentNode(TraceCallback trace)
@@ -630,11 +625,6 @@ public:
 
 
 protected:
-    void verifyTypeIsGarbageCollected() const
-    {
-        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
-    }
-
     T* m_raw;
 
     template<bool x, WTF::WeakHandlingFlag y, WTF::ShouldWeakPointersBeMarkedStrongly z, typename U, typename V> friend struct CollectionBackingTraceTrait;
