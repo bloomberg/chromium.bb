@@ -809,6 +809,9 @@ void WizardController::PerformOOBECompletedActions() {
   GetLocalState()->ClearPref(prefs::kTimesHIDDialogShown);
   StartupUtils::MarkOobeCompleted();
 
+  // Restart to make the login page pick up the policy changes resulting from
+  // enrollment recovery.
+  // TODO(tnagel): Find a way to update login page without reboot.
   if (enrollment_recovery_)
     chrome::AttemptRestart();
 }
