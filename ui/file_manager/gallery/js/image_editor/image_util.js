@@ -146,6 +146,28 @@ ImageRect.createFromBounds = function(bound) {
   return new ImageRect(bound);
 };
 
+/**
+ * Creates an image rect with width and height.
+ * @param {number} width Width.
+ * @param {number} height Height.
+ * @return {!ImageRect}
+ */
+ImageRect.createFromWidthAndHeight = function(width, height) {
+  return new ImageRect(width, height);
+};
+
+/**
+ * Creates an image rect with left, top, width and height.
+ * @param {number} left Left.
+ * @param {number} top Top.
+ * @param {number} width Width.
+ * @param {number} height Height.
+ * @return {!ImageRect}
+ */
+ImageRect.createWith = function(left, top, width, height) {
+  return new ImageRect(left, top, width, height);
+};
+
 ImageRect.prototype = {
   /**
    * Obtains the x coordinate of right edge. The most right pixels in the
