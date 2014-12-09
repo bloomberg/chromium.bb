@@ -397,9 +397,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteFrame) {
 
 // Crash a subframe and ensures its children are cleared from the FrameTree.
 // See http://crbug.com/338508.
-// TODO(creis): Disabled for flakiness; see http://crbug.com/405582.
-// TODO(creis): Enable this on Android when we can kill the process there.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrashSubframe) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrashSubframe) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   NavigateToURL(shell(), main_url);
 
@@ -419,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrashSubframe) {
   FrameTreeNode* root =
       static_cast<WebContentsImpl*>(shell()->web_contents())->
           GetFrameTree()->root();
-  ASSERT_EQ(1U, root->child_count());
+  ASSERT_EQ(2U, root->child_count());
   FrameTreeNode* child = root->child_at(0);
   EXPECT_EQ(main_url, root->current_url());
   EXPECT_EQ("foo.com", child->current_url().host());
@@ -441,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrashSubframe) {
   }
 
   // Ensure that the child frame still exists but has been cleared.
-  EXPECT_EQ(1U, root->child_count());
+  EXPECT_EQ(2U, root->child_count());
   EXPECT_EQ(main_url, root->current_url());
   EXPECT_EQ(GURL(), child->current_url());
 
