@@ -40,25 +40,77 @@ remoting.HostDaemonFacade = function() {
   /** @type {Array.<function(boolean):void>} @private */
   this.afterInitializationTasks_ = [];
 
-  /** @private */
-  this.initializationFinished_ = false;
+  /**
+   * A promise that fulfills when the daemon finishes initializing.
+   * It will be set to null when the promise fulfills.
+   * @type {Promise}
+   * @private
+   */
+  this.initializingPromise_ = null;
 
   /** @type {remoting.Error} @private */
   this.error_ = remoting.Error.NONE;
 
-  try {
-    this.port_ = chrome.runtime.connectNative(
-        'com.google.chrome.remote_desktop');
-    this.port_.onMessage.addListener(this.onIncomingMessage_.bind(this));
-    this.port_.onDisconnect.addListener(this.onDisconnect_.bind(this));
-    this.postMessage_({type: 'hello'},
-                      this.onInitialized_.bind(this, true),
-                      this.onInitialized_.bind(this, false));
-  } catch (err) {
-    console.log('Native Messaging initialization failed: ',
-                /** @type {*} */ (err));
-    this.onInitialized_(false);
+  /** @private */
+  this.onIncomingMessageCallback_ = this.onIncomingMessage_.bind(this);
+
+  /** @private */
+  this.onDisconnectCallback_ = this.onDisconnect_.bind(this);
+
+  this.initialize_();
+};
+
+/**
+ * @return {Promise} A promise that fulfills when the daemon finishes
+ *     initializing
+ * @private
+ */
+remoting.HostDaemonFacade.prototype.initialize_ = function() {
+  if (!this.initializingPromise_) {
+    if (this.port_) {
+      return Promise.resolve();
+    }
+
+    /** @type {remoting.HostDaemonFacade} */
+    var that = this;
+    this.initializingPromise_ = this.connectNative_().then(function() {
+      that.initializingPromise_ = null;
+    }, function() {
+      that.initializingPromise_ = null;
+      throw new Error(that.error_);
+    });
   }
+  return this.initializingPromise_;
+};
+
+/**
+ * Connects to the native messaging host and sends a hello message.
+ *
+ * @return {Promise} A promise that fulfills when the connection attempt
+ *     succeeds or fails.
+ * @private
+ */
+remoting.HostDaemonFacade.prototype.connectNative_ = function() {
+  return new Promise(
+    /**
+     * @param {function(*=):void} resolve
+     * @param {function(*=):void} reject
+     * @this {remoting.HostDaemonFacade}
+     */
+    function(resolve, reject) {
+      try {
+        this.port_ = chrome.runtime.connectNative(
+            'com.google.chrome.remote_desktop');
+        this.port_.onMessage.addListener(this.onIncomingMessageCallback_);
+        this.port_.onDisconnect.addListener(this.onDisconnectCallback_);
+        this.postMessageInternal_({type: 'hello'}, resolve, reject);
+      } catch (err) {
+        console.log('Native Messaging initialization failed: ',
+                    /** @type {*} */ (err));
+        reject();
+      }
+    }.bind(this)
+  );
 };
 
 /**
@@ -77,38 +129,38 @@ remoting.HostDaemonFacade.PendingReply = function(type, onDone, onError) {
 };
 
 /**
- * @param {boolean} success
- * @return {void} Nothing.
- * @private
- */
-remoting.HostDaemonFacade.prototype.onInitialized_ = function(success) {
-  this.initializationFinished_ = true;
-  var afterInitializationTasks = this.afterInitializationTasks_;
-  this.afterInitializationTasks_ = [];
-  for (var id in afterInitializationTasks) {
-    afterInitializationTasks[/** @type {number} */(id)](success);
-  }
-};
-
-/**
  * @param {remoting.HostController.Feature} feature The feature to test for.
  * @param {function(boolean):void} onDone Callback to return result.
  * @return {boolean} True if the implementation supports the named feature.
  */
 remoting.HostDaemonFacade.prototype.hasFeature = function(feature, onDone) {
-  if (!this.port_) {
+  /** @type {remoting.HostDaemonFacade} */
+  var that = this;
+  this.initialize_().then(function() {
+    onDone(that.supportedFeatures_.indexOf(feature) >= 0);
+  }, function (){
     onDone(false);
-  } else if (this.initializationFinished_) {
-    onDone(this.supportedFeatures_.indexOf(feature) >= 0);
-  } else {
-    /** @type remoting.HostDaemonFacade */
-    var that = this;
-    this.afterInitializationTasks_.push(
-        /** @param {boolean} success */
-        function(success) {
-          onDone(that.supportedFeatures_.indexOf(feature) >= 0);
-        });
-  }
+  });
+};
+
+/**
+ * Initializes that the Daemon if necessary and posts the supplied message.
+ *
+ * @param {{type: string}} message The message to post.
+ * @param {function(...):void} onDone The callback, if any, to be triggered
+ *     on response.
+ * @param {function(remoting.Error):void} onError Callback to call on error.
+ * @private
+ */
+remoting.HostDaemonFacade.prototype.postMessage_ =
+    function(message, onDone, onError) {
+  /** @type {remoting.HostDaemonFacade} */
+  var that = this;
+  this.initialize_().then(function() {
+    that.postMessageInternal_(message, onDone, onError);
+  }, function() {
+    onError(that.error_);
+  });
 };
 
 /**
@@ -124,12 +176,8 @@ remoting.HostDaemonFacade.prototype.hasFeature = function(feature, onDone) {
  * @return {void} Nothing.
  * @private
  */
-remoting.HostDaemonFacade.prototype.postMessage_ =
+remoting.HostDaemonFacade.prototype.postMessageInternal_ =
     function(message, onDone, onError) {
-  if (!this.port_) {
-    onError(this.error_);
-    return;
-  }
   var id = this.nextId_++;
   message['id'] = id;
   this.pendingReplies_[id] = new remoting.HostDaemonFacade.PendingReply(
@@ -279,12 +327,14 @@ remoting.HostDaemonFacade.prototype.handleIncomingMessage_ =
 remoting.HostDaemonFacade.prototype.onDisconnect_ = function() {
   console.error('Native Message port disconnected');
 
+  this.port_.onDisconnect.removeListener(this.onDisconnectCallback_);
+  this.port_.onMessage.removeListener(this.onIncomingMessageCallback_);
   this.port_ = null;
 
   // If initialization hasn't finished then assume that the port was
   // disconnected because Native Messaging host is not installed.
-  this.error_ = this.initializationFinished_ ? remoting.Error.UNEXPECTED :
-                                               remoting.Error.MISSING_PLUGIN;
+  this.error_ = this.initializingPromise_ ? remoting.Error.MISSING_PLUGIN :
+                                            remoting.Error.UNEXPECTED;
 
   // Notify the error-handlers of any requests that are still outstanding.
   var pendingReplies = this.pendingReplies_;
@@ -377,29 +427,20 @@ remoting.HostDaemonFacade.prototype.getDaemonConfig =
 /**
  * Retrieves daemon version. The version is passed to onDone as a dotted decimal
  * string of the form major.minor.build.patch.
+ *
  * @param {function(string):void} onDone Callback to be called to return result.
  * @param {function(remoting.Error):void} onError Callback to call on error.
  * @return {void}
  */
 remoting.HostDaemonFacade.prototype.getDaemonVersion =
     function(onDone, onError) {
-  if (!this.port_) {
-    onError(remoting.Error.UNEXPECTED);
-  } else if (this.initializationFinished_) {
-    onDone(this.version_);
-  } else {
-    /** @type remoting.HostDaemonFacade */
-    var that = this;
-    this.afterInitializationTasks_.push(
-        /** @param {boolean} success */
-        function(success) {
-          if (success) {
-            onDone(that.version_);
-          } else {
-            onError(that.error_);
-          }
-        });
-  }
+  /** @type {remoting.HostDaemonFacade} */
+  var that = this;
+  this.initialize_().then(function() {
+    onDone(that.version_);
+  }, function() {
+    onError(that.error_);
+  });
 };
 
 /**
