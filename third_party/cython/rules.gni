@@ -63,6 +63,9 @@ template("python_binary_module_sources") {
     if (defined(invoker.additional_sources)) {
       sources += invoker.additional_sources
     }
+    if (defined(invoker.configs)) {
+      configs += invoker.configs
+    }
     all_dependent_configs = [ ":$config_name" ]
   }
 }
@@ -91,6 +94,9 @@ template("python_binary_module") {
   python_binary_module_sources(sources_target_name) {
     visibility = target_visibility
     sources = invoker.sources
+    if (defined(invoker.configs)) {
+      configs = invoker.configs
+    }
   }
 
   shared_library(shared_library_name) {
