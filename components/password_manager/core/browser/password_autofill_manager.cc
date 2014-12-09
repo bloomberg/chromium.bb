@@ -12,9 +12,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace password_manager {
 
@@ -108,7 +111,7 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
     int key,
     base::i18n::TextDirection text_direction,
     const base::string16& typed_username,
-    bool show_all,
+    int options,
     const gfx::RectF& bounds) {
   std::vector<base::string16> suggestions;
   std::vector<base::string16> realms;
@@ -120,7 +123,7 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
     return;
   }
   GetSuggestions(fill_data_it->second, typed_username, &suggestions, &realms,
-                 show_all);
+                 options & autofill::SHOW_ALL);
   DCHECK_EQ(suggestions.size(), realms.size());
 
   form_data_key_ = key;
@@ -133,6 +136,14 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
   std::vector<base::string16> empty(suggestions.size());
   std::vector<int> password_ids(suggestions.size(),
                                 autofill::POPUP_ITEM_ID_PASSWORD_ENTRY);
+  if (options & autofill::IS_PASSWORD_FIELD) {
+    base::string16 password_field_suggestions_title = l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_PASSWORD_FIELD_SUGGESTIONS_TITLE);
+    suggestions.insert(suggestions.begin(), password_field_suggestions_title);
+    realms.insert(realms.begin(), base::string16());
+    empty.insert(empty.begin(), base::string16());
+    password_ids.insert(password_ids.begin(), autofill::POPUP_ITEM_ID_TITLE);
+  }
   autofill_client_->ShowAutofillPopup(bounds,
                                       text_direction,
                                       suggestions,

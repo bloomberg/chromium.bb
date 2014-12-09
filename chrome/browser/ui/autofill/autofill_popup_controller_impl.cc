@@ -111,6 +111,7 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
                  base::Unretained(this)));
 #if !defined(OS_ANDROID)
   subtext_font_list_ = name_font_list_.DeriveWithSizeDelta(kLabelFontSizeDelta);
+  title_font_list_ = name_font_list_.DeriveWithStyle(gfx::Font::BOLD);
 #if defined(OS_MACOSX)
   // There is no italic version of the system font.
   warning_font_list_ = name_font_list_;
@@ -259,7 +260,10 @@ bool AutofillPopupControllerImpl::HandleKeyPressEvent(
       SelectNextLine();
       return true;
     case ui::VKEY_PRIOR:  // Page up.
-      SetSelectedLine(0);
+      // Set no line and then select the next line in case the first line is not
+      // selectable.
+      SetSelectedLine(kNoSelection);
+      SelectNextLine();
       return true;
     case ui::VKEY_NEXT:  // Page down.
       SetSelectedLine(names().size() - 1);
@@ -404,6 +408,9 @@ const gfx::FontList& AutofillPopupControllerImpl::GetNameFontListForRow(
   if (identifiers_[index] == POPUP_ITEM_ID_WARNING_MESSAGE)
     return warning_font_list_;
 
+  if (identifiers_[index] == POPUP_ITEM_ID_TITLE)
+    return title_font_list_;
+
   return name_font_list_;
 }
 
@@ -424,8 +431,12 @@ void AutofillPopupControllerImpl::SetSelectedLine(int selected_line) {
       static_cast<size_t>(selected_line_) < identifiers_.size())
     InvalidateRow(selected_line_);
 
-  if (selected_line != kNoSelection)
+  if (selected_line != kNoSelection) {
     InvalidateRow(selected_line);
+
+    if (!CanAccept(identifiers_[selected_line]))
+      selected_line = kNoSelection;
+  }
 
   selected_line_ = selected_line;
 
@@ -521,7 +532,8 @@ int AutofillPopupControllerImpl::GetRowHeightFromId(int identifier) const {
 }
 
 bool AutofillPopupControllerImpl::CanAccept(int id) {
-  return id != POPUP_ITEM_ID_SEPARATOR && id != POPUP_ITEM_ID_WARNING_MESSAGE;
+  return id != POPUP_ITEM_ID_SEPARATOR && id != POPUP_ITEM_ID_WARNING_MESSAGE &&
+         id != POPUP_ITEM_ID_TITLE;
 }
 
 bool AutofillPopupControllerImpl::HasSuggestions() {

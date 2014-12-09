@@ -10,12 +10,15 @@
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
+#include "components/strings/grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 // The name of the username/password element in the form.
@@ -259,6 +262,46 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("xyz"), true,
       element_bounds);
+}
+
+TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
+  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
+  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+
+  gfx::RectF element_bounds;
+  autofill::PasswordFormFillData data;
+  data.username_field.value = test_username_;
+  data.password_field.value = test_password_;
+  data.preferred_realm = "http://foo.com/";
+
+  autofill::PasswordAndRealm additional;
+  additional.realm = "https://foobarrealm.org";
+  base::string16 additional_username(base::ASCIIToUTF16("John Foo"));
+  data.additional_logins[additional_username] = additional;
+
+  autofill::UsernamesCollectionKey usernames_key;
+  usernames_key.realm = "http://yetanother.net";
+  std::vector<base::string16> other_names;
+  base::string16 other_username(base::ASCIIToUTF16("John Different"));
+  other_names.push_back(other_username);
+  data.other_possible_usernames[usernames_key] = other_names;
+
+  int dummy_key = 0;
+  password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
+
+  // Simulate displaying suggestions matching a username and specifying that the
+  // field is a password field.
+  base::string16 title = l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_PASSWORD_FIELD_SUGGESTIONS_TITLE);
+  EXPECT_CALL(*autofill_client,
+              ShowAutofillPopup(
+                  element_bounds, _,
+                  testing::UnorderedElementsAre(title, test_username_),
+                  _, _, _, _));
+  password_autofill_manager_->OnShowPasswordSuggestions(
+      dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
+      autofill::IS_PASSWORD_FIELD, element_bounds);
 }
 
 }  // namespace password_manager

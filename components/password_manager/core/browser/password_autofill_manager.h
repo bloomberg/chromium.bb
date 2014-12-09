@@ -46,11 +46,12 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
       const autofill::PasswordFormFillData& fill_data);
 
   // Handles a request from the renderer to show a popup with the given
-  // |suggestions| from the password manager.
+  // |suggestions| from the password manager. |options| should be a bitwise mask
+  // of autofill::ShowPasswordSuggestionsOptions values.
   void OnShowPasswordSuggestions(int key,
                                  base::i18n::TextDirection text_direction,
                                  const base::string16& typed_username,
-                                 bool show_all,
+                                 int options,
                                  const gfx::RectF& bounds);
 
   // Invoked to clear any page specific cached values.

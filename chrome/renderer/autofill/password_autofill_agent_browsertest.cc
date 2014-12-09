@@ -10,6 +10,7 @@
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/test_password_autofill_agent.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "content/public/renderer/render_frame.h"
@@ -410,12 +411,13 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         render_thread_->sink().GetFirstMessageMatching(
             AutofillHostMsg_ShowPasswordSuggestions::ID);
     EXPECT_TRUE(message);
-    Tuple5<int, base::i18n::TextDirection, base::string16, bool, gfx::RectF>
+    Tuple5<int, base::i18n::TextDirection, base::string16, int, gfx::RectF>
         args;
     AutofillHostMsg_ShowPasswordSuggestions::Read(message, &args);
     EXPECT_EQ(kPasswordFillFormDataId, args.a);
     EXPECT_EQ(ASCIIToUTF16(username), args.c);
-    EXPECT_EQ(show_all, args.d);
+    int options = args.d;
+    EXPECT_EQ(show_all, static_cast<bool>(options & autofill::SHOW_ALL));
 
     render_thread_->sink().ClearMessages();
   }

@@ -68,6 +68,7 @@ static_library("browser") {
     "//components/keyed_service/core",
     "//components/os_crypt",
     "//components/password_manager/core/common",
+    "//components/strings",
     "//net",
     "//sql",
     "//url",

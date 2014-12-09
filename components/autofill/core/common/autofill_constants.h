@@ -20,6 +20,12 @@ extern const char kHelpURL[];
 // it's not necessary.
 extern const size_t kRequiredAutofillFields;
 
+// Options bitmask values for AutofillHostMsg_ShowPasswordSuggestions IPC
+enum ShowPasswordSuggestionsOptions {
+  SHOW_ALL = 1 << 0 /* show all credentials, not just ones matching username */,
+  IS_PASSWORD_FIELD = 1 << 1 /* input field is a password field */
+};
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_COMMON_AUTOFILL_CONSTANTS_H_

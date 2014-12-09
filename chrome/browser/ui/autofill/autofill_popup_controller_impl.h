@@ -192,6 +192,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   gfx::FontList name_font_list_;
   gfx::FontList subtext_font_list_;
   gfx::FontList warning_font_list_;
+  gfx::FontList title_font_list_;
 #endif
 
   // The line that is currently selected by the user.

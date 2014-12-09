@@ -128,4 +128,8 @@
     Scan new card
   </message>
 
+  <message name="IDS_AUTOFILL_PASSWORD_FIELD_SUGGESTIONS_TITLE" desc="Text shown as the title of the suggestion drop down when a password field is clicked.">
+    Use password for:
+  </message>
+
 </grit-part>

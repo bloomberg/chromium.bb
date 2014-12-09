@@ -13,6 +13,7 @@
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
@@ -1068,9 +1069,12 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
                                  bounding_box.y() * scale,
                                  bounding_box.width() * scale,
                                  bounding_box.height() * scale);
+  int options = 0;
+  if (show_all)
+    options |= SHOW_ALL;
   Send(new AutofillHostMsg_ShowPasswordSuggestions(
       routing_id(), key_it->second, field.text_direction, user_input.value(),
-      show_all, bounding_box_scaled));
+      options, bounding_box_scaled));
 
   bool suggestions_present = false;
   if (GetSuggestionsStats(fill_data, user_input.value(), show_all,

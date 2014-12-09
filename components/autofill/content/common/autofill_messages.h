@@ -302,12 +302,13 @@ IPC_MESSAGE_ROUTED0(AutofillHostMsg_HidePasswordGenerationPopup)
 // Instruct the browser to show a popup with suggestions filled from data
 // associated with |key|. The popup will use |text_direction| for displaying
 // text.
-IPC_MESSAGE_ROUTED5(AutofillHostMsg_ShowPasswordSuggestions,
-                    int /* key */,
-                    base::i18n::TextDirection /*text_direction */,
-                    base::string16 /* username typed by user */,
-                    bool /* show all suggestions */,
-                    gfx::RectF /* input field bounds, window-relative */)
+IPC_MESSAGE_ROUTED5(
+    AutofillHostMsg_ShowPasswordSuggestions,
+    int /* key */,
+    base::i18n::TextDirection /* text_direction */,
+    base::string16 /* username typed by user */,
+    int /* options bitmask of autofill::ShowPasswordSuggestionsOptions */,
+    gfx::RectF /* input field bounds, window-relative */)
 
 // Inform browser of data list values for the curent field.
 IPC_MESSAGE_ROUTED2(AutofillHostMsg_SetDataList,
