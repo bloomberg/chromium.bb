@@ -20,6 +20,7 @@
 
 [
     SetWrapperReferenceFrom=document,
+    TypeChecking=Interface,
     WillBeGarbageCollected,
 ] interface DOMImplementation {
 
@@ -34,8 +35,8 @@
                                                       DOMString publicId,
                                                       DOMString systemId);
     [RaisesException] XMLDocument createDocument(DOMString? namespaceURI,
-                                                 DOMString? qualifiedName,
-                                                 [Default=Undefined] optional DocumentType doctype);
+                                                 [TreatNullAs=EmptyString] DOMString qualifiedName,
+                                                 optional DocumentType? doctype = null);
 
     // HTMLDOMImplementation interface from DOM Level 2 HTML
 
