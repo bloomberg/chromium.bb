@@ -130,6 +130,14 @@ def CreatePidNs():
     # Reap the children as the parent of the new namespace.
     process_util.ExitAsStatus(_ReapChildren(pid))
   else:
+    # Make sure to unshare the existing mount point if needed.  Some distros
+    # create shared mount points everywhere by default.
+    try:
+      osutils.Mount('none', '/proc', 0, osutils.MS_PRIVATE | osutils.MS_REC)
+    except OSError as e:
+      if e.errno != errno.EINVAL:
+        raise
+
     # The child needs its own proc mount as it'll be different.
     osutils.Mount('proc', '/proc', 'proc',
                   osutils.MS_NOSUID | osutils.MS_NODEV | osutils.MS_NOEXEC |
