@@ -9,8 +9,8 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/zoom/zoom_observer.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/ui/zoom/zoom_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -33,7 +33,7 @@ class ChromeAutofillClient
     : public AutofillClient,
       public content::WebContentsUserData<ChromeAutofillClient>,
       public content::WebContentsObserver,
-      public ZoomObserver {
+      public ui_zoom::ZoomObserver {
  public:
   ~ChromeAutofillClient() override;
 
@@ -76,7 +76,8 @@ class ChromeAutofillClient
   void WebContentsDestroyed() override;
 
   // ZoomObserver implementation.
-  void OnZoomChanged(const ZoomController::ZoomChangedEventData& data) override;
+  void OnZoomChanged(
+      const ui_zoom::ZoomController::ZoomChangedEventData& data) override;
 
   // Exposed for testing.
   AutofillDialogController* GetDialogControllerForTesting() {

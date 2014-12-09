@@ -635,6 +635,8 @@
         'browser/extension_util.h',
         'browser/extension_web_contents_observer.cc',
         'browser/extension_web_contents_observer.h',
+        'browser/extension_zoom_request_client.cc',
+        'browser/extension_zoom_request_client.h',
         'browser/extensions_browser_client.cc',
         'browser/extensions_browser_client.h',
         'browser/external_provider_interface.h',

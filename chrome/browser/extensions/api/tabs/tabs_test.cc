@@ -803,7 +803,7 @@ content::WebContents* ExtensionTabsZoomTest::OpenUrlAndWaitForLoad(
 namespace {
 
 double GetZoomLevel(const content::WebContents* web_contents) {
-  return ZoomController::FromWebContents(web_contents)->GetZoomLevel();
+  return ui_zoom::ZoomController::FromWebContents(web_contents)->GetZoomLevel();
 }
 
 content::OpenURLParams GetOpenParams(const char* url) {

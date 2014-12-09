@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/zoom/zoom_controller.h"
+#include "components/ui/zoom/zoom_controller.h"
 
 #include "base/prefs/pref_service.h"
 #include "base/process/kill.h"
@@ -19,6 +19,9 @@
 #include "content/public/common/page_type.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+using ui_zoom::ZoomController;
+using ui_zoom::ZoomObserver;
 
 bool operator==(const ZoomController::ZoomChangedEventData& lhs,
                 const ZoomController::ZoomChangedEventData& rhs) {
@@ -57,16 +60,7 @@ class ZoomChangedWatcher : public ZoomObserver {
   DISALLOW_COPY_AND_ASSIGN(ZoomChangedWatcher);
 };
 
-class TestZoomObserver : public ZoomObserver {
- public:
-  MOCK_METHOD1(OnZoomChanged,
-               void(const ZoomController::ZoomChangedEventData&));
-};
-
-class ZoomControllerBrowserTest: public InProcessBrowserTest {
- protected:
-  TestZoomObserver zoom_observer_;
-};
+typedef InProcessBrowserTest ZoomControllerBrowserTest;
 
 #if defined(OS_ANDROID)
 #define MAYBE_CrashedTabsDoNotChangeZoom DISABLED_CrashedTabsDoNotChangeZoom
@@ -145,9 +139,6 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, ErrorPagesCanZoom) {
 IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, Observe) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ZoomController* zoom_controller =
-      ZoomController::FromWebContents(web_contents);
-  zoom_controller->AddObserver(&zoom_observer_);
 
   double new_zoom_level = 1.0;
   // When the event is initiated from HostZoomMap, the old zoom level is not
@@ -158,11 +149,12 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, Observe) {
       new_zoom_level,
       ZoomController::ZOOM_MODE_DEFAULT,
       true);  // We have a non-empty host, so this will be 'true'.
-  EXPECT_CALL(zoom_observer_, OnZoomChanged(zoom_change_data)).Times(1);
+  ZoomChangedWatcher zoom_change_watcher(web_contents, zoom_change_data);
 
   content::HostZoomMap* host_zoom_map =
       content::HostZoomMap::GetDefaultForBrowserContext(
           web_contents->GetBrowserContext());
 
   host_zoom_map->SetZoomLevelForHost("about:blank", new_zoom_level);
+  zoom_change_watcher.Wait();
 }

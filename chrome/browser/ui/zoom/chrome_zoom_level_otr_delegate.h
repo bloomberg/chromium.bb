@@ -11,7 +11,9 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/zoom_level_delegate.h"
 
+namespace ui_zoom {
 class ZoomEventManager;
+}
 
 namespace chrome {
 
@@ -21,7 +23,7 @@ namespace chrome {
 class ChromeZoomLevelOTRDelegate : public content::ZoomLevelDelegate {
  public:
   ChromeZoomLevelOTRDelegate(
-      base::WeakPtr<ZoomEventManager> zoom_event_manager);
+      base::WeakPtr<ui_zoom::ZoomEventManager> zoom_event_manager);
   virtual ~ChromeZoomLevelOTRDelegate();
 
   // content::ZoomLevelDelegate
@@ -33,7 +35,7 @@ class ChromeZoomLevelOTRDelegate : public content::ZoomLevelDelegate {
   // zoom levels (if any) managed by this class (for its associated partition).
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 
-  base::WeakPtr<ZoomEventManager> zoom_event_manager_;
+  base::WeakPtr<ui_zoom::ZoomEventManager> zoom_event_manager_;
   content::HostZoomMap* host_zoom_map_;
   scoped_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
 

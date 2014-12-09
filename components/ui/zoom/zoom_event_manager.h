@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ZOOM_ZOOM_EVENT_MANAGER_H_
-#define CHROME_BROWSER_UI_ZOOM_ZOOM_EVENT_MANAGER_H_
+#ifndef COMPONENTS_UI_ZOOM_ZOOM_EVENT_MANAGER_H_
+#define COMPONENTS_UI_ZOOM_ZOOM_EVENT_MANAGER_H_
 
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
@@ -13,6 +13,8 @@
 namespace content {
 class BrowserContext;
 }  // namespace content
+
+namespace ui_zoom {
 
 // This class serves as a target for event notifications from all ZoomController
 // objects. Classes that need to know about browser-specific zoom events (e.g.
@@ -50,4 +52,6 @@ class ZoomEventManager : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(ZoomEventManager);
 };
 
-#endif  // CHROME_BROWSER_UI_ZOOM_ZOOM_EVENT_MANAGER_H_
+}  // namespace ui_zoom
+
+#endif  // COMPONENTS_UI_ZOOM_ZOOM_EVENT_MANAGER_H_

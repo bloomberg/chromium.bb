@@ -18,7 +18,7 @@
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/ui/zoom/zoom_controller.h"
+#include "components/ui/zoom/zoom_controller.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -44,8 +44,8 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
 
   double default_zoom_level = -1;
 #if !defined(OS_ANDROID)
-  ZoomController* zoom_controller =
-      ZoomController::FromWebContents(web_contents);
+  ui_zoom::ZoomController* zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(web_contents);
   if (zoom_controller)
     default_zoom_level = zoom_controller->GetDefaultZoomLevel();
 #endif

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_GUEST_VIEW_WEB_VIEW_CHROME_WEB_VIEW_GUEST_DELEGATE_H_
 
 #include "chrome/browser/extensions/api/web_view/chrome_web_view_internal_api.h"
-#include "chrome/browser/ui/zoom/zoom_observer.h"
+#include "components/ui/zoom/zoom_observer.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest_delegate.h"
 
@@ -23,7 +23,7 @@ class SimpleMenuModel;
 namespace extensions {
 
 class ChromeWebViewGuestDelegate : public WebViewGuestDelegate,
-                                   public ZoomObserver {
+                                   public ui_zoom::ZoomObserver {
  public :
   explicit ChromeWebViewGuestDelegate(WebViewGuest* web_view_guest);
   ~ChromeWebViewGuestDelegate() override;
@@ -43,7 +43,8 @@ class ChromeWebViewGuestDelegate : public WebViewGuestDelegate,
   void OnShowContextMenu(int request_id, const MenuItemVector* items) override;
 
   // ZoomObserver implementation.
-  void OnZoomChanged(const ZoomController::ZoomChangedEventData& data) override;
+  void OnZoomChanged(
+      const ui_zoom::ZoomController::ZoomChangedEventData& data) override;
 
   WebViewGuest* web_view_guest() const { return web_view_guest_; }
 

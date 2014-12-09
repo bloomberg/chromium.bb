@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
-#include "chrome/browser/ui/zoom/zoom_event_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -31,6 +30,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/ui/zoom/zoom_event_manager.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -46,7 +46,7 @@ class ZoomLevelChangeObserver {
  public:
   explicit ZoomLevelChangeObserver(content::BrowserContext* context)
       : message_loop_runner_(new content::MessageLoopRunner) {
-    subscription_ = ZoomEventManager::GetForBrowserContext(context)
+    subscription_ = ui_zoom::ZoomEventManager::GetForBrowserContext(context)
                         ->AddZoomLevelChangedCallback(base::Bind(
                             &ZoomLevelChangeObserver::OnZoomLevelChanged,
                             base::Unretained(this)));

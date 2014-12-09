@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ZOOM_ZOOM_OBSERVER_H_
-#define CHROME_BROWSER_UI_ZOOM_ZOOM_OBSERVER_H_
+#ifndef COMPONENTS_UI_ZOOM_ZOOM_OBSERVER_H_
+#define COMPONENTS_UI_ZOOM_ZOOM_OBSERVER_H_
 
-#include "chrome/browser/ui/zoom/zoom_controller.h"
+#include "components/ui/zoom/zoom_controller.h"
 
-namespace content {
-class WebContents;
-}
+namespace ui_zoom {
 
 // Interface for objects that wish to be notified of changes in ZoomController.
 class ZoomObserver {
@@ -22,4 +20,6 @@ class ZoomObserver {
   virtual ~ZoomObserver() {}
 };
 
-#endif  // CHROME_BROWSER_UI_ZOOM_ZOOM_OBSERVER_H_
+}  // namespace ui_zoom
+
+#endif  // COMPONENTS_UI_ZOOM_ZOOM_OBSERVER_H_

@@ -26,12 +26,12 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -693,8 +693,8 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   bindings_->SetDelegate(this);
   // DevTools uses chrome_page_zoom::Zoom(), so main_web_contents_ requires a
   // ZoomController.
-  ZoomController::CreateForWebContents(main_web_contents_);
-  ZoomController::FromWebContents(main_web_contents_)
+  ui_zoom::ZoomController::CreateForWebContents(main_web_contents_);
+  ui_zoom::ZoomController::FromWebContents(main_web_contents_)
       ->SetShowsNotificationBubble(false);
 
   g_instances.Get().push_back(this);

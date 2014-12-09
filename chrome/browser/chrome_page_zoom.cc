@@ -10,7 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_page_zoom_constants.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -66,8 +66,8 @@ std::vector<double> PresetZoomLevels(double custom_level) {
 }
 
 void Zoom(content::WebContents* web_contents, content::PageZoom zoom) {
-  ZoomController* zoom_controller =
-      ZoomController::FromWebContents(web_contents);
+  ui_zoom::ZoomController* zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(web_contents);
   DCHECK(zoom_controller);
 
   double current_zoom_level = zoom_controller->GetZoomLevel();

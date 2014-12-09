@@ -56,12 +56,12 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/translate/core/browser/language_state.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -753,7 +753,7 @@ bool LocationBarViewMac::UpdateZoomDecoration() {
     return false;
 
   return zoom_decoration_->UpdateIfNecessary(
-      ZoomController::FromWebContents(web_contents));
+      ui_zoom::ZoomController::FromWebContents(web_contents));
 }
 
 bool LocationBarViewMac::UpdateMicSearchDecorationVisibility() {

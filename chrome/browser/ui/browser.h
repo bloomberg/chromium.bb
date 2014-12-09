@@ -30,10 +30,10 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
-#include "chrome/browser/ui/zoom/zoom_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/sessions/session_id.h"
+#include "components/ui/zoom/zoom_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/page_navigator.h"
@@ -108,7 +108,7 @@ class Browser : public TabStripModelObserver,
                 public SearchTabHelperDelegate,
                 public ChromeWebModalDialogManagerDelegate,
                 public BookmarkTabHelperDelegate,
-                public ZoomObserver,
+                public ui_zoom::ZoomObserver,
                 public content::PageNavigator,
                 public content::NotificationObserver,
 #if defined(ENABLE_EXTENSIONS)
@@ -684,7 +684,8 @@ class Browser : public TabStripModelObserver,
                          bool starred) override;
 
   // Overridden from ZoomObserver:
-  void OnZoomChanged(const ZoomController::ZoomChangedEventData& data) override;
+  void OnZoomChanged(
+      const ui_zoom::ZoomController::ZoomChangedEventData& data) override;
 
   // Overridden from SelectFileDialog::Listener:
   void FileSelected(const base::FilePath& path,

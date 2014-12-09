@@ -44,7 +44,6 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/tabs.h"
@@ -55,6 +54,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/common/language_detection_details.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -68,6 +68,7 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_function_util.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_zoom_request_client.h"
 #include "extensions/browser/file_reader.h"
 #include "extensions/browser/script_executor.h"
 #include "extensions/common/api/extension_types.h"
@@ -97,6 +98,7 @@ using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
+using ui_zoom::ZoomController;
 
 namespace extensions {
 
@@ -1851,7 +1853,9 @@ bool TabsSetZoomFunction::RunAsync() {
       ZoomController::FromWebContents(web_contents);
   double zoom_level = content::ZoomFactorToZoomLevel(params->zoom_factor);
 
-  if (!zoom_controller->SetZoomLevelByExtension(zoom_level, extension())) {
+  scoped_refptr<ExtensionZoomRequestClient> client(
+      new ExtensionZoomRequestClient(extension()));
+  if (!zoom_controller->SetZoomLevelByClient(zoom_level, client)) {
     // Tried to zoom a tab in disabled mode.
     error_ = keys::kCannotZoomDisabledTabError;
     return false;

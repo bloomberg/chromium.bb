@@ -7,8 +7,9 @@
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/ui/zoom/zoom_controller.h"
+#include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -24,7 +25,7 @@ ZoomView::ZoomView(LocationBarView::Delegate* location_bar_delegate)
 ZoomView::~ZoomView() {
 }
 
-void ZoomView::Update(ZoomController* zoom_controller) {
+void ZoomView::Update(ui_zoom::ZoomController* zoom_controller) {
   if (!zoom_controller || zoom_controller->IsAtDefaultZoom() ||
       location_bar_delegate_->GetToolbarModel()->input_in_progress()) {
     SetVisible(false);
@@ -34,8 +35,15 @@ void ZoomView::Update(ZoomController* zoom_controller) {
 
   SetTooltipText(l10n_util::GetStringFUTF16Int(
       IDS_TOOLTIP_ZOOM, zoom_controller->GetZoomPercent()));
-  SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      zoom_controller->GetResourceForZoomLevel()));
+  int image_id = IDR_ZOOM_NORMAL;
+  ui_zoom::ZoomController::RelativeZoom relative_zoom =
+      zoom_controller->GetZoomRelativeToDefault();
+  if (relative_zoom == ui_zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM)
+    image_id = IDR_ZOOM_MINUS;
+  else if (relative_zoom == ui_zoom::ZoomController::ZOOM_ABOVE_DEFAULT_ZOOM)
+    image_id = IDR_ZOOM_PLUS;
+
+  SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(image_id));
   SetVisible(true);
 }
 

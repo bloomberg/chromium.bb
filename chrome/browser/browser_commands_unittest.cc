@@ -9,12 +9,12 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -24,6 +24,7 @@ typedef BrowserWithTestWindowTest BrowserCommandsTest;
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
+using ui_zoom::ZoomController;
 
 // Tests IDC_SELECT_TAB_0, IDC_SELECT_NEXT_TAB, IDC_SELECT_PREVIOUS_TAB and
 // IDC_SELECT_LAST_TAB.

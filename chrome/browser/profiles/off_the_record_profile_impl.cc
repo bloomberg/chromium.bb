@@ -33,7 +33,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_otr_delegate.h"
-#include "chrome/browser/ui/zoom/zoom_event_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -41,6 +40,7 @@
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/ui/zoom/zoom_event_manager.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -238,7 +238,7 @@ scoped_ptr<content::ZoomLevelDelegate>
 OffTheRecordProfileImpl::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
   return make_scoped_ptr(new chrome::ChromeZoomLevelOTRDelegate(
-      ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr()));
+      ui_zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr()));
 }
 
 scoped_refptr<base::SequencedTaskRunner>

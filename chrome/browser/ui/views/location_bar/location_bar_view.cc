@@ -58,12 +58,12 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/translate/core/browser/language_state.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
@@ -1138,7 +1138,7 @@ bool LocationBarView::RefreshZoomView() {
   if (!web_contents)
     return false;
   const bool was_visible = zoom_view_->visible();
-  zoom_view_->Update(ZoomController::FromWebContents(web_contents));
+  zoom_view_->Update(ui_zoom::ZoomController::FromWebContents(web_contents));
   if (!zoom_view_->visible())
     ZoomBubbleView::CloseBubble();
   return was_visible != zoom_view_->visible();

@@ -9,7 +9,9 @@
 #include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 
+namespace ui_zoom {
 class ZoomController;
+}
 
 // View for the zoom icon in the Omnibox.
 class ZoomView : public BubbleIconView {
@@ -23,7 +25,7 @@ class ZoomView : public BubbleIconView {
 
   // Updates the image and its tooltip appropriately, hiding or showing the icon
   // as needed.
-  void Update(ZoomController* zoom_controller);
+  void Update(ui_zoom::ZoomController* zoom_controller);
 
  protected:
   // BubbleIconView:

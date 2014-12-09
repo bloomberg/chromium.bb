@@ -1102,9 +1102,6 @@
       'browser/ui/zoom/chrome_zoom_level_otr_delegate.h',
       'browser/ui/zoom/chrome_zoom_level_prefs.cc',
       'browser/ui/zoom/chrome_zoom_level_prefs.h',
-      'browser/ui/zoom/zoom_event_manager.cc',
-      'browser/ui/zoom/zoom_event_manager.h',
-      'browser/ui/zoom/zoom_observer.h',
     ],
     # Note that we assume app list is enabled on all views builds, so the
     # views-specific app list files are in the views section.
@@ -1790,8 +1787,6 @@
       'browser/ui/webui/uber/uber_ui.h',
       'browser/ui/window_sizer/window_sizer.cc',
       'browser/ui/window_sizer/window_sizer.h',
-      'browser/ui/zoom/zoom_controller.cc',
-      'browser/ui/zoom/zoom_controller.h',
     ],
     'chrome_browser_ui_non_mobile_sources': [
       'browser/ui/browser_commands.cc',
@@ -2622,6 +2617,7 @@
         '../components/components.gyp:omaha_client',
         '../components/components.gyp:onc_component',
         '../components/components.gyp:password_manager_core_browser',
+        '../components/components.gyp:ui_zoom',
         '../components/components_resources.gyp:components_resources',
         '../components/components_strings.gyp:components_strings',
         '../content/content.gyp:content_browser',

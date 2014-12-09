@@ -1,0 +1,22 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("ui_zoom") {
+  sources = [
+    "zoom_controller.cc",
+    "zoom_controller.h",
+    "zoom_event_manager.cc",
+    "zoom_event_manager.h",
+    "zoom_observer.h",
+  ]
+
+  deps = [
+    "//base",
+    "//content/public/browser",
+    "//content/public/common",
+    "//ipc",
+    "//net",
+    "//url",
+  ]
+}

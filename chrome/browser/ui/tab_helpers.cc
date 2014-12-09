@@ -52,8 +52,8 @@
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #endif  // defined(OS_ANDROID)
 
@@ -123,7 +123,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #if !defined(OS_ANDROID)
   // ZoomController comes before common tab helpers since ChromeAutofillClient
   // may want to register as a ZoomObserver with it.
-  ZoomController::CreateForWebContents(web_contents);
+  ui_zoom::ZoomController::CreateForWebContents(web_contents);
 #endif
 
   // --- Common tab helpers ---

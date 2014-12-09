@@ -353,6 +353,8 @@ source_set("browser") {
       "extension_util.h",
       "extension_web_contents_observer.cc",
       "extension_web_contents_observer.h",
+      "extension_zoom_request_client.cc",
+      "extension_zoom_request_client.h",
       "extensions_browser_client.cc",
       "extensions_browser_client.h",
       "external_provider_interface.h",

@@ -29,6 +29,7 @@ using base::ListValue;
 using base::FundamentalValue;
 using content::NavigationController;
 using content::WebContents;
+using ui_zoom::ZoomController;
 
 namespace extensions {
 

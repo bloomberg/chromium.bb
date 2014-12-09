@@ -4,6 +4,7 @@ include_rules = [
   "+components/pref_registry",
   "+components/sessions",
   "+components/storage_monitor",
+  "+components/ui/zoom",
   "+components/web_cache",
   "+components/web_modal",
   "+content/public/browser",

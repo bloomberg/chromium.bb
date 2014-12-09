@@ -1871,7 +1871,8 @@ namespace {
 int GetZoomPercent(const content::WebContents* contents,
                    bool* enable_plus,
                    bool* enable_minus) {
-  int percent = ZoomController::FromWebContents(contents)->GetZoomPercent();
+  int percent =
+      ui_zoom::ZoomController::FromWebContents(contents)->GetZoomPercent();
   *enable_plus = percent < contents->GetMaximumZoomPercent();
   *enable_minus = percent > contents->GetMinimumZoomPercent();
   return percent;

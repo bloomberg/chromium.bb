@@ -93,6 +93,7 @@ group("all_components") {
     "//components/translate/content/renderer",
     "//components/translate/core/browser",
     "//components/translate/core/common",
+    "//components/ui/zoom:ui_zoom",
     "//components/url_fixer",
     "//components/url_matcher",
     "//components/user_manager",

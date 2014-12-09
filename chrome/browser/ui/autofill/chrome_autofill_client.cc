@@ -32,7 +32,7 @@
 #include "chrome/browser/android/chromium_application.h"
 #include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
 #else
-#include "chrome/browser/ui/zoom/zoom_controller.h"
+#include "components/ui/zoom/zoom_controller.h"
 #endif
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::ChromeAutofillClient);
@@ -49,8 +49,8 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
   // WebContentsObservers is not guaranteed. ZoomController silently clears
   // its ZoomObserver list during WebContentsDestroyed() so there's no need
   // to explicitly remove ourselves on destruction.
-  ZoomController* zoom_controller =
-      ZoomController::FromWebContents(web_contents);
+  ui_zoom::ZoomController* zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(web_contents);
   // There may not always be a ZoomController, e.g. in tests.
   if (zoom_controller)
     zoom_controller->AddObserver(this);
@@ -199,7 +199,7 @@ void ChromeAutofillClient::WebContentsDestroyed() {
 }
 
 void ChromeAutofillClient::OnZoomChanged(
-    const ZoomController::ZoomChangedEventData& data) {
+    const ui_zoom::ZoomController::ZoomChangedEventData& data) {
   HideAutofillPopup();
 }
 

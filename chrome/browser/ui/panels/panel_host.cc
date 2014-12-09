@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
@@ -57,7 +57,7 @@ void PanelHost::Init(const GURL& url) {
   web_contents_->SetDelegate(this);
   // web_contents_ may be passed to chrome_page_zoom::Zoom(), so it needs
   // a ZoomController.
-  ZoomController::CreateForWebContents(web_contents_.get());
+  ui_zoom::ZoomController::CreateForWebContents(web_contents_.get());
   content::WebContentsObserver::Observe(web_contents_.get());
 
   // Needed to give the web contents a Tab ID. Extension APIs

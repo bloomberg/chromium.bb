@@ -13,8 +13,11 @@
 
 class LocationBarViewMac;
 @class ZoomBubbleController;
-class ZoomController;
 class ZoomDecorationTest;
+
+namespace ui_zoom {
+class ZoomController;
+}
 
 // Zoom icon at the end of the omnibox (close to page actions) when at a
 // non-standard zoom level.
@@ -26,7 +29,7 @@ class ZoomDecoration : public ImageDecoration,
 
   // Called when this decoration should show or hide itself in its most current
   // state. Returns whether any updates were made.
-  bool UpdateIfNecessary(ZoomController* zoom_controller);
+  bool UpdateIfNecessary(ui_zoom::ZoomController* zoom_controller);
 
   // Shows the zoom bubble for this decoration. If |auto_close| is YES, then
   // the bubble will automatically close after a fixed period of time.
@@ -42,7 +45,7 @@ class ZoomDecoration : public ImageDecoration,
 
   // Show and update UI associated with the zoom decoration.
   // Virtual and protected for testing.
-  virtual void ShowAndUpdateUI(ZoomController* zoom_controller,
+  virtual void ShowAndUpdateUI(ui_zoom::ZoomController* zoom_controller,
                                NSString* tooltip_string);
 
  private:

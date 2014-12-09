@@ -136,7 +136,6 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
@@ -157,6 +156,7 @@
 #include "components/search/search.h"
 #include "components/sessions/session_types.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -1908,7 +1908,8 @@ void Browser::URLStarredChanged(content::WebContents* web_contents,
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, ZoomObserver implementation:
 
-void Browser::OnZoomChanged(const ZoomController::ZoomChangedEventData& data) {
+void Browser::OnZoomChanged(
+    const ui_zoom::ZoomController::ZoomChangedEventData& data) {
   if (data.web_contents == tab_strip_model_->GetActiveWebContents()) {
     // Only show the zoom bubble for zoom changes in the active window.
     window_->ZoomChangedForActiveTab(data.can_show_bubble &&
@@ -2276,10 +2277,11 @@ void Browser::SetAsDelegate(WebContents* web_contents, bool set_delegate) {
   translate::ContentTranslateDriver& content_translate_driver =
       ChromeTranslateClient::FromWebContents(web_contents)->translate_driver();
   if (delegate) {
-    ZoomController::FromWebContents(web_contents)->AddObserver(this);
+    ui_zoom::ZoomController::FromWebContents(web_contents)->AddObserver(this);
     content_translate_driver.AddObserver(translate_driver_observer_.get());
   } else {
-    ZoomController::FromWebContents(web_contents)->RemoveObserver(this);
+    ui_zoom::ZoomController::FromWebContents(web_contents)
+        ->RemoveObserver(this);
     content_translate_driver.RemoveObserver(translate_driver_observer_.get());
   }
 }

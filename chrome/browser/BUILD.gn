@@ -112,6 +112,7 @@ static_library("browser") {
     "//components/sync_driver",
     "//components/translate/core/browser",
     "//components/translate/core/common",
+    "//components/ui/zoom:ui_zoom",
     "//components/url_fixer",
     "//components/user_prefs",
     "//components/variations",

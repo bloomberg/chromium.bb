@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ZOOM_ZOOM_CONTROLLER_H_
-#define CHROME_BROWSER_UI_ZOOM_ZOOM_CONTROLLER_H_
+#ifndef COMPONENTS_UI_ZOOM_ZOOM_CONTROLLER_H_
+#define COMPONENTS_UI_ZOOM_ZOOM_CONTROLLER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_member.h"
@@ -14,15 +15,27 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-class ZoomObserver;
+class ZoomControllerTest;
 
 namespace content {
 class WebContents;
 }
 
-namespace extensions {
-class Extension;
-}  // namespace extensions
+namespace ui_zoom {
+class ZoomObserver;
+
+class ZoomRequestClient : public base::RefCounted<ZoomRequestClient> {
+ public:
+  ZoomRequestClient() {}
+
+ protected:
+  virtual ~ZoomRequestClient() {}
+
+ private:
+  friend class base::RefCounted<ZoomRequestClient>;
+
+  DISALLOW_COPY_AND_ASSIGN(ZoomRequestClient);
+};
 
 // Per-tab class to manage zoom changes and the Omnibox zoom icon.
 class ZoomController : public content::WebContentsObserver,
@@ -46,6 +59,12 @@ class ZoomController : public content::WebContentsObserver,
     // Disables all zooming in this tab. The tab will revert to default (100%)
     // zoom, and all attempted zoom changes will be ignored.
     ZOOM_MODE_DISABLED,
+  };
+
+  enum RelativeZoom {
+    ZOOM_BELOW_DEFAULT_ZOOM,
+    ZOOM_AT_DEFAULT_ZOOM,
+    ZOOM_ABOVE_DEFAULT_ZOOM
   };
 
   struct ZoomChangedEventData {
@@ -81,11 +100,9 @@ class ZoomController : public content::WebContentsObserver,
   bool IsAtDefaultZoom() const;
 
   // Returns which image should be loaded for the current zoom level.
-  int GetResourceForZoomLevel() const;
+  RelativeZoom GetZoomRelativeToDefault() const;
 
-  const extensions::Extension* last_extension() const {
-    return last_extension_.get();
-  }
+  const ZoomRequestClient* last_client() const { return last_client_.get(); }
 
   void AddObserver(ZoomObserver* observer);
   void RemoveObserver(ZoomObserver* observer);
@@ -110,10 +127,10 @@ class ZoomController : public content::WebContentsObserver,
   bool SetZoomLevel(double zoom_level);
 
   // Sets the zoom level via HostZoomMap (or stores it locally if in manual zoom
-  // mode), and attributes the zoom to |extension|. Returns true on success.
-  bool SetZoomLevelByExtension(
+  // mode), and attributes the zoom to |client|. Returns true on success.
+  bool SetZoomLevelByClient(
       double zoom_level,
-      const scoped_refptr<const extensions::Extension>& extension);
+      const scoped_refptr<const ZoomRequestClient>& client);
 
   // Sets the zoom mode, which defines zoom behavior (see enum ZoomMode).
   void SetZoomMode(ZoomMode zoom_mode);
@@ -130,7 +147,7 @@ class ZoomController : public content::WebContentsObserver,
 
  private:
   friend class content::WebContentsUserData<ZoomController>;
-  friend class ZoomControllerTest;
+  friend class ::ZoomControllerTest;
 
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 
@@ -153,7 +170,7 @@ class ZoomController : public content::WebContentsObserver,
 
   // Keeps track of the extension (if any) that initiated the last zoom change
   // that took effect.
-  scoped_refptr<const extensions::Extension> last_extension_;
+  scoped_refptr<const ZoomRequestClient> last_client_;
 
   // Observer receiving notifications on state changes.
   ObserverList<ZoomObserver> observers_;
@@ -165,4 +182,6 @@ class ZoomController : public content::WebContentsObserver,
   DISALLOW_COPY_AND_ASSIGN(ZoomController);
 };
 
-#endif  // CHROME_BROWSER_UI_ZOOM_ZOOM_CONTROLLER_H_
+}  // namespace ui_zoom
+
+#endif  // COMPONENTS_UI_ZOOM_ZOOM_CONTROLLER_H_

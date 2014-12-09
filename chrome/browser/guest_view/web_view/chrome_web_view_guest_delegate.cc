@@ -9,10 +9,10 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_version_info.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "content/public/common/page_zoom.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
@@ -27,6 +27,8 @@
 #endif  // defined(ENABLE_PRINTING)
 
 namespace extensions {
+
+using ui_zoom::ZoomController;
 
 ChromeWebViewGuestDelegate::ChromeWebViewGuestDelegate(
     WebViewGuest* web_view_guest)

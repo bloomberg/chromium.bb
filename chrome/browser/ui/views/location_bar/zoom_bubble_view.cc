@@ -15,10 +15,11 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_zoom_request_client.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -59,16 +60,14 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
       browser_view->GetLocationBarView()->zoom_view() : NULL;
 
   // Find the extension that initiated the zoom change, if any.
-  ZoomController* zoom_controller =
-      ZoomController::FromWebContents(web_contents);
-  const extensions::Extension* extension = zoom_controller->last_extension();
+  ui_zoom::ZoomController* zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(web_contents);
+  const ui_zoom::ZoomRequestClient* client = zoom_controller->last_client();
 
   // If the bubble is already showing in this window and the zoom change was not
   // initiated by an extension, then the bubble can be reused and only the label
   // text needs to be updated.
-  if (zoom_bubble_ &&
-      zoom_bubble_->GetAnchorView() == anchor_view &&
-      !extension) {
+  if (zoom_bubble_ && zoom_bubble_->GetAnchorView() == anchor_view && !client) {
     DCHECK_EQ(web_contents, zoom_bubble_->web_contents_);
     zoom_bubble_->Refresh();
     return;
@@ -86,8 +85,11 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
 
   // If the zoom change was initiated by an extension, capture the relevent
   // information from it.
-  if (extension)
-    zoom_bubble_->SetExtensionInfo(extension);
+  if (client) {
+    zoom_bubble_->SetExtensionInfo(
+        static_cast<const extensions::ExtensionZoomRequestClient*>(client)
+            ->extension());
+  }
 
   // If we do not have an anchor view, parent the bubble to the content area.
   if (!anchor_to_view)
@@ -166,8 +168,8 @@ void ZoomBubbleView::AdjustForFullscreen(const gfx::Rect& screen_bounds) {
 }
 
 void ZoomBubbleView::Refresh() {
-  ZoomController* zoom_controller =
-      ZoomController::FromWebContents(web_contents_);
+  ui_zoom::ZoomController* zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(web_contents_);
   int zoom_percent = zoom_controller->GetZoomPercent();
   label_->SetText(
       l10n_util::GetStringFUTF16Int(IDS_TOOLTIP_ZOOM, zoom_percent));
@@ -313,8 +315,8 @@ void ZoomBubbleView::Init() {
   }
 
   // Add zoom label with the new zoom percent.
-  ZoomController* zoom_controller =
-      ZoomController::FromWebContents(web_contents_);
+  ui_zoom::ZoomController* zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(web_contents_);
   int zoom_percent = zoom_controller->GetZoomPercent();
   label_ = new views::Label(
       l10n_util::GetStringFUTF16Int(IDS_TOOLTIP_ZOOM, zoom_percent));

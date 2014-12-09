@@ -22,8 +22,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
@@ -182,7 +182,7 @@ void ChromeAppDelegate::InitWebContents(content::WebContents* web_contents) {
 
   // Kiosk app supports zooming.
   if (chrome::IsRunningInForcedAppMode())
-    ZoomController::CreateForWebContents(web_contents);
+    ui_zoom::ZoomController::CreateForWebContents(web_contents);
 }
 
 void ChromeAppDelegate::ResizeWebContents(content::WebContents* web_contents,

@@ -24,8 +24,8 @@
 #import "chrome/browser/ui/cocoa/wrench_menu/recent_tabs_menu_model_delegate.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
-#include "chrome/browser/ui/zoom/zoom_event_manager.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/ui/zoom/zoom_event_manager.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
@@ -68,7 +68,7 @@ class AcceleratorDelegate : public ui::AcceleratorProvider {
 class ZoomLevelObserver {
  public:
   ZoomLevelObserver(WrenchMenuController* controller,
-                    ZoomEventManager* manager)
+                    ui_zoom::ZoomEventManager* manager)
       : controller_(controller) {
     subscription_ = manager->AddZoomLevelChangedCallback(
         base::Bind(&ZoomLevelObserver::OnZoomLevelChanged,
@@ -102,7 +102,7 @@ class ZoomLevelObserver {
     browser_ = browser;
     observer_.reset(new WrenchMenuControllerInternal::ZoomLevelObserver(
         self,
-        ZoomEventManager::GetForBrowserContext(browser->profile())));
+        ui_zoom::ZoomEventManager::GetForBrowserContext(browser->profile())));
     acceleratorDelegate_.reset(
         new WrenchMenuControllerInternal::AcceleratorDelegate());
     [self createModel];

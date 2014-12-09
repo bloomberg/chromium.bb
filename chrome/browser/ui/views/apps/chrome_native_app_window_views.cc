@@ -16,9 +16,9 @@
 #include "chrome/browser/ui/views/apps/shaped_app_window_targeter.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/frame/taskbar_decorator.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "extensions/common/extension.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -293,8 +293,8 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
 
   // Ensure there is a ZoomController in kiosk mode, otherwise the processing
   // of the accelerators will cause a crash.
-  DCHECK(!is_kiosk_app_mode ||
-         ZoomController::FromWebContents(web_view()->GetWebContents()));
+  DCHECK(!is_kiosk_app_mode || ui_zoom::ZoomController::FromWebContents(
+                                   web_view()->GetWebContents()));
 
   for (std::map<ui::Accelerator, int>::const_iterator iter =
            accelerator_table.begin();

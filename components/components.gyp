@@ -57,6 +57,7 @@
     'startup_metric_utils.gypi',
     'suggestions.gypi',
     'translate.gypi',
+    'ui_zoom.gypi',
     'url_fixer.gypi',
     'url_matcher.gypi',
     'user_prefs.gypi',

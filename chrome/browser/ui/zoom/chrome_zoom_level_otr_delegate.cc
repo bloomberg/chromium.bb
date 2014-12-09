@@ -5,14 +5,13 @@
 #include "chrome/browser/ui/zoom/chrome_zoom_level_otr_delegate.h"
 
 #include "base/bind.h"
-#include "chrome/browser/ui/zoom/zoom_event_manager.h"
+#include "components/ui/zoom/zoom_event_manager.h"
 
 namespace chrome {
 
 ChromeZoomLevelOTRDelegate::ChromeZoomLevelOTRDelegate(
-      base::WeakPtr<ZoomEventManager> zoom_event_manager)
-  : zoom_event_manager_(zoom_event_manager),
-    host_zoom_map_(nullptr) {
+    base::WeakPtr<ui_zoom::ZoomEventManager> zoom_event_manager)
+    : zoom_event_manager_(zoom_event_manager), host_zoom_map_(nullptr) {
 }
 
 ChromeZoomLevelOTRDelegate::~ChromeZoomLevelOTRDelegate() {

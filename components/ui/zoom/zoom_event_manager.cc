@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/zoom/zoom_event_manager.h"
+#include "components/ui/zoom/zoom_event_manager.h"
 
 #include "content/public/browser/browser_context.h"
 
 namespace {
 static const char kBrowserZoomEventManager[] = "browser_zoom_event_manager";
 }
+
+namespace ui_zoom {
 
 ZoomEventManager* ZoomEventManager::GetForBrowserContext(
     content::BrowserContext* context) {
@@ -21,7 +23,8 @@ ZoomEventManager* ZoomEventManager::GetForBrowserContext(
 ZoomEventManager::ZoomEventManager() : weak_ptr_factory_(this) {
 }
 
-ZoomEventManager::~ZoomEventManager() {}
+ZoomEventManager::~ZoomEventManager() {
+}
 
 void ZoomEventManager::OnZoomLevelChanged(
     const content::HostZoomMap::ZoomLevelChange& change) {
@@ -33,3 +36,5 @@ ZoomEventManager::AddZoomLevelChangedCallback(
     const content::HostZoomMap::ZoomLevelChangedCallback& callback) {
   return zoom_level_changed_callbacks_.Add(callback);
 }
+
+}  // namespace ui_zoom

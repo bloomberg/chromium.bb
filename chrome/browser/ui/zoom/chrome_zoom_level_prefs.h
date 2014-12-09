@@ -18,10 +18,12 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/zoom_level_delegate.h"
 
-class ZoomEventManager;
-
 namespace base {
 class DictionaryValue;
+}
+
+namespace ui_zoom {
+class ZoomEventManager;
 }
 
 namespace chrome {
@@ -41,10 +43,11 @@ class ChromeZoomLevelPrefs : public content::ZoomLevelDelegate {
   // as these concepts won't be available in the content base class
   // ZoomLevelDelegate, which will define the InitHostZoomMap interface.
   // |pref_service_| must outlive this class.
-  ChromeZoomLevelPrefs(PrefService* pref_service,
-                       const base::FilePath& profile_path,
-                       const base::FilePath& partition_path,
-                       base::WeakPtr<ZoomEventManager> zoom_event_manager);
+  ChromeZoomLevelPrefs(
+      PrefService* pref_service,
+      const base::FilePath& profile_path,
+      const base::FilePath& partition_path,
+      base::WeakPtr<ui_zoom::ZoomEventManager> zoom_event_manager);
   virtual ~ChromeZoomLevelPrefs();
 
   static std::string GetHashForTesting(const base::FilePath& relative_path);
@@ -68,7 +71,7 @@ class ChromeZoomLevelPrefs : public content::ZoomLevelDelegate {
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 
   PrefService* pref_service_;
-  base::WeakPtr<ZoomEventManager> zoom_event_manager_;
+  base::WeakPtr<ui_zoom::ZoomEventManager> zoom_event_manager_;
   content::HostZoomMap* host_zoom_map_;
   scoped_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
   std::string partition_key_;

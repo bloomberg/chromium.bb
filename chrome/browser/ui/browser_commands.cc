@@ -50,7 +50,6 @@
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -60,6 +59,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/translate/core/browser/language_state.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "components/web_modal/popup_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
@@ -596,19 +596,22 @@ void CloseTab(Browser* browser) {
 }
 
 bool CanZoomIn(content::WebContents* contents) {
-  ZoomController* zoom_controller = ZoomController::FromWebContents(contents);
+  ui_zoom::ZoomController* zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(contents);
   return zoom_controller->GetZoomPercent() !=
       contents->GetMaximumZoomPercent() + 1;
 }
 
 bool CanZoomOut(content::WebContents* contents) {
-  ZoomController* zoom_controller = ZoomController::FromWebContents(contents);
+  ui_zoom::ZoomController* zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(contents);
   return zoom_controller->GetZoomPercent() !=
       contents->GetMinimumZoomPercent();
 }
 
 bool ActualSize(content::WebContents* contents) {
-  ZoomController* zoom_controller = ZoomController::FromWebContents(contents);
+  ui_zoom::ZoomController* zoom_controller =
+      ui_zoom::ZoomController::FromWebContents(contents);
   return zoom_controller->GetZoomPercent() != 100.0f;
 }
 
