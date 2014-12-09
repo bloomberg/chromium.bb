@@ -129,7 +129,10 @@ OsPasswordStatus GetOsPasswordStatus() {
     retVal = PASSWORD_STATUS_WIN_DOMAIN;
   } else {
     username_length = CREDUI_MAX_USERNAME_LENGTH;
-    if (GetUserName(username, &username_length)) {
+    // CheckBlankPassword() isn't safe to call on before Windows 7.
+    // http://crbug.com/345916
+    if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
+        GetUserName(username, &username_length)) {
       retVal = CheckBlankPassword(username) ? PASSWORD_STATUS_BLANK :
           PASSWORD_STATUS_NONBLANK;
     }
