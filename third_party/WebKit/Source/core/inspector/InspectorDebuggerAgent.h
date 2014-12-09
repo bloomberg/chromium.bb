@@ -213,7 +213,7 @@ private:
     bool v8AsyncTaskEventsEnabled() const final;
     void didReceiveV8AsyncTaskEvent(ExecutionContext*, const String& eventType, const String& eventName, int id) final;
     bool v8PromiseEventsEnabled() const final;
-    void didReceiveV8PromiseEvent(ScriptState*, v8::Handle<v8::Object> promise, v8::Handle<v8::Value> parentPromise, int status) final;
+    void didReceiveV8PromiseEvent(ScriptState*, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status) final;
 
     void setPauseOnExceptionsImpl(ErrorString*, int);
 

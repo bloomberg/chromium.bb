@@ -45,7 +45,7 @@ static const unsigned maxStackDepthLimit = 32;
 
 class V8ValueStringBuilder {
 public:
-    static String toString(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+    static String toString(v8::Local<v8::Value> value, v8::Isolate* isolate)
     {
         V8ValueStringBuilder builder(isolate);
         if (!builder.append(value))
@@ -65,7 +65,7 @@ private:
     {
     }
 
-    bool append(v8::Handle<v8::Value> value, unsigned ignoreOptions = 0)
+    bool append(v8::Local<v8::Value> value, unsigned ignoreOptions = 0)
     {
         if (value.IsEmpty())
             return true;
@@ -74,23 +74,23 @@ private:
         if ((ignoreOptions & IgnoreUndefined) && value->IsUndefined())
             return true;
         if (value->IsString())
-            return append(v8::Handle<v8::String>::Cast(value));
+            return append(v8::Local<v8::String>::Cast(value));
         if (value->IsStringObject())
-            return append(v8::Handle<v8::StringObject>::Cast(value)->ValueOf());
+            return append(v8::Local<v8::StringObject>::Cast(value)->ValueOf());
         if (value->IsSymbol())
-            return append(v8::Handle<v8::Symbol>::Cast(value));
+            return append(v8::Local<v8::Symbol>::Cast(value));
         if (value->IsSymbolObject())
-            return append(v8::Handle<v8::SymbolObject>::Cast(value)->ValueOf());
+            return append(v8::Local<v8::SymbolObject>::Cast(value)->ValueOf());
         if (value->IsNumberObject()) {
-            m_builder.appendNumber(v8::Handle<v8::NumberObject>::Cast(value)->ValueOf());
+            m_builder.appendNumber(v8::Local<v8::NumberObject>::Cast(value)->ValueOf());
             return true;
         }
         if (value->IsBooleanObject()) {
-            m_builder.append(v8::Handle<v8::BooleanObject>::Cast(value)->ValueOf() ? "true" : "false");
+            m_builder.append(v8::Local<v8::BooleanObject>::Cast(value)->ValueOf() ? "true" : "false");
             return true;
         }
         if (value->IsArray())
-            return append(v8::Handle<v8::Array>::Cast(value));
+            return append(v8::Local<v8::Array>::Cast(value));
         if (toDOMWindow(m_isolate, value)) {
             m_builder.append("[object Window]");
             return true;
@@ -100,11 +100,11 @@ private:
             && !value->IsFunction()
             && !value->IsNativeError()
             && !value->IsRegExp())
-            return append(v8::Handle<v8::Object>::Cast(value)->ObjectProtoToString());
+            return append(v8::Local<v8::Object>::Cast(value)->ObjectProtoToString());
         return append(value->ToString(m_isolate));
     }
 
-    bool append(v8::Handle<v8::Array> array)
+    bool append(v8::Local<v8::Array> array)
     {
         if (m_visitedArrays.contains(array))
             return true;
@@ -129,7 +129,7 @@ private:
         return result;
     }
 
-    bool append(v8::Handle<v8::Symbol> symbol)
+    bool append(v8::Local<v8::Symbol> symbol)
     {
         m_builder.appendLiteral("Symbol(");
         bool result = append(symbol->Name(), IgnoreUndefined);
@@ -137,7 +137,7 @@ private:
         return result;
     }
 
-    bool append(v8::Handle<v8::String> string)
+    bool append(v8::Local<v8::String> string)
     {
         if (m_tryCatch.HasCaught())
             return false;
@@ -156,7 +156,7 @@ private:
     uint32_t m_arrayLimit;
     v8::Isolate* m_isolate;
     StringBuilder m_builder;
-    Vector<v8::Handle<v8::Array> > m_visitedArrays;
+    Vector<v8::Local<v8::Array> > m_visitedArrays;
     v8::TryCatch m_tryCatch;
 };
 

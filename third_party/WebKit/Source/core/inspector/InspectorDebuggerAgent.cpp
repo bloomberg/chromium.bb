@@ -762,7 +762,7 @@ bool InspectorDebuggerAgent::v8PromiseEventsEnabled() const
     return promiseTracker().isEnabled() || (m_listener && m_listener->canPauseOnPromiseEvent());
 }
 
-void InspectorDebuggerAgent::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Handle<v8::Object> promise, v8::Handle<v8::Value> parentPromise, int status)
+void InspectorDebuggerAgent::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status)
 {
     if (promiseTracker().isEnabled())
         promiseTracker().didReceiveV8PromiseEvent(scriptState, promise, parentPromise, status);

@@ -46,7 +46,7 @@ class ScriptValue;
 class JavaScriptCallFrame : public RefCountedWillBeGarbageCollectedFinalized<JavaScriptCallFrame>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<JavaScriptCallFrame> create(v8::Handle<v8::Context> debuggerContext, v8::Handle<v8::Object> callFrame)
+    static PassRefPtrWillBeRawPtr<JavaScriptCallFrame> create(v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame)
     {
         return adoptRefWillBeNoop(new JavaScriptCallFrame(debuggerContext, callFrame));
     }
@@ -61,21 +61,21 @@ public:
     String scriptName() const;
     String functionName() const;
 
-    v8::Handle<v8::Value> scopeChain() const;
+    v8::Local<v8::Value> scopeChain() const;
     int scopeType(int scopeIndex) const;
-    v8::Handle<v8::Value> thisObject() const;
+    v8::Local<v8::Value> thisObject() const;
     String stepInPositions() const;
     bool isAtReturn() const;
-    v8::Handle<v8::Value> returnValue() const;
+    v8::Local<v8::Value> returnValue() const;
 
     ScriptValue evaluateWithExceptionDetails(ScriptState*, const String& expression, const ScriptValue& scopeExtension);
-    v8::Handle<v8::Value> restart();
+    v8::Local<v8::Value> restart();
     ScriptValue setVariableValue(ScriptState*, int scopeNumber, const String& variableName, const ScriptValue& newValue);
 
-    static v8::Handle<v8::Object> createExceptionDetails(v8::Isolate*, v8::Handle<v8::Message>);
+    static v8::Local<v8::Object> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
 
 private:
-    JavaScriptCallFrame(v8::Handle<v8::Context> debuggerContext, v8::Handle<v8::Object> callFrame);
+    JavaScriptCallFrame(v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame);
 
     int callV8FunctionReturnInt(const char* name) const;
     String callV8FunctionReturnString(const char* name) const;

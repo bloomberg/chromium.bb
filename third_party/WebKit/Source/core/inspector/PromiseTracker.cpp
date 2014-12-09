@@ -21,7 +21,7 @@ namespace blink {
 
 class PromiseTracker::PromiseData final : public RefCountedWillBeGarbageCollectedFinalized<PromiseData> {
 public:
-    static PassRefPtrWillBeRawPtr<PromiseData> create(ScriptState* scriptState, int promiseHash, int promiseId, v8::Handle<v8::Object> promise)
+    static PassRefPtrWillBeRawPtr<PromiseData> create(ScriptState* scriptState, int promiseHash, int promiseId, v8::Local<v8::Object> promise)
     {
         return adoptRefWillBeNoop(new PromiseData(scriptState, promiseHash, promiseId, promise));
     }
@@ -51,7 +51,7 @@ public:
 private:
     friend class PromiseTracker;
 
-    PromiseData(ScriptState* scriptState, int promiseHash, int promiseId, v8::Handle<v8::Object> promise)
+    PromiseData(ScriptState* scriptState, int promiseHash, int promiseId, v8::Local<v8::Object> promise)
         : m_scriptState(scriptState)
         , m_promiseHash(promiseHash)
         , m_promiseId(promiseId)
@@ -202,7 +202,7 @@ int PromiseTracker::circularSequentialId()
     return m_circularSequentialId;
 }
 
-PassRefPtrWillBeRawPtr<PromiseTracker::PromiseData> PromiseTracker::createPromiseDataIfNeeded(ScriptState* scriptState, v8::Handle<v8::Object> promise)
+PassRefPtrWillBeRawPtr<PromiseTracker::PromiseData> PromiseTracker::createPromiseDataIfNeeded(ScriptState* scriptState, v8::Local<v8::Object> promise)
 {
     int promiseHash = promise->GetIdentityHash();
     RawPtr<PromiseDataVector> vector = nullptr;
@@ -235,13 +235,13 @@ PassRefPtrWillBeRawPtr<PromiseTracker::PromiseData> PromiseTracker::createPromis
     return data.release();
 }
 
-void PromiseTracker::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Handle<v8::Object> promise, v8::Handle<v8::Value> parentPromise, int status)
+void PromiseTracker::didReceiveV8PromiseEvent(ScriptState* scriptState, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status)
 {
     ASSERT(isEnabled());
 
     RefPtrWillBeRawPtr<PromiseData> data = createPromiseDataIfNeeded(scriptState, promise);
     if (!parentPromise.IsEmpty() && parentPromise->IsObject()) {
-        v8::Handle<v8::Object> handle = parentPromise->ToObject(scriptState->isolate());
+        v8::Local<v8::Object> handle = parentPromise->ToObject(scriptState->isolate());
         RefPtrWillBeRawPtr<PromiseData> parentData = createPromiseDataIfNeeded(scriptState, handle);
         data->m_parentPromiseId = parentData->m_promiseId;
         data->m_parentPromise.set(scriptState->isolate(), handle);

@@ -759,8 +759,8 @@ Page* InspectorOverlay::overlayPage()
     ScriptState* scriptState = ScriptState::forMainWorld(frame.get());
     ASSERT(scriptState->contextIsValid());
     ScriptState::Scope scope(scriptState);
-    v8::Handle<v8::Object> global = scriptState->context()->Global();
-    v8::Handle<v8::Value> overlayHostObj = toV8(m_overlayHost.get(), global, isolate);
+    v8::Local<v8::Object> global = scriptState->context()->Global();
+    v8::Local<v8::Value> overlayHostObj = toV8(m_overlayHost.get(), global, isolate);
     global->Set(v8::String::NewFromUtf8(isolate, "InspectorOverlayHost"), overlayHostObj);
 
 #if OS(WIN)
