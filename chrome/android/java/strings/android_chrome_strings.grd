@@ -464,14 +464,6 @@ You are signing in with a managed account and giving its administrator control o
         Cancel
       </message>
 
-      <!-- Data Reduction Proxy -->
-      <message name="IDS_DATA_REDUCTION_INFOBAR_TEXT" desc="Text to be displayed in the data reduction proxy infobar" translateable="false">
-        You are part of a data reduction proxy field trial.
-      </message>
-      <message name="IDS_DATA_REDUCTION_INFOBAR_LINK_TEXT" desc="Text to be displayed in the data reduction proxy infobar link" translateable="false">
-        Settings
-      </message>
-
       <!-- Android NFC Beam strings -->
       <message name="IDS_NFC_BEAM_ERROR_OVERLAY_ACTIVE" desc="Android Beam error - a tab is not in the foreground [CHAR-LIMIT=40]">
         Select a tab to beam
