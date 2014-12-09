@@ -89,7 +89,6 @@ function Downloads() {
    */
   this.downloads_ = {};
   this.node_ = $('downloads-display');
-  this.noDownloadsOrResults_ = $('no-downloads-or-results');
   this.summary_ = $('downloads-summary-text');
   this.searchText_ = '';
 
@@ -167,12 +166,16 @@ Downloads.prototype.updateSummary = function() {
  * results or not.
  */
 Downloads.prototype.updateResults = function() {
-  this.noDownloadsOrResults_.textContent = loadTimeData.getString(
+  var noDownloadsOrResults = $('no-downloads-or-results');
+  noDownloadsOrResults.textContent = loadTimeData.getString(
       this.searchText_ ? 'no_search_results' : 'no_downloads');
 
   var hasDownloads = this.size() > 0;
   this.node_.hidden = !hasDownloads;
-  this.noDownloadsOrResults_.hidden = hasDownloads;
+  noDownloadsOrResults.hidden = hasDownloads;
+
+  if (loadTimeData.getBoolean('allow_deleting_history'))
+    $('clear-all').hidden = !hasDownloads || this.searchText_;
 };
 
 /**
@@ -395,22 +398,12 @@ function Download(download) {
       loadTimeData.getString('control_resume'));
   this.nodeControls_.appendChild(this.controlResume_);
 
-  // Anchors <a> don't support the "disabled" property.
   if (loadTimeData.getBoolean('allow_deleting_history')) {
     this.controlRemove_ = createActionLink(this.remove_.bind(this),
         loadTimeData.getString('control_removefromlist'));
     this.controlRemove_.classList.add('control-remove-link');
-  } else {
-    this.controlRemove_ = document.createElement('span');
-    this.controlRemove_.classList.add('disabled-link');
-    var text = document.createTextNode(
-        loadTimeData.getString('control_removefromlist'));
-    this.controlRemove_.appendChild(text);
+    this.nodeControls_.appendChild(this.controlRemove_);
   }
-  if (!loadTimeData.getBoolean('show_delete_history'))
-    this.controlRemove_.hidden = true;
-
-  this.nodeControls_.appendChild(this.controlRemove_);
 
   this.controlCancel_ = createActionLink(this.cancel_.bind(this),
       loadTimeData.getString('control_cancel'));
@@ -639,7 +632,8 @@ Download.prototype.update = function(download) {
     var showCancel = this.state_ == Download.States.IN_PROGRESS ||
                      this.state_ == Download.States.PAUSED;
     showInline(this.controlCancel_, showCancel);
-    showInline(this.controlRemove_, !showCancel);
+    if (this.controlRemove_)
+      showInline(this.controlRemove_, !showCancel);
 
     if (this.byExtensionId_ && this.byExtensionName_) {
       // Format 'control_by_extension' with a link instead of plain text by
@@ -861,8 +855,8 @@ Download.prototype.resume_ = function() {
  * @private
  */
 Download.prototype.remove_ = function() {
-  if (loadTimeData.getBoolean('allow_deleting_history'))
-    chrome.send('remove', [this.id_]);
+  assert(loadTimeData.getBoolean('allow_deleting_history'));
+  chrome.send('remove', [this.id_]);
   return false;
 };
 
@@ -898,22 +892,9 @@ function load() {
   $('term').focus();
   setSearch('');
 
-  var clearAllHolder = $('clear-all-holder');
-  var clearAllElement;
-  if (loadTimeData.getBoolean('allow_deleting_history')) {
-    clearAllElement = createActionLink(
-        clearAll, loadTimeData.getString('clear_all'));
-    clearAllElement.classList.add('clear-all-link');
-    clearAllHolder.classList.remove('disabled-link');
-  } else {
-    clearAllElement = document.createTextNode(
-        loadTimeData.getString('clear_all'));
-    clearAllHolder.classList.add('disabled-link');
-  }
-  if (!loadTimeData.getBoolean('show_delete_history'))
-    clearAllHolder.hidden = true;
-
-  clearAllHolder.appendChild(clearAllElement);
+  $('clear-all').onclick = function() {
+    chrome.send('clearAll');
+  };
 
   $('open-downloads-folder').onclick = function() {
     chrome.send('openDownloadsFolder');

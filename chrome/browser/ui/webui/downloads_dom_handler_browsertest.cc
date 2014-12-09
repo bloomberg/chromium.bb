@@ -186,6 +186,8 @@ IN_PROC_BROWSER_TEST_F(DownloadsDOMHandlerTest, RemoveAll) {
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kAllowDeletingBrowserHistory, false);
   mock_handler_->HandleClearAll(NULL);
+  // Attempting to clear all shouldn't do anything when deletion is disabled.
+  mock_handler_->ForceSendCurrentDownloads();
   mock_handler_->WaitForDownloadsList();
   ASSERT_EQ(1, static_cast<int>(mock_handler_->downloads_list()->GetSize()));
 

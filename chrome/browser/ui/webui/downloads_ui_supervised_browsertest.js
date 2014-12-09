@@ -22,6 +22,6 @@ DownloadsWebUIForSupervisedUsersTest.prototype = {
 // Test UI for supervised users, removing entries should be disabled
 // and removal controls should be hidden.
 TEST_F('DownloadsWebUIForSupervisedUsersTest', 'SupervisedUsers', function() {
-  this.testHelper(false, true);
+  this.expectDeleteControlsVisible(false);
   testDone();
 });

@@ -7,7 +7,7 @@ GEN('#include "chrome/browser/ui/webui/downloads_ui_browsertest.h"');
 
 // Test UI when removing entries is allowed.
 TEST_F('BaseDownloadsWebUITest', 'DeleteAllowed', function() {
-  this.testHelper(true, false);
+  this.expectDeleteControlsVisible(true);
   // TODO(pamg): Mock out the back-end calls, so we can also test removing a
   // single item.
   testDone();
@@ -92,7 +92,7 @@ DownloadsWebUIDeleteProhibitedTest.prototype = {
 
 // Test UI when removing entries is prohibited.
 TEST_F('DownloadsWebUIDeleteProhibitedTest', 'DeleteProhibited', function() {
-  this.testHelper(false, false);
+  this.expectDeleteControlsVisible(false);
   // TODO(pamg): Mock out the back-end calls, so we can also test removing a
   // single item.
   testDone();

@@ -106,47 +106,16 @@ BaseDownloadsWebUITest.prototype = {
   },
 
   /**
-   * Asserts the correctness of the state of the UI elements
-   * that delete the download history.
-   * @param {boolean} allowDelete True if download history deletion is
-   *     allowed and false otherwise.
-   * @param {boolean} expectControlsHidden True if the controls to delete
-   *     download history are expected to be hidden and false otherwise.
+   * Asserts the correctness of the state of the UI elements that delete the
+   * download history.
+   * @param {boolean} visible True if download deletion UI should be visible.
    */
-  testHelper: function(allowDelete, expectControlsHidden) {
-    var clearAllElements = document.getElementsByClassName('clear-all-link');
-    var disabledElements = document.getElementsByClassName('disabled-link');
-    var removeLinkElements =
-        document.getElementsByClassName('control-remove-link');
+  expectDeleteControlsVisible: function(visible) {
+    // "Clear all" should only be showing when deletions are allowed.
+    expectEquals(!visible, $('clear-all').hidden);
 
-    // "Clear all" should be a link only when deletions are allowed.
-    expectEquals(allowDelete ? 1 : 0, clearAllElements.length);
-
-    // There should be no disabled links when deletions are allowed.
-    // On the other hand, when deletions are not allowed, "Clear All"
-    // and all "Remove from list" links should be disabled.
-    expectEquals(allowDelete ? 0 : TOTAL_RESULT_COUNT + 1,
-        disabledElements.length);
-
-    // All "Remove from list" items should be links when deletions are allowed.
-    // On the other hand, when deletions are not allowed, all
-    // "Remove from list" items should be text.
-    expectEquals(allowDelete ? TOTAL_RESULT_COUNT : 0,
-        removeLinkElements.length);
-
-    if (allowDelete) {
-      // "Clear all" should not be hidden.
-      expectFalse(clearAllElements[0].hidden);
-
-      // No "Remove from list" items should be hidden.
-      expectFalse(removeLinkElements[0].hidden);
-    } else {
-      expectEquals(expectControlsHidden, disabledElements[0].hidden);
-    }
-
-    // The model is updated synchronously, even though the actual
-    // back-end removal (tested elsewhere) is asynchronous.
-    clearAll();
-    expectEquals(allowDelete ? 0 : TOTAL_RESULT_COUNT, downloads.size());
+    // "Remove from list" links should only exist when deletions are allowed.
+    expectEquals(visible ? TOTAL_RESULT_COUNT : 0,
+        document.querySelectorAll('.control-remove-link').length);
   },
 };

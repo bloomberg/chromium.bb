@@ -8,22 +8,12 @@
   font-weight: bold;
 }
 
-.disabled-link {
-  color: #999;
-  text-decoration: none;
+#download-actions {
+  -webkit-margin-start: 16px;
 }
 
-#downloads-actions > a,
-#downloads-actions > .disabled-link {
-  -webkit-margin-start: 10px;
-}
-
-#downloads-actions > a:first-child {
-  -webkit-margin-start: 0;
-}
-
-#open-downloads-folder {
-  -webkit-margin-end: 16px;
+#downloads-actions > * ~ * {
+  -webkit-margin-end: 10px;
 }
 
 #downloads-display,

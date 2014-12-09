@@ -267,14 +267,18 @@ base::DictionaryValue* CreateDownloadItemValue(
   return file_value;
 }
 
+bool IsRemoved(const content::DownloadItem& item) {
+  const DownloadsDOMHandlerData* data = DownloadsDOMHandlerData::Get(&item);
+  return data && data->is_removed();
+}
+
 // Filters out extension downloads and downloads that don't have a filename yet.
 bool IsDownloadDisplayable(const content::DownloadItem& item) {
-  const DownloadsDOMHandlerData* data = DownloadsDOMHandlerData::Get(&item);
   return !download_crx_util::IsExtensionDownload(item) &&
          !item.IsTemporary() &&
          !item.GetFileNameToReportUser().empty() &&
          !item.GetTargetFilePath().empty() &&
-         (!data || !data->is_removed());
+         !IsRemoved(item);
 }
 
 }  // namespace
@@ -295,11 +299,15 @@ DownloadsDOMHandler::DownloadsDOMHandler(content::DownloadManager* dlm)
 }
 
 DownloadsDOMHandler::~DownloadsDOMHandler() {
-  while (!removed_ids_.empty()) {
-    content::DownloadItem* download = GetDownloadById(removed_ids_.back());
-    removed_ids_.pop_back();
-    if (download)
-      download->Remove();
+  while (!removes_.empty()) {
+    const std::set<uint32> remove = removes_.back();
+    removes_.pop_back();
+
+    for (const auto id : remove) {
+      content::DownloadItem* download = GetDownloadById(id);
+      if (download)
+        download->Remove();
+    }
   }
 }
 
@@ -390,8 +398,7 @@ void DownloadsDOMHandler::OnDownloadUpdated(
 void DownloadsDOMHandler::OnDownloadRemoved(
     content::DownloadManager* manager,
     content::DownloadItem* download_item) {
-  DownloadsDOMHandlerData* data = DownloadsDOMHandlerData::Get(download_item);
-  if (data && data->is_removed())
+  if (IsRemoved(*download_item))
     return;
 
   // This relies on |download_item| being removed from DownloadManager in this
@@ -489,25 +496,26 @@ void DownloadsDOMHandler::HandleRemove(const base::ListValue* args) {
   if (!file)
     return;
 
-  removed_ids_.push_back(file->GetId());
-  DownloadsDOMHandlerData::Create(file)->set_is_removed(true);
-  file->UpdateObservers();
+  std::vector<content::DownloadItem*> downloads;
+  downloads.push_back(file);
+  RemoveDownloads(downloads);
 }
 
 void DownloadsDOMHandler::HandleUndo(const base::ListValue* args) {
   // TODO(dbeam): handle more than removed downloads someday?
-  if (removed_ids_.empty())
+  if (removes_.empty())
     return;
 
-  uint32 last_removed_id = removed_ids_.back();
-  removed_ids_.pop_back();
+  const std::set<uint32> last_removed_ids = removes_.back();
+  removes_.pop_back();
 
-  content::DownloadItem* download = GetDownloadById(last_removed_id);
-  if (!download)
-    return;
-
-  DownloadsDOMHandlerData::Set(download, nullptr);
-  download->UpdateObservers();
+  for (auto id : last_removed_ids) {
+    content::DownloadItem* download = GetDownloadById(id);
+    if (!download)
+      continue;
+    DownloadsDOMHandlerData::Set(download, nullptr);
+    download->UpdateObservers();
+  }
 }
 
 void DownloadsDOMHandler::HandleCancel(const base::ListValue* args) {
@@ -518,23 +526,31 @@ void DownloadsDOMHandler::HandleCancel(const base::ListValue* args) {
 }
 
 void DownloadsDOMHandler::HandleClearAll(const base::ListValue* args) {
-  if (IsDeletingHistoryAllowed()) {
-    CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_CLEAR_ALL);
-    // IsDeletingHistoryAllowed already checked for the existence of the
-    // manager.
-    main_notifier_.GetManager()->RemoveAllDownloads();
+  if (!IsDeletingHistoryAllowed())
+    return;
 
-    // If this is an incognito downloads page, clear All should clear main
-    // download manager as well.
-    if (original_notifier_.get() && original_notifier_->GetManager())
-      original_notifier_->GetManager()->RemoveAllDownloads();
+  CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_CLEAR_ALL);
+
+  std::vector<content::DownloadItem*> downloads;
+  if (main_notifier_.GetManager())
+    main_notifier_.GetManager()->GetAllDownloads(&downloads);
+  if (original_notifier_ && original_notifier_->GetManager())
+    original_notifier_->GetManager()->GetAllDownloads(&downloads);
+  RemoveDownloads(downloads);
+}
+
+void DownloadsDOMHandler::RemoveDownloads(
+    const std::vector<content::DownloadItem*>& to_remove) {
+  std::set<uint32> ids;
+  for (auto* download : to_remove) {
+    if (IsRemoved(*download))
+      continue;
+
+    DownloadsDOMHandlerData::Create(download)->set_is_removed(true);
+    ids.insert(download->GetId());
+    download->UpdateObservers();
   }
-
-  // downloads.js always clears the display and relies on HandleClearAll to
-  // ScheduleSendCurrentDownloads(). If any downloads are removed, then
-  // OnDownloadRemoved() will call it, but if no downloads are actually removed,
-  // then HandleClearAll needs to call it manually.
-  ScheduleSendCurrentDownloads();
+  removes_.push_back(ids);
 }
 
 void DownloadsDOMHandler::HandleOpenDownloadsFolder(
