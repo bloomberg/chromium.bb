@@ -419,7 +419,7 @@ void SourceBuffer::removedFromMediaSource()
     m_webSourceBuffer->removedFromMediaSource();
     m_webSourceBuffer.clear();
     m_source = nullptr;
-    m_asyncEventQueue = 0;
+    m_asyncEventQueue = nullptr;
 }
 
 void SourceBuffer::initializationSegmentReceived()
@@ -746,6 +746,7 @@ void SourceBuffer::trace(Visitor* visitor)
 {
     visitor->trace(m_source);
     visitor->trace(m_stream);
+    visitor->trace(m_asyncEventQueue);
     EventTargetWithInlineData::trace(visitor);
 }
 

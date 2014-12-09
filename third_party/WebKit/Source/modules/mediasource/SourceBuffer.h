@@ -123,7 +123,7 @@ private:
 
     OwnPtr<WebSourceBuffer> m_webSourceBuffer;
     Member<MediaSource> m_source;
-    GenericEventQueue* m_asyncEventQueue;
+    RawPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
 
     AtomicString m_mode;
     bool m_updating;
