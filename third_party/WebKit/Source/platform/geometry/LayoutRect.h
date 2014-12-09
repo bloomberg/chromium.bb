@@ -177,7 +177,16 @@ public:
     static LayoutRect infiniteRect()
     {
         // Return a rect that is slightly smaller than the true max rect to allow pixelSnapping to round up to the nearest IntRect without overflowing.
-        return LayoutRect(LayoutUnit::nearlyMin() / 2, LayoutUnit::nearlyMin() / 2, LayoutUnit::nearlyMax(), LayoutUnit::nearlyMax());
+        // FIXME(crbug.com/440143): Remove this hack.
+        static LayoutRect infiniteRect(LayoutUnit::nearlyMin() / 2, LayoutUnit::nearlyMin() / 2, LayoutUnit::nearlyMax(), LayoutUnit::nearlyMax());
+        return infiniteRect;
+    }
+
+    static IntRect infiniteIntRect()
+    {
+        // Due to saturated arithemetic this value is not the same as LayoutRect(IntRect(INT_MIN/2, INT_MIN/2, INT_MAX/2, INT_MAX/2)).
+        static IntRect infiniteIntRect(infiniteRect());
+        return infiniteIntRect;
     }
 
 #ifndef NDEBUG

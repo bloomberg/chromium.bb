@@ -366,7 +366,7 @@ bool CompositedLayerMapping::owningLayerClippedByLayerNotAboveCompositedAncestor
     ClipRectsContext clipRectsContext(compositingAncestor, UncachedClipRects, IgnoreOverlayScrollbarSize);
     clipRectsContext.setIgnoreOverflowClip();
     IntRect parentClipRect = pixelSnappedIntRect(m_owningLayer.clipper().backgroundClipRect(clipRectsContext).rect());
-    return parentClipRect != PaintInfo::infiniteRect();
+    return parentClipRect != LayoutRect::infiniteIntRect();
 }
 
 bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
@@ -525,7 +525,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
 
 static IntRect clipBox(RenderBox* renderer)
 {
-    LayoutRect result = PaintInfo::infiniteRect();
+    LayoutRect result = LayoutRect::infiniteIntRect();
     if (renderer->hasOverflowClip())
         result = renderer->overflowClipRect(LayoutPoint());
 
@@ -772,7 +772,7 @@ void CompositedLayerMapping::updateAncestorClippingLayerGeometry(const RenderLay
 
     ClipRectsContext clipRectsContext(compositingContainer, PaintingClipRectsIgnoringOverflowClip, IgnoreOverlayScrollbarSize);
     IntRect parentClipRect = pixelSnappedIntRect(m_owningLayer.clipper().backgroundClipRect(clipRectsContext).rect());
-    ASSERT(parentClipRect != PaintInfo::infiniteRect());
+    ASSERT(parentClipRect != LayoutRect::infiniteIntRect());
     m_ancestorClippingLayer->setPosition(FloatPoint(parentClipRect.location() - graphicsLayerParentLocation));
     m_ancestorClippingLayer->setSize(parentClipRect.size());
 
@@ -2032,7 +2032,7 @@ IntRect CompositedLayerMapping::localClipRectForSquashedLayer(const RenderLayer&
 {
     const RenderObject* clippingContainer = paintInfo.renderLayer->clippingContainer();
     if (clippingContainer == referenceLayer.clippingContainer())
-        return PaintInfo::infiniteRect();
+        return LayoutRect::infiniteIntRect();
 
     ASSERT(clippingContainer);
 
@@ -2040,10 +2040,10 @@ IntRect CompositedLayerMapping::localClipRectForSquashedLayer(const RenderLayer&
     // Must be there, otherwise CompositingLayerAssigner::canSquashIntoCurrentSquashingOwner would have disallowed squashing.
     ASSERT(ancestorPaintInfo);
 
-    // FIXME: this is a potential performance issue. We shoudl consider caching these clip rects or otherwise optimizing.
+    // FIXME: this is a potential performance issue. We should consider caching these clip rects or otherwise optimizing.
     ClipRectsContext clipRectsContext(ancestorPaintInfo->renderLayer, UncachedClipRects);
     IntRect parentClipRect = pixelSnappedIntRect(paintInfo.renderLayer->clipper().backgroundClipRect(clipRectsContext).rect());
-    ASSERT(parentClipRect != PaintInfo::infiniteRect());
+    ASSERT(parentClipRect != LayoutRect::infiniteIntRect());
 
     // Convert from ancestor to local coordinates.
     IntSize ancestorToLocalOffset = paintInfo.offsetFromRenderer - ancestorPaintInfo->offsetFromRenderer;

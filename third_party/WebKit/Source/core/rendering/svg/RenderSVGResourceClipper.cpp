@@ -278,7 +278,7 @@ void RenderSVGResourceClipper::createPicture(GraphicsContext* context)
         // - masker/filter not applied when rendering the children
         // - fill is set to the initial fill paint server (solid, black)
         // - stroke is set to the initial stroke paint server (none)
-        PaintInfo info(context, PaintInfo::infiniteRect(), PaintPhaseForeground, PaintBehaviorRenderingClipPathAsMask);
+        PaintInfo info(context, LayoutRect::infiniteIntRect(), PaintPhaseForeground, PaintBehaviorRenderingClipPathAsMask);
         renderer->paint(info, IntPoint());
     }
 

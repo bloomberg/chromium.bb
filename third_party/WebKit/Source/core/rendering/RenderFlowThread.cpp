@@ -31,7 +31,6 @@
 
 #include "core/rendering/RenderFlowThread.h"
 
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderMultiColumnSet.h"
 #include "core/rendering/RenderView.h"
 
@@ -207,7 +206,7 @@ LayoutRect RenderFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundin
     for (RenderMultiColumnSetList::const_iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
         RenderMultiColumnSet* columnSet = *iter;
         LayerFragments fragments;
-        columnSet->collectLayerFragments(fragments, layerBoundingBox, PaintInfo::infiniteRect());
+        columnSet->collectLayerFragments(fragments, layerBoundingBox, LayoutRect::infiniteIntRect());
         for (size_t i = 0; i < fragments.size(); ++i) {
             const LayerFragment& fragment = fragments.at(i);
             LayoutRect fragmentRect(layerBoundingBox);

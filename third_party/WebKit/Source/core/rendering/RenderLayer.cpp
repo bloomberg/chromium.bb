@@ -1501,7 +1501,7 @@ void RenderLayer::collectFragments(LayerFragments& fragments, const RenderLayer*
     ClipRect backgroundRectInFlowThread;
     ClipRect foregroundRectInFlowThread;
     ClipRect outlineRectInFlowThread;
-    clipper().calculateRects(paginationClipRectsContext, PaintInfo::infiniteRect(), layerBoundsInFlowThread, backgroundRectInFlowThread, foregroundRectInFlowThread,
+    clipper().calculateRects(paginationClipRectsContext, LayoutRect::infiniteIntRect(), layerBoundsInFlowThread, backgroundRectInFlowThread, foregroundRectInFlowThread,
         outlineRectInFlowThread, &offsetWithinPaginatedLayer);
 
     // Take our bounding box within the flow thread and clip it.
@@ -2349,7 +2349,7 @@ LayoutRect RenderLayer::boundingBoxForCompositing(const RenderLayer* ancestorLay
         return LayoutRect();
 
     LayoutRect result = clipper().localClipRect();
-    if (result == PaintInfo::infiniteRect()) {
+    if (result == LayoutRect::infiniteIntRect()) {
         LayoutPoint origin;
         result = physicalBoundingBox(ancestorLayer, &origin);
 

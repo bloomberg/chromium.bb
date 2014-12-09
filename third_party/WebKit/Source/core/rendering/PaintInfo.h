@@ -97,7 +97,7 @@ struct PaintInfo {
 
         context->concatCTM(localToAncestorTransform);
 
-        if (rect == infiniteRect())
+        if (rect == LayoutRect::infiniteIntRect())
             return;
 
         if (localToAncestorTransform.isInvertible())
@@ -106,7 +106,6 @@ struct PaintInfo {
             rect.setSize(IntSize(0, 0));
     }
 
-    static IntRect infiniteRect() { return IntRect(LayoutRect::infiniteRect()); }
     const RenderLayerModelObject* paintContainer() const { return m_paintContainer; }
 
     ListHashSet<RenderInline*>* outlineObjects() const { return m_outlineObjects; }

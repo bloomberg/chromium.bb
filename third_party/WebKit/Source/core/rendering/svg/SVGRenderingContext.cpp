@@ -257,7 +257,7 @@ void SVGRenderingContext::renderSubtree(GraphicsContext* context, RenderObject* 
     ASSERT(item);
     ASSERT(!item->needsLayout());
 
-    PaintInfo info(context, PaintInfo::infiniteRect(), PaintPhaseForeground, PaintBehaviorNormal);
+    PaintInfo info(context, LayoutRect::infiniteIntRect(), PaintPhaseForeground, PaintBehaviorNormal);
     item->paint(info, IntPoint());
 }
 
