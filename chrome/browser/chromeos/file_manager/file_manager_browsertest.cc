@@ -862,9 +862,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "audioRepeatMultipleFileDrive"),
         TestParameter(NOT_IN_GUEST_MODE, "audioNoRepeatMultipleFileDrive")));
 
-// Flaky http://crbug.com/327719
+// Slow tests are disabled on debug build. http://crbug.com/327719
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
+#define MAYBE_CreateNewFolder DISABLED_CreateNewFolder
+#else
+#define MAYBE_CreateNewFolder CreateNewFolder
+#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_CreateNewFolder,
+    MAYBE_CreateNewFolder,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "createNewFolderAfterSelectFile"),
