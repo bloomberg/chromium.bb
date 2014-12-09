@@ -59,11 +59,12 @@
 
   setAllEventsOccuredHandler(reportTestSuccess);
 
-  // Test that we can setup call with an audio and video track.
+  // Test that we can setup a call with an audio and video track (must request
+  // video in this call since we expect video to be playing).
   function call(constraints) {
     createConnections(null);
     navigator.webkitGetUserMedia(constraints,
-      addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
     waitForVideo('remote-view-1');
     waitForVideo('remote-view-2');
   }
@@ -89,7 +90,7 @@
                                    expected_height) {
     createConnections(null);
     navigator.webkitGetUserMedia(constraints,
-      addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
     waitForVideoWithResolution('remote-view-1',
                                expected_width,
                                expected_height);
@@ -108,9 +109,50 @@
     negotiate();
     waitForConnectionToStabilize(gFirstConnection, function() {
       navigator.webkitGetUserMedia(constraints,
-        addStreamToTheFirstConnectionAndNegotiate, printGetUserMediaError);
+          addStreamToTheFirstConnectionAndNegotiate, printGetUserMediaError);
       // Only the first connection is sending here.
       waitForVideo('remote-view-2');
+    });
+  }
+
+  // The second set of constraints should request video (e.g. video:true) since
+  // we expect video to be playing after the second renegotiation.
+  function callAndRenegotiateToVideo(constraints, renegotiationConstraints) {
+    createConnections(null);
+    navigator.webkitGetUserMedia(constraints,
+        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+
+    waitForConnectionToStabilize(gFirstConnection, function() {
+      gFirstConnection.removeStream(gLocalStream);
+      gSecondConnection.removeStream(gLocalStream);
+
+      navigator.webkitGetUserMedia(renegotiationConstraints,
+          addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+      waitForVideo('remote-view-1');
+      waitForVideo('remote-view-2');
+    });
+  }
+
+  // The second set of constraints should request audio (e.g. audio:true) since
+  // we expect audio to be playing after the second renegotiation.
+  function callAndRenegotiateToAudio(beLenient, constraints,
+                                     renegotiationConstraints) {
+    createConnections(null);
+    navigator.webkitGetUserMedia(constraints,
+        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+
+    waitForConnectionToStabilize(gFirstConnection, function() {
+      gFirstConnection.removeStream(gLocalStream);
+      gSecondConnection.removeStream(gLocalStream);
+
+      navigator.webkitGetUserMedia(renegotiationConstraints,
+          addStreamToTheFirstConnectionAndNegotiate, printGetUserMediaError);
+
+      var onCallEstablished = function() {
+        ensureAudioPlaying(gSecondConnection, beLenient);
+      };
+
+      waitForConnectionToStabilize(gFirstConnection, onCallEstablished);
     });
   }
 
@@ -205,7 +247,7 @@
     onLocalDescriptionError = function(error) {
       var expectedMsg = 'Failed to set local offer sdp:' +
           ' Session error code: ERROR_CONTENT. Session error description:' +
-              ' Failed to set video receive codecs..';
+          ' Failed to set video receive codecs..';
       assertEquals(expectedMsg, error);
       reportTestSuccess();
     };

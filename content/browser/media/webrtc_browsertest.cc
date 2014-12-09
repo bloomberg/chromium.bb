@@ -185,6 +185,21 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
   MakeTypicalPeerConnectionCall(kJavascript);
 }
 
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
+                       CanMakeAudioCallAndThenRenegotiateToVideo) {
+  const char* kJavascript =
+      "callAndRenegotiateToVideo({audio: true}, {audio: true, video:true});";
+  MakeTypicalPeerConnectionCall(kJavascript);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
+                       CanMakeVideoCallAndThenRenegotiateToAudio) {
+  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
+      "callAndRenegotiateToAudio("
+      "    %s, {audio: true, video:true}, {audio: true});",
+      kUseLenientAudioChecking));
+}
+
 // Below 2 test will make a complete PeerConnection-based call between pc1 and
 // pc2, and then use the remote stream to setup a call between pc3 and pc4, and
 // then verify that video is received on pc3 and pc4.

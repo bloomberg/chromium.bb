@@ -40,6 +40,9 @@ function gatherAudioLevelSamples(peerConnection, numSamples, frequency,
                                  callback) {
   console.log('Gathering ' + numSamples + ' audio samples...');
   var audioLevelSamples = []
+
+  // If this times out and never found any audio output levels, the call
+  // probably doesn't have an audio stream.
   var gatherSamples = setInterval(function() {
     peerConnection.getStats(function(response) {
       audioOutputLevels = getAudioLevelFromStats_(response);
