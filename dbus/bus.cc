@@ -197,8 +197,7 @@ Bus::Bus(const Options& options)
       shutdown_completed_(false),
       num_pending_watches_(0),
       num_pending_timeouts_(0),
-      address_(options.address),
-      on_disconnected_closure_(options.disconnected_callback) {
+      address_(options.address) {
   // This is safe to call multiple times.
   dbus_threads_init_default();
   // The origin message loop is unnecessary if the client uses synchronous
@@ -824,8 +823,7 @@ void Bus::ProcessAllIncomingDataIfAny() {
     return;
 
   // It is safe and necessary to call dbus_connection_get_dispatch_status even
-  // if the connection is lost. Otherwise we will miss "Disconnected" signal.
-  // (crbug.com/174431)
+  // if the connection is lost.
   if (dbus_connection_get_dispatch_status(connection_) ==
       DBUS_DISPATCH_DATA_REMAINS) {
     while (dbus_connection_dispatch(connection_) ==
@@ -1104,19 +1102,6 @@ void Bus::OnDispatchStatusChanged(DBusConnection* connection,
                                            this));
 }
 
-void Bus::OnConnectionDisconnected(DBusConnection* connection) {
-  AssertOnDBusThread();
-
-  if (!on_disconnected_closure_.is_null())
-    GetOriginTaskRunner()->PostTask(FROM_HERE, on_disconnected_closure_);
-
-  if (!connection)
-    return;
-  DCHECK(!dbus_connection_get_is_connected(connection));
-
-  ShutdownAndBlock();
-}
-
 void Bus::OnServiceOwnerChanged(DBusMessage* message) {
   DCHECK(message);
   AssertOnDBusThread();
@@ -1207,9 +1192,8 @@ DBusHandlerResult Bus::OnConnectionDisconnectedFilter(
   if (dbus_message_is_signal(message,
                              DBUS_INTERFACE_LOCAL,
                              kDisconnectedSignal)) {
-    Bus* self = static_cast<Bus*>(data);
-    self->OnConnectionDisconnected(connection);
-    return DBUS_HANDLER_RESULT_HANDLED;
+    // Abort when the connection is lost.
+    LOG(FATAL) << "D-Bus connection was disconnected. Aborting.";
   }
   return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }

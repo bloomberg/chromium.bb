@@ -218,12 +218,6 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
     //   // Do something.
     //
     std::string address;
-
-    // If the connection with dbus-daemon is closed, |disconnected_callback|
-    // will be called on the origin thread. This is also called when the
-    // disonnection by ShutdownAndBlock. |disconnected_callback| can be null
-    // callback
-    base::Closure disconnected_callback;
   };
 
   // Creates a Bus object. The actual connection will be established when
@@ -670,9 +664,6 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   void OnDispatchStatusChanged(DBusConnection* connection,
                                DBusDispatchStatus status);
 
-  // Called when the connection is diconnected.
-  void OnConnectionDisconnected(DBusConnection* connection);
-
   // Called when a service owner change occurs.
   void OnServiceOwnerChanged(DBusMessage* message);
 
@@ -760,7 +751,6 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   int num_pending_timeouts_;
 
   std::string address_;
-  base::Closure on_disconnected_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(Bus);
 };
