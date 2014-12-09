@@ -864,6 +864,13 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   EXPECT_EQ(2, view()->history_list_length_);
   EXPECT_EQ(1, view()->history_list_offset_);
   EXPECT_EQ(3, view()->history_page_ids_[1]);
+
+  // Check for a valid DidDropNavigation message.
+  ProcessPendingMessages();
+  const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
+      FrameHostMsg_DidDropNavigation::ID);
+  ASSERT_TRUE(msg);
+  render_thread_->sink().ClearMessages();
 }
 
 // Test that we do not ignore navigations after the entry limit is reached,

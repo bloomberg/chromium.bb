@@ -421,6 +421,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int error_code,
       const base::string16& error_description);
   void OnDidCommitProvisionalLoad(const IPC::Message& msg);
+  void OnDidDropNavigation();
   void OnBeforeUnloadACK(
       bool proceed,
       const base::TimeTicks& renderer_before_unload_start_time,

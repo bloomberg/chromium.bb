@@ -352,6 +352,7 @@ class CONTENT_EXPORT WebContentsImpl
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
   void DidStartLoading(RenderFrameHost* render_frame_host,
                        bool to_different_document) override;
+  void DidStopLoading(RenderFrameHost* render_frame_host) override;
   void SwappedOut(RenderFrameHost* render_frame_host) override;
   void DidDeferAfterResponseStarted(
       const TransitionLayerData& transition_data) override;
@@ -882,9 +883,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Calculates the progress of the current load and notifies the delegate.
   void SendLoadProgressChanged();
-
-  // Called once when the last frame on the page has stopped loading.
-  void DidStopLoading(RenderFrameHost* render_frame_host);
 
   // Misc non-view stuff -------------------------------------------------------
 

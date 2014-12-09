@@ -303,6 +303,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnDidFailLoadWithError)
     IPC_MESSAGE_HANDLER_GENERIC(FrameHostMsg_DidCommitProvisionalLoad,
                                 OnDidCommitProvisionalLoad(msg))
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidDropNavigation, OnDidDropNavigation)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DocumentOnLoadCompleted,
                         OnDocumentOnLoadCompleted)
@@ -701,6 +702,14 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
 
   accessibility_reset_count_ = 0;
   frame_tree_node()->navigator()->DidNavigate(this, validated_params);
+}
+
+void RenderFrameHostImpl::OnDidDropNavigation() {
+  // At the end of Navigate(), the delegate's DidStartLoading is called to force
+  // the spinner to start, even if the renderer didn't yet begin the load. If it
+  // turns out that the renderer dropped the navigation, we need to turn off the
+  // spinner.
+  delegate_->DidStopLoading(this);
 }
 
 RenderWidgetHostImpl* RenderFrameHostImpl::GetRenderWidgetHost() {

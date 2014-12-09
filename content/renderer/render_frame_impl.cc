@@ -956,6 +956,7 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
       params.common_params.url, params.common_params.navigation_type,
       params.commit_params.page_state, true, params.pending_history_list_offset,
       params.page_id, &is_reload, &cache_policy)) {
+    Send(new FrameHostMsg_DidDropNavigation(routing_id_));
     return;
   }
 
