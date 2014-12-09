@@ -12,8 +12,10 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
 #include "content/browser/android/java/gin_java_bound_object.h"
 #include "content/browser/android/java/gin_java_method_invocation_helper.h"
+#include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace base {
@@ -31,14 +33,13 @@ namespace content {
 // proxy object is created in the renderer. An instance of this class exists
 // for each RenderFrameHost.
 class GinJavaBridgeDispatcherHost
-    : public base::SupportsWeakPtr<GinJavaBridgeDispatcherHost>,
-      public WebContentsObserver,
+    : public WebContentsObserver,
+      public BrowserMessageFilter,
       public GinJavaMethodInvocationHelper::DispatcherDelegate {
  public:
 
   GinJavaBridgeDispatcherHost(WebContents* web_contents,
                               jobject retained_object_set);
-  virtual ~GinJavaBridgeDispatcherHost();
 
   void AddNamedObject(
       const std::string& name,
@@ -48,56 +49,68 @@ class GinJavaBridgeDispatcherHost
   void SetAllowObjectContentsInspection(bool allow);
 
   // WebContentsObserver
-  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
-  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
-  virtual void DocumentAvailableInMainFrame() override;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 RenderFrameHost* render_frame_host) override;
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+  void DocumentAvailableInMainFrame() override;
+
+  // BrowserMessageFilter
+  using BrowserMessageFilter::Send;
+  void OnDestruct() const override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  base::TaskRunner* OverrideTaskRunnerForMessage(
+      const IPC::Message& message) override;
 
   // GinJavaMethodInvocationHelper::DispatcherDelegate
-  virtual JavaObjectWeakGlobalRef GetObjectWeakRef(
+  JavaObjectWeakGlobalRef GetObjectWeakRef(
       GinJavaBoundObject::ObjectID object_id) override;
 
-  void OnGetMethods(RenderFrameHost* render_frame_host,
-                    GinJavaBoundObject::ObjectID object_id,
-                    IPC::Message* reply_msg);
-  void OnHasMethod(RenderFrameHost* render_frame_host,
-                   GinJavaBoundObject::ObjectID object_id,
-                   const std::string& method_name,
-                   IPC::Message* reply_msg);
-  void OnInvokeMethod(RenderFrameHost* render_frame_host,
-                      GinJavaBoundObject::ObjectID object_id,
-                      const std::string& method_name,
-                      const base::ListValue& arguments,
-                      IPC::Message* reply_msg);
-
  private:
-  void OnObjectWrapperDeleted(RenderFrameHost* render_frame_host,
-                              GinJavaBoundObject::ObjectID object_id);
+  friend class BrowserThread;
+  friend class base::DeleteHelper<GinJavaBridgeDispatcherHost>;
 
-  bool IsValidRenderFrameHost(RenderFrameHost* render_frame_host);
-  void SendMethods(RenderFrameHost* render_frame_host,
-                   const std::set<std::string>& method_names);
-  void SendHasMethodReply(RenderFrameHost* render_frame_host,
-                          bool result);
-  void ProcessMethodInvocationResult(
-      RenderFrameHost* render_frame_host,
-      scoped_refptr<GinJavaMethodInvocationHelper> result);
-  void ProcessMethodInvocationObjectResult(
-      RenderFrameHost* render_frame_host,
-      scoped_refptr<GinJavaMethodInvocationHelper> result);
+  typedef std::map<GinJavaBoundObject::ObjectID,
+                   scoped_refptr<GinJavaBoundObject>> ObjectMap;
+
+  ~GinJavaBridgeDispatcherHost() override;
+
+  void AddBrowserFilterIfNeeded();
+
+  // Run on any thread.
   GinJavaBoundObject::ObjectID AddObject(
       const base::android::JavaRef<jobject>& object,
       const base::android::JavaRef<jclass>& safe_annotation_clazz,
       bool is_named,
-      RenderFrameHost* holder);
+      int32 holder);
+  scoped_refptr<GinJavaBoundObject> FindObject(
+      GinJavaBoundObject::ObjectID object_id);
   bool FindObjectId(const base::android::JavaRef<jobject>& object,
                     GinJavaBoundObject::ObjectID* object_id);
-  void RemoveHolder(RenderFrameHost* holder,
-                    const GinJavaBoundObject::ObjectMap::iterator& from,
-                    size_t count);
-  bool HasPendingReply(RenderFrameHost* render_frame_host) const;
-  IPC::Message* TakePendingReply(RenderFrameHost* render_frame_host);
+  void RemoveFromRetainedObjectSetLocked(const JavaObjectWeakGlobalRef& ref);
+  JavaObjectWeakGlobalRef RemoveHolderAndAdvanceLocked(
+      int32 holder,
+      ObjectMap::iterator* iter_ptr);
+
+  // Run on the background thread.
+  void OnGetMethods(GinJavaBoundObject::ObjectID object_id,
+                    std::set<std::string>* returned_method_names);
+  void OnHasMethod(GinJavaBoundObject::ObjectID object_id,
+                   const std::string& method_name,
+                   bool* result);
+  void OnInvokeMethod(GinJavaBoundObject::ObjectID object_id,
+                      const std::string& method_name,
+                      const base::ListValue& arguments,
+                      base::ListValue* result,
+                      content::GinJavaBridgeError* error_code);
+  void OnObjectWrapperDeleted(GinJavaBoundObject::ObjectID object_id);
+  int GetCurrentRoutingID() const;
+  void SetCurrentRoutingID(int routing_id);
+
+  bool browser_filter_added_;
+
+  typedef std::map<std::string, GinJavaBoundObject::ObjectID> NamedObjectMap;
+  NamedObjectMap named_objects_;
+
+  // The following objects are used on both threads, so locking must be used.
 
   // Every time a GinJavaBoundObject backed by a real Java object is
   // created/destroyed, we insert/remove a strong ref to that Java object into
@@ -106,17 +119,15 @@ class GinJavaBridgeDispatcherHost
   // and defined in Java so that pushing refs into it does not create new GC
   // roots that would prevent ContentViewCore from being garbage collected.
   JavaObjectWeakGlobalRef retained_object_set_;
-  bool allow_object_contents_inspection_;
-  GinJavaBoundObject::ObjectMap objects_;
-  typedef std::map<std::string, GinJavaBoundObject::ObjectID> NamedObjectMap;
-  NamedObjectMap named_objects_;
+  // Note that retained_object_set_ does not need to be consistent
+  // with objects_.
+  ObjectMap objects_;
+  base::Lock objects_lock_;
 
-  // Keep track of pending calls out to Java such that we can send a synchronous
-  // reply to the renderer waiting on the response should the RenderFrame be
-  // destroyed while the reply is pending.
-  // Only used on the UI thread.
-  typedef std::map<RenderFrameHost*, IPC::Message*> PendingReplyMap;
-  PendingReplyMap pending_replies_;
+  // The following objects are only used on the background thread.
+  bool allow_object_contents_inspection_;
+  // The routing id of the RenderFrameHost whose request we are processing.
+  int32 current_routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GinJavaBridgeDispatcherHost);
 };

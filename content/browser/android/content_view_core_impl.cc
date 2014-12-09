@@ -248,9 +248,9 @@ ContentViewCoreImpl::ContentViewCoreImpl(
       BuildUserAgentFromOSAndProduct(kLinuxInfoStr, product);
   web_contents->SetUserAgentOverride(spoofed_ua);
 
-  java_bridge_dispatcher_host_.reset(
+  java_bridge_dispatcher_host_ =
       new GinJavaBridgeDispatcherHost(web_contents,
-                                      java_bridge_retained_object_set));
+                                      java_bridge_retained_object_set);
 
   InitWebContents();
 }

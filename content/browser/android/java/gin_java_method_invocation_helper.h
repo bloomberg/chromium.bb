@@ -20,13 +20,10 @@ namespace content {
 
 class JavaMethod;
 
-// Instances of this class are created and initialized on the UI thread, do
-// their work on the background thread, and then again examined on the UI
-// thread. They don't work on both threads simultaneously, though.
+// Instances of this class are created and used on the background thread.
 class CONTENT_EXPORT GinJavaMethodInvocationHelper
     : public base::RefCountedThreadSafe<GinJavaMethodInvocationHelper> {
  public:
-  // DispatcherDelegate is used on the UI thread
   class DispatcherDelegate {
    public:
     DispatcherDelegate() {}
@@ -38,7 +35,6 @@ class CONTENT_EXPORT GinJavaMethodInvocationHelper
     DISALLOW_COPY_AND_ASSIGN(DispatcherDelegate);
   };
 
-  // ObjectDelegate is used in the background thread
   class ObjectDelegate {
    public:
     ObjectDelegate() {}
@@ -61,10 +57,8 @@ class CONTENT_EXPORT GinJavaMethodInvocationHelper
                                 const base::ListValue& arguments);
   void Init(DispatcherDelegate* dispatcher);
 
-  // Called on the background thread
   void Invoke();
 
-  // Called on the UI thread
   bool HoldsPrimitiveResult();
   const base::ListValue& GetPrimitiveResult();
   const base::android::JavaRef<jobject>& GetObjectResult();
@@ -75,7 +69,6 @@ class CONTENT_EXPORT GinJavaMethodInvocationHelper
   friend class base::RefCountedThreadSafe<GinJavaMethodInvocationHelper>;
   ~GinJavaMethodInvocationHelper();
 
-  // Called on the UI thread
   void BuildObjectRefsFromListValue(DispatcherDelegate* dispatcher,
                                     const base::Value* list_value);
   void BuildObjectRefsFromDictionaryValue(DispatcherDelegate* dispatcher,
@@ -84,7 +77,6 @@ class CONTENT_EXPORT GinJavaMethodInvocationHelper
   bool AppendObjectRef(DispatcherDelegate* dispatcher,
                        const base::Value* raw_value);
 
-  // Called on the background thread.
   void InvokeMethod(jobject object,
                     jclass clazz,
                     const JavaType& return_type,

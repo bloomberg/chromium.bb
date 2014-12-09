@@ -4,10 +4,15 @@
 
 package org.chromium.content.browser;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.test.suitebuilder.annotation.SmallTest;
+
+import junit.framework.Assert;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_shell_apk.ContentShellActivity;
 
 import java.lang.annotation.Annotation;
@@ -16,6 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.ref.WeakReference;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Part of the test suite for the Java Bridge. Tests a number of features including ...
@@ -527,6 +533,47 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
             @Override
             public void run() {
                 assertFalse(threadId == Thread.currentThread().getId());
+            }
+        });
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testBlockingUiThreadDoesNotBlockCallsFromJs() throws Throwable {
+        class TestObject {
+            private CountDownLatch mLatch;
+            public TestObject() {
+                mLatch = new CountDownLatch(1);
+            }
+            public boolean waitOnTheLatch() throws Exception {
+                return mLatch.await(scaleTimeout(10000),
+                        java.util.concurrent.TimeUnit.MILLISECONDS);
+            }
+            public void unlockTheLatch() throws Exception {
+                mTestController.setStringValue("unlocked");
+                mLatch.countDown();
+            }
+        }
+        final TestObject testObject = new TestObject();
+        injectObjectAndReload(testObject, "testObject");
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // loadUrl is asynchronous, the JS code will start running on the renderer
+                // thread. As soon as we exit loadUrl, the browser UI thread will be stuck waiting
+                // on the latch. If blocking the browser thread blocks Java Bridge, then the call
+                // to "unlockTheLatch()" will be executed after the waiting timeout, thus the
+                // string value will not yet be updated by the injected object.
+                mTestController.setStringValue("locked");
+                getWebContents().getNavigationController().loadUrl(new LoadUrlParams(
+                        "javascript:(function() { testObject.unlockTheLatch() })()"));
+                try {
+                    assertTrue(testObject.waitOnTheLatch());
+                } catch (Exception e) {
+                    android.util.Log.e("JavaBridgeBasicsTest", "Wait exception", e);
+                    Assert.fail("Wait exception");
+                }
+                assertEquals("unlocked", mTestController.getStringValue());
             }
         });
     }

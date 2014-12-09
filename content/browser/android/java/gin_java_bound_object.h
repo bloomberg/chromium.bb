@@ -10,26 +10,17 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/id_map.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "content/browser/android/java/java_method.h"
 
 namespace content {
 
-class RenderFrameHost;
-
 class GinJavaBoundObject
     : public base::RefCountedThreadSafe<GinJavaBoundObject> {
  public:
-  // Using scoped_refptr<> as a value type is somewhat not IDMap had been
-  // designed for (it returns T* from lookups, so we have to de-ref it), but on
-  // the other hand, this allows us to manage lifetime of GinJavaBoundObject
-  // automatically.
-  typedef IDMap<scoped_refptr<GinJavaBoundObject>, IDMapOwnPointer> ObjectMap;
-  typedef ObjectMap::KeyType ObjectID;
+  typedef int32 ObjectID;
 
   static GinJavaBoundObject* CreateNamed(
       const JavaObjectWeakGlobalRef& ref,
@@ -37,8 +28,9 @@ class GinJavaBoundObject
   static GinJavaBoundObject* CreateTransient(
       const JavaObjectWeakGlobalRef& ref,
       const base::android::JavaRef<jclass>& safe_annotation_clazz,
-      RenderFrameHost* holder);
+      int32 holder);
 
+  // The following methods can be called on any thread.
   JavaObjectWeakGlobalRef& GetWeakRef() { return ref_; }
   base::android::ScopedJavaLocalRef<jobject> GetLocalRef(JNIEnv* env) {
     return ref_.get(env);
@@ -49,8 +41,8 @@ class GinJavaBoundObject
   void RemoveName() { --names_count_; }
 
   bool HasHolders() { return !holders_.empty(); }
-  void AddHolder(RenderFrameHost* holder) { holders_.insert(holder); }
-  void RemoveHolder(RenderFrameHost* holder) { holders_.erase(holder); }
+  void AddHolder(int32 holder) { holders_.insert(holder); }
+  void RemoveHolder(int32 holder) { holders_.erase(holder); }
 
   // The following methods are called on the background thread.
   std::set<std::string> GetMethodNames();
@@ -70,7 +62,7 @@ class GinJavaBoundObject
   GinJavaBoundObject(
       const JavaObjectWeakGlobalRef& ref,
       const base::android::JavaRef<jclass>& safe_annotation_clazz,
-      const std::set<RenderFrameHost*> holders);
+      const std::set<int32>& holders);
   ~GinJavaBoundObject();
 
   // The following methods are called on the background thread.
@@ -81,7 +73,7 @@ class GinJavaBoundObject
   // An object must be kept in retained_object_set_ either if it has
   // names or if it has a non-empty holders set.
   int names_count_;
-  std::set<RenderFrameHost*> holders_;
+  std::set<int32> holders_;
 
   // The following fields are accessed on the background thread.
   typedef std::multimap<std::string, linked_ptr<JavaMethod> > JavaMethodMap;
