@@ -99,7 +99,7 @@ def _GetXbuddyPath(path):
     raise ValueError('Do not support scheme %s.', parsed.scheme)
 
 
-def GetImagePathWithXbuddy(path, board):
+def GetImagePathWithXbuddy(path, board, device='<DEVICE>'):
   """Gets image path using xbuddy.
 
   Ask xbuddy to translate |path|, and if necessary, download and stage the
@@ -108,6 +108,7 @@ def GetImagePathWithXbuddy(path, board):
   Args:
     path: The xbuddy path.
     board: The default board to use if board is not specified in |path|.
+    device: The device specified by the user.
 
   Returns:
     A translated path to the image: build-id/version/image_name.
@@ -127,9 +128,10 @@ def GetImagePathWithXbuddy(path, board):
     build_id, file_name = xb.Get(path_list)
     return os.path.join(build_id, file_name)
   except xbuddy.XBuddyException as e:
-    logging.error('Unable to translate the image path: %s. Are you sure the '
-                  'image path is correct? The board %s is used when no board '
-                  'name is included in the image path.', path, board)
+    logging.error('Locating image "%s" failed. The path might not be valid or '
+                  'the image might not exist. To get the latest remote image, '
+                  'please run:\ncros flash --board=%s %s remote/latest', path,
+                  board, device)
     raise ValueError('Cannot locate image %s: %s' % (path, e))
 
 
@@ -320,7 +322,8 @@ class USBImager(object):
       image_path = self.ChooseImageFromDirectory(self.image)
     else:
       # Translate the xbuddy path to get the exact image to use.
-      translated_path = GetImagePathWithXbuddy(self.image, self.board)
+      translated_path = GetImagePathWithXbuddy(self.image, self.board,
+                                               'usb://%s' % self.device)
       image_path = TranslatedPathToLocalPath(translated_path,
                                              DEVSERVER_STATIC_DIR)
 
@@ -770,8 +773,12 @@ class RemoteDeviceUpdater(object):
             # don't want to duplicate xbuddy code.  TODO(sosa):
             # crbug.com/340722 and use it to compare boards.
 
+            device_addr = 'ssh://%s' % self.ssh_hostname
+            if self.ssh_port:
+              device_addr = '%s:%d' % (device_addr, self.ssh_port)
             # Translate the xbuddy path to get the exact image to use.
-            translated_path = GetImagePathWithXbuddy(self.image, board)
+            translated_path = GetImagePathWithXbuddy(self.image, board,
+                                                     device_addr)
             logging.info('Using image %s', translated_path)
             # Convert the translated path to be used in the update request.
             image_path = ConvertTranslatedPath(self.image, translated_path)
