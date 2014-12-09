@@ -18,7 +18,7 @@ var onControlMessageReceived = function(message) {
 }
 
 var onPluginMessageReceived = function(message) {
-  if (message.data == "hello") {
+  if (message.data == "Test passed") {
     chrome.test.sendMessage("hello", onControlMessageReceived);
   } else if (message.data) {
     chrome.test.fail(message.data);

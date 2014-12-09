@@ -65,6 +65,20 @@
           'packaged_app/index.html',
           'packaged_app/main.js',
           'packaged_app/manifest.json',
+          'packaged_app/test_file.txt',
+          'packaged_app/test_file2.txt',
+        ],
+        'create_nmf_args_portable': [
+          # Add lots of "files" entries to make sure that open_resource can
+          # handle more files than FileDescriptorSet::kMaxDescriptorsPerMessage.
+          '-xtest_file0:test_file.txt',
+          '-xtest_file1:test_file2.txt',
+          '-xtest_file2:test_file.txt',
+          '-xtest_file3:test_file2.txt',
+          '-xtest_file4:test_file.txt',
+          '-xtest_file5:test_file2.txt',
+          '-xtest_file6:test_file.txt',
+          '-xtest_file7:test_file2.txt',
         ],
       },
       'conditions': [
