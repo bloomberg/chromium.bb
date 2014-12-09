@@ -10,6 +10,7 @@
 #include "sandbox/sandbox_export.h"
 
 struct sock_fprog;
+struct rlimit64;
 
 namespace sandbox {
 
@@ -37,6 +38,12 @@ SANDBOX_EXPORT void sys_exit_group(int status);
 SANDBOX_EXPORT int sys_seccomp(unsigned int operation,
                                unsigned int flags,
                                const struct sock_fprog* args);
+
+// Some libcs do not expose a prlimit64 wrapper.
+SANDBOX_EXPORT int sys_prlimit64(pid_t pid,
+                                 int resource,
+                                 const struct rlimit64* new_limit,
+                                 struct rlimit64* old_limit);
 
 }  // namespace sandbox
 

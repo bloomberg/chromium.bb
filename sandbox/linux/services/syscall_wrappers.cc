@@ -4,7 +4,9 @@
 
 #include "sandbox/linux/services/syscall_wrappers.h"
 
+#include <sys/resource.h>
 #include <sys/syscall.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -60,6 +62,13 @@ int sys_seccomp(unsigned int operation,
                 unsigned int flags,
                 const struct sock_fprog* args) {
   return syscall(__NR_seccomp, operation, flags, args);
+}
+
+int sys_prlimit64(pid_t pid,
+                  int resource,
+                  const struct rlimit64* new_limit,
+                  struct rlimit64* old_limit) {
+  return syscall(__NR_prlimit64, pid, resource, new_limit, old_limit);
 }
 
 }  // namespace sandbox
