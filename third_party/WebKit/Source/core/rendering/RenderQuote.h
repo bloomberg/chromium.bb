@@ -63,6 +63,8 @@ private:
     String m_text;
 };
 
+WILL_NOT_BE_EAGERLY_TRACED_CLASS(RenderQuote);
+
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderQuote, isQuote());
 
 } // namespace blink

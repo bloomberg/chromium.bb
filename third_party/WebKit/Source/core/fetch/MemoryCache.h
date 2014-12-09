@@ -109,6 +109,8 @@ private:
     }
 };
 
+WILL_NOT_BE_EAGERLY_TRACED_CLASS(MemoryCacheEntry);
+
 // MemoryCacheLRUList is used only in MemoryCache class, but we don't make
 // MemoryCacheLRUList an inner struct of MemoryCache because we can't define
 // VectorTraits for inner structs.

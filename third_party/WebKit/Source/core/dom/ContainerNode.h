@@ -275,6 +275,8 @@ private:
 bool childAttachedAllowedWhenAttachingChildren(ContainerNode*);
 #endif
 
+WILL_NOT_BE_EAGERLY_TRACED_CLASS(ContainerNode);
+
 DEFINE_NODE_TYPE_CASTS(ContainerNode, isContainerNode());
 
 inline bool ContainerNode::hasChildCount(unsigned count) const
