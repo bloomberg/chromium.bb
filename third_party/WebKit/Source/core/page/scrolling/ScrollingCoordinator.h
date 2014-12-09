@@ -82,9 +82,8 @@ public:
 
     enum MainThreadScrollingReasonFlags {
         HasSlowRepaintObjects = 1 << 0,
-        HasViewportConstrainedObjectsWithoutSupportingFixedLayers = 1 << 1,
-        HasNonLayerViewportConstrainedObjects = 1 << 2,
-        ThreadedScrollingDisabled = 1 << 3
+        HasNonLayerViewportConstrainedObjects = 1 << 1,
+        ThreadedScrollingDisabled = 1 << 2
     };
 
     MainThreadScrollingReasons mainThreadScrollingReasons() const;

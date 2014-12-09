@@ -968,8 +968,6 @@ String ScrollingCoordinator::mainThreadScrollingReasonsAsText(MainThreadScrollin
 
     if (reasons & ScrollingCoordinator::HasSlowRepaintObjects)
         stringBuilder.appendLiteral("Has slow repaint objects, ");
-    if (reasons & ScrollingCoordinator::HasViewportConstrainedObjectsWithoutSupportingFixedLayers)
-        stringBuilder.appendLiteral("Has viewport constrained objects without supporting fixed layers, ");
     if (reasons & ScrollingCoordinator::HasNonLayerViewportConstrainedObjects)
         stringBuilder.appendLiteral("Has non-layer viewport-constrained objects, ");
     if (reasons & ScrollingCoordinator::ThreadedScrollingDisabled)
