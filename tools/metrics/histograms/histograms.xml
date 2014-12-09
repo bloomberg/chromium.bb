@@ -60295,6 +60295,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="PPAPIFlashProcess"/>
   <suffix name="PPAPIProcess"/>
   <suffix name="RendererProcess"/>
+  <suffix name="RendererExtensionEventProcess"/>
+  <suffix name="RendererExtensionPersistentProcess"/>
   <suffix name="WorkerProcess"/>
   <affected-histogram name="PerformanceMonitor.AverageCPU"/>
   <affected-histogram name="PerformanceMonitor.HighCPU"/>

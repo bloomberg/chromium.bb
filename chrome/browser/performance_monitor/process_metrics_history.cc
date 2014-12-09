@@ -9,8 +9,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process_metrics.h"
-#include "base/strings/utf_string_conversions.h"
-#include "content/public/common/content_constants.h"
 #include "content/public/common/process_type.h"
 
 #if defined(OS_MACOSX)
@@ -24,8 +22,7 @@ namespace performance_monitor {
 const float kHighCPUUtilizationThreshold = 90.0f;
 
 ProcessMetricsHistory::ProcessMetricsHistory()
-    : process_data_(content::PROCESS_TYPE_UNKNOWN),
-      last_update_sequence_(0) {
+    : last_update_sequence_(0) {
   ResetCounters();
 }
 
@@ -40,7 +37,7 @@ void ProcessMetricsHistory::ResetCounters() {
 }
 
 void ProcessMetricsHistory::Initialize(
-    const content::ChildProcessData& process_data,
+    const ProcessMetricsMetadata& process_data,
     int initial_update_sequence) {
   DCHECK_EQ(base::kNullProcessHandle, process_data_.handle);
   process_data_ = process_data;
@@ -132,18 +129,44 @@ void ProcessMetricsHistory::RunPerformanceTriggers() {
           kHistogramMin, kHistogramMax, kHistogramBucketCount);
       if (min_cpu_usage_ > kHighCPUUtilizationThreshold)
         UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.PPAPIProcess", true);
-      if (process_data_.name == base::ASCIIToUTF16(content::kFlashPluginName)) {
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "PerformanceMonitor.AverageCPU.PPAPIFlashProcess",
-            average_cpu_usage, kHistogramMin, kHistogramMax,
-            kHistogramBucketCount);
-        if (min_cpu_usage_ > kHighCPUUtilizationThreshold) {
-          UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.PPAPIFlashProcess",
-                                true);
-        }
-      }
       break;
     default:
+      break;
+  }
+
+  switch (process_data_.process_subtype) {
+    case kProcessSubtypeUnknown:
+      break;
+    case kProcessSubtypePPAPIFlash:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "PerformanceMonitor.AverageCPU.PPAPIFlashProcess",
+          average_cpu_usage, kHistogramMin, kHistogramMax,
+          kHistogramBucketCount);
+      if (min_cpu_usage_ > kHighCPUUtilizationThreshold) {
+        UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.PPAPIFlashProcess",
+                              true);
+      }
+      break;
+    case kProcessSubtypeExtensionPersistent:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "PerformanceMonitor.AverageCPU.RendererExtensionPersistentProcess",
+          average_cpu_usage, kHistogramMin, kHistogramMax,
+          kHistogramBucketCount);
+      if (min_cpu_usage_ > kHighCPUUtilizationThreshold) {
+        UMA_HISTOGRAM_BOOLEAN(
+            "PerformanceMonitor.HighCPU.RendererExtensionPersistentProcess",
+            true);
+      }
+      break;
+    case kProcessSubtypeExtensionEvent:
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "PerformanceMonitor.AverageCPU.RendererExtensionEventProcess",
+          average_cpu_usage, kHistogramMin, kHistogramMax,
+          kHistogramBucketCount);
+      if (min_cpu_usage_ > kHighCPUUtilizationThreshold) {
+        UMA_HISTOGRAM_BOOLEAN(
+            "PerformanceMonitor.HighCPU.RendererExtensionEventProcess", true);
+      }
       break;
   }
 }

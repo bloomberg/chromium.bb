@@ -6,12 +6,20 @@
 
 #include "base/memory/singleton.h"
 #include "base/process/process_iterator.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_constants.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/manifest_handlers/background_info.h"
+#endif
 
 using content::BrowserThread;
 
@@ -44,6 +52,44 @@ void PerformanceMonitor::StartGatherCycle() {
                          &PerformanceMonitor::GatherMetricsMapOnUIThread);
 }
 
+namespace {
+
+void GatherMetricsForRenderProcess(
+    content::RenderProcessHost* host,
+    ProcessMetricsMetadata& data) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#if defined(ENABLE_EXTENSIONS)
+  content::BrowserContext* browser_context = host->GetBrowserContext();
+  extensions::ProcessMap* extension_process_map =
+      extensions::ProcessMap::Get(browser_context);
+
+  std::set<std::string> extension_ids =
+      extension_process_map->GetExtensionsInProcess(host->GetID());
+
+  // We only collect more granular metrics when there's only one extension
+  // running in a given renderer, to reduce noise.
+  if (extension_ids.size() != 1)
+    return;
+
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(browser_context);
+
+  const extensions::Extension* extension =
+      extension_registry->enabled_extensions().GetByID(*extension_ids.begin());
+
+  if (!extension)
+    return;
+
+  if (extensions::BackgroundInfo::HasPersistentBackgroundPage(extension)) {
+    data.process_subtype = kProcessSubtypeExtensionPersistent;
+  } else {
+    data.process_subtype = kProcessSubtypeExtensionEvent;
+  }
+#endif
+}
+
+} // namespace
+
 void PerformanceMonitor::GatherMetricsMapOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -56,9 +102,12 @@ void PerformanceMonitor::GatherMetricsMapOnUIThread() {
   for (content::RenderProcessHost::iterator rph_iter =
            content::RenderProcessHost::AllHostsIterator();
        !rph_iter.IsAtEnd(); rph_iter.Advance()) {
-    base::ProcessHandle handle = rph_iter.GetCurrentValue()->GetHandle();
-    content::ChildProcessData data(content::PROCESS_TYPE_RENDERER);
-    data.handle = handle;
+    content::RenderProcessHost* host = rph_iter.GetCurrentValue();
+    ProcessMetricsMetadata data;
+    data.process_type = content::PROCESS_TYPE_RENDERER;
+    data.handle = host->GetHandle();
+
+    GatherMetricsForRenderProcess(host, data);
     MarkProcessAsAlive(data, current_update_sequence);
   }
 
@@ -71,19 +120,18 @@ void PerformanceMonitor::GatherMetricsMapOnUIThread() {
 }
 
 void PerformanceMonitor::MarkProcessAsAlive(
-    const content::ChildProcessData& process_data,
+    const ProcessMetricsMetadata& process_data,
     int current_update_sequence) {
-  if (process_data.handle == base::kNullProcessHandle) {
+  const base::ProcessHandle& handle = process_data.handle;
+  if (handle == base::kNullProcessHandle) {
     // Process may not be valid yet.
     return;
   }
 
-  MetricsMap::iterator process_metrics_iter =
-      metrics_map_.find(process_data.handle);
+  MetricsMap::iterator process_metrics_iter = metrics_map_.find(handle);
   if (process_metrics_iter == metrics_map_.end()) {
     // If we're not already watching the process, let's initialize it.
-    metrics_map_[process_data.handle].Initialize(process_data,
-                                                 current_update_sequence);
+    metrics_map_[handle].Initialize(process_data, current_update_sequence);
   } else {
     // If we are watching the process, touch it to keep it alive.
     ProcessMetricsHistory& process_metrics = process_metrics_iter->second;
@@ -97,11 +145,21 @@ void PerformanceMonitor::GatherMetricsMapOnIOThread(
 
   // Find all child processes (does not include renderers), which has to be
   // done on the IO thread.
-  for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter)
-    MarkProcessAsAlive(iter.GetData(), current_update_sequence);
+  for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
+    ProcessMetricsMetadata child_process_data;
+    child_process_data.handle = iter.GetData().handle;
+    child_process_data.process_type = iter.GetData().process_type;
+
+    if (iter.GetData().name == base::ASCIIToUTF16(content::kFlashPluginName)) {
+      child_process_data.process_subtype = kProcessSubtypePPAPIFlash;
+    }
+
+    MarkProcessAsAlive(child_process_data, current_update_sequence);
+  }
 
   // Add the current (browser) process.
-  content::ChildProcessData browser_process_data(content::PROCESS_TYPE_BROWSER);
+  ProcessMetricsMetadata browser_process_data;
+  browser_process_data.process_type = content::PROCESS_TYPE_BROWSER;
   browser_process_data.handle = base::GetCurrentProcessHandle();
   MarkProcessAsAlive(browser_process_data, current_update_sequence);
 

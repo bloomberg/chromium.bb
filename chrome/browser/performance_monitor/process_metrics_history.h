@@ -8,12 +8,31 @@
 #include "base/memory/linked_ptr.h"
 #include "base/process/process_handle.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/common/process_type.h"
 
 namespace base {
 class ProcessMetrics;
 }
 
 namespace performance_monitor {
+enum ProcessSubtypes {
+  kProcessSubtypeUnknown,
+  kProcessSubtypePPAPIFlash,
+  kProcessSubtypeExtensionPersistent,
+  kProcessSubtypeExtensionEvent
+};
+
+struct ProcessMetricsMetadata {
+  base::ProcessHandle handle;
+  int process_type;
+  ProcessSubtypes process_subtype;
+
+  ProcessMetricsMetadata()
+      : handle(base::kNullProcessHandle),
+        process_type(content::PROCESS_TYPE_UNKNOWN),
+        process_subtype(kProcessSubtypeUnknown) {
+  }
+};
 
 class ProcessMetricsHistory {
  public:
@@ -21,7 +40,7 @@ class ProcessMetricsHistory {
   ~ProcessMetricsHistory();
 
   // Configure this to monitor a specific process.
-  void Initialize(const content::ChildProcessData& process_data,
+  void Initialize(const ProcessMetricsMetadata& process_data,
                   int initial_update_sequence);
 
   // End of a measurement cycle; check for performance issues and reset
@@ -57,7 +76,7 @@ class ProcessMetricsHistory {
 
   // May not be fully populated. e.g. no |id| and no |name| for browser and
   // renderer processes.
-  content::ChildProcessData process_data_;
+  ProcessMetricsMetadata process_data_;
   linked_ptr<base::ProcessMetrics> process_metrics_;
   int last_update_sequence_;
 

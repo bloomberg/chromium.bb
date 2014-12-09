@@ -46,7 +46,7 @@ class PerformanceMonitor {
   // Mark the given process as alive in the current update iteration.
   // This means adding an entry to the map of watched processes if it's not
   // already present.
-  void MarkProcessAsAlive(const content::ChildProcessData& process_data,
+  void MarkProcessAsAlive(const ProcessMetricsMetadata& process_data,
                           int current_update_sequence);
 
   // Updates the ProcessMetrics map with the current list of processes and
