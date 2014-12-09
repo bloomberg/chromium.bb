@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 
 namespace autofill {
@@ -25,7 +26,8 @@ class PasswordManager;
 
 // Interface that allows PasswordManager core code to interact with its driver
 // (i.e., obtain information from it and give information to it).
-class PasswordManagerDriver {
+class PasswordManagerDriver
+    : public base::SupportsWeakPtr<PasswordManagerDriver> {
  public:
   PasswordManagerDriver() {}
   virtual ~PasswordManagerDriver() {}

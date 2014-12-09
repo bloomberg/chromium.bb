@@ -20,7 +20,7 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
     ContentCredentialManagerDispatcher* dispatcher)
     : PasswordFormManager(driver->GetPasswordManager(),
                           client,
-                          driver,
+                          driver->AsWeakPtr(),
                           observed_form,
                           true),
       dispatcher_(dispatcher) {

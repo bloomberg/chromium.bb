@@ -49,7 +49,7 @@ void ManagePasswordsTest::SetupPendingPassword() {
   password_manager::StubPasswordManagerDriver driver;
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
-          NULL, &client, &driver, *test_form(), false));
+          NULL, &client, driver.AsWeakPtr(), *test_form(), false));
   GetController()->OnPasswordSubmitted(test_form_manager.Pass());
 
   // Wait for the command execution triggered by the automatic popup to pop up
@@ -63,7 +63,7 @@ void ManagePasswordsTest::SetupAutomaticPassword() {
   password_manager::StubPasswordManagerDriver driver;
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
-          NULL, &client, &driver, *test_form(), false));
+          NULL, &client, driver.AsWeakPtr(), *test_form(), false));
   GetController()->OnAutomaticPasswordSave(test_form_manager.Pass());
 
   // Wait for the command execution triggered by the automatic popup to pop up

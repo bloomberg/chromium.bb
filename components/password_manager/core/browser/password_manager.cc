@@ -157,8 +157,8 @@ void PasswordManager::SetFormHasGeneratedPassword(
   // not the common case, and should only happen when there is a bug in our
   // ability to detect forms.
   bool ssl_valid = form.origin.SchemeIsSecure();
-  PasswordFormManager* manager =
-      new PasswordFormManager(this, client_, driver, form, ssl_valid);
+  PasswordFormManager* manager = new PasswordFormManager(
+      this, client_, driver->AsWeakPtr(), form, ssl_valid);
   pending_login_managers_.push_back(manager);
   manager->SetHasGeneratedPassword();
   // TODO(gcasto): Add UMA stats to track this.
@@ -442,8 +442,8 @@ void PasswordManager::CreatePendingLoginManagers(
       continue;  // The current form is already managed.
 
     bool ssl_valid = iter->origin.SchemeIsSecure();
-    PasswordFormManager* manager =
-        new PasswordFormManager(this, client_, driver, *iter, ssl_valid);
+    PasswordFormManager* manager = new PasswordFormManager(
+        this, client_, driver->AsWeakPtr(), *iter, ssl_valid);
     pending_login_managers_.push_back(manager);
 
     PasswordStore::AuthorizationPromptPolicy prompt_policy =

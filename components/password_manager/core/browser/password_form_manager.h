@@ -10,6 +10,7 @@
 
 #include "build/build_config.h"
 
+#include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/password_form.h"
@@ -32,7 +33,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   //           used to filter login results from database.
   PasswordFormManager(PasswordManager* password_manager,
                       PasswordManagerClient* client,
-                      PasswordManagerDriver* driver,
+                      const base::WeakPtr<PasswordManagerDriver>& driver,
                       const autofill::PasswordForm& observed_form,
                       bool ssl_valid);
   ~PasswordFormManager() override;
@@ -327,9 +328,17 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
 
-  // The driver which implements platform-specific PasswordManager operations.
-  // TODO(vabr): remove this due to lifetime issues. http://crbug.com/439387
-  PasswordManagerDriver* driver_;
+  // The driver for frame-specific operations. Note that while |driver_| lives
+  // only as long as its associated frame, |this| is kept alive at least until
+  // main frame navigation or even past that (if it carries a provisionally
+  // saved password). Normally, |this| requests stored credentials from
+  // PasswordStore, and only needs |driver_| to update the frame with those as
+  // soon as the store calls back with the results. But because the store
+  // retrieval involves UI->DB->UI thread communication, the frame (and
+  // |driver_|) might get deleted sooner than the store calls back. In that
+  // case, the updates of the frame are no longer needed, and calls to |driver_|
+  // should silently be omitted.
+  const base::WeakPtr<PasswordManagerDriver> driver_;
 
   // These three fields record the "ActionsTaken" by the browser and
   // the user with this form, and the result. They are combined and
