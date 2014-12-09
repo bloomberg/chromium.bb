@@ -26,5 +26,6 @@
 [
     NoInterfaceObject,
     WillBeGarbageCollected,
+    SetWrapperReferenceFrom=canvas,
 ] interface OESElementIndexUint {
 };
