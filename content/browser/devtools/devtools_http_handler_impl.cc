@@ -16,8 +16,7 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "content/browser/devtools/devtools_manager.h"
-#include "content/browser/devtools/devtools_protocol.h"
-#include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
+#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 #include "content/browser/devtools/protocol/system_info_handler.h"
 #include "content/browser/devtools/protocol/tethering_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
@@ -408,32 +407,23 @@ class BrowserTarget {
             delegate, message_loop->message_loop_proxy())),
         tracing_handler_(new devtools::tracing::TracingHandler(
             devtools::tracing::TracingHandler::Browser)),
-        protocol_handler_(new DevToolsProtocolHandlerImpl()) {
-    protocol_handler_->SetNotifier(
-        base::Bind(&BrowserTarget::Respond, base::Unretained(this)));
-    protocol_handler_->SetSystemInfoHandler(system_info_handler_.get());
-    protocol_handler_->SetTetheringHandler(tethering_handler_.get());
-    protocol_handler_->SetTracingHandler(tracing_handler_.get());
+        protocol_handler_(new DevToolsProtocolHandler(
+            true /* handle_generic_errors */,
+            base::Bind(&BrowserTarget::Respond, base::Unretained(this)))) {
+    DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
+    dispatcher->SetSystemInfoHandler(system_info_handler_.get());
+    dispatcher->SetTetheringHandler(tethering_handler_.get());
+    dispatcher->SetTracingHandler(tracing_handler_.get());
   }
 
   void HandleMessage(const std::string& message) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     std::string error_response;
-    scoped_refptr<DevToolsProtocol::Command> command =
-        DevToolsProtocol::ParseCommand(message, &error_response);
-    if (!command.get()) {
-      Respond(error_response);
-      return;
-    }
-
-    scoped_refptr<DevToolsProtocol::Response> response =
-        protocol_handler_->HandleCommand(command);
-
-    if (response.get()) {
-      if (!response->is_async_promise())
-        Respond(response->Serialize());
-    } else {
-      Respond(command->NoSuchMethodErrorResponse()->Serialize());
+    scoped_ptr<base::DictionaryValue> command =
+        protocol_handler_->ParseCommand(message);
+    if (command) {
+      bool result = protocol_handler_->HandleCommand(command.Pass());
+      DCHECK(result);
     }
   }
 
@@ -454,7 +444,7 @@ class BrowserTarget {
   scoped_ptr<devtools::system_info::SystemInfoHandler> system_info_handler_;
   scoped_ptr<devtools::tethering::TetheringHandler> tethering_handler_;
   scoped_ptr<devtools::tracing::TracingHandler> tracing_handler_;
-  scoped_ptr<DevToolsProtocolHandlerImpl> protocol_handler_;
+  scoped_ptr<DevToolsProtocolHandler> protocol_handler_;
 };
 
 }  // namespace

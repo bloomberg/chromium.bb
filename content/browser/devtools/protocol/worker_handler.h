@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_WORKER_HANDLER_H_
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_WORKER_HANDLER_H_
 
-#include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
+#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 
 namespace content {
 namespace devtools {

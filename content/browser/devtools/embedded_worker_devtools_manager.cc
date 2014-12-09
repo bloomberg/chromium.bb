@@ -5,7 +5,6 @@
 #include "content/browser/devtools/embedded_worker_devtools_manager.h"
 
 #include "content/browser/devtools/devtools_manager.h"
-#include "content/browser/devtools/devtools_protocol.h"
 #include "content/browser/devtools/embedded_worker_devtools_agent_host.h"
 #include "content/browser/devtools/ipc_devtools_agent_host.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"

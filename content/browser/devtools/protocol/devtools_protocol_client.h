@@ -5,68 +5,67 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_DEVTOOLS_PROTOCOL_CLIENT_H_
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_DEVTOOLS_PROTOCOL_CLIENT_H_
 
-#include "content/browser/devtools/devtools_protocol.h"
+#include "base/callback.h"
+#include "base/values.h"
 
 namespace content {
+
+using DevToolsCommandId = int;
+class DevToolsProtocolHandler;
+class DevToolsProtocolDispatcher;
 
 class DevToolsProtocolClient {
  public:
   typedef base::Callback<void(const std::string& message)>
       RawMessageCallback;
-
-  enum ResponseStatus {
-    RESPONSE_STATUS_FALLTHROUGH,
-    RESPONSE_STATUS_OK,
-    RESPONSE_STATUS_INVALID_PARAMS,
-    RESPONSE_STATUS_INTERNAL_ERROR,
-    RESPONSE_STATUS_SERVER_ERROR,
-  };
+  static const DevToolsCommandId kNoId;
 
   struct Response {
    public:
     static Response FallThrough();
     static Response OK();
-    static Response InvalidParams(const std::string& message);
+    static Response InvalidParams(const std::string& param);
     static Response InternalError(const std::string& message);
     static Response ServerError(const std::string& message);
 
-    ResponseStatus status() const;
+    int status() const;
     const std::string& message() const;
 
-   private:
-    Response();
+    bool IsFallThrough() const;
 
-    ResponseStatus status_;
+   private:
+    friend class DevToolsProtocolHandler;
+
+    explicit Response(int status);
+    Response(int status, const std::string& message);
+
+    int status_;
     std::string message_;
   };
 
-  void SendInvalidParamsResponse(
-      scoped_refptr<DevToolsProtocol::Command> command,
-      const std::string& message);
-  void SendInternalErrorResponse(
-      scoped_refptr<DevToolsProtocol::Command> command,
-      const std::string& message);
-  void SendServerErrorResponse(
-      scoped_refptr<DevToolsProtocol::Command> command,
-      const std::string& message);
+  bool SendError(DevToolsCommandId command_id,
+                 const Response& response);
 
   // Sends message to client, the caller is presumed to properly
   // format the message. Do not use unless you must.
   void SendRawMessage(const std::string& message);
 
- protected:
-  DevToolsProtocolClient(const RawMessageCallback& raw_message_callback);
-
+  explicit DevToolsProtocolClient(
+      const RawMessageCallback& raw_message_callback);
   virtual ~DevToolsProtocolClient();
 
+ protected:
+  void SendSuccess(DevToolsCommandId command_id,
+                   scoped_ptr<base::DictionaryValue> params);
   void SendNotification(const std::string& method,
                         scoped_ptr<base::DictionaryValue> params);
 
-  void SendAsyncResponse(scoped_refptr<DevToolsProtocol::Response> response);
-
  private:
-  RawMessageCallback raw_message_callback_;
+  friend class DevToolsProtocolDispatcher;
 
+  void SendMessage(const base::DictionaryValue& message);
+
+  RawMessageCallback raw_message_callback_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsProtocolClient);
 };
 

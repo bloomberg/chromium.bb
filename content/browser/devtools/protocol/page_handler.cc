@@ -324,15 +324,14 @@ Response PageHandler::SetTouchEmulationEnabled(
   return Response::FallThrough();
 }
 
-scoped_refptr<DevToolsProtocol::Response> PageHandler::CaptureScreenshot(
-    scoped_refptr<DevToolsProtocol::Command> command) {
+Response PageHandler::CaptureScreenshot(DevToolsCommandId command_id) {
   if (!host_ || !host_->GetView())
-    return command->InternalErrorResponse("Could not connect to view");
+    return Response::InternalError("Could not connect to view");
 
   host_->GetSnapshotFromBrowser(
       base::Bind(&PageHandler::ScreenshotCaptured,
-          weak_factory_.GetWeakPtr(), command));
-  return command->AsyncResponsePromise();
+          weak_factory_.GetWeakPtr(), command_id));
+  return Response::OK();
 }
 
 Response PageHandler::CanScreencast(bool* result) {
@@ -422,11 +421,10 @@ Response PageHandler::HandleJavaScriptDialog(bool accept,
   return Response::InternalError("Could not handle JavaScript dialog");
 }
 
-scoped_refptr<DevToolsProtocol::Response> PageHandler::QueryUsageAndQuota(
-    const std::string& security_origin,
-    scoped_refptr<DevToolsProtocol::Command> command) {
+Response PageHandler::QueryUsageAndQuota(DevToolsCommandId command_id,
+                                         const std::string& security_origin) {
   if (!host_)
-    return command->InternalErrorResponse("Could not connect to view");
+    return Response::InternalError("Could not connect to view");
 
   scoped_refptr<storage::QuotaManager> quota_manager =
       host_->GetProcess()->GetStoragePartition()->GetQuotaManager();
@@ -439,9 +437,8 @@ scoped_refptr<DevToolsProtocol::Response> PageHandler::QueryUsageAndQuota(
                  GURL(security_origin),
                  base::Bind(&PageHandler::QueryUsageAndQuotaCompleted,
                             weak_factory_.GetWeakPtr(),
-                            command)));
-
-  return command->AsyncResponsePromise();
+                            command_id)));
+  return Response::OK();
 }
 
 Response PageHandler::SetColorPickerEnabled(bool enabled) {
@@ -580,13 +577,12 @@ void PageHandler::ScreencastFrameEncoded(
       ->set_frame_number(++screencast_frame_sent_));
 }
 
-void PageHandler::ScreenshotCaptured(
-    scoped_refptr<DevToolsProtocol::Command> command,
-    const unsigned char* png_data,
-    size_t png_size) {
+void PageHandler::ScreenshotCaptured(DevToolsCommandId command_id,
+                                     const unsigned char* png_data,
+                                     size_t png_size) {
   if (!png_data || !png_size) {
-    client_->SendInternalErrorResponse(command,
-                                       "Unable to capture screenshot");
+    client_->SendError(command_id,
+                       Response::InternalError("Unable to capture screenshot"));
     return;
   }
 
@@ -595,7 +591,7 @@ void PageHandler::ScreenshotCaptured(
       base::StringPiece(reinterpret_cast<const char*>(png_data), png_size),
       &base_64_data);
 
-  client_->SendCaptureScreenshotResponse(command,
+  client_->SendCaptureScreenshotResponse(command_id,
       CaptureScreenshotResponse::Create()->set_data(base_64_data));
 }
 
@@ -606,9 +602,9 @@ void PageHandler::OnColorPicked(int r, int g, int b, int a) {
 }
 
 void PageHandler::QueryUsageAndQuotaCompleted(
-    scoped_refptr<DevToolsProtocol::Command> command,
+    DevToolsCommandId command_id,
     scoped_refptr<QueryUsageAndQuotaResponse> response_data) {
-  client_->SendQueryUsageAndQuotaResponse(command, response_data);
+  client_->SendQueryUsageAndQuotaResponse(command_id, response_data);
 }
 
 }  // namespace page

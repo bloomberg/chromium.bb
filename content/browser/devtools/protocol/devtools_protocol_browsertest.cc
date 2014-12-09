@@ -5,7 +5,7 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "content/browser/devtools/devtools_protocol.h"
+#include "base/json/json_writer.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -17,13 +17,28 @@
 
 namespace content {
 
-class RendererOverridesHandlerTest : public ContentBrowserTest,
-                                     public DevToolsAgentHostClient {
+namespace {
+
+const char kIdParam[] = "id";
+const char kMethodParam[] = "method";
+const char kParamsParam[] = "params";
+
+}
+
+class DevToolsProtocolTest : public ContentBrowserTest,
+                             public DevToolsAgentHostClient {
  protected:
   void SendCommand(const std::string& method,
-                   base::DictionaryValue* params) {
-    agent_host_->DispatchProtocolMessage(
-        DevToolsProtocol::CreateCommand(1, method, params)->Serialize());
+                   scoped_ptr<base::DictionaryValue> params) {
+    base::DictionaryValue command;
+    command.SetInteger(kIdParam, 1);
+    command.SetString(kMethodParam, method);
+    if (params)
+      command.Set(kParamsParam, params.release());
+
+    std::string json_command;
+    base::JSONWriter::Write(&command, &json_command);
+    agent_host_->DispatchProtocolMessage(json_command);
     base::MessageLoop::current()->Run();
   }
 
@@ -81,10 +96,10 @@ class RendererOverridesHandlerTest : public ContentBrowserTest,
   }
 };
 
-IN_PROC_BROWSER_TEST_F(RendererOverridesHandlerTest, QueryUsageAndQuota) {
-  base::DictionaryValue* params = new base::DictionaryValue();
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, QueryUsageAndQuota) {
+  scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue);
   params->SetString("securityOrigin", "http://example.com");
-  SendCommand("Page.queryUsageAndQuota", params);
+  SendCommand("Page.queryUsageAndQuota", params.Pass());
 
   EXPECT_TRUE(HasValue("quota.persistent"));
   EXPECT_TRUE(HasValue("quota.temporary"));
@@ -95,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(RendererOverridesHandlerTest, QueryUsageAndQuota) {
   EXPECT_TRUE(HasListItem("usage.persistent", "id", "filesystem"));
 }
 
-class CaptureScreenshotTest : public RendererOverridesHandlerTest {
+class CaptureScreenshotTest : public DevToolsProtocolTest {
  private:
 #if !defined(OS_ANDROID)
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -120,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, MAYBE_CaptureScreenshot) {
   EXPECT_TRUE(content::ExecuteScript(
       shell()->web_contents()->GetRenderViewHost(),
       "document.body.style.background = '#123456'"));
-  SendCommand("Page.captureScreenshot", new base::DictionaryValue());
+  SendCommand("Page.captureScreenshot", nullptr);
   std::string base64;
   EXPECT_TRUE(result_->GetString("data", &base64));
   std::string png;

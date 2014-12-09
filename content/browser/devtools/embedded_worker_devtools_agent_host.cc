@@ -5,7 +5,7 @@
 #include "content/browser/devtools/embedded_worker_devtools_agent_host.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
+#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"

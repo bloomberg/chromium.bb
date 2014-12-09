@@ -9,7 +9,6 @@ namespace devtools {
 namespace worker {
 
 typedef DevToolsProtocolClient::Response Response;
-typedef DevToolsProtocolClient::ResponseStatus ResponseStatus;
 
 WorkerHandler::WorkerHandler() {
 }

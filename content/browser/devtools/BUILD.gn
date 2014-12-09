@@ -49,8 +49,8 @@ action("gen_devtools_protocol_handler") {
   ]
 
   outputs = [
-    "$target_gen_dir/protocol/devtools_protocol_handler_impl.cc",
-    "$target_gen_dir/protocol/devtools_protocol_handler_impl.h",
+    "$target_gen_dir/protocol/devtools_protocol_dispatcher.cc",
+    "$target_gen_dir/protocol/devtools_protocol_dispatcher.h",
   ]
 
   args =

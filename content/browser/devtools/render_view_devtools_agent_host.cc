@@ -5,12 +5,12 @@
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
 
 #include "base/basictypes.h"
+#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_manager.h"
-#include "content/browser/devtools/devtools_protocol.h"
-#include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
+#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 #include "content/browser/devtools/protocol/dom_handler.h"
 #include "content/browser/devtools/protocol/input_handler.h"
 #include "content/browser/devtools/protocol/inspector_handler.h"
@@ -122,20 +122,20 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
       power_handler_(new devtools::power::PowerHandler()),
       tracing_handler_(new devtools::tracing::TracingHandler(
           devtools::tracing::TracingHandler::Renderer)),
-      handler_impl_(new DevToolsProtocolHandlerImpl()),
+      protocol_handler_(new DevToolsProtocolHandler(
+          false /* handle_generic_errors */,
+          base::Bind(&RenderViewDevToolsAgentHost::DispatchOnInspectorFrontend,
+                     base::Unretained(this)))),
       reattaching_(false) {
-  handler_impl_->SetDOMHandler(dom_handler_.get());
-  handler_impl_->SetInputHandler(input_handler_.get());
-  handler_impl_->SetInspectorHandler(inspector_handler_.get());
-  handler_impl_->SetNetworkHandler(network_handler_.get());
-  handler_impl_->SetPageHandler(page_handler_.get());
-  handler_impl_->SetPowerHandler(power_handler_.get());
-  handler_impl_->SetTracingHandler(tracing_handler_.get());
+  DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
+  dispatcher->SetDOMHandler(dom_handler_.get());
+  dispatcher->SetInputHandler(input_handler_.get());
+  dispatcher->SetInspectorHandler(inspector_handler_.get());
+  dispatcher->SetNetworkHandler(network_handler_.get());
+  dispatcher->SetPageHandler(page_handler_.get());
+  dispatcher->SetPowerHandler(power_handler_.get());
+  dispatcher->SetTracingHandler(tracing_handler_.get());
   SetRenderViewHost(rvh);
-  DevToolsProtocol::Notifier notifier(base::Bind(
-      &RenderViewDevToolsAgentHost::DispatchOnInspectorFrontend,
-      base::Unretained(this)));
-  handler_impl_->SetNotifier(notifier);
   g_instances.Get().push_back(this);
   AddRef();  // Balanced in RenderViewHostDestroyed.
   DevToolsManager::GetInstance()->AgentHostChanged(this);
@@ -152,32 +152,24 @@ WebContents* RenderViewDevToolsAgentHost::GetWebContents() {
 
 void RenderViewDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
-  std::string error_message;
 
-  scoped_ptr<base::DictionaryValue> message_dict(
-      DevToolsProtocol::ParseMessage(message, &error_message));
-  scoped_refptr<DevToolsProtocol::Command> command =
-      DevToolsProtocol::ParseCommand(message_dict.get(), &error_message);
-
-  if (command.get()) {
-    scoped_refptr<DevToolsProtocol::Response> overridden_response;
-
+  scoped_ptr<base::DictionaryValue> command =
+      protocol_handler_->ParseCommand(message);
+  if (command) {
     DevToolsManagerDelegate* delegate =
         DevToolsManager::GetInstance()->delegate();
     if (delegate) {
-      scoped_ptr<base::DictionaryValue> overridden_response_value(
-          delegate->HandleCommand(this, message_dict.get()));
-      if (overridden_response_value)
-        overridden_response = DevToolsProtocol::ParseResponse(
-            overridden_response_value.get());
+      scoped_ptr<base::DictionaryValue> response(
+          delegate->HandleCommand(this, command.get()));
+      if (response) {
+        std::string json_response;
+        base::JSONWriter::Write(response.get(), &json_response);
+        DispatchOnInspectorFrontend(json_response);
+        return;
+      }
     }
-    if (!overridden_response.get())
-      overridden_response = handler_impl_->HandleCommand(command);
-    if (overridden_response.get()) {
-      if (!overridden_response->is_async_promise())
-        DispatchOnInspectorFrontend(overridden_response->Serialize());
+    if (protocol_handler_->HandleCommand(command.Pass()))
       return;
-    }
   }
 
   IPCDevToolsAgentHost::DispatchProtocolMessage(message);

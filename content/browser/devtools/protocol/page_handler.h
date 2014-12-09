@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
+#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 #include "content/public/browser/readback_types.h"
 
 class SkBitmap;
@@ -64,8 +64,7 @@ class PageHandler {
   Response SetTouchEmulationEnabled(bool enabled,
                                     const std::string* configuration);
 
-  scoped_refptr<DevToolsProtocol::Response> CaptureScreenshot(
-      scoped_refptr<DevToolsProtocol::Command> command);
+  Response CaptureScreenshot(DevToolsCommandId command_id);
 
   Response CanScreencast(bool* result);
   Response CanEmulate(bool* result);
@@ -79,9 +78,8 @@ class PageHandler {
 
   Response HandleJavaScriptDialog(bool accept, const std::string* prompt_text);
 
-  scoped_refptr<DevToolsProtocol::Response> QueryUsageAndQuota(
-      const std::string& security_origin,
-      scoped_refptr<DevToolsProtocol::Command> command);
+  Response QueryUsageAndQuota(DevToolsCommandId command_id,
+                              const std::string& security_origin);
 
   Response SetColorPickerEnabled(bool enabled);
 
@@ -98,14 +96,14 @@ class PageHandler {
                               const std::string& data);
 
   void ScreenshotCaptured(
-      scoped_refptr<DevToolsProtocol::Command> command,
+      DevToolsCommandId command_id,
       const unsigned char* png_data,
       size_t png_size);
 
   void OnColorPicked(int r, int g, int b, int a);
 
   void QueryUsageAndQuotaCompleted(
-      scoped_refptr<DevToolsProtocol::Command> command,
+      DevToolsCommandId command_id,
       scoped_refptr<QueryUsageAndQuotaResponse> response);
 
   bool enabled_;

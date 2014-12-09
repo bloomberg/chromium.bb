@@ -4,7 +4,33 @@
 
 #include "content/browser/devtools/protocol/devtools_protocol_client.h"
 
+#include "base/json/json_writer.h"
+#include "base/strings/stringprintf.h"
+
 namespace content {
+
+namespace {
+
+const char kIdParam[] = "id";
+const char kMethodParam[] = "method";
+const char kParamsParam[] = "params";
+const char kResultParam[] = "result";
+const char kErrorParam[] = "error";
+const char kErrorCodeParam[] = "code";
+const char kErrorMessageParam[] = "message";
+
+// Special values.
+const int kStatusOk = -1;
+const int kStatusFallThrough = -2;
+// JSON RPC 2.0 spec: http://www.jsonrpc.org/specification#error_object
+const int kStatusInvalidParams = -32602;
+const int kStatusInternalError = -32603;
+const int kStatusServerError = -32000;
+
+}  // namespace
+
+// static
+const DevToolsCommandId DevToolsProtocolClient::kNoId = -1;
 
 DevToolsProtocolClient::DevToolsProtocolClient(
     const RawMessageCallback& raw_message_callback)
@@ -14,77 +40,83 @@ DevToolsProtocolClient::DevToolsProtocolClient(
 DevToolsProtocolClient::~DevToolsProtocolClient() {
 }
 
-void DevToolsProtocolClient::SendNotification(
-    const std::string& method,
-    scoped_ptr<base::DictionaryValue> params) {
-  scoped_refptr<DevToolsProtocol::Notification> notification =
-      new DevToolsProtocol::Notification(method, params.release());
-  SendRawMessage(notification->Serialize());
-}
-
-void DevToolsProtocolClient::SendAsyncResponse(
-    scoped_refptr<DevToolsProtocol::Response> response) {
-  SendRawMessage(response->Serialize());
-}
-
 void DevToolsProtocolClient::SendRawMessage(const std::string& message) {
   raw_message_callback_.Run(message);
 }
 
-void DevToolsProtocolClient::SendInvalidParamsResponse(
-    scoped_refptr<DevToolsProtocol::Command> command,
-    const std::string& message) {
-  SendAsyncResponse(command->InvalidParamResponse(message));
+void DevToolsProtocolClient::SendMessage(const base::DictionaryValue& message) {
+  std::string json_message;
+  base::JSONWriter::Write(&message, &json_message);
+  SendRawMessage(json_message);
 }
 
-void DevToolsProtocolClient::SendInternalErrorResponse(
-    scoped_refptr<DevToolsProtocol::Command> command,
-    const std::string& message) {
-  SendAsyncResponse(command->InternalErrorResponse(message));
+void DevToolsProtocolClient::SendNotification(
+    const std::string& method,
+    scoped_ptr<base::DictionaryValue> params) {
+  base::DictionaryValue notification;
+  notification.SetString(kMethodParam, method);
+  if (params)
+    notification.Set(kParamsParam, params.release());
+
+  SendMessage(notification);
 }
 
-void DevToolsProtocolClient::SendServerErrorResponse(
-    scoped_refptr<DevToolsProtocol::Command> command,
-    const std::string& message) {
-  SendAsyncResponse(command->ServerErrorResponse(message));
+void DevToolsProtocolClient::SendSuccess(
+    DevToolsCommandId command_id,
+    scoped_ptr<base::DictionaryValue> params) {
+  base::DictionaryValue response;
+  response.SetInteger(kIdParam, command_id);
+
+  response.Set(kResultParam,
+      params ? params.release() : new base::DictionaryValue());
+
+  SendMessage(response);
+}
+
+bool DevToolsProtocolClient::SendError(DevToolsCommandId command_id,
+                                       const Response& response) {
+  if (response.status() == kStatusOk ||
+      response.status() == kStatusFallThrough) {
+    return false;
+  }
+  base::DictionaryValue dict;
+  if (command_id != kNoId)
+    dict.SetInteger(kIdParam, command_id);
+
+  base::DictionaryValue* error_object = new base::DictionaryValue();
+  error_object->SetInteger(kErrorCodeParam, response.status());
+  if (!response.message().empty())
+    error_object->SetString(kErrorMessageParam, response.message());
+
+  dict.Set(kErrorParam, error_object);
+  SendMessage(dict);
+  return true;
 }
 
 typedef DevToolsProtocolClient::Response Response;
 
 Response Response::FallThrough() {
-  Response response;
-  response.status_ = ResponseStatus::RESPONSE_STATUS_FALLTHROUGH;
-  return response;
+  return Response(kStatusFallThrough);
 }
 
 Response Response::OK() {
-  Response response;
-  response.status_ = ResponseStatus::RESPONSE_STATUS_OK;
-  return response;
+  return Response(kStatusOk);
 }
 
-Response Response::InvalidParams(const std::string& message) {
-  Response response;
-  response.status_ = ResponseStatus::RESPONSE_STATUS_INVALID_PARAMS;
-  response.message_ = message;
-  return response;
+Response Response::InvalidParams(const std::string& param) {
+  return Response(kStatusInvalidParams,
+      base::StringPrintf("Missing or invalid '%s' parameter", param.c_str()));
 }
 
 Response Response::InternalError(const std::string& message) {
-  Response response;
-  response.status_ = ResponseStatus::RESPONSE_STATUS_INTERNAL_ERROR;
-  response.message_ = message;
-  return response;
+  return Response(kStatusInternalError, message);
 }
 
 Response Response::ServerError(const std::string& message) {
-  Response response;
-  response.status_ = ResponseStatus::RESPONSE_STATUS_SERVER_ERROR;
-  response.message_ = message;
-  return response;
+  return Response(kStatusServerError, message);
 }
 
-DevToolsProtocolClient::ResponseStatus Response::status() const {
+int Response::status() const {
   return status_;
 }
 
@@ -92,7 +124,17 @@ const std::string& Response::message() const {
   return message_;
 }
 
-Response::Response() {
+bool Response::IsFallThrough() const {
+  return status_ == kStatusFallThrough;
+}
+
+Response::Response(int status)
+    : status_(status) {
+}
+
+Response::Response(int status, const std::string& message)
+    : status_(status),
+      message_(message) {
 }
 
 }  // namespace content

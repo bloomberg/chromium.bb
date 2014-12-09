@@ -26,15 +26,14 @@ header = """\
 
 template_h = string.Template(header + """\
 
-#ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_DEVTOOLS_PROTOCOL_HANDLER_IMPL_H_
-#define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_DEVTOOLS_PROTOCOL_HANDLER_IMPL_H_
+#ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_DEVTOOLS_PROTOCOL_DISPATCHER_H_
+#define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_DEVTOOLS_PROTOCOL_DISPATCHER_H_
 
-#include "content/browser/devtools/devtools_protocol.h"
 #include "content/browser/devtools/protocol/devtools_protocol_client.h"
 
 namespace content {
 
-class DevToolsProtocolHandlerImpl;
+class DevToolsProtocolDispatcher;
 
 namespace devtools {
 
@@ -73,25 +72,34 @@ ${types}\
 
 }  // namespace devtools
 
-class DevToolsProtocolHandlerImpl : public DevToolsProtocol::Handler {
+class DevToolsProtocolDispatcher {
  public:
-  typedef DevToolsProtocolClient::Response Response;
-  typedef DevToolsProtocolClient::ResponseStatus ResponseStatus;
+  using Notifier = DevToolsProtocolClient::RawMessageCallback;
+  using CommandHandler =
+      base::Callback<bool(int, scoped_ptr<base::DictionaryValue>)>;
 
-  DevToolsProtocolHandlerImpl();
-  virtual ~DevToolsProtocolHandlerImpl();
+  explicit DevToolsProtocolDispatcher(const Notifier& notifier);
+  ~DevToolsProtocolDispatcher();
+
+  CommandHandler FindCommandHandler(const std::string& method);
 
 ${setters}\
 
  private:
+  using Response = DevToolsProtocolClient::Response;
+  using CommandHandlers = std::map<std::string, CommandHandler>;
+
 ${methods}\
 
+  Notifier notifier_;
+  DevToolsProtocolClient client_;
+  CommandHandlers command_handlers_;
 ${fields}\
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DEVTOOLS_PROTOCOL_DEVTOOLS_PROTOCOL_HANDLER_IMPL_H_
+#endif  // CONTENT_BROWSER_DEVTOOLS_PROTOCOL_DEVTOOLS_PROTOCOL_DISPATCHER_H_
 """)
 
 tmpl_typedef = string.Template("""\
@@ -192,7 +200,7 @@ tmpl_client = string.Template("""\
 namespace ${domain} {
 class Client : public DevToolsProtocolClient {
  public:
-  Client(const RawMessageCallback& raw_message_callback);
+  explicit Client(const RawMessageCallback& raw_message_callback);
   virtual ~Client();
 
 ${methods}\
@@ -207,7 +215,7 @@ tmpl_event = string.Template("""\
 
 tmpl_response = string.Template("""\
   void Send${Command}Response(
-      scoped_refptr<DevToolsProtocol::Command> command,
+      DevToolsCommandId command_id,
       scoped_refptr<${Command}Response> params);
 """)
 
@@ -217,9 +225,9 @@ tmpl_setter = string.Template("""\
 """)
 
 tmpl_callback = string.Template("""\
-  scoped_refptr<DevToolsProtocol::Response>
-  On${Domain}${Command}(
-      scoped_refptr<DevToolsProtocol::Command> command);
+  bool On${Domain}${Command}(
+      DevToolsCommandId command_id,
+      scoped_ptr<base::DictionaryValue> params);
 """)
 
 tmpl_field = string.Template("""\
@@ -228,7 +236,7 @@ tmpl_field = string.Template("""\
 
 template_cc = string.Template(header + """\
 
-#include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
+#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
@@ -236,41 +244,21 @@ ${includes}\
 
 namespace content {
 
-DevToolsProtocolHandlerImpl::DevToolsProtocolHandlerImpl()
-    : ${fields_init} {
+DevToolsProtocolDispatcher::DevToolsProtocolDispatcher(
+    const Notifier& notifier)
+    : notifier_(notifier),
+      client_(notifier),
+      ${fields_init} {
 }
 
-DevToolsProtocolHandlerImpl::~DevToolsProtocolHandlerImpl() {
+DevToolsProtocolDispatcher::~DevToolsProtocolDispatcher() {
 }
 
-namespace {
-
-typedef DevToolsProtocolClient::ResponseStatus ResponseStatus;
-
-bool CreateCommonResponse(
-    scoped_refptr<DevToolsProtocol::Command> command,
-    const DevToolsProtocolClient::Response& response,
-    scoped_refptr<DevToolsProtocol::Response>* protocol_response) {
-  switch (response.status()) {
-    case ResponseStatus::RESPONSE_STATUS_FALLTHROUGH:
-      *protocol_response = nullptr;
-      break;
-    case ResponseStatus::RESPONSE_STATUS_OK:
-      return false;
-    case ResponseStatus::RESPONSE_STATUS_INVALID_PARAMS:
-      *protocol_response = command->InvalidParamResponse(response.message());
-      break;
-    case ResponseStatus::RESPONSE_STATUS_INTERNAL_ERROR:
-      *protocol_response = command->InternalErrorResponse(response.message());
-      break;
-    case ResponseStatus::RESPONSE_STATUS_SERVER_ERROR:
-      *protocol_response = command->ServerErrorResponse(response.message());
-      break;
-  }
-  return true;
+DevToolsProtocolDispatcher::CommandHandler
+DevToolsProtocolDispatcher::FindCommandHandler(const std::string& method) {
+  CommandHandlers::iterator it = command_handlers_.find(method);
+  return it == command_handlers_.end() ? CommandHandler() : it->second;
 }
-
-}  // namespace
 
 ${methods}\
 
@@ -306,7 +294,7 @@ tmpl_include = string.Template("""\
 tmpl_field_init = string.Template("${domain}_handler_(nullptr)")
 
 tmpl_setter_impl = string.Template("""\
-void DevToolsProtocolHandlerImpl::Set${Domain}Handler(
+void DevToolsProtocolDispatcher::Set${Domain}Handler(
     devtools::${domain}::${Domain}Handler* ${domain}_handler) {
   DCHECK(!${domain}_handler_);
   ${domain}_handler_ = ${domain}_handler;
@@ -315,32 +303,32 @@ ${initializations}\
 """)
 
 tmpl_register = string.Template("""\
-  RegisterCommandHandler(
-      "${Domain}.${command}",
+  command_handlers_["${Domain}.${command}"] =
       base::Bind(
-          &DevToolsProtocolHandlerImpl::On${Domain}${Command},
-          base::Unretained(this)));
+          &DevToolsProtocolDispatcher::On${Domain}${Command},
+          base::Unretained(this));
 """)
 
 tmpl_init_client = string.Template("""\
   ${domain}_handler_->SetClient(make_scoped_ptr(
-      new devtools::${domain}::Client(
-          base::Bind(&DevToolsProtocolHandlerImpl::SendRawMessage,
-                     base::Unretained(this)))));
+      new devtools::${domain}::Client(notifier_)));
 """)
 
 tmpl_callback_impl = string.Template("""\
-scoped_refptr<DevToolsProtocol::Response>
-DevToolsProtocolHandlerImpl::On${Domain}${Command}(
-    scoped_refptr<DevToolsProtocol::Command> command) {
+bool DevToolsProtocolDispatcher::On${Domain}${Command}(
+    DevToolsCommandId command_id,
+    scoped_ptr<base::DictionaryValue> params) {
 ${prep}\
   Response response = ${domain}_handler_->${Command}(${args});
-  scoped_refptr<DevToolsProtocol::Response> protocol_response;
-  if (CreateCommonResponse(command, response, &protocol_response))
-    return protocol_response;
-  base::DictionaryValue* result = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> protocol_response;
+  if (client_.SendError(command_id, response))
+    return true;
+  if (response.IsFallThrough())
+    return false;
+  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
 ${wrap}\
-  return command->SuccessResponse(result);
+  client_.SendSuccess(command_id, result.Pass());
+  return true;
 }
 """)
 
@@ -349,34 +337,39 @@ tmpl_wrap = string.Template("""\
 """)
 
 tmpl_callback_async_impl = string.Template("""\
-scoped_refptr<DevToolsProtocol::Response>
-DevToolsProtocolHandlerImpl::On${Domain}${Command}(
-    scoped_refptr<DevToolsProtocol::Command> command) {
+bool DevToolsProtocolDispatcher::On${Domain}${Command}(
+    DevToolsCommandId command_id,
+    scoped_ptr<base::DictionaryValue> params) {
 ${prep}\
-  return ${domain}_handler_->${Command}(${args});
+  Response response = ${domain}_handler_->${Command}(${args});
+  if (client_.SendError(command_id, response))
+    return true;
+  return !response.IsFallThrough();
 }
 """)
 
-params_prep = """\
-  base::DictionaryValue* params = command->params();
-"""
-
 tmpl_prep_req = string.Template("""\
   ${param_type} in_${param}${init};
-  if (!params || !params->Get${Type}("${proto_param}", &in_${param}))
-    return command->InvalidParamResponse("${proto_param}");
+  if (!params || !params->Get${Type}("${proto_param}", &in_${param})) {
+    client_.SendError(command_id, Response::InvalidParams("${proto_param}"));
+    return true;
+  }
 """)
 
 tmpl_prep_req_list = string.Template("""\
   base::ListValue* list_${param} = nullptr;
-  if (!params || !params->GetList("${proto_param}", &list_${param}))
-    return command->InvalidParamResponse("${proto_param}");
+  if (!params || !params->GetList("${proto_param}", &list_${param})) {
+    client_.SendError(command_id, Response::InvalidParams("${proto_param}"));
+    return true;
+  }
   std::vector<${item_type}> in_${param};
   for (base::ListValue::const_iterator it =
       list_${param}->begin(); it != list_${param}->end(); ++it) {
     ${item_type} item${item_init};
-    if (!(*it)->GetAs${ItemType}(&item))
-      return command->InvalidParamResponse("${proto_param}");
+    if (!(*it)->GetAs${ItemType}(&item)) {
+      client_.SendError(command_id, Response::InvalidParams("${proto_param}"));
+      return true;
+    }
     in_${param}.push_back(item);
   }
 """)
@@ -422,9 +415,9 @@ void Client::${Command}(
 
 tmpl_response_impl = string.Template("""\
 void Client::Send${Command}Response(
-    scoped_refptr<DevToolsProtocol::Command> command,
+    DevToolsCommandId command_id,
     scoped_refptr<${Command}Response> params) {
-  SendAsyncResponse(command->SuccessResponse(params->ToValue().release()));
+  SendSuccess(command_id, params->ToValue().Pass());
 }
 """)
 
@@ -641,8 +634,6 @@ for json_domain in all_domains:
           param_map["proto_param"] = json_param["name"]
           param_map["param"] = Uncamelcase(json_param["name"])
           ResolveType(json_param, param_map)
-          if len(prep) == 0:
-            prep.append(params_prep)
           if json_param.get("optional"):
             if param_map["Type"] in ["List", "Dictionary"]:
               # TODO(vkuzkokov) Implement transformation of base::ListValue
@@ -665,7 +656,7 @@ for json_domain in all_domains:
         # TODO(vkuzkokov) Pass async callback instance similar to how
         # InspectorBackendDispatcher does it. This, however, can work
         # only if Blink and Chrome are in the same repo.
-        args.append("command")
+        args.insert(0, "command_id")
         handler_method_impls.append(
             tmpl_callback_async_impl.substitute(command_map,
                 prep = "".join(prep),

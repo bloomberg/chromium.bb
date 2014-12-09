@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_QUOTA_AND_USAGE_QUERY_H_
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_QUOTA_AND_USAGE_QUERY_H_
 
-#include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
+#include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 #include "storage/browser/quota/quota_manager.h"
 
 namespace content {
