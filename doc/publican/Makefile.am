@@ -13,6 +13,7 @@
 # * WaylandServerAPI.xml is generated from the doxygen output and saved in
 #   $(builddir)/en-US
 # * run xmlto on $(builddir)/en-US, output to $(builddir)/Wayland/en-US
+
 publican_sources = \
 	$(srcdir)/sources/Wayland.ent \
 	$(srcdir)/sources/Wayland.xml \
@@ -37,6 +38,7 @@ css_sources = \
 	$(srcdir)/sources/css/default.css \
 	$(srcdir)/sources/css/epub.css \
 	$(srcdir)/sources/css/print.css
+
 img_sources = \
 	$(srcdir)/sources/images/icon.svg \
 	$(srcdir)/sources/images/wayland-architecture.png \
@@ -45,71 +47,84 @@ img_sources = \
 
 if HAVE_XMLTO
 if HAVE_XSLTPROC
-noinst_DATA = Wayland $(publican_targets)
+noinst_DATA = $(builddir)/Wayland $(publican_targets)
 XMLTO_PARAM = \
 	--skip-validation \
 	--stringparam chunk.section.depth=0 \
 	--stringparam toc.section.depth=1 \
 	--stringparam html.stylesheet=css/default.css
 
+doxydir := $(top_builddir)/doc/doxygen
+
 html_destdir = $(builddir)/Wayland/en-US/html
 
-Wayland: $(publican_targets)
-	$(AM_V_GEN)$(MKDIR_P) -p $(html_destdir)/css
-	$(AM_V_GEN)cp -f $(css_sources) $(html_destdir)/css/
-	$(AM_V_GEN)$(MKDIR_P) -p $(html_destdir)/images
-	$(AM_V_GEN)cp -f $(img_sources) $(html_destdir)/images/
-	$(AM_V_GEN)$(XMLTO) $(XMLTO_PARAM) html en-US/Wayland.xml -o $(html_destdir)
-	@touch Wayland
+# Listing various directories that might need to be created.
+alldirs := $(builddir)/en-US $(builddir)/en-US/images $(html_destdir) $(html_destdir)/css $(html_destdir)/images
+
+
+html_css_targets = $(addprefix $(html_destdir)/css/,$(notdir $(css_sources)))
+html_img_targets = $(addprefix $(html_destdir)/images/,$(notdir $(img_sources)))
+
+$(builddir)/Wayland: $(publican_targets) $(html_css_targets) $(html_img_targets) | $(builddir)/en-US
+	$(AM_V_GEN)$(XMLTO) $(XMLTO_PARAM) html $(builddir)/en-US/Wayland.xml -o $(html_destdir)
+	@touch $@
+
+$(html_destdir)/css/%: $(srcdir)/sources/css/% | $(html_destdir)/css
+	$(AM_V_GEN)cp -f $< $@
+
+$(html_destdir)/images/%: $(srcdir)/sources/images/% | $(html_destdir)/images
+	$(AM_V_GEN)cp -f $< $@
 
 pubdir = $(docdir)/Wayland/en-US
 
-publican_targets = $(publican_sources:$(srcdir)/sources%=$(builddir)/en-US%) \
-	en-US/ProtocolSpec.xml en-US/ProtocolInterfaces.xml \
-	en-US/WaylandClientAPI.xml en-US/WaylandServerAPI.xml
+publican_targets = $(publican_sources:$(srcdir)/sources/%=$(builddir)/en-US/%) \
+	$(builddir)/en-US/ProtocolSpec.xml $(builddir)/en-US/ProtocolInterfaces.xml \
+	$(builddir)/en-US/WaylandClientAPI.xml $(builddir)/en-US/WaylandServerAPI.xml
 
 # The Protocol.xml is purely generated and required before running publican
-en-US/ProtocolSpec.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)/protocol-to-docbook.xsl
-	$(AM_V_GEN)$(MKDIR_P) en-US/images
+$(builddir)/en-US/ProtocolSpec.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)/protocol-to-docbook.xsl | $(builddir)/en-US
 	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/protocol-to-docbook.xsl \
-		$(top_srcdir)/protocol/wayland.xml > en-US/ProtocolSpec.xml
+		$(top_srcdir)/protocol/wayland.xml > $@
 
-en-US/ProtocolInterfaces.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)/protocol-interfaces-to-docbook.xsl
-	$(AM_V_GEN)$(MKDIR_P) en-US/images
+$(builddir)/en-US/ProtocolInterfaces.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)/protocol-interfaces-to-docbook.xsl
 	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/protocol-interfaces-to-docbook.xsl \
-		$(top_srcdir)/protocol/wayland.xml > en-US/ProtocolInterfaces.xml
+		$(top_srcdir)/protocol/wayland.xml > $@
 
 # * we don't want wayland-{server|client}_8h.xml to avoid duplicating output methods,
 #   move it out of the way first.
 # * use doxygen's combine.xslt to merge the xml files into one single file
 # * move wayland-<foo>_8h.xml back to its original location
-en-US/%API.xml.tmp: $(top_builddir)/doc/doxygen/xml/%/index.xml
-	$(AM_V_GEN)mv $(top_builddir)/doc/doxygen/xml/$*/wayland-$*_8h.xml \
-		$(top_builddir)/doc/doxygen/xml/
-	$(AM_V_GEN)$(XSLTPROC) $(top_builddir)/doc/doxygen/xml/$*/combine.xslt \
-		$(top_builddir)/doc/doxygen/xml/$*/index.xml > $@
-	$(AM_V_GEN)mv $(top_builddir)/doc/doxygen/xml/wayland-$*_8h.xml \
-		$(top_builddir)/doc/doxygen/xml/$*
+$(builddir)/en-US/%API.xml.tmp: $(doxydir)/xml/%/index.xml | $(builddir)/en-US
+	$(AM_V_at)mv $(doxydir)/xml/$*/wayland-$*_8h.xml \
+		$(doxydir)/xml/
+	$(AM_V_GEN)$(XSLTPROC) $(doxydir)/xml/$*/combine.xslt \
+		$(doxydir)/xml/$*/index.xml > $@
+	$(AM_V_at)mv $(doxydir)/xml/wayland-$*_8h.xml \
+		$(doxydir)/xml/$*
 
 # WaylandClientAPI.xml:
 # merge doxygen xml files into one single file, then transform the combined XML file into docbook format
-en-US/WaylandClientAPI.xml: en-US/clientAPI.xml.tmp $(srcdir)/doxygen-to-publican.xsl
+$(builddir)/en-US/WaylandClientAPI.xml: $(builddir)/en-US/clientAPI.xml.tmp $(srcdir)/doxygen-to-publican.xsl | $(builddir)/en-US
 	$(AM_V_GEN)$(XSLTPROC)  --stringparam which Client $(srcdir)/doxygen-to-publican.xsl \
-		$(builddir)/en-US/clientAPI.xml.tmp > en-US/WaylandClientAPI.xml
+		$(builddir)/en-US/clientAPI.xml.tmp > $@
 
 # WaylandServerAPI.xml: see WaylandClientAPI.xml
-en-US/WaylandServerAPI.xml: en-US/serverAPI.xml.tmp $(srcdir)/doxygen-to-publican.xsl
+$(builddir)/en-US/WaylandServerAPI.xml: $(builddir)/en-US/serverAPI.xml.tmp $(srcdir)/doxygen-to-publican.xsl | $(builddir)/en-US
 	$(AM_V_GEN)$(XSLTPROC) --stringparam which Server $(srcdir)/doxygen-to-publican.xsl \
-		$(builddir)/en-US/serverAPI.xml.tmp > en-US/WaylandServerAPI.xml
+		$(builddir)/en-US/serverAPI.xml.tmp > $@
 
 # Copy the sources source files into en-US destination
 # This is required for out-of-source-tree build as publican does not allow us
 # to specify the location of the source code.
-$(builddir)/en-US/%: $(srcdir)/sources/% en-US/ProtocolSpec.xml en-US/ProtocolInterfaces.xml en-US/WaylandClientAPI.xml $(publican_sources)
+$(builddir)/en-US/%: $(srcdir)/sources/% $(builddir)/en-US/ProtocolSpec.xml $(builddir)/en-US/ProtocolInterfaces.xml $(builddir)/en-US/WaylandClientAPI.xml $(publican_sources) | $(builddir)/en-US/images
 	$(AM_V_GEN)cp -f $< $@
-	$(AM_V_GEN)chmod a+w $@
+	$(AM_V_at)chmod a+w $@
 
-CLEANFILES = en-US/ProtocolSpec.xml en-US/ProtocolInterfaces.xml en-US/WaylandClientAPI.xml $(publican_targets)
+# general rule to create one of the listed directories.
+$(alldirs):
+	$(AM_V_GEN)$(MKDIR_P) $@
+
+CLEANFILES = $(builddir)/en-US/ProtocolSpec.xml $(builddir)/en-US/ProtocolInterfaces.xml $(builddir)/en-US/WaylandClientAPI.xml $(publican_targets)
 
 clean-local:
 	$(AM_V_at)rm -fr $(builddir)/en-US
