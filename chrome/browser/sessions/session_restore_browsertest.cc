@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/process/launch.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -122,12 +123,14 @@ class SessionRestoreTest : public InProcessBrowserTest {
   }
 
   Browser* QuitBrowserAndRestore(Browser* browser, int expected_tab_count) {
-    return QuitBrowserAndRestoreWithURL(browser, expected_tab_count, GURL());
+    return QuitBrowserAndRestoreWithURL(
+        browser, expected_tab_count, GURL(), true);
   }
 
   Browser* QuitBrowserAndRestoreWithURL(Browser* browser,
                                         int expected_tab_count,
-                                        const GURL& url) {
+                                        const GURL& url,
+                                        bool no_memory_pressure) {
     Profile* profile = browser->profile();
 
     // Close the browser.
@@ -148,6 +151,11 @@ class SessionRestoreTest : public InProcessBrowserTest {
       chrome::Navigate(&params);
     }
     Browser* new_browser = window_observer.WaitForSingleNewBrowser();
+    // Stop loading anything more if we are running out of space.
+    if (!no_memory_pressure) {
+      base::MemoryPressureListener::NotifyMemoryPressure(
+          base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+    }
     restore_observer.Wait();
     g_browser_process->ReleaseModule();
 
@@ -732,6 +740,63 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, Basic) {
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NoMemoryPressureLoadsAllTabs) {
+  // Add several tabs to the browser. Restart the browser and check that all
+  // tabs got loaded properly.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(url::kAboutBlankURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(url::kAboutBlankURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  Browser* restored =
+      QuitBrowserAndRestoreWithURL(browser(), 1, GURL(), true);
+  TabStripModel* tab_strip_model = restored->tab_strip_model();
+
+  ASSERT_EQ(1u, active_browser_list_->size());
+
+  ASSERT_EQ(3, tab_strip_model->count());
+  // All render widgets should be initialized by now.
+  ASSERT_TRUE(
+      tab_strip_model->GetWebContentsAt(0)->GetRenderWidgetHostView() &&
+      tab_strip_model->GetWebContentsAt(1)->GetRenderWidgetHostView() &&
+      tab_strip_model->GetWebContentsAt(2)->GetRenderWidgetHostView());
+}
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MemoryPressureLoadsNotAllTabs) {
+  // Add several tabs to the browser. Restart the browser and check that all
+  // tabs got loaded properly.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(url::kAboutBlankURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(url::kAboutBlankURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  // Restore the brwoser, but instead of directly waiting, we issue a critical
+  // memory pressure event and finish then the loading.
+  Browser* restored =
+      QuitBrowserAndRestoreWithURL(browser(), 1, GURL(), false);
+
+  TabStripModel* tab_strip_model = restored->tab_strip_model();
+
+  ASSERT_EQ(1u, active_browser_list_->size());
+
+  ASSERT_EQ(3, tab_strip_model->count());
+  // At least one of the render widgets should not be initialized yet.
+  ASSERT_FALSE(
+      tab_strip_model->GetWebContentsAt(0)->GetRenderWidgetHostView() &&
+      tab_strip_model->GetWebContentsAt(1)->GetRenderWidgetHostView() &&
+      tab_strip_model->GetWebContentsAt(2)->GetRenderWidgetHostView());
+}
+
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWebUI) {
   const GURL webui_url("chrome://omnibox");
   ui_test_utils::NavigateToURL(browser(), webui_url);
@@ -1096,7 +1161,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreWithNavigateSelectedTab) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Restore the session by calling chrome::Navigate().
-  Browser* new_browser = QuitBrowserAndRestoreWithURL(browser(), 3, url3_);
+  Browser* new_browser =
+      QuitBrowserAndRestoreWithURL(browser(), 3, url3_, true);
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(3, new_browser->tab_strip_model()->count());
   // Navigated url should be the active tab.

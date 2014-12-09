@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
@@ -156,7 +157,15 @@ class TabLoader : public content::NotificationObserver,
   // TODO(sky): remove. For debugging 368236.
   void CheckNotObserving(NavigationController* controller);
 
+  // React to memory pressure by stopping to load any more tabs.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
   scoped_ptr<TabLoaderDelegate> delegate_;
+
+  // Listens for system under memory pressure notifications and stops loading
+  // of tabs when we start running out of memory.
+  base::MemoryPressureListener memory_pressure_listener_;
 
   content::NotificationRegistrar registrar_;
 
@@ -265,7 +274,9 @@ void TabLoader::SetTabLoadingEnabled(bool enable_tab_loading) {
 }
 
 TabLoader::TabLoader(base::TimeTicks restore_started)
-    : force_load_delay_multiplier_(1),
+    : memory_pressure_listener_(
+        base::Bind(&TabLoader::OnMemoryPressure, base::Unretained(this))),
+      force_load_delay_multiplier_(1),
       loading_enabled_(true),
       got_first_foreground_load_(false),
       got_first_paint_(false),
@@ -533,6 +544,25 @@ void TabLoader::CheckNotObserving(NavigationController* controller) {
   base::debug::Alias(&in_tabs_loading);
   base::debug::Alias(&observing);
   CHECK(!in_tabs_to_load && !in_tabs_loading && !observing);
+}
+
+void TabLoader::OnMemoryPressure(
+base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  // When receiving a resource pressure level warning, we stop pre-loading more
+  // tabs since we are running in danger of loading more tabs by throwing out
+  // old ones.
+  if (tabs_to_load_.empty())
+    return;
+  // Stop the timer and suppress any tab loads while we clean the list.
+  SetTabLoadingEnabled(false);
+  while (!tabs_to_load_.empty()) {
+    NavigationController* controller = tabs_to_load_.front();
+    tabs_to_load_.pop_front();
+    RemoveTab(controller);
+  }
+  // By calling |LoadNextTab| explicitly, we make sure that the
+  // |NOTIFICATION_SESSION_RESTORE_DONE| event gets sent.
+  LoadNextTab();
 }
 
 // SessionRestoreImpl ---------------------------------------------------------
