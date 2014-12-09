@@ -431,31 +431,33 @@ static void CorruptIndexedDBDatabase(
 
   int numFiles = 0;
   int numErrors = 0;
-  base::FilePath idb_data_path = context->GetFilePath(origin_url);
   const bool recursive = false;
-  base::FileEnumerator enumerator(
-      idb_data_path, recursive, base::FileEnumerator::FILES);
-  for (base::FilePath idb_file = enumerator.Next(); !idb_file.empty();
-       idb_file = enumerator.Next()) {
-    int64 size(0);
-    GetFileSize(idb_file, &size);
+  for (const base::FilePath& idb_data_path :
+       context->GetStoragePaths(origin_url)) {
+    base::FileEnumerator enumerator(
+        idb_data_path, recursive, base::FileEnumerator::FILES);
+    for (base::FilePath idb_file = enumerator.Next(); !idb_file.empty();
+         idb_file = enumerator.Next()) {
+      int64 size(0);
+      GetFileSize(idb_file, &size);
 
-    if (idb_file.Extension() == FILE_PATH_LITERAL(".ldb")) {
-      numFiles++;
-      base::File file(idb_file,
-                      base::File::FLAG_WRITE | base::File::FLAG_OPEN_TRUNCATED);
-      if (file.IsValid()) {
-        // Was opened truncated, expand back to the original
-        // file size and fill with zeros (corrupting the file).
-        file.SetLength(size);
-      } else {
-        numErrors++;
+      if (idb_file.Extension() == FILE_PATH_LITERAL(".ldb")) {
+        numFiles++;
+        base::File file(
+            idb_file, base::File::FLAG_WRITE | base::File::FLAG_OPEN_TRUNCATED);
+        if (file.IsValid()) {
+          // Was opened truncated, expand back to the original
+          // file size and fill with zeros (corrupting the file).
+          file.SetLength(size);
+        } else {
+          numErrors++;
+        }
       }
     }
+    VLOG(0) << "There were " << numFiles << " in " << idb_data_path.value()
+            << " with " << numErrors << " errors";
   }
 
-  VLOG(0) << "There were " << numFiles << " in " << idb_data_path.value()
-          << " with " << numErrors << " errors";
   signal_when_finished->Signal();
 }
 

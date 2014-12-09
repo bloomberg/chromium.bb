@@ -27,6 +27,19 @@
 
 namespace content {
 
+namespace {
+
+bool AllowWhitelistedPaths(const std::vector<base::FilePath>& allowed_paths,
+                           const base::FilePath& candidate_path) {
+  for (const base::FilePath& allowed_path : allowed_paths) {
+    if (allowed_path.IsParent(candidate_path))
+      return true;
+  }
+  return false;
+}
+
+}  // namespace
+
 IndexedDBInternalsUI::IndexedDBInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui) {
   web_ui->RegisterMessageCallback(
@@ -223,7 +236,9 @@ void IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread(
   // This happens on the "webkit" thread (which is really just the IndexedDB
   // thread) as a simple way to avoid another script reopening the origin
   // while we are zipping.
-  zip::Zip(context->GetFilePath(origin_url), zip_path, true);
+  std::vector<base::FilePath> paths = context->GetStoragePaths(origin_url);
+  zip::ZipWithFilterCallback(context->data_path(), zip_path,
+                             base::Bind(AllowWhitelistedPaths, paths));
 
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,

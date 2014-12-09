@@ -88,8 +88,9 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // ForceClose takes a value rather than a reference since it may release the
   // owning object.
   void ForceClose(const GURL origin_url, ForceCloseReason reason);
-
-  base::FilePath GetFilePath(const GURL& origin_url) const;
+  // GetStoragePaths returns all paths owned by this database, in arbitrary
+  // order.
+  std::vector<base::FilePath> GetStoragePaths(const GURL& origin_url) const;
   base::FilePath data_path() const { return data_path_; }
   bool IsInOriginSet(const GURL& origin_url) {
     std::set<GURL>* set = GetOriginSet();
@@ -117,7 +118,9 @@ class CONTENT_EXPORT IndexedDBContextImpl
   typedef std::map<GURL, int64> OriginToSizeMap;
   class IndexedDBGetUsageAndQuotaCallback;
 
-  base::FilePath GetIndexedDBFilePath(const std::string& origin_id) const;
+  base::FilePath GetBlobPath(const std::string& origin_id) const;
+  base::FilePath GetLevelDBPath(const GURL& origin_url) const;
+  base::FilePath GetLevelDBPath(const std::string& origin_id) const;
   int64 ReadUsageFromDisk(const GURL& origin_url) const;
   void EnsureDiskUsageCacheInitialized(const GURL& origin_url);
   void QueryDiskAndUpdateQuotaUsage(const GURL& origin_url);

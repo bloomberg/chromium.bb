@@ -44,6 +44,9 @@ namespace content {
 const base::FilePath::CharType IndexedDBContextImpl::kIndexedDBDirectory[] =
     FILE_PATH_LITERAL("IndexedDB");
 
+static const base::FilePath::CharType kBlobExtension[] =
+    FILE_PATH_LITERAL(".blob");
+
 static const base::FilePath::CharType kIndexedDBExtension[] =
     FILE_PATH_LITERAL(".indexeddb");
 
@@ -139,7 +142,7 @@ std::vector<IndexedDBInfo> IndexedDBContextImpl::GetAllOriginsInfo() {
   std::vector<GURL> origins = GetAllOrigins();
   std::vector<IndexedDBInfo> result;
   for (const auto& origin_url : origins) {
-    base::FilePath idb_directory = GetFilePath(origin_url);
+    base::FilePath idb_directory = GetLevelDBPath(origin_url);
     size_t connection_count = GetConnectionCount(origin_url);
     result.push_back(IndexedDBInfo(origin_url,
                                    GetOriginDiskUsage(origin_url),
@@ -168,7 +171,7 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
     info->SetDouble("last_modified",
                     GetOriginLastModified(origin_url).ToJsTime());
     if (!is_incognito())
-      info->SetString("path", GetFilePath(origin_url).value());
+      info->SetString("path", GetLevelDBPath(origin_url).value());
     info->SetDouble("connection_count", GetConnectionCount(origin_url));
 
     // This ends up being O(n^2) since we iterate over all open databases
@@ -280,7 +283,7 @@ base::Time IndexedDBContextImpl::GetOriginLastModified(const GURL& origin_url) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
   if (data_path_.empty() || !IsInOriginSet(origin_url))
     return base::Time();
-  base::FilePath idb_directory = GetFilePath(origin_url);
+  base::FilePath idb_directory = GetLevelDBPath(origin_url);
   base::File::Info file_info;
   if (!base::GetFileInfo(idb_directory, &file_info))
     return base::Time();
@@ -293,7 +296,7 @@ void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
   if (data_path_.empty() || !IsInOriginSet(origin_url))
     return;
 
-  base::FilePath idb_directory = GetFilePath(origin_url);
+  base::FilePath idb_directory = GetLevelDBPath(origin_url);
   EnsureDiskUsageCacheInitialized(origin_url);
   leveldb::Status s = LevelDBDatabase::Destroy(idb_directory);
   if (!s.ok()) {
@@ -341,14 +344,24 @@ size_t IndexedDBContextImpl::GetConnectionCount(const GURL& origin_url) {
   return factory_->GetConnectionCount(origin_url);
 }
 
-base::FilePath IndexedDBContextImpl::GetFilePath(const GURL& origin_url) const {
+base::FilePath IndexedDBContextImpl::GetLevelDBPath(
+    const GURL& origin_url) const {
   std::string origin_id = storage::GetIdentifierFromOrigin(origin_url);
-  return GetIndexedDBFilePath(origin_id);
+  return GetLevelDBPath(origin_id);
+}
+
+std::vector<base::FilePath> IndexedDBContextImpl::GetStoragePaths(
+    const GURL& origin_url) const {
+  std::string origin_id = storage::GetIdentifierFromOrigin(origin_url);
+  std::vector<base::FilePath> paths;
+  paths.push_back(GetLevelDBPath(origin_id));
+  paths.push_back(GetBlobPath(origin_id));
+  return paths;
 }
 
 base::FilePath IndexedDBContextImpl::GetFilePathForTesting(
     const std::string& origin_id) const {
-  return GetIndexedDBFilePath(origin_id);
+  return GetLevelDBPath(origin_id);
 }
 
 void IndexedDBContextImpl::SetTaskRunnerForTesting(
@@ -446,7 +459,14 @@ IndexedDBContextImpl::~IndexedDBContextImpl() {
           &ClearSessionOnlyOrigins, data_path_, special_storage_policy_));
 }
 
-base::FilePath IndexedDBContextImpl::GetIndexedDBFilePath(
+base::FilePath IndexedDBContextImpl::GetBlobPath(
+    const std::string& origin_id) const {
+  DCHECK(!data_path_.empty());
+  return data_path_.AppendASCII(origin_id).AddExtension(kIndexedDBExtension)
+      .AddExtension(kBlobExtension);
+}
+
+base::FilePath IndexedDBContextImpl::GetLevelDBPath(
     const std::string& origin_id) const {
   DCHECK(!data_path_.empty());
   return data_path_.AppendASCII(origin_id).AddExtension(kIndexedDBExtension)
@@ -456,7 +476,7 @@ base::FilePath IndexedDBContextImpl::GetIndexedDBFilePath(
 int64 IndexedDBContextImpl::ReadUsageFromDisk(const GURL& origin_url) const {
   if (data_path_.empty())
     return 0;
-  base::FilePath file_path = GetFilePath(origin_url);
+  base::FilePath file_path = GetLevelDBPath(origin_url);
   return base::ComputeDirectorySize(file_path);
 }
 
