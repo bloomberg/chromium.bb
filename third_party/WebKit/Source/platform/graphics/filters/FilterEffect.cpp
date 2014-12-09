@@ -50,6 +50,7 @@ FilterEffect::~FilterEffect()
 void FilterEffect::trace(Visitor* visitor)
 {
     visitor->trace(m_inputEffects);
+    visitor->trace(m_filter);
 }
 
 FloatRect FilterEffect::determineAbsolutePaintRect(const FloatRect& originalRequestedRect)

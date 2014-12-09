@@ -29,6 +29,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/ColorSpace.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebFilterOperations.h"
 
 class SkImageFilter;
@@ -41,6 +42,7 @@ class GraphicsContext;
 class SourceGraphic;
 
 class PLATFORM_EXPORT SkiaImageFilterBuilder {
+    STACK_ALLOCATED();
 public:
     SkiaImageFilterBuilder();
     explicit SkiaImageFilterBuilder(GraphicsContext*);
@@ -64,7 +66,7 @@ public:
 private:
     FloatSize m_cropOffset;
     GraphicsContext* m_context;
-    SourceGraphic* m_sourceGraphic;
+    RawPtrWillBeMember<SourceGraphic> m_sourceGraphic;
 };
 
 } // namespace blink

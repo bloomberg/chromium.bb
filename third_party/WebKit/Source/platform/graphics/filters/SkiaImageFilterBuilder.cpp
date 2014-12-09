@@ -41,14 +41,14 @@
 namespace blink {
 
 SkiaImageFilterBuilder::SkiaImageFilterBuilder()
-    : m_context(0)
-    , m_sourceGraphic(0)
+    : m_context(nullptr)
+    , m_sourceGraphic(nullptr)
 {
 }
 
 SkiaImageFilterBuilder::SkiaImageFilterBuilder(GraphicsContext* context)
     : m_context(context)
-    , m_sourceGraphic(0)
+    , m_sourceGraphic(nullptr)
 {
 }
 
