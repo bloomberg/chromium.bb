@@ -241,8 +241,10 @@ void DriveAppProvider::UpdateDriveApps() {
   IdSet current_ids;
   for (size_t i = 0; i < drive_apps_.size(); ++i) {
     const std::string& drive_app_id = drive_apps_[i].app_id;
-    if (!mapping_->IsUninstalledDriveApp(drive_app_id))
+    if (!mapping_->IsUninstalledDriveApp(drive_app_id) &&
+        drive_apps_[i].create_url.is_valid()) {
       current_ids.insert(drive_app_id);
+    }
   }
 
   const IdSet existing_ids = mapping_->GetDriveAppIds();
@@ -255,8 +257,10 @@ void DriveAppProvider::UpdateDriveApps() {
   }
 
   for (size_t i = 0; i < drive_apps_.size(); ++i) {
-    if (!mapping_->IsUninstalledDriveApp(drive_apps_[i].app_id))
+    if (!mapping_->IsUninstalledDriveApp(drive_apps_[i].app_id) &&
+        drive_apps_[i].create_url.is_valid()) {
       AddOrUpdateDriveApp(drive_apps_[i]);
+    }
   }
   SchedulePendingConverters();
 }
