@@ -3,14 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'neon_sources': [
-      'dsp/dec_neon.c',
-      'dsp/enc_neon.c',
-      'dsp/lossless_neon.c',
-      'dsp/upsampling_neon.c',
-    ]
-  },
   'targets': [
     {
       'target_name': 'libwebp_dec',
@@ -83,29 +75,31 @@
     {
       'target_name': 'libwebp_dsp_neon',
       'conditions': [
-        ['target_arch == "arm" and arm_version >= 7 and (arm_neon == 1 or arm_neon_optional == 1)', {
+        # iOS uses the same project to generate build project for both device
+        # and simulator and do not use "target_arch" variable. Other platform
+        # set it correctly.
+        ['OS == "ios" or (target_arch == "arm" and arm_version >= 7 and (arm_neon == 1 or arm_neon_optional == 1)) or (target_arch == "arm64")', {
           'type': 'static_library',
           'include_dirs': ['.'],
           'sources': [
-            '<@(neon_sources)'
+            'dsp/dec_neon.c',
+            'dsp/enc_neon.c',
+            'dsp/lossless_neon.c',
+            'dsp/upsampling_neon.c',
           ],
-          # behavior similar to *.c.neon in an Android.mk
-          'cflags!': [ '-mfpu=vfpv3-d16' ],
-          'cflags': [ '-mfpu=neon' ],
-        },{
           'conditions': [
+            ['target_arch == "arm" and arm_version >= 7 and (arm_neon == 1 or arm_neon_optional == 1)', {
+              # behavior similar to *.c.neon in an Android.mk
+              'cflags!': [ '-mfpu=vfpv3-d16' ],
+              'cflags': [ '-mfpu=neon' ],
+            }],
             ['target_arch == "arm64"', {
-              'type': 'static_library',
-              'include_dirs': ['.'],
-              'sources': [
-                '<@(neon_sources)'
-              ],
               # avoid an ICE with gcc-4.9: b/15574841
               'cflags': [ '-frename-registers' ],
-            },{  # "target_arch != "arm|arm64" or arm_version < 7"
-              'type': 'none',
             }],
-          ],
+          ]
+        }, {
+          'type': 'none',
         }],
         ['order_profiling != 0', {
           'target_conditions' : [
