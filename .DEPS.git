@@ -7,7 +7,7 @@ use_relative_paths = True
 vars = {
   "git_url": "https://chromium.googlesource.com",
 
-  "clang_format_rev": "385fc3379dc95b67d601b4384b16b1ec0bf12361",
+  "clang_format_rev": "81edd558fea5dd7855d67a1dc61db34ae8c1fd63", # r223685
 }
 
 deps = {
