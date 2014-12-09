@@ -534,7 +534,7 @@ THROTTLED_CQ_READY_QUERY = (
 # the Trybot-Ready flag has been set.
 PRECQ_READY_QUERY = (
     '%(open)s AND (%(approved)s AND label:Commit-Queue>=1 OR '
-    'label:Code-Review=+2 AND -age:1day OR label:Trybot-Ready=+1)' % _QUERIES,
+    'label:Code-Review=+2 AND -age:2h OR label:Trybot-Ready=+1)' % _QUERIES,
     lambda change: (change.HasApproval('CRVW', '2') or
                     change.HasApproval('TRY', '1')))
 
