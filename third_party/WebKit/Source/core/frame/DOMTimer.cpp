@@ -95,7 +95,8 @@ DOMTimer::DOMTimer(ExecutionContext* context, PassOwnPtr<ScheduledAction> action
     if (shouldForwardUserGesture(interval, m_nestingLevel))
         m_userGestureToken = UserGestureIndicator::currentToken();
 
-    double intervalMilliseconds = std::max(oneMillisecond, interval * oneMillisecond);
+    // TimerBase treats an interval of 0 as non-repeating so we still need to clamp repeating timers.
+    double intervalMilliseconds = std::max(singleShot ? 0.0 : oneMillisecond, interval * oneMillisecond);
     if (intervalMilliseconds < minimumInterval && m_nestingLevel >= maxTimerNestingLevel)
         intervalMilliseconds = minimumInterval;
     if (singleShot)

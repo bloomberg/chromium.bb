@@ -429,10 +429,10 @@ function testSVGInObjectWithPlaceholderHeightAttr(placeholderHeightAttr) {
 
                 t.step(function() {
                     placeholder.addEventListener('load', function() {
-                        // setTimeout is a work-around to let engines
+                        // RAF is a work-around to let engines
                         // finish layout of child browsing contexts even
                         // after the load event
-                        setTimeout(t.step_func(checkSize), 0);
+                        requestAnimationFrame(t.step_func(checkSize));
                     });
                     testContainer.appendChild(container);
                 });
