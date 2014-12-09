@@ -118,8 +118,8 @@ class GLHelperHolder
   GLHelperHolder();
   static scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext3D();
 
-  scoped_ptr<GLHelper> gl_helper_;
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context_;
+  scoped_ptr<GLHelper> gl_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(GLHelperHolder);
 };
