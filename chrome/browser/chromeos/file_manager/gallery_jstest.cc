@@ -4,19 +4,25 @@
 
 #include <vector>
 
+#include "base/path_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/filename_util.h"
 
 class GalleryJsTest : public InProcessBrowserTest {
  public:
   // Runs all test functions in |file|, waiting for them to complete.
   void RunTest(const base::FilePath& file) {
-    const GURL url = ui_test_utils::GetTestUrl(
-        base::FilePath(FILE_PATH_LITERAL("gallery/unit_tests")), file);
+    base::FilePath root_path;
+    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
+
+    const GURL url = net::FilePathToFileURL(
+        root_path.Append(FILE_PATH_LITERAL("ui/file_manager/gallery"))
+            .Append(file));
     ui_test_utils::NavigateToURL(browser(), url);
 
     content::WebContents* const web_contents =
@@ -30,5 +36,5 @@ class GalleryJsTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(GalleryJsTest, ExifEncoderTest) {
   RunTest(base::FilePath(
-      FILE_PATH_LITERAL("exif_encoder_unittest.html")));
+      FILE_PATH_LITERAL("js/image_editor/exif_encoder_unittest.html")));
 }
