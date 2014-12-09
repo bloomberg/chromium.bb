@@ -170,7 +170,8 @@ TouchDispositionGestureFilter::OnGesturePacket(
   return SUCCESS;
 }
 
-void TouchDispositionGestureFilter::OnTouchEventAck(bool event_consumed) {
+void TouchDispositionGestureFilter::OnTouchEventAckForQueueFront(
+    bool event_consumed) {
   // Spurious touch acks from the renderer should not trigger a crash.
   if (IsEmpty() || (Head().empty() && sequences_.size() == 1))
     return;
@@ -178,12 +179,34 @@ void TouchDispositionGestureFilter::OnTouchEventAck(bool event_consumed) {
   if (Head().empty())
     PopGestureSequence();
 
-  GestureSequence& sequence = Head();
+  Head().front().Ack(event_consumed);
+  SendAckedEvents();
+}
 
-  // Dispatch the packet corresponding to the ack'ed touch, as well as any
-  // additional timeout-based packets queued before the ack was received.
+void TouchDispositionGestureFilter::OnTouchEventAckForQueueBack(
+    bool event_consumed) {
+  // Make sure there is an event to ack.
+  CHECK(!IsEmpty());
+  CHECK(!Tail().empty());
+
+  Tail().back().Ack(event_consumed);
+
+  if (Head().empty())
+    PopGestureSequence();
+
+  if (sequences_.size() == 1 && Tail().size() == 1)
+    SendAckedEvents();
+}
+
+void TouchDispositionGestureFilter::SendAckedEvents() {
+  // Dispatch all packets corresponding to ack'ed touches, as well as
+  // any pending timeout-based packets.
   bool touch_packet_for_current_ack_handled = false;
-  while (!sequence.empty()) {
+  while (!IsEmpty() && (!Head().empty() || sequences_.size() != 1)) {
+    if (Head().empty())
+      PopGestureSequence();
+    GestureSequence& sequence = Head();
+
     DCHECK_NE(sequence.front().gesture_source(),
               GestureEventDataPacket::UNDEFINED);
     DCHECK_NE(sequence.front().gesture_source(),
@@ -191,17 +214,21 @@ void TouchDispositionGestureFilter::OnTouchEventAck(bool event_consumed) {
 
     GestureEventDataPacket::GestureSource source =
         sequence.front().gesture_source();
+    GestureEventDataPacket::AckState ack_state = sequence.front().ack_state();
+
     if (source != GestureEventDataPacket::TOUCH_TIMEOUT) {
-      // We should handle at most one non-timeout based packet.
-      if (touch_packet_for_current_ack_handled)
+      // We've sent all packets which aren't pending their ack.
+      if (ack_state == GestureEventDataPacket::AckState::PENDING)
         break;
-      state_.OnTouchEventAck(event_consumed, IsTouchStartEvent(source));
-      touch_packet_for_current_ack_handled = true;
+      state_.OnTouchEventAck(
+          ack_state == GestureEventDataPacket::AckState::CONSUMED,
+          IsTouchStartEvent(source));
     }
     // We need to pop the current sequence before sending the packet, because
     // sending the packet could result in this method being re-entered (e.g. on
     // Aura, we could trigger a touch-cancel). As popping the sequence destroys
     // the packet, we copy the packet before popping it.
+    touch_packet_for_current_ack_handled = true;
     const GestureEventDataPacket packet = sequence.front();
     sequence.pop();
     FilterAndSendPacket(packet);

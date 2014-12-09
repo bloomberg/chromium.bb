@@ -42,8 +42,10 @@ class GESTURE_DETECTION_EXPORT TouchDispositionGestureFilter {
   };
   PacketResult OnGesturePacket(const GestureEventDataPacket& packet);
 
-  // To be called upon receipt of *all* touch event acks.
-  void OnTouchEventAck(bool event_consumed);
+  // One of |OnTouchEventAckForQueue*| must be called upon receipt of
+  // every touch event ack.
+  void OnTouchEventAckForQueueFront(bool event_consumed);
+  void OnTouchEventAckForQueueBack(bool event_consumed);
 
   // Whether there are any active gesture sequences still queued in the filter.
   bool IsEmpty() const;
@@ -87,6 +89,7 @@ class GESTURE_DETECTION_EXPORT TouchDispositionGestureFilter {
   void CancelFlingIfNecessary(const GestureEventDataPacket& packet);
   void EndScrollIfNecessary(const GestureEventDataPacket& packet);
   void PopGestureSequence();
+  void SendAckedEvents();
   GestureSequence& Head();
   GestureSequence& Tail();
 

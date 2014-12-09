@@ -2333,6 +2333,7 @@ class AsyncWindowDelegate : public test::TestWindowDelegate {
   void OnTouchEvent(ui::TouchEvent* event) override {
     // Convert touch event back to root window coordinates.
     event->ConvertLocationToTarget(window_, window_->GetRootWindow());
+    event->DisableSynchronousHandling();
     dispatcher_->ProcessedTouchEvent(event, window_, ui::ER_UNHANDLED);
     event->StopPropagation();
   }

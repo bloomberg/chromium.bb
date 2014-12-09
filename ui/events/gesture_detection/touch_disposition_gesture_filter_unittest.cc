@@ -128,12 +128,32 @@ class TouchDispositionGestureFilterTest
   }
 
   void SendTouchEventAck(bool event_consumed) {
-    queue_->OnTouchEventAck(event_consumed);
+    queue_->OnTouchEventAckForQueueFront(event_consumed);
   }
 
   void SendTouchConsumedAck() { SendTouchEventAck(true); }
 
   void SendTouchNotConsumedAck() { SendTouchEventAck(false); }
+
+  void SendTouchEventAckForQueueBack(bool event_consumed) {
+    queue_->OnTouchEventAckForQueueBack(event_consumed);
+  }
+
+  void SendTouchConsumedAckForQueueBack() {
+    SendTouchEventAckForQueueBack(true);
+  }
+
+  void SendTouchNotConsumedAckForQueueBack() {
+    SendTouchEventAckForQueueBack(false);
+  }
+
+  void PushGesture(EventType type) {
+    pending_gesture_packet_.Push(CreateGesture(type));
+  }
+
+  void PushGesture(EventType type, float x, float y, float diameter) {
+    pending_gesture_packet_.Push(CreateGesture(type, x, y, diameter));
+  }
 
   const MockMotionEvent& PressTouchPoint(float x, float y) {
     touch_event_.PressPoint(x, y);
@@ -1097,6 +1117,119 @@ TEST_F(TouchDispositionGestureFilterTest, PreviousScrollPrevented) {
   ASSERT_TRUE(GesturesSent());
   EXPECT_TRUE(last_sent_gesture()
                   .details.previous_scroll_update_in_sequence_prevented());
+}
+
+TEST_F(TouchDispositionGestureFilterTest, AckQueueBack) {
+  SendPacket(PressTouchPoint(1, 1), Gestures(ET_GESTURE_BEGIN));
+  SendTouchNotConsumedAck();
+
+  SendPacket(MoveTouchPoint(), Gestures(ET_GESTURE_SCROLL_BEGIN));
+  SendTouchNotConsumedAck();
+  GetAndResetSentGestures();
+
+  // Pending touch move.
+  GestureEventDataPacket packet1;
+  packet1.Push(CreateGesture(ET_GESTURE_SCROLL_UPDATE, 2, 3, 0));
+  SendTouchGestures(MoveTouchPoint(), packet1);
+  EXPECT_FALSE(GesturesSent());
+
+  // Additional pending touch move.
+  SendPacket(MoveTouchPoint(), Gestures(ET_GESTURE_SCROLL_UPDATE));
+
+  // Ack back of the queue consumed.
+  SendTouchConsumedAckForQueueBack();
+
+  // Ack the pending touch.
+  GetAndResetSentGestures();
+  SendTouchNotConsumedAck();
+
+  // The consumed touch doesn't produce a gesture.
+  EXPECT_TRUE(GesturesMatch(
+      Gestures(ET_GESTURE_SCROLL_UPDATE),
+      GetAndResetSentGestures()));
+  EXPECT_EQ(gfx::PointF(2, 3), LastSentGestureLocation());
+
+  // Pending touch move.
+  SendPacket(MoveTouchPoint(), Gestures(ET_GESTURE_SCROLL_UPDATE));
+  EXPECT_FALSE(GesturesSent());
+
+  // Ack back of the queue unconsumed (twice).
+  SendPacket(MoveTouchPoint(), Gestures(ET_GESTURE_SCROLL_UPDATE));
+  SendTouchNotConsumedAckForQueueBack();
+
+  GestureEventDataPacket packet2;
+  packet2.Push(CreateGesture(ET_GESTURE_SCROLL_UPDATE, 7, 8, 0));
+  SendTouchGestures(MoveTouchPoint(), packet2);
+  EXPECT_FALSE(GesturesSent());
+
+  SendTouchNotConsumedAckForQueueBack();
+
+  // Ack the pending touch.
+  GetAndResetSentGestures();
+  SendTouchNotConsumedAck();
+
+  // Both touches have now been acked.
+  EXPECT_TRUE(
+      GesturesMatch(Gestures(ET_GESTURE_SCROLL_UPDATE, ET_GESTURE_SCROLL_UPDATE,
+                             ET_GESTURE_SCROLL_UPDATE),
+                    GetAndResetSentGestures()));
+  EXPECT_EQ(gfx::PointF(7, 8), LastSentGestureLocation());
+}
+
+TEST_F(TouchDispositionGestureFilterTest, AckQueueGestureAtBack) {
+  // Send gesture sequence
+  SendPacket(PressTouchPoint(), Gestures(ET_GESTURE_BEGIN));
+  SendPacket(ReleaseTouchPoint(), Gestures(ET_GESTURE_END));
+
+  // Send second gesture sequence, and synchronously ack it.
+  SendPacket(PressTouchPoint(), Gestures(ET_GESTURE_BEGIN));
+  SendTouchNotConsumedAckForQueueBack();
+
+  GestureEventDataPacket packet;
+  packet.Push(CreateGesture(ET_GESTURE_END, 2, 3, 0));
+  SendTouchGestures(ReleaseTouchPoint(), packet);
+  SendTouchNotConsumedAckForQueueBack();
+
+  // The second gesture sequence is blocked on the first.
+  EXPECT_FALSE(GesturesSent());
+
+  SendTouchNotConsumedAck();
+  SendTouchNotConsumedAck();
+
+  // Both gestures have now been acked.
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_BEGIN, ET_GESTURE_END,
+                                     ET_GESTURE_BEGIN, ET_GESTURE_END),
+                            GetAndResetSentGestures()));
+  EXPECT_EQ(gfx::PointF(2, 3), LastSentGestureLocation());
+}
+
+TEST_F(TouchDispositionGestureFilterTest,
+       SyncAcksOnlyTriggerAppropriateGestures) {
+  // Queue a touch press.
+  SendPacket(PressTouchPoint(), Gestures(ET_GESTURE_BEGIN));
+
+  // Send and synchronously ack two touch moves.
+  SendPacket(MoveTouchPoint(), Gestures(ET_GESTURE_SCROLL_UPDATE));
+  SendTouchNotConsumedAckForQueueBack();
+
+  SendPacket(MoveTouchPoint(), Gestures(ET_GESTURE_SCROLL_UPDATE));
+  SendTouchNotConsumedAckForQueueBack();
+
+  // Queue a touch release.
+  SendPacket(ReleaseTouchPoint(), Gestures(ET_GESTURE_END));
+
+  EXPECT_FALSE(GesturesSent());
+
+  // Ack the touch press. All events but the release should be acked.
+  SendTouchNotConsumedAck();
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_BEGIN, ET_GESTURE_SCROLL_UPDATE,
+                                     ET_GESTURE_SCROLL_UPDATE),
+                            GetAndResetSentGestures()));
+
+  // The touch release still requires an ack.
+  SendTouchNotConsumedAck();
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_END),
+                            GetAndResetSentGestures()));
 }
 
 }  // namespace ui

@@ -489,11 +489,11 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   TouchEvent(const TouchEvent& model, T* source, T* target)
       : LocatedEvent(model, source, target),
         touch_id_(model.touch_id_),
+        unique_event_id_(model.unique_event_id_),
         radius_x_(model.radius_x_),
         radius_y_(model.radius_y_),
         rotation_angle_(model.rotation_angle_),
-        force_(model.force_) {
-  }
+        force_(model.force_) {}
 
   TouchEvent(EventType type,
              const gfx::PointF& location,
@@ -512,7 +512,10 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
 
   ~TouchEvent() override;
 
+  // The id of the pointer this event modifies.
   int touch_id() const { return touch_id_; }
+  // A unique identifier for this event.
+  uint64 unique_event_id() const { return unique_event_id_; }
   float radius_x() const { return radius_x_; }
   float radius_y() const { return radius_y_; }
   float rotation_angle() const { return rotation_angle_; }
@@ -525,6 +528,12 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   // Overridden from LocatedEvent.
   void UpdateForRootTransform(
       const gfx::Transform& inverted_root_transform) override;
+
+  // Marks the event as not participating in synchronous gesture recognition.
+  void DisableSynchronousHandling();
+  bool synchronous_handling_disabled() const {
+    return !!(result() & ER_DISABLE_SYNC_HANDLING);
+  }
 
  protected:
   void set_radius(float radius_x, float radius_y) {
@@ -542,6 +551,9 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   // The identity (typically finger) of the touch starting at 0 and incrementing
   // for each separable additional touch that the hardware can detect.
   const int touch_id_;
+
+  // A unique identifier for the touch event.
+  const uint64 unique_event_id_;
 
   // Radius of the X (major) axis of the touch ellipse. 0.0 if unknown.
   float radius_x_;

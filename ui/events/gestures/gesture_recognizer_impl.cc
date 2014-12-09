@@ -249,25 +249,24 @@ bool GestureRecognizerImpl::ProcessTouchEventPreDispatch(
 }
 
 GestureRecognizer::Gestures*
-GestureRecognizerImpl::ProcessTouchEventPostDispatch(
+GestureRecognizerImpl::AckAsyncTouchEvent(
     const TouchEvent& event,
     ui::EventResult result,
     GestureConsumer* consumer) {
   GestureProviderAura* gesture_provider =
       GetGestureProviderForConsumer(consumer);
-  gesture_provider->OnTouchEventAck(result != ER_UNHANDLED);
+  gesture_provider->OnAsyncTouchEventAck(result != ER_UNHANDLED);
   return gesture_provider->GetAndResetPendingGestures();
 }
 
-GestureRecognizer::Gestures* GestureRecognizerImpl::ProcessTouchEventOnAsyncAck(
-    const TouchEvent& event,
+GestureRecognizer::Gestures* GestureRecognizerImpl::AckSyncTouchEvent(
+    const uint64 unique_event_id,
     ui::EventResult result,
     GestureConsumer* consumer) {
-  if (result & ui::ER_CONSUMED)
-    return NULL;
   GestureProviderAura* gesture_provider =
       GetGestureProviderForConsumer(consumer);
-  gesture_provider->OnTouchEventAck(result != ER_UNHANDLED);
+  gesture_provider->OnSyncTouchEventAck(unique_event_id,
+                                        result != ER_UNHANDLED);
   return gesture_provider->GetAndResetPendingGestures();
 }
 

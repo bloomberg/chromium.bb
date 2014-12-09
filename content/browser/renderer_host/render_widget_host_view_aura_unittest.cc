@@ -991,7 +991,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   EXPECT_TRUE(widget_host_->ShouldForwardTouchEvent());
 
   view_->OnTouchEvent(&press);
-  EXPECT_TRUE(press.stopped_propagation());
+  EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_.type);
   EXPECT_TRUE(view_->touch_event_.cancelable);
   EXPECT_EQ(1U, view_->touch_event_.touchesLength);
@@ -999,7 +999,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
             view_->touch_event_.touches[0].state);
 
   view_->OnTouchEvent(&move);
-  EXPECT_TRUE(move.stopped_propagation());
+  EXPECT_TRUE(move.synchronous_handling_disabled());
   EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_.type);
   EXPECT_TRUE(view_->touch_event_.cancelable);
   EXPECT_EQ(1U, view_->touch_event_.touchesLength);
@@ -1007,14 +1007,14 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
             view_->touch_event_.touches[0].state);
 
   view_->OnTouchEvent(&release);
-  EXPECT_TRUE(release.stopped_propagation());
+  EXPECT_TRUE(release.synchronous_handling_disabled());
   EXPECT_EQ(blink::WebInputEvent::TouchEnd, view_->touch_event_.type);
   EXPECT_TRUE(view_->touch_event_.cancelable);
   EXPECT_EQ(0U, view_->touch_event_.touchesLength);
 
   // Now start a touch event, and remove the event-handlers before the release.
   view_->OnTouchEvent(&press);
-  EXPECT_TRUE(press.stopped_propagation());
+  EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_.type);
   EXPECT_EQ(1U, view_->touch_event_.touchesLength);
   EXPECT_EQ(blink::WebTouchPoint::StatePressed,
@@ -1070,14 +1070,14 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventSyncAsync) {
                          ui::EventTimeForNow());
 
   view_->OnTouchEvent(&press);
-  EXPECT_TRUE(press.stopped_propagation());
+  EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(blink::WebInputEvent::TouchStart, view_->touch_event_.type);
   EXPECT_EQ(1U, view_->touch_event_.touchesLength);
   EXPECT_EQ(blink::WebTouchPoint::StatePressed,
             view_->touch_event_.touches[0].state);
 
   view_->OnTouchEvent(&move);
-  EXPECT_TRUE(move.stopped_propagation());
+  EXPECT_TRUE(move.synchronous_handling_disabled());
   EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_.type);
   EXPECT_EQ(1U, view_->touch_event_.touchesLength);
   EXPECT_EQ(blink::WebTouchPoint::StateMoved,
@@ -1086,14 +1086,14 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventSyncAsync) {
   // Send the same move event. Since the point hasn't moved, it won't affect the
   // queue. However, the view should consume the event.
   view_->OnTouchEvent(&move);
-  EXPECT_TRUE(move.stopped_propagation());
+  EXPECT_TRUE(move.synchronous_handling_disabled());
   EXPECT_EQ(blink::WebInputEvent::TouchMove, view_->touch_event_.type);
   EXPECT_EQ(1U, view_->touch_event_.touchesLength);
   EXPECT_EQ(blink::WebTouchPoint::StateMoved,
             view_->touch_event_.touches[0].state);
 
   view_->OnTouchEvent(&release);
-  EXPECT_TRUE(release.stopped_propagation());
+  EXPECT_TRUE(release.synchronous_handling_disabled());
   EXPECT_EQ(blink::WebInputEvent::TouchEnd, view_->touch_event_.type);
   EXPECT_EQ(0U, view_->touch_event_.touchesLength);
 }
@@ -2941,6 +2941,32 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollResetsOnBlur) {
 TEST_F(RenderWidgetHostViewGuestAuraTest, GuestViewDoesNotLeak) {
   TearDownEnvironment();
   ASSERT_FALSE(guest_view_weak_.get());
+}
+
+// Tests that invalid touch events are consumed and handled
+// synchronously.
+TEST_F(RenderWidgetHostViewAuraTest,
+       InvalidEventsHaveSyncHandlingDisabled) {
+  view_->InitAsChild(NULL);
+  view_->Show();
+
+  widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  EXPECT_TRUE(widget_host_->ShouldForwardTouchEvent());
+
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), 0,
+                       ui::EventTimeForNow());
+
+  // Construct a move with a touch id which doesn't exist.
+  ui::TouchEvent invalid_move(ui::ET_TOUCH_MOVED, gfx::Point(30, 30), 1,
+                              ui::EventTimeForNow());
+
+  view_->OnTouchEvent(&press);
+  view_->OnTouchEvent(&invalid_move);
+  // Valid press is handled asynchronously.
+  EXPECT_TRUE(press.synchronous_handling_disabled());
+  // Invalid move is handled synchronously, but is consumed.
+  EXPECT_FALSE(invalid_move.synchronous_handling_disabled());
+  EXPECT_TRUE(invalid_move.stopped_propagation());
 }
 
 }  // namespace content

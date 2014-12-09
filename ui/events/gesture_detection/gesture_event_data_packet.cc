@@ -33,7 +33,7 @@ GestureEventDataPacket::GestureSource ToGestureSource(
 }  // namespace
 
 GestureEventDataPacket::GestureEventDataPacket()
-    : gesture_source_(UNDEFINED) {
+    : gesture_source_(UNDEFINED), ack_state_(AckState::PENDING) {
 }
 
 GestureEventDataPacket::GestureEventDataPacket(
@@ -44,7 +44,8 @@ GestureEventDataPacket::GestureEventDataPacket(
     : timestamp_(timestamp),
       touch_location_(touch_location),
       raw_touch_location_(raw_touch_location),
-      gesture_source_(source) {
+      gesture_source_(source),
+      ack_state_(AckState::PENDING) {
   DCHECK_NE(gesture_source_, UNDEFINED);
 }
 
@@ -54,7 +55,8 @@ GestureEventDataPacket::GestureEventDataPacket(
       gestures_(other.gestures_),
       touch_location_(other.touch_location_),
       raw_touch_location_(other.raw_touch_location_),
-      gesture_source_(other.gesture_source_) {
+      gesture_source_(other.gesture_source_),
+      ack_state_(AckState::PENDING) {
 }
 
 GestureEventDataPacket::~GestureEventDataPacket() {
@@ -67,6 +69,7 @@ GestureEventDataPacket& GestureEventDataPacket::operator=(
   touch_location_ = other.touch_location_;
   raw_touch_location_ = other.raw_touch_location_;
   gestures_ = other.gestures_;
+  ack_state_ = other.ack_state_;
   return *this;
 }
 
@@ -91,6 +94,11 @@ GestureEventDataPacket GestureEventDataPacket::FromTouchTimeout(
                                 gfx::PointF(gesture.raw_x, gesture.raw_y));
   packet.Push(gesture);
   return packet;
+}
+
+void GestureEventDataPacket::Ack(bool event_consumed) {
+  DCHECK_EQ(static_cast<int>(ack_state_), static_cast<int>(AckState::PENDING));
+  ack_state_ = event_consumed ? AckState::CONSUMED : AckState::UNCONSUMED;
 }
 
 }  // namespace ui

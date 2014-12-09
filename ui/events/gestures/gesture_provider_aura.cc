@@ -16,13 +16,16 @@ namespace ui {
 GestureProviderAura::GestureProviderAura(GestureProviderAuraClient* client)
     : client_(client),
       filtered_gesture_provider_(DefaultGestureProviderConfig(), this),
-      handling_event_(false) {
+      handling_event_(false),
+      last_unique_touch_event_id_(
+          std::numeric_limits<unsigned long long>::max()) {
   filtered_gesture_provider_.SetDoubleTapSupportForPlatformEnabled(false);
 }
 
 GestureProviderAura::~GestureProviderAura() {}
 
 bool GestureProviderAura::OnTouchEvent(const TouchEvent& event) {
+  last_unique_touch_event_id_ = event.unique_event_id();
   int index = pointer_state_.FindPointerIndexOfId(event.touch_id());
   bool pointer_id_is_active = index != -1;
 
@@ -52,11 +55,21 @@ bool GestureProviderAura::OnTouchEvent(const TouchEvent& event) {
   return result;
 }
 
-void GestureProviderAura::OnTouchEventAck(bool event_consumed) {
+void GestureProviderAura::OnAsyncTouchEventAck(bool event_consumed) {
   DCHECK(pending_gestures_.empty());
   DCHECK(!handling_event_);
   base::AutoReset<bool> handling_event(&handling_event_, true);
-  filtered_gesture_provider_.OnTouchEventAck(event_consumed);
+  filtered_gesture_provider_.OnAsyncTouchEventAck(event_consumed);
+  last_touch_event_latency_info_.Clear();
+}
+
+void GestureProviderAura::OnSyncTouchEventAck(const uint64 unique_event_id,
+                                              bool event_consumed) {
+  DCHECK_EQ(last_unique_touch_event_id_, unique_event_id);
+  DCHECK(pending_gestures_.empty());
+  DCHECK(!handling_event_);
+  base::AutoReset<bool> handling_event(&handling_event_, true);
+  filtered_gesture_provider_.OnSyncTouchEventAck(event_consumed);
   last_touch_event_latency_info_.Clear();
 }
 

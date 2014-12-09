@@ -108,6 +108,11 @@ bool X11EventHasNonStandardState(const base::NativeEvent& event) {
 #endif
 }
 
+unsigned long long get_next_touch_event_id() {
+  static unsigned long long id = 0;
+  return id++;
+}
+
 }  // namespace
 
 namespace ui {
@@ -514,6 +519,7 @@ void MouseWheelEvent::UpdateForRootTransform(
 TouchEvent::TouchEvent(const base::NativeEvent& native_event)
     : LocatedEvent(native_event),
       touch_id_(GetTouchId(native_event)),
+      unique_event_id_(get_next_touch_event_id()),
       radius_x_(GetTouchRadiusX(native_event)),
       radius_y_(GetTouchRadiusY(native_event)),
       rotation_angle_(GetTouchAngle(native_event)),
@@ -537,6 +543,7 @@ TouchEvent::TouchEvent(EventType type,
                        base::TimeDelta time_stamp)
     : LocatedEvent(type, location, location, time_stamp, 0),
       touch_id_(touch_id),
+      unique_event_id_(get_next_touch_event_id()),
       radius_x_(0.0f),
       radius_y_(0.0f),
       rotation_angle_(0.0f),
@@ -555,6 +562,7 @@ TouchEvent::TouchEvent(EventType type,
                        float force)
     : LocatedEvent(type, location, location, time_stamp, flags),
       touch_id_(touch_id),
+      unique_event_id_(get_next_touch_event_id()),
       radius_x_(radius_x),
       radius_y_(radius_y),
       rotation_angle_(angle),
@@ -580,6 +588,12 @@ void TouchEvent::UpdateForRootTransform(
     radius_x_ *= decomp.scale[0];
   if (decomp.scale[1])
     radius_y_ *= decomp.scale[1];
+}
+
+void TouchEvent::DisableSynchronousHandling() {
+  DispatcherApi dispatcher_api(this);
+  dispatcher_api.set_result(
+      static_cast<EventResult>(result() | ER_DISABLE_SYNC_HANDLING));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

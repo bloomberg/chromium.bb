@@ -28,21 +28,22 @@ class EVENTS_EXPORT GestureRecognizer {
   virtual ~GestureRecognizer() {}
 
   // Invoked before event dispatch. If the event is invalid given the current
-  // touch sequence, marks it as handled.
+  // touch sequence, returns false.
   virtual bool ProcessTouchEventPreDispatch(const TouchEvent& event,
                                             GestureConsumer* consumer) = 0;
+
   // Returns a list of zero or more GestureEvents. The caller is responsible for
-  // freeing the returned events. Called synchronously after event dispatch.
-  virtual Gestures* ProcessTouchEventPostDispatch(
+  // freeing the returned events. Acks the first gesture packet in the queue.
+  virtual Gestures* AckAsyncTouchEvent(
       const TouchEvent& event,
       ui::EventResult result,
       GestureConsumer* consumer) = 0;
+
   // Returns a list of zero or more GestureEvents. The caller is responsible for
-  // freeing the returned events. Called when a touch event receives an
-  // asynchronous ack.
-  virtual Gestures* ProcessTouchEventOnAsyncAck(const TouchEvent& event,
-                                                ui::EventResult result,
-                                                GestureConsumer* consumer) = 0;
+  // freeing the returned events. Acks the last gesture packet in the queue.
+  virtual Gestures* AckSyncTouchEvent(const uint64 unique_event_id,
+                                      ui::EventResult result,
+                                      GestureConsumer* consumer) = 0;
 
   // This is called when the consumer is destroyed. So this should cleanup any
   // internal state maintained for |consumer|. Returns true iff there was

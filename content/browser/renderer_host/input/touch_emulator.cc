@@ -216,7 +216,7 @@ void TouchEmulator::ForwardTouchEventToClient() {
   const bool event_consumed = true;
   // Block emulated event when emulated native stream is active.
   if (native_stream_active_sequence_count_) {
-    gesture_provider_.OnTouchEventAck(event_consumed);
+    gesture_provider_.OnSyncTouchEventAck(event_consumed);
     return;
   }
 
@@ -224,7 +224,7 @@ void TouchEmulator::ForwardTouchEventToClient() {
       WebTouchEventTraits::IsTouchSequenceStart(touch_event_);
   // Do not allow middle-sequence event to pass through, if start was blocked.
   if (!emulated_stream_active_sequence_count_ && !is_sequence_start) {
-    gesture_provider_.OnTouchEventAck(event_consumed);
+    gesture_provider_.OnSyncTouchEventAck(event_consumed);
     return;
   }
 
@@ -241,7 +241,7 @@ bool TouchEmulator::HandleTouchEventAck(
       emulated_stream_active_sequence_count_--;
 
     const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
-    gesture_provider_.OnTouchEventAck(event_consumed);
+    gesture_provider_.OnAsyncTouchEventAck(event_consumed);
     return true;
   }
 

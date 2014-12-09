@@ -119,12 +119,17 @@ enum MouseEventFlags {
 
 // Result of dispatching an event.
 enum EventResult {
-  ER_UNHANDLED = 0,       // The event hasn't been handled. The event can be
-                          // propagated to other handlers.
-  ER_HANDLED   = 1 << 0,  // The event has already been handled, but it can
-                          // still be propagated to other handlers.
-  ER_CONSUMED  = 1 << 1,  // The event has been handled, and it should not be
-                          // propagated to other handlers.
+  ER_UNHANDLED = 0,      // The event hasn't been handled. The event can be
+                         // propagated to other handlers.
+  ER_HANDLED = 1 << 0,   // The event has already been handled, but it can
+                         // still be propagated to other handlers.
+  ER_CONSUMED = 1 << 1,  // The event has been handled, and it should not be
+                         // propagated to other handlers.
+  ER_DISABLE_SYNC_HANDLING =
+      1 << 2,  // The event shouldn't be handled synchronously. This
+               // happens if the event is being handled
+               // asynchronously, or if the event is invalid and
+               // shouldn't be handled at all.
 };
 
 // Phase of the event dispatch.

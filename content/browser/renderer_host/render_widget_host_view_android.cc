@@ -793,7 +793,7 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
                                             CreateLatencyInfo(web_event));
   } else {
     const bool event_consumed = false;
-    gesture_provider_.OnTouchEventAck(event_consumed);
+    gesture_provider_.OnAsyncTouchEventAck(event_consumed);
   }
 
   // Send a proactive BeginFrame on the next vsync to reduce latency.
@@ -1479,7 +1479,7 @@ gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
 void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
   const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
-  gesture_provider_.OnTouchEventAck(event_consumed);
+  gesture_provider_.OnAsyncTouchEventAck(event_consumed);
 }
 
 void RenderWidgetHostViewAndroid::GestureEventAck(

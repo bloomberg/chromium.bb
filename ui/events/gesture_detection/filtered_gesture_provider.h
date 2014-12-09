@@ -28,9 +28,13 @@ class GESTURE_DETECTION_EXPORT FilteredGestureProvider
   // should drop |event|, not forwarding it to the renderer.
   bool OnTouchEvent(const MotionEvent& event);
 
-  // To be called upon ack of an event that was forwarded after a successful
-  // call to |OnTouchEvent()|.
-  void OnTouchEventAck(bool event_consumed);
+  // To be called upon asynchronous ack of an event that was forwarded
+  // after a successful call to |OnTouchEvent()|.
+  void OnAsyncTouchEventAck(bool event_consumed);
+
+  // To be called upon synchronous ack of an event that was forwarded
+  // after a successful call to |OnTouchEvent()|.
+  void OnSyncTouchEventAck(bool event_consumed);
 
   // Methods delegated to |gesture_provider_|.
   void ResetDetection();
