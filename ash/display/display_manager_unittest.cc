@@ -403,6 +403,27 @@ TEST_F(DisplayManagerTest, OverscanInsetsTest) {
             bounds_in_native().ToString());
   EXPECT_EQ("0,0 188x190",
             Shell::GetScreen()->GetPrimaryDisplay().bounds().ToString());
+
+  // Make sure just moving the overscan area should property notify observers.
+  UpdateDisplay("0+0-500x500");
+  int64 primary_id = Shell::GetScreen()->GetPrimaryDisplay().id();
+  display_manager()->SetOverscanInsets(primary_id, gfx::Insets(0, 0, 20, 20));
+  EXPECT_EQ("0,0 480x480",
+            Shell::GetScreen()->GetPrimaryDisplay().bounds().ToString());
+  reset();
+  display_manager()->SetOverscanInsets(primary_id, gfx::Insets(10, 10, 10, 10));
+  EXPECT_TRUE(changed_metrics() & gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS);
+  EXPECT_TRUE(
+      changed_metrics() & gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
+  EXPECT_EQ("0,0 480x480",
+            Shell::GetScreen()->GetPrimaryDisplay().bounds().ToString());
+  reset();
+  display_manager()->SetOverscanInsets(primary_id, gfx::Insets(0, 0, 0, 0));
+  EXPECT_TRUE(changed_metrics() & gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS);
+  EXPECT_TRUE(
+      changed_metrics() & gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA);
+  EXPECT_EQ("0,0 500x500",
+            Shell::GetScreen()->GetPrimaryDisplay().bounds().ToString());
 }
 
 TEST_F(DisplayManagerTest, ZeroOverscanInsets) {

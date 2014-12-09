@@ -168,6 +168,10 @@ class ASH_EXPORT DisplayInfo {
   void SetOverscanInsets(const gfx::Insets& insets_in_dip);
   gfx::Insets GetOverscanInsetsInPixel() const;
 
+  // Sets/Gets the flag to clear overscan insets.
+  bool clear_overscan_insets() const { return clear_overscan_insets_; }
+  void set_clear_overscan_insets(bool clear) { clear_overscan_insets_ = clear; }
+
   void set_native(bool native) { native_ = native; }
   bool native() const { return native_; }
 
@@ -262,6 +266,10 @@ class ASH_EXPORT DisplayInfo {
   // display is configured in a non-native mode, only parts of the display will
   // be used such that the aspect ratio is preserved.
   bool is_aspect_preserving_scaling_;
+
+  // True if the displays' overscan inset should be cleared. This is
+  // to distinguish the empty overscan insets from native display info.
+  bool clear_overscan_insets_;
 
   // The list of modes supported by this display.
   std::vector<DisplayMode> display_modes_;

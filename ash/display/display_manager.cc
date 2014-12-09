@@ -382,14 +382,28 @@ bool DisplayManager::UpdateWorkAreaOfDisplay(int64 display_id,
 
 void DisplayManager::SetOverscanInsets(int64 display_id,
                                        const gfx::Insets& insets_in_dip) {
-  display_info_[display_id].SetOverscanInsets(insets_in_dip);
+  bool update = false;
   DisplayInfoList display_info_list;
   for (DisplayList::const_iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
-    display_info_list.push_back(GetDisplayInfo(iter->id()));
+    DisplayInfo info = GetDisplayInfo(iter->id());
+    if (info.id() == display_id) {
+      if (insets_in_dip.empty()) {
+        info.set_clear_overscan_insets(true);
+      } else {
+        info.set_clear_overscan_insets(false);
+        info.SetOverscanInsets(insets_in_dip);
+      }
+      update = true;
+    }
+    display_info_list.push_back(info);
   }
-  AddMirrorDisplayInfoIfAny(&display_info_list);
-  UpdateDisplays(display_info_list);
+  if (update) {
+    AddMirrorDisplayInfoIfAny(&display_info_list);
+    UpdateDisplays(display_info_list);
+  } else {
+    display_info_[display_id].SetOverscanInsets(insets_in_dip);
+  }
 }
 
 void DisplayManager::SetDisplayRotation(int64 display_id,
@@ -804,8 +818,8 @@ void DisplayManager::UpdateDisplays(
       if (force_bounds_changed_ ||
           (current_display_info.bounds_in_native() !=
            new_display_info.bounds_in_native()) ||
-          (current_display_info.size_in_pixel() !=
-           new_display.GetSizeInPixel()) ||
+          (current_display_info.GetOverscanInsetsInPixel() !=
+           new_display_info.GetOverscanInsetsInPixel()) ||
           current_display.size() != new_display.size()) {
         metrics |= gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS |
             gfx::DisplayObserver::DISPLAY_METRIC_WORK_AREA;
@@ -1156,7 +1170,6 @@ void DisplayManager::InsertAndUpdateDisplayInfo(const DisplayInfo& new_info) {
     display_info_[new_info.id()].set_native(false);
   }
   display_info_[new_info.id()].UpdateDisplaySize();
-
   OnDisplayInfoUpdated(display_info_[new_info.id()]);
 }
 

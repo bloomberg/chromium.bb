@@ -219,6 +219,7 @@ DisplayInfo::DisplayInfo()
       configured_ui_scale_(1.0f),
       native_(false),
       is_aspect_preserving_scaling_(false),
+      clear_overscan_insets_(false),
       color_profile_(ui::COLOR_PROFILE_STANDARD) {
 }
 
@@ -236,6 +237,7 @@ DisplayInfo::DisplayInfo(int64 id,
       configured_ui_scale_(1.0f),
       native_(false),
       is_aspect_preserving_scaling_(false),
+      clear_overscan_insets_(false),
       color_profile_(ui::COLOR_PROFILE_STANDARD) {
 }
 
@@ -255,17 +257,17 @@ void DisplayInfo::Copy(const DisplayInfo& native_info) {
   touch_support_ = native_info.touch_support_;
   touch_device_id_ = native_info.touch_device_id_;
 
-  // Copy overscan_insets_in_dip_ if it's not empty. This is for test
-  // cases which use "/o" annotation which sets the overscan inset
-  // to native, and that overscan has to be propagated. This does not
-  // happen on the real environment.
-  if (!native_info.overscan_insets_in_dip_.empty())
-    overscan_insets_in_dip_ = native_info.overscan_insets_in_dip_;
-
-  // Rotation_ and ui_scale_ color_profile_ are given by preference,
+  // Rotation, ui_scale, color_profile and overscan are given by preference,
   // or unit tests. Don't copy if this native_info came from
   // DisplayChangeObserver.
   if (!native_info.native()) {
+    // Update the overscan_insets_in_dip_ either if the inset should be
+    // cleared, or has non empty insts.
+    if (native_info.clear_overscan_insets())
+      overscan_insets_in_dip_.Set(0, 0, 0, 0);
+    else if (!native_info.overscan_insets_in_dip_.empty())
+      overscan_insets_in_dip_ = native_info.overscan_insets_in_dip_;
+
     rotation_ = native_info.rotation_;
     configured_ui_scale_ = native_info.configured_ui_scale_;
     color_profile_ = native_info.color_profile();
