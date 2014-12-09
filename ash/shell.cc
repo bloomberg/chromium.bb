@@ -651,9 +651,7 @@ Shell::Shell(ShellDelegate* delegate)
   gpu_support_.reset(delegate_->CreateGPUSupport());
   display_manager_.reset(new DisplayManager);
   display_controller_.reset(new DisplayController);
-#if defined(OS_CHROMEOS) && defined(USE_X11)
   user_metrics_recorder_.reset(new UserMetricsRecorder);
-#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
   PowerStatus::Initialize();
