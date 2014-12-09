@@ -5,7 +5,7 @@
 #ifndef CHROMECAST_BROWSER_CAST_NETWORK_DELEGATE_H_
 #define CHROMECAST_BROWSER_CAST_NETWORK_DELEGATE_H_
 
-#include "net/base/network_delegate.h"
+#include "net/base/network_delegate_impl.h"
 
 namespace net {
 class X509Certificate;
@@ -14,7 +14,7 @@ class X509Certificate;
 namespace chromecast {
 namespace shell {
 
-class CastNetworkDelegate : public net::NetworkDelegate {
+class CastNetworkDelegate : public net::NetworkDelegateImpl {
  public:
   static CastNetworkDelegate* Create();
   static net::X509Certificate* DeviceCert();

@@ -6,13 +6,13 @@
 #define EXTENSIONS_SHELL_BROWSER_SHELL_NETNETWORK_DELEGATE_H_
 
 #include "extensions/browser/info_map.h"
-#include "net/base/network_delegate.h"
+#include "net/base/network_delegate_impl.h"
 
 namespace extensions {
 
 class InfoMap;
 
-class ShellNetworkDelegate : public net::NetworkDelegate {
+class ShellNetworkDelegate : public net::NetworkDelegateImpl {
  public:
   ShellNetworkDelegate(void* browser_context, InfoMap* extension_info_map);
   ~ShellNetworkDelegate() override;

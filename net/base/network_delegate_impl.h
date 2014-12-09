@@ -1,17 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_NETWORK_DELEGATE_H_
-#define NET_BASE_NETWORK_DELEGATE_H_
+#ifndef NET_BASE_NETWORK_DELEGATE_IMPL_H_
+#define NET_BASE_NETWORK_DELEGATE_IMPL_H_
 
-#include <string>
-
-#include "base/callback.h"
 #include "base/strings/string16.h"
-#include "base/threading/non_thread_safe.h"
-#include "net/base/auth.h"
 #include "net/base/completion_callback.h"
+#include "net/base/network_delegate.h"
 #include "net/cookies/canonical_cookie.h"
 
 class GURL;
@@ -22,16 +18,6 @@ class FilePath;
 
 namespace net {
 
-// NOTE: Layering violations!
-// We decided to accept these violations (depending
-// on other net/ submodules from net/base/), because otherwise NetworkDelegate
-// would have to be broken up into too many smaller interfaces targeted to each
-// submodule. Also, since the lower levels in net/ may callback into higher
-// levels, we may encounter dangerous casting issues.
-//
-// NOTE: It is not okay to add any compile-time dependencies on symbols outside
-// of net/base here, because we have a net_base library. Forward declarations
-// are ok.
 class CookieOptions;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
@@ -40,74 +26,9 @@ class ProxyServer;
 class ProxyService;
 class URLRequest;
 
-class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
+class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
  public:
-  // AuthRequiredResponse indicates how a NetworkDelegate handles an
-  // OnAuthRequired call. It's placed in this file to prevent url_request.h
-  // from having to include network_delegate.h.
-  enum AuthRequiredResponse {
-    AUTH_REQUIRED_RESPONSE_NO_ACTION,
-    AUTH_REQUIRED_RESPONSE_SET_AUTH,
-    AUTH_REQUIRED_RESPONSE_CANCEL_AUTH,
-    AUTH_REQUIRED_RESPONSE_IO_PENDING,
-  };
-  typedef base::Callback<void(AuthRequiredResponse)> AuthCallback;
-
-  virtual ~NetworkDelegate() {}
-
-  // Notification interface called by the network stack. Note that these
-  // functions mostly forward to the private virtuals. They also add some sanity
-  // checking on parameters. See the corresponding virtuals for explanations of
-  // the methods and their arguments.
-  int NotifyBeforeURLRequest(URLRequest* request,
-                             const CompletionCallback& callback,
-                             GURL* new_url);
-  void NotifyResolveProxy(const GURL& url,
-                          int load_flags,
-                          const ProxyService& proxy_service,
-                          ProxyInfo* result);
-  void NotifyProxyFallback(const ProxyServer& bad_proxy,
-                           int net_error);
-  int NotifyBeforeSendHeaders(URLRequest* request,
-                              const CompletionCallback& callback,
-                              HttpRequestHeaders* headers);
-  void NotifyBeforeSendProxyHeaders(URLRequest* request,
-                                    const ProxyInfo& proxy_info,
-                                    HttpRequestHeaders* headers);
-  void NotifySendHeaders(URLRequest* request,
-                         const HttpRequestHeaders& headers);
-  int NotifyHeadersReceived(
-      URLRequest* request,
-      const CompletionCallback& callback,
-      const HttpResponseHeaders* original_response_headers,
-      scoped_refptr<HttpResponseHeaders>* override_response_headers,
-      GURL* allowed_unsafe_redirect_url);
-  void NotifyBeforeRedirect(URLRequest* request,
-                            const GURL& new_location);
-  void NotifyResponseStarted(URLRequest* request);
-  void NotifyRawBytesRead(const URLRequest& request, int bytes_read);
-  void NotifyCompleted(URLRequest* request, bool started);
-  void NotifyURLRequestDestroyed(URLRequest* request);
-  void NotifyPACScriptError(int line_number, const base::string16& error);
-  AuthRequiredResponse NotifyAuthRequired(URLRequest* request,
-                                          const AuthChallengeInfo& auth_info,
-                                          const AuthCallback& callback,
-                                          AuthCredentials* credentials);
-  bool CanGetCookies(const URLRequest& request,
-                     const CookieList& cookie_list);
-  bool CanSetCookie(const URLRequest& request,
-                    const std::string& cookie_line,
-                    CookieOptions* options);
-  bool CanAccessFile(const URLRequest& request,
-                     const base::FilePath& path) const;
-  bool CanThrottleRequest(const URLRequest& request) const;
-  bool CanEnablePrivacyMode(const GURL& url,
-                            const GURL& first_party_for_cookies) const;
-
-  bool CancelURLRequestWithPolicyViolatingReferrerHeader(
-      const URLRequest& request,
-      const GURL& target_url,
-      const GURL& referrer_url) const;
+  virtual ~NetworkDelegateImpl() {}
 
  private:
   // This is the interface for subclasses of NetworkDelegate to implement. These
@@ -126,45 +47,45 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   // report the status code as the reason.
   //
   // The default implementation returns OK (continue with request).
-  virtual int OnBeforeURLRequest(URLRequest* request,
-                                 const CompletionCallback& callback,
-                                 GURL* new_url) = 0;
+  int OnBeforeURLRequest(URLRequest* request,
+                         const CompletionCallback& callback,
+                         GURL* new_url) override;
 
   // Called as the proxy is being resolved for |url|. Allows the delegate to
   // override the proxy resolution decision made by ProxyService. The delegate
   // may override the decision by modifying the ProxyInfo |result|.
-  virtual void OnResolveProxy(const GURL& url,
-                              int load_flags,
-                              const ProxyService& proxy_service,
-                              ProxyInfo* result) = 0;
+  void OnResolveProxy(const GURL& url,
+                      int load_flags,
+                      const ProxyService& proxy_service,
+                      ProxyInfo* result) override;
 
   // Called when use of |bad_proxy| fails due to |net_error|. |net_error| is
   // the network error encountered, if any, and OK if the fallback was
   // for a reason other than a network error (e.g. the proxy service was
   // explicitly directed to skip a proxy).
-  virtual void OnProxyFallback(const ProxyServer& bad_proxy, int net_error) = 0;
+  void OnProxyFallback(const ProxyServer& bad_proxy, int net_error) override;
 
   // Called right before the HTTP headers are sent. Allows the delegate to
   // read/write |headers| before they get sent out. |callback| and |headers| are
   // valid only until OnCompleted or OnURLRequestDestroyed is called for this
   // request.
   // See OnBeforeURLRequest for return value description. Returns OK by default.
-  virtual int OnBeforeSendHeaders(URLRequest* request,
-                                  const CompletionCallback& callback,
-                                  HttpRequestHeaders* headers) = 0;
+  int OnBeforeSendHeaders(URLRequest* request,
+                          const CompletionCallback& callback,
+                          HttpRequestHeaders* headers) override;
 
   // Called after a proxy connection. Allows the delegate to read/write
   // |headers| before they get sent out. |headers| is valid only until
   // OnCompleted or OnURLRequestDestroyed is called for this request.
-  virtual void OnBeforeSendProxyHeaders(URLRequest* request,
-                                        const ProxyInfo& proxy_info,
-                                        HttpRequestHeaders* headers) = 0;
+  void OnBeforeSendProxyHeaders(URLRequest* request,
+                                const ProxyInfo& proxy_info,
+                                HttpRequestHeaders* headers) override;
 
   // Called right before the HTTP request(s) are being sent to the network.
   // |headers| is only valid until OnCompleted or OnURLRequestDestroyed is
   // called for this request.
-  virtual void OnSendHeaders(URLRequest* request,
-                             const HttpRequestHeaders& headers) = 0;
+  void OnSendHeaders(URLRequest* request,
+                     const HttpRequestHeaders& headers) override;
 
   // Called for HTTP requests when the headers have been received.
   // |original_response_headers| contains the headers as received over the
@@ -179,38 +100,36 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   // |callback|, |original_response_headers|, and |override_response_headers|
   // are only valid until OnURLRequestDestroyed is called for this request.
   // See OnBeforeURLRequest for return value description. Returns OK by default.
-  virtual int OnHeadersReceived(
+  int OnHeadersReceived(
       URLRequest* request,
       const CompletionCallback& callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
-      GURL* allowed_unsafe_redirect_url) = 0;
+      GURL* allowed_unsafe_redirect_url) override;
 
   // Called right after a redirect response code was received.
   // |new_location| is only valid until OnURLRequestDestroyed is called for this
   // request.
-  virtual void OnBeforeRedirect(URLRequest* request,
-                                const GURL& new_location) = 0;
+  void OnBeforeRedirect(URLRequest* request, const GURL& new_location) override;
 
   // This corresponds to URLRequestDelegate::OnResponseStarted.
-  virtual void OnResponseStarted(URLRequest* request) = 0;
+  void OnResponseStarted(URLRequest* request) override;
 
   // Called every time we read raw bytes.
-  virtual void OnRawBytesRead(const URLRequest& request, int bytes_read) = 0;
+  void OnRawBytesRead(const URLRequest& request, int bytes_read) override;
 
   // Indicates that the URL request has been completed or failed.
   // |started| indicates whether the request has been started. If false,
   // some information like the socket address is not available.
-  virtual void OnCompleted(URLRequest* request, bool started) = 0;
+  void OnCompleted(URLRequest* request, bool started) override;
 
   // Called when an URLRequest is being destroyed. Note that the request is
   // being deleted, so it's not safe to call any methods that may result in
   // a virtual method call.
-  virtual void OnURLRequestDestroyed(URLRequest* request) = 0;
+  void OnURLRequestDestroyed(URLRequest* request) override;
 
   // Corresponds to ProxyResolverJSBindings::OnError.
-  virtual void OnPACScriptError(int line_number,
-                                const base::string16& error) = 0;
+  void OnPACScriptError(int line_number, const base::string16& error) override;
 
   // Called when a request receives an authentication challenge
   // specified by |auth_info|, and is unable to respond using cached
@@ -229,54 +148,53 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   //    asynchronously. |callback| will be invoked when the decision is made,
   //    and one of the other AuthRequiredResponse values will be passed in with
   //    the same semantics as described above.
-  virtual AuthRequiredResponse OnAuthRequired(
-      URLRequest* request,
-      const AuthChallengeInfo& auth_info,
-      const AuthCallback& callback,
-      AuthCredentials* credentials) = 0;
+  AuthRequiredResponse OnAuthRequired(URLRequest* request,
+                                      const AuthChallengeInfo& auth_info,
+                                      const AuthCallback& callback,
+                                      AuthCredentials* credentials) override;
 
   // Called when reading cookies to allow the network delegate to block access
   // to the cookie. This method will never be invoked when
   // LOAD_DO_NOT_SEND_COOKIES is specified.
-  virtual bool OnCanGetCookies(const URLRequest& request,
-                               const CookieList& cookie_list) = 0;
+  bool OnCanGetCookies(const URLRequest& request,
+                       const CookieList& cookie_list) override;
 
   // Called when a cookie is set to allow the network delegate to block access
   // to the cookie. This method will never be invoked when
   // LOAD_DO_NOT_SAVE_COOKIES is specified.
-  virtual bool OnCanSetCookie(const URLRequest& request,
-                              const std::string& cookie_line,
-                              CookieOptions* options) = 0;
+  bool OnCanSetCookie(const URLRequest& request,
+                      const std::string& cookie_line,
+                      CookieOptions* options) override;
 
   // Called when a file access is attempted to allow the network delegate to
   // allow or block access to the given file path.  Returns true if access is
   // allowed.
-  virtual bool OnCanAccessFile(const URLRequest& request,
-                               const base::FilePath& path) const = 0;
+  bool OnCanAccessFile(const URLRequest& request,
+                       const base::FilePath& path) const override;
 
   // Returns true if the given request may be rejected when the
   // URLRequestThrottlerManager believes the server servicing the
   // request is overloaded or down.
-  virtual bool OnCanThrottleRequest(const URLRequest& request) const = 0;
+  bool OnCanThrottleRequest(const URLRequest& request) const override;
 
   // Returns true if the given |url| has to be requested over connection that
   // is not tracked by the server. Usually is false, unless user privacy
   // settings block cookies from being get or set.
-  virtual bool OnCanEnablePrivacyMode(
+  bool OnCanEnablePrivacyMode(
       const GURL& url,
-      const GURL& first_party_for_cookies) const = 0;
+      const GURL& first_party_for_cookies) const override;
 
   // Called when the |referrer_url| for requesting |target_url| during handling
   // of the |request| is does not comply with the referrer policy (e.g. a
   // secure referrer for an insecure initial target).
   // Returns true if the request should be cancelled. Otherwise, the referrer
   // header is stripped from the request.
-  virtual bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
+  bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const URLRequest& request,
       const GURL& target_url,
-      const GURL& referrer_url) const = 0;
+      const GURL& referrer_url) const override;
 };
 
 }  // namespace net
 
-#endif  // NET_BASE_NETWORK_DELEGATE_H_
+#endif  // NET_BASE_NETWORK_DELEGATE_IMPL_H_

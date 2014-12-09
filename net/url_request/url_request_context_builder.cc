@@ -14,7 +14,7 @@
 #include "base/threading/thread.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
-#include "net/base/network_delegate.h"
+#include "net/base/network_delegate_impl.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
@@ -48,7 +48,7 @@ namespace net {
 
 namespace {
 
-class BasicNetworkDelegate : public NetworkDelegate {
+class BasicNetworkDelegate : public NetworkDelegateImpl {
  public:
   BasicNetworkDelegate() {}
   ~BasicNetworkDelegate() override {}

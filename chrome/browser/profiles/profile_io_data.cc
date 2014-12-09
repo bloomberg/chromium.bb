@@ -57,6 +57,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
@@ -1026,14 +1027,14 @@ void ProfileIOData::Init(
   main_request_context_.reset(new net::URLRequestContext());
   extensions_request_context_.reset(new net::URLRequestContext());
 
-  ChromeNetworkDelegate* network_delegate =
+  scoped_ptr<ChromeNetworkDelegate> network_delegate(
       new ChromeNetworkDelegate(
 #if defined(ENABLE_EXTENSIONS)
           io_thread_globals->extension_event_router_forwarder.get(),
 #else
           NULL,
 #endif
-          &enable_referrers_);
+          &enable_referrers_));
   if (command_line.HasSwitch(switches::kEnableClientHints))
     network_delegate->SetEnableClientHints();
 #if defined(ENABLE_EXTENSIONS)
@@ -1051,8 +1052,6 @@ void ProfileIOData::Init(
   network_delegate->set_force_google_safe_search(&force_google_safesearch_);
   network_delegate->set_force_youtube_safety_mode(&force_youtube_safety_mode_);
   network_delegate->set_prerender_tracker(profile_params_->prerender_tracker);
-  network_delegate_.reset(network_delegate);
-
   fraudulent_certificate_reporter_.reset(
       new chrome_browser_net::ChromeFraudulentCertificateReporter(
           main_request_context_.get()));
@@ -1119,7 +1118,8 @@ void ProfileIOData::Init(
 #endif
 
   InitializeInternal(
-      profile_params_.get(), protocol_handlers, request_interceptors.Pass());
+      network_delegate.Pass(), profile_params_.get(),
+      protocol_handlers, request_interceptors.Pass());
 
   profile_params_.reset();
   initialized_ = true;
@@ -1296,7 +1296,7 @@ scoped_ptr<net::HttpCache> ProfileIOData::CreateMainHttpFactory(
   params.ssl_session_cache_shard = GetSSLSessionCacheShard();
   params.ssl_config_service = context->ssl_config_service();
   params.http_auth_handler_factory = context->http_auth_handler_factory();
-  params.network_delegate = network_delegate();
+  params.network_delegate = context->network_delegate();
   params.http_server_properties = context->http_server_properties();
   params.net_log = context->net_log();
 

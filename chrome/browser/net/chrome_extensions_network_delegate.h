@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/network_delegate.h"
+#include "net/base/network_delegate_impl.h"
 
 namespace extensions {
 class EventRouterForwarder;
@@ -17,7 +17,7 @@ class InfoMap;
 
 // ChromeExtensionsNetworkDelegate is the extensions-only portion of
 // ChromeNetworkDelegate. When extensions are disabled, do nothing.
-class ChromeExtensionsNetworkDelegate : public net::NetworkDelegate {
+class ChromeExtensionsNetworkDelegate : public net::NetworkDelegateImpl {
  public:
   static ChromeExtensionsNetworkDelegate* Create(
       extensions::EventRouterForwarder* event_router);

@@ -110,10 +110,12 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   explicit OffTheRecordProfileIOData(Profile::ProfileType profile_type);
   ~OffTheRecordProfileIOData() override;
 
-  void InitializeInternal(ProfileParams* profile_params,
-                          content::ProtocolHandlerMap* protocol_handlers,
-                          content::URLRequestInterceptorScopedVector
-                              request_interceptors) const override;
+  void InitializeInternal(
+      scoped_ptr<ChromeNetworkDelegate> chrome_network_delegate,
+      ProfileParams* profile_params,
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::URLRequestInterceptorScopedVector
+          request_interceptors) const override;
   void InitializeExtensionsRequestContext(
       ProfileParams* profile_params) const override;
   net::URLRequestContext* InitializeAppRequestContext(
@@ -139,6 +141,8 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   net::URLRequestContext* AcquireIsolatedMediaRequestContext(
       net::URLRequestContext* app_context,
       const StoragePartitionDescriptor& partition_descriptor) const override;
+
+  mutable scoped_ptr<ChromeNetworkDelegate> network_delegate_;
 
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   mutable scoped_ptr<net::FtpTransactionFactory> ftp_factory_;

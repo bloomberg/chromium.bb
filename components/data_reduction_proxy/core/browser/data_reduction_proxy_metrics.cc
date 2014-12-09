@@ -468,9 +468,10 @@ void UpdateContentLengthPrefsForDataReductionProxy(
 
 void UpdateContentLengthPrefs(int received_content_length,
                               int original_content_length,
-                              PrefService* profile_prefs,
+                              bool data_reduction_proxy_enabled,
                               DataReductionProxyRequestType request_type,
                               DataReductionProxyStatisticsPrefs* prefs) {
+  DCHECK(prefs);
   int64 total_received = prefs->GetInt64(
       data_reduction_proxy::prefs::kHttpReceivedContentLength);
   int64 total_original = prefs->GetInt64(
@@ -484,13 +485,10 @@ void UpdateContentLengthPrefs(int received_content_length,
       data_reduction_proxy::prefs::kHttpOriginalContentLength,
       total_original);
 
-  bool with_data_reduction_proxy_enabled =
-      profile_prefs->GetBoolean(
-          data_reduction_proxy::prefs::kDataReductionProxyEnabled);
   UpdateContentLengthPrefsForDataReductionProxy(
       received_content_length,
       original_content_length,
-      with_data_reduction_proxy_enabled,
+      data_reduction_proxy_enabled,
       request_type,
       base::Time::Now(),
       prefs);

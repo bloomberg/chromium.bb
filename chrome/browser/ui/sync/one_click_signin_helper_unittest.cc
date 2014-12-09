@@ -111,10 +111,12 @@ class TestProfileIOData : public ProfileIOData {
   }
 
   // ProfileIOData overrides:
-  void InitializeInternal(ProfileParams* profile_params,
-                          content::ProtocolHandlerMap* protocol_handlers,
-                          content::URLRequestInterceptorScopedVector
-                              request_interceptors) const override {
+  void InitializeInternal(
+      scoped_ptr<ChromeNetworkDelegate> chrome_network_delegate,
+      ProfileParams* profile_params,
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::URLRequestInterceptorScopedVector
+      request_interceptors) const override {
     NOTREACHED();
   }
   void InitializeExtensionsRequestContext(

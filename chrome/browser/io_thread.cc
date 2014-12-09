@@ -43,6 +43,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_protocol.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
@@ -584,17 +585,29 @@ void IOThread::InitAsync() {
       extension_event_router_forwarder_;
 #endif
 
-  ChromeNetworkDelegate* network_delegate =
+  scoped_ptr<ChromeNetworkDelegate> chrome_network_delegate(
       new ChromeNetworkDelegate(extension_event_router_forwarder(),
-                                &system_enable_referrers_);
+                                &system_enable_referrers_));
 
   if (command_line.HasSwitch(switches::kEnableClientHints))
-    network_delegate->SetEnableClientHints();
+    chrome_network_delegate->SetEnableClientHints();
 
 #if defined(ENABLE_EXTENSIONS)
   if (command_line.HasSwitch(switches::kDisableExtensionsHttpThrottling))
-    network_delegate->NeverThrottleRequests();
+    chrome_network_delegate->NeverThrottleRequests();
 #endif
+
+  SetupDataReductionProxy();
+
+  // This is the same as in ProfileImplIOData except that it does not collect
+  // usage stats.
+  data_reduction_proxy::DataReductionProxyNetworkDelegate* network_delegate =
+      new data_reduction_proxy::DataReductionProxyNetworkDelegate(
+          chrome_network_delegate.Pass(),
+          globals_->data_reduction_proxy_params.get(),
+          globals_->data_reduction_proxy_auth_request_handler.get(),
+          data_reduction_proxy::DataReductionProxyNetworkDelegate::
+              ProxyConfigGetter());
 
   globals_->system_network_delegate.reset(network_delegate);
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
@@ -652,8 +665,6 @@ void IOThread::InitAsync() {
   globals_->cert_policy_enforcer.reset(policy_enforcer);
 
   globals_->ssl_config_service = GetSSLConfigService();
-
-  SetupDataReductionProxy(network_delegate);
 
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));
@@ -1145,8 +1156,7 @@ void IOThread::ConfigureQuic(const CommandLine& command_line) {
   ConfigureQuicGlobals(command_line, group, params, globals_);
 }
 
-void IOThread::SetupDataReductionProxy(
-    ChromeNetworkDelegate* network_delegate) {
+void IOThread::SetupDataReductionProxy() {
   // TODO(kundaji): Move flags initialization to DataReductionProxyParams and
   // merge with flag initialization in
   // data_reduction_proxy_chrome_settings_factory.cc.
@@ -1172,14 +1182,6 @@ void IOThread::SetupDataReductionProxy(
       new data_reduction_proxy::DataReductionProxyDelegate(
           globals_->data_reduction_proxy_auth_request_handler.get(),
           globals_->data_reduction_proxy_params.get()));
-  // This is the same as in ProfileImplIOData except that we do not collect
-  // usage stats.
-  network_delegate->set_data_reduction_proxy_params(
-      globals_->data_reduction_proxy_params.get());
-  network_delegate->set_data_reduction_proxy_auth_request_handler(
-      globals_->data_reduction_proxy_auth_request_handler.get());
-  network_delegate->set_on_resolve_proxy_handler(
-      base::Bind(data_reduction_proxy::OnResolveProxyHandler));
 }
 
 // static

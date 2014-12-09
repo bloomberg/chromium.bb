@@ -23,7 +23,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
-#include "net/base/network_delegate.h"
+#include "net/base/network_delegate_impl.h"
 #include "net/base/request_priority.h"
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
@@ -220,7 +220,7 @@ class TestDelegate : public URLRequest::Delegate {
 
 //-----------------------------------------------------------------------------
 
-class TestNetworkDelegate : public NetworkDelegate {
+class TestNetworkDelegate : public NetworkDelegateImpl {
  public:
   enum Options {
     NO_GET_COOKIES = 1 << 0,

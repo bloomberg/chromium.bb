@@ -196,6 +196,7 @@ OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {
 }
 
 void OffTheRecordProfileIOData::InitializeInternal(
+    scoped_ptr<ChromeNetworkDelegate> chrome_network_delegate,
     ProfileParams* profile_params,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) const {
@@ -210,7 +211,9 @@ void OffTheRecordProfileIOData::InitializeInternal(
 
   main_context->set_net_log(io_thread->net_log());
 
-  main_context->set_network_delegate(network_delegate());
+  main_context->set_network_delegate(chrome_network_delegate.get());
+
+  network_delegate_ = chrome_network_delegate.Pass();
 
   main_context->set_host_resolver(
       io_thread_globals->host_resolver.get());
@@ -266,7 +269,7 @@ void OffTheRecordProfileIOData::InitializeInternal(
       main_job_factory.Pass(),
       request_interceptors.Pass(),
       profile_params->protocol_handler_interceptor.Pass(),
-      network_delegate(),
+      main_context->network_delegate(),
       ftp_factory_.get());
   main_context->set_job_factory(main_job_factory_.get());
 
@@ -364,7 +367,7 @@ net::URLRequestContext* OffTheRecordProfileIOData::InitializeAppRequestContext(
   top_job_factory = SetUpJobFactoryDefaults(job_factory.Pass(),
                                             request_interceptors.Pass(),
                                             protocol_handler_interceptor.Pass(),
-                                            network_delegate(),
+                                            main_context->network_delegate(),
                                             ftp_factory_.get());
   context->SetJobFactory(top_job_factory.Pass());
   return context;

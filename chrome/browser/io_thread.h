@@ -319,7 +319,7 @@ class IOThread : public content::BrowserThreadDelegate {
   void ConfigureQuic(const base::CommandLine& command_line);
 
   // Set up data reduction proxy related objects on IO thread globals.
-  void SetupDataReductionProxy(ChromeNetworkDelegate* network_delegate);
+  void SetupDataReductionProxy();
 
   extensions::EventRouterForwarder* extension_event_router_forwarder() {
 #if defined(ENABLE_EXTENSIONS)

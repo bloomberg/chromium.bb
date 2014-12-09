@@ -20,6 +20,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -195,8 +196,33 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
 
   net::URLRequestContextBuilder builder;
   builder.set_user_agent(GetUserAgent());
-  AwNetworkDelegate* aw_network_delegate = new AwNetworkDelegate();
-  builder.set_network_delegate(aw_network_delegate);
+  scoped_ptr<AwNetworkDelegate> aw_network_delegate(new AwNetworkDelegate());
+
+  AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
+  DCHECK(browser_context);
+
+  // Compression statistics are not gathered for WebView, so
+  // DataReductionProxyStatisticsPrefs is not instantiated and passed to the
+  // network delegate.
+  DataReductionProxySettings* data_reduction_proxy_settings =
+      browser_context->GetDataReductionProxySettings();
+  DCHECK(data_reduction_proxy_settings);
+  data_reduction_proxy_auth_request_handler_.reset(
+      new data_reduction_proxy::DataReductionProxyAuthRequestHandler(
+          data_reduction_proxy::Client::WEBVIEW_ANDROID,
+          data_reduction_proxy_settings->params(),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+
+  data_reduction_proxy::DataReductionProxyNetworkDelegate*
+      data_reduction_proxy_network_delegate =
+          new data_reduction_proxy::DataReductionProxyNetworkDelegate(
+              aw_network_delegate.Pass(),
+              data_reduction_proxy_settings->params(),
+              data_reduction_proxy_auth_request_handler_.get(),
+              data_reduction_proxy::DataReductionProxyNetworkDelegate::
+                  ProxyConfigGetter());
+
+  builder.set_network_delegate(data_reduction_proxy_network_delegate);
 #if !defined(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
 #endif
@@ -229,25 +255,6 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
           cache_path_,
           20 * 1024 * 1024,  // 20M
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
-
-  AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
-  DCHECK(browser_context);
-  DataReductionProxySettings* data_reduction_proxy_settings =
-      browser_context->GetDataReductionProxySettings();
-  DCHECK(data_reduction_proxy_settings);
-  data_reduction_proxy_auth_request_handler_.reset(
-      new data_reduction_proxy::DataReductionProxyAuthRequestHandler(
-          data_reduction_proxy::Client::WEBVIEW_ANDROID,
-          data_reduction_proxy_settings->params(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
-
-  // Compression statistics are not gathered for WebView, so
-  // DataReductionProxyStatisticsPrefs is not instantiated and passed to the
-  // network delegate.
-  aw_network_delegate->set_data_reduction_proxy_params(
-      data_reduction_proxy_settings->params());
-  aw_network_delegate->set_data_reduction_proxy_auth_request_handler(
-      data_reduction_proxy_auth_request_handler_.get());
 
   main_http_factory_.reset(main_cache);
   url_request_context_->set_http_transaction_factory(main_cache);

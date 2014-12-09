@@ -43,6 +43,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/onc/onc_constants.h"
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
@@ -652,8 +653,8 @@ void NetInternalsMessageHandler::OnGetHistoricNetworkStats(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Profile* profile = Profile::FromWebUI(web_ui());
   base::Value* historic_network_info =
-      ChromeNetworkDelegate::HistoricNetworkStatsInfoToValue(
-          profile->GetPrefs());
+      data_reduction_proxy::DataReductionProxyNetworkDelegate::
+          HistoricNetworkStatsInfoToValue(profile->GetPrefs());
   SendJavascriptCommand("receivedHistoricNetworkStats", historic_network_info);
 }
 
@@ -1065,8 +1066,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSessionNetworkStats(
 
   base::Value* network_info = NULL;
   if (http_network_session) {
-    ChromeNetworkDelegate* net_delegate =
-        static_cast<ChromeNetworkDelegate*>(
+    data_reduction_proxy::DataReductionProxyNetworkDelegate* net_delegate =
+        static_cast<data_reduction_proxy::DataReductionProxyNetworkDelegate*>(
             http_network_session->network_delegate());
     if (net_delegate) {
       network_info = net_delegate->SessionNetworkStatsInfoToValue();

@@ -7,11 +7,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "net/base/network_delegate.h"
+#include "net/base/network_delegate_impl.h"
 
 namespace content {
 
-class ShellNetworkDelegate : public net::NetworkDelegate {
+class ShellNetworkDelegate : public net::NetworkDelegateImpl {
  public:
   ShellNetworkDelegate();
   ~ShellNetworkDelegate() override;

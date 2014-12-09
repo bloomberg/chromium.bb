@@ -6,12 +6,7 @@
 #define ANDROID_WEBVIEW_BROWSER_NET_AW_NETWORK_DELEGATE_H_
 
 #include "base/basictypes.h"
-#include "net/base/network_delegate.h"
-
-namespace data_reduction_proxy {
-class DataReductionProxyAuthRequestHandler;
-class DataReductionProxyParams;
-}
+#include "net/base/network_delegate_impl.h"
 
 namespace net {
 class ProxyInfo;
@@ -21,23 +16,10 @@ class URLRequest;
 namespace android_webview {
 
 // WebView's implementation of the NetworkDelegate.
-class AwNetworkDelegate : public net::NetworkDelegate {
+class AwNetworkDelegate : public net::NetworkDelegateImpl {
  public:
   AwNetworkDelegate();
   virtual ~AwNetworkDelegate();
-
-  // Sets the |DataReductionProxySettings| object to use. If not set, the
-  // NetworkDelegate will not perform any operations related to the data
-  // reduction proxy.
-  void set_data_reduction_proxy_params(
-      data_reduction_proxy::DataReductionProxyParams* params) {
-    data_reduction_proxy_params_ = params;
-  }
-
-  void set_data_reduction_proxy_auth_request_handler(
-      data_reduction_proxy::DataReductionProxyAuthRequestHandler* handler) {
-    data_reduction_proxy_auth_request_handler_ = handler;
-  }
 
  private:
   // NetworkDelegate implementation.
@@ -47,10 +29,6 @@ class AwNetworkDelegate : public net::NetworkDelegate {
   virtual int OnBeforeSendHeaders(net::URLRequest* request,
                                   const net::CompletionCallback& callback,
                                   net::HttpRequestHeaders* headers) override;
-  virtual void OnBeforeSendProxyHeaders(
-      net::URLRequest* request,
-      const net::ProxyInfo& proxy_info,
-      net::HttpRequestHeaders* headers) override;
   virtual void OnSendHeaders(net::URLRequest* request,
                              const net::HttpRequestHeaders& headers) override;
   virtual int OnHeadersReceived(
@@ -82,11 +60,6 @@ class AwNetworkDelegate : public net::NetworkDelegate {
                                const base::FilePath& path) const override;
   virtual bool OnCanThrottleRequest(
       const net::URLRequest& request) const override;
-
-  // Data reduction proxy parameters object. Must outlive this.
-  data_reduction_proxy::DataReductionProxyParams* data_reduction_proxy_params_;
-  data_reduction_proxy::DataReductionProxyAuthRequestHandler*
-  data_reduction_proxy_auth_request_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AwNetworkDelegate);
 };

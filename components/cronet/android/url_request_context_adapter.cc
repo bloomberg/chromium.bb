@@ -16,6 +16,7 @@
 #include "net/base/net_log_logger.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/network_delegate_impl.h"
 #include "net/cert/cert_verifier.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
@@ -35,7 +36,7 @@ base::MessageLoop* g_main_message_loop = nullptr;
 
 net::NetworkChangeNotifier* g_network_change_notifier = nullptr;
 
-class BasicNetworkDelegate : public net::NetworkDelegate {
+class BasicNetworkDelegate : public net::NetworkDelegateImpl {
  public:
   BasicNetworkDelegate() {}
   virtual ~BasicNetworkDelegate() {}

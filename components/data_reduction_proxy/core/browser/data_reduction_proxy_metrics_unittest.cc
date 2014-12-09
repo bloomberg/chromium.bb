@@ -97,7 +97,9 @@ TEST_F(ChromeNetworkDataSavingMetricsTest, TotalLengths) {
 
   UpdateContentLengthPrefs(
       kReceivedLength, kOriginalLength,
-      &pref_service_, UNKNOWN_TYPE, statistics_prefs_.get());
+      pref_service_.GetBoolean(
+          data_reduction_proxy::prefs::kDataReductionProxyEnabled),
+      UNKNOWN_TYPE, statistics_prefs_.get());
 
   EXPECT_EQ(kReceivedLength,
             statistics_prefs_->GetInt64(
@@ -111,7 +113,9 @@ TEST_F(ChromeNetworkDataSavingMetricsTest, TotalLengths) {
   // Record the same numbers again, and total lengths should be doubled.
   UpdateContentLengthPrefs(
       kReceivedLength, kOriginalLength,
-      &pref_service_, UNKNOWN_TYPE, statistics_prefs_.get());
+      pref_service_.GetBoolean(
+          data_reduction_proxy::prefs::kDataReductionProxyEnabled),
+      UNKNOWN_TYPE, statistics_prefs_.get());
 
   EXPECT_EQ(kReceivedLength * 2,
             statistics_prefs_->GetInt64(

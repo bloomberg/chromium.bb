@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
+#include "net/base/network_delegate_impl.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/disk_cache/disk_cache.h"
@@ -107,7 +108,7 @@ GURL GetTestFileUrl(const std::string& relpath) {
 // without introducing layering violations.  Also causes a test failure if a
 // request is seen that doesn't set a load flag to bypass revocation checking.
 
-class BasicNetworkDelegate : public NetworkDelegate {
+class BasicNetworkDelegate : public NetworkDelegateImpl {
  public:
   BasicNetworkDelegate() {}
   ~BasicNetworkDelegate() override {}

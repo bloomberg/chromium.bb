@@ -55,7 +55,7 @@ void UpdateContentLengthPrefsForDataReductionProxy(
 void UpdateContentLengthPrefs(
     int received_content_length,
     int original_content_length,
-    PrefService* profile_prefs,
+    bool data_reduction_proxy_enabled,
     DataReductionProxyRequestType request_type,
     DataReductionProxyStatisticsPrefs* prefs);
 

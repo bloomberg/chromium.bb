@@ -24,6 +24,10 @@ namespace content {
 class CookieCryptoDelegate;
 }  // namespace content
 
+namespace data_reduction_proxy {
+class DataReductionProxyNetworkDelegate;
+}  // namespace data_reduction_proxy
+
 namespace domain_reliability {
 class DomainReliabilityMonitor;
 }  // namespace domain_reliability
@@ -155,10 +159,6 @@ class ProfileImplIOData : public ProfileIOData {
 
   bool IsDataReductionProxyEnabled() const override;
 
-  BooleanPrefMember* data_reduction_proxy_enabled() const {
-    return &data_reduction_proxy_enabled_;
-  }
-
  private:
   friend class base::RefCountedThreadSafe<ProfileImplIOData>;
 
@@ -182,10 +182,12 @@ class ProfileImplIOData : public ProfileIOData {
   ProfileImplIOData();
   ~ProfileImplIOData() override;
 
-  void InitializeInternal(ProfileParams* profile_params,
-                          content::ProtocolHandlerMap* protocol_handlers,
-                          content::URLRequestInterceptorScopedVector
-                              request_interceptors) const override;
+  void InitializeInternal(
+      scoped_ptr<ChromeNetworkDelegate> chrome_network_delegate,
+      ProfileParams* profile_params,
+      content::ProtocolHandlerMap* protocol_handlers,
+      content::URLRequestInterceptorScopedVector
+          request_interceptors) const override;
   void InitializeExtensionsRequestContext(
       ProfileParams* profile_params) const override;
   net::URLRequestContext* InitializeAppRequestContext(
@@ -218,6 +220,9 @@ class ProfileImplIOData : public ProfileIOData {
   // it will be posted on the UI thread once the removal process completes.
   void ClearNetworkingHistorySinceOnIOThread(base::Time time,
                                              const base::Closure& completion);
+
+  mutable scoped_ptr<data_reduction_proxy::DataReductionProxyNetworkDelegate>
+       network_delegate_;
 
   // Lazy initialization params.
   mutable scoped_ptr<LazyParams> lazy_params_;

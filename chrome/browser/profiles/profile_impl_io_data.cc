@@ -37,6 +37,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_protocol.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
@@ -117,7 +118,7 @@ ProfileImplIOData::Handle::~Handle() {
   if (io_data_->http_server_properties_manager_)
     io_data_->http_server_properties_manager_->ShutdownOnPrefThread();
 
-  io_data_->data_reduction_proxy_enabled()->Destroy();
+  io_data_->data_reduction_proxy_enabled_.Destroy();
   io_data_->ShutdownOnUIThread(GetAllContextGetters().Pass());
 }
 
@@ -365,9 +366,9 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
   io_data_->safe_browsing_enabled()->MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 #endif
-  io_data_->data_reduction_proxy_enabled()->Init(
+  io_data_->data_reduction_proxy_enabled_.Init(
       data_reduction_proxy::prefs::kDataReductionProxyEnabled, pref_service);
-  io_data_->data_reduction_proxy_enabled()->MoveToThread(
+  io_data_->data_reduction_proxy_enabled_.MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   io_data_->InitializeOnUIThread(profile_);
 }
@@ -414,9 +415,6 @@ ProfileImplIOData::ProfileImplIOData()
 }
 
 ProfileImplIOData::~ProfileImplIOData() {
-  if (initialized())
-    network_delegate()->set_domain_reliability_monitor(NULL);
-
   DestroyResourceContext();
 
   if (media_request_context_)
@@ -424,6 +422,7 @@ ProfileImplIOData::~ProfileImplIOData() {
 }
 
 void ProfileImplIOData::InitializeInternal(
+    scoped_ptr<ChromeNetworkDelegate> chrome_network_delegate,
     ProfileParams* profile_params,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) const {
@@ -431,6 +430,17 @@ void ProfileImplIOData::InitializeInternal(
 
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
+
+  chrome_network_delegate->set_predictor(predictor_.get());
+
+  if (domain_reliability_monitor_) {
+    domain_reliability::DomainReliabilityMonitor* monitor =
+        domain_reliability_monitor_.get();
+    monitor->InitURLRequestContext(main_context);
+    monitor->AddBakedInConfigs();
+    monitor->SetDiscardUploads(!GetMetricsEnabledStateOnIOThread());
+    chrome_network_delegate->set_domain_reliability_monitor(monitor);
+  }
 
   set_data_reduction_proxy_auth_request_handler(
       scoped_ptr<data_reduction_proxy::DataReductionProxyAuthRequestHandler>
@@ -447,23 +457,23 @@ void ProfileImplIOData::InitializeInternal(
   data_reduction_proxy_usage_stats()->set_unavailable_callback(
       data_reduction_proxy_unavailable_callback());
 
-  network_delegate()->set_data_reduction_proxy_enabled_pref(
-      &data_reduction_proxy_enabled_);
-  network_delegate()->set_data_reduction_proxy_params(
-      data_reduction_proxy_params());
-  network_delegate()->set_data_reduction_proxy_usage_stats(
-      data_reduction_proxy_usage_stats());
-  network_delegate()->set_data_reduction_proxy_auth_request_handler(
-      data_reduction_proxy_auth_request_handler());
-  network_delegate()->set_data_reduction_proxy_statistics_prefs(
-      data_reduction_proxy_statistics_prefs());
-  network_delegate()->set_on_resolve_proxy_handler(
+  scoped_ptr<data_reduction_proxy::DataReductionProxyNetworkDelegate>
+  data_reduction_proxy_network_delegate(
+      new data_reduction_proxy::DataReductionProxyNetworkDelegate(
+          chrome_network_delegate.Pass(),
+          data_reduction_proxy_params(),
+          data_reduction_proxy_auth_request_handler(),
+          base::Bind(
+              &DataReductionProxyChromeConfigurator::GetProxyConfigOnIOThread,
+              base::Unretained(data_reduction_proxy_chrome_configurator()))));
+  data_reduction_proxy_network_delegate->InitProxyConfigOverrider(
       base::Bind(data_reduction_proxy::OnResolveProxyHandler));
-  network_delegate()->set_proxy_config_getter(
-      base::Bind(
-          &DataReductionProxyChromeConfigurator::GetProxyConfigOnIOThread,
-          base::Unretained(data_reduction_proxy_chrome_configurator())));
-  network_delegate()->set_predictor(predictor_.get());
+  data_reduction_proxy_network_delegate->InitStatisticsPrefsAndUMA(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+      data_reduction_proxy_statistics_prefs(),
+      &data_reduction_proxy_enabled_,
+      data_reduction_proxy_usage_stats());
+  network_delegate_ = data_reduction_proxy_network_delegate.Pass();
 
   // Initialize context members.
 
@@ -476,7 +486,7 @@ void ProfileImplIOData::InitializeInternal(
 
   main_context->set_net_log(io_thread->net_log());
 
-  main_context->set_network_delegate(network_delegate());
+  main_context->set_network_delegate(network_delegate_.get());
 
   main_context->set_http_server_properties(http_server_properties());
 
@@ -586,7 +596,7 @@ void ProfileImplIOData::InitializeInternal(
       main_job_factory.Pass(),
       request_interceptors.Pass(),
       profile_params->protocol_handler_interceptor.Pass(),
-      network_delegate(),
+      main_context->network_delegate(),
       ftp_factory_.get());
   main_context->set_job_factory(main_job_factory_.get());
 
@@ -604,15 +614,6 @@ void ProfileImplIOData::InitializeInternal(
   StoragePartitionDescriptor details(profile_path_, false);
   media_request_context_.reset(InitializeMediaRequestContext(main_context,
                                                              details));
-
-  if (domain_reliability_monitor_) {
-    domain_reliability::DomainReliabilityMonitor* monitor =
-        domain_reliability_monitor_.get();
-    monitor->InitURLRequestContext(main_context);
-    monitor->AddBakedInConfigs();
-    monitor->SetDiscardUploads(!GetMetricsEnabledStateOnIOThread());
-    network_delegate()->set_domain_reliability_monitor(monitor);
-  }
 
   lazy_params_.reset();
 }
@@ -747,7 +748,7 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
       SetUpJobFactoryDefaults(job_factory.Pass(),
                               request_interceptors.Pass(),
                               protocol_handler_interceptor.Pass(),
-                              network_delegate(),
+                              main_context->network_delegate(),
                               ftp_factory_.get()));
   context->SetJobFactory(top_job_factory.Pass());
 

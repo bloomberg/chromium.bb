@@ -14,7 +14,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/base/net_log_unittest.h"
-#include "net/base/network_delegate.h"
+#include "net/base/network_delegate_impl.h"
 #include "net/base/test_completion_callback.h"
 #include "net/proxy/dhcp_proxy_script_fetcher.h"
 #include "net/proxy/mock_proxy_resolver.h"
@@ -158,7 +158,7 @@ class MockProxyConfigService: public ProxyConfigService {
 };
 
 // A test network delegate that exercises the OnResolveProxy callback.
-class TestResolveProxyNetworkDelegate : public NetworkDelegate {
+class TestResolveProxyNetworkDelegate : public NetworkDelegateImpl {
  public:
   TestResolveProxyNetworkDelegate()
       : on_resolve_proxy_called_(false),
@@ -205,7 +205,7 @@ class TestResolveProxyNetworkDelegate : public NetworkDelegate {
 };
 
 // A test network delegate that exercises the OnProxyFallback callback.
-class TestProxyFallbackNetworkDelegate : public NetworkDelegate {
+class TestProxyFallbackNetworkDelegate : public NetworkDelegateImpl {
  public:
   TestProxyFallbackNetworkDelegate()
       : on_proxy_fallback_called_(false),
@@ -507,7 +507,7 @@ TEST_F(ProxyServiceTest, PAC_FailoverWithoutDirect) {
   // Now, imagine that connecting to foopy:8080 fails: there is nothing
   // left to fallback to, since our proxy list was NOT terminated by
   // DIRECT.
-  NetworkDelegate network_delegate;
+  NetworkDelegateImpl network_delegate;
   TestCompletionCallback callback2;
   ProxyServer expected_proxy_server = info.proxy_server();
   rv = service.ReconsiderProxyAfterError(
@@ -618,7 +618,7 @@ TEST_F(ProxyServiceTest, PAC_FailoverAfterDirect) {
   EXPECT_EQ("foobar:10", info.proxy_server().ToURI());
 
   // Fallback 2.
-  NetworkDelegate network_delegate;
+  NetworkDelegateImpl network_delegate;
   ProxyServer expected_proxy_server3 = info.proxy_server();
   TestCompletionCallback callback3;
   rv = service.ReconsiderProxyAfterError(url, net::LOAD_NORMAL,
