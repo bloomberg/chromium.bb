@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "omnibox_prerender.h"
+#include "chrome/browser/android/omnibox/omnibox_prerender.h"
 
 #include "base/android/jni_string.h"
 #include "base/logging.h"

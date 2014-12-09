@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_SERVICE_PROCESS_UTIL_POSIX_H_
 #define CHROME_COMMON_SERVICE_PROCESS_UTIL_POSIX_H_
 
-#include "service_process_util.h"
+#include "chrome/common/service_process_util.h"
 
 #include <signal.h>
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "input_method_event_router.h"
+#include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 
 #include <algorithm>
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "document_scan_interface.h"
+#include "chrome/browser/extensions/api/document_scan/document_scan_interface.h"
 
 namespace extensions {
 

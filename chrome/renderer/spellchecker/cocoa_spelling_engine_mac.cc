@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cocoa_spelling_engine_mac.h"
+#include "chrome/renderer/spellchecker/cocoa_spelling_engine_mac.h"
 
 #include "chrome/common/spellcheck_messages.h"
 #include "content/public/renderer/render_thread.h"

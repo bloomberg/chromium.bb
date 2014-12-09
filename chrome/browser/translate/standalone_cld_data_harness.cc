@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "standalone_cld_data_harness.h"
+#include "chrome/browser/translate/standalone_cld_data_harness.h"
 
 #include "base/base_paths.h"
 #include "base/files/file_util.h"

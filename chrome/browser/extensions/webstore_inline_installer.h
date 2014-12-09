@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/extensions/webstore_standalone_installer.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "webstore_standalone_installer.h"
 
 namespace content {
 class WebContents;
@@ -25,9 +25,8 @@ namespace extensions {
 //
 // Clients will be notified of success or failure via the |callback| argument
 // passed into the constructor.
-class WebstoreInlineInstaller
-    : public WebstoreStandaloneInstaller,
-      public content::WebContentsObserver {
+class WebstoreInlineInstaller : public WebstoreStandaloneInstaller,
+                                public content::WebContentsObserver {
  public:
   typedef WebstoreStandaloneInstaller::Callback Callback;
 

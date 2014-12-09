@@ -4,7 +4,8 @@
 //
 // Test program to convert lists of integers into ranges, and vice versa.
 
-#include "chunk_range.h"
+#include "chrome/browser/safe_browsing/chunk_range.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Test various configurations of chunk numbers.

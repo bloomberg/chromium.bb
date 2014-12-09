@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "fake_certificate.h"
+#include "chrome/browser/chromeos/attestation/fake_certificate.h"
 
 #include "base/time/time.h"
 #include "crypto/rsa_private_key.h"
