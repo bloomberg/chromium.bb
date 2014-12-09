@@ -38,11 +38,23 @@
         '../ui/base/ui_base_tests.gyp:ui_base_unittests',
         '../url/url.gyp:url_unittests',
       ],
+      'variables': {
+        'filters': [
+          # Disable OutOfMemoryDeathTest.ViaSharedLibraries due to gTrusty eglibc incompatibility
+          # See: crbug/428211
+          'base_unittests --gtest_filter=-OutOfMemoryDeathTest.ViaSharedLibraries',
+        ],
+      },
       'conditions': [
         ['OS!="android"', {
           'dependencies': [
             'cast_shell_browser_test',
           ],
+          'variables': {
+            'filters': [
+              'cast_shell_browser_test --no-sandbox',
+            ],
+          },
         }],
       ],
       'includes': ['build/tests/test_list.gypi'],
