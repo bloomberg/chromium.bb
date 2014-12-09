@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/break_list.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
@@ -2380,24 +2381,24 @@ TEST_F(RenderTextTest, HarfBuzz_UniscribeFallback) {
 TEST_F(RenderTextTest, TextDoesntClip) {
   const wchar_t* kTestStrings[] = { L"Save", L"Remove", L"TEST", L"W", L"WWW" };
 
-  skia::RefPtr<SkCanvas> sk_canvas =
-      skia::AdoptRef(SkCanvas::NewRasterN32(300, 50));
+  skia::RefPtr<SkSurface> surface =
+      skia::AdoptRef(SkSurface::NewRasterPMColor(300, 50));
   scoped_ptr<Canvas> canvas(
-      Canvas::CreateCanvasWithoutScaling(sk_canvas.get(), 1.0f));
+      Canvas::CreateCanvasWithoutScaling(surface->getCanvas(), 1.0f));
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetDisplayRect(Rect(300, 50));
   render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   render_text->SetColor(SK_ColorBLACK);
 
   for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
-    sk_canvas->clear(SK_ColorWHITE);
+    surface->getCanvas()->clear(SK_ColorWHITE);
     render_text->SetText(WideToUTF16(kTestStrings[i]));
     render_text->SetStyle(BOLD, true);
     render_text->Draw(canvas.get());
     int width = render_text->GetStringSize().width();
     ASSERT_LT(width, 300);
     const uint32* buffer = static_cast<const uint32*>(
-        sk_canvas->peekPixels(NULL, NULL));
+        surface->peekPixels(NULL, NULL));
     ASSERT_NE(nullptr, buffer);
     for (int y = 0; y < 50; ++y) {
       EXPECT_EQ(SK_ColorWHITE, buffer[width + y * 300])
