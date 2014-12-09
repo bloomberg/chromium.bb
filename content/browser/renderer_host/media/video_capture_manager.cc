@@ -315,8 +315,7 @@ void VideoCaptureManager::StartCaptureForClient(
             session_id,
             entry,
             params,
-            base::Passed(
-                entry->video_capture_controller->CreateDeviceClient())));
+            base::Passed(entry->video_capture_controller->NewDeviceClient())));
   }
   // Run the callback first, as AddClient() may trigger OnFrameInfo().
   done_cb.Run(entry->video_capture_controller->GetWeakPtr());
@@ -432,7 +431,7 @@ void VideoCaptureManager::ResumeCaptureForClient(
           session_id,
           entry,
           params,
-          base::Passed(entry->video_capture_controller->CreateDeviceClient())));
+          base::Passed(entry->video_capture_controller->NewDeviceClient())));
 }
 
 bool VideoCaptureManager::GetDeviceSupportedFormats(

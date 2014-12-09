@@ -78,7 +78,7 @@ class CONTENT_EXPORT VideoCaptureController {
 
   // Return a new VideoCaptureDeviceClient to forward capture events to this
   // instance.
-  scoped_ptr<media::VideoCaptureDevice::Client> CreateDeviceClient();
+  scoped_ptr<media::VideoCaptureDevice::Client> NewDeviceClient();
 
   // Start video capturing and try to use the resolution specified in |params|.
   // Buffers will be shared to the client as necessary. The client will continue
@@ -89,7 +89,7 @@ class CONTENT_EXPORT VideoCaptureController {
                  media::VideoCaptureSessionId session_id,
                  const media::VideoCaptureParams& params);
 
-  // Stop video capture. This will take back all buffers held by
+  // Stop video capture. This will take back all buffers held by by
   // |event_handler|, and |event_handler| shouldn't use those buffers any more.
   // Returns the session_id of the stopped client, or
   // kInvalidMediaCaptureSessionId if the indicated client was not registered.
@@ -130,7 +130,7 @@ class CONTENT_EXPORT VideoCaptureController {
   struct ControllerClient;
   typedef std::list<ControllerClient*> ControllerClients;
 
-  // Worker functions on IO thread. Called by VideoCaptureDeviceClient.
+  // Worker functions on IO thread. Called by the VideoCaptureDeviceClient.
   void DoIncomingCapturedVideoFrameOnIOThread(
       const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
       const media::VideoCaptureFormat& format,
@@ -141,13 +141,15 @@ class CONTENT_EXPORT VideoCaptureController {
   void DoBufferDestroyedOnIOThread(int buffer_id_to_drop);
 
   // Find a client of |id| and |handler| in |clients|.
-  ControllerClient* FindClient(const VideoCaptureControllerID& id,
-                               VideoCaptureControllerEventHandler* handler,
-                               const ControllerClients& clients);
+  ControllerClient* FindClient(
+      const VideoCaptureControllerID& id,
+      VideoCaptureControllerEventHandler* handler,
+      const ControllerClients& clients);
 
   // Find a client of |session_id| in |clients|.
-  ControllerClient* FindClient(int session_id,
-                               const ControllerClients& clients);
+  ControllerClient* FindClient(
+      int session_id,
+      const ControllerClients& clients);
 
   // The pool of shared-memory buffers used for capturing.
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
