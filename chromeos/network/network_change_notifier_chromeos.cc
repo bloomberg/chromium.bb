@@ -53,8 +53,10 @@ void NetworkChangeNotifierChromeos::DnsConfigService::OnNetworkChange() {
 NetworkChangeNotifierChromeos::NetworkChangeNotifierChromeos()
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsChromeos()),
       connection_type_(CONNECTION_NONE),
-      poll_callback_(base::Bind(&NetworkChangeNotifierChromeos::PollForState,
-                                base::Unretained(this))) {
+      message_loop_(base::MessageLoopProxy::current()),
+      weak_ptr_factory_(this) {
+  poll_callback_ = base::Bind(&NetworkChangeNotifierChromeos::PollForState,
+                              weak_ptr_factory_.GetWeakPtr());
 }
 
 NetworkChangeNotifierChromeos::~NetworkChangeNotifierChromeos() {
@@ -92,7 +94,7 @@ NetworkChangeNotifierChromeos::GetCurrentConnectionType() const {
   // |this|, to allow PollForState() to modify our cached state.
   // TODO(gauravsh): Figure out why we would have missed this notification.
   if (connection_type_ == CONNECTION_NONE)
-    poll_callback_.Run();
+    message_loop_->PostTask(FROM_HERE, poll_callback_);
   return connection_type_;
 }
 

@@ -11,6 +11,8 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/network/network_state_handler_observer.h"
@@ -82,10 +84,15 @@ class CHROMEOS_EXPORT NetworkChangeNotifierChromeos
   std::vector<std::string> dns_servers_;
   // Service path for the current default network.
   std::string service_path_;
+
+  scoped_ptr<DnsConfigService> dns_config_service_;
+
   // Callback for refreshing network state.
   base::Closure poll_callback_;
 
-  scoped_ptr<DnsConfigService> dns_config_service_;
+  // For setting up network refresh polling callbacks.
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  base::WeakPtrFactory<NetworkChangeNotifierChromeos> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifierChromeos);
 };
