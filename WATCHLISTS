@@ -123,10 +123,9 @@
     },
     'battery_status': {
       'filepath': 'content/browser/battery_status/|'\
-                  'content/common/battery_status_messages.h|'\
-                  'content/public/android/java/src/org/chromium/content/browser/BatteryStatusManager.java|'\
-                  'content/public/android/javatests/src/org/chromium/content/browser/BatteryStatusManagerTest.java|'\
-                  'content/renderer/battery_status/',
+                  'content/renderer/battery_status/|'\
+                  'content/test/data/battery_status/|'\
+                  'device/battery/',
     },
     'bookmarks': {
       'filepath': 'chrome/browser/bookmarks/' \
