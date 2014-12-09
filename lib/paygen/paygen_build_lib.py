@@ -169,7 +169,7 @@ def _FilterForMp(artifacts):
   Returns:
     List of MP images.
   """
-  return [i for i in _FilterForImages(artifacts) if i.key.startswith('mp')]
+  return [i for i in _FilterForImages(artifacts) if 'mp' in i.key.split('-')]
 
 
 def _FilterForPremp(artifacts):
@@ -184,7 +184,7 @@ def _FilterForPremp(artifacts):
   Returns:
     List of PreMP images.
   """
-  return [i for i in _FilterForImages(artifacts) if i.key == 'premp']
+  return [i for i in _FilterForImages(artifacts) if 'premp' in i.key.split('-')]
 
 
 def _FilterForBasic(artifacts):
