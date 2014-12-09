@@ -102,7 +102,7 @@ TEST_F(MHTMLTest, CheckDomain)
     Document* document = frame->document();
     ASSERT_TRUE(document);
 
-    EXPECT_STREQ(kFileURL, frame->domWindow()->location().href().ascii().data());
+    EXPECT_STREQ(kFileURL, frame->domWindow()->location()->href().ascii().data());
 
     SecurityOrigin* origin = document->securityOrigin();
     EXPECT_STRNE("localhost", origin->domain().ascii().data());

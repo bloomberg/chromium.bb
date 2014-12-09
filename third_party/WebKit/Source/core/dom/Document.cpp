@@ -752,7 +752,7 @@ Location* Document::location() const
     if (!frame())
         return 0;
 
-    return &domWindow()->location();
+    return domWindow()->location();
 }
 
 void Document::childrenChanged(const ChildrenChange& change)

@@ -11,6 +11,7 @@
 namespace blink {
 
 class Event;
+class RemoteDOMWindow;
 class RemoteFrameClient;
 class RemoteFrameView;
 
@@ -23,7 +24,7 @@ public:
     // Frame overrides:
     void trace(Visitor*) override;
     virtual bool isRemoteFrame() const override { return true; }
-    virtual DOMWindow* domWindow() const override { return 0; }
+    virtual DOMWindow* domWindow() const override;
     virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) override;
     virtual void detach() override;
     virtual RemoteSecurityContext* securityContext() const override;
@@ -45,6 +46,7 @@ private:
 
     RefPtrWillBeMember<RemoteFrameView> m_view;
     RefPtr<RemoteSecurityContext> m_securityContext;
+    RefPtrWillBeMember<RemoteDOMWindow> m_domWindow;
 };
 
 inline RemoteFrameView* RemoteFrame::view() const

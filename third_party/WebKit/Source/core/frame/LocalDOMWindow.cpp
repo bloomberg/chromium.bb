@@ -765,11 +765,11 @@ Performance* LocalDOMWindow::performance() const
     return m_performance.get();
 }
 
-Location& LocalDOMWindow::location() const
+Location* LocalDOMWindow::location() const
 {
     if (!m_location)
         m_location = Location::create(frame());
-    return *m_location;
+    return m_location.get();
 }
 
 Storage* LocalDOMWindow::sessionStorage(ExceptionState& exceptionState) const
@@ -1275,19 +1275,6 @@ double LocalDOMWindow::scrollY() const
     return adjustScrollForAbsoluteZoom(viewportY, frame()->pageZoomFactor());
 }
 
-bool LocalDOMWindow::closed() const
-{
-    return !frame() || !frame()->host();
-}
-
-unsigned LocalDOMWindow::length() const
-{
-    if (!isCurrentlyDisplayedInFrame())
-        return 0;
-
-    return frame()->tree().scopedChildCount();
-}
-
 const AtomicString& LocalDOMWindow::name() const
 {
     if (!isCurrentlyDisplayedInFrame())
@@ -1334,46 +1321,6 @@ void LocalDOMWindow::setDefaultStatus(const String& string)
 
     ASSERT(frame()->document()); // Client calls shouldn't be made when the frame is in inconsistent state.
     host->chrome().setStatusbarText(frame(), m_defaultStatus);
-}
-
-DOMWindow* LocalDOMWindow::self() const
-{
-    if (!frame())
-        return 0;
-
-    return frame()->domWindow();
-}
-
-DOMWindow* LocalDOMWindow::opener() const
-{
-    if (!frame())
-        return 0;
-
-    Frame* opener = frame()->loader().opener();
-    if (!opener)
-        return 0;
-
-    return opener->domWindow();
-}
-
-DOMWindow* LocalDOMWindow::parent() const
-{
-    if (!frame())
-        return 0;
-
-    Frame* parent = frame()->tree().parent();
-    if (parent)
-        return parent->domWindow();
-
-    return frame()->domWindow();
-}
-
-DOMWindow* LocalDOMWindow::top() const
-{
-    if (!frame())
-        return 0;
-
-    return frame()->tree().top()->domWindow();
 }
 
 Document* LocalDOMWindow::document() const
@@ -1986,18 +1933,6 @@ void LocalDOMWindow::showModalDialog(const String& urlString, const String& dial
         return;
     UserGestureIndicatorDisabler disabler;
     dialogFrame->host()->chrome().runModal();
-}
-
-DOMWindow* LocalDOMWindow::anonymousIndexedGetter(uint32_t index)
-{
-    if (!frame())
-        return 0;
-
-    Frame* child = frame()->tree().scopedChild(index);
-    if (child)
-        return child->domWindow();
-
-    return 0;
 }
 
 DOMWindowLifecycleNotifier& LocalDOMWindow::lifecycleNotifier()

@@ -93,7 +93,7 @@ public:
     BarProp* statusbar() const override;
     BarProp* toolbar() const override;
     Navigator* navigator() const override;
-    Location& location() const override;
+    Location* location() const override;
     bool offscreenBuffering() const override;
     int outerHeight() const override;
     int outerWidth() const override;
@@ -103,20 +103,12 @@ public:
     int screenY() const override;
     double scrollX() const override;
     double scrollY() const override;
-    bool closed() const override;
-    unsigned length() const override;
     const AtomicString& name() const override;
     void setName(const AtomicString&) override;
     String status() const override;
     void setStatus(const String&) override;
     String defaultStatus() const override;
     void setDefaultStatus(const String&) override;
-    DOMWindow* self() const override;
-    DOMWindow* window() const { return self(); }
-    DOMWindow* frames() const { return self(); }
-    DOMWindow* opener() const override;
-    DOMWindow* parent() const override;
-    DOMWindow* top() const override;
     Document* document() const override;
     StyleMedia* styleMedia() const override;
     double devicePixelRatio() const override;
@@ -155,7 +147,6 @@ public:
     int requestAnimationFrame(RequestAnimationFrameCallback*) override;
     int webkitRequestAnimationFrame(RequestAnimationFrameCallback*) override;
     void cancelAnimationFrame(int id) override;
-    DOMWindow* anonymousIndexedGetter(uint32_t) override;
     void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, LocalDOMWindow* source, ExceptionState&) override;
     String crossDomainAccessErrorMessage(LocalDOMWindow* callingWindow) override;
     String sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* callingWindow) override;
