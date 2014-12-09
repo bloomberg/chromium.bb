@@ -139,9 +139,9 @@ bool DebugAcceleratorsEnabled() {
       switches::kAshDebugShortcuts);
 }
 
-bool PerformDebugAction(AcceleratorAction action) {
+void PerformDebugActionIfEnabled(AcceleratorAction action) {
   if (!DebugAcceleratorsEnabled())
-    return false;
+    return;
 
   switch (action) {
 #if defined(OS_CHROMEOS)
@@ -177,9 +177,8 @@ bool PerformDebugAction(AcceleratorAction action) {
       ToggleShowPaintRects();
       break;
     default:
-      return false;
+      break;
   }
-  return true;
 }
 
 }  // namespace debug

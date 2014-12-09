@@ -143,17 +143,25 @@ class UI_BASE_EXPORT InputMethodManager {
         const std::string& locale,
         const std::string& layout) = 0;
 
+    // Returns whether the input method (or keyboard layout) can be switched
+    // to the next or previous one. Returns false if only one input method is
+    // enabled.
+    virtual bool CanCycleInputMethod() = 0;
+
     // Switches the current input method (or keyboard layout) to the next one.
-    virtual bool SwitchToNextInputMethod() = 0;
+    virtual void SwitchToNextInputMethod() = 0;
 
     // Switches the current input method (or keyboard layout) to the previous
     // one.
-    virtual bool SwitchToPreviousInputMethod(
-        const ui::Accelerator& accelerator) = 0;
+    virtual void SwitchToPreviousInputMethod() = 0;
+
+    // Returns true if the input method can be switched to the input method
+    // associated with |accelerator|.
+    virtual bool CanSwitchInputMethod(const ui::Accelerator& accelerator) = 0;
 
     // Switches to an input method (or keyboard layout) which is associated with
     // the |accelerator|.
-    virtual bool SwitchInputMethod(const ui::Accelerator& accelerator) = 0;
+    virtual void SwitchInputMethod(const ui::Accelerator& accelerator) = 0;
 
     // Gets the descriptor of the input method which is currently selected.
     virtual InputMethodDescriptor GetCurrentInputMethod() const = 0;

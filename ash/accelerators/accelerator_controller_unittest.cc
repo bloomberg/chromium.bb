@@ -129,14 +129,16 @@ class DummyImeControlDelegate : public ImeControlDelegate {
         handle_switch_ime_count_(0) {}
   ~DummyImeControlDelegate() override {}
 
+  bool CanCycleIme() override { return true; }
   void HandleNextIme() override { ++handle_next_ime_count_; }
-  bool HandlePreviousIme(const ui::Accelerator& accelerator) override {
+  void HandlePreviousIme() override {
     ++handle_previous_ime_count_;
+  }
+  bool CanSwitchIme(const ui::Accelerator& accelerator) override {
     return true;
   }
-  bool HandleSwitchIme(const ui::Accelerator& accelerator) override {
+  void HandleSwitchIme(const ui::Accelerator& accelerator) override {
     ++handle_switch_ime_count_;
-    return true;
   }
 
   int handle_next_ime_count() const {
@@ -1027,13 +1029,17 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
 TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
   // Test IME shortcuts.
   {
-    const ui::Accelerator control_space(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
+     ui::Accelerator control_space_down(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
+    control_space_down.set_type(ui::ET_KEY_PRESSED);
+    ui::Accelerator control_space_up(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
+    control_space_up.set_type(ui::ET_KEY_RELEASED);
     const ui::Accelerator convert(ui::VKEY_CONVERT, ui::EF_NONE);
     const ui::Accelerator non_convert(ui::VKEY_NONCONVERT, ui::EF_NONE);
     const ui::Accelerator wide_half_1(ui::VKEY_DBE_SBCSCHAR, ui::EF_NONE);
     const ui::Accelerator wide_half_2(ui::VKEY_DBE_DBCSCHAR, ui::EF_NONE);
     const ui::Accelerator hangul(ui::VKEY_HANGUL, ui::EF_NONE);
-    EXPECT_FALSE(ProcessInController(control_space));
+    EXPECT_FALSE(ProcessInController(control_space_down));
+    EXPECT_FALSE(ProcessInController(control_space_up));
     EXPECT_FALSE(ProcessInController(convert));
     EXPECT_FALSE(ProcessInController(non_convert));
     EXPECT_FALSE(ProcessInController(wide_half_1));
@@ -1043,7 +1049,9 @@ TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
     GetController()->SetImeControlDelegate(
         scoped_ptr<ImeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_previous_ime_count());
-    EXPECT_TRUE(ProcessInController(control_space));
+    EXPECT_TRUE(ProcessInController(control_space_down));
+    EXPECT_EQ(1, delegate->handle_previous_ime_count());
+    EXPECT_TRUE(ProcessInController(control_space_up));
     EXPECT_EQ(1, delegate->handle_previous_ime_count());
     EXPECT_EQ(0, delegate->handle_switch_ime_count());
     EXPECT_TRUE(ProcessInController(convert));

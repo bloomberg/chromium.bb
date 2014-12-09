@@ -16,17 +16,23 @@ class ImeControlDelegate {
  public:
   virtual ~ImeControlDelegate() {}
 
-  // Changes the IME to what is listed next. This function do nothing if there
-  // is only one IME is enabled.
+  // Returns whether a user can cycle through IMEs. Returns false if only one
+  // IME is enabled.
+  virtual bool CanCycleIme() = 0;
+
+  // Changes the IME to what is listed next.
   virtual void HandleNextIme() = 0;
 
   // Changes the IME to previously selected one. If there is no previously
-  // selected IMEs, chooses the next listed IME. This function returns false if
-  // there is only one IME is enabled.
-  virtual bool HandlePreviousIme(const ui::Accelerator& accelerator) = 0;
+  // selected IMEs, chooses the next listed IME.
+  virtual void HandlePreviousIme() = 0;
 
-  // Switches to another IME depending on the |accelerator|.
-  virtual bool HandleSwitchIme(const ui::Accelerator& accelerator) = 0;
+  // Returns true if the IME can be switched to the IME associated with
+  // |accelerator|.
+  virtual bool CanSwitchIme(const ui::Accelerator& accelerator) = 0;
+
+  // Switches to the IME associated with |accelerator|.
+  virtual void HandleSwitchIme(const ui::Accelerator& accelerator) = 0;
 
   // Checks for special language anomalies and re-map the |accelerator|
   // accordingly.

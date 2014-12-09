@@ -8,8 +8,8 @@
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_export.h"
 
-// This file contains implementations of commands that are used only
-// when running on desktop for debugging.
+// This file contains implementations of commands that are used only when
+// debugging.
 namespace ash {
 namespace debug {
 
@@ -20,9 +20,9 @@ ASH_EXPORT void PrintUIHierarchies();
 // Returns true if debug accelerators are enabled.
 ASH_EXPORT bool DebugAcceleratorsEnabled();
 
-// Performs |action| and returns true if |action| belongs to a
-// debug-only accelerator and debug accelerators are enabled.
-ASH_EXPORT bool PerformDebugAction(AcceleratorAction action);
+// Performs |action| if |action| belongs to a debug-only accelerator and debug
+// accelerators are enabled.
+ASH_EXPORT void PerformDebugActionIfEnabled(AcceleratorAction action);
 
 }  // namespace debug
 }  // namespace ash

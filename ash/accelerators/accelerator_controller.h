@@ -133,11 +133,18 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   void RegisterAccelerators(const AcceleratorData accelerators[],
                             size_t accelerators_length);
 
+  // Returns whether |action| can be performed. The |accelerator| may provide
+  // additional data the action needs.
+  bool CanPerformAction(AcceleratorAction action,
+                        const ui::Accelerator& accelerator);
+
   // Performs the specified action. The |accelerator| may provide additional
-  // data the action needs. Returns whether an action was performed
-  // successfully.
-  bool PerformAction(AcceleratorAction action,
+  // data the action needs.
+  void PerformAction(AcceleratorAction action,
                      const ui::Accelerator& accelerator);
+
+  // Returns whether performing |action| should consume the key event.
+  bool ShouldActionConsumeKeyEvent(AcceleratorAction action);
 
   // Get the accelerator restriction for the given action. Supply an |action|
   // of -1 to get restrictions that apply for the current context.

@@ -7,22 +7,34 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
+bool ImeController::CanCycleIme() {
+  chromeos::input_method::InputMethodManager* manager =
+      chromeos::input_method::InputMethodManager::Get();
+  return manager->GetActiveIMEState()->CanCycleInputMethod();
+}
+
 void ImeController::HandleNextIme() {
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
   manager->GetActiveIMEState()->SwitchToNextInputMethod();
 }
 
-bool ImeController::HandlePreviousIme(const ui::Accelerator& accelerator) {
+void ImeController::HandlePreviousIme() {
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
-  return manager->GetActiveIMEState()->SwitchToPreviousInputMethod(accelerator);
+  manager->GetActiveIMEState()->SwitchToPreviousInputMethod();
 }
 
-bool ImeController::HandleSwitchIme(const ui::Accelerator& accelerator) {
+bool ImeController::CanSwitchIme(const ui::Accelerator& accelerator) {
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
-  return manager->GetActiveIMEState()->SwitchInputMethod(accelerator);
+  return manager->GetActiveIMEState()->CanSwitchInputMethod(accelerator);
+}
+
+void ImeController::HandleSwitchIme(const ui::Accelerator& accelerator) {
+  chromeos::input_method::InputMethodManager* manager =
+      chromeos::input_method::InputMethodManager::Get();
+  manager->GetActiveIMEState()->SwitchInputMethod(accelerator);
 }
 
 ui::Accelerator ImeController::RemapAccelerator(

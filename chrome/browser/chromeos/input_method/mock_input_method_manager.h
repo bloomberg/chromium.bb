@@ -52,10 +52,12 @@ class MockInputMethodManager : public InputMethodManager {
     virtual void SetInputMethodLoginDefaultFromVPD(
         const std::string& locale,
         const std::string& layout) override;
-    virtual bool SwitchToNextInputMethod() override;
-    virtual bool SwitchToPreviousInputMethod(
+    virtual bool CanCycleInputMethod() override;
+    virtual void SwitchToNextInputMethod() override;
+    virtual void SwitchToPreviousInputMethod() override;
+    virtual bool CanSwitchInputMethod(
         const ui::Accelerator& accelerator) override;
-    virtual bool SwitchInputMethod(const ui::Accelerator& accelerator) override;
+    virtual void SwitchInputMethod(const ui::Accelerator& accelerator) override;
     virtual InputMethodDescriptor GetCurrentInputMethod() const override;
     virtual bool ReplaceEnabledInputMethods(
         const std::vector<std::string>& new_active_input_method_ids) override;

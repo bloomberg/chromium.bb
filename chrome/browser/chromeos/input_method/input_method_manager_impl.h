@@ -58,6 +58,14 @@ class InputMethodManagerImpl : public InputMethodManager,
         const std::vector<std::string>& input_method_ids,
         const std::string& current_input_methodid);
 
+    // Returns the IDs of the subset of input methods which are active and are
+    // associated with |accelerator|. For example,
+    // { "mozc-hangul", "xkb:kr:kr104:kor" } is returned for
+    // ui::VKEY_DBE_SBCSCHAR if the two input methods are active.
+    void GetCandidateInputMethodsForAccelerator(
+        const ui::Accelerator& accelerator,
+        std::vector<std::string>* out_candidate_ids);
+
     // Returns true if given input method requires pending extension.
     bool MethodAwaitsExtensionLoad(const std::string& input_method_id) const;
 
@@ -92,10 +100,12 @@ class InputMethodManagerImpl : public InputMethodManager,
     virtual void SetInputMethodLoginDefaultFromVPD(
         const std::string& locale,
         const std::string& layout) override;
-    virtual bool SwitchToNextInputMethod() override;
-    virtual bool SwitchToPreviousInputMethod(
+    virtual bool CanCycleInputMethod() override;
+    virtual void SwitchToNextInputMethod() override;
+    virtual void SwitchToPreviousInputMethod() override;
+    virtual bool CanSwitchInputMethod(
         const ui::Accelerator& accelerator) override;
-    virtual bool SwitchInputMethod(const ui::Accelerator& accelerator) override;
+    virtual void SwitchInputMethod(const ui::Accelerator& accelerator) override;
     virtual InputMethodDescriptor GetCurrentInputMethod() const override;
     virtual bool ReplaceEnabledInputMethods(
         const std::vector<std::string>& new_active_input_method_ids) override;
@@ -120,7 +130,6 @@ class InputMethodManagerImpl : public InputMethodManager,
     // those created by extension.
     std::map<std::string, InputMethodDescriptor> extra_input_methods;
 
-   private:
     InputMethodManagerImpl* const manager_;
 
    protected:

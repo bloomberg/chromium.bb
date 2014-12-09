@@ -17,9 +17,11 @@ class ImeController : public ash::ImeControlDelegate {
   virtual ~ImeController() {}
 
   // Overridden from ash::ImeControlDelegate:
+  virtual bool CanCycleIme() override;
   virtual void HandleNextIme() override;
-  virtual bool HandlePreviousIme(const ui::Accelerator& accelerator) override;
-  virtual bool HandleSwitchIme(const ui::Accelerator& accelerator) override;
+  virtual void HandlePreviousIme() override;
+  virtual bool CanSwitchIme(const ui::Accelerator& accelerator) override;
+  virtual void HandleSwitchIme(const ui::Accelerator& accelerator) override;
   virtual ui::Accelerator RemapAccelerator(
       const ui::Accelerator& accelerator) override;
 
