@@ -279,7 +279,7 @@ void Body::didStartLoading() { }
 void Body::didReceiveData() { }
 void Body::didFinishLoading()
 {
-    if (executionContext()->activeDOMObjectsAreStopped())
+    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return;
 
     if (m_streamAccessed) {
@@ -363,7 +363,7 @@ void Body::didFinishLoadingViaStream(DOMArrayBuffer* buffer)
 
 void Body::didFail(FileError::ErrorCode code)
 {
-    if (executionContext()->activeDOMObjectsAreStopped())
+    if (!executionContext() || executionContext()->activeDOMObjectsAreStopped())
         return;
 
     if (m_resolver) {
