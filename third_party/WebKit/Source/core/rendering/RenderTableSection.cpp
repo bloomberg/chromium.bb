@@ -704,8 +704,10 @@ int RenderTableSection::calcRowLogicalHeight()
 
     RenderTableCell* cell;
 
-    // FIXME: This shouldn't use the same constructor as RenderView.
-    LayoutState state(*this);
+    // We may have to forcefully lay out cells here, in which case we need a layout
+    // state. Technically, we should also push state for the row, but since rows don't push a
+    // coordinate transform, that's not necessary.
+    LayoutState state(*this, locationOffset());
 
     m_rowPos.resize(m_grid.size() + 1);
 

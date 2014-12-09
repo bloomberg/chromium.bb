@@ -112,8 +112,7 @@ LayoutState::LayoutState(RenderObject& root)
     , m_pageLogicalHeight(0)
     , m_renderer(root)
 {
-    // FIXME: Why does RenderTableSection create this wonky LayoutState?
-    ASSERT(!m_next || root.isTableSection());
+    ASSERT(!m_next);
     // We'll end up pushing in RenderView itself, so don't bother adding it.
     if (root.isRenderView())
         return;

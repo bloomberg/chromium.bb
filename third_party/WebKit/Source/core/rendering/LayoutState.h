@@ -44,7 +44,7 @@ class LayoutState {
 public:
     // Constructor for root LayoutState created by RenderView
     LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, RenderView&);
-    // Constructor for sub-tree Layout and RenderTableSections
+    // Constructor for sub-tree layout
     explicit LayoutState(RenderObject& root);
 
     LayoutState(RenderBox&, const LayoutSize& offset, LayoutUnit pageLogicalHeight = 0, bool pageHeightLogicalChanged = false, ColumnInfo* = 0, bool containingBlockLogicalWidthChanged = false);
