@@ -47,10 +47,6 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
 
   // PlatformDevice overrides
   CGContextRef GetBitmapContext() override;
-  void DrawToNativeContext(CGContextRef context,
-                           int x,
-                           int y,
-                           const CGRect* src_rect) override;
 
   // SkBaseDevice overrides
   void setMatrixClip(const SkMatrix& transform,

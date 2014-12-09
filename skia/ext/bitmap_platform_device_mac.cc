@@ -200,37 +200,6 @@ void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,
   SetMatrixClip(transform, region);
 }
 
-void BitmapPlatformDevice::DrawToNativeContext(CGContextRef context, int x,
-                                               int y, const CGRect* src_rect) {
-  bool created_dc = false;
-  if (!bitmap_context_) {
-    created_dc = true;
-    GetBitmapContext();
-  }
-
-  // this should not make a copy of the bits, since we're not doing
-  // anything to trigger copy on write
-  CGImageRef image = CGBitmapContextCreateImage(bitmap_context_);
-  CGRect bounds;
-  bounds.origin.x = x;
-  bounds.origin.y = y;
-  if (src_rect) {
-    bounds.size.width = src_rect->size.width;
-    bounds.size.height = src_rect->size.height;
-    CGImageRef sub_image = CGImageCreateWithImageInRect(image, *src_rect);
-    CGContextDrawImage(context, bounds, sub_image);
-    CGImageRelease(sub_image);
-  } else {
-    bounds.size.width = width();
-    bounds.size.height = height();
-    CGContextDrawImage(context, bounds, image);
-  }
-  CGImageRelease(image);
-
-  if (created_dc)
-    ReleaseBitmapContext();
-}
-
 SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
                                                      const CreateInfo& cinfo) {
   const SkImageInfo& info = cinfo.fInfo;

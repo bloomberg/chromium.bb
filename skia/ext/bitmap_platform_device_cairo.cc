@@ -185,12 +185,6 @@ cairo_t* BitmapPlatformDevice::BeginPlatformPaint() {
   return cairo_;
 }
 
-void BitmapPlatformDevice::DrawToNativeContext(
-    PlatformSurface surface, int x, int y, const PlatformRect* src_rect) {
-  // Should never be called on Linux.
-  SkASSERT(false);
-}
-
 void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,
                                          const SkRegion& region,
                                          const SkClipStack&) {

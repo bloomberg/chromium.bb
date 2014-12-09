@@ -50,13 +50,12 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
   virtual PlatformSurface BeginPlatformPaint() override;
   virtual void EndPlatformPaint() override;
 
-  virtual void DrawToNativeContext(HDC dc, int x, int y,
-                                   const RECT* src_rect) override;
-
   // Loads the given transform and clipping region into the HDC. This is
   // overridden from SkBaseDevice.
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region,
                              const SkClipStack&) override;
+
+  void DrawToHDC(HDC dc, int x, int y, const RECT* src_rect) override;
 
  protected:
   // Flushes the Windows device context so that the pixel data can be accessed

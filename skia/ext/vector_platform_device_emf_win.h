@@ -32,8 +32,7 @@ class VectorPlatformDeviceEmf : public SkBitmapDevice, public PlatformDevice {
 
   // PlatformDevice methods
   virtual PlatformSurface BeginPlatformPaint() override;
-  virtual void DrawToNativeContext(HDC dc, int x, int y,
-                                   const RECT* src_rect) override;
+
   // SkBaseDevice methods.
   virtual void drawPaint(const SkDraw& draw, const SkPaint& paint) override;
   virtual void drawPoints(const SkDraw& draw, SkCanvas::PointMode mode,

@@ -43,6 +43,14 @@ enum OnFailureType {
                                         bool is_opaque,
                                         HANDLE shared_section,
                                         OnFailureType failure_type);
+
+  // Draws the top layer of the canvas into the specified HDC. Only works
+  // with a PlatformCanvas with a BitmapPlatformDevice.
+  SK_API void DrawToNativeContext(SkCanvas* canvas,
+                                  HDC hdc,
+                                  int x,
+                                  int y,
+                                  const RECT* src_rect);
 #elif defined(__APPLE__)
   SK_API SkCanvas* CreatePlatformCanvas(CGContextRef context,
                                         int width,
@@ -112,15 +120,6 @@ SK_API SkBaseDevice* GetTopDevice(const SkCanvas& canvas);
 // given canvas. If this function returns false, BeginPlatformPaint will
 // return NULL PlatformSurface.
 SK_API bool SupportsPlatformPaint(const SkCanvas* canvas);
-
-// Draws into the a native platform surface, |context|.  Forwards to
-// DrawToNativeContext on a PlatformDevice instance bound to the top device.
-// If no PlatformDevice instance is bound, is a no-operation.
-SK_API void DrawToNativeContext(SkCanvas* canvas,
-                                PlatformSurface context,
-                                int x,
-                                int y,
-                                const PlatformRect* src_rect);
 
 // Sets the opacity of each pixel in the specified region to be opaque.
 SK_API void MakeOpaque(SkCanvas* canvas, int x, int y, int width, int height);

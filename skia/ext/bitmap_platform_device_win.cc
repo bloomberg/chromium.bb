@@ -55,6 +55,15 @@ HBITMAP CreateHBitmap(int width, int height, bool is_opaque,
 
 namespace skia {
 
+void DrawToNativeContext(SkCanvas* canvas, HDC hdc, int x, int y,
+                         const RECT* src_rect) {
+  PlatformDevice* platform_device = GetPlatformDevice(GetTopDevice(*canvas));
+  if (platform_device)
+    platform_device->DrawToHDC(hdc, x, y, src_rect);
+}
+
+void PlatformDevice::DrawToHDC(HDC, int x, int y, const RECT* src_rect) {}
+
 HDC BitmapPlatformDevice::GetBitmapDC() {
   if (!hdc_) {
     hdc_ = CreateCompatibleDC(NULL);
@@ -202,8 +211,8 @@ void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,
   SetMatrixClip(transform, region);
 }
 
-void BitmapPlatformDevice::DrawToNativeContext(HDC dc, int x, int y,
-                                               const RECT* src_rect) {
+void BitmapPlatformDevice::DrawToHDC(HDC dc, int x, int y,
+                                     const RECT* src_rect) {
   bool created_dc = !IsBitmapDCCreated();
   HDC source_dc = BeginPlatformPaint();
 

@@ -60,10 +60,6 @@ void PlatformDevice::EndPlatformPaint() {
   // Flushing will be done in onAccessBitmap.
 }
 
-void PlatformDevice::DrawToNativeContext(PlatformSurface surface, int x, int y,
-                                         const PlatformRect* src_rect) {
-}
-
 // static
 bool PlatformDevice::LoadPathToDC(HDC context, const SkPath& path) {
   switch (path.getFillType()) {

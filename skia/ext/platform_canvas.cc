@@ -32,13 +32,6 @@ void EndPlatformPaint(SkCanvas* canvas) {
     platform_device->EndPlatformPaint();
 }
 
-void DrawToNativeContext(SkCanvas* canvas, PlatformSurface context, int x,
-                         int y, const PlatformRect* src_rect) {
-  PlatformDevice* platform_device = GetPlatformDevice(GetTopDevice(*canvas));
-  if (platform_device)
-    platform_device->DrawToNativeContext(context, x, y, src_rect);
-}
-
 void MakeOpaque(SkCanvas* canvas, int x, int y, int width, int height) {
   if (width <= 0 || height <= 0)
     return;

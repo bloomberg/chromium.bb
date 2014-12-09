@@ -55,12 +55,6 @@ PlatformSurface BitmapPlatformDevice::BeginPlatformPaint() {
   return accessBitmap(true).getPixels();
 }
 
-void BitmapPlatformDevice::DrawToNativeContext(
-    PlatformSurface surface, int x, int y, const PlatformRect* src_rect) {
-  // Should never be called on Android.
-  SkASSERT(false);
-}
-
 // PlatformCanvas impl
 
 SkCanvas* CreatePlatformCanvas(int width, int height, bool is_opaque,

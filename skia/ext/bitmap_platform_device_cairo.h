@@ -89,8 +89,6 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
 
   // Overridden from PlatformDevice:
   virtual cairo_t* BeginPlatformPaint() override;
-  virtual void DrawToNativeContext(PlatformSurface surface, int x, int y,
-                                   const PlatformRect* src_rect) override;
 
  protected:
   virtual SkBaseDevice* onCreateCompatibleDevice(const CreateInfo& info)

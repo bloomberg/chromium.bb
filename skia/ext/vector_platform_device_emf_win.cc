@@ -684,11 +684,6 @@ void VectorPlatformDeviceEmf::setMatrixClip(const SkMatrix& transform,
     LoadClipRegion();
 }
 
-void VectorPlatformDeviceEmf::DrawToNativeContext(HDC dc, int x, int y,
-                                                  const RECT* src_rect) {
-  SkASSERT(false);
-}
-
 void VectorPlatformDeviceEmf::LoadClipRegion() {
   SkMatrix t;
   t.reset();

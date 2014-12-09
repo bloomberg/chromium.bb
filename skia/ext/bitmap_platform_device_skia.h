@@ -38,8 +38,6 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
   virtual ~BitmapPlatformDevice();
 
   virtual PlatformSurface BeginPlatformPaint() override;
-  virtual void DrawToNativeContext(PlatformSurface surface, int x, int y,
-                                   const PlatformRect* src_rect) override;
 
  protected:
   virtual SkBaseDevice* onCreateCompatibleDevice(const CreateInfo& info)
