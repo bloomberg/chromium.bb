@@ -1152,7 +1152,7 @@ void InspectorDebuggerAgent::didEvaluateScript()
 
 void InspectorDebuggerAgent::changeJavaScriptRecursionLevel(int step)
 {
-    if (m_javaScriptPauseScheduled && !isPaused()) {
+    if (m_javaScriptPauseScheduled && !m_skipAllPauses && !isPaused()) {
         // Do not ever loose user's pause request until we have actually paused.
         scriptDebugServer().setPauseOnNextStatement(true);
     }
