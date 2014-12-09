@@ -124,7 +124,7 @@ class DriverToolsTest(unittest.TestCase):
     env.pop()
 
   def _WriteDummyElfHeader(self, stream):
-    stream.write(struct.pack(
+    header = struct.pack(
         '<4sBBBBB7xHH',
         '\177ELF',  # ELF magic
         1,  # ei_class = ELFCLASS32
@@ -133,7 +133,11 @@ class DriverToolsTest(unittest.TestCase):
         3,  # ei_osabi = ELFOSABI_LINUX (=ELFOSABI_GNU)
         7,  # ei_abiversion = NACL ABI version
         1,  # e_type = ET_REL
-        3))  # e_machine = EM_386
+        3)  # e_machine = EM_386
+    # Append dummy values as the rest of the ELF header. The size of
+    # Elf32_Ehdr is 52.
+    header += '\0' * (52 - len(header))
+    stream.write(header)
 
   def _WriteDummyArHeader(self, stream):
     stream.write('!<arch>\n')
@@ -169,8 +173,8 @@ class DriverToolsTest(unittest.TestCase):
       # Create dummy archive file.
       with open(path, 'wb') as stream:
         self._WriteDummyArHeader(stream)
-        # 20 is the length of dummy ELF header size.
-        self._WriteDummyArFileHeader(stream, 'file', filesize=20)
+        # 52 is the length of dummy ELF header size.
+        self._WriteDummyArFileHeader(stream, 'file', filesize=52)
         self._WriteDummyElfHeader(stream)
 
       # First, ARCH is not set.

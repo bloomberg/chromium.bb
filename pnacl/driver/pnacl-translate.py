@@ -286,17 +286,7 @@ def SetUpLinkOptions():
     # "_begin" allows a PIE to find its load address in order to apply
     # dynamic relocations.
     env.append('LD_FLAGS', '-defsym=_begin=0')
-    if env.getbool('USE_IRT'):
-      env.append('LD_FLAGS', '-pie')
-    else:
-      # Note that we really want to use "-pie" for this case, but it
-      # currently adds a PT_INTERP header to the executable that we don't
-      # want because it stops the executable from being loadable by Linux.
-      # TODO(mseaborn): Add a linker option to omit PT_INTERP.
-      env.append('LD_FLAGS', '-static')
-      # Set _DYNAMIC to a dummy value.  TODO(mseaborn): Remove this when we
-      # use "-pie" instead of "-static" for this case.
-      env.append('LD_FLAGS', '-defsym=_DYNAMIC=1')
+    env.append('LD_FLAGS', '-pie')
   else:
     env.append('LD_FLAGS', '-static')
     # Give non-IRT builds 12MB of text before starting rodata instead of

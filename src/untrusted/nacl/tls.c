@@ -46,7 +46,7 @@ extern uint32_t __tls_template_alignment __attribute__((weak));
 extern union {
   Elf32_Ehdr ehdr32;
   Elf64_Ehdr ehdr64;
-} __ehdr_start __attribute__((weak));
+} __ehdr_start __attribute__((weak, visibility("hidden")));
 
 static size_t aligned_size(size_t size, size_t alignment) {
   return (size + alignment - 1) & -alignment;
@@ -63,7 +63,7 @@ static char *aligned_addr(void *start, size_t alignment) {
  */
 
 struct tls_info {
-  const void *tdata_start;  /* Address of .tdata (initializer data) */
+  const char *tdata_start;  /* Address of .tdata (initializer data) */
   size_t tdata_size;        /* Size of .tdata (initializer data) */
   size_t tbss_size;         /* Size of .tbss (zero-fill space after .tdata) */
   size_t tls_alignment;     /* Alignment required for TLS segment */
@@ -119,7 +119,10 @@ static void finish_info_cache(
       if (phdr[i].p_type == PT_TLS) {                                   \
         cached_tls_info.tls_alignment = phdr[i].p_align;                \
         cached_tls_info.tdata_start =                                   \
-          (const void *) (uintptr_t) phdr[i].p_vaddr;                   \
+          (const char *) (uintptr_t) phdr[i].p_vaddr;                   \
+        /* For a PIE, we should offset the the load address. */         \
+        if ((ehdr)->e_type == ET_DYN)                                   \
+          cached_tls_info.tdata_start += (uintptr_t) (ehdr);            \
         cached_tls_info.tdata_size = phdr[i].p_filesz;                  \
         cached_tls_info.tbss_size = phdr[i].p_memsz - phdr[i].p_filesz; \
         return 1;                                                       \

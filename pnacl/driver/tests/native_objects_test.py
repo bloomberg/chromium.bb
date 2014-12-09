@@ -21,7 +21,7 @@ class TestNativeDriverOptions(driver_test_utils.DriverTesterCommon):
 
   def getFakeSourceFile(self):
     with self.getTemp(suffix='.c', close=False) as s:
-      s.write('int main(int argc, char* argv[]) { return 0; }')
+      s.write('void _start() {}')
       s.close()
       return s
 
@@ -68,7 +68,10 @@ class TestNativeDriverOptions(driver_test_utils.DriverTesterCommon):
           [s.name, '-c', '-o', obj.name, '--target=x86_64-unknown-nacl',
            '-arch', 'x86-64', '--pnacl-allow-translate'])
       self.assertTrue(filetype.IsNativeObject(obj.name))
-      self.assertEqual(elftools.GetELFHeader(obj.name).arch, 'X8664')
+      ehdr = elftools.GetELFHeader(obj.name)
+      self.assertEqual(ehdr.arch, 'X8664')
+      # ET_REL does not have program headers.
+      self.assertEqual(ehdr.phnum, 0)
 
       driver_tools.RunDriver('pnacl-clang',
           [s.name, '-c', '-o', obj.name, '--target=i686-unknown-nacl',
@@ -89,3 +92,50 @@ class TestNativeDriverOptions(driver_test_utils.DriverTesterCommon):
            '-arch', 'x86-32', '--pnacl-allow-translate'])
       self.assertTrue(filetype.IsNativeObject(obj.name))
       self.assertEqual(elftools.GetELFHeader(obj.name).arch, 'X8632')
+
+  def test_compile_native_executables(self):
+    s = self.getFakeSourceFile()
+    with self.getTemp(suffix='.nexe') as obj:
+      driver_tools.RunDriver('pnacl-clang',
+          [s.name, '-nostdlib', '-o', obj.name, '-arch', 'x86-64'])
+      # This test is a sanity check that the ELF header parsing code
+      # works. If the ELF header parsing code were no longer needed
+      # for other purposes, this test could be removed.
+      ehdr, phdrs = elftools.GetELFAndProgramHeaders(obj.name)
+      self.assertEqual(ehdr.arch, 'X8664')
+      self.assertNotEqual(ehdr.phnum, 0)
+      self.assertEqual(ehdr.phentsize, 56)
+      self.assertNotEqual(len(phdrs), 0)
+
+      phdr_type_nums = {}
+      for phdr in phdrs:
+        phdr_type_nums[phdr.type] = phdr_type_nums.get(phdr.type, 0) + 1
+        if phdr.type == elftools.ProgramHeader.PT_LOAD:
+          self.assertEqual(phdr.align, 0x10000)
+          self.assertIn(phdr.flags, xrange(8))
+      self.assertTrue(phdr_type_nums[elftools.ProgramHeader.PT_LOAD] >= 2)
+
+  def test_compile_nonsfi_executables(self):
+    s = self.getFakeSourceFile()
+    with self.getTemp(suffix='.nexe') as obj:
+      driver_tools.RunDriver('pnacl-clang',
+          [s.name, '-nostdlib', '-o', obj.name, '-arch', 'x86-32-nonsfi'])
+      ehdr, phdrs = elftools.GetELFAndProgramHeaders(obj.name)
+      self.assertEqual(ehdr.arch, 'X8632')
+      self.assertNotEqual(ehdr.phnum, 0)
+      self.assertEqual(ehdr.phentsize, 32)
+      self.assertNotEqual(len(phdrs), 0)
+
+      phdr_type_nums = {}
+      for phdr in phdrs:
+        phdr_type_nums[phdr.type] = phdr_type_nums.get(phdr.type, 0) + 1
+        if phdr.type == elftools.ProgramHeader.PT_LOAD:
+          self.assertIn(phdr.flags, xrange(8))
+      self.assertTrue(phdr_type_nums[elftools.ProgramHeader.PT_LOAD] >= 2)
+      # Check that PT_INTERP was replaced by PT_NULL.
+      self.assertNotIn(elftools.ProgramHeader.PT_INTERP, phdr_type_nums)
+      self.assertEqual(phdr_type_nums[elftools.ProgramHeader.PT_NULL], 1)
+
+
+if __name__ == '__main__':
+  unittest.main()

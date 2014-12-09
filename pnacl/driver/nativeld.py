@@ -13,12 +13,14 @@
 # --pnacl-sb will cause the sandboxed LD to be used.
 # The bulk of this file is logic to invoke the sandboxed translator.
 
+import os
 import subprocess
 
 from driver_tools import CheckTranslatorPrerequisites, GetArch, ParseArgs, \
     Run, UnrecognizedOption
 from driver_env import env
 from driver_log import Log
+import elftools
 import ldtools
 import pathtools
 
@@ -135,6 +137,17 @@ LDPatterns = [
   ( '(.*)',                "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
+def RemoveInterpProgramHeader(filename):
+  headers = elftools.GetELFAndProgramHeaders(filename)
+  assert headers
+  ehdr, phdrs = headers
+  for i, phdr in enumerate(phdrs):
+    if phdr.type == elftools.ProgramHeader.PT_INTERP:
+      fp = open(filename, 'rb+')
+      fp.seek(ehdr.phoff + ehdr.phentsize * i)
+      # Zero this program header. Note PT_NULL is 0.
+      fp.write('\0' * ehdr.phentsize)
+      fp.close()
 
 def main(argv):
   env.update(EXTRA_ENV)
@@ -148,6 +161,12 @@ def main(argv):
   if output == '':
     output = pathtools.normalize('a.out')
 
+  # As we will modify the output file in-place for non-SFI, we output
+  # the file to a temporary file first and then rename it. Otherwise,
+  # build systems such as make assume the output file is ready even
+  # if the last build failed during the in-place update.
+  tmp_output = output + '.tmp'
+
   # Expand all parameters
   # This resolves -lfoo into actual filenames,
   # and expands linker scripts into command-line arguments.
@@ -158,12 +177,25 @@ def main(argv):
 
   env.push()
   env.set('inputs', *inputs)
-  env.set('output', output)
+  env.set('output', tmp_output)
 
   if env.getbool('SANDBOXED'):
     RunLDSandboxed()
   else:
     Run('${RUN_LD}')
+
+  if env.getbool('NONSFI_NACL'):
+    # Remove PT_INTERP in non-SFI binaries as we never use host's
+    # dynamic linker/loader.
+    #
+    # This is necessary otherwise we get a statically linked
+    # executable that is not directly runnable by Linux, because Linux
+    # tries to load the non-existent file that PT_INTERP points to.
+    #
+    # This is fairly hacky.  It would be better if the linker provided
+    # an option for omitting PT_INTERP (e.g. "--dynamic-linker ''").
+    RemoveInterpProgramHeader(tmp_output)
+  os.rename(tmp_output, output)
   env.pop()
   # only reached in case of no errors
   return 0
