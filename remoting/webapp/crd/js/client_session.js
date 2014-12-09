@@ -215,6 +215,11 @@ remoting.ClientSession.prototype.getHostDisplayName = function() {
  * fixed.
  */
 remoting.ClientSession.prototype.updateScrollbarVisibility = function() {
+  var scroller = document.getElementById('scroller');
+  if (!scroller) {
+    return;
+  }
+
   var needsVerticalScroll = false;
   var needsHorizontalScroll = false;
   if (!this.shrinkToFit_) {
@@ -233,7 +238,6 @@ remoting.ClientSession.prototype.updateScrollbarVisibility = function() {
     }
   }
 
-  var scroller = document.getElementById('scroller');
   if (needsHorizontalScroll) {
     scroller.classList.remove('no-horizontal-scroll');
   } else {
