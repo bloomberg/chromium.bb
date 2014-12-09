@@ -39,6 +39,12 @@
 #include "platform/TraceEvent.h"
 #include "third_party/snappy/src/snappy.h"
 
+#if defined(WTF_OS_WIN)
+#include <malloc.h>
+#else
+#include <alloca.h>
+#endif
+
 namespace blink {
 
 namespace {
@@ -99,6 +105,17 @@ v8::Local<v8::Script> compileAndConsumeCache(ScriptResource* resource, unsigned 
         v8::ScriptCompiler::Source source(code, origin, cachedData);
         script = v8::ScriptCompiler::Compile(isolate, &source, compileOptions);
         invalidCache = cachedData->rejected;
+        if (invalidCache && compileOptions == v8::ScriptCompiler::kConsumeParserCache) {
+            // Debug code for a bug where streaming produces invalid parser
+            // cache. Crash on purpose, but write the the URL of the script and
+            // cached data on the stack before it. They can then be extracted
+            // from the crash dump. FIXME: Remove after debugging is done.
+            size_t urlLength = resource->url().string().ascii().length();
+            char* ptr = reinterpret_cast<char*>(alloca(urlLength + length));
+            memcpy(ptr, resource->url().string().ascii().data(), urlLength);
+            memcpy(ptr + urlLength, data, length);
+            RELEASE_ASSERT(false);
+        }
     }
     if (invalidCache)
         resource->clearCachedMetadata();
