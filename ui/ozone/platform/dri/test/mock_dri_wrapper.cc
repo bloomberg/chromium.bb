@@ -84,6 +84,10 @@ bool MockDriWrapper::RemoveFramebuffer(uint32_t framebuffer) {
   return true;
 }
 
+ScopedDrmFramebufferPtr MockDriWrapper::GetFramebuffer(uint32_t framebuffer) {
+  return ScopedDrmFramebufferPtr();
+}
+
 bool MockDriWrapper::PageFlip(uint32_t crtc_id,
                               uint32_t framebuffer,
                               void* data) {

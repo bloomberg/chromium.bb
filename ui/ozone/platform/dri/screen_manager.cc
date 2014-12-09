@@ -6,16 +6,58 @@
 
 #include <xf86drmMode.h>
 
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/ozone/platform/dri/crtc_controller.h"
+#include "ui/ozone/platform/dri/dri_console_buffer.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
 #include "ui/ozone/platform/dri/scanout_buffer.h"
 
 namespace ui {
+
+namespace {
+
+// Copies the contents of the saved framebuffer from the CRTCs in |controller|
+// to the new modeset buffer |buffer|.
+void FillModesetBuffer(DriWrapper* dri,
+                       HardwareDisplayController* controller,
+                       ScanoutBuffer* buffer) {
+  DriConsoleBuffer modeset_buffer(dri, buffer->GetFramebufferId());
+  if (!modeset_buffer.Initialize()) {
+    LOG(ERROR) << "Failed to grab framebuffer " << buffer->GetFramebufferId();
+    return;
+  }
+
+  auto crtcs = controller->crtc_controllers();
+  DCHECK(!crtcs.empty());
+
+  if (!crtcs[0]->saved_crtc() || !crtcs[0]->saved_crtc()->buffer_id)
+    return;
+
+  // If the display controller is in mirror mode, the CRTCs should be sharing
+  // the same framebuffer.
+  DriConsoleBuffer saved_buffer(dri, crtcs[0]->saved_crtc()->buffer_id);
+  if (!saved_buffer.Initialize()) {
+    LOG(ERROR) << "Failed to grab saved framebuffer "
+               << crtcs[0]->saved_crtc()->buffer_id;
+    return;
+  }
+
+  // Don't copy anything if the sizes mismatch. This can happen when the user
+  // changes modes.
+  if (saved_buffer.canvas()->getBaseLayerSize() !=
+      modeset_buffer.canvas()->getBaseLayerSize())
+    return;
+
+  skia::RefPtr<SkImage> image = saved_buffer.image();
+  modeset_buffer.canvas()->drawImage(image.get(), 0, 0);
+}
+
+}  // namespace
 
 ScreenManager::ScreenManager(DriWrapper* dri,
                              ScanoutBufferGenerator* buffer_generator)
@@ -183,6 +225,8 @@ bool ScreenManager::ModesetDisplayController(
     LOG(ERROR) << "Failed to create scanout buffer";
     return false;
   }
+
+  FillModesetBuffer(dri_, controller, buffer.get());
 
   if (!controller->Modeset(OverlayPlane(buffer), mode)) {
     LOG(ERROR) << "Failed to modeset controller";

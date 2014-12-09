@@ -142,6 +142,10 @@ class HardwareDisplayController
 
   uint64_t GetTimeOfLastFlip() const;
 
+  const std::vector<CrtcController*>& crtc_controllers() const {
+    return crtc_controllers_.get();
+  }
+
  private:
   // Buffers need to be declared first so that they are destroyed last. Needed
   // since the controllers may reference the buffers.

@@ -33,6 +33,8 @@ class CrtcController {
   bool page_flip_pending() const { return page_flip_pending_; }
   uint64_t time_of_last_flip() const { return time_of_last_flip_; }
 
+  drmModeCrtc* saved_crtc() const { return saved_crtc_.get(); }
+
   // Perform the initial modesetting operation using |plane| as the buffer for
   // the primary plane. The CRTC configuration is specified by |mode|.
   bool Modeset(const OverlayPlane& plane, drmModeModeInfo mode);

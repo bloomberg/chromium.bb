@@ -14,7 +14,6 @@ namespace ui {
 
 class DeviceManager;
 class DisplaySnapshotDri;
-class DriConsoleBuffer;
 class DriWrapper;
 class ScreenManager;
 
@@ -62,7 +61,6 @@ class NativeDisplayDelegateDri : public NativeDisplayDelegate {
 
   DriWrapper* dri_;                // Not owned.
   ScreenManager* screen_manager_;  // Not owned.
-  scoped_ptr<DriConsoleBuffer> console_buffer_;
   // Modes can be shared between different displays, so we need to keep track
   // of them independently for cleanup.
   ScopedVector<const DisplayMode> cached_modes_;

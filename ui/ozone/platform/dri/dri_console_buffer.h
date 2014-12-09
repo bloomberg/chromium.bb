@@ -25,6 +25,9 @@ class DriConsoleBuffer {
   ~DriConsoleBuffer();
 
   SkCanvas* canvas() { return surface_->getCanvas(); }
+  skia::RefPtr<SkImage> image() {
+    return skia::AdoptRef(surface_->newImageSnapshot());
+  }
 
   // Memory map the backing pixels and wrap them in |surface_|.
   bool Initialize();

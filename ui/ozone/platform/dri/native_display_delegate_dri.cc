@@ -5,12 +5,10 @@
 #include "ui/ozone/platform/dri/native_display_delegate_dri.h"
 
 #include "base/bind.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/display/types/native_display_observer.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/ozone/platform/dri/display_mode_dri.h"
 #include "ui/ozone/platform/dri/display_snapshot_dri.h"
-#include "ui/ozone/platform/dri/dri_console_buffer.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
@@ -103,23 +101,6 @@ const DisplayMode* NativeDisplayDelegateDri::FindDisplayMode(
 }
 
 void NativeDisplayDelegateDri::Initialize() {
-  ScopedVector<HardwareDisplayControllerInfo> displays =
-      GetAvailableDisplayControllerInfos(dri_->get_fd());
-
-  // By default all displays show the same console buffer.
-  console_buffer_.reset(
-      new DriConsoleBuffer(dri_, displays[0]->crtc()->buffer_id));
-  if (!console_buffer_->Initialize()) {
-    VLOG(1) << "Failed to initialize console buffer";
-    console_buffer_.reset();
-  } else {
-    // Clear the console buffer such that restarting Chrome will show a
-    // predetermined background.
-    //
-    // Black was chosen since Chrome's first buffer paints start with a black
-    // background.
-    console_buffer_->canvas()->clear(SK_ColorBLACK);
-  }
 }
 
 void NativeDisplayDelegateDri::GrabServer() {
@@ -148,8 +129,6 @@ void NativeDisplayDelegateDri::SyncWithServer() {
 }
 
 void NativeDisplayDelegateDri::SetBackgroundColor(uint32_t color_argb) {
-  if (console_buffer_)
-    console_buffer_->canvas()->clear(color_argb);
 }
 
 void NativeDisplayDelegateDri::ForceDPMSOn() {
