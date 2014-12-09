@@ -5,13 +5,22 @@
 #include "config.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 
+#include "wtf/StaticConstructors.h"
+
 namespace blink {
+
+DEFINE_GLOBAL(CSSParserToken, staticEOFToken);
+
+void CSSParserTokenRange::initStaticEOFToken()
+{
+    new ((void*)&staticEOFToken) CSSParserToken(EOFToken);
+}
 
 CSSParserTokenRange CSSParserTokenRange::makeSubRange(const CSSParserToken* first, const CSSParserToken* last)
 {
-    if (first == &staticEOF())
+    if (first == &staticEOFToken)
         first = m_last;
-    if (last == &staticEOF())
+    if (last == &staticEOFToken)
         last = m_last;
     ASSERT(first <= last);
     return CSSParserTokenRange(first, last);
