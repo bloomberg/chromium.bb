@@ -25468,37 +25468,6 @@
         "trybot_list": true,
         "usepkg_build_packages": false
     },
-    "parrot-grouped-pre-cq": {
-        "archive": false,
-        "boards": [
-            "parrot"
-        ],
-        "build_packages_in_background": true,
-        "build_type": "binary",
-        "chrome_sdk_build_chrome": false,
-        "chroot_replace": true,
-        "compilecheck": true,
-        "cpe_export": false,
-        "debug_symbols": false,
-        "description": "Verifies compilation only",
-        "important": true,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "manifest_version": true,
-        "name": "parrot-grouped-pre-cq",
-        "overlays": "both",
-        "pre_cq": true,
-        "trybot_list": true,
-        "unittests": false,
-        "upload_standalone_images": false,
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [
-            "smoke_suite"
-        ]
-    },
     "parrot-no-vmtest-pre-cq": {
         "archive": false,
         "boards": [
@@ -30064,7 +30033,7 @@
             {
                 "archive": false,
                 "boards": [
-                    "parrot"
+                    "rush_ryu"
                 ],
                 "build_packages_in_background": true,
                 "build_type": "binary",
@@ -30080,18 +30049,17 @@
                 "manifest": "official.xml",
                 "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
                 "manifest_version": true,
-                "name": "parrot-grouped-pre-cq",
+                "name": "rush_ryu-grouped-pre-cq",
                 "overlays": "both",
                 "pre_cq": true,
+                "tests_supported": false,
                 "trybot_list": true,
                 "unittests": false,
                 "upload_standalone_images": false,
                 "useflags": [
                     "chrome_internal"
                 ],
-                "vm_tests": [
-                    "smoke_suite"
-                ]
+                "vm_tests": []
             }
         ],
         "chrome_sdk_build_chrome": false,
@@ -33257,6 +33225,36 @@
         "trybot_list": true,
         "unittests": false,
         "usepkg_build_packages": false,
+        "vm_tests": []
+    },
+    "rush_ryu-grouped-pre-cq": {
+        "archive": false,
+        "boards": [
+            "rush_ryu"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "compilecheck": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation only",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "rush_ryu-grouped-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "rush_ryu-no-vmtest-pre-cq": {

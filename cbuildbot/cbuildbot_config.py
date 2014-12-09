@@ -2175,9 +2175,9 @@ _config.add_group(constants.PRE_CQ_GROUP_CONFIG,
   compile_only_pre_cq.add_config('lumpy-grouped-pre-cq',
                                  _base_configs['lumpy']),
 
-  # amd64 w/kernel 3.4.
-  compile_only_pre_cq.add_config('parrot-grouped-pre-cq',
-                                 _base_configs['parrot']),
+  # arm64 w/kernel 3.4.
+  compile_only_pre_cq.add_config('rush_ryu-grouped-pre-cq',
+                                 _base_configs['rush_ryu']),
 )
 
 internal_paladin.add_config('pre-cq-launcher',
