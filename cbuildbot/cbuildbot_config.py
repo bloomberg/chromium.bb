@@ -1229,8 +1229,10 @@ _arm_internal_non_release_boards = frozenset([
 
 _x86_internal_release_boards = frozenset([
   'auron',
-  'auron_yuna',
+  'auron_cid',
+  'auron_lulu',
   'auron_paine',
+  'auron_yuna',
   'bayleybay',
   'beltino',
   'bobcat',
@@ -1407,6 +1409,8 @@ _moblab_boards = frozenset([
 
 _freon_boards = frozenset([
   'auron',
+  'auron_cid',
+  'auron_lulu',
   'auron_paine',
   'auron_yuna',
   'link_freon',
@@ -2780,7 +2784,13 @@ _AddGroupConfig('nyan', 'nyan', (
 # auron-based boards
 _AddGroupConfig('auron', 'auron', (
     'auron_yuna',
-    'auron_paine'),
+    'auron_paine',
+))
+
+_AddGroupConfig('auron-b', 'auron_lulu', (
+    'auron_cid',
+    ),
+    important=False
 )
 
 # veyron-based boards
