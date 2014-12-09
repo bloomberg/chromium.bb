@@ -23,6 +23,15 @@
 var remoting = remoting || {};
 
 /**
+ * Interval that determines how often the web-app should send a new access token
+ * to the host.
+ *
+ * @const
+ * @type {number}
+ */
+remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS = 15 * 60 * 1000;
+
+/**
  * True if Cast capability is supported.
  *
  * @type {boolean}
@@ -383,6 +392,11 @@ remoting.ClientSession.Capability = {
   // Let the host know that we're interested in knowing whether or not it
   // rate limits desktop-resize requests.
   RATE_LIMIT_RESIZE_REQUESTS: 'rateLimitResizeRequests',
+
+  // Indicates that host/client supports Google Drive integration, and that the
+  // client should send to the host the OAuth tokens to be used by Google Drive
+  // on the host.
+  GOOGLE_DRIVE: "googleDrive",
 
   // Indicates that the client supports the video frame-recording extension.
   VIDEO_RECORDER: 'videoRecorder',
@@ -1083,6 +1097,9 @@ remoting.ClientSession.prototype.onSetCapabilities_ = function(capabilities) {
                                         clientArea.height,
                                         window.devicePixelRatio);
   }
+  if (this.hasCapability_(remoting.ClientSession.Capability.GOOGLE_DRIVE)) {
+    this.sendGoogleDriveAccessToken_();
+  }
   if (this.hasCapability_(
       remoting.ClientSession.Capability.VIDEO_RECORDER)) {
     this.videoFrameRecorder_ = new remoting.VideoFrameRecorder(this.plugin_);
@@ -1514,6 +1531,18 @@ remoting.ClientSession.prototype.sendClipboardItem = function(mimeType, item) {
 };
 
 /**
+ * Sends an extension message to the host.
+ *
+ * @param {string} type The message type.
+ * @param {string} message The message payload.
+ */
+remoting.ClientSession.prototype.sendClientMessage = function(type, message) {
+  if (!this.plugin_)
+    return;
+  this.plugin_.sendClientMessage(type, message);
+};
+
+/**
  * Send a gnubby-auth extension message to the host.
  * @param {Object} data The gnubby-auth message data.
  */
@@ -1552,6 +1581,30 @@ remoting.ClientSession.prototype.createGnubbyAuthHandler_ = function() {
     // TODO(psj): Move to more generic capabilities mechanism.
     this.sendGnubbyAuthMessage({'type': 'control', 'option': 'auth-v1'});
   }
+};
+
+/**
+ * Timer callback to send the access token to the host.
+ * @private
+ */
+remoting.ClientSession.prototype.sendGoogleDriveAccessToken_ = function() {
+  if (this.state_ != remoting.ClientSession.State.CONNECTED) {
+    return;
+  }
+  /** @type {remoting.ClientSession} */
+  var that = this;
+
+  /** @param {string} token */
+  var sendToken = function(token) {
+    remoting.clientSession.sendClientMessage('accessToken', token);
+  };
+  /** @param {remoting.Error} error */
+  var sendError = function(error) {
+    console.log('Failed to refresh access token: ' + error);
+  }
+  remoting.identity.callWithNewToken(sendToken, sendError);
+  window.setTimeout(this.sendGoogleDriveAccessToken_.bind(this),
+                    remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS);
 };
 
 /**
