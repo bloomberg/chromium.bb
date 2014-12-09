@@ -6,22 +6,30 @@
   "default_locale": "en",
   "incognito": "split",
   "permissions": [
-    "app.window.ime",
-    "app.window.alpha",
-    "input",
-    "unlimitedStorage",
-    "inputMethodPrivate",
-    "virtualKeyboardPrivate",
-    "metricsPrivate",
-    "https://dl.google.com/",
-    "https://clients4.google.com/",
     "accessibilityFeatures.read",
+    "app.window.alpha",
+    "app.window.alwaysOnTop",
+    "app.window.ime",
     "audioCapture",
-    "tabs"
+    "https://clients4.google.com/",
+    "https://dl.google.com/",
+    "https://www.googleapis.com/",
+    "input",
+    "inputMethodPrivate",
+    "metricsPrivate",
+    "tabs",
+    "unlimitedStorage",
+    "virtualKeyboardPrivate"
   ],
   "background": {
     "page": "background.html"
   },
+  "content_scripts": [
+    {
+      "matches": ["https://www.googleapis.com/auth/imesync*"],
+      "js": ["chos_inject-debug.js"]
+    }
+  ],
   "ime_path": "/usr/share/chromeos-assets/input_methods/input_tools",
   "input_components": [
     {
@@ -295,7 +303,7 @@
       "description": "Korean input method.",
       "language": "ko",
       "layouts": ["us"],
-      "input_view": "inputview.html#id=ko&language=ko&passwordLayout=us&name=inputmethod_hangul",
+      "input_view": "inputview.html#id=ko&language=ko&passwordLayout=us-ltr&name=inputmethod_hangul",
       "options_page": "hmm_options.html?code=ko-t-i0-und"
     },
     {
@@ -306,7 +314,7 @@
       "description": "Japanese input method.",
       "language": "ja",
       "layouts": ["us"],
-      "input_view": "inputview.html#id=jp_us&language=ja&passwordLayout=us&name=appNameUSKeyboard",
+      "input_view": "inputview.html#id=jp_us&language=ja&passwordLayout=us-ltr&name=appNameUSKeyboard",
       "options_page": "mozc_option.html"
     },
     {
@@ -317,7 +325,7 @@
       "description": "Japanese input method.",
       "language": "ja",
       "layouts": ["jp"],
-      "input_view": "inputview.html#id=jp&language=ja&passwordLayout=us&name=appNameJPKeyboard",
+      "input_view": "inputview.html#id=jp&language=ja&passwordLayout=us-ltr&name=appNameJPKeyboard",
       "options_page": "mozc_option.html"
     },
     {
@@ -327,7 +335,7 @@
       "description": "",
       "language": ["bn"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:bn_phone&language=bn&passwordLayout=us&name=keyboard_bengali_phonetic"
+      "input_view": "inputview.html#id=m17n:bn_phone&language=bn&passwordLayout=us-ltr&name=keyboard_bengali_phonetic"
     },
     {
       "name": "__MSG_keyboard_gujarati_phonetic__",
@@ -336,7 +344,7 @@
       "description": "",
       "language": ["gu"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:gu_phone&language=gu&passwordLayout=us&name=keyboard_gujarati_phonetic"
+      "input_view": "inputview.html#id=m17n:gu_phone&language=gu&passwordLayout=us-ltr&name=keyboard_gujarati_phonetic"
     },
     {
       "name": "__MSG_keyboard_devanagari_phonetic__",
@@ -345,7 +353,7 @@
       "description": "",
       "language": ["hi", "mr"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:deva_phone&language=hi&passwordLayout=us&name=keyboard_devanagari_phonetic"
+      "input_view": "inputview.html#id=m17n:deva_phone&language=hi&passwordLayout=us-ltr&name=keyboard_devanagari_phonetic"
     },
     {
       "name": "__MSG_keyboard_kannada_phonetic__",
@@ -354,7 +362,7 @@
       "description": "",
       "language": ["kn"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:kn_phone&language=kn&passwordLayout=us&name=keyboard_kannada_phonetic"
+      "input_view": "inputview.html#id=m17n:kn_phone&language=kn&passwordLayout=us-ltr&name=keyboard_kannada_phonetic"
     },
     {
       "name": "__MSG_keyboard_malayalam_phonetic__",
@@ -363,7 +371,7 @@
       "description": "",
       "language": ["ml"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:ml_phone&language=ml&passwordLayout=us&name=keyboard_malayalam_phonetic"
+      "input_view": "inputview.html#id=m17n:ml_phone&language=ml&passwordLayout=us-ltr&name=keyboard_malayalam_phonetic"
     },
     {
       "name": "__MSG_keyboard_tamil_inscript__",
@@ -372,7 +380,7 @@
       "description": "",
       "language": ["ta"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:ta_inscript&language=ta&passwordLayout=us&name=keyboard_tamil_inscript"
+      "input_view": "inputview.html#id=m17n:ta_inscript&language=ta&passwordLayout=us-ltr&name=keyboard_tamil_inscript"
     },
     {
       "name": "__MSG_keyboard_tamil_phonetic__",
@@ -381,7 +389,7 @@
       "description": "",
       "language": ["ta"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:ta_phone&language=ta&passwordLayout=us&name=keyboard_tamil_phonetic"
+      "input_view": "inputview.html#id=m17n:ta_phone&language=ta&passwordLayout=us-ltr&name=keyboard_tamil_phonetic"
     },
     {
       "name": "__MSG_keyboard_tamil_tamil99__",
@@ -390,7 +398,7 @@
       "description": "",
       "language": ["ta"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:ta_tamil99&language=ta&passwordLayout=us&name=keyboard_tamil_tamil99"
+      "input_view": "inputview.html#id=m17n:ta_tamil99&language=ta&passwordLayout=us-ltr&name=keyboard_tamil_tamil99"
     },
     {
       "name": "__MSG_keyboard_tamil_typewriter__",
@@ -399,7 +407,7 @@
       "description": "",
       "language": ["ta"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:ta_typewriter&language=ta&passwordLayout=us&name=keyboard_tamil_typewriter"
+      "input_view": "inputview.html#id=m17n:ta_typewriter&language=ta&passwordLayout=us-ltr&name=keyboard_tamil_typewriter"
     },
     {
       "name": "__MSG_keyboard_tamil_itrans__",
@@ -408,7 +416,7 @@
       "description": "",
       "language": ["ta"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:ta_itrans&language=ta&passwordLayout=us&name=keyboard_tamil_itrans"
+      "input_view": "inputview.html#id=m17n:ta_itrans&language=ta&passwordLayout=us-ltr&name=keyboard_tamil_itrans"
     },
     {
       "name": "__MSG_keyboard_telugu_phonetic__",
@@ -417,7 +425,7 @@
       "description": "",
       "language": ["te"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:te_phone&language=te&passwordLayout=us&name=keyboard_telugu_phonetic"
+      "input_view": "inputview.html#id=m17n:te_phone&language=te&passwordLayout=us-ltr&name=keyboard_telugu_phonetic"
     },
     {
       "name": "__MSG_keyboard_ethiopic__",
@@ -426,7 +434,7 @@
       "description": "",
       "language": ["am"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:ethi&language=am&passwordLayout=us&name=keyboard_ethiopic"
+      "input_view": "inputview.html#id=m17n:ethi&language=am&passwordLayout=us-ltr&name=keyboard_ethiopic"
     },
     {
       "name": "__MSG_keyboard_thai_kedmanee__",
@@ -435,7 +443,7 @@
       "description": "",
       "language": ["th"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:th&language=th&passwordLayout=us&name=keyboard_thai_kedmanee"
+      "input_view": "inputview.html#id=m17n:th&language=th&passwordLayout=us-ltr&name=keyboard_thai_kedmanee"
     },
     {
       "name": "__MSG_keyboard_thai_pattachote__",
@@ -444,7 +452,7 @@
       "description": "",
       "language": ["th"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:th_pattajoti&language=th&passwordLayout=us&name=keyboard_thai_pattachote"
+      "input_view": "inputview.html#id=m17n:th_pattajoti&language=th&passwordLayout=us-ltr&name=keyboard_thai_pattachote"
     },
     {
       "name": "__MSG_keyboard_thai_tis__",
@@ -453,7 +461,7 @@
       "description": "",
       "language": ["th"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:th_tis&language=th&passwordLayout=us&name=keyboard_thai_tis"
+      "input_view": "inputview.html#id=m17n:th_tis&language=th&passwordLayout=us-ltr&name=keyboard_thai_tis"
     },
     {
       "name": "__MSG_keyboard_persian__",
@@ -462,7 +470,7 @@
       "description": "",
       "language": ["fa"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:fa&language=fa&passwordLayout=us&name=keyboard_persian"
+      "input_view": "inputview.html#id=m17n:fa&language=fa&passwordLayout=us-rtl&name=keyboard_persian"
     },
     {
       "name": "__MSG_keyboard_vietnamese_tcvn__",
@@ -471,7 +479,7 @@
       "description": "",
       "language": ["vi"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:vi_tcvn&language=vi&passwordLayout=us&name=keyboard_vietnamese_tcvn"
+      "input_view": "inputview.html#id=m17n:vi_tcvn&language=vi&passwordLayout=us-ltr&name=keyboard_vietnamese_tcvn"
     },
     {
       "name": "__MSG_keyboard_vietnamese_telex__",
@@ -480,7 +488,7 @@
       "description": "",
       "language": ["vi"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:vi_telex&language=vi&passwordLayout=us&name=keyboard_vietnamese_telex"
+      "input_view": "inputview.html#id=m17n:vi_telex&language=vi&passwordLayout=us-ltr&name=keyboard_vietnamese_telex"
     },
     {
       "name": "__MSG_keyboard_vietnamese_viqr__",
@@ -489,7 +497,7 @@
       "description": "",
       "language": ["vi"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:vi_viqr&language=vi&passwordLayout=us&name=keyboard_vietnamese_viqr"
+      "input_view": "inputview.html#id=m17n:vi_viqr&language=vi&passwordLayout=us-ltr&name=keyboard_vietnamese_viqr"
     },
     {
       "name": "__MSG_keyboard_vietnamese_vni__",
@@ -498,7 +506,7 @@
       "description": "",
       "language": ["vi"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:vi_vni&language=vi&passwordLayout=us&name=keyboard_vietnamese_vni"
+      "input_view": "inputview.html#id=m17n:vi_vni&language=vi&passwordLayout=us-ltr&name=keyboard_vietnamese_vni"
     },
     {
       "name": "__MSG_keyboard_arabic__",
@@ -507,7 +515,7 @@
       "description": "",
       "language": ["ar"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:ar&language=ar&passwordLayout=us&name=keyboard_arabic"
+      "input_view": "inputview.html#id=m17n:ar&language=ar&passwordLayout=us-rtl&name=keyboard_arabic"
     },
     {
       "name": "__MSG_keyboard_lao__",
@@ -516,7 +524,7 @@
       "description": "",
       "language": ["lo"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:lo&language=lo&passwordLayout=us&name=keyboard_laothian"
+      "input_view": "inputview.html#id=m17n:lo&language=lo&passwordLayout=us-ltr&name=keyboard_laothian"
     },
     {
       "name": "__MSG_keyboard_nepali_inscript__",
@@ -525,7 +533,7 @@
       "description": "",
       "language": ["ne"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:ne_inscript&language=ne&passwordLayout=us&name=keyboard_nepali_inscript"
+      "input_view": "inputview.html#id=m17n:ne_inscript&language=ne&passwordLayout=us-ltr&name=keyboard_nepali_inscript"
     },
     {
       "name": "__MSG_keyboard_nepali_phonetic__",
@@ -534,7 +542,7 @@
       "description": "",
       "language": ["ne"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:ne_phone&language=ne&passwordLayout=us&name=keyboard_nepali_phonetic"
+      "input_view": "inputview.html#id=m17n:ne_phone&language=ne&passwordLayout=us-ltr&name=keyboard_nepali_phonetic"
     },
     {
       "name": "__MSG_keyboard_khmer__",
@@ -543,7 +551,7 @@
       "description": "",
       "language": ["km"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:km&language=km&passwordLayout=us&name=keyboard_khmer"
+      "input_view": "inputview.html#id=m17n:km&language=km&passwordLayout=us-ltr&name=keyboard_khmer"
     },
     {
       "name": "__MSG_keyboard_myanmar__",
@@ -552,7 +560,7 @@
       "description": "",
       "language": ["my"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:my&language=my&passwordLayout=us&name=keyboard_myanmar"
+      "input_view": "inputview.html#id=m17n:my&language=my&passwordLayout=us-ltr&name=keyboard_myanmar"
     },
     {
       "name": "__MSG_keyboard_sinhala__",
@@ -561,7 +569,7 @@
       "description": "",
       "language": ["si"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:si&language=si&passwordLayout=us&name=keyboard_sinhala"
+      "input_view": "inputview.html#id=m17n:si&language=si&passwordLayout=us-ltr&name=keyboard_sinhala"
     },
     {
       "name": "__MSG_keyboard_soranikurdish_en__",
@@ -570,7 +578,7 @@
       "description": "Sorani Kurdish - English-based",
       "language": ["ckb"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:ckb_en&language=ckb&passwordLayout=us&name=keyboard_soranikurdish_en"
+      "input_view": "inputview.html#id=m17n:ckb_en&language=ckb&passwordLayout=us-rtl&name=keyboard_soranikurdish_en"
     },
     {
       "name": "__MSG_keyboard_soranikurdish_ar__",
@@ -579,7 +587,7 @@
       "description": "Sorani Kurdish - Arabic-based",
       "language": ["ckb"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:ckb_ar&language=ckb&passwordLayout=us&name=keyboard_soranikurdish_ar"
+      "input_view": "inputview.html#id=m17n:ckb_ar&language=ckb&passwordLayout=us-rtl&name=keyboard_soranikurdish_ar"
     },
     {
       "name": "__MSG_keyboard_myanmar_myansan__",
@@ -588,7 +596,7 @@
       "description": "",
       "language": ["my"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:my_myansan&language=my&passwordLayout=us&name=keyboard_myanmar_myansan"
+      "input_view": "inputview.html#id=m17n:my_myansan&language=my&passwordLayout=us-ltr&name=keyboard_myanmar_myansan"
     },
     {
       "name": "__MSG_keyboard_russian_phonetic_aatseel__",
@@ -597,7 +605,7 @@
       "description": "",
       "language": ["ru"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:ru_phone_aatseel&language=ru&passwordLayout=us&name=keyboard_russian_phonetic_aatseel"
+      "input_view": "inputview.html#id=m17n:ru_phone_aatseel&language=ru&passwordLayout=us-ltr&name=keyboard_russian_phonetic_aatseel"
     },
     {
       "name": "__MSG_keyboard_russian_phonetic_yazhert__",
@@ -606,7 +614,7 @@
       "description": "",
       "language": ["ru"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=m17n:ru_phone_yazhert&language=ru&passwordLayout=us&name=keyboard_russian_phonetic_yazhert"
+      "input_view": "inputview.html#id=m17n:ru_phone_yazhert&language=ru&passwordLayout=us-ltr&name=keyboard_russian_phonetic_yazhert"
     }
   ],
   "manifest_version": 2

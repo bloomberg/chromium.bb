@@ -6,23 +6,31 @@
   "incognito": "split",
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC7C0oB6YTnf69uhWnVTZl5TB/psHrJXgIPLYchFb0whlVCG8fqMo9lW/oxBmZXZ3N8T7zZrdYI/SUjoc9I5R/dMVVD2q4iKox+x7xlTbqSdVeOb6b9ZVJ24pLbO1L7feSNSBgR0t61jrC2eY/gf78h7w58UEQBPFT2mUxhhwodyQIDAQAB",
   "permissions": [
-    "app.window.ime",
+    "accessibilityFeatures.read",
     "app.window.alpha",
+    "app.window.alwaysOnTop",
+    "app.window.ime",
+    "audioCapture",
+    "https://clients4.google.com/",
+    "https://dl.google.com/",
+    "https://www.googleapis.com/",
     "input",
     "inputMethodPrivate",
-    "virtualKeyboardPrivate",
     "metricsPrivate",
+    "tabs",
     "unlimitedStorage",
-    "https://dl.google.com/",
-    "https://clients4.google.com/",
-    "accessibilityFeatures.read",
-    "audioCapture",
-    "tabs"
+    "virtualKeyboardPrivate"
   ],
   "background": {
     "page": "background.html",
     "persistent": false
   },
+  "content_scripts": [
+    {
+      "matches": ["https://www.googleapis.com/auth/imesync*"],
+      "js": ["chos_inject-debug.js"]
+    }
+  ],
   "ime_path": "/usr/share/chromeos-assets/input_methods/input_tools",
   "input_components": [
     {
@@ -42,7 +50,7 @@
       "description": "",
       "language": ["id"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=us&language=id&passwordLayout=us&name=keyboard_us",
+      "input_view": "inputview.html#id=us-ltr&language=id&passwordLayout=us-ltr&name=keyboard_us",
       "options_page": "hmm_options.html?code=xkb:us::ind"
     },
     {
@@ -52,7 +60,7 @@
       "description": "",
       "language": ["fil"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=us&language=fil&passwordLayout=us&name=keyboard_us",
+      "input_view": "inputview.html#id=us-ltr&language=fil&passwordLayout=us-ltr&name=keyboard_us",
       "options_page": "hmm_options.html?code=xkb:us::fil"
     },
     {
@@ -62,7 +70,7 @@
       "description": "",
       "language": ["ms"],
       "layouts": ["us"],
-      "input_view": "inputview.html#id=us&language=ms&passwordLayout=us&name=keyboard_us",
+      "input_view": "inputview.html#id=us-ltr&language=ms&passwordLayout=us-ltr&name=keyboard_us",
       "options_page": "hmm_options.html?code=xkb:us::msa"
     },
     {
@@ -250,7 +258,7 @@
       "description": "",
       "language": ["ru"],
       "layouts": ["ru"],
-      "input_view": "inputview.html#id=ru&language=ru&passwordLayout=us&name=keyboard_russian",
+      "input_view": "inputview.html#id=ru&language=ru&passwordLayout=us-ltr&name=keyboard_russian",
       "options_page": "hmm_options.html?code=xkb:ru::rus"
     },
     {
@@ -260,7 +268,7 @@
       "description": "",
       "language": ["ru"],
       "layouts": ["ru(phonetic)"],
-      "input_view": "inputview.html#id=ru-phonetic&language=ru&passwordLayout=us&name=keyboard_russian_phonetic",
+      "input_view": "inputview.html#id=ru-phonetic&language=ru&passwordLayout=us-ltr&name=keyboard_russian_phonetic",
       "options_page": "hmm_options.html?code=xkb:ru:phonetic:rus"
     },
     {
@@ -280,7 +288,7 @@
       "description": "",
       "language": ["bg"],
       "layouts": ["bg"],
-      "input_view": "inputview.html#id=bg&language=bg&passwordLayout=us&name=keyboard_bulgarian",
+      "input_view": "inputview.html#id=bg&language=bg&passwordLayout=us-ltr&name=keyboard_bulgarian",
       "options_page": "hmm_options.html?code=xkb:bg::bul"
     },
     {
@@ -290,7 +298,7 @@
       "description": "",
       "language": ["bg"],
       "layouts": ["bg(phonetic)"],
-      "input_view": "inputview.html#id=bg-phonetic&language=bg&passwordLayout=us&name=keyboard_bulgarian_phonetic",
+      "input_view": "inputview.html#id=bg-phonetic&language=bg&passwordLayout=us-ltr&name=keyboard_bulgarian_phonetic",
       "options_page": "hmm_options.html?code=xkb:bg:phonetic:bul"
     },
     {
@@ -372,7 +380,7 @@
       "description": "",
       "language": ["el"],
       "layouts": ["gr"],
-      "input_view": "inputview.html#id=gr&language=el&passwordLayout=us&name=keyboard_greek",
+      "input_view": "inputview.html#id=gr&language=el&passwordLayout=us-ltr&name=keyboard_greek",
       "options_page": "hmm_options.html?code=xkb:gr::gre"
     },
     {
@@ -382,7 +390,7 @@
       "description": "",
       "language": ["he"],
       "layouts": ["il"],
-      "input_view": "inputview.html#id=il&language=he&passwordLayout=us&name=keyboard_hebrew",
+      "input_view": "inputview.html#id=il&language=he&passwordLayout=us-rtl&name=keyboard_hebrew",
       "options_page": "hmm_options.html?code=xkb:il::heb"
     },
     {
@@ -544,7 +552,7 @@
       "description": "",
       "language": ["sk"],
       "layouts": ["sk"],
-      "input_view": "inputview.html#id=sk&language=sk&passwordLayout=us&name=keyboard_slovakian",
+      "input_view": "inputview.html#id=sk&language=sk&passwordLayout=us-ltr&name=keyboard_slovakian",
       "options_page": "hmm_options.html?code=xkb:sk::slo"
     },
     {
@@ -564,7 +572,7 @@
       "description": "",
       "language": ["sr"],
       "layouts": ["rs"],
-      "input_view": "inputview.html#id=rs&language=sr&passwordLayout=us&name=keyboard_serbian",
+      "input_view": "inputview.html#id=rs&language=sr&passwordLayout=us-ltr&name=keyboard_serbian",
       "options_page": "hmm_options.html?code=xkb:rs::srp"
     },
     {
@@ -584,7 +592,7 @@
       "description": "",
       "language": ["uk"],
       "layouts": ["ua"],
-      "input_view": "inputview.html#id=ua&language=uk&passwordLayout=us&name=keyboard_ukrainian",
+      "input_view": "inputview.html#id=ua&language=uk&passwordLayout=us-ltr&name=keyboard_ukrainian",
       "options_page": "hmm_options.html?code=xkb:ua::ukr"
     },
     {
@@ -594,7 +602,7 @@
       "description": "",
       "language": ["be"],
       "layouts": ["by"],
-      "input_view": "inputview.html#id=by&language=be&passwordLayout=us&name=keyboard_belarusian",
+      "input_view": "inputview.html#id=by&language=be&passwordLayout=us-ltr&name=keyboard_belarusian",
       "options_page": "hmm_options.html?code=xkb:by::bel"
     },
     {
@@ -604,7 +612,7 @@
       "description": "",
       "language": ["hy"],
       "layouts": ["am(phonetic)"],
-      "input_view": "inputview.html#id=am-phonetic&language=hy&passwordLayout=us&name=keyboard_armenian_phonetic",
+      "input_view": "inputview.html#id=am-phonetic&language=hy&passwordLayout=us-ltr&name=keyboard_armenian_phonetic",
       "options_page": "hmm_options.html?code=xkb:am:phonetic:arm"
     },
     {
@@ -614,7 +622,7 @@
       "description": "",
       "language": ["ka"],
       "layouts": ["ge"],
-      "input_view": "inputview.html#id=ge&language=ka&passwordLayout=us&name=keyboard_georgian",
+      "input_view": "inputview.html#id=ge&language=ka&passwordLayout=us-ltr&name=keyboard_georgian",
       "options_page": "hmm_options.html?code=xkb:ge::geo"
     },
     {
@@ -624,7 +632,7 @@
       "description": "",
       "language": ["mn"],
       "layouts": ["mn"],
-      "input_view": "inputview.html#id=mn&language=mn&passwordLayout=us&name=keyboard_mongolian",
+      "input_view": "inputview.html#id=mn&language=mn&passwordLayout=us-ltr&name=keyboard_mongolian",
       "options_page": "hmm_options.html?code=xkb:mn::mon"
     },
     {
