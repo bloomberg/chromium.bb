@@ -9746,26 +9746,30 @@ struct TraceBeginCHROMIUM {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLuint _bucket_id) {
+  void Init(GLuint _category_bucket_id, GLuint _name_bucket_id) {
     SetHeader();
-    bucket_id = _bucket_id;
+    category_bucket_id = _category_bucket_id;
+    name_bucket_id = _name_bucket_id;
   }
 
-  void* Set(void* cmd, GLuint _bucket_id) {
-    static_cast<ValueType*>(cmd)->Init(_bucket_id);
+  void* Set(void* cmd, GLuint _category_bucket_id, GLuint _name_bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_category_bucket_id, _name_bucket_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
-  uint32_t bucket_id;
+  uint32_t category_bucket_id;
+  uint32_t name_bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(TraceBeginCHROMIUM) == 8,
-               Sizeof_TraceBeginCHROMIUM_is_not_8);
+COMPILE_ASSERT(sizeof(TraceBeginCHROMIUM) == 12,
+               Sizeof_TraceBeginCHROMIUM_is_not_12);
 COMPILE_ASSERT(offsetof(TraceBeginCHROMIUM, header) == 0,
                OffsetOf_TraceBeginCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(TraceBeginCHROMIUM, bucket_id) == 4,
-               OffsetOf_TraceBeginCHROMIUM_bucket_id_not_4);
+COMPILE_ASSERT(offsetof(TraceBeginCHROMIUM, category_bucket_id) == 4,
+               OffsetOf_TraceBeginCHROMIUM_category_bucket_id_not_4);
+COMPILE_ASSERT(offsetof(TraceBeginCHROMIUM, name_bucket_id) == 8,
+               OffsetOf_TraceBeginCHROMIUM_name_bucket_id_not_8);
 
 struct TraceEndCHROMIUM {
   typedef TraceEndCHROMIUM ValueType;

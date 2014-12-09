@@ -543,7 +543,8 @@ virtual void UniformValuebufferCHROMIUM(GLint location,
                                         GLenum subscription) = 0;
 virtual void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) = 0;
 virtual void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) = 0;
-virtual void TraceBeginCHROMIUM(const char* name) = 0;
+virtual void TraceBeginCHROMIUM(const char* category_name,
+                                const char* trace_name) = 0;
 virtual void TraceEndCHROMIUM() = 0;
 virtual void AsyncTexSubImage2DCHROMIUM(GLenum target,
                                         GLint level,

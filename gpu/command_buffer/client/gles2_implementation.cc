@@ -3484,32 +3484,38 @@ void GLES2Implementation::PopGroupMarkerEXT() {
   debug_marker_manager_.PopGroup();
 }
 
-void GLES2Implementation::TraceBeginCHROMIUM(const char* name) {
+void GLES2Implementation::TraceBeginCHROMIUM(
+    const char* category_name, const char* trace_name) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glTraceBeginCHROMIUM("
-                 << name << ")");
-  if (current_trace_name_.get()) {
+                 << category_name << ", " << trace_name << ")");
+  if (current_trace_category_.get() || current_trace_name_.get()) {
     SetGLError(GL_INVALID_OPERATION, "glTraceBeginCHROMIUM",
                "trace already running");
     return;
   }
-  TRACE_EVENT_COPY_ASYNC_BEGIN0("gpu", name, this);
-  SetBucketAsCString(kResultBucketId, name);
-  helper_->TraceBeginCHROMIUM(kResultBucketId);
+  TRACE_EVENT_COPY_ASYNC_BEGIN0(category_name, trace_name, this);
+  SetBucketAsCString(kResultBucketId, category_name);
+  SetBucketAsCString(kResultBucketId + 1, category_name);
+  helper_->TraceBeginCHROMIUM(kResultBucketId, kResultBucketId + 1);
   helper_->SetBucketSize(kResultBucketId, 0);
-  current_trace_name_.reset(new std::string(name));
+  helper_->SetBucketSize(kResultBucketId + 1, 0);
+  current_trace_category_.reset(new std::string(category_name));
+  current_trace_name_.reset(new std::string(trace_name));
 }
 
 void GLES2Implementation::TraceEndCHROMIUM() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glTraceEndCHROMIUM(" << ")");
-  if (!current_trace_name_.get()) {
+  if (!current_trace_category_.get() || !current_trace_name_.get()) {
     SetGLError(GL_INVALID_OPERATION, "glTraceEndCHROMIUM",
                "missing begin trace");
     return;
   }
   helper_->TraceEndCHROMIUM();
-  TRACE_EVENT_COPY_ASYNC_END0("gpu", current_trace_name_->c_str(), this);
+  TRACE_EVENT_COPY_ASYNC_END0(current_trace_category_->c_str(),
+                              current_trace_name_->c_str(), this);
+  current_trace_category_.reset();
   current_trace_name_.reset();
 }
 

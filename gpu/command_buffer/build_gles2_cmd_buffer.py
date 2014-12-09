@@ -2711,7 +2711,7 @@ _FUNCTION_INFO = {
     'type': 'Custom',
     'impl_func': False,
     'client_test': False,
-    'cmd_args': 'GLuint bucket_id',
+    'cmd_args': 'GLuint category_bucket_id, GLuint name_bucket_id',
     'extension': True,
     'chromium': True,
   },

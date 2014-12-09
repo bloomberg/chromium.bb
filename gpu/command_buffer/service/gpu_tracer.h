@@ -42,9 +42,10 @@ enum GpuTracerType {
 
 // Marker structure for a Trace.
 struct TraceMarker {
-  TraceMarker(const std::string& name);
+  TraceMarker(const std::string& category, const std::string& name);
   ~TraceMarker();
 
+  std::string category_;
   std::string name_;
   scoped_refptr<GPUTrace> trace_;
 };
@@ -62,7 +63,8 @@ class GPUTracer : public base::SupportsWeakPtr<GPUTracer> {
   bool EndDecoding();
 
   // Begin a trace marker.
-  bool Begin(const std::string& name, GpuTracerSource source);
+  bool Begin(const std::string& category, const std::string& name,
+             GpuTracerSource source);
 
   // End the last started trace marker.
   bool End(GpuTracerSource source);
@@ -71,11 +73,13 @@ class GPUTracer : public base::SupportsWeakPtr<GPUTracer> {
 
   // Retrieve the name of the current open trace.
   // Returns empty string if no current open trace.
+  const std::string& CurrentCategory() const;
   const std::string& CurrentName() const;
 
  private:
   // Trace Processing.
-  scoped_refptr<GPUTrace> CreateTrace(const std::string& name);
+  scoped_refptr<GPUTrace> CreateTrace(const std::string& category,
+                                      const std::string& name);
   void Process();
   void ProcessTraces();
 
@@ -103,7 +107,8 @@ class GPUTracer : public base::SupportsWeakPtr<GPUTracer> {
 
 class Outputter : public base::RefCounted<Outputter> {
  public:
-  virtual void Trace(const std::string& name,
+  virtual void Trace(const std::string& category,
+                     const std::string& name,
                      int64 start_time,
                      int64 end_time) = 0;
 
@@ -115,7 +120,8 @@ class Outputter : public base::RefCounted<Outputter> {
 class TraceOutputter : public Outputter {
  public:
   static scoped_refptr<TraceOutputter> Create(const std::string& name);
-  void Trace(const std::string& name,
+  void Trace(const std::string& category,
+             const std::string& name,
              int64 start_time,
              int64 end_time) override;
 
@@ -134,15 +140,18 @@ class GPU_EXPORT GPUTrace
     : public base::RefCounted<GPUTrace> {
  public:
   GPUTrace(scoped_refptr<Outputter> outputter,
+           const std::string& category,
            const std::string& name,
            int64 offset,
            GpuTracerType tracer_type);
 
   bool IsEnabled() { return tracer_type_ != kTracerTypeInvalid; }
+
+  const std::string& category() { return category_; }
   const std::string& name() { return name_; }
 
-  void Start();
-  void End();
+  void Start(bool trace_service);
+  void End(bool tracing_service);
   bool IsAvailable();
   void Process();
 
@@ -153,6 +162,7 @@ class GPU_EXPORT GPUTrace
 
   friend class base::RefCounted<GPUTrace>;
 
+  std::string category_;
   std::string name_;
   scoped_refptr<Outputter> outputter_;
 

@@ -22,8 +22,9 @@ using ::testing::_;
 class MockOutputter : public Outputter {
  public:
   MockOutputter() {}
-  MOCK_METHOD3(Trace,
-               void(const std::string& name, int64 start_time, int64 end_time));
+  MOCK_METHOD4(Trace,
+               void(const std::string& category, const std::string& name,
+                    int64 start_time, int64 end_time));
 
  protected:
   ~MockOutputter() {}
@@ -113,6 +114,7 @@ class BaseGpuTracerTest : public GpuServiceTest {
     SetupTimerQueryMocks();
 
     // Expected results
+    const std::string category_name("trace_category");
     const std::string trace_name("trace_test");
     const int64 offset_time = 3231;
     const GLint64 start_timestamp = 7 * base::Time::kNanosecondsPerMicrosecond;
@@ -125,20 +127,21 @@ class BaseGpuTracerTest : public GpuServiceTest {
 
     // Expected Outputter::Trace call
     EXPECT_CALL(*outputter,
-                Trace(trace_name, expect_start_time, expect_end_time));
+                Trace(category_name, trace_name,
+                      expect_start_time, expect_end_time));
 
     scoped_refptr<GPUTrace> trace =
-        new GPUTrace(outputter_ref, trace_name, offset_time,
-                     GetTracerType());
+        new GPUTrace(outputter_ref, category_name, trace_name,
+                     offset_time, GetTracerType());
 
     gl_fake_queries_.SetCurrentGLTime(start_timestamp);
-    trace->Start();
+    trace->Start(true);
 
     // Shouldn't be available before End() call
     gl_fake_queries_.SetCurrentGLTime(end_timestamp);
     EXPECT_FALSE(trace->IsAvailable());
 
-    trace->End();
+    trace->End(true);
 
     // Shouldn't be available until the queries complete
     gl_fake_queries_.SetCurrentGLTime(end_timestamp -

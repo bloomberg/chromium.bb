@@ -37,12 +37,16 @@ class GLES2DecoderTest3 : public GLES2DecoderTestBase {
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderTest3, ::testing::Bool());
 
 TEST_P(GLES2DecoderTest3, TraceBeginCHROMIUM) {
-  const uint32 kBucketId = 123;
+  const uint32 kCategoryBucketId = 123;
+  const uint32 kNameBucketId = 234;
+
+  const char kCategory[] = "test_category";
   const char kName[] = "test_command";
-  SetBucketAsCString(kBucketId, kName);
+  SetBucketAsCString(kCategoryBucketId, kCategory);
+  SetBucketAsCString(kNameBucketId, kName);
 
   TraceBeginCHROMIUM begin_cmd;
-  begin_cmd.Init(kBucketId);
+  begin_cmd.Init(kCategoryBucketId, kNameBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
 }
 
@@ -53,12 +57,16 @@ TEST_P(GLES2DecoderTest3, TraceEndCHROMIUM) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 
-  const uint32 kBucketId = 123;
+  const uint32 kCategoryBucketId = 123;
+  const uint32 kNameBucketId = 234;
+
+  const char kCategory[] = "test_category";
   const char kName[] = "test_command";
-  SetBucketAsCString(kBucketId, kName);
+  SetBucketAsCString(kCategoryBucketId, kCategory);
+  SetBucketAsCString(kNameBucketId, kName);
 
   TraceBeginCHROMIUM begin_cmd;
-  begin_cmd.Init(kBucketId);
+  begin_cmd.Init(kCategoryBucketId, kNameBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
 
   end_cmd.Init();

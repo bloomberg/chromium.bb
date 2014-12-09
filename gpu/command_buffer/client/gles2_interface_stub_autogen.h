@@ -529,7 +529,8 @@ void UniformValuebufferCHROMIUM(GLint location,
                                 GLenum subscription) override;
 void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) override;
 void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) override;
-void TraceBeginCHROMIUM(const char* name) override;
+void TraceBeginCHROMIUM(const char* category_name,
+                        const char* trace_name) override;
 void TraceEndCHROMIUM() override;
 void AsyncTexSubImage2DCHROMIUM(GLenum target,
                                 GLint level,

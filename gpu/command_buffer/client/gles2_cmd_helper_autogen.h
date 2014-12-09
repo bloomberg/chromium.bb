@@ -2021,11 +2021,11 @@ void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) {
   }
 }
 
-void TraceBeginCHROMIUM(GLuint bucket_id) {
+void TraceBeginCHROMIUM(GLuint category_bucket_id, GLuint name_bucket_id) {
   gles2::cmds::TraceBeginCHROMIUM* c =
       GetCmdSpace<gles2::cmds::TraceBeginCHROMIUM>();
   if (c) {
-    c->Init(bucket_id);
+    c->Init(category_bucket_id, name_bucket_id);
   }
 }
 
