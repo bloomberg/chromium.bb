@@ -703,4 +703,46 @@ TEST_F(BrowserAccessibilityTest, EmptyDocHasUniqueIdWin) {
   ASSERT_EQ(root, manager->GetFromUniqueIdWin(unique_id_win));
 }
 
+TEST_F(BrowserAccessibilityTest, TestIA2Attributes) {
+  ui::AXNodeData button;
+  ui::AXNodeData checkbox;
+  checkbox.id = 2;
+  checkbox.SetName("Checkbox");
+  checkbox.role = ui::AX_ROLE_CHECK_BOX;
+  checkbox.state = 1 << ui::AX_STATE_CHECKED;
+
+  ui::AXNodeData root;
+  root.id = 1;
+  root.SetName("Document");
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.state = 0;
+  root.child_ids.push_back(2);
+
+  CountedBrowserAccessibility::reset();
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, checkbox),
+          nullptr, new CountedBrowserAccessibilityFactory()));
+  ASSERT_EQ(2, CountedBrowserAccessibility::num_instances());
+
+  ASSERT_NE(nullptr, manager->GetRoot());
+  BrowserAccessibilityWin* root_accessible =
+      manager->GetRoot()->ToBrowserAccessibilityWin();
+      ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(1, root_accessible->PlatformChildCount());
+  BrowserAccessibilityWin* checkbox_accessible =
+      root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, checkbox_accessible);
+
+  base::win::ScopedBstr attributes;
+  HRESULT hr = checkbox_accessible->get_attributes(attributes.Receive());
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_NE(nullptr, static_cast<BSTR>(attributes));
+  std::wstring attributes_str(attributes, attributes.Length());
+  EXPECT_EQ(L"checkable:true;", attributes_str);
+
+  manager.reset();
+  ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
+}
+
 }  // namespace content

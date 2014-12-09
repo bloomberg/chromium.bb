@@ -696,10 +696,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_attributes(BSTR* attributes) {
   // The iaccessible2 attributes are a set of key-value pairs
   // separated by semicolons, with a colon between the key and the value.
   base::string16 str;
-  for (unsigned int i = 0; i < ia2_attributes_.size(); ++i) {
-    if (i != 0)
-      str += L';';
-    str += ia2_attributes_[i];
+  const std::vector<base::string16>& attributes_list = ia2_attributes();
+  for (unsigned int i = 0; i < attributes_list.size(); ++i) {
+    str += attributes_list[i] + L';';
   }
 
   if (str.empty())
