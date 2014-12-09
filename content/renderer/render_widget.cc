@@ -1300,12 +1300,17 @@ void RenderWidget::initializeLayerTreeView() {
     StartCompositor();
 }
 
-void RenderWidget::DestroyLayerTreeView() {
+void RenderWidget::WillCloseLayerTreeView() {
+  if (host_closing_)
+    return;
+
+  // Prevent new compositors or output surfaces from being created.
+  host_closing_ = true;
+
   // Always send this notification to prevent new layer tree views from
   // being created, even if one hasn't been created yet.
   if (webwidget_)
     webwidget_->willCloseLayerTreeView();
-  compositor_.reset();
 }
 
 blink::WebLayerTreeView* RenderWidget::layerTreeView() {
@@ -1472,12 +1477,7 @@ void RenderWidget::didBlur() {
 }
 
 void RenderWidget::DoDeferredClose() {
-  // No more compositing is possible.  This prevents shutdown races between
-  // previously posted CreateOutputSurface tasks and the host being unable to
-  // create them because the close message was handled.
-  DestroyLayerTreeView();
-  // Also prevent new compositors from being created.
-  host_closing_ = true;
+  WillCloseLayerTreeView();
   Send(new ViewHostMsg_Close(routing_id_));
 }
 
@@ -1498,7 +1498,7 @@ void RenderWidget::closeWidgetSoon() {
   // could be closed before the JS finishes executing.  So instead, post a
   // message back to the message loop, which won't run until the JS is
   // complete, and then the Close message can be sent.
-  base::MessageLoop::current()->PostNonNestableTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&RenderWidget::DoDeferredClose, this));
 }
 
@@ -1517,7 +1517,8 @@ void RenderWidget::QueueSyntheticGesture(
 
 void RenderWidget::Close() {
   screen_metrics_emulator_.reset();
-  DestroyLayerTreeView();
+  WillCloseLayerTreeView();
+  compositor_.reset();
   if (webwidget_) {
     webwidget_->close();
     webwidget_ = NULL;

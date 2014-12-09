@@ -171,7 +171,7 @@ class CONTENT_EXPORT RenderWidget
   void StartCompositor();
 
   // Stop compositing.
-  void DestroyLayerTreeView();
+  void WillCloseLayerTreeView();
 
   // Called when a plugin is moved.  These events are queued up and sent with
   // the next paint or scroll message to the host.
@@ -301,6 +301,8 @@ class CONTENT_EXPORT RenderWidget
   void DidChangeBodyBackgroundColor(SkColor bg_color);
   bool DoesRecordFullLayer() const;
 #endif
+
+  bool host_closing() const { return host_closing_; }
 
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class

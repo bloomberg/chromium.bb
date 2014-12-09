@@ -844,6 +844,11 @@ void RenderWidgetCompositor::ApplyViewportDeltas(
 }
 
 void RenderWidgetCompositor::RequestNewOutputSurface(bool fallback) {
+  // If the host is closing, then no more compositing is possible.  This
+  // prevents shutdown races between handling the close message and
+  // the CreateOutputSurface task.
+  if (widget_->host_closing())
+    return;
   layer_tree_host_->SetOutputSurface(widget_->CreateOutputSurface(fallback));
 }
 
