@@ -1974,7 +1974,7 @@
         'enable_pepper_cdms%': 0,
       }],
 
-      ['OS=="android"', {
+      ['OS=="android" or chromecast==1', {
         'enable_browser_cdms%': 1,
       }, {
         'enable_browser_cdms%': 0,
