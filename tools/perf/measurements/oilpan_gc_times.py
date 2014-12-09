@@ -145,3 +145,14 @@ class OilpanGCTimesForBlinkPerf(_OilpanGCTimesBase):
   def DidRunActions(self, page, tab):
     tab.WaitForJavaScriptExpression('testRunner.isDone', 600)
     super(OilpanGCTimesForBlinkPerf, self).DidRunActions(page, tab)
+
+
+class OilpanGCTimesForInternals(_OilpanGCTimesBase):
+  def __init__(self):
+    super(OilpanGCTimesForInternals, self).__init__()
+
+  @classmethod
+  def CustomizeBrowserOptions(cls, options):
+    # 'expose-internals-for-testing' can be enabled on content shell.
+    assert 'content-shell' in options.browser_type
+    options.AppendExtraBrowserArgs('--expose-internals-for-testing')
