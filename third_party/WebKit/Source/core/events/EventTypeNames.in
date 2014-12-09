@@ -155,7 +155,6 @@ popstate
 progress
 push
 ratechange
-ready
 readystatechange
 removesourcebuffer
 removestream

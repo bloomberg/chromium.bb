@@ -67,7 +67,6 @@ public:
     static bool isValidSessionType(const String& sessionType);
     virtual ~MediaKeySession();
 
-    const String& keySystem() const { return m_keySystem; }
     String sessionId() const;
     double expiration() const { return m_expiration; }
     ScriptPromise closed(ScriptState*);
@@ -75,9 +74,6 @@ public:
     ScriptPromise generateRequest(ScriptState*, const String& initDataType, DOMArrayBuffer* initData);
     ScriptPromise generateRequest(ScriptState*, const String& initDataType, DOMArrayBufferView* initData);
     ScriptPromise load(ScriptState*, const String& sessionId);
-
-    void setError(MediaKeyError*);
-    MediaKeyError* error() { return m_error.get(); }
 
     ScriptPromise update(ScriptState*, DOMArrayBuffer* response);
     ScriptPromise update(ScriptState*, DOMArrayBufferView* response);
@@ -107,10 +103,7 @@ private:
 
     // WebContentDecryptionModuleSession::Client
     virtual void message(const unsigned char* message, size_t messageLength, const WebURL& destinationURL) override;
-    virtual void ready() override;
     virtual void close() override;
-    virtual void error(MediaKeyErrorCode, unsigned long systemCode) override;
-    virtual void error(WebContentDecryptionModuleException, unsigned long systemCode, const WebString& errorMessage) override;
     virtual void expirationChanged(double updatedExpiryTimeInMS) override;
 
     ScriptPromise generateRequestInternal(ScriptState*, const String& initDataType, PassRefPtr<DOMArrayBuffer> initData);
@@ -123,7 +116,6 @@ private:
     void finishLoad();
 
     String m_keySystem;
-    RefPtrWillBeMember<MediaKeyError> m_error;
     OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
     OwnPtr<WebContentDecryptionModuleSession> m_session;
 

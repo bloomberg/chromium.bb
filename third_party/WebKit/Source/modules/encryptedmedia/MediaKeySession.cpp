@@ -353,11 +353,6 @@ MediaKeySession::~MediaKeySession()
 #endif
 }
 
-void MediaKeySession::setError(MediaKeyError* error)
-{
-    m_error = error;
-}
-
 String MediaKeySession::sessionId() const
 {
     return m_session->sessionId();
@@ -837,15 +832,6 @@ void MediaKeySession::message(const unsigned char* message, size_t messageLength
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
-void MediaKeySession::ready()
-{
-    WTF_LOG(Media, "MediaKeySession(%p)::ready", this);
-
-    RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::ready);
-    event->setTarget(this);
-    m_asyncEventQueue->enqueueEvent(event.release());
-}
-
 void MediaKeySession::close()
 {
     WTF_LOG(Media, "MediaKeySession(%p)::close", this);
@@ -856,54 +842,6 @@ void MediaKeySession::close()
 
     // Resolve the closed promise.
     m_closedPromise->resolve(ToV8UndefinedGenerator());
-}
-
-// Queue a task to fire a simple event named keyadded at the MediaKeySession object.
-void MediaKeySession::error(MediaKeyErrorCode errorCode, unsigned long systemCode)
-{
-    WTF_LOG(Media, "MediaKeySession(%p)::error: errorCode=%d, systemCode=%lu", this, errorCode, systemCode);
-
-    MediaKeyError::Code mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_UNKNOWN;
-    switch (errorCode) {
-    case MediaKeyErrorCodeUnknown:
-        mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_UNKNOWN;
-        break;
-    case MediaKeyErrorCodeClient:
-        mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_CLIENT;
-        break;
-    }
-
-    // 1. Create a new MediaKeyError object with the following attributes:
-    //    code = the appropriate MediaKeyError code
-    //    systemCode = a Key System-specific value, if provided, and 0 otherwise
-    // 2. Set the MediaKeySession object's error attribute to the error object created in the previous step.
-    m_error = MediaKeyError::create(mediaKeyErrorCode, systemCode);
-
-    // 3. queue a task to fire a simple event named keyerror at the MediaKeySession object.
-    RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::error);
-    event->setTarget(this);
-    m_asyncEventQueue->enqueueEvent(event.release());
-}
-
-void MediaKeySession::error(WebContentDecryptionModuleException exception, unsigned long systemCode, const WebString& errorMessage)
-{
-    WTF_LOG(Media, "MediaKeySession::error: exception=%d, systemCode=%lu", exception, systemCode);
-
-    // FIXME: EME-WD MediaKeyError now derives from DOMException. Figure out how
-    // to implement this without breaking prefixed EME, which has a totally
-    // different definition. The spec may also change to be just a DOMException.
-    // For now, simply generate an existing MediaKeyError.
-    MediaKeyErrorCode errorCode;
-    switch (exception) {
-    case WebContentDecryptionModuleExceptionClientError:
-        errorCode = MediaKeyErrorCodeClient;
-        break;
-    default:
-        // All other exceptions get converted into Unknown.
-        errorCode = MediaKeyErrorCodeUnknown;
-        break;
-    }
-    error(errorCode, systemCode);
 }
 
 void MediaKeySession::expirationChanged(double updatedExpiryTimeInMS)
@@ -951,7 +889,6 @@ void MediaKeySession::stop()
 
 void MediaKeySession::trace(Visitor* visitor)
 {
-    visitor->trace(m_error);
     visitor->trace(m_asyncEventQueue);
     visitor->trace(m_pendingActions);
     visitor->trace(m_mediaKeys);

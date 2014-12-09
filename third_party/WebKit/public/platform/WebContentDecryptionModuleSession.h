@@ -44,17 +44,8 @@ class BLINK_PLATFORM_EXPORT WebContentDecryptionModuleSession {
 public:
     class BLINK_PLATFORM_EXPORT Client {
     public:
-        enum MediaKeyErrorCode {
-            MediaKeyErrorCodeUnknown = 1,
-            MediaKeyErrorCodeClient,
-        };
-
         virtual void message(const unsigned char* message, size_t messageLength, const WebURL& destinationURL) = 0;
-        virtual void ready() = 0;
         virtual void close() = 0;
-        // FIXME: Remove this method once Chromium updated to use the new parameters.
-        virtual void error(MediaKeyErrorCode, unsigned long systemCode) = 0;
-        virtual void error(WebContentDecryptionModuleException, unsigned long systemCode, const WebString& message) = 0;
 
         // Called when the expiration time for the session changes.
         // |updatedExpiryTimeInMS| is specified as the number of milliseconds
@@ -70,19 +61,11 @@ public:
     virtual void setClientInterface(Client*) = 0;
     virtual WebString sessionId() const = 0;
 
-    // FIXME: Remove these methods once the new methods are implemented in Chromium.
-    virtual void initializeNewSession(const WebString& mimeType, const unsigned char* initData, size_t initDataLength) = 0;
-    virtual void update(const unsigned char* response, size_t responseLength) = 0;
-    virtual void release() = 0;
-
-    virtual void initializeNewSession(const WebString& initDataType, const unsigned char* initData, size_t initDataLength, const WebString& sessionType, WebContentDecryptionModuleResult);
-    virtual void load(const WebString& sessionId, WebContentDecryptionModuleResult);
-    virtual void update(const unsigned char* response, size_t responseLength, WebContentDecryptionModuleResult);
-    virtual void close(WebContentDecryptionModuleResult);
-    virtual void remove(WebContentDecryptionModuleResult);
-
-    // FIXME: Remove this method once the new methods are implemented in Chromium.
-    virtual void release(WebContentDecryptionModuleResult);
+    virtual void initializeNewSession(const WebString& initDataType, const unsigned char* initData, size_t initDataLength, const WebString& sessionType, WebContentDecryptionModuleResult) = 0;
+    virtual void load(const WebString& sessionId, WebContentDecryptionModuleResult) = 0;
+    virtual void update(const unsigned char* response, size_t responseLength, WebContentDecryptionModuleResult) = 0;
+    virtual void close(WebContentDecryptionModuleResult) = 0;
+    virtual void remove(WebContentDecryptionModuleResult) = 0;
 };
 
 } // namespace blink
