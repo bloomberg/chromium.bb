@@ -403,7 +403,11 @@ remoting.ClientSession.Capability = {
 
   // Indicates that the client supports 'cast'ing the video stream to a
   // cast-enabled device.
-  CAST: 'casting'
+  CAST: 'casting',
+
+  // When enabled, this capability results in the client informing the host
+  // that it supports Gnubby-based authentication.
+  GNUBBY_AUTH: 'gnubbyAuth'
 };
 
 /**
@@ -1576,7 +1580,8 @@ remoting.ClientSession.prototype.processGnubbyAuthMessage_ = function(data) {
  * @private
  */
 remoting.ClientSession.prototype.createGnubbyAuthHandler_ = function() {
-  if (this.mode_ == remoting.ClientSession.Mode.ME2ME) {
+  if (this.hasCapability_(remoting.ClientSession.Capability.GNUBBY_AUTH) &&
+      this.mode_ == remoting.ClientSession.Mode.ME2ME) {
     this.gnubbyAuthHandler_ = new remoting.GnubbyAuthHandler(this);
     // TODO(psj): Move to more generic capabilities mechanism.
     this.sendGnubbyAuthMessage({'type': 'control', 'option': 'auth-v1'});
