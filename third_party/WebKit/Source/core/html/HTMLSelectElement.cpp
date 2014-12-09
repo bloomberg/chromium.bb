@@ -660,20 +660,19 @@ void HTMLSelectElement::setActiveSelectionEndIndex(int index)
 void HTMLSelectElement::updateListBoxSelection(bool deselectOtherOptions, bool scroll)
 {
     ASSERT(renderer() && (renderer()->isListBox() || m_multiple));
-    ASSERT(!listItems().size() || m_activeSelectionAnchorIndex >= 0);
 
-    unsigned start = std::min(m_activeSelectionAnchorIndex, m_activeSelectionEndIndex);
-    unsigned end = std::max(m_activeSelectionAnchorIndex, m_activeSelectionEndIndex);
+    int start = std::min(m_activeSelectionAnchorIndex, m_activeSelectionEndIndex);
+    int end = std::max(m_activeSelectionAnchorIndex, m_activeSelectionEndIndex);
 
     const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = listItems();
-    for (unsigned i = 0; i < items.size(); ++i) {
+    for (int i = 0; i < static_cast<int>(items.size()); ++i) {
         HTMLElement* element = items[i];
         if (!isHTMLOptionElement(*element) || toHTMLOptionElement(element)->isDisabledFormControl() || !toHTMLOptionElement(element)->renderer())
             continue;
 
         if (i >= start && i <= end)
             toHTMLOptionElement(element)->setSelectedState(m_activeSelectionState);
-        else if (deselectOtherOptions || i >= m_cachedStateForActiveSelection.size())
+        else if (deselectOtherOptions || i >= static_cast<int>(m_cachedStateForActiveSelection.size()))
             toHTMLOptionElement(element)->setSelectedState(false);
         else
             toHTMLOptionElement(element)->setSelectedState(m_cachedStateForActiveSelection[i]);
