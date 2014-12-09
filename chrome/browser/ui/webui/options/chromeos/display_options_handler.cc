@@ -295,11 +295,14 @@ void DisplayOptionsHandler::SendDisplayInfo(
     base::ListValue* available_color_profiles = new base::ListValue();
     for (size_t i = 0;
          i < display_info.available_color_profiles().size(); ++i) {
-      base::DictionaryValue* color_profile_dict = new base::DictionaryValue();
       ui::ColorCalibrationProfile color_profile =
           display_info.available_color_profiles()[i];
+      const base::string16 profile_name = GetColorProfileName(color_profile);
+      if (profile_name.empty())
+        continue;
+      base::DictionaryValue* color_profile_dict = new base::DictionaryValue();
       color_profile_dict->SetInteger("profileId", color_profile);
-      color_profile_dict->SetString("name", GetColorProfileName(color_profile));
+      color_profile_dict->SetString("name", profile_name);
       available_color_profiles->Append(color_profile_dict);
     }
     js_display->Set("availableColorProfiles", available_color_profiles);
