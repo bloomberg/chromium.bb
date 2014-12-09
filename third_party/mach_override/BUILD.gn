@@ -30,6 +30,11 @@ static_library("libudis86") {
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  if (is_clang) {
+    # For UD_ASSERT(!"message");
+    configs -= [ "//build/config/clang:extra_warnings" ]
+  }
 }
 
 static_library("mach_override") {

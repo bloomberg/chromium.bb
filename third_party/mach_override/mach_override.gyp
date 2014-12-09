@@ -42,6 +42,12 @@
             'libudis86/syn-intel.c',
             'libudis86/syn.c',
           ],
+          'variables': {
+            'clang_warning_flags_unset': [
+              # For UD_ASSERT(!"message");
+              '-Wstring-conversion',
+            ],
+          },
         },
         {
           'target_name' : 'mach_override',
