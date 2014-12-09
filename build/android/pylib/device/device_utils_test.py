@@ -496,86 +496,61 @@ class DeviceUtilsRebootTest(DeviceUtilsNewImplTest):
       self.device.Reboot(block=True)
 
 
-class DeviceUtilsInstallTest(DeviceUtilsOldImplTest):
+class DeviceUtilsInstallTest(DeviceUtilsNewImplTest):
 
   def testInstall_noPriorInstall(self):
-    with mock.patch('os.path.isfile', return_value=True), (
-         mock.patch('pylib.utils.apk_helper.GetPackageName',
-                    return_value='this.is.a.test.package')):
-      with self.assertCallsSequence([
-          ("adb -s 0123456789abcdef shell 'pm path this.is.a.test.package'",
-           ''),
-          ("adb -s 0123456789abcdef install /fake/test/app.apk",
-           'Success\r\n')]):
-        self.device.Install('/fake/test/app.apk', retries=0)
+    with self.assertCalls(
+        (mock.call.pylib.utils.apk_helper.GetPackageName('/fake/test/app.apk'),
+         'this.is.a.test.package'),
+        (self.call.device.GetApplicationPath('this.is.a.test.package'), None),
+        self.call.adb.Install('/fake/test/app.apk', reinstall=False)):
+      self.device.Install('/fake/test/app.apk', retries=0)
 
   def testInstall_differentPriorInstall(self):
-    def mockGetFilesChanged(host_path, device_path, ignore_filenames):
-      return [(host_path, device_path)]
-
-    with mock.patch('os.path.isfile', return_value=True), (
-         mock.patch('os.path.exists', return_value=True)), (
-         mock.patch('pylib.utils.apk_helper.GetPackageName',
-                    return_value='this.is.a.test.package')), (
-         mock.patch('pylib.constants.GetOutDirectory',
-                    return_value='/fake/test/out')), (
-         mock.patch('pylib.android_commands.AndroidCommands.GetFilesChanged',
-                    side_effect=mockGetFilesChanged)):
-      with self.assertCallsSequence([
-          ("adb -s 0123456789abcdef shell 'pm path this.is.a.test.package'",
-           'package:/fake/data/app/this.is.a.test.package.apk\r\n'),
-          # GetFilesChanged is mocked, so its adb calls are omitted.
-          ('adb -s 0123456789abcdef uninstall this.is.a.test.package',
-           'Success\r\n'),
-          ('adb -s 0123456789abcdef install /fake/test/app.apk',
-           'Success\r\n')]):
-        self.device.Install('/fake/test/app.apk', retries=0)
+    with self.assertCalls(
+        (mock.call.pylib.utils.apk_helper.GetPackageName('/fake/test/app.apk'),
+         'this.is.a.test.package'),
+        (self.call.device.GetApplicationPath('this.is.a.test.package'),
+         '/fake/data/app/this.is.a.test.package.apk'),
+        (self.call.device._GetChangedFilesImpl(
+            '/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk'),
+         [('/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk')]),
+        self.call.adb.Uninstall('this.is.a.test.package'),
+        self.call.adb.Install('/fake/test/app.apk', reinstall=False)):
+      self.device.Install('/fake/test/app.apk', retries=0)
 
   def testInstall_differentPriorInstall_reinstall(self):
-    def mockGetFilesChanged(host_path, device_path, ignore_filenames):
-      return [(host_path, device_path)]
-
-    with mock.patch('os.path.isfile', return_value=True), (
-         mock.patch('pylib.utils.apk_helper.GetPackageName',
-                    return_value='this.is.a.test.package')), (
-         mock.patch('pylib.constants.GetOutDirectory',
-                    return_value='/fake/test/out')), (
-         mock.patch('pylib.android_commands.AndroidCommands.GetFilesChanged',
-                    side_effect=mockGetFilesChanged)):
-      with self.assertCallsSequence([
-          ("adb -s 0123456789abcdef shell 'pm path this.is.a.test.package'",
-           'package:/fake/data/app/this.is.a.test.package.apk\r\n'),
-          # GetFilesChanged is mocked, so its adb calls are omitted.
-          ('adb -s 0123456789abcdef install -r /fake/test/app.apk',
-           'Success\r\n')]):
-        self.device.Install('/fake/test/app.apk', reinstall=True, retries=0)
+    with self.assertCalls(
+        (mock.call.pylib.utils.apk_helper.GetPackageName('/fake/test/app.apk'),
+         'this.is.a.test.package'),
+        (self.call.device.GetApplicationPath('this.is.a.test.package'),
+         '/fake/data/app/this.is.a.test.package.apk'),
+        (self.call.device._GetChangedFilesImpl(
+            '/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk'),
+         [('/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk')]),
+        self.call.adb.Install('/fake/test/app.apk', reinstall=True)):
+      self.device.Install('/fake/test/app.apk', reinstall=True, retries=0)
 
   def testInstall_identicalPriorInstall(self):
-    def mockGetFilesChanged(host_path, device_path, ignore_filenames):
-      return []
-
-    with mock.patch('pylib.utils.apk_helper.GetPackageName',
-                    return_value='this.is.a.test.package'), (
-         mock.patch('pylib.android_commands.AndroidCommands.GetFilesChanged',
-                    side_effect=mockGetFilesChanged)):
-      with self.assertCallsSequence([
-          ("adb -s 0123456789abcdef shell 'pm path this.is.a.test.package'",
-           'package:/fake/data/app/this.is.a.test.package.apk\r\n')
-          # GetFilesChanged is mocked, so its adb calls are omitted.
-          ]):
-        self.device.Install('/fake/test/app.apk', retries=0)
+    with self.assertCalls(
+        (mock.call.pylib.utils.apk_helper.GetPackageName('/fake/test/app.apk'),
+         'this.is.a.test.package'),
+        (self.call.device.GetApplicationPath('this.is.a.test.package'),
+         '/fake/data/app/this.is.a.test.package.apk'),
+        (self.call.device._GetChangedFilesImpl(
+            '/fake/test/app.apk', '/fake/data/app/this.is.a.test.package.apk'),
+         [])):
+      self.device.Install('/fake/test/app.apk', retries=0)
 
   def testInstall_fails(self):
-    with mock.patch('os.path.isfile', return_value=True), (
-         mock.patch('pylib.utils.apk_helper.GetPackageName',
-                    return_value='this.is.a.test.package')):
-      with self.assertCallsSequence([
-          ("adb -s 0123456789abcdef shell 'pm path this.is.a.test.package'",
-           ''),
-          ("adb -s 0123456789abcdef install /fake/test/app.apk",
-           'Failure\r\n')]):
-        with self.assertRaises(device_errors.CommandFailedError):
-          self.device.Install('/fake/test/app.apk', retries=0)
+    with self.assertCalls(
+        (mock.call.pylib.utils.apk_helper.GetPackageName('/fake/test/app.apk'),
+         'this.is.a.test.package'),
+        (self.call.device.GetApplicationPath('this.is.a.test.package'), None),
+        (self.call.adb.Install('/fake/test/app.apk', reinstall=False),
+         self.CommandError('Failure\r\n'))):
+      with self.assertRaises(device_errors.CommandFailedError):
+        self.device.Install('/fake/test/app.apk', retries=0)
 
 
 class DeviceUtilsRunShellCommandTest(DeviceUtilsNewImplTest):

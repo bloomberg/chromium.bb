@@ -343,30 +343,15 @@ class DeviceUtils(object):
       DeviceUnreachableError on missing device.
     """
     package_name = apk_helper.GetPackageName(apk_path)
-    device_path = self.old_interface.GetApplicationPath(package_name)
+    device_path = self.GetApplicationPath(package_name)
     if device_path is not None:
-      files_changed = self.old_interface.GetFilesChanged(
-          apk_path, device_path, ignore_filenames=True)
-      if len(files_changed) > 0:
-        should_install = True
-        if not reinstall:
-          out = self.old_interface.Uninstall(package_name)
-          for line in out.splitlines():
-            if 'Failure' in line:
-              raise device_errors.CommandFailedError(line.strip(), str(self))
-      else:
-        should_install = False
+      should_install = bool(self._GetChangedFilesImpl(apk_path, device_path))
+      if should_install and not reinstall:
+        self.adb.Uninstall(package_name)
     else:
       should_install = True
     if should_install:
-      try:
-        out = self.old_interface.Install(apk_path, reinstall=reinstall)
-        for line in out.splitlines():
-          if 'Failure' in line:
-            raise device_errors.CommandFailedError(line.strip(), str(self))
-      except AssertionError as e:
-        raise device_errors.CommandFailedError(
-            str(e), str(self)), None, sys.exc_info()[2]
+      self.adb.Install(apk_path, reinstall=reinstall)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def RunShellCommand(self, cmd, check_return=False, cwd=None, env=None,
