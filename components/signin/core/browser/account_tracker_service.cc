@@ -293,7 +293,13 @@ void AccountTrackerService::OnRefreshTokenAvailable(
   if (account_id == "managed_user@localhost")
     return;
 
+#if defined(OS_ANDROID)
+  // TODO(mlerman): Change this condition back to state.info.IsValid() and
+  // ensure the Fetch doesn't occur until after ProfileImpl::OnPrefsLoaded().
+  if (state.info.gaia.empty())
+#else
   if (state.info.IsValid())
+#endif
     StartFetchingUserInfo(account_id);
 
   SendRefreshTokenAnnotationRequest(account_id);
