@@ -232,13 +232,11 @@ class MEDIA_EXPORT BufferedDataSource : public DataSource {
 
   DownloadingCB downloading_cb_;
 
-  // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<BufferedDataSource> weak_factory_;
-
   // Disallow rebinding WeakReference ownership to a different thread by keeping
   // a persistent reference. This avoids problems with the thread-safety of
   // reaching into this class from multiple threads to attain a WeakPtr.
-  const base::WeakPtr<BufferedDataSource> weak_ptr_;
+  base::WeakPtr<BufferedDataSource> weak_ptr_;
+  base::WeakPtrFactory<BufferedDataSource> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedDataSource);
 };

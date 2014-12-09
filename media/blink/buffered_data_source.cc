@@ -104,8 +104,8 @@ BufferedDataSource::BufferedDataSource(
       media_log_(media_log),
       host_(host),
       downloading_cb_(downloading_cb),
-      weak_factory_(this),
-      weak_ptr_(weak_factory_.GetWeakPtr()) {
+      weak_factory_(this) {
+  weak_ptr_ = weak_factory_.GetWeakPtr();
   DCHECK(host_);
   DCHECK(!downloading_cb_.is_null());
   DCHECK(render_task_runner_->BelongsToCurrentThread());

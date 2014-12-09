@@ -87,8 +87,8 @@ class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
   base::RepeatingTimer<MojoRendererService> time_update_timer_;
   uint64_t last_media_time_usec_;
 
-  base::WeakPtrFactory<MojoRendererService> weak_factory_;
   base::WeakPtr<MojoRendererService> weak_this_;
+  base::WeakPtrFactory<MojoRendererService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoRendererService);
 };

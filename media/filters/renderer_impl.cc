@@ -35,8 +35,8 @@ RendererImpl::RendererImpl(
       cdm_context_(nullptr),
       underflow_disabled_for_testing_(false),
       clockless_video_playback_enabled_for_testing_(false),
-      weak_factory_(this),
-      weak_this_(weak_factory_.GetWeakPtr()) {
+      weak_factory_(this) {
+  weak_this_ = weak_factory_.GetWeakPtr();
   DVLOG(1) << __FUNCTION__;
 }
 

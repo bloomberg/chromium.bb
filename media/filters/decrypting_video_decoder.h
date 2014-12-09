@@ -110,9 +110,8 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   // matching DecryptCB call (in DoDeliverFrame()).
   uint32 trace_id_;
 
-  // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<DecryptingVideoDecoder> weak_factory_;
   base::WeakPtr<DecryptingVideoDecoder> weak_this_;
+  base::WeakPtrFactory<DecryptingVideoDecoder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DecryptingVideoDecoder);
 };

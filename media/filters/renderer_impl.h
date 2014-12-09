@@ -171,9 +171,8 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   bool underflow_disabled_for_testing_;
   bool clockless_video_playback_enabled_for_testing_;
 
-  // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<RendererImpl> weak_factory_;
   base::WeakPtr<RendererImpl> weak_this_;
+  base::WeakPtrFactory<RendererImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererImpl);
 };

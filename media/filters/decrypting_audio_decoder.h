@@ -117,9 +117,8 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
 
   scoped_ptr<AudioTimestampHelper> timestamp_helper_;
 
-  // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<DecryptingAudioDecoder> weak_factory_;
   base::WeakPtr<DecryptingAudioDecoder> weak_this_;
+  base::WeakPtrFactory<DecryptingAudioDecoder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DecryptingAudioDecoder);
 };

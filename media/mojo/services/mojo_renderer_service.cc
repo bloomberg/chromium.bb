@@ -41,8 +41,8 @@ static void MojoTrampoline(const mojo::Closure& closure) {
 MojoRendererService::MojoRendererService()
     : state_(STATE_UNINITIALIZED),
       last_media_time_usec_(0),
-      weak_factory_(this),
-      weak_this_(weak_factory_.GetWeakPtr()) {
+      weak_factory_(this) {
+  weak_this_ = weak_factory_.GetWeakPtr();
   DVLOG(1) << __FUNCTION__;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
