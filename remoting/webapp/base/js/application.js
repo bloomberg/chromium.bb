@@ -95,7 +95,15 @@ remoting.Application.prototype.onVideoStreamingStarted = function() {
  * @return {boolean} Return true if the extension message was recognized.
  */
 remoting.Application.prototype.onExtensionMessage = function(type, data) {
-  return this.delegate_.onExtensionMessage(type, data);
+  // Give the delegate a chance to handle this extension message first.
+  if (this.delegate_.onExtensionMessage(type, data)) {
+    return true;
+  }
+
+  if (remoting.clientSession) {
+    return remoting.clientSession.handleExtensionMessage(type, data);
+  }
+  return false;
 };
 
 /**

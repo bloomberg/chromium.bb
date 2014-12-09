@@ -184,9 +184,6 @@ remoting.DesktopRemoting.prototype.onVideoStreamingStarted = function() {
  * @return {boolean} Return true if the extension message was recognized.
  */
 remoting.DesktopRemoting.prototype.onExtensionMessage = function(type, data) {
-  if (remoting.clientSession) {
-    return remoting.clientSession.handleExtensionMessage(type, data);
-  }
   return false;
 };
 
