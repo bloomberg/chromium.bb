@@ -4,6 +4,8 @@
 
 #include "ash/wm/workspace/multi_window_resize_controller.h"
 
+#include "ash/ash_constants.h"
+#include "ash/frame/custom_frame_view_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
@@ -17,8 +19,34 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
+
+namespace {
+
+// WidgetDelegate for a resizable widget which creates a NonClientFrameView
+// which is actually used in Ash.
+class TestWidgetDelegate : public views::WidgetDelegateView {
+ public:
+  TestWidgetDelegate() {}
+  ~TestWidgetDelegate() override {}
+
+  // views::WidgetDelegateView:
+  bool CanResize() const override {
+    return true;
+  }
+
+  views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) override {
+    return new CustomFrameViewAsh(widget);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
+};
+
+}  // namespace
 
 class MultiWindowResizeControllerTest : public test::AshTestBase {
  public:
@@ -57,10 +85,6 @@ class MultiWindowResizeControllerTest : public test::AshTestBase {
 
   bool HasPendingShow() {
     return resize_controller_->show_timer_.IsRunning();
-  }
-
-  bool HasPendingHide() {
-    return resize_controller_->hide_timer_.IsRunning();
   }
 
   void Hide() {
@@ -109,13 +133,11 @@ TEST_F(MultiWindowResizeControllerTest, BasicTests) {
   generator.MoveMouseTo(w1->bounds().CenterPoint());
   EXPECT_TRUE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
-  EXPECT_FALSE(HasPendingHide());
 
   // Force a show now.
   ShowNow();
   EXPECT_FALSE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
-  EXPECT_FALSE(HasPendingHide());
 
   EXPECT_FALSE(IsOverWindows(gfx::Point(200, 200)));
 
@@ -123,7 +145,79 @@ TEST_F(MultiWindowResizeControllerTest, BasicTests) {
   resize_controller_->MouseMovedOutOfHost();
   EXPECT_FALSE(HasPendingShow());
   EXPECT_FALSE(IsShowing());
-  EXPECT_FALSE(HasPendingHide());
+}
+
+// Test the behavior of IsOverWindows().
+TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
+  // Create the following layout:
+  //  __________________
+  //  | w1     | w2     |
+  //  |        |________|
+  //  |        | w3     |
+  //  |________|________|
+  scoped_ptr<views::Widget> w1(new views::Widget);
+  views::Widget::InitParams params1;
+  params1.delegate = new TestWidgetDelegate;
+  params1.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params1.bounds = gfx::Rect(100, 200);
+  params1.context = CurrentContext();
+  w1->Init(params1);
+  w1->Show();
+
+  scoped_ptr<views::Widget> w2(new views::Widget);
+  views::Widget::InitParams params2;
+  params2.delegate = new TestWidgetDelegate;
+  params2.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params2.bounds = gfx::Rect(100, 0, 100, 100);
+  params2.context = CurrentContext();
+  w2->Init(params2);
+  w2->Show();
+
+  scoped_ptr<views::Widget> w3(new views::Widget);
+  views::Widget::InitParams params3;
+  params3.delegate = new TestWidgetDelegate;
+  params3.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params3.bounds = gfx::Rect(100, 100, 100, 100);
+  params3.context = CurrentContext();
+  w3->Init(params3);
+  w3->Show();
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(gfx::Point(100, 150));
+  EXPECT_TRUE(HasPendingShow());
+  EXPECT_TRUE(IsShowing());
+  ShowNow();
+  EXPECT_TRUE(IsShowing());
+
+  // Check that the multi-window resize handle does not hide while the mouse is
+  // over a window's resize area. A window's resize area extends outside the
+  // window's bounds.
+  EXPECT_TRUE(w3->IsActive());
+  ASSERT_LT(kResizeInsideBoundsSize, kResizeOutsideBoundsSize);
+
+  EXPECT_TRUE(IsOverWindows(gfx::Point(100, 150)));
+  EXPECT_TRUE(IsOverWindows(gfx::Point(100 - kResizeOutsideBoundsSize, 150)));
+  EXPECT_FALSE(
+      IsOverWindows(gfx::Point(100 - kResizeOutsideBoundsSize - 1, 150)));
+  EXPECT_TRUE(
+      IsOverWindows(gfx::Point(100 + kResizeInsideBoundsSize - 1, 150)));
+  EXPECT_FALSE(IsOverWindows(gfx::Point(100 + kResizeInsideBoundsSize, 150)));
+  EXPECT_FALSE(
+      IsOverWindows(gfx::Point(100 + kResizeOutsideBoundsSize - 1, 150)));
+
+  w1->Activate();
+  EXPECT_TRUE(IsOverWindows(gfx::Point(100, 150)));
+  EXPECT_TRUE(IsOverWindows(gfx::Point(100 - kResizeInsideBoundsSize, 150)));
+  EXPECT_FALSE(
+      IsOverWindows(gfx::Point(100 - kResizeInsideBoundsSize - 1, 150)));
+  EXPECT_FALSE(IsOverWindows(gfx::Point(100 - kResizeOutsideBoundsSize, 150)));
+  EXPECT_TRUE(
+      IsOverWindows(gfx::Point(100 + kResizeOutsideBoundsSize - 1, 150)));
+  EXPECT_FALSE(IsOverWindows(gfx::Point(100 + kResizeOutsideBoundsSize, 150)));
+
+  // Check that the multi-window resize handles eventually hide if the mouse
+  // moves between |w1| and |w2|.
+  EXPECT_FALSE(IsOverWindows(gfx::Point(100, 50)));
 }
 
 // Makes sure deleting a window hides.
@@ -140,13 +234,11 @@ TEST_F(MultiWindowResizeControllerTest, DeleteWindow) {
   generator.MoveMouseTo(w1->bounds().CenterPoint());
   EXPECT_TRUE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
-  EXPECT_FALSE(HasPendingHide());
 
   // Force a show now.
   ShowNow();
   EXPECT_FALSE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
-  EXPECT_FALSE(HasPendingHide());
 
   // Move the mouse over the resize widget.
   ASSERT_TRUE(resize_widget());
@@ -154,7 +246,6 @@ TEST_F(MultiWindowResizeControllerTest, DeleteWindow) {
   generator.MoveMouseTo(bounds.x() + 1, bounds.y() + 1);
   EXPECT_FALSE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
-  EXPECT_FALSE(HasPendingHide());
 
   // Move the resize widget
   generator.PressLeftButton();
@@ -165,7 +256,6 @@ TEST_F(MultiWindowResizeControllerTest, DeleteWindow) {
   EXPECT_TRUE(resize_widget() == NULL);
   EXPECT_FALSE(HasPendingShow());
   EXPECT_FALSE(IsShowing());
-  EXPECT_FALSE(HasPendingHide());
   EXPECT_FALSE(HasTarget(w1.get()));
 }
 
@@ -183,13 +273,11 @@ TEST_F(MultiWindowResizeControllerTest, Drag) {
   generator.MoveMouseTo(w1->bounds().CenterPoint());
   EXPECT_TRUE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
-  EXPECT_FALSE(HasPendingHide());
 
   // Force a show now.
   ShowNow();
   EXPECT_FALSE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
-  EXPECT_FALSE(HasPendingHide());
 
   // Move the mouse over the resize widget.
   ASSERT_TRUE(resize_widget());
@@ -197,7 +285,6 @@ TEST_F(MultiWindowResizeControllerTest, Drag) {
   generator.MoveMouseTo(bounds.x() + 1, bounds.y() + 1);
   EXPECT_FALSE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
-  EXPECT_FALSE(HasPendingHide());
 
   // Move the resize widget
   generator.PressLeftButton();
@@ -207,7 +294,6 @@ TEST_F(MultiWindowResizeControllerTest, Drag) {
   EXPECT_TRUE(resize_widget());
   EXPECT_FALSE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
-  EXPECT_FALSE(HasPendingHide());
   EXPECT_EQ("0,0 110x100", w1->bounds().ToString());
   EXPECT_EQ("110,0 100x100", w2->bounds().ToString());
 }
@@ -231,13 +317,11 @@ TEST_F(MultiWindowResizeControllerTest, Three) {
   generator.MoveMouseTo(w1->bounds().CenterPoint());
   EXPECT_TRUE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
-  EXPECT_FALSE(HasPendingHide());
   EXPECT_FALSE(HasTarget(w3.get()));
 
   ShowNow();
   EXPECT_FALSE(HasPendingShow());
   EXPECT_TRUE(IsShowing());
-  EXPECT_FALSE(HasPendingHide());
 
   // w3 should be picked up when resize is started.
   gfx::Rect bounds(resize_widget()->GetWindowBoundsInScreen());

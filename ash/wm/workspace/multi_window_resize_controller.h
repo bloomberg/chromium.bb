@@ -87,6 +87,8 @@ class ASH_EXPORT MultiWindowResizeController :
   class ResizeMouseWatcherHost;
   class ResizeView;
 
+  void CreateMouseWatcher();
+
   // Returns a ResizeWindows based on the specified arguments. Use is_valid()
   // to test if the return value is a valid multi window resize location.
   ResizeWindows DetermineWindows(aura::Window* window,
@@ -100,8 +102,8 @@ class ASH_EXPORT MultiWindowResizeController :
   // Finds a window by edge (one of the constants HitTestCompat.
   aura::Window* FindWindowByEdge(aura::Window* window_to_ignore,
                                  int edge_want,
-                                 int x,
-                                 int y) const;
+                                 int x_in_parent,
+                                 int y_in_parent) const;
 
   // Returns the first window touching |window|.
   aura::Window* FindWindowTouching(aura::Window* window,
@@ -111,9 +113,6 @@ class ASH_EXPORT MultiWindowResizeController :
   void FindWindowsTouching(aura::Window* start,
                            Direction direction,
                            std::vector<aura::Window*>* others) const;
-
-  // Hides the window after a delay.
-  void DelayedHide();
 
   // Shows the resizer if the mouse is still at a valid location. This is called
   // from the |show_timer_|.
@@ -145,16 +144,13 @@ class ASH_EXPORT MultiWindowResizeController :
   // (or the resize widget itself).
   bool IsOverWindows(const gfx::Point& location_in_screen) const;
 
-  // Returns true if |location_in_screen| is over |window|.
-  bool IsOverWindow(aura::Window* window,
-                    const gfx::Point& location_in_screen,
-                    int component) const;
+  // Returns true if |location_in_screen| is over |component| in |window|.
+  bool IsOverComponent(aura::Window* window,
+                       const gfx::Point& location_in_screen,
+                       int component) const;
 
   // Windows and direction to resize.
   ResizeWindows windows_;
-
-  // Timer before hiding.
-  base::OneShotTimer<MultiWindowResizeController> hide_timer_;
 
   // Timer used before showing.
   base::OneShotTimer<MultiWindowResizeController> show_timer_;
