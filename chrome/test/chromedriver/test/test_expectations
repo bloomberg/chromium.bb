@@ -85,6 +85,9 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'WindowTest.*',
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=528
     'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
+    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=653
+    'PageLoadingTest.testShouldBeAbleToNavigateBackInTheBrowserHistoryInPresenceOfIframes',
+    'PageLoadingTest.testShouldBeAbleToNavigateBackInTheBrowserHistory',
 ]
 
 
