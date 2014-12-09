@@ -492,8 +492,8 @@ const char kEnableV8IdleNotificationAfterCommit[] =
 // pinch gestures.
 const char kEnableViewport[]                = "enable-viewport";
 
-// Enables the use of the legacy viewport meta tag. Turning this on also
-// turns on the @viewport CSS rule
+// Enables the viewport meta tag, the de facto way to control layout which works
+// only on mobile browsers.
 const char kEnableViewportMeta[]            = "enable-viewport-meta";
 
 // Resizes of the main frame are the caused by changing between landscape
