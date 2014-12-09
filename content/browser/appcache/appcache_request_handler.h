@@ -49,6 +49,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // Methods to support cross site navigations.
   void PrepareForCrossSiteTransfer(int old_process_id);
   void CompleteCrossSiteTransfer(int new_process_id, int new_host_id);
+  void MaybeCompleteCrossSiteTransferInOldProcess(int old_process_id);
 
   static bool IsMainResourceType(ResourceType type) {
     return IsResourceTypeFrame(type) ||
@@ -145,6 +146,8 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // During a cross site navigation, we transfer ownership the AppcacheHost
   // from the old processes structures over to the new structures.
   scoped_ptr<AppCacheHost> host_for_cross_site_transfer_;
+  int old_process_id_;
+  int old_host_id_;
 
   friend class content::AppCacheRequestHandlerTest;
   DISALLOW_COPY_AND_ASSIGN(AppCacheRequestHandler);

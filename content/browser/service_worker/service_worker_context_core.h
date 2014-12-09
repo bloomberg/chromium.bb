@@ -187,6 +187,15 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       net::URLRequestContext* request_context,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context);
 
+  // Methods to support cross site navigations.
+  scoped_ptr<ServiceWorkerProviderHost> TransferProviderHostOut(
+      int process_id,
+      int provider_id);
+  void TransferProviderHostIn(
+      int new_process_id,
+      int new_host_id,
+      scoped_ptr<ServiceWorkerProviderHost> provider_host);
+
   base::WeakPtr<ServiceWorkerContextCore> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }

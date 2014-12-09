@@ -20,6 +20,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/child_process_host.h"
 
 namespace content {
 
@@ -56,6 +57,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       context_(context),
       dispatcher_host_(dispatcher_host),
       allow_association_(true) {
+  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
@@ -68,10 +70,9 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
     DecreaseProcessReference(associated_registration_->pattern());
     associated_registration_->RemoveListener(this);
   }
-  for (std::vector<GURL>::iterator it = associated_patterns_.begin();
-       it != associated_patterns_.end(); ++it) {
-    DecreaseProcessReference(*it);
-  }
+
+  for (const GURL& pattern : associated_patterns_)
+    DecreaseProcessReference(pattern);
 }
 
 void ServiceWorkerProviderHost::OnRegistrationFailed(
@@ -137,25 +138,9 @@ void ServiceWorkerProviderHost::AssociateRegistration(
     DecreaseProcessReference(associated_registration_->pattern());
   IncreaseProcessReference(registration->pattern());
 
-  if (dispatcher_host_) {
-    ServiceWorkerRegistrationHandle* handle =
-        dispatcher_host_->GetOrCreateRegistrationHandle(
-            provider_id(), registration);
-
-    ServiceWorkerVersionAttributes attrs;
-    attrs.installing = handle->CreateServiceWorkerHandleAndPass(
-        registration->installing_version());
-    attrs.waiting = handle->CreateServiceWorkerHandleAndPass(
-        registration->waiting_version());
-    attrs.active = handle->CreateServiceWorkerHandleAndPass(
-        registration->active_version());
-
-    dispatcher_host_->Send(new ServiceWorkerMsg_AssociateRegistration(
-        kDocumentMainThreadId, provider_id(), handle->GetObjectInfo(), attrs));
-  }
-
   associated_registration_ = registration;
   associated_registration_->AddListener(this);
+  SendAssociateRegistrationMessage();
   SetControllerVersionAttribute(registration->active_version());
 }
 
@@ -246,6 +231,68 @@ void ServiceWorkerProviderHost::AddScopedProcessReferenceToPattern(
     const GURL& pattern) {
   associated_patterns_.push_back(pattern);
   IncreaseProcessReference(pattern);
+}
+
+void ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
+  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, render_process_id_);
+
+  for (const GURL& pattern : associated_patterns_)
+    DecreaseProcessReference(pattern);
+
+  if (associated_registration_.get())
+    DecreaseProcessReference(associated_registration_->pattern());
+
+  render_process_id_ = ChildProcessHost::kInvalidUniqueID;
+  render_frame_id_ = MSG_ROUTING_NONE;
+  provider_id_ = kInvalidServiceWorkerProviderId;
+  dispatcher_host_ = nullptr;
+}
+
+void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
+    int new_process_id,
+    int new_frame_id,
+    int new_provider_id,
+    ServiceWorkerDispatcherHost* new_dispatcher_host) {
+  DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
+  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, new_process_id);
+
+  render_process_id_ = new_process_id;
+  render_frame_id_ = new_frame_id;
+  provider_id_ = new_provider_id;
+  dispatcher_host_ = new_dispatcher_host;
+
+  for (const GURL& pattern : associated_patterns_)
+    IncreaseProcessReference(pattern);
+
+  if (associated_registration_.get()) {
+    IncreaseProcessReference(associated_registration_->pattern());
+    SendAssociateRegistrationMessage();
+    if (dispatcher_host_ && associated_registration_->active_version()) {
+      dispatcher_host_->Send(new ServiceWorkerMsg_SetControllerServiceWorker(
+          kDocumentMainThreadId, provider_id(),
+          CreateHandleAndPass(associated_registration_->active_version())));
+    }
+  }
+}
+
+void ServiceWorkerProviderHost::SendAssociateRegistrationMessage() {
+  if (!dispatcher_host_)
+    return;
+
+  ServiceWorkerRegistrationHandle* handle =
+      dispatcher_host_->GetOrCreateRegistrationHandle(
+          provider_id(), associated_registration_.get());
+
+  ServiceWorkerVersionAttributes attrs;
+  attrs.installing = handle->CreateServiceWorkerHandleAndPass(
+      associated_registration_->installing_version());
+  attrs.waiting = handle->CreateServiceWorkerHandleAndPass(
+      associated_registration_->waiting_version());
+  attrs.active = handle->CreateServiceWorkerHandleAndPass(
+      associated_registration_->active_version());
+
+  dispatcher_host_->Send(new ServiceWorkerMsg_AssociateRegistration(
+      kDocumentMainThreadId, provider_id(), handle->GetObjectInfo(), attrs));
 }
 
 ServiceWorkerObjectInfo ServiceWorkerProviderHost::CreateHandleAndPass(

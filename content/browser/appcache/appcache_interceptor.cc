@@ -85,6 +85,15 @@ void AppCacheInterceptor::CompleteCrossSiteTransfer(
                                      new_host_id);
 }
 
+void AppCacheInterceptor::MaybeCompleteCrossSiteTransferInOldProcess(
+    net::URLRequest* request,
+    int process_id) {
+  AppCacheRequestHandler* handler = GetHandler(request);
+  if (!handler)
+    return;
+  handler->MaybeCompleteCrossSiteTransferInOldProcess(process_id);
+}
+
 AppCacheInterceptor::AppCacheInterceptor() {
 }
 

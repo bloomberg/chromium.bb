@@ -56,6 +56,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   int process_id() const { return render_process_id_; }
   int provider_id() const { return provider_id_; }
+  int frame_id() const { return render_frame_id_; }
 
   bool IsHostToRunningServiceWorker() {
     return running_hosted_version_.get() != NULL;
@@ -140,6 +141,17 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // be removed in destructor.
   void AddScopedProcessReferenceToPattern(const GURL& pattern);
 
+  // Methods to support cross site navigations.
+  void PrepareForCrossSiteTransfer();
+  void CompleteCrossSiteTransfer(
+      int new_process_id,
+      int new_frame_id,
+      int new_provider_id,
+      ServiceWorkerDispatcherHost* dispatcher_host);
+  ServiceWorkerDispatcherHost* dispatcher_host() const {
+    return dispatcher_host_;
+  }
+
  private:
   friend class ServiceWorkerProviderHostTest;
   friend class ServiceWorkerWriteToCacheJobTest;
@@ -155,6 +167,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // clears the field.
   void SetControllerVersionAttribute(ServiceWorkerVersion* version);
 
+  void SendAssociateRegistrationMessage();
+
   // Creates a ServiceWorkerHandle to retain |version| and returns a
   // ServiceWorkerInfo with the handle ID to pass to the provider. The
   // provider is responsible for releasing the handle.
@@ -164,9 +178,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void IncreaseProcessReference(const GURL& pattern);
   void DecreaseProcessReference(const GURL& pattern);
 
-  const int render_process_id_;
-  const int render_frame_id_;
-  const int provider_id_;
+  int render_process_id_;
+  int render_frame_id_;
+  int provider_id_;
   GURL document_url_;
   GURL topmost_frame_url_;
 

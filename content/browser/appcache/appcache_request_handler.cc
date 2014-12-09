@@ -25,7 +25,9 @@ AppCacheRequestHandler::AppCacheRequestHandler(AppCacheHost* host,
       found_cache_id_(0),
       found_network_namespace_(false),
       cache_entry_not_found_(false),
-      maybe_load_resource_executed_(false) {
+      maybe_load_resource_executed_(false),
+      old_process_id_(0),
+      old_host_id_(kAppCacheNoHostId) {
   DCHECK(host_);
   host_->AddObserver(this);
 }
@@ -185,6 +187,8 @@ void AppCacheRequestHandler::PrepareForCrossSiteTransfer(int old_process_id) {
   if (!host_)
     return;
   AppCacheBackendImpl* backend = host_->service()->GetBackend(old_process_id);
+  old_process_id_ = old_process_id;
+  old_host_id_ = host_->host_id();
   host_for_cross_site_transfer_ = backend->TransferHostOut(host_->host_id());
   DCHECK_EQ(host_, host_for_cross_site_transfer_.get());
 }
@@ -196,6 +200,15 @@ void AppCacheRequestHandler::CompleteCrossSiteTransfer(
   DCHECK_EQ(host_, host_for_cross_site_transfer_.get());
   AppCacheBackendImpl* backend = host_->service()->GetBackend(new_process_id);
   backend->TransferHostIn(new_host_id, host_for_cross_site_transfer_.Pass());
+}
+
+void AppCacheRequestHandler::MaybeCompleteCrossSiteTransferInOldProcess(
+    int old_process_id) {
+  if (!host_ || !host_for_cross_site_transfer_.get() ||
+      old_process_id != old_process_id_) {
+    return;
+  }
+  CompleteCrossSiteTransfer(old_process_id_, old_host_id_);
 }
 
 void AppCacheRequestHandler::OnDestructionImminent(AppCacheHost* host) {

@@ -1072,6 +1072,13 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
       child_id,
       request_data.appcache_host_id);
 
+  ServiceWorkerRequestHandler* handler =
+      ServiceWorkerRequestHandler::GetHandler(loader->request());
+  if (handler) {
+    handler->CompleteCrossSiteTransfer(
+        child_id, request_data.service_worker_provider_id);
+  }
+
   // We should have a CrossSiteResourceHandler to finish the transfer.
   DCHECK(info->cross_site_handler());
 }
@@ -1964,7 +1971,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   }
 
   // TODO(davidben): Attach ServiceWorkerRequestHandler.
-
+  // TODO(michaeln): Help out with this and that.
   // TODO(davidben): Attach AppCacheInterceptor.
 
   scoped_ptr<ResourceHandler> handler(new NavigationResourceHandler(

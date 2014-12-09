@@ -44,6 +44,9 @@ class CONTENT_EXPORT AppCacheInterceptor : public net::URLRequestInterceptor {
   static void CompleteCrossSiteTransfer(net::URLRequest* request,
                                         int new_process_id,
                                         int new_host_id);
+  static void MaybeCompleteCrossSiteTransferInOldProcess(
+      net::URLRequest* request,
+      int old_process_id);
 
   AppCacheInterceptor();
   ~AppCacheInterceptor() override;

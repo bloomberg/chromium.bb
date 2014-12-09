@@ -120,6 +120,39 @@ bool ServiceWorkerRequestHandler::IsControlledByServiceWorker(
          handler->provider_host_->running_hosted_version();
 }
 
+void ServiceWorkerRequestHandler::PrepareForCrossSiteTransfer(
+    int old_process_id) {
+  if (!provider_host_ || !context_)
+    return;
+  old_process_id_ = old_process_id;
+  old_provider_id_ = provider_host_->provider_id();
+  host_for_cross_site_transfer_ =
+      context_->TransferProviderHostOut(old_process_id,
+                                        provider_host_->provider_id());
+  DCHECK_EQ(provider_host_.get(), host_for_cross_site_transfer_.get());
+}
+
+void ServiceWorkerRequestHandler::CompleteCrossSiteTransfer(
+    int new_process_id, int new_provider_id) {
+  if (!host_for_cross_site_transfer_.get() || !context_)
+    return;
+  DCHECK_EQ(provider_host_.get(), host_for_cross_site_transfer_.get());
+  context_->TransferProviderHostIn(
+      new_process_id,
+      new_provider_id,
+      host_for_cross_site_transfer_.Pass());
+  DCHECK_EQ(provider_host_->provider_id(), new_provider_id);
+}
+
+void ServiceWorkerRequestHandler::MaybeCompleteCrossSiteTransferInOldProcess(
+    int old_process_id) {
+  if (!host_for_cross_site_transfer_.get() || !context_ ||
+      old_process_id_ != old_process_id) {
+    return;
+  }
+  CompleteCrossSiteTransfer(old_process_id_, old_provider_id_);
+}
+
 ServiceWorkerRequestHandler::~ServiceWorkerRequestHandler() {
 }
 
@@ -131,7 +164,9 @@ ServiceWorkerRequestHandler::ServiceWorkerRequestHandler(
     : context_(context),
       provider_host_(provider_host),
       blob_storage_context_(blob_storage_context),
-      resource_type_(resource_type) {
+      resource_type_(resource_type),
+      old_process_id_(0),
+      old_provider_id_(kInvalidServiceWorkerProviderId) {
 }
 
 }  // namespace content

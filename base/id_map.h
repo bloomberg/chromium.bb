@@ -53,13 +53,14 @@ class IDMap : public base::NonThreadSafe {
     Releaser<OS, 0>::release_all(&data_);
   }
 
-  // Sets whether Add should CHECK if passed in NULL data. Default is false.
+  // Sets whether Add and Replace should DCHECK if passed in NULL data.
+  // Default is false.
   void set_check_on_null_data(bool value) { check_on_null_data_ = value; }
 
   // Adds a view with an automatically generated unique ID. See AddWithID.
   KeyType Add(T* data) {
     DCHECK(CalledOnValidThread());
-    CHECK(!check_on_null_data_ || data);
+    DCHECK(!check_on_null_data_ || data);
     KeyType this_id = next_id_;
     DCHECK(data_.find(this_id) == data_.end()) << "Inserting duplicate item";
     data_[this_id] = data;
@@ -73,7 +74,7 @@ class IDMap : public base::NonThreadSafe {
   // two methods may not be mixed, or duplicate IDs may be generated
   void AddWithID(T* data, KeyType id) {
     DCHECK(CalledOnValidThread());
-    CHECK(!check_on_null_data_ || data);
+    DCHECK(!check_on_null_data_ || data);
     DCHECK(data_.find(id) == data_.end()) << "Inserting duplicate item";
     data_[id] = data;
   }
@@ -92,6 +93,25 @@ class IDMap : public base::NonThreadSafe {
     } else {
       removed_ids_.insert(id);
     }
+  }
+
+  // Replaces the value for |id| with |new_data| and returns a pointer to the
+  // existing value. If there is no entry for |id|, the map is not altered and
+  // nullptr is returned. The OwnershipSemantics of the map have no effect on
+  // how the existing value is treated, the IDMap does not delete the existing
+  // value being replaced.
+  T* Replace(KeyType id, T* new_data) {
+    DCHECK(CalledOnValidThread());
+    DCHECK(!check_on_null_data_ || new_data);
+    typename HashTable::iterator i = data_.find(id);
+    if (i == data_.end()) {
+      NOTREACHED() << "Attempting to replace an item not in the list";
+      return nullptr;
+    }
+
+    T* temp = i->second;
+    i->second = new_data;
+    return temp;
   }
 
   void Clear() {

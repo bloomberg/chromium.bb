@@ -53,6 +53,9 @@ TEST(IDMapTest, Basic) {
   EXPECT_EQ(&obj1, map.Lookup(1));
   EXPECT_EQ(&obj2, map.Lookup(2));
 
+  EXPECT_EQ(&obj2, map.Replace(2, &obj1));
+  EXPECT_EQ(&obj1, map.Lookup(2));
+
   EXPECT_EQ(0, map.iteration_depth());
 }
 

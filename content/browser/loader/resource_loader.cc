@@ -189,6 +189,13 @@ void ResourceLoader::MarkAsTransferring() {
   CHECK(IsResourceTypeFrame(GetRequestInfo()->GetResourceType()))
       << "Can only transfer for navigations";
   is_transferring_ = true;
+
+  int child_id = GetRequestInfo()->GetChildID();
+  AppCacheInterceptor::PrepareForCrossSiteTransfer(request(), child_id);
+  ServiceWorkerRequestHandler* handler =
+      ServiceWorkerRequestHandler::GetHandler(request());
+  if (handler)
+    handler->PrepareForCrossSiteTransfer(child_id);
 }
 
 void ResourceLoader::CompleteTransfer() {
@@ -198,6 +205,18 @@ void ResourceLoader::CompleteTransfer() {
   // a later read stage.
   DCHECK(DEFERRED_READ == deferred_stage_ ||
          DEFERRED_RESPONSE_COMPLETE == deferred_stage_);
+  DCHECK(is_transferring_);
+
+  // In some cases, a process transfer doesn't really happen and the
+  // request is resumed in the original process. Real transfers to a new process
+  // are completed via ResourceDispatcherHostImpl::UpdateRequestForTransfer.
+  int child_id = GetRequestInfo()->GetChildID();
+  AppCacheInterceptor::MaybeCompleteCrossSiteTransferInOldProcess(
+      request(), child_id);
+  ServiceWorkerRequestHandler* handler =
+      ServiceWorkerRequestHandler::GetHandler(request());
+  if (handler)
+    handler->MaybeCompleteCrossSiteTransferInOldProcess(child_id);
 
   is_transferring_ = false;
   GetRequestInfo()->cross_site_handler()->ResumeResponse();
