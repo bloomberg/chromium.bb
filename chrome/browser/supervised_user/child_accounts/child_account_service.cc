@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/supervised_user/permission_request_creator_apiary.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
@@ -58,9 +59,7 @@ void ChildAccountService::Init() {
 
 void ChildAccountService::Shutdown() {
   CancelFetchingServiceFlags();
-  SupervisedUserService* service =
-      SupervisedUserServiceFactory::GetForProfile(profile_);
-  service->SetDelegate(NULL);
+  SupervisedUserServiceFactory::GetForProfile(profile_)->SetDelegate(NULL);
   DCHECK(!active_);
   SigninManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
 }
@@ -97,20 +96,10 @@ bool ChildAccountService::SetActive(bool active) {
         profile_->GetRequestContext()));
     family_fetcher_->StartGetFamilyMembers();
 
-    // Set the permission request API URL and scope, unless they have been
-    // explicitly specified on the command line.
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (!command_line->HasSwitch(switches::kPermissionRequestApiUrl)) {
-      command_line->AppendSwitchASCII(
-          switches::kPermissionRequestApiUrl,
-          "https://www.googleapis.com/"
-              "kidsmanagement/v1/people/me/permissionRequests");
-    }
-    if (!command_line->HasSwitch(switches::kPermissionRequestApiScope)) {
-      command_line->AppendSwitchASCII(
-          switches::kPermissionRequestApiScope,
-          "https://www.googleapis.com/auth/kid.permission");
-    }
+    SupervisedUserService* service =
+        SupervisedUserServiceFactory::GetForProfile(profile_);
+    service->AddPermissionRequestCreator(
+        PermissionRequestCreatorApiary::CreateWithProfile(profile_));
 
     EnableExperimentalFiltering();
   } else {
@@ -320,7 +309,7 @@ void ChildAccountService::ClearSecondCustodianPrefs() {
 }
 
 void ChildAccountService::EnableExperimentalFiltering() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // Static blacklist defaults to enabled.
   bool has_enable_blacklist =

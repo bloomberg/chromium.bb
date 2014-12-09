@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -25,8 +24,13 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "url/gurl.h"
 
 using net::URLFetcher;
+
+const char kApiUrl[] =
+    "https://www.googleapis.com/kidsmanagement/v1/people/me/permissionRequests";
+const char kApiScope[] = "https://www.googleapis.com/auth/kid.permission";
 
 const int kNumRetries = 1;
 const char kNamespace[] = "PERMISSION_CHROME_URL";
@@ -66,32 +70,27 @@ PermissionRequestCreatorApiary::Request::~Request() {}
 
 PermissionRequestCreatorApiary::PermissionRequestCreatorApiary(
     OAuth2TokenService* oauth2_token_service,
-    scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
-    net::URLRequestContextGetter* context,
-    const GURL& apiary_url)
+    const std::string& account_id,
+    net::URLRequestContextGetter* context)
     : OAuth2TokenService::Consumer("permissions_creator"),
       oauth2_token_service_(oauth2_token_service),
-      signin_wrapper_(signin_wrapper.Pass()),
+      account_id_(account_id),
       context_(context),
-      apiary_url_(apiary_url),
       url_fetcher_id_(0) {
-  DCHECK(apiary_url_.is_valid());
 }
 
 PermissionRequestCreatorApiary::~PermissionRequestCreatorApiary() {}
 
 // static
 scoped_ptr<PermissionRequestCreator>
-PermissionRequestCreatorApiary::CreateWithProfile(Profile* profile,
-                                                  const GURL& apiary_url) {
+PermissionRequestCreatorApiary::CreateWithProfile(Profile* profile) {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
-  scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper(
-      new SupervisedUserSigninManagerWrapper(profile, signin));
   return make_scoped_ptr(new PermissionRequestCreatorApiary(
-      token_service, signin_wrapper.Pass(), profile->GetRequestContext(),
-      apiary_url));
+      token_service,
+      signin->GetAuthenticatedAccountId(),
+      profile->GetRequestContext()));
 }
 
 bool PermissionRequestCreatorApiary::IsEnabled() const {
@@ -105,21 +104,34 @@ void PermissionRequestCreatorApiary::CreatePermissionRequest(
   StartFetching(requests_.back());
 }
 
-std::string PermissionRequestCreatorApiary::GetApiScopeToUse() const {
+GURL PermissionRequestCreatorApiary::GetApiUrl() const {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPermissionRequestApiUrl)) {
+    GURL url(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                 switches::kPermissionRequestApiUrl));
+    LOG_IF(WARNING, !url.is_valid())
+        << "Got invalid URL for " << switches::kPermissionRequestApiUrl;
+    return url;
+  } else {
+    return GURL(kApiUrl);
+  }
+}
+
+std::string PermissionRequestCreatorApiary::GetApiScope() const {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kPermissionRequestApiScope)) {
     return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
         switches::kPermissionRequestApiScope);
   } else {
-    return signin_wrapper_->GetSyncScopeToUse();
+    return kApiScope;
   }
 }
 
 void PermissionRequestCreatorApiary::StartFetching(Request* request) {
   OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(GetApiScopeToUse());
+  scopes.insert(GetApiScope());
   request->access_token_request = oauth2_token_service_->StartRequest(
-      signin_wrapper_->GetAccountIdToUse(), scopes, this);
+      account_id_, scopes, this);
 }
 
 void PermissionRequestCreatorApiary::OnGetTokenSuccess(
@@ -136,7 +148,7 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
   (*it)->access_token = access_token;
 
   (*it)->url_fetcher.reset(URLFetcher::Create((*it)->url_fetcher_id,
-                                              apiary_url_,
+                                              GetApiUrl(),
                                               URLFetcher::POST,
                                               this));
 
@@ -193,9 +205,10 @@ void PermissionRequestCreatorApiary::OnURLFetchComplete(
   if (response_code == net::HTTP_UNAUTHORIZED && !(*it)->access_token_expired) {
     (*it)->access_token_expired = true;
     OAuth2TokenService::ScopeSet scopes;
-    scopes.insert(GetApiScopeToUse());
-    oauth2_token_service_->InvalidateToken(
-        signin_wrapper_->GetAccountIdToUse(), scopes, (*it)->access_token);
+    scopes.insert(GetApiScope());
+    oauth2_token_service_->InvalidateToken(account_id_,
+                                           scopes,
+                                           (*it)->access_token);
     StartFetching(*it);
     return;
   }

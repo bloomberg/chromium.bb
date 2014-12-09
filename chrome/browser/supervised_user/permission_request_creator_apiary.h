@@ -12,10 +12,9 @@
 #include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
-#include "url/gurl.h"
 
+class GURL;
 class Profile;
-class SupervisedUserSigninManagerWrapper;
 
 namespace base {
 class Time;
@@ -32,13 +31,12 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
  public:
   PermissionRequestCreatorApiary(
       OAuth2TokenService* oauth2_token_service,
-      scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper,
-      net::URLRequestContextGetter* context,
-      const GURL& apiary_url);
+      const std::string& account_id,
+      net::URLRequestContextGetter* context);
   ~PermissionRequestCreatorApiary() override;
 
   static scoped_ptr<PermissionRequestCreator> CreateWithProfile(
-      Profile* profile, const GURL& apiary_url);
+      Profile* profile);
 
   // PermissionRequestCreator implementation:
   bool IsEnabled() const override;
@@ -61,7 +59,8 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
   // net::URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  std::string GetApiScopeToUse() const;
+  GURL GetApiUrl() const;
+  std::string GetApiScope() const;
 
   // Requests an access token, which is the first thing we need. This is where
   // we restart when the returned access token has expired.
@@ -72,12 +71,13 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
                                       const GoogleServiceAuthError& error);
 
   OAuth2TokenService* oauth2_token_service_;
-  scoped_ptr<SupervisedUserSigninManagerWrapper> signin_wrapper_;
+  std::string account_id_;
   net::URLRequestContextGetter* context_;
-  GURL apiary_url_;
   int url_fetcher_id_;
 
   ScopedVector<Request> requests_;
+
+  DISALLOW_COPY_AND_ASSIGN(PermissionRequestCreatorApiary);
 };
 
 #endif  // CHROME_BROWSER_SUPERVISED_USER_PERMISSION_REQUEST_CREATOR_APIARY_H_

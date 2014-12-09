@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -203,7 +204,8 @@ TEST_F(SupervisedUserServiceTest, CreatePermissionRequest) {
 
   // Add a disabled permission request creator. This should not change anything.
   MockPermissionRequestCreator* creator = new MockPermissionRequestCreator;
-  supervised_user_service_->AddPermissionRequestCreatorForTesting(creator);
+  supervised_user_service_->AddPermissionRequestCreator(
+      make_scoped_ptr(creator));
 
   EXPECT_FALSE(supervised_user_service_->AccessRequestsEnabled());
   {
@@ -239,7 +241,8 @@ TEST_F(SupervisedUserServiceTest, CreatePermissionRequest) {
   // Add a second permission request creator.
   MockPermissionRequestCreator* creator_2 = new MockPermissionRequestCreator;
   creator_2->set_enabled(true);
-  supervised_user_service_->AddPermissionRequestCreatorForTesting(creator_2);
+  supervised_user_service_->AddPermissionRequestCreator(
+      make_scoped_ptr(creator_2));
 
   {
     AsyncResultHolder result_holder;

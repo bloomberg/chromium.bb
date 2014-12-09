@@ -174,8 +174,8 @@ class SupervisedUserService : public KeyedService,
   void AddObserver(SupervisedUserServiceObserver* observer);
   void RemoveObserver(SupervisedUserServiceObserver* observer);
 
-  // Will take ownership of |creator|.
-  void AddPermissionRequestCreatorForTesting(PermissionRequestCreator* creator);
+  void AddPermissionRequestCreator(
+      scoped_ptr<PermissionRequestCreator> creator);
 
 #if defined(ENABLE_EXTENSIONS)
   // extensions::ManagementPolicy::Provider implementation:

@@ -18,7 +18,6 @@
 #include "chrome/browser/supervised_user/custodian_profile_downloader_service.h"
 #include "chrome/browser/supervised_user/custodian_profile_downloader_service_factory.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_blacklist_downloader.h"
-#include "chrome/browser/supervised_user/permission_request_creator_apiary.h"
 #include "chrome/browser/supervised_user/permission_request_creator_sync.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_pref_mapping_service.h"
@@ -363,9 +362,9 @@ void SupervisedUserService::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-void SupervisedUserService::AddPermissionRequestCreatorForTesting(
-    PermissionRequestCreator* creator) {
-  permissions_creators_.push_back(creator);
+void SupervisedUserService::AddPermissionRequestCreator(
+    scoped_ptr<PermissionRequestCreator> creator) {
+  permissions_creators_.push_back(creator.release());
 }
 
 #if defined(ENABLE_EXTENSIONS)
@@ -751,6 +750,14 @@ void SupervisedUserService::SetActive(bool active) {
       token_service->LoadCredentials(
           supervised_users::kSupervisedUserPseudoEmail);
 
+      permissions_creators_.push_back(new PermissionRequestCreatorSync(
+          GetSettingsService(),
+          SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
+              profile_),
+          ProfileSyncServiceFactory::GetForProfile(profile_),
+          GetSupervisedUserName(),
+          profile_->GetPrefs()->GetString(prefs::kSupervisedUserId)));
+
       SetupSync();
     }
   }
@@ -776,28 +783,6 @@ void SupervisedUserService::SetActive(bool active) {
 #endif
 
   if (active_) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kPermissionRequestApiUrl)) {
-      GURL url(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kPermissionRequestApiUrl));
-      if (url.is_valid()) {
-        scoped_ptr<PermissionRequestCreator> creator =
-            PermissionRequestCreatorApiary::CreateWithProfile(profile_, url);
-        permissions_creators_.push_back(creator.release());
-      } else {
-        LOG(WARNING) << "Got invalid URL for "
-                     << switches::kPermissionRequestApiUrl;
-      }
-    } else {
-      permissions_creators_.push_back(new PermissionRequestCreatorSync(
-          GetSettingsService(),
-          SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
-              profile_),
-          ProfileSyncServiceFactory::GetForProfile(profile_),
-          GetSupervisedUserName(),
-          profile_->GetPrefs()->GetString(prefs::kSupervisedUserId)));
-    }
-
     pref_change_registrar_.Add(
         prefs::kDefaultSupervisedUserFilteringBehavior,
         base::Bind(&SupervisedUserService::OnDefaultFilteringBehaviorChanged,

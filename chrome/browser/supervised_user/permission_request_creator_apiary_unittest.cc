@@ -8,7 +8,6 @@
 #include "base/values.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/supervised_user/permission_request_creator_apiary.h"
-#include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -17,8 +16,6 @@
 namespace {
 
 const char kAccountId[] = "account@gmail.com";
-const char kApiScope[] = "api_scope";
-const char kPermissionRequestApiUrl[] = "https://myapis.com/permissions";
 
 std::string BuildResponse() {
   base::DictionaryValue dict;
@@ -30,17 +27,6 @@ std::string BuildResponse() {
   return result;
 }
 
-class FakeSupervisedUserSigninManagerWrapper
-    : public SupervisedUserSigninManagerWrapper {
- public:
-  FakeSupervisedUserSigninManagerWrapper()
-      : SupervisedUserSigninManagerWrapper(NULL, NULL) {}
-
-  std::string GetEffectiveUsername() const override { return kAccountId; }
-  std::string GetAccountIdToUse() const override { return kAccountId; }
-  std::string GetSyncScopeToUse() const override { return kApiScope; }
-};
-
 }  // namespace
 
 class PermissionRequestCreatorApiaryTest : public testing::Test {
@@ -48,11 +34,9 @@ class PermissionRequestCreatorApiaryTest : public testing::Test {
   PermissionRequestCreatorApiaryTest()
       : request_context_(new net::TestURLRequestContextGetter(
             base::MessageLoopProxy::current())),
-        permission_creator_(
-            &token_service_,
-            make_scoped_ptr(new FakeSupervisedUserSigninManagerWrapper),
-            request_context_.get(),
-            GURL(kPermissionRequestApiUrl)) {
+        permission_creator_(&token_service_,
+                            kAccountId,
+                            request_context_.get()) {
     token_service_.IssueRefreshTokenForUser(kAccountId, "refresh_token");
   }
 
