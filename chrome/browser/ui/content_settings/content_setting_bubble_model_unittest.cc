@@ -96,6 +96,7 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
       content_setting_bubble_model->bubble_content();
   std::string title = bubble_content.title;
   EXPECT_FALSE(title.empty());
+  EXPECT_TRUE(bubble_content.plugin_names.empty());
   ASSERT_EQ(2U, bubble_content.radio_group.radio_items.size());
   std::string radio1 = bubble_content.radio_group.radio_items[0];
   std::string radio2 = bubble_content.radio_group.radio_items[1];
@@ -729,7 +730,10 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
 TEST_F(ContentSettingBubbleModelTest, Plugins) {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS);
+  const base::string16 plugin_name = base::ASCIIToUTF16("plugin_name");
+
+  content_settings->OnContentBlockedWithDetail(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                               plugin_name);
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -738,6 +742,9 @@ TEST_F(ContentSettingBubbleModelTest, Plugins) {
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_FALSE(bubble_content.title.empty());
+  EXPECT_FALSE(bubble_content.plugin_names.empty());
+  EXPECT_NE(base::string16::npos,
+            bubble_content.plugin_names.find(plugin_name));
   EXPECT_EQ(2U, bubble_content.radio_group.radio_items.size());
   EXPECT_FALSE(bubble_content.custom_link.empty());
   EXPECT_TRUE(bubble_content.custom_link_enabled);

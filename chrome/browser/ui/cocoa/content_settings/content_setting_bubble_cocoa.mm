@@ -383,12 +383,9 @@ class ContentSettingBubbleWebContentsObserverBridge
 }
 
 - (void)initializeBlockedPluginsList {
-  int delta = NSMinY([titleLabel_ frame]) -
-              NSMinY([blockedResourcesField_ frame]);
-  [blockedResourcesField_ removeFromSuperview];
-  NSRect frame = [[self window] frame];
-  frame.size.height -= delta;
-  [[self window] setFrame:frame display:NO];
+  NSString* label = base::SysUTF16ToNSString(
+      contentSettingBubbleModel_->bubble_content().plugin_names);
+  [blockedResourcesField_ setStringValue:label];
 }
 
 - (void)initializePopupList {

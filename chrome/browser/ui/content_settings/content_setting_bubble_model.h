@@ -79,6 +79,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     ~BubbleContent();
 
     std::string title;
+    base::string16 plugin_names;
     PopupItems popup_items;
     RadioGroup radio_group;
     bool radio_group_enabled;
@@ -132,6 +133,9 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   Profile* profile() const { return profile_; }
 
   void set_title(const std::string& title) { bubble_content_.title = title; }
+  void set_plugin_names(const base::string16& plugin_names) {
+    bubble_content_.plugin_names = plugin_names;
+  }
   void add_popup(const PopupItem& popup) {
     bubble_content_.popup_items.push_back(popup);
   }

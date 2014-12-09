@@ -211,6 +211,27 @@ void ContentSettingBubbleContents::Init() {
     bubble_content_empty = false;
   }
 
+  if (!bubble_content.plugin_names.empty()) {
+    const int kPluginsColumnSetId = 4;
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    views::ColumnSet* plugins_column_set =
+        layout->AddColumnSet(kPluginsColumnSetId);
+    plugins_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
+                                  GridLayout::USE_PREF, 0, 0);
+    plugins_column_set->AddPaddingColumn(
+        0, views::kRelatedControlHorizontalSpacing);
+    plugins_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
+                                  GridLayout::USE_PREF, 0, 0);
+
+    views::Label* plugin_names_label =
+        new views::Label(bubble_content.plugin_names);
+    plugin_names_label->SetMultiLine(true);
+    plugin_names_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    layout->StartRow(0, kPluginsColumnSetId);
+    layout->AddView(plugin_names_label);
+    bubble_content_empty = false;
+  }
+
   if (content_setting_bubble_model_->content_type() ==
       CONTENT_SETTINGS_TYPE_POPUPS) {
     const int kPopupColumnSetId = 2;

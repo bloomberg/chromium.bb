@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
@@ -237,6 +238,10 @@ void TabSpecificContentSettings::FileSystemAccessed(int render_process_id,
     settings->OnFileSystemAccessed(url, blocked_by_policy);
 }
 
+const base::string16 TabSpecificContentSettings::GetBlockedPluginNames() const {
+  return JoinString(blocked_plugin_names_, base::ASCIIToUTF16(", "));
+}
+
 bool TabSpecificContentSettings::IsContentBlocked(
     ContentSettingsType content_type) const {
   DCHECK(content_type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
@@ -291,6 +296,12 @@ bool TabSpecificContentSettings::IsContentAllowed(
 }
 
 void TabSpecificContentSettings::OnContentBlocked(ContentSettingsType type) {
+  OnContentBlockedWithDetail(type, base::string16());
+}
+
+void TabSpecificContentSettings::OnContentBlockedWithDetail(
+    ContentSettingsType type,
+    const base::string16& details) {
   DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
       << "Geolocation settings handled by OnGeolocationPermissionSet";
   DCHECK(type != CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC &&
@@ -318,6 +329,12 @@ void TabSpecificContentSettings::OnContentBlocked(ContentSettingsType type) {
     content_blockage_indicated_to_user_[type] = false;
   }
 #endif
+
+  if (type == CONTENT_SETTINGS_TYPE_PLUGINS && !details.empty() &&
+      std::find(blocked_plugin_names_.begin(), blocked_plugin_names_.end(),
+                details) == blocked_plugin_names_.end()) {
+    blocked_plugin_names_.push_back(details);
+  }
 
   if (!content_blocked_[type]) {
     content_blocked_[type] = true;
@@ -698,7 +715,8 @@ bool TabSpecificContentSettings::OnMessageReceived(
     content::RenderFrameHost* render_frame_host) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TabSpecificContentSettings, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ContentBlocked, OnContentBlocked)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ContentBlocked,
+                        OnContentBlockedWithDetail)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -710,6 +728,7 @@ void TabSpecificContentSettings::DidNavigateMainFrame(
   if (!details.is_in_page) {
     // Clear "blocked" flags.
     ClearBlockedContentSettingsExceptForCookies();
+    blocked_plugin_names_.clear();
     GeolocationDidNavigate(details);
     MidiDidNavigate(details);
   }

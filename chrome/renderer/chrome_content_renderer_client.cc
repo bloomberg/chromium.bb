@@ -877,7 +877,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
               identifier));
         } else {
           // Send IPC for showing blocked plugins page action.
-          observer->DidBlockContentType(content_type);
+          observer->DidBlockContentType(content_type, group_name);
         }
         break;
       }
@@ -888,7 +888,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         placeholder->set_allow_loading(true);
         RenderThread::Get()->RecordAction(
             UserMetricsAction("Plugin_ClickToPlay"));
-        observer->DidBlockContentType(content_type);
+        observer->DidBlockContentType(content_type, group_name);
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kBlocked: {
@@ -897,7 +897,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name), GURL());
         placeholder->set_allow_loading(true);
         RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Blocked"));
-        observer->DidBlockContentType(content_type);
+        observer->DidBlockContentType(content_type, group_name);
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kBlockedByPolicy: {
@@ -907,7 +907,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         placeholder->set_allow_loading(false);
         RenderThread::Get()->RecordAction(
             UserMetricsAction("Plugin_BlockedByPolicy"));
-        observer->DidBlockContentType(content_type);
+        observer->DidBlockContentType(content_type, group_name);
         break;
       }
     }

@@ -108,11 +108,22 @@ ContentSettingTitleAndLinkModel::ContentSettingTitleAndLinkModel(
 }
 
 void ContentSettingTitleAndLinkModel::SetTitle() {
+  TabSpecificContentSettings* content_settings = NULL;
+  if (web_contents()) {
+    content_settings =
+        TabSpecificContentSettings::FromWebContents(web_contents());
+  }
+
+  if (content_type() == CONTENT_SETTINGS_TYPE_PLUGINS && content_settings &&
+      content_settings->IsContentBlocked(content_type())) {
+    set_plugin_names(content_settings->GetBlockedPluginNames());
+  }
+
   static const ContentSettingsTypeIdEntry kBlockedTitleIDs[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_TITLE},
     {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_TITLE},
     {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_TITLE},
-    {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_MESSAGE},
+    {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_TITLE},
     {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_TITLE},
     {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
         IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT},
@@ -128,11 +139,8 @@ void ContentSettingTitleAndLinkModel::SetTitle() {
   };
   const ContentSettingsTypeIdEntry *title_ids = kBlockedTitleIDs;
   size_t num_title_ids = arraysize(kBlockedTitleIDs);
-  if (web_contents() &&
-      TabSpecificContentSettings::FromWebContents(
-          web_contents())->IsContentAllowed(content_type()) &&
-      !TabSpecificContentSettings::FromWebContents(
-          web_contents())->IsContentBlocked(content_type())) {
+  if (content_settings && content_settings->IsContentAllowed(content_type()) &&
+      !content_settings->IsContentBlocked(content_type())) {
     title_ids = kAccessedTitleIDs;
     num_title_ids = arraysize(kAccessedTitleIDs);
   }
