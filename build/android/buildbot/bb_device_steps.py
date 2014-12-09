@@ -43,38 +43,41 @@ GS_AUTH_URL = 'https://storage.cloud.google.com'
 #   annotation: Annotation of the tests to include.
 #   exclude_annotation: The annotation of the tests to exclude.
 I_TEST = collections.namedtuple('InstrumentationTest', [
-    'name', 'apk', 'apk_package', 'test_apk', 'test_data', 'isolate_file_path',
-    'host_driven_root', 'annotation', 'exclude_annotation', 'extra_flags'])
+    'name', 'apk', 'apk_package', 'test_apk', 'test_data', 'host_driven_root',
+    'annotation', 'exclude_annotation', 'extra_flags'])
 
 
 def SrcPath(*path):
   return os.path.join(CHROME_SRC_DIR, *path)
 
-# pylint: disable=unused-argument
-def I(name, apk, apk_package, test_apk, test_data=None, isolate_file_path=None,
-      host_driven_root=None, annotation=None, exclude_annotation=None,
-      extra_flags=None):
-  return I_TEST(name, apk, apk_package, test_apk, test_data, isolate_file_path,
-      host_driven_root, annotation, exclude_annotation, extra_flags)
+
+def I(name, apk, apk_package, test_apk, test_data, host_driven_root=None,
+      annotation=None, exclude_annotation=None, extra_flags=None):
+  return I_TEST(name, apk, apk_package, test_apk, test_data, host_driven_root,
+                annotation, exclude_annotation, extra_flags)
 
 INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
     I('ContentShell',
       'ContentShell.apk',
       'org.chromium.content_shell_apk',
-      'ContentShellTest'),
+      'ContentShellTest',
+      'content:content/test/data/android/device_files'),
     I('ChromeShell',
       'ChromeShell.apk',
       'org.chromium.chrome.shell',
       'ChromeShellTest',
-      host_driven_root=constants.CHROME_SHELL_HOST_DRIVEN_DIR),
+      'chrome:chrome/test/data/android/device_files',
+      constants.CHROME_SHELL_HOST_DRIVEN_DIR),
     I('AndroidWebView',
       'AndroidWebView.apk',
       'org.chromium.android_webview.shell',
-      'AndroidWebViewTest'),
+      'AndroidWebViewTest',
+      'webview:android_webview/test/data/device_files'),
     I('ChromeSyncShell',
       'ChromeSyncShell.apk',
       'org.chromium.chrome.browser.sync',
-      'ChromeSyncShellTest'),
+      'ChromeSyncShellTest',
+      None),
     ])
 
 InstallablePackage = collections.namedtuple('InstallablePackage', [
@@ -253,8 +256,6 @@ def RunInstrumentationSuite(options, test, flunk_on_failure=True,
   args = ['--test-apk', test.test_apk, '--verbose']
   if test.test_data:
     args.extend(['--test_data', test.test_data])
-  if test.isolate_file_path:
-    args.extend(['--isolate_file_path', test.isolate_file_path])
   if options.target == 'Release':
     args.append('--release')
   if options.asan:
