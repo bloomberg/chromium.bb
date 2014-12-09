@@ -1,30 +1,34 @@
 GN "Generate Ninja"
 
 GN is a meta-build system that generates ninja files. It's meant to be faster
-and simpler than GYP. It outputs Ninja build files and optionally GYP files
-during the transitional period.
+and simpler than GYP.
 
-Chromium normally uses checked-in binary versions of GN, so that we don't
-have to worry about bootstrapping a build of GN from scratch.
+Chromium uses binary versions of GN downloaded from Google Cloud Storage during
+gclient runhooks, so that we don't have to worry about bootstrapping a build
+of GN from scratch.
 
-In order to make changes to GN and update the checked-in binaries, you must
+In order to make changes to GN and update the binaries, you must
 have access to the "chromium-gn" bucket in Google Cloud Storage.  To date,
 only a few Googlers have this access; if you don't have it, ask someone
 who does for help :).
 
 Assuming you have access to the bucket, do the following:
 
-1) Make the changes to the GN source
+1) Make the changes to the GN source.
 
-2) Upload a patch
+2) Upload a patch.
 
 3) Get it reviewed and landed.
 
 4) Obtain local build machines (with Chromium checkouts with your change)
    for Mac, Windows, and 32-bit and 64-bit Linux environments.
-   
+
    On Linux, make sure you have the debian sysroots needed to do proper builds:
-   % export GYP_DEFINES="branding=Chrome buildtype=Official"
+   For 32-bits:
+   % export GYP_DEFINES="branding=Chrome buildtype=Official target_arch=ia32"
+   For 64-bits:
+   % export GYP_DEFINES="branding=Chrome buildtype=Official target_arch=x64"
+   Then:
    % gclient runhooks
 
 5) Sync each checkout to the revision of Chromium containing your change (or
