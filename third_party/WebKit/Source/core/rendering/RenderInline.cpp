@@ -717,13 +717,11 @@ LayoutUnit RenderInline::offsetTop() const
 
 static LayoutUnit computeMargin(const RenderInline* renderer, const Length& margin)
 {
-    if (margin.isAuto())
-        return 0;
     if (margin.isFixed())
         return margin.value();
     if (margin.isPercent())
-        return minimumValueForLength(margin, std::max<LayoutUnit>(0, renderer->containingBlock()->availableLogicalWidth()));
-    return 0;
+        return minimumValueForLength(margin, std::max(LayoutUnit(), renderer->containingBlock()->availableLogicalWidth()));
+    return LayoutUnit();
 }
 
 LayoutBoxExtent RenderInline::marginBox() const

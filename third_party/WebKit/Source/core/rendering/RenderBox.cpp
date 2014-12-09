@@ -359,7 +359,7 @@ LayoutUnit RenderBox::scrollWidth() const
     // FIXME: Need to work right with writing modes.
     if (style()->isLeftToRightDirection())
         return std::max(clientWidth(), layoutOverflowRect().maxX() - borderLeft());
-    return clientWidth() - std::min<LayoutUnit>(0, layoutOverflowRect().x() - borderLeft());
+    return clientWidth() - std::min(LayoutUnit(), layoutOverflowRect().x() - borderLeft());
 }
 
 LayoutUnit RenderBox::scrollHeight() const
@@ -1024,12 +1024,12 @@ void RenderBox::clearOverrideContainingBlockContentLogicalHeight()
 
 LayoutUnit RenderBox::extraInlineOffset() const
 {
-    return gExtraInlineOffsetMap ? gExtraInlineOffsetMap->get(this) : LayoutUnit(0);
+    return gExtraInlineOffsetMap ? gExtraInlineOffsetMap->get(this) : LayoutUnit();
 }
 
 LayoutUnit RenderBox::extraBlockOffset() const
 {
-    return gExtraBlockOffsetMap ? gExtraBlockOffsetMap->get(this) : LayoutUnit(0);
+    return gExtraBlockOffsetMap ? gExtraBlockOffsetMap->get(this) : LayoutUnit();
 }
 
 void RenderBox::setExtraInlineOffset(LayoutUnit inlineOffest)
@@ -1074,14 +1074,14 @@ LayoutUnit RenderBox::adjustContentBoxLogicalWidthForBoxSizing(LayoutUnit width)
 {
     if (style()->boxSizing() == BORDER_BOX)
         width -= borderAndPaddingLogicalWidth();
-    return std::max<LayoutUnit>(0, width);
+    return std::max(LayoutUnit(), width);
 }
 
 LayoutUnit RenderBox::adjustContentBoxLogicalHeightForBoxSizing(LayoutUnit height) const
 {
     if (style()->boxSizing() == BORDER_BOX)
         height -= borderAndPaddingLogicalHeight();
-    return std::max<LayoutUnit>(0, height);
+    return std::max(LayoutUnit(), height);
 }
 
 // Hit Testing
@@ -1434,7 +1434,7 @@ LayoutRect RenderBox::clipRect(const LayoutPoint& location)
 static LayoutUnit portionOfMarginNotConsumedByFloat(LayoutUnit childMargin, LayoutUnit contentSide, LayoutUnit offset)
 {
     if (childMargin <= 0)
-        return 0;
+        return LayoutUnit();
     LayoutUnit contentSideWithMargin = contentSide + childMargin;
     if (offset > contentSideWithMargin)
         return childMargin;
@@ -1453,7 +1453,7 @@ LayoutUnit RenderBox::shrinkLogicalWidthToAvoidFloats(LayoutUnit childMarginStar
     if (startOffsetForContent == startOffsetForLine && endOffsetForContent == endOffsetForLine)
         return cb->availableLogicalWidthForLine(logicalTopPosition, false) - childMarginStart - childMarginEnd;
 
-    LayoutUnit width = cb->availableLogicalWidthForLine(logicalTopPosition, false) - std::max<LayoutUnit>(0, childMarginStart) - std::max<LayoutUnit>(0, childMarginEnd);
+    LayoutUnit width = cb->availableLogicalWidthForLine(logicalTopPosition, false) - std::max(LayoutUnit(), childMarginStart) - std::max(LayoutUnit(), childMarginEnd);
     // We need to see if margins on either the start side or the end side can contain the floats in question. If they can,
     // then just using the line width is inaccurate. In the case where a float completely fits, we don't need to use the line
     // offset at all, but can instead push all the way to the content edge of the containing block. In the case where the float
@@ -1487,7 +1487,7 @@ LayoutUnit RenderBox::containingBlockAvailableLineWidth() const
     RenderBlock* cb = containingBlock();
     if (cb->isRenderBlockFlow())
         return toRenderBlockFlow(cb)->availableLogicalWidthForLine(logicalTop(), false, availableLogicalHeight(IncludeMarginBorderPadding));
-    return 0;
+    return LayoutUnit();
 }
 
 LayoutUnit RenderBox::perpendicularContainingBlockLogicalHeight() const
@@ -1905,7 +1905,7 @@ void RenderBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
     Length logicalWidthLength = treatAsReplaced ? Length(computeReplacedLogicalWidth(), Fixed) : styleToUse->logicalWidth();
 
     RenderBlock* cb = containingBlock();
-    LayoutUnit containerLogicalWidth = std::max<LayoutUnit>(0, containingBlockLogicalWidthForContent());
+    LayoutUnit containerLogicalWidth = std::max(LayoutUnit(), containingBlockLogicalWidthForContent());
     bool hasPerpendicularContainingBlock = cb->isHorizontalWritingMode() != isHorizontalWritingMode();
 
     if (isInline() && !isInlineBlockOrInlineTable()) {
@@ -2121,8 +2121,8 @@ void RenderBox::computeMarginsForDirection(MarginDirection flowDirection, const 
     if (avoidsFloats() && containingBlock->isRenderBlockFlow() && toRenderBlockFlow(containingBlock)->containsFloats()) {
         availableWidth = containingBlockAvailableLineWidth();
         if (shrinkToAvoidFloats() && availableWidth < containerWidth) {
-            marginStart = std::max<LayoutUnit>(0, marginStartWidth);
-            marginEnd = std::max<LayoutUnit>(0, marginEndWidth);
+            marginStart = std::max(LayoutUnit(), marginStartWidth);
+            marginEnd = std::max(LayoutUnit(), marginEndWidth);
         }
     }
 
@@ -2137,7 +2137,7 @@ void RenderBox::computeMarginsForDirection(MarginDirection flowDirection, const 
     if ((marginStartLength.isAuto() && marginEndLength.isAuto() && marginBoxWidth < availableWidth)
         || (!marginStartLength.isAuto() && !marginEndLength.isAuto() && containingBlockStyle->textAlign() == WEBKIT_CENTER)) {
         // Other browsers center the margin box for align=center elements so we match them here.
-        LayoutUnit centeredMarginBoxStart = std::max<LayoutUnit>(0, (availableWidth - childWidth - marginStartWidth - marginEndWidth) / 2);
+        LayoutUnit centeredMarginBoxStart = std::max(LayoutUnit(), (availableWidth - childWidth - marginStartWidth - marginEndWidth) / 2);
         marginStart = centeredMarginBoxStart + marginStartWidth;
         marginEnd = availableWidth - childWidth - marginStart + marginEndWidth;
         return;
@@ -2284,7 +2284,7 @@ LayoutUnit RenderBox::computeContentLogicalHeight(const Length& height, LayoutUn
     LayoutUnit heightIncludingScrollbar = computeContentAndScrollbarLogicalHeightUsing(height, intrinsicContentHeight);
     if (heightIncludingScrollbar == -1)
         return -1;
-    return std::max<LayoutUnit>(0, adjustContentBoxLogicalHeightForBoxSizing(heightIncludingScrollbar) - scrollbarLogicalHeight());
+    return std::max(LayoutUnit(), adjustContentBoxLogicalHeightForBoxSizing(heightIncludingScrollbar) - scrollbarLogicalHeight());
 }
 
 LayoutUnit RenderBox::computeIntrinsicLogicalContentHeightUsing(const Length& logicalHeightLength, LayoutUnit intrinsicContentHeight, LayoutUnit borderAndPadding) const
@@ -2378,7 +2378,7 @@ LayoutUnit RenderBox::computePercentageLogicalHeight(const Length& height) const
                 // preferable to the alternative (sizing intrinsically and making the row end up too big).
                 RenderTableCell* cell = toRenderTableCell(cb);
                 if (scrollsOverflowY() && (!cell->style()->logicalHeight().isAuto() || !cell->table()->style()->logicalHeight().isAuto()))
-                    return 0;
+                    return LayoutUnit();
                 return -1;
             }
             availableHeight = cb->overrideLogicalContentHeight();
@@ -2386,7 +2386,7 @@ LayoutUnit RenderBox::computePercentageLogicalHeight(const Length& height) const
         }
     } else if (cbstyle->logicalHeight().isFixed()) {
         LayoutUnit contentBoxHeight = cb->adjustContentBoxLogicalHeightForBoxSizing(cbstyle->logicalHeight().value());
-        availableHeight = std::max<LayoutUnit>(0, cb->constrainContentBoxLogicalHeightByMinMax(contentBoxHeight - cb->scrollbarLogicalHeight(), -1));
+        availableHeight = std::max(LayoutUnit(), cb->constrainContentBoxLogicalHeightByMinMax(contentBoxHeight - cb->scrollbarLogicalHeight(), -1));
     } else if (cbstyle->logicalHeight().isPercent() && !isOutOfFlowPositionedWithSpecifiedHeight) {
         // We need to recur and compute the percentage height for our containing block.
         LayoutUnit heightWithScrollbar = cb->computePercentageLogicalHeight(cbstyle->logicalHeight());
@@ -2397,7 +2397,7 @@ LayoutUnit RenderBox::computePercentageLogicalHeight(const Length& height) const
             // return value from the recursive call will not have been adjusted
             // yet.
             LayoutUnit contentBoxHeight = cb->constrainContentBoxLogicalHeightByMinMax(contentBoxHeightWithScrollbar - cb->scrollbarLogicalHeight(), -1);
-            availableHeight = std::max<LayoutUnit>(0, contentBoxHeight);
+            availableHeight = std::max(LayoutUnit(), contentBoxHeight);
         }
     } else if (isOutOfFlowPositionedWithSpecifiedHeight) {
         // Don't allow this to affect the block' size() member variable, since this
@@ -2423,7 +2423,7 @@ LayoutUnit RenderBox::computePercentageLogicalHeight(const Length& height) const
         // box model. This is essential for sizing inside
         // table cells using percentage heights.
         result -= borderAndPaddingLogicalHeight();
-        return std::max<LayoutUnit>(0, result);
+        return std::max(LayoutUnit(), result);
     }
     return result;
 }
@@ -2466,7 +2466,7 @@ LayoutUnit RenderBox::computeReplacedLogicalWidthUsing(const Length& logicalWidt
                 return computeIntrinsicLogicalWidthUsing(logicalWidth, cw, borderAndPaddingLogicalWidth()) - borderAndPaddingLogicalWidth();
             if (cw > 0 || (!cw && (containerLogicalWidth.isFixed() || containerLogicalWidth.isPercent())))
                 return adjustContentBoxLogicalWidthForBoxSizing(minimumValueForLength(logicalWidth, cw));
-            return 0;
+            return LayoutUnit();
         }
         case Intrinsic:
         case MinIntrinsic:
@@ -2603,7 +2603,7 @@ LayoutUnit RenderBox::availableLogicalHeightUsing(const Length& h, AvailableLogi
 
     LayoutUnit heightIncludingScrollbar = computeContentAndScrollbarLogicalHeightUsing(h, -1);
     if (heightIncludingScrollbar != -1)
-        return std::max<LayoutUnit>(0, adjustContentBoxLogicalHeightForBoxSizing(heightIncludingScrollbar) - scrollbarLogicalHeight());
+        return std::max(LayoutUnit(), adjustContentBoxLogicalHeightForBoxSizing(heightIncludingScrollbar) - scrollbarLogicalHeight());
 
     // FIXME: Check logicalTop/logicalBottom here to correctly handle vertical writing-mode.
     // https://bugs.webkit.org/show_bug.cgi?id=46500
@@ -2665,7 +2665,7 @@ LayoutUnit RenderBox::containingBlockLogicalWidthForPositioned(const RenderBoxMo
 
     // If the containing block is empty, return a width of 0.
     if (!first || !last)
-        return 0;
+        return LayoutUnit();
 
     LayoutUnit fromLeft;
     LayoutUnit fromRight;
@@ -2677,7 +2677,7 @@ LayoutUnit RenderBox::containingBlockLogicalWidthForPositioned(const RenderBoxMo
         fromLeft = last->logicalLeft() + last->borderLogicalLeft();
     }
 
-    return std::max<LayoutUnit>(0, fromRight - fromLeft);
+    return std::max(LayoutUnit(), fromRight - fromLeft);
 }
 
 LayoutUnit RenderBox::containingBlockLogicalHeightForPositioned(const RenderBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode) const
@@ -2711,7 +2711,7 @@ LayoutUnit RenderBox::containingBlockLogicalHeightForPositioned(const RenderBoxM
 
     // If the containing block is empty, return a height of 0.
     if (!first || !last)
-        return 0;
+        return LayoutUnit();
 
     LayoutUnit heightResult;
     LayoutRect boundingBox = flow->linesBoundingBox();
@@ -3052,7 +3052,7 @@ void RenderBox::computePositionedLogicalWidthUsing(Length logicalWidth, const Re
             if (autoWidthShouldFitContent())
                 computedValues.m_extent = shrinkToFitLogicalWidth(availableSpace, bordersPlusPadding);
             else
-                computedValues.m_extent = std::max<LayoutUnit>(0, availableSpace);
+                computedValues.m_extent = std::max(LayoutUnit(), availableSpace);
         } else if (!logicalLeftIsAuto && !logicalWidthIsAuto && logicalRightIsAuto) {
             // RULE 6: (no need solve for right)
             computedValues.m_extent = adjustContentBoxLogicalWidthForBoxSizing(valueForLength(logicalWidth, containerLogicalWidth));
@@ -3330,7 +3330,7 @@ void RenderBox::computePositionedLogicalHeightUsing(Length logicalHeightLength, 
         } else if (!logicalTopIsAuto && logicalHeightIsAuto && !logicalBottomIsAuto) {
             // RULE 5: (solve of height)
             logicalTopValue = valueForLength(logicalTop, containerLogicalHeight);
-            logicalHeightValue = std::max<LayoutUnit>(0, availableSpace - (logicalTopValue + valueForLength(logicalBottom, containerLogicalHeight)));
+            logicalHeightValue = std::max(LayoutUnit(), availableSpace - (logicalTopValue + valueForLength(logicalBottom, containerLogicalHeight)));
         } else if (!logicalTopIsAuto && !logicalHeightIsAuto && logicalBottomIsAuto) {
             // RULE 6: (no need solve of bottom)
             logicalHeightValue = resolvedLogicalHeight;
@@ -4184,7 +4184,7 @@ LayoutUnit RenderBox::lineHeight(bool /*firstLine*/, LineDirectionMode direction
 {
     if (isReplaced())
         return direction == HorizontalLine ? m_marginBox.top() + size().height() + m_marginBox.bottom() : m_marginBox.right() + size().width() + m_marginBox.left();
-    return 0;
+    return LayoutUnit();
 }
 
 int RenderBox::baselinePosition(FontBaseline baselineType, bool /*firstLine*/, LineDirectionMode direction, LinePositionMode linePositionMode) const
@@ -4421,10 +4421,10 @@ LayoutUnit RenderBox::offsetFromLogicalTopOfFirstPage() const
 {
     LayoutState* layoutState = view()->layoutState();
     if (layoutState && !layoutState->isPaginated())
-        return 0;
+        return LayoutUnit();
 
     if (!layoutState && !flowThreadContainingBlock())
-        return 0;
+        return LayoutUnit();
 
     RenderBlock* containerBlock = containingBlock();
     return containerBlock->offsetFromLogicalTopOfFirstPage() + logicalTop();

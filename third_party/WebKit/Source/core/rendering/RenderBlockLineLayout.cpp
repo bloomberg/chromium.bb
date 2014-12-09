@@ -1148,7 +1148,7 @@ static LayoutUnit getBPMWidth(LayoutUnit childValue, Length cssUnit)
 {
     if (cssUnit.type() != Auto)
         return (cssUnit.isFixed() ? static_cast<LayoutUnit>(cssUnit.value()) : childValue);
-    return 0;
+    return LayoutUnit();
 }
 
 static LayoutUnit getBorderPaddingMargin(RenderBoxModelObject* child, bool endOfInline)

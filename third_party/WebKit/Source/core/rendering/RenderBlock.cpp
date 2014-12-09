@@ -3215,7 +3215,7 @@ LayoutUnit RenderBlock::minLineHeightForReplacedRenderer(bool isFirstLine, Layou
         return replacedHeight;
 
     if (!(style(isFirstLine)->lineBoxContain() & LineBoxContainBlock))
-        return 0;
+        return LayoutUnit();
 
     return std::max<LayoutUnit>(replacedHeight, lineHeight(isFirstLine, isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes));
 }

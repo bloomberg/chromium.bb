@@ -249,7 +249,7 @@ void RenderBlockFlow::checkForPaginationLogicalHeightChange(LayoutUnit& pageLogi
         // it's unknown, we need to prevent the pagination code from assuming page breaks everywhere
         // and thereby eating every top margin. It should be trivial to clean up and get rid of this
         // hack once the old multicol implementation is gone.
-        pageLogicalHeight = flowThread->isPageLogicalHeightKnown() ? LayoutUnit(1) : LayoutUnit(0);
+        pageLogicalHeight = flowThread->isPageLogicalHeightKnown() ? LayoutUnit(1) : LayoutUnit();
 
         pageLogicalHeightChanged = flowThread->pageLogicalSizeChanged();
     }
@@ -1269,7 +1269,7 @@ LayoutUnit RenderBlockFlow::collapseMargins(RenderBox& child, MarginInfo& margin
             // If we are at the before side of the block and we collapse, ignore the computed margin
             // and just add the child margin to the container height. This will correctly position
             // the child inside the container.
-            LayoutUnit separateMargin = !marginInfo.canCollapseWithMarginBefore() ? marginInfo.margin() : LayoutUnit(0);
+            LayoutUnit separateMargin = !marginInfo.canCollapseWithMarginBefore() ? marginInfo.margin() : LayoutUnit();
             setLogicalHeight(logicalHeight() + separateMargin + marginBeforeForChild(child));
             logicalTop = logicalHeight();
         } else if (!marginInfo.discardMargin() && (!marginInfo.atBeforeSideOfBlock()
@@ -1863,7 +1863,7 @@ LayoutUnit RenderBlockFlow::getClearDelta(RenderBox* child, LayoutUnit logicalTo
 {
     // There is no need to compute clearance if we have no floats.
     if (!containsFloats())
-        return 0;
+        return LayoutUnit();
 
     // At least one float is present. We need to perform the clearance computation.
     bool clearSet = child->style()->clear() != CNONE;
@@ -2584,7 +2584,7 @@ void RenderBlockFlow::addOverhangingFloats(RenderBlockFlow* child, bool makeChil
 LayoutUnit RenderBlockFlow::lowestFloatLogicalBottom(FloatingObject::Type floatType) const
 {
     if (!m_floatingObjects)
-        return 0;
+        return LayoutUnit();
 
     return m_floatingObjects->lowestFloatLogicalBottom(floatType);
 }
