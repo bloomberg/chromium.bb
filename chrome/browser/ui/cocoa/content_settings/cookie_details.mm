@@ -270,6 +270,8 @@
     canEditExpiration_ = NO;
     domain_.reset([base::SysUTF8ToNSString(
         serviceWorkerInfo->origin.spec()) retain]);
+    fileSize_.reset([base::SysUTF16ToNSString(
+        ui::FormatBytes(serviceWorkerInfo->total_size_bytes)) retain]);
 
     NSMutableArray *scopes = [[NSMutableArray alloc]
                          initWithCapacity:serviceWorkerInfo->scopes.size()];

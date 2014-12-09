@@ -259,8 +259,8 @@ TEST_F(CookiesDetailsTest, CreateForTreeServiceWorker) {
   EXPECT_EQ([details.get() type], kCocoaCookieDetailsTypeTreeServiceWorker);
   EXPECT_NSEQ(@"https://example.com/", [details.get() domain]);
   EXPECT_NSEQ(@"https://example.com/app1/*,https://example.com/app2/*", [details.get() scopes]);
-  // TODO(jsbell): Plumb these through.
-  EXPECT_NSEQ(nil, [details.get() fileSize]);
+  EXPECT_NSEQ(@"0 B", [details.get() fileSize]);
+  // TODO(jsbell): Plumb this through.
   EXPECT_NSEQ(nil, [details.get() lastModified]);
 
   EXPECT_TRUE([details.get() shouldHideCookieDetailsView]);
