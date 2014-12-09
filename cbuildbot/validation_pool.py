@@ -1230,7 +1230,8 @@ class ValidationPool(object):
     # doing this here we can reduce the number of builder cycles.
     end_time = time.time() + cls.MAX_TIMEOUT
     while True:
-      time_left = end_time - time.time()
+      loop_time = time.time()
+      time_left = end_time - loop_time
 
       # Wait until the tree becomes open (or throttled, if |throttled_ok|,
       # and record the tree status).
@@ -1295,7 +1296,9 @@ class ValidationPool(object):
 
       logging.info('Waiting for %s (%d minutes left)...', waiting_for,
                    time_left / 60)
-      time.sleep(cls.SLEEP_TIMEOUT)
+      wait_time = loop_time + cls.SLEEP_TIMEOUT - time.time()
+      if wait_time > 0:
+        time.sleep(wait_time)
 
     pool.RecordPatchesInMetadataAndDatabase()
     return pool
