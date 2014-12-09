@@ -281,7 +281,6 @@
       'src/crypto/x509v3/x509v3_error.c',
       'src/ssl/d1_both.c',
       'src/ssl/d1_clnt.c',
-      'src/ssl/d1_enc.c',
       'src/ssl/d1_lib.c',
       'src/ssl/d1_meth.c',
       'src/ssl/d1_pkt.c',
