@@ -61,6 +61,10 @@ class ServiceWorkerContextObserver {
   virtual void OnRegistrationStored(const GURL& pattern) {}
   virtual void OnRegistrationDeleted(const GURL& pattern) {}
 
+  // Notified when the storage corruption recovery is completed and all stored
+  // data is wiped out.
+  virtual void OnStorageWiped() {}
+
  protected:
   virtual ~ServiceWorkerContextObserver() {}
 };

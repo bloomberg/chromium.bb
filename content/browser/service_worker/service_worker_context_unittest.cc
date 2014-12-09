@@ -105,6 +105,7 @@ class RejectActivateTestHelper : public EmbeddedWorkerTestHelper {
 enum NotificationType {
   REGISTRATION_STORED,
   REGISTRATION_DELETED,
+  STORAGE_RECOVERED,
 };
 
 struct NotificationLog {
@@ -139,6 +140,11 @@ class ServiceWorkerContextTest : public ServiceWorkerContextObserver,
     NotificationLog log;
     log.type = REGISTRATION_DELETED;
     log.pattern = pattern;
+    notifications_.push_back(log);
+  }
+  void OnStorageWiped() override {
+    NotificationLog log;
+    log.type = STORAGE_RECOVERED;
     notifications_.push_back(log);
   }
 
@@ -572,14 +578,12 @@ TEST_F(ServiceWorkerContextTest, DeleteAndStartOver) {
   EXPECT_EQ(1, context()->GetNewServiceWorkerHandleId());
   EXPECT_EQ(1, context()->GetNewRegistrationHandleId());
 
-  ASSERT_EQ(2u, notifications_.size());
+  ASSERT_EQ(3u, notifications_.size());
   EXPECT_EQ(REGISTRATION_STORED, notifications_[0].type);
   EXPECT_EQ(pattern, notifications_[0].pattern);
-  EXPECT_EQ(REGISTRATION_STORED, notifications_[1].type);
-  EXPECT_EQ(pattern, notifications_[1].pattern);
-
-  // TODO(nhiroki): REGISTRATION_DELETED event (or other new event) caused by
-  // StartAndDeleteOver should be notified.
+  EXPECT_EQ(STORAGE_RECOVERED, notifications_[1].type);
+  EXPECT_EQ(REGISTRATION_STORED, notifications_[2].type);
+  EXPECT_EQ(pattern, notifications_[2].pattern);
 }
 
 }  // namespace content
