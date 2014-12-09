@@ -30,6 +30,10 @@ UI_BASE_EXPORT extern const char kLang[];
 UI_BASE_EXPORT extern const char kNoMessageBox[];
 UI_BASE_EXPORT extern const char kViewerConnect[];
 
+#if defined(OS_CHROMEOS)
+UI_BASE_EXPORT extern const char kEnableRobotoFontUI[];
+#endif
+
 }  // namespace switches
 
 #endif  // UI_BASE_UI_BASE_SWITCHES_H_

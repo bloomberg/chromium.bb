@@ -41,7 +41,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/font_helper_chromeos.h"
 #include "ui/gfx/platform_font_pango.h"
 #endif
 
@@ -79,6 +79,7 @@ void InitDefaultFontList() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   std::string font_family = base::UTF16ToUTF8(
       rb.GetLocalizedString(IDS_UI_FONT_FAMILY_CROS));
+  ui::ReplaceNotoSansWithRobotoIfEnabled(&font_family);
   gfx::FontList::SetDefaultFontDescription(font_family);
 
   // TODO(yukishiino): Remove SetDefaultFontDescription() once the migration to

@@ -49224,6 +49224,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="550378029" label="reset-app-list-install-state"/>
   <int value="567368307" label="enable-experimental-canvas-features"/>
   <int value="593707592" label="disable-network-portal-notification"/>
+  <int value="598827460" label="enable-roboto-font-ui"/>
   <int value="606288133" label="enable-print-preview-register-promos"/>
   <int value="625273056" label="disable-boot-animation"/>
   <int value="630947363" label="touch-events"/>

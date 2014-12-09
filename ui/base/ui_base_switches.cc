@@ -55,4 +55,10 @@ const char kNoMessageBox[] = "no-message-box";
 // process.
 const char kViewerConnect[] = "connect-to-metro-viewer";
 
+#if defined(OS_CHROMEOS)
+// Enables Roboto as UI font (instead of Noto Sans) experiment in both
+// native and web UI.
+const char kEnableRobotoFontUI[] = "enable-roboto-font-ui";
+#endif
+
 }  // namespace switches

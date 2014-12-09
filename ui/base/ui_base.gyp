@@ -189,6 +189,8 @@
         'dragdrop/os_exchange_data_provider_mac.mm',
         'dragdrop/os_exchange_data_provider_win.cc',
         'dragdrop/os_exchange_data_provider_win.h',
+        'font_helper_chromeos.cc',
+        'font_helper_chromeos.h',
         'hit_test.h',
         'ime/candidate_window.cc',
         'ime/candidate_window.h',
