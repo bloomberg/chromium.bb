@@ -2,28 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.page import test_expectations
+from gpu_test_expectations import GpuTestExpectations
 
-# Valid expectation conditions are:
-#
-# Operating systems:
-#     win, xp, vista, win7, mac, leopard, snowleopard, lion, mountainlion,
-#     mavericks, yosemite, linux, chromeos, android
-#
-# GPU vendors:
-#     amd, arm, broadcom, hisilicon, intel, imagination, nvidia, qualcomm,
-#     vivante
-#
-# Specific GPUs can be listed as a tuple with vendor name and device ID.
-# Examples: ('nvidia', 0x1234), ('arm', 'Mali-T604')
-# Device IDs must be paired with a GPU vendor.
+# See the GpuTestExpectations class for documentation.
 
-class WebGLConformanceExpectations(test_expectations.TestExpectations):
+class WebGLConformanceExpectations(GpuTestExpectations):
   def SetExpectations(self):
-    # Sample Usage:
-    # self.Fail('gl-enable-vertex-attrib.html',
-    #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
-
     # Fails on all platforms
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         bug=421710)
@@ -82,7 +66,7 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/extensions/webgl-depth-texture.html',
         ['win', 'amd'], bug=839) # angle bug ID
     self.Fail('conformance/textures/texparameter-test.html',
-        ['win', 'amd'], bug=839) # angle bug ID
+        ['win', 'amd', 'd3d9'], bug=839) # angle bug ID
 
     # Mac / Intel failures
     # Radar 13499466

@@ -2,23 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.page import test_expectations as expectations
+from gpu_test_expectations import GpuTestExpectations
 
-# Valid expectation conditions are:
-#
-# Operating systems:
-#     win, xp, vista, win7, mac, leopard, snowleopard, lion, mountainlion,
-#     mavericks, yosemite, linux, chromeos, android
-#
-# GPU vendors:
-#     amd, arm, broadcom, hisilicon, intel, imagination, nvidia, qualcomm,
-#     vivante
-#
-# Specific GPUs can be listed as a tuple with vendor name and device ID.
-# Examples: ('nvidia', 0x1234), ('arm', 'Mali-T604')
-# Device IDs must be paired with a GPU vendor.
+# See the GpuTestExpectations class for documentation.
 
-class GpuProcessExpectations(expectations.TestExpectations):
+class GpuProcessExpectations(GpuTestExpectations):
   def SetExpectations(self):
     # Accelerated 2D canvas is not available on Linux due to driver instability
     self.Fail('GpuProcess.canvas2d', ['linux'], bug=254724)
