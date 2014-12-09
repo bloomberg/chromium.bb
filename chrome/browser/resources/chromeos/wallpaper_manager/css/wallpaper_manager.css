@@ -326,9 +326,9 @@ body:not([custom]) [visibleif~='custom'] {
 }
 
 .overlay-container .page {
-  -webkit-border-radius: 3px;
   -webkit-box-orient: vertical;
   background: rgb(255, 255, 255);
+  border-radius: 3px;
   box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.15);
   color: #333;
   display: -webkit-box;

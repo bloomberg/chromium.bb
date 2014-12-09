@@ -50,8 +50,8 @@
 }
 
 .code-input {
-  -webkit-border-radius: 2px;
   border: 1px solid #aaa;
+  border-radius: 2px;
   font-size: inherit;
   padding: 3px;
 }
@@ -92,7 +92,7 @@
 
 .choose-pin-input-area {
   margin: 5px 5px 5px 5px;
-  width: 125px; 
+  width: 125px;
 }
 
 #choose-pin-action-area {

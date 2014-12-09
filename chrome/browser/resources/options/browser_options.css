@@ -366,12 +366,12 @@ list:not([disabled]) > .network-group[selected] {
 }
 
 .network-menu {
-  -webkit-box-shadow:
+  background: #fff;
+  box-shadow:
       0 0 0 1px rgba(0,0,0,0.1),
       0 5px 1px 1px rgba(0,0,0,0.1),
       0 5px 2px 1px rgba(0,0,0,0.1),
       0 5px 12px 1px rgba(0,0,0,0.5);
-  background: #fff;
   display: block;
   position: absolute;
   width: 320px;

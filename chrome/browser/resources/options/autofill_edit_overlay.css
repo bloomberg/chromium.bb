@@ -35,11 +35,11 @@
 }
 
 #autofill-edit-address-overlay list div.static-text {
-  -webkit-border-radius: 2px;
   -webkit-box-flex: 1;
   -webkit-padding-end: 4px;
   -webkit-padding-start: 4px;
   border: 1px solid darkGray;
+  border-radius: 2px;
   /* Border should go "inside" the height. */
   box-sizing: border-box;
   /* Set the line-height and min-height to match the height of an input element,

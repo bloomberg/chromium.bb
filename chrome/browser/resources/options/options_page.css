@@ -72,10 +72,10 @@ div.disabled {
 .raw-button,
 .raw-button:hover,
 .raw-button:active {
-  -webkit-box-shadow: none;
   background-color: transparent;
   background-repeat: no-repeat;
   border: none;
+  box-shadow: none;
   min-width: 0;
   padding: 1px 6px;
 }

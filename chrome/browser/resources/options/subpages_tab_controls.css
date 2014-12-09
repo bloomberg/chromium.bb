@@ -8,12 +8,12 @@
 }
 
 .subpages-nav-tabs .active-tab {
-  -webkit-box-shadow: 8px -8px 12px -6px rgb(240, 240, 240);
   background: white;
   border: 1px solid #ddd;
   border-bottom: 2px solid white;
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
+  box-shadow: 8px -8px 12px -6px rgb(240, 240, 240);
   position: relative;
 }
 

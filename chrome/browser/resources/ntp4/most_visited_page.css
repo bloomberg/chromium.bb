@@ -156,7 +156,7 @@ html[dir='rtl'] .most-visited .favicon {
 /* The thumbnail gets a shadow when clicked, but not when the click is on the
  * close button. */
 .most-visited:active .close-button:not(:active) + .thumbnail .thumbnail-shield {
-  -webkit-box-shadow: inset 0 1px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 1px 10px rgba(0, 0, 0, 0.2);
 }
 
 .thumbnail-wrapper {

@@ -28,11 +28,11 @@
 } /* @media only screen and (max-height:500px) */
 
 #supervised-user-learn-more-image {
-  -webkit-border-radius: 3px 3px 0 0;
   background-image: -webkit-image-set(
       url(../../../../ui/resources/default_100_percent/supervised_illustration_start.png) 1x,
       url(../../../../ui/resources/default_200_percent/supervised_illustration_start.png) 2x);
   background-position: center;
+  border-radius: 3px 3px 0 0;
   height: 344px;
 }
 

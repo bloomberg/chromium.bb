@@ -230,9 +230,9 @@ body.bare-minimum #dot-list {
 /* Login Status. **************************************************************/
 
 #login-container {
-  -webkit-box-shadow: none;
   background: transparent none;
   border: none;
+  box-shadow: none;
   color: inherit;
   cursor: pointer;
   font: inherit;

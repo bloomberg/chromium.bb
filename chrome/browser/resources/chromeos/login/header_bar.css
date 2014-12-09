@@ -44,8 +44,8 @@ html[screen=oobe] .login-header-bar-animate-slow {
 #login-header-bar button:active,
 #login-header-bar button:focus,
 #login-header-bar button:hover {
-  -webkit-box-shadow: none;
   background: transparent none;
+  box-shadow: none;
   cursor: pointer;
   height: 34px;
   margin: 0;
