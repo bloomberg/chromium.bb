@@ -30,7 +30,7 @@ chrome.experimental = chrome.experimental || {};
  * Fall back on the experimental API if the new name is not available.
  */
 chrome.accessibilityPrivate = chrome.accessibilityPrivate ||
-    chrome.experimental.accessibility;
+    chrome.experimental.accessibility || {};
 
 
 /**

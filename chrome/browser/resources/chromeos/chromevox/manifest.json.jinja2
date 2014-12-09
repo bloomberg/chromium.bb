@@ -10,7 +10,11 @@
   "incognito": "split",
 {% endif %}
   "background": {
+{% if is_chromevox_classic == '1' %}
+    "page": "chromevox/background/background.html"
+{% else %}
     "page": "cvox2/background/background.html"
+{% endif %}
   },
   "permissions": [
     "accessibilityPrivate",
@@ -52,6 +56,7 @@
     "chromevox/injected/mathjax.js",
     "chromevox/injected/mathjax_external_util.js"
   ],
+{% if is_chromevox_classic == '0' %}
   "automation": {
     "desktop": true
   },
@@ -153,6 +158,7 @@
       }
     }
   },
+{% endif %}
   "options_page": "chromevox/background/options.html",
   "default_locale": "en"
 }
