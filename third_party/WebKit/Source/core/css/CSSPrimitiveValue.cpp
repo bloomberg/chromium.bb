@@ -1014,9 +1014,6 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
 
 String CSSPrimitiveValue::customCSSText(CSSTextFormattingFlags formattingFlag) const
 {
-    // FIXME: return the original value instead of a generated one (e.g. color
-    // name if it was specified) - check what spec says about this
-
     if (m_hasCachedCSSText) {
         ASSERT(cssTextCache().contains(this));
         return cssTextCache().get(this);
