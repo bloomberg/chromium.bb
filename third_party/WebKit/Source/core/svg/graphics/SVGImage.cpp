@@ -52,7 +52,6 @@
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/ImageObserver.h"
-#include "platform/graphics/Picture.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/PassRefPtr.h"
 
@@ -241,7 +240,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
         recordingContext.clipRect(tile);
     drawForContainer(&recordingContext, containerSize, zoom, tile, srcRect, CompositeSourceOver,
         blink::WebBlendModeNormal);
-    RefPtr<Picture> tilePicture = recordingContext.endRecording();
+    RefPtr<const SkPicture> tilePicture = recordingContext.endRecording();
 
     // FIXME: SkPictureShader ignores the picture offset - so we must compensate here.
     SkRect tileRect = SkRect::MakeXYWH(-spacedTile.x(), -spacedTile.y(),

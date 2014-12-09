@@ -34,7 +34,6 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/Picture.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/text/BidiResolver.h"
@@ -535,14 +534,14 @@ void GraphicsContext::beginRecording(const FloatRect& bounds, uint32_t recordFla
     setRegionTrackingMode(RegionTrackingDisabled);
 }
 
-PassRefPtr<Picture> GraphicsContext::endRecording()
+PassRefPtr<const SkPicture> GraphicsContext::endRecording()
 {
     if (contextDisabled())
         return nullptr;
 
     ASSERT(!m_recordingStateStack.isEmpty());
     RecordingState* recording = m_recordingStateStack.last().get();
-    RefPtr<Picture> picture = adoptRef(recording->recorder().endRecordingAsPicture());
+    RefPtr<const SkPicture> picture = adoptRef(recording->recorder().endRecordingAsPicture());
     m_canvas = recording->canvas();
     setRegionTrackingMode(recording->trackingMode());
 
@@ -557,7 +556,7 @@ bool GraphicsContext::isRecording() const
     return !m_recordingStateStack.isEmpty();
 }
 
-void GraphicsContext::drawPicture(const Picture* picture)
+void GraphicsContext::drawPicture(const SkPicture* picture)
 {
     ASSERT(m_canvas);
 

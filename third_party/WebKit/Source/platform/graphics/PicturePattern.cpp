@@ -5,20 +5,19 @@
 #include "config.h"
 #include "platform/graphics/PicturePattern.h"
 
-#include "platform/graphics/Picture.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkShader.h"
 
 namespace blink {
 
-PassRefPtr<PicturePattern> PicturePattern::create(PassRefPtr<Picture> picture,
+PassRefPtr<PicturePattern> PicturePattern::create(PassRefPtr<const SkPicture> picture,
     RepeatMode repeatMode)
 {
     return adoptRef(new PicturePattern(picture, repeatMode));
 }
 
-PicturePattern::PicturePattern(PassRefPtr<Picture> picture, RepeatMode mode)
+PicturePattern::PicturePattern(PassRefPtr<const SkPicture> picture, RepeatMode mode)
     : Pattern(mode)
     , m_tilePicture(picture)
 {

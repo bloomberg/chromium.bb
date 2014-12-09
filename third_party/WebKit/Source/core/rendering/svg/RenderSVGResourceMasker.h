@@ -26,10 +26,11 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/Picture.h"
 
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
+
+class SkPicture;
 
 namespace blink {
 
@@ -61,7 +62,7 @@ private:
     void drawMaskForRenderer(GraphicsContext*, const FloatRect& targetBoundingBox);
     void createPicture(GraphicsContext*);
 
-    RefPtr<Picture> m_maskContentPicture;
+    RefPtr<const SkPicture> m_maskContentPicture;
     FloatRect m_maskContentBoundaries;
 };
 

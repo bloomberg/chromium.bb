@@ -31,13 +31,13 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/Image.h"
-#include "platform/graphics/Picture.h"
 #include "platform/transforms/AffineTransform.h"
 
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
+class SkPicture;
 class SkShader;
 
 namespace blink {
@@ -54,7 +54,7 @@ public:
 
     static PassRefPtr<Pattern> createBitmapPattern(PassRefPtr<Image> tileImage,
         RepeatMode = RepeatModeXY);
-    static PassRefPtr<Pattern> createPicturePattern(PassRefPtr<Picture>,
+    static PassRefPtr<Pattern> createPicturePattern(PassRefPtr<const SkPicture>,
         RepeatMode = RepeatModeXY);
     virtual ~Pattern();
 

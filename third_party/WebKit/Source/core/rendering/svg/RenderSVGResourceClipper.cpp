@@ -34,7 +34,6 @@
 #include "core/svg/SVGUseElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/Picture.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/TemporaryChange.h"
 

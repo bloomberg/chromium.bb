@@ -15,20 +15,23 @@ namespace blink {
 
 class PLATFORM_EXPORT DrawingDisplayItem : public DisplayItem {
 public:
-    static PassOwnPtr<DrawingDisplayItem> create(DisplayItemClient client, Type type, PassRefPtr<SkPicture> picture) { return adoptPtr(new DrawingDisplayItem(client, type, picture)); }
+    static PassOwnPtr<DrawingDisplayItem> create(DisplayItemClient client, Type type, PassRefPtr<const SkPicture> picture)
+    {
+        return adoptPtr(new DrawingDisplayItem(client, type, picture));
+    }
 
     virtual void replay(GraphicsContext*);
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
-    PassRefPtr<SkPicture> picture() const { return m_picture; }
+    PassRefPtr<const SkPicture> picture() const { return m_picture; }
 
 protected:
-    DrawingDisplayItem(DisplayItemClient client, Type type, PassRefPtr<SkPicture> picture)
+    DrawingDisplayItem(DisplayItemClient client, Type type, PassRefPtr<const SkPicture> picture)
         : DisplayItem(client, type), m_picture(picture) { ASSERT(m_picture); }
 
 private:
 
-    RefPtr<SkPicture> m_picture;
+    RefPtr<const SkPicture> m_picture;
 #ifndef NDEBUG
     virtual WTF::String asDebugString() const override;
 #endif

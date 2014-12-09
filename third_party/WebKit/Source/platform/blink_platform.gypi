@@ -481,7 +481,6 @@
       'graphics/DecodingImageGenerator.h',
       'graphics/DeferredImageDecoder.cpp',
       'graphics/DeferredImageDecoder.h',
-      'graphics/Picture.h',
       'graphics/PicturePattern.cpp',
       'graphics/PicturePattern.h',
       'graphics/DrawLooperBuilder.cpp',

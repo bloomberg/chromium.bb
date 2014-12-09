@@ -38,7 +38,6 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/GraphicsContextAnnotation.h"
 #include "platform/graphics/GraphicsContextState.h"
-#include "platform/graphics/Picture.h"
 #include "platform/graphics/RegionTracker.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "wtf/FastAllocBase.h"
@@ -49,6 +48,7 @@
 class SkBitmap;
 class SkPaint;
 class SkPath;
+class SkPicture;
 class SkRRect;
 class SkTextBlob;
 struct SkRect;
@@ -258,7 +258,7 @@ public:
         const IntRect&, const IntSize& innerTopLeft, const IntSize& innerTopRight, const IntSize& innerBottomLeft, const IntSize& innerBottomRight, const Color&);
     void fillBetweenRoundedRects(const RoundedRect&, const RoundedRect&, const Color&);
 
-    void drawPicture(const Picture*);
+    void drawPicture(const SkPicture*);
     void drawPicture(SkPicture*, const FloatRect& dest, const FloatRect& src, CompositeOperator, WebBlendMode);
 
     void drawImage(Image*, const IntPoint&, CompositeOperator = CompositeSourceOver, RespectImageOrientationEnum = DoNotRespectImageOrientation);
@@ -321,7 +321,7 @@ public:
     // are stored in a display list that can be replayed at a later time. Pass in the bounding
     // rectangle for the content in the list.
     void beginRecording(const FloatRect&, uint32_t = 0);
-    PassRefPtr<Picture> endRecording();
+    PassRefPtr<const SkPicture> endRecording();
 
     bool hasShadow() const;
     void setShadow(const FloatSize& offset, float blur, const Color&,

@@ -58,7 +58,7 @@ FloatRect SourceGraphic::determineAbsolutePaintRect(const FloatRect& requestedRe
     return srcRect;
 }
 
-void SourceGraphic::setPicture(PassRefPtr<Picture> picture)
+void SourceGraphic::setPicture(PassRefPtr<const SkPicture> picture)
 {
     m_picture = picture;
 }

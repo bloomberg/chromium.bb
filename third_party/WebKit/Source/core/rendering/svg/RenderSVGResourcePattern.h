@@ -24,11 +24,12 @@
 
 #include "core/rendering/svg/RenderSVGResourcePaintServer.h"
 #include "core/svg/PatternAttributes.h"
-#include "platform/graphics/Picture.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
+
+class SkPicture;
 
 namespace blink {
 
@@ -55,7 +56,7 @@ public:
 
 private:
     PassOwnPtr<PatternData> buildPatternData(const RenderObject&);
-    PassRefPtr<Picture> asPicture(const FloatRect& tileBounds, const AffineTransform&) const;
+    PassRefPtr<const SkPicture> asPicture(const FloatRect& tile, const AffineTransform&) const;
     PatternData* patternForRenderer(const RenderObject&);
 
     bool m_shouldCollectPatternAttributes : 1;

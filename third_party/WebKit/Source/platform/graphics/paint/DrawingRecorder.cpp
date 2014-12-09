@@ -8,9 +8,9 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/Picture.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
 
@@ -44,7 +44,7 @@ DrawingRecorder::~DrawingRecorder()
     s_inDrawingRecorder = false;
 #endif
 
-    RefPtr<Picture> picture = m_context->endRecording();
+    RefPtr<const SkPicture> picture = m_context->endRecording();
     if (!picture || !picture->approximateOpCount())
         return;
     OwnPtr<DrawingDisplayItem> drawingItem = DrawingDisplayItem::create(m_displayItemClient, m_displayItemType, picture);

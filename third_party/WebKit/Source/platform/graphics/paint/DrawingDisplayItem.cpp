@@ -18,7 +18,8 @@ void DrawingDisplayItem::replay(GraphicsContext* context)
 void DrawingDisplayItem::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
     // FIXME: the offset is no longer necessary and should be removed.
-    list->appendDrawingItem(m_picture.get(), FloatPoint());
+    // FIXME: SkPictures are immutable - update WebDisplayItemList to take a const SkPicture*
+    list->appendDrawingItem(const_cast<SkPicture*>(m_picture.get()), FloatPoint());
 }
 
 #ifndef NDEBUG

@@ -27,7 +27,6 @@
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGPatternElement.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/Picture.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
@@ -152,7 +151,7 @@ SVGPaintServer RenderSVGResourcePattern::preparePaintServer(const RenderObject& 
     return SVGPaintServer(patternData->pattern);
 }
 
-PassRefPtr<Picture> RenderSVGResourcePattern::asPicture(const FloatRect& tileBounds,
+PassRefPtr<const SkPicture> RenderSVGResourcePattern::asPicture(const FloatRect& tileBounds,
     const AffineTransform& tileTransform) const
 {
     ASSERT(!m_shouldCollectPatternAttributes);

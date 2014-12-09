@@ -25,18 +25,18 @@
 
 #include "core/svg/graphics/filters/SVGFEImage.h"
 
-#include "SkBitmapSource.h"
-#include "SkPictureImageFilter.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/Picture.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "platform/transforms/AffineTransform.h"
+#include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/effects/SkBitmapSource.h"
+#include "third_party/skia/include/effects/SkPictureImageFilter.h"
 
 namespace blink {
 
@@ -176,7 +176,7 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForRenderer(RenderObject* re
     context->beginRecording(bounds);
     context->concatCTM(transform);
     SVGRenderingContext::renderSubtree(context, renderer);
-    RefPtr<Picture> picture = context->endRecording();
+    RefPtr<const SkPicture> picture = context->endRecording();
     context->restore();
     RefPtr<SkImageFilter> result = adoptRef(SkPictureImageFilter::Create(picture.get(), dstRect));
     return result.release();

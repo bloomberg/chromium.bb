@@ -29,7 +29,6 @@
 #include "platform/graphics/Pattern.h"
 
 #include "platform/graphics/BitmapPattern.h"
-#include "platform/graphics/Picture.h"
 #include "platform/graphics/PicturePattern.h"
 #include "platform/graphics/StaticBitmapPattern.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -47,7 +46,7 @@ PassRefPtr<Pattern> Pattern::createBitmapPattern(PassRefPtr<Image> tileImage, Re
     return BitmapPattern::create(tileImage, repeatMode);
 }
 
-PassRefPtr<Pattern> Pattern::createPicturePattern(PassRefPtr<Picture> picture,
+PassRefPtr<Pattern> Pattern::createPicturePattern(PassRefPtr<const SkPicture> picture,
     RepeatMode repeatMode)
 {
     return PicturePattern::create(picture, repeatMode);

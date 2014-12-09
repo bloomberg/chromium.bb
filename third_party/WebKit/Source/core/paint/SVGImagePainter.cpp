@@ -16,7 +16,6 @@
 #include "core/svg/SVGImageElement.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/Picture.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
@@ -47,7 +46,7 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
         if (m_renderSVGImage.style()->svgStyle().bufferedRendering() != BR_STATIC) {
             paintForeground(childPaintInfo);
         } else {
-            RefPtr<Picture>& bufferedForeground = m_renderSVGImage.bufferedForeground();
+            RefPtr<const SkPicture>& bufferedForeground = m_renderSVGImage.bufferedForeground();
             if (!bufferedForeground) {
                 childPaintInfo.context->beginRecording(m_renderSVGImage.objectBoundingBox());
                 paintForeground(childPaintInfo);

@@ -28,7 +28,6 @@
 
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/Picture.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -234,7 +233,7 @@ TEST(GraphicsContextTest, trackDisplayListRecording)
     FloatRect bounds(0, 0, 100, 100);
     context.beginRecording(bounds);
     context.fillRect(FloatRect(0, 0, 100, 100), opaque, CompositeSourceOver);
-    RefPtr<Picture> picture = context.endRecording();
+    RefPtr<const SkPicture> picture = context.endRecording();
 
     // Make sure the opaque region was unaffected by the rect drawn during Picture recording.
     EXPECT_EQ_RECT(IntRect(0, 0, 50, 50), context.opaqueRegion().asRect());
@@ -1212,7 +1211,7 @@ TEST(GraphicsContextTest, RecordingCanvas)
     EXPECT_TRUE(canvas1->unique());
 
     // endRecording finally makes the picture accessible
-    RefPtr<Picture> picture = context.endRecording();
+    RefPtr<const SkPicture> picture = context.endRecording();
     EXPECT_TRUE(picture);
     EXPECT_TRUE(picture->unique());
 
