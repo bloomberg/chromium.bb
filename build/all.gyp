@@ -463,8 +463,10 @@
         }],
         ['disable_nacl==0 and disable_nacl_untrusted==0', {
           'dependencies': [
-            '../mojo/mojo_nacl.gyp:*',
-            '../testing/gtest_nacl.gyp:*',
+            '../mojo/mojo_nacl.gyp:mojo_nacl',
+            '../mojo/mojo_nacl.gyp:monacl_codegen',
+            '../mojo/mojo_nacl.gyp:monacl_sel',
+            '../mojo/mojo_nacl.gyp:monacl_shell',
           ],
         }],
       ],

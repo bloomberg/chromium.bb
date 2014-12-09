@@ -33,6 +33,10 @@ namespace embedder {
 
 // SimplePlatformSharedBuffer --------------------------------------------------
 
+// The implementation for android uses ashmem to generate the file descriptor
+// for the shared memory. See simple_platform_shared_buffer_android.cc
+#if !defined(OS_ANDROID)
+
 bool SimplePlatformSharedBuffer::Init() {
   DCHECK(!handle_.is_valid());
 
@@ -114,6 +118,8 @@ bool SimplePlatformSharedBuffer::InitFromPlatformHandle(
   handle_ = platform_handle.Pass();
   return true;
 }
+
+#endif  // !defined(OS_ANDROID)
 
 scoped_ptr<PlatformSharedBufferMapping> SimplePlatformSharedBuffer::MapImpl(
     size_t offset,

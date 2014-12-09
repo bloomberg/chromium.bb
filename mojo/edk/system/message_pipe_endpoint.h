@@ -23,7 +23,7 @@ namespace mojo {
 namespace system {
 
 class ChannelEndpoint;
-class Waiter;
+class Awakable;
 
 // This is an interface to one of the ends of a message pipe, and is used by
 // |MessagePipe|. Its most important role is to provide a sink for messages
@@ -58,18 +58,19 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   // These methods implement the methods of the same name in |MessagePipe|,
   // though |MessagePipe|'s implementation may have to do a little more if the
   // operation involves both endpoints.
-  virtual void CancelAllWaiters();
+  virtual void CancelAllAwakables();
   virtual MojoResult ReadMessage(UserPointer<void> bytes,
                                  UserPointer<uint32_t> num_bytes,
                                  DispatcherVector* dispatchers,
                                  uint32_t* num_dispatchers,
                                  MojoReadMessageFlags flags);
   virtual HandleSignalsState GetHandleSignalsState() const;
-  virtual MojoResult AddWaiter(Waiter* waiter,
-                               MojoHandleSignals signals,
-                               uint32_t context,
-                               HandleSignalsState* signals_state);
-  virtual void RemoveWaiter(Waiter* waiter, HandleSignalsState* signals_state);
+  virtual MojoResult AddAwakable(Awakable* awakable,
+                                 MojoHandleSignals signals,
+                                 uint32_t context,
+                                 HandleSignalsState* signals_state);
+  virtual void RemoveAwakable(Awakable* awakable,
+                              HandleSignalsState* signals_state);
 
   // Implementations must override these if they represent a proxy endpoint. An
   // implementation for a local endpoint needs not override these methods, since

@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("../mojo_edk.gni")
+
 # GYP version: mojo/edk/mojo_edk.gyp:mojo_common_test_support
-source_set("test_support") {
+mojo_edk_source_set("test_support") {
   testonly = true
   sources = [
     "multiprocess_test_helper.cc",
@@ -16,37 +18,52 @@ source_set("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
     "//testing/gtest",
+  ]
+
+  mojo_edk_deps = [
+    "mojo/edk/system",
   ]
 }
 
 # GYP version: mojo/edk/mojo_edk.gyp:mojo_run_all_unittests
-source_set("run_all_unittests") {
+mojo_edk_source_set("run_all_unittests") {
   testonly = true
+  sources = [
+    "run_all_unittests.cc"
+  ]
+
   deps = [
     ":test_support_impl",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
-    "//mojo/public/c/test_support",
     "//testing/gtest",
   ]
 
-  sources = [
-    "run_all_unittests.cc",
+  mojo_edk_deps = [
+    "mojo/edk/system",
+  ]
+  
+  mojo_sdk_deps = [
+    "mojo/public/c/test_support",
   ]
 }
 
 # GYP version: mojo/edk/mojo_edk.gyp:mojo_run_all_perftests
-source_set("run_all_perftests") {
+mojo_edk_source_set("run_all_perftests") {
   testonly = true
   deps = [
     ":test_support_impl",
     "//base",
     "//base/test:test_support",
-    "//mojo/edk/system",
-    "//mojo/public/c/test_support",
+  ]
+
+  mojo_edk_deps = [
+    "mojo/edk/system",
+  ]
+
+  mojo_sdk_deps = [
+    "mojo/public/c/test_support",
   ]
 
   sources = [
@@ -55,12 +72,15 @@ source_set("run_all_perftests") {
 }
 
 # GYP version: mojo/edk/mojo_edk.gyp:mojo_test_support_impl
-source_set("test_support_impl") {
+mojo_edk_source_set("test_support_impl") {
   testonly = true
   deps = [
     "//base",
     "//base/test:test_support",
-    "//mojo/public/c/test_support",
+  ]
+
+  mojo_sdk_deps = [
+    "mojo/public/c/test_support",
   ]
 
   sources = [

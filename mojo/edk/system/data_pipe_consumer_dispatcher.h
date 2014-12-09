@@ -32,7 +32,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher : public Dispatcher {
   ~DataPipeConsumerDispatcher() override;
 
   // |Dispatcher| protected methods:
-  void CancelAllWaitersNoLock() override;
+  void CancelAllAwakablesNoLock() override;
   void CloseImplNoLock() override;
   scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseImplNoLock()
       override;
@@ -44,12 +44,12 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher : public Dispatcher {
                                      MojoReadDataFlags flags) override;
   MojoResult EndReadDataImplNoLock(uint32_t num_bytes_read) override;
   HandleSignalsState GetHandleSignalsStateImplNoLock() const override;
-  MojoResult AddWaiterImplNoLock(Waiter* waiter,
-                                 MojoHandleSignals signals,
-                                 uint32_t context,
-                                 HandleSignalsState* signals_state) override;
-  void RemoveWaiterImplNoLock(Waiter* waiter,
-                              HandleSignalsState* signals_state) override;
+  MojoResult AddAwakableImplNoLock(Awakable* awakable,
+                                   MojoHandleSignals signals,
+                                   uint32_t context,
+                                   HandleSignalsState* signals_state) override;
+  void RemoveAwakableImplNoLock(Awakable* awakable,
+                                HandleSignalsState* signals_state) override;
   bool IsBusyNoLock() const override;
 
   // Protected by |lock()|:

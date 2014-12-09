@@ -45,6 +45,10 @@
       'message': 'Generating Mojo bindings from <@(mojom_files)',
     }
   ],
+  # Prevent the generated sources from being injected into the "all" target by
+  # preventing the code generator from being directly depended on by the "all"
+  # target.
+  'suppress_wildcard': '1',
   'direct_dependent_settings': {
     # A target directly depending on this action will compile the generated
     # sources.

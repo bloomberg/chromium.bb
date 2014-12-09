@@ -49,7 +49,7 @@ void Thread::Join() {
   assert(!joined_);
 
   joined_ = true;
-  int rv = pthread_join(thread_, NULL);
+  int rv = pthread_join(thread_, nullptr);
   MOJO_ALLOW_UNUSED_LOCAL(rv);
   assert(rv == 0);
 }
@@ -58,7 +58,7 @@ void Thread::Join() {
 void* Thread::ThreadRunTrampoline(void* arg) {
   Thread* self = static_cast<Thread*>(arg);
   self->Run();
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace mojo

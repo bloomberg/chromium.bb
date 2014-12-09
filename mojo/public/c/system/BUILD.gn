@@ -2,11 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("../../mojo_sdk.gni")
+
 # Depend on this target to use the types etc defined in the system without
 # linking against a specific implementation of the system. To link against a
 # particular implementation, use the :for_component or
 # :for_shared_library targets, depending on the type of target you are.
-source_set("system") {
+mojo_sdk_source_set("system") {
   sources = [
     "buffer.h",
     "core.h",
@@ -31,17 +33,18 @@ source_set("system") {
 # For shared_library targets (e.g., a Mojo App), add
 # //mojo/public/c/system:for_shared_library to your deps
 
+# TODO(jamesr): Eliminate the need for these targets. crbug.com/438701
 group("for_shared_library") {
   public_deps = [
     ":system",
   ]
   if (is_component_build) {
     deps = [
-      "//mojo/edk/system",
+      "../../../edk/system",
     ]
   } else {
     deps = [
-      "//mojo/public/platform/native:system_thunks",
+      "../../platform/native:system_thunks",
     ]
   }
 }
@@ -52,7 +55,7 @@ group("for_component") {
   ]
   if (is_component_build) {
     deps = [
-      "//mojo/edk/system",
+      "../../../edk/system",
     ]
   }
 }

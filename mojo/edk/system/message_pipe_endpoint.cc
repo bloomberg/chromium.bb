@@ -9,7 +9,7 @@
 namespace mojo {
 namespace system {
 
-void MessagePipeEndpoint::CancelAllWaiters() {
+void MessagePipeEndpoint::CancelAllAwakables() {
   NOTREACHED();
 }
 
@@ -27,18 +27,18 @@ HandleSignalsState MessagePipeEndpoint::GetHandleSignalsState() const {
   return HandleSignalsState();
 }
 
-MojoResult MessagePipeEndpoint::AddWaiter(Waiter* /*waiter*/,
-                                          MojoHandleSignals /*signals*/,
-                                          uint32_t /*context*/,
-                                          HandleSignalsState* signals_state) {
+MojoResult MessagePipeEndpoint::AddAwakable(Awakable* /*awakable*/,
+                                            MojoHandleSignals /*signals*/,
+                                            uint32_t /*context*/,
+                                            HandleSignalsState* signals_state) {
   NOTREACHED();
   if (signals_state)
     *signals_state = HandleSignalsState();
   return MOJO_RESULT_INTERNAL;
 }
 
-void MessagePipeEndpoint::RemoveWaiter(Waiter* /*waiter*/,
-                                       HandleSignalsState* signals_state) {
+void MessagePipeEndpoint::RemoveAwakable(Awakable* /*awakable*/,
+                                         HandleSignalsState* signals_state) {
   NOTREACHED();
   if (signals_state)
     *signals_state = HandleSignalsState();

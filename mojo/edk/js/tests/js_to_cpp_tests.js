@@ -19,9 +19,7 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
     capacityNumBytes: 64
   };
 
-  function JsSideConnection(cppSide) {
-    this.cppSide_ = cppSide;
-    cppSide.startTest();
+  function JsSideConnection() {
   }
 
   JsSideConnection.prototype =
@@ -205,6 +203,12 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
     }, null);
   }
 
+  function createCppSideConnection(handle, stubClass, proxyClass) {
+    var c = new connection.Connection(handle, stubClass, proxyClass);
+    c.local.cppSide_ = c.remote;
+    return c;
+  }
+
   return function(handle) {
     var i;
     sampleData = new Uint8Array(DATA_PIPE_PARAMS.capacityNumBytes);
@@ -215,7 +219,8 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
     for (i = 0; i < sampleMessage.length; ++i) {
       sampleMessage[i] = 255 - i;
     }
-    retainedConnection = new connection.Connection(handle, JsSideConnection,
-                                                   jsToCpp.CppSide.proxyClass);
+    retainedConnection = createCppSideConnection(
+        handle, JsSideConnection,jsToCpp.CppSide.proxyClass);
+    retainedConnection.remote.startTest();
   };
 });

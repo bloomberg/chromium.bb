@@ -11,7 +11,7 @@ namespace internal {
 
 // static
 void ThreadLocalPlatform::AllocateSlot(SlotType* slot) {
-  if (pthread_key_create(slot, NULL) != 0) {
+  if (pthread_key_create(slot, nullptr) != 0) {
     assert(false);
   }
 }

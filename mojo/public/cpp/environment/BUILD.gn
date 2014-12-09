@@ -2,24 +2,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("environment") {
+import("../../mojo_sdk.gni")
+
+mojo_sdk_source_set("environment") {
   sources = [
     "async_waiter.h",
     "logging.h",
     "environment.h",
   ]
 
-  public_deps = [
-    "//mojo/public/c/environment",
-  ]
+  mojo_sdk_public_deps = [ "mojo/public/c/environment" ]
 
-  deps = [
-    "//mojo/public/cpp/bindings:callback",
-    "//mojo/public/cpp/system",
+  mojo_sdk_deps = [
+    "mojo/public/cpp/bindings:callback",
+    "mojo/public/cpp/system",
   ]
 }
 
-source_set("standalone") {
+mojo_sdk_source_set("standalone") {
   sources = [
     "lib/async_waiter.cc",
     "lib/default_async_waiter.cc",
@@ -34,8 +34,8 @@ source_set("standalone") {
     ":environment",
   ]
 
-  deps = [
-    "//mojo/public/c/environment",
-    "//mojo/public/cpp/utility",
+  mojo_sdk_deps = [
+    "mojo/public/c/environment",
+    "mojo/public/cpp/utility",
   ]
 }

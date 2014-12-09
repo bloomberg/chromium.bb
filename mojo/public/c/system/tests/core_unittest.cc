@@ -13,6 +13,13 @@
 namespace mojo {
 namespace {
 
+const MojoHandleSignals kSignalReadadableWritable =
+    MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE;
+
+const MojoHandleSignals kSignalAll = MOJO_HANDLE_SIGNAL_READABLE |
+                                     MOJO_HANDLE_SIGNAL_WRITABLE |
+                                     MOJO_HANDLE_SIGNAL_PEER_CLOSED;
+
 TEST(CoreTest, GetTimeTicksNow) {
   const MojoTimeTicks start = MojoGetTimeTicksNow();
   EXPECT_NE(static_cast<MojoTimeTicks>(0), start)
@@ -34,21 +41,23 @@ TEST(CoreTest, InvalidHandle) {
 
   // Wait:
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoWait(MOJO_HANDLE_INVALID, ~MOJO_HANDLE_SIGNAL_NONE, 1000000));
+            MojoNewWait(MOJO_HANDLE_INVALID, ~MOJO_HANDLE_SIGNAL_NONE, 1000000,
+                        NULL));
+
   h0 = MOJO_HANDLE_INVALID;
   sig = ~MOJO_HANDLE_SIGNAL_NONE;
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoWaitMany(&h0, &sig, 1, MOJO_DEADLINE_INDEFINITE));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      MojoNewWaitMany(&h0, &sig, 1, MOJO_DEADLINE_INDEFINITE, NULL, NULL));
 
   // Message pipe:
   EXPECT_EQ(
       MOJO_RESULT_INVALID_ARGUMENT,
       MojoWriteMessage(h0, buffer, 3, NULL, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  EXPECT_EQ(
-      MOJO_RESULT_INVALID_ARGUMENT,
-      MojoReadMessage(
-          h0, buffer, &buffer_size, NULL, NULL, MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            MojoReadMessage(h0, buffer, &buffer_size, NULL, NULL,
+                            MOJO_READ_MESSAGE_FLAG_NONE));
 
   // Data pipe:
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
@@ -56,16 +65,16 @@ TEST(CoreTest, InvalidHandle) {
             MojoWriteData(h0, buffer, &buffer_size, MOJO_WRITE_DATA_FLAG_NONE));
   write_pointer = NULL;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoBeginWriteData(
-                h0, &write_pointer, &buffer_size, MOJO_WRITE_DATA_FLAG_NONE));
+            MojoBeginWriteData(h0, &write_pointer, &buffer_size,
+                               MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoEndWriteData(h0, 1));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             MojoReadData(h0, buffer, &buffer_size, MOJO_READ_DATA_FLAG_NONE));
   read_pointer = NULL;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoBeginReadData(
-                h0, &read_pointer, &buffer_size, MOJO_READ_DATA_FLAG_NONE));
+            MojoBeginReadData(h0, &read_pointer, &buffer_size,
+                              MOJO_READ_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoEndReadData(h0, 1));
 
   // Shared buffer:
@@ -88,45 +97,56 @@ TEST(CoreTest, BasicMessagePipe) {
   EXPECT_NE(h0, MOJO_HANDLE_INVALID);
   EXPECT_NE(h1, MOJO_HANDLE_INVALID);
 
-  // Shouldn't be readable.
+  // Shouldn't be readable, we haven't written anything.
+  MojoHandleSignalsState state;
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            MojoWait(h0, MOJO_HANDLE_SIGNAL_READABLE, 0));
+            MojoNewWait(h0, MOJO_HANDLE_SIGNAL_READABLE, 0, &state));
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
+  EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
   // Should be writable.
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(h0, MOJO_HANDLE_SIGNAL_WRITABLE, 0));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoNewWait(h0, MOJO_HANDLE_SIGNAL_WRITABLE, 0, &state));
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
+  EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
   // Try to read.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  EXPECT_EQ(
-      MOJO_RESULT_SHOULD_WAIT,
-      MojoReadMessage(
-          h0, buffer, &buffer_size, NULL, NULL, MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
+            MojoReadMessage(h0, buffer, &buffer_size, NULL, NULL,
+                            MOJO_READ_MESSAGE_FLAG_NONE));
 
   // Write to |h1|.
   static const char kHello[] = "hello";
   buffer_size = static_cast<uint32_t>(sizeof(kHello));
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      MojoWriteMessage(
-          h1, kHello, buffer_size, NULL, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWriteMessage(h1, kHello, buffer_size, NULL, 0,
+                                             MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // |h0| should be readable.
+  uint32_t result_index = 1;
+  MojoHandleSignalsState states[1];
   sig = MOJO_HANDLE_SIGNAL_READABLE;
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWaitMany(&h0, &sig, 1, MOJO_DEADLINE_INDEFINITE));
+            MojoNewWaitMany(&h0, &sig, 1, MOJO_DEADLINE_INDEFINITE,
+                            &result_index, states));
+
+  EXPECT_EQ(0u, result_index);
+  EXPECT_EQ(kSignalReadadableWritable, states[0].satisfied_signals);
+  EXPECT_EQ(kSignalAll, states[0].satisfiable_signals);
 
   // Read from |h0|.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      MojoReadMessage(
-          h0, buffer, &buffer_size, NULL, NULL, MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoReadMessage(h0, buffer, &buffer_size, NULL,
+                                            NULL, MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(static_cast<uint32_t>(sizeof(kHello)), buffer_size);
   EXPECT_STREQ(kHello, buffer);
 
   // |h0| should no longer be readable.
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            MojoWait(h0, MOJO_HANDLE_SIGNAL_READABLE, 10));
+            MojoNewWait(h0, MOJO_HANDLE_SIGNAL_READABLE, 10, &state));
+
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
+  EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
   // Close |h0|.
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h0));
@@ -134,8 +154,11 @@ TEST(CoreTest, BasicMessagePipe) {
   // |h1| should no longer be readable or writable.
   EXPECT_EQ(
       MOJO_RESULT_FAILED_PRECONDITION,
-      MojoWait(
-          h1, MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE, 1000));
+      MojoNewWait(h1, MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+                  1000, &state));
+
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfiable_signals);
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h1));
 }
@@ -164,11 +187,21 @@ TEST(CoreTest, MAYBE_BasicDataPipe) {
   EXPECT_NE(hc, MOJO_HANDLE_INVALID);
 
   // The consumer |hc| shouldn't be readable.
+  MojoHandleSignalsState state;
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            MojoWait(hc, MOJO_HANDLE_SIGNAL_READABLE, 0));
+            MojoNewWait(hc, MOJO_HANDLE_SIGNAL_READABLE, 0, &state));
+
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_NONE, state.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            state.satisfiable_signals);
 
   // The producer |hp| should be writable.
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(hp, MOJO_HANDLE_SIGNAL_WRITABLE, 0));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoNewWait(hp, MOJO_HANDLE_SIGNAL_WRITABLE, 0, &state));
+
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            state.satisfiable_signals);
 
   // Try to read from |hc|.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
@@ -178,26 +211,32 @@ TEST(CoreTest, MAYBE_BasicDataPipe) {
   // Try to begin a two-phase read from |hc|.
   read_pointer = NULL;
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            MojoBeginReadData(
-                hc, &read_pointer, &buffer_size, MOJO_READ_DATA_FLAG_NONE));
+            MojoBeginReadData(hc, &read_pointer, &buffer_size,
+                              MOJO_READ_DATA_FLAG_NONE));
 
   // Write to |hp|.
   static const char kHello[] = "hello ";
   // Don't include terminating null.
   buffer_size = static_cast<uint32_t>(strlen(kHello));
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      MojoWriteData(hp, kHello, &buffer_size, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWriteData(hp, kHello, &buffer_size,
+                                          MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // |hc| should be(come) readable.
+  uint32_t result_index = 1;
+  MojoHandleSignalsState states[1];
   sig = MOJO_HANDLE_SIGNAL_READABLE;
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWaitMany(&hc, &sig, 1, MOJO_DEADLINE_INDEFINITE));
+            MojoNewWaitMany(&hc, &sig, 1, MOJO_DEADLINE_INDEFINITE,
+                            &result_index, states));
+
+  EXPECT_EQ(0u, result_index);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, states[0].satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            states[0].satisfiable_signals);
 
   // Do a two-phase write to |hp|.
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoBeginWriteData(
-                hp, &write_pointer, &buffer_size, MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoBeginWriteData(hp, &write_pointer, &buffer_size,
+                                               MOJO_WRITE_DATA_FLAG_NONE));
   static const char kWorld[] = "world";
   ASSERT_GE(buffer_size, sizeof(kWorld));
   // Include the terminating null.
@@ -215,13 +254,18 @@ TEST(CoreTest, MAYBE_BasicDataPipe) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(hp));
 
   // |hc| should still be readable.
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(hc, MOJO_HANDLE_SIGNAL_READABLE, 0));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoNewWait(hc, MOJO_HANDLE_SIGNAL_READABLE, 0, &state));
+
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            state.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            state.satisfiable_signals);
 
   // Do a two-phase read from |hc|.
   read_pointer = NULL;
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoBeginReadData(
-                hc, &read_pointer, &buffer_size, MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoBeginReadData(hc, &read_pointer, &buffer_size,
+                                              MOJO_READ_DATA_FLAG_NONE));
   ASSERT_LE(buffer_size, sizeof(buffer) - 1);
   memcpy(&buffer[1], read_pointer, buffer_size);
   EXPECT_EQ(MOJO_RESULT_OK, MojoEndReadData(hc, buffer_size));
@@ -229,7 +273,10 @@ TEST(CoreTest, MAYBE_BasicDataPipe) {
 
   // |hc| should no longer be readable.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoWait(hc, MOJO_HANDLE_SIGNAL_READABLE, 1000));
+            MojoNewWait(hc, MOJO_HANDLE_SIGNAL_READABLE, 1000, &state));
+
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfiable_signals);
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(hc));
 

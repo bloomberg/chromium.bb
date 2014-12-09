@@ -21,14 +21,15 @@ MojoResult WaitIfNecessary(scoped_refptr<MessagePipe> mp,
   Waiter waiter;
   waiter.Init();
 
-  MojoResult add_result = mp->AddWaiter(0, &waiter, signals, 0, signals_state);
+  MojoResult add_result =
+      mp->AddAwakable(0, &waiter, signals, 0, signals_state);
   if (add_result != MOJO_RESULT_OK) {
     return (add_result == MOJO_RESULT_ALREADY_EXISTS) ? MOJO_RESULT_OK
                                                       : add_result;
   }
 
   MojoResult wait_result = waiter.Wait(MOJO_DEADLINE_INDEFINITE, nullptr);
-  mp->RemoveWaiter(0, &waiter, signals_state);
+  mp->RemoveAwakable(0, &waiter, signals_state);
   return wait_result;
 }
 
@@ -51,7 +52,7 @@ void ChannelThread::Start(embedder::ScopedPlatformHandle platform_handle,
 }
 
 void ChannelThread::Stop() {
-  if (channel_.get()) {
+  if (channel_) {
     // Hack to flush write buffers before quitting.
     // TODO(vtl): Remove this once |Channel| has a
     // |FlushWriteBufferAndShutdown()| (or whatever).
@@ -85,7 +86,7 @@ void ChannelThread::InitChannelOnIOThread(
 }
 
 void ChannelThread::ShutdownChannelOnIOThread() {
-  CHECK(channel_.get());
+  CHECK(channel_);
   channel_->Shutdown();
   channel_ = nullptr;
 }

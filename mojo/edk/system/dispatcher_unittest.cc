@@ -67,16 +67,16 @@ TEST(DispatcherTest, Basic) {
   w.Init();
   HandleSignalsState hss;
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            d->AddWaiter(&w, ~MOJO_HANDLE_SIGNAL_NONE, 0, &hss));
+            d->AddAwakable(&w, ~MOJO_HANDLE_SIGNAL_NONE, 0, &hss));
   EXPECT_EQ(0u, hss.satisfied_signals);
   EXPECT_EQ(0u, hss.satisfiable_signals);
   // Okay to remove even if it wasn't added (or was already removed).
   hss = HandleSignalsState();
-  d->RemoveWaiter(&w, &hss);
+  d->RemoveAwakable(&w, &hss);
   EXPECT_EQ(0u, hss.satisfied_signals);
   EXPECT_EQ(0u, hss.satisfiable_signals);
   hss = HandleSignalsState();
-  d->RemoveWaiter(&w, &hss);
+  d->RemoveAwakable(&w, &hss);
   EXPECT_EQ(0u, hss.satisfied_signals);
   EXPECT_EQ(0u, hss.satisfiable_signals);
 
@@ -104,11 +104,11 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, d->EndReadData(0));
   hss = HandleSignalsState();
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->AddWaiter(&w, ~MOJO_HANDLE_SIGNAL_NONE, 0, &hss));
+            d->AddAwakable(&w, ~MOJO_HANDLE_SIGNAL_NONE, 0, &hss));
   EXPECT_EQ(0u, hss.satisfied_signals);
   EXPECT_EQ(0u, hss.satisfiable_signals);
   hss = HandleSignalsState();
-  d->RemoveWaiter(&w, &hss);
+  d->RemoveAwakable(&w, &hss);
   EXPECT_EQ(0u, hss.satisfied_signals);
   EXPECT_EQ(0u, hss.satisfiable_signals);
 }
@@ -212,8 +212,8 @@ class ThreadSafetyStressThread : public base::SimpleThread {
       }
       case ADD_WAITER: {
         HandleSignalsState hss;
-        MojoResult r =
-            dispatcher_->AddWaiter(&waiter_, ~MOJO_HANDLE_SIGNAL_NONE, 0, &hss);
+        MojoResult r = dispatcher_->AddAwakable(
+            &waiter_, ~MOJO_HANDLE_SIGNAL_NONE, 0, &hss);
         EXPECT_TRUE(r == MOJO_RESULT_FAILED_PRECONDITION ||
                     r == MOJO_RESULT_INVALID_ARGUMENT);
         EXPECT_EQ(0u, hss.satisfied_signals);
@@ -222,7 +222,7 @@ class ThreadSafetyStressThread : public base::SimpleThread {
       }
       case REMOVE_WAITER: {
         HandleSignalsState hss;
-        dispatcher_->RemoveWaiter(&waiter_, &hss);
+        dispatcher_->RemoveAwakable(&waiter_, &hss);
         EXPECT_EQ(0u, hss.satisfied_signals);
         EXPECT_EQ(0u, hss.satisfiable_signals);
         break;
@@ -234,7 +234,7 @@ class ThreadSafetyStressThread : public base::SimpleThread {
 
     // Always try to remove the waiter, in case we added it.
     HandleSignalsState hss;
-    dispatcher_->RemoveWaiter(&waiter_, &hss);
+    dispatcher_->RemoveAwakable(&waiter_, &hss);
     EXPECT_EQ(0u, hss.satisfied_signals);
     EXPECT_EQ(0u, hss.satisfiable_signals);
   }

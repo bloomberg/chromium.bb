@@ -91,7 +91,7 @@ bool HandleTable::AddDispatcherVector(const DispatcherVector& dispatchers,
     return false;
 
   for (size_t i = 0; i < dispatchers.size(); i++) {
-    if (dispatchers[i].get()) {
+    if (dispatchers[i]) {
       handles[i] = AddDispatcherNoSizeCheck(dispatchers[i]);
     } else {
       LOG(WARNING) << "Invalid dispatcher at index " << i;
@@ -188,7 +188,7 @@ MojoResult HandleTable::MarkBusyAndStartTransport(
 
 MojoHandle HandleTable::AddDispatcherNoSizeCheck(
     const scoped_refptr<Dispatcher>& dispatcher) {
-  DCHECK(dispatcher.get());
+  DCHECK(dispatcher);
   DCHECK_LT(handle_to_entry_map_.size(),
             GetConfiguration().max_handle_table_size);
   DCHECK_NE(next_handle_, MOJO_HANDLE_INVALID);

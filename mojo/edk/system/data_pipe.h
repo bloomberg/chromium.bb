@@ -20,8 +20,8 @@
 namespace mojo {
 namespace system {
 
-class Waiter;
-class WaiterList;
+class Awakable;
+class AwakableList;
 
 // |DataPipe| is a base class for secondary objects implementing data pipes,
 // similar to |MessagePipe| (see the explanatory comment in core.cc). It is
@@ -48,7 +48,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
 
   // These are called by the producer dispatcher to implement its methods of
   // corresponding names.
-  void ProducerCancelAllWaiters();
+  void ProducerCancelAllAwakables();
   void ProducerClose();
   MojoResult ProducerWriteData(UserPointer<const void> elements,
                                UserPointer<uint32_t> num_bytes,
@@ -58,16 +58,17 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
                                     bool all_or_none);
   MojoResult ProducerEndWriteData(uint32_t num_bytes_written);
   HandleSignalsState ProducerGetHandleSignalsState();
-  MojoResult ProducerAddWaiter(Waiter* waiter,
-                               MojoHandleSignals signals,
-                               uint32_t context,
-                               HandleSignalsState* signals_state);
-  void ProducerRemoveWaiter(Waiter* waiter, HandleSignalsState* signals_state);
+  MojoResult ProducerAddAwakable(Awakable* awakable,
+                                 MojoHandleSignals signals,
+                                 uint32_t context,
+                                 HandleSignalsState* signals_state);
+  void ProducerRemoveAwakable(Awakable* awakable,
+                              HandleSignalsState* signals_state);
   bool ProducerIsBusy() const;
 
   // These are called by the consumer dispatcher to implement its methods of
   // corresponding names.
-  void ConsumerCancelAllWaiters();
+  void ConsumerCancelAllAwakables();
   void ConsumerClose();
   // This does not validate its arguments, except to check that |*num_bytes| is
   // a multiple of |element_num_bytes_|.
@@ -83,11 +84,12 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
                                    bool all_or_none);
   MojoResult ConsumerEndReadData(uint32_t num_bytes_read);
   HandleSignalsState ConsumerGetHandleSignalsState();
-  MojoResult ConsumerAddWaiter(Waiter* waiter,
-                               MojoHandleSignals signals,
-                               uint32_t context,
-                               HandleSignalsState* signals_state);
-  void ConsumerRemoveWaiter(Waiter* waiter, HandleSignalsState* signals_state);
+  MojoResult ConsumerAddAwakable(Awakable* awakable,
+                                 MojoHandleSignals signals,
+                                 uint32_t context,
+                                 HandleSignalsState* signals_state);
+  void ConsumerRemoveAwakable(Awakable* awakable,
+                              HandleSignalsState* signals_state);
   bool ConsumerIsBusy() const;
 
  protected:
@@ -179,18 +181,18 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
   }
 
  private:
-  void AwakeProducerWaitersForStateChangeNoLock(
+  void AwakeProducerAwakablesForStateChangeNoLock(
       const HandleSignalsState& new_producer_state);
-  void AwakeConsumerWaitersForStateChangeNoLock(
+  void AwakeConsumerAwakablesForStateChangeNoLock(
       const HandleSignalsState& new_consumer_state);
 
   bool has_local_producer_no_lock() const {
     lock_.AssertAcquired();
-    return !!producer_waiter_list_;
+    return !!producer_awakable_list_;
   }
   bool has_local_consumer_no_lock() const {
     lock_.AssertAcquired();
-    return !!consumer_waiter_list_;
+    return !!consumer_awakable_list_;
   }
 
   const bool may_discard_;
@@ -202,8 +204,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
   bool producer_open_;
   bool consumer_open_;
   // Non-null only if the producer or consumer, respectively, is local.
-  scoped_ptr<WaiterList> producer_waiter_list_;
-  scoped_ptr<WaiterList> consumer_waiter_list_;
+  scoped_ptr<AwakableList> producer_awakable_list_;
+  scoped_ptr<AwakableList> consumer_awakable_list_;
   // These are nonzero if and only if a two-phase write/read is in progress.
   uint32_t producer_two_phase_max_num_bytes_written_;
   uint32_t consumer_two_phase_max_num_bytes_read_;

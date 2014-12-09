@@ -695,6 +695,46 @@ TEST_F(ViewObserverTest, SetVisible) {
   }
 }
 
+TEST_F(ViewObserverTest, SetVisibleParent) {
+  TestView parent;
+  ViewPrivate(&parent).set_id(1);
+  TestView child;
+  ViewPrivate(&child).set_id(2);
+  parent.AddChild(&child);
+  EXPECT_TRUE(parent.visible());
+  EXPECT_TRUE(child.visible());
+  {
+    // Change visibility from true to false and make sure we get notifications
+    // on the parent.
+    VisibilityChangeObserver observer(&parent);
+    child.SetVisible(false);
+
+    Changes changes = observer.GetAndClearChanges();
+    ASSERT_EQ(1U, changes.size());
+    EXPECT_EQ("view=0,2 phase=changed visibility=false", changes[0]);
+  }
+}
+
+TEST_F(ViewObserverTest, SetVisibleChild) {
+  TestView parent;
+  ViewPrivate(&parent).set_id(1);
+  TestView child;
+  ViewPrivate(&child).set_id(2);
+  parent.AddChild(&child);
+  EXPECT_TRUE(parent.visible());
+  EXPECT_TRUE(child.visible());
+  {
+    // Change visibility from true to false and make sure we get notifications
+    // on the child.
+    VisibilityChangeObserver observer(&child);
+    parent.SetVisible(false);
+
+    Changes changes = observer.GetAndClearChanges();
+    ASSERT_EQ(1U, changes.size());
+    EXPECT_EQ("view=0,1 phase=changed visibility=false", changes[0]);
+  }
+}
+
 namespace {
 
 class SharedPropertyChangeObserver : public ViewObserver {

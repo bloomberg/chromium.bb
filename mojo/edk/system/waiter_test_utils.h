@@ -29,19 +29,19 @@ namespace test {
 //
 //    MojoResult result;
 //    {
-//      WaiterList waiter_list;
+//      AwakableList awakable_list;
 //      test::SimpleWaiterThread thread(&result);
-//      waiter_list.AddWaiter(thread.waiter(), ...);
+//      awakable_list.Add(thread.waiter(), ...);
 //      thread.Start();
 //      ... some stuff to wake the waiter ...
-//      waiter_list.RemoveWaiter(thread.waiter());
+//      awakable_list.Remove(thread.waiter());
 //    }  // Join |thread|.
 //    EXPECT_EQ(..., result);
 //
 // There's a bit of unrealism in its use: In this sort of usage, calls such as
-// |Waiter::Init()|, |AddWaiter()|, and |RemoveWaiter()| are done in the main
-// (test) thread, not the waiter thread (as would actually happen in real code).
-// (We accept this unrealism for simplicity, since |WaiterList| is
+// |Waiter::Init()|, |AddAwakable()|, and |RemoveAwakable()| are done in the
+// main (test) thread, not the waiter thread (as would actually happen in real
+// code). (We accept this unrealism for simplicity, since |AwakableList| is
 // thread-unsafe so making it more realistic would require adding nontrivial
 // synchronization machinery.)
 class SimpleWaiterThread : public base::SimpleThread {

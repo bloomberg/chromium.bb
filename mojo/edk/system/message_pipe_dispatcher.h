@@ -73,7 +73,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
   unsigned GetPortNoLock() const;
 
   // |Dispatcher| protected methods:
-  void CancelAllWaitersNoLock() override;
+  void CancelAllAwakablesNoLock() override;
   void CloseImplNoLock() override;
   scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseImplNoLock()
       override;
@@ -88,12 +88,12 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
                                    uint32_t* num_dispatchers,
                                    MojoReadMessageFlags flags) override;
   HandleSignalsState GetHandleSignalsStateImplNoLock() const override;
-  MojoResult AddWaiterImplNoLock(Waiter* waiter,
-                                 MojoHandleSignals signals,
-                                 uint32_t context,
-                                 HandleSignalsState* signals_state) override;
-  void RemoveWaiterImplNoLock(Waiter* waiter,
-                              HandleSignalsState* signals_state) override;
+  MojoResult AddAwakableImplNoLock(Awakable* awakable,
+                                   MojoHandleSignals signals,
+                                   uint32_t context,
+                                   HandleSignalsState* signals_state) override;
+  void RemoveAwakableImplNoLock(Awakable* awakable,
+                                HandleSignalsState* signals_state) override;
   void StartSerializeImplNoLock(Channel* channel,
                                 size_t* max_size,
                                 size_t* max_platform_handles) override;

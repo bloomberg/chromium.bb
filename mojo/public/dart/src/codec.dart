@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(zra): Rewrite MojoDecoder and MojoEncoder using Dart idioms, and make
+// corresponding changes to the bindings generation script.
+
 part of bindings;
 
 const int kAlignment = 8;
@@ -563,17 +566,10 @@ class MessageReader {
 }
 
 
-abstract class MojoType<T> {
-  static const int encodedSize = 0;
-  static T decode(MojoDecoder decoder) { return null; }
-  static void encode(MojoEncoder encoder, T val) {}
-}
-
-
 class PackedBool {}
 
 
-class Int8 implements MojoType<int> {
+class Int8 {
   static const int encodedSize = 1;
   static int decode(MojoDecoder decoder) => decoder.readInt8();
   static void encode(MojoEncoder encoder, int val) {
@@ -582,7 +578,7 @@ class Int8 implements MojoType<int> {
 }
 
 
-class Uint8 implements MojoType<int> {
+class Uint8 {
   static const int encodedSize = 1;
   static int decode(MojoDecoder decoder) => decoder.readUint8();
   static void encode(MojoEncoder encoder, int val) {
@@ -591,7 +587,7 @@ class Uint8 implements MojoType<int> {
 }
 
 
-class Int16 implements MojoType<int> {
+class Int16 {
   static const int encodedSize = 2;
   static int decode(MojoDecoder decoder) => decoder.readInt16();
   static void encode(MojoEncoder encoder, int val) {
@@ -600,7 +596,7 @@ class Int16 implements MojoType<int> {
 }
 
 
-class Uint16 implements MojoType<int> {
+class Uint16 {
   static const int encodedSize = 2;
   static int decode(MojoDecoder decoder) => decoder.readUint16();
   static void encode(MojoEncoder encoder, int val) {
@@ -609,7 +605,7 @@ class Uint16 implements MojoType<int> {
 }
 
 
-class Int32 implements MojoType<int> {
+class Int32 {
   static const int encodedSize = 4;
   static int decode(MojoDecoder decoder) => decoder.readInt32();
   static void encode(MojoEncoder encoder, int val) {
@@ -618,7 +614,7 @@ class Int32 implements MojoType<int> {
 }
 
 
-class Uint32 implements MojoType<int> {
+class Uint32 {
   static const int encodedSize = 4;
   static int decode(MojoDecoder decoder) => decoder.readUint32();
   static void encode(MojoEncoder encoder, int val) {
@@ -627,7 +623,7 @@ class Uint32 implements MojoType<int> {
 }
 
 
-class Int64 implements MojoType<int> {
+class Int64 {
   static const int encodedSize = 8;
   static int decode(MojoDecoder decoder) => decoder.readInt64();
   static void encode(MojoEncoder encoder, int val) {
@@ -636,7 +632,7 @@ class Int64 implements MojoType<int> {
 }
 
 
-class Uint64 implements MojoType<int> {
+class Uint64 {
   static const int encodedSize = 8;
   static int decode(MojoDecoder decoder) => decoder.readUint64();
   static void encode(MojoEncoder encoder, int val) {
@@ -645,7 +641,7 @@ class Uint64 implements MojoType<int> {
 }
 
 
-class MojoString implements MojoType<String> {
+class MojoString {
   static const int encodedSize = 8;
   static String decode(MojoDecoder decoder) => decoder.decodeStringPointer();
   static void encode(MojoEncoder encoder, String val) {
@@ -654,14 +650,14 @@ class MojoString implements MojoType<String> {
 }
 
 
-class NullableMojoString implements MojoType<String> {
+class NullableMojoString {
   static const int encodedSize = MojoString.encodedSize;
   static var decode = MojoString.decode;
   static var encode = MojoString.encode;
 }
 
 
-class Float implements MojoType<double> {
+class Float {
   static const int encodedSize = 4;
   static double decode(MojoDecoder decoder) => decoder.readFloat();
   static void encode(MojoEncoder encoder, double val) {
@@ -670,7 +666,7 @@ class Float implements MojoType<double> {
 }
 
 
-class Double implements MojoType<double> {
+class Double {
   static const int encodedSize = 8;
   static double decode(MojoDecoder decoder) => decoder.readDouble();
   static void encode(MojoEncoder encoder, double val) {
@@ -730,16 +726,17 @@ class NullableArrayOf extends ArrayOf {
 }
 
 
-class Handle implements MojoType<core.RawMojoHandle> {
+class Handle {
   static const int encodedSize = 4;
-  static core.RawMojoHandle decode(MojoDecoder decoder) => decoder.decodeHandle();
+  static core.RawMojoHandle decode(MojoDecoder decoder) =>
+      decoder.decodeHandle();
   static void encode(MojoEncoder encoder, core.RawMojoHandle val) {
     encoder.encodeHandle(val);
   }
 }
 
 
-class NullableHandle implements MojoType<int> {
+class NullableHandle {
   static const int encodedSize = Handle.encodedSize;
   static const decode = Handle.decode;
   static const encode = Handle.encode;

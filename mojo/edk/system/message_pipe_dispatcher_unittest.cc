@@ -59,7 +59,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     w.Init();
     hss = HandleSignalsState();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 0, &hss));
+              d0->AddAwakable(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 0, &hss));
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
     EXPECT_EQ(kAllSignals, hss.satisfiable_signals);
     // Shouldn't need to remove the waiter (it was not added).
@@ -68,7 +68,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     // |d1|), then wait.
     w.Init();
     ASSERT_EQ(MOJO_RESULT_OK,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 1, nullptr));
+              d0->AddAwakable(&w, MOJO_HANDLE_SIGNAL_READABLE, 1, nullptr));
     buffer[0] = 123456789;
     EXPECT_EQ(MOJO_RESULT_OK,
               d1->WriteMessage(UserPointer<const void>(buffer), kBufferSize,
@@ -78,7 +78,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     EXPECT_EQ(1u, context);
     EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
     hss = HandleSignalsState();
-    d0->RemoveWaiter(&w, &hss);
+    d0->RemoveAwakable(&w, &hss);
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
               hss.satisfied_signals);
     EXPECT_EQ(kAllSignals, hss.satisfiable_signals);
@@ -87,7 +87,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     w.Init();
     hss = HandleSignalsState();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 2, &hss));
+              d0->AddAwakable(&w, MOJO_HANDLE_SIGNAL_READABLE, 2, &hss));
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
               hss.satisfied_signals);
     EXPECT_EQ(kAllSignals, hss.satisfiable_signals);
@@ -106,19 +106,19 @@ TEST(MessagePipeDispatcherTest, Basic) {
     // Wait for zero time for readability on |d0| (will time out).
     w.Init();
     ASSERT_EQ(MOJO_RESULT_OK,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3, nullptr));
+              d0->AddAwakable(&w, MOJO_HANDLE_SIGNAL_READABLE, 3, nullptr));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0, nullptr));
     EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
     hss = HandleSignalsState();
-    d0->RemoveWaiter(&w, &hss);
+    d0->RemoveAwakable(&w, &hss);
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
     EXPECT_EQ(kAllSignals, hss.satisfiable_signals);
 
     // Wait for non-zero, finite time for readability on |d0| (will time out).
     w.Init();
     ASSERT_EQ(MOJO_RESULT_OK,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3, nullptr));
+              d0->AddAwakable(&w, MOJO_HANDLE_SIGNAL_READABLE, 3, nullptr));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
               w.Wait(2 * test::EpsilonTimeout().InMicroseconds(), nullptr));
@@ -126,14 +126,14 @@ TEST(MessagePipeDispatcherTest, Basic) {
     EXPECT_GT(elapsed, (2 - 1) * test::EpsilonTimeout());
     EXPECT_LT(elapsed, (2 + 1) * test::EpsilonTimeout());
     hss = HandleSignalsState();
-    d0->RemoveWaiter(&w, &hss);
+    d0->RemoveAwakable(&w, &hss);
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
     EXPECT_EQ(kAllSignals, hss.satisfiable_signals);
 
     // Check the peer closed signal.
     w.Init();
     ASSERT_EQ(MOJO_RESULT_OK,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_PEER_CLOSED, 12, nullptr));
+              d0->AddAwakable(&w, MOJO_HANDLE_SIGNAL_PEER_CLOSED, 12, nullptr));
 
     // Close the peer.
     EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
@@ -142,7 +142,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     EXPECT_EQ(MOJO_RESULT_OK, w.Wait(1000, &context));
     EXPECT_EQ(12u, context);
     hss = HandleSignalsState();
-    d0->RemoveWaiter(&w, &hss);
+    d0->RemoveAwakable(&w, &hss);
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 
@@ -249,7 +249,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     w.Init();
     hss = HandleSignalsState();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 0, &hss));
+              d0->AddAwakable(&w, MOJO_HANDLE_SIGNAL_READABLE, 0, &hss));
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
               hss.satisfied_signals);
     EXPECT_EQ(kAllSignals, hss.satisfiable_signals);
@@ -269,7 +269,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     w.Init();
     hss = HandleSignalsState();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 1, &hss));
+              d0->AddAwakable(&w, MOJO_HANDLE_SIGNAL_READABLE, 1, &hss));
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
               hss.satisfied_signals);
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
@@ -289,7 +289,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     w.Init();
     hss = HandleSignalsState();
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 2, &hss));
+              d0->AddAwakable(&w, MOJO_HANDLE_SIGNAL_READABLE, 2, &hss));
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
               hss.satisfied_signals);
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
@@ -309,7 +309,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     w.Init();
     hss = HandleSignalsState();
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 3, &hss));
+              d0->AddAwakable(&w, MOJO_HANDLE_SIGNAL_READABLE, 3, &hss));
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 
@@ -317,7 +317,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     w.Init();
     hss = HandleSignalsState();
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              d0->AddWaiter(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 4, &hss));
+              d0->AddAwakable(&w, MOJO_HANDLE_SIGNAL_WRITABLE, 4, &hss));
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 
@@ -559,15 +559,15 @@ class ReaderThread : public base::SimpleThread {
       // Wait for it to be readable.
       w.Init();
       hss = HandleSignalsState();
-      result =
-          read_dispatcher_->AddWaiter(&w, MOJO_HANDLE_SIGNAL_READABLE, 0, &hss);
+      result = read_dispatcher_->AddAwakable(&w, MOJO_HANDLE_SIGNAL_READABLE, 0,
+                                             &hss);
       EXPECT_TRUE(result == MOJO_RESULT_OK ||
                   result == MOJO_RESULT_ALREADY_EXISTS)
           << "result: " << result;
       if (result == MOJO_RESULT_OK) {
         // Actually need to wait.
         EXPECT_EQ(MOJO_RESULT_OK, w.Wait(MOJO_DEADLINE_INDEFINITE, nullptr));
-        read_dispatcher_->RemoveWaiter(&w, &hss);
+        read_dispatcher_->RemoveAwakable(&w, &hss);
       }
       // We may not actually be readable, since we're racing with other threads.
       EXPECT_TRUE((hss.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE));

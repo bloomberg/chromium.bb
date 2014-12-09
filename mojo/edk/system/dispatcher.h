@@ -39,7 +39,7 @@ class HandleTable;
 class LocalMessagePipeEndpoint;
 class ProxyMessagePipeEndpoint;
 class TransportData;
-class Waiter;
+class Awakable;
 
 typedef std::vector<scoped_refptr<Dispatcher>> DispatcherVector;
 
@@ -128,7 +128,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   // threads.
   HandleSignalsState GetHandleSignalsState() const;
 
-  // Adds a waiter to this dispatcher. The waiter will be woken up when this
+  // Adds an awakable to this dispatcher, which will be woken up when this
   // object changes state to satisfy |signals| with context |context|. It will
   // also be woken up when it becomes impossible for the object to ever satisfy
   // |signals| with a suitable error status.
@@ -137,20 +137,20 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   // to the current handle signals state (on success, it is left untouched).
   //
   // Returns:
-  //  - |MOJO_RESULT_OK| if the waiter was added;
+  //  - |MOJO_RESULT_OK| if the awakable was added;
   //  - |MOJO_RESULT_ALREADY_EXISTS| if |signals| is already satisfied;
   //  - |MOJO_RESULT_INVALID_ARGUMENT| if the dispatcher has been closed; and
   //  - |MOJO_RESULT_FAILED_PRECONDITION| if it is not (or no longer) possible
   //    that |signals| will ever be satisfied.
-  MojoResult AddWaiter(Waiter* waiter,
-                       MojoHandleSignals signals,
-                       uint32_t context,
-                       HandleSignalsState* signals_state);
-  // Removes a waiter from this dispatcher. (It is valid to call this multiple
-  // times for the same |waiter| on the same object, so long as |AddWaiter()|
-  // was called at most once.) If |signals_state| is non-null, |*signals_state|
-  // will be set to the current handle signals state.
-  void RemoveWaiter(Waiter* waiter, HandleSignalsState* signals_state);
+  MojoResult AddAwakable(Awakable* awakable,
+                         MojoHandleSignals signals,
+                         uint32_t context,
+                         HandleSignalsState* signals_state);
+  // Removes an awakable from this dispatcher. (It is valid to call this
+  // multiple times for the same |awakable| on the same object, so long as
+  // |AddAwakable()| was called at most once.) If |signals_state| is non-null,
+  // |*signals_state| will be set to the current handle signals state.
+  void RemoveAwakable(Awakable* awakable, HandleSignalsState* signals_state);
 
   // A dispatcher must be put into a special state in order to be sent across a
   // message pipe. Outside of tests, only |HandleTableAccess| is allowed to do
@@ -220,9 +220,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   virtual ~Dispatcher();
 
   // These are to be overridden by subclasses (if necessary). They are called
-  // exactly once -- first |CancelAllWaitersNoLock()|, then |CloseImplNoLock()|,
+  // exactly once -- first |CancelAllAwakablesNoLock()|, then
+  // |CloseImplNoLock()|,
   // when the dispatcher is being closed. They are called under |lock_|.
-  virtual void CancelAllWaitersNoLock();
+  virtual void CancelAllAwakablesNoLock();
   virtual void CloseImplNoLock();
   virtual scoped_refptr<Dispatcher>
   CreateEquivalentDispatcherAndCloseImplNoLock() = 0;
@@ -266,12 +267,12 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
       MojoMapBufferFlags flags,
       scoped_ptr<embedder::PlatformSharedBufferMapping>* mapping);
   virtual HandleSignalsState GetHandleSignalsStateImplNoLock() const;
-  virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
-                                         MojoHandleSignals signals,
-                                         uint32_t context,
-                                         HandleSignalsState* signals_state);
-  virtual void RemoveWaiterImplNoLock(Waiter* waiter,
-                                      HandleSignalsState* signals_state);
+  virtual MojoResult AddAwakableImplNoLock(Awakable* awakable,
+                                           MojoHandleSignals signals,
+                                           uint32_t context,
+                                           HandleSignalsState* signals_state);
+  virtual void RemoveAwakableImplNoLock(Awakable* awakable,
+                                        HandleSignalsState* signals_state);
 
   // These implement the API used to serialize dispatchers to a |Channel|
   // (described below). They will only be called on a dispatcher that's attached

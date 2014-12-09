@@ -15,7 +15,7 @@ DataPipeProducerDispatcher::DataPipeProducerDispatcher() {
 }
 
 void DataPipeProducerDispatcher::Init(scoped_refptr<DataPipe> data_pipe) {
-  DCHECK(data_pipe.get());
+  DCHECK(data_pipe);
   data_pipe_ = data_pipe;
 }
 
@@ -25,12 +25,12 @@ Dispatcher::Type DataPipeProducerDispatcher::GetType() const {
 
 DataPipeProducerDispatcher::~DataPipeProducerDispatcher() {
   // |Close()|/|CloseImplNoLock()| should have taken care of the pipe.
-  DCHECK(!data_pipe_.get());
+  DCHECK(!data_pipe_);
 }
 
-void DataPipeProducerDispatcher::CancelAllWaitersNoLock() {
+void DataPipeProducerDispatcher::CancelAllAwakablesNoLock() {
   lock().AssertAcquired();
-  data_pipe_->ProducerCancelAllWaiters();
+  data_pipe_->ProducerCancelAllAwakables();
 }
 
 void DataPipeProducerDispatcher::CloseImplNoLock() {
@@ -82,20 +82,21 @@ HandleSignalsState DataPipeProducerDispatcher::GetHandleSignalsStateImplNoLock()
   return data_pipe_->ProducerGetHandleSignalsState();
 }
 
-MojoResult DataPipeProducerDispatcher::AddWaiterImplNoLock(
-    Waiter* waiter,
+MojoResult DataPipeProducerDispatcher::AddAwakableImplNoLock(
+    Awakable* awakable,
     MojoHandleSignals signals,
     uint32_t context,
     HandleSignalsState* signals_state) {
   lock().AssertAcquired();
-  return data_pipe_->ProducerAddWaiter(waiter, signals, context, signals_state);
+  return data_pipe_->ProducerAddAwakable(awakable, signals, context,
+                                         signals_state);
 }
 
-void DataPipeProducerDispatcher::RemoveWaiterImplNoLock(
-    Waiter* waiter,
+void DataPipeProducerDispatcher::RemoveAwakableImplNoLock(
+    Awakable* awakable,
     HandleSignalsState* signals_state) {
   lock().AssertAcquired();
-  data_pipe_->ProducerRemoveWaiter(waiter, signals_state);
+  data_pipe_->ProducerRemoveAwakable(awakable, signals_state);
 }
 
 bool DataPipeProducerDispatcher::IsBusyNoLock() const {

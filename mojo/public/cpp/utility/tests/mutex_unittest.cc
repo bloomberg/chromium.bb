@@ -90,7 +90,7 @@ class Fiddler {
       0,  // Seconds.
       (rand() % 10) * kNanosPerMilli // Nanoseconds.
     };
-    int rv = nanosleep(&req, NULL);
+    int rv = nanosleep(&req, nullptr);
     MOJO_ALLOW_UNUSED_LOCAL(rv);
     assert(rv == 0);
   }

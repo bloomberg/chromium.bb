@@ -54,6 +54,7 @@
           ],
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:sel',
+            'monacl_codegen',
           ],
         },
         {

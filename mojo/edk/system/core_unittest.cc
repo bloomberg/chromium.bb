@@ -95,30 +95,30 @@ TEST_F(CoreTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED, core()->EndReadData(h, 0));
   EXPECT_EQ(1u, info.GetEndReadDataCallCount());
 
-  EXPECT_EQ(0u, info.GetAddWaiterCallCount());
+  EXPECT_EQ(0u, info.GetAddAwakableCallCount());
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             core()->Wait(h, ~MOJO_HANDLE_SIGNAL_NONE, MOJO_DEADLINE_INDEFINITE,
                          NullUserPointer()));
-  EXPECT_EQ(1u, info.GetAddWaiterCallCount());
+  EXPECT_EQ(1u, info.GetAddAwakableCallCount());
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             core()->Wait(h, ~MOJO_HANDLE_SIGNAL_NONE, 0, NullUserPointer()));
-  EXPECT_EQ(2u, info.GetAddWaiterCallCount());
+  EXPECT_EQ(2u, info.GetAddAwakableCallCount());
   MojoHandleSignalsState hss = kFullMojoHandleSignalsState;
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             core()->Wait(h, ~MOJO_HANDLE_SIGNAL_NONE, MOJO_DEADLINE_INDEFINITE,
                          MakeUserPointer(&hss)));
-  EXPECT_EQ(3u, info.GetAddWaiterCallCount());
+  EXPECT_EQ(3u, info.GetAddAwakableCallCount());
   EXPECT_EQ(0u, hss.satisfied_signals);
   EXPECT_EQ(0u, hss.satisfiable_signals);
   EXPECT_EQ(
       MOJO_RESULT_FAILED_PRECONDITION,
       core()->Wait(h, ~MOJO_HANDLE_SIGNAL_NONE, 10 * 1000, NullUserPointer()));
-  EXPECT_EQ(4u, info.GetAddWaiterCallCount());
+  EXPECT_EQ(4u, info.GetAddAwakableCallCount());
   hss = kFullMojoHandleSignalsState;
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             core()->Wait(h, ~MOJO_HANDLE_SIGNAL_NONE, 10 * 1000,
                          MakeUserPointer(&hss)));
-  EXPECT_EQ(5u, info.GetAddWaiterCallCount());
+  EXPECT_EQ(5u, info.GetAddAwakableCallCount());
   EXPECT_EQ(0u, hss.satisfied_signals);
   EXPECT_EQ(0u, hss.satisfiable_signals);
 
@@ -128,14 +128,14 @@ TEST_F(CoreTest, Basic) {
       core()->WaitMany(MakeUserPointer(&h), MakeUserPointer(&handle_signals), 1,
                        MOJO_DEADLINE_INDEFINITE, NullUserPointer(),
                        NullUserPointer()));
-  EXPECT_EQ(6u, info.GetAddWaiterCallCount());
+  EXPECT_EQ(6u, info.GetAddAwakableCallCount());
   uint32_t result_index = static_cast<uint32_t>(-1);
   EXPECT_EQ(
       MOJO_RESULT_FAILED_PRECONDITION,
       core()->WaitMany(MakeUserPointer(&h), MakeUserPointer(&handle_signals), 1,
                        MOJO_DEADLINE_INDEFINITE, MakeUserPointer(&result_index),
                        NullUserPointer()));
-  EXPECT_EQ(7u, info.GetAddWaiterCallCount());
+  EXPECT_EQ(7u, info.GetAddAwakableCallCount());
   EXPECT_EQ(0u, result_index);
   hss = kFullMojoHandleSignalsState;
   EXPECT_EQ(
@@ -143,7 +143,7 @@ TEST_F(CoreTest, Basic) {
       core()->WaitMany(MakeUserPointer(&h), MakeUserPointer(&handle_signals), 1,
                        MOJO_DEADLINE_INDEFINITE, NullUserPointer(),
                        MakeUserPointer(&hss)));
-  EXPECT_EQ(8u, info.GetAddWaiterCallCount());
+  EXPECT_EQ(8u, info.GetAddAwakableCallCount());
   EXPECT_EQ(0u, hss.satisfied_signals);
   EXPECT_EQ(0u, hss.satisfiable_signals);
   result_index = static_cast<uint32_t>(-1);
@@ -153,21 +153,21 @@ TEST_F(CoreTest, Basic) {
       core()->WaitMany(MakeUserPointer(&h), MakeUserPointer(&handle_signals), 1,
                        MOJO_DEADLINE_INDEFINITE, MakeUserPointer(&result_index),
                        MakeUserPointer(&hss)));
-  EXPECT_EQ(9u, info.GetAddWaiterCallCount());
+  EXPECT_EQ(9u, info.GetAddAwakableCallCount());
   EXPECT_EQ(0u, result_index);
   EXPECT_EQ(0u, hss.satisfied_signals);
   EXPECT_EQ(0u, hss.satisfiable_signals);
 
   EXPECT_EQ(0u, info.GetDtorCallCount());
   EXPECT_EQ(0u, info.GetCloseCallCount());
-  EXPECT_EQ(0u, info.GetCancelAllWaitersCallCount());
+  EXPECT_EQ(0u, info.GetCancelAllAwakablesCallCount());
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h));
-  EXPECT_EQ(1u, info.GetCancelAllWaitersCallCount());
+  EXPECT_EQ(1u, info.GetCancelAllAwakablesCallCount());
   EXPECT_EQ(1u, info.GetCloseCallCount());
   EXPECT_EQ(1u, info.GetDtorCallCount());
 
-  // No waiters should ever have ever been added.
-  EXPECT_EQ(0u, info.GetRemoveWaiterCallCount());
+  // No awakables should ever have ever been added.
+  EXPECT_EQ(0u, info.GetRemoveAwakableCallCount());
 }
 
 TEST_F(CoreTest, InvalidArguments) {

@@ -22,7 +22,7 @@ ChannelInit::~ChannelInit() {
 ScopedMessagePipeHandle ChannelInit::Init(
     base::PlatformFile file,
     scoped_refptr<base::TaskRunner> io_thread_task_runner) {
-  DCHECK(!io_thread_task_runner_.get());  // Should only init once.
+  DCHECK(!io_thread_task_runner_);  // Should only init once.
   io_thread_task_runner_ = io_thread_task_runner;
   ScopedMessagePipeHandle message_pipe =
       CreateChannel(

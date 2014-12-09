@@ -33,6 +33,14 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
   explicit ProxyMessagePipeEndpoint(ChannelEndpoint* channel_endpoint);
   ~ProxyMessagePipeEndpoint() override;
 
+  // Returns |channel_endpoint_| and resets |channel_endpoint_| to null. This
+  // may be called at most once, after which |Close()| need not be called.
+  //
+  // Note: The returned |ChannelEndpoint| must have its client changed while
+  // still under |MessagePipe|'s lock (which this must have also been called
+  // under).
+  scoped_refptr<ChannelEndpoint> ReleaseChannelEndpoint();
+
   // |MessagePipeEndpoint| implementation:
   Type GetType() const override;
   bool OnPeerClose() override;

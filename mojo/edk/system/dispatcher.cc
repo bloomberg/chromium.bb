@@ -220,10 +220,10 @@ HandleSignalsState Dispatcher::GetHandleSignalsState() const {
   return GetHandleSignalsStateImplNoLock();
 }
 
-MojoResult Dispatcher::AddWaiter(Waiter* waiter,
-                                 MojoHandleSignals signals,
-                                 uint32_t context,
-                                 HandleSignalsState* signals_state) {
+MojoResult Dispatcher::AddAwakable(Awakable* awakable,
+                                   MojoHandleSignals signals,
+                                   uint32_t context,
+                                   HandleSignalsState* signals_state) {
   base::AutoLock locker(lock_);
   if (is_closed_) {
     if (signals_state)
@@ -231,18 +231,19 @@ MojoResult Dispatcher::AddWaiter(Waiter* waiter,
     return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
-  return AddWaiterImplNoLock(waiter, signals, context, signals_state);
+  return AddAwakableImplNoLock(awakable, signals, context, signals_state);
 }
 
-void Dispatcher::RemoveWaiter(Waiter* waiter,
-                              HandleSignalsState* handle_signals_state) {
+void Dispatcher::RemoveAwakable(Awakable* awakable,
+                                HandleSignalsState* handle_signals_state) {
   base::AutoLock locker(lock_);
   if (is_closed_) {
     if (handle_signals_state)
       *handle_signals_state = HandleSignalsState();
     return;
   }
-  RemoveWaiterImplNoLock(waiter, handle_signals_state);
+
+  RemoveAwakableImplNoLock(awakable, handle_signals_state);
 }
 
 Dispatcher::Dispatcher() : is_closed_(false) {
@@ -253,7 +254,7 @@ Dispatcher::~Dispatcher() {
   DCHECK(is_closed_);
 }
 
-void Dispatcher::CancelAllWaitersNoLock() {
+void Dispatcher::CancelAllAwakablesNoLock() {
   lock_.AssertAcquired();
   DCHECK(is_closed_);
   // By default, waiting isn't supported. Only dispatchers that can be waited on
@@ -370,10 +371,11 @@ HandleSignalsState Dispatcher::GetHandleSignalsStateImplNoLock() const {
   return HandleSignalsState();
 }
 
-MojoResult Dispatcher::AddWaiterImplNoLock(Waiter* /*waiter*/,
-                                           MojoHandleSignals /*signals*/,
-                                           uint32_t /*context*/,
-                                           HandleSignalsState* signals_state) {
+MojoResult Dispatcher::AddAwakableImplNoLock(
+    Awakable* /*awakable*/,
+    MojoHandleSignals /*signals*/,
+    uint32_t /*context*/,
+    HandleSignalsState* signals_state) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // By default, waiting isn't supported. Only dispatchers that can be waited on
@@ -383,8 +385,8 @@ MojoResult Dispatcher::AddWaiterImplNoLock(Waiter* /*waiter*/,
   return MOJO_RESULT_FAILED_PRECONDITION;
 }
 
-void Dispatcher::RemoveWaiterImplNoLock(Waiter* /*waiter*/,
-                                        HandleSignalsState* signals_state) {
+void Dispatcher::RemoveAwakableImplNoLock(Awakable* /*awakable*/,
+                                          HandleSignalsState* signals_state) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // By default, waiting isn't supported. Only dispatchers that can be waited on
@@ -427,7 +429,7 @@ void Dispatcher::CloseNoLock() {
   DCHECK(!is_closed_);
 
   is_closed_ = true;
-  CancelAllWaitersNoLock();
+  CancelAllAwakablesNoLock();
   CloseImplNoLock();
 }
 
@@ -437,7 +439,7 @@ Dispatcher::CreateEquivalentDispatcherAndCloseNoLock() {
   DCHECK(!is_closed_);
 
   is_closed_ = true;
-  CancelAllWaitersNoLock();
+  CancelAllAwakablesNoLock();
   return CreateEquivalentDispatcherAndCloseImplNoLock();
 }
 

@@ -27,7 +27,7 @@ MojoResult MojoMain(MojoHandle shell_handle) {
     mojo::ApplicationImpl app(&dummy_application_delegate, shell_handle);
     MOJO_CHECK(app.WaitForInitialize());
 
-    // InitGoogleTest expects (argc + 1) elements, including a terminating NULL.
+    // InitGoogleTest expects (argc + 1) elements, including a terminating null.
     // It also removes GTEST arguments from |argv| and updates the |argc| count.
     const std::vector<std::string>& args = app.args();
     MOJO_CHECK(args.size() <

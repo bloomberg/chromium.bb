@@ -9,7 +9,10 @@
 #include "native_client/src/public/imc_syscalls.h"
 #include "native_client/src/public/imc_types.h"
 
-#define NACL_MOJO_DESC (NACL_CHROME_DESC_BASE + 2)
+// The value for this FD must not conflict with uses inside Chromium. However,
+// mojo/nacl doesn't depend on any Chromium headers, so we can't use a #define
+// from there.
+#define NACL_MOJO_DESC (NACL_CHROME_DESC_BASE + 3)
 
 static void DoMojoCall(uint32_t params[], nacl_abi_size_t num_params) {
   NaClAbiNaClImcMsgIoVec iov[1] = {

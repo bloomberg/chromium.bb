@@ -9,6 +9,7 @@ group("python") {
     ":base",
     ":bindings",
     ":system",
+    ":system_impl",
   ]
 }
 
@@ -17,21 +18,38 @@ python_binary_module("system") {
   python_base_module = "mojo"
   sources = [
     "mojo/c_core.pxd",
-    "mojo/c_environment.pxd",
     "mojo/system.pyx",
+  ]
+  deps = [
+    ":base",
+    "../c/environment",
+    "../c/system:for_shared_library",
+    "../cpp/environment:standalone",
+    "../cpp/system",
+    "../cpp/utility",
+    "../cpp/bindings:callback",
+  ]
+}
+
+python_binary_module("system_impl") {
+  python_base_module = "mojo"
+  sources = [
+    "mojo/c_core.pxd",
+    "mojo/c_environment.pxd",
+    "mojo/system_impl.pyx",
   ]
   additional_sources = [
     "src/python_system_helper.cc",
     "src/python_system_helper.h",
   ]
   deps = [
-    "//mojo/public/c/environment",
-    "//mojo/public/c/system:for_shared_library",
-    "//mojo/public/cpp/environment:standalone",
-    "//mojo/public/cpp/system",
-    "//mojo/public/cpp/utility",
-    "//mojo/public/cpp/bindings:callback",
     ":base",
+    "../c/environment",
+    "../c/system:for_shared_library",
+    "../cpp/environment:standalone",
+    "../cpp/system",
+    "../cpp/utility",
+    "../cpp/bindings:callback",
   ]
 }
 

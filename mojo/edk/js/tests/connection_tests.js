@@ -81,14 +81,20 @@ define([
     threading.quit();
   }.bind(this));
 
+  function createPeerConnection(handle, stubClass, proxyClass) {
+    var c = new connection.Connection(handle, stubClass, proxyClass);
+    c.local.peer = c.remote;
+    c.remote.peer = c.local;
+    return c;
+  }
+
   function testClientServer() {
     var receivedFrobinate = false;
     var receivedDidFrobinate = false;
 
     // ServiceImpl ------------------------------------------------------------
 
-    function ServiceImpl(peer) {
-      this.peer = peer;
+    function ServiceImpl() {
     }
 
     ServiceImpl.prototype = Object.create(
@@ -106,8 +112,7 @@ define([
 
     // ServiceClientImpl ------------------------------------------------------
 
-    function ServiceClientImpl(peer) {
-      this.peer = peer;
+    function ServiceClientImpl() {
     }
 
     ServiceClientImpl.prototype =
@@ -123,10 +128,10 @@ define([
     var anotherPipe = core.createMessagePipe();
     var sourcePipe = core.createMessagePipe();
 
-    var connection0 = new connection.Connection(
+    var connection0 = createPeerConnection(
         pipe.handle0, ServiceImpl, sample_service.ServiceClient.proxyClass);
 
-    var connection1 = new connection.Connection(
+    var connection1 = createPeerConnection(
         pipe.handle1, ServiceClientImpl, sample_service.Service.proxyClass);
 
     var foo = new sample_service.Foo();
@@ -163,7 +168,7 @@ define([
   function testWriteToClosedPipe() {
     var pipe = core.createMessagePipe();
 
-    var connection1 = new connection.Connection(
+    var connection1 = createPeerConnection(
         pipe.handle1, function() {}, sample_service.Service.proxyClass);
 
     // Close the other end of the pipe.
@@ -192,8 +197,7 @@ define([
 
     // ProviderImpl ------------------------------------------------------------
 
-    function ProviderImpl(peer) {
-      this.peer = peer;
+    function ProviderImpl() {
     }
 
     ProviderImpl.prototype =
@@ -211,8 +215,7 @@ define([
 
     // ProviderClientImpl ------------------------------------------------------
 
-    function ProviderClientImpl(peer) {
-      this.peer = peer;
+    function ProviderClientImpl() {
     }
 
     ProviderClientImpl.prototype =
@@ -220,12 +223,12 @@ define([
 
     var pipe = core.createMessagePipe();
 
-    var connection0 = new connection.Connection(
+    var connection0 = createPeerConnection(
         pipe.handle0,
         ProviderImpl,
         sample_interfaces.ProviderClient.proxyClass);
 
-    var connection1 = new connection.Connection(
+    var connection1 = createPeerConnection(
         pipe.handle1,
         ProviderClientImpl,
         sample_interfaces.Provider.proxyClass);

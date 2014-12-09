@@ -50,7 +50,7 @@ class ChannelTest : public testing::Test {
     CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
 
     CHECK(raw_channel_);
-    CHECK(channel_.get());
+    CHECK(channel_);
     CHECK_EQ(init_result_, TRISTATE_UNKNOWN);
 
     init_result_ = BoolToTristate(channel_->Init(raw_channel_.Pass()));
@@ -59,7 +59,7 @@ class ChannelTest : public testing::Test {
   void ShutdownChannelOnIOThread() {
     CHECK_EQ(base::MessageLoop::current(), io_thread()->message_loop());
 
-    CHECK(channel_.get());
+    CHECK(channel_);
     channel_->Shutdown();
   }
 
@@ -231,7 +231,7 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
   waiter.Init();
   ASSERT_EQ(
       MOJO_RESULT_OK,
-      mp->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, nullptr));
+      mp->AddAwakable(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, nullptr));
 
   // Don't wait for the shutdown to run ...
   io_thread()->PostTask(FROM_HERE,
@@ -242,7 +242,7 @@ TEST_F(ChannelTest, ShutdownAfterAttach) {
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             waiter.Wait(MOJO_DEADLINE_INDEFINITE, nullptr));
   HandleSignalsState hss;
-  mp->RemoveWaiter(0, &waiter, &hss);
+  mp->RemoveAwakable(0, &waiter, &hss);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 
@@ -277,8 +277,9 @@ TEST_F(ChannelTest, WaitAfterAttachRunAndShutdown) {
   Waiter waiter;
   waiter.Init();
   HandleSignalsState hss;
-  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            mp->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, &hss));
+  EXPECT_EQ(
+      MOJO_RESULT_FAILED_PRECONDITION,
+      mp->AddAwakable(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 

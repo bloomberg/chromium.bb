@@ -10,3 +10,9 @@ declare_args() {
   # Whether to build the dart bindings.
   mojo_use_dart = false
 }
+
+# The absolute path to the directory containing the mojo public SDK (i.e., the
+# directory containing mojo/public). The build files within the Mojo public
+# SDK use this variable to allow themselves to be parameterized by the location
+# of the public SDK within a client repo.
+mojo_root = get_path_info("../..", "abspath")

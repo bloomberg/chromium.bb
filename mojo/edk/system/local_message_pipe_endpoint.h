@@ -7,11 +7,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "mojo/edk/system/awakable_list.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/message_in_transit_queue.h"
 #include "mojo/edk/system/message_pipe_endpoint.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/edk/system/waiter_list.h"
 
 namespace mojo {
 namespace system {
@@ -30,18 +30,19 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
   // There's a dispatcher for |LocalMessagePipeEndpoint|s, so we have to
   // implement/override these:
   void Close() override;
-  void CancelAllWaiters() override;
+  void CancelAllAwakables() override;
   MojoResult ReadMessage(UserPointer<void> bytes,
                          UserPointer<uint32_t> num_bytes,
                          DispatcherVector* dispatchers,
                          uint32_t* num_dispatchers,
                          MojoReadMessageFlags flags) override;
   HandleSignalsState GetHandleSignalsState() const override;
-  MojoResult AddWaiter(Waiter* waiter,
-                       MojoHandleSignals signals,
-                       uint32_t context,
-                       HandleSignalsState* signals_state) override;
-  void RemoveWaiter(Waiter* waiter, HandleSignalsState* signals_state) override;
+  MojoResult AddAwakable(Awakable* awakable,
+                         MojoHandleSignals signals,
+                         uint32_t context,
+                         HandleSignalsState* signals_state) override;
+  void RemoveAwakable(Awakable* awakable,
+                      HandleSignalsState* signals_state) override;
 
   // This is only to be used by |MessagePipe|:
   MessageInTransitQueue* message_queue() { return &message_queue_; }
@@ -52,7 +53,7 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalMessagePipeEndpoint
 
   // Queue of incoming messages.
   MessageInTransitQueue message_queue_;
-  WaiterList waiter_list_;
+  AwakableList awakable_list_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalMessagePipeEndpoint);
 };

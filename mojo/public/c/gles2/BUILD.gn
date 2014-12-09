@@ -2,11 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("../../mojo_sdk.gni")
+
 config("gles2_config") {
   defines = [ "GLES2_USE_MOJO" ]
 }
 
-source_set("gles2") {
+group("gles2") {
+  public_configs = [ "//third_party/khronos:khronos_headers" ]
+  public_deps = [
+    ":headers",
+  ]
+  deps = [
+    "../../platform/native:gles2_thunks",
+  ]
+}
+
+mojo_sdk_source_set("headers") {
   sources = [
     "gles2.h",
     "gles2_export.h",
@@ -14,8 +26,8 @@ source_set("gles2") {
 
   public_configs = [ ":gles2_config" ]
 
-  public_deps = [
-    "//mojo/public/c/environment",
-    "//mojo/public/c/system",
+  mojo_sdk_public_deps = [
+    "mojo/public/c/environment",
+    "mojo/public/c/system",
   ]
 }

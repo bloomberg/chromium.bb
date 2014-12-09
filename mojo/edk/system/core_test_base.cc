@@ -123,27 +123,27 @@ class MockDispatcher : public Dispatcher {
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  MojoResult AddWaiterImplNoLock(Waiter* /*waiter*/,
-                                 MojoHandleSignals /*signals*/,
-                                 uint32_t /*context*/,
-                                 HandleSignalsState* signals_state) override {
-    info_->IncrementAddWaiterCallCount();
+  MojoResult AddAwakableImplNoLock(Awakable* /*awakable*/,
+                                   MojoHandleSignals /*signals*/,
+                                   uint32_t /*context*/,
+                                   HandleSignalsState* signals_state) override {
+    info_->IncrementAddAwakableCallCount();
     lock().AssertAcquired();
     if (signals_state)
       *signals_state = HandleSignalsState();
     return MOJO_RESULT_FAILED_PRECONDITION;
   }
 
-  void RemoveWaiterImplNoLock(Waiter* /*waiter*/,
-                              HandleSignalsState* signals_state) override {
-    info_->IncrementRemoveWaiterCallCount();
+  void RemoveAwakableImplNoLock(Awakable* /*awakable*/,
+                                HandleSignalsState* signals_state) override {
+    info_->IncrementRemoveAwakableCallCount();
     lock().AssertAcquired();
     if (signals_state)
       *signals_state = HandleSignalsState();
   }
 
-  void CancelAllWaitersNoLock() override {
-    info_->IncrementCancelAllWaitersCallCount();
+  void CancelAllAwakablesNoLock() override {
+    info_->IncrementCancelAllAwakablesCallCount();
     lock().AssertAcquired();
   }
 
@@ -196,9 +196,9 @@ CoreTestBase_MockHandleInfo::CoreTestBase_MockHandleInfo()
       read_data_call_count_(0),
       begin_read_data_call_count_(0),
       end_read_data_call_count_(0),
-      add_waiter_call_count_(0),
-      remove_waiter_call_count_(0),
-      cancel_all_waiters_call_count_(0) {
+      add_awakable_call_count_(0),
+      remove_awakable_call_count_(0),
+      cancel_all_awakables_call_count_(0) {
 }
 
 CoreTestBase_MockHandleInfo::~CoreTestBase_MockHandleInfo() {
@@ -259,19 +259,19 @@ unsigned CoreTestBase_MockHandleInfo::GetEndReadDataCallCount() const {
   return end_read_data_call_count_;
 }
 
-unsigned CoreTestBase_MockHandleInfo::GetAddWaiterCallCount() const {
+unsigned CoreTestBase_MockHandleInfo::GetAddAwakableCallCount() const {
   base::AutoLock locker(lock_);
-  return add_waiter_call_count_;
+  return add_awakable_call_count_;
 }
 
-unsigned CoreTestBase_MockHandleInfo::GetRemoveWaiterCallCount() const {
+unsigned CoreTestBase_MockHandleInfo::GetRemoveAwakableCallCount() const {
   base::AutoLock locker(lock_);
-  return remove_waiter_call_count_;
+  return remove_awakable_call_count_;
 }
 
-unsigned CoreTestBase_MockHandleInfo::GetCancelAllWaitersCallCount() const {
+unsigned CoreTestBase_MockHandleInfo::GetCancelAllAwakablesCallCount() const {
   base::AutoLock locker(lock_);
-  return cancel_all_waiters_call_count_;
+  return cancel_all_awakables_call_count_;
 }
 
 void CoreTestBase_MockHandleInfo::IncrementCtorCallCount() {
@@ -329,19 +329,19 @@ void CoreTestBase_MockHandleInfo::IncrementEndReadDataCallCount() {
   end_read_data_call_count_++;
 }
 
-void CoreTestBase_MockHandleInfo::IncrementAddWaiterCallCount() {
+void CoreTestBase_MockHandleInfo::IncrementAddAwakableCallCount() {
   base::AutoLock locker(lock_);
-  add_waiter_call_count_++;
+  add_awakable_call_count_++;
 }
 
-void CoreTestBase_MockHandleInfo::IncrementRemoveWaiterCallCount() {
+void CoreTestBase_MockHandleInfo::IncrementRemoveAwakableCallCount() {
   base::AutoLock locker(lock_);
-  remove_waiter_call_count_++;
+  remove_awakable_call_count_++;
 }
 
-void CoreTestBase_MockHandleInfo::IncrementCancelAllWaitersCallCount() {
+void CoreTestBase_MockHandleInfo::IncrementCancelAllAwakablesCallCount() {
   base::AutoLock locker(lock_);
-  cancel_all_waiters_call_count_++;
+  cancel_all_awakables_call_count_++;
 }
 
 }  // namespace test

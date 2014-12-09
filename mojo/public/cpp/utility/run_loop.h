@@ -27,7 +27,7 @@ class RunLoop {
   // Cleans state created by Setup().
   static void TearDown();
 
-  // Returns the RunLoop for the current thread. Returns NULL if not yet
+  // Returns the RunLoop for the current thread. Returns null if not yet
   // created.
   static RunLoop* current();
 
@@ -62,7 +62,7 @@ class RunLoop {
   // Contains the data needed to track a request to AddHandler().
   struct HandlerData {
     HandlerData()
-        : handler(NULL),
+        : handler(nullptr),
           handle_signals(MOJO_HANDLE_SIGNAL_NONE),
           deadline(0),
           id(0) {}
@@ -112,7 +112,7 @@ class RunLoop {
 
   HandleToHandlerData handler_data_;
 
-  // If non-NULL we're running (inside Run()). Member references a value on the
+  // If non-null we're running (inside Run()). Member references a value on the
   // stack.
   RunState* run_state_;
 

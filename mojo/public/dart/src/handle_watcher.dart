@@ -45,7 +45,8 @@ class MojoHandleWatcher {
   static const int REMOVE = 1;
   static const int TOGGLE_WRITE = 2;
   static const int CLOSE = 3;
-  static const int SHUTDOWN = 4;
+  static const int TIMER = 4;
+  static const int SHUTDOWN = 5;
 
   static int _encodeCommand(int cmd, [int signals = 0]) =>
       (cmd << 2) | (signals & MojoHandleSignals.READWRITE);
@@ -75,6 +76,9 @@ class MojoHandleWatcher {
   // a RawMojoHandle.
   RawMojoHandle _tempHandle;
 
+  // Priority queue of timers registered with the watcher.
+  TimerQueue _timerQueue;
+
   MojoHandleWatcher(this._controlHandle) :
       _shutdown = false,
       _handles = new List<int>(),
@@ -82,7 +86,8 @@ class MojoHandleWatcher {
       _signals = new List<int>(),
       _handleIndices = new Map<int, int>(),
       _handleCount = 1,
-      _tempHandle = new RawMojoHandle(RawMojoHandle.INVALID) {
+      _tempHandle = new RawMojoHandle(RawMojoHandle.INVALID),
+      _timerQueue = new TimerQueue() {
     // Setup control handle.
     _handles.add(_controlHandle);
     _ports.add(null);  // There is no port for the control handle.
@@ -90,11 +95,13 @@ class MojoHandleWatcher {
     _handleIndices[_controlHandle] = 0;
   }
 
-  static void _handleWatcherIsolate(MojoHandleWatcher watcher) {
+  static void _handleWatcherIsolate(int consumerHandle) {
+    MojoHandleWatcher watcher = new MojoHandleWatcher(consumerHandle);
     while (!watcher._shutdown) {
+      int deadline = watcher._processTimerDeadlines();
       int res = RawMojoHandle.waitMany(watcher._handles,
                                        watcher._signals,
-                                       RawMojoHandle.DEADLINE_INDEFINITE);
+                                       deadline);
       if (res == 0) {
         watcher._handleControlMessage();
       } else if (res > 0) {
@@ -103,7 +110,7 @@ class MojoHandleWatcher {
         watcher._routeEvent(res);
         // Remove the handle from the list.
         watcher._removeHandle(handle);
-      } else {
+      } else if (res != MojoResult.kDeadlineExceeded) {
         // Some handle was closed, but not by us.
         // We have to go through the list and find it.
         watcher._pruneClosedHandles();
@@ -133,8 +140,8 @@ class MojoHandleWatcher {
 
   void _handleControlMessage() {
     List result = _MojoHandleWatcherNatives.recvControlData(_controlHandle);
-    // result[0] = mojo handle if any
-    // result[1] = SendPort if any
+    // result[0] = mojo handle if any, or a timer deadline in milliseconds.
+    // result[1] = SendPort if any.
     // result[2] = command << 2 | WRITABLE | READABLE
 
     int signals = result[2] & MojoHandleSignals.READWRITE;
@@ -151,6 +158,9 @@ class MojoHandleWatcher {
         break;
       case CLOSE:
         _close(result[0]);
+        break;
+      case TIMER:
+        _timer(result[1], result[0]);
         break;
       case SHUTDOWN:
         _shutdownHandleWatcher();
@@ -217,6 +227,22 @@ class MojoHandleWatcher {
     _removeHandle(mojoHandle);
   }
 
+  // Returns the next timer deadline in units of microseconds from 'now'.
+  int _processTimerDeadlines() {
+    int now = (new DateTime.now()).millisecondsSinceEpoch;
+    while (_timerQueue.hasTimer && (now >= _timerQueue.currentTimeout)) {
+      _timerQueue.currentPort.send(null);
+      _timerQueue.removeCurrent();
+      now = (new DateTime.now()).millisecondsSinceEpoch;
+    }
+    return _timerQueue.hasTimer ? (_timerQueue.currentTimeout - now) * 1000
+                                : RawMojoHandle.DEADLINE_INDEFINITE;
+  }
+
+  void _timer(SendPort port, int deadline) {
+    _timerQueue.updateTimer(port, deadline);
+  }
+
   void _toggleWrite(int mojoHandle) {
     int idx = _handleIndices[mojoHandle];
     if (idx == null) {
@@ -274,14 +300,11 @@ class MojoHandleWatcher {
     int consumerHandle = pipe.endpoints[0].handle.h;
     int producerHandle = pipe.endpoints[1].handle.h;
 
-    // Make a MojoHandleWatcher with one end.
-    MojoHandleWatcher watcher = new MojoHandleWatcher(consumerHandle);
-
     // Call setControlHandle with the other end.
     _MojoHandleWatcherNatives.setControlHandle(producerHandle);
 
     // Spawn the handle watcher isolate with the MojoHandleWatcher,
-    return Isolate.spawn(_handleWatcherIsolate, watcher);
+    return Isolate.spawn(_handleWatcherIsolate, consumerHandle);
   }
 
   static void Stop() {
@@ -292,6 +315,9 @@ class MojoHandleWatcher {
     int controlHandle = _MojoHandleWatcherNatives.getControlHandle();
     var handle = new RawMojoHandle(controlHandle);
     handle.close();
+
+    // Invalidate the control handle.
+    _MojoHandleWatcherNatives.setControlHandle(RawMojoHandle.INVALID);
   }
 
   static MojoResult close(RawMojoHandle mojoHandle) {
@@ -308,5 +334,11 @@ class MojoHandleWatcher {
 
   static MojoResult remove(RawMojoHandle mojoHandle) {
     return _sendControlData(mojoHandle, null, _encodeCommand(REMOVE));
+  }
+
+  static MojoResult timer(SendPort port, int deadline) {
+    // The deadline will be unwrapped before sending to the handle watcher.
+    return _sendControlData(
+        new RawMojoHandle(deadline), port, _encodeCommand(TIMER));
   }
 }

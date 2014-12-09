@@ -5,7 +5,6 @@
 # GYP version: mojo/mojo_base.gyp:mojo_public_application_unittests
 test("mojo_public_application_unittests") {
   deps = [
-    "//base",
     "//mojo/edk/test:run_all_unittests",
     "//mojo/public/cpp/application:standalone",
     "//mojo/public/cpp/environment:standalone",

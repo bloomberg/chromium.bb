@@ -41,6 +41,25 @@ MojoResult MojoWaitMany(const MojoHandle* handles,
                                     : result;
 }
 
+MojoResult MojoNewWait(MojoHandle handle,
+                       MojoHandleSignals signals,
+                       MojoDeadline deadline,
+                       MojoHandleSignalsState* signals_state) {
+  return g_core->Wait(handle, signals, deadline,
+                      MakeUserPointer(signals_state));
+}
+
+MojoResult MojoNewWaitMany(const MojoHandle* handles,
+                           const MojoHandleSignals* signals,
+                           uint32_t num_handles,
+                           MojoDeadline deadline,
+                           uint32_t* result_index,
+                           MojoHandleSignalsState* signals_states) {
+  return g_core->WaitMany(MakeUserPointer(handles), MakeUserPointer(signals),
+                          num_handles, deadline, MakeUserPointer(result_index),
+                          MakeUserPointer(signals_states));
+}
+
 MojoResult MojoCreateMessagePipe(const MojoCreateMessagePipeOptions* options,
                                  MojoHandle* message_pipe_handle0,
                                  MojoHandle* message_pipe_handle1) {

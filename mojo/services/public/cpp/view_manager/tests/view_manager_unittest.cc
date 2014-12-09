@@ -20,7 +20,7 @@
 #include "mojo/services/public/cpp/view_manager/view_manager_client_factory.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_delegate.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
-#include "mojo/shell/shell_test_helper.h"
+#include "shell/shell_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

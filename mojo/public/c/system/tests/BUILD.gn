@@ -28,7 +28,6 @@ test("perftests") {
   ]
 
   deps = [
-    "//base",
     "//mojo/edk/test:run_all_perftests",
     "//mojo/public/c/environment",
     "//mojo/public/cpp/system",

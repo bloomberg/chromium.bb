@@ -1,6 +1,6 @@
 {#--- Begin #}
 
-class {{struct.name}} implements bindings.MojoType<{{struct.name}}> {
+class {{struct.name}} {
 {#--- Enums #}
 {%- from "enum_definition.tmpl" import enum_def %}
 {%  for enum in struct.enums %}

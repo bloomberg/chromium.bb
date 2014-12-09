@@ -72,7 +72,7 @@ void Channel::Shutdown() {
   size_t num_zombies = 0;
   for (IdToEndpointMap::iterator it = to_destroy.begin();
        it != to_destroy.end(); ++it) {
-    if (it->second.get()) {
+    if (it->second) {
       num_live++;
       it->second->DetachFromChannel();
     } else {
@@ -97,7 +97,7 @@ void Channel::WillShutdownSoon() {
 ChannelEndpointId Channel::AttachAndRunEndpoint(
     scoped_refptr<ChannelEndpoint> endpoint,
     bool is_bootstrap) {
-  DCHECK(endpoint.get());
+  DCHECK(endpoint);
 
   ChannelEndpointId local_id;
   ChannelEndpointId remote_id;
@@ -185,7 +185,7 @@ void Channel::DetachEndpoint(ChannelEndpoint* endpoint,
     if (it == local_id_to_endpoint_map_.end() || it->second.get() != endpoint)
       return;
 
-    DCHECK(it->second.get());
+    DCHECK(it->second);
     it->second = nullptr;
 
     // Send a remove message outside the lock.
@@ -306,7 +306,7 @@ void Channel::OnReadMessageForEndpoint(
         local_id_to_endpoint_map_.find(local_id);
     if (it != local_id_to_endpoint_map_.end()) {
       // Ignore messages for zombie endpoints (not an error).
-      if (!it->second.get()) {
+      if (!it->second) {
         DVLOG(2) << "Ignoring downstream message for zombie endpoint (local ID "
                     "= " << local_id
                  << ", remote ID = " << message_view.source_id() << ")";
@@ -316,7 +316,7 @@ void Channel::OnReadMessageForEndpoint(
       endpoint = it->second;
     }
   }
-  if (!endpoint.get()) {
+  if (!endpoint) {
     HandleRemoteError(base::StringPrintf(
         "Received a message for nonexistent local destination ID %u",
         static_cast<unsigned>(local_id.value())));
@@ -453,7 +453,7 @@ bool Channel::OnRemoveMessagePipeEndpoint(ChannelEndpointId local_id,
       return false;
     }
 
-    if (!it->second.get()) {
+    if (!it->second) {
       // Remove messages "crossed"; we have to wait for the ack.
       return true;
     }
@@ -489,7 +489,7 @@ bool Channel::OnRemoveMessagePipeEndpointAck(ChannelEndpointId local_id) {
     return false;
   }
 
-  if (it->second.get()) {
+  if (it->second) {
     DVLOG(2) << "Remove message pipe endpoint ack error: wrong state";
     return false;
   }

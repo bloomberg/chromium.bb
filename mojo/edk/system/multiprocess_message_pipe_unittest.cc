@@ -316,7 +316,7 @@ TEST_F(MultiprocessMessagePipeTest, MAYBE_SharedBufferPassing) {
                                 platform_support(),
                                 SharedBufferDispatcher::kDefaultCreateOptions,
                                 100, &dispatcher));
-  ASSERT_TRUE(dispatcher.get());
+  ASSERT_TRUE(dispatcher);
 
   // Make a mapping.
   scoped_ptr<embedder::PlatformSharedBufferMapping> mapping;

@@ -42,7 +42,7 @@ base::TimeDelta EpsilonTimeout() {
 // Currently, |tiny_timeout()| is usually 100 ms (possibly scaled under ASAN,
 // etc.). Based on this, set it to (usually be) 30 ms on Windows and 20 ms
 // elsewhere.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID)
   return (TestTimeouts::tiny_timeout() * 3) / 10;
 #else
   return (TestTimeouts::tiny_timeout() * 2) / 10;

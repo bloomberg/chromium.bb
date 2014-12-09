@@ -5,13 +5,13 @@
 action_foreach("sky") {
   script = "convert_amd_modules_to_sky.py"
   sources = [
-    "//mojo/public/js/buffer.js",
-    "//mojo/public/js/codec.js",
-    "//mojo/public/js/connection.js",
-    "//mojo/public/js/connector.js",
-    "//mojo/public/js/router.js",
-    "//mojo/public/js/unicode.js",
-    "//mojo/public/js/validator.js",
+    "../js/buffer.js",
+    "../js/codec.js",
+    "../js/connection.js",
+    "../js/connector.js",
+    "../js/router.js",
+    "../js/unicode.js",
+    "../js/validator.js",
   ]
   outputs = [
     "$target_gen_dir/{{source_name_part}}.sky",

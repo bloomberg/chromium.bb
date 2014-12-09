@@ -30,7 +30,7 @@ abstract class Interface {
 
         // Read the data and view as a message.
         var bytes = new ByteData(result.bytesRead);
-        var handles = new List<RawMojoHandle>(result.handlesRead);
+        var handles = new List<core.RawMojoHandle>(result.handlesRead);
         result = _endpoint.read(bytes, result.bytesRead, handles);
         if (!result.status.isOk && !result.status.isResourceExhausted) {
           // If something else happens, it means the handle wasn't really ready

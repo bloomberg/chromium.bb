@@ -8,9 +8,9 @@
 #include <list>
 
 #include "base/macros.h"
+#include "mojo/edk/system/awakable_list.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/edk/system/waiter_list.h"
 
 namespace mojo {
 namespace system {
@@ -30,17 +30,17 @@ class MOJO_SYSTEM_IMPL_EXPORT SimpleDispatcher : public Dispatcher {
   void HandleSignalsStateChangedNoLock();
 
   // |Dispatcher| protected methods:
-  void CancelAllWaitersNoLock() override;
-  MojoResult AddWaiterImplNoLock(Waiter* waiter,
-                                 MojoHandleSignals signals,
-                                 uint32_t context,
-                                 HandleSignalsState* signals_state) override;
-  void RemoveWaiterImplNoLock(Waiter* waiter,
-                              HandleSignalsState* signals_state) override;
+  void CancelAllAwakablesNoLock() override;
+  MojoResult AddAwakableImplNoLock(Awakable* awakable,
+                                   MojoHandleSignals signals,
+                                   uint32_t context,
+                                   HandleSignalsState* signals_state) override;
+  void RemoveAwakableImplNoLock(Awakable* awakable,
+                                HandleSignalsState* signals_state) override;
 
  private:
   // Protected by |lock()|:
-  WaiterList waiter_list_;
+  AwakableList awakable_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleDispatcher);
 };

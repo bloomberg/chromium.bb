@@ -35,7 +35,7 @@ bool LocalMessagePipeEndpoint::OnPeerClose() {
   HandleSignalsState new_state = GetHandleSignalsState();
 
   if (!new_state.equals(old_state))
-    waiter_list_.AwakeWaitersForStateChange(new_state);
+    awakable_list_.AwakeForStateChange(new_state);
 
   return true;
 }
@@ -48,7 +48,7 @@ void LocalMessagePipeEndpoint::EnqueueMessage(
   bool was_empty = message_queue_.IsEmpty();
   message_queue_.AddMessage(message.Pass());
   if (was_empty)
-    waiter_list_.AwakeWaitersForStateChange(GetHandleSignalsState());
+    awakable_list_.AwakeForStateChange(GetHandleSignalsState());
 }
 
 void LocalMessagePipeEndpoint::Close() {
@@ -57,9 +57,9 @@ void LocalMessagePipeEndpoint::Close() {
   message_queue_.Clear();
 }
 
-void LocalMessagePipeEndpoint::CancelAllWaiters() {
+void LocalMessagePipeEndpoint::CancelAllAwakables() {
   DCHECK(is_open_);
-  waiter_list_.CancelAllWaiters();
+  awakable_list_.CancelAll();
 }
 
 MojoResult LocalMessagePipeEndpoint::ReadMessage(
@@ -117,7 +117,7 @@ MojoResult LocalMessagePipeEndpoint::ReadMessage(
     if (message_queue_.IsEmpty()) {
       // It's currently not possible to wait for non-readability, but we should
       // do the state change anyway.
-      waiter_list_.AwakeWaitersForStateChange(GetHandleSignalsState());
+      awakable_list_.AwakeForStateChange(GetHandleSignalsState());
     }
   }
 
@@ -144,8 +144,8 @@ HandleSignalsState LocalMessagePipeEndpoint::GetHandleSignalsState() const {
   return rv;
 }
 
-MojoResult LocalMessagePipeEndpoint::AddWaiter(
-    Waiter* waiter,
+MojoResult LocalMessagePipeEndpoint::AddAwakable(
+    Awakable* awakable,
     MojoHandleSignals signals,
     uint32_t context,
     HandleSignalsState* signals_state) {
@@ -163,14 +163,15 @@ MojoResult LocalMessagePipeEndpoint::AddWaiter(
     return MOJO_RESULT_FAILED_PRECONDITION;
   }
 
-  waiter_list_.AddWaiter(waiter, signals, context);
+  awakable_list_.Add(awakable, signals, context);
   return MOJO_RESULT_OK;
 }
 
-void LocalMessagePipeEndpoint::RemoveWaiter(Waiter* waiter,
-                                            HandleSignalsState* signals_state) {
+void LocalMessagePipeEndpoint::RemoveAwakable(
+    Awakable* awakable,
+    HandleSignalsState* signals_state) {
   DCHECK(is_open_);
-  waiter_list_.RemoveWaiter(waiter);
+  awakable_list_.Remove(awakable);
   if (signals_state)
     *signals_state = GetHandleSignalsState();
 }

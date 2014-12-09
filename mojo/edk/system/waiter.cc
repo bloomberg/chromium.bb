@@ -49,7 +49,7 @@ MojoResult Waiter::Wait(MojoDeadline deadline, uint32_t* context) {
   if (awoken_) {
     DCHECK_NE(awake_result_, MOJO_RESULT_INTERNAL);
     if (context)
-      *context = awake_context_;
+      *context = static_cast<uint32_t>(awake_context_);
     return awake_result_;
   }
 
@@ -78,11 +78,11 @@ MojoResult Waiter::Wait(MojoDeadline deadline, uint32_t* context) {
 
   DCHECK_NE(awake_result_, MOJO_RESULT_INTERNAL);
   if (context)
-    *context = awake_context_;
+    *context = static_cast<uint32_t>(awake_context_);
   return awake_result_;
 }
 
-void Waiter::Awake(MojoResult result, uint32_t context) {
+void Waiter::Awake(MojoResult result, uintptr_t context) {
   base::AutoLock locker(lock_);
 
   if (awoken_)

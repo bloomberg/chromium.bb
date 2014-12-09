@@ -130,6 +130,15 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   // called.)
   bool EnqueueMessage(scoped_ptr<MessageInTransit> message);
 
+  // Called to *replace* current client with a new client (which must differ
+  // from the existing client). This must not be called after
+  // |DetachFromClient()| has been called.
+  //
+  // This returns true in the typical case, and false if this endpoint has been
+  // detached from the channel, in which case the caller should probably call
+  // its (new) client's |OnDetachFromChannel()|.
+  bool ReplaceClient(ChannelEndpointClient* client, unsigned client_port);
+
   // Called before the |ChannelEndpointClient| gives up its reference to this
   // object.
   void DetachFromClient();
@@ -156,6 +165,10 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   // Must be called with |lock_| held.
   bool WriteMessageNoLock(scoped_ptr<MessageInTransit> message);
 
+  // Resets |channel_| to null (and sets |is_detached_from_channel_|). This may
+  // only be called if |channel_| is non-null. Must be called with |lock_| held.
+  void ResetChannelNoLock();
+
   // Protects the members below.
   base::Lock lock_;
 
@@ -168,6 +181,9 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   // WARNING: |ChannelEndpointClient| methods must not be called under |lock_|.
   // Thus to make such a call, a reference must first be taken under |lock_| and
   // the lock released.
+  // WARNING: Beware of interactions with |ReplaceClient()|. By the time the
+  // call is made, the client may have changed. This must be detected and dealt
+  // with.
   scoped_refptr<ChannelEndpointClient> client_;
   unsigned client_port_;
 
@@ -177,6 +193,9 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   Channel* channel_;
   ChannelEndpointId local_id_;
   ChannelEndpointId remote_id_;
+  // This distinguishes the two cases of |channel| being null: not yet attached
+  // versus detached.
+  bool is_detached_from_channel_;
 
   // This queue is used before we're running on a channel and ready to send
   // messages to the channel.

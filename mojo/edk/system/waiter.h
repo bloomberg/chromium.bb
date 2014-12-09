@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "mojo/edk/system/awakable.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/types.h"
 
@@ -20,7 +21,7 @@ namespace system {
 // under other locks, in particular, |Dispatcher::lock_|s, so |Waiter| methods
 // must never call out to other objects (in particular, |Dispatcher|s). This
 // class is thread-safe.
-class MOJO_SYSTEM_IMPL_EXPORT Waiter {
+class MOJO_SYSTEM_IMPL_EXPORT Waiter : public Awakable {
  public:
   Waiter();
   ~Waiter();
@@ -39,12 +40,12 @@ class MOJO_SYSTEM_IMPL_EXPORT Waiter {
   //     case |*context| is not modified.
   //
   // Usually, the context passed to |Awake()| will be the value passed to
-  // |Dispatcher::AddWaiter()|, which is usually the index to the array of
+  // |Dispatcher::AddAwakable()|, which is usually the index to the array of
   // handles passed to |MojoWaitMany()| (or 0 for |MojoWait()|).
   //
   // Typical |Awake()| results are:
   //   - |MOJO_RESULT_OK| if one of the flags passed to
-  //     |MojoWait()|/|MojoWaitMany()| (hence |Dispatcher::AddWaiter()|) was
+  //     |MojoWait()|/|MojoWaitMany()| (hence |Dispatcher::AddAwakable()|) was
   //     satisfied;
   //   - |MOJO_RESULT_CANCELLED| if a handle (on which
   //     |MojoWait()|/|MojoWaitMany()| was called) was closed (hence the
@@ -57,7 +58,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Waiter {
 
   // Wake the waiter up with the given result and context (or no-op if it's been
   // woken up already).
-  void Awake(MojoResult result, uint32_t context);
+  void Awake(MojoResult result, uintptr_t context) override;
 
  private:
   base::ConditionVariable cv_;  // Associated to |lock_|.
@@ -67,10 +68,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Waiter {
 #endif
   bool awoken_;
   MojoResult awake_result_;
-  // This is a |uint32_t| because we really only need to store an index (for
-  // |MojoWaitMany()|). But in tests, it's convenient to use this for other
-  // purposes (e.g., to distinguish between different wake-up reasons).
-  uint32_t awake_context_;
+  uintptr_t awake_context_;
 
   DISALLOW_COPY_AND_ASSIGN(Waiter);
 };

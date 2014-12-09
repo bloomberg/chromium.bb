@@ -17,7 +17,7 @@ source_set("network") {
     "//mojo/application",
     "//mojo/common",
     "//mojo/environment:chromium",
-    "//mojo/public/c/system:for_component",
+    "//mojo/public/c/system",
     "//mojo/public/cpp/system",
     "//mojo/services/public/interfaces/network",
   ]

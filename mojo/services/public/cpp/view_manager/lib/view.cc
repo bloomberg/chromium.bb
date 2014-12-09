@@ -4,10 +4,13 @@
 
 #include "mojo/services/public/cpp/view_manager/view.h"
 
+#include <set>
+
 #include "mojo/public/cpp/application/service_provider_impl.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_client_impl.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
+#include "mojo/services/public/cpp/view_manager/view_tracker.h"
 
 namespace mojo {
 
@@ -225,7 +228,7 @@ void View::SetVisible(bool value) {
     static_cast<ViewManagerClientImpl*>(manager_)->SetVisible(id_, value);
   FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewVisibilityChanging(this));
   visible_ = value;
-  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewVisibilityChanged(this));
+  NotifyViewVisibilityChanged(this);
 }
 
 void View::SetSharedProperty(const std::string& name,
@@ -501,6 +504,54 @@ void View::LocalSetDrawn(bool value) {
   FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDrawnChanging(this));
   drawn_ = value;
   FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewDrawnChanged(this));
+}
+
+void View::NotifyViewVisibilityChanged(View* target) {
+  if (!NotifyViewVisibilityChangedDown(target)) {
+    return; // |this| has been deleted.
+  }
+  NotifyViewVisibilityChangedUp(target);
+}
+
+bool View::NotifyViewVisibilityChangedAtReceiver(View* target) {
+  // |this| may be deleted during a call to OnViewVisibilityChanged() on one
+  // of the observers. We create an local observer for that. In that case we
+  // exit without further access to any members.
+  ViewTracker tracker;
+  tracker.Add(this);
+  FOR_EACH_OBSERVER(ViewObserver, observers_, OnViewVisibilityChanged(target));
+  return tracker.Contains(this);
+}
+
+bool View::NotifyViewVisibilityChangedDown(View* target) {
+  if (!NotifyViewVisibilityChangedAtReceiver(target))
+    return false; // |this| was deleted.
+  std::set<const View*> child_already_processed;
+  bool child_destroyed = false;
+  do {
+    child_destroyed = false;
+    for (View::Children::const_iterator it = children_.begin();
+         it != children_.end(); ++it) {
+      if (!child_already_processed.insert(*it).second)
+        continue;
+      if (!(*it)->NotifyViewVisibilityChangedDown(target)) {
+        // |*it| was deleted, |it| is invalid and |children_| has changed.  We
+        // exit the current for-loop and enter a new one.
+        child_destroyed = true;
+        break;
+      }
+    }
+  } while (child_destroyed);
+  return true;
+}
+
+void View::NotifyViewVisibilityChangedUp(View* target) {
+  // Start with the parent as we already notified |this|
+  // in NotifyViewVisibilityChangedDown.
+  for (View* view = parent(); view; view = view->parent()) {
+    bool ret = view->NotifyViewVisibilityChangedAtReceiver(target);
+    DCHECK(ret);
+  }
 }
 
 }  // namespace mojo

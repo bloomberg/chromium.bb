@@ -24,7 +24,7 @@ TEST(SimplePlatformSharedBufferTest, Basic) {
   // Make some memory.
   scoped_refptr<SimplePlatformSharedBuffer> buffer(
       SimplePlatformSharedBuffer::Create(kNumBytes));
-  ASSERT_TRUE(buffer.get());
+  ASSERT_TRUE(buffer);
 
   // Map it all, scribble some stuff, and then unmap it.
   {
@@ -100,7 +100,7 @@ TEST(SimplePlatformSharedBufferTest, Basic) {
 TEST(SimplePlatformSharedBufferTest, InvalidMappings) {
   scoped_refptr<SimplePlatformSharedBuffer> buffer(
       SimplePlatformSharedBuffer::Create(100));
-  ASSERT_TRUE(buffer.get());
+  ASSERT_TRUE(buffer);
 
   // Zero length not allowed.
   EXPECT_FALSE(buffer->Map(0, 0));
@@ -133,7 +133,7 @@ TEST(SimplePlatformSharedBufferTest, TooBig) {
       SimplePlatformSharedBuffer::Create(kMaxSizeT));
   // But, assuming |sizeof(size_t) == sizeof(void*)|, mapping all of it should
   // always fail.
-  if (buffer.get())
+  if (buffer)
     EXPECT_FALSE(buffer->Map(0, kMaxSizeT));
 }
 

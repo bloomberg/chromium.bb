@@ -118,7 +118,7 @@ TEST_F(SharedBufferDispatcherTest, CreateAndMapBuffer) {
                                 platform_support(),
                                 SharedBufferDispatcher::kDefaultCreateOptions,
                                 100, &dispatcher));
-  ASSERT_TRUE(dispatcher.get());
+  ASSERT_TRUE(dispatcher);
   EXPECT_EQ(Dispatcher::kTypeSharedBuffer, dispatcher->GetType());
 
   // Make a couple of mappings.
@@ -165,7 +165,7 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandle) {
   scoped_refptr<Dispatcher> dispatcher2;
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher1->DuplicateBufferHandle(
                                 NullUserPointer(), &dispatcher2));
-  ASSERT_TRUE(dispatcher2.get());
+  ASSERT_TRUE(dispatcher2);
   EXPECT_EQ(Dispatcher::kTypeSharedBuffer, dispatcher2->GetType());
 
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher1->Close());
@@ -193,7 +193,7 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsValid) {
     scoped_refptr<Dispatcher> dispatcher2;
     EXPECT_EQ(MOJO_RESULT_OK, dispatcher1->DuplicateBufferHandle(
                                   MakeUserPointer(&options[i]), &dispatcher2));
-    ASSERT_TRUE(dispatcher2.get());
+    ASSERT_TRUE(dispatcher2);
     EXPECT_EQ(Dispatcher::kTypeSharedBuffer, dispatcher2->GetType());
     EXPECT_EQ(MOJO_RESULT_OK, dispatcher2->Close());
   }
@@ -216,7 +216,7 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsInvalid) {
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
               dispatcher1->DuplicateBufferHandle(MakeUserPointer(&options),
                                                  &dispatcher2));
-    EXPECT_FALSE(dispatcher2.get());
+    EXPECT_FALSE(dispatcher2);
   }
 
   // Unknown |flags|.
@@ -227,7 +227,7 @@ TEST_F(SharedBufferDispatcherTest, DuplicateBufferHandleOptionsInvalid) {
     EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
               dispatcher1->DuplicateBufferHandle(MakeUserPointer(&options),
                                                  &dispatcher2));
-    EXPECT_FALSE(dispatcher2.get());
+    EXPECT_FALSE(dispatcher2);
   }
 
   EXPECT_EQ(MOJO_RESULT_OK, dispatcher1->Close());
@@ -241,14 +241,14 @@ TEST_F(SharedBufferDispatcherTest, CreateInvalidNumBytes) {
       SharedBufferDispatcher::Create(
           platform_support(), SharedBufferDispatcher::kDefaultCreateOptions,
           std::numeric_limits<uint64_t>::max(), &dispatcher));
-  EXPECT_FALSE(dispatcher.get());
+  EXPECT_FALSE(dispatcher);
 
   // Zero size.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             SharedBufferDispatcher::Create(
                 platform_support(),
                 SharedBufferDispatcher::kDefaultCreateOptions, 0, &dispatcher));
-  EXPECT_FALSE(dispatcher.get());
+  EXPECT_FALSE(dispatcher);
 }
 
 TEST_F(SharedBufferDispatcherTest, MapBufferInvalidArguments) {

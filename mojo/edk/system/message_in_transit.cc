@@ -127,7 +127,7 @@ MessageInTransit::MessageInTransit(const View& message_view)
 MessageInTransit::~MessageInTransit() {
   if (dispatchers_) {
     for (size_t i = 0; i < dispatchers_->size(); i++) {
-      if (!(*dispatchers_)[i].get())
+      if (!(*dispatchers_)[i])
         continue;
 
       DCHECK((*dispatchers_)[i]->HasOneRef());
@@ -166,7 +166,7 @@ void MessageInTransit::SetDispatchers(
   dispatchers_ = dispatchers.Pass();
 #ifndef NDEBUG
   for (size_t i = 0; i < dispatchers_->size(); i++)
-    DCHECK(!(*dispatchers_)[i].get() || (*dispatchers_)[i]->HasOneRef());
+    DCHECK(!(*dispatchers_)[i] || (*dispatchers_)[i]->HasOneRef());
 #endif
 }
 

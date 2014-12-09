@@ -154,6 +154,18 @@ class View {
   void LocalSetBounds(const Rect& old_bounds, const Rect& new_bounds);
   void LocalSetDrawn(bool drawn);
 
+  // Methods implementing visibility change notifications. See ViewObserver
+  // for more details.
+  void NotifyViewVisibilityChanged(View* target);
+  // Notifies this view's observers. Returns false if |this| was deleted during
+  // the call (by an observer), otherwise true.
+  bool NotifyViewVisibilityChangedAtReceiver(View* target);
+  // Notifies this view and its child hierarchy. Returns false if |this| was
+  // deleted during the call (by an observer), otherwise true.
+  bool NotifyViewVisibilityChangedDown(View* target);
+  // Notifies this view and its parent hierarchy.
+  void NotifyViewVisibilityChangedUp(View* target);
+
   ViewManager* manager_;
   Id id_;
   View* parent_;

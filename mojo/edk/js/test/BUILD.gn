@@ -4,17 +4,17 @@
 
 test("js_unittests") {
   deps = [
+    "../../js",
+    "../../js:js_unittests",
+    "../../test:run_all_unittests",
+    "../../test:test_support",
+    "../../../environment:chromium",
+    "../../../public/cpp/environment",
+    "../../../public/cpp/system",
+    "../../../public/cpp/utility",
+    "../../../public/interfaces/bindings/tests:test_interfaces",
     "//base",
     "//gin:gin_test",
-    "//mojo/edk/js",
-    "//mojo/edk/js:js_unittests",
-    "//mojo/edk/test:run_all_unittests",
-    "//mojo/edk/test:test_support",
-    "//mojo/public/cpp/environment",
-    "//mojo/public/cpp/system",
-    "//mojo/public/cpp/utility",
-    "//mojo/environment:chromium",
-    "//mojo/public/interfaces/bindings/tests:test_interfaces",
   ]
 
   sources = [
@@ -24,15 +24,15 @@ test("js_unittests") {
 
 test("js_integration_tests") {
   deps = [
+    "../../js",
+    "../../js/tests:js_to_cpp_tests",
+    "../../test:run_all_unittests",
+    "../../test:test_support",
+    "../../../environment:chromium",
+    "../../../public/cpp/bindings",
+    "../../../public/interfaces/bindings/tests:test_interfaces",
     "//base",
     "//gin:gin_test",
-    "//mojo/edk/js",
-    "//mojo/edk/js/tests:js_to_cpp_tests",
-    "//mojo/edk/test:run_all_unittests",
-    "//mojo/edk/test:test_support",
-    "//mojo/public/cpp/bindings",
-    "//mojo/environment:chromium",
-    "//mojo/public/interfaces/bindings/tests:test_interfaces",
   ]
 
   sources = [

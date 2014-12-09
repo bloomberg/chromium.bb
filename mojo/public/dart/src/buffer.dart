@@ -11,7 +11,11 @@ class _MojoSharedBufferNatives {
   static List Duplicate(int buffer_handle, int flags)
       native "MojoSharedBuffer_Duplicate";
 
-  static List Map(int buffer_handle, int offset, int num_bytes, int flags)
+  static List Map(MojoSharedBuffer buffer,
+                  int buffer_handle,
+                  int offset,
+                  int num_bytes,
+                  int flags)
       native "MojoSharedBuffer_Map";
 
   static int Unmap(ByteData buffer)
@@ -66,7 +70,7 @@ class MojoSharedBuffer {
     MojoSharedBuffer dupe = new MojoSharedBuffer._();
     dupe.status = r;
     dupe.handle = new RawMojoHandle(result[1]);
-    dupe.mapping = msb.mapping;
+    dupe.mapping = null;  // The buffer is not mapped in the duplicate.
     return dupe;
   }
 
@@ -87,7 +91,7 @@ class MojoSharedBuffer {
       return status;
     }
     List result = _MojoSharedBufferNatives.Map(
-        handle.h, offset, num_bytes, flags);
+        this, handle.h, offset, num_bytes, flags);
     if (result == null) {
       status = MojoResult.INVALID_ARGUMENT;
       return status;

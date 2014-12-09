@@ -24,6 +24,13 @@ namespace mojo {
 namespace embedder {
 namespace {
 
+const MojoHandleSignals kSignalReadadableWritable =
+    MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE;
+
+const MojoHandleSignals kSignalAll = MOJO_HANDLE_SIGNAL_READABLE |
+                                     MOJO_HANDLE_SIGNAL_WRITABLE |
+                                     MOJO_HANDLE_SIGNAL_PEER_CLOSED;
+
 class ScopedTestChannel {
  public:
   // Creates a channel that lives on a given I/O thread (determined by the given
@@ -123,8 +130,12 @@ TEST_F(EmbedderTest, ChannelsBasic) {
                                0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Now wait for the other side to become readable.
-    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE));
+    MojoHandleSignalsState state;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              MojoNewWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                          MOJO_DEADLINE_INDEFINITE, &state));
+    EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
+    EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
     char buffer[1000] = {};
     uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
@@ -188,8 +199,12 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
                                nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Wait for |client_mp| to become readable.
-    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE));
+    MojoHandleSignalsState state;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              MojoNewWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                          MOJO_DEADLINE_INDEFINITE, &state));
+    EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
+    EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
     // Read a message from |client_mp|.
     char buffer[1000] = {};
@@ -206,8 +221,10 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
     h1 = handles[0];
 
     // Wait for |h1| to become readable.
-    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(h1, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoNewWait(h1, MOJO_HANDLE_SIGNAL_READABLE,
+                                          MOJO_DEADLINE_INDEFINITE, &state));
+    EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
+    EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
     // Read a message from |h1|.
     memset(buffer, 0, sizeof(buffer));
@@ -222,8 +239,10 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
     EXPECT_EQ(0u, num_handles);
 
     // Wait for |h1| to become readable (again).
-    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(h1, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoNewWait(h1, MOJO_HANDLE_SIGNAL_READABLE,
+                                          MOJO_DEADLINE_INDEFINITE, &state));
+    EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
+    EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
     // Read the second message from |h1|.
     memset(buffer, 0, sizeof(buffer));
@@ -242,8 +261,10 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
                          nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Wait for |h0| to become readable.
-    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(h0, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoNewWait(h0, MOJO_HANDLE_SIGNAL_READABLE,
+                                          MOJO_DEADLINE_INDEFINITE, &state));
+    EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
+    EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
     // Read a message from |h0|.
     memset(buffer, 0, sizeof(buffer));
@@ -282,6 +303,7 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
 //  10.                          (close)
 //  11.                                      (wait/cl.)
 //  12.                                                  (wait/cl.)
+
 #if defined(OS_ANDROID)
 // Android multi-process tests are not executing the new process. This is flaky.
 #define MAYBE_MultiprocessChannels DISABLED_MultiprocessChannels
@@ -313,8 +335,13 @@ TEST_F(EmbedderTest, MAYBE_MultiprocessChannels) {
     // |server_mp|), we die with a fatal error in |Channel::HandleLocalError()|.
 
     // 2. Read a message from |server_mp|.
-    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(server_mp, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE));
+    MojoHandleSignalsState state;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              MojoNewWait(server_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                          MOJO_DEADLINE_INDEFINITE, &state));
+    EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
+    EXPECT_EQ(kSignalAll, state.satisfiable_signals);
+
     char buffer[1000] = {};
     uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
     EXPECT_EQ(MOJO_RESULT_OK,
@@ -346,8 +373,11 @@ TEST_F(EmbedderTest, MAYBE_MultiprocessChannels) {
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(server_mp));
 
     // 9. Read a message from |mp0|, which should have |mp2| attached.
-    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(mp0, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoNewWait(mp0, MOJO_HANDLE_SIGNAL_READABLE,
+                                          MOJO_DEADLINE_INDEFINITE, &state));
+    EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
+    EXPECT_EQ(kSignalAll, state.satisfiable_signals);
+
     memset(buffer, 0, sizeof(buffer));
     num_bytes = static_cast<uint32_t>(sizeof(buffer));
     MojoHandle mp2 = MOJO_HANDLE_INVALID;
@@ -362,8 +392,13 @@ TEST_F(EmbedderTest, MAYBE_MultiprocessChannels) {
     EXPECT_NE(mp2, MOJO_HANDLE_INVALID);
 
     // 7. Read a message from |mp2|.
-    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(mp2, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoNewWait(mp2, MOJO_HANDLE_SIGNAL_READABLE,
+                                          MOJO_DEADLINE_INDEFINITE, &state));
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+              state.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+              state.satisfiable_signals);
+
     memset(buffer, 0, sizeof(buffer));
     num_bytes = static_cast<uint32_t>(sizeof(buffer));
     EXPECT_EQ(MOJO_RESULT_OK,
@@ -380,8 +415,11 @@ TEST_F(EmbedderTest, MAYBE_MultiprocessChannels) {
 // TODO(vtl): crbug.com/351768
 #if 0
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              MojoWait(mp2, MOJO_HANDLE_SIGNAL_READABLE,
-                       MOJO_DEADLINE_INDEFINITE));
+              MojoNewWait(mp2, MOJO_HANDLE_SIGNAL_READABLE,
+                       MOJO_DEADLINE_INDEFINITE,
+                       &state));
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_NONE, state.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_NONE, state.satisfiable_signals);
 #endif
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(mp2));
   }
@@ -407,8 +445,13 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
     CHECK(client_channel.channel_info() != nullptr);
 
     // 1. Read the first message from |client_mp|.
-    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE));
+    MojoHandleSignalsState state;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              MojoNewWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                          MOJO_DEADLINE_INDEFINITE, &state));
+    EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
+    EXPECT_EQ(kSignalAll, state.satisfiable_signals);
+
     char buffer[1000] = {};
     uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
     EXPECT_EQ(MOJO_RESULT_OK,
@@ -426,8 +469,15 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
                                0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // 4. Read a message from |client_mp|, which should have |mp1| attached.
-    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK,
+              MojoNewWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                          MOJO_DEADLINE_INDEFINITE, &state));
+    // The other end of the handle may or may not be closed at this point, so we
+    // can't test MOJO_HANDLE_SIGNAL_WRITABLE or MOJO_HANDLE_SIGNAL_PEER_CLOSED.
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE,
+              state.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE,
+              state.satisfiable_signals & MOJO_HANDLE_SIGNAL_READABLE);
     // TODO(vtl): If the scope were to end here (and |client_mp| closed), we'd
     // die (again due to |Channel::HandleLocalError()|).
     memset(buffer, 0, sizeof(buffer));
@@ -470,8 +520,11 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
     mp2 = MOJO_HANDLE_INVALID;
 
     // 3. Read a message from |mp1|.
-    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(mp1, MOJO_HANDLE_SIGNAL_READABLE,
-                                       MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoNewWait(mp1, MOJO_HANDLE_SIGNAL_READABLE,
+                                          MOJO_DEADLINE_INDEFINITE, &state));
+    EXPECT_EQ(kSignalReadadableWritable, state.satisfied_signals);
+    EXPECT_EQ(kSignalAll, state.satisfiable_signals);
+
     memset(buffer, 0, sizeof(buffer));
     num_bytes = static_cast<uint32_t>(sizeof(buffer));
     EXPECT_EQ(MOJO_RESULT_OK,
@@ -482,9 +535,11 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
     EXPECT_STREQ(kFoo, buffer);
 
     // 11. Wait on |mp1| (which should eventually fail) and then close it.
-    EXPECT_EQ(
-        MOJO_RESULT_FAILED_PRECONDITION,
-        MojoWait(mp1, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+              MojoNewWait(mp1, MOJO_HANDLE_SIGNAL_READABLE,
+                          MOJO_DEADLINE_INDEFINITE, &state));
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfiable_signals);
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(mp1));
   }
 

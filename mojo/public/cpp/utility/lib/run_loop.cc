@@ -37,7 +37,7 @@ struct RunLoop::RunState {
 };
 
 RunLoop::RunLoop()
-    : run_state_(NULL), next_handler_id_(0), next_sequence_number_(0) {
+    : run_state_(nullptr), next_handler_id_(0), next_sequence_number_(0) {
   assert(!current());
   current_run_loop.Set(this);
 }
@@ -45,7 +45,7 @@ RunLoop::RunLoop()
 RunLoop::~RunLoop() {
   assert(current() == this);
   NotifyHandlers(MOJO_RESULT_ABORTED, IGNORE_DEADLINE);
-  current_run_loop.Set(NULL);
+  current_run_loop.Set(nullptr);
 }
 
 // static

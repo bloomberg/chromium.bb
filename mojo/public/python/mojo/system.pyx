@@ -5,7 +5,6 @@
 # distutils language = c++
 
 cimport c_core
-cimport c_environment
 
 
 from cpython.buffer cimport PyBUF_CONTIG
@@ -21,6 +20,8 @@ from libc.stdint cimport int32_t, int64_t, uint32_t, uint64_t, uintptr_t
 import ctypes
 import threading
 
+import mojo.system_impl
+
 def SetSystemThunks(system_thunks_as_object):
   """Bind the basic Mojo Core functions.
 
@@ -29,6 +30,7 @@ def SetSystemThunks(system_thunks_as_object):
   cdef const c_core.MojoSystemThunks* system_thunks = (
       <const c_core.MojoSystemThunks*><uintptr_t>system_thunks_as_object)
   c_core.MojoSetSystemThunks(system_thunks)
+  mojo.system_impl.SetSystemThunks(system_thunks_as_object)
 
 HANDLE_INVALID = c_core.MOJO_HANDLE_INVALID
 RESULT_OK = c_core.MOJO_RESULT_OK
@@ -347,7 +349,7 @@ cdef class Handle(object):
     cdef c_core.MojoHandle handle = self._mojo_handle
     cdef c_core.MojoHandleSignals csignals = signals
     cdef c_core.MojoDeadline cdeadline = deadline
-    cdef c_environment.MojoAsyncWaitID wait_id = _ASYNC_WAITER.AsyncWait(
+    wait_id = _ASYNC_WAITER.AsyncWait(
         handle,
         csignals,
         cdeadline,
@@ -734,19 +736,34 @@ class DuplicateSharedBufferOptions(object):
 _RUN_LOOPS = threading.local()
 
 
-cdef class RunLoop(object):
+class RunLoop(object):
   """RunLoop to use when using asynchronous operations on handles."""
 
-  cdef c_environment.CRunLoop* c_run_loop
-
   def __init__(self):
-    assert not <uintptr_t>(c_environment.CRunLoopCurrent())
-    self.c_run_loop = new c_environment.CRunLoop()
+    self.__run_loop = mojo.system_impl.RunLoop()
     _RUN_LOOPS.loop = id(self)
 
-  def __dealloc__(self):
+  def __del__(self):
     del _RUN_LOOPS.loop
-    del self.c_run_loop
+
+  def Run(self):
+    """Run the runloop until Quit is called."""
+    return self.__run_loop.Run()
+
+  def RunUntilIdle(self):
+    """Run the runloop until Quit is called or no operation is waiting."""
+    return self.__run_loop.RunUntilIdle()
+
+  def Quit(self):
+    """Quit the runloop."""
+    return self.__run_loop.Quit()
+
+  def PostDelayedTask(self, runnable, delay=0):
+    """
+    Post a task on the runloop. This must be called from the thread owning the
+    runloop.
+    """
+    return self.__run_loop.PostDelayedTask(runnable, delay)
 
   @staticmethod
   def Current():
@@ -754,26 +771,5 @@ cdef class RunLoop(object):
       return ctypes.cast(_RUN_LOOPS.loop, ctypes.py_object).value
     return None
 
-  def Run(self):
-    """Run the runloop until Quit is called."""
-    self.c_run_loop.Run()
 
-  def RunUntilIdle(self):
-    """Run the runloop until Quit is called or no operation is waiting."""
-    self.c_run_loop.RunUntilIdle()
-
-  def Quit(self):
-    """Quit the runloop."""
-    self.c_run_loop.Quit()
-
-  def PostDelayedTask(self, runnable, delay=0):
-    """
-    Post a task on the runloop. This must be called from the thread owning the
-    runloop.
-    """
-    cdef c_environment.CClosure closure = c_environment.BuildClosure(runnable)
-    self.c_run_loop.PostDelayedTask(closure, delay)
-
-
-cdef c_environment.CEnvironment* _ENVIRONMENT = new c_environment.CEnvironment()
-cdef c_environment.PythonAsyncWaiter* _ASYNC_WAITER = new c_environment.PythonAsyncWaiter()
+_ASYNC_WAITER = mojo.system_impl.ASYNC_WAITER

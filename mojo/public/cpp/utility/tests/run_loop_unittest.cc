@@ -71,8 +71,7 @@ TEST_F(RunLoopTest, ExitsWithNoHandles) {
 
 class RemoveOnReadyRunLoopHandler : public TestRunLoopHandler {
  public:
-  RemoveOnReadyRunLoopHandler() : run_loop_(NULL) {
-  }
+  RemoveOnReadyRunLoopHandler() : run_loop_(nullptr) {}
   ~RemoveOnReadyRunLoopHandler() override {}
 
   void set_run_loop(RunLoop* run_loop) { run_loop_ = run_loop; }
@@ -107,8 +106,7 @@ TEST_F(RunLoopTest, HandleReady) {
 
 class QuitOnReadyRunLoopHandler : public TestRunLoopHandler {
  public:
-  QuitOnReadyRunLoopHandler() : run_loop_(NULL) {
-  }
+  QuitOnReadyRunLoopHandler() : run_loop_(nullptr) {}
   ~QuitOnReadyRunLoopHandler() override {}
 
   void set_run_loop(RunLoop* run_loop) { run_loop_ = run_loop; }
@@ -143,8 +141,7 @@ TEST_F(RunLoopTest, QuitFromReady) {
 
 class QuitOnErrorRunLoopHandler : public TestRunLoopHandler {
  public:
-  QuitOnErrorRunLoopHandler() : run_loop_(NULL) {
-  }
+  QuitOnErrorRunLoopHandler() : run_loop_(nullptr) {}
   ~QuitOnErrorRunLoopHandler() override {}
 
   void set_run_loop(RunLoop* run_loop) { run_loop_ = run_loop; }
@@ -194,8 +191,7 @@ TEST_F(RunLoopTest, Destruction) {
 
 class RemoveManyRunLoopHandler : public TestRunLoopHandler {
  public:
-  RemoveManyRunLoopHandler() : run_loop_(NULL) {
-  }
+  RemoveManyRunLoopHandler() : run_loop_(nullptr) {}
   ~RemoveManyRunLoopHandler() override {}
 
   void set_run_loop(RunLoop* run_loop) { run_loop_ = run_loop; }
@@ -246,8 +242,7 @@ TEST_F(RunLoopTest, MultipleHandleDestruction) {
 
 class AddHandlerOnErrorHandler : public TestRunLoopHandler {
  public:
-  AddHandlerOnErrorHandler() : run_loop_(NULL) {
-  }
+  AddHandlerOnErrorHandler() : run_loop_(nullptr) {}
   ~AddHandlerOnErrorHandler() override {}
 
   void set_run_loop(RunLoop* run_loop) { run_loop_ = run_loop; }
@@ -282,12 +277,12 @@ TEST_F(RunLoopTest, AddHandlerOnError) {
 }
 
 TEST_F(RunLoopTest, Current) {
-  EXPECT_TRUE(RunLoop::current() == NULL);
+  EXPECT_TRUE(RunLoop::current() == nullptr);
   {
     RunLoop run_loop;
     EXPECT_EQ(&run_loop, RunLoop::current());
   }
-  EXPECT_TRUE(RunLoop::current() == NULL);
+  EXPECT_TRUE(RunLoop::current() == nullptr);
 }
 
 class NestingRunLoopHandler : public TestRunLoopHandler {
@@ -296,8 +291,8 @@ class NestingRunLoopHandler : public TestRunLoopHandler {
   static const char kSignalMagic;
 
   NestingRunLoopHandler()
-      : run_loop_(NULL),
-        pipe_(NULL),
+      : run_loop_(nullptr),
+        pipe_(nullptr),
         depth_(0),
         reached_depth_limit_(false) {}
 
@@ -335,9 +330,9 @@ class NestingRunLoopHandler : public TestRunLoopHandler {
 
   void WriteSignal() {
     char write_byte = kSignalMagic;
-    MojoResult write_result = WriteMessageRaw(
-        pipe_->handle1.get(),
-        &write_byte, 1, NULL, 0, MOJO_WRITE_MESSAGE_FLAG_NONE);
+    MojoResult write_result =
+        WriteMessageRaw(pipe_->handle1.get(), &write_byte, 1, nullptr, 0,
+                        MOJO_WRITE_MESSAGE_FLAG_NONE);
     EXPECT_EQ(write_result, MOJO_RESULT_OK);
   }
 
@@ -345,10 +340,9 @@ class NestingRunLoopHandler : public TestRunLoopHandler {
     char read_byte = 0;
     uint32_t bytes_read = 1;
     uint32_t handles_read = 0;
-    MojoResult read_result = ReadMessageRaw(
-        pipe_->handle0.get(),
-        &read_byte, &bytes_read, NULL, &handles_read,
-        MOJO_READ_MESSAGE_FLAG_NONE);
+    MojoResult read_result =
+        ReadMessageRaw(pipe_->handle0.get(), &read_byte, &bytes_read, nullptr,
+                       &handles_read, MOJO_READ_MESSAGE_FLAG_NONE);
     EXPECT_EQ(read_result, MOJO_RESULT_OK);
     EXPECT_EQ(read_byte, kSignalMagic);
   }

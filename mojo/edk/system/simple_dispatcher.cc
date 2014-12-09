@@ -17,16 +17,16 @@ SimpleDispatcher::~SimpleDispatcher() {
 
 void SimpleDispatcher::HandleSignalsStateChangedNoLock() {
   lock().AssertAcquired();
-  waiter_list_.AwakeWaitersForStateChange(GetHandleSignalsStateImplNoLock());
+  awakable_list_.AwakeForStateChange(GetHandleSignalsStateImplNoLock());
 }
 
-void SimpleDispatcher::CancelAllWaitersNoLock() {
+void SimpleDispatcher::CancelAllAwakablesNoLock() {
   lock().AssertAcquired();
-  waiter_list_.CancelAllWaiters();
+  awakable_list_.CancelAll();
 }
 
-MojoResult SimpleDispatcher::AddWaiterImplNoLock(
-    Waiter* waiter,
+MojoResult SimpleDispatcher::AddAwakableImplNoLock(
+    Awakable* awakable,
     MojoHandleSignals signals,
     uint32_t context,
     HandleSignalsState* signals_state) {
@@ -44,15 +44,15 @@ MojoResult SimpleDispatcher::AddWaiterImplNoLock(
     return MOJO_RESULT_FAILED_PRECONDITION;
   }
 
-  waiter_list_.AddWaiter(waiter, signals, context);
+  awakable_list_.Add(awakable, signals, context);
   return MOJO_RESULT_OK;
 }
 
-void SimpleDispatcher::RemoveWaiterImplNoLock(
-    Waiter* waiter,
+void SimpleDispatcher::RemoveAwakableImplNoLock(
+    Awakable* awakable,
     HandleSignalsState* signals_state) {
   lock().AssertAcquired();
-  waiter_list_.RemoveWaiter(waiter);
+  awakable_list_.Remove(awakable);
   if (signals_state)
     *signals_state = GetHandleSignalsStateImplNoLock();
 }

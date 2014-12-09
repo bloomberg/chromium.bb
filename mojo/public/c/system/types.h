@@ -165,7 +165,14 @@ const MojoHandleSignals MOJO_HANDLE_SIGNAL_PEER_CLOSED = 1 << 2;
 #define MOJO_HANDLE_SIGNAL_PEER_CLOSED ((MojoHandleSignals)1 << 2)
 #endif
 
-// TODO(vtl): Add out parameters with this to MojoWait/MojoWaitMany.
+// |MojoHandleSignalsState|: Returned by wait functions to indicate the
+// signaling state of handles. Members are as follows:
+//   - |satisfied signals|: Bitmask of signals that were satisfied at some time
+//         before the call returned.
+//   - |satisfiable signals|: These are the signals that are possible to
+//         satisfy. For example, if the return value was
+//         |MOJO_RESULT_FAILED_PRECONDITION|, you can use this field to
+//         determine which, if any, of the signals can still be satisfied.
 // Note: This struct is not extensible (and only has 32-bit quantities), so it's
 // 32-bit-aligned.
 MOJO_STATIC_ASSERT(MOJO_ALIGNOF(int32_t) == 4, "int32_t has weird alignment");

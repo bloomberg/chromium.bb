@@ -37,10 +37,14 @@
     'embedder/scoped_platform_handle.h',
     'embedder/simple_platform_shared_buffer.cc',
     'embedder/simple_platform_shared_buffer.h',
+    'embedder/simple_platform_shared_buffer_android.cc',
     'embedder/simple_platform_shared_buffer_posix.cc',
     'embedder/simple_platform_shared_buffer_win.cc',
     'embedder/simple_platform_support.cc',
     'embedder/simple_platform_support.h',
+    'system/awakable.h',
+    'system/awakable_list.cc',
+    'system/awakable_list.h',
     'system/channel.cc',
     'system/channel.h',
     'system/channel_endpoint.cc',
@@ -64,6 +68,8 @@
     'system/data_pipe_producer_dispatcher.h',
     'system/dispatcher.cc',
     'system/dispatcher.h',
+    'system/endpoint_relayer.cc',
+    'system/endpoint_relayer.h',
     'system/handle_signals_state.h',
     'system/handle_table.cc',
     'system/handle_table.h',
@@ -102,8 +108,6 @@
     'system/transport_data.h',
     'system/waiter.cc',
     'system/waiter.h',
-    'system/waiter_list.cc',
-    'system/waiter_list.h',
     # Test-only code:
     # TODO(vtl): It's a little unfortunate that these end up in the same
     # component as non-test-only code. In the static build, this code
@@ -115,4 +119,11 @@
     # Ensures that dependent projects import the core functions on Windows.
     'defines': ['MOJO_USE_SYSTEM_IMPL'],
   },
+  'conditions': [
+    ['OS=="android"', {
+      "dependencies": [
+        "<(DEPTH)/third_party/ashmem/ashmem.gyp:ashmem",
+      ],
+    }],
+  ],
 }

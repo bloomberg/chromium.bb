@@ -61,8 +61,18 @@ const char* MinimalCTest(void) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(NULL, &handle0, &handle1));
 
   signals = MOJO_HANDLE_SIGNAL_READABLE;
+  uint32_t result_index = 123;
+  struct MojoHandleSignalsState states[1];
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            MojoWaitMany(&handle0, &signals, 1, 1));
+            MojoNewWaitMany(&handle0, &signals, 1, 1, &result_index, states));
+
+  // "Deadline exceeded" doesn't apply to a single handle, so this should leave
+  // |result_index| untouched.
+  EXPECT_EQ(123u, result_index);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, states[0].satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
+            MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            states[0].satisfiable_signals);
 
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoWriteMessage(handle0,
@@ -72,9 +82,17 @@ const char* MinimalCTest(void) {
                              0u,
                              MOJO_WRITE_DATA_FLAG_NONE));
 
+  struct MojoHandleSignalsState state;
   EXPECT_EQ(
       MOJO_RESULT_OK,
-      MojoWait(handle1, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE));
+      MojoNewWait(handle1, MOJO_HANDLE_SIGNAL_READABLE,
+                  MOJO_DEADLINE_INDEFINITE, &state));
+
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
+            state.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
+            MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            state.satisfiable_signals);
 
   num_bytes = (uint32_t)sizeof(buffer);
   EXPECT_EQ(MOJO_RESULT_OK,
