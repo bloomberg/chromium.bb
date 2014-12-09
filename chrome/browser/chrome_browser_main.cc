@@ -439,14 +439,12 @@ void RegisterComponentsForUpdate() {
     // network.
     // For Chrome OS this registration is delayed until user login.
     g_browser_process->crl_set_fetcher()->StartInitialLoad(cus, path);
+    // Registration of the EV Whitelist component here is not necessary for:
+    // 1. Android: Because it currently does not have the EV indicator.
+    // 2. Chrome OS: On Chrome OS this registration is delayed until user login.
+    RegisterEVWhitelistComponent(cus, path);
 #endif
   }
-
-#if !defined(OS_ANDROID)
-  // Android does not currently have the EV indicator. No need to get the
-  // EV certs whitelist on Android, then.
-  RegisterEVWhitelistComponent(cus);
-#endif
 
 #if defined(OS_WIN)
   RegisterSwReporterComponent(cus, g_browser_process->local_state());

@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "chrome/browser/net/packed_ct_ev_whitelist.h"
 #include "components/component_updater/component_updater_paths.h"
@@ -23,6 +24,63 @@ using component_updater::ComponentUpdateService;
 namespace {
 const base::FilePath::CharType kCompressedEVWhitelistFileName[] =
     FILE_PATH_LITERAL("ev_hashes_whitelist.bin");
+
+base::FilePath GetEVWhitelistFilePath(const base::FilePath& base_path) {
+  return base_path.Append(kCompressedEVWhitelistFileName);
+}
+
+void UpdateNewWhitelistData(const base::FilePath& new_whitelist_file,
+                            const base::FilePath& stored_whitelist_path) {
+  VLOG(1) << "Reading new EV whitelist from file: "
+          << new_whitelist_file.value();
+  std::string compressed_list;
+  if (!base::ReadFileToString(new_whitelist_file, &compressed_list)) {
+    VLOG(1) << "Failed reading from " << new_whitelist_file.value();
+    return;
+  }
+
+  scoped_refptr<net::ct::EVCertsWhitelist> new_whitelist(
+      new PackedEVCertsWhitelist(compressed_list));
+  if (!new_whitelist->IsValid()) {
+    VLOG(1) << "Failed uncompressing EV certs whitelist.";
+    return;
+  }
+
+  if (base::IsValueInRangeForNumericType<int>(compressed_list.size())) {
+    const int list_size = base::checked_cast<int>(compressed_list.size());
+    if (base::WriteFile(stored_whitelist_path, compressed_list.data(),
+                        list_size) != list_size) {
+      LOG(WARNING) << "Failed to save new EV whitelist to file.";
+    }
+  }
+
+  SetEVCertsWhitelist(new_whitelist);
+}
+
+void DoInitialLoadFromDisk(const base::FilePath& stored_whitelist_path) {
+  if (stored_whitelist_path.empty()) {
+    return;
+  }
+
+  VLOG(1) << "Initial load: reading EV whitelist from file: "
+          << stored_whitelist_path.value();
+  std::string compressed_list;
+  if (!base::ReadFileToString(stored_whitelist_path, &compressed_list)) {
+    VLOG(1) << "Failed reading from " << stored_whitelist_path.value();
+    return;
+  }
+
+  scoped_refptr<net::ct::EVCertsWhitelist> new_whitelist(
+      new PackedEVCertsWhitelist(compressed_list));
+  if (!new_whitelist->IsValid()) {
+    VLOG(1) << "Failed uncompressing EV certs whitelist.";
+    return;
+  }
+
+  VLOG(1) << "EV whitelist: Sucessfully loaded initial data.";
+  SetEVCertsWhitelist(new_whitelist);
+}
+
 }  // namespace
 
 namespace component_updater {
@@ -36,7 +94,9 @@ const uint8_t kPublicKeySHA256[32] = {
 
 const char kEVWhitelistManifestName[] = "EV Certs CT whitelist";
 
-EVWhitelistComponentInstallerTraits::EVWhitelistComponentInstallerTraits() {
+EVWhitelistComponentInstallerTraits::EVWhitelistComponentInstallerTraits(
+    const base::FilePath& base_path)
+    : ev_whitelist_path_(GetEVWhitelistFilePath(base_path)) {
 }
 
 bool EVWhitelistComponentInstallerTraits::CanAutoUpdate() const {
@@ -68,7 +128,8 @@ void EVWhitelistComponentInstallerTraits::ComponentReady(
 
   const base::FilePath whitelist_file = GetInstalledPath(path);
   content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(&SetEVWhitelistFromFile, whitelist_file));
+      FROM_HERE,
+      base::Bind(&UpdateNewWhitelistData, whitelist_file, ev_whitelist_path_));
 }
 
 bool EVWhitelistComponentInstallerTraits::VerifyInstallation(
@@ -108,15 +169,22 @@ std::string EVWhitelistComponentInstallerTraits::GetName() const {
   return kEVWhitelistManifestName;
 }
 
-void RegisterEVWhitelistComponent(ComponentUpdateService* cus) {
+void RegisterEVWhitelistComponent(ComponentUpdateService* cus,
+                                  const base::FilePath& path) {
   VLOG(1) << "Registering EV whitelist component.";
 
   scoped_ptr<ComponentInstallerTraits> traits(
-      new EVWhitelistComponentInstallerTraits());
+      new EVWhitelistComponentInstallerTraits(path));
   // |cus| will take ownership of |installer| during installer->Register(cus).
   DefaultComponentInstaller* installer =
       new DefaultComponentInstaller(traits.Pass());
   installer->Register(cus);
+
+  if (!content::BrowserThread::PostBlockingPoolTask(
+          FROM_HERE,
+          base::Bind(&DoInitialLoadFromDisk, GetEVWhitelistFilePath(path)))) {
+    NOTREACHED();
+  }
 }
 
 }  // namespace component_updater

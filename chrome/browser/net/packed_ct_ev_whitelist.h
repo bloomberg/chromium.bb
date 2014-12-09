@@ -71,13 +71,9 @@ class PackedEVCertsWhitelist : public net::ct::EVCertsWhitelist {
   DISALLOW_COPY_AND_ASSIGN(PackedEVCertsWhitelist);
 };
 
-// Sets the EV certificate hashes whitelist from |compressed_whitelist_file|
-// in |ssl_config_service|, after uncompressing it.
-// If the data in |compressed_whitelist_file| is not a valid compressed
-// whitelist, does nothing.
-// As this function performs file operations, it should be called from a
-// blocking pool worker or a file worker.
+// Sets the EV certificate hashes whitelist in the SSLConfigService
+// to the provided |whitelist|, if valid. Otherwise, does nothing.
 // To set the new whitelist, this function dispatches a task to the IO thread.
-void SetEVWhitelistFromFile(const base::FilePath& compressed_whitelist_file);
+void SetEVCertsWhitelist(scoped_refptr<net::ct::EVCertsWhitelist> whitelist);
 
 #endif  // CHROME_BROWSER_NET_PACKED_CT_EV_WHITELIST_H_

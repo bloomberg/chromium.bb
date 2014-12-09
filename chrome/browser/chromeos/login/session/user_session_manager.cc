@@ -49,6 +49,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/component_updater/ev_whitelist_component_installer.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -970,6 +971,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     InitRlz(profile);
     InitializeCerts(profile);
     InitializeCRLSetFetcher(user);
+    InitializeEVCertificatesWhitelistComponent(user);
   }
 
   UpdateEasyUnlockKeys(user_context_);
@@ -1195,6 +1197,18 @@ void UserSessionManager::InitializeCRLSetFetcher(
     CRLSetFetcher* crl_set = g_browser_process->crl_set_fetcher();
     if (crl_set && cus)
       crl_set->StartInitialLoad(cus, path);
+  }
+}
+
+void UserSessionManager::InitializeEVCertificatesWhitelistComponent(
+    const user_manager::User* user) {
+  const std::string username_hash = user->username_hash();
+  component_updater::ComponentUpdateService* cus =
+      g_browser_process->component_updater();
+  if (!username_hash.empty() && cus) {
+    const base::FilePath path =
+        ProfileHelper::GetProfilePathByUserIdHash(username_hash);
+    RegisterEVWhitelistComponent(cus, path);
   }
 }
 

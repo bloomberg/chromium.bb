@@ -21,8 +21,9 @@ const uint8_t kCertHashLengthBits = 64;  // 8 bytes
 const uint8_t kCertHashLength = kCertHashLengthBits / 8;
 const uint64_t kGolombMParameterBits = 47;  // 2^47
 
-void SetNewEVWhitelistInSSLConfigService(
+void SetEVWhitelistInSSLConfigService(
     const scoped_refptr<net::ct::EVCertsWhitelist>& new_whitelist) {
+  VLOG(1) << "Setting new EV Certs whitelist.";
   net::SSLConfigService::SetEVCertsWhitelist(new_whitelist);
 }
 
@@ -37,24 +38,14 @@ int TruncatedHashesComparator(const void* v1, const void* v2) {
 }
 }  // namespace
 
-void SetEVWhitelistFromFile(const base::FilePath& compressed_whitelist_file) {
-  VLOG(1) << "Setting EV whitelist from file: "
-          << compressed_whitelist_file.value();
-  std::string compressed_list;
-  if (!base::ReadFileToString(compressed_whitelist_file, &compressed_list)) {
-    VLOG(1) << "Failed reading from " << compressed_whitelist_file.value();
-    return;
-  }
-
-  scoped_refptr<net::ct::EVCertsWhitelist> new_whitelist(
-      new PackedEVCertsWhitelist(compressed_list));
-  if (!new_whitelist->IsValid()) {
-    VLOG(1) << "Failed uncompressing EV certs whitelist.";
+void SetEVCertsWhitelist(scoped_refptr<net::ct::EVCertsWhitelist> whitelist) {
+  if (!whitelist->IsValid()) {
+    VLOG(1) << "EV Certs whitelist is not valid, not setting.";
     return;
   }
 
   base::Closure assign_cb =
-      base::Bind(SetNewEVWhitelistInSSLConfigService, new_whitelist);
+      base::Bind(SetEVWhitelistInSSLConfigService, whitelist);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE, assign_cb);
 }

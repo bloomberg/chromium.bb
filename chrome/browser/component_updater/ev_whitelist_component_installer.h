@@ -14,13 +14,17 @@
 #include "base/values.h"
 #include "components/component_updater/default_component_installer.h"
 
+namespace base {
+class FilePath;
+}  // namespace base
+
 namespace component_updater {
 
 class ComponentUpdateService;
 
 class EVWhitelistComponentInstallerTraits : public ComponentInstallerTraits {
  public:
-  EVWhitelistComponentInstallerTraits();
+  explicit EVWhitelistComponentInstallerTraits(const base::FilePath& base_path);
   ~EVWhitelistComponentInstallerTraits() override {}
 
  private:
@@ -39,12 +43,15 @@ class EVWhitelistComponentInstallerTraits : public ComponentInstallerTraits {
 
   static base::FilePath GetInstalledPath(const base::FilePath& base);
 
+  const base::FilePath ev_whitelist_path_;
+
   DISALLOW_COPY_AND_ASSIGN(EVWhitelistComponentInstallerTraits);
 };
 
 // Call once during startup to make the component update service aware of
 // the EV whitelist.
-void RegisterEVWhitelistComponent(ComponentUpdateService* cus);
+void RegisterEVWhitelistComponent(ComponentUpdateService* cus,
+                                  const base::FilePath& path);
 
 }  // namespace component_updater
 
