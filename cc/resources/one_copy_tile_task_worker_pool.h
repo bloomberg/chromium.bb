@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RESOURCES_ONE_COPY_RASTER_WORKER_POOL_H_
-#define CC_RESOURCES_ONE_COPY_RASTER_WORKER_POOL_H_
+#ifndef CC_RESOURCES_ONE_COPY_TILE_TASK_WORKER_POOL_H_
+#define CC_RESOURCES_ONE_COPY_TILE_TASK_WORKER_POOL_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "cc/base/scoped_ptr_deque.h"
 #include "cc/output/context_provider.h"
-#include "cc/resources/raster_worker_pool.h"
-#include "cc/resources/rasterizer.h"
 #include "cc/resources/resource_provider.h"
+#include "cc/resources/tile_task_runner.h"
+#include "cc/resources/tile_task_worker_pool.h"
 
 namespace base {
 namespace debug {
@@ -27,29 +27,29 @@ class ScopedResource;
 
 typedef int64 CopySequenceNumber;
 
-class CC_EXPORT OneCopyRasterWorkerPool : public RasterWorkerPool,
-                                          public Rasterizer,
-                                          public RasterizerTaskClient {
+class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
+                                            public TileTaskRunner,
+                                            public TileTaskClient {
  public:
-  ~OneCopyRasterWorkerPool() override;
+  ~OneCopyTileTaskWorkerPool() override;
 
-  static scoped_ptr<RasterWorkerPool> Create(
+  static scoped_ptr<TileTaskWorkerPool> Create(
       base::SequencedTaskRunner* task_runner,
       TaskGraphRunner* task_graph_runner,
       ContextProvider* context_provider,
       ResourceProvider* resource_provider,
       ResourcePool* resource_pool);
 
-  // Overridden from RasterWorkerPool:
-  Rasterizer* AsRasterizer() override;
+  // Overridden from TileTaskWorkerPool:
+  TileTaskRunner* AsTileTaskRunner() override;
 
-  // Overridden from Rasterizer:
-  void SetClient(RasterizerClient* client) override;
+  // Overridden from TileTaskRunner:
+  void SetClient(TileTaskRunnerClient* client) override;
   void Shutdown() override;
-  void ScheduleTasks(RasterTaskQueue* queue) override;
+  void ScheduleTasks(TileTaskQueue* queue) override;
   void CheckForCompletedTasks() override;
 
-  // Overridden from RasterizerTaskClient:
+  // Overridden from TileTaskClient:
   scoped_ptr<RasterBuffer> AcquireBufferForRaster(
       const Resource* resource) override;
   void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) override;
@@ -69,11 +69,11 @@ class CC_EXPORT OneCopyRasterWorkerPool : public RasterWorkerPool,
   void AdvanceLastIssuedCopyTo(CopySequenceNumber sequence);
 
  protected:
-  OneCopyRasterWorkerPool(base::SequencedTaskRunner* task_runner,
-                          TaskGraphRunner* task_graph_runner,
-                          ContextProvider* context_provider,
-                          ResourceProvider* resource_provider,
-                          ResourcePool* resource_pool);
+  OneCopyTileTaskWorkerPool(base::SequencedTaskRunner* task_runner,
+                            TaskGraphRunner* task_graph_runner,
+                            ContextProvider* context_provider,
+                            ResourceProvider* resource_provider,
+                            ResourcePool* resource_pool);
 
  private:
   struct CopyOperation {
@@ -90,7 +90,7 @@ class CC_EXPORT OneCopyRasterWorkerPool : public RasterWorkerPool,
     const Resource* dst;
   };
 
-  void OnRasterFinished(TaskSet task_set);
+  void OnTaskSetFinished(TaskSet task_set);
   void AdvanceLastFlushedCopyTo(CopySequenceNumber sequence);
   void IssueCopyOperations(int64 count);
   void ScheduleCheckForCompletedCopyOperationsWithLockAcquired(
@@ -102,12 +102,12 @@ class CC_EXPORT OneCopyRasterWorkerPool : public RasterWorkerPool,
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   TaskGraphRunner* task_graph_runner_;
   const NamespaceToken namespace_token_;
-  RasterizerClient* client_;
+  TileTaskRunnerClient* client_;
   ContextProvider* context_provider_;
   ResourceProvider* resource_provider_;
   ResourcePool* resource_pool_;
-  TaskSetCollection raster_pending_;
-  scoped_refptr<RasterizerTask> raster_finished_tasks_[kNumberOfTaskSets];
+  TaskSetCollection tasks_pending_;
+  scoped_refptr<TileTask> task_set_finished_tasks_[kNumberOfTaskSets];
   CopySequenceNumber last_issued_copy_operation_;
   CopySequenceNumber last_flushed_copy_operation_;
 
@@ -127,15 +127,15 @@ class CC_EXPORT OneCopyRasterWorkerPool : public RasterWorkerPool,
   base::TimeTicks last_check_for_completed_copy_operations_time_;
   bool shutdown_;
 
-  base::WeakPtrFactory<OneCopyRasterWorkerPool> weak_ptr_factory_;
+  base::WeakPtrFactory<OneCopyTileTaskWorkerPool> weak_ptr_factory_;
   // "raster finished" tasks need their own factory as they need to be
   // canceled when ScheduleTasks() is called.
-  base::WeakPtrFactory<OneCopyRasterWorkerPool>
-      raster_finished_weak_ptr_factory_;
+  base::WeakPtrFactory<OneCopyTileTaskWorkerPool>
+      task_set_finished_weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(OneCopyRasterWorkerPool);
+  DISALLOW_COPY_AND_ASSIGN(OneCopyTileTaskWorkerPool);
 };
 
 }  // namespace cc
 
-#endif  // CC_RESOURCES_ONE_COPY_RASTER_WORKER_POOL_H_
+#endif  // CC_RESOURCES_ONE_COPY_TILE_TASK_WORKER_POOL_H_

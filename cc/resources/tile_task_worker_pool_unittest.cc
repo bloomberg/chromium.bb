@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/raster_worker_pool.h"
+#include "cc/resources/tile_task_worker_pool.h"
 
 #include <limits>
 #include <vector>
 
 #include "base/cancelable_callback.h"
-#include "cc/resources/bitmap_raster_worker_pool.h"
-#include "cc/resources/gpu_raster_worker_pool.h"
-#include "cc/resources/one_copy_raster_worker_pool.h"
+#include "cc/resources/bitmap_tile_task_worker_pool.h"
+#include "cc/resources/gpu_tile_task_worker_pool.h"
+#include "cc/resources/one_copy_tile_task_worker_pool.h"
 #include "cc/resources/picture_pile.h"
 #include "cc/resources/picture_pile_impl.h"
-#include "cc/resources/pixel_buffer_raster_worker_pool.h"
+#include "cc/resources/pixel_buffer_tile_task_worker_pool.h"
 #include "cc/resources/raster_buffer.h"
-#include "cc/resources/rasterizer.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
-#include "cc/resources/zero_copy_raster_worker_pool.h"
+#include "cc/resources/tile_task_runner.h"
+#include "cc/resources/zero_copy_tile_task_worker_pool.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_pile_impl.h"
@@ -36,12 +36,12 @@ const size_t kMaxTransferBufferUsageBytes = 10000U;
 // buffer constant.
 const size_t kLargeResourceDimension = 1000U;
 
-enum RasterWorkerPoolType {
-  RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER,
-  RASTER_WORKER_POOL_TYPE_ZERO_COPY,
-  RASTER_WORKER_POOL_TYPE_ONE_COPY,
-  RASTER_WORKER_POOL_TYPE_GPU,
-  RASTER_WORKER_POOL_TYPE_BITMAP
+enum TileTaskWorkerPoolType {
+  TILE_TASK_WORKER_POOL_TYPE_PIXEL_BUFFER,
+  TILE_TASK_WORKER_POOL_TYPE_ZERO_COPY,
+  TILE_TASK_WORKER_POOL_TYPE_ONE_COPY,
+  TILE_TASK_WORKER_POOL_TYPE_GPU,
+  TILE_TASK_WORKER_POOL_TYPE_BITMAP
 };
 
 class TestRasterTaskImpl : public RasterTask {
@@ -62,11 +62,11 @@ class TestRasterTaskImpl : public RasterTask {
     raster_buffer_->Playback(picture_pile_.get(), gfx::Rect(0, 0, 1, 1), 1.0);
   }
 
-  // Overridden from RasterizerTask:
-  void ScheduleOnOriginThread(RasterizerTaskClient* client) override {
+  // Overridden from TileTask:
+  void ScheduleOnOriginThread(TileTaskClient* client) override {
     raster_buffer_ = client->AcquireBufferForRaster(resource());
   }
-  void CompleteOnOriginThread(RasterizerTaskClient* client) override {
+  void CompleteOnOriginThread(TileTaskClient* client) override {
     client->ReleaseBufferForRaster(raster_buffer_.Pass());
   }
   void RunReplyOnOriginThread() override {
@@ -98,7 +98,7 @@ class BlockingTestRasterTaskImpl : public TestRasterTaskImpl {
     TestRasterTaskImpl::RunOnWorkerThread();
   }
 
-  // Overridden from RasterizerTask:
+  // Overridden from TileTask:
   void RunReplyOnOriginThread() override {}
 
  protected:
@@ -110,9 +110,9 @@ class BlockingTestRasterTaskImpl : public TestRasterTaskImpl {
   DISALLOW_COPY_AND_ASSIGN(BlockingTestRasterTaskImpl);
 };
 
-class RasterWorkerPoolTest
-    : public testing::TestWithParam<RasterWorkerPoolType>,
-      public RasterizerClient {
+class TileTaskWorkerPoolTest
+    : public testing::TestWithParam<TileTaskWorkerPoolType>,
+      public TileTaskRunnerClient {
  public:
   struct RasterTaskResult {
     unsigned id;
@@ -123,7 +123,7 @@ class RasterWorkerPoolTest
 
   enum NamedTaskSet { ALL, REQUIRED_FOR_ACTIVATION, REQUIRED_FOR_DRAW };
 
-  RasterWorkerPoolTest()
+  TileTaskWorkerPoolTest()
       : context_provider_(TestContextProvider::Create()),
         timeout_seconds_(5),
         timed_out_(false) {}
@@ -131,63 +131,55 @@ class RasterWorkerPoolTest
   // Overridden from testing::Test:
   void SetUp() override {
     switch (GetParam()) {
-      case RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER:
+      case TILE_TASK_WORKER_POOL_TYPE_PIXEL_BUFFER:
         Create3dOutputSurfaceAndResourceProvider();
-        raster_worker_pool_ = PixelBufferRasterWorkerPool::Create(
+        tile_task_worker_pool_ = PixelBufferTileTaskWorkerPool::Create(
             base::MessageLoopProxy::current().get(),
-            RasterWorkerPool::GetTaskGraphRunner(),
-            context_provider_.get(),
-            resource_provider_.get(),
-            kMaxTransferBufferUsageBytes);
+            TileTaskWorkerPool::GetTaskGraphRunner(), context_provider_.get(),
+            resource_provider_.get(), kMaxTransferBufferUsageBytes);
         break;
-      case RASTER_WORKER_POOL_TYPE_ZERO_COPY:
+      case TILE_TASK_WORKER_POOL_TYPE_ZERO_COPY:
         Create3dOutputSurfaceAndResourceProvider();
-        raster_worker_pool_ = ZeroCopyRasterWorkerPool::Create(
+        tile_task_worker_pool_ = ZeroCopyTileTaskWorkerPool::Create(
             base::MessageLoopProxy::current().get(),
-            RasterWorkerPool::GetTaskGraphRunner(),
-            resource_provider_.get());
+            TileTaskWorkerPool::GetTaskGraphRunner(), resource_provider_.get());
         break;
-      case RASTER_WORKER_POOL_TYPE_ONE_COPY:
+      case TILE_TASK_WORKER_POOL_TYPE_ONE_COPY:
         Create3dOutputSurfaceAndResourceProvider();
-        staging_resource_pool_ = ResourcePool::Create(
-            resource_provider_.get(), GL_TEXTURE_2D, RGBA_8888);
-        raster_worker_pool_ = OneCopyRasterWorkerPool::Create(
+        staging_resource_pool_ = ResourcePool::Create(resource_provider_.get(),
+                                                      GL_TEXTURE_2D, RGBA_8888);
+        tile_task_worker_pool_ = OneCopyTileTaskWorkerPool::Create(
             base::MessageLoopProxy::current().get(),
-            RasterWorkerPool::GetTaskGraphRunner(),
-            context_provider_.get(),
-            resource_provider_.get(),
-            staging_resource_pool_.get());
+            TileTaskWorkerPool::GetTaskGraphRunner(), context_provider_.get(),
+            resource_provider_.get(), staging_resource_pool_.get());
         break;
-      case RASTER_WORKER_POOL_TYPE_GPU:
+      case TILE_TASK_WORKER_POOL_TYPE_GPU:
         Create3dOutputSurfaceAndResourceProvider();
-        raster_worker_pool_ =
-            GpuRasterWorkerPool::Create(base::MessageLoopProxy::current().get(),
-                                        context_provider_.get(),
-                                        resource_provider_.get(),
-                                        false);
+        tile_task_worker_pool_ = GpuTileTaskWorkerPool::Create(
+            base::MessageLoopProxy::current().get(), context_provider_.get(),
+            resource_provider_.get(), false);
         break;
-      case RASTER_WORKER_POOL_TYPE_BITMAP:
+      case TILE_TASK_WORKER_POOL_TYPE_BITMAP:
         CreateSoftwareOutputSurfaceAndResourceProvider();
-        raster_worker_pool_ = BitmapRasterWorkerPool::Create(
+        tile_task_worker_pool_ = BitmapTileTaskWorkerPool::Create(
             base::MessageLoopProxy::current().get(),
-            RasterWorkerPool::GetTaskGraphRunner(),
-            resource_provider_.get());
+            TileTaskWorkerPool::GetTaskGraphRunner(), resource_provider_.get());
         break;
     }
 
-    DCHECK(raster_worker_pool_);
-    raster_worker_pool_->AsRasterizer()->SetClient(this);
+    DCHECK(tile_task_worker_pool_);
+    tile_task_worker_pool_->AsTileTaskRunner()->SetClient(this);
   }
 
   void TearDown() override {
-    raster_worker_pool_->AsRasterizer()->Shutdown();
-    raster_worker_pool_->AsRasterizer()->CheckForCompletedTasks();
+    tile_task_worker_pool_->AsTileTaskRunner()->Shutdown();
+    tile_task_worker_pool_->AsTileTaskRunner()->CheckForCompletedTasks();
   }
 
-  // Overriden from RasterWorkerPoolClient:
-  void DidFinishRunningTasks(TaskSet task_set) override {
+  // Overriden from TileTaskWorkerPoolClient:
+  void DidFinishRunningTileTasks(TaskSet task_set) override {
     if (task_set == ALL) {
-      raster_worker_pool_->AsRasterizer()->CheckForCompletedTasks();
+      tile_task_worker_pool_->AsTileTaskRunner()->CheckForCompletedTasks();
       base::MessageLoop::current()->Quit();
     }
   }
@@ -197,11 +189,10 @@ class RasterWorkerPoolTest
 
   void RunMessageLoopUntilAllTasksHaveCompleted() {
     if (timeout_seconds_) {
-      timeout_.Reset(
-          base::Bind(&RasterWorkerPoolTest::OnTimeout, base::Unretained(this)));
+      timeout_.Reset(base::Bind(&TileTaskWorkerPoolTest::OnTimeout,
+                                base::Unretained(this)));
       base::MessageLoopProxy::current()->PostDelayedTask(
-          FROM_HERE,
-          timeout_.callback(),
+          FROM_HERE, timeout_.callback(),
           base::TimeDelta::FromSeconds(timeout_seconds_));
     }
 
@@ -213,17 +204,16 @@ class RasterWorkerPoolTest
   }
 
   void ScheduleTasks() {
-    RasterTaskQueue queue;
+    TileTaskQueue queue;
 
     for (RasterTaskVector::const_iterator it = tasks_.begin();
-         it != tasks_.end();
-         ++it) {
+         it != tasks_.end(); ++it) {
       TaskSetCollection task_sets;
       task_sets[ALL] = true;
-      queue.items.push_back(RasterTaskQueue::Item(it->get(), task_sets));
+      queue.items.push_back(TileTaskQueue::Item(it->get(), task_sets));
     }
 
-    raster_worker_pool_->AsRasterizer()->ScheduleTasks(&queue);
+    tile_task_worker_pool_->AsTileTaskRunner()->ScheduleTasks(&queue);
   }
 
   void AppendTask(unsigned id, const gfx::Size& size) {
@@ -235,10 +225,8 @@ class RasterWorkerPoolTest
     ImageDecodeTask::Vector empty;
     tasks_.push_back(new TestRasterTaskImpl(
         const_resource,
-        base::Bind(&RasterWorkerPoolTest::OnTaskCompleted,
-                   base::Unretained(this),
-                   base::Passed(&resource),
-                   id),
+        base::Bind(&TileTaskWorkerPoolTest::OnTaskCompleted,
+                   base::Unretained(this), base::Passed(&resource), id),
         &empty));
   }
 
@@ -255,12 +243,9 @@ class RasterWorkerPoolTest
     ImageDecodeTask::Vector empty;
     tasks_.push_back(new BlockingTestRasterTaskImpl(
         const_resource,
-        base::Bind(&RasterWorkerPoolTest::OnTaskCompleted,
-                   base::Unretained(this),
-                   base::Passed(&resource),
-                   id),
-        lock,
-        &empty));
+        base::Bind(&TileTaskWorkerPoolTest::OnTaskCompleted,
+                   base::Unretained(this), base::Passed(&resource), id),
+        lock, &empty));
   }
 
   const std::vector<RasterTaskResult>& completed_tasks() const {
@@ -273,26 +258,18 @@ class RasterWorkerPoolTest
     CHECK(output_surface_->BindToClient(&output_surface_client_));
     TestWebGraphicsContext3D* context3d = context_provider_->TestContext3d();
     context3d->set_support_sync_query(true);
-    resource_provider_ = ResourceProvider::Create(output_surface_.get(),
-                                                  NULL,
+    resource_provider_ = ResourceProvider::Create(output_surface_.get(), NULL,
                                                   &gpu_memory_buffer_manager_,
-                                                  NULL,
-                                                  0,
-                                                  false,
-                                                  1).Pass();
+                                                  NULL, 0, false, 1).Pass();
   }
 
   void CreateSoftwareOutputSurfaceAndResourceProvider() {
     output_surface_ = FakeOutputSurface::CreateSoftware(
         make_scoped_ptr(new SoftwareOutputDevice));
     CHECK(output_surface_->BindToClient(&output_surface_client_));
-    resource_provider_ = ResourceProvider::Create(output_surface_.get(),
-                                                  &shared_bitmap_manager_,
-                                                  NULL,
-                                                  NULL,
-                                                  0,
-                                                  false,
-                                                  1).Pass();
+    resource_provider_ =
+        ResourceProvider::Create(output_surface_.get(), &shared_bitmap_manager_,
+                                 NULL, NULL, 0, false, 1).Pass();
   }
 
   void OnTaskCompleted(scoped_ptr<ScopedResource> resource,
@@ -316,7 +293,7 @@ class RasterWorkerPoolTest
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<ResourcePool> staging_resource_pool_;
-  scoped_ptr<RasterWorkerPool> raster_worker_pool_;
+  scoped_ptr<TileTaskWorkerPool> tile_task_worker_pool_;
   TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestSharedBitmapManager shared_bitmap_manager_;
   base::CancelableClosure timeout_;
@@ -326,7 +303,7 @@ class RasterWorkerPoolTest
   std::vector<RasterTaskResult> completed_tasks_;
 };
 
-TEST_P(RasterWorkerPoolTest, Basic) {
+TEST_P(TileTaskWorkerPoolTest, Basic) {
   AppendTask(0u);
   AppendTask(1u);
   ScheduleTasks();
@@ -338,8 +315,8 @@ TEST_P(RasterWorkerPoolTest, Basic) {
   EXPECT_FALSE(completed_tasks()[1].canceled);
 }
 
-TEST_P(RasterWorkerPoolTest, FailedMapResource) {
-  if (GetParam() == RASTER_WORKER_POOL_TYPE_BITMAP)
+TEST_P(TileTaskWorkerPoolTest, FailedMapResource) {
+  if (GetParam() == TILE_TASK_WORKER_POOL_TYPE_BITMAP)
     return;
 
   TestWebGraphicsContext3D* context3d = context_provider_->TestContext3d();
@@ -354,8 +331,8 @@ TEST_P(RasterWorkerPoolTest, FailedMapResource) {
 }
 
 // This test checks that replacing a pending raster task with another does
-// not prevent the DidFinishRunningTasks notification from being sent.
-TEST_P(RasterWorkerPoolTest, FalseThrottling) {
+// not prevent the DidFinishRunningTileTasks notification from being sent.
+TEST_P(TileTaskWorkerPoolTest, FalseThrottling) {
   base::Lock lock;
 
   // Schedule a task that is prevented from completing with a lock.
@@ -365,7 +342,7 @@ TEST_P(RasterWorkerPoolTest, FalseThrottling) {
 
   // Schedule another task to replace the still-pending task. Because the old
   // task is not a throttled task in the new task set, it should not prevent
-  // DidFinishRunningTasks from getting signaled.
+  // DidFinishRunningTileTasks from getting signaled.
   RasterTaskVector tasks;
   tasks.swap(tasks_);
   AppendTask(1u);
@@ -377,7 +354,7 @@ TEST_P(RasterWorkerPoolTest, FalseThrottling) {
   RunMessageLoopUntilAllTasksHaveCompleted();
 }
 
-TEST_P(RasterWorkerPoolTest, LargeResources) {
+TEST_P(TileTaskWorkerPoolTest, LargeResources) {
   gfx::Size size(kLargeResourceDimension, kLargeResourceDimension);
 
   {
@@ -398,13 +375,14 @@ TEST_P(RasterWorkerPoolTest, LargeResources) {
   RunMessageLoopUntilAllTasksHaveCompleted();
 }
 
-INSTANTIATE_TEST_CASE_P(RasterWorkerPoolTests,
-                        RasterWorkerPoolTest,
-                        ::testing::Values(RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER,
-                                          RASTER_WORKER_POOL_TYPE_ZERO_COPY,
-                                          RASTER_WORKER_POOL_TYPE_ONE_COPY,
-                                          RASTER_WORKER_POOL_TYPE_GPU,
-                                          RASTER_WORKER_POOL_TYPE_BITMAP));
+INSTANTIATE_TEST_CASE_P(
+    TileTaskWorkerPoolTests,
+    TileTaskWorkerPoolTest,
+    ::testing::Values(TILE_TASK_WORKER_POOL_TYPE_PIXEL_BUFFER,
+                      TILE_TASK_WORKER_POOL_TYPE_ZERO_COPY,
+                      TILE_TASK_WORKER_POOL_TYPE_ONE_COPY,
+                      TILE_TASK_WORKER_POOL_TYPE_GPU,
+                      TILE_TASK_WORKER_POOL_TYPE_BITMAP));
 
 }  // namespace
 }  // namespace cc

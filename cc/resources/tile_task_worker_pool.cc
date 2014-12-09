@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/raster_worker_pool.h"
+#include "cc/resources/tile_task_worker_pool.h"
 
 #include <algorithm>
 
@@ -19,18 +19,17 @@
 namespace cc {
 namespace {
 
-class RasterTaskGraphRunner : public TaskGraphRunner,
-                              public base::DelegateSimpleThread::Delegate {
+class TileTaskGraphRunner : public TaskGraphRunner,
+                            public base::DelegateSimpleThread::Delegate {
  public:
-  RasterTaskGraphRunner() {
-    size_t num_threads = RasterWorkerPool::GetNumRasterThreads();
+  TileTaskGraphRunner() {
+    size_t num_threads = TileTaskWorkerPool::GetNumWorkerThreads();
     while (workers_.size() < num_threads) {
       scoped_ptr<base::DelegateSimpleThread> worker =
           make_scoped_ptr(new base::DelegateSimpleThread(
-              this,
-              base::StringPrintf("CompositorRasterWorker%u",
-                                 static_cast<unsigned>(workers_.size() + 1))
-                  .c_str()));
+              this, base::StringPrintf(
+                        "CompositorTileWorker%u",
+                        static_cast<unsigned>(workers_.size() + 1)).c_str()));
       worker->Start();
 #if defined(OS_ANDROID) || defined(OS_LINUX)
       worker->SetThreadPriority(base::kThreadPriority_Background);
@@ -39,7 +38,7 @@ class RasterTaskGraphRunner : public TaskGraphRunner,
     }
   }
 
-  ~RasterTaskGraphRunner() override { NOTREACHED(); }
+  ~TileTaskGraphRunner() override { NOTREACHED(); }
 
  private:
   // Overridden from base::DelegateSimpleThread::Delegate:
@@ -48,99 +47,100 @@ class RasterTaskGraphRunner : public TaskGraphRunner,
   ScopedPtrDeque<base::DelegateSimpleThread> workers_;
 };
 
-base::LazyInstance<RasterTaskGraphRunner>::Leaky g_task_graph_runner =
+base::LazyInstance<TileTaskGraphRunner>::Leaky g_task_graph_runner =
     LAZY_INSTANCE_INITIALIZER;
 
-const int kDefaultNumRasterThreads = 1;
+const int kDefaultNumWorkerThreads = 1;
 
-int g_num_raster_threads = 0;
+int g_num_worker_threads = 0;
 
-class RasterFinishedTaskImpl : public RasterizerTask {
+class TaskSetFinishedTaskImpl : public TileTask {
  public:
-  explicit RasterFinishedTaskImpl(
+  explicit TaskSetFinishedTaskImpl(
       base::SequencedTaskRunner* task_runner,
-      const base::Closure& on_raster_finished_callback)
+      const base::Closure& on_task_set_finished_callback)
       : task_runner_(task_runner),
-        on_raster_finished_callback_(on_raster_finished_callback) {}
+        on_task_set_finished_callback_(on_task_set_finished_callback) {}
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
-    TRACE_EVENT0("cc", "RasterFinishedTaskImpl::RunOnWorkerThread");
-    RasterFinished();
+    TRACE_EVENT0("cc", "TaskSetFinishedTaskImpl::RunOnWorkerThread");
+    TaskSetFinished();
   }
 
-  // Overridden from RasterizerTask:
-  void ScheduleOnOriginThread(RasterizerTaskClient* client) override {}
-  void CompleteOnOriginThread(RasterizerTaskClient* client) override {}
+  // Overridden from TileTask:
+  void ScheduleOnOriginThread(TileTaskClient* client) override {}
+  void CompleteOnOriginThread(TileTaskClient* client) override {}
   void RunReplyOnOriginThread() override {}
 
  protected:
-  ~RasterFinishedTaskImpl() override {}
+  ~TaskSetFinishedTaskImpl() override {}
 
-  void RasterFinished() {
-    task_runner_->PostTask(FROM_HERE, on_raster_finished_callback_);
+  void TaskSetFinished() {
+    task_runner_->PostTask(FROM_HERE, on_task_set_finished_callback_);
   }
 
  private:
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  const base::Closure on_raster_finished_callback_;
+  const base::Closure on_task_set_finished_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(RasterFinishedTaskImpl);
+  DISALLOW_COPY_AND_ASSIGN(TaskSetFinishedTaskImpl);
 };
 
 }  // namespace
 
 // This allows a micro benchmark system to run tasks with highest priority,
 // since it should finish as quickly as possible.
-unsigned RasterWorkerPool::kBenchmarkRasterTaskPriority = 0u;
-// Task priorities that make sure raster finished tasks run before any
-// remaining raster tasks.
-unsigned RasterWorkerPool::kRasterFinishedTaskPriority = 1u;
-unsigned RasterWorkerPool::kRasterTaskPriorityBase = 2u;
+unsigned TileTaskWorkerPool::kBenchmarkTaskPriority = 0u;
+// Task priorities that make sure task set finished tasks run before any
+// other remaining tasks.
+unsigned TileTaskWorkerPool::kTaskSetFinishedTaskPriority = 1u;
+unsigned TileTaskWorkerPool::kTileTaskPriorityBase = 2u;
 
-RasterWorkerPool::RasterWorkerPool() {}
+TileTaskWorkerPool::TileTaskWorkerPool() {
+}
 
-RasterWorkerPool::~RasterWorkerPool() {}
+TileTaskWorkerPool::~TileTaskWorkerPool() {
+}
 
 // static
-void RasterWorkerPool::SetNumRasterThreads(int num_threads) {
+void TileTaskWorkerPool::SetNumWorkerThreads(int num_threads) {
   DCHECK_LT(0, num_threads);
-  DCHECK_EQ(0, g_num_raster_threads);
+  DCHECK_EQ(0, g_num_worker_threads);
 
-  g_num_raster_threads = num_threads;
+  g_num_worker_threads = num_threads;
 }
 
 // static
-int RasterWorkerPool::GetNumRasterThreads() {
-  if (!g_num_raster_threads)
-    g_num_raster_threads = kDefaultNumRasterThreads;
+int TileTaskWorkerPool::GetNumWorkerThreads() {
+  if (!g_num_worker_threads)
+    g_num_worker_threads = kDefaultNumWorkerThreads;
 
-  return g_num_raster_threads;
+  return g_num_worker_threads;
 }
 
 // static
-TaskGraphRunner* RasterWorkerPool::GetTaskGraphRunner() {
+TaskGraphRunner* TileTaskWorkerPool::GetTaskGraphRunner() {
   return g_task_graph_runner.Pointer();
 }
 
 // static
-scoped_refptr<RasterizerTask> RasterWorkerPool::CreateRasterFinishedTask(
+scoped_refptr<TileTask> TileTaskWorkerPool::CreateTaskSetFinishedTask(
     base::SequencedTaskRunner* task_runner,
-    const base::Closure& on_raster_finished_callback) {
+    const base::Closure& on_task_set_finished_callback) {
   return make_scoped_refptr(
-      new RasterFinishedTaskImpl(task_runner, on_raster_finished_callback));
+      new TaskSetFinishedTaskImpl(task_runner, on_task_set_finished_callback));
 }
 
 // static
-void RasterWorkerPool::ScheduleTasksOnOriginThread(RasterizerTaskClient* client,
-                                                   TaskGraph* graph) {
-  TRACE_EVENT0("cc", "Rasterizer::ScheduleTasksOnOriginThread");
+void TileTaskWorkerPool::ScheduleTasksOnOriginThread(TileTaskClient* client,
+                                                     TaskGraph* graph) {
+  TRACE_EVENT0("cc", "TileTaskWorkerPool::ScheduleTasksOnOriginThread");
 
   for (TaskGraph::Node::Vector::iterator it = graph->nodes.begin();
-       it != graph->nodes.end();
-       ++it) {
+       it != graph->nodes.end(); ++it) {
     TaskGraph::Node& node = *it;
-    RasterizerTask* task = static_cast<RasterizerTask*>(node.task);
+    TileTask* task = static_cast<TileTask*>(node.task);
 
     if (!task->HasBeenScheduled()) {
       task->WillSchedule();
@@ -151,19 +151,18 @@ void RasterWorkerPool::ScheduleTasksOnOriginThread(RasterizerTaskClient* client,
 }
 
 // static
-void RasterWorkerPool::InsertNodeForTask(TaskGraph* graph,
-                                         RasterizerTask* task,
-                                         unsigned priority,
-                                         size_t dependencies) {
-  DCHECK(std::find_if(graph->nodes.begin(),
-                      graph->nodes.end(),
+void TileTaskWorkerPool::InsertNodeForTask(TaskGraph* graph,
+                                           TileTask* task,
+                                           unsigned priority,
+                                           size_t dependencies) {
+  DCHECK(std::find_if(graph->nodes.begin(), graph->nodes.end(),
                       TaskGraph::Node::TaskComparator(task)) ==
          graph->nodes.end());
   graph->nodes.push_back(TaskGraph::Node(task, priority, dependencies));
 }
 
 // static
-void RasterWorkerPool::InsertNodesForRasterTask(
+void TileTaskWorkerPool::InsertNodesForRasterTask(
     TaskGraph* graph,
     RasterTask* raster_task,
     const ImageDecodeTask::Vector& decode_tasks,
@@ -172,8 +171,7 @@ void RasterWorkerPool::InsertNodesForRasterTask(
 
   // Insert image decode tasks.
   for (ImageDecodeTask::Vector::const_iterator it = decode_tasks.begin();
-       it != decode_tasks.end();
-       ++it) {
+       it != decode_tasks.end(); ++it) {
     ImageDecodeTask* decode_task = it->get();
 
     // Skip if already decoded.
@@ -184,8 +182,7 @@ void RasterWorkerPool::InsertNodesForRasterTask(
 
     // Add decode task if it doesn't already exists in graph.
     TaskGraph::Node::Vector::iterator decode_it =
-        std::find_if(graph->nodes.begin(),
-                     graph->nodes.end(),
+        std::find_if(graph->nodes.begin(), graph->nodes.end(),
                      TaskGraph::Node::TaskComparator(decode_task));
     if (decode_it == graph->nodes.end())
       InsertNodeForTask(graph, decode_task, priority, 0u);
@@ -214,13 +211,13 @@ static bool IsSupportedPlaybackToMemoryFormat(ResourceFormat format) {
 }
 
 // static
-void RasterWorkerPool::PlaybackToMemory(void* memory,
-                                        ResourceFormat format,
-                                        const gfx::Size& size,
-                                        int stride,
-                                        const RasterSource* raster_source,
-                                        const gfx::Rect& rect,
-                                        float scale) {
+void TileTaskWorkerPool::PlaybackToMemory(void* memory,
+                                          ResourceFormat format,
+                                          const gfx::Size& size,
+                                          int stride,
+                                          const RasterSource* raster_source,
+                                          const gfx::Rect& rect,
+                                          float scale) {
   DCHECK(IsSupportedPlaybackToMemoryFormat(format)) << format;
 
   // Uses kPremul_SkAlphaType since the result is not known to be opaque.

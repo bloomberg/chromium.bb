@@ -51,7 +51,7 @@ class PageScaleAnimation;
 class PaintTimeCounter;
 class PictureLayerImpl;
 class RasterTilePriorityQueue;
-class RasterWorkerPool;
+class TileTaskWorkerPool;
 class RenderPassDrawQuad;
 class RenderingStatsInstrumentation;
 class ResourcePool;
@@ -499,8 +499,8 @@ class CC_EXPORT LayerTreeHostImpl
   // Only valid for synchronous (non-scheduled) single-threaded case.
   void SynchronouslyInitializeAllTiles();
 
-  virtual void CreateResourceAndRasterWorkerPool(
-      scoped_ptr<RasterWorkerPool>* raster_worker_pool,
+  virtual void CreateResourceAndTileTaskWorkerPool(
+      scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
       scoped_ptr<ResourcePool>* resource_pool,
       scoped_ptr<ResourcePool>* staging_resource_pool);
 
@@ -610,7 +610,7 @@ class CC_EXPORT LayerTreeHostImpl
   scoped_ptr<TileManager> tile_manager_;
   bool use_gpu_rasterization_;
   GpuRasterizationStatus gpu_rasterization_status_;
-  scoped_ptr<RasterWorkerPool> raster_worker_pool_;
+  scoped_ptr<TileTaskWorkerPool> tile_task_worker_pool_;
   scoped_ptr<ResourcePool> resource_pool_;
   scoped_ptr<ResourcePool> staging_resource_pool_;
   scoped_ptr<Renderer> renderer_;

@@ -12,7 +12,7 @@
 #include "cc/debug/lap_timer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer_impl.h"
-#include "cc/resources/raster_worker_pool.h"
+#include "cc/resources/tile_task_worker_pool.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "ui/gfx/geometry/rect.h"
@@ -207,7 +207,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
     return;
   }
 
-  TaskGraphRunner* task_graph_runner = RasterWorkerPool::GetTaskGraphRunner();
+  TaskGraphRunner* task_graph_runner = TileTaskWorkerPool::GetTaskGraphRunner();
   DCHECK(task_graph_runner);
 
   if (!task_namespace_.IsValid())
@@ -240,8 +240,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
 
     graph.nodes.push_back(
         TaskGraph::Node(benchmark_raster_task.get(),
-                        RasterWorkerPool::kBenchmarkRasterTaskPriority,
-                        0u));
+                        TileTaskWorkerPool::kBenchmarkTaskPriority, 0u));
 
     task_graph_runner->ScheduleTasks(task_namespace_, &graph);
     task_graph_runner->WaitForTasksToFinishRunning(task_namespace_);

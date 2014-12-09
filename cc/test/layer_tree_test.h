@@ -35,9 +35,9 @@ class TestHooks : public AnimationDelegate {
 
   void ReadSettings(const LayerTreeSettings& settings);
 
-  virtual void CreateResourceAndRasterWorkerPool(
+  virtual void CreateResourceAndTileTaskWorkerPool(
       LayerTreeHostImpl* host_impl,
-      scoped_ptr<RasterWorkerPool>* raster_worker_pool,
+      scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
       scoped_ptr<ResourcePool>* resource_pool,
       scoped_ptr<ResourcePool>* staging_resource_pool);
   virtual void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,

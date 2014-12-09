@@ -11,7 +11,7 @@
 namespace cc {
 
 class LayerTreeHostImpl;
-class RasterWorkerPool;
+class TileTaskWorkerPool;
 class ResourcePool;
 
 // Enumerate the various combinations of renderer, resource pool, staging
@@ -34,27 +34,27 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
  public:
   explicit LayerTreeHostPixelResourceTest(PixelResourceTestCase test_case);
 
-  void CreateResourceAndRasterWorkerPool(
+  void CreateResourceAndTileTaskWorkerPool(
       LayerTreeHostImpl* host_impl,
-      scoped_ptr<RasterWorkerPool>* raster_worker_pool,
+      scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
       scoped_ptr<ResourcePool>* resource_pool,
       scoped_ptr<ResourcePool>* staging_resource_pool) override;
 
   void RunPixelResourceTest(scoped_refptr<Layer> content_root,
                             base::FilePath file_name);
 
-  enum RasterWorkerPoolOption {
-    BITMAP_RASTER_WORKER_POOL,
-    GPU_RASTER_WORKER_POOL,
-    ZERO_COPY_RASTER_WORKER_POOL,
-    ONE_COPY_RASTER_WORKER_POOL,
-    PIXEL_BUFFER_RASTER_WORKER_POOL,
+  enum TileTaskWorkerPoolOption {
+    BITMAP_TILE_TASK_WORKER_POOL,
+    GPU_TILE_TASK_WORKER_POOL,
+    ZERO_COPY_TILE_TASK_WORKER_POOL,
+    ONE_COPY_TILE_TASK_WORKER_POOL,
+    PIXEL_BUFFER_TILE_TASK_WORKER_POOL,
   };
 
  protected:
   unsigned staging_texture_target_;
   unsigned draw_texture_target_;
-  RasterWorkerPoolOption resource_pool_option_;
+  TileTaskWorkerPoolOption resource_pool_option_;
 
  private:
   void InitializeFromTestCase(PixelResourceTestCase test_case);

@@ -7,11 +7,11 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/resources/platform_color.h"
-#include "cc/resources/rasterizer.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
 #include "cc/resources/tile_priority.h"
+#include "cc/resources/tile_task_runner.h"
 
 namespace cc {
 

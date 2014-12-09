@@ -10,7 +10,7 @@
 
 #include "cc/base/region.h"
 #include "cc/resources/picture_pile_impl.h"
-#include "cc/resources/raster_worker_pool.h"
+#include "cc/resources/tile_task_worker_pool.h"
 #include "skia/ext/analysis_canvas.h"
 
 namespace {
@@ -545,7 +545,7 @@ void PicturePile::CreatePictures(ContentLayerClient* painter,
     // raster thread doesn't provide any benefit. This might change
     // in the future but we avoid it for now to reduce the cost of
     // Picture::Create.
-    bool gather_pixel_refs = RasterWorkerPool::GetNumRasterThreads() > 1;
+    bool gather_pixel_refs = TileTaskWorkerPool::GetNumWorkerThreads() > 1;
 
     for (int i = 0; i < repeat_count; i++) {
       picture = Picture::Create(padded_record_rect, painter, tile_grid_info_,

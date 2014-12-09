@@ -22,9 +22,9 @@
 #include "cc/resources/memory_history.h"
 #include "cc/resources/raster_source.h"
 #include "cc/resources/raster_tile_priority_queue.h"
-#include "cc/resources/rasterizer.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/tile.h"
+#include "cc/resources/tile_task_runner.h"
 
 namespace base {
 namespace debug {
@@ -86,7 +86,7 @@ scoped_refptr<base::debug::ConvertableToTraceFormat>
 // should no longer have any memory assigned to them. Tile objects are "owned"
 // by layers; they automatically register with the manager when they are
 // created, and unregister from the manager when they are deleted.
-class CC_EXPORT TileManager : public RasterizerClient,
+class CC_EXPORT TileManager : public TileTaskRunnerClient,
                               public RefCountedManager<Tile> {
  public:
   enum NamedTaskSet {
@@ -101,7 +101,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
       TileManagerClient* client,
       base::SequencedTaskRunner* task_runner,
       ResourcePool* resource_pool,
-      Rasterizer* rasterizer,
+      TileTaskRunner* tile_task_runner,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       size_t scheduled_raster_task_limit);
   ~TileManager() override;
@@ -146,7 +146,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
     global_state_ = state;
   }
 
-  void SetRasterizerForTesting(Rasterizer* rasterizer);
+  void SetTileTaskRunnerForTesting(TileTaskRunner* tile_task_runner);
 
   void FreeResourcesAndCleanUpReleasedTilesForTesting() {
     FreeResourcesForReleasedTiles();
@@ -170,7 +170,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
   TileManager(TileManagerClient* client,
               const scoped_refptr<base::SequencedTaskRunner>& task_runner,
               ResourcePool* resource_pool,
-              Rasterizer* rasterizer,
+              TileTaskRunner* tile_task_runner,
               RenderingStatsInstrumentation* rendering_stats_instrumentation,
               size_t scheduled_raster_task_limit);
 
@@ -181,8 +181,8 @@ class CC_EXPORT TileManager : public RasterizerClient,
   friend class Tile;
   void Release(Tile* tile) override;
 
-  // Overriden from RasterizerClient:
-  void DidFinishRunningTasks(TaskSet task_set) override;
+  // Overriden from TileTaskRunnerClient:
+  void DidFinishRunningTileTasks(TaskSet task_set) override;
   TaskSetCollection TasksThatShouldBeForcedToComplete() const override;
 
   typedef std::vector<Tile*> TileVector;
@@ -245,7 +245,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
   TileManagerClient* client_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   ResourcePool* resource_pool_;
-  Rasterizer* rasterizer_;
+  TileTaskRunner* tile_task_runner_;
   GlobalStateThatImpactsTilePriority global_state_;
   size_t scheduled_raster_task_limit_;
 
@@ -275,7 +275,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
   ResourceFormat resource_format_;
 
   // Queue used when scheduling raster tasks.
-  RasterTaskQueue raster_queue_;
+  TileTaskQueue raster_queue_;
 
   std::vector<scoped_refptr<RasterTask>> orphan_raster_tasks_;
 

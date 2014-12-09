@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/one_copy_raster_worker_pool.h"
+#include "cc/resources/one_copy_tile_task_worker_pool.h"
 
 #include <algorithm>
 #include <limits>
@@ -22,7 +22,7 @@ namespace {
 
 class RasterBufferImpl : public RasterBuffer {
  public:
-  RasterBufferImpl(OneCopyRasterWorkerPool* worker_pool,
+  RasterBufferImpl(OneCopyTileTaskWorkerPool* worker_pool,
                    ResourceProvider* resource_provider,
                    ResourcePool* resource_pool,
                    const Resource* resource)
@@ -61,7 +61,7 @@ class RasterBufferImpl : public RasterBuffer {
   }
 
  private:
-  OneCopyRasterWorkerPool* worker_pool_;
+  OneCopyTileTaskWorkerPool* worker_pool_;
   ResourceProvider* resource_provider_;
   ResourcePool* resource_pool_;
   const Resource* resource_;
@@ -87,32 +87,29 @@ const int kFailedAttemptsBeforeWaitIfNeeded = 256;
 
 }  // namespace
 
-OneCopyRasterWorkerPool::CopyOperation::CopyOperation(
+OneCopyTileTaskWorkerPool::CopyOperation::CopyOperation(
     scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> write_lock,
     scoped_ptr<ScopedResource> src,
     const Resource* dst)
     : write_lock(write_lock.Pass()), src(src.Pass()), dst(dst) {
 }
 
-OneCopyRasterWorkerPool::CopyOperation::~CopyOperation() {
+OneCopyTileTaskWorkerPool::CopyOperation::~CopyOperation() {
 }
 
 // static
-scoped_ptr<RasterWorkerPool> OneCopyRasterWorkerPool::Create(
+scoped_ptr<TileTaskWorkerPool> OneCopyTileTaskWorkerPool::Create(
     base::SequencedTaskRunner* task_runner,
     TaskGraphRunner* task_graph_runner,
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     ResourcePool* resource_pool) {
-  return make_scoped_ptr<RasterWorkerPool>(
-      new OneCopyRasterWorkerPool(task_runner,
-                                  task_graph_runner,
-                                  context_provider,
-                                  resource_provider,
-                                  resource_pool));
+  return make_scoped_ptr<TileTaskWorkerPool>(new OneCopyTileTaskWorkerPool(
+      task_runner, task_graph_runner, context_provider, resource_provider,
+      resource_pool));
 }
 
-OneCopyRasterWorkerPool::OneCopyRasterWorkerPool(
+OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
     base::SequencedTaskRunner* task_runner,
     TaskGraphRunner* task_graph_runner,
     ContextProvider* context_provider,
@@ -134,24 +131,24 @@ OneCopyRasterWorkerPool::OneCopyRasterWorkerPool(
       check_for_completed_copy_operations_pending_(false),
       shutdown_(false),
       weak_ptr_factory_(this),
-      raster_finished_weak_ptr_factory_(this) {
+      task_set_finished_weak_ptr_factory_(this) {
   DCHECK(context_provider_);
 }
 
-OneCopyRasterWorkerPool::~OneCopyRasterWorkerPool() {
+OneCopyTileTaskWorkerPool::~OneCopyTileTaskWorkerPool() {
   DCHECK_EQ(scheduled_copy_operation_count_, 0u);
 }
 
-Rasterizer* OneCopyRasterWorkerPool::AsRasterizer() {
+TileTaskRunner* OneCopyTileTaskWorkerPool::AsTileTaskRunner() {
   return this;
 }
 
-void OneCopyRasterWorkerPool::SetClient(RasterizerClient* client) {
+void OneCopyTileTaskWorkerPool::SetClient(TileTaskRunnerClient* client) {
   client_ = client;
 }
 
-void OneCopyRasterWorkerPool::Shutdown() {
-  TRACE_EVENT0("cc", "OneCopyRasterWorkerPool::Shutdown");
+void OneCopyTileTaskWorkerPool::Shutdown() {
+  TRACE_EVENT0("cc", "OneCopyTileTaskWorkerPool::Shutdown");
 
   {
     base::AutoLock lock(lock_);
@@ -165,40 +162,38 @@ void OneCopyRasterWorkerPool::Shutdown() {
   task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
 }
 
-void OneCopyRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
-  TRACE_EVENT0("cc", "OneCopyRasterWorkerPool::ScheduleTasks");
+void OneCopyTileTaskWorkerPool::ScheduleTasks(TileTaskQueue* queue) {
+  TRACE_EVENT0("cc", "OneCopyTileTaskWorkerPool::ScheduleTasks");
 
-  if (raster_pending_.none())
+  if (tasks_pending_.none())
     TRACE_EVENT_ASYNC_BEGIN0("cc", "ScheduledTasks", this);
 
   // Mark all task sets as pending.
-  raster_pending_.set();
+  tasks_pending_.set();
 
-  unsigned priority = kRasterTaskPriorityBase;
+  unsigned priority = kTileTaskPriorityBase;
 
   graph_.Reset();
 
-  // Cancel existing OnRasterFinished callbacks.
-  raster_finished_weak_ptr_factory_.InvalidateWeakPtrs();
+  // Cancel existing OnTaskSetFinished callbacks.
+  task_set_finished_weak_ptr_factory_.InvalidateWeakPtrs();
 
-  scoped_refptr<RasterizerTask> new_raster_finished_tasks[kNumberOfTaskSets];
+  scoped_refptr<TileTask> new_task_set_finished_tasks[kNumberOfTaskSets];
 
   size_t task_count[kNumberOfTaskSets] = {0};
 
   for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set) {
-    new_raster_finished_tasks[task_set] = CreateRasterFinishedTask(
+    new_task_set_finished_tasks[task_set] = CreateTaskSetFinishedTask(
         task_runner_.get(),
-        base::Bind(&OneCopyRasterWorkerPool::OnRasterFinished,
-                   raster_finished_weak_ptr_factory_.GetWeakPtr(),
-                   task_set));
+        base::Bind(&OneCopyTileTaskWorkerPool::OnTaskSetFinished,
+                   task_set_finished_weak_ptr_factory_.GetWeakPtr(), task_set));
   }
 
   resource_pool_->CheckBusyResources(false);
 
-  for (RasterTaskQueue::Item::Vector::const_iterator it = queue->items.begin();
-       it != queue->items.end();
-       ++it) {
-    const RasterTaskQueue::Item& item = *it;
+  for (TileTaskQueue::Item::Vector::const_iterator it = queue->items.begin();
+       it != queue->items.end(); ++it) {
+    const TileTaskQueue::Item& item = *it;
     RasterTask* task = item.task;
     DCHECK(!task->HasCompleted());
 
@@ -209,42 +204,39 @@ void OneCopyRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
       ++task_count[task_set];
 
       graph_.edges.push_back(
-          TaskGraph::Edge(task, new_raster_finished_tasks[task_set].get()));
+          TaskGraph::Edge(task, new_task_set_finished_tasks[task_set].get()));
     }
 
     InsertNodesForRasterTask(&graph_, task, task->dependencies(), priority++);
   }
 
   for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set) {
-    InsertNodeForTask(&graph_,
-                      new_raster_finished_tasks[task_set].get(),
-                      kRasterFinishedTaskPriority,
-                      task_count[task_set]);
+    InsertNodeForTask(&graph_, new_task_set_finished_tasks[task_set].get(),
+                      kTaskSetFinishedTaskPriority, task_count[task_set]);
   }
 
   ScheduleTasksOnOriginThread(this, &graph_);
   task_graph_runner_->ScheduleTasks(namespace_token_, &graph_);
 
-  std::copy(new_raster_finished_tasks,
-            new_raster_finished_tasks + kNumberOfTaskSets,
-            raster_finished_tasks_);
+  std::copy(new_task_set_finished_tasks,
+            new_task_set_finished_tasks + kNumberOfTaskSets,
+            task_set_finished_tasks_);
 
   resource_pool_->ReduceResourceUsage();
 
-  TRACE_EVENT_ASYNC_STEP_INTO1(
-      "cc", "ScheduledTasks", this, "rasterizing", "state", StateAsValue());
+  TRACE_EVENT_ASYNC_STEP_INTO1("cc", "ScheduledTasks", this, "running", "state",
+                               StateAsValue());
 }
 
-void OneCopyRasterWorkerPool::CheckForCompletedTasks() {
-  TRACE_EVENT0("cc", "OneCopyRasterWorkerPool::CheckForCompletedTasks");
+void OneCopyTileTaskWorkerPool::CheckForCompletedTasks() {
+  TRACE_EVENT0("cc", "OneCopyTileTaskWorkerPool::CheckForCompletedTasks");
 
   task_graph_runner_->CollectCompletedTasks(namespace_token_,
                                             &completed_tasks_);
 
   for (Task::Vector::const_iterator it = completed_tasks_.begin();
-       it != completed_tasks_.end();
-       ++it) {
-    RasterizerTask* task = static_cast<RasterizerTask*>(it->get());
+       it != completed_tasks_.end(); ++it) {
+    TileTask* task = static_cast<TileTask*>(it->get());
 
     task->WillComplete();
     task->CompleteOnOriginThread(this);
@@ -255,20 +247,20 @@ void OneCopyRasterWorkerPool::CheckForCompletedTasks() {
   completed_tasks_.clear();
 }
 
-scoped_ptr<RasterBuffer> OneCopyRasterWorkerPool::AcquireBufferForRaster(
+scoped_ptr<RasterBuffer> OneCopyTileTaskWorkerPool::AcquireBufferForRaster(
     const Resource* resource) {
   DCHECK_EQ(resource->format(), resource_pool_->resource_format());
   return make_scoped_ptr<RasterBuffer>(
       new RasterBufferImpl(this, resource_provider_, resource_pool_, resource));
 }
 
-void OneCopyRasterWorkerPool::ReleaseBufferForRaster(
+void OneCopyTileTaskWorkerPool::ReleaseBufferForRaster(
     scoped_ptr<RasterBuffer> buffer) {
   // Nothing to do here. RasterBufferImpl destructor cleans up after itself.
 }
 
 CopySequenceNumber
-OneCopyRasterWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
+OneCopyTileTaskWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
     scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> write_lock,
     scoped_ptr<ScopedResource> src,
     const Resource* dst,
@@ -313,13 +305,9 @@ OneCopyRasterWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
 
     gfx::GpuMemoryBuffer* gpu_memory_buffer = write_lock->GetGpuMemoryBuffer();
     if (gpu_memory_buffer) {
-      RasterWorkerPool::PlaybackToMemory(gpu_memory_buffer->Map(),
-                                         src->format(),
-                                         src->size(),
-                                         gpu_memory_buffer->GetStride(),
-                                         raster_source,
-                                         rect,
-                                         scale);
+      TileTaskWorkerPool::PlaybackToMemory(
+          gpu_memory_buffer->Map(), src->format(), src->size(),
+          gpu_memory_buffer->GetStride(), raster_source, rect, scale);
       gpu_memory_buffer->Unmap();
     }
   }
@@ -335,15 +323,14 @@ OneCopyRasterWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
   if ((sequence % kCopyFlushPeriod) == 0) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&OneCopyRasterWorkerPool::AdvanceLastFlushedCopyTo,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   sequence));
+        base::Bind(&OneCopyTileTaskWorkerPool::AdvanceLastFlushedCopyTo,
+                   weak_ptr_factory_.GetWeakPtr(), sequence));
   }
 
   return sequence;
 }
 
-void OneCopyRasterWorkerPool::AdvanceLastIssuedCopyTo(
+void OneCopyTileTaskWorkerPool::AdvanceLastIssuedCopyTo(
     CopySequenceNumber sequence) {
   if (last_issued_copy_operation_ >= sequence)
     return;
@@ -352,7 +339,7 @@ void OneCopyRasterWorkerPool::AdvanceLastIssuedCopyTo(
   last_issued_copy_operation_ = sequence;
 }
 
-void OneCopyRasterWorkerPool::AdvanceLastFlushedCopyTo(
+void OneCopyTileTaskWorkerPool::AdvanceLastFlushedCopyTo(
     CopySequenceNumber sequence) {
   if (last_flushed_copy_operation_ >= sequence)
     return;
@@ -364,24 +351,24 @@ void OneCopyRasterWorkerPool::AdvanceLastFlushedCopyTo(
   last_flushed_copy_operation_ = last_issued_copy_operation_;
 }
 
-void OneCopyRasterWorkerPool::OnRasterFinished(TaskSet task_set) {
-  TRACE_EVENT1(
-      "cc", "OneCopyRasterWorkerPool::OnRasterFinished", "task_set", task_set);
+void OneCopyTileTaskWorkerPool::OnTaskSetFinished(TaskSet task_set) {
+  TRACE_EVENT1("cc", "OneCopyTileTaskWorkerPool::OnTaskSetFinished", "task_set",
+               task_set);
 
-  DCHECK(raster_pending_[task_set]);
-  raster_pending_[task_set] = false;
-  if (raster_pending_.any()) {
-    TRACE_EVENT_ASYNC_STEP_INTO1(
-        "cc", "ScheduledTasks", this, "rasterizing", "state", StateAsValue());
+  DCHECK(tasks_pending_[task_set]);
+  tasks_pending_[task_set] = false;
+  if (tasks_pending_.any()) {
+    TRACE_EVENT_ASYNC_STEP_INTO1("cc", "ScheduledTasks", this, "running",
+                                 "state", StateAsValue());
   } else {
     TRACE_EVENT_ASYNC_END0("cc", "ScheduledTasks", this);
   }
-  client_->DidFinishRunningTasks(task_set);
+  client_->DidFinishRunningTileTasks(task_set);
 }
 
-void OneCopyRasterWorkerPool::IssueCopyOperations(int64 count) {
-  TRACE_EVENT1(
-      "cc", "OneCopyRasterWorkerPool::IssueCopyOperations", "count", count);
+void OneCopyTileTaskWorkerPool::IssueCopyOperations(int64 count) {
+  TRACE_EVENT1("cc", "OneCopyTileTaskWorkerPool::IssueCopyOperations", "count",
+               count);
 
   CopyOperation::Deque copy_operations;
 
@@ -417,7 +404,7 @@ void OneCopyRasterWorkerPool::IssueCopyOperations(int64 count) {
   }
 }
 
-void OneCopyRasterWorkerPool::
+void OneCopyTileTaskWorkerPool::
     ScheduleCheckForCompletedCopyOperationsWithLockAcquired(
         bool wait_if_needed) {
   lock_.AssertAcquired();
@@ -438,9 +425,8 @@ void OneCopyRasterWorkerPool::
 
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&OneCopyRasterWorkerPool::CheckForCompletedCopyOperations,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 wait_if_needed),
+      base::Bind(&OneCopyTileTaskWorkerPool::CheckForCompletedCopyOperations,
+                 weak_ptr_factory_.GetWeakPtr(), wait_if_needed),
       next_check_for_completed_copy_operations_time - now);
 
   last_check_for_completed_copy_operations_time_ =
@@ -448,12 +434,11 @@ void OneCopyRasterWorkerPool::
   check_for_completed_copy_operations_pending_ = true;
 }
 
-void OneCopyRasterWorkerPool::CheckForCompletedCopyOperations(
+void OneCopyTileTaskWorkerPool::CheckForCompletedCopyOperations(
     bool wait_if_needed) {
   TRACE_EVENT1("cc",
-               "OneCopyRasterWorkerPool::CheckForCompletedCopyOperations",
-               "wait_if_needed",
-               wait_if_needed);
+               "OneCopyTileTaskWorkerPool::CheckForCompletedCopyOperations",
+               "wait_if_needed", wait_if_needed);
 
   resource_pool_->CheckBusyResources(wait_if_needed);
 
@@ -474,13 +459,13 @@ void OneCopyRasterWorkerPool::CheckForCompletedCopyOperations(
 }
 
 scoped_refptr<base::debug::ConvertableToTraceFormat>
-OneCopyRasterWorkerPool::StateAsValue() const {
+OneCopyTileTaskWorkerPool::StateAsValue() const {
   scoped_refptr<base::debug::TracedValue> state =
       new base::debug::TracedValue();
 
   state->BeginArray("tasks_pending");
   for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set)
-    state->AppendBoolean(raster_pending_[task_set]);
+    state->AppendBoolean(tasks_pending_[task_set]);
   state->EndArray();
   state->BeginDictionary("staging_state");
   StagingStateAsValueInto(state.get());
@@ -489,7 +474,7 @@ OneCopyRasterWorkerPool::StateAsValue() const {
   return state;
 }
 
-void OneCopyRasterWorkerPool::StagingStateAsValueInto(
+void OneCopyTileTaskWorkerPool::StagingStateAsValueInto(
     base::debug::TracedValue* staging_state) const {
   staging_state->SetInteger("staging_resource_count",
                             resource_pool_->total_resource_count());

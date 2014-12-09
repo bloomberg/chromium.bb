@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_RESOURCES_RASTER_WORKER_POOL_H_
-#define CC_RESOURCES_RASTER_WORKER_POOL_H_
+#ifndef CC_RESOURCES_TILE_TASK_WORKER_POOL_H_
+#define CC_RESOURCES_TILE_TASK_WORKER_POOL_H_
 
-#include "cc/resources/rasterizer.h"
+#include "cc/resources/tile_task_runner.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -17,42 +17,42 @@ namespace cc {
 class RasterSource;
 class RenderingStatsInstrumentation;
 
-class CC_EXPORT RasterWorkerPool {
+class CC_EXPORT TileTaskWorkerPool {
  public:
-  static unsigned kBenchmarkRasterTaskPriority;
-  static unsigned kRasterFinishedTaskPriority;
-  static unsigned kRasterTaskPriorityBase;
+  static unsigned kBenchmarkTaskPriority;
+  static unsigned kTaskSetFinishedTaskPriority;
+  static unsigned kTileTaskPriorityBase;
 
-  RasterWorkerPool();
-  virtual ~RasterWorkerPool();
+  TileTaskWorkerPool();
+  virtual ~TileTaskWorkerPool();
 
   // Set the number of threads to use for the global TaskGraphRunner instance.
   // This can only be called once and must be called prior to
-  // GetNumRasterThreads().
-  static void SetNumRasterThreads(int num_threads);
+  // GetNumWorkerThreads().
+  static void SetNumWorkerThreads(int num_threads);
 
   // Returns the number of threads used for the global TaskGraphRunner instance.
-  static int GetNumRasterThreads();
+  static int GetNumWorkerThreads();
 
   // Returns a pointer to the global TaskGraphRunner instance.
   static TaskGraphRunner* GetTaskGraphRunner();
 
-  // Utility function that can be used to create a "raster finished" task that
+  // Utility function that can be used to create a "Task set finished" task that
   // posts |callback| to |task_runner| when run.
-  static scoped_refptr<RasterizerTask> CreateRasterFinishedTask(
+  static scoped_refptr<TileTask> CreateTaskSetFinishedTask(
       base::SequencedTaskRunner* task_runner,
       const base::Closure& callback);
 
   // Utility function that can be used to call ::ScheduleOnOriginThread() for
   // each task in |graph|.
-  static void ScheduleTasksOnOriginThread(RasterizerTaskClient* client,
+  static void ScheduleTasksOnOriginThread(TileTaskClient* client,
                                           TaskGraph* graph);
 
   // Utility function that can be used to build a task graph. Inserts a node
   // that represents |task| in |graph|. See TaskGraph definition for valid
   // |priority| values.
   static void InsertNodeForTask(TaskGraph* graph,
-                                RasterizerTask* task,
+                                TileTask* task,
                                 unsigned priority,
                                 size_t dependencies);
 
@@ -75,9 +75,9 @@ class CC_EXPORT RasterWorkerPool {
                                float scale);
 
   // Type-checking downcast routine.
-  virtual Rasterizer* AsRasterizer() = 0;
+  virtual TileTaskRunner* AsTileTaskRunner() = 0;
 };
 
 }  // namespace cc
 
-#endif  // CC_RESOURCES_RASTER_WORKER_POOL_H_
+#endif  // CC_RESOURCES_TILE_TASK_WORKER_POOL_H_

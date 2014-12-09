@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/gpu_raster_worker_pool.h"
+#include "cc/resources/gpu_tile_task_worker_pool.h"
 
 #include <algorithm>
 
@@ -50,10 +50,8 @@ class RasterBufferImpl : public RasterBuffer {
     SkPictureRecorder recorder;
     gfx::Size size = resource_->size();
     const int flags = SkPictureRecorder::kComputeSaveLayerInfo_RecordFlag;
-    skia::RefPtr<SkCanvas> canvas =
-        skia::SharePtr(recorder.beginRecording(size.width(), size.height(),
-                                               NULL, flags));
-
+    skia::RefPtr<SkCanvas> canvas = skia::SharePtr(
+        recorder.beginRecording(size.width(), size.height(), NULL, flags));
 
     canvas->save();
     raster_source->PlaybackToCanvas(canvas.get(), rect, scale);
@@ -76,22 +74,21 @@ class RasterBufferImpl : public RasterBuffer {
 }  // namespace
 
 // static
-scoped_ptr<RasterWorkerPool> GpuRasterWorkerPool::Create(
+scoped_ptr<TileTaskWorkerPool> GpuTileTaskWorkerPool::Create(
     base::SequencedTaskRunner* task_runner,
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     bool use_distance_field_text) {
-  return make_scoped_ptr<RasterWorkerPool>(
-      new GpuRasterWorkerPool(task_runner,
-                              context_provider,
-                              resource_provider,
-                              use_distance_field_text));
+  return make_scoped_ptr<TileTaskWorkerPool>(
+      new GpuTileTaskWorkerPool(task_runner, context_provider,
+                                resource_provider, use_distance_field_text));
 }
 
-GpuRasterWorkerPool::GpuRasterWorkerPool(base::SequencedTaskRunner* task_runner,
-                                         ContextProvider* context_provider,
-                                         ResourceProvider* resource_provider,
-                                         bool use_distance_field_text)
+GpuTileTaskWorkerPool::GpuTileTaskWorkerPool(
+    base::SequencedTaskRunner* task_runner,
+    ContextProvider* context_provider,
+    ResourceProvider* resource_provider,
+    bool use_distance_field_text)
     : task_runner_(task_runner),
       task_graph_runner_(new TaskGraphRunner),
       namespace_token_(task_graph_runner_->GetNamespaceToken()),
@@ -99,60 +96,58 @@ GpuRasterWorkerPool::GpuRasterWorkerPool(base::SequencedTaskRunner* task_runner,
       resource_provider_(resource_provider),
       run_tasks_on_origin_thread_pending_(false),
       use_distance_field_text_(use_distance_field_text),
-      raster_finished_weak_ptr_factory_(this),
+      task_set_finished_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
   DCHECK(context_provider_);
 }
 
-GpuRasterWorkerPool::~GpuRasterWorkerPool() {
+GpuTileTaskWorkerPool::~GpuTileTaskWorkerPool() {
   DCHECK_EQ(0u, completed_tasks_.size());
 }
 
-Rasterizer* GpuRasterWorkerPool::AsRasterizer() {
+TileTaskRunner* GpuTileTaskWorkerPool::AsTileTaskRunner() {
   return this;
 }
 
-void GpuRasterWorkerPool::SetClient(RasterizerClient* client) {
+void GpuTileTaskWorkerPool::SetClient(TileTaskRunnerClient* client) {
   client_ = client;
 }
 
-void GpuRasterWorkerPool::Shutdown() {
-  TRACE_EVENT0("cc", "GpuRasterWorkerPool::Shutdown");
+void GpuTileTaskWorkerPool::Shutdown() {
+  TRACE_EVENT0("cc", "GpuTileTaskWorkerPool::Shutdown");
 
   TaskGraph empty;
   task_graph_runner_->ScheduleTasks(namespace_token_, &empty);
   task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
 }
 
-void GpuRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
-  TRACE_EVENT0("cc", "GpuRasterWorkerPool::ScheduleTasks");
+void GpuTileTaskWorkerPool::ScheduleTasks(TileTaskQueue* queue) {
+  TRACE_EVENT0("cc", "GpuTileTaskWorkerPool::ScheduleTasks");
 
   // Mark all task sets as pending.
-  raster_pending_.set();
+  tasks_pending_.set();
 
-  unsigned priority = kRasterTaskPriorityBase;
+  unsigned priority = kTileTaskPriorityBase;
 
   graph_.Reset();
 
-  // Cancel existing OnRasterFinished callbacks.
-  raster_finished_weak_ptr_factory_.InvalidateWeakPtrs();
+  // Cancel existing OnTaskSetFinished callbacks.
+  task_set_finished_weak_ptr_factory_.InvalidateWeakPtrs();
 
-  scoped_refptr<RasterizerTask> new_raster_finished_tasks[kNumberOfTaskSets];
+  scoped_refptr<TileTask> new_task_set_finished_tasks[kNumberOfTaskSets];
 
   size_t task_count[kNumberOfTaskSets] = {0};
 
   for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set) {
-    new_raster_finished_tasks[task_set] = CreateRasterFinishedTask(
+    new_task_set_finished_tasks[task_set] = CreateTaskSetFinishedTask(
         task_runner_.get(),
-        base::Bind(&GpuRasterWorkerPool::OnRasterFinished,
-                   raster_finished_weak_ptr_factory_.GetWeakPtr(),
-                   task_set));
+        base::Bind(&GpuTileTaskWorkerPool::OnTaskSetFinished,
+                   task_set_finished_weak_ptr_factory_.GetWeakPtr(), task_set));
   }
 
-  for (RasterTaskQueue::Item::Vector::const_iterator it = queue->items.begin();
-       it != queue->items.end();
-       ++it) {
-    const RasterTaskQueue::Item& item = *it;
+  for (TileTaskQueue::Item::Vector::const_iterator it = queue->items.begin();
+       it != queue->items.end(); ++it) {
+    const TileTaskQueue::Item& item = *it;
     RasterTask* task = item.task;
     DCHECK(!task->HasCompleted());
 
@@ -163,17 +158,15 @@ void GpuRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
       ++task_count[task_set];
 
       graph_.edges.push_back(
-          TaskGraph::Edge(task, new_raster_finished_tasks[task_set].get()));
+          TaskGraph::Edge(task, new_task_set_finished_tasks[task_set].get()));
     }
 
     InsertNodesForRasterTask(&graph_, task, task->dependencies(), priority++);
   }
 
   for (TaskSet task_set = 0; task_set < kNumberOfTaskSets; ++task_set) {
-    InsertNodeForTask(&graph_,
-                      new_raster_finished_tasks[task_set].get(),
-                      kRasterFinishedTaskPriority,
-                      task_count[task_set]);
+    InsertNodeForTask(&graph_, new_task_set_finished_tasks[task_set].get(),
+                      kTaskSetFinishedTaskPriority, task_count[task_set]);
   }
 
   ScheduleTasksOnOriginThread(this, &graph_);
@@ -181,20 +174,19 @@ void GpuRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
 
   ScheduleRunTasksOnOriginThread();
 
-  std::copy(new_raster_finished_tasks,
-            new_raster_finished_tasks + kNumberOfTaskSets,
-            raster_finished_tasks_);
+  std::copy(new_task_set_finished_tasks,
+            new_task_set_finished_tasks + kNumberOfTaskSets,
+            task_set_finished_tasks_);
 }
 
-void GpuRasterWorkerPool::CheckForCompletedTasks() {
-  TRACE_EVENT0("cc", "GpuRasterWorkerPool::CheckForCompletedTasks");
+void GpuTileTaskWorkerPool::CheckForCompletedTasks() {
+  TRACE_EVENT0("cc", "GpuTileTaskWorkerPool::CheckForCompletedTasks");
 
   task_graph_runner_->CollectCompletedTasks(namespace_token_,
                                             &completed_tasks_);
   for (Task::Vector::const_iterator it = completed_tasks_.begin();
-       it != completed_tasks_.end();
-       ++it) {
-    RasterizerTask* task = static_cast<RasterizerTask*>(it->get());
+       it != completed_tasks_.end(); ++it) {
+    TileTask* task = static_cast<TileTask*>(it->get());
 
     task->WillComplete();
     task->CompleteOnOriginThread(this);
@@ -205,42 +197,39 @@ void GpuRasterWorkerPool::CheckForCompletedTasks() {
   completed_tasks_.clear();
 }
 
-scoped_ptr<RasterBuffer> GpuRasterWorkerPool::AcquireBufferForRaster(
+scoped_ptr<RasterBuffer> GpuTileTaskWorkerPool::AcquireBufferForRaster(
     const Resource* resource) {
   return make_scoped_ptr<RasterBuffer>(
-      new RasterBufferImpl(resource_provider_,
-                           resource,
-                           &multi_picture_draw_,
+      new RasterBufferImpl(resource_provider_, resource, &multi_picture_draw_,
                            use_distance_field_text_));
 }
 
-void GpuRasterWorkerPool::ReleaseBufferForRaster(
+void GpuTileTaskWorkerPool::ReleaseBufferForRaster(
     scoped_ptr<RasterBuffer> buffer) {
   // Nothing to do here. RasterBufferImpl destructor cleans up after itself.
 }
 
-void GpuRasterWorkerPool::OnRasterFinished(TaskSet task_set) {
-  TRACE_EVENT1(
-      "cc", "GpuRasterWorkerPool::OnRasterFinished", "task_set", task_set);
+void GpuTileTaskWorkerPool::OnTaskSetFinished(TaskSet task_set) {
+  TRACE_EVENT1("cc", "GpuTileTaskWorkerPool::OnTaskSetFinished", "task_set",
+               task_set);
 
-  DCHECK(raster_pending_[task_set]);
-  raster_pending_[task_set] = false;
-  client_->DidFinishRunningTasks(task_set);
+  DCHECK(tasks_pending_[task_set]);
+  tasks_pending_[task_set] = false;
+  client_->DidFinishRunningTileTasks(task_set);
 }
 
-void GpuRasterWorkerPool::ScheduleRunTasksOnOriginThread() {
+void GpuTileTaskWorkerPool::ScheduleRunTasksOnOriginThread() {
   if (run_tasks_on_origin_thread_pending_)
     return;
 
   task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&GpuRasterWorkerPool::RunTasksOnOriginThread,
-                 weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::Bind(&GpuTileTaskWorkerPool::RunTasksOnOriginThread,
+                            weak_ptr_factory_.GetWeakPtr()));
   run_tasks_on_origin_thread_pending_ = true;
 }
 
-void GpuRasterWorkerPool::RunTasksOnOriginThread() {
-  TRACE_EVENT0("cc", "GpuRasterWorkerPool::RunTasksOnOriginThread");
+void GpuTileTaskWorkerPool::RunTasksOnOriginThread() {
+  TRACE_EVENT0("cc", "GpuTileTaskWorkerPool::RunTasksOnOriginThread");
 
   DCHECK(run_tasks_on_origin_thread_pending_);
   run_tasks_on_origin_thread_pending_ = false;

@@ -18,8 +18,8 @@
 #include "cc/debug/traced_value.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/resources/raster_buffer.h"
-#include "cc/resources/rasterizer.h"
 #include "cc/resources/tile.h"
+#include "cc/resources/tile_task_runner.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
@@ -73,12 +73,12 @@ class RasterTaskImpl : public RasterTask {
     Raster(raster_source_.get());
   }
 
-  // Overridden from RasterizerTask:
-  void ScheduleOnOriginThread(RasterizerTaskClient* client) override {
+  // Overridden from TileTask:
+  void ScheduleOnOriginThread(TileTaskClient* client) override {
     DCHECK(!raster_buffer_);
     raster_buffer_ = client->AcquireBufferForRaster(resource());
   }
-  void CompleteOnOriginThread(RasterizerTaskClient* client) override {
+  void CompleteOnOriginThread(TileTaskClient* client) override {
     client->ReleaseBufferForRaster(raster_buffer_.Pass());
   }
   void RunReplyOnOriginThread() override {
@@ -158,9 +158,9 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
     pixel_ref_->unlockPixels();
   }
 
-  // Overridden from RasterizerTask:
-  void ScheduleOnOriginThread(RasterizerTaskClient* client) override {}
-  void CompleteOnOriginThread(RasterizerTaskClient* client) override {}
+  // Overridden from TileTask:
+  void ScheduleOnOriginThread(TileTaskClient* client) override {}
+  void CompleteOnOriginThread(TileTaskClient* client) override {}
   void RunReplyOnOriginThread() override { reply_.Run(!HasFinishedRunning()); }
 
  protected:
@@ -208,28 +208,25 @@ scoped_ptr<TileManager> TileManager::Create(
     TileManagerClient* client,
     base::SequencedTaskRunner* task_runner,
     ResourcePool* resource_pool,
-    Rasterizer* rasterizer,
+    TileTaskRunner* tile_task_runner,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     size_t scheduled_raster_task_limit) {
-  return make_scoped_ptr(new TileManager(client,
-                                         task_runner,
-                                         resource_pool,
-                                         rasterizer,
-                                         rendering_stats_instrumentation,
-                                         scheduled_raster_task_limit));
+  return make_scoped_ptr(new TileManager(
+      client, task_runner, resource_pool, tile_task_runner,
+      rendering_stats_instrumentation, scheduled_raster_task_limit));
 }
 
 TileManager::TileManager(
     TileManagerClient* client,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     ResourcePool* resource_pool,
-    Rasterizer* rasterizer,
+    TileTaskRunner* tile_task_runner,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     size_t scheduled_raster_task_limit)
     : client_(client),
       task_runner_(task_runner),
       resource_pool_(resource_pool),
-      rasterizer_(rasterizer),
+      tile_task_runner_(tile_task_runner),
       scheduled_raster_task_limit_(scheduled_raster_task_limit),
       all_tiles_that_need_to_be_rasterized_are_scheduled_(true),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
@@ -244,7 +241,7 @@ TileManager::TileManager(
           base::Bind(&TileManager::CheckIfReadyToDraw, base::Unretained(this))),
       did_notify_ready_to_activate_(false),
       did_notify_ready_to_draw_(false) {
-  rasterizer_->SetClient(this);
+  tile_task_runner_->SetClient(this);
 }
 
 TileManager::~TileManager() {
@@ -252,14 +249,14 @@ TileManager::~TileManager() {
   // our memory usage to drop to zero.
   global_state_ = GlobalStateThatImpactsTilePriority();
 
-  RasterTaskQueue empty;
-  rasterizer_->ScheduleTasks(&empty);
+  TileTaskQueue empty;
+  tile_task_runner_->ScheduleTasks(&empty);
   orphan_raster_tasks_.clear();
 
   // This should finish all pending tasks and release any uninitialized
   // resources.
-  rasterizer_->Shutdown();
-  rasterizer_->CheckForCompletedTasks();
+  tile_task_runner_->Shutdown();
+  tile_task_runner_->CheckForCompletedTasks();
 
   FreeResourcesForReleasedTiles();
   CleanUpReleasedTiles();
@@ -312,8 +309,8 @@ void TileManager::CleanUpReleasedTiles() {
   }
 }
 
-void TileManager::DidFinishRunningTasks(TaskSet task_set) {
-  TRACE_EVENT1("cc", "TileManager::DidFinishRunningTasks", "task_set",
+void TileManager::DidFinishRunningTileTasks(TaskSet task_set) {
+  TRACE_EVENT1("cc", "TileManager::DidFinishRunningTileTasks", "task_set",
                TaskSetName(task_set));
 
   switch (task_set) {
@@ -328,7 +325,7 @@ void TileManager::DidFinishRunningTasks(TaskSet task_set) {
           !memory_usage_above_limit)
         return;
 
-      rasterizer_->CheckForCompletedTasks();
+      tile_task_runner_->CheckForCompletedTasks();
       did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
       TileVector tiles_that_need_to_be_rasterized;
@@ -408,7 +405,7 @@ void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
   // We need to call CheckForCompletedTasks() once in-between each call
   // to ScheduleTasks() to prevent canceled tasks from being scheduled.
   if (!did_check_for_completed_tasks_since_last_schedule_tasks_) {
-    rasterizer_->CheckForCompletedTasks();
+    tile_task_runner_->CheckForCompletedTasks();
     did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
   }
 
@@ -418,7 +415,7 @@ void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
   TileVector tiles_that_need_to_be_rasterized;
   AssignGpuMemoryToTiles(&tiles_that_need_to_be_rasterized);
 
-  // Schedule rasterizer tasks.
+  // Schedule tile tasks.
   ScheduleTasks(tiles_that_need_to_be_rasterized);
 
   did_notify_ready_to_activate_ = false;
@@ -440,7 +437,7 @@ void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
 void TileManager::UpdateVisibleTiles() {
   TRACE_EVENT0("cc", "TileManager::UpdateVisibleTiles");
 
-  rasterizer_->CheckForCompletedTasks();
+  tile_task_runner_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
   TRACE_EVENT_INSTANT1(
@@ -698,7 +695,7 @@ void TileManager::ScheduleTasks(
       task_sets.set(REQUIRED_FOR_DRAW);
     task_sets.set(ALL);
     raster_queue_.items.push_back(
-        RasterTaskQueue::Item(mts.raster_task.get(), task_sets));
+        TileTaskQueue::Item(mts.raster_task.get(), task_sets));
   }
 
   // We must reduce the amount of unused resoruces before calling
@@ -708,7 +705,7 @@ void TileManager::ScheduleTasks(
   // Schedule running of |raster_queue_|. This replaces any previously
   // scheduled tasks and effectively cancels all tasks not present
   // in |raster_queue_|.
-  rasterizer_->ScheduleTasks(&raster_queue_);
+  tile_task_runner_->ScheduleTasks(&raster_queue_);
 
   // It's now safe to clean up orphan tasks as raster worker pool is not
   // allowed to keep around unreferenced raster tasks after ScheduleTasks() has
@@ -853,9 +850,10 @@ scoped_refptr<Tile> TileManager::CreateTile(RasterSource* raster_source,
   return tile;
 }
 
-void TileManager::SetRasterizerForTesting(Rasterizer* rasterizer) {
-  rasterizer_ = rasterizer;
-  rasterizer_->SetClient(this);
+void TileManager::SetTileTaskRunnerForTesting(
+    TileTaskRunner* tile_task_runner) {
+  tile_task_runner_ = tile_task_runner;
+  tile_task_runner_->SetClient(this);
 }
 
 bool TileManager::IsReadyToActivate() const {
@@ -884,7 +882,7 @@ bool TileManager::IsReadyToDraw() const {
 void TileManager::CheckIfReadyToActivate() {
   TRACE_EVENT0("cc", "TileManager::CheckIfReadyToActivate");
 
-  rasterizer_->CheckForCompletedTasks();
+  tile_task_runner_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
   if (did_notify_ready_to_activate_)
@@ -899,7 +897,7 @@ void TileManager::CheckIfReadyToActivate() {
 void TileManager::CheckIfReadyToDraw() {
   TRACE_EVENT0("cc", "TileManager::CheckIfReadyToDraw");
 
-  rasterizer_->CheckForCompletedTasks();
+  tile_task_runner_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
   if (did_notify_ready_to_draw_)

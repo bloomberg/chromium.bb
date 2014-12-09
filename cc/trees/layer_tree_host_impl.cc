@@ -47,20 +47,20 @@
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "cc/resources/bitmap_raster_worker_pool.h"
+#include "cc/resources/bitmap_tile_task_worker_pool.h"
 #include "cc/resources/eviction_tile_priority_queue.h"
-#include "cc/resources/gpu_raster_worker_pool.h"
+#include "cc/resources/gpu_tile_task_worker_pool.h"
 #include "cc/resources/memory_history.h"
-#include "cc/resources/one_copy_raster_worker_pool.h"
+#include "cc/resources/one_copy_tile_task_worker_pool.h"
 #include "cc/resources/picture_layer_tiling.h"
-#include "cc/resources/pixel_buffer_raster_worker_pool.h"
+#include "cc/resources/pixel_buffer_tile_task_worker_pool.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/raster_tile_priority_queue.h"
-#include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/texture_mailbox_deleter.h"
+#include "cc/resources/tile_task_worker_pool.h"
 #include "cc/resources/ui_resource_bitmap.h"
-#include "cc/resources/zero_copy_raster_worker_pool.h"
+#include "cc/resources/zero_copy_tile_task_worker_pool.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/layer_tree_host.h"
@@ -1950,9 +1950,9 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
   DCHECK(output_surface_);
   DCHECK(resource_provider_);
 
-  CreateResourceAndRasterWorkerPool(
-      &raster_worker_pool_, &resource_pool_, &staging_resource_pool_);
-  DCHECK(raster_worker_pool_);
+  CreateResourceAndTileTaskWorkerPool(&tile_task_worker_pool_, &resource_pool_,
+                                      &staging_resource_pool_);
+  DCHECK(tile_task_worker_pool_);
   DCHECK(resource_pool_);
 
   base::SingleThreadTaskRunner* task_runner =
@@ -1962,18 +1962,16 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
   size_t scheduled_raster_task_limit =
       IsSynchronousSingleThreaded() ? std::numeric_limits<size_t>::max()
                                     : settings_.scheduled_raster_task_limit;
-  tile_manager_ = TileManager::Create(this,
-                                      task_runner,
-                                      resource_pool_.get(),
-                                      raster_worker_pool_->AsRasterizer(),
-                                      rendering_stats_instrumentation_,
-                                      scheduled_raster_task_limit);
+  tile_manager_ = TileManager::Create(
+      this, task_runner, resource_pool_.get(),
+      tile_task_worker_pool_->AsTileTaskRunner(),
+      rendering_stats_instrumentation_, scheduled_raster_task_limit);
 
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
 }
 
-void LayerTreeHostImpl::CreateResourceAndRasterWorkerPool(
-    scoped_ptr<RasterWorkerPool>* raster_worker_pool,
+void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
+    scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
     scoped_ptr<ResourcePool>* resource_pool,
     scoped_ptr<ResourcePool>* staging_resource_pool) {
   base::SingleThreadTaskRunner* task_runner =
@@ -1988,10 +1986,9 @@ void LayerTreeHostImpl::CreateResourceAndRasterWorkerPool(
                              GL_TEXTURE_2D,
                              resource_provider_->best_texture_format());
 
-    *raster_worker_pool =
-        BitmapRasterWorkerPool::Create(task_runner,
-                                       RasterWorkerPool::GetTaskGraphRunner(),
-                                       resource_provider_.get());
+    *tile_task_worker_pool = BitmapTileTaskWorkerPool::Create(
+        task_runner, TileTaskWorkerPool::GetTaskGraphRunner(),
+        resource_provider_.get());
     return;
   }
 
@@ -2001,11 +1998,9 @@ void LayerTreeHostImpl::CreateResourceAndRasterWorkerPool(
                              GL_TEXTURE_2D,
                              resource_provider_->best_texture_format());
 
-    *raster_worker_pool =
-        GpuRasterWorkerPool::Create(task_runner,
-                                    context_provider,
-                                    resource_provider_.get(),
-                                    settings_.use_distance_field_text);
+    *tile_task_worker_pool = GpuTileTaskWorkerPool::Create(
+        task_runner, context_provider, resource_provider_.get(),
+        settings_.use_distance_field_text);
     return;
   }
 
@@ -2029,10 +2024,10 @@ void LayerTreeHostImpl::CreateResourceAndRasterWorkerPool(
         single_thread_synchronous_task_graph_runner_.reset(new TaskGraphRunner);
         task_graph_runner = single_thread_synchronous_task_graph_runner_.get();
       } else {
-        task_graph_runner = RasterWorkerPool::GetTaskGraphRunner();
+        task_graph_runner = TileTaskWorkerPool::GetTaskGraphRunner();
       }
 
-      *raster_worker_pool = ZeroCopyRasterWorkerPool::Create(
+      *tile_task_worker_pool = ZeroCopyTileTaskWorkerPool::Create(
           task_runner, task_graph_runner, resource_provider_.get());
       return;
     }
@@ -2046,9 +2041,10 @@ void LayerTreeHostImpl::CreateResourceAndRasterWorkerPool(
           ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D,
                                resource_provider_->best_texture_format());
 
-      *raster_worker_pool = OneCopyRasterWorkerPool::Create(
-          task_runner, RasterWorkerPool::GetTaskGraphRunner(), context_provider,
-          resource_provider_.get(), staging_resource_pool_.get());
+      *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
+          task_runner, TileTaskWorkerPool::GetTaskGraphRunner(),
+          context_provider, resource_provider_.get(),
+          staging_resource_pool_.get());
       return;
     }
   }
@@ -2057,8 +2053,8 @@ void LayerTreeHostImpl::CreateResourceAndRasterWorkerPool(
       resource_provider_.get(), GL_TEXTURE_2D,
       resource_provider_->memory_efficient_texture_format());
 
-  *raster_worker_pool = PixelBufferRasterWorkerPool::Create(
-      task_runner, RasterWorkerPool::GetTaskGraphRunner(), context_provider,
+  *tile_task_worker_pool = PixelBufferTileTaskWorkerPool::Create(
+      task_runner, TileTaskWorkerPool::GetTaskGraphRunner(), context_provider,
       resource_provider_.get(),
       GetMaxTransferBufferUsageBytes(context_provider->ContextCapabilities(),
                                      settings_.renderer_settings.refresh_rate));
@@ -2068,7 +2064,7 @@ void LayerTreeHostImpl::DestroyTileManager() {
   tile_manager_ = nullptr;
   resource_pool_ = nullptr;
   staging_resource_pool_ = nullptr;
-  raster_worker_pool_ = nullptr;
+  tile_task_worker_pool_ = nullptr;
   single_thread_synchronous_task_graph_runner_ = nullptr;
 }
 
