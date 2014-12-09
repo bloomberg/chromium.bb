@@ -11,7 +11,6 @@ import sys
 import traceback
 
 from chromite.lib import cros_build_lib
-from chromite.lib import portage_util
 
 
 class StepFailure(Exception):
@@ -366,6 +365,8 @@ class BuildFailureMessage(object):
     Returns:
       Set of changes that likely caused the failure.
     """
+    # Import portage_util here to avoid circular imports.
+    from chromite.lib import portage_util
     blame_everything = False
     suspects = set()
     for tb in self.tracebacks:

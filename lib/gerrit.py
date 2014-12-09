@@ -13,6 +13,7 @@ from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gob_util
+from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
 
 gob_util.LOGGER = cros_build_lib.logger
@@ -39,6 +40,11 @@ class GerritHelper(object):
 
   # Maximum number of results to return per query.
   _GERRIT_MAX_QUERY_RETURN = 500
+
+  # Number of processes to run in parallel when fetching from Gerrit. The
+  # Gerrit team recommended keeping this small to avoid putting too much
+  # load on the server.
+  _NUM_PROCESSES = 10
 
   # Fields that appear in gerrit change query results.
   MORE_CHANGES = '_more_changes'
@@ -264,7 +270,7 @@ class GerritHelper(object):
     # result directly, circumventing the cache.  For reference:
     #   https://code.google.com/p/chromium/issues/detail?id=302072
     if bypass_cache:
-      result = [self.GetChangeDetail(x['_number']) for x in result]
+      result = self.GetMultipleChangeDetail([x['_number'] for x in result])
 
     result = [cros_patch.GerritPatch.ConvertQueryResults(
         x, self.host) for x in result]
@@ -273,6 +279,19 @@ class GerritHelper(object):
     if raw:
       return result
     return [cros_patch.GerritPatch(x, self.remote, url_prefix) for x in result]
+
+  def GetMultipleChangeDetail(self, changes):
+    """Query the gerrit server for multiple changes using GetChangeDetail.
+
+    Args:
+      changes: A sequence of gerrit change numbers.
+
+    Returns:
+      A list of the raw output of GetChangeDetail.
+    """
+    inputs = [[change] for change in changes]
+    return parallel.RunTasksInProcessPool(self.GetChangeDetail, inputs,
+                                          processes=self._NUM_PROCESSES)
 
   def QueryMultipleCurrentPatchset(self, changes):
     """Query the gerrit server for multiple changes.
@@ -285,9 +304,10 @@ class GerritHelper(object):
     """
     if not changes:
       return
+
     url_prefix = gob_util.GetGerritFetchUrl(self.host)
-    for change in changes:
-      change_detail = self.GetChangeDetail(change)
+    results = self.GetMultipleChangeDetail(changes)
+    for change, change_detail in zip(changes, results):
       if not change_detail:
         raise GerritException('Change %s not found on server %s.'
                               % (change, self.host))
