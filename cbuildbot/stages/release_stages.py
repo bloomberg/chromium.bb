@@ -75,7 +75,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
   """Stage that generates release payloads.
 
   If this stage is created with a 'channels' argument, it can run
-  independantly. Otherwise, it's dependent on values queued up by
+  independently. Otherwise, it's dependent on values queued up by
   the ArchiveStage (push_image).
   """
   option_name = 'paygen'

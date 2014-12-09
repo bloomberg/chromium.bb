@@ -1799,7 +1799,7 @@ def main(argv):
 
   if not options.buildroot:
     if options.buildbot:
-      parser.error('Please specify a buildroot with the --buildbot option.')
+      parser.error('Please specify a buildroot with the --buildroot option.')
 
     options.buildroot = _DetermineDefaultBuildRoot(options.sourceroot,
                                                    build_config['internal'])
