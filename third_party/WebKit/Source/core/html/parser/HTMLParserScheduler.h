@@ -59,9 +59,12 @@ public:
     ~SpeculationsPumpSession();
 
     double elapsedTime() const;
+    void addedElementTokens(size_t count);
+    size_t processedElementTokens() const { return m_processedElementTokens; }
 
 private:
     double m_startTime;
+    size_t m_processedElementTokens;
 };
 
 class HTMLParserScheduler {
@@ -76,7 +79,7 @@ public:
     bool isScheduledForResume() const { return m_isSuspendedWithActiveTimer || m_continueNextChunkTimer.isActive(); }
 
     void scheduleForResume();
-    bool yieldIfNeeded(const SpeculationsPumpSession&);
+    bool yieldIfNeeded(const SpeculationsPumpSession&, bool startingScript);
 
     /**
      * Can only be called if this scheduler is suspended. If this is called,
@@ -93,7 +96,7 @@ public:
 private:
     explicit HTMLParserScheduler(HTMLDocumentParser*);
 
-    bool shouldYield(const SpeculationsPumpSession&) const;
+    bool shouldYield(const SpeculationsPumpSession&, bool startingScript) const;
     void continueNextChunkTimerFired(Timer<HTMLParserScheduler>*);
 
     HTMLDocumentParser* m_parser;
