@@ -39,13 +39,6 @@ const float kMaxScaleRatioDuringPinch = 2.0f;
 // tiling's scale if the desired scale is within this ratio.
 const float kSnapToExistingTilingRatio = 1.2f;
 
-// Estimate skewport 60 frames ahead for pre-rasterization on the CPU.
-const float kCpuSkewportTargetTimeInFrames = 60.0f;
-
-// Don't pre-rasterize on the GPU (except for kBackflingGuardDistancePixels in
-// TileManager::BinFromTilePriority).
-const float kGpuSkewportTargetTimeInFrames = 0.0f;
-
 // Even for really wide viewports, at some point GPU raster should use
 // less than 4 tiles to fill the viewport. This is set to 256 as a
 // sane minimum for now, but we might want to tune this for low-end.
@@ -684,13 +677,9 @@ size_t PictureLayerImpl::GetMaxTilesForInterestArea() const {
 }
 
 float PictureLayerImpl::GetSkewportTargetTimeInSeconds() const {
-  float skewport_target_time_in_frames =
-      layer_tree_impl()->use_gpu_rasterization()
-          ? kGpuSkewportTargetTimeInFrames
-          : kCpuSkewportTargetTimeInFrames;
-  return skewport_target_time_in_frames *
-         layer_tree_impl()->begin_impl_frame_interval().InSecondsF() *
-         layer_tree_impl()->settings().skewport_target_time_multiplier;
+  return layer_tree_impl()->use_gpu_rasterization()
+             ? 0.f
+             : layer_tree_impl()->settings().skewport_target_time_in_seconds;
 }
 
 int PictureLayerImpl::GetSkewportExtrapolationLimitInContentPixels() const {

@@ -65,7 +65,7 @@ class CC_EXPORT LayerTreeSettings {
   bool use_pinch_zoom_scrollbars;
   bool use_pinch_virtual_viewport;
   size_t max_tiles_for_interest_area;
-  float skewport_target_time_multiplier;
+  float skewport_target_time_in_seconds;
   int skewport_extrapolation_limit_in_content_pixels;
   size_t max_unused_resource_memory_percentage;
   size_t max_memory_for_prepaint_percentage;

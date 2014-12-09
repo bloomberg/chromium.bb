@@ -54,7 +54,7 @@ LayerTreeSettings::LayerTreeSettings()
       use_pinch_virtual_viewport(false),
       // At 256x256 tiles, 128 tiles cover an area of 2048x4096 pixels.
       max_tiles_for_interest_area(128),
-      skewport_target_time_multiplier(1.0f),
+      skewport_target_time_in_seconds(1.0f),
       skewport_extrapolation_limit_in_content_pixels(2000),
       max_unused_resource_memory_percentage(100),
       max_memory_for_prepaint_percentage(100),
