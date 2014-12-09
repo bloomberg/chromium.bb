@@ -395,6 +395,14 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
         NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
         return;
       }
+
+      // TODO(dshwang): after moving to D3D11, remove this. crbug.com/438691
+      GLenum format =
+          video_decode_accelerator_.get()->GetSurfaceInternalFormat();
+      if (format != GL_RGBA) {
+        texture_manager->SetLevelInfo(texture_ref, texture_target_, 0, format,
+                                      width, height, 1, 0, format, 0, false);
+      }
     }
     uint32 service_texture_id;
     if (!command_decoder->GetServiceTextureId(

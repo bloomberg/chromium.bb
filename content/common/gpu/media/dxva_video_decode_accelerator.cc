@@ -298,6 +298,7 @@ DXVAVideoDecodeAccelerator::DXVAPictureBuffer::Create(
                     "Failed to query ANGLE surface pointer",
                     linked_ptr<DXVAPictureBuffer>(NULL));
 
+  // TODO(dshwang): after moving to D3D11, use RGBA surface. crbug.com/438691
   HRESULT hr = decoder.device_->CreateTexture(
       buffer.size().width(),
       buffer.size().height(),
@@ -721,6 +722,10 @@ void DXVAVideoDecodeAccelerator::Destroy() {
 
 bool DXVAVideoDecodeAccelerator::CanDecodeOnIOThread() {
   return false;
+}
+
+GLenum DXVAVideoDecodeAccelerator::GetSurfaceInternalFormat() const {
+  return GL_BGRA_EXT;
 }
 
 bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {

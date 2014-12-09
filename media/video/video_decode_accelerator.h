@@ -13,6 +13,8 @@
 #include "media/video/picture.h"
 #include "ui/gfx/size.h"
 
+typedef unsigned int GLenum;
+
 namespace media {
 
 // Video decoder interface.
@@ -142,6 +144,10 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   // PictureReady should be run on the child thread if a picture is delivered
   // the first time so it can be cleared.
   virtual bool CanDecodeOnIOThread();
+
+  // Windows creates a BGRA texture.
+  // TODO(dshwang): after moving to D3D11, remove this. crbug.com/438691
+  virtual GLenum GetSurfaceInternalFormat() const;
 
  protected:
   // Do not delete directly; use Destroy() or own it with a scoped_ptr, which

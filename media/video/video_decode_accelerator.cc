@@ -4,6 +4,7 @@
 
 #include "media/video/video_decode_accelerator.h"
 
+#include <GLES2/gl2.h>
 #include "base/logging.h"
 
 namespace media {
@@ -14,6 +15,10 @@ bool VideoDecodeAccelerator::CanDecodeOnIOThread() {
   // GPU process subclasses must override this.
   LOG(FATAL) << "This should only get called in the GPU process";
   return false;  // not reached
+}
+
+GLenum VideoDecodeAccelerator::GetSurfaceInternalFormat() const {
+  return GL_RGBA;
 }
 
 } // namespace media

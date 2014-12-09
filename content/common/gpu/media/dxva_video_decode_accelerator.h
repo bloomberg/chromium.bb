@@ -65,6 +65,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   virtual void Reset() override;
   virtual void Destroy() override;
   virtual bool CanDecodeOnIOThread() override;
+  GLenum GetSurfaceInternalFormat() const override;
 
  private:
   typedef void* EGLConfig;
