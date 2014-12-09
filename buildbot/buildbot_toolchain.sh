@@ -63,8 +63,21 @@ echo @@@BUILD_STEP build_core_sdk@@@
     nacl_newlib_dir=tools/sdk/nacl-sdk \
     DESTINATION_ROOT="tools/${CORE_SDK_WORK}" \
     includedir="tools/${CORE_SDK}/x86_64-nacl/include" \
+    install_headers
+
+  ${NATIVE_PYTHON} scons.py MODE=nacl naclsdk_validate=0 \
+    platform=x86-32 \
+    nacl_newlib_dir=tools/sdk/nacl-sdk \
+    DESTINATION_ROOT="tools/${CORE_SDK_WORK}" \
+    libdir="tools/${CORE_SDK}/x86_64-nacl/lib32" \
+    install_lib
+
+  ${NATIVE_PYTHON} scons.py MODE=nacl naclsdk_validate=0 \
+    platform=x86-64 \
+    nacl_newlib_dir=tools/sdk/nacl-sdk \
+    DESTINATION_ROOT="tools/${CORE_SDK_WORK}" \
     libdir="tools/${CORE_SDK}/x86_64-nacl/lib" \
-    install
+    install_lib
 )
 
 echo @@@BUILD_STEP canonicalize timestamps@@@

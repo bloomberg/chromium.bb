@@ -135,8 +135,21 @@ python scons.py --nacl_glibc MODE=nacl naclsdk_validate=0 \
   nacl_glibc_dir="tools/${TOOL_TOOLCHAIN}" \
   DESTINATION_ROOT="tools/${CORE_SDK_WORK}" \
   includedir="tools/${CORE_SDK}/x86_64-nacl/include" \
+  install_headers
+
+python scons.py --nacl_glibc MODE=nacl naclsdk_validate=0 \
+  platform=x86-32 \
+  nacl_glibc_dir="tools/${TOOL_TOOLCHAIN}" \
+  DESTINATION_ROOT="tools/${CORE_SDK_WORK}" \
+  libdir="tools/${CORE_SDK}/x86_64-nacl/lib32" \
+  install_lib
+
+python scons.py --nacl_glibc MODE=nacl naclsdk_validate=0 \
+  platform=x86-64 \
+  nacl_glibc_dir="tools/${TOOL_TOOLCHAIN}" \
+  DESTINATION_ROOT="tools/${CORE_SDK_WORK}" \
   libdir="tools/${CORE_SDK}/x86_64-nacl/lib" \
-  install
+  install_lib
 
 
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
