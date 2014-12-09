@@ -18,7 +18,6 @@ import logging
 import os
 import sys
 import time
-import urllib
 from xml.dom import minidom
 
 from chromite.cbuildbot import failures_lib
@@ -1078,12 +1077,14 @@ class ValidationPool(object):
           'cros_patch.PatchException derivative, got %r'
           % (conflicting_changes,))
 
-    self.build_log = self.ConstructDashboardURL(overlays, pre_cq, builder_name,
-                                                str(build_number))
-
     self.is_master = bool(is_master)
     self.pre_cq = pre_cq
     self._run = builder_run
+    self.build_log = None
+    if self._run:
+      waterfall = self._run.attrs.metadata.GetValue('buildbot-master-name')
+      self.build_log = tree_status.ConstructDashboardURL(
+          waterfall, builder_name, build_number)
     self.dryrun = bool(dryrun) or self.GLOBAL_DRYRUN
     self.queue = 'A trybot' if pre_cq else 'The Commit Queue'
     self.bot = PRE_CQ if pre_cq else CQ
@@ -1101,37 +1102,6 @@ class ValidationPool(object):
     self._overlays = overlays
     self._build_number = build_number
     self._builder_name = builder_name
-
-  @staticmethod
-  def GetBuildDashboardForOverlays(overlays, trybot):
-    """Discern the dashboard to use based on the given overlay."""
-    if trybot:
-      return constants.TRYBOT_DASHBOARD
-    if overlays in [constants.PRIVATE_OVERLAYS, constants.BOTH_OVERLAYS]:
-      return constants.BUILD_INT_DASHBOARD
-    return constants.BUILD_DASHBOARD
-
-  @classmethod
-  def ConstructDashboardURL(cls, overlays, trybot, builder_name, build_number,
-                            stage=None):
-    """Return the dashboard (buildbot) URL for this run
-
-    Args:
-      overlays: One of constants.VALID_OVERLAYS.
-      trybot: Boolean: is this a remote trybot?
-      builder_name: Builder name on buildbot dashboard.
-      build_number: Build number for this validation attempt.
-      stage: Link directly to a stage log, else use the general landing page.
-
-    Returns:
-      The fully formed URL
-    """
-    build_dashboard = cls.GetBuildDashboardForOverlays(overlays, trybot)
-    url_suffix = 'builders/%s/builds/%s' % (builder_name, str(build_number))
-    if stage:
-      url_suffix += '/steps/%s/logs/stdio' % (stage,)
-    url_suffix = urllib.quote(url_suffix)
-    return os.path.join(build_dashboard, url_suffix)
 
   @staticmethod
   def GetGerritHelpersForOverlays(overlays):
@@ -1563,11 +1533,10 @@ class ValidationPool(object):
 
     self.PrintLinksToChanges(applied)
 
-    if self.is_master:
-      _, db = self._run.GetCIDBHandle()
-      action_history = db.GetActionsForChanges(applied)
-      inputs = [[change, action_history] for change in applied]
-      parallel.RunTasksInProcessPool(self._HandleApplySuccess, inputs)
+    if self.is_master and not self.pre_cq:
+      # PreCQ configs do not comment on gerrit individually.
+      inputs = [[change, None] for change in applied]
+      parallel.RunTasksInProcessPool(self.HandleApplySuccess, inputs)
 
     failed_tot = self._FilterDependencyErrors(failed_tot)
     if failed_tot:
@@ -2151,7 +2120,9 @@ class ValidationPool(object):
         self.RemoveReady(change)
 
   def SendNotification(self, change, msg, **kwargs):
-    d = dict(build_log=self.build_log, queue=self.queue, **kwargs)
+    kwargs.setdefault('build_log', self.build_log)
+    kwargs.setdefault('queue', self.queue)
+    d = dict(**kwargs)
     try:
       msg %= d
     except (TypeError, ValueError) as e:
@@ -2164,16 +2135,20 @@ class ValidationPool(object):
     PaladinMessage(msg, change, self._helper_pool.ForChange(change)).Send(
         self.dryrun)
 
-  def HandlePreCQSuccess(self):
-    """Handler that is called when a pre-cq tryjob verifies a change."""
-    config_name = self._run.config.name
-    msg = ('%(queue)s job with config %(config)s successfully verified your '
-           'change in %(build_log)s .')
+  def HandlePreCQSuccess(self, changes):
+    """Handler that is called when |changes| passed all pre-cq configs."""
+    msg = ('%(queue)s has successfully verified your change.')
+    def ProcessChange(change):
+      self.SendNotification(change, msg)
 
+    inputs = [[change] for change in changes]
+    parallel.RunTasksInProcessPool(ProcessChange, inputs)
+
+  def HandlePreCQPerConfigSuccess(self):
+    """Handler that is called when a pre-cq tryjob verifies a change."""
     def ProcessChange(change):
       # Note: This function has no unit test coverage. Be careful when
       # modifying.
-      self.SendNotification(change, msg, config=config_name)
       if self._run:
         metadata = self._run.attrs.metadata
         timestamp = int(time.time())
@@ -2396,7 +2371,7 @@ class ValidationPool(object):
     self.SendNotification(change, msg)
     self.RemoveReady(change)
 
-  def _HandleApplySuccess(self, change, action_history):
+  def HandleApplySuccess(self, change, build_log=None):
     """Handler for when Paladin successfully applies (picks up) a change.
 
     This handler notifies a developer that their change is being tried as
@@ -2405,14 +2380,11 @@ class ValidationPool(object):
     Args:
       change: GerritPatch instance to operate upon.
       action_history: List of CLAction instances.
+      build_log: The URL to the build log.
     """
-    if self.pre_cq:
-      status = clactions.GetCLPreCQStatus(change, action_history)
-      if status == constants.CL_STATUS_PASSED:
-        return
     msg = ('%(queue)s has picked up your change. '
            'You can follow along at %(build_log)s .')
-    self.SendNotification(change, msg)
+    self.SendNotification(change, msg, build_log=build_log)
 
   def UpdateCLPreCQStatus(self, change, status):
     """Update the pre-CQ |status| of |change|."""

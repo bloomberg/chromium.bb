@@ -19,6 +19,7 @@ from chromite.cbuildbot import cbuildbot_config as config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import cbuildbot_run
+from chromite.cbuildbot import constants
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
@@ -73,7 +74,8 @@ class StageTest(cros_test_lib.MockOutputTestCase,
     self._run = None
 
   def _Prepare(self, bot_id=None, extra_config=None, cmd_args=None,
-               extra_cmd_args=None, build_id=DEFAULT_BUILD_ID):
+               extra_cmd_args=None, build_id=DEFAULT_BUILD_ID,
+               waterfall=constants.WATERFALL_INTERNAL):
     """Prepare a BuilderRun at self._run for this test.
 
     This method must allow being called more than once.  Subclasses can
@@ -98,6 +100,7 @@ class StageTest(cros_test_lib.MockOutputTestCase,
         Example: ['branch-name', 'some-branch-name'] will effectively cause
         self._run.options.branch_name to be set to 'some-branch-name'.
       build_id: mock build id
+      waterfall: One of constants.CIDB_KNOWN_WATERFALLS.
     """
     # Use cbuildbot parser to create options object and populate default values.
     parser = cbuildbot._CreateParser()
@@ -145,6 +148,8 @@ class StageTest(cros_test_lib.MockOutputTestCase,
 
     if build_id is not None:
       self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
+
+    self._run.attrs.metadata.UpdateWithDict({'buildbot-master-name': waterfall})
 
     if self.RELEASE_TAG is not None:
       self._run.attrs.release_tag = self.RELEASE_TAG
@@ -258,7 +263,7 @@ class BuilderStageTest(AbstractStageTest):
   """Tests for BuilderStage class."""
 
   def setUp(self):
-    self._Prepare()
+    self._Prepare(waterfall=constants.WATERFALL_EXTERNAL)
 
   def ConstructStage(self):
     return generic_stages.BuilderStage(self._run)

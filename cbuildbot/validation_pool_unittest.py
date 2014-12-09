@@ -78,8 +78,10 @@ class FakeBuilderRun(object):
   """
   def __init__(self, fake_db=None):
     self.fake_db = fake_db
+    metadata_dict = {'buildbot-master-name': constants.WATERFALL_INTERNAL}
     FakeAttrs = collections.namedtuple('FakeAttrs', ['metadata'])
-    self.attrs = FakeAttrs(metadata=metadata_lib.CBuildbotMetadata())
+    self.attrs = FakeAttrs(metadata=metadata_lib.CBuildbotMetadata(
+        metadata_dict=metadata_dict))
 
   def GetCIDBHandle(self):
     """Get the build_id and cidb handle, if available.
@@ -718,7 +720,7 @@ class TestCoreLogic(MoxBase):
     handlers = kwargs.pop('handlers', False)
     kwargs['build_root'] = self.build_root
     pool = MakePool(*args, **kwargs)
-    funcs = ['_HandleApplySuccess', '_HandleApplyFailure',
+    funcs = ['HandleApplySuccess', '_HandleApplyFailure',
              '_HandleCouldNotApply', '_HandleCouldNotSubmit',
              '_HandleFailedToApplyDueToInflightConflict']
     if handlers:
@@ -740,7 +742,7 @@ class TestCoreLogic(MoxBase):
         ).AndReturn((applied, tot, inflight))
 
     for patch in applied:
-      pool._HandleApplySuccess(patch, []).AndReturn(None)
+      pool.HandleApplySuccess(patch, mox.IgnoreArg()).AndReturn(None)
 
     if tot:
       pool._HandleApplyFailure(tot).AndReturn(None)
@@ -807,9 +809,10 @@ class TestCoreLogic(MoxBase):
     """Validate steps taken for successfull application."""
     patch = self.GetPatches(1)
     pool = self.MakePool(fake_db=self.fake_db)
-    pool.SendNotification(patch, mox.StrContains('has picked up your change'))
+    pool.SendNotification(patch, mox.StrContains('has picked up your change'),
+                          build_log=mox.IgnoreArg())
     self.mox.ReplayAll()
-    pool._HandleApplySuccess(patch, [])
+    pool.HandleApplySuccess(patch, build_log=mox.IgnoreArg())
     self.mox.VerifyAll()
 
   def testHandleApplyFailure(self):

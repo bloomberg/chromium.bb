@@ -1061,7 +1061,7 @@ class PreCQLauncherStage(SyncStage):
       that should be launched.
     """
     # Get the set of busy and passed CLs.
-    busy, verified = clactions.GetPreCQCategories(progress_map)
+    busy, _, verified = clactions.GetPreCQCategories(progress_map)
 
     screened_changes = set(progress_map)
 
@@ -1136,7 +1136,7 @@ class PreCQLauncherStage(SyncStage):
     timeout_statuses = (constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED,
                         constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT)
     config_progress = progress_map[change]
-    for config, (config_status, timestamp) in config_progress.iteritems():
+    for config, (config_status, timestamp, _) in config_progress.iteritems():
       if not config_status in timeout_statuses:
         continue
       launched = config_status == constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED
@@ -1197,7 +1197,7 @@ class PreCQLauncherStage(SyncStage):
     status_map = {c: clactions.GetCLPreCQStatus(c, action_history)
                   for c in changes}
     progress_map = clactions.GetPreCQProgressMap(changes, action_history)
-    _, verified = clactions.GetPreCQCategories(progress_map)
+    _, inflight, verified = clactions.GetPreCQCategories(progress_map)
     current_db_time = db.GetTime()
 
     # TODO(akeshet): Once this change lands, we will no longer mark changes
@@ -1220,6 +1220,20 @@ class PreCQLauncherStage(SyncStage):
 
     for change in changes:
       self._ProcessRequeuedAndSpeculative(change, action_history)
+
+    for change in inflight:
+      if status_map[change] != constants.CL_STATUS_INFLIGHT:
+        build_ids = [x for _, _, x in progress_map[change].values()]
+        # Change the status to inflight.
+        pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_INFLIGHT)
+        build_dicts = db.GetBuildStatuses(build_ids)
+        urls = []
+        for b in build_dicts:
+          urls.append(tree_status.ConstructDashboardURL(
+              b['waterfall'], b['builder_name'], b['build_number']))
+
+        # Send notifications.
+        pool.HandleApplySuccess(change, build_log='\n'.join(urls))
 
     for change in to_process:
       # Detect if change is ready to be marked as passed, or ready to submit.
@@ -1248,10 +1262,10 @@ class PreCQLauncherStage(SyncStage):
         pool, launchable_progress_map):
       self.LaunchTrybot(plan, config)
 
-    # Submit changes that are ready to submit, if we can.
-    if tree_status.IsTreeOpen():
-      pool.SubmitNonManifestChanges(check_tree_open=False)
-      pool.SubmitChanges(will_submit, check_tree_open=False)
+    # Send notifications to all successfully verified changes.
+    success = will_pass.union(will_submit)
+    if success:
+      pool.HandlePreCQSuccess(success)
 
     # Mark passed changes as passed
     if will_pass:
@@ -1261,6 +1275,11 @@ class PreCQLauncherStage(SyncStage):
       actions = [clactions.CLAction.FromGerritPatchAndAction(c, a)
                  for c in will_pass]
       db.InsertCLActions(build_id, actions)
+
+    # Submit changes that are ready to submit, if we can.
+    if tree_status.IsTreeOpen():
+      pool.SubmitNonManifestChanges(check_tree_open=False)
+      pool.SubmitChanges(will_submit, check_tree_open=False)
 
     # Tell ValidationPool to keep waiting for more changes until we hit
     # its internal timeout.

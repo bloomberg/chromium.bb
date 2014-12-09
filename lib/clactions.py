@@ -260,10 +260,11 @@ def GetCLPreCQProgress(change, action_history):
     action_history: List of CLAction instances.
 
   Returns:
-    A dict of the form {config_name: (status, timestamp)} specifying
+    A dict of the form {config_name: (status, timestamp, build_id)} specifying
     all the per-config pre-cq statuses, where status is one of
-    constants.CL_PRECQ_CONFIG_STATUSES and timestampe is a datetime.datetime of
-    when this status was most recently achieved.
+    constants.CL_PRECQ_CONFIG_STATUSES, timestamp is a datetime.datetime of
+    when this status was most recently achieved, and build_id is the id of the
+    build which most recently updated this per-config status.
   """
   actions_for_patch = ActionsForPatch(change, action_history)
   config_status_dict = {}
@@ -274,7 +275,7 @@ def GetCLPreCQProgress(change, action_history):
     if a.action == constants.CL_ACTION_VALIDATION_PENDING_PRE_CQ:
       assert a.reason, 'Validation was requested without a specified config.'
       config_status_dict[a.reason] = (constants.CL_PRECQ_CONFIG_STATUS_PENDING,
-                                      a.timestamp)
+                                      a.timestamp, a.build_id)
 
   # Loop through actions_for_patch several times, in order of status priority.
   # CL_PRECQ_CONFIG_STATUS_LAUNCHED,
@@ -285,24 +286,24 @@ def GetCLPreCQProgress(change, action_history):
     if (a.action == constants.CL_ACTION_TRYBOT_LAUNCHING and
         a.reason in config_status_dict):
       config_status_dict[a.reason] = (constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED,
-                                      a.timestamp)
+                                      a.timestamp, a.build_id)
     elif (a.action == constants.CL_ACTION_PICKED_UP and
           a.build_config in config_status_dict):
       config_status_dict[a.build_config] = (
-          constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT, a.timestamp)
+          constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT, a.timestamp, a.build_id)
     elif (a.action == constants.CL_ACTION_KICKED_OUT and
         (a.build_config in config_status_dict or
          a.reason in config_status_dict)):
       config = (a.build_config if a.build_config in config_status_dict else
                 a.reason)
       config_status_dict[config] = (constants.CL_PRECQ_CONFIG_STATUS_FAILED,
-                                    a.timestamp)
+                                    a.timestamp, a.build_id)
 
   for a in actions_for_patch:
     if (a.action == constants.CL_ACTION_VERIFIED and
         a.build_config in config_status_dict):
       config_status_dict[a.build_config] = (
-          constants.CL_PRECQ_CONFIG_STATUS_VERIFIED, a.timestamp)
+          constants.CL_PRECQ_CONFIG_STATUS_VERIFIED, a.timestamp, a.build_id)
 
   return config_status_dict
 
@@ -335,26 +336,32 @@ def GetPreCQCategories(progress_map):
     progress_map: See return type of GetPreCQProgressMap.
 
   Returns:
-    A (busy, verified) tuple where busy and verified are each a set of changes.
+    A (busy, inflight, verified) tuple where each item is a set of changes.
     A change is verified if all its pending configs have verified it. A change
     is busy if it is not verified, but all pending configs are either launched
-    or inflight or verified.
+    or inflight or verified. A change is inflight if all configs are at least
+    at or past the inflight state, and at least one config is still inflight.
   """
-  busy = set()
-  verified = set()
+  busy, inflight, verified = set(), set(), set()
   busy_states = (constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED,
                  constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT,
                  constants.CL_PRECQ_CONFIG_STATUS_VERIFIED)
+  beyond_inflight_states = (constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT,
+                            constants.CL_PRECQ_CONFIG_STATUS_VERIFIED,
+                            constants.CL_PRECQ_CONFIG_STATUS_FAILED)
 
   for change, config_status_dict in progress_map.iteritems():
-    if all(s == constants.CL_PRECQ_CONFIG_STATUS_VERIFIED for
-           (s, t) in config_status_dict.values()):
+    statuses = [x for x, _, _, in config_status_dict.values()]
+    if all(x == constants.CL_PRECQ_CONFIG_STATUS_VERIFIED for x in statuses):
       verified.add(change)
-    elif all(s in busy_states for
-             (s, t) in config_status_dict.values()):
+    elif all(x in busy_states for x in statuses):
       busy.add(change)
 
-  return busy, verified
+    if (all(x in beyond_inflight_states for x in statuses) and
+        any(x == constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT for x in statuses)):
+      inflight.add(change)
+
+  return busy, inflight, verified
 
 
 def GetPreCQConfigsToTest(changes, progress_map):
@@ -381,7 +388,7 @@ def GetPreCQConfigsToTest(changes, progress_map):
   to_test_states = (constants.CL_PRECQ_CONFIG_STATUS_PENDING,
                     constants.CL_PRECQ_CONFIG_STATUS_FAILED)
   for change in changes:
-    for config, (status, _) in progress_map[change].iteritems():
+    for config, (status, _, _) in progress_map[change].iteritems():
       if status in to_test_states:
         configs_to_test.add(config)
   return configs_to_test

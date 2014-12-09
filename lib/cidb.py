@@ -761,11 +761,28 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     Returns:
       A dictionary with keys (id, build_config, start_time, finish_time,
-      status), or None if no build with this id was found.
+      status, waterfall, build_number, builder_name), or None if no build
+      with this id was found.
     """
-    return self._Select('buildTable', build_id,
-                        ['id', 'build_config', 'start_time',
-                         'finish_time', 'status'])
+    return self.GetBuildStatuses([build_id])[0]
+
+  @minimum_schema(2)
+  def GetBuildStatuses(self, build_ids):
+    """Gets the statuses of the builds.
+
+    Args:
+      build_ids: A list of build id to fetch.
+
+    Returns:
+      A list of dictionary with keys (id, build_config, start_time,
+      finish_time, status, waterfall, build_number, builder_name), or
+      None if no build with this id was found.
+    """
+    return self._SelectWhere(
+        'buildTable',
+        'id IN (%s)' % ','.join(str(x) for x in build_ids),
+        ['id', 'build_config', 'start_time', 'finish_time', 'status',
+         'waterfall', 'build_number', 'builder_name'])
 
   @minimum_schema(2)
   def GetSlaveStatuses(self, master_build_id):

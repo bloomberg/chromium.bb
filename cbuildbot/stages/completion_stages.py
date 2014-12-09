@@ -769,7 +769,7 @@ class PreCQCompletionStage(generic_stages.BuilderStage):
   def PerformStage(self):
     # Update Gerrit and Google Storage with the Pre-CQ status.
     if self.success:
-      self.sync_stage.pool.HandlePreCQSuccess()
+      self.sync_stage.pool.HandlePreCQPerConfigSuccess()
     else:
       message = self.GetBuildFailureMessage()
       self.sync_stage.pool.HandleValidationFailure([message])

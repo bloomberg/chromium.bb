@@ -363,3 +363,24 @@ def GetHealthAlertRecipients(builder_run):
       recipients.extend(GetSheriffEmailAddresses(entry))
 
   return recipients
+
+
+def ConstructDashboardURL(waterfall, builder_name, build_number, stage=None):
+  """Return the dashboard (buildbot) URL for this run
+
+  Args:
+    waterfall: One of constants.CIDB_KNOWN_WATERFALLS.
+    builder_name: Builder name on buildbot dashboard.
+    build_number: Build number for this validation attempt.
+    stage: Link directly to a stage log, else use the general landing page.
+
+  Returns:
+    The fully formed URL.
+  """
+  build_dashboard = constants.WATERFALL_TO_DASHBOARD[waterfall]
+  url_suffix = 'builders/%s/builds/%s' % (builder_name, str(build_number))
+  if stage:
+    url_suffix += '/steps/%s/logs/stdio' % (stage,)
+  url_suffix = urllib.quote(url_suffix)
+  return os.path.join(build_dashboard, url_suffix)
+

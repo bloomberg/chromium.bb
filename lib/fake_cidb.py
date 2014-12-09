@@ -105,3 +105,11 @@ class FakeCIDBConnection(object):
       values.append(row)
 
     return [clactions.CLAction(*row) for row in values]
+
+  def GetBuildStatus(self, build_id):
+    """Gets the status of the build."""
+    return self.buildTable[build_id - 1]
+
+  def GetBuildStatuses(self, build_ids):
+    """Gets the status of the builds."""
+    return [self.buildTable[x -1] for x in build_ids]

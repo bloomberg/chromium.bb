@@ -202,6 +202,7 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     c2 = metadata_lib.GerritPatchTuple(2, 2, False)
     c3 = metadata_lib.GerritPatchTuple(3, 3, False)
     c4 = metadata_lib.GerritPatchTuple(4, 4, False)
+    c5 = metadata_lib.GerritPatchTuple(5, 5, False)
 
     launcher_build_id = self.fake_db.InsertBuild(
         constants.PRE_CQ_LAUNCHER_NAME, constants.WATERFALL_INTERNAL,
@@ -214,7 +215,7 @@ class TestCLActionHistory(cros_test_lib.TestCase):
         'guava hostname')
 
     # c1 has 3 pending verifications, but only 1 inflight and 1
-    # launching, so it is not busy.
+    # launching, so it is not busy/inflight.
     self._Act(launcher_build_id, c1,
               constants.CL_ACTION_VALIDATION_PENDING_PRE_CQ,
               'pineapple-pre-cq')
@@ -255,13 +256,25 @@ class TestCLActionHistory(cros_test_lib.TestCase):
     self._Act(pineapple_build_id, c3, constants.CL_ACTION_VERIFIED)
     self._Act(guava_build_id, c3, constants.CL_ACTION_VERIFIED)
 
-    # c4 has not even been screened.
+    # c4 has 2 pending verifications: one is inflight and the other
+    # passed. It is considered inflight and busy.
+    self._Act(launcher_build_id, c4,
+              constants.CL_ACTION_VALIDATION_PENDING_PRE_CQ,
+              'pineapple-pre-cq')
+    self._Act(launcher_build_id, c4,
+              constants.CL_ACTION_VALIDATION_PENDING_PRE_CQ,
+              'guava-pre-cq')
+    self._Act(pineapple_build_id, c4, constants.CL_ACTION_PICKED_UP)
+    self._Act(guava_build_id, c4, constants.CL_ACTION_VERIFIED)
 
-    changes = [c1, c2, c3, c4]
+    # c5 has not even been screened.
+
+    changes = [c1, c2, c3, c4, c5]
     action_history = self.fake_db.GetActionsForChanges(changes)
     progress_map = clactions.GetPreCQProgressMap(changes, action_history)
 
-    self.assertEqual(({c2}, {c3}), clactions.GetPreCQCategories(progress_map))
+    self.assertEqual(({c2, c4}, {c4}, {c3}),
+                     clactions.GetPreCQCategories(progress_map))
 
     # Among changes c1, c2, c3, only the guava-pre-cq config is pending. The
     # other configs are either inflight, launching, or passed everywhere.

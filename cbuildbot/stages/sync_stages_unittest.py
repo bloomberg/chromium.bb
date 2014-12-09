@@ -414,6 +414,8 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
   def setUp(self):
     self.PatchObject(time, 'sleep', autospec=True)
+    self.PatchObject(validation_pool.ValidationPool, 'HandlePreCQSuccess',
+                     autospec=True)
 
   def _Prepare(self, bot_id=None, **kwargs):
     build_id = self.fake_db.InsertBuild(
@@ -604,7 +606,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     self.assertEqual(self._GetPreCQStatus(changes[1]),
                      constants.CL_STATUS_PASSED)
     self.assertEqual(self._GetPreCQStatus(changes[2]),
-                     None)
+                     constants.CL_STATUS_INFLIGHT)
     for change in changes[3:5]:
       self.assertEqual(self._GetPreCQStatus(change),
                        constants.CL_STATUS_FAILED)
@@ -674,6 +676,10 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     progress_map = clactions.GetPreCQProgressMap(changes, action_history)
     assertAllStatuses(progress_map, constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT)
 
+    # Verify that we mark the change as inflight.
+    self.assertEqual(self._GetPreCQStatus(changes[0]),
+                     constants.CL_STATUS_INFLIGHT)
+
     # Fake the CLs being verified.
     self.fake_db.InsertCLActions(
         build_ids[constants.PRE_CQ_GROUP_CONFIG],
@@ -683,7 +689,8 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     self.PerformSync(pre_cq_status=None, changes=changes, patch_objects=False)
 
     # Verify that we don't mark the change as passed.
-    self.assertEqual(self._GetPreCQStatus(changes[0]), None)
+    self.assertEqual(self._GetPreCQStatus(changes[0]),
+                     constants.CL_STATUS_INFLIGHT)
 
     # Mark our changes as ready, and see if they are immediately passed.
     for change in changes:
@@ -700,7 +707,7 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     """Pretend to start all launched tryjobs."""
     build_ids_per_config = {}
     for change, change_status_dict in progress_map.iteritems():
-      for config, (status, _) in change_status_dict.iteritems():
+      for config, (status, _, _) in change_status_dict.iteritems():
         if status == constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED:
           if not config in build_ids_per_config:
             build_ids_per_config[config] = self.fake_db.InsertBuild(

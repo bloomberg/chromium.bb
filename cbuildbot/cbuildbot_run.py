@@ -38,7 +38,7 @@ from chromite.cbuildbot import archive_lib
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
-from chromite.cbuildbot import validation_pool
+from chromite.cbuildbot import tree_status
 from chromite.lib import cidb
 from chromite.lib import portage_util
 
@@ -654,6 +654,14 @@ class _BuilderRunBase(object):
     """Create a BoardRunAttributes object for this run and given |board|."""
     return BoardRunAttributes(self.attrs, board, self.config.name)
 
+  def GetWaterfall(self):
+    """Gets the waterfall of the current build."""
+    # Metadata dictionary may not have been written at this time (it
+    # should be written in the BuildStartStage), fall back to get the
+    # environment variable in that case.
+    return (self.attrs.metadata.GetDict().get('buildbot-master-name') or
+            os.environ.get('BUILDBOT_MASTERNAME', ''))
+
   def ConstructDashboardURL(self, stage=None):
     """Return the dashboard URL
 
@@ -665,8 +673,8 @@ class _BuilderRunBase(object):
     Returns:
       The fully formed URL
     """
-    return validation_pool.ValidationPool.ConstructDashboardURL(
-        self.config.overlays, self.options.remote_trybot,
+    return tree_status.ConstructDashboardURL(
+        self.GetWaterfall(),
         os.environ.get('BUILDBOT_BUILDERNAME', self.config.name),
         self.options.buildnumber, stage=stage)
 

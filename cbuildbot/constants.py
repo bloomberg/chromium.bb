@@ -55,6 +55,22 @@ CIDB_KNOWN_WATERFALLS = (WATERFALL_INTERNAL,
                          WATERFALL_RELEASE,
                          WATERFALL_BRANCH)
 
+# URLs to the various waterfalls.
+BUILD_DASHBOARD = 'http://build.chromium.org/p/chromiumos'
+BUILD_INT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos'
+TRYBOT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromiumos.tryserver'
+RELEASE_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos_release'
+BRANCH_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos.branch'
+
+# Waterfall to dashboard URL mapping.
+WATERFALL_TO_DASHBOARD = {
+    WATERFALL_INTERNAL: BUILD_INT_DASHBOARD,
+    WATERFALL_EXTERNAL: BUILD_DASHBOARD,
+    WATERFALL_TRYBOT: TRYBOT_DASHBOARD,
+    WATERFALL_RELEASE: RELEASE_DASHBOARD,
+    WATERFALL_BRANCH: BRANCH_DASHBOARD,
+}
+
 # Builder status strings
 BUILDER_STATUS_FAILED = 'fail'
 BUILDER_STATUS_PASSED = 'pass'
@@ -703,11 +719,6 @@ SLEEP_TIMEOUT = 30
 LAB_STATUS_URL = 'http://chromiumos-lab.appspot.com/current?format=json'
 
 GOLO_SMTP_SERVER = 'mail.golo.chromium.org'
-
-# URLs to the various waterfalls.
-BUILD_DASHBOARD = 'http://build.chromium.org/p/chromiumos'
-BUILD_INT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos'
-TRYBOT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromiumos.tryserver'
 
 # Valid sherrif types.
 TREE_SHERIFF = 'tree'
