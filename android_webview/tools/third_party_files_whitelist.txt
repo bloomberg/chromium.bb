@@ -8,6 +8,9 @@
 # New third-party code should be added under a directory named 'third_party',
 # so additions to this file should be rare. See
 # http://www.chromium.org/developers/adding-3rd-party-libraries.
+#
+# Please always use forward slashes '/' as path separators, even if you are
+# on Windows.
 
 # Contains test strings that look like copyrights.
 android_webview/tools/copyright_scanner_unittest.py

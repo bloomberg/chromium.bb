@@ -90,8 +90,11 @@ def GetUnknownIncompatibleDirectories():
   """
   incompatible_directories = frozenset(GetIncompatibleDirectories())
   known_incompatible = []
+  input_api = InputApi()
   for path, exclude_list in known_issues.KNOWN_INCOMPATIBLE.iteritems():
+    path = copyright_scanner.ForwardSlashesToOsPathSeps(input_api, path)
     for exclude in exclude_list:
+      exclude = copyright_scanner.ForwardSlashesToOsPathSeps(input_api, exclude)
       if glob.has_magic(exclude):
         exclude_dirname = os.path.dirname(exclude)
         if glob.has_magic(exclude_dirname):

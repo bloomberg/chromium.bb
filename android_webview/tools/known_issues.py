@@ -25,6 +25,9 @@ process will stop and this list must be updated.
 
 # If there is a temporary license-related issue with a particular third_party
 # directory, please put it here, with a comment linking to the bug entry.
+#
+# Please always use forward slashes '/' as path separators, even if you are
+# on Windows.
 KNOWN_ISSUES = [
 ]
 

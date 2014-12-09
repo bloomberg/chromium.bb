@@ -93,28 +93,29 @@ class FindFilesTest(SuperMoxTestBase):
     self.input_api.os_path = os.path
 
   def testFilesAsStartPaths(self):
+    join = self.input_api.os_path.join
     self.input_api.os_path.isfile = lambda _: True
     input_files = [
       'a',
       'a.cc',
       'a.txt',
-      'foo/a',
-      'foo/a.cc',
-      'foo/a.txt',
-      'third_party/a',
-      'third_party/a.cc',
-      'third_party/a.txt',
-      'foo/third_party/a',
-      'foo/third_party/a.cc'
-      'foo/third_party/a.txt',
+      join('foo', 'a'),
+      join('foo', 'a.cc'),
+      join('foo', 'a.txt'),
+      join('third_party', 'a'),
+      join('third_party', 'a.cc'),
+      join('third_party', 'a.txt'),
+      join('foo', 'third_party', 'a'),
+      join('foo', 'third_party', 'a.cc'),
+      join('foo', 'third_party', 'a.txt'),
     ]
-    root_dir = '/src'
+    root_dir = os.path.sep + 'src'
     actual = copyright_scanner.FindFiles(
       self.input_api, root_dir, input_files, [''])
-    self.assertEqual(['a.cc', 'foo/a.cc'], actual)
+    self.assertEqual(['a.cc', join('foo', 'a.cc')], actual)
     actual = copyright_scanner.FindFiles(
       self.input_api, root_dir, input_files, ['third_party'])
-    self.assertEqual(['a.cc', 'foo/a.cc'], actual)
+    self.assertEqual(['a.cc', join('foo', 'a.cc')], actual)
     actual = copyright_scanner.FindFiles(
       self.input_api, root_dir, input_files, ['foo'])
     self.assertEqual(['a.cc'], actual)
@@ -122,14 +123,14 @@ class FindFilesTest(SuperMoxTestBase):
       self.input_api, root_dir, input_files, ['foo', 'third_party'])
     self.assertEqual(['a.cc'], actual)
     actual = copyright_scanner.FindFiles(
-      self.input_api, root_dir, input_files, ['foo/third_party'])
-    self.assertEqual(['a.cc', 'foo/a.cc'], actual)
+      self.input_api, root_dir, input_files, [join('foo', 'third_party')])
+    self.assertEqual(['a.cc', join('foo', 'a.cc')], actual)
 
   def testDirAsStartPath(self):
     self.input_api.os_path.isfile = lambda _: False
     join = self.input_api.os_path.join
     normpath = self.input_api.os_path.normpath
-    root_dir = '/src'
+    root_dir = os.path.sep + 'src'
     scan_from = '.'
     base_path = join(root_dir, scan_from)
 
@@ -149,26 +150,26 @@ class FindFilesTest(SuperMoxTestBase):
     self.input_api.os_walk = mock_os_walk('foo')
     actual = map(normpath, copyright_scanner.FindFiles(
       self.input_api, root_dir, [scan_from], ['']))
-    self.assertEqual(['foo/a.cc'], actual)
+    self.assertEqual([join('foo', 'a.cc')], actual)
 
     self.input_api.os_walk = mock_os_walk('foo')
     actual = map(normpath, copyright_scanner.FindFiles(
       self.input_api, root_dir, [scan_from], ['foo']))
     self.assertEqual([], actual)
 
-    self.input_api.os_walk = mock_os_walk('foo/bar')
+    self.input_api.os_walk = mock_os_walk(join('foo', 'bar'))
     actual = map(normpath, copyright_scanner.FindFiles(
       self.input_api, root_dir, [scan_from], ['foo']))
     self.assertEqual([], actual)
 
-    self.input_api.os_walk = mock_os_walk('foo/third_party')
+    self.input_api.os_walk = mock_os_walk(join('foo', 'third_party'))
     actual = map(normpath, copyright_scanner.FindFiles(
       self.input_api, root_dir, [scan_from], ['']))
     self.assertEqual([], actual)
 
-    self.input_api.os_walk = mock_os_walk('foo/third_party')
+    self.input_api.os_walk = mock_os_walk(join('foo', 'third_party'))
     actual = map(normpath, copyright_scanner.FindFiles(
-      self.input_api, root_dir, [scan_from], ['foo/third_party']))
+      self.input_api, root_dir, [scan_from], [join('foo', 'third_party')]))
     self.assertEqual([], actual)
 
 

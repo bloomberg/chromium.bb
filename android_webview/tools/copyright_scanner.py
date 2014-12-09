@@ -7,6 +7,17 @@
 
 import itertools
 
+def ForwardSlashesToOsPathSeps(input_api, path):
+  """Converts forward slashes ('/') in the input path to OS-specific
+  path separators. Used when the paths come from outside and are using
+  UNIX path separators. Only works for relative paths!
+  Args:
+    input_api: InputAPI, as in presubmit scripts.
+    path: The path to convert.
+  Returns:
+    Converted path.
+  """
+  return input_api.os_path.join(*path.split('/'))
 
 def FindFiles(input_api, root_dir, start_paths_list, excluded_dirs_list):
   """Similar to UNIX utility find(1), searches for files in the directories.
@@ -25,49 +36,51 @@ def FindFiles(input_api, root_dir, start_paths_list, excluded_dirs_list):
   # Using a common pattern for third-partyies makes the ignore regexp shorter
   excluded_dirs_list.append('third_party')
 
+  path_join = input_api.os_path.join
   EXTRA_EXCLUDED_DIRS = [
     # VCS dirs
-    '.git',
-    '.svn',
+    path_join('.git'),
+    path_join('.svn'),
     # Build output
-    'out/Debug',
-    'out/Release',
+    path_join('out', 'Debug'),
+    path_join('out', 'Release'),
     # 'Copyright' appears in license agreements
-    'chrome/app/resources',
+    path_join('chrome', 'app', 'resources'),
     # Quickoffice js files from internal src used on buildbots.
     # crbug.com/350472.
-    'chrome/browser/resources/chromeos/quickoffice',
+    path_join('chrome', 'browser', 'resources', 'chromeos', 'quickoffice'),
     # This is a test output directory
-    'chrome/tools/test/reference_build',
+    path_join('chrome', 'tools', 'test', 'reference_build'),
     # blink style copy right headers.
-    'content/shell/renderer/test_runner',
+    path_join('content', 'shell', 'renderer', 'test_runner'),
     # blink style copy right headers.
-    'content/shell/tools/plugin',
+    path_join('content', 'shell', 'tools', 'plugin'),
     # This is tests directory, doesn't exist in the snapshot
-    'content/test/data',
+    path_join('content', 'test', 'data'),
     # This is a tests directory that doesn't exist in the shipped product.
-    'gin/test',
+    path_join('gin', 'test'),
     # This is a test output directory
-    'data/dom_perf',
+    path_join('data', 'dom_perf'),
     # This is a tests directory that doesn't exist in the shipped product.
-    'tools/perf/page_sets',
-    'tools/perf/page_sets/tough_animation_cases',
+    path_join('tools', 'perf', 'page_sets'),
+    path_join('tools', 'perf', 'page_sets', 'tough_animation_cases'),
     # Histogram tools, doesn't exist in the snapshot
-    'tools/histograms',
+    path_join('tools', 'histograms'),
     # Swarming tools, doesn't exist in the snapshot
-    'tools/swarming_client',
+    path_join('tools', 'swarming_client'),
     # ARM sysroot, doesn't exist in the snapshot
-    'chrome/installer/linux/debian_wheezy_arm-sysroot',
+    path_join('chrome', 'installer', 'linux', 'debian_wheezy_arm-sysroot'),
     # Old location (TODO(sbc): Remove this once it no longer exists on any bots)
-    'arm-sysroot',
+    path_join('arm-sysroot'),
     # Data is not part of open source chromium, but are included on some bots.
-    'data',
+    path_join('data'),
     # This is not part of open source chromium, but are included on some bots.
-    'skia/tools/clusterfuzz-data'
+    path_join('skia', 'tools', 'clusterfuzz-data')
   ]
   excluded_dirs_list.extend(EXTRA_EXCLUDED_DIRS)
 
-  dirs_blacklist = ['/' + d + '/' for d in excluded_dirs_list]
+  # Surround the directory names with OS path separators.
+  dirs_blacklist = [path_join('.', d, '')[1:] for d in excluded_dirs_list if d]
   def IsBlacklistedDir(d):
     for item in dirs_blacklist:
       if item in d:
@@ -82,7 +95,7 @@ def FindFiles(input_api, root_dir, start_paths_list, excluded_dirs_list):
 
   base_path_len = len(root_dir)
   for path in start_paths_list:
-    full_path = input_api.os_path.join(root_dir, path)
+    full_path = path_join(root_dir, path)
     if input_api.os_path.isfile(full_path):
       if files_whitelist_re.search(path) and \
           not IsBlacklistedDir(full_path[base_path_len:]):  # Keep '/' prefix.
@@ -92,11 +105,11 @@ def FindFiles(input_api, root_dir, start_paths_list, excluded_dirs_list):
         # Remove excluded subdirs for faster scanning.
         for item in dirnames[:]:
           if IsBlacklistedDir(
-              input_api.os_path.join(dirpath, item)[base_path_len + 1:]):
+              path_join(dirpath, item)[base_path_len + 1:]):
             dirnames.remove(item)
         for filename in filenames:
           filepath = \
-              input_api.os_path.join(dirpath, filename)[base_path_len + 1:]
+              path_join(dirpath, filename)[base_path_len + 1:]
           if files_whitelist_re.search(filepath) and \
               not IsBlacklistedDir(filepath):
             files.append(filepath)
@@ -269,7 +282,8 @@ def _ProcessWhitelistedFilesList(input_api, lines):
   for line in lines:
     match = input_api.re.match(r'([^#\s]+)', line)
     if match:
-      whitelisted_files.append(match.group(1))
+      whitelisted_files.append(
+        ForwardSlashesToOsPathSeps(input_api, match.group(1)))
   return whitelisted_files
 
 
