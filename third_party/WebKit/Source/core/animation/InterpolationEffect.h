@@ -28,6 +28,11 @@ public:
 
     void trace(Visitor*);
 
+private:
+    InterpolationEffect()
+    {
+    }
+
     class InterpolationRecord : public NoBaseWillBeGarbageCollectedFinalized<InterpolationRecord> {
     public:
         RefPtrWillBeMember<Interpolation> m_interpolation;
@@ -56,16 +61,8 @@ public:
         }
     };
 
-private:
-    InterpolationEffect()
-    {
-    }
-
     WillBeHeapVector<OwnPtrWillBeMember<InterpolationRecord> > m_interpolations;
 };
-
-WILL_BE_EAGERLY_TRACED(InterpolationEffect);
-WILL_BE_EAGERLY_TRACED(InterpolationEffect::InterpolationRecord);
 
 } // namespace blink
 

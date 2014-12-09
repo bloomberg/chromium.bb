@@ -60,8 +60,6 @@ public:
     virtual void trace(Visitor*) { }
 };
 
-WILL_BE_EAGERLY_TRACED(AnimationEffect);
-
 } // namespace blink
 
 #endif // AnimationEffect_h

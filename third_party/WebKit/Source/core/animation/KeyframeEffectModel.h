@@ -176,8 +176,6 @@ inline bool KeyframeEffectModel<AnimatableValueKeyframe>::isAnimatableValueKeyfr
 template <>
 inline bool KeyframeEffectModel<StringKeyframe>::isStringKeyframeEffectModel() const { return true; }
 
-WILL_BE_EAGERLY_TRACED(KeyframeEffectModelBase::PropertySpecificKeyframeGroup);
-
 } // namespace blink
 
 #endif // KeyframeEffectModel_h

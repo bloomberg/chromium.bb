@@ -66,8 +66,6 @@ private:
     friend class AnimationAnimationStackTest;
 };
 
-WILL_BE_EAGERLY_TRACED(AnimationStack);
-
 } // namespace blink
 
 #endif // AnimationStack_h

@@ -186,8 +186,6 @@ private:
     unsigned m_classType : ClassTypeBits; // ClassType
 };
 
-WILL_BE_EAGERLY_TRACED(CSSValue);
-
 template<typename CSSValueType, size_t inlineCapacity>
 inline bool compareCSSValueVector(const WillBeHeapVector<RefPtrWillBeMember<CSSValueType>, inlineCapacity>& firstVector, const WillBeHeapVector<RefPtrWillBeMember<CSSValueType>, inlineCapacity>& secondVector)
 {

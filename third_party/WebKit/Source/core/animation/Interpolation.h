@@ -42,8 +42,6 @@ private:
     friend class AnimationInterpolationEffectTest;
 };
 
-WILL_BE_EAGERLY_TRACED(Interpolation);
-
 } // namespace blink
 
 #endif // Interpolation_h

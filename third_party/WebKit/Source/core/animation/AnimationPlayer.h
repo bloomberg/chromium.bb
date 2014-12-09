@@ -42,9 +42,6 @@ namespace blink {
 class AnimationTimeline;
 class ExceptionState;
 
-class AnimationPlayer;
-WILL_BE_EAGERLY_TRACED(AnimationPlayer);
-
 class AnimationPlayer final : public RefCountedWillBeGarbageCollectedFinalized<AnimationPlayer>
     , public ActiveDOMObject
     , public EventTargetWithInlineData {

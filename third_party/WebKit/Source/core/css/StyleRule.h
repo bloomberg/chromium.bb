@@ -96,8 +96,6 @@ private:
     unsigned m_type : 5;
 };
 
-WILL_BE_EAGERLY_TRACED(StyleRuleBase);
-
 class StyleRule : public StyleRuleBase {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:

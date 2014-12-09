@@ -38,8 +38,6 @@ private:
     friend class InterpolableList;
 };
 
-WILL_BE_EAGERLY_TRACED(InterpolableValue);
-
 class InterpolableNumber final : public InterpolableValue {
 public:
     static PassOwnPtrWillBeRawPtr<InterpolableNumber> create(double value)

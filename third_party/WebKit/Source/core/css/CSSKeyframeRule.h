@@ -102,8 +102,6 @@ private:
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSKeyframeRule, KEYFRAME_RULE);
 
-WILL_BE_EAGERLY_TRACED(StyleKeyframe);
-
 } // namespace blink
 
 #endif // CSSKeyframeRule_h
