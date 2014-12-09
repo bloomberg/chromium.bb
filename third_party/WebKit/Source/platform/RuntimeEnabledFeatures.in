@@ -82,6 +82,7 @@ MediaStreamSpeech status=experimental
 MemoryInfoInWorkers status=experimental
 MouseEventButtonsAttribute status=experimental
 NavigationTransitions status=experimental
+NavigatorConnect status=experimental
 NavigatorContentUtils
 NetworkInformation status=stable
 // CSS parser based on the css-syntax spec. crbug.com/330389

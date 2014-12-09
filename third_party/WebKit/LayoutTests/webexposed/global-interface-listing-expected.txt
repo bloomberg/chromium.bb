@@ -1214,6 +1214,7 @@ interface NamedNodeMap
     method setNamedItem
     method setNamedItemNS
 interface Navigator
+    method connect
     method constructor
     method getBattery
     method getGamepads
