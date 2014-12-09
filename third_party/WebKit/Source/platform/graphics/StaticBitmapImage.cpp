@@ -48,15 +48,17 @@ void StaticBitmapImage::draw(GraphicsContext* ctx, const FloatRect& dstRect, con
 
     ASSERT(normSrcRect.width() <= m_image->width() && normSrcRect.height() <= m_image->height());
 
-    SkPaint paint;
-    ctx->preparePaintForDrawRectToRect(&paint, srcRect, dstRect, compositeOp, blendMode, !currentFrameKnownToBeOpaque());
+    {
+        SkPaint paint;
+        OwnPtr<GraphicsContext::AutoCanvasRestorer> restorer = ctx->preparePaintForDrawRectToRect(&paint, srcRect, dstRect, compositeOp, blendMode, !currentFrameKnownToBeOpaque());
 
-    SkRect srcSkRect = WebCoreFloatRectToSKRect(normSrcRect);
-    SkRect dstSkRect = WebCoreFloatRectToSKRect(normDstRect);
+        SkRect srcSkRect = WebCoreFloatRectToSKRect(normSrcRect);
+        SkRect dstSkRect = WebCoreFloatRectToSKRect(normDstRect);
 
-    SkCanvas* canvas = ctx->canvas();
+        SkCanvas* canvas = ctx->canvas();
 
-    canvas->drawImageRect(m_image.get(), &srcSkRect, dstSkRect, &paint);
+        canvas->drawImageRect(m_image.get(), &srcSkRect, dstSkRect, &paint);
+    }
 
     if (ImageObserver* observer = imageObserver())
         observer->didDraw(this);

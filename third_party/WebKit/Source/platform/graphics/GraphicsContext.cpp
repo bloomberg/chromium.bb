@@ -1907,7 +1907,7 @@ void GraphicsContext::didDrawTextInRect(const SkRect& textRect)
     }
 }
 
-void GraphicsContext::preparePaintForDrawRectToRect(
+PassOwnPtr<GraphicsContext::AutoCanvasRestorer> GraphicsContext::preparePaintForDrawRectToRect(
     SkPaint* paint,
     const SkRect& srcRect,
     const SkRect& destRect,
@@ -1917,14 +1917,41 @@ void GraphicsContext::preparePaintForDrawRectToRect(
     bool isLazyDecoded,
     bool isDataComplete) const
 {
-    paint->setXfermodeMode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
     paint->setColorFilter(this->colorFilter());
     paint->setAlpha(this->getNormalizedAlpha());
-    if (this->dropShadowImageFilter() && isBitmapWithAlpha) {
-        paint->setImageFilter(this->dropShadowImageFilter());
-    } else {
+    OwnPtr<AutoCanvasRestorer> restorer;
+    bool usingImageFilter = false;
+    if (dropShadowImageFilter() && isBitmapWithAlpha) {
+        SkMatrix ctm = getTotalMatrix();
+        SkMatrix invCtm;
+        if (ctm.invert(&invCtm)) {
+            usingImageFilter = true;
+            // The image filter is meant to ignore tranforms with respect to
+            // the shadow parameters. The matrix tweaks below ensures that the image
+            // filter is applied in post-transform space. We use concat() instead of
+            // setMatrix() in case this goes into a recording canvas which may need to
+            // respect a parent transform at playback time.
+            m_canvas->save();
+            m_canvas->concat(invCtm);
+            SkRect bounds = destRect;
+            ctm.mapRect(&bounds);
+            SkRect filteredBounds;
+            dropShadowImageFilter()->computeFastBounds(bounds, &filteredBounds);
+            SkPaint layerPaint;
+            layerPaint.setXfermodeMode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
+            layerPaint.setImageFilter(dropShadowImageFilter());
+            m_canvas->saveLayer(&filteredBounds, &layerPaint);
+            m_canvas->concat(ctm);
+            // Need two calls to restore to undo state setup performed here
+            restorer = adoptPtr(new AutoCanvasRestorer(m_canvas, 2));
+        }
+    }
+
+    if (!usingImageFilter) {
+        paint->setXfermodeMode(WebCoreCompositeToSkiaComposite(compositeOp, blendMode));
         paint->setLooper(this->drawLooper());
     }
+
     paint->setAntiAlias(shouldDrawAntiAliased(this, destRect));
 
     InterpolationQuality resampling;
@@ -1955,6 +1982,16 @@ void GraphicsContext::preparePaintForDrawRectToRect(
     }
     resampling = limitInterpolationQuality(this, resampling);
     paint->setFilterLevel(static_cast<SkPaint::FilterLevel>(resampling));
+    return restorer.release();
+}
+
+GraphicsContext::AutoCanvasRestorer::~AutoCanvasRestorer()
+{
+    while (m_restoreCount) {
+        m_canvas->restore();
+        m_restoreCount--;
+    }
+
 }
 
 } // namespace blink

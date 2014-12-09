@@ -376,7 +376,20 @@ public:
     void beginAnnotation(const AnnotationList&);
     void endAnnotation();
 
-    void preparePaintForDrawRectToRect(
+    class AutoCanvasRestorer {
+    public:
+        AutoCanvasRestorer(SkCanvas* canvas, int restoreCount)
+            : m_canvas(canvas)
+            , m_restoreCount(restoreCount)
+        { }
+
+        ~AutoCanvasRestorer();
+    private:
+        SkCanvas* m_canvas;
+        int m_restoreCount;
+    };
+
+    WARN_UNUSED_RETURN PassOwnPtr<AutoCanvasRestorer> preparePaintForDrawRectToRect(
         SkPaint*,
         const SkRect& srcRect,
         const SkRect& destRect,
