@@ -20,6 +20,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/search_result.h"
 
 using content::BrowserThread;
@@ -108,9 +109,9 @@ class WebstoreProviderTest : public InProcessBrowserTest {
         base::Bind(&WebstoreProviderTest::HandleRequest,
                    base::Unretained(this)));
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kAppsGalleryURL, test_server_->base_url().spec());
+        ::switches::kAppsGalleryURL, test_server_->base_url().spec());
     CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableEphemeralApps);
+        switches::kEnableExperimentalAppList);
 
     webstore_provider_.reset(new WebstoreProvider(
         ProfileManager::GetActiveUserProfile(), NULL));

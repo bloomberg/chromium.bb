@@ -6606,11 +6606,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_STREAMLINED_HOSTED_APPS_DESCRIPTION" desc="Description for the flag to enable streamlined hosted apps.">
         Enables an experimental, more streamlined hosted app experience.
       </message>
-      <message name="IDS_FLAGS_ENABLE_EPHEMERAL_APPS_NAME" desc="Name of the flag to enable ephemeral apps.">
-        Enable experimental ephemeral apps.
+      <message name="IDS_FLAGS_ENABLE_EPHEMERAL_APPS_IN_WEBSTORE_NAME" desc="Name of the flag to enable ephemeral apps in the webstore.">
+        Enable experimental ephemeral apps from the webstore.
       </message>
-      <message name="IDS_FLAGS_ENABLE_EPHEMERAL_APPS_DESCRIPTION" desc="Description for the flag to enable ephemeral apps.">
-        Enables experimentation with ephemeral apps, which are launched without installing in Chrome.
+      <message name="IDS_FLAGS_ENABLE_EPHEMERAL_APPS_IN_WEBSTORE_DESCRIPTION" desc="Description for the flag to enable ephemeral apps.">
+        Enables ephemeral apps, which are launched without installing in Chrome, to be launched from the Chrome WebStore. Requires the experimental App Launcher to be enabled.
       </message>
       <message name="IDS_FLAGS_ENABLE_LINKABLE_EPHEMERAL_APPS_NAME" desc="Name of the flag to enable linkable ephemeral apps.">
         Enable experimental linkable ephemeral apps.

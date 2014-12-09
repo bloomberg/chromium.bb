@@ -30,6 +30,7 @@
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "net/dns/mock_host_resolver.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/gl/gl_switches.h"
 
 using gpu::GpuFeatureType;
@@ -420,13 +421,17 @@ class EphemeralAppWebstorePrivateApiTest
 // Run tests when the --enable-ephemeral-apps switch is not enabled.
 IN_PROC_BROWSER_TEST_F(EphemeralAppWebstorePrivateApiTest,
                        EphemeralAppsFeatureDisabled) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      app_list::switches::kDisableExperimentalAppList);
   ASSERT_TRUE(RunInstallTest("webstore_launch_disabled.html", "app.crx"));
 }
 
 // Run tests when the --enable-ephemeral-apps switch is enabled.
 IN_PROC_BROWSER_TEST_F(EphemeralAppWebstorePrivateApiTest, LaunchEphemeralApp) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableEphemeralApps);
+      switches::kEnableEphemeralAppsInWebstore);
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      app_list::switches::kEnableExperimentalAppList);
   ASSERT_TRUE(RunInstallTest("webstore_launch_app.html", "app.crx"));
 }
 

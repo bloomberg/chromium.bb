@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/apps/ephemeral_app_launcher.h"
 #include "chrome/browser/apps/per_app_settings_service.h"
 #include "chrome/browser/apps/per_app_settings_service_factory.h"
 #include "chrome/browser/jumplist_updater_win.h"
@@ -160,10 +161,8 @@ void ChromeNativeAppWindowViewsWin::UpdateShelfMenu() {
 
   // Currently the only option is related to ephemeral apps, so avoid updating
   // the app's jump list when the feature is not enabled.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableEphemeralApps)) {
+  if (!EphemeralAppLauncher::IsFeatureEnabled())
     return;
-  }
 
   const extensions::Extension* extension = app_window()->GetExtension();
   if (!extension)

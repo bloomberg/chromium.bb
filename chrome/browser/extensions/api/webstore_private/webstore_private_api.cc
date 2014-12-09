@@ -703,7 +703,7 @@ WebstorePrivateGetEphemeralAppsEnabledFunction::
 
 bool WebstorePrivateGetEphemeralAppsEnabledFunction::RunSync() {
   results_ = GetEphemeralAppsEnabled::Results::Create(
-      EphemeralAppLauncher::IsFeatureEnabled());
+      EphemeralAppLauncher::IsFeatureEnabledInWebstore());
   return true;
 }
 

@@ -447,9 +447,9 @@ const char kEnableDomainReliability[]          = "enable-domain-reliability";
 // Enable Enhanced Bookmarks.
 const char kEnhancedBookmarksExperiment[] = "enhanced-bookmarks-experiment";
 
-// Enables experimentation with ephemeral apps, which are launched without
-// installing in Chrome.
-const char kEnableEphemeralApps[]           = "enable-ephemeral-apps";
+// Enables experimentation with ephemeral apps to be launched from the webstore.
+const char kEnableEphemeralAppsInWebstore[] =
+    "enable-ephemeral-apps-in-webstore";
 
 // Disables v2 hotword detection features. These features include
 // using a new component extension for performing hotword detection, new UI

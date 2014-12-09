@@ -25,6 +25,7 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "ui/app_list/app_list_switches.h"
 
 using content::WebContents;
 using extensions::Extension;
@@ -92,8 +93,13 @@ bool CheckCommonLaunchCriteria(Profile* profile,
 
 // static
 bool EphemeralAppLauncher::IsFeatureEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableEphemeralApps);
+  return app_list::switches::IsExperimentalAppListEnabled();
+}
+
+// static
+bool EphemeralAppLauncher::IsFeatureEnabledInWebstore() {
+  return IsFeatureEnabled() && CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableEphemeralAppsInWebstore);
 }
 
 // static

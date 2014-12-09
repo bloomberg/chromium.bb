@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/alarms.h"
 #include "content/public/browser/power_save_blocker.h"
 #include "content/public/test/browser_test.h"
@@ -37,12 +36,12 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "sync/api/fake_sync_change_processor.h"
 #include "sync/api/sync_change_processor_wrapper_for_test.h"
 #include "sync/api/sync_error_factory_mock.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notifier_settings.h"
 
@@ -201,8 +200,9 @@ void EphemeralAppTestBase::SetUpCommandLine(base::CommandLine* command_line) {
   extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);
   extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1);
 
-  // Enable ephemeral apps flag.
-  command_line->AppendSwitch(switches::kEnableEphemeralApps);
+  // Enable ephemeral apps, which are gated by the experimental app launcher
+  // flag.
+  command_line->AppendSwitch(app_list::switches::kEnableExperimentalAppList);
 }
 
 void EphemeralAppTestBase::SetUpOnMainThread() {

@@ -42,6 +42,9 @@ class EphemeralAppLauncher : public extensions::WebstoreStandaloneInstaller,
   // Returns true if launching ephemeral apps is enabled.
   static bool IsFeatureEnabled();
 
+  // Returns true if launching ephemeral apps from the wiebstore is enabled.
+  static bool IsFeatureEnabledInWebstore();
+
   // Create for the app launcher.
   static scoped_refptr<EphemeralAppLauncher> CreateForLauncher(
       const std::string& webstore_item_id,
