@@ -635,7 +635,7 @@ double Element::scrollLeft()
 
         if (FrameView* view = document().view()) {
             if (RenderView* renderView = document().renderView())
-                return adjustScrollForAbsoluteZoom(view->scrollX(), *renderView);
+                return adjustScrollForAbsoluteZoom(view->scrollPositionDouble().x(), *renderView);
         }
     }
 
@@ -658,7 +658,7 @@ double Element::scrollTop()
 
         if (FrameView* view = document().view()) {
             if (RenderView* renderView = document().renderView())
-                return adjustScrollForAbsoluteZoom(view->scrollY(), *renderView);
+                return adjustScrollForAbsoluteZoom(view->scrollPositionDouble().y(), *renderView);
         }
     }
 
@@ -690,7 +690,7 @@ void Element::setScrollLeft(double newLeft)
         if (!view)
             return;
 
-        view->setScrollPosition(DoublePoint(newLeft * frame->pageZoomFactor(), view->scrollY()), ScrollBehaviorAuto);
+        view->setScrollPosition(DoublePoint(newLeft * frame->pageZoomFactor(), view->scrollPositionDouble().y()), ScrollBehaviorAuto);
     }
 }
 
@@ -719,7 +719,7 @@ void Element::setScrollTop(double newTop)
         if (!view)
             return;
 
-        view->setScrollPosition(DoublePoint(view->scrollX(), newTop * frame->pageZoomFactor()), ScrollBehaviorAuto);
+        view->setScrollPosition(DoublePoint(view->scrollPositionDouble().x(), newTop * frame->pageZoomFactor()), ScrollBehaviorAuto);
     }
 }
 
@@ -849,8 +849,8 @@ void Element::scrollFrameBy(const ScrollToOptions& scrollToOptions)
     if (!view)
         return;
 
-    double newScaledLeft = left * frame->pageZoomFactor() + view->scrollX();
-    double newScaledTop = top * frame->pageZoomFactor() + view->scrollY();
+    double newScaledLeft = left * frame->pageZoomFactor() + view->scrollPositionDouble().x();
+    double newScaledTop = top * frame->pageZoomFactor() + view->scrollPositionDouble().y();
     view->setScrollPosition(DoublePoint(newScaledLeft, newScaledTop), scrollBehavior);
 }
 
@@ -870,8 +870,8 @@ void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions)
     if (!view)
         return;
 
-    double scaledLeft = view->scrollX();
-    double scaledTop = view->scrollY();
+    double scaledLeft = view->scrollPositionDouble().x();
+    double scaledTop = view->scrollPositionDouble().y();
     if (scrollToOptions.hasLeft())
         scaledLeft = scrollToOptions.left() * frame->pageZoomFactor();
     if (scrollToOptions.hasTop())

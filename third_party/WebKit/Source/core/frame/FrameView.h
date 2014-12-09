@@ -419,10 +419,11 @@ public:
     int contentsHeight() const { return contentsSize().height(); }
 
     // Functions for querying the current scrolled position (both as a point, a size, or as individual X and Y values).
-    // FIXME: Remove the IntPoint version. crbug.com/414283.
+    // Be careful in using the Double version scrollPositionDouble() and scrollOffsetDouble(). They are meant to be
+    // used to communicate the fractional scroll position/offset with chromium compositor which can do sub-pixel positioning.
+    // Do not call these if the scroll position/offset is used in Blink for positioning. Use the Int version instead.
     virtual IntPoint scrollPosition() const override { return visibleContentRect().location(); }
     virtual DoublePoint scrollPositionDouble() const override { return m_scrollPosition; }
-    // FIXME: Remove scrollOffset(). crbug.com/414283.
     IntSize scrollOffset() const { return toIntSize(visibleContentRect().location()); } // Gets the scrolled position as an IntSize. Convenient for adding to other sizes.
     DoubleSize scrollOffsetDouble() const { return DoubleSize(m_scrollPosition.x(), m_scrollPosition.y()); }
     DoubleSize pendingScrollDelta() const { return m_pendingScrollDelta; }
@@ -430,8 +431,8 @@ public:
     // Adjust the passed in scroll position to keep it between the minimum and maximum positions.
     IntPoint adjustScrollPositionWithinRange(const IntPoint&) const;
     DoublePoint adjustScrollPositionWithinRange(const DoublePoint&) const;
-    double scrollX() const { return scrollPositionDouble().x(); }
-    double scrollY() const { return scrollPositionDouble().y(); }
+    int scrollX() const { return scrollPosition().x(); }
+    int scrollY() const { return scrollPosition().y(); }
 
     virtual IntSize overhangAmount() const override;
 

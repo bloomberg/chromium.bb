@@ -1245,7 +1245,7 @@ double LocalDOMWindow::scrollX() const
 
     frame()->document()->updateLayoutIgnorePendingStylesheets();
 
-    double viewportX = view->scrollX();
+    double viewportX = view->scrollPositionDouble().x();
 
     if (host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame())
         viewportX += host->pinchViewport().location().x();
@@ -1268,7 +1268,7 @@ double LocalDOMWindow::scrollY() const
 
     frame()->document()->updateLayoutIgnorePendingStylesheets();
 
-    double viewportY = view->scrollY();
+    double viewportY = view->scrollPositionDouble().y();
 
     if (host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame())
         viewportY += host->pinchViewport().location().y();
