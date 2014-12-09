@@ -81,8 +81,6 @@ public class InfoBarContainer extends ScrollView {
 
     private final Activity mActivity;
 
-    private final AutoLoginDelegate mAutoLoginDelegate;
-
     // The list of all infobars in this container, regardless of whether they've been shown yet.
     private final ArrayList<InfoBar> mInfoBars = new ArrayList<InfoBar>();
 
@@ -117,8 +115,8 @@ public class InfoBarContainer extends ScrollView {
     private boolean mDoStayInvisible;
     private TabObserver mTabObserver;
 
-    public InfoBarContainer(Activity activity, AutoLoginProcessor autoLoginProcessor,
-            int tabId, ViewGroup parentView, WebContents webContents) {
+    public InfoBarContainer(Activity activity, int tabId, ViewGroup parentView,
+            WebContents webContents) {
         super(activity);
 
         // Workaround for http://crbug.com/407149. See explanation in onMeasure() below.
@@ -140,7 +138,6 @@ public class InfoBarContainer extends ScrollView {
         mAnimationListener = null;
         mInfoBarTransitions = new ArrayDeque<InfoBarTransitionInfo>();
 
-        mAutoLoginDelegate = new AutoLoginDelegate(autoLoginProcessor, activity);
         mActivity = activity;
         mTabId = tabId;
         mParentView = parentView;
@@ -150,7 +147,7 @@ public class InfoBarContainer extends ScrollView {
 
         // Chromium's InfoBarContainer may add an InfoBar immediately during this initialization
         // call, so make sure everything in the InfoBarContainer is completely ready beforehand.
-        mNativeInfoBarContainer = nativeInit(webContents, mAutoLoginDelegate);
+        mNativeInfoBarContainer = nativeInit(webContents);
     }
 
     @Override
@@ -492,28 +489,6 @@ public class InfoBarContainer extends ScrollView {
         return mInfoBars;
     }
 
-    /**
-     * Dismisses all {@link AutoLoginInfoBar}s in this {@link InfoBarContainer} that are for
-     * {@code accountName} and {@code authToken}.  This also resets all {@link InfoBar}s that are
-     * for a different request.
-     * @param accountName The name of the account request is being accessed for.
-     * @param authToken The authentication token access is being requested for.
-     * @param success Whether or not the authentication attempt was successful.
-     * @param result The resulting token for the auto login request (ignored if {@code success} is
-     *               {@code false}.
-     */
-    public void processAutoLogin(String accountName, String authToken, boolean success,
-            String result) {
-        mAutoLoginDelegate.dismissAutoLogins(accountName, authToken, success, result);
-    }
-
-    /**
-     * Dismiss all auto logins infobars without processing any result.
-     */
-    public void dismissAutoLoginInfoBars() {
-        mAutoLoginDelegate.dismissAutoLogins("", "", false, "");
-    }
-
     public void prepareTransition(View toShow) {
         if (toShow != null) {
             // In order to animate the addition of the infobar, we need a layout first.
@@ -587,6 +562,6 @@ public class InfoBarContainer extends ScrollView {
         return mNativeInfoBarContainer;
     }
 
-    private native long nativeInit(WebContents webContents, AutoLoginDelegate autoLoginDelegate);
+    private native long nativeInit(WebContents webContents);
     private native void nativeDestroy(long nativeInfoBarContainerAndroid);
 }

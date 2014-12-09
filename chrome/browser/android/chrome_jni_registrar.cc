@@ -65,7 +65,6 @@
 #include "chrome/browser/ui/android/autofill/password_generation_popup_view_android.h"
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
-#include "chrome/browser/ui/android/infobars/auto_login_infobar_delegate_android.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 #include "chrome/browser/ui/android/infobars/data_reduction_proxy_infobar.h"
 #include "chrome/browser/ui/android/infobars/generated_password_saved_infobar.h"
@@ -125,7 +124,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"AutofillLoggerAndroid", autofill::AutofillLoggerAndroid::Register},
     {"AutofillPopup",
      autofill::AutofillPopupViewAndroid::RegisterAutofillPopupViewAndroid},
-    {"AutoLoginDelegate", AutoLoginInfoBarDelegateAndroid::Register},
     {"BookmarksBridge", BookmarksBridge::RegisterBookmarksBridge},
     {"CertificateViewer", RegisterCertificateViewer},
     {"ChromeBrowserProvider",

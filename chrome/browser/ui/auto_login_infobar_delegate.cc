@@ -36,11 +36,6 @@
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/ui/android/infobars/auto_login_infobar_delegate_android.h"
-#endif
-
-
 // AutoLoginRedirector --------------------------------------------------------
 
 namespace {
@@ -140,11 +135,7 @@ bool AutoLoginInfoBarDelegate::Create(content::WebContents* web_contents,
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-#if defined(OS_ANDROID)
-  typedef AutoLoginInfoBarDelegateAndroid Delegate;
-#else
   typedef AutoLoginInfoBarDelegate Delegate;
-#endif
   return !!infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(new Delegate(params, profile))));
 }

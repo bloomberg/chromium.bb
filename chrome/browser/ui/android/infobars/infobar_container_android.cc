@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ui/android/infobars/auto_login_infobar_delegate_android.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
@@ -19,11 +18,9 @@
 // InfoBarContainerAndroid ----------------------------------------------------
 
 InfoBarContainerAndroid::InfoBarContainerAndroid(JNIEnv* env,
-                                                 jobject obj,
-                                                 jobject auto_login_delegate)
+                                                 jobject obj)
     : infobars::InfoBarContainer(NULL),
-      weak_java_infobar_container_(env, obj),
-      weak_java_auto_login_delegate_(env, auto_login_delegate) {}
+      weak_java_infobar_container_(env, obj) {}
 
 InfoBarContainerAndroid::~InfoBarContainerAndroid() {
   RemoveAllInfoBarsForDestruction();
@@ -45,14 +42,6 @@ void InfoBarContainerAndroid::PlatformSpecificAddInfoBar(
     NOTIMPLEMENTED() << "CLANK: infobar type "
                      << infobar->delegate()->GetInfoBarType();
     return;
-  }
-
-  if (infobar->delegate()->AsAutoLoginInfoBarDelegate()) {
-    AutoLoginInfoBarDelegateAndroid* auto_login_delegate =
-        static_cast<AutoLoginInfoBarDelegateAndroid*>(
-            infobar->delegate()->AsAutoLoginInfoBarDelegate());
-    if (!auto_login_delegate->AttachAccount(weak_java_auto_login_delegate_))
-      return;
   }
 
   AttachJavaInfoBar(android_bar);
@@ -87,10 +76,9 @@ void InfoBarContainerAndroid::PlatformSpecificRemoveInfoBar(
 
 static jlong Init(JNIEnv* env,
                   jobject obj,
-                  jobject web_contents,
-                  jobject auto_login_delegate) {
+                  jobject web_contents) {
   InfoBarContainerAndroid* infobar_container =
-      new InfoBarContainerAndroid(env, obj, auto_login_delegate);
+      new InfoBarContainerAndroid(env, obj);
   InfoBarService* infobar_service = InfoBarService::FromWebContents(
       content::WebContents::FromJavaWebContents(web_contents));
   infobar_container->ChangeInfoBarManager(infobar_service);

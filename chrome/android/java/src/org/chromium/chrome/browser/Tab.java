@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulatorWrapper;
 import org.chromium.chrome.browser.contextmenu.EmptyChromeContextMenuItemDelegate;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerFeedbackReporter;
-import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -591,19 +590,6 @@ public class Tab {
     }
 
     /**
-     * Create an {@code AutoLoginProcessor} to decide how to handle login
-     * requests.
-     */
-    protected AutoLoginProcessor createAutoLoginProcessor() {
-        return new AutoLoginProcessor() {
-            @Override
-            public void processAutoLoginResult(String accountName, String authToken,
-                    boolean success, String result) {
-            }
-        };
-    }
-
-    /**
      * Prints the current page.
      *
      * @return Whether the printing process is started successfully.
@@ -907,8 +893,7 @@ public class Tab {
             // initialized.
             WebContents webContents = mContentViewCore.getWebContents();
             mInfoBarContainer = new InfoBarContainer(
-                    (Activity) mContext, createAutoLoginProcessor(), getId(),
-                    mContentViewCore.getContainerView(), webContents);
+                    (Activity) mContext, getId(), mContentViewCore.getContainerView(), webContents);
         } else {
             mInfoBarContainer.onParentViewChanged(getId(), mContentViewCore.getContainerView());
         }

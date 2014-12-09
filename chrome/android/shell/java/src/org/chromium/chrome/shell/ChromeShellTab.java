@@ -11,7 +11,6 @@ import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
-import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -91,18 +90,6 @@ public class ChromeShellTab extends Tab {
     @Override
     protected TabChromeWebContentsDelegateAndroid createWebContentsDelegate() {
         return new ChromeShellTabChromeWebContentsDelegateAndroid();
-    }
-
-    @Override
-    protected AutoLoginProcessor createAutoLoginProcessor() {
-        return new AutoLoginProcessor() {
-            @Override
-            public void processAutoLoginResult(String accountName,
-                    String authToken, boolean success, String result) {
-                getInfoBarContainer().processAutoLogin(accountName, authToken,
-                        success, result);
-            }
-        };
     }
 
     @Override

@@ -23,13 +23,8 @@ class WebContents;
 class InfoBarContainerAndroid : public infobars::InfoBarContainer {
  public:
   InfoBarContainerAndroid(JNIEnv* env,
-                          jobject infobar_container,
-                          jobject auto_login_delegate);
+                          jobject infobar_container);
   void Destroy(JNIEnv* env, jobject obj);
-
-  JavaObjectWeakGlobalRef auto_login_delegate() const {
-    return weak_java_auto_login_delegate_;
-  }
 
   JavaObjectWeakGlobalRef java_container() const {
     return weak_java_infobar_container_;
@@ -54,7 +49,6 @@ class InfoBarContainerAndroid : public infobars::InfoBarContainer {
   // We're owned by the java infobar, need to use a weak ref so it can destroy
   // us.
   JavaObjectWeakGlobalRef weak_java_infobar_container_;
-  JavaObjectWeakGlobalRef weak_java_auto_login_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainerAndroid);
 };
