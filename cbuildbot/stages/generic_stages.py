@@ -702,6 +702,11 @@ class ArchivingStageMixin(object):
         board = builder_run.config['boards'][0]
     if (not self._IsInUploadBlacklist(filename) and
         (hasattr(self, '_current_board') or board)):
+      if self._run.config.pre_cq:
+        # Do not load artifacts.json for pre-cq configs. This is a
+        # workaround for crbug.com/440167.
+        return urls
+
       board = board or self._current_board
       custom_artifacts_file = portage_util.ReadOverlayFile(
           'scripts/artifacts.json', board=board)
