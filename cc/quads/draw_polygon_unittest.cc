@@ -19,11 +19,16 @@ namespace {
 #define EXPECT_FLOAT_WITHIN_EPSILON_OF(a, b) \
   EXPECT_TRUE(std::abs(a - b) < std::numeric_limits<float>::epsilon());
 
+#define EXPECT_POINT_EQ(point_a, point_b)    \
+  EXPECT_FLOAT_EQ(point_a.x(), point_b.x()); \
+  EXPECT_FLOAT_EQ(point_a.y(), point_b.y()); \
+  EXPECT_FLOAT_EQ(point_a.z(), point_b.z());
+
 static void ValidatePoints(const DrawPolygon& polygon,
                            const std::vector<gfx::Point3F>& points) {
   EXPECT_EQ(polygon.points().size(), points.size());
   for (size_t i = 0; i < points.size(); i++) {
-    EXPECT_EQ(polygon.points()[i], points[i]);
+    EXPECT_POINT_EQ(polygon.points()[i], points[i]);
   }
 }
 
