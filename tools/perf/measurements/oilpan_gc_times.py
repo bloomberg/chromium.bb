@@ -13,6 +13,7 @@ from telemetry.page.actions import action_runner
 from telemetry.timeline.model import TimelineModel
 from telemetry.util import statistics
 from telemetry.value import list_of_scalar_values
+from telemetry.value import scalar
 from telemetry.value import trace
 
 
@@ -59,11 +60,28 @@ def _AddTracingResults(events, results):
     values['oilpan_%s_sweep' % gc_type].append(sweep_time)
 
   # Dump
+  page = results.current_page
   unit = 'ms'
   for name in _NAMES_TO_DUMP:
     if values[name]:
       results.AddValue(list_of_scalar_values.ListOfScalarValues(
-          results.current_page, name, unit, values[name]))
+          page, name, unit, values[name]))
+      results.AddValue(scalar.ScalarValue(
+          page, name + '_max', unit, max(values[name])))
+    results.AddValue(scalar.ScalarValue(
+        page, name + '_total', unit, sum(values[name])))
+
+  for do_type in ['mark', 'sweep']:
+    work_time = 0
+    for gc_type in ['precise', 'conservative']:
+      work_time += sum(values['oilpan_%s_%s' % (gc_type, do_type)])
+    key = 'oilpan_%s' % do_type
+    results.AddValue(scalar.ScalarValue(page, key, unit, work_time))
+
+  gc_time = 0
+  for key in values:
+    gc_time += sum(values[key])
+  results.AddValue(scalar.ScalarValue(page, 'oilpan_gc', unit, gc_time))
 
 
 class _OilpanGCTimesBase(page_test.PageTest):
