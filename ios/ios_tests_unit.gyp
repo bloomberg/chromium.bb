@@ -22,6 +22,7 @@
       'sources': [
         'web/browser_state_unittest.cc',
         'web/navigation/navigation_item_impl_unittest.mm',
+        'web/string_util_unittest.cc',
       ],
     },
   ],

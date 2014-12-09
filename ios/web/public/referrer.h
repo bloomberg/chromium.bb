@@ -13,9 +13,11 @@ namespace web {
 enum ReferrerPolicy {
   ReferrerPolicyAlways,
   ReferrerPolicyDefault,
+  ReferrerPolicyNoReferrerWhenDowngrade,
   ReferrerPolicyNever,
   ReferrerPolicyOrigin,
-  ReferrerPolicyLast = ReferrerPolicyOrigin
+  ReferrerPolicyOriginWhenCrossOrigin,
+  ReferrerPolicyLast = ReferrerPolicyOriginWhenCrossOrigin
 };
 
 // This struct holds a referrer URL, as well as the referrer policy to be
