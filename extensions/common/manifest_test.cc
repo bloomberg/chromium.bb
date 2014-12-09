@@ -87,6 +87,10 @@ base::DictionaryValue* ManifestTest::ManifestData::GetManifest(
   return manifest_;
 }
 
+std::string ManifestTest::GetTestExtensionID() const {
+  return std::string();
+}
+
 base::FilePath ManifestTest::GetTestDataDir() {
   base::FilePath path;
   PathService::Get(DIR_TEST_DATA, &path);
@@ -108,8 +112,8 @@ scoped_refptr<Extension> ManifestTest::LoadExtension(
   base::DictionaryValue* value = manifest.GetManifest(test_data_dir, error);
   if (!value)
     return NULL;
-  return Extension::Create(
-      test_data_dir.DirName(), location, *value, flags, error);
+  return Extension::Create(test_data_dir.DirName(), location, *value, flags,
+      GetTestExtensionID(), error);
 }
 
 scoped_refptr<Extension> ManifestTest::LoadAndExpectSuccess(

@@ -13,6 +13,23 @@
     },
     "types": [
       {
+        "id": "ContentCapabilities",
+        "type": "object",
+        "description": "The <code>content_capabilities</code> manifest entry allows an extension to grant certain additional capabilities to web contents whose locations match a given set of URL patterns.",
+        "properties": {
+          "matches": {
+            "description": "The set of URL patterns to match against. If any of the given patterns match a URL, its contents will be granted the specified capabilities.",
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "permissions": {
+            "description": "The set of capabilities to grant matched contents. This is currently limited to <code>clipboardRead</code>, <code>clipboardWrite</code>, and <code>unlimitedStorage</code>.",
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      {
         "id": "ExternallyConnectable",
         "type": "object",
         // Note: description commented out because externally_connectable.html

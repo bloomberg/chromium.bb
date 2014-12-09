@@ -19,6 +19,7 @@ namespace {
 const char kOldAlwaysOnTopWindowsPermission[] = "alwaysOnTopWindows";
 const char kOldFullscreenPermission[] = "fullscreen";
 const char kOldOverrideEscFullscreenPermission[] = "overrideEscFullscreen";
+const char kOldUnlimitedStoragePermission[] = "unlimited_storage";
 
 template <typename T>
 APIPermission* CreateAPIPermission(const APIPermissionInfo* permission) {
@@ -41,6 +42,14 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
        APIPermissionInfo::kFlagCannotBeOptional,
        IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_PRIVATE,
        PermissionMessage::kBluetoothPrivate},
+      {APIPermission::kClipboardRead,
+       "clipboardRead",
+       APIPermissionInfo::kFlagSupportsContentCapabilities,
+       IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD,
+       PermissionMessage::kClipboard},
+      {APIPermission::kClipboardWrite,
+       "clipboardWrite",
+       APIPermissionInfo::kFlagSupportsContentCapabilities},
       {APIPermission::kDeclarativeWebRequest, "declarativeWebRequest",
        APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_DECLARATIVE_WEB_REQUEST,
@@ -73,6 +82,10 @@ std::vector<APIPermissionInfo*> ExtensionsAPIPermissions::GetAllPermissions()
       {APIPermission::kU2fDevices, "u2fDevices", APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_U2F_DEVICES,
        PermissionMessage::kU2fDevices},
+      {APIPermission::kUnlimitedStorage,
+       "unlimitedStorage",
+       APIPermissionInfo::kFlagCannotBeOptional |
+          APIPermissionInfo::kFlagSupportsContentCapabilities},
       {APIPermission::kUsb, "usb", APIPermissionInfo::kFlagNone},
       {APIPermission::kUsbDevice, "usbDevices", APIPermissionInfo::kFlagNone, 0,
        PermissionMessage::kNone, &CreateAPIPermission<UsbDevicePermission>},
@@ -113,6 +126,8 @@ ExtensionsAPIPermissions::GetAllAliases() const {
   aliases.push_back(
       PermissionsProvider::AliasInfo("app.window.fullscreen.overrideEsc",
                                      kOldOverrideEscFullscreenPermission));
+  aliases.push_back(PermissionsProvider::AliasInfo(
+      "unlimitedStorage", kOldUnlimitedStoragePermission));
   return aliases;
 }
 

@@ -218,6 +218,7 @@ if (false) {
       "common/extension_set_unittest.cc",
       "common/file_util_unittest.cc",
       "common/manifest_handler_unittest.cc",
+      "common/manifest_handlers/content_capabilities_manifest_unittest.cc",
       "common/manifest_handlers/oauth2_manifest_unittest.cc",
       "common/manifest_handlers/shared_module_manifest_unittest.cc",
       "common/message_bundle_unittest.cc",

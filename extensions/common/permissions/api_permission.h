@@ -295,6 +295,10 @@ class APIPermissionInfo {
     // Indicates that the permission is internal to the extensions
     // system and cannot be specified in the "permissions" list.
     kFlagInternal = 1 << 4,
+
+    // Indicates that the permission may be granted to web contents by
+    // extensions using the content_capabilities manifest feature.
+    kFlagSupportsContentCapabilities = 1 << 5,
   };
 
   typedef APIPermission* (*APIPermissionConstructor)(const APIPermissionInfo*);
@@ -338,6 +342,12 @@ class APIPermissionInfo {
   // "permissions" list entry.
   bool is_internal() const {
     return (flags_ & kFlagInternal) != 0;
+  }
+
+  // Returns true if this permission can be granted to web contents by an
+  // extension through the content_capabilities manifest feature.
+  bool supports_content_capabilities() const {
+    return (flags_ & kFlagSupportsContentCapabilities) != 0;
   }
 
  private:

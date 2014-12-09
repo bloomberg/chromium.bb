@@ -16,7 +16,6 @@ namespace extensions {
 
 namespace {
 
-const char kOldUnlimitedStoragePermission[] = "unlimited_storage";
 const char kWindowsPermission[] = "windows";
 
 template <typename T>
@@ -31,12 +30,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
   APIPermissionInfo::InitInfo permissions_to_register[] = {
       // Register permissions for all extension types.
       {APIPermission::kBackground, "background"},
-      {APIPermission::kClipboardRead,
-       "clipboardRead",
-       APIPermissionInfo::kFlagNone,
-       IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD,
-       PermissionMessage::kClipboard},
-      {APIPermission::kClipboardWrite, "clipboardWrite"},
       {APIPermission::kDeclarativeContent, "declarativeContent"},
       {APIPermission::kDesktopCapture,
        "desktopCapture",
@@ -73,9 +66,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION,
        PermissionMessage::kGeolocation},
       {APIPermission::kNotifications, "notifications"},
-      {APIPermission::kUnlimitedStorage,
-       "unlimitedStorage",
-       APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kGcdPrivate, "gcdPrivate"},
       {APIPermission::kGcm, "gcm"},
       {APIPermission::kNotificationProvider, "notificationProvider"},
@@ -455,8 +445,6 @@ std::vector<PermissionsProvider::AliasInfo>
 ChromeAPIPermissions::GetAllAliases() const {
   // Register aliases.
   std::vector<PermissionsProvider::AliasInfo> aliases;
-  aliases.push_back(PermissionsProvider::AliasInfo(
-      "unlimitedStorage", kOldUnlimitedStoragePermission));
   aliases.push_back(PermissionsProvider::AliasInfo("tabs", kWindowsPermission));
   return aliases;
 }

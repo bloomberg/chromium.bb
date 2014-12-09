@@ -56,6 +56,10 @@ class ManifestTest : public testing::Test {
     mutable scoped_ptr<base::DictionaryValue> manifest_holder_;
   };
 
+  // Allows the test implementation to override a loaded test manifest's
+  // extension ID. Useful for testing features behind a whitelist.
+  virtual std::string GetTestExtensionID() const;
+
   // Returns the path in which to find test manifest data files, for example
   // extensions/test/data/manifest_tests.
   virtual base::FilePath GetTestDataDir();
