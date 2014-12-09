@@ -186,13 +186,13 @@ StyleRecalcChange RenderStyle::stylePropagationDiff(const RenderStyle* oldStyle,
         || oldStyle->alignItems() != newStyle->alignItems())
         return Reattach;
 
-    if (*oldStyle == *newStyle)
-        return diffPseudoStyles(oldStyle, newStyle);
-
     if (oldStyle->inheritedNotEqual(newStyle)
         || oldStyle->hasExplicitlyInheritedProperties()
         || newStyle->hasExplicitlyInheritedProperties())
         return Inherit;
+
+    if (*oldStyle == *newStyle)
+        return diffPseudoStyles(oldStyle, newStyle);
 
     return NoInherit;
 }
@@ -339,9 +339,10 @@ void RenderStyle::removeCachedPseudoStyle(PseudoId pid)
 bool RenderStyle::inheritedNotEqual(const RenderStyle* other) const
 {
     return inherited_flags != other->inherited_flags
-           || inherited != other->inherited
-           || m_svgStyle->inheritedNotEqual(other->m_svgStyle.get())
-           || rareInheritedData != other->rareInheritedData;
+        || inherited != other->inherited
+        || font().loadingCustomFonts() != other->font().loadingCustomFonts()
+        || m_svgStyle->inheritedNotEqual(other->m_svgStyle.get())
+        || rareInheritedData != other->rareInheritedData;
 }
 
 bool RenderStyle::inheritedDataShared(const RenderStyle* other) const
