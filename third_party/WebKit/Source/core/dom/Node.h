@@ -129,7 +129,6 @@ class Node : NODE_BASE_CLASSES {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(TreeShared<Node>);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Node);
-    friend class Document;
     friend class TreeScope;
     friend class TreeScopeAdopter;
 public:
@@ -781,8 +780,6 @@ protected:
 private:
     friend class TreeShared<Node>;
     friend class WeakNodeMap;
-
-    unsigned styledSubtreeSize() const;
 
 #if !ENABLE(OILPAN)
     void removedLastRef();

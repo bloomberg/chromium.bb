@@ -1073,7 +1073,6 @@ protected:
     void lockCompatibilityMode() { m_compatibilityModeLocked = true; }
 
 private:
-    friend class Node;
     friend class IgnoreDestructiveWriteCountIncrementer;
 
     bool isDocumentFragment() const = delete; // This will catch anyone doing an unnecessary check.
