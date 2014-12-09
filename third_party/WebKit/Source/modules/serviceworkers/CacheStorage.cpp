@@ -9,7 +9,8 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/serviceworkers/Cache.h"
+#include "modules/serviceworkers/Request.h"
+#include "modules/serviceworkers/Response.h"
 #include "public/platform/WebServiceWorkerCacheError.h"
 #include "public/platform/WebServiceWorkerCacheStorage.h"
 
@@ -86,6 +87,33 @@ private:
     Persistent<CacheStorage> m_cacheStorage;
     RefPtr<ScriptPromiseResolver> m_resolver;
 };
+
+// FIXME: Consider using CallbackPromiseAdapter.
+class CacheStorage::MatchCallbacks : public WebServiceWorkerCacheStorage::CacheStorageMatchCallbacks {
+    WTF_MAKE_NONCOPYABLE(MatchCallbacks);
+public:
+    MatchCallbacks(PassRefPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver) { }
+
+    virtual void onSuccess(WebServiceWorkerResponse* webResponse) override
+    {
+        m_resolver->resolve(Response::create(m_resolver->scriptState()->executionContext(), *webResponse));
+        m_resolver.clear();
+    }
+
+    virtual void onError(WebServiceWorkerCacheError* reason) override
+    {
+        if (*reason == WebServiceWorkerCacheErrorNotFound)
+            m_resolver->resolve();
+        else
+            m_resolver->reject(Cache::domExceptionForCacheError(*reason));
+        m_resolver.clear();
+    }
+
+private:
+    RefPtr<ScriptPromiseResolver> m_resolver;
+};
+
 
 // FIXME: Consider using CallbackPromiseAdapter.
 class CacheStorage::DeleteCallbacks final : public WebServiceWorkerCacheStorage::CacheStorageCallbacks {
@@ -206,6 +234,34 @@ ScriptPromise CacheStorage::keys(ScriptState* scriptState)
 
     if (m_webCacheStorage)
         m_webCacheStorage->dispatchKeys(new KeysCallbacks(resolver));
+    else
+        resolver->reject(createNoImplementationException());
+
+    return promise;
+}
+
+ScriptPromise CacheStorage::match(ScriptState* scriptState, const RequestInfo& request, const CacheQueryOptions& options, ExceptionState& exceptionState)
+{
+    ASSERT(!request.isNull());
+
+    if (request.isRequest())
+        return matchImpl(scriptState, request.getAsRequest(), options);
+    Request* newRequest = Request::create(scriptState->executionContext(), request.getAsUSVString(), exceptionState);
+    if (exceptionState.hadException())
+        return ScriptPromise();
+    return matchImpl(scriptState, newRequest, options);
+}
+
+ScriptPromise CacheStorage::matchImpl(ScriptState* scriptState, const Request* request, const CacheQueryOptions& options)
+{
+    WebServiceWorkerRequest webRequest;
+    request->populateWebServiceWorkerRequest(webRequest);
+
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    const ScriptPromise promise = resolver->promise();
+
+    if (m_webCacheStorage)
+        m_webCacheStorage->dispatchMatch(new MatchCallbacks(resolver), webRequest, Cache::toWebQueryParams(options));
     else
         resolver->reject(createNoImplementationException());
 

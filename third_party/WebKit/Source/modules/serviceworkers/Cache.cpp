@@ -18,17 +18,6 @@ namespace blink {
 
 namespace {
 
-WebServiceWorkerCache::QueryParams toWebQueryParams(const CacheQueryOptions& options)
-{
-    WebServiceWorkerCache::QueryParams webQueryParams;
-    webQueryParams.ignoreSearch = options.ignoreSearch();
-    webQueryParams.ignoreMethod = options.ignoreMethod();
-    webQueryParams.ignoreVary = options.ignoreVary();
-    webQueryParams.prefixMatch = options.prefixMatch();
-    webQueryParams.cacheName = options.cacheName();
-    return webQueryParams;
-}
-
 // FIXME: Consider using CallbackPromiseAdapter.
 class CacheMatchCallbacks : public WebServiceWorkerCache::CacheMatchCallbacks {
     WTF_MAKE_NONCOPYABLE(CacheMatchCallbacks);
@@ -236,6 +225,18 @@ ScriptPromise Cache::keys(ScriptState* scriptState, const RequestInfo& request, 
     if (exceptionState.hadException())
         return ScriptPromise();
     return keysImpl(scriptState, newRequest, options);
+}
+
+// static
+WebServiceWorkerCache::QueryParams Cache::toWebQueryParams(const CacheQueryOptions& options)
+{
+    WebServiceWorkerCache::QueryParams webQueryParams;
+    webQueryParams.ignoreSearch = options.ignoreSearch();
+    webQueryParams.ignoreMethod = options.ignoreMethod();
+    webQueryParams.ignoreVary = options.ignoreVary();
+    webQueryParams.prefixMatch = options.prefixMatch();
+    webQueryParams.cacheName = options.cacheName();
+    return webQueryParams;
 }
 
 Cache::Cache(WebServiceWorkerCache* webCache)

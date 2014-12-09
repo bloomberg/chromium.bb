@@ -38,9 +38,8 @@ test(function() {
                      self.caches,
                      {
                        match: 'function',
-                       get: 'function',
                        has: 'function',
-                       create: 'function',
+                       open: 'function',
                        delete: 'function',
                        keys: 'function'
                      });

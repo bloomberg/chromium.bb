@@ -45,6 +45,8 @@ public:
 
     static PassRefPtrWillBeRawPtr<DOMException> domExceptionForCacheError(WebServiceWorkerCacheError);
 
+    static WebServiceWorkerCache::QueryParams toWebQueryParams(const CacheQueryOptions&);
+
     void trace(Visitor*) { }
 
 private:

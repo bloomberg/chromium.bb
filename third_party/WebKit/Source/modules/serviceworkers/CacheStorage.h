@@ -8,6 +8,8 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "modules/serviceworkers/Cache.h"
+#include "modules/serviceworkers/CacheQueryOptions.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -27,6 +29,8 @@ public:
     ScriptPromise has(ScriptState*, const String& cacheName);
     ScriptPromise deleteFunction(ScriptState*, const String& cacheName);
     ScriptPromise keys(ScriptState*);
+    ScriptPromise match(ScriptState*, const RequestInfo&, const CacheQueryOptions&, ExceptionState&);
+
 
     void trace(Visitor*);
 
@@ -35,11 +39,13 @@ private:
     class WithCacheCallbacks;
     class DeleteCallbacks;
     class KeysCallbacks;
+    class MatchCallbacks;
 
     friend class WithCacheCallbacks;
     friend class DeleteCallbacks;
 
     explicit CacheStorage(WebServiceWorkerCacheStorage*);
+    ScriptPromise matchImpl(ScriptState*, const Request*, const CacheQueryOptions&);
 
     WebServiceWorkerCacheStorage* m_webCacheStorage;
     HeapHashMap<String, Member<Cache> > m_nameToCacheMap;

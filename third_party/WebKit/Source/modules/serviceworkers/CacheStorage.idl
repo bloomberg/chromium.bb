@@ -13,7 +13,5 @@
   [CallWith=ScriptState] Promise<Cache> open(DOMString cacheName);
   [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise<boolean> delete(DOMString cacheName);
   [CallWith=ScriptState] Promise<sequence<DOMString>> keys();
-  // FIXME: From https://github.com/slightlyoff/ServiceWorker/issues/372 and the updated
-  // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#cache-storage ,
-  // we have yet to implement match().
+  [CallWith=ScriptState, RaisesException] Promise<Response> match(RequestInfo request, optional CacheQueryOptions options);
 };
