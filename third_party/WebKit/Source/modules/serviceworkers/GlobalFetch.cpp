@@ -1,0 +1,96 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "config.h"
+#include "modules/serviceworkers/GlobalFetch.h"
+
+#include "core/dom/ActiveDOMObject.h"
+#include "core/frame/LocalDOMWindow.h"
+#include "core/workers/WorkerGlobalScope.h"
+#include "modules/serviceworkers/FetchManager.h"
+#include "modules/serviceworkers/Request.h"
+#include "platform/Supplementable.h"
+#include "platform/heap/Handle.h"
+#include "wtf/OwnPtr.h"
+
+namespace blink {
+
+namespace {
+
+template <typename T>
+class GlobalFetchImpl final : public NoBaseWillBeGarbageCollectedFinalized<GlobalFetchImpl<T>>, public WillBeHeapSupplement<T> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(GlobalFetchImpl);
+public:
+    static GlobalFetchImpl& from(T& supplementable, ExecutionContext* executionContext)
+    {
+        GlobalFetchImpl* supplement = static_cast<GlobalFetchImpl*>(WillBeHeapSupplement<T>::from(supplementable, name()));
+        if (!supplement) {
+            supplement = new GlobalFetchImpl(executionContext);
+            WillBeHeapSupplement<T>::provideTo(supplementable, name(), adoptPtrWillBeNoop(supplement));
+        }
+        return *supplement;
+    }
+
+    ScriptPromise fetch(ScriptState* scriptState, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
+    {
+        if (m_fetchManager.isStopped()) {
+            exceptionState.throwTypeError("The global scope is shutting down.");
+            return ScriptPromise();
+        }
+
+        // "Let |r| be the associated request of the result of invoking the
+        // initial value of Request as constructor with |input| and |init| as
+        // arguments. If this throws an exception, reject |p| with it."
+        Request* r = Request::create(m_stopDetector.executionContext(), input, init, exceptionState);
+        if (exceptionState.hadException())
+            return ScriptPromise();
+        return m_fetchManager.fetch(scriptState, r->request());
+    }
+
+    void trace(Visitor* visitor) override
+    {
+        WillBeHeapSupplement<T>::trace(visitor);
+    }
+
+private:
+    class StopDetector : public ActiveDOMObject {
+    public:
+        StopDetector(ExecutionContext* executionContext, FetchManager* fetchManager)
+            : ActiveDOMObject(executionContext)
+            , m_fetchManager(fetchManager)
+        {
+            suspendIfNeeded();
+        }
+        void stop() override { m_fetchManager->stop(); }
+
+    private:
+        // Having a raw pointer is safe, because |m_fetchManager| is owned by
+        // the owner of this object.
+        FetchManager* m_fetchManager;
+    };
+
+    explicit GlobalFetchImpl(ExecutionContext* executionContext)
+        : m_fetchManager(executionContext)
+        , m_stopDetector(executionContext, &m_fetchManager)
+    {
+    }
+    static const char* name() { return "GlobalFetch"; }
+
+    FetchManager m_fetchManager;
+    StopDetector m_stopDetector;
+};
+
+} // namespace
+
+ScriptPromise GlobalFetch::fetch(ScriptState* scriptState, DOMWindow& window, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
+{
+    return GlobalFetchImpl<LocalDOMWindow>::from(toLocalDOMWindow(window), window.executionContext()).fetch(scriptState, input, init, exceptionState);
+}
+
+ScriptPromise GlobalFetch::fetch(ScriptState* scriptState, WorkerGlobalScope& worker, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
+{
+    return GlobalFetchImpl<WorkerGlobalScope>::from(worker, worker.executionContext()).fetch(scriptState, input, init, exceptionState);
+}
+
+} // namespace blink

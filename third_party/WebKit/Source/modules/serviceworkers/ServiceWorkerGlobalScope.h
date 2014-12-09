@@ -41,7 +41,6 @@ namespace blink {
 
 class CacheStorage;
 class Dictionary;
-class FetchManager;
 class Request;
 class ScriptPromise;
 class ScriptState;
@@ -61,7 +60,6 @@ public:
     virtual bool isServiceWorkerGlobalScope() const override { return true; }
 
     // WorkerGlobalScope
-    virtual void stopFetch() override;
     virtual void didEvaluateWorkerScript() override;
 
     // ServiceWorkerGlobalScope.idl
@@ -99,7 +97,6 @@ private:
     virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override;
 
     PersistentWillBeMember<ServiceWorkerClients> m_clients;
-    OwnPtr<FetchManager> m_fetchManager;
     PersistentWillBeMember<CacheStorage> m_caches;
     bool m_didEvaluateScript;
     bool m_hadErrorInTopLevelEventHandler;

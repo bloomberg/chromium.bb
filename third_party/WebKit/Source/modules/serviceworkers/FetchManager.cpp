@@ -349,14 +349,14 @@ void FetchManager::Loader::notifyFinished()
 
 FetchManager::FetchManager(ExecutionContext* executionContext)
     : m_executionContext(executionContext)
+    , m_isStopped(false)
 {
 }
 
 FetchManager::~FetchManager()
 {
-    for (HashSet<OwnPtr<Loader> >::iterator it = m_loaders.begin(); it != m_loaders.end(); ++it) {
-        (*it)->cleanup();
-    }
+    if (!m_isStopped)
+        stop();
 }
 
 ScriptPromise FetchManager::fetch(ScriptState* scriptState, const FetchRequestData* request)
@@ -368,6 +368,15 @@ ScriptPromise FetchManager::fetch(ScriptState* scriptState, const FetchRequestDa
     Loader* loader = m_loaders.add(ownLoader.release()).storedValue->get();
     loader->start();
     return promise;
+}
+
+void FetchManager::stop()
+{
+    ASSERT(!m_isStopped);
+    m_isStopped = true;
+    for (auto& loader : m_loaders) {
+        loader->cleanup();
+    }
 }
 
 void FetchManager::onLoaderFinished(Loader* loader)

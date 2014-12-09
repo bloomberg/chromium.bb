@@ -42,7 +42,7 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/EventTargetModules.h"
 #include "modules/serviceworkers/CacheStorage.h"
-#include "modules/serviceworkers/FetchManager.h"
+#include "modules/serviceworkers/GlobalFetch.h"
 #include "modules/serviceworkers/Request.h"
 #include "modules/serviceworkers/ServiceWorkerClients.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
@@ -83,7 +83,6 @@ PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::creat
 
 ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(const KURL& url, const String& userAgent, ServiceWorkerThread* thread, double timeOrigin, const SecurityOrigin* starterOrigin, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : WorkerGlobalScope(url, userAgent, thread, timeOrigin, starterOrigin, workerClients)
-    , m_fetchManager(adoptPtr(new FetchManager(this)))
     , m_didEvaluateScript(false)
     , m_hadErrorInTopLevelEventHandler(false)
     , m_eventNestingLevel(0)
@@ -97,11 +96,6 @@ ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope()
 void ServiceWorkerGlobalScope::didEvaluateWorkerScript()
 {
     m_didEvaluateScript = true;
-}
-
-void ServiceWorkerGlobalScope::stopFetch()
-{
-    m_fetchManager.clear();
 }
 
 String ServiceWorkerGlobalScope::scope(ExecutionContext* context)
@@ -118,18 +112,7 @@ CacheStorage* ServiceWorkerGlobalScope::caches(ExecutionContext* context)
 
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* scriptState, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState)
 {
-    if (!m_fetchManager) {
-        exceptionState.throwTypeError("ServiceWorkerGlobalScope is shutting down.");
-        return ScriptPromise();
-    }
-
-    // "Let |r| be the associated request of the result of invoking the initial
-    // value of Request as constructor with |input| and |init| as arguments. If
-    // this throws an exception, reject |p| with it."
-    Request* r = Request::create(this, input, init, exceptionState);
-    if (exceptionState.hadException())
-        return ScriptPromise();
-    return m_fetchManager->fetch(scriptState, r->request());
+    return GlobalFetch::fetch(scriptState, *this, input, init, exceptionState);
 }
 
 ServiceWorkerClients* ServiceWorkerGlobalScope::clients()

@@ -2882,6 +2882,7 @@ interface Window
     method confirm
     method constructor
     method createImageBitmap
+    method fetch
     method find
     method focus
     method getComputedStyle

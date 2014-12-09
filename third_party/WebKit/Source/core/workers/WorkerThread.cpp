@@ -388,7 +388,6 @@ public:
     virtual void performTask(ExecutionContext *context)
     {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
-        workerGlobalScope->stopFetch();
         workerGlobalScope->stopActiveDOMObjects();
         PlatformThreadData::current().threadTimers().setSharedTimer(nullptr);
 

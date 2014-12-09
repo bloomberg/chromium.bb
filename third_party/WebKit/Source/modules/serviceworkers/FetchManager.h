@@ -20,6 +20,8 @@ public:
     FetchManager(ExecutionContext*);
     ~FetchManager();
     ScriptPromise fetch(ScriptState*, const FetchRequestData*);
+    void stop();
+    bool isStopped() const { return m_isStopped; }
 
 private:
     class Loader;
@@ -29,6 +31,7 @@ private:
 
     ExecutionContext* m_executionContext;
     HashSet<OwnPtr<Loader> > m_loaders;
+    bool m_isStopped;
 };
 
 } // namespace blink
