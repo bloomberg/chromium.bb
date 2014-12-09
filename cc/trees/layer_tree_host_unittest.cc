@@ -5520,11 +5520,11 @@ class LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer
     EndTest();
   }
 
-  void ApplyViewportDeltas(
-      const gfx::Vector2d& inner,
-      const gfx::Vector2d& outer,
-      float scale_delta,
-      float top_controls_delta) override {
+  void ApplyViewportDeltas(const gfx::Vector2d& inner,
+                           const gfx::Vector2d& outer,
+                           const gfx::Vector2dF& elastic_overscroll_delta,
+                           float scale_delta,
+                           float top_controls_delta) override {
     EXPECT_EQ(info_.page_scale_delta, scale_delta);
     EXPECT_EQ(info_.top_controls_delta, top_controls_delta);
     deltas_sent_to_client_ = true;

@@ -79,11 +79,13 @@ void WebLayerTreeViewImpl::Layout() {
 void WebLayerTreeViewImpl::ApplyViewportDeltas(
     const gfx::Vector2d& inner_delta,
     const gfx::Vector2d& outer_delta,
+    const gfx::Vector2dF& elastic_overscroll_delta,
     float page_scale,
     float top_controls_delta) {
   widget_->applyViewportDeltas(
       inner_delta,
       outer_delta,
+      elastic_overscroll_delta,
       page_scale,
       top_controls_delta);
 }

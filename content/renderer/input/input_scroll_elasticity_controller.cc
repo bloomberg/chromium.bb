@@ -41,7 +41,7 @@ namespace {
 // deltas against the event timestamps, which are in seconds since epoch. Find
 // out which is right. Also, avoid querying time, and use frame time instead.
 double SystemUptime() {
-  return base::Time::Now().ToDoubleT();
+  return base::TimeTicks::Now().ToInternalValue() / 1.0e6;
 }
 
 const float kScrollVelocityZeroingTimeout = 0.10f;

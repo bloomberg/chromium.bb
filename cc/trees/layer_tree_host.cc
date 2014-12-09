@@ -1160,9 +1160,8 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
       // TODO(ccameron): pass the elastic overscroll here so that input events
       // may be translated appropriately.
       client_->ApplyViewportDeltas(
-          inner_viewport_scroll_delta,
-          outer_viewport_scroll_delta,
-          info->page_scale_delta,
+          inner_viewport_scroll_delta, outer_viewport_scroll_delta,
+          info->elastic_overscroll_delta, info->page_scale_delta,
           info->top_controls_delta);
     }
   }
