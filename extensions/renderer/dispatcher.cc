@@ -26,6 +26,7 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest.h"
@@ -326,6 +327,11 @@ void Dispatcher::DidCreateScriptContext(
     module_system->Require("denyAppView");
   }
 
+  if (extensions::FeatureSwitch::worker_frame()->IsEnabled() &&
+      context->GetAvailability("workerFrameInternal").is_available()) {
+    module_system->Require("workerframe");
+  }
+
   // Note: setting up the WebView class here, not the chrome.webview API.
   // The API will be automatically set up when first used.
   if (context->GetAvailability("webViewInternal").is_available()) {
@@ -544,6 +550,7 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(std::make_pair("guestViewContainer",
                                      IDR_GUEST_VIEW_CONTAINER_JS));
   resources.push_back(std::make_pair("webView", IDR_WEB_VIEW_JS));
+  resources.push_back(std::make_pair("workerframe", IDR_WORKER_FRAME_JS));
   resources.push_back(std::make_pair("webViewApiMethods",
                                      IDR_WEB_VIEW_API_METHODS_JS));
   resources.push_back(std::make_pair("webViewAttributes",
@@ -1077,6 +1084,9 @@ void Dispatcher::EnableCustomElementWhiteList() {
       "extensionoptionsbrowserplugin");
   blink::WebCustomElement::addEmbedderCustomElementName("webview");
   blink::WebCustomElement::addEmbedderCustomElementName("webviewbrowserplugin");
+  blink::WebCustomElement::addEmbedderCustomElementName("workerframe");
+  blink::WebCustomElement::addEmbedderCustomElementName(
+      "workerframebrowserplugin");
 }
 
 void Dispatcher::UpdateBindings(const std::string& extension_id) {
@@ -1105,7 +1115,9 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
 
       // ... and that the runtime API might be available if any extension can
       // connect to it.
-      bool runtime_is_available = false;
+      bool runtime_is_available =
+          extensions::FeatureSwitch::worker_frame()->IsEnabled() &&
+              context->GetAvailability("workerFrameInternal").is_available();
       for (ExtensionSet::const_iterator it = extensions_.begin();
            it != extensions_.end();
            ++it) {

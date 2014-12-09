@@ -27,6 +27,7 @@ class FeatureSwitch {
   static FeatureSwitch* extension_action_redesign();
   static FeatureSwitch* scripts_require_action();
   static FeatureSwitch* embedded_extension_options();
+  static FeatureSwitch* worker_frame();
   static FeatureSwitch* trace_app_source();
 
   enum DefaultValue {

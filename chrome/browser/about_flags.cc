@@ -1467,6 +1467,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAppList)
   },
 #endif
+#if defined(ENABLE_EXTENSIONS)
+  {
+    "enable-worker-frame",
+    IDS_FLAGS_ENABLE_WORKER_FRAME_NAME,
+    IDS_FLAGS_ENABLE_WORKER_FRAME_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(extensions::switches::kEnableWorkerFrame)
+  },
+#endif
   {
     "disable-app-list-app-info",
     IDS_FLAGS_DISABLE_APP_INFO_IN_APP_LIST,

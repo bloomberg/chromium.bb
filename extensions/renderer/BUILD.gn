@@ -122,6 +122,7 @@ source_set("renderer") {
     "resources/web_view_experimental.js",
     "resources/web_request_custom_bindings.js",
     "resources/web_request_internal_custom_bindings.js",
+    "resources/worker_frame.js",
     "runtime_custom_bindings.cc",
     "runtime_custom_bindings.h",
     "safe_builtins.cc",

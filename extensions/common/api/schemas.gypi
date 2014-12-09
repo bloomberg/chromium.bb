@@ -46,6 +46,7 @@
       'virtual_keyboard_private.json',
       'web_request.json',
       'web_view_internal.json',
+      'worker_frame_internal.json'
     ],
     # ChromeOS-specific schemas.
     'chromeos_schema_files': [

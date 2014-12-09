@@ -35,6 +35,7 @@ class CommonSwitches {
                                FeatureSwitch::DEFAULT_DISABLED),
         embedded_extension_options(switches::kEmbeddedExtensionOptions,
                                    FeatureSwitch::DEFAULT_DISABLED),
+        worker_frame(switches::kWorkerFrame, FeatureSwitch::DEFAULT_DISABLED),
         trace_app_source(switches::kTraceAppSource,
                          FeatureSwitch::DEFAULT_DISABLED) {
   }
@@ -54,6 +55,7 @@ class CommonSwitches {
   FeatureSwitch extension_action_redesign;
   FeatureSwitch scripts_require_action;
   FeatureSwitch embedded_extension_options;
+  FeatureSwitch worker_frame;
   FeatureSwitch trace_app_source;
 };
 
@@ -85,6 +87,9 @@ FeatureSwitch* FeatureSwitch::scripts_require_action() {
 }
 FeatureSwitch* FeatureSwitch::embedded_extension_options() {
   return &g_common_switches.Get().embedded_extension_options;
+}
+FeatureSwitch* FeatureSwitch::worker_frame() {
+  return &g_common_switches.Get().worker_frame;
 }
 FeatureSwitch* FeatureSwitch::trace_app_source() {
   return &g_common_switches.Get().trace_app_source;
