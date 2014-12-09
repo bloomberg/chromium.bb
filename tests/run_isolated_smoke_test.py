@@ -3,11 +3,9 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
-import hashlib
 import json
 import logging
 import os
-import shutil
 import subprocess
 import sys
 import unittest
@@ -19,27 +17,108 @@ import isolated_format
 import run_isolated
 from utils import file_path
 
+import isolateserver_mock
 import test_utils
 
-ALGO = hashlib.sha1
+
+CONTENTS = {
+  'check_files.py': """if True:
+      import os, sys
+      ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+      expected = [
+        'check_files.py', 'file1.txt', 'file1_copy.txt', 'file2.txt',
+        'repeated_files.py',
+      ]
+      actual = sorted(os.listdir(ROOT_DIR))
+      if expected != actual:
+        print >> sys.stderr, 'Expected list doesn\\'t match:'
+        print >> sys.stderr, '%s\\n%s' % (','.join(expected), ','.join(actual))
+        sys.exit(1)
+      # Check that file2.txt is in reality file3.txt.
+      with open(os.path.join(ROOT_DIR, 'file2.txt'), 'rb') as f:
+        if f.read() != 'File3\\n':
+          print >> sys.stderr, 'file2.txt should be file3.txt in reality'
+          sys.exit(2)
+      print('Success')""",
+  'file1.txt': 'File1\n',
+  'file2.txt': 'File2.txt\n',
+  'file3.txt': 'File3\n',
+  'repeated_files.py': """if True:
+      import os, sys
+      expected = ['file1.txt', 'file1_copy.txt', 'repeated_files.py']
+      actual = sorted(os.listdir(os.path.dirname(os.path.abspath(__file__))))
+      if expected != actual:
+        print >> sys.stderr, 'Expected list doesn\\'t match:'
+        print >> sys.stderr, '%s\\n%s' % (','.join(expected), ','.join(actual))
+        sys.exit(1)
+      print('Success')""",
+}
 
 
-class CalledProcessError(subprocess.CalledProcessError):
-  """Makes 2.6 version act like 2.7"""
-  def __init__(self, returncode, cmd, output, stderr, cwd):
-    super(CalledProcessError, self).__init__(returncode, cmd)
-    self.output = output
-    self.stderr = stderr
-    self.cwd = cwd
+def file_meta(filename):
+  return {
+    'h': isolateserver_mock.hash_content(CONTENTS[filename]),
+    's': len(CONTENTS[filename]),
+  }
 
-  def __str__(self):
-    return super(CalledProcessError, self).__str__() + (
-        '\n'
-        'cwd=%s\n%s\n%s\n%s') % (
-            self.cwd,
-            self.output,
-            self.stderr,
-            ' '.join(self.cmd))
+
+CONTENTS['download.isolated'] = json.dumps(
+    {
+      'command': ['python', 'repeated_files.py'],
+      'files': {
+        'file1.txt': file_meta('file1.txt'),
+        'file1_symlink.txt': {'l': 'files1.txt'},
+        'new_folder/file1.txt': file_meta('file1.txt'),
+        'repeated_files.py': file_meta('repeated_files.py'),
+      },
+    })
+
+
+CONTENTS['file_with_size.isolated'] = json.dumps(
+    {
+      'command': [ 'python', '-V' ],
+      'files': {'file1.txt': file_meta('file1.txt')},
+      'read_only': 1,
+    })
+
+
+CONTENTS['manifest1.isolated'] = json.dumps(
+    {'files': {'file1.txt': file_meta('file1.txt')}})
+
+
+CONTENTS['manifest2.isolated'] = json.dumps(
+    {
+      'files': {'file2.txt': file_meta('file2.txt')},
+      'includes': [
+        isolateserver_mock.hash_content(CONTENTS['manifest1.isolated']),
+      ],
+    })
+
+
+CONTENTS['repeated_files.isolated'] = json.dumps(
+    {
+      'command': ['python', 'repeated_files.py'],
+      'files': {
+        'file1.txt': file_meta('file1.txt'),
+        'file1_copy.txt': file_meta('file1.txt'),
+        'repeated_files.py': file_meta('repeated_files.py'),
+      },
+    })
+
+
+CONTENTS['check_files.isolated'] = json.dumps(
+    {
+      'command': ['python', 'check_files.py'],
+      'files': {
+        'check_files.py': file_meta('check_files.py'),
+        # Mapping another file.
+        'file2.txt': file_meta('file3.txt'),
+      },
+      'includes': [
+        isolateserver_mock.hash_content(CONTENTS[i])
+        for i in ('manifest2.isolated', 'repeated_files.isolated')
+      ]
+    })
 
 
 def list_files_tree(directory):
@@ -88,20 +167,17 @@ class RunIsolatedTest(unittest.TestCase):
     self.run_isolated_zip = os.path.join(self.tempdir, 'run_isolated.zip')
     run_isolated.get_as_zip_package().zip_into_file(
         self.run_isolated_zip, compress=False)
-    # The "source" hash table.
-    self.table = os.path.join(self.tempdir, 'table')
-    os.mkdir(self.table)
-    # The slave-side cache.
+    # The run_isolated local cache.
     self.cache = os.path.join(self.tempdir, 'cache')
-
-    self.data_dir = os.path.join(ROOT_DIR, 'tests', 'run_isolated')
+    self.server = isolateserver_mock.MockIsolateServer()
 
   def tearDown(self):
-    file_path.rmtree(self.tempdir)
-    super(RunIsolatedTest, self).tearDown()
-
-  def _result_tree(self):
-    return list_files_tree(self.tempdir)
+    try:
+      self.server.close_start()
+      file_path.rmtree(self.tempdir)
+      self.server.close_end()
+    finally:
+      super(RunIsolatedTest, self).tearDown()
 
   def _run(self, args):
     cmd = [sys.executable, self.run_isolated_zip]
@@ -117,32 +193,15 @@ class RunIsolatedTest(unittest.TestCase):
     out, err = proc.communicate()
     return out, err, proc.returncode
 
-  def _store_result(self, result_data):
-    """Stores a .isolated file in the hash table."""
-    # Need to know the hash before writting the file.
-    result_text = json.dumps(result_data, sort_keys=True, indent=2)
-    result_hash = ALGO(result_text).hexdigest()
-    write_content(os.path.join(self.table, result_hash), result_text)
-    return result_hash
+  def _store_isolated(self, data):
+    """Stores an isolated file and returns its hash."""
+    return self.server.add_content('default', json.dumps(data, sort_keys=True))
 
   def _store(self, filename):
-    """Stores a test data file in the table.
+    """Stores a test data file in the table and returns its hash."""
+    return self.server.add_content('default', CONTENTS[filename])
 
-    Returns its sha-1 hash.
-    """
-    filepath = os.path.join(self.data_dir, filename)
-    h = isolated_format.hash_file(filepath, ALGO)
-    shutil.copyfile(filepath, os.path.join(self.table, h))
-    return h
-
-  def _generate_args_with_isolated(self, isolated):
-    """Generates the standard arguments used with isolated as the isolated file.
-
-    Returns a list of the required arguments.
-    """
-    return self._generate_args_with_hash(self._store(isolated))
-
-  def _generate_args_with_hash(self, hash_value):
+  def _cmd_args(self, hash_value):
     """Generates the standard arguments used with |hash_value| as the hash.
 
     Returns a list of the required arguments.
@@ -150,7 +209,7 @@ class RunIsolatedTest(unittest.TestCase):
     return [
       '--hash', hash_value,
       '--cache', self.cache,
-      '--indir', self.table,
+      '--isolate-server', self.server.url,
       '--namespace', 'default',
     ]
 
@@ -174,35 +233,19 @@ class RunIsolatedTest(unittest.TestCase):
     expected_mangled = dict((k, oct(v[index])) for k, v in expected.iteritems())
     self.assertEqual(expected_mangled, actual)
 
-  def test_result(self):
-    # Loads an arbitrary .isolated on the file system.
-    isolated = os.path.join(self.data_dir, 'repeated_files.isolated')
-    expected = [
-      'state.json',
-      self._store('file1.txt'),
-      self._store('file1_copy.txt'),
-      self._store('repeated_files.py'),
-      isolated_format.hash_file(isolated, ALGO),
-    ]
-    out, err, returncode = self._run(
-        self._generate_args_with_isolated(isolated))
-    self.assertEqual('Success\n', out, (out, err))
-    self.assertEqual(0, returncode)
-    actual = list_files_tree(self.cache)
-    self.assertEqual(sorted(set(expected)), actual)
-
-  def test_hash(self):
+  def test_normal(self):
     # Loads the .isolated from the store as a hash.
-    result_hash = self._store('repeated_files.isolated')
+    # Load an isolated file with the same content (same SHA-1), listed under two
+    # different names and ensure both are created.
+    isolated_hash = self._store('repeated_files.isolated')
     expected = [
       'state.json',
+      isolated_hash,
       self._store('file1.txt'),
-      self._store('file1_copy.txt'),
       self._store('repeated_files.py'),
-      result_hash,
     ]
 
-    out, err, returncode = self._run(self._generate_args_with_hash(result_hash))
+    out, err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual('', err)
     self.assertEqual('Success\n', out, out)
     self.assertEqual(0, returncode)
@@ -210,12 +253,9 @@ class RunIsolatedTest(unittest.TestCase):
     self.assertEqual(sorted(set(expected)), actual)
 
   def test_fail_empty_isolated(self):
-    result_hash = self._store_result({})
-    expected = [
-      'state.json',
-      result_hash,
-    ]
-    out, err, returncode = self._run(self._generate_args_with_hash(result_hash))
+    isolated_hash = self._store_isolated({})
+    expected = ['state.json', isolated_hash]
+    out, err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual('', out)
     self.assertIn('No command to run\n', err)
     self.assertEqual(1, returncode)
@@ -227,9 +267,10 @@ class RunIsolatedTest(unittest.TestCase):
 
     # References manifest2.isolated and repeated_files.isolated. Maps file3.txt
     # as file2.txt.
-    result_hash = self._store('check_files.isolated')
+    isolated_hash = self._store('check_files.isolated')
     expected = [
       'state.json',
+      isolated_hash,
       self._store('check_files.py'),
       self._store('file1.txt'),
       self._store('file3.txt'),
@@ -237,46 +278,22 @@ class RunIsolatedTest(unittest.TestCase):
       self._store('manifest1.isolated'),
       # References manifest1.isolated. Maps file2.txt but it is overriden.
       self._store('manifest2.isolated'),
-      result_hash,
       self._store('repeated_files.py'),
       self._store('repeated_files.isolated'),
     ]
-    out, err, returncode = self._run(self._generate_args_with_hash(result_hash))
+    out, err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual('', err)
     self.assertEqual('Success\n', out)
     self.assertEqual(0, returncode)
     actual = list_files_tree(self.cache)
     self.assertEqual(sorted(expected), actual)
 
-  def test_link_all_hash_instances(self):
-    # Load an isolated file with the same file (same sha-1 hash), listed under
-    # two different names and ensure both are created.
-    result_hash = self._store('repeated_files.isolated')
-    expected = [
-        'state.json',
-        result_hash,
-        self._store('file1.txt'),
-        self._store('repeated_files.py')
-    ]
-
-    out, err, returncode = self._run(self._generate_args_with_hash(result_hash))
-    self.assertEqual('', err)
-    self.assertEqual('Success\n', out)
-    self.assertEqual(0, returncode)
-    actual = list_files_tree(self.cache)
-    self.assertEqual(sorted(expected), actual)
-
-  def test_delete_quite_corrupted_cache_entry(self):
-    # Test that an entry with an invalid file size properly gets removed and
-    # fetched again. This test case also check for file modes.
-    isolated_file = os.path.join(self.data_dir, 'file_with_size.isolated')
-    isolated_hash = isolated_format.hash_file(isolated_file, ALGO)
+  def _test_corruption_common(self, new_content):
+    isolated_hash = self._store('file_with_size.isolated')
     file1_hash = self._store('file1.txt')
-    # Note that <tempdir>/table/<file1_hash> has 640 mode.
 
     # Run the test once to generate the cache.
-    _out, _err, returncode = self._run(self._generate_args_with_isolated(
-        isolated_file))
+    _out, _err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual(0, returncode)
     expected = {
       '.': (040707, 040707, 040777),
@@ -293,18 +310,14 @@ class RunIsolatedTest(unittest.TestCase):
     cached_file_path = os.path.join(self.cache, file1_hash)
     previous_mode = os.stat(cached_file_path).st_mode
     os.chmod(cached_file_path, 0600)
-    old_content = read_content(cached_file_path)
-    write_content(cached_file_path, old_content + ' but now invalid size')
+    write_content(cached_file_path, new_content)
     os.chmod(cached_file_path, previous_mode)
     logging.info('Modified %s', cached_file_path)
     # Ensure that the cache has an invalid file.
-    self.assertNotEqual(
-        os.stat(os.path.join(self.data_dir, 'file1.txt')).st_size,
-        os.stat(cached_file_path).st_size)
+    self.assertNotEqual(CONTENTS['file1.txt'], read_content(cached_file_path))
 
     # Rerun the test and make sure the cache contains the right file afterwards.
-    _out, _err, returncode = self._run(self._generate_args_with_isolated(
-        isolated_file))
+    _out, _err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual(0, returncode)
     expected = {
       '.': (040700, 040700, 040777),
@@ -313,60 +326,23 @@ class RunIsolatedTest(unittest.TestCase):
       isolated_hash: (0100400, 0100400, 0100444),
     }
     self.assertTreeModes(self.cache, expected)
+    return cached_file_path
 
-    self.assertEqual(os.stat(os.path.join(self.data_dir, 'file1.txt')).st_size,
-                     os.stat(cached_file_path).st_size)
-    self.assertEqual(old_content, read_content(cached_file_path))
-
-  def test_delete_slightly_corrupted_cache_entry(self):
+  def test_corrupted_cache_entry_different_size(self):
     # Test that an entry with an invalid file size properly gets removed and
     # fetched again. This test case also check for file modes.
-    isolated_file = os.path.join(self.data_dir, 'file_with_size.isolated')
-    isolated_hash = isolated_format.hash_file(isolated_file, ALGO)
-    file1_hash = self._store('file1.txt')
-    # Note that <tempdir>/table/<file1_hash> has 640 mode.
+    cached_file_path = self._test_corruption_common(
+        CONTENTS['file1.txt'] + ' now invalid size')
+    self.assertEqual(CONTENTS['file1.txt'], read_content(cached_file_path))
 
-    # Run the test once to generate the cache.
-    _out, _err, returncode = self._run(self._generate_args_with_isolated(
-        isolated_file))
-    self.assertEqual(0, returncode)
-    expected = {
-      '.': (040707, 040707, 040777),
-      'state.json': (0100606, 0100606, 0100666),
-      file1_hash: (0100400, 0100400, 0100666),
-      isolated_hash: (0100400, 0100400, 0100444),
-    }
-    self.assertTreeModes(self.cache, expected)
-
-    # Modify one of the files in the cache to be invalid.
-    cached_file_path = os.path.join(self.cache, file1_hash)
-    previous_mode = os.stat(cached_file_path).st_mode
-    os.chmod(cached_file_path, 0600)
-    old_content = read_content(cached_file_path)
-    write_content(cached_file_path, old_content[1:] + 'b')
-    os.chmod(cached_file_path, previous_mode)
-    logging.info('Modified %s', cached_file_path)
-    self.assertEqual(
-        os.stat(os.path.join(self.data_dir, 'file1.txt')).st_size,
-        os.stat(cached_file_path).st_size)
-
-    # Rerun the test and make sure the cache contains the right file afterwards.
-    _out, _err, returncode = self._run(self._generate_args_with_isolated(
-        isolated_file))
-    self.assertEqual(0, returncode)
-    expected = {
-      '.': (040700, 040700, 040777),
-      'state.json': (0100600, 0100600, 0100666),
-      file1_hash: (0100400, 0100400, 0100666),
-      isolated_hash: (0100400, 0100400, 0100444),
-    }
-    self.assertTreeModes(self.cache, expected)
-
-    self.assertEqual(os.stat(os.path.join(self.data_dir, 'file1.txt')).st_size,
-                     os.stat(cached_file_path).st_size)
+  def test_corrupted_cache_entry_same_size(self):
+    # Test that an entry with an invalid file content but same size is NOT
+    # detected property.
+    cached_file_path = self._test_corruption_common(
+        CONTENTS['file1.txt'][:-1] + ' ')
     # TODO(maruel): This corruption is NOT detected.
     # This needs to be fixed.
-    self.assertNotEqual(old_content, read_content(cached_file_path))
+    self.assertNotEqual(CONTENTS['file1.txt'], read_content(cached_file_path))
 
 
 if __name__ == '__main__':
