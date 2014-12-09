@@ -242,14 +242,11 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
         blink::WebBlendModeNormal);
     RefPtr<const SkPicture> tilePicture = recordingContext.endRecording();
 
-    // FIXME: SkPictureShader ignores the picture offset - so we must compensate here.
-    SkRect tileRect = SkRect::MakeXYWH(-spacedTile.x(), -spacedTile.y(),
-        spacedTile.width(), spacedTile.height());
     SkMatrix patternTransform;
     patternTransform.setTranslate(phase.x() + spacedTile.x(), phase.y() + spacedTile.y());
     RefPtr<SkShader> patternShader = adoptRef(SkShader::CreatePictureShader(
         tilePicture.get(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode,
-        &patternTransform, &tileRect));
+        &patternTransform, nullptr));
 
     SkPaint paint;
     paint.setShader(patternShader.get());
