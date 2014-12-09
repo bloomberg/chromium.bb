@@ -768,9 +768,10 @@ bool AXNodeObject::isPressed() const
     if (!node)
         return false;
 
-    // If this is an ARIA button, check the aria-pressed attribute rather than node()->active()
-    if (ariaRoleAttribute() == ButtonRole) {
-        if (equalIgnoringCase(getAttribute(aria_pressedAttr), "true"))
+    // ARIA button with aria-pressed not undefined, then check for aria-pressed attribute rather than node()->active()
+    if (ariaRoleAttribute() == ToggleButtonRole) {
+        if (equalIgnoringCase(getAttribute(aria_pressedAttr), "true")
+            || equalIgnoringCase(getAttribute(aria_pressedAttr), "mixed"))
             return true;
         return false;
     }
