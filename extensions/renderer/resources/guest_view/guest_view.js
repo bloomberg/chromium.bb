@@ -102,7 +102,7 @@ GuestViewImpl.prototype.checkState = function(action) {
 
 // Internal implementation of attach().
 GuestViewImpl.prototype.attachImpl = function(
-    internalInstanceId, attachParams, callback) {
+    internalInstanceId, viewInstanceId, attachParams, callback) {
   // Check the current state.
   if (!this.checkState('attach')) {
     this.handleCallback(callback);
@@ -133,6 +133,7 @@ GuestViewImpl.prototype.attachImpl = function(
     this.handleCallback(callback);
   };
 
+  attachParams['instanceId'] = viewInstanceId;
   GuestViewInternalNatives.AttachGuest(internalInstanceId,
                                        this.id,
                                        attachParams,
@@ -232,10 +233,10 @@ function GuestView(viewType, guestInstanceId) {
 
 // Attaches the guestview to the container with ID |internalInstanceId|.
 GuestView.prototype.attach = function(
-    internalInstanceId, attachParams, callback) {
+    internalInstanceId, viewInstanceId, attachParams, callback) {
   var internal = privates(this).internal;
   internal.actionQueue.push(internal.attachImpl.bind(
-      internal, internalInstanceId, attachParams, callback));
+      internal, internalInstanceId, viewInstanceId, attachParams, callback));
   internal.performNextAction();
 };
 

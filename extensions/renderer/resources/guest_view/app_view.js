@@ -72,11 +72,4 @@ AppViewImpl.prototype.connect = function(app, data, callback) {
   }.bind(this));
 };
 
-AppViewImpl.prototype.buildAttachParams = function() {
-  var params = {
-    'instanceId': this.viewInstanceId
-  };
-  return params;
-};
-
 GuestViewContainer.registerElement(AppViewImpl);

@@ -221,10 +221,7 @@ WebViewImpl.prototype.onAttach = function(storagePartitionId) {
 };
 
 WebViewImpl.prototype.buildAttachParams = function() {
-  var params = {
-    'instanceId': this.viewInstanceId,
-    'userAgentOverride': this.userAgentOverride
-  };
+  var params = { 'userAgentOverride': this.userAgentOverride };
   for (var i in this.attributes) {
     params[i] = this.attributes[i].getValue();
   }

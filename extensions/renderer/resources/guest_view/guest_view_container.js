@@ -84,7 +84,9 @@ GuestViewContainer.prototype.attachWindow = function() {
     return true;
   }
 
-  this.guest.attach(this.internalInstanceId, this.buildAttachParams());
+  this.guest.attach(this.internalInstanceId,
+                    this.viewInstanceId,
+                    this.buildAttachParams());
   return true;
 };
 
@@ -97,7 +99,9 @@ GuestViewContainer.prototype.handleBrowserPluginAttributeMutation =
     if (!this.guest.getId()) {
       return;
     }
-    this.guest.attach(this.internalInstanceId, this.buildAttachParams());
+    this.guest.attach(this.internalInstanceId,
+                      this.viewInstanceId,
+                      this.buildAttachParams());
   }
 };
 

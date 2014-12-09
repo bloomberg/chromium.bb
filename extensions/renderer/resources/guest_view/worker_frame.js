@@ -53,11 +53,4 @@ WorkerFrameImpl.prototype.connect = function(url, callback) {
   }.bind(this));
 };
 
-WorkerFrameImpl.prototype.buildAttachParams = function() {
-  var params = {
-    'instanceId': this.viewInstanceId
-  };
-  return params;
-};
-
 GuestViewContainer.registerElement(WorkerFrameImpl);
