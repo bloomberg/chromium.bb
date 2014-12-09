@@ -1091,6 +1091,11 @@ bool Predictor::WouldLikelyProxyURL(const GURL& url) {
 UrlInfo* Predictor::AppendToResolutionQueue(
     const GURL& url,
     UrlInfo::ResolutionMotivation motivation) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436671 Predictor::AppendToResolutionQueue1"));
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(url.has_host());
 
@@ -1109,6 +1114,11 @@ UrlInfo* Predictor::AppendToResolutionQueue(
     return NULL;
   }
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436671 Predictor::AppendToResolutionQueue2"));
+
   AdviseProxy(url, motivation, false /* is_preconnect */);
   if ((proxy_advisor_ && proxy_advisor_->WouldProxyURL(url)) ||
       WouldLikelyProxyURL(url)) {
@@ -1116,8 +1126,19 @@ UrlInfo* Predictor::AppendToResolutionQueue(
     return NULL;
   }
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436671 Predictor::AppendToResolutionQueue3"));
+
   info->SetQueuedState(motivation);
   work_queue_.Push(url, motivation);
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "436671 Predictor::AppendToResolutionQueue4"));
+
   StartSomeQueuedResolutions();
   return info;
 }
