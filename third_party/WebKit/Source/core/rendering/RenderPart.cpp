@@ -209,6 +209,10 @@ void RenderPart::styleDidChange(StyleDifference diff, const RenderStyle* oldStyl
     if (!widget)
         return;
 
+    // If the iframe has custom scrollbars, recalculate their style.
+    if (widget && widget->isFrameView())
+        toFrameView(widget)->recalculateCustomScrollbarStyle();
+
     if (style()->visibility() != VISIBLE) {
         widget->hide();
     } else {
