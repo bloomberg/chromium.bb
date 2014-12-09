@@ -2769,7 +2769,7 @@ def CMDowners(parser, args):
 @subcommand.usage('[files or directories to diff]')
 def CMDformat(parser, args):
   """Runs clang-format on the diff."""
-  CLANG_EXTS = ['.cc', '.cpp', '.h', '.mm', '.proto']
+  CLANG_EXTS = ['.cc', '.cpp', '.h', '.mm', '.proto', '.java']
   parser.add_option('--full', action='store_true',
                     help='Reformat the full content of all touched files')
   parser.add_option('--dry-run', action='store_true',
