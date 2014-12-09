@@ -12,6 +12,10 @@
 
 using base::AutoLock;
 
+namespace syncer {
+class AttachmentService;
+}
+
 namespace sync_driver {
 
 SharedChangeProcessor::SharedChangeProcessor()
@@ -72,6 +76,12 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
                                                       local_service,
                                                       merge_result,
                                                       sync_factory).release();
+  // If available, propagate attachment service to the syncable service.
+  scoped_ptr<syncer::AttachmentService> attachment_service =
+      generic_change_processor_->GetAttachmentService();
+  if (attachment_service) {
+    local_service->SetAttachmentService(attachment_service.Pass());
+  }
   return local_service;
 }
 

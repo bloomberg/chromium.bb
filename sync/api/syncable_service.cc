@@ -12,4 +12,8 @@ scoped_refptr<AttachmentStore> SyncableService::GetAttachmentStore() {
   return scoped_refptr<AttachmentStore>();
 }
 
+void SyncableService::SetAttachmentService(
+    scoped_ptr<AttachmentService> attachment_service) {
+}
+
 }  // namespace syncer

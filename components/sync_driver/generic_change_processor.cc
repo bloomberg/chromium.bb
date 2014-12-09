@@ -114,14 +114,14 @@ GenericChangeProcessor::GenericChangeProcessor(
     attachment_service_weak_ptr_factory_.reset(
         new base::WeakPtrFactory<syncer::AttachmentService>(
             attachment_service_.get()));
-    attachment_service_proxy_.reset(new syncer::AttachmentServiceProxy(
+    attachment_service_proxy_ = syncer::AttachmentServiceProxy(
         base::MessageLoopProxy::current(),
-        attachment_service_weak_ptr_factory_->GetWeakPtr()));
+        attachment_service_weak_ptr_factory_->GetWeakPtr());
     UploadAllAttachmentsNotOnServer();
   } else {
-    attachment_service_proxy_.reset(new syncer::AttachmentServiceProxy(
+    attachment_service_proxy_ = syncer::AttachmentServiceProxy(
         base::MessageLoopProxy::current(),
-        base::WeakPtr<syncer::AttachmentService>()));
+        base::WeakPtr<syncer::AttachmentService>());
   }
 }
 
@@ -146,15 +146,11 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
             CopyFrom(it->extra->unencrypted());
       }
       const syncer::AttachmentIdList empty_list_of_attachment_ids;
-      syncer_changes_.push_back(
-          syncer::SyncChange(FROM_HERE,
-                             syncer::SyncChange::ACTION_DELETE,
-                             syncer::SyncData::CreateRemoteData(
-                                 it->id,
-                                 specifics ? *specifics : it->specifics,
-                                 base::Time(),
-                                 empty_list_of_attachment_ids,
-                                 *attachment_service_proxy_)));
+      syncer_changes_.push_back(syncer::SyncChange(
+          FROM_HERE, syncer::SyncChange::ACTION_DELETE,
+          syncer::SyncData::CreateRemoteData(
+              it->id, specifics ? *specifics : it->specifics, base::Time(),
+              empty_list_of_attachment_ids, attachment_service_proxy_)));
     } else {
       syncer::SyncChange::SyncChangeType action =
           (it->action == syncer::ChangeRecord::ACTION_ADD) ?
@@ -172,9 +168,8 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
         return;
       }
       syncer_changes_.push_back(syncer::SyncChange(
-          FROM_HERE,
-          action,
-          BuildRemoteSyncData(it->id, read_node, *attachment_service_proxy_)));
+          FROM_HERE, action,
+          BuildRemoteSyncData(it->id, read_node, attachment_service_proxy_)));
     }
   }
 }
@@ -272,7 +267,7 @@ syncer::SyncError GenericChangeProcessor::GetAllSyncDataReturnError(
       return error;
     }
     current_sync_data->push_back(BuildRemoteSyncData(
-        sync_child_node.GetId(), sync_child_node, *attachment_service_proxy_));
+        sync_child_node.GetId(), sync_child_node, attachment_service_proxy_));
   }
   return syncer::SyncError();
 }
@@ -718,6 +713,12 @@ void GenericChangeProcessor::UploadAllAttachmentsNotOnServer() {
   if (!id_set.empty()) {
     attachment_service_->UploadAttachments(id_set);
   }
+}
+
+scoped_ptr<syncer::AttachmentService>
+GenericChangeProcessor::GetAttachmentService() const {
+  return scoped_ptr<syncer::AttachmentService>(
+      new syncer::AttachmentServiceProxy(attachment_service_proxy_));
 }
 
 }  // namespace sync_driver

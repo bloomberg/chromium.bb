@@ -98,6 +98,9 @@ class GenericChangeProcessor : public ChangeProcessor,
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
   virtual bool CryptoReadyIfNecessary();
 
+  // Gets AttachmentService proxy for datatype.
+  scoped_ptr<syncer::AttachmentService> GetAttachmentService() const;
+
  protected:
   // ChangeProcessor interface.
   void StartImpl() override;  // Does nothing.
@@ -162,8 +165,7 @@ class GenericChangeProcessor : public ChangeProcessor,
   // Can be NULL if attachment_service_ is NULL;
   scoped_ptr<base::WeakPtrFactory<syncer::AttachmentService> >
       attachment_service_weak_ptr_factory_;
-  scoped_ptr<syncer::AttachmentServiceProxy> attachment_service_proxy_;
-
+  syncer::AttachmentServiceProxy attachment_service_proxy_;
   base::WeakPtrFactory<GenericChangeProcessor> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GenericChangeProcessor);
