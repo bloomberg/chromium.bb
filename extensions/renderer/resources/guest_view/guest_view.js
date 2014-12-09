@@ -10,16 +10,11 @@ var GuestViewInternal =
 var GuestViewInternalNatives = requireNative('guest_view_internal');
 
 // Possible states.
-var GUEST_STATE_ATTACHED = 'attached';
-var GUEST_STATE_CREATED = 'created';
-var GUEST_STATE_START = 'start';
+var GUEST_STATE_ATTACHED = 2;
+var GUEST_STATE_CREATED = 1;
+var GUEST_STATE_START = 0;
 
 // Error messages.
-var ERROR_MSG_ATTACH = 'Error calling attach: ';
-var ERROR_MSG_CREATE = 'Error calling create: ';
-var ERROR_MSG_DESTROY = 'Error calling destroy: ';
-var ERROR_MSG_DETACH = 'Error calling detach: ';
-var ERROR_MSG_SETAUTOSIZE = 'Error calling setAutoSize: ';
 var ERROR_MSG_ALREADY_ATTACHED = 'The guest has already been attached.';
 var ERROR_MSG_ALREADY_CREATED = 'The guest has already been created.';
 var ERROR_MSG_INVALID_STATE = 'The guest is in an invalid state.';
@@ -65,26 +60,51 @@ GuestViewImpl.prototype.performNextAction = function() {
   }
 };
 
+// Check the current state to see if the proposed action is valid. Returns false
+// if invalid.
+GuestViewImpl.prototype.checkState = function(action) {
+  // Create an error prefix based on the proposed action.
+  var errorPrefix = 'Error calling ' + action + ': ';
+
+  // Check that the current state is valid.
+  if (!(this.state >= 0 && this.state <= 2)) {
+    window.console.error(errorPrefix + ERROR_MSG_INVALID_STATE);
+    return false;
+  }
+
+  // Map of possible errors for each action. For each action, the errors are
+  // listed for states in the order: GUEST_STATE_START, GUEST_STATE_CREATED,
+  // GUEST_STATE_ATTACHED.
+  var errors = {
+    'attach': [ERROR_MSG_NOT_CREATED, null, ERROR_MSG_ALREADY_ATTACHED],
+    'create': [null, ERROR_MSG_ALREADY_CREATED, ERROR_MSG_ALREADY_CREATED],
+    'destroy': [null, null, null],
+    'detach': [ERROR_MSG_NOT_ATTACHED, ERROR_MSG_NOT_ATTACHED, null],
+    'setAutoSize': [ERROR_MSG_NOT_CREATED, null, null]
+  };
+
+  // Check that the proposed action is a real action.
+  if (errors[action] == undefined) {
+    window.console.error(errorPrefix + ERROR_MSG_INVALID_ACTION);
+    return false;
+  }
+
+  // Report the error if the proposed action is found to be invalid for the
+  // current state.
+  var error;
+  if (error = errors[action][this.state]) {
+    window.console.error(errorPrefix + error);
+    return false;
+  }
+
+  return true;
+};
+
 // Internal implementation of attach().
 GuestViewImpl.prototype.attachImpl = function(
     internalInstanceId, attachParams, callback) {
   // Check the current state.
-  var error;
-  switch (this.state) {
-    case GUEST_STATE_START:
-      error = ERROR_MSG_ATTACH + ERROR_MSG_NOT_CREATED;
-      break;
-    case GUEST_STATE_ATTACHED:
-      error = ERROR_MSG_ATTACH + ERROR_MSG_ALREADY_ATTACHED;
-      break;
-    case GUEST_STATE_CREATED:
-      // No error.
-      break;
-    default:
-      error = ERROR_MSG_ATTACH + ERROR_MSG_INVALID_STATE;
-  }
-  if (error) {
-    window.console.error(error);
+  if (!this.checkState('attach')) {
     this.handleCallback(callback);
     return;
   }
@@ -125,20 +145,7 @@ GuestViewImpl.prototype.attachImpl = function(
 // Internal implementation of create().
 GuestViewImpl.prototype.createImpl = function(createParams, callback) {
   // Check the current state.
-  var error;
-  switch (this.state) {
-    case GUEST_STATE_ATTACHED:
-    case GUEST_STATE_CREATED:
-      error = ERROR_MSG_CREATE + ERROR_MSG_ALREADY_CREATED;
-      break;
-    case GUEST_STATE_START:
-      // No error.
-      break;
-    default:
-      error = ERROR_MSG_CREATE + ERROR_MSG_INVALID_STATE;
-  }
-  if (error) {
-    window.console.error(error);
+  if (!this.checkState('create')) {
     this.handleCallback(callback);
     return;
   }
@@ -167,21 +174,13 @@ GuestViewImpl.prototype.createImpl = function(createParams, callback) {
 // Internal implementation of destroy().
 GuestViewImpl.prototype.destroyImpl = function(callback) {
   // Check the current state.
-  var error;
-  switch (this.state) {
-    case GUEST_STATE_ATTACHED:
-    case GUEST_STATE_CREATED:
-      // No error.
-      break;
-    case GUEST_STATE_START:
-      // This is a valid state, but destroy() will do nothing in this case.
-      this.handleCallback(callback);
-      return;
-    default:
-      error = ERROR_MSG_DESTROY + ERROR_MSG_INVALID_STATE;
+  if (!this.checkState('destroy')) {
+    this.handleCallback(callback);
+    return;
   }
-  if (error) {
-    window.console.error(error);
+
+  if (this.state == GUEST_STATE_START) {
+    // destroy() does nothing in this case.
     this.handleCallback(callback);
     return;
   }
@@ -198,20 +197,7 @@ GuestViewImpl.prototype.destroyImpl = function(callback) {
 // Internal implementation of detach().
 GuestViewImpl.prototype.detachImpl = function(callback) {
   // Check the current state.
-  var error;
-  switch (this.state) {
-    case GUEST_STATE_ATTACHED:
-      // No error.
-      break;
-    case GUEST_STATE_CREATED:
-    case GUEST_STATE_START:
-      error = ERROR_MSG_DETACH + ERROR_MSG_NOT_ATTACHED;
-      break;
-    default:
-      error = ERROR_MSG_DETACH + ERROR_MSG_INVALID_STATE;
-  }
-  if (error) {
-    window.console.error(error);
+  if (!this.checkState('detach')) {
     this.handleCallback(callback);
     return;
   }
@@ -228,20 +214,7 @@ GuestViewImpl.prototype.detachImpl = function(callback) {
 // Internal implementation of setAutoSize().
 GuestViewImpl.prototype.setAutoSizeImpl = function(autoSizeParams, callback) {
   // Check the current state.
-  var error;
-  switch (this.state) {
-    case GUEST_STATE_ATTACHED:
-    case GUEST_STATE_CREATED:
-      // No error.
-      break;
-    case GUEST_STATE_START:
-      error = ERROR_MSG_SETAUTOSIZE + ERROR_MSG_NOT_CREATED;
-      break;
-    default:
-      error = ERROR_MSG_SETAUTOSIZE + ERROR_MSG_INVALID_STATE;
-  }
-  if (error) {
-    window.console.error(error);
+  if (!this.checkState('setAutoSize')) {
     this.handleCallback(callback);
     return;
   }
