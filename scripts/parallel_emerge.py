@@ -30,6 +30,7 @@ except ImportError:
   # pylint: disable=F0401
   import queue as Queue
 import signal
+import subprocess
 import sys
 import tempfile
 import threading
@@ -55,6 +56,18 @@ if "PORTAGE_USERNAME" not in os.environ:
   homedir = os.environ.get("HOME")
   if homedir:
     os.environ["PORTAGE_USERNAME"] = os.path.basename(homedir)
+
+# Wrap Popen with a lock to ensure no two Popen are executed simultaneously in
+# the same process.
+# Two Popen call at the same time might be the cause for crbug.com/433482.
+_popen_lock = threading.Lock()
+_old_popen = subprocess.Popen
+
+def _LockedPopen(*args, **kwargs):
+  with _popen_lock:
+    return _old_popen(*args, **kwargs)
+
+subprocess.Popen = _LockedPopen
 
 # Portage doesn't expose dependency trees in its public API, so we have to
 # make use of some private APIs here. These modules are found under
