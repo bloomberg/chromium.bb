@@ -368,7 +368,7 @@ void ManageProfileHandler::SetProfileIconAndName(const base::ListValue* args) {
   }
   ProfileMetrics::LogProfileUpdate(profile_file_path);
 
-  if (profile->IsSupervised())
+  if (profile->IsLegacySupervised())
     return;
 
   base::string16 new_profile_name;

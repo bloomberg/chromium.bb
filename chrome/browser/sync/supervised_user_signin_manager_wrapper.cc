@@ -26,7 +26,7 @@ SigninManagerBase* SupervisedUserSigninManagerWrapper::GetOriginal() {
 
 std::string SupervisedUserSigninManagerWrapper::GetEffectiveUsername() const {
 #if defined(ENABLE_SUPERVISED_USERS)
-  if (!original_->IsAuthenticated() && profile_->IsSupervised())
+  if (profile_->IsLegacySupervised())
     return supervised_users::kSupervisedUserPseudoEmail;
 #endif
   return original_->GetAuthenticatedUsername();
@@ -34,7 +34,7 @@ std::string SupervisedUserSigninManagerWrapper::GetEffectiveUsername() const {
 
 std::string SupervisedUserSigninManagerWrapper::GetAccountIdToUse() const {
 #if defined(ENABLE_SUPERVISED_USERS)
-  if (!original_->IsAuthenticated() && profile_->IsSupervised())
+  if (profile_->IsLegacySupervised())
     return supervised_users::kSupervisedUserPseudoEmail;
 #endif
   return original_->GetAuthenticatedAccountId();
@@ -42,7 +42,7 @@ std::string SupervisedUserSigninManagerWrapper::GetAccountIdToUse() const {
 
 std::string SupervisedUserSigninManagerWrapper::GetSyncScopeToUse() const {
 #if defined(ENABLE_SUPERVISED_USERS)
-  if (!original_->IsAuthenticated() && profile_->IsSupervised())
+  if (profile_->IsLegacySupervised())
     return GaiaConstants::kChromeSyncSupervisedOAuth2Scope;
 #endif
   return GaiaConstants::kChromeSyncOAuth2Scope;
