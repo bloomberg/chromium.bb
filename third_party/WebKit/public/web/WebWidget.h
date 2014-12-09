@@ -236,6 +236,8 @@ public:
     // to render its contents.
     virtual bool isAcceleratedCompositingActive() const { return false; }
 
+    // Returns true if the WebWidget created is of type WebView.
+    virtual bool isWebView() const { return false; }
     // Returns true if the WebWidget created is of type WebPagePopup.
     virtual bool isPagePopup() const { return false; }
     // Returns true if the WebWidget created is of type WebPopupMenu.

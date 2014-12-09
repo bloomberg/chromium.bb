@@ -161,6 +161,7 @@ public:
     virtual void didChangeWindowResizerRect() override;
 
     // WebView methods:
+    virtual bool isWebView() const { return true; }
     virtual void setMainFrame(WebFrame*) override;
     virtual void setAutofillClient(WebAutofillClient*) override;
     virtual void setCredentialManagerClient(WebCredentialManagerClient*) override;
@@ -759,6 +760,7 @@ private:
     float m_topControlsLayoutHeight;
 };
 
+DEFINE_TYPE_CASTS(WebViewImpl, WebWidget, widget, widget->isWebView(), widget.isWebView());
 // We have no ways to check if the specified WebView is an instance of
 // WebViewImpl because WebViewImpl is the only implementation of WebView.
 DEFINE_TYPE_CASTS(WebViewImpl, WebView, webView, true, true);
